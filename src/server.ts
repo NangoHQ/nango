@@ -22,7 +22,8 @@ const app = App(baseApp)
 // const viewsDir = path.join(__dirname, './views')
 const viewsDir = process.env.NODE_ENV !== 'production' ? './dist/views' : './views'
 
-// app.set('view engine', 'ejs')
+app.engine('html', require('ejs').renderFile)
+app.set('view engine', 'html')
 app.set('views', viewsDir)
 
 console.log('Auth VHost:', AUTH_VHOST)
