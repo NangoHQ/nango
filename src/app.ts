@@ -5,7 +5,7 @@ import express from 'express'
 
 const { COOKIE_SECRET } = process.env
 
-export default (app = express(), { name = 'IntegrationService' } = {}) => {
+export default (app = express()) => {
   app.use(bodyParser.urlencoded({ extended: false }))
   app.use(bodyParser.json({ limit: '5mb' }))
   app.use(passport.initialize())

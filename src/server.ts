@@ -2,19 +2,13 @@ import 'source-map-support/register'
 import mustacheExpress from 'mustache-express'
 import vhost from 'vhost'
 
-import express, {
-  Request,
-  // Response,
-  NextFunction
-} from 'express'
+import express from 'express'
 
 import App from './app'
-import functions from // proxyFunction
-'./functions/router'
+import functions from './functions/router' // proxyFunction
 
 import errorHandler from './errorHandler'
 
-import { IWithStageVariables } from './types'
 import authV3, { authHostRouter } from './auth/v3/router'
 import { AUTH_VHOST, PROXY_VHOST } from './constants'
 export const BUID = 'bearerUid'
@@ -24,13 +18,6 @@ import resourceNotFound from './resourceNotFound'
 
 // simulates variables sent by API gateway
 const baseApp = express()
-baseApp.use((req: Request & IWithStageVariables, _res, next: NextFunction) => {
-  req.stageVariables = {
-    stage: process.env.STAGE!
-  }
-  next()
-})
-
 const app = App(baseApp)
 
 /******* API ******/

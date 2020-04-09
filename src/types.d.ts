@@ -1,17 +1,10 @@
 import { Request } from 'express'
-import { DynamoDB } from 'aws-sdk'
 
 import { TWithInstrument } from './instrumentation/middleware'
 import { Integration } from './functions/integration'
 import { AuthDetails } from './auth/v3/types'
 
 export type Omit<T, K> = Pick<T, Exclude<keyof T, K>>
-
-export interface IWithStageVariables {
-  stageVariables: {
-    stage: string
-  }
-}
 
 export interface IntegrationServiceRequest extends Request, IWithStageVariables {
   environmentIdentifier: string
