@@ -1,0 +1,24 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`revoke raises an error if the clientId parameter is missing 1`] = `[MissingParameter: 'clientId' must be set]`;
+
+exports[`revoke revokes the authentication 1`] = `
+[MockFunction] {
+  "calls": Array [
+    Array [
+      Object {
+        "authId": "test-auth-id",
+        "buid": "test-buid",
+        "clientId": "test-client-id",
+        "servicesTableName": "services-table-name",
+      },
+    ],
+  ],
+  "results": Array [
+    Object {
+      "isThrow": false,
+      "value": undefined,
+    },
+  ],
+}
+`;

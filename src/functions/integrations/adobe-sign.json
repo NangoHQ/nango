@@ -1,0 +1,20 @@
+{
+  "name": "Adobe Sign",
+  "config": {
+    "authorizationURL": "https://secure.eu1.echosign.com/public/oauth",
+    "tokenURL": "https://api.eu1.echosign.com/oauth/token",
+    "refreshURL": "https://api.eu1.echosign.com/oauth/refresh",
+    "authType": "OAUTH2",
+    "config": { "scope": ["agreement_read:account"] },
+    "provider": "Adobe Sign",
+    "hint": "You will find your Adobe Sign credentials here: https://secure.eu1.echosign.com/account/accountSettingsPage#pageId::API_APPLICATIONS"
+  },
+  "request": {
+    "baseURL": "https://api.eu1.echosign.com/api/rest/v6",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer ${auth.accessToken}",
+      "User-Agent": "Bearer.sh"
+    }
+  }
+}

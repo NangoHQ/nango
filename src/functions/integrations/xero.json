@@ -1,0 +1,20 @@
+{
+  "name": "Xero",
+  "config": {
+    "requestTokenURL": "https://api.xero.com/oauth/RequestToken",
+    "accessTokenURL": "https://api.xero.com/oauth/AccessToken",
+    "userAuthorizationURL": "https://api.xero.com/oauth/Authorize",
+    "callbackURL": "https://int.bearer.sh/v2/auth/callback",
+    "authType": "OAUTH1",
+    "signatureMethod": "HMAC-SHA1",
+    "tokenParams": {},
+    "authorizationParams": {},
+    "config": { "scope": [] },
+    "provider": "Xero",
+    "hint": "You will find your Xero credentials here: https://developer.xero.com/myapps"
+  },
+  "request": {
+    "baseURL": "https://api.xero.com/api.xro/2.0/",
+    "headers": { "Accept": "application/json", "Authorization": "OAuth ${auth.oauth1}", "User-Agent": "Bearer.sh" }
+  }
+}

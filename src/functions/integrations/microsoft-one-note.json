@@ -1,0 +1,19 @@
+{
+  "name": "Microsoft OneNote",
+  "config": {
+    "authorizationURL": "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
+    "tokenURL": "https://login.microsoftonline.com/common/oauth2/v2.0/token",
+    "authType": "OAUTH2",
+    "config": { "scope": ["Notes.Read", "Notes.Read.All", "offline_access"] },
+    "provider": "Microsoft OneNote",
+    "hint": "You will find your Microsoft OneNote credentials here: https://apps.dev.microsoft.com/?referrer=https%3a%2f%2fdocs.microsoft.com%2fen-us%2fgraph%2fauth-overview#/application/411f5f1d-cdc1-4678-9749-8d40eeb49b3d"
+  },
+  "request": {
+    "baseURL": "https://graph.microsoft.com/v1.0",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer ${auth.accessToken}",
+      "User-Agent": "Bearer.sh"
+    }
+  }
+}

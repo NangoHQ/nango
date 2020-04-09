@@ -1,0 +1,20 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`callbackContext raises a NoAuthInProgress error if there is no session data 1`] = `[NoAuthInProgress: The callback was invoked whilst no authentication was in progress. Either too much time has elapsed between starting authentication and the callback being invoked, or the callback was invoked without first calling the integration's authentication endpoint. Please try again]`;
+
+exports[`connectContext stores the context data in the session 1`] = `
+Object {
+  "aliasBuid": "test-alias",
+  "buid": "test-buid",
+  "clientId": "test-client-id",
+  "connectParams": Object {
+    "conParam": "test-con-param",
+  },
+  "environmentIdentifier": "test-env-123456",
+  "localAuth": false,
+  "organizationIdentifier": "test-org-12345",
+  "setupId": "test-setup-id",
+}
+`;
+
+exports[`connectContext when assigning clientId from query param raises an error if the clientId query parameter is not present 1`] = `[MissingParameter: 'clientId' must be set]`;

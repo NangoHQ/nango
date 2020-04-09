@@ -1,0 +1,15 @@
+# package directories
+node_modules
+jspm_packages
+.webpack
+.env
+
+# Serverless directories
+.serverless
+
+.envrc
+
+coverage/
+.DS_Store
+dist/
+yarn-error.log

@@ -1,0 +1,31 @@
+{
+  "properties": {
+    "authId": "authId",
+    "scenarios": [
+      {
+        "uuid": "1d234-simple-scenario-with-suffix",
+        "asset": "http://static.test.bearer.sh/1d234/dist/simple-scenario-with-suffix.js"
+      },
+      {
+        "uuid": "ea990-other-version",
+        "asset": "http://static.test.bearer.sh/ea990/dist/ea990-other-version.js"
+      },
+      {
+        "uuid": "8e444-hacky-hack-beta-3",
+        "asset": "http://static.test.bearer.sh/8e444/dist/8e444-hacky-hack-beta-3.js"
+      }
+    ],
+    "scenario_set": [
+      "1d234-simple-scenario-with-suffix",
+      "ea990-other-version",
+      "8e444-hacky-hack-beta-3"
+    ],
+    "scenario_0": "1d234-simple-scenario-with-suffix",
+    "scenario_1": "ea990-other-version",
+    "scenario_2": "8e444-hacky-hack-beta-3"
+  },
+  "context": {
+    "userId": "userId"
+  },
+  "event": "Hit"
+}

@@ -1,0 +1,20 @@
+{
+  "name": "Twist",
+  "config": {
+    "authType": "OAUTH2",
+    "config": { "scope": ["workspaces:read"] },
+    "tokenParams": {},
+    "authorizationParams": {},
+    "authorizationURL": "https://twist.com/oauth/authorize",
+    "tokenURL": "https://twist.com/oauth/access_token"
+  },
+  "request": {
+    "params": {},
+    "headers": {
+      "Accept": "application/json",
+      "User-Agent": "Bearer.sh",
+      "Authorization": "Bearer ${auth.accessToken}"
+    },
+    "baseURL": "https://api.twist.com/api/v3"
+  }
+}

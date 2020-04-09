@@ -1,0 +1,5 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`expandTemplate when NO value was supplied for a variable raises an UndefinedVariable error with the correct path for arrays 1`] = `"Undefined variable x.who used in template at a[1]"`;
+
+exports[`expandTemplate when NO value was supplied for a variable raises an UndefinedVariable error with the correct path for objects 1`] = `"Undefined variable x.who used in template at a.b"`;

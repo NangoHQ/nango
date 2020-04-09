@@ -1,0 +1,66 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`expandAuthConfig returns an error if a required header is missing 1`] = `"The API's Token URL configuration requires the 'someParam' query parameter to be passed when connecting."`;
+
+exports[`expandAuthConfig returns an error if an invalid variable is encountered 1`] = `"The API's Token URL has been configured with an invalid variable \${invalid.var}."`;
+
+exports[`expandAuthConfig when the auth type is OAuth 1 expands variables in supported variables 1`] = `
+Object {
+  "accessTokenURL": "http://auth.one.example.com/access",
+  "authType": "OAUTH1",
+  "authorizationParams": Object {
+    "auth": "auth-param-two",
+  },
+  "requestTokenURL": "http://auth.two.example.com/token",
+  "signatureMethod": "PLAINTEXT",
+  "tokenParams": Object {
+    "token": "token-param-one",
+  },
+  "userAuthorizationURL": "http://auth.two.example.com/auth",
+}
+`;
+
+exports[`expandAuthConfig when the auth type is OAuth 1 leaves other parts of the config alone 1`] = `
+Object {
+  "authType": "OAUTH1",
+  "signatureMethod": "sig-\${connectParams.param1}",
+}
+`;
+
+exports[`expandAuthConfig when the auth type is OAuth 2 expands variables in supported variables 1`] = `
+Object {
+  "authType": "OAUTH2",
+  "authorizationMethod": "header",
+  "authorizationParams": Object {
+    "auth": "auth-param-two",
+  },
+  "authorizationURL": "http://auth.one.example.com/auth",
+  "bodyFormat": "json",
+  "config": Object {
+    "scope": Array [
+      "read",
+      "write",
+    ],
+  },
+  "grantType": "authorization_code",
+  "refreshURL": "http://auth.one.example.com/refresh",
+  "tokenParams": Object {
+    "token": "token-param-one",
+  },
+  "tokenURL": "http://auth.two.example.com/token",
+}
+`;
+
+exports[`expandAuthConfig when the auth type is OAuth 2 leaves other parts of the config alone 1`] = `
+Object {
+  "authType": "OAUTH2",
+  "authorizationMethod": "auth-meth-\${connectParams.param1}",
+  "bodyFormat": "body-fmt-\${connectParams.param2}",
+  "config": Object {
+    "scope": Array [
+      "scope-\${connectParams.param1}",
+    ],
+  },
+  "grantType": "authorization_code",
+}
+`;

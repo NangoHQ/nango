@@ -1,0 +1,22 @@
+{
+  "name": "Snov.io",
+  "config": {
+    "authType": "OAUTH2",
+    "bodyFormat": "form",
+    "grantType": "client_credentials",
+    "config": { "scope": [] },
+    "tokenParams": {},
+    "tokenURL": "https://app.snov.io/oauth/access_token",
+    "authorizationMethod": "body",
+    "authorizationParams": {}
+  },
+  "request": {
+    "headers": {
+      "Accept": "application/json",
+      "User-Agent": "Bearer.sh",
+      "Authorization": "Bearer ${auth.accessToken}"
+    },
+    "baseURL": "https://app.snov.io/restapi/",
+    "params": {}
+  }
+}

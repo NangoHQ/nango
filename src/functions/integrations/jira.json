@@ -1,0 +1,26 @@
+{
+  "name": "Jira",
+  "config": {
+    "authorizationURL": "https://auth.atlassian.com/authorize",
+    "tokenURL": "https://auth.atlassian.com/oauth/token",
+    "authType": "OAUTH2",
+    "tokenParams": { "redirect_uri": "https://int.bearer.sh/v2/auth/callback", "grant_type": "authorization_code" },
+    "authorizationParams": { "prompt": "consent", "state": 1, "audience": "api.atlassian.com" },
+    "config": {
+      "callbackURL": "https://int.bearer.sh/v2/auth/callback",
+      "response_type": "code",
+      "scope": ["read:jira-work"]
+    },
+    "provider": "Jira",
+    "hint": "You will find your Jira credentials here: https://developer.atlassian.com/apps/create"
+  },
+  "request": {
+    "baseURL": "https://${headers.atlassian_domain}.atlassian.net/rest/api/3/",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer ${auth.accessToken}",
+      "Content-Type": "application/json",
+      "User-Agent": "Bearer.sh"
+    }
+  }
+}

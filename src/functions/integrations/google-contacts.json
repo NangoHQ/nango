@@ -1,0 +1,24 @@
+{
+  "name": "Google Contacts",
+  "config": {
+    "authorizationURL": "https://accounts.google.com/o/oauth2/v2/auth",
+    "tokenURL": "https://www.googleapis.com/oauth2/v4/token",
+    "authType": "OAUTH2",
+    "tokenParams": { "redirect_uri": "https://int.bearer.sh/v2/auth/callback", "grant_type": "authorization_code" },
+    "authorizationParams": { "prompt": "consent", "access_type": "offline" },
+    "config": {
+      "callbackURL": "https://int.bearer.sh/v2/auth/callback",
+      "response_type": "code",
+      "scope": ["https://www.googleapis.com/auth/contacts.readonly"]
+    }
+  },
+  "request": {
+    "baseURL": "https://www.google.com/m8",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer ${auth.accessToken}",
+      "User-Agent": "Bearer.sh",
+      "GData-Version": "3.0"
+    }
+  }
+}

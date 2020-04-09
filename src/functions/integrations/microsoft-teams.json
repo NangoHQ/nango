@@ -1,0 +1,19 @@
+{
+  "name": "Microsoft Teams",
+  "config": {
+    "authorizationURL": "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
+    "tokenURL": "https://login.microsoftonline.com/common/oauth2/v2.0/token",
+    "authType": "OAUTH2",
+    "config": { "scope": ["openid", "offline_access", "https://graph.microsoft.com/user.read"] },
+    "provider": "Microsoft Teams",
+    "hint": "You will find your Microsoft Teams credentials here: https://apps.dev.microsoft.com"
+  },
+  "request": {
+    "baseURL": "https://graph.microsoft.com/v1.0/",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer ${auth.accessToken}",
+      "User-Agent": "Bearer.sh"
+    }
+  }
+}

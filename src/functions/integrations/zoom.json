@@ -1,0 +1,23 @@
+{
+  "name": "Zoom",
+  "config": {
+    "authorizationURL": "https://zoom.us/oauth/authorize",
+    "tokenURL": "https://zoom.us/oauth/token",
+    "authType": "OAUTH2",
+    "tokenParams": { "redirect_uri": "https://int.bearer.sh/v2/auth/callback", "grant_type": "authorization_code" },
+    "authorizationParams": {},
+    "config": {
+      "callbackURL": "https://int.bearer.sh/v2/auth/callback",
+      "response_type": "code",
+      "scope": ["chat_channel:read"]
+    }
+  },
+  "request": {
+    "baseURL": "https://api.zoom.us/v2/",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer ${auth.accessToken}",
+      "User-Agent": "Bearer.sh"
+    }
+  }
+}

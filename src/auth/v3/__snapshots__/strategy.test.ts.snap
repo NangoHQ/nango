@@ -1,0 +1,5 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`authenticate when the authType is any other type raises an OAuthOnlyEndpoint error 1`] = `[OAuthOnlyEndpoint: This endpoint is only for 'OAUTH1' and 'OAUTH2' auth types but the integration is configured with authType 'BASIC']`;
+
+exports[`fetchAuthDetails when the authType is any other value raises an InvalidAuthType error 1`] = `[InvalidAuthType: Invalid authType 'invalid'. Please check the integration's auth.config.json file. Allowed values are 'OAUTH1', 'OAUTH2', 'BASIC', 'APIKEY', 'NONE']`;

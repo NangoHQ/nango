@@ -1,0 +1,87 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`connectConfig validates the authType 1`] = `[InvalidAuthType: Invalid authType 'invalid'. Please check the integration's auth.config.json file. Allowed values are 'OAUTH1', 'OAUTH2', 'BASIC', 'APIKEY', 'NONE']`;
+
+exports[`connectConfig when authenticating in production expands any variables in the auth config 1`] = `
+[MockFunction] {
+  "calls": Array [
+    Array [
+      Object {
+        "authConfig": Object {
+          "authType": "OAUTH2",
+          "prodIntParam": "\${some_var}",
+        },
+        "connectParams": Object {
+          "param": "test-con-param",
+        },
+      },
+    ],
+  ],
+  "results": Array [
+    Object {
+      "isThrow": false,
+      "value": Object {
+        "authType": "OAUTH2",
+        "prodIntParam": "test-prod-int-value",
+      },
+    },
+  ],
+}
+`;
+
+exports[`connectConfig when authenticating in production looks up the integration config and stores it on the request 1`] = `
+[MockFunction] {
+  "calls": Array [
+    Array [
+      Object {
+        "buid": "test-buid",
+      },
+    ],
+  ],
+  "results": Array [
+    Object {
+      "isThrow": false,
+      "value": Object {
+        "authType": "OAUTH2",
+        "prodIntParam": "\${some_var}",
+      },
+    },
+  ],
+}
+`;
+
+exports[`connectConfig when authenticating in production looks up the setup details and stores them on the request 1`] = `
+[MockFunction] {
+  "calls": Array [
+    Array [
+      Object {
+        "buid": "test-buid",
+        "clientId": "test-client-id",
+        "scopedUserDataTableName": "tableName",
+        "setupId": "test-setup-id",
+      },
+    ],
+  ],
+  "results": Array [
+    Object {
+      "isThrow": false,
+      "value": Object {
+        "prodSetupParam": "test-prod-setup-value",
+      },
+    },
+  ],
+}
+`;
+
+exports[`connectConfig when authenticating in production saves the auth config into the session 1`] = `
+Object {
+  "integrationConfig": Object {
+    "authType": "OAUTH2",
+    "prodIntParam": "test-prod-int-value",
+  },
+  "setupDetails": Object {
+    "clientID": "clientId",
+    "clientSecret": "clientSecret",
+  },
+}
+`;

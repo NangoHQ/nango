@@ -1,0 +1,23 @@
+{
+  "name": "Slack",
+  "config": {
+    "authorizationURL": "https://slack.com/oauth/authorize",
+    "tokenURL": "https://slack.com/api/oauth.access",
+    "authType": "OAUTH2",
+    "authorizationParams": { "access_type": "offline", "consent": true },
+    "tokenParams": { "redirect_uri": "https://int.bearer.sh/v2/auth/callback" },
+    "config": {
+      "accessType": "offline",
+      "callbackURL": "https://int.bearer.sh/v2/auth/callback",
+      "scope": ["pins:read", "channels:read", "users.profile:read"]
+    }
+  },
+  "request": {
+    "baseURL": "https://slack.com/api/",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer ${auth.accessToken}",
+      "User-Agent": "Bearer.sh"
+    }
+  }
+}

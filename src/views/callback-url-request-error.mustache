@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Bearer's Callback URL</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro&display=swap" rel="stylesheet">
+    <style>
+      * {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        margin: 0;
+        padding: 0;
+        border: 0;
+      }
+      html,
+      body {
+        background-color: #f6f6fa;
+        font-family: 'Source Sans Pro', sans-serif;
+        font-size: 16px;
+        line-height: 16px;
+      }
+      h1 {
+        color: #4c14e9;
+        margin-bottom: 16px;
+        font-size: 32px;
+        font-weight: 600;
+      }
+      h3 {
+        color: #9f82ea;
+        font-size: 14px;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+      div {
+        color: #2f1869;
+        font-size: 16px;
+        font-weight: 600;
+        font-style: normal;
+        font-stretch: normal;
+        line-height: normal;
+        letter-spacing: normal;
+      }
+      p {
+        line-height: 22px;
+      }
+      a {
+        text-decoration: none;
+      }
+      .container {
+        margin: 88px;
+        display: flex;
+      }
+      .image-bg {
+        display: flex;
+        align-items: center;
+        background-color: #ece6fd;
+        border-radius: 100%;
+        margin-right: 12px;
+        height: 80px;
+        width: 80px;
+        text-align: center;
+      }
+      .image-bg svg {
+        margin: 0 auto;
+        display: block;
+      }
+      .icon-bg {
+        background-color: #ece6fd;
+        border-radius: 100%;
+        margin-right: 12px;
+        height: 18px;
+        width: 18px;
+        text-align: center;
+      }
+      .button {
+        border-radius: 4px;
+        border: solid 1px #eae7f2;
+        box-shadow: 0 2px 2px 0 rgba(91, 68, 151, 0.04);
+        display: inline-flex;
+        margin-top: 32px;
+        padding: 12px 16px;
+        background-color: #ffffff;
+        color: #4c14e9;
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 0px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div>
+        <div class="image-bg">
+          <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 16 16">
+            <g fill="none" fill-rule="nonzero">
+              <path
+                fill="#4C14E9"
+                d="M12.387 8.494c-.26-.453-.867-.626-1.357-.386a.969.969 0 0 0-.417.386l-3.5 6.165a.855.855 0 0 0 .033.901c.183.273.506.44.854.44h7c.348 0 .67-.166.854-.439a.854.854 0 0 0 .033-.902l-3.5-6.165zM10.98 10.88c0-.265.233-.48.52-.48.287 0 .52.215.52.48v1.92c0 .265-.233.48-.52.48-.287 0-.52-.215-.52-.48v-1.92zm.52 4c-.383 0-.693-.287-.693-.64 0-.353.31-.64.693-.64.382 0 .692.287.692.64 0 .353-.31.64-.692.64z"
+              />
+              <path
+                fill="#9F82EA"
+                d="M14 0H2C.895 0 0 .852 0 1.902v9.196C0 12.148.895 13 2 13h4c.368 0 .667-.284.667-.634 0-.35-.299-.634-.667-.634H2c-.368 0-.667-.284-.667-.634v-7.77c0-.087.075-.158.167-.158h13c.092 0 .167.071.167.159v3.963c0 .35.298.634.666.634.369 0 .667-.284.667-.634v-5.39C16 .852 15.104 0 14 0zM2.897 1.902a.662.662 0 0 1-1.128 0 .595.595 0 0 1-.102-.317c.003-.348.3-.63.666-.634a.663.663 0 0 1 .564.317c.064.095.1.205.103.317a.595.595 0 0 1-.103.317zm2.334 0a.662.662 0 0 1-1.129 0A.595.595 0 0 1 4 1.585a.593.593 0 0 1 .102-.317.662.662 0 0 1 1.129 0c.064.095.1.205.102.317a.595.595 0 0 1-.102.317zm2.333 0a.662.662 0 0 1-1.129 0 .595.595 0 0 1-.102-.317.593.593 0 0 1 .102-.317.662.662 0 0 1 1.129 0c.064.095.1.205.103.317a.595.595 0 0 1-.103.317z"
+              />
+            </g>
+          </svg>
+        </div>
+      </div>
+      <div>
+        <h3>Cannot {{method}} {{callbackUrl}}</h3>
+        <h1>That's Bearer's callback URL</h1>
+
+        <p>Register this URL to let Bearer handle your application's OAuth dance.</p>
+        <p>To learn more about this callback URL, follow the instructions in our documentation.</p>
+        <a class="button" href="https://docs.bearer.sh/">
+          <div class="icon-bg">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12">
+              <path
+                fill="#4C14E9"
+                fill-rule="evenodd"
+                d="M8.683 5.75l.172.005c1.53.095 2.745 1.456 2.745 3.12l-.005.184C11.506 10.699 10.237 12 8.683 12c-1.61 0-2.916-1.4-2.916-3.125 0-1.726 1.305-3.125 2.916-3.125zm1.588 2.02a.898.898 0 0 0-1.33.026l-.094.1-.05.04a.222.222 0 0 1-.28-.04l-.094-.1L8.4 7.77a.898.898 0 0 0-1.33.026c-.362.4-.35 1.039.023 1.426l1.423 1.59a.223.223 0 0 0 .337 0l1.422-1.59h-.003l.025-.026c.36-.401.35-1.04-.025-1.426zM5.807 0c.206 0 .406.073.567.206l.093.087L8.527 2.5c.145.157.238.36.265.576l.008.131V4.5c0 .276-.209.5-.467.5a.477.477 0 0 1-.459-.41l-.007-.09V3.31a.264.264 0 0 0-.031-.124l-.037-.052-1.924-2.061a.23.23 0 0 0-.104-.064L5.71 1H1.566a.237.237 0 0 0-.225.184l-.009.066v8.375l.009.066a.243.243 0 0 0 .163.175l.062.009h3.15c.257 0 .466.224.466.5 0 .245-.165.45-.382.492l-.084.008H1.333c-.478 0-.873-.386-.927-.883L.4 9.875V1L.406.883c.05-.459.39-.823.818-.876L1.334 0h4.473zM2.383 6.75h2.59c.194 0 .35.168.35.375a.37.37 0 0 1-.28.367l-.07.008h-2.59c-.193 0-.35-.168-.35-.375a.37.37 0 0 1 .28-.367l.07-.008h2.59zm3.29-2.25l.071.008c.137.03.245.145.273.291l.007.076-.007.076a.364.364 0 0 1-.273.291l-.07.008h-3.29c-.194 0-.35-.168-.35-.375a.37.37 0 0 1 .279-.367l.07-.008h3.29z"
+              />
+            </svg>
+          </div>
+          Open our documentation
+        </a>
+      </div>
+    </div>
+  </body>
+</html>

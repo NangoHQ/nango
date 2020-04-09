@@ -1,0 +1,24 @@
+{
+  "name": "Twitch",
+  "config": {
+    "authType": "OAUTH2",
+    "bodyFormat": "form",
+    "grantType": "authorization_code",
+    "config": { "scope": ["user:read:email"] },
+    "tokenParams": {},
+    "authorizationMethod": "body",
+    "authorizationParams": { "redirectUri": "https://int.bearer.sh/v2/auth/callback", "responseType": "code" },
+    "authorizationURL": "https://id.twitch.tv/oauth2/authorize",
+    "callbackURL": "https://int.bearer.sh/v2/auth/callback",
+    "tokenURL": "https://id.twitch.tv/oauth2/token"
+  },
+  "request": {
+    "params": {},
+    "headers": {
+      "Accept": "application/json",
+      "User-Agent": "Bearer.sh",
+      "Authorization": "Bearer ${auth.accessToken}"
+    },
+    "baseURL": "https://api.twitch.tv/helix/"
+  }
+}

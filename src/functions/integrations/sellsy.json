@@ -1,0 +1,20 @@
+{
+  "name": "Sellsy",
+  "config": {
+    "requestTokenURL": "https://apifeed.sellsy.com/0/request_token",
+    "accessTokenURL": "https://apifeed.sellsy.com/0/access_token",
+    "userAuthorizationURL": "https://apifeed.sellsy.com/0/login.php",
+    "callbackURL": "https://int.bearer.sh/v2/auth/callback",
+    "authType": "OAUTH1",
+    "signatureMethod": "PLAINTEXT",
+    "tokenParams": {},
+    "authorizationParams": {},
+    "config": {},
+    "provider": "Sellsy",
+    "hint": "You will find your Sellsy credentials here: https://www.sellsy.com/?_f=accountPreferences\\u0026action=development"
+  },
+  "request": {
+    "baseURL": "https://apifeed.sellsy.fr/0/",
+    "headers": { "Accept": "application/json", "Authorization": "OAuth ${auth.oauth1}", "User-Agent": "Bearer.sh" }
+  }
+}

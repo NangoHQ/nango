@@ -1,0 +1,25 @@
+{
+  "name": "Linkedin",
+  "config": {
+    "authorizationURL": "https://www.linkedin.com/oauth/v2/authorization",
+    "tokenURL": "https://www.linkedin.com/oauth/v2/accessToken",
+    "authType": "OAUTH2",
+    "tokenParams": { "redirect_uri": "https://int.bearer.sh/v2/auth/callback", "grant_type": "authorization_code" },
+    "authorizationParams": {},
+    "config": {
+      "callbackURL": "https://int.bearer.sh/v2/auth/callback",
+      "response_type": "code",
+      "scope": ["r_liteprofile"]
+    },
+    "provider": "Linkedin",
+    "hint": "You will find your LinkedIn credentials here: https://www.linkedin.com/developers/apps"
+  },
+  "request": {
+    "baseURL": "https://api.linkedin.com/v2",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer ${auth.accessToken}",
+      "User-Agent": "Bearer.sh"
+    }
+  }
+}
