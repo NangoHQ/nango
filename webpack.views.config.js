@@ -1,126 +1,79 @@
-const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin')
-const CopyPlugin = require('copy-webpack-plugin')
+const HtmlWebpackInlineSourcePlugin = require('html-webpack-inline-source-plugin')
 
-const mode = 'production'
-const distPath = path.join(__dirname, '.webpack', 'service', 'views')
-const srcViews = path.join(__dirname, 'src/views')
-const stage = process.env.STAGE
-
-if (!stage) {
-  throw new Error('Missing stage')
+const resolve = { extensions: ['.ts', '.tsx', '.js'] }
+const moduleConf = {
+  rules: [
+    {
+      test: /\.html$/,
+      loader: 'html-loader'
+    },
+    {
+      test: /\.ts(x?)$/,
+      use: [
+        {
+          loader: 'ts-loader',
+          options: {
+            configFile: 'tsconfig.views.build.json'
+          }
+        }
+      ],
+      exclude: /node_modules/
+    }
+  ]
 }
 
 module.exports = [
   {
-    // unfortunately I can not name js dan html the same way. That's why I added script suffix
-    entry: path.join(srcViews, 'iframe-script.ts'),
-    output: {
-      filename: 'iframe-script.js?[hash]',
-      path: distPath
-    },
-    mode,
+    resolve: resolve,
+    entry: { 'callback-script': './views/callback-script.ts' },
+    output: { path: __dirname + '/dist/views' },
     plugins: [
       new HtmlWebpackPlugin({
-        template: 'src/views/iframe.html',
-        filename: 'iframe.html'
+        filename: 'callback.html',
+        template: './views/callback.html',
+        inlineSource: '.js$'
       }),
-      new ScriptExtHtmlWebpackPlugin({
-        inline: 'iframe-script'
-      })
+      new HtmlWebpackInlineSourcePlugin()
     ],
-    resolve: {
-      extensions: ['.ts', '.tsx', '.js']
-    },
-    module: {
-      rules: [
-        {
-          test: /\.ts(x?)$/,
-          exclude: path.resolve(__dirname, 'node_modules'),
-          use: [
-            {
-              loader: 'ts-loader'
-            }
-          ]
-        }
-      ]
-    }
+    module: moduleConf
   },
   {
-    // unfortunately I can not name js dan html the same way. That's why I added script suffix
-    entry: path.join(srcViews, 'error-script.ts'),
-    output: {
-      filename: 'error-script.js?[hash]',
-      path: distPath
-    },
-    mode,
+    resolve: resolve,
+    entry: { 'iframe-script': './views/iframe-script.ts' },
+    output: { path: __dirname + '/dist/views' },
     plugins: [
       new HtmlWebpackPlugin({
-        template: 'src/views/page-not-found-error.mustache',
-        filename: 'page-not-found-error.mustache'
+        filename: 'callback.html',
+        template: './views/iframe.html',
+        inlineSource: '.js$'
       }),
-      new HtmlWebpackPlugin({
-        template: 'src/views/callback-url-request-error.mustache',
-        filename: 'callback-url-request-error.mustache'
-      }),
-      new HtmlWebpackPlugin({
-        template: 'src/views/oauth-error.mustache',
-        filename: 'oauth-error.mustache'
-      }),
-      new ScriptExtHtmlWebpackPlugin({
-        inline: 'error-script'
-      })
+      new HtmlWebpackInlineSourcePlugin()
     ],
-    resolve: {
-      extensions: ['.ts', '.tsx', '.js']
-    },
-    module: {
-      rules: [
-        {
-          test: /\.ts(x?)$/,
-          exclude: path.resolve(__dirname, 'node_modules'),
-          use: [
-            {
-              loader: 'ts-loader'
-            }
-          ]
-        }
-      ]
-    }
+    module: moduleConf
   },
   {
-    // unfortunately I can not name js dan html the same way. That's why I added script suffix
-    entry: path.join(srcViews, 'callback-script.ts'),
-    output: {
-      filename: 'callback-script.js?[hash]',
-      path: distPath
-    },
-    mode,
+    entry: { 'error-script': './views/error-script.ts' },
+    output: { path: __dirname + '/dist/views' },
     plugins: [
       new HtmlWebpackPlugin({
-        template: 'src/views/callback.mustache',
-        filename: 'callback.mustache'
+        template: './views/page-not-found-error.html',
+        filename: 'page-not-found-error.html',
+        inlineSource: '.js$'
       }),
-      new ScriptExtHtmlWebpackPlugin({
-        inline: 'callback-script'
-      })
+      new HtmlWebpackPlugin({
+        template: './views/callback-url-request-error.html',
+        filename: 'callback-url-request-error.html',
+        inlineSource: '.js$'
+      }),
+      new HtmlWebpackPlugin({
+        template: './views/oauth-error.html',
+        filename: 'oauth-error.html',
+        inlineSource: '.js$'
+      }),
+      new HtmlWebpackInlineSourcePlugin()
     ],
-    resolve: {
-      extensions: ['.ts', '.tsx', '.js']
-    },
-    module: {
-      rules: [
-        {
-          test: /\.ts(x?)$/,
-          exclude: path.resolve(__dirname, 'node_modules'),
-          use: [
-            {
-              loader: 'ts-loader'
-            }
-          ]
-        }
-      ]
-    }
+    resolve: resolve,
+    module: moduleConf
   }
 ]

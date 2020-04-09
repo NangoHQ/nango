@@ -1,5 +1,4 @@
 import { Request } from 'express'
-import { IWithStageVariables } from '../../types'
 import Integration from '../../functions/integration'
 
 export interface IAuthContext {
@@ -95,7 +94,6 @@ interface IAuthConfigSessionData {
 
 export type TConnectConfigRequest = Request &
   IAuthContext &
-  IWithStageVariables &
   IAuthConfig &
   IAuthConfigSessionData & {
     query: {
@@ -147,12 +145,11 @@ export type TAuthenticateRequest = Request & IAuthContext & IAuthConfig & IWithA
 export type TLocalAuthSuccessRequest = Request & IAuthContext & IAuthConfig & IWithAuthCredentials
 
 export type AuthSuccessRequest = Request &
-  IWithStageVariables &
   IAuthContext &
   IAuthId &
   IWithAuthCredentials & { aliasBuid: string; integrationConfig?: TIntegrationConfig }
 
-export type TRevokeRequest = Request & IWithStageVariables & { buid: string }
+export type TRevokeRequest = Request & { buid: string }
 
 export type TErrorHandlerRequest = Request & Partial<IAuthContext> & Partial<IAuthId>
 

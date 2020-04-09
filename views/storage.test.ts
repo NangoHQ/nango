@@ -74,18 +74,10 @@ describe('Storage', () => {
     describe('known user', () => {
       it('not authorized then authorized', () => {
         // Only the correct one is authorized
-        expect(Storage.hasAuthorized(scenarioTarget, integrationTarget)).toBe(
-          true
-        )
-        expect(Storage.hasAuthorized(scenarioTarget, otherIntegration)).toBe(
-          false
-        )
-        expect(Storage.hasAuthorized(otherScenario, integrationTarget)).toBe(
-          false
-        )
-        expect(Storage.hasAuthorized(otherScenario, otherIntegration)).toBe(
-          false
-        )
+        expect(Storage.hasAuthorized(scenarioTarget, integrationTarget)).toBe(true)
+        expect(Storage.hasAuthorized(scenarioTarget, otherIntegration)).toBe(false)
+        expect(Storage.hasAuthorized(otherScenario, integrationTarget)).toBe(false)
+        expect(Storage.hasAuthorized(otherScenario, otherIntegration)).toBe(false)
       })
     })
 
@@ -94,18 +86,10 @@ describe('Storage', () => {
       it('alaways return false', () => {
         document.cookie = 'uuid=unknow'
 
-        expect(Storage.hasAuthorized(scenarioTarget, integrationTarget)).toBe(
-          false
-        )
-        expect(Storage.hasAuthorized(scenarioTarget, otherIntegration)).toBe(
-          false
-        )
-        expect(Storage.hasAuthorized(otherScenario, integrationTarget)).toBe(
-          false
-        )
-        expect(Storage.hasAuthorized(otherScenario, otherIntegration)).toBe(
-          false
-        )
+        expect(Storage.hasAuthorized(scenarioTarget, integrationTarget)).toBe(false)
+        expect(Storage.hasAuthorized(scenarioTarget, otherIntegration)).toBe(false)
+        expect(Storage.hasAuthorized(otherScenario, integrationTarget)).toBe(false)
+        expect(Storage.hasAuthorized(otherScenario, otherIntegration)).toBe(false)
       })
     })
   })
