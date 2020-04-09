@@ -1,0 +1,189 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`authSuccess renders the \`callback\` template with the authId and buid 1`] = `
+Object {
+  "name": "callback",
+  "options": Object {
+    "authId": "test-auth-id",
+    "error": "",
+    "error_description": "",
+    "integrationUuid": "test-buid",
+  },
+}
+`;
+
+exports[`authSuccess saves the credentials for the given authId 1`] = `
+[MockFunction] {
+  "calls": Array [
+    Array [
+      Object {
+        "authId": "test-auth-id",
+        "buid": "test-buid",
+        "clientId": "test-client-id",
+        "servicesTableName": "services-table-name",
+        "userAttributes": Object {
+          "accessToken": "test-access-token",
+          "connectParams": Object {
+            "conParam": "test-con-param",
+          },
+          "expiresIn": 1234,
+          "idToken": "test-id-token",
+          "refreshToken": "test-refresh-token",
+          "serviceName": "test-buid",
+          "setupId": "test-setup-id",
+          "updatedAt": 12345678,
+          "userId": "test-auth-id",
+        },
+      },
+    ],
+  ],
+  "results": Array [
+    Object {
+      "isThrow": false,
+      "value": undefined,
+    },
+  ],
+}
+`;
+
+exports[`authSuccess saves the credentials with scopes for the given authId 1`] = `
+[MockFunction] {
+  "calls": Array [
+    Array [
+      Object {
+        "authId": "test-auth-id",
+        "buid": "test-buid",
+        "clientId": "test-client-id",
+        "servicesTableName": "services-table-name",
+        "userAttributes": Object {
+          "accessToken": "test-access-token",
+          "connectParams": Object {
+            "conParam": "test-con-param",
+          },
+          "expiresIn": 1234,
+          "idToken": "test-id-token",
+          "refreshToken": "test-refresh-token",
+          "scopes": Array [
+            "users",
+          ],
+          "serviceName": "test-buid",
+          "setupId": "test-setup-id",
+          "updatedAt": 12345678,
+          "userId": "test-auth-id",
+        },
+      },
+    ],
+  ],
+  "results": Array [
+    Object {
+      "isThrow": false,
+      "value": undefined,
+    },
+  ],
+}
+`;
+
+exports[`authSuccess saves the credentials with token response 1`] = `
+[MockFunction] {
+  "calls": Array [
+    Array [
+      Object {
+        "authId": "test-auth-id",
+        "buid": "test-buid",
+        "clientId": "test-client-id",
+        "servicesTableName": "services-table-name",
+        "userAttributes": Object {
+          "accessToken": "test-access-token",
+          "connectParams": Object {
+            "conParam": "test-con-param",
+          },
+          "expiresIn": 1234,
+          "idToken": "test-id-token",
+          "refreshToken": "test-refresh-token",
+          "serviceName": "test-buid",
+          "setupId": "test-setup-id",
+          "tokenResponseJSON": "{\\"body\\":{\\"hey\\":\\"there\\"}}",
+          "updatedAt": 12345678,
+          "userId": "test-auth-id",
+        },
+      },
+    ],
+  ],
+  "results": Array [
+    Object {
+      "isThrow": false,
+      "value": undefined,
+    },
+  ],
+}
+`;
+
+exports[`authSuccess saves the credentials without scopes for the given authId 1`] = `
+[MockFunction] {
+  "calls": Array [
+    Array [
+      Object {
+        "authId": "test-auth-id",
+        "buid": "test-buid",
+        "clientId": "test-client-id",
+        "servicesTableName": "services-table-name",
+        "userAttributes": Object {
+          "accessToken": "test-access-token",
+          "connectParams": Object {
+            "conParam": "test-con-param",
+          },
+          "expiresIn": 1234,
+          "idToken": "test-id-token",
+          "refreshToken": "test-refresh-token",
+          "scopes": Array [],
+          "serviceName": "test-buid",
+          "setupId": "test-setup-id",
+          "updatedAt": 12345678,
+          "userId": "test-auth-id",
+        },
+      },
+    ],
+  ],
+  "results": Array [
+    Object {
+      "isThrow": false,
+      "value": undefined,
+    },
+  ],
+}
+`;
+
+exports[`authSuccess when the request is a callback request saves the query params as JSON along with the credentials 1`] = `
+[MockFunction] {
+  "calls": Array [
+    Array [
+      Object {
+        "authId": "test-auth-id",
+        "buid": "test-buid",
+        "clientId": "test-client-id",
+        "servicesTableName": "services-table-name",
+        "userAttributes": Object {
+          "accessToken": "test-access-token",
+          "callbackParamsJSON": "{\\"some_param\\":\\"param value\\"}",
+          "connectParams": Object {
+            "conParam": "test-con-param",
+          },
+          "expiresIn": 1234,
+          "idToken": "test-id-token",
+          "refreshToken": "test-refresh-token",
+          "serviceName": "test-buid",
+          "setupId": "test-setup-id",
+          "updatedAt": 12345678,
+          "userId": "test-auth-id",
+        },
+      },
+    ],
+  ],
+  "results": Array [
+    Object {
+      "isThrow": false,
+      "value": undefined,
+    },
+  ],
+}
+`;

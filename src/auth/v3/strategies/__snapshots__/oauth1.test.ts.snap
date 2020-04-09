@@ -1,0 +1,35 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`authenticate when called back by the third party raises an AuthenticationFailed error if no access token was returned 1`] = `
+[AuthenticationFailed: Authentication failed:
+{
+  "message": "No access token returned",
+  "response": {
+    "non_standard": "error"
+  }
+}]
+`;
+
+exports[`authenticate when called back by the third party raises an AuthenticationFailed error if there is an error getting the access token 1`] = `
+[AuthenticationFailed: Authentication failed:
+{
+  "statusCode": 403,
+  "body": "oops"
+}]
+`;
+
+exports[`fetchAuthDetails returns the details from the auth credentials and setup details 1`] = `
+Object {
+  "accessToken": "accessToken",
+  "callbackParams": Object {},
+  "connectParams": Object {},
+  "consumerKey": "consumerKey",
+  "consumerSecret": "consumerSecret",
+  "expiresIn": 1234567890,
+  "signatureMethod": "PLAINTEXT",
+  "tokenSecret": "tokenSecret",
+  "updatedAt": 1234567890,
+}
+`;
+
+exports[`fetchAuthDetails when the setupId used when connecting doesn't match the setupId sent by the user in the request throws an InconsistentSetupId error 1`] = `[InconsistentSetupId: The provided setupId does not match the setupId used when connecting. Please reconnect using this setupId, or retry this call with the setupId corresponding to the authId]`;

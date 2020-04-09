@@ -1,0 +1,55 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`errorHandler when NoAuthInProgress error is returned to request WITH query params renders the \`oauth-error\` template with the expected parameters 1`] = `
+Object {
+  "name": "oauth-error",
+  "options": Object {
+    "error": "NO_AUTH_IN_PROGRESS: The callback was invoked whilst no authentication was in progress. Either too much time has elapsed between starting authentication and the callback being invoked, or the callback was invoked without first calling the integration's authentication endpoint. Please try again",
+  },
+}
+`;
+
+exports[`errorHandler when NoAuthInProgress error is returned to request WITHOUT query params renders the \`callback-url-request-error\` template with the expected parameters 1`] = `
+Object {
+  "name": "callback-url-request-error",
+  "options": Object {
+    "callbackUrl": "v2/auth/callback",
+    "error": "NO_AUTH_IN_PROGRESS: The callback was invoked whilst no authentication was in progress. Either too much time has elapsed between starting authentication and the callback being invoked, or the callback was invoked without first calling the integration's authentication endpoint. Please try again",
+    "method": "GET",
+  },
+}
+`;
+
+exports[`errorHandler when the error is NOT a UserError renders the \`oauth-error\` template with the expected parameters 1`] = `
+Object {
+  "name": "oauth-error",
+  "options": Object {
+    "error": "INTERNAL_ERROR: Encountered an unexpected error. Please contact support",
+  },
+}
+`;
+
+exports[`errorHandler when the error is a UserError when the error is NOT an AuthenticationFailed error renders the \`oauth-error\` template with the expected parameters 1`] = `
+Object {
+  "name": "oauth-error",
+  "options": Object {
+    "error": "TEST_ERROR: test error",
+  },
+}
+`;
+
+exports[`errorHandler when the error is a UserError when the error is an AuthenticationFailed error renders the \`callback\` template with the expected parameters 1`] = `
+Object {
+  "name": "callback",
+  "options": Object {
+    "authId": "test-auth-id",
+    "error": "oops_code",
+    "error_description": "some error",
+    "integrationUuid": "test-alias",
+  },
+}
+`;
+
+exports[`errorHandler when the error is a UserError when there is NOT a logger on the request logs the error to the debug logger 1`] = `[MockFunction]`;
+
+exports[`errorHandler when the error is a UserError when there is a logger on the request logs the error to the request's logger with ERROR level 1`] = `[MockFunction]`;

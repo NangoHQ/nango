@@ -1,0 +1,20 @@
+{
+  "name": "Front",
+  "config": {
+    "authType": "OAUTH2",
+    "config": { "scope": [] },
+    "tokenParams": { "grant_type": "authorization_code" },
+    "authorizationParams": { "response_type": "code" },
+    "authorizationURL": "https://app.frontapp.com/oauth/authorize",
+    "tokenURL": "https://app.frontapp.com/oauth/token"
+  },
+  "request": {
+    "params": {},
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer ${auth.accessToken}",
+      "User-Agent": "Bearer.sh"
+    },
+    "baseURL": "https://api2.frontapp.com"
+  }
+}

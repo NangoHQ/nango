@@ -1,0 +1,13 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Filter connection headers removes all hop by hop headers 1`] = `
+Object {
+  "content-Type": "application/json",
+}
+`;
+
+exports[`Filter connection headers removes http2 headers 1`] = `
+Object {
+  "content-Type": "application/json",
+}
+`;

@@ -1,0 +1,129 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`getCodeRedirectURL returns the authorization URL with appropriate parameters 1`] = `"https://example.com/auth?response_type=code&client_id=test-oauth-client-id&auth=param&state=test-state&redirect_uri=https%3A%2F%2Fbearer.example.com%2Fcallback&scope=read%20write"`;
+
+exports[`getTokenWithClientCredentials when an unknown error is raised while making the refresh request propagates the error 1`] = `
+[AuthenticationFailed: Authentication failed:
+{
+  "message": "Client request error: unknown error"
+}]
+`;
+
+exports[`getTokenWithClientCredentials when the refresh request returns a success response but there is no access token when the response is JSON raises an AuthenticationFailed error with the response 1`] = `
+[AuthenticationFailed: Authentication failed:
+{
+  "message": "No access token returned",
+  "response": {
+    "no": "token"
+  }
+}]
+`;
+
+exports[`getTokenWithClientCredentials when the refresh request returns a success response but there is no access token when the response is text raises an AuthenticationFailed error with the response 1`] = `
+[AuthenticationFailed: Authentication failed:
+{
+  "message": "The content-type is not JSON compatible"
+}]
+`;
+
+exports[`getTokenWithClientCredentials when the request returns an error response when the response is JSON raises an AuthenticationFailed error with the response 1`] = `
+[AuthenticationFailed: Authentication failed:
+{
+  "statusCode": 400,
+  "response": {
+    "error": "oops",
+    "error_description": "something bad"
+  }
+}]
+`;
+
+exports[`getTokenWithClientCredentials when the request returns an error response when the response is text raises an AuthenticationFailed error with the response 1`] = `
+[AuthenticationFailed: Authentication failed:
+{
+  "message": "The content-type is not JSON compatible"
+}]
+`;
+
+exports[`getTokenWithCode when an unknown error is raised while making the refresh request propagates the error 1`] = `
+[AuthenticationFailed: Authentication failed:
+{
+  "message": "Client request error: unknown error"
+}]
+`;
+
+exports[`getTokenWithCode when the refresh request returns a success response but there is no access token when the response is JSON raises an AuthenticationFailed error with the response 1`] = `
+[AuthenticationFailed: Authentication failed:
+{
+  "message": "No access token returned",
+  "response": {
+    "no": "token"
+  }
+}]
+`;
+
+exports[`getTokenWithCode when the refresh request returns a success response but there is no access token when the response is text raises an AuthenticationFailed error with the response 1`] = `
+[AuthenticationFailed: Authentication failed:
+{
+  "message": "The content-type is not JSON compatible"
+}]
+`;
+
+exports[`getTokenWithCode when the request returns an error response when the response is JSON raises an AuthenticationFailed error with the response 1`] = `
+[AuthenticationFailed: Authentication failed:
+{
+  "statusCode": 400,
+  "response": {
+    "error": "oops",
+    "error_description": "something bad"
+  }
+}]
+`;
+
+exports[`getTokenWithCode when the request returns an error response when the response is text raises an AuthenticationFailed error with the response 1`] = `
+[AuthenticationFailed: Authentication failed:
+{
+  "message": "The content-type is not JSON compatible"
+}]
+`;
+
+exports[`getTokenWithRefreshToken when an unknown error is raised while making the refresh request propagates the error 1`] = `
+[AuthenticationFailed: Authentication failed:
+{
+  "message": "Client request error: unknown error"
+}]
+`;
+
+exports[`getTokenWithRefreshToken when the refresh request returns a success response but there is no access token when the response is JSON raises an AuthenticationFailed error with the response 1`] = `
+[AuthenticationFailed: Authentication failed:
+{
+  "message": "No access token returned",
+  "response": {
+    "no": "token"
+  }
+}]
+`;
+
+exports[`getTokenWithRefreshToken when the refresh request returns a success response but there is no access token when the response is text raises an AuthenticationFailed error with the response 1`] = `
+[AuthenticationFailed: Authentication failed:
+{
+  "message": "The content-type is not JSON compatible"
+}]
+`;
+
+exports[`getTokenWithRefreshToken when the request returns an error response when the response is JSON raises an AuthenticationFailed error with the response 1`] = `
+[AuthenticationFailed: Authentication failed:
+{
+  "statusCode": 400,
+  "response": {
+    "error": "oops",
+    "error_description": "something bad"
+  }
+}]
+`;
+
+exports[`getTokenWithRefreshToken when the request returns an error response when the response is text raises an AuthenticationFailed error with the response 1`] = `
+[AuthenticationFailed: Authentication failed:
+{
+  "message": "The content-type is not JSON compatible"
+}]
+`;

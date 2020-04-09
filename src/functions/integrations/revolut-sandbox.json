@@ -1,0 +1,20 @@
+{
+  "name": "Revolut (sandbox)",
+  "config": {
+    "authType": "OAUTH2",
+    "config": { "scope": ["READ"] },
+    "tokenParams": { "response_type": "code" },
+    "authorizationParams": {},
+    "authorizationURL": "https://sandbox-business.revolut.com/app-confirm",
+    "tokenURL": "https://sandbox-b2b.revolut.com/api/1.0/auth/token"
+  },
+  "request": {
+    "params": {},
+    "headers": {
+      "Accept": "application/json",
+      "User-Agent": "Bearer.sh",
+      "Authorization": "Bearer ${auth.accessToken}"
+    },
+    "baseURL": "https://sandbox-b2b.revolut.com/api/1.0/"
+  }
+}

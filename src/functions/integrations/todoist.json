@@ -1,0 +1,22 @@
+{
+  "name": "Todoist",
+  "config": {
+    "authorizationURL": "https://todoist.com/oauth/authorize",
+    "tokenURL": "https://todoist.com/oauth/access_token",
+    "authType": "OAUTH2",
+    "tokenParams": { "redirect_uri": "https://int.bearer.sh/v2/auth/callback", "grant_type": "authorization_code" },
+    "authorizationParams": {},
+    "config": {
+      "callbackURL": "https://int.bearer.sh/v2/auth/callback",
+      "response_type": "code",
+      "scope": ["data:read"]
+    },
+    "provider": "Todoist",
+    "hint": "You will find your Todoist credentials here: https://developer.todoist.com/appconsole.html"
+  },
+  "request": {
+    "baseURL": "https://todoist.com/api/v8/",
+    "headers": { "Accept": "application/json", "User-Agent": "Bearer.sh" },
+    "params": { "token": "${auth.accessToken}" }
+  }
+}

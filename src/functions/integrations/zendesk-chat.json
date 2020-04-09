@@ -1,0 +1,24 @@
+{
+  "name": "Zendesk Chat",
+  "config": {
+    "authType": "OAUTH2",
+    "config": { "scope": ["read", "write", "chat"] },
+    "tokenParams": {},
+    "authorizationParams": {
+      "response_type": "token",
+      "subdomain": "lesalon",
+      "redirect_uri": "https://int.bearer.sh/v2/auth/callback"
+    },
+    "authorizationURL": "https://www.zopim.com/oauth2/authorizations/new",
+    "tokenURL": "https://www.zopim.com/oauth2/token"
+  },
+  "request": {
+    "params": {},
+    "headers": {
+      "Accept": "application/json",
+      "User-Agent": "Bearer.sh",
+      "Authorization": "Bearer ${auth.accessToken}"
+    },
+    "baseURL": "https://www.zopim.com/api/v2/"
+  }
+}

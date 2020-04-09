@@ -1,0 +1,5 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`proxyFunction authenticate with api key and authId sets req with expected variables 1`] = `"arn:aws:lambda:eu-west-3:1:function:gateway-test-service"`;
+
+exports[`proxyFunction authenticate with bearer-publishable-key sets req with expected variables 1`] = `"arn:aws:lambda:eu-west-3:1:function:gateway-test-service"`;

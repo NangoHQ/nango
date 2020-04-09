@@ -1,0 +1,23 @@
+{
+  "name": "Zoho Subscriptions",
+  "config": {
+    "authType": "OAUTH2",
+    "config": {
+      "response_type": "code",
+      "callbackURL": "https://int.bearer.sh/v2/auth/callback",
+      "scope": ["ZohoSubscriptions.products.READ"]
+    },
+    "tokenParams": { "grant_type": "authorization_code", "redirect_uri": "https://int.bearer.sh/v2/auth/callback" },
+    "authorizationParams": { "access_type": "offline", "prompt": "consent" },
+    "authorizationURL": "https://accounts.zoho.com/oauth/v2/auth",
+    "tokenURL": "https://accounts.zoho.com/oauth/v2/token"
+  },
+  "request": {
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer ${auth.accessToken}",
+      "User-Agent": "Bearer.sh"
+    },
+    "baseURL": "https://subscriptions.zoho.com/api/v1/"
+  }
+}

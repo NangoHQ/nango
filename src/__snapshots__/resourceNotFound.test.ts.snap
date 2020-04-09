@@ -1,0 +1,10 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`resourceNotFound middleware Returns 404 NOT_FOUND JSON response for non-HTML-accepting requests 1`] = `
+Object {
+  "error": Object {
+    "code": "NOT_FOUND",
+    "message": "The requested URL /qwerty could not be found on this server. Please make sure you've entered the right URL and try again. For further help, please see https://docs.bearer.sh/help-and-support",
+  },
+}
+`;

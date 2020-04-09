@@ -1,0 +1,19 @@
+{
+  "name": "Zoho Invoice",
+  "config": {
+    "authType": "OAUTH2",
+    "config": { "response_type": "code", "callbackURL": "https://int.bearer.sh/v2/auth/callback" },
+    "tokenParams": { "grant_type": "authorization_code", "redirect_uri": "https://int.bearer.sh/v2/auth/callback" },
+    "authorizationParams": { "access_type": "offline", "prompt": "consent" },
+    "authorizationURL": "https://accounts.zoho.com/oauth/v2/auth",
+    "tokenURL": "https://accounts.zoho.com/oauth/v2/token"
+  },
+  "request": {
+    "headers": {
+      "Accept": "application/json",
+      "User-Agent": "Bearer.sh",
+      "Authorization": "Zoho-oauthtoken ${auth.accessToken}"
+    },
+    "baseURL": "https://invoice.zoho.com/api/v3/"
+  }
+}

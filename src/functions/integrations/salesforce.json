@@ -1,0 +1,19 @@
+{
+  "name": "Salesforce",
+  "config": {
+    "authorizationURL": "https://login.salesforce.com/services/oauth2/authorize",
+    "tokenURL": "https://login.salesforce.com/services/oauth2/token",
+    "authType": "OAUTH2",
+    "tokenParams": {},
+    "authorizationParams": {},
+    "config": { "scope": [] }
+  },
+  "request": {
+    "baseURL": "${auth.tokenResponse.body.instance_url}/services/",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer ${auth.accessToken}",
+      "User-Agent": "Bearer.sh"
+    }
+  }
+}

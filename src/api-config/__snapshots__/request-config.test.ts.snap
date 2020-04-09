@@ -1,0 +1,71 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`expandRequestConfig baseURL returns an error if a required header is missing 1`] = `"The API's Request Base URL configuration requires the 'missing' header to be passed with each request."`;
+
+exports[`expandRequestConfig baseURL returns an error if it contains an invalid variable 1`] = `"The API's Request Base URL has been configured with an invalid variable \${invalid}."`;
+
+exports[`expandRequestConfig fills in the variables 1`] = `
+Object {
+  "baseURL": "https://test-instance.example.com/test-user",
+  "headers": Object {
+    "authorization": "Bearer test-pass",
+    "h2": "Some test-some-value",
+  },
+  "params": Object {
+    "p2": "test-other-value",
+    "p3": "test-con-param",
+    "user": "test-user",
+  },
+}
+`;
+
+exports[`expandRequestConfig headers returns an error if a required connect param is missing 1`] = `"The API's Request Header 'test' configuration requires the 'missing' query parameter to be passed when connecting."`;
+
+exports[`expandRequestConfig headers returns an error if a required header is missing 1`] = `"The API's Request Header 'test' configuration requires the 'missing' header to be passed with each request."`;
+
+exports[`expandRequestConfig headers returns an error if one contains an invalid variable 1`] = `"The API's Request Header 'test' has been configured with an invalid variable \${invalid}."`;
+
+exports[`expandRequestConfig params returns an error if a required connect param is missing 1`] = `"The API's Request Param 'test' configuration requires the 'missing' query parameter to be passed when connecting."`;
+
+exports[`expandRequestConfig params returns an error if a required header is missing 1`] = `"The API's Request Param 'test' configuration requires the 'missing' header to be passed with each request."`;
+
+exports[`expandRequestConfig params returns an error if one contains an invalid variable 1`] = `"The API's Request Param 'test' has been configured with an invalid variable \${invalid}."`;
+
+exports[`expandRequestConfig when authType is OAuth1 sets \`auth.oauth1\` to the encoded credentials for the auth header 1`] = `
+[MockFunction] {
+  "calls": Array [
+    Array [
+      "",
+      "",
+      "test-consumer-key",
+      "test-consumer-secret",
+      "1.0",
+      "",
+      "HMAC-SHA1",
+    ],
+  ],
+  "results": Array [
+    Object {
+      "isThrow": false,
+      "value": Object {
+        "authHeader": [MockFunction] {
+          "calls": Array [
+            Array [
+              "https://api.example.com/super-secure",
+              "test-access-token",
+              "test-token-secret",
+              "GET",
+            ],
+          ],
+          "results": Array [
+            Object {
+              "isThrow": false,
+              "value": "OAuth test-oauth1-creds",
+            },
+          ],
+        },
+      },
+    },
+  ],
+}
+`;

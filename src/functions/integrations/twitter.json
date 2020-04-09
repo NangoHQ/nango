@@ -1,0 +1,18 @@
+{
+  "name": "Twitter",
+  "config": {
+    "requestTokenURL": "https://api.twitter.com/oauth/request_token",
+    "accessTokenURL": "https://api.twitter.com/oauth/access_token",
+    "userAuthorizationURL": "https://api.twitter.com/oauth/authorize",
+    "callbackURL": "https://int.bearer.sh/v2/auth/callback",
+    "authType": "OAUTH1",
+    "signatureMethod": "HMAC-SHA1",
+    "tokenParams": {},
+    "authorizationParams": {},
+    "config": { "scope": ["read"] }
+  },
+  "request": {
+    "baseURL": "https://api.twitter.com/1.1/",
+    "headers": { "Accept": "application/json", "Authorization": "OAuth ${auth.oauth1}", "User-Agent": "Bearer.sh" }
+  }
+}
