@@ -1,9 +1,7 @@
-import { mocked } from 'ts-jest/utils'
-
 import { MiddlewareTestHarness } from '../../../../../tests/utils'
 import { TAuthenticateRequest, EAuthType } from '../../types'
 import { authenticate } from './client-credentials'
-import { getTokenWithClientCredentials } from '../../../../clients/oauth2'
+// import { getTokenWithClientCredentials } from '../../../../clients/oauth2'
 import { responseToCredentials } from './common'
 
 jest.mock('../../../../clients/oauth2')
@@ -13,13 +11,13 @@ describe('authenticate', () => {
   const scope = ['print', 'email']
   const clientID = 'test-client-id'
   const clientSecret = 'test-client-secret'
-  const accessToken = 'test-access-token'
-  const refreshToken = 'test-refresh-token'
-  const idToken = 'test-id-token'
-  const expiresIn = 1234
+  // const accessToken = 'test-access-token'
+  // const refreshToken = 'test-refresh-token'
+  // const idToken = 'test-id-token'
+  // const expiresIn = 1234
 
   const tokenResult = { accessToken: 'response-access-token', decodedResponse: { body: { hey: 'there' } } }
-  const credentials = { accessToken, expiresIn, idToken, refreshToken }
+  // const credentials = { accessToken, expiresIn, idToken, refreshToken }
 
   const setup = () =>
     new MiddlewareTestHarness<TAuthenticateRequest>({
@@ -35,12 +33,12 @@ describe('authenticate', () => {
     })
 
   beforeAll(() => {
-    mocked(getTokenWithClientCredentials).mockResolvedValue(tokenResult)
-    mocked(responseToCredentials).mockReturnValue(credentials)
+    // mocked(getTokenWithClientCredentials).mockResolvedValue(tokenResult)
+    // mocked(responseToCredentials).mockReturnValue(credentials)
   })
 
   beforeEach(() => {
-    mocked(responseToCredentials).mockClear()
+    // mocked(responseToCredentials).mockClear()
   })
 
   it('fetches the tokens using the setup details', async () => {

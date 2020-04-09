@@ -1,17 +1,17 @@
-import expressSession from 'express-session'
-import { mocked } from 'ts-jest/utils'
+// import expressSession from 'express-session'
+// import { mocked } from 'ts-jest/utils'
 import { destroySession, destroySessionOnError } from './session'
 import { MiddlewareTestHarness, ErrorMiddlewareTestHarness, session as testSession } from '../../../tests/utils'
 
 jest.mock('express-session')
 
 describe('session', () => {
-  const mockSession = {}
+  // const mockSession = {}
 
   beforeEach(() => {
-    mocked(expressSession)
-      .mockImplementationOnce(() => mockSession)
-      .mockClear()
+    // mocked(expressSession)
+    //   .mockImplementationOnce(() => mockSession)
+    //   .mockClear()
   })
 })
 

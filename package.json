@@ -6,10 +6,10 @@
   "scripts": {
     "test": "jest",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "start": "yarn generate:views && yarn build && NODE_ENV=production node .webpack/src/server.js -p $PORT",
+    "start": "yarn build && NODE_ENV=production node .webpack/src/server.js -p $PORT",
     "dev": "nodemon ./src/server.ts",
     "generate:views": "webpack --config webpack.views.config.js",
-    "build": "webpack --config webpack.config.js"
+    "build": "yarn generate:views && webpack --config webpack.config.js"
   },
   "author": "engineering@bearer.sh",
   "license": "ISC",

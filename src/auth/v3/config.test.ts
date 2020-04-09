@@ -1,11 +1,11 @@
 import { MiddlewareTestHarness, session } from '../../../tests/utils'
 import { connectConfig, callbackConfig } from './config'
-import { TConnectConfigRequest, ELocalRedirectMethod, TCallbackConfigRequest, EAuthType } from './types'
+import { TConnectConfigRequest, TCallbackConfigRequest, EAuthType } from './types'
 import {
   getConfig
   // getSetupDetails
 } from '../../clients/integrations'
-import { mocked } from 'ts-jest/utils'
+// import { mocked } from 'ts-jest/utils'
 import { expandAuthConfig } from '../../api-config/auth-config'
 
 jest.mock('../../clients/integrations')
@@ -20,22 +20,22 @@ describe('connectConfig', () => {
     })
 
   const setupProduction = (authType = 'OAUTH2') => {
-    const unexpandedIntegrationConfig = {
-      authType,
-      prodIntParam: '${some_var}'
-    }
+    // const unexpandedIntegrationConfig = {
+    //   authType,
+    //   prodIntParam: '${some_var}'
+    // }
 
-    const integrationConfig = {
-      authType,
-      prodIntParam: 'test-prod-int-value'
-    }
+    // const integrationConfig = {
+    //   authType,
+    //   prodIntParam: 'test-prod-int-value'
+    // }
 
-    mocked(getConfig)
-      .mockReturnValueOnce(unexpandedIntegrationConfig)
-      .mockClear()
-    mocked(expandAuthConfig)
-      .mockReturnValueOnce(integrationConfig)
-      .mockClear()
+    // mocked(getConfig)
+    //   .mockReturnValueOnce(unexpandedIntegrationConfig)
+    //   .mockClear()
+    // mocked(expandAuthConfig)
+    //   .mockReturnValueOnce(integrationConfig)
+    //   .mockClear()
     // mocked(getSetupDetails)
     // .mockImplementationOnce(() => ({ prodSetupParam: 'test-prod-setup-value' }))
     // .mockClear()
@@ -106,7 +106,6 @@ describe('callbackConfig', () => {
     new MiddlewareTestHarness<TCallbackConfigRequest>({
       configureRequest: req => {
         req.session!.authConfig = {
-          localRedirectMethod: ELocalRedirectMethod.Localhost,
           integrationConfig: {
             authType: EAuthType.OAuth1,
             intParam: 'int-param-value'
@@ -125,7 +124,6 @@ describe('callbackConfig', () => {
 
     await test.get().expect(200)
 
-    expect(test.req.localRedirectMethod).toBe(ELocalRedirectMethod.Localhost)
     expect(test.req.integrationConfig).toEqual({
       authType: EAuthType.OAuth1,
       intParam: 'int-param-value'

@@ -104,13 +104,7 @@ module.exports = [
       }),
       new ScriptExtHtmlWebpackPlugin({
         inline: 'callback-script'
-      }),
-      new CopyPlugin([
-        {
-          from: 'src/views/callback-local.mustache',
-          to: distPath
-        }
-      ])
+      })
     ],
     resolve: {
       extensions: ['.ts', '.tsx', '.js']

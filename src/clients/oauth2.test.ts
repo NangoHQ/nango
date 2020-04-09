@@ -10,8 +10,8 @@ import {
   AuthorizationMethod,
   getTokenWithCode
 } from './oauth2'
-import { mocked } from 'ts-jest/utils'
-import { inspectAccessToken } from './openid-connect'
+// import { mocked } from 'ts-jest/utils'
+// import { inspectAccessToken } from './openid-connect'
 
 jest.mock('./openid-connect')
 
@@ -69,10 +69,10 @@ const commonHeaders = {
   'User-Agent': 'Bearer'
 }
 
-mocked(inspectAccessToken).mockResolvedValue(undefined)
+// mocked(inspectAccessToken).mockResolvedValue(undefined)
 
 beforeEach(() => {
-  mocked(inspectAccessToken).mockClear()
+  // mocked(inspectAccessToken).mockClear()
 })
 
 const sharedTokenTests = (mockRequest: () => nock.Interceptor, triggerRequest: () => Promise<TokenResult>) => {
@@ -92,7 +92,7 @@ const sharedTokenTests = (mockRequest: () => nock.Interceptor, triggerRequest: (
     })
 
     it('inspects the access token and uses `exp` and `iat` from the metadata to calculate `expiresIn`', async () => {
-      mocked(inspectAccessToken).mockResolvedValueOnce({ exp: 1234, iat: 1192 })
+      // mocked(inspectAccessToken).mockResolvedValueOnce({ exp: 1234, iat: 1192 })
 
       const result = await triggerRequest()
 
@@ -100,7 +100,7 @@ const sharedTokenTests = (mockRequest: () => nock.Interceptor, triggerRequest: (
     })
 
     it('returns no `expiresIn` when no token metadata is available', async () => {
-      mocked(inspectAccessToken).mockResolvedValueOnce(undefined)
+      // mocked(inspectAccessToken).mockResolvedValueOnce(undefined)
 
       const result = await triggerRequest()
 
@@ -108,7 +108,7 @@ const sharedTokenTests = (mockRequest: () => nock.Interceptor, triggerRequest: (
     })
 
     it('returns no `expiresIn` when the token metadata has no `exp` value', async () => {
-      mocked(inspectAccessToken).mockResolvedValueOnce({ iat: 1192 })
+      // mocked(inspectAccessToken).mockResolvedValueOnce({ iat: 1192 })
 
       const result = await triggerRequest()
 
@@ -116,7 +116,7 @@ const sharedTokenTests = (mockRequest: () => nock.Interceptor, triggerRequest: (
     })
 
     it('uses the current time for the calculation when the token metadata has no `iat` value', async () => {
-      mocked(inspectAccessToken).mockResolvedValueOnce({ exp: 1234 })
+      // mocked(inspectAccessToken).mockResolvedValueOnce({ exp: 1234 })
 
       await timekeeper.withFreeze(1000000, async () => {
         const result = await triggerRequest()
