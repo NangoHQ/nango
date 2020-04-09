@@ -1,0 +1,4 @@
+export AUTH_CALLBACK_URL=http://localhost:3000/v2/auth/callback
+export AUTH_VHOST=YOUR_AUTH_HOST
+export PROXY_VHOST=YOUR_PROXY_HOST
+export COOKIE_SECRET=CHANGEME
