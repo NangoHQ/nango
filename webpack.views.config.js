@@ -44,7 +44,7 @@ module.exports = [
     output: { path: __dirname + '/dist/views' },
     plugins: [
       new HtmlWebpackPlugin({
-        filename: 'callback.html',
+        filename: 'iframe.html',
         template: './views/iframe.html',
         inlineSource: '.js$'
       }),
