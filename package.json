@@ -5,13 +5,10 @@
   "main": "handler.js",
   "scripts": {
     "test": "jest",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "start": "yarn build && NODE_ENV=production node .webpack/src/server.js -p $PORT",
-    "dev": "nodemon ./src/server.ts",
-    "generate:views": "webpack --config webpack.views.config.js",
-    "build:old": "yarn generate:views && webpack --config webpack.config.js",
-    "build": "rimraf dist/ && yarn webpack",
-    "build:views": "rimraf dist/views && yarn webpack --config webpack.views.config.js"
+    "build": "rimraf dist/ && yarn build:server && yarn build:views",
+    "build:server": "rimraf dist/server && yarn webpack --config webpack.config.js",
+    "build:views": "rimraf dist/views && yarn webpack --config webpack.views.config.js",
+    "start": "node dist/server"
   },
   "author": "engineering@bearer.sh",
   "license": "ISC",
