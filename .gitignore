@@ -4,9 +4,6 @@ jspm_packages
 .webpack
 .env
 
-# Serverless directories
-.serverless
-
 .envrc
 
 coverage/

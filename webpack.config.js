@@ -1,7 +1,7 @@
 const path = require('path')
 
 module.exports = {
-  entry: { 'src/server': './src/server.ts' },
+  entry: { 'server/index': './src/server.ts' },
   target: 'node',
   mode: 'production',
   optimization: {
@@ -18,7 +18,7 @@ module.exports = {
   devtool: 'nosources-source-map',
   output: {
     libraryTarget: 'commonjs2',
-    path: path.join(__dirname, '.webpack'),
+    path: path.join(__dirname, 'dist'),
     filename: '[name].js',
     sourceMapFilename: '[file].map'
   },
@@ -28,7 +28,10 @@ module.exports = {
         test: /\.ts(x?)$/,
         use: [
           {
-            loader: 'ts-loader'
+            loader: 'ts-loader',
+            options: {
+              configFile: 'tsconfig.build.json'
+            }
           }
         ],
         exclude: /node_modules/

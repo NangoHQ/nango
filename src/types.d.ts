@@ -6,7 +6,7 @@ import { AuthDetails } from './auth/v3/types'
 
 export type Omit<T, K> = Pick<T, Exclude<keyof T, K>>
 
-export interface IntegrationServiceRequest extends Request, IWithStageVariables {
+export interface IntegrationServiceRequest extends Request {
   environmentIdentifier: string
   organizationIdentifier: string
 }
@@ -17,8 +17,7 @@ export type TRequest = Request & {
   organizationIdentifier?: any
   environmentIdentifier?: any
   bearerOverhead?: number
-} & TWithInstrument &
-  IWithStageVariables
+} & TWithInstrument
 
 export type TServerResponse = {
   data: {
