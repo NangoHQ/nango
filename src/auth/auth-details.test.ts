@@ -73,7 +73,7 @@ describe('authDetailsResponse', () => {
   })
 
   it('raises an OAuthOnlyEndpoint error if the API auth type is not oauth1/2', async () => {
-    const test = setup({ authType: EAuthType.Basic })
+    const test = setup({ authType: EAuthType.NoAuth })
 
     await test.get().expect(422)
 

@@ -223,7 +223,7 @@ interface TokenClientParams {
 
 interface CodeParams extends TokenClientParams {
   callbackURL: string
-  code: string
+  code: any // string
   tokenParams: any
 }
 

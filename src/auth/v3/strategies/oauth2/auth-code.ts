@@ -25,16 +25,16 @@ export const authenticate = asyncMiddleware(async (req: TAuthenticateRequest, re
   }
 
   if (code) {
-    console.table([
-      authorizationMethod,
-      bodyFormat,
-      clientID,
-      clientSecret,
-      code,
-      tokenParams,
-      tokenURL,
-      AUTH_CALLBACK_URL
-    ])
+    // console.table([
+    //   authorizationMethod,
+    //   bodyFormat,
+    //   clientID,
+    //   clientSecret,
+    //   code,
+    //   tokenParams,
+    //   tokenURL,
+    //   AUTH_CALLBACK_URL
+    // ])
     const tokenResult = await getTokenWithCode({
       authorizationMethod,
       bodyFormat,

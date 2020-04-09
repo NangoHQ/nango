@@ -1,12 +1,12 @@
-import uuidv1 from 'uuid/v1'
+// import uuidv1 from 'uuid/v1'
 import { MiddlewareTestHarness, session } from '../../../tests/utils'
 import { callbackAuthId, connectAuthId } from './auth-id'
 import { TAuthIdRequest } from './types'
-import { mocked } from 'ts-jest/utils'
+// import { mocked } from 'ts-jest/utils'
 
 jest.mock('uuid/v1')
 
-mocked(uuidv1).mockImplementation(() => 'generated-auth-id')
+// mocked(uuidv1).mockImplementation(() => 'generated-auth-id')
 
 describe('connectAuthId', () => {
   const queryConfig = (req: TAuthIdRequest) => {

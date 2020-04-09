@@ -1,8 +1,7 @@
 import { MiddlewareTestHarness } from '../../../../../tests/utils'
 import { authenticate } from './auth-code'
 import { TAuthenticateRequest, EAuthType, TIntegrationConfig } from '../../types'
-import { mocked } from 'ts-jest/utils'
-import { getCodeRedirectURL, getTokenWithCode } from '../../../../clients/oauth2'
+import { getCodeRedirectURL } from '../../../../clients/oauth2'
 import { responseToCredentials } from './common'
 
 jest.mock('../../../../clients/oauth2')
@@ -48,9 +47,9 @@ describe('authenticate', () => {
     const redirectURL = 'https://example.com/auth?with_params=true'
 
     it('redirects to the authorization url with correct params', async () => {
-      mocked(getCodeRedirectURL)
-        .mockReturnValueOnce(redirectURL)
-        .mockClear()
+      // mocked(getCodeRedirectURL)
+      //   .mockReturnValueOnce(redirectURL)
+      //   .mockClear()
 
       await setup()
         .get()
@@ -71,12 +70,12 @@ describe('authenticate', () => {
     const credentials = { accessToken, expiresIn, idToken, refreshToken }
 
     beforeAll(() => {
-      mocked(getTokenWithCode).mockResolvedValue(tokenResult)
-      mocked(responseToCredentials).mockReturnValue(credentials)
+      // mocked(getTokenWithCode).mockResolvedValue(tokenResult)
+      // mocked(responseToCredentials).mockReturnValue(credentials)
     })
 
     beforeEach(() => {
-      mocked(responseToCredentials).mockClear()
+      // mocked(responseToCredentials).mockClear()
     })
 
     it('exchanges the code for tokens and stores them on the request', async () => {
