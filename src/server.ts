@@ -3,7 +3,6 @@ import express from 'express'
 import App from './app'
 import functions from './functions/router' // proxyFunction
 import errorHandler from './errorHandler'
-import 'ejs'
 
 import authV3, { authHostRouter } from './auth/v3/router'
 import { AUTH_VHOST, PROXY_VHOST } from './constants'
@@ -18,13 +17,9 @@ const app = App(baseApp)
 
 /******* API ******/
 
-// console.log(express.static(`${__dirname}./views`))
-// const viewsDir = path.join(__dirname, './views')
-const viewsDir = process.env.NODE_ENV !== 'production' ? './dist/views' : './views'
-
 app.engine('html', require('ejs').renderFile)
 app.set('view engine', 'html')
-app.set('views', viewsDir)
+app.set('views', './dist/views')
 
 console.log('Auth VHost:', AUTH_VHOST)
 app.use(vhost(AUTH_VHOST, authHostRouter()))
