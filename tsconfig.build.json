@@ -8,7 +8,7 @@
     "noUnusedLocals": true,
     "strictNullChecks": true,
     "skipLibCheck": true,
-    "outDir": "dist/app"
+    "outDir": "dist"
   },
   "include": ["src/"],
   "exclude": ["**/*.test.*"]
