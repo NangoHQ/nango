@@ -1,13 +1,13 @@
 import { Response, NextFunction } from 'express'
 import { TAuthIdRequest } from './types'
-// import uuidv1 from 'uuid/v1'
+import uuidv1 from 'uuid/v1'
 
 export const connectAuthId = (req: TAuthIdRequest, res: Response, next: NextFunction) => {
-  // const currentAuthId = req.query.authId
-  // const authId = currentAuthId || uuidv1()
+  const currentAuthId = req.query.authId as string
+  const authId = currentAuthId || uuidv1()
 
-  // req.authId = authId
-  // req.session.authId = authId
+  req.authId = authId
+  req.session.authId = authId
 
   next()
 }
