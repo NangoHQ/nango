@@ -14,7 +14,7 @@
     "start": "node dist",
     "dev": "concurrently --names 'server,views' 'yarn build:server --watch' 'yarn build:views --watch'",
     "lint:server": "yarn tsc --noEmit",
-    "run:migrations": "NODE_ENV=production yarn knex --cwd dist/config migrate:latest"
+    "run:migrations": "yarn knex --cwd dist/config migrate:latest"
   },
   "author": "engineering@bearer.sh",
   "license": "ISC",
