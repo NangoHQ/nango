@@ -90,7 +90,7 @@ export type TAuthUserAttributes = TOAuth1UserAttributes | TOAuth2UserAttributes
 export const getConfig = async ({ buid }: { buid: string }) => {
   let item = {} as any
   try {
-    item = require(`../functions/integrations/${buid}.json`)
+    item = require(`../../integrations/${buid}.json`)
   } catch (err) {
     if (err.code === 'MODULE_NOT_FOUND') {
       return false
