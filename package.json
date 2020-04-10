@@ -44,6 +44,7 @@
     "post-robot": "^8.0.26",
     "simple-oauth2": "^3.0.0",
     "ts-node": "^8.8.2",
+    "uuid": "^7.0.3",
     "vhost": "^3.0.2"
   },
   "devDependencies": {
@@ -66,7 +67,6 @@
     "@types/passport-oauth2": "^1.4.5",
     "@types/simple-oauth2": "^2.2.1",
     "@types/supertest": "^2.0.5",
-    "@types/uuid": "^3.4.3",
     "@types/wreck": "^14.0.0",
     "babel-loader": "^8.0.5",
     "commitlint": "^7.2.1",
