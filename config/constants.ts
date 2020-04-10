@@ -7,7 +7,7 @@ export const {
   DB_PORT,
   DB_DATABASE,
   HEROKU_POSTGRESQL_ONYX_URL,
-  POSTGRESQL_URL
+  DATABASE_URL
 } = process.env as {
   COOKIE_SECRET: string
   HOSTNAME: string
@@ -18,10 +18,10 @@ export const {
   DB_PORT?: string
   DB_DATABASE?: string
   HEROKU_POSTGRESQL_ONYX_URL?: string
-  POSTGRESQL_URL?: string
+  DATABASE_URL?: string
 }
 
-export const connection = POSTGRESQL_URL ||
+export const connection = DATABASE_URL ||
   HEROKU_POSTGRESQL_ONYX_URL || {
     user: DB_USER!,
     password: DB_PASSWORD!,
