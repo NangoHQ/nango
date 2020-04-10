@@ -1,6 +1,6 @@
 import { Response, NextFunction } from 'express'
 import { TAuthIdRequest } from './types'
-import uuidv1 from 'uuid/v1'
+import { v1 as uuidv1 } from 'uuid'
 
 export const connectAuthId = (req: TAuthIdRequest, res: Response, next: NextFunction) => {
   const currentAuthId = req.query.authId as string
