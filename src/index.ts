@@ -4,7 +4,7 @@ import functions from './functions/router'
 import errorHandler from './errorHandler'
 
 import authV3, { authRouter } from './auth/v3/router'
-// import { AUTH_SUBDOMAIN, PROXY_SUBDOMAIN, HOSTNAME } from './constants'
+
 export const BUID = 'bearerUid'
 
 import { cors } from './proxy/cors'
@@ -38,5 +38,5 @@ app.use(errorHandler)
 app.use(resourceNotFound)
 
 app.listen(process.env.PORT || 3000, () => {
-  console.log('Integration Service app listening on port', process.env.PORT || 3000)
+  console.log('Pizzly App listening on port', process.env.PORT || 3000)
 })
