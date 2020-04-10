@@ -2,22 +2,12 @@
   "name": "Pizzly",
   "description": "A Node Application to simplify OAuth",
   "image": "heroku/node",
-  "repository": "https://github.com/Bearer/pizzly",
+  "repository": "https://github.com/Bearer/Pizzly",
   "keywords": ["OAuth", "node"],
   "env": {
-    "AUTH_CALLBACK_URL": {
+    "HOSTNAME": {
       "description": "",
       "required": true
-    },
-    "AUTH_VHOST": {
-      "description": "",
-      "default": "auth.bearer.sh",
-      "required": false
-    },
-    "PROXY_VHOST": {
-      "description": "",
-      "default": "proxy.bearer.sh",
-      "required": false
     },
     "COOKIE_SECRET": {
       "description": "",
