@@ -42,6 +42,7 @@
     "pg": "^8.0.2",
     "post-robot": "^8.0.26",
     "simple-oauth2": "^3.0.0",
+    "ts-node": "^8.8.2",
     "vhost": "^3.0.2"
   },
   "devDependencies": {
@@ -89,8 +90,6 @@
     "timekeeper": "^2.2.0",
     "ts-jest": "^23.10.5",
     "ts-loader": "^5.3.3",
-    "ts-node": "^8.8.2",
-    "ts-node-dev": "^1.0.0-pre.42",
     "tslint": "^5.12.0",
     "tslint-config-prettier": "^1.17.0",
     "typescript": "^3.2.2",
