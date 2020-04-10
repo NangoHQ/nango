@@ -19,7 +19,12 @@ export default () => {
   const router = Router()
 
   router.use(session())
-
+  // TODO: remove
+  router.use('/test-session', (req: any, res, next) => {
+    const n = req.session.views || 0
+    req.session.views = Math.max(100, n + 1)
+    res.end(`${n} views`)
+  })
   router.get('/callback', callbackContext, callbackConfig, callbackAuthId, authenticateAndRespond)
 
   router.get(

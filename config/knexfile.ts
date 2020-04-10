@@ -4,7 +4,7 @@ import { connection } from './constants'
 module.exports = {
   development: {
     connection,
-    client: 'postgresql',
+    client: 'pg',
     pool: {
       min: 2,
       max: 10
@@ -15,7 +15,7 @@ module.exports = {
   },
   production: {
     connection,
-    client: 'postgresql',
+    client: 'pg',
     pool: {
       min: 2,
       max: 10

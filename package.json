@@ -25,6 +25,7 @@
     "body-parser": "^1.18.3",
     "cls-hooked": "^4.2.2",
     "compose-middleware": "^5.0.1",
+    "connect-session-knex": "^1.6.0",
     "cookie-parser": "^1.4.3",
     "ejs": "^3.0.2",
     "express": "^4.16.3",
