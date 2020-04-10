@@ -21,10 +21,14 @@ export const {
   POSTGRESQL_URL?: string
 }
 
-export const connectionString =
-  POSTGRESQL_URL ||
-  HEROKU_POSTGRESQL_ONYX_URL ||
-  `postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_DATABASE}`
+export const connection = POSTGRESQL_URL ||
+  HEROKU_POSTGRESQL_ONYX_URL || {
+    user: DB_USER!,
+    password: DB_PASSWORD!,
+    host: DB_HOST!,
+    port: DB_PORT!,
+    database: DB_DATABASE!
+  }
 
 export const AUTH_CALLBACK_URL = `https://${HOSTNAME}/v2/auth/callback`
 
