@@ -3,7 +3,12 @@ import { COOKIE_SECRET } from '../../../config/constants'
 import { Request, Response, NextFunction } from 'express'
 
 export const session = () => {
-  return expressSession({ secret: COOKIE_SECRET })
+  return expressSession({
+    secret: COOKIE_SECRET,
+    cookie: { secure: process.env.NODE_ENV === 'production' },
+    resave: false,
+    saveUninitialized: false
+  })
 }
 
 export const destroySession = (req: Request, _res: Response, next: NextFunction) => {
