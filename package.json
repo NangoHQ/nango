@@ -11,7 +11,7 @@
     "build": "rimraf dist/ && yarn build:server && yarn build:views",
     "build:server": "yarn tsc -p tsconfig.build.json",
     "build:views": "rimraf dist/views && yarn webpack --config webpack.config.js",
-    "start": "node dist",
+    "start": "node dist/src",
     "dev": "concurrently --names 'server,views' 'yarn build:server --watch' 'yarn build:views --watch'",
     "lint:server": "yarn tsc --noEmit",
     "run:migrations": "yarn knex --cwd dist/config migrate:latest"
