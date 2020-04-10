@@ -9,7 +9,8 @@
     "build:server": "yarn webpack --config webpack.config.js",
     "build:views": "rimraf dist/views && yarn webpack --config webpack.views.config.js",
     "start": "node dist",
-    "dev": "concurrently --names 'server,views' 'yarn build:server --watch' 'yarn build:views --watch'"
+    "dev": "concurrently --names 'server,views' 'yarn build:server --watch' 'yarn build:views --watch'",
+    "lint:server": "yarn tsc --noEmit"
   },
   "author": "engineering@bearer.sh",
   "license": "ISC",
