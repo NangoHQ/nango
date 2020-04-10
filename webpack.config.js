@@ -1,44 +1,79 @@
-const path = require('path')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const HtmlWebpackInlineSourcePlugin = require('html-webpack-inline-source-plugin')
 
-module.exports = {
-  entry: { index: './src/server.ts' },
-  target: 'node',
-  mode: 'production',
-  optimization: {
-    // We no not want to minimize our code.
-    minimize: false
-  },
-  performance: {
-    // Turn off size warnings for entry point
-    hints: 'warning'
-  },
-  resolve: {
-    extensions: ['.js', '.json', '.ts', '.tsx']
-  },
-  devtool: 'nosources-source-map',
-  output: {
-    libraryTarget: 'commonjs2',
-    path: path.join(__dirname, 'dist'),
-    filename: '[name].js',
-    sourceMapFilename: '[file].map'
-  },
-  module: {
-    rules: [
-      {
-        test: /\.ts(x?)$/,
-        use: [
-          {
-            loader: 'ts-loader',
-            options: {
-              configFile: 'tsconfig.build.json'
-            }
+const resolve = { extensions: ['.ts', '.tsx', '.js'] }
+const moduleConf = {
+  rules: [
+    {
+      test: /\.html$/,
+      loader: 'html-loader'
+    },
+    {
+      test: /\.ts(x?)$/,
+      use: [
+        {
+          loader: 'ts-loader',
+          options: {
+            configFile: 'tsconfig.views.build.json'
           }
-        ],
-        exclude: /node_modules/
-      }
-    ]
-  },
-  externals: {
-    'simple-oauth2': true
-  }
+        }
+      ],
+      exclude: /node_modules/
+    }
+  ]
 }
+
+module.exports = [
+  {
+    resolve: resolve,
+    entry: { 'callback-script': './views/callback-script.ts' },
+    output: { path: __dirname + '/dist/views' },
+    plugins: [
+      new HtmlWebpackPlugin({
+        filename: 'callback.html',
+        template: './views/callback.html',
+        inlineSource: '.js$'
+      }),
+      new HtmlWebpackInlineSourcePlugin()
+    ],
+    module: moduleConf
+  },
+  {
+    resolve: resolve,
+    entry: { 'iframe-script': './views/iframe-script.ts' },
+    output: { path: __dirname + '/dist/views' },
+    plugins: [
+      new HtmlWebpackPlugin({
+        filename: 'iframe.html',
+        template: './views/iframe.html',
+        inlineSource: '.js$'
+      }),
+      new HtmlWebpackInlineSourcePlugin()
+    ],
+    module: moduleConf
+  },
+  {
+    entry: { 'error-script': './views/error-script.ts' },
+    output: { path: __dirname + '/dist/views' },
+    plugins: [
+      new HtmlWebpackPlugin({
+        template: './views/page-not-found-error.html',
+        filename: 'page-not-found-error.html',
+        inlineSource: '.js$'
+      }),
+      new HtmlWebpackPlugin({
+        template: './views/callback-url-request-error.html',
+        filename: 'callback-url-request-error.html',
+        inlineSource: '.js$'
+      }),
+      new HtmlWebpackPlugin({
+        template: './views/oauth-error.html',
+        filename: 'oauth-error.html',
+        inlineSource: '.js$'
+      }),
+      new HtmlWebpackInlineSourcePlugin()
+    ],
+    resolve: resolve,
+    module: moduleConf
+  }
+]
