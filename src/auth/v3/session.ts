@@ -12,7 +12,9 @@ export const session = () => {
 
   return expressSession({
     secret: COOKIE_SECRET,
-    cookie: { secure: process.env.NODE_ENV === 'production' },
+    // TODO: fix secure
+    // cookie: { secure: process.env.NODE_ENV === 'production' },
+    cookie: { secure: false },
     resave: false,
     saveUninitialized: false,
     store: new knexSessionStore({ knex })
