@@ -1,6 +1,6 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const HtmlWebpackInlineSourcePlugin = require('html-webpack-inline-source-plugin')
-
+const mode = process.env.NODE_ENV === 'production' ? 'production' : 'development'
 const resolve = { extensions: ['.ts', '.tsx', '.js'] }
 const moduleConf = {
   rules: [
@@ -26,6 +26,7 @@ const moduleConf = {
 module.exports = [
   {
     resolve: resolve,
+    mode: mode,
     entry: { 'callback-script': './views/callback-script.ts' },
     output: { path: __dirname + '/dist/views' },
     plugins: [
@@ -40,6 +41,7 @@ module.exports = [
   },
   {
     resolve: resolve,
+    mode: mode,
     entry: { 'iframe-script': './views/iframe-script.ts' },
     output: { path: __dirname + '/dist/views' },
     plugins: [
@@ -53,6 +55,7 @@ module.exports = [
     module: moduleConf
   },
   {
+    mode: mode,
     entry: { 'error-script': './views/error-script.ts' },
     output: { path: __dirname + '/dist/views' },
     plugins: [
