@@ -13,7 +13,7 @@ import {
   OAuth1SignatureMethod
 } from '../types'
 import { AuthenticationFailed, InvalidAuthId } from '../errors'
-import { AUTH_CALLBACK_URL } from '../../../constants'
+import { AUTH_CALLBACK_URL } from '../../../../config/constants'
 // import { getSetupDetails, getAuth, TOAuth1UserAttributes } from '../../../clients/integrations'
 import { checkSetupIdConsistency } from './setup-id-consistency'
 

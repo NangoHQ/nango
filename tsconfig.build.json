@@ -10,6 +10,6 @@
     "skipLibCheck": true,
     "outDir": "dist"
   },
-  "include": ["src/"],
+  "include": ["src/", "config"],
   "exclude": ["**/*.test.*"]
 }

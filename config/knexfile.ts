@@ -1,8 +1,8 @@
 // Update with your config settings.
-import { connection } from '../src/constants'
+import { connection } from './constants'
 
 module.exports = {
-  config: {
+  production: {
     connection,
     client: 'postgresql',
     pool: {
