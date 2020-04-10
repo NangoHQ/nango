@@ -1,11 +1,10 @@
-import vhost from 'vhost'
 import express from 'express'
 import App from './app'
-import functions from './functions/router' // proxyFunction
+import functions from './functions/router'
 import errorHandler from './errorHandler'
 
-import authV3, { authHostRouter } from './auth/v3/router'
-import { AUTH_VHOST, PROXY_VHOST } from './constants'
+import authV3, { authRouter } from './auth/v3/router'
+// import { AUTH_SUBDOMAIN, PROXY_SUBDOMAIN, HOSTNAME } from './constants'
 export const BUID = 'bearerUid'
 
 import { cors } from './proxy/cors'
@@ -21,13 +20,14 @@ app.engine('html', require('ejs').renderFile)
 app.set('view engine', 'html')
 app.set('views', './dist/views')
 
-console.log('Auth VHost:', AUTH_VHOST)
-app.use(vhost(AUTH_VHOST, authHostRouter()))
+// console.log('Auth VHost:', AUTH_SUBDOMAIN)
+// app.use(vhost(AUTH_VHOST, authHostRouter()))
 
-console.log('Proxy VHost:', PROXY_VHOST)
+// console.log('Proxy VHost:', PROXY_VHOST)
 // app.use(vhost(PROXY_VHOST, proxyFunction()))
 
 app.use('/v2/auth', cors, authV3())
+app.use('/apis', cors, authRouter())
 
 app.use('/api/v4/functions', cors, functions())
 app.use('/api/v5/functions', cors, functions())
