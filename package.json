@@ -8,9 +8,10 @@
     "build": "rimraf dist/ && yarn build:server && yarn build:views",
     "build:server": "yarn tsc -p tsconfig.build.json",
     "build:views": "rimraf dist/views && yarn webpack --config webpack.config.js",
-    "start": "node dist",
+    "start": "yarn run:migrations && node dist",
     "dev": "concurrently --names 'server,views' 'yarn build:server --watch' 'yarn build:views --watch'",
-    "lint:server": "yarn tsc --noEmit"
+    "lint:server": "yarn tsc --noEmit",
+    "run:migrations": "NODE_ENV=production yarn knex migrate:latest"
   },
   "author": "engineering@bearer.sh",
   "license": "ISC",
@@ -27,6 +28,7 @@
     "express-session": "^1.15.6",
     "js-cookie": "^2.2.0",
     "jsonwebtoken": "^8.5.1",
+    "knex": "^0.20.13",
     "lodash.at": "^4.6.0",
     "lodash.omit": "^4.5.0",
     "lodash.pick": "^4.4.0",
