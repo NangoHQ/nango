@@ -4,6 +4,7 @@
   "image": "heroku/node",
   "repository": "https://github.com/Bearer/Pizzly",
   "keywords": ["OAuth", "node"],
+  "addons": ["heroku-postgresql:hobby-dev"],
   "env": {
     "HOSTNAME": {
       "description": "",
