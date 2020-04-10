@@ -1,5 +1,5 @@
 import expressSession from 'express-session'
-import { COOKIE_SECRET } from '../../constants'
+import { COOKIE_SECRET } from '../../../config/constants'
 import { Request, Response, NextFunction } from 'express'
 
 export const session = () => {

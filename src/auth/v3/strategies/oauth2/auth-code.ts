@@ -1,7 +1,7 @@
 import { NextFunction, Response } from 'express'
 
 import { TAuthenticateRequest } from '../../types'
-import { AUTH_CALLBACK_URL } from '../../../../constants'
+import { AUTH_CALLBACK_URL } from '../../../../../config/constants'
 import { getCodeRedirectURL, getTokenWithCode } from '../../../../clients/oauth2'
 import { asyncMiddleware } from '../../../../errorHandler'
 import { responseToCredentials } from './common'
