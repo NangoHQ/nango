@@ -8,8 +8,9 @@
     "noUnusedLocals": true,
     "strictNullChecks": true,
     "skipLibCheck": true,
-    "outDir": "dist"
+    "outDir": "dist",
+    "resolveJsonModule": true
   },
-  "include": ["src/", "config"],
+  "include": ["src", "config", "integrations"],
   "exclude": ["**/*.test.*"]
 }
