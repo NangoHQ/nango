@@ -47,8 +47,8 @@ function setProxyCallType(req: any, _res, next: NextFunction) {
 
 export default () => {
   const router = Router()
-  router.use(`/backend/:${BUID}`, buid, isBackendRequest, functionsRouter())
-  router.use(`/:${BUID}`, buid, functionsRouter())
+  router.use(`/backend/:${BUID}`, buid, authId, isBackendRequest, functionsRouter())
+  router.use(`/:${BUID}`, buid, authId, functionsRouter())
   router.use(errorHandler)
 
   return router
@@ -56,9 +56,14 @@ export default () => {
 
 export function proxyFunction() {
   const router = Router()
-  router.use(`/:${BUID}`, proxyCorsMiddleware, buid, setProxyCallType, proxyRouter())
+  router.use(`/:${BUID}`, proxyCorsMiddleware, buid, authId, setProxyCallType, proxyRouter())
   router.use(errorHandler)
   return router
+}
+
+function authId(req, _res, next) {
+  req.authId = req.headers['bearer-auth-id'] || req.query.authId
+  next()
 }
 
 function buid(req, _res, next) {
