@@ -1,1 +1,1 @@
-console.log('{ errorMessage: {{error}} }')
+console.log('{ errorMessage: <%= error %> }')
