@@ -163,9 +163,6 @@ export const authenticate = (req: TAuthenticateRequest, res: Response, next: Nex
 export const fetchAuthDetails = async (params: IFetchAuthDetailsParams, integrationConfig: TIntegrationConfig) => {
   const {
     buid,
-    // scopedUserDataTableName,
-    // servicesTableName,
-    // environmentIdentifier,
     integration,
     authId
     // setupId: setupIdParam,
