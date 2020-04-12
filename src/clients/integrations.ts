@@ -1,5 +1,6 @@
 // import { SetupDetailsNotFound } from '../errors'
 import { TIntegrationConfig, EAuthType } from '../auth/v3/types'
+import '../../integrations'
 
 interface ICommonUserAttributes {
   serviceName: string
