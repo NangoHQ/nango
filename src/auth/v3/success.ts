@@ -40,9 +40,11 @@ export const authSuccess = asyncMiddleware(async (req: AuthSuccessRequest, res: 
     userAttributes
   }
 
-  console.log('[authSucces] userAttributes', params)
+  console.log('[authSuccess] userAttributes', params)
 
-  await updateAuth(params)
+  const row = await updateAuth(params)
+
+  console.log('[authSuccess] userAttributes', row)
 
   res.header('Content-Type', 'text/html')
   res.render('callback', { authId, error: '', error_description: '', integrationUuid: buid })
