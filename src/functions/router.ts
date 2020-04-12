@@ -10,11 +10,6 @@ import Integration from './integration'
 
 const BUID = 'bearerUuid'
 
-// function here(req, _res, next) {
-//   console.log('here')
-//   next()
-// }
-
 function functionsRouter() {
   const functionsRouter = Router({ mergeParams: true })
 
