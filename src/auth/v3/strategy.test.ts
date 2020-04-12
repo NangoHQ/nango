@@ -73,7 +73,6 @@ describe('fetchAuthDetails', () => {
     new MiddlewareTestHarness({
       configureRequest: (req: TBackendRequestV4) => {
         req.integration = { buid: 'test-buid', config: jest.fn(() => ({ authType, some: 'config' })) }
-        req.aliasBuid = 'test-alias'
         req.buid = 'test-buid'
         if (withAuthId) {
           req.authId = 'test-auth-id'

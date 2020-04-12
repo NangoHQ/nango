@@ -51,7 +51,6 @@ export type TBackendRequestV4 = TRequest & {
   organizationIdentifier?: any
   environmentIdentifier?: any
   isBackend: boolean
-  aliasBuid: string
   buid: string
   setupId: string
   integration: Integration

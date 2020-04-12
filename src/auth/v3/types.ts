@@ -7,7 +7,6 @@ export interface IAuthContext {
   connectParams: any
   buid?: string
   setupId: string
-  aliasBuid?: string
   environmentIdentifier: string
   organizationIdentifier: string
   internalCorrelationId?: string
@@ -147,14 +146,14 @@ export type TLocalAuthSuccessRequest = Request & IAuthContext & IAuthConfig & IW
 export type AuthSuccessRequest = Request &
   IAuthContext &
   IAuthId &
-  IWithAuthCredentials & { aliasBuid: string; integrationConfig?: TIntegrationConfig }
+  IWithAuthCredentials & { buid: string; integrationConfig?: TIntegrationConfig }
 
 export type TRevokeRequest = Request & { buid: string }
 
 export type TErrorHandlerRequest = Request & Partial<IAuthContext> & Partial<IAuthId>
 
 export interface IFetchAuthDetailsParams {
-  aliasBuid: string
+  buid: string
   scopedUserDataTableName: string
   servicesTableName: string
   integration: Integration

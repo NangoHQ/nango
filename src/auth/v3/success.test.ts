@@ -22,7 +22,6 @@ describe('authSuccess', () => {
     new MiddlewareTestHarness({
       configureRequest: (req: AuthSuccessRequest) => {
         req.buid = 'test-buid'
-        req.aliasBuid = 'test-buid'
         req.clientId = 'test-client-id'
         req.connectParams = {
           conParam: 'test-con-param'

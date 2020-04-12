@@ -6,12 +6,16 @@ import Integration from '../functions/integration'
 
 export const configureAuthDetailsRequest = asyncMiddleware(
   async (req: AuthDetailsRequestInput, res: Response, next: NextFunction) => {
-    const { aliasBuid, authId, setupId } = req.params
+    const { buid, authId, setupId } = req.params
     // const bearerKey = req.get('authorization')
 
     req.authId = authId
-    req.buid = aliasBuid
-    req.integration = new Integration(req.buid)
+    console.log('[configureAuthDetailsRequest] buid', buid)
+    console.log('[configureAuthDetailsRequest] authId', authId)
+
+    req.integration = new Integration(buid)
+
+    console.log('[configureAuthDetailsRequest] integration', JSON.stringify(req.integration))
     req.setupId = setupId
 
     next()
@@ -19,7 +23,6 @@ export const configureAuthDetailsRequest = asyncMiddleware(
 )
 
 export interface AuthDetailsRequest extends IntegrationServiceRequest {
-  aliasBuid: string
   authId: string
   buid: string
   integration: Integration
@@ -28,7 +31,7 @@ export interface AuthDetailsRequest extends IntegrationServiceRequest {
 
 interface AuthDetailsRequestInput extends AuthDetailsRequest {
   params: {
-    aliasBuid: string
+    buid: string
     authId: string
     setupId: string
   }

@@ -48,7 +48,7 @@ export default () => {
 export const authRouter = () => {
   const router = Router()
 
-  router.get('/:aliasBuid/auth/:authId', configureAuthDetailsRequest, fetchAuthDetails, authDetailsResponse)
+  router.get('/:buid/auth/:authId', configureAuthDetailsRequest, fetchAuthDetails, authDetailsResponse)
 
   return router
 }

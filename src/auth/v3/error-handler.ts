@@ -19,7 +19,7 @@ const respondWithCallbackError = (req: TErrorHandlerRequest, res: Response, err:
     authId: req.authId,
     error: err.error,
     error_description: err.errorDescription,
-    integrationUuid: req.aliasBuid
+    integrationUuid: req.buid
   })
 }
 

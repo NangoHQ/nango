@@ -260,7 +260,7 @@ describe('fetchAuthDetails', () => {
   const setupId = 'test-setup-id'
 
   const paramsBase: any = {
-    aliasBuid: 'test-alias',
+    buid: 'test-alias',
     scopedUserDataTableName: 'test-scoped-data-table',
     servicesTableName: 'test-services-table',
     environmentIdentifier: 'test-env-id',
