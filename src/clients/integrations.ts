@@ -42,6 +42,24 @@ interface IAuthParams {
 
 export type TAuthUserAttributes = TOAuth1UserAttributes | TOAuth2UserAttributes
 
+export interface IAuthResult {
+  id: string
+  buid: string
+  auth_id: string
+  user_attributes: {
+    accessToken: string
+    refreshToken: string
+    idToken: string
+    expiresIn: any
+    scopes: string[]
+    tokenResponseJSON: string
+    updatedAt: any
+    idTokenJwt: any
+    connectParams?: any
+    callbackParamsJSON: any
+  }
+}
+
 export const updateAuth = async ({
   buid,
   authId,
@@ -49,12 +67,14 @@ export const updateAuth = async ({
 }: IAuthParams & { userAttributes: TAuthUserAttributes }) => {
   const client = dbClient()
   await client('authentications').insert({ buid, auth_id: authId, user_attributes: userAttributes })
-
-  const res = await client('authentications').where({ buid, auth_id: authId })
-  console.log('[updateAuth] res', res)
 }
 
-export const getAuth = async <T = TAuthUserAttributes>({ buid, authId }: IAuthParams) => {}
+export const getAuth = async <IAuthResult>({ buid, authId }: IAuthParams) => {
+  const client = dbClient()
+  return (await client('authentications')
+    .where({ buid, auth_id: authId })
+    .first()) as IAuthResult
+}
 
 export const getConfig = async ({ buid }: { buid: string }) => {
   let item = {} as any
