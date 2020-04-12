@@ -14,7 +14,7 @@ export const session = () => {
     secret: COOKIE_SECRET,
     // TODO: fix secure
     // cookie: { secure: process.env.NODE_ENV === 'production' },
-    cookie: { secure: false },
+    cookie: { secure: 'auto' },
     resave: false,
     saveUninitialized: false,
     store: new knexSessionStore({ knex })

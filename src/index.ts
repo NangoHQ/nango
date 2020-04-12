@@ -13,6 +13,7 @@ import resourceNotFound from './resourceNotFound'
 // simulates variables sent by API gateway
 const baseApp = express()
 const app = App(baseApp)
+app.set('trust proxy', 1)
 
 /******* API ******/
 
