@@ -37,7 +37,7 @@ describe('authDetailsResponse', () => {
       configureRequest: req => {
         req.integration = { config: () => Promise.resolve({ authType }) } as any
         req.authId = 'test-auth-id'
-        req.aliasBuid = 'test-alias'
+        req.buid = 'test-alias'
 
         if (withAuth) {
           req.auth = (authType === EAuthType.OAuth1 ? oauth1AuthDetails : oauth2AuthDetails) as any

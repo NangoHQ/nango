@@ -51,10 +51,10 @@ export class MissingParameter extends UserError {
 }
 
 export class InvalidBuid extends UserError {
-  constructor(aliasBuid: string) {
+  constructor(buid: string) {
     super(
       // tslint:disable-next-line:max-line-length
-      `No API found with alias/buid '${aliasBuid}', please refer to this link for further information: https://docs.bearer.sh/dashboard/apis#how-to-add-a-new-api`,
+      `No API found with alias/buid '${buid}', please refer to this link for further information: https://docs.bearer.sh/dashboard/apis#how-to-add-a-new-api`,
       422,
       'INVALID_BUID'
     )

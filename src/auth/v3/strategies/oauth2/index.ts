@@ -154,7 +154,7 @@ const refreshAndUpdateCredentials = async (
 
 export const fetchAuthDetails = async (params: IFetchAuthDetailsParams, integrationConfig: TIntegrationConfig) => {
   const {
-    aliasBuid,
+    buid,
     // scopedUserDataTableName,
     // servicesTableName,
     // environmentIdentifier,
@@ -198,7 +198,7 @@ export const fetchAuthDetails = async (params: IFetchAuthDetailsParams, integrat
   }
 
   if (!credentials || !credentials.accessToken) {
-    throw new InvalidAuthId(aliasBuid, authId!)
+    throw new InvalidAuthId(buid, authId!)
   }
 
   const {

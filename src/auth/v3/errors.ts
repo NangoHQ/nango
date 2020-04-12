@@ -103,9 +103,9 @@ export class InconsistentSetupId extends UserError {
 }
 
 export class InvalidAuthId extends UserError {
-  constructor(aliasBuid: string, authId: string) {
+  constructor(buid: string, authId: string) {
     super(
-      `No auth details were found using authId '${authId}' for API '${aliasBuid}'
+      `No auth details were found using authId '${authId}' for API '${buid}'
 
 Please try again with a valid authId or connect with this authId`,
       404,
@@ -115,9 +115,9 @@ Please try again with a valid authId or connect with this authId`,
 }
 
 export class MissingAuthId extends UserError {
-  constructor(aliasBuid: string) {
+  constructor(buid: string) {
     super(
-      `You must supply an authId to use the '${aliasBuid}' API
+      `You must supply an authId to use the '${buid}' API
 
 Please try again with a valid authId.
 
@@ -129,9 +129,9 @@ See the following link for information on how to obtain an authId: https://docs.
 }
 
 export class CredentialsNotConfigured extends UserError {
-  constructor(aliasBuid: string) {
+  constructor(buid: string) {
     super(
-      `Missing credentials for the '${aliasBuid}' API
+      `Missing credentials for the '${buid}' API
 
 Please configure the credentials in the dashboard and try again.
 

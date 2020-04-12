@@ -23,7 +23,6 @@ describe('errorHandler', () => {
   const setup = ({ withLogger = true, sendResponse = false, url = '' } = {}) =>
     new ErrorMiddlewareTestHarness<TErrorHandlerRequest>({
       configureRequest: (req, res) => {
-        req.aliasBuid = 'test-alias'
         req.buid = 'test-buid'
         req.authId = 'test-auth-id'
 

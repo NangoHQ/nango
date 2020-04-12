@@ -127,7 +127,7 @@ describe('fetchAuthDetails', () => {
   const log = jest.fn()
 
   const paramsBase: any = {
-    aliasBuid: 'test-alias',
+    buid: 'test-alias',
     scopedUserDataTableName: 'test-scoped-data-table',
     servicesTableName: 'test-services-table',
     environmentIdentifier: 'test-env-id',
