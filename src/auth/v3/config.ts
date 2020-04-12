@@ -40,7 +40,10 @@ const copyConfig = (src: IAuthConfig, dest: IAuthConfig) => {
 
 export const connectConfig = asyncMiddleware(async (req: TConnectConfigRequest, _res: Response, next: NextFunction) => {
   const authConfig = await getAuthConfig(req)
+  console.log('[connectConfig] req', JSON.stringify(req, null, 2))
+  console.log('[connectConfig] authConfig', JSON.stringify(authConfig, null, 2))
   const { authType } = authConfig.integrationConfig
+  console.log('[connectConfig] authType', authType)
 
   if (!Object.values(EAuthType).includes(authType)) {
     throw new InvalidAuthType(authType)
