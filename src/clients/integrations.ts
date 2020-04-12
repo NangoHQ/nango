@@ -71,6 +71,9 @@ export const updateAuth = async ({
 
 export const getAuth = async <IAuthResult>({ buid, authId }: IAuthParams) => {
   const client = dbClient()
+
+  console.log('[getAuth] buid/authId', buid, authId)
+
   return (await client('authentications')
     .where({ buid, auth_id: authId })
     .first()) as IAuthResult
