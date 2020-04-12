@@ -1,10 +1,7 @@
 import { Response } from 'express'
 import { AuthSuccessRequest } from './types'
 import { asyncMiddleware } from '../../errorHandler'
-import {
-  // updateAuthV3,
-  TAuthUserAttributes
-} from '../../clients/integrations'
+import { updateAuth, TAuthUserAttributes } from '../../clients/integrations'
 
 export const authSuccess = asyncMiddleware(async (req: AuthSuccessRequest, res: Response) => {
   const {
@@ -37,15 +34,15 @@ export const authSuccess = asyncMiddleware(async (req: AuthSuccessRequest, res: 
     userAttributes.callbackParamsJSON = JSON.stringify(req.query)
   }
 
-  // const params = {
-  //   clientId,
-  //   buid,
-  //   authId,
-  //   userAttributes,
-  //   servicesTableName: req.stageVariables.servicesTableId
-  // }
+  const params = {
+    buid,
+    authId,
+    userAttributes
+  }
 
-  // await updateAuthV3(params)
+  console.log('[authSucces] userAttributes', params)
+
+  await updateAuth(params)
 
   res.header('Content-Type', 'text/html')
   res.render('callback', { authId, error: '', error_description: '', integrationUuid: buid })

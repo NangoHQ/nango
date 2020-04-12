@@ -1,6 +1,7 @@
 // import { SetupDetailsNotFound } from '../errors'
 import { TIntegrationConfig, EAuthType } from '../auth/v3/types'
 import '../../integrations'
+import { dbClient } from '../db'
 
 interface ICommonUserAttributes {
   serviceName: string
@@ -34,59 +35,26 @@ export type TOAuth2UserAttributes = ICommonUserAttributes & {
 // const nameUserId = ({ clientId, buid, authId }: { clientId: string; buid: string; authId: string }) =>
 //   [clientId, buid, authId].join(':')
 
-// interface IAuthParams {
-//   servicesTableName: string
-//   clientId: string
-//   buid: string
-//   authId: string
-// }
+interface IAuthParams {
+  buid: string
+  authId: string
+}
 
 export type TAuthUserAttributes = TOAuth1UserAttributes | TOAuth2UserAttributes
 
-// export const updateAuthV3 = async ({
-//   servicesTableName,
-//   clientId,
-//   buid,
-//   authId,
-//   userAttributes
-// }: IAuthParams & { userAttributes: TAuthUserAttributes }) => {
-//   const { UpdateExpression, ExpressionAttributeValues } = buildExpression(userAttributes)
-//   const updateParams = {
-//     UpdateExpression,
-//     ExpressionAttributeValues,
-//     TableName: servicesTableName,
-//     Key: {
-//       nameUserId: nameUserId({ clientId, buid, authId })
-//     }
-//   }
+export const updateAuth = async ({
+  buid,
+  authId,
+  userAttributes
+}: IAuthParams & { userAttributes: TAuthUserAttributes }) => {
+  const client = dbClient()
+  await client('authentications').insert({ buid, auth_id: authId, user_attributes: userAttributes })
 
-//   await dynamoDb.update(updateParams).promise()
-// }
+  const res = await client('authentications').where({ buid, auth_id: authId })
+  console.log('[updateAuth] res', res)
+}
 
-// export const revokeAuthV3 = async ({ servicesTableName, clientId, buid, authId }: IAuthParams) => {
-//   const revokeParams = {
-//     TableName: servicesTableName,
-//     Key: {
-//       nameUserId: nameUserId({ clientId, buid, authId })
-//     }
-//   }
-
-//   await dynamoDb.delete(revokeParams).promise()
-// }
-
-// tslint:disable-next-line:max-line-length
-// export const getAuth = async <T = TAuthUserAttributes>({ servicesTableName, clientId, buid, authId }: IAuthParams) => {
-//   const getParams = {
-//     TableName: servicesTableName,
-//     Key: {
-//       nameUserId: nameUserId({ clientId, buid, authId })
-//     }
-//   }
-
-//   const item = (await dynamoDb.get(getParams).promise()).Item
-
-//   return item as T | undefined
-// }
+export const getAuth = async <T = TAuthUserAttributes>({ buid, authId }: IAuthParams) => {}
 
 export const getConfig = async ({ buid }: { buid: string }) => {
   let item = {} as any
