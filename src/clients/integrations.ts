@@ -109,8 +109,23 @@ export const saveSetupDetails = async ({
   await store('configurations').insert({ buid, setup, scopes, setup_id: setupId })
 }
 
-export const getSetupDetails = async ({ buid, setupId, store }: { buid: string; setupId: string; store: Knex }) => {
-  await store('configurations')
-    .where({ buid, setup_id: setupId })
+export const getSetupDetails = async ({
+  buid,
+  setupId,
+  store
+}: {
+  buid: string
+  setupId: string | undefined
+  store: Knex
+}) => {
+  if (setupId) {
+    return await store('configurations')
+      .where({ buid, setup_id: setupId })
+      .first()
+  }
+
+  return await store('configurations')
+    .where({ buid })
+    .orderBy('updated_at', 'desc')
     .first()
 }

@@ -1,17 +1,16 @@
 import { Request } from 'express'
 import Integration from '../../functions/integration'
+import Knex from 'knex'
 
 export interface IAuthContext {
-  localAuth: boolean
   clientId: string
   connectParams: any
   buid?: string
   setupId: string
-  environmentIdentifier: string
-  organizationIdentifier: string
   internalCorrelationId?: string
   userCorrelationId?: string
   isCallback?: boolean
+  store: Knex
 }
 
 interface IContextSessionData {
@@ -133,12 +132,10 @@ export interface IWithAuthCredentials {
 
 export type TAuthenticateRequest = Request & IAuthContext & IAuthConfig & IWithAuthCredentials
 
-export type TLocalAuthSuccessRequest = Request & IAuthContext & IAuthConfig & IWithAuthCredentials
-
 export type AuthSuccessRequest = Request &
   IAuthContext &
   IAuthId &
-  IWithAuthCredentials & { buid: string; integrationConfig?: TIntegrationConfig } & { store: any }
+  IWithAuthCredentials & { buid: string; integrationConfig?: TIntegrationConfig } & { store: Knex }
 
 export type TRevokeRequest = Request & { buid: string }
 
