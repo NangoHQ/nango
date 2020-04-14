@@ -54,6 +54,7 @@ export const fetchAuthDetails = asyncMiddleware(async (req: TBackendRequestV4, _
     authId,
     integration,
     setupId,
+    store: req.store,
     setupIdFromRequest: !!req.query.setupId
   }
 
