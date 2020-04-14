@@ -11,6 +11,8 @@ import { cors } from './proxy/cors'
 import resourceNotFound from './resourceNotFound'
 import { dbClient } from './db'
 
+const store = dbClient()
+
 // simulates variables sent by API gateway
 const baseApp = express()
 const app = App(baseApp)
@@ -37,7 +39,7 @@ app.use('/api/v5/functions', cors, initializeDB, functions())
 app.use(errorHandler)
 
 function initializeDB(req, _res, next) {
-  req.store = dbClient()
+  req.store = store
   next()
 }
 
