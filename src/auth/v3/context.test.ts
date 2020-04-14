@@ -20,10 +20,7 @@ describe('connectContext', () => {
       pathParams: ['buid'],
       configureRequest: (req, _res) => {
         req.buid = 'test-buid'
-        req.organizationIdentifier = 'test-org-12345'
-        req.environmentIdentifier = envId
         req.session.context = {} as any
-        req.localAuth = false
         req.setupId = setupId
       }
     })
