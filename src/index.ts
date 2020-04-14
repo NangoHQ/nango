@@ -24,12 +24,6 @@ app.engine('html', require('ejs').renderFile)
 app.set('view engine', 'html')
 app.set('views', './dist/views')
 
-// console.log('Auth VHost:', AUTH_SUBDOMAIN)
-// app.use(vhost(AUTH_VHOST, authHostRouter()))
-
-// console.log('Proxy VHost:', PROXY_VHOST)
-// app.use(vhost(PROXY_VHOST, proxyFunction()))
-
 app.use('/v2/auth', cors, initializeDB, authV3())
 app.use('/apis', cors, initializeDB, authRouter())
 

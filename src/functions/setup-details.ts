@@ -3,74 +3,38 @@ import { Response, NextFunction } from 'express'
 import { v4 as uuidv4 } from 'uuid'
 
 import { TBackendRequestV4 } from '../types'
-// import { getSetupDetails, saveSetupDetails } from '../clients/integrations'
+import { getSetupDetails, saveSetupDetails } from '../clients/integrations'
 import { asyncMiddleware } from '../errorHandler'
-import { SetupDetailsNotFound } from '../errors'
 
-const makeResponse = (payload: any) => ({
-  StatusCode: 200,
-  Payload: JSON.stringify(payload)
-})
-
-const reportError = (req: TBackendRequestV4, next: NextFunction, error: any) => {
-  req.bearerResponse = makeResponse({ error })
-  return next()
-}
-
-const getOptionalSetupDetails = async (req: TBackendRequestV4, setupId: string) => {
-  const {
-    // buid,
-    // clientId,
-    // stageVariables: { scopedUserDataTableId: scopedUserDataTableName }
-  } = req
-
-  try {
-    // return await getSetupDetails({ buid, clientId, scopedUserDataTableName, setupId })
-  } catch (e) {
-    if (e instanceof SetupDetailsNotFound) {
-      return undefined
-    }
-
-    throw e
-  }
-}
-
-export const setupSave = asyncMiddleware(async (req: TBackendRequestV4, _res: Response, next: NextFunction) => {
+export const setupSave = asyncMiddleware(async (req: TBackendRequestV4, res: Response, next: NextFunction) => {
   const { referenceId } = req.query
+  const { buid, store } = req
   const { setup } = req.body
 
+  console.log('[setupSave] body', req.body)
+  console.log('[setupSave] setup', setup)
+  console.log('[setupSave] buid', buid)
+
   if (!setup) {
-    return reportError(req, next, {
+    return res.send({
       code: 'MISSING_SETUP',
       message: 'Please provide a setup object containing information { setup: { ... } }'
     })
   }
 
-  const { authType } = await req.integration.config()
-
-  if (setup.type) {
-    setup.type = setup.type.toUpperCase()
-  } else {
-    setup.type = authType
-  }
+  const { scopes } = req.body
+  console.log('[setupSave] scopes', scopes)
 
   const { error: typeError } = Joi.validate(setup, formatValidator, { abortEarly: false })
   if (typeError) {
-    return reportError(req, next, typeError)
-  }
-
-  if (setup.type !== authType) {
-    return reportError(req, next, {
-      code: 'INCONSISTENT_AUTH_TYPE',
-      message:
-        'The auth type of the supplied setup details must match the auth type of the API. ' +
-        ` The supplied setup type was '${setup.type}' but the API is '${authType}'.`
-    })
+    console.log('[setupSave] typeError', typeError)
+    return res.send(typeError)
   }
 
   const { error } = Joi.validate(setup, validator[setup.type], { abortEarly: false })
   if (error) {
-    return reportError(req, next, error)
+    console.log('[setupSave] error', error)
+    return res.send(error)
   }
 
   // We can't store empty values
@@ -81,34 +45,32 @@ export const setupSave = asyncMiddleware(async (req: TBackendRequestV4, _res: Re
   }
 
   const ref = referenceId || uuidv4()
-  const exist = await getOptionalSetupDetails(req, ref)
-  if (exist) {
-    return reportError(req, next, {
-      code: 'EXISTING_SETUP',
-      message: 'A setup already exists with this reference'
-    })
-  }
 
-  // await saveSetupDetails({ buid, clientId, scopedUserDataTableName, setupId: ref, data: setup })
-  req.bearerResponse = makeResponse({ data: { ...setup, setupId: ref }, referenceId: ref })
+  console.log('[setupSave] params', { buid, scopes, ref })
+  await saveSetupDetails({ store, buid, setup, scopes, setupId: ref })
 
-  next()
+  res.send({
+    referenceId: ref,
+    ack: 'true'
+  })
 })
 
-export const setupRetrieve = asyncMiddleware(async (req: TBackendRequestV4, _res: Response, next: NextFunction) => {
+export const setupRetrieve = asyncMiddleware(async (req: TBackendRequestV4, res: Response, next: NextFunction) => {
   const { referenceId } = req.query
+  const { store, buid } = req
 
   if (!referenceId) {
-    return reportError(req, next, {
+    return res.send({
       code: 'MISSING_PARAMETER',
       message: 'Please provide a referenceId'
     })
   }
 
-  const data = await getOptionalSetupDetails(req, referenceId)
-  req.bearerResponse = makeResponse({ referenceId, data: Boolean(data) })
-
-  next()
+  const data = await getSetupDetails({ store, buid, setupId: referenceId })
+  res.send({
+    referenceId,
+    data: Boolean(data)
+  })
 })
 
 enum AuthType {
