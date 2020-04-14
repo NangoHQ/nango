@@ -92,7 +92,8 @@ const oauth2Validator = Joi.object().keys({
   clientSecret: Joi.string()
     .required()
     .allow(''),
-  type: joiExtended.authType()
+  type: joiExtended.authType(),
+  scopes: [Joi.array(), null]
 })
 
 const oauth1Validator = Joi.object().keys({
@@ -102,7 +103,8 @@ const oauth1Validator = Joi.object().keys({
   consumerSecret: Joi.string()
     .required()
     .allow(''),
-  type: joiExtended.authType()
+  type: joiExtended.authType(),
+  scopes: [Joi.array(), null]
 })
 
 const formatValidator = Joi.object()
