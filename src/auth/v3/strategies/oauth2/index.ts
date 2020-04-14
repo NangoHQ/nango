@@ -9,8 +9,7 @@ import {
 } from '../../errors'
 import {
   getAuth,
-  IAuthResult,
-  getSetupDetails
+  IAuthResult
   // getSetupDetails,
   // updateAuthV3
 } from '../../../../clients/integrations'
@@ -167,7 +166,7 @@ export const fetchAuthDetails = async (params: IFetchAuthDetailsParams, integrat
     integration,
     authId,
     store,
-    setupId
+    setup
     // setupId: setupIdParam,
     // setupIdFromRequest
   } = params
@@ -213,11 +212,7 @@ export const fetchAuthDetails = async (params: IFetchAuthDetailsParams, integrat
 
   // const { clientID, clientSecret } = credentials
   // if (!clientID || !clientSecret) {
-  const { clientID, clientSecret } = await getSetupDetails({
-    setupId,
-    store,
-    buid: integration.buid
-  })
+  const { clientID, clientSecret } = setup
   // }
 
   console.log('[fetchAuthDetails] credentials', credentials)

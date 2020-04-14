@@ -1,16 +1,8 @@
 import { TConnectContextRequest, TCallbackContextRequest } from './types'
 import { NextFunction, Response } from 'express'
-import { MissingParameter, UserError } from '../../errors'
+import { UserError } from '../../errors'
 import { NoAuthInProgress } from './errors'
 import { asyncMiddleware } from '../../errorHandler'
-
-const getClientId = (req: TConnectContextRequest) => {
-  const { clientId } = req.query
-  if (!clientId) {
-    throw new MissingParameter('clientId')
-  }
-  return clientId
-}
 
 const getConnectParams = (params?: any) => {
   if (params === undefined) {
@@ -31,13 +23,11 @@ const getConnectParams = (params?: any) => {
 }
 
 export const connectContext = (req: TConnectContextRequest, res: Response, next: NextFunction) => {
-  const clientId = getClientId(req)
   const { buid, setupId } = req
 
   const connectParams = getConnectParams(req.query.params)
 
   req.session.context = {
-    clientId,
     connectParams,
     setupId,
     buid
@@ -49,7 +39,7 @@ export const connectContext = (req: TConnectContextRequest, res: Response, next:
 }
 
 export const callbackContext = asyncMiddleware(
-  async (req: TCallbackContextRequest, res: Response, next: NextFunction) => {
+  async (req: TCallbackContextRequest, _res: Response, next: NextFunction) => {
     if (!req.session.context) {
       throw new NoAuthInProgress()
     }

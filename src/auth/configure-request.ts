@@ -5,9 +5,8 @@ import { asyncMiddleware } from '../errorHandler'
 import Integration from '../functions/integration'
 
 export const configureAuthDetailsRequest = asyncMiddleware(
-  async (req: AuthDetailsRequestInput, res: Response, next: NextFunction) => {
-    const { buid, authId, setupId } = req.params
-    // const bearerKey = req.get('authorization')
+  async (req: AuthDetailsRequestInput, _res: Response, next: NextFunction) => {
+    const { buid, authId } = req.params
 
     req.authId = authId
     console.log('[configureAuthDetailsRequest] buid', buid)
@@ -16,7 +15,6 @@ export const configureAuthDetailsRequest = asyncMiddleware(
     req.integration = new Integration(buid)
 
     console.log('[configureAuthDetailsRequest] integration', JSON.stringify(req.integration))
-    req.setupId = setupId
 
     next()
   }
@@ -33,6 +31,5 @@ interface AuthDetailsRequestInput extends AuthDetailsRequest {
   params: {
     buid: string
     authId: string
-    setupId: string
   }
 }
