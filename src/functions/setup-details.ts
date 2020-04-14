@@ -22,7 +22,7 @@ export const setupSave = asyncMiddleware(async (req: TBackendRequestV4, res: Res
     })
   }
 
-  const { scopes } = req.body
+  const { scopes } = setup
   console.log('[setupSave] scopes', scopes)
 
   const { error: typeError } = Joi.validate(setup, formatValidator, { abortEarly: false })
