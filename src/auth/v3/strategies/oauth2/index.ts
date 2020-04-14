@@ -9,7 +9,8 @@ import {
 } from '../../errors'
 import {
   getAuth,
-  IAuthResult
+  IAuthResult,
+  getSetupDetails
   // getSetupDetails,
   // updateAuthV3
 } from '../../../../clients/integrations'
@@ -165,7 +166,8 @@ export const fetchAuthDetails = async (params: IFetchAuthDetailsParams, integrat
     buid,
     integration,
     authId,
-    store
+    store,
+    setupId
     // setupId: setupIdParam,
     // setupIdFromRequest
   } = params
@@ -211,12 +213,11 @@ export const fetchAuthDetails = async (params: IFetchAuthDetailsParams, integrat
 
   // const { clientID, clientSecret } = credentials
   // if (!clientID || !clientSecret) {
-  // ;({ clientID, clientSecret } = await getSetupDetails({
-  //   scopedUserDataTableName,
-  //   setupId,
-  //   buid: integration.buid,
-  //   clientId: environmentIdentifier
-  // }))
+  const { clientID, clientSecret } = await getSetupDetails({
+    setupId,
+    store,
+    buid: integration.buid
+  })
   // }
 
   console.log('[fetchAuthDetails] credentials', credentials)
@@ -230,8 +231,8 @@ export const fetchAuthDetails = async (params: IFetchAuthDetailsParams, integrat
     refreshToken,
     tokenResponse,
     updatedAt,
-    clientID: 'clientID',
-    clientSecret: 'clientSecret',
+    clientID,
+    clientSecret,
     idTokenJwt: idTokenJwt || getIdTokenJwt(idToken)
   }
 }

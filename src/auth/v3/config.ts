@@ -2,7 +2,8 @@ import { asyncMiddleware } from '../../errorHandler'
 import { IAuthConfig, EAuthType, TConnectConfigRequest, TCallbackConfigRequest } from './types'
 import { NextFunction, Response } from 'express'
 import {
-  getConfig
+  getConfig,
+  getSetupDetails
   // getSetupDetails
 } from '../../clients/integrations'
 import { InvalidAuthType } from './errors'
@@ -12,8 +13,9 @@ const getAuthConfig = async (req: TConnectConfigRequest) => {
   const {
     // clientId,
     connectParams,
-    buid
-    // setupId
+    buid,
+    setupId,
+    store
   } = req
 
   return {
@@ -23,13 +25,12 @@ const getAuthConfig = async (req: TConnectConfigRequest) => {
         buid: buid!
       })) as any
     }),
-    setupDetails: { clientID: '***REMOVED***', clientSecret: '***REMOVED***' }
-    // setupDetails: await getSetupDetails({
-    //   clientId,
-    //   setupId,
-    //   buid: buid!,
-    //   scopedUserDataTableName: stageVariables.scopedUserDataTableId
-    // })
+    // setupDetails: { clientID: '***REMOVED***', clientSecret: '***REMOVED***' }
+    setupDetails: await getSetupDetails({
+      setupId,
+      store,
+      buid: buid!
+    })
   } as IAuthConfig
 }
 
