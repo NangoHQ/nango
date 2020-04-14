@@ -4,6 +4,10 @@ import { connection } from '../config/constants'
 export const dbClient = function() {
   return knex({
     connection,
-    client: 'pg'
+    client: 'pg',
+    pool: {
+      min: 2,
+      max: 5
+    }
   })
 }
