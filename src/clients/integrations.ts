@@ -1,7 +1,6 @@
 // import { SetupDetailsNotFound } from '../errors'
 import { TIntegrationConfig, EAuthType } from '../auth/v3/types'
 import '../../integrations'
-import { dbClient } from '../db'
 
 interface ICommonUserAttributes {
   serviceName: string
@@ -60,18 +59,16 @@ export interface IAuthResult {
 export const updateAuth = async ({
   buid,
   authId,
-  userAttributes
-}: IAuthParams & { userAttributes: TAuthUserAttributes }) => {
-  const client = dbClient()
-  await client('authentications').insert({ buid, auth_id: authId, user_attributes: userAttributes })
+  userAttributes,
+  store
+}: IAuthParams & { userAttributes: TAuthUserAttributes } & { store: any }) => {
+  await store('authentications').insert({ buid, auth_id: authId, user_attributes: userAttributes })
 }
 
-export const getAuth = async <IAuthResult>({ buid, authId }: IAuthParams) => {
-  const client = dbClient()
-
+export const getAuth = async <IAuthResult>({ buid, authId, store }: IAuthParams & { store: any }) => {
   console.log('[getAuth] buid/authId', buid, authId)
 
-  return (await client('authentications')
+  return (await store('authentications')
     .where({ buid, auth_id: authId })
     .first()) as IAuthResult
 }
