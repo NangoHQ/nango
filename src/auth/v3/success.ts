@@ -4,14 +4,7 @@ import { asyncMiddleware } from '../../errorHandler'
 import { updateAuth, TAuthUserAttributes } from '../../clients/integrations'
 
 export const authSuccess = asyncMiddleware(async (req: AuthSuccessRequest, res: Response) => {
-  const {
-    // clientId,
-    connectParams,
-    setupId,
-    authId,
-    credentials,
-    store
-  } = req
+  const { connectParams, setupId, authId, credentials, store, setup } = req
   const buid = req.buid!
 
   const userAttributes: TAuthUserAttributes = {
@@ -25,6 +18,11 @@ export const authSuccess = asyncMiddleware(async (req: AuthSuccessRequest, res: 
 
   if (req.integrationConfig && req.integrationConfig.config) {
     userAttributes.scopes = req.integrationConfig.config.scope || []
+  }
+
+  if (setup && setup.scopes) {
+    console.log('[authSuccess] scopes', setup.scopes)
+    userAttributes.scopes = setup.scopes
   }
 
   if (req.tokenResponse) {

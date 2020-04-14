@@ -7,10 +7,16 @@ export interface IAuthContext {
   connectParams: any
   buid?: string
   setupId: string
-  internalCorrelationId?: string
-  userCorrelationId?: string
   isCallback?: boolean
   store: Knex
+  setup: SetupRecord
+}
+
+interface SetupRecord {
+  setup_id: string
+  scopes: string[] | undefined
+  buid: string
+  setup: any
 }
 
 interface IContextSessionData {
@@ -149,6 +155,7 @@ export interface IFetchAuthDetailsParams {
   environmentIdentifier: string
   authId?: string
   setupId?: string
+  setup: any
   setupIdFromRequest?: boolean
   store: any
 }

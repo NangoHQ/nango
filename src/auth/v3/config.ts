@@ -2,35 +2,24 @@ import { asyncMiddleware } from '../../errorHandler'
 import { IAuthConfig, EAuthType, TConnectConfigRequest, TCallbackConfigRequest } from './types'
 import { NextFunction, Response } from 'express'
 import {
-  getConfig,
-  getSetupDetails
+  getConfig
   // getSetupDetails
 } from '../../clients/integrations'
 import { InvalidAuthType } from './errors'
 import { expandAuthConfig } from '../../api-config/auth-config'
 
 const getAuthConfig = async (req: TConnectConfigRequest) => {
-  const {
-    // clientId,
-    connectParams,
-    buid,
-    setupId,
-    store
-  } = req
+  const { connectParams, buid, setup } = req
 
   return {
+    setupDetails: setup,
     integrationConfig: expandAuthConfig({
       connectParams,
       authConfig: (await getConfig({
         buid: buid!
       })) as any
-    }),
-    // setupDetails: { clientID: '150714643009.1056243521876', clientSecret: '851aaa8e41fa28c9c5182085445b7d01' }
-    setupDetails: await getSetupDetails({
-      setupId,
-      store,
-      buid: buid!
     })
+    // setupDetails: { clientID: '150714643009.1056243521876', clientSecret: '851aaa8e41fa28c9c5182085445b7d01' }
   } as IAuthConfig
 }
 
@@ -56,11 +45,7 @@ export const connectConfig = asyncMiddleware(async (req: TConnectConfigRequest, 
 })
 
 export const callbackConfig = (req: TCallbackConfigRequest, _res: Response, next: NextFunction) => {
-  // console.log('authConfig', req.session.authConfig)
-
   copyConfig(req.session.authConfig, req)
 
-  // console.log('integrationConfig', req.integrationConfig)
-  // console.log('setupDetails', req.setupDetails)
   next()
 }

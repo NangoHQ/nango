@@ -7,6 +7,7 @@ import { fetchAuthDetails } from '../auth/v3/strategy'
 import { middleware as proxyHandler } from '../functions/lambda-request'
 import { PROXY_PREFIX, setProxyFunction } from '../middlewares/v4/intent-info'
 import Integration from './integration'
+import { getSetupDetails } from '../clients/integrations'
 
 const BUID = 'bearerUuid'
 
@@ -42,8 +43,8 @@ function setProxyCallType(req: any, _res, next: NextFunction) {
 
 export default () => {
   const router = Router()
-  router.use(`/backend/:${BUID}`, buid, authId, isBackendRequest, functionsRouter())
-  router.use(`/:${BUID}`, buid, authId, functionsRouter())
+  router.use(`/backend/:${BUID}`, buid, setupId, authId, isBackendRequest, functionsRouter())
+  router.use(`/:${BUID}`, buid, setupId, authId, functionsRouter())
   router.use(errorHandler)
 
   return router
@@ -51,7 +52,7 @@ export default () => {
 
 export function proxyFunction() {
   const router = Router()
-  router.use(`/:${BUID}`, proxyCorsMiddleware, buid, authId, setProxyCallType, proxyRouter())
+  router.use(`/:${BUID}`, proxyCorsMiddleware, buid, setupId, authId, setProxyCallType, proxyRouter())
   router.use(errorHandler)
   return router
 }
@@ -64,6 +65,16 @@ function authId(req, _res, next) {
 function buid(req, _res, next) {
   req.buid = req.params[BUID]
   req.integration = new Integration(req.buid)
+  next()
+}
+
+export async function setupId(req, _res, next) {
+  console.log('[setupId] query.setupId', req.query.setupId)
+  const setup = await getSetupDetails({ buid: req.buid, store: req.store, setupId: req.query.setupId })
+  console.log('[setupId] setup', JSON.stringify(setup, null, 2))
+  req.setupId = setup.setupId
+  req.setup = setup
+
   next()
 }
 

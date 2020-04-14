@@ -8,7 +8,7 @@ import { responseToCredentials } from './common'
 import { AuthenticationFailed } from '../../errors'
 
 export const authenticate = asyncMiddleware(async (req: TAuthenticateRequest, res: Response, next: NextFunction) => {
-  const { clientID, clientSecret } = req.setupDetails
+  const { clientID, clientSecret, scopes = [] } = req.setupDetails
   const { code, error } = req.query
   const {
     authorizationURL,
@@ -25,16 +25,6 @@ export const authenticate = asyncMiddleware(async (req: TAuthenticateRequest, re
   }
 
   if (code) {
-    // console.table([
-    //   authorizationMethod,
-    //   bodyFormat,
-    //   clientID,
-    //   clientSecret,
-    //   code,
-    //   tokenParams,
-    //   tokenURL,
-    //   AUTH_CALLBACK_URL
-    // ])
     const tokenResult = await getTokenWithCode({
       authorizationMethod,
       bodyFormat,
@@ -55,14 +45,15 @@ export const authenticate = asyncMiddleware(async (req: TAuthenticateRequest, re
     return next()
   }
 
-  const { scope = [], state = 'none' } = config || {}
+  // const { scope = [], state = 'none' } = config || {}
+  const { state = 'none' } = config || {}
 
   const redirectURL = getCodeRedirectURL({
     authorizationParams,
     authorizationURL,
     clientID,
-    scope,
     state,
+    scope: scopes,
     callbackURL: AUTH_CALLBACK_URL
   })
 

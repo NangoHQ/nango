@@ -12,6 +12,7 @@ import { compose } from 'compose-middleware'
 import { configureAuthDetailsRequest } from '../configure-request'
 import { authDetailsResponse } from '../auth-details'
 import { connectBuid } from '../../middlewares/set-identifiers'
+import { setupId } from '../../functions/router'
 
 export default () => {
   const authenticateAndRespond = compose(authenticate, destroySession, authSuccess)
@@ -26,6 +27,7 @@ export default () => {
     '/:buid',
     connectBuid,
     connectContext,
+    setupId,
     connectSetupId,
     connectConfig,
     connectAuthId,
@@ -43,7 +45,7 @@ export default () => {
 export const authRouter = () => {
   const router = Router()
 
-  router.get('/:buid/auth/:authId', configureAuthDetailsRequest, fetchAuthDetails, authDetailsResponse)
+  router.get('/:buid/auth/:authId', configureAuthDetailsRequest, setupId, fetchAuthDetails, authDetailsResponse)
 
   return router
 }
