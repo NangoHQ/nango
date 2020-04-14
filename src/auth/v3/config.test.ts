@@ -45,7 +45,6 @@ describe('connectConfig', () => {
       req.clientId = 'test-client-id'
       req.connectParams = { param: 'test-con-param' }
       req.setupId = 'test-setup-id'
-      req.localAuth = false
     })
   }
 
