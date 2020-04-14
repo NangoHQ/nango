@@ -1,6 +1,7 @@
 // import { SetupDetailsNotFound } from '../errors'
 import { TIntegrationConfig, EAuthType } from '../auth/v3/types'
 import '../../integrations'
+import Knex from 'knex'
 
 interface ICommonUserAttributes {
   serviceName: string
@@ -90,4 +91,26 @@ export const getConfig = async ({ buid }: { buid: string }) => {
   }
 
   return { ...configItem, requestConfig: item.request }
+}
+
+export const saveSetupDetails = async ({
+  buid,
+  setupId,
+  setup,
+  scopes,
+  store
+}: {
+  buid: string
+  setupId: string
+  store: Knex
+  setup: any
+  scopes: string[]
+}) => {
+  await store('configurations').insert({ buid, setup, scopes, setup_id: setupId })
+}
+
+export const getSetupDetails = async ({ buid, setupId, store }: { buid: string; setupId: string; store: Knex }) => {
+  await store('configurations')
+    .where({ buid, setup_id: setupId })
+    .first()
 }

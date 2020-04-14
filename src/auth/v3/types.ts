@@ -91,15 +91,7 @@ interface IAuthConfigSessionData {
   }
 }
 
-export type TConnectConfigRequest = Request &
-  IAuthContext &
-  IAuthConfig &
-  IAuthConfigSessionData & {
-    query: {
-      devConfig: string
-      localHostRedirectSupported?: string
-    }
-  }
+export type TConnectConfigRequest = Request & IAuthContext & IAuthConfig & IAuthConfigSessionData
 
 export type TCallbackConfigRequest = Request & IAuthConfig & IAuthConfigSessionData
 
