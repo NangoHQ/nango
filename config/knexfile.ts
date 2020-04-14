@@ -17,8 +17,8 @@ module.exports = {
     connection,
     client: 'pg',
     pool: {
-      min: 2,
-      max: 5
+      min: 0,
+      max: 1
     },
     migrations: {
       tableName: 'knex_migrations',
