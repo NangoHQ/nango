@@ -146,7 +146,7 @@ export type TLocalAuthSuccessRequest = Request & IAuthContext & IAuthConfig & IW
 export type AuthSuccessRequest = Request &
   IAuthContext &
   IAuthId &
-  IWithAuthCredentials & { buid: string; integrationConfig?: TIntegrationConfig }
+  IWithAuthCredentials & { buid: string; integrationConfig?: TIntegrationConfig } & { store: any }
 
 export type TRevokeRequest = Request & { buid: string }
 
@@ -161,6 +161,7 @@ export interface IFetchAuthDetailsParams {
   authId?: string
   setupId?: string
   setupIdFromRequest?: boolean
+  store: any
 }
 
 export interface BasicAuthDetails {

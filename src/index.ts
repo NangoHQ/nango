@@ -9,6 +9,7 @@ export const BUID = 'bearerUid'
 
 import { cors } from './proxy/cors'
 import resourceNotFound from './resourceNotFound'
+import { dbClient } from './db'
 
 // simulates variables sent by API gateway
 const baseApp = express()
@@ -27,13 +28,18 @@ app.set('views', './dist/views')
 // console.log('Proxy VHost:', PROXY_VHOST)
 // app.use(vhost(PROXY_VHOST, proxyFunction()))
 
-app.use('/v2/auth', cors, authV3())
-app.use('/apis', cors, authRouter())
+app.use('/v2/auth', cors, initializeDB, authV3())
+app.use('/apis', cors, initializeDB, authRouter())
 
-app.use('/api/v4/functions', cors, functions())
-app.use('/api/v5/functions', cors, functions())
+app.use('/api/v4/functions', cors, initializeDB, functions())
+app.use('/api/v5/functions', cors, initializeDB, functions())
 
 app.use(errorHandler)
+
+function initializeDB(req, _res, next) {
+  req.store = dbClient()
+  next()
+}
 
 // catch 404s
 app.use(resourceNotFound)

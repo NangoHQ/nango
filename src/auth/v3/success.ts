@@ -9,7 +9,8 @@ export const authSuccess = asyncMiddleware(async (req: AuthSuccessRequest, res: 
     connectParams,
     setupId,
     authId,
-    credentials
+    credentials,
+    store
   } = req
   const buid = req.buid!
 
@@ -42,7 +43,7 @@ export const authSuccess = asyncMiddleware(async (req: AuthSuccessRequest, res: 
 
   console.log('[authSuccess] userAttributes', params)
 
-  const row = await updateAuth(params)
+  const row = await updateAuth({ ...params, store })
 
   console.log('[authSuccess] userAttributes', row)
 

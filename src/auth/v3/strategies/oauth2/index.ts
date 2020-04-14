@@ -164,12 +164,14 @@ export const fetchAuthDetails = async (params: IFetchAuthDetailsParams, integrat
   const {
     buid,
     integration,
-    authId
+    authId,
+    store
     // setupId: setupIdParam,
     // setupIdFromRequest
   } = params
 
   const credentials = await getAuth<IAuthResult>({
+    store,
     buid: integration.buid,
     authId: authId!
   })
