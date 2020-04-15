@@ -53,7 +53,7 @@ export const authenticate = asyncMiddleware(async (req: TAuthenticateRequest, re
     authorizationURL,
     clientID,
     state,
-    scope: scopes,
+    scope: scopes || config!.scope || [],
     callbackURL: AUTH_CALLBACK_URL
   })
 
