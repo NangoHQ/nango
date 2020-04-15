@@ -36,6 +36,7 @@ export const authSuccess = asyncMiddleware(async (req: AuthSuccessRequest, res: 
   const params = {
     buid,
     authId,
+    setupId,
     userAttributes
   }
 

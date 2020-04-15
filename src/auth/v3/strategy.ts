@@ -1,12 +1,7 @@
 import { NextFunction, Response } from 'express'
 
 import { EAuthType, TAuthenticateRequest } from './types'
-import {
-  OAuthOnlyEndpoint,
-  InvalidAuthType
-  // MissingAuthId,
-  //  CredentialsNotConfigured
-} from './errors'
+import { InvalidAuthType } from './errors'
 import * as oauth1 from './strategies/oauth1'
 import * as oauth2 from './strategies/oauth2'
 import { TBackendRequestV4 } from '../../types'
@@ -21,10 +16,6 @@ export const isOAuthType = (authType: EAuthType) => [EAuthType.OAuth1, EAuthType
 
 export const authenticate = (req: TAuthenticateRequest, res: Response, next: NextFunction) => {
   const { authType } = req.integrationConfig
-
-  if (!isOAuthType(authType)) {
-    throw new OAuthOnlyEndpoint(authType)
-  }
 
   strategies[authType].authenticate(req, res, next)
 }
@@ -41,14 +32,6 @@ export const fetchAuthDetails = asyncMiddleware(async (req: TBackendRequestV4, _
 
   const strategy = strategies[authType]
 
-  // if (isOAuthType(authType)) {
-  //   if (!authId) {
-  //     throw new MissingAuthId(buid)
-  //   }
-  // } else if (!setupId) {
-  //   throw new CredentialsNotConfigured(buid)
-  // }
-
   const params = {
     buid,
     authId,
@@ -59,11 +42,9 @@ export const fetchAuthDetails = asyncMiddleware(async (req: TBackendRequestV4, _
     setupIdFromRequest: !!req.query.setupId
   }
 
-  // console.log(params)
-  // console.log(integrationConfig)
   req.auth = await strategy.fetchAuthDetails(params, integrationConfig)
 
-  console.log('Auth', req.auth)
+  console.log('[fetchAuthDetails] Auth', req.auth)
 
   next()
 })
