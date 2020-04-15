@@ -8,7 +8,10 @@ import { responseToCredentials } from './common'
 import { AuthenticationFailed } from '../../errors'
 
 export const authenticate = asyncMiddleware(async (req: TAuthenticateRequest, res: Response, next: NextFunction) => {
-  const { clientID, clientSecret, scopes = [] } = req.setupDetails
+  const {
+    setup: { clientID, clientSecret },
+    scopes = []
+  } = req.setupDetails
   const { code, error } = req.query
   const {
     authorizationURL,
