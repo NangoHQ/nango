@@ -21,7 +21,7 @@ export const authenticate = (req: TAuthenticateRequest, res: Response, next: Nex
 }
 
 export const fetchAuthDetails = asyncMiddleware(async (req: TBackendRequestV4, _res: Response, next: NextFunction) => {
-  const { buid, authId, integration, setupId, setup } = req
+  const { buid, authId, integration, setup } = req
 
   const integrationConfig = await integration.config()
   const { authType } = integrationConfig
@@ -36,10 +36,8 @@ export const fetchAuthDetails = asyncMiddleware(async (req: TBackendRequestV4, _
     buid,
     authId,
     integration,
-    setupId,
     setup,
-    store: req.store,
-    setupIdFromRequest: !!req.query.setupId
+    store: req.store
   }
 
   req.auth = await strategy.fetchAuthDetails(params, integrationConfig)
