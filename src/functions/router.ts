@@ -14,7 +14,7 @@ const BUID = 'bearerUuid'
 function functionsRouter() {
   const functionsRouter = Router({ mergeParams: true })
 
-  functionsRouter.all(`${PROXY_PREFIX}/*`, fetchAuthDetails, setProxyFunction, proxyHandler())
+  functionsRouter.all(`${PROXY_PREFIX}/*`, setupId, fetchAuthDetails, setProxyFunction, proxyHandler())
   functionsRouter.post('/setup-save', setupSave)
   functionsRouter.post('/setup-retrieve', setupRetrieve)
   functionsRouter.use((_req, res) => res.status(404).send())
@@ -43,8 +43,8 @@ function setProxyCallType(req: any, _res, next: NextFunction) {
 
 export default () => {
   const router = Router()
-  router.use(`/backend/:${BUID}`, buid, setupId, authId, isBackendRequest, functionsRouter())
-  router.use(`/:${BUID}`, buid, setupId, authId, functionsRouter())
+  router.use(`/backend/:${BUID}`, buid, authId, isBackendRequest, functionsRouter())
+  router.use(`/:${BUID}`, buid, authId, functionsRouter())
   router.use(errorHandler)
 
   return router
