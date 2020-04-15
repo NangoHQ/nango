@@ -212,7 +212,9 @@ export const fetchAuthDetails = async (params: IFetchAuthDetailsParams, integrat
 
   // const { clientID, clientSecret } = credentials
   // if (!clientID || !clientSecret) {
-  const { clientID, clientSecret } = setup
+  const {
+    setup: { clientID, clientSecret }
+  } = setup
   // }
 
   console.log('[fetchAuthDetails] credentials', credentials)
