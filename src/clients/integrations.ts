@@ -60,10 +60,11 @@ export interface IAuthResult {
 export const updateAuth = async ({
   buid,
   authId,
+  setupId,
   userAttributes,
   store
-}: IAuthParams & { userAttributes: TAuthUserAttributes } & { store: any }) => {
-  await store('authentications').insert({ buid, auth_id: authId, user_attributes: userAttributes })
+}: IAuthParams & { userAttributes: TAuthUserAttributes } & { store: any; setupId: string }) => {
+  await store('authentications').insert({ buid, auth_id: authId, setup_id: setupId, user_attributes: userAttributes })
 }
 
 export const getAuth = async <IAuthResult>({ buid, authId, store }: IAuthParams & { store: any }) => {
