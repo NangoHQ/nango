@@ -9,7 +9,7 @@
     "config": {
       "accessType": "offline",
       "callbackURL": "https://int.bearer.sh/v2/auth/callback",
-      "scope": ["pins:read", "channels:read", "users.profile:read"]
+      "scope": ["reminders:write"]
     }
   },
   "request": {
