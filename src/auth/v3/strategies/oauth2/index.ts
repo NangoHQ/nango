@@ -49,9 +49,6 @@ export const authenticate = (req: TAuthenticateRequest, res: Response, next: Nex
     throw new InvalidGrantType(grantType)
   }
 
-  // console.log(grantType)
-  // console.log(req.integrationConfig)
-
   strategies[grantType](req, res, next)
 }
 
@@ -161,15 +158,7 @@ export const authenticate = (req: TAuthenticateRequest, res: Response, next: Nex
 // }
 
 export const fetchAuthDetails = async (params: IFetchAuthDetailsParams, integrationConfig: TIntegrationConfig) => {
-  const {
-    buid,
-    integration,
-    authId,
-    store,
-    setup
-    // setupId: setupIdParam,
-    // setupIdFromRequest
-  } = params
+  const { buid, integration, authId, store, setup } = params
 
   const credentials = await getAuth<IAuthResult>({
     store,
