@@ -1,8 +1,5 @@
 {
-  "extends": "@bearer/tslint-config",
   "linterOptions": {
-    "exclude": [
-      "README.md"
-    ]
+    "exclude": ["README.md"]
   }
 }

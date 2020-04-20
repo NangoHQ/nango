@@ -1,0 +1,28 @@
+<% const base = `/dashboard/${req.params.api}`; %>
+
+<!DOCTYPE html>
+<html>
+  <%- include('layout-head', { title: 'API'}) %>
+
+  <body>
+    <!-- Header -->
+    <%- include('layout-header-api') -%>
+
+    <main class="container">
+      <section style="text-align: center;">
+        <img src="/assets/img/logos/bearer.svg" alt="Bearer logo" style="width: 256px; margin: 2rem;" />
+        <h2 style="margin: 0;">Monitor API usage with Bearer</h2>
+        <p style="max-width: 500px; margin: 1rem auto;">
+          Bearer aggregates and analyzes the APIs you use directly from your app without redirecting or proxying your
+          traffic.
+        </p>
+
+        <a class="button button-primary" href="https://www.bearer.sh/">Enable now</a> or
+        <a href="https://www.bearer.sh/">learn more</a>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <%- include('layout-footer') -%>
+  </body>
+</html>
