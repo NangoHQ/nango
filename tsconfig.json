@@ -9,6 +9,7 @@
     "lib": ["es5", "es6", "dom", "es2015", "es2015.symbol", "esnext.asynciterable", "es2017", "dom"],
     "noUnusedLocals": true,
     "strictNullChecks": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "outDir": "dist/"
   }
 }
