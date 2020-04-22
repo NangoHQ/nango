@@ -1,4 +1,5 @@
-<% const base = `/dashboard/${req.params.api}`; %>
+<% const base = `/dashboard/${req.params.api}`; %> <% const dateOptions = { weekday: 'short', year: 'numeric', month:
+'long', day: 'numeric', hour12: false, hour: 'numeric', minute: 'numeric', second: 'numeric'}; %>
 
 <!DOCTYPE html>
 <html>
@@ -30,68 +31,27 @@
               </tr>
             </thead>
             <tbody>
+              <% data.authentications.forEach(function(auth){ %>
               <tr>
-                <td class="ellipsis"><span>21438ef4b9ad4fc21438ef4b9ad4fc</span></td>
-                <td class="ellipsis"><span>21438ef4b9ad4fc21438ef4b9ad4fc</span></td>
+                <td class="ellipsis"><span><%= auth.auth_id %></span></td>
+                <td class="ellipsis"><span><%= auth.setup_id %></span></td>
                 <td></td>
-                <td class="col-date">Dec 23, 2019</td>
-                <td class="col-date">Dec 23, 2019</td>
+                <td class="col-date"><%= new Date(auth.created_at).toLocaleString('en-US', dateOptions) %></td>
+                <td class="col-date"><%= new Date(auth.updated_at).toLocaleString('en-US', dateOptions) %></td>
                 <td class="col-actions">
-                  <a data-icon="view" href="./users/21438ef4b9ad4fc21438ef4b9ad4fc" alt="Edit">Edit</a>
+                  <a data-icon="view" href="./<%= auth.auth_id %>" alt="View">View</a>
                   <a data-icon="delete" href="#delete" alt="Delete">Delete</a>
                 </td>
               </tr>
-              <tr>
-                <td class="ellipsis"><span>21438ef4b9ad4fc21438ef4b9ad4fc</span></td>
-                <td class="ellipsis"><span>21438ef4b9ad4fc21438ef4b9ad4fc</span></td>
-                <td></td>
-                <td class="col-date">Dec 23, 2019</td>
-                <td class="col-date">Dec 23, 2019</td>
-                <td class="col-actions">
-                  <a data-icon="view" href="./users/21438ef4b9ad4fc21438ef4b9ad4fc" alt="Edit">Edit</a>
-                  <a data-icon="delete" href="#delete" alt="Delete">Delete</a>
-                </td>
-              </tr>
-              <tr>
-                <td class="ellipsis"><span>21438ef4b9ad4fc21438ef4b9ad4fc</span></td>
-                <td class="ellipsis"><span>21438ef4b9ad4fc21438ef4b9ad4fc</span></td>
-                <td></td>
-                <td class="col-date">Dec 23, 2019</td>
-                <td class="col-date">Dec 23, 2019</td>
-                <td class="col-actions">
-                  <a data-icon="view" href="./users/21438ef4b9ad4fc21438ef4b9ad4fc" alt="Edit">Edit</a>
-                  <a data-icon="delete" href="#delete" alt="Delete">Delete</a>
-                </td>
-              </tr>
-              <tr>
-                <td class="ellipsis"><span>21438ef4b9ad4fc21438ef4b9ad4fc</span></td>
-                <td class="ellipsis"><span>21438ef4b9ad4fc21438ef4b9ad4fc</span></td>
-                <td></td>
-                <td class="col-date">Dec 23, 2019</td>
-                <td class="col-date">Dec 23, 2019</td>
-                <td class="col-actions">
-                  <a data-icon="view" href="./users/21438ef4b9ad4fc21438ef4b9ad4fc" alt="Edit">Edit</a>
-                  <a data-icon="delete" href="#delete" alt="Delete">Delete</a>
-                </td>
-              </tr>
-              <tr>
-                <td class="ellipsis"><span>21438ef4b9ad4fc21438ef4b9ad4fc</span></td>
-                <td class="ellipsis"><span>21438ef4b9ad4fc21438ef4b9ad4fc</span></td>
-                <td></td>
-                <td class="col-date">Dec 23, 2019</td>
-                <td class="col-date">Dec 23, 2019</td>
-                <td class="col-actions">
-                  <a data-icon="view" href="./users/21438ef4b9ad4fc21438ef4b9ad4fc" alt="Edit">Edit</a>
-                  <a data-icon="delete" href="#delete" alt="Delete">Delete</a>
-                </td>
-              </tr>
+              <% }); %>
             </tbody>
           </table>
         </div>
 
         <div class="pagination">
-          <a href="?prev=true" class="button">Prev</a>
-          <a href="?next=true" class="button">Next</a>
+          <% const startAt = Number(req.query.startAt) || 0; const limit = 25; %>
+          <a href="?startAt=<%= (startAt - limit) > 0 ? (startAt - limit) : 0 %>" class="button">Prev</a>
+          <a href="?startAt=<%= startAt > 0 ? (startAt + limit) : limit %>" class="button">Next</a>
         </div>
       </section>
     </main>
