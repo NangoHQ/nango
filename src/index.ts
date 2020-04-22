@@ -17,9 +17,9 @@ app.use(passport.initialize())
 app.use(cookieParser(COOKIE_SECRET))
 
 app.set('view engine', 'ejs')
-app.set('views', './dist/views')
+app.set('views', './views')
 app.set('trust proxy', 1)
-app.use('/assets', express.static('./dist/views/assets'))
+app.use('/assets', express.static('./views/assets'))
 
 /**y
  * Authentication endpoints
