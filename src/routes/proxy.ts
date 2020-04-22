@@ -1,10 +1,7 @@
 import * as express from 'express'
+import * as legacy from './legacy'
 const proxy = express.Router()
 
-proxy.all('*', handler)
-
-function handler(req, res) {
-  res.send('[PROXY] It works!')
-}
+proxy.use('/', legacy.proxy)
 
 export { proxy }
