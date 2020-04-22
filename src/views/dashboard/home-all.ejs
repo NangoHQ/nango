@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <%- include('layout-head', { title: "All APIs"}) %>
+  <body>
+    <!-- Header -->
+    <%- include('layout-header'); %>
+
+    <main class="container">
+      <section>
+        <h2 class="section-heading">Enabled API</h2>
+        <ul class="api-list">
+          <li>
+            <a href="/dashboard/all">
+              <figure>
+                <div><img alt="Add a new API" src="" /></div>
+                <figcaption>Add a new API</figcaption>
+              </figure>
+            </a>
+          </li>
+          <li>
+            <a href="/dashboard/salesforce">
+              <figure>
+                <div><img alt="Salesforce API" src="https://logo.clearbit.com/salesforce.com" /></div>
+                <figcaption>Salesforce</figcaption>
+              </figure>
+            </a>
+          </li>
+
+          <li>
+            <a href="/dashboard/youtube">
+              <figure>
+                <div><img alt="YouTube API" src="https://logo.clearbit.com/youtube.com" /></div>
+                <figcaption>YouTube</figcaption>
+              </figure>
+            </a>
+          </li>
+        </ul>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <%- include('layout-footer') -%>
+  </body>
+</html>
