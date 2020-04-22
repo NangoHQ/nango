@@ -1,21 +1,21 @@
 html,
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif,
-    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'
+    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale
-  background-color: #f1f3f4
-  margin: 0
-  padding: 0
-  color: #333
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f1f3f4;
+  margin: 0;
+  padding: 0;
+  color: #333;
 }
 
 .container {
-  max-width: 60rem
-  padding: 0 1.5rem
-  margin: 0 auto
-  position: relative
+  max-width: 60rem;
+  padding: 0 1.5rem;
+  margin: 0 auto;
+  position: relative;
 }
 
 /**
@@ -23,74 +23,75 @@ body {
  */
 
 body > header {
-  background-color: #fff
+  background-color: #fff;
 }
 
 body > header h1 {
-  margin: 0
-  padding: 2rem 0
+  margin: 0;
+  padding: 2rem 0;
 }
 
 body > header h1 a {
-  color: inherit
-  text-decoration: none
+  color: inherit;
+  text-decoration: none;
 }
 
 body > header h1 a:hover {
-  text-decoration: underline
+  text-decoration: underline;
 }
 
 body > header .separator {
-  color: #d3d3d3
+  color: #d3d3d3;
 }
 
 body > header nav ol,
 body > header nav ul {
-  list-style: none
+  list-style: none;
 }
 
 body > header nav ol,
 body > header nav ul {
-  margin: 0
-  padding: 0
-  display: flex
+  margin: 0;
+  padding: 0;
+  display: flex;
 }
 
 body > header nav li {
-  margin-right: 2rem
-  color: #666
-  animation: color 0.5s ease
+  margin-right: 2rem;
+  color: #666;
+  animation: color 0.5s ease;
 }
 
 body > header nav li:not(.active):hover {
-  color: #000
+  color: #000;
 }
 
 body > header nav li.active {
-  color: #1a73e8
+  color: #1a73e8;
 }
 
 body > header nav li.active:after {
-  content: ''
-  display: block
-  height: 4px
-  width: 110%
-  position: relative
-  left: -5%
-  margin-top: 0.5rem
-  background-color: #1a73e8
+  content: '';
+  display: block;
+  height: 4px;
+  width: 110%;
+  position: relative;
+  left: -5%;
+  margin-top: 0.5rem;
+  background-color: #1a73e8;
 }
 
 body > header nav li a {
-  text-decoration: none
-  color: inherit
+  text-decoration: none;
+  color: inherit;
 }
 
 body > header .logo {
-  position: absolute
-  right: 1.5rem
-  top: 2rem
-  width: 5rem
+  position: absolute;
+  right: 1.5rem;
+  top: 2rem;
+  width: 5rem;
+  height: 5rem;
 }
 
 /**
@@ -98,23 +99,23 @@ body > header .logo {
  */
 
 body > footer {
-  text-align: center
-  margin-top: 2rem
-  font-size: 0.9rem
-  color: #666
+  text-align: center;
+  margin-top: 2rem;
+  font-size: 0.9rem;
+  color: #666;
 }
 
 body > footer.container {
-  border-top: 1px solid #d3d3d3
-  padding: 1rem 0
-  display: flex
-  justify-content: space-between
-  align-items: center
+  border-top: 1px solid #d3d3d3;
+  padding: 1rem 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 body > footer a {
-  color: #333
-  text-decoration: none
+  color: #333;
+  text-decoration: none;
 }
 
 /**
@@ -122,28 +123,28 @@ body > footer a {
  */
 
 body > main {
-  min-height: 30rem
+  min-height: 30rem;
 }
 
 body > main section {
-  margin: 3rem 0
+  margin: 3rem 0;
 }
 
 body > main section h2 {
-  font-size: 1.4rem
-  font-weight: 500
-  margin: 0 0 2rem 0
+  font-size: 1.4rem;
+  font-weight: 500;
+  margin: 0 0 2rem 0;
 }
 
 body > main section header {
-  margin-bottom: 2rem
-  display: flex
-  align-items: center
-  justify-content: space-between
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 body > main section header h2 {
-  margin: 0
+  margin: 0;
 }
 
 /**
@@ -151,63 +152,63 @@ body > main section header h2 {
  */
 
 table {
-  background-color: #fff
-  border-radius: 4px
-  border-collapse: collapse
-  font-size: 0.95rem
-  width: 100%
+  background-color: #fff;
+  border-radius: 4px;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  width: 100%;
 }
 
 table thead {
-  background-color: #fff
-  border-bottom: 1px solid #f0f2f7
+  background-color: #fff;
+  border-bottom: 1px solid #f0f2f7;
 }
 
 table thead th {
-  padding: 1rem 0.5rem
-  text-align: left
-  font-size: 0.9rem
+  padding: 1rem 0.5rem;
+  text-align: left;
+  font-size: 0.9rem;
 }
 
 table thead th:first-child {
-  border-top-left-radius: 4px
+  border-top-left-radius: 4px;
 }
 
 table thead th:last-child {
-  border-top-right-radius: 4px
+  border-top-right-radius: 4px;
 }
 
 table thead th:first-child,
 table tbody td:first-child {
-  padding-left: 1rem
+  padding-left: 1rem;
 }
 
 table thead th:last-child,
 table tbody td:last-child {
-  padding-right: 1rem
+  padding-right: 1rem;
 }
 
 table tbody td {
-  padding: 0.75rem 0.25rem
+  padding: 0.75rem 0.25rem;
 }
 
 table tbody td.ellipsis span {
-  text-align: left
-  overflow: hidden
-  text-overflow: ellipsis
-  white-space: nowrap
-  display: inline-block
-  max-width: 10rem
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+  max-width: 10rem;
 }
 
 table .col-date {
-  width: 7rem
-  text-align: center
+  width: 7rem;
+  text-align: center;
 }
 
 table .col-actions {
-  width: 4rem
-  text-align: right
+  width: 4rem;
+  text-align: right;
 }
 
 /**
@@ -215,32 +216,32 @@ table .col-actions {
  */
 
 form fieldset {
-  border: 0
-  width: 100%
-  margin: 0
-  padding: 1rem 0
+  border: 0;
+  width: 100%;
+  margin: 0;
+  padding: 1rem 0;
 }
 
 form fieldset label,
 form fieldset .form-input {
-  display: inline-block
-  vertical-align: top
+  display: inline-block;
+  vertical-align: top;
 }
 
 form fieldset label {
-  width: 10rem
-  padding: 0.5rem 0
+  width: 10rem;
+  padding: 0.5rem 0;
 }
 
 form fieldset .form-input {
-  min-width: 20rem
-  padding: 0.5rem
-  font-size: 1rem
-  border: 1px solid #d3d3d3
+  min-width: 20rem;
+  padding: 0.5rem;
+  font-size: 1rem;
+  border: 1px solid #d3d3d3;
 }
 
 form .form-actions {
-  margin-left: 10.25rem
+  margin-left: 10.25rem;
 }
 
 /**
@@ -248,8 +249,8 @@ form .form-actions {
  */
 
 .pagination {
-  margin: 1rem
-  text-align: center
+  margin: 1rem;
+  text-align: center;
 }
 
 /**
@@ -257,61 +258,61 @@ form .form-actions {
  */
 
 .api-list {
-  margin: 0
-  padding: 0
-  list-style: none
-  margin: 0 -1rem
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  margin: 0 -1rem;
 }
 
 .api-list li {
-  margin: 0
-  padding: 0
-  display: inline-block
-  width: 10rem
-  margin: 1rem 1rem
+  margin: 0;
+  padding: 0;
+  display: inline-block;
+  width: 10rem;
+  margin: 1rem 1rem;
 }
 
 .api-list li a {
-  text-decoration: none
-  color: inherit
+  text-decoration: none;
+  color: inherit;
 }
 
 .api-list li a:hover {
-  color: #000
+  color: #000;
 }
 
 .api-list li a:hover figure div {
-  color: #000
-  border-color: #d3d3d3
+  color: #000;
+  border-color: #d3d3d3;
 }
 
 .api-list figure {
-  margin: 0
-  padding: 0
-  text-align: center
+  margin: 0;
+  padding: 0;
+  text-align: center;
 }
 
 .api-list figure div {
-  background: #fff
-  width: 10rem
-  height: 10rem
-  border-radius: 4px
-  border: 1px solid #d3d3d3
-  display: flex
-  align-items: center
-  justify-content: center
+  background: #fff;
+  width: 10rem;
+  height: 10rem;
+  border-radius: 4px;
+  border: 1px solid #d3d3d3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .api-list figure img {
-  width: 80%
+  width: 80%;
 }
 
 .api-list figure figcaption {
-  display: block
-  padding-top: 0.5rem
-  text-overflow: ellipsis
-  white-space: nowrap
-  overflow: hidden
+  display: block;
+  padding-top: 0.5rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 /**
@@ -319,41 +320,41 @@ form .form-actions {
  */
 
 .button {
-  display: inline-block
-  text-decoration: none
-  color: #333
-  padding: 0.5rem 1rem
-  font-weight: 500
-  background: #e7e7e9
-  border-radius: 0.5rem
-  border: 1px solid transparent
-  font-size: 0.95rem
-  cursor: pointer
-  outline: none
+  display: inline-block;
+  text-decoration: none;
+  color: #333;
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  background: #e7e7e9;
+  border-radius: 0.5rem;
+  border: 1px solid transparent;
+  font-size: 0.95rem;
+  cursor: pointer;
+  outline: none;
 }
 
 .button:hover {
-  background-color: #d3d3d3
+  background-color: #d3d3d3;
 }
 
 .button-primary {
-  background-color: #207af9
-  color: white
+  background-color: #207af9;
+  color: white;
 }
 
 .button-primary:hover {
-  background-color: #0d6ff8
+  background-color: #0d6ff8;
 }
 
 .button-primary-outline {
-  background-color: white
-  border: 1px solid #207af9
-  color: #207af9
+  background-color: white;
+  border: 1px solid #207af9;
+  color: #207af9;
 }
 
 .button-primary-outline:hover {
-  background-color: #207af9
-  color: white
+  background-color: #207af9;
+  color: white;
 }
 
 /**
@@ -362,36 +363,36 @@ form .form-actions {
 
 a[data-icon],
 span[data-icon] {
-  color: transparent
-  overflow: hidden
-  width: 20px
-  height: 20px
-  display: inline-block
-  content: ''
-  background-repeat: no-repeat
-  background-size: 20px 20px
-  background-position: center center
-  opacity: 0.7
+  color: transparent;
+  overflow: hidden;
+  width: 20px;
+  height: 20px;
+  display: inline-block;
+  content: '';
+  background-repeat: no-repeat;
+  background-size: 20px 20px;
+  background-position: center center;
+  opacity: 0.7;
 }
 
 a[data-icon]:hover {
-  opacity: 1
+  opacity: 1;
 }
 
 [data-icon='edit'] {
-  background-image: url(/assets/img/icons/create-24px.svg)
+  background-image: url(/assets/img/icons/create-24px.svg);
 }
 
 [data-icon='delete'] {
-  background-image: url(/assets/img/icons/delete-24px.svg)
+  background-image: url(/assets/img/icons/delete-24px.svg);
 }
 
 [data-icon='view'] {
-  background-image: url(/assets/img/icons/visibility-24px.svg)
+  background-image: url(/assets/img/icons/visibility-24px.svg);
 }
 
 [data-icon='back'] {
-  background-image: url(/assets/img/icons/arrow_back-24px.svg)
+  background-image: url(/assets/img/icons/arrow_back-24px.svg);
 }
 
 /**
@@ -403,43 +404,43 @@ a[data-icon]:hover {
 
 @media (max-width: 30rem) {
   body > header .logo {
-    position: relative
-    right: auto
-    top: auto
-    padding-top: 1rem
+    position: relative;
+    right: auto;
+    top: auto;
+    padding-top: 1rem;
   }
 
   body > header nav {
-    width: 100%
-    white-space: nowrap
+    width: 100%;
+    white-space: nowrap;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    -ms-overflow-style: -ms-autohiding-scrollbar
+    -ms-overflow-style: -ms-autohiding-scrollbar;
   }
 
   body > main .api-list li {
-    width: 7rem
+    width: 7rem;
   }
 
   body > main .table {
-    width: 100%
-    white-space: nowrap
+    width: 100%;
+    white-space: nowrap;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    -ms-overflow-style: -ms-autohiding-scrollbar
+    -ms-overflow-style: -ms-autohiding-scrollbar;
   }
 
   .api-list figure div {
-    width: 8rem
-    height: 8rem
+    width: 8rem;
+    height: 8rem;
   }
 
   body > header nav::-webkit-scrollbar {
-    display: none
+    display: none;
   }
 
   body > footer .container {
-    display: block
-    text-align: center
+    display: block;
+    text-align: center;
   }
 }
