@@ -1,27 +1,15 @@
 import express from 'express'
 import App from './app'
-import functions from './functions/router'
-import errorHandler from './errorHandler'
 import * as routes from './routes'
-
-import authV3, { authRouter } from './auth/v3/router'
-
-export const BUID = 'bearerUid'
-
-import { cors } from './proxy/cors'
 import resourceNotFound from './resourceNotFound'
-import { dbClient } from './lib/database'
-
-const store = dbClient()
-function initializeDB(req, _res, next) {
-  req.store = store
-  next()
-}
+import errorHandler from './errorHandler'
 
 const app = App(express())
+export const BUID = 'bearerUid' // TODO - What is this for?
 
 app.engine('html', require('ejs').renderFile)
 app.set('view engine', 'html')
+app.set('views', './dist/views')
 app.set('trust proxy', 1)
 
 /**y
@@ -31,7 +19,7 @@ app.set('trust proxy', 1)
 app.use('/auth', routes.auth)
 
 /**
- * Proxy
+ * Proxy feature
  */
 
 app.use('/proxy', routes.proxy)
@@ -46,26 +34,32 @@ app.use('/api', routes.api)
  * Dashboard
  */
 
-// app.use('/dashboard', dashboard)
+app.use('/dashboard', routes.dashboard)
 
 /**
  * Legacy endpoints
  *
- * Pizzly is a fork of a previous codebase made by Bearer.sh engineering team
- * and previous users were using different endpoints. These endpoints are
- * identified below for backward compatibility. It's very likely that these endpoints
- * will be removed by the end of 2020.
+ * Pizzly is a fork of a previous codebase made by Bearer.sh engineering team.
+ * To help the migration of Bearer's users, we keep here some legacy endpoints.
+ * It's very likely that these endpoints will be removed by the end of 2020,
+ * so please do not rely on these endpoints anymore.
  */
 
-app.set('views', './dist/views')
-app.use('/v2/auth', cors, initializeDB, authV3())
-app.use('/apis', cors, initializeDB, authRouter())
-app.use('/api/v4/functions', cors, initializeDB, functions())
-app.use(errorHandler)
+app.use('/v2/auth', routes.legacy.auth)
+app.use('/apis', routes.legacy.apis)
+app.use('/api/v4/functions', routes.legacy.proxy)
 
-// catch 404s
+/**
+ * Error handling - TODO
+ */
+
+app.use(errorHandler)
 app.use(resourceNotFound)
 
+/**
+ * Starting up the server
+ */
+
 app.listen(process.env.PORT || 3000, () => {
-  console.log('Pizzly App listening on port', process.env.PORT || 3000)
+  console.log('Pizzly listening on port', process.env.PORT || 3000)
 })
