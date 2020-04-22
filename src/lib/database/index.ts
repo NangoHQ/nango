@@ -11,3 +11,9 @@ export const dbClient = function() {
     }
   })
 }
+
+export const store = dbClient()
+export const initializeDB = function(req, _res, next) {
+  req.store = store
+  next()
+}
