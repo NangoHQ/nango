@@ -1,8 +1,6 @@
 import express, { Express, RequestHandler, Request, ErrorRequestHandler, Response } from 'express'
 import supertest from 'supertest'
 
-import App from '../src/app'
-
 const expressSession = jest.requireActual('express-session')
 
 export function baseApp(stageVariables = {}) {
@@ -23,7 +21,7 @@ export function baseApp(stageVariables = {}) {
     next()
   })
 
-  return App(testApp)
+  return testApp
 }
 
 export const session = () => expressSession({ resave: false, secret: 'secret', saveUninitialized: false })
