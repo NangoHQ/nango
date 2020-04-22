@@ -7,10 +7,10 @@ import errorHandler from './errorHandler'
 const app = App(express())
 export const BUID = 'bearerUid' // TODO - What is this for?
 
-app.engine('html', require('ejs').renderFile)
-app.set('view engine', 'html')
+app.set('view engine', 'ejs')
 app.set('views', './dist/views')
 app.set('trust proxy', 1)
+app.use('/assets', express.static('./dist/views/assets'))
 
 /**y
  * Authentication endpoints
