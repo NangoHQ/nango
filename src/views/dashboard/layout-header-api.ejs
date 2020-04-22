@@ -1,0 +1,22 @@
+<% const base = req.ejs.base_url; const active = req.path.split('/')[2] || ""; %>
+
+<header>
+  <div class="container">
+    <a href="/dashboard/"><img src="/assets/img/logos/pizzly.png" class="logo" alt="Pizzly"/></a>
+
+    <h1><a href="/dashboard/">APIs</a> <span class="separator">/</span> <%= req.params.api %></h1>
+
+    <nav>
+      <ol>
+        <li class="<%= active === '' ? 'active' : '' %>"><a href="<%= base %>/">Overview</a></li>
+        <li class="<%= active === 'credentials' ? 'active' : '' %>">
+          <a href="<%= base %>/credentials">Credentials</a>
+        </li>
+        <li class="<%= active === 'users' ? 'active' : '' %>"><a href="<%= base %>/users">Users</a></li>
+        <li class="<%= active === 'monitoring' ? 'active' : '' %>">
+          <a href="<%= base %>/monitoring">Monitoring</a>
+        </li>
+      </ol>
+    </nav>
+  </div>
+</header>

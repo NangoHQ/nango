@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+  <%- include('layout-head', { title: 'API'}) %>
+
+  <body>
+    <!-- Header -->
+    <%- include('layout-header-api') -%>
+
+    <main class="container">
+      <section>
+        <header>
+          <h2>Credentials saved</h2>
+          <aside>
+            <a href="<%= req.ejs.base_url %>/credentials/new" class="button button-primary">Save new credentials</a>
+          </aside>
+        </header>
+
+        <div class="table">
+          <table>
+            <thead>
+              <tr>
+                <th>Client ID</th>
+                <th>Client Secret</th>
+                <th>Scopes</th>
+                <th>Setup ID</th>
+                <th class="col-date">Creation date</th>
+                <th class="col-actions"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="ellipsis"><span>21438ef4b9ad4fc21438ef4b9ad4fc</span></td>
+                <td class="ellipsis"><span>21438ef4b9ad4fc21438ef4b9ad4fc</span></td>
+                <td></td>
+                <td class="ellipsis"><span>21438ef4b9ad4fc21438ef4b9ad4fc</span></td>
+                <td class="col-date">Dec 23, 2019</td>
+                <td class="col-actions">
+                  <a data-icon="edit" href="./credentials/21438ef4b9ad4fc21438ef4b9ad4fc" alt="Edit">Edit</a>
+                  <a data-icon="delete" href="#delete" alt="Delete">Delete</a>
+                </td>
+              </tr>
+              <tr>
+                <td class="ellipsis"><span>21438ef4b9ad4fc21438ef4b9ad4fc</span></td>
+                <td class="ellipsis"><span>21438ef4b9ad4fc21438ef4b9ad4fc</span></td>
+                <td></td>
+                <td class="ellipsis"><span>21438ef4b9ad4fc21438ef4b9ad4fc</span></td>
+                <td class="col-date">Dec 23, 2019</td>
+                <td class="col-actions">
+                  <a data-icon="edit" href="./credentials/21438ef4b9ad4fc21438ef4b9ad4fc" alt="Edit">Edit</a>
+                  <a data-icon="delete" href="#delete" alt="Delete">Delete</a>
+                </td>
+              </tr>
+              <tr>
+                <td class="ellipsis"><span>21438ef4b9ad4fc21438ef4b9ad4fc</span></td>
+                <td class="ellipsis"><span>21438ef4b9ad4fc21438ef4b9ad4fc</span></td>
+                <td></td>
+                <td class="ellipsis"><span>21438ef4b9ad4fc21438ef4b9ad4fc</span></td>
+                <td class="col-date">Dec 23, 2019</td>
+                <td class="col-actions">
+                  <a data-icon="edit" href="./credentials/21438ef4b9ad4fc21438ef4b9ad4fc" alt="Edit">Edit</a>
+                  <a data-icon="delete" href="#delete" alt="Delete">Delete</a>
+                </td>
+              </tr>
+              <tr>
+                <td class="ellipsis"><span>21438ef4b9ad4fc21438ef4b9ad4fc</span></td>
+                <td class="ellipsis"><span>21438ef4b9ad4fc21438ef4b9ad4fc</span></td>
+                <td></td>
+                <td class="ellipsis"><span>21438ef4b9ad4fc21438ef4b9ad4fc</span></td>
+                <td class="col-date">Dec 23, 2019</td>
+                <td class="col-actions">
+                  <a data-icon="edit" href="./credentials/21438ef4b9ad4fc21438ef4b9ad4fc" alt="Edit">Edit</a>
+                  <a data-icon="delete" href="#delete" alt="Delete">Delete</a>
+                </td>
+              </tr>
+              <tr>
+                <td class="ellipsis"><span>21438ef4b9ad4fc21438ef4b9ad4fc</span></td>
+                <td class="ellipsis"><span>21438ef4b9ad4fc21438ef4b9ad4fc</span></td>
+                <td></td>
+                <td class="ellipsis"><span>21438ef4b9ad4fc21438ef4b9ad4fc</span></td>
+                <td class="col-date">Dec 23, 2019</td>
+                <td class="col-actions">
+                  <a data-icon="edit" href="./credentials/21438ef4b9ad4fc21438ef4b9ad4fc" alt="Edit">Edit</a>
+                  <a data-icon="delete" href="#delete" alt="Delete">Delete</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pagination">
+          <a href="<%= req.ejs.base_url %>/credentials" class="button">See more</a>
+        </div>
+      </section>
+
+      <section>
+        <header>
+          <h2 class="section-heading">Users authenticated</h2>
+          <aside>
+            <a href="/TODO" class="button button-primary">Add a connect button</a>
+          </aside>
+        </header>
+
+        <div class="table">
+          <table>
+            <thead>
+              <tr>
+                <th>Auth ID</th>
+                <th>Setup ID</th>
+                <th>Scopes</th>
+                <th class="col-date">Last modified</th>
+                <th class="col-date">Creation date</th>
+                <th class="col-actions"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="ellipsis"><span>21438ef4b9ad4fc21438ef4b9ad4fc</span></td>
+                <td class="ellipsis"><span>21438ef4b9ad4fc21438ef4b9ad4fc</span></td>
+                <td></td>
+                <td class="col-date">Dec 23, 2019</td>
+                <td class="col-date">Dec 23, 2019</td>
+                <td class="col-actions">
+                  <a data-icon="view" href="./users/21438ef4b9ad4fc21438ef4b9ad4fc" alt="Edit">Edit</a>
+                  <a data-icon="delete" href="#delete" alt="Delete">Delete</a>
+                </td>
+              </tr>
+              <tr>
+                <td class="ellipsis"><span>21438ef4b9ad4fc21438ef4b9ad4fc</span></td>
+                <td class="ellipsis"><span>21438ef4b9ad4fc21438ef4b9ad4fc</span></td>
+                <td></td>
+                <td class="col-date">Dec 23, 2019</td>
+                <td class="col-date">Dec 23, 2019</td>
+                <td class="col-actions">
+                  <a data-icon="view" href="./users/21438ef4b9ad4fc21438ef4b9ad4fc" alt="Edit">Edit</a>
+                  <a data-icon="delete" href="#delete" alt="Delete">Delete</a>
+                </td>
+              </tr>
+              <tr>
+                <td class="ellipsis"><span>21438ef4b9ad4fc21438ef4b9ad4fc</span></td>
+                <td class="ellipsis"><span>21438ef4b9ad4fc21438ef4b9ad4fc</span></td>
+                <td></td>
+                <td class="col-date">Dec 23, 2019</td>
+                <td class="col-date">Dec 23, 2019</td>
+                <td class="col-actions">
+                  <a data-icon="view" href="./users/21438ef4b9ad4fc21438ef4b9ad4fc" alt="Edit">Edit</a>
+                  <a data-icon="delete" href="#delete" alt="Delete">Delete</a>
+                </td>
+              </tr>
+              <tr>
+                <td class="ellipsis"><span>21438ef4b9ad4fc21438ef4b9ad4fc</span></td>
+                <td class="ellipsis"><span>21438ef4b9ad4fc21438ef4b9ad4fc</span></td>
+                <td></td>
+                <td class="col-date">Dec 23, 2019</td>
+                <td class="col-date">Dec 23, 2019</td>
+                <td class="col-actions">
+                  <a data-icon="view" href="./users/21438ef4b9ad4fc21438ef4b9ad4fc" alt="Edit">Edit</a>
+                  <a data-icon="delete" href="#delete" alt="Delete">Delete</a>
+                </td>
+              </tr>
+              <tr>
+                <td class="ellipsis"><span>21438ef4b9ad4fc21438ef4b9ad4fc</span></td>
+                <td class="ellipsis"><span>21438ef4b9ad4fc21438ef4b9ad4fc</span></td>
+                <td></td>
+                <td class="col-date">Dec 23, 2019</td>
+                <td class="col-date">Dec 23, 2019</td>
+                <td class="col-actions">
+                  <a data-icon="view" href="./users/21438ef4b9ad4fc21438ef4b9ad4fc" alt="Edit">Edit</a>
+                  <a data-icon="delete" href="#delete" alt="Delete">Delete</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pagination">
+          <a href="<%= req.ejs.base_url %>/users" class="button">See more</a>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <%- include('layout-footer') -%>
+  </body>
+</html>
