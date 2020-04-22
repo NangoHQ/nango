@@ -1,11 +1,20 @@
 import express from 'express'
-import App from './app'
+import bodyParser from 'body-parser'
+import passport from 'passport'
+import cookieParser from 'cookie-parser'
 import * as routes from './routes'
 import resourceNotFound from './resourceNotFound'
 import errorHandler from './errorHandler'
 
-const app = App(express())
+const { COOKIE_SECRET } = process.env
 export const BUID = 'bearerUid' // TODO - What is this for?
+
+const app = express()
+
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json({ limit: '5mb' }))
+app.use(passport.initialize())
+app.use(cookieParser(COOKIE_SECRET))
 
 app.set('view engine', 'ejs')
 app.set('views', './dist/views')
