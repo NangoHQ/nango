@@ -7,17 +7,22 @@
  */
 
 import * as express from 'express'
+import * as integrations from '../lib/integrations'
+
 const dashboard = express.Router()
 
 dashboard.get('/', (req, res) => {
   res.render('dashboard/home', { req })
 })
 
-dashboard.get('/all', (req, res) => {
-  res.render('dashboard/home-all', { req })
+dashboard.get('/all', async (req, res) => {
+  const apis = await integrations.list()
+  res.render('dashboard/home-all', { req, data: { apis } })
 })
 
-dashboard.use('/:api', (req, res, next) => {
+dashboard.use('/:api', async (req, res, next) => {
+  const api = await integrations.get(req.params.api)
+
   // @ts-ignore TODO
   if (!req.ejs) {
     // @ts-ignore
@@ -26,6 +31,9 @@ dashboard.use('/:api', (req, res, next) => {
 
   // @ts-ignore
   req.ejs.base_url = `/dashboard/${req.params.api}`
+
+  // @ts-ignore
+  req.data = { api }
 
   return next()
 })
