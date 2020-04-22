@@ -5,7 +5,7 @@ export default (req: Request, res: Response) => {
     req.originalUrl,
     'could not be found on this server.',
     "Please make sure you've entered the right URL and try again.",
-    'For further help, please see https://docs.bearer.sh/help-and-support'
+    'For further help, please see https://github.com/pizzly/wiki/help'
   ].join(' ')
   if (!res.headersSent) {
     // console.log('resourceNotFound', message)
