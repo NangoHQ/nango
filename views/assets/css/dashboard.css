@@ -105,7 +105,7 @@ body > footer {
   color: #666;
 }
 
-body > footer.container {
+body > footer .content {
   border-top: 1px solid #d3d3d3;
   padding: 1rem 0;
   display: flex;
@@ -201,14 +201,24 @@ table tbody td.ellipsis span {
   max-width: 10rem;
 }
 
+table .col-center {
+  text-align: center;
+}
+
 table .col-date {
-  width: 7rem;
+  min-width: 7rem;
   text-align: center;
 }
 
 table .col-actions {
   width: 4rem;
   text-align: right;
+}
+
+.table-empty {
+  text-align: center;
+  padding: 3rem;
+  background: #fff;
 }
 
 /**
@@ -439,7 +449,7 @@ a[data-icon]:hover {
     display: none;
   }
 
-  body > footer .container {
+  body > footer .content {
     display: block;
     text-align: center;
   }

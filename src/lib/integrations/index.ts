@@ -44,19 +44,31 @@ const list = async (): Promise<any[]> => {
  * @returns the integration configuration.
  */
 
-const get = async (apiName: string): Promise<any[]> => {
+const get = async (integrationName: string): Promise<Integration> => {
   return new Promise((resolve, reject) => {
-    if (!apiName) {
-      return reject('Empty API name provided.')
+    if (!integrationName) {
+      return reject('Empty integration name provided.')
     }
 
     try {
-      const api = require(path.join(integrationsDir, `${apiName}.json`))
-      return resolve(api)
+      const integration = require(path.join(integrationsDir, `${integrationName}.json`))
+
+      const isOAuth2 = integration.config.authType === 'OAUTH2'
+      integration.config.setupKeyLabel = isOAuth2 ? 'Client ID' : 'Consumer Key'
+      integration.config.setupSecretLabel = isOAuth2 ? 'Client Secret' : 'Consumer Secret'
+
+      return resolve(integration)
     } catch (err) {
       return reject(err)
     }
   })
+}
+
+interface Integration {
+  config: {
+    setupKeyLabel: string
+    setupSecretLabel: string
+  }
 }
 
 export { get, list }

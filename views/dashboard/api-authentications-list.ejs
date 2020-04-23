@@ -1,0 +1,29 @@
+<div class="table">
+  <table>
+    <thead>
+      <tr>
+        <th>Auth ID</th>
+        <th>Setup ID</th>
+        <th>Scopes</th>
+        <th class="col-date">Last modified</th>
+        <th class="col-actions"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% req.data.authentications.forEach(function(auth){ %>
+      <tr>
+        <td><%= auth.auth_id %></td>
+        <td><%= auth.setup_id %></td>
+        <td></td>
+        <td class="col-date">
+          <%= new Date(auth.updated_at).toLocaleString('en-US', req.ejs.datetimeOptions) %>
+        </td>
+        <td class="col-actions">
+          <a data-icon="view" href="<%= req.ejs.base_url %>/authentications/<%= auth.auth_id %>" title="View">View</a>
+          <a data-icon="delete" href="#delete" title="Delete">Delete</a>
+        </td>
+      </tr>
+      <% }); %>
+    </tbody>
+  </table>
+</div>

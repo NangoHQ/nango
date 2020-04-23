@@ -8,11 +8,11 @@
 
     <nav>
       <ol>
-        <li class="active">
+        <li class="<%= req.path.indexOf('all') === -1 ? 'active' : '' %>">
           <a href="/dashboard">Enabled</a>
         </li>
 
-        <li>
+        <li class="<%= req.path.indexOf('all') > 0 ? 'active' : '' %>">
           <a href="/dashboard/all">All</a>
         </li>
       </ol>
