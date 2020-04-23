@@ -9,12 +9,13 @@
       <section>
         <h2 class="section-heading">Enabled API</h2>
         <ul class="api-list">
-          <% data.apis.forEach(function(api){ %>
+          <% req.data.integrations.forEach(function(api){ %>
           <li>
             <a href="/dashboard/<%= api.id %>">
               <figure>
                 <div>
-                  <% if (api.img) { %> <img alt="<%= api.name.substr('"', '\"') %>" src="<%= api.name %> logo" /><% }%>
+                  <% if (api.image) { %> <img alt="<%= api.name.substr('"', '\"') %> logo" src="<%= api.image %>" /><%
+                  }%>
                 </div>
                 <figcaption><%= api.name %></figcaption>
               </figure>

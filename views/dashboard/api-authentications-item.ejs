@@ -11,7 +11,7 @@
         <h2><%= req.data.authentication.auth_id %></h2>
         <form>
           <fieldset>
-            <label for="scopes">Scopes</label>
+            <label>Payload</label>
             <textarea style="min-width: 380px;min-height: 25vh;">
 <%= JSON.stringify(req.data.authentication.user_attributes, null, 4) 
               %></textarea

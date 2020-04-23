@@ -13,7 +13,7 @@ const integrationsDir = path.join(__dirname, '../../../', 'integrations')
  * @returns an array of the integrations configuration.
  */
 
-const list = async (): Promise<any[]> => {
+const list = async (): Promise<Integration[]> => {
   return new Promise((resolve, reject) => {
     fs.readdir(integrationsDir, function(err, integrationsFiles) {
       if (err) {
@@ -28,8 +28,11 @@ const list = async (): Promise<any[]> => {
         }
 
         try {
-          const api = require(path.join(integrationsDir, file))
-          apis.push({ ...api, id: file.slice(0, -5) })
+          const fileName = file.slice(0, -5)
+          const fileContent = require(path.join(integrationsDir, `${fileName}.json`))
+          const integration = formatIntegration(fileName, fileContent)
+
+          apis.push(integration)
         } catch (err) {}
       })
 
@@ -51,12 +54,8 @@ const get = async (integrationName: string): Promise<Integration> => {
     }
 
     try {
-      const integration = require(path.join(integrationsDir, `${integrationName}.json`))
-
-      const isOAuth2 = integration.config.authType === 'OAUTH2'
-      integration.config.setupKeyLabel = isOAuth2 ? 'Client ID' : 'Consumer Key'
-      integration.config.setupSecretLabel = isOAuth2 ? 'Client Secret' : 'Consumer Secret'
-
+      const fileContent = require(path.join(integrationsDir, `${integrationName}.json`))
+      const integration = formatIntegration(integrationName, fileContent)
       return resolve(integration)
     } catch (err) {
       return reject(err)
@@ -64,8 +63,24 @@ const get = async (integrationName: string): Promise<Integration> => {
   })
 }
 
+const formatIntegration = (fileName: string, fileContent: any) => {
+  const integration = fileContent as Integration
+  integration.id = fileName
+  integration.image = 'http://logo.clearbit.com/' + integration.name.toLowerCase() + '.com'
+
+  const isOAuth2 = integration.config.authType === 'OAUTH2'
+  integration.config.setupKeyLabel = isOAuth2 ? 'Client ID' : 'Consumer Key'
+  integration.config.setupSecretLabel = isOAuth2 ? 'Client Secret' : 'Consumer Secret'
+
+  return integration
+}
+
 interface Integration {
+  id: string
+  image: string
+  name: string
   config: {
+    authType: string
     setupKeyLabel: string
     setupSecretLabel: string
   }
