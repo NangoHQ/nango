@@ -17,23 +17,19 @@
               </figure>
             </a>
           </li>
+          <% req.data.enabled.forEach(function(api){ %>
           <li>
-            <a href="/dashboard/github">
+            <a href="/dashboard/<%= api.id %>">
               <figure>
-                <div><img alt="GitHub API" src="https://logo.clearbit.com/github.com" /></div>
-                <figcaption>GitHub</figcaption>
+                <div>
+                  <% if (api.image) { %> <img alt="<%= api.name.substr('"', '\"') %> logo" src="<%= api.image %>" /><%
+                  }%>
+                </div>
+                <figcaption><%= api.name %></figcaption>
               </figure>
             </a>
           </li>
-
-          <li>
-            <a href="/dashboard/youtube">
-              <figure>
-                <div><img alt="YouTube API" src="https://logo.clearbit.com/youtube.com" /></div>
-                <figcaption>YouTube</figcaption>
-              </figure>
-            </a>
-          </li>
+          <% }); %>
         </ul>
       </section>
     </main>

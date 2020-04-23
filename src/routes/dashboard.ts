@@ -35,13 +35,36 @@ dashboard.use('/', (req, res, next) => {
   return next()
 })
 
-dashboard.get('/', (req, res) => {
+dashboard.get('/', async (req, res) => {
+  const list = await integrations.list()
+  const configurations = await store('configurations')
+    .select('buid')
+    .groupBy('buid')
+
+  const enabled = list.filter(integration => {
+    for (let i = 0; i < configurations.length; i++) {
+      if (configurations[i].buid === integration.id) {
+        return true
+      }
+    }
+
+    return false
+  })
+
+  console.log(enabled)
+
+  // @ts-ignore
+  req.data = { ...req.data, enabled }
+
   res.render('dashboard/home', { req })
 })
 
 dashboard.get('/all', async (req, res) => {
-  const apis = await integrations.list()
-  res.render('dashboard/home-all', { req, data: { apis } })
+  const list = await integrations.list()
+
+  // @ts-ignore
+  req.data = { ...req.data, integrations: list }
+  res.render('dashboard/home-all', { req })
 })
 
 dashboard.use('/:api', async (req, res, next) => {
