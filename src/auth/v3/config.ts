@@ -19,7 +19,6 @@ const getAuthConfig = async (req: TConnectConfigRequest) => {
         buid: buid!
       })) as any
     })
-    // setupDetails: { clientID: '***REMOVED***', clientSecret: '***REMOVED***' }
   } as IAuthConfig
 }
 
