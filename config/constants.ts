@@ -30,7 +30,7 @@ export const connection = DATABASE_URL ||
     database: DB_DATABASE!
   }
 
-export const AUTH_CALLBACK_URL = `https://${HOSTNAME}/v2/auth/callback`
+export const AUTH_CALLBACK_URL = process.env.AUTH_CALLBACK_URL || `https://${HOSTNAME}/v2/auth/callback`
 
 // const AUTH_VHOST = `https://${AUTH_SUBDOMAIN}.${HOSTNAME}`
 // const PROXY_VHOST = `https://${PROXY_SUBDOMAIN}.${HOSTNAME}`

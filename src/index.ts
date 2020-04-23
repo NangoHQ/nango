@@ -1,44 +1,65 @@
 import express from 'express'
 import App from './app'
-import functions from './functions/router'
+import * as routes from './routes'
+import resourceNotFound from './resourceNotFound'
 import errorHandler from './errorHandler'
 
-import authV3, { authRouter } from './auth/v3/router'
-
-export const BUID = 'bearerUid'
-
-import { cors } from './proxy/cors'
-import resourceNotFound from './resourceNotFound'
-import { dbClient } from './db'
-
-const store = dbClient()
-
-// simulates variables sent by API gateway
-const baseApp = express()
-const app = App(baseApp)
-app.set('trust proxy', 1)
-
-/******* API ******/
+const app = App(express())
+export const BUID = 'bearerUid' // TODO - What is this for?
 
 app.engine('html', require('ejs').renderFile)
 app.set('view engine', 'html')
 app.set('views', './dist/views')
+app.set('trust proxy', 1)
 
-app.use('/v2/auth', cors, initializeDB, authV3())
-app.use('/apis', cors, initializeDB, authRouter())
+/**y
+ * Authentication endpoints
+ */
 
-app.use('/api/v4/functions', cors, initializeDB, functions())
+app.use('/auth', routes.auth)
+
+/**
+ * Proxy feature
+ */
+
+app.use('/proxy', routes.proxy)
+
+/**
+ * API
+ */
+
+app.use('/api', routes.api)
+
+/**
+ * Dashboard
+ */
+
+app.use('/dashboard', routes.dashboard)
+
+/**
+ * Legacy endpoints
+ *
+ * Pizzly is a fork of a previous codebase made by Bearer.sh engineering team.
+ * To help the migration of Bearer's users, we keep here some legacy endpoints.
+ * It's very likely that these endpoints will be removed by the end of 2020,
+ * so please do not rely on these endpoints anymore.
+ */
+
+app.use('/v2/auth', routes.legacy.auth)
+app.use('/apis', routes.legacy.apis)
+app.use('/api/v4/functions', routes.legacy.proxy)
+
+/**
+ * Error handling - TODO
+ */
 
 app.use(errorHandler)
-
-function initializeDB(req, _res, next) {
-  req.store = store
-  next()
-}
-
-// catch 404s
 app.use(resourceNotFound)
 
+/**
+ * Starting up the server
+ */
+
 app.listen(process.env.PORT || 3000, () => {
-  console.log('Pizzly App listening on port', process.env.PORT || 3000)
+  console.log('Pizzly listening on port', process.env.PORT || 3000)
 })
