@@ -51,8 +51,6 @@ dashboard.get('/', async (req, res) => {
     return false
   })
 
-  console.log(enabled)
-
   // @ts-ignore
   req.data = { ...req.data, enabled }
 
