@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-  <%- include('layout-head', { title: `Credentials - ${req.data.api.name} API`}) %>
+  <%- include('layout-head', { title: `Authentications - ${req.data.api.name} API` }) %>
 
   <body>
     <!-- Header -->
@@ -9,13 +9,13 @@
     <main class="container">
       <section>
         <header>
-          <h2>Credentials</h2>
+          <h2>Authentications</h2>
           <aside>
-            <a href="<%= req.ejs.base_url %>/credentials/new" class="button button-primary">Save new credentials</a>
+            <a href="/TODO" class="button button-primary">Connect button</a>
           </aside>
         </header>
 
-        <%- include('api-credentials-list', { req }) %>
+        <%- include('api-authentications-list', { req }) %>
 
         <div class="pagination">
           <% const startAt = Number(req.query.startAt) || 0; const limit = 25; %>

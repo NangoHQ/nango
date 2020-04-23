@@ -3,14 +3,14 @@
   <%- include('layout-head') %>
   <body>
     <!-- Header -->
-    <%- include('layout-header'); %>
+    <%- include('layout-header', { req }); %>
 
     <main class="container">
       <section>
         <h2 class="section-heading">Enabled API</h2>
         <ul class="api-list">
           <li>
-            <a href="?all=true">
+            <a href="/dashboard/all">
               <figure>
                 <div><img alt="Add a new API" src="" /></div>
                 <figcaption>Add a new API</figcaption>
@@ -18,10 +18,10 @@
             </a>
           </li>
           <li>
-            <a href="/dashboard/salesforce">
+            <a href="/dashboard/github">
               <figure>
-                <div><img alt="Salesforce API" src="https://logo.clearbit.com/salesforce.com" /></div>
-                <figcaption>Salesforce</figcaption>
+                <div><img alt="GitHub API" src="https://logo.clearbit.com/github.com" /></div>
+                <figcaption>GitHub</figcaption>
               </figure>
             </a>
           </li>
