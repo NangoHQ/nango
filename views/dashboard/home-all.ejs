@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <%- include('layout-head', { title: "All APIs"}) %>
+  <body>
+    <!-- Header -->
+    <%- include('layout-header', { req }); %>
+
+    <main class="container">
+      <section>
+        <h2 class="section-heading">Enabled API</h2>
+        <ul class="api-list">
+          <% req.data.integrations.forEach(function(api){ %>
+          <li>
+            <a href="/dashboard/<%= api.id %>">
+              <figure>
+                <div>
+                  <% if (api.image) { %> <img alt="<%= api.name.substr('"', '\"') %> logo" src="<%= api.image %>" /><%
+                  }%>
+                </div>
+                <figcaption><%= api.name %></figcaption>
+              </figure>
+            </a>
+          </li>
+          <% }); %>
+        </ul>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <%- include('layout-footer') -%>
+  </body>
+</html>

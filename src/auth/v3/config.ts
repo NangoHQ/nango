@@ -19,7 +19,6 @@ const getAuthConfig = async (req: TConnectConfigRequest) => {
         buid: buid!
       })) as any
     })
-    // setupDetails: { clientID: '150714643009.1056243521876', clientSecret: '851aaa8e41fa28c9c5182085445b7d01' }
   } as IAuthConfig
 }
 

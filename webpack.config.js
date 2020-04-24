@@ -31,8 +31,8 @@ module.exports = [
     output: { path: __dirname + '/dist/views' },
     plugins: [
       new HtmlWebpackPlugin({
-        filename: 'callback.html',
         template: './views/callback.html',
+        filename: 'callback.ejs',
         inlineSource: '.js$'
       }),
       new HtmlWebpackInlineSourcePlugin()
@@ -46,8 +46,8 @@ module.exports = [
     output: { path: __dirname + '/dist/views' },
     plugins: [
       new HtmlWebpackPlugin({
-        filename: 'iframe.html',
         template: './views/iframe.html',
+        filename: 'iframe.ejs',
         inlineSource: '.js$'
       }),
       new HtmlWebpackInlineSourcePlugin()
@@ -61,17 +61,17 @@ module.exports = [
     plugins: [
       new HtmlWebpackPlugin({
         template: './views/page-not-found-error.html',
-        filename: 'page-not-found-error.html',
+        filename: 'page-not-found-error.ejs',
         inlineSource: '.js$'
       }),
       new HtmlWebpackPlugin({
         template: './views/callback-url-request-error.html',
-        filename: 'callback-url-request-error.html',
+        filename: 'callback-url-request-error.ejs',
         inlineSource: '.js$'
       }),
       new HtmlWebpackPlugin({
         template: './views/oauth-error.html',
-        filename: 'oauth-error.html',
+        filename: 'oauth-error.ejs',
         inlineSource: '.js$'
       }),
       new HtmlWebpackInlineSourcePlugin()
