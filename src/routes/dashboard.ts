@@ -10,6 +10,7 @@ import * as express from 'express'
 import { v4 as uuidv4 } from 'uuid'
 import * as integrations from '../lib/integrations'
 import { store } from '../lib/database'
+import { Types } from '../types'
 
 const dashboard = express.Router()
 
@@ -133,9 +134,12 @@ dashboard.get('/:integration/credentials/new', (req, res) => {
 
 // Form handler (POST)
 dashboard.post('/:integration/credentials/new', async (req, res) => {
+  const scopes = integrations.validateConfigurationScopes(String(req.body.scopes))
+  // @ts-ignore
+  const integration = req.data.api as Types.Integration
+  const newSetup = formatSetup(String(req.body.setupKey), String(req.body.setupSecret), integration)
+  const setup = integrations.validateConfigurationCredentials(newSetup, integration)
   const setup_id = uuidv4()
-  const scopes = validateConfigurationScopes(String(req.body.scopes))
-  const setup = validateConfigurationSetup(req)
 
   await store('configurations').insert({
     buid: req.params.integration,
@@ -169,8 +173,11 @@ dashboard.get('/:integration/credentials/:setupId', async (req, res) => {
 // Form handler (POST)
 dashboard.post('/:integration/credentials/:setupId', async (req, res) => {
   const setupId = String(req.params.setupId)
-  const scopes = validateConfigurationScopes(String(req.body.scopes))
-  const setup = validateConfigurationSetup(req)
+  // @ts-ignore
+  const integration = req.data.api as Types.Integration
+  const newSetup = formatSetup(String(req.body.setupKey), String(req.body.setupSecret), integration)
+  const setup = integrations.validateConfigurationCredentials(newSetup, integration)
+  const scopes = integrations.validateConfigurationScopes(String(req.body.scopes))
 
   await store('configurations')
     .update({
@@ -243,26 +250,22 @@ const formatCredential = (data): IntegrationCredential => {
   }
 }
 
-const validateConfigurationScopes = (scopesAsString: string): string[] | null => {
-  const scopes: string = ((String(scopesAsString) as string) || '').trim()
-
-  return (scopes && scopes.split('\n')) || null
-}
-
-const validateConfigurationSetup = req => {
-  const integrationConfig = req.data.api.config
+const formatSetup = (
+  setupKey: string,
+  setupSecret: string,
+  integration: Types.Integration
+): { [key: string]: string } | undefined => {
+  const integrationConfig = integration.config
   const isOAuth2 = integrationConfig.authType == 'OAUTH2'
   const isOAuth1 = integrationConfig.authType == 'OAUTH1'
 
-  let setup = {}
-
   if (isOAuth1) {
-    setup = { consumerKey: String(req.body.setupKey), consumerSecret: String(req.body.setupSecret) }
+    return { consumerKey: setupKey, consumersecret: setupSecret }
   } else if (isOAuth2) {
-    setup = { clientID: String(req.body.setupKey), clientSecret: String(req.body.setupSecret) }
+    return { clientId: setupKey, clientSecret: setupSecret }
   }
 
-  return setup
+  return
 }
 
 interface IntegrationCredential {
