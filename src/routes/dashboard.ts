@@ -65,11 +65,11 @@ dashboard.get('/all', async (req, res) => {
   res.render('dashboard/home-all', { req })
 })
 
-dashboard.use('/:api', async (req, res, next) => {
-  const api = await integrations.get(req.params.api)
+dashboard.use('/:integration', async (req, res, next) => {
+  const api = await integrations.get(req.params.integration).catch(err => next(err))
 
   // @ts-ignore
-  req.ejs = { ...req.ejs, base_url: `/dashboard/${req.params.api}` }
+  req.ejs = { ...req.ejs, base_url: `/dashboard/${req.params.integration}` }
 
   // @ts-ignore
   req.data = { ...req.data, api }
@@ -77,10 +77,11 @@ dashboard.use('/:api', async (req, res, next) => {
   return next()
 })
 
-dashboard.get('/:api', async (req, res) => {
+dashboard.get('/:integrationId', async (req, res) => {
+  const integrationId = String(req.params.integrationId)
   const configurations = await store('configurations')
     .select('setup', 'setup_id', 'scopes', 'created_at')
-    .where({ buid: req.params.api })
+    .where({ buid: integrationId })
     .orderBy('created_at', 'desc')
     .limit(5)
     .offset(0)
@@ -92,7 +93,7 @@ dashboard.get('/:api', async (req, res) => {
 
   const authentications = await store('authentications')
     .select('auth_id', 'setup_id', 'created_at', 'updated_at')
-    .where({ buid: req.params.api })
+    .where({ buid: integrationId })
     .orderBy('updated_at', 'desc')
     .limit(5)
     .offset(0)
@@ -108,10 +109,10 @@ dashboard.get('/:api', async (req, res) => {
  */
 
 // List credentials saved
-dashboard.get('/:api/credentials', async (req, res) => {
+dashboard.get('/:integration/credentials', async (req, res) => {
   const configurations = await store('configurations')
     .select('setup', 'setup_id', 'scopes', 'created_at')
-    .where({ buid: req.params.api })
+    .where({ buid: req.params.integration })
     .limit(1)
 
   const credentials: IntegrationCredential[] = []
@@ -126,18 +127,18 @@ dashboard.get('/:api/credentials', async (req, res) => {
 })
 
 // Form to save new credentials
-dashboard.get('/:api/credentials/new', (req, res) => {
+dashboard.get('/:integration/credentials/new', (req, res) => {
   res.render('dashboard/api-credentials-new', { req })
 })
 
 // Form handler (POST)
-dashboard.post('/:api/credentials/new', async (req, res) => {
+dashboard.post('/:integration/credentials/new', async (req, res) => {
   const setup_id = uuidv4()
   const scopes = validateConfigurationScopes(String(req.body.scopes))
   const setup = validateConfigurationSetup(req)
 
   await store('configurations').insert({
-    buid: req.params.api,
+    buid: req.params.integration,
     setup_id,
     setup,
     scopes
@@ -148,10 +149,11 @@ dashboard.post('/:api/credentials/new', async (req, res) => {
 })
 
 // Update a pair of credentials
-dashboard.get('/:api/credentials/:setup_id', async (req, res) => {
+dashboard.get('/:integration/credentials/:setupId', async (req, res) => {
+  const setupId = String(req.params.setupId)
   const configuration = await store('configurations')
     .select('setup', 'setup_id', 'scopes', 'created_at')
-    .where({ buid: req.params.api, setup_id: req.params.setup_id })
+    .where({ buid: req.params.integration, setup_id: setupId })
     .first()
 
   if (!configuration) {
@@ -165,28 +167,28 @@ dashboard.get('/:api/credentials/:setup_id', async (req, res) => {
 })
 
 // Form handler (POST)
-dashboard.post('/:api/credentials/:setup_id', async (req, res) => {
-  const setup_id = req.params.setup_id
+dashboard.post('/:integration/credentials/:setupId', async (req, res) => {
+  const setupId = String(req.params.setupId)
   const scopes = validateConfigurationScopes(String(req.body.scopes))
   const setup = validateConfigurationSetup(req)
 
   await store('configurations')
     .update({
-      setup_id,
+      setup_id: setupId,
       setup,
       scopes
     })
-    .where({ buid: req.params.api, setup_id })
+    .where({ buid: req.params.integration, setup_id: setupId })
 
   // @ts-ignore
   res.redirect(302, `${req.ejs.base_url}`)
 })
 
-dashboard.get('/:api/authentications', async (req, res) => {
+dashboard.get('/:integration/authentications', async (req, res) => {
   const startAt = Number(req.query.startAt) || 0
   const authentications = await store('authentications')
     .select('auth_id', 'setup_id', 'created_at', 'updated_at')
-    .where({ buid: req.params.api })
+    .where({ buid: req.params.integration })
     .orderBy('updated_at', 'desc')
     .limit(25)
     .offset(startAt > 0 ? startAt : 0)
@@ -197,10 +199,11 @@ dashboard.get('/:api/authentications', async (req, res) => {
   res.render('dashboard/api-authentications', { req })
 })
 
-dashboard.get('/:api/authentications/:auth_id', async (req, res) => {
+dashboard.get('/:integration/authentications/:authId', async (req, res) => {
+  const authId = String(req.params.authId)
   const authentication = await store('authentications')
     .select('auth_id', 'user_attributes', 'created_at', 'updated_at')
-    .where({ buid: req.params.api, auth_id: req.params.auth_id })
+    .where({ buid: req.params.integration, auth_id: authId })
     .first()
 
   // @ts-ignore
@@ -209,9 +212,26 @@ dashboard.get('/:api/authentications/:auth_id', async (req, res) => {
   res.render('dashboard/api-authentications-item', { req })
 })
 
-dashboard.get('/:api/monitoring', (req, res) => {
+dashboard.get('/:integration/monitoring', (req, res) => {
   res.render('dashboard/api-monitoring', { req })
 })
+
+/**
+ * 404 Handler
+ */
+
+dashboard.use((req, res, next) => {
+  return res.status(404).render('dashboard/404')
+})
+
+dashboard.use((err, req, res, next) => {
+  console.error(err)
+  return res.status(500).render('dashboard/500')
+})
+
+/**
+ * Helpers
+ */
 
 const formatCredential = (data): IntegrationCredential => {
   return {
