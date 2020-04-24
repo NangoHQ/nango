@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <%- include('layout-head', { title: `Authentications - ${req.data.api.name} API` }) %>
+
+  <body>
+    <!-- Header -->
+    <%- include('layout-header-api') -%>
+
+    <main class="container">
+      <section>
+        <h2><%= req.data.authentication.auth_id %></h2>
+        <form>
+          <fieldset>
+            <label>Payload</label>
+            <textarea style="min-width: 380px;min-height: 25vh;">
+<%= JSON.stringify(req.data.authentication.user_attributes, null, 4) 
+              %></textarea
+            >
+          </fieldset>
+          <div class="form-actions">
+            <a class="button" href="javascript:history.back()">Cancel</a>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <%- include('layout-footer') -%>
+  </body>
+</html>
