@@ -324,6 +324,11 @@ form .form-actions {
   overflow: hidden;
 }
 
+.animation-removal {
+  opacity: 0;
+  transition: opacity 0.5s ease-in;
+}
+
 /**
  * Content > Error pages
  */
