@@ -14,7 +14,7 @@ import {
   getTokenWithClientCredentials,
   AuthorizationMethod,
   BodyFormat
-} from '../../../../clients/oauth2'
+} from '../../../clients/oauth2'
 import { responseToCredentials, getIdTokenJwt } from './common'
 // import { expandAuthConfig } from '../../../../api-config/auth-config'
 

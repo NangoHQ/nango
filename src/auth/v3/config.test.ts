@@ -4,7 +4,7 @@ import { TConnectConfigRequest, TCallbackConfigRequest, EAuthType } from './type
 import {
   getConfig
   // getSetupDetails
-} from '../../clients/integrations'
+} from '../clients/integrations'
 // import { mocked } from 'ts-jest/utils'
 import { expandAuthConfig } from '../../api-config/auth-config'
 

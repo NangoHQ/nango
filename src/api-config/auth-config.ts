@@ -3,7 +3,7 @@ import pick from 'lodash.pick'
 import { expandTemplate, UndefinedVariable } from './template'
 import { EAuthType, OAuth1SignatureMethod } from '../auth/v3/types'
 import { InvalidApiConfig, MissingApiConfigConnectParam } from './errors'
-import { AuthorizationMethod, BodyFormat } from '../clients/oauth2'
+import { AuthorizationMethod, BodyFormat } from '../auth/clients/oauth2'
 import { GrantType } from '../auth/v3/strategies/oauth2'
 
 const labels: Record<string, string> = {

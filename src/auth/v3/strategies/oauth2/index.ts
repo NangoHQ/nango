@@ -12,7 +12,7 @@ import {
   IAuthResult
   // getSetupDetails,
   // updateAuthV3
-} from '../../../../clients/integrations'
+} from '../../../clients/integrations'
 // import { checkSetupIdConsistency } from '../setup-id-consistency'
 // import { getTokenWithRefreshToken, getTokenWithClientCredentials } from '../../../../clients/oauth2'
 import { authenticate as authCodeAuthenticate } from './auth-code'
