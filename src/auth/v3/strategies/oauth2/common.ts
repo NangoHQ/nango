@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken'
 
-import { TokenResult } from '../../../../clients/oauth2'
+import { TokenResult } from '../../../clients/oauth2'
 import { IOAuth2Credentials } from '../../types'
 
 export const NO_VALUE = 'non'

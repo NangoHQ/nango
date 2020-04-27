@@ -1,6 +1,6 @@
 import { expandAuthConfig, OAuth1AuthConfig, OAuth2AuthCodeConfig } from './auth-config'
 import { EAuthType, OAuth1SignatureMethod } from '../auth/v3/types'
-import { BodyFormat, AuthorizationMethod } from '../clients/oauth2'
+import { BodyFormat, AuthorizationMethod } from '../auth/clients/oauth2'
 import { GrantType } from '../auth/v3/strategies/oauth2'
 
 describe('expandAuthConfig', () => {

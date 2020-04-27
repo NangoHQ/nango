@@ -1,6 +1,6 @@
 // import { SetupDetailsNotFound } from '../errors'
-import { TIntegrationConfig, EAuthType } from '../auth/v3/types'
-import '../../integrations'
+import { TIntegrationConfig, EAuthType } from '../v3/types'
+import '../../../integrations'
 import Knex from 'knex'
 
 interface ICommonUserAttributes {

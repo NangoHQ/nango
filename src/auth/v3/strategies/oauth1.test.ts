@@ -6,7 +6,7 @@ import {
   // getSetupDetails,
   // getAuth,
   TOAuth1UserAttributes
-} from '../../../clients/integrations'
+} from '../../clients/integrations'
 import Integration from '../../../functions/integration'
 
 jest.mock('../../../clients/integrations')
