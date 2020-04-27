@@ -11,7 +11,11 @@
     </thead>
     <tbody>
       <% req.data.authentications.forEach(function(auth){ %>
-      <tr>
+      <tr
+        data-item-integration="<%= req.data.api.id %>"
+        data-item-type="authentication"
+        data-item-id="<%= auth.auth_id %>"
+      >
         <td><%= auth.auth_id %></td>
         <td><%= auth.setup_id %></td>
         <td></td>
@@ -20,7 +24,7 @@
         </td>
         <td class="col-actions">
           <a data-icon="view" href="<%= req.ejs.base_url %>/authentications/<%= auth.auth_id %>" title="View">View</a>
-          <a data-icon="delete" href="#delete" title="Delete">Delete</a>
+          <a data-icon="delete" href="#delete" onclick="removeItem(event)" title="Delete">Delete</a>
         </td>
       </tr>
       <% }); %>

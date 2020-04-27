@@ -90,7 +90,6 @@ body > header .logo {
   position: absolute;
   right: 1.5rem;
   top: 2rem;
-  width: 5rem;
   height: 5rem;
 }
 
@@ -323,6 +322,19 @@ form .form-actions {
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
+}
+
+.animation-removal {
+  opacity: 0;
+  transition: opacity 0.5s ease-in;
+}
+
+/**
+ * Content > Error pages
+ */
+
+.error {
+  text-align: center;
 }
 
 /**
