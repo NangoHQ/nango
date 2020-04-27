@@ -5,6 +5,7 @@
 
 import fs from 'fs'
 import path from 'path'
+import { Types } from '../../types'
 
 const integrationsDir = path.join(__dirname, '../../../', 'integrations')
 
@@ -13,7 +14,7 @@ const integrationsDir = path.join(__dirname, '../../../', 'integrations')
  * @returns an array of the integrations configuration.
  */
 
-const list = async (): Promise<Integration[]> => {
+export const list = async (): Promise<Types.Integration[]> => {
   return new Promise((resolve, reject) => {
     fs.readdir(integrationsDir, function(err, integrationsFiles) {
       if (err) {
@@ -47,7 +48,7 @@ const list = async (): Promise<Integration[]> => {
  * @returns the integration configuration.
  */
 
-const get = async (integrationName: string): Promise<Integration> => {
+export const get = async (integrationName: string): Promise<Types.Integration> => {
   return new Promise((resolve, reject) => {
     if (!integrationName) {
       return reject('Empty integration name provided.')
@@ -64,7 +65,7 @@ const get = async (integrationName: string): Promise<Integration> => {
 }
 
 const formatIntegration = (fileName: string, fileContent: any) => {
-  const integration = fileContent as Integration
+  const integration = fileContent as Types.Integration
   integration.id = fileName
   integration.image = 'http://logo.clearbit.com/' + integration.name.toLowerCase() + '.com'
 
@@ -75,15 +76,43 @@ const formatIntegration = (fileName: string, fileContent: any) => {
   return integration
 }
 
-interface Integration {
-  id: string
-  image: string
-  name: string
-  config: {
-    authType: string
-    setupKeyLabel: string
-    setupSecretLabel: string
-  }
+/**
+ * Validation
+ */
+
+export const validateConfigurationScopes = (scopesAsString: string): string[] | null => {
+  const scopes: string = ((String(scopesAsString) as string) || '').trim()
+
+  return (scopes && scopes.split('\n')) || null
 }
 
-export { get, list }
+export const validateConfigurationCredentials = (
+  setup: { [key: string]: string } | undefined,
+  integration: Types.Integration
+): Types.OAuth1Credentials | Types.OAuth2Credentials | undefined => {
+  if (!setup) {
+    return
+  }
+
+  const integrationConfig = integration.config
+  const isOAuth2 = integrationConfig.authType == 'OAUTH2'
+  const isOAuth1 = integrationConfig.authType == 'OAUTH1'
+
+  if (isOAuth1) {
+    const consumerKey = String(setup.consumerKey)
+    const consumerSecret = String(setup.consumerSecret)
+
+    if (consumerKey && consumerSecret) {
+      return { consumerKey, consumerSecret }
+    }
+  } else if (isOAuth2) {
+    const clientId = String(setup.clientId)
+    const clientSecret = String(setup.clientSecret)
+
+    if (clientId && clientSecret) {
+      return { clientId, clientSecret, clientID: clientId }
+    }
+  }
+
+  return
+}

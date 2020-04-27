@@ -76,3 +76,36 @@ export type TIdentifiersRequest = Request & {
 }
 
 /**********************/
+
+export namespace Types {
+  export interface Integration {
+    id: string
+    image: string
+    name: string
+    config: {
+      authType: string
+      setupKeyLabel: string
+      setupSecretLabel: string
+    }
+  }
+
+  export interface OAuth2Credentials {
+    clientID: string // TODO - Get rid of this in the database
+    clientId: string
+    clientSecret: string
+  }
+
+  export interface OAuth1Credentials {
+    consumerKey: string
+    consumerSecret: string
+  }
+
+  export interface Configuration {
+    id: string
+    object: string
+    scopes: string[]
+    credentials: OAuth1Credentials | OAuth2Credentials
+    createdAt?: string
+    modifiedAt?: string
+  }
+}
