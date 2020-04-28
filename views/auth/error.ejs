@@ -94,6 +94,10 @@
         font-weight: 600;
         letter-spacing: 0px;
       }
+
+      #error{
+        display: none;
+      } 
     </style>
   </head>
   <body>
@@ -124,10 +128,11 @@
             </p>
             <p id="error">Error: <%= error %></p>
             <a class="button" href="javascript:window.close()"> Close this window </a>
-            <a class="button" href="javascript:document.getElementById('error').style.display = 'block'"">Show error</a>
+            <a class="button" href="javascript:showError()"">Show error</a>
           </div>
         </div>
       </div>
     </div>
+    <script>function showError () {document.getElementById('error').style.display = 'block'}</script>
   </body>
 </html>
