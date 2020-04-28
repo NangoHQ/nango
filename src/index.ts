@@ -10,6 +10,7 @@ const { COOKIE_SECRET } = process.env
 export const BUID = 'bearerUid' // TODO - What is this for?
 
 const app = express()
+const PORT = process.env.port || 3000
 
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json({ limit: '5mb' }))
@@ -69,6 +70,9 @@ app.use(resourceNotFound)
  * Starting up the server
  */
 
-app.listen(process.env.PORT || 3000, () => {
-  console.log('Pizzly listening on port', process.env.PORT || 3000)
+app.listen(PORT, () => {
+  console.log('Pizzly listening on port', PORT)
+  if (PORT === 3000) {
+    console.log('http://localhost:3000')
+  }
 })

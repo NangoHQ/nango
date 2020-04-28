@@ -9,7 +9,7 @@ const respondWithOAuthError = (
 ) => {
   res.header('Content-Type', 'text/html')
   res.status(statusCode)
-  res.render('oauth-error', { error: `${code}: ${message}` })
+  res.render('auth/error', { error: `${code}: ${message}` })
 }
 
 const respondWithCallbackError = (req: TErrorHandlerRequest, res: Response, err: AuthenticationFailed) => {
@@ -23,14 +23,14 @@ const respondWithCallbackError = (req: TErrorHandlerRequest, res: Response, err:
   })
 }
 
-const respondWithCallbackUrlRequestError = (
+const respondWithCallbackPlaceholder = (
   req: TErrorHandlerRequest,
   res: Response,
   { statusCode, code, message }: { statusCode: number; code: string; message: string }
 ) => {
   res.header('Content-Type', 'text/html')
   res.status(statusCode)
-  res.render('callback-url-request-error', {
+  res.render('auth/placeholder', {
     error: `${code}: ${message}`,
     callbackUrl: req.originalUrl,
     method: req.method
@@ -48,7 +48,7 @@ export const errorHandler = (err: any, req: TErrorHandlerRequest, res: Response,
     }
 
     if (err instanceof NoAuthInProgress && isEmpty(req.query)) {
-      return respondWithCallbackUrlRequestError(req, res, err)
+      return respondWithCallbackPlaceholder(req, res, err)
     }
 
     return respondWithOAuthError(res, err)

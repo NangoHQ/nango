@@ -67,7 +67,7 @@ curl -X GET "http://localhost/github/authentications/691d596a-8b76-4628-a3f5-f6b
 -u "your_login:your_password" // TODO - Confirm it will be a basic authentication to query Pizzly's API
 ```
 
-For ease of use, you can also provide your own `authId` that Pizzly will use instead of generating one ([learn more](TODO)).
+For ease of use, you can also provide your own `authId` that Pizzly will use instead of generating one ([learn more](https://github.com/Bearer/Pizzly/wiki/TODO)).
 
 ### Calling an API endpoint (proxy)
 
@@ -138,7 +138,7 @@ pizzly
   })
 ```
 
-This is particularly useful when you are trying to build a marketplace of integrations ([learn more](TODO - Article on marketplace of integrations)).
+This is particularly useful when you are trying to build a marketplace of integrations ([learn more](https://github.com/Bearer/Pizzly/wiki/TODO)).
 
 ### Providing your own `authId`
 
