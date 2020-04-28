@@ -80,14 +80,12 @@ export const getConfig = async ({ buid }: { buid: string }) => {
   try {
     item = require(`../../../integrations/${buid}.json`)
   } catch (err) {
-    console.error('[ERROR]', err)
     if (err.code === 'MODULE_NOT_FOUND') {
       return false
     }
   }
 
   const configItem = item.config as TIntegrationConfig
-  console.log('[ITEM]', item)
   if (configItem.authType) {
     configItem.authType = configItem.authType.toUpperCase() as EAuthType
   }
