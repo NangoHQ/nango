@@ -15,7 +15,7 @@ const respondWithOAuthError = (
 const respondWithCallbackError = (req: TErrorHandlerRequest, res: Response, err: AuthenticationFailed) => {
   res.header('Content-Type', 'text/html')
   res.status(err.statusCode)
-  res.render('callback', {
+  res.render('auth/callback', {
     authId: req.authId,
     error: err.error,
     error_description: err.errorDescription,

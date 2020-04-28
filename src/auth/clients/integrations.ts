@@ -78,15 +78,16 @@ export const getAuth = async <IAuthResult>({ buid, authId, store }: IAuthParams 
 export const getConfig = async ({ buid }: { buid: string }) => {
   let item = {} as any
   try {
-    item = require(`../../integrations/${buid}.json`)
+    item = require(`../../../integrations/${buid}.json`)
   } catch (err) {
+    console.error('[ERROR]', err)
     if (err.code === 'MODULE_NOT_FOUND') {
       return false
     }
   }
 
   const configItem = item.config as TIntegrationConfig
-
+  console.log('[ITEM]', item)
   if (configItem.authType) {
     configItem.authType = configItem.authType.toUpperCase() as EAuthType
   }

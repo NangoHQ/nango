@@ -47,5 +47,5 @@ export const authSuccess = asyncMiddleware(async (req: AuthSuccessRequest, res: 
   console.log('[authSuccess] userAttributes', row)
 
   res.header('Content-Type', 'text/html')
-  res.render('callback', { authId, error: '', error_description: '', integrationUuid: buid })
+  res.render('auth/callback', { authId, error: '', error_description: '', integrationUuid: buid })
 })
