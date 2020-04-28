@@ -12,7 +12,7 @@ export default (req: Request, res: Response) => {
     res.status(404)
     if (req.accepts('html')) {
       res.header('Content-Type', 'text/html')
-      res.render('page-not-found-error', {
+      res.render('404', {
         method: req.method,
         error: '404: Page Not Found',
         callbackUrl: req.originalUrl

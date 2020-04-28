@@ -27,11 +27,11 @@ module.exports = [
   {
     resolve: resolve,
     mode: mode,
-    entry: { 'callback-script': './views/callback-script.ts' },
-    output: { path: __dirname + '/dist/views' },
+    entry: { 'callback-script': './views/auth/src/callback-script.ts' },
+    output: { path: __dirname + '/views/auth' },
     plugins: [
       new HtmlWebpackPlugin({
-        template: './views/callback.html',
+        template: './views/auth/src/callback.html',
         filename: 'callback.ejs',
         inlineSource: '.js$'
       }),
@@ -42,41 +42,16 @@ module.exports = [
   {
     resolve: resolve,
     mode: mode,
-    entry: { 'iframe-script': './views/iframe-script.ts' },
-    output: { path: __dirname + '/dist/views' },
+    entry: { 'init-script': './views/auth/src/init-script.ts' },
+    output: { path: __dirname + '/views/auth' },
     plugins: [
       new HtmlWebpackPlugin({
-        template: './views/iframe.html',
-        filename: 'iframe.ejs',
+        template: './views/auth/src/init.html',
+        filename: 'init.ejs',
         inlineSource: '.js$'
       }),
       new HtmlWebpackInlineSourcePlugin()
     ],
-    module: moduleConf
-  },
-  {
-    mode: mode,
-    entry: { 'error-script': './views/error-script.ts' },
-    output: { path: __dirname + '/dist/views' },
-    plugins: [
-      new HtmlWebpackPlugin({
-        template: './views/page-not-found-error.html',
-        filename: 'page-not-found-error.ejs',
-        inlineSource: '.js$'
-      }),
-      new HtmlWebpackPlugin({
-        template: './views/callback-url-request-error.html',
-        filename: 'callback-url-request-error.ejs',
-        inlineSource: '.js$'
-      }),
-      new HtmlWebpackPlugin({
-        template: './views/oauth-error.html',
-        filename: 'oauth-error.ejs',
-        inlineSource: '.js$'
-      }),
-      new HtmlWebpackInlineSourcePlugin()
-    ],
-    resolve: resolve,
     module: moduleConf
   }
 ]
