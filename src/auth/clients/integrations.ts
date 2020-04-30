@@ -1,6 +1,6 @@
 // import { SetupDetailsNotFound } from '../errors'
-import { TIntegrationConfig, EAuthType } from '../auth/v3/types'
-import '../../integrations'
+import { TIntegrationConfig, EAuthType } from '../v3/types'
+import '../../../integrations'
 import Knex from 'knex'
 
 interface ICommonUserAttributes {
@@ -78,7 +78,7 @@ export const getAuth = async <IAuthResult>({ buid, authId, store }: IAuthParams 
 export const getConfig = async ({ buid }: { buid: string }) => {
   let item = {} as any
   try {
-    item = require(`../../integrations/${buid}.json`)
+    item = require(`../../../integrations/${buid}.json`)
   } catch (err) {
     if (err.code === 'MODULE_NOT_FOUND') {
       return false
@@ -86,7 +86,6 @@ export const getConfig = async ({ buid }: { buid: string }) => {
   }
 
   const configItem = item.config as TIntegrationConfig
-
   if (configItem.authType) {
     configItem.authType = configItem.authType.toUpperCase() as EAuthType
   }

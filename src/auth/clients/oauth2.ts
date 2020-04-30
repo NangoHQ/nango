@@ -3,9 +3,9 @@ import Wreck from 'wreck'
 import http from 'http'
 import { URL } from 'url'
 
-import { AuthenticationFailed } from '../auth/v3/errors'
+import { AuthenticationFailed } from '../v3/errors'
 import Boom from 'boom'
-import { OAuthTokenResponse } from '../auth/v3/types'
+import { OAuthTokenResponse } from '../v3/types'
 // import { inspectAccessToken } from './openid-connect'
 
 const headers = { 'User-Agent': 'Bearer' }

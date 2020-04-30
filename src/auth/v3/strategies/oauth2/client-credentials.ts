@@ -1,7 +1,7 @@
 import { NextFunction, Response } from 'express'
 
 import { TAuthenticateRequest } from '../../types'
-import { getTokenWithClientCredentials } from '../../../../clients/oauth2'
+import { getTokenWithClientCredentials } from '../../../clients/oauth2'
 import { asyncMiddleware } from '../../../../errorHandler'
 import { responseToCredentials } from './common'
 

@@ -1,10 +1,14 @@
+<!--
+Static page when you GET the callback URL.
+-->
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Page Not Found</title>
+    <title>Pizzly's Callback URL</title>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro&display=swap" rel="stylesheet" />
     <style>
       * {
         -webkit-font-smoothing: antialiased;
@@ -16,8 +20,7 @@
       html,
       body {
         background-color: #f6f6fa;
-        font-family: 'Proxima Nova', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif,
-          'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+        font-family: 'Source Sans Pro', sans-serif;
         font-size: 16px;
         line-height: 16px;
       }
@@ -108,12 +111,11 @@
         </div>
       </div>
       <div>
-        <h3>Cannot <%= method %> <%= callbackUrl %></h3>
-        <h1>Page Not Found</h1>
+        <h1>That's your Pizzly's callback URL</h1>
 
-        <p>The requested URL <%= callbackUrl %> could not be found on this server.</p>
-        <p>Make sure that you've entered the right URL and try again</p>
-        <a class="button" href="https://github.com/pizzly/wiki/help">
+        <p>Register this URL to let Pizzly handle your application's OAuth dance.</p>
+        <p>To learn more about this callback URL, follow the instructions in the documentation.</p>
+        <a class="button" href="https://github.com/Bearer/Pizzly/wiki/TODO">
           <div class="icon-bg">
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12">
               <path
@@ -123,7 +125,7 @@
               />
             </svg>
           </div>
-          Get help
+          Open the documentation
         </a>
       </div>
     </div>
