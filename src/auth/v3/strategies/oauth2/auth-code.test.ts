@@ -1,7 +1,7 @@
 import { MiddlewareTestHarness } from '../../../../../tests/utils'
 import { authenticate } from './auth-code'
 import { TAuthenticateRequest, EAuthType, TIntegrationConfig } from '../../types'
-import { getCodeRedirectURL } from '../../../../clients/oauth2'
+import { getCodeRedirectURL } from '../../../clients/oauth2'
 import { responseToCredentials } from './common'
 
 jest.mock('../../../../clients/oauth2')

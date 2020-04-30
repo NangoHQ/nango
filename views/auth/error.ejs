@@ -94,6 +94,10 @@
         font-weight: 600;
         letter-spacing: 0px;
       }
+
+      #error{
+        display: none;
+      } 
     </style>
   </head>
   <body>
@@ -120,12 +124,15 @@
 
             <p>
               We were unable to connect you. Make sure the application is configured correctly and/or contact the
-              application owner to proceed further
+              application owner to proceed further.
             </p>
+            <p id="error">Error: <%= error %></p>
             <a class="button" href="javascript:window.close()"> Close this window </a>
+            <a class="button" href="javascript:showError()"">Show error</a>
           </div>
         </div>
       </div>
     </div>
+    <script>function showError () {document.getElementById('error').style.display = 'block'}</script>
   </body>
 </html>

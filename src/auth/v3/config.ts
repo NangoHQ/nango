@@ -4,7 +4,7 @@ import { NextFunction, Response } from 'express'
 import {
   getConfig
   // getSetupDetails
-} from '../../clients/integrations'
+} from '../clients/integrations'
 import { InvalidAuthType } from './errors'
 import { expandAuthConfig } from '../../api-config/auth-config'
 

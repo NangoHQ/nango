@@ -7,7 +7,7 @@ import { fetchAuthDetails } from '../auth/v3/strategy'
 import { middleware as proxyHandler } from '../functions/lambda-request'
 import { PROXY_PREFIX, setProxyFunction } from '../middlewares/v4/intent-info'
 import Integration from './integration'
-import { getSetupDetails } from '../clients/integrations'
+import { getSetupDetails } from '../auth/clients/integrations'
 
 const BUID = 'bearerUuid'
 
