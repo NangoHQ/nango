@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Proxy - Pizzly</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
+  <body>
+    <noscript>
+      You need to enable JavaScript to run this app.
+    </noscript>
+
+    <div id="example">
+      <button>Fetch data</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.2/axios.min.js"></script>
+    <script src="../dist/index.umd.js"></script>
+    <script>
+      function fetchData() {
+        const pizzly = new Pizzly('abc123...', { port: 3000 })
+
+        const github = pizzly.integration('github')
+        github.get('/')
+      }
+
+      document.querySelector('#example button').addEventListener('click', fetchData, false)
+    </script>
+  </body>
+</html>
