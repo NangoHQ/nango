@@ -52,7 +52,7 @@ export default class PizzlyConnect {
 
         if (!e) {
           const errorMessage =
-            'Authorization cancelled. The user might have interrupted the process by closing the authorization modal.'
+            'Authorization cancelled. The user has likely interrupted the process by closing the modal.'
           return reject(new Error(errorMessage))
         }
 
