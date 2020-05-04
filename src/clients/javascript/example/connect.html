@@ -14,11 +14,11 @@
       <button>Connect to GitHub</button>
     </div>
 
-    <script type="module">
-      import Pizzly from '../dist/index.mjs'
+    <script src="../dist/index.umd.js"></script>
+    <script>
       const pizzly = new Pizzly('abc123...', { port: 3000 })
 
-      export const connect = () => {
+      const connect = () => {
         pizzly
           .connect('github', { setupId: '4adf3721-a88-4d3f-9c7f-d6baee037263' })
           .then(console.log)
