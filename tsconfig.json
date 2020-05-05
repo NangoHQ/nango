@@ -2,7 +2,6 @@
   "compilerOptions": {
     "target": "es5",
     "module": "commonjs",
-    "sourceMap": true,
     "allowSyntheticDefaultImports": true,
     "downlevelIteration": true,
     "esModuleInterop": true,
@@ -10,6 +9,9 @@
     "noUnusedLocals": true,
     "strictNullChecks": true,
     "skipLibCheck": true,
-    "outDir": "dist/"
-  }
+    "outDir": "dist/",
+    "resolveJsonModule": true
+  },
+  "include": ["src", "config", "integrations"],
+  "exclude": ["src/clients/**/*", "**/*.test.*"]
 }
