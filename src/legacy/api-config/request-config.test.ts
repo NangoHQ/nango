@@ -1,13 +1,7 @@
 import { OAuth } from 'oauth'
 
 import { expandRequestConfig, RequestConfig } from './request-config'
-import {
-  EAuthType,
-  OAuth1SignatureMethod,
-  OAuth1AuthDetails,
-  AuthDetails,
-  BasicAuthDetails
-} from '../legacy/auth/v3/types'
+import { EAuthType, OAuth1SignatureMethod, OAuth1AuthDetails, AuthDetails, BasicAuthDetails } from '../auth/v3/types'
 
 jest.mock('oauth')
 

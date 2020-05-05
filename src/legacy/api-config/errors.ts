@@ -1,4 +1,4 @@
-import { UserError } from '../errors'
+import { UserError } from '../../errors'
 
 export class InvalidApiConfig extends UserError {
   constructor(label: string, subAttribute: string | undefined, variableName: string) {
