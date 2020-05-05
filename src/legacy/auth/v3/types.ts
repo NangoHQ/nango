@@ -1,5 +1,5 @@
 import { Request } from 'express'
-import Integration from '../../../functions/integration'
+import Integration from '../../functions/integration'
 import Knex from 'knex'
 
 export interface IAuthContext {

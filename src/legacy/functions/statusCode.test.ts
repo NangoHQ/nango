@@ -1,8 +1,8 @@
 import request from 'supertest'
 
-import { baseApp } from '../../tests/utils'
+import { baseApp } from '../../../tests/utils'
 import { intentStatusCode, proxyResponse } from './statusCodes'
-import { TBackendRequestV4 } from '../types'
+import { TBackendRequestV4 } from '../../types'
 
 const res = {
   status: jest.fn(() => res),

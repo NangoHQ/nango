@@ -2,7 +2,7 @@ import { Response, NextFunction } from 'express'
 
 import { IntegrationServiceRequest } from '../../types'
 import { asyncMiddleware } from '../../errorHandler'
-import Integration from '../../functions/integration'
+import Integration from '../functions/integration'
 
 export const configureAuthDetailsRequest = asyncMiddleware(
   async (req: AuthDetailsRequestInput, _res: Response, next: NextFunction) => {

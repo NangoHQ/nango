@@ -1,9 +1,9 @@
 import { v4 as uuidv4 } from 'uuid'
-import { MiddlewareTestHarness } from '../../tests/utils'
+import { MiddlewareTestHarness } from '../../../tests/utils'
 import { setupRetrieve, setupSave } from './setup-details'
-import { TBackendRequestV4 } from '../types'
+import { TBackendRequestV4 } from '../../types'
 // import { getSetupDetails, saveSetupDetails } from '../clients/integrations'
-import { SetupDetailsNotFound } from '../errors'
+import { SetupDetailsNotFound } from '../../errors'
 
 jest.mock('../clients/integrations')
 jest.mock('uuid/v4') // TODO: fix uuid upgrade

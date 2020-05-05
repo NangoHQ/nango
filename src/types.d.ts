@@ -1,7 +1,7 @@
 import { Request } from 'express'
 
 import { TWithInstrument } from './instrumentation/middleware'
-import { Integration } from './functions/integration'
+import { Integration } from './legacy/functions/integration'
 import { AuthDetails } from './legacy/auth/v3/types'
 
 export type Omit<T, K> = Pick<T, Exclude<keyof T, K>>

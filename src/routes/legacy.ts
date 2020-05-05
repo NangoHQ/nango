@@ -2,7 +2,7 @@ import * as express from 'express'
 import { cors } from '../legacy/proxy/cors'
 import authV3, { authRouter } from '../legacy/auth/v3/router'
 import { initializeDB } from '../lib/database'
-import functions from '../functions/router'
+import functions from '../legacy/functions/router'
 
 const legacy = express.Router()
 

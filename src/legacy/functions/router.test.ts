@@ -24,7 +24,7 @@ jest.mock('../auth/v3/strategy', () => ({
 
 import request from 'supertest'
 
-import { baseApp } from '../../tests/utils'
+import { baseApp } from '../../../tests/utils'
 import router, { proxyFunction } from './router'
 
 const app = baseApp()

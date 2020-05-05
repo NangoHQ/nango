@@ -6,7 +6,7 @@ import { authenticate, fetchAuthDetails, CLOCK_DRIFT_MS, GrantType } from '.'
 import { TAuthenticateRequest, EAuthType } from '../../types'
 // import { getSetupDetails, getAuth, updateAuthV3 } from '../../../../clients/integrations'
 // import { mocked } from 'ts-jest/utils'
-import Integration from '../../../../../functions/integration'
+import Integration from '../../../../functions/integration'
 import { authenticate as authCodeAuthenticate } from './auth-code'
 import { authenticate as clientCredentialsAuthenticate } from './client-credentials'
 import {
