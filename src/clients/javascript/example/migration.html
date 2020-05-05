@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Proxy - Pizzly</title>
+    <title>Migration from Bearer - Pizzly</title>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
   </head>
@@ -11,7 +11,8 @@
     </noscript>
 
     <div id="example">
-      <button>Fetch data</button>
+      <button>Fetch data (Pizzly)</button>
+      <button>Fetch data (Bearer)</button>
     </div>
 
     <script type="module">
@@ -25,6 +26,17 @@
       }
 
       document.querySelector('#example button').addEventListener('click', fetchData, false)
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@bearer/js@latest/lib/bearer.production.min.js"></script>
+    <script>
+      function fetchDataBearer() {
+        const bearerClient = bearer('BEARER_PUBLISHABLE_KEY', { integrationHost: 'http://localhost:3000' })
+
+        const github = bearerClient.integration('github')
+        github.get('/search?limit=10', { query: { q: 'pizzly' } })
+      }
+      document.querySelector('#example button:last-child').addEventListener('click', fetchDataBearer, false)
     </script>
   </body>
 </html>
