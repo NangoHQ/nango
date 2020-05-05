@@ -2,7 +2,7 @@ import merge from 'merge'
 import { OAuth } from 'oauth'
 
 import { expandTemplate, UndefinedVariable } from './template'
-import { EAuthType, AuthDetails, OAuth1AuthDetails } from '../auth/v3/types'
+import { EAuthType, AuthDetails, OAuth1AuthDetails } from '../legacy/auth/v3/types'
 import { MissingApiConfigHeader, InvalidApiConfig, MissingApiConfigConnectParam } from './errors'
 
 const labels: Record<keyof RequestConfig, string> = {

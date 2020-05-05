@@ -1,5 +1,5 @@
 import * as express from 'express'
-import authV3 from '../auth/v3/router'
+import authV3 from '../legacy/auth/v3/router'
 import { initializeDB } from '../lib/database'
 
 const auth = express.Router()
