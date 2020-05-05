@@ -14,8 +14,9 @@
       <button>Connect to GitHub</button>
     </div>
 
-    <script src="../dist/index.umd.js"></script>
-    <script>
+    <script type="module">
+      import Pizzly from '../dist/index.mjs'
+
       const pizzly = new Pizzly('abc123...', { port: 3000 })
 
       const connect = () => {

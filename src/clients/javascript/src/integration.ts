@@ -2,12 +2,11 @@
  * Pizzly(JS) > Integration
  */
 
-import axios from 'axios'
 import Types from './types'
 
 export default class PizzlyIntegration {
   private integration: string
-  private options: Types.IntegrationOptions
+  private options: Types.IntegrationOptions = {}
   private origin: string
 
   constructor(integration: string, options: Types.IntegrationOptions, origin: string) {
@@ -82,33 +81,60 @@ export default class PizzlyIntegration {
    */
 
   private request = (method: Types.RequestMethod, endpoint: string, parameters: Types.RequestParameters = {}) => {
-    console.log('doing request')
     if (parameters && typeof parameters !== 'object') {
       throw new Error(
         'Unable to trigger API request. Request parameters should be an object in the form "{ headers: { "Foo": "bar" }, body: "My body" }'
       )
     }
+    console.log(this.options)
 
     const headers: Types.RequestHeaders = {
-      'Bearer-Auth-Id': this.options.authId!,
-      'Bearer-Setup-Id': this.options.setupId!
-      // TODO - 'Bearer-Publishable-Key': this.bearerInstance.clientId
+      'Pizzly-Auth-Id': this.options.authId!,
+      'Pizzly-Setup-Id': this.options.setupId!
+      // TODO - 'Pizzly-Publishable-Key': this.key
     }
 
     if (parameters && parameters.headers) {
       for (const key in parameters.headers) {
-        headers[`Bearer-Proxy-${key}`] = parameters.headers[key]
+        headers[`Pizzly-Proxy-${key}`] = parameters.headers[key]
       }
     }
 
-    return axios.request({
+    const url = this.toURL(this.origin, `/proxy/${this.integration}`, endpoint, parameters.query)
+    const fetch = window.fetch
+
+    return fetch(url.toString(), {
       method,
       headers: this.cleanHeaders(headers),
-      baseURL: `${this.origin}/proxy/${this.integration}/`,
-      url: endpoint,
-      params: parameters.query,
-      data: parameters && parameters.body
+      body: parameters && parameters.body
     })
+  }
+
+  /**
+   * Helper to build a new URL from different params
+   */
+
+  private toURL(origin: string, baseURL: string, endpoint: string, queryString?: Types.RequestQueryString): URL {
+    const removeLeadingSlash = (text: string) => {
+      return text.replace(/^\//, '')
+    }
+
+    const removeTrailingSlash = (text: string) => {
+      return text.replace(/\/$/, '')
+    }
+
+    const urlParts: string[] = []
+    urlParts.push(removeTrailingSlash(origin))
+    urlParts.push(removeLeadingSlash(removeTrailingSlash(baseURL)))
+    urlParts.push(removeLeadingSlash(endpoint))
+
+    const url = new URL(urlParts.join('/'))
+
+    if (queryString) {
+      Object.keys(queryString).forEach(key => url.searchParams.append(key, String(queryString[key])))
+    }
+
+    return url
   }
 
   /**
