@@ -1,5 +1,3 @@
-import { AxiosRequestConfig } from 'axios'
-
 declare namespace Types {
   export interface ConnectOptions {
     authId?: string
