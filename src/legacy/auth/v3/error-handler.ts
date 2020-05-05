@@ -1,7 +1,7 @@
 import { TErrorHandlerRequest } from './types'
 import { Response, NextFunction } from 'express'
 import { AuthenticationFailed, NoAuthInProgress } from './errors'
-import { isEmpty } from '../../../functions/utils'
+import { isEmpty } from '../../functions/utils'
 
 const respondWithOAuthError = (
   res: Response,

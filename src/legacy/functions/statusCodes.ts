@@ -1,5 +1,5 @@
 import { Response } from 'express'
-import { TBackendRequestV4 } from '../types'
+import { TBackendRequestV4 } from '../../types'
 
 export function intentStatusCode(req: TBackendRequestV4, res: Response) {
   const { StatusCode, Payload } = req.bearerResponse

@@ -2,9 +2,9 @@ import Joi from '@hapi/joi'
 import { Response, NextFunction } from 'express'
 import { v4 as uuidv4 } from 'uuid'
 
-import { TBackendRequestV4 } from '../types'
-import { getSetupDetails, saveSetupDetails } from '../legacy/auth/clients/integrations'
-import { asyncMiddleware } from '../errorHandler'
+import { TBackendRequestV4 } from '../../types'
+import { getSetupDetails, saveSetupDetails } from '../auth/clients/integrations'
+import { asyncMiddleware } from '../../errorHandler'
 
 export const setupSave = asyncMiddleware(async (req: TBackendRequestV4, res: Response, next: NextFunction) => {
   const { referenceId } = req.query

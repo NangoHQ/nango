@@ -7,7 +7,7 @@ import {
   // getAuth,
   TOAuth1UserAttributes
 } from '../../clients/integrations'
-import Integration from '../../../../functions/integration'
+import Integration from '../../../functions/integration'
 
 jest.mock('../../../clients/integrations')
 

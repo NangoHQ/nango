@@ -1,9 +1,9 @@
 import { Response, NextFunction } from 'express'
 
-import { TBackendRequestV4 } from '../types'
-import { asyncMiddleware } from '../errorHandler'
-import { proxyHandler } from '../legacy/proxy/function'
-import { GenericFunctionError, UserError } from '../errors'
+import { TBackendRequestV4 } from '../../types'
+import { asyncMiddleware } from '../../errorHandler'
+import { proxyHandler } from '../proxy/function'
+import { GenericFunctionError, UserError } from '../../errors'
 
 export const BUID = 'bearerUid'
 const FAILING_HEADER_VALUE = new Set([undefined, null, ''])

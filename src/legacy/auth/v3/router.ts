@@ -12,7 +12,7 @@ import { compose } from 'compose-middleware'
 import { configureAuthDetailsRequest } from '../configure-request'
 import { authDetailsResponse } from '../auth-details'
 import { connectBuid } from '../../middlewares/set-identifiers'
-import { setupId } from '../../../functions/router'
+import { setupId } from '../../functions/router'
 
 export default () => {
   const authenticateAndRespond = compose(authenticate, destroySession, authSuccess)

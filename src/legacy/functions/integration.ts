@@ -1,4 +1,4 @@
-import { getConfig } from '../legacy/auth/clients/integrations'
+import { getConfig } from '../auth/clients/integrations'
 
 class Integration {
   private _config!: any
