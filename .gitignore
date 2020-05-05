@@ -6,6 +6,7 @@ jspm_packages
 
 .envrc
 
+.cache/
 coverage/
 .DS_Store
 dist/
