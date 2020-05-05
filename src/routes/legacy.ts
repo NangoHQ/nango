@@ -1,5 +1,5 @@
 import * as express from 'express'
-import { cors } from '../proxy/cors'
+import { cors } from '../legacy/proxy/cors'
 import authV3, { authRouter } from '../legacy/auth/v3/router'
 import { initializeDB } from '../lib/database'
 import functions from '../functions/router'
