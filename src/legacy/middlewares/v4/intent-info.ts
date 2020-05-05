@@ -1,10 +1,10 @@
 import omit from 'lodash.omit'
 
-import { TBackendRequestV4 } from '../../types'
-import { AuthDetails } from '../../legacy/auth/v3/types'
-import { asyncMiddleware } from '../../errorHandler'
-import { stripHopByHopHeaders } from '../../legacy/proxy/headers'
-import { expandRequestConfig } from '../../api-config/request-config'
+import { TBackendRequestV4 } from '../../../types'
+import { AuthDetails } from '../../auth/v3/types'
+import { asyncMiddleware } from '../../../errorHandler'
+import { stripHopByHopHeaders } from '../../proxy/headers'
+import { expandRequestConfig } from '../../../api-config/request-config'
 
 export const PROXY_PREFIX = '/bearer-proxy'
 

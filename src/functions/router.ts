@@ -5,7 +5,7 @@ import { setupSave, setupRetrieve } from './setup-details'
 import { proxyCorsMiddleware } from '../legacy/proxy/cors'
 import { fetchAuthDetails } from '../legacy/auth/v3/strategy'
 import { middleware as proxyHandler } from '../functions/lambda-request'
-import { PROXY_PREFIX, setProxyFunction } from '../middlewares/v4/intent-info'
+import { PROXY_PREFIX, setProxyFunction } from '../legacy/middlewares/v4/intent-info'
 import Integration from './integration'
 import { getSetupDetails } from '../legacy/auth/clients/integrations'
 
