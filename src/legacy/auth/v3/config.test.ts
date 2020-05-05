@@ -6,7 +6,7 @@ import {
   // getSetupDetails
 } from '../clients/integrations'
 // import { mocked } from 'ts-jest/utils'
-import { expandAuthConfig } from '../../../api-config/auth-config'
+import { expandAuthConfig } from '../../api-config/auth-config'
 
 jest.mock('../../clients/integrations')
 jest.mock('../../api-config/auth-config')

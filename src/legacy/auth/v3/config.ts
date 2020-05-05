@@ -6,7 +6,7 @@ import {
   // getSetupDetails
 } from '../clients/integrations'
 import { InvalidAuthType } from './errors'
-import { expandAuthConfig } from '../../../api-config/auth-config'
+import { expandAuthConfig } from '../../api-config/auth-config'
 
 const getAuthConfig = async (req: TConnectConfigRequest) => {
   const { connectParams, buid, setup } = req
