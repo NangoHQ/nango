@@ -104,10 +104,6 @@ export default class PizzlyConnect {
       query.push(`authId=${options.authId}`)
     }
 
-    if (typeof options.configId === 'string') {
-      query.push(`setupId=${options.configId}`)
-    }
-
     if (typeof options.setupId === 'string') {
       query.push(`setupId=${options.setupId}`)
     }
