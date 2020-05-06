@@ -7,7 +7,7 @@ Pizzly authorization callback. Read more about how to use it at: https://github.
     <title>Authorization callback</title>
   </head>
   <body>
-    You can close this window.
+    <noscript>JavaScript is required to proceed with the authentication.</noscript>
     <script type="text/javascript">
       window.integration = '<%= integrationUuid %>'
       window.authId = '<%= authId %>'
@@ -18,9 +18,11 @@ Pizzly authorization callback. Read more about how to use it at: https://github.
 
       if (window.authError) {
         message.eventType = 'AUTHORIZATION_FAILED'
-        message.error = {
-          type: window.authError,
-          message: window.authErrorDescription
+        message.data = {
+          error: {
+            type: window.authError,
+            message: window.authErrorDescription
+          }
         }
       } else {
         message.eventType = 'AUTHORIZATION_SUCEEDED'
@@ -28,10 +30,12 @@ Pizzly authorization callback. Read more about how to use it at: https://github.
       }
 
       // Tell the world what happened
-      window.opener.postMessage(message, '*')
+      window.opener && window.opener.postMessage(message, '*')
 
       // Close the modal
-      window.close()
+      window.setTimeout(function() {
+        window.close()
+      }, 300)
     </script>
   </body>
 </html>

@@ -66,7 +66,7 @@ export default class PizzlyConnect {
         if (event.eventType === 'AUTHORIZATION_SUCEEDED') {
           return resolve(event.data)
         } else if (event.eventType === 'AUTHORIZATION_FAILED') {
-          return reject(event.error)
+          return reject(event.data)
         }
 
         reject(new Error('Authorization failed. The response type is not supported'))
