@@ -8,9 +8,10 @@ import errorHandler from './errorHandler'
 
 const { COOKIE_SECRET } = process.env
 export const BUID = 'bearerUid' // TODO - What is this for?
+export const PORT = process.env.port || 8080
+export const AUTH_CALLBACK_URL = process.env.AUTH_CALLBACK_URL || ''
 
 const app = express()
-const PORT = process.env.port || 3000
 
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json({ limit: '5mb' }))
@@ -22,29 +23,35 @@ app.set('views', './views')
 app.set('trust proxy', 1)
 app.use('/assets', express.static('./views/assets'))
 
-/**y
+/**
+ * Project homepage
+ */
+
+app.get('/', routes.home)
+
+/**
+ * API endpoints
+ */
+
+app.use('/api', routes.api)
+
+/**
  * Authentication endpoints
  */
 
 app.use('/auth', routes.auth)
 
 /**
- * Proxy feature
- */
-
-app.use('/proxy', routes.proxy)
-
-/**
- * API
- */
-
-app.use('/api', routes.api)
-
-/**
  * Dashboard
  */
 
 app.use('/dashboard', routes.dashboard)
+
+/**
+ * Proxy feature
+ */
+
+app.use('/proxy', routes.proxy)
 
 /**
  * Legacy endpoints
@@ -72,7 +79,7 @@ app.use(resourceNotFound)
 
 app.listen(PORT, () => {
   console.log('Pizzly listening on port', PORT)
-  if (PORT === 3000) {
-    console.log('http://localhost:3000')
+  if (PORT === 8080) {
+    console.log('http://localhost:8080')
   }
 })
