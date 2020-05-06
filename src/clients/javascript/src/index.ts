@@ -3,7 +3,7 @@
  */
 
 import PizzlyConnect from './connect'
-import { integration } from './integration'
+import PizzlyIntegration from './integration'
 import Types from './types'
 
 export default class Pizzly {
@@ -52,7 +52,9 @@ export default class Pizzly {
    * Integration
    */
 
-  public integration = integration
+  public integration(integration: string, options?: Types.IntegrationOptions) {
+    return new PizzlyIntegration(integration, options || {}, this.origin)
+  }
 
   /**
    * Save config
