@@ -111,10 +111,13 @@ dashboard.get('/:integrationId', async (req, res) => {
 
 // List credentials saved
 dashboard.get('/:integration/credentials', async (req, res) => {
+  const startAt = Number(req.query.startAt) || 0
   const configurations = await store('configurations')
     .select('setup', 'setup_id', 'scopes', 'created_at')
     .where({ buid: req.params.integration })
-    .limit(1)
+    .orderBy('updated_at', 'desc')
+    .limit(25)
+    .offset(startAt > 0 ? startAt : 0)
 
   const credentials: IntegrationCredential[] = []
   configurations.forEach(item => {
