@@ -1,5 +1,5 @@
 import { ErrorRequestHandler, NextFunction, Response } from 'express'
-import { TBackendRequestV4 } from './types'
+import { TBackendRequestV4 } from '../types'
 
 export const asyncMiddleware = (fn: (req: any, res: any, next: any) => Promise<void | Response>) =>
   function asyncUtilWrap(req: any, res: any, next: any) {

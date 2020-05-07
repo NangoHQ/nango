@@ -1,4 +1,4 @@
-import { asyncMiddleware } from '../../../errorHandler'
+import { asyncMiddleware } from '../../errorHandler'
 import { IAuthConfig, EAuthType, TConnectConfigRequest, TCallbackConfigRequest } from './types'
 import { NextFunction, Response } from 'express'
 import {

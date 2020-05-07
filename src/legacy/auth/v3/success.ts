@@ -1,6 +1,6 @@
 import { Response } from 'express'
 import { AuthSuccessRequest } from './types'
-import { asyncMiddleware } from '../../../errorHandler'
+import { asyncMiddleware } from '../../../legacy/errorHandler'
 import { updateAuth, TOAuthPayload } from '../clients/integrations'
 
 export const authSuccess = asyncMiddleware(async (req: AuthSuccessRequest, res: Response) => {

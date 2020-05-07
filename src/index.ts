@@ -4,7 +4,7 @@ import passport from 'passport'
 import cookieParser from 'cookie-parser'
 import * as routes from './routes'
 import resourceNotFound from './resourceNotFound'
-import errorHandler from './errorHandler'
+import errorHandler from './legacy/errorHandler'
 
 const { COOKIE_SECRET } = process.env
 export const BUID = 'bearerUid' // TODO - What is this for?

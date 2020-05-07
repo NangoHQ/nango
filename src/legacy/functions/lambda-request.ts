@@ -1,7 +1,7 @@
 import { Response, NextFunction } from 'express'
 
 import { TBackendRequestV4 } from '../../types'
-import { asyncMiddleware } from '../../errorHandler'
+import { asyncMiddleware } from '../errorHandler'
 import { proxyHandler } from '../proxy/function'
 import { GenericFunctionError, UserError } from '../../errors'
 

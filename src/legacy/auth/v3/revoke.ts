@@ -1,4 +1,4 @@
-import { asyncMiddleware } from '../../../errorHandler'
+import { asyncMiddleware } from '../../errorHandler'
 import { TRevokeRequest } from './types'
 // import { revokeAuthV3 } from '../../clients/integrations'
 import { Response } from 'express'
