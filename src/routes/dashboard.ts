@@ -111,10 +111,13 @@ dashboard.get('/:integrationId', async (req, res) => {
 
 // List credentials saved
 dashboard.get('/:integration/credentials', async (req, res) => {
+  const startAt = Number(req.query.startAt) || 0
   const configurations = await store('configurations')
     .select('setup', 'setup_id', 'scopes', 'created_at')
     .where({ buid: req.params.integration })
-    .limit(1)
+    .orderBy('updated_at', 'desc')
+    .limit(25)
+    .offset(startAt > 0 ? startAt : 0)
 
   const credentials: IntegrationCredential[] = []
   configurations.forEach(item => {
@@ -206,6 +209,10 @@ dashboard.get('/:integration/authentications', async (req, res) => {
   res.render('dashboard/api-authentications', { req })
 })
 
+dashboard.get('/:integration/authentications/connect', (req, res) => {
+  res.render('dashboard/api-authentications-connect', { req })
+})
+
 dashboard.get('/:integration/authentications/:authId', async (req, res) => {
   const authId = String(req.params.authId)
   const authentication = await store('authentications')
@@ -228,12 +235,12 @@ dashboard.get('/:integration/monitoring', (req, res) => {
  */
 
 dashboard.use((req, res, next) => {
-  return res.status(404).render('dashboard/404')
+  return res.status(404).render('404')
 })
 
 dashboard.use((err, req, res, next) => {
   console.error(err)
-  return res.status(500).render('dashboard/500')
+  return res.status(500).render('500')
 })
 
 /**

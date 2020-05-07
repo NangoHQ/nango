@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <%- include('layout-head', { title: `Connect to ${req.data.api.name}` }) %>
+
+  <body>
+    <!-- Header -->
+    <%- include('layout-header-api') -%>
+
+    <main class="container">
+      <section>
+        <h2>Connect to <%= req.data.api.name %></h2>
+        <form>
+          <fieldset>
+            <label>Setup ID</label>
+            <input type="text" class="form-input" id="setupId" />
+          </fieldset>
+          <fieldset>
+            <label>Auth ID</label>
+            <input disabled="disabled" type="text" class="form-input" id="authId" />
+          </fieldset>
+          <div class="form-actions">
+            <button type="submit" class="button button-primary">Connect to <%= req.data.api.name %></button>
+            <a class="button" href="javascript:history.back()">Cancel</a>
+            <p id="status"></p>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <%- include('layout-footer') -%>
+
+    <script src="http://localhost:5000/dist/index.umd.min.js"></script>
+    <script>
+      document.forms[0].addEventListener('submit', e => {
+        e.preventDefault()
+
+        const setupId = document.getElementById('setupId').value || null
+        const pizzly = new Pizzly('PUBLISHABLE-KEY')
+
+        pizzly
+          .connect('github', { setupId })
+          .then(({ authId }) => {
+            const input = document.getElementById('authId')
+            input.value = authId
+            input.removeAttribute('disabled')
+
+            setStatus('Connected!')
+          })
+          .catch(err => {
+            setStatus('It failed.')
+            console.error(err)
+          })
+      })
+
+      function setStatus(status) {
+        document.getElementById('status').innerText = status
+      }
+    </script>
+  </body>
+</html>

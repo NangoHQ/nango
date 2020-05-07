@@ -13,5 +13,5 @@
     "resolveJsonModule": true
   },
   "include": ["src", "config", "integrations"],
-  "exclude": ["src/clients/**/*", "**/*.test.*"]
+  "exclude": ["src/clients/**/*", "**/*.test.*", "dist"]
 }
