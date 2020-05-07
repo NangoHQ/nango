@@ -1,15 +1,16 @@
 {
   "name": "pizzly",
-  "version": "0.2",
+  "version": "0.2.0",
   "description": "",
   "author": "engineering@bearer.sh",
   "license": "ISC",
   "main": "dist/src/index.js",
   "types": "src/types.d.ts",
   "scripts": {
-    "build": "rimraf dist/ && yarn tsc -p tsconfig.json",
+    "prepare": "npm run migrations && npm run build",
+    "build": "rimraf dist/ && tsc -p tsconfig.json",
     "start": "node dist/src",
-    "run:migrations": "yarn knex --cwd dist/config migrate:latest",
+    "migrations": "knex --cwd dist/config migrate:latest",
     "test": "jest"
   },
   "engines": {
