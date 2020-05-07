@@ -30,7 +30,7 @@
         <!-- /Credentials empty state -->
 
         <!-- Credentials pagination (see more) -->
-        <% } else if (req.data.credentials.length > 5) { %>
+        <% } else if (req.data.credentials.length > 4) { %>
         <div class="pagination">
           <a href="<%= req.ejs.base_url %>/credentials" class="button">See more</a>
         </div>
@@ -43,7 +43,9 @@
         <header>
           <h2 class="section-heading">Authenticated users</h2>
           <aside>
-            <a href="https://github.com/Bearer/Pizzly/wiki/TODO" class="button button-primary">Add a connect button</a>
+            <a href="<%= req.ejs.base_url %>/authentications/connect" class="button button-primary"
+              >Add a connect button</a
+            >
           </aside>
         </header>
 

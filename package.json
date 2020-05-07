@@ -1,18 +1,21 @@
 {
   "name": "pizzly",
-  "version": "0.2",
+  "version": "0.2.0",
   "description": "",
+  "author": "engineering@bearer.sh",
+  "license": "ISC",
+  "main": "dist/src/index.js",
+  "types": "src/types.d.ts",
+  "scripts": {
+    "prepare": "npm run migrations && npm run build",
+    "build": "rimraf dist/ && tsc -p tsconfig.json",
+    "start": "node dist/src",
+    "migrations": "knex --cwd dist/config migrate:latest",
+    "test": "jest"
+  },
   "engines": {
     "node": ">= 10"
   },
-  "scripts": {
-    "test": "jest",
-    "build": "rimraf dist/ && yarn tsc -p tsconfig.json",
-    "start": "node dist/src",
-    "run:migrations": "yarn knex --cwd dist/config migrate:latest"
-  },
-  "author": "engineering@bearer.sh",
-  "license": "ISC",
   "dependencies": {
     "@hapi/joi": "^15.1.1",
     "@types/sleep": "^0.0.7",
@@ -138,22 +141,5 @@
         "verbose": true
       }
     ]
-  },
-  "lint-staged": {
-    "*.{css,md,tsx,ts}": [
-      "prettier --write",
-      "git add"
-    ]
-  },
-  "config": {
-    "commitizen": {
-      "path": "./node_modules/cz-conventional-changelog"
-    }
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged",
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
-    }
   }
 }

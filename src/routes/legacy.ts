@@ -10,10 +10,10 @@ const legacy = express.Router()
  * Legacy endpoints for authentication.
  *
  * In Bearer.sh, users where triggering an OAuth dance by requesting:
- * https://int.bearer.sh/v2/auth/[API-NAME]?clientId=[SECRET-KEY]
+ * ${hostname}/v2/auth/[API-NAME]?clientId=[SECRET-KEY]
  *
  * In return, they had to register the following callback URL
- * https://int.bearer.sh/v2/auth/callback
+ * ${hostname}/v2/auth/callback
  * */
 
 const auth = legacy.use('/', cors, initializeDB, authV3())
@@ -23,7 +23,7 @@ const auth = legacy.use('/', cors, initializeDB, authV3())
  *
  * In Bearer.sh, users where also able to use a proxy that was populating
  * each request to the distant API with the right credentials. It was working like this
- * https://int.bearer.sh/api/v4/functions/[API-NAME]/[ENDPOINT-PATH]
+ * ${hostname}/api/v4/functions/[API-NAME]/[ENDPOINT-PATH]
  */
 
 const proxy = legacy.use('/', cors, initializeDB, functions())
