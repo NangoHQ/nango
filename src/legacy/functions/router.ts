@@ -1,6 +1,6 @@
 import { Router, NextFunction } from 'express'
 
-import errorHandler from '../../errorHandler'
+import errorHandler from '../../legacy/errorHandler'
 import { proxyCorsMiddleware } from '../proxy/cors'
 import { fetchAuthDetails } from '../auth/v3/strategy'
 import { middleware as proxyHandler } from './lambda-request'

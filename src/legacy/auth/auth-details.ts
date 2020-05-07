@@ -4,7 +4,7 @@ import { AuthDetailsRequest } from './configure-request'
 import { AuthDetails, EAuthType, OAuth1AuthDetails, OAuth2AuthDetails } from './v3/types'
 import { OAuthOnlyEndpoint } from './v3/errors'
 import { isOAuthType } from './v3/strategy'
-import { asyncMiddleware } from '../../errorHandler'
+import { asyncMiddleware } from '../errorHandler'
 import { NO_VALUE } from './v3/strategies/oauth2/common'
 
 enum TokenType {
