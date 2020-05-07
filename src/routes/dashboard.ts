@@ -10,9 +10,25 @@ import * as express from 'express'
 import { v4 as uuidv4 } from 'uuid'
 import * as integrations from '../lib/integrations'
 import { store } from '../lib/database'
+import { authentication } from '../lib/authentication'
 import { Types } from '../types'
 
 const dashboard = express.Router()
+
+/**
+ * Authentication middleware.
+ *
+ * Authenticate requests to the dashboard using a BASIC authentication.
+ * This requires that you've previously secured your Pizzly's instance.
+ * Learn more at https://github.com/Bearer/Pizzly/wiki/Secure
+ */
+
+dashboard.use('*', authentication.basic)
+
+/**
+ * General middleware to surchage the request variable with some EJS properties.
+ * This ease how we render files by the EJS template engine.
+ */
 
 dashboard.use('/', (req, res, next) => {
   // @ts-ignore
@@ -36,6 +52,12 @@ dashboard.use('/', (req, res, next) => {
   return next()
 })
 
+/**
+ * Dashboard's homepage
+ *
+ * @render the list of enabled APIs
+ */
+
 dashboard.get('/', async (req, res) => {
   const list = await integrations.list()
   const configurations = await store('configurations')
@@ -58,6 +80,12 @@ dashboard.get('/', async (req, res) => {
   res.render('dashboard/home', { req })
 })
 
+/**
+ * All APIs page
+ *
+ * @render the list of all APIs available in the "/integrations" directory
+ */
+
 dashboard.get('/all', async (req, res) => {
   const list = await integrations.list()
 
@@ -78,11 +106,15 @@ dashboard.use('/:integration', async (req, res, next) => {
   return next()
 })
 
-dashboard.get('/:integrationId', async (req, res) => {
-  const integrationId = String(req.params.integrationId)
+/**
+ * Integration's overview
+ */
+
+dashboard.get('/:integration', async (req, res) => {
+  const integration = String(req.params.integration)
   const configurations = await store('configurations')
     .select('setup', 'setup_id', 'scopes', 'created_at')
-    .where({ buid: integrationId })
+    .where({ buid: integration })
     .orderBy('created_at', 'desc')
     .limit(5)
     .offset(0)
@@ -94,7 +126,7 @@ dashboard.get('/:integrationId', async (req, res) => {
 
   const authentications = await store('authentications')
     .select('auth_id', 'setup_id', 'created_at', 'updated_at')
-    .where({ buid: integrationId })
+    .where({ buid: integration })
     .orderBy('updated_at', 'desc')
     .limit(5)
     .offset(0)
@@ -106,10 +138,13 @@ dashboard.get('/:integrationId', async (req, res) => {
 })
 
 /**
- * API > Credentials
+ * Integration > Credentials
  */
 
-// List credentials saved
+/**
+ * List all the credentials saved
+ */
+
 dashboard.get('/:integration/credentials', async (req, res) => {
   const startAt = Number(req.query.startAt) || 0
   const configurations = await store('configurations')
@@ -130,12 +165,18 @@ dashboard.get('/:integration/credentials', async (req, res) => {
   res.render('dashboard/api-credentials', { req })
 })
 
-// Form to save new credentials
+/**
+ * New credentials form (GET)
+ */
+
 dashboard.get('/:integration/credentials/new', (req, res) => {
   res.render('dashboard/api-credentials-new', { req })
 })
 
-// Form handler (POST)
+/**
+ * New credentials form handler (POST)
+ */
+
 dashboard.post('/:integration/credentials/new', async (req, res) => {
   const scopes = integrations.validateConfigurationScopes(String(req.body.scopes))
   // @ts-ignore
@@ -155,7 +196,10 @@ dashboard.post('/:integration/credentials/new', async (req, res) => {
   res.redirect(302, `${req.ejs.base_url}`)
 })
 
-// Update a pair of credentials
+/**
+ * Update credentials form
+ */
+
 dashboard.get('/:integration/credentials/:setupId', async (req, res) => {
   const setupId = String(req.params.setupId)
   const configuration = await store('configurations')
@@ -173,7 +217,10 @@ dashboard.get('/:integration/credentials/:setupId', async (req, res) => {
   res.render('dashboard/api-credentials-edit', { req })
 })
 
-// Form handler (POST)
+/**
+ * Update credentials form handler (POST)
+ */
+
 dashboard.post('/:integration/credentials/:setupId', async (req, res) => {
   const setupId = String(req.params.setupId)
   // @ts-ignore
@@ -194,6 +241,14 @@ dashboard.post('/:integration/credentials/:setupId', async (req, res) => {
   res.redirect(302, `${req.ejs.base_url}`)
 })
 
+/**
+ * Integration > Authentications
+ */
+
+/**
+ * List all the authentications generated
+ */
+
 dashboard.get('/:integration/authentications', async (req, res) => {
   const startAt = Number(req.query.startAt) || 0
   const authentications = await store('authentications')
@@ -209,9 +264,17 @@ dashboard.get('/:integration/authentications', async (req, res) => {
   res.render('dashboard/api-authentications', { req })
 })
 
+/**
+ * Connect generation to the integration
+ */
+
 dashboard.get('/:integration/authentications/connect', (req, res) => {
   res.render('dashboard/api-authentications-connect', { req })
 })
+
+/**
+ * Render information about a specific authentication (authId)
+ */
 
 dashboard.get('/:integration/authentications/:authId', async (req, res) => {
   const authId = String(req.params.authId)
@@ -225,6 +288,10 @@ dashboard.get('/:integration/authentications/:authId', async (req, res) => {
 
   res.render('dashboard/api-authentications-item', { req })
 })
+
+/**
+ * Integration > Monitoring
+ */
 
 dashboard.get('/:integration/monitoring', (req, res) => {
   res.render('dashboard/api-monitoring', { req })
