@@ -1,4 +1,16 @@
 export AUTH_CALLBACK_URL="http://localhost:8080/auth/callback"
 export AUTH_VHOST=YOUR_AUTH_HOST
 export PROXY_VHOST=YOUR_PROXY_HOST
-export COOKIE_SECRET=CHANGEME
+export COOKIE_SECRET="CHANGE_ME"
+
+# Secure your instance
+#
+# 1. Secure access to the dashboard
+#
+export AUTHENTICATION_USER=""
+export AUTHENTICATION_PASSWORD=""
+#
+# 2. Secure requests to the API
+#
+export SECRET_KEY=""
+export PUBLISHABLE_KEY=""
