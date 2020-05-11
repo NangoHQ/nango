@@ -137,15 +137,15 @@ describe('setupSave', () => {
       [
         'OAUTH2',
         [
-          { clientID: 'aClientId', clientSecret: 'aSecret', type: 'OAUTH2' },
-          { clientID: 'aClientId', clientSecret: 'aSecret', type: 'OaUtH2' },
-          { clientID: '', clientSecret: '', type: 'OAUTH2' }
+          { clientId: 'aClientId', clientSecret: 'aSecret', type: 'OAUTH2' },
+          { clientId: 'aClientId', clientSecret: 'aSecret', type: 'OaUtH2' },
+          { clientId: '', clientSecret: '', type: 'OAUTH2' }
         ],
         [
           { type: 'OAUTH2' },
           { clientId: 'aClientId', clientSecret: 'a secret', type: 'OAUTH2' },
-          { clientID: 'a clientId', clientSecre: 'a secret', type: 'OAUTH2' },
-          { clientID: 1, clientSecret: 4, type: 'OAUTH2' }
+          { clientId: 'a clientId', clientSecre: 'a secret', type: 'OAUTH2' },
+          { clientId: 1, clientSecret: 4, type: 'OAUTH2' }
         ]
       ],
       [

@@ -171,7 +171,7 @@ describe('fetchAuthDetails', () => {
     //   accessToken,
     //   idTokenJwt,
     //   callbackParamsJSON: withCallbackParams ? JSON.stringify(callbackParams) : undefined,
-    //   clientID: withClientCredentials ? oAuthClientId : undefined,
+    //   clientId: withClientCredentials ? oAuthClientId : undefined,
     //   clientSecret: withClientCredentials ? clientSecret : undefined,
     //   idToken: idTokenValue,
     //   refreshToken: effectiveRefreshToken,
@@ -179,7 +179,7 @@ describe('fetchAuthDetails', () => {
     // }
 
     // mocked(getSetupDetails)
-    //   .mockResolvedValueOnce({ clientSecret, clientID: oAuthClientId })
+    //   .mockResolvedValueOnce({ clientSecret, clientId: oAuthClientId })
     //   .mockClear()
     // mocked(getAuth)
     //   .mockResolvedValueOnce(withCredentials ? credentials : undefined)
@@ -216,13 +216,13 @@ describe('fetchAuthDetails', () => {
       expect(auth.tokenResponse).toEqual(tokenResponse)
     })
 
-    it('looks up the clientID and clientSecret if not stored with the credentials', async () => {
+    it('looks up the clientId and clientSecret if not stored with the credentials', async () => {
       setup({ expiresIn: expiresInNever, withClientCredentials: false })
 
       const auth = await fetchAuthDetails(params, requiredIntegrationConfig)
 
       // expect(getSetupDetails).toHaveBeenCalled()
-      expect(auth).toMatchObject({ clientSecret, clientID: oAuthClientId })
+      expect(auth).toMatchObject({ clientSecret, clientId: oAuthClientId })
     })
   })
 

@@ -15,7 +15,7 @@ import {
 
 jest.mock('./openid-connect')
 
-const clientID = 'test-oauth-client-id'
+const clientId = 'test-oauth-client-id'
 const clientSecret = 'test-client-secret'
 const accessToken = 'test-access-token'
 const refreshToken = 'test-refresh-token'
@@ -30,7 +30,7 @@ const tokenURL = 'https://example.com/token'
 
 const authorizationParams = { auth: 'param' }
 
-const encodedOAuthClientDetails = Buffer.from(`${clientID}:${clientSecret}`).toString('base64')
+const encodedOAuthClientDetails = Buffer.from(`${clientId}:${clientSecret}`).toString('base64')
 
 const minimalResponse = {
   access_token: accessToken
@@ -177,7 +177,7 @@ describe('getCodeRedirectURL', () => {
       authorizationParams,
       authorizationURL,
       callbackURL,
-      clientID,
+      clientId,
       scope,
       state
     })
@@ -189,14 +189,14 @@ describe('getCodeRedirectURL', () => {
 describe('getTokenWithCode', () => {
   const code = 'test-code'
   const tokenParams = { token: 'param' }
-  const params = { callbackURL, clientID, clientSecret, code, tokenParams, tokenURL, scope }
+  const params = { callbackURL, clientId, clientSecret, code, tokenParams, tokenURL, scope }
 
   const mockRequest = () =>
     nock('https://example.com')
       .post(
         '/token',
         // tslint:disable-next-line:max-line-length
-        `grant_type=authorization_code&token=param&code=${code}&redirect_uri=https%3A%2F%2Fbearer.example.com%2Fcallback&client_id=${clientID}&client_secret=${clientSecret}`,
+        `grant_type=authorization_code&token=param&code=${code}&redirect_uri=https%3A%2F%2Fbearer.example.com%2Fcallback&client_id=${clientId}&client_secret=${clientSecret}`,
         {
           reqheaders: {
             ...commonHeaders,
@@ -242,7 +242,7 @@ describe('getTokenWithCode', () => {
       .post(
         '/token',
         // tslint:disable-next-line:max-line-length
-        `{"grant_type":"authorization_code","token":"param","code":"${code}","redirect_uri":"${callbackURL}","client_id":"${clientID}","client_secret":"${clientSecret}"}`,
+        `{"grant_type":"authorization_code","token":"param","code":"${code}","redirect_uri":"${callbackURL}","client_id":"${clientId}","client_secret":"${clientSecret}"}`,
         {
           reqheaders: {
             ...commonHeaders,
@@ -265,13 +265,13 @@ describe('getTokenWithCode', () => {
 describe('getTokenWithRefreshToken', () => {
   const oldRefreshToken = 'old-refresh-token'
   const oldIdToken = 'old-id-token'
-  const params = { clientID, clientSecret, tokenURL, idToken: oldIdToken, refreshToken: oldRefreshToken }
+  const params = { clientId, clientSecret, tokenURL, idToken: oldIdToken, refreshToken: oldRefreshToken }
 
   const mockRequest = () =>
     nock('https://example.com')
       .post(
         '/token',
-        `grant_type=refresh_token&refresh_token=${oldRefreshToken}&client_id=${clientID}&client_secret=${clientSecret}`,
+        `grant_type=refresh_token&refresh_token=${oldRefreshToken}&client_id=${clientId}&client_secret=${clientSecret}`,
         {
           reqheaders: {
             ...commonHeaders,
@@ -322,7 +322,7 @@ describe('getTokenWithRefreshToken', () => {
       .post(
         '/token',
         // tslint:disable-next-line:max-line-length
-        `{"grant_type":"refresh_token","refresh_token":"${oldRefreshToken}","client_id":"${clientID}","client_secret":"${clientSecret}"}`,
+        `{"grant_type":"refresh_token","refresh_token":"${oldRefreshToken}","client_id":"${clientId}","client_secret":"${clientSecret}"}`,
         {
           reqheaders: {
             ...commonHeaders,
@@ -343,13 +343,13 @@ describe('getTokenWithRefreshToken', () => {
 })
 
 describe('getTokenWithClientCredentials', () => {
-  const params = { clientID, clientSecret, tokenURL, scope }
+  const params = { clientId, clientSecret, tokenURL, scope }
 
   const mockRequest = () =>
     nock('https://example.com')
       .post(
         '/token',
-        `grant_type=client_credentials&scope=read%20write&client_id=${clientID}&client_secret=${clientSecret}`,
+        `grant_type=client_credentials&scope=read%20write&client_id=${clientId}&client_secret=${clientSecret}`,
         {
           reqheaders: {
             ...commonHeaders,
@@ -390,7 +390,7 @@ describe('getTokenWithClientCredentials', () => {
       .post(
         '/token',
         // tslint:disable-next-line:max-line-length
-        `{"grant_type":"client_credentials","scope":"read write","client_id":"${clientID}","client_secret":"${clientSecret}"}`,
+        `{"grant_type":"client_credentials","scope":"read write","client_id":"${clientId}","client_secret":"${clientSecret}"}`,
         {
           reqheaders: {
             ...commonHeaders,

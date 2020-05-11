@@ -86,7 +86,7 @@ const joiExtended = Joi.extend({
 })
 
 const oauth2Validator = Joi.object().keys({
-  clientID: Joi.string()
+  clientId: Joi.string()
     .required()
     .allow(''),
   clientSecret: Joi.string()

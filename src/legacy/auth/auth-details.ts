@@ -16,14 +16,14 @@ enum TokenType {
 
 // Follows RFC7662 unless stated otherwise
 const formatToken = ({
-  clientID,
+  clientId,
   expiresIn,
   scopes,
   tokenType,
   updatedAt,
   value
 }: {
-  clientID: string
+  clientId: string
   expiresIn?: number
   scopes?: string[]
   tokenType: TokenType
@@ -41,7 +41,7 @@ const formatToken = ({
   return {
     active,
     value, // Not defined in RFC7662
-    client_id: clientID,
+    client_id: clientId,
     exp: expiresAt,
     iat: issuedAt,
     scope: scopes ? scopes.join(' ') : undefined,
@@ -73,7 +73,7 @@ const formatAuthDetails = (authType: EAuthType, authDetails: OAuth1AuthDetails |
       accessToken: formatToken({
         expiresIn,
         updatedAt,
-        clientID: consumerKey,
+        clientId: consumerKey,
         tokenType: TokenType.OAuth1,
         value: accessToken
       })
@@ -83,7 +83,7 @@ const formatAuthDetails = (authType: EAuthType, authDetails: OAuth1AuthDetails |
   const {
     accessToken,
     callbackParams,
-    clientID,
+    clientId,
     clientSecret,
     expiresIn,
     idToken,
@@ -96,19 +96,19 @@ const formatAuthDetails = (authType: EAuthType, authDetails: OAuth1AuthDetails |
   // OAuth2
   return {
     callbackParams,
-    clientID,
+    clientId,
     clientSecret,
     idTokenJwt,
     tokenResponse,
     accessToken: formatToken({
-      clientID,
+      clientId,
       updatedAt,
       expiresIn,
       tokenType: TokenType.OAuth2AccessToken,
       value: accessToken
     }),
-    idToken: formatToken({ clientID, updatedAt, tokenType: TokenType.OpenIDConnectToken, value: idToken }),
-    refreshToken: formatToken({ clientID, updatedAt, tokenType: TokenType.OAuth2RefreshToken, value: refreshToken })
+    idToken: formatToken({ clientId, updatedAt, tokenType: TokenType.OpenIDConnectToken, value: idToken }),
+    refreshToken: formatToken({ clientId, updatedAt, tokenType: TokenType.OAuth2RefreshToken, value: refreshToken })
   }
 }
 
