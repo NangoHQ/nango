@@ -160,13 +160,13 @@ export const authenticate = (req: TAuthenticateRequest, res: Response, next: Nex
 export const fetchAuthDetails = async (params: IFetchAuthDetailsParams, integrationConfig: TIntegrationConfig) => {
   const { buid, integration, authId, store, setup } = params
 
-  const credentials = await getAuth<IAuthResult>({
+  const authentication = await getAuth<IAuthResult>({
     store,
     buid: integration.buid,
     authId: authId!
   })
 
-  if (!credentials || !credentials.payload || !credentials.payload.accessToken) {
+  if (!authentication || !authentication.payload || !authentication.payload.accessToken) {
     throw new InvalidAuthId(buid, authId!)
   }
 
@@ -180,7 +180,7 @@ export const fetchAuthDetails = async (params: IFetchAuthDetailsParams, integrat
     idTokenJwt,
     refreshToken,
     tokenResponseJSON
-  } = credentials.payload
+  } = authentication.payload
   const tokenResponse = tokenResponseJSON ? JSON.parse(tokenResponseJSON) : undefined
   const callbackParams = callbackParamsJSON ? JSON.parse(callbackParamsJSON) : undefined
 
@@ -205,8 +205,6 @@ export const fetchAuthDetails = async (params: IFetchAuthDetailsParams, integrat
     setup: { clientId, clientSecret }
   } = setup
   // }
-
-  console.log('[fetchAuthDetails] credentials', credentials)
 
   return {
     accessToken,

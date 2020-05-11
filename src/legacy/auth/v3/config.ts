@@ -9,10 +9,10 @@ import { InvalidAuthType } from './errors'
 import { expandAuthConfig } from '../../api-config/auth-config'
 
 const getAuthConfig = async (req: TConnectConfigRequest) => {
-  const { connectParams, buid, setup } = req
+  const { connectParams, buid, configuration } = req
 
   return {
-    setupDetails: setup,
+    setupDetails: configuration,
     integrationConfig: expandAuthConfig({
       connectParams,
       authConfig: (await getConfig({

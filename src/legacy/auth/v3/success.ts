@@ -4,7 +4,7 @@ import { asyncMiddleware } from '../../../errorHandler'
 import { updateAuth, TOAuthPayload } from '../clients/integrations'
 
 export const authSuccess = asyncMiddleware(async (req: AuthSuccessRequest, res: Response) => {
-  const { connectParams, setupId, authId, credentials, store, setup } = req
+  const { connectParams, setupId, authId, credentials, store, configuration } = req
   const buid = req.buid!
 
   const payload: TOAuthPayload = {
@@ -20,9 +20,9 @@ export const authSuccess = asyncMiddleware(async (req: AuthSuccessRequest, res: 
     payload.scopes = req.integrationConfig.config.scope || []
   }
 
-  if (setup && setup.scopes) {
-    console.log('[authSuccess] scopes', setup.scopes)
-    payload.scopes = setup.scopes
+  if (configuration && configuration.scopes) {
+    console.log('[authSuccess] scopes', configuration.scopes)
+    payload.scopes = configuration.scopes
   }
 
   if (req.tokenResponse) {

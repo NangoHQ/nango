@@ -1,7 +1,6 @@
 import { Router, NextFunction } from 'express'
 
 import errorHandler from '../../errorHandler'
-import { setupSave, setupRetrieve } from './setup-details'
 import { proxyCorsMiddleware } from '../proxy/cors'
 import { fetchAuthDetails } from '../auth/v3/strategy'
 import { middleware as proxyHandler } from './lambda-request'
@@ -15,8 +14,6 @@ function functionsRouter() {
   const functionsRouter = Router({ mergeParams: true })
 
   functionsRouter.all(`${PROXY_PREFIX}/*`, setupId, fetchAuthDetails, setProxyFunction, proxyHandler())
-  functionsRouter.post('/setup-save', setupSave)
-  functionsRouter.post('/setup-retrieve', setupRetrieve)
   functionsRouter.use((_req, res) => res.status(404).send())
   functionsRouter.use(errorHandler)
 
@@ -70,10 +67,10 @@ function buid(req, _res, next) {
 
 export async function setupId(req, _res, next) {
   console.log('[setupId] query.setupId', req.query.setupId)
-  const setup = await getSetupDetails({ buid: req.buid, store: req.store, setupId: req.query.setupId })
-  console.log('[setupId] setup', JSON.stringify(setup, null, 2))
-  req.setupId = setup.setupId
-  req.setup = setup
+  const configuration = await getSetupDetails({ buid: req.buid, store: req.store, setupId: req.query.setupId })
+  console.log('[setupId] setup', JSON.stringify(configuration, null, 2))
+  req.setupId = configuration.setupId
+  req.configuration = configuration
 
   next()
 }
