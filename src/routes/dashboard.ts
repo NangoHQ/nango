@@ -113,7 +113,7 @@ dashboard.use('/:integration', async (req, res, next) => {
 dashboard.get('/:integration', async (req, res) => {
   const integration = String(req.params.integration)
   const configurations = await store('configurations')
-    .select('setup', 'setup_id', 'scopes', 'created_at')
+    .select('credentials', 'setup_id', 'scopes', 'created_at')
     .where({ buid: integration })
     .orderBy('created_at', 'desc')
     .limit(5)
@@ -148,7 +148,7 @@ dashboard.get('/:integration', async (req, res) => {
 dashboard.get('/:integration/credentials', async (req, res) => {
   const startAt = Number(req.query.startAt) || 0
   const configurations = await store('configurations')
-    .select('setup', 'setup_id', 'scopes', 'created_at')
+    .select('credentials', 'setup_id', 'scopes', 'created_at')
     .where({ buid: req.params.integration })
     .orderBy('updated_at', 'desc')
     .limit(25)
@@ -181,14 +181,14 @@ dashboard.post('/:integration/credentials/new', async (req, res) => {
   const scopes = integrations.validateConfigurationScopes(String(req.body.scopes))
   // @ts-ignore
   const integration = req.data.api as Types.Integration
-  const newSetup = formatSetup(String(req.body.setupKey), String(req.body.setupSecret), integration)
-  const setup = integrations.validateConfigurationCredentials(newSetup, integration)
+  const newCredentials = formatSetup(String(req.body.setupKey), String(req.body.setupSecret), integration)
+  const credentials = integrations.validateConfigurationCredentials(newCredentials, integration)
   const setup_id = uuidv4()
 
   await store('configurations').insert({
     buid: req.params.integration,
     setup_id,
-    setup,
+    credentials,
     scopes
   })
 
@@ -203,7 +203,7 @@ dashboard.post('/:integration/credentials/new', async (req, res) => {
 dashboard.get('/:integration/credentials/:setupId', async (req, res) => {
   const setupId = String(req.params.setupId)
   const configuration = await store('configurations')
-    .select('setup', 'setup_id', 'scopes', 'created_at')
+    .select('credentials', 'setup_id', 'scopes', 'created_at')
     .where({ buid: req.params.integration, setup_id: setupId })
     .first()
 
@@ -225,14 +225,14 @@ dashboard.post('/:integration/credentials/:setupId', async (req, res) => {
   const setupId = String(req.params.setupId)
   // @ts-ignore
   const integration = req.data.api as Types.Integration
-  const newSetup = formatSetup(String(req.body.setupKey), String(req.body.setupSecret), integration)
-  const setup = integrations.validateConfigurationCredentials(newSetup, integration)
+  const newCredentials = formatSetup(String(req.body.setupKey), String(req.body.setupSecret), integration)
+  const credentials = integrations.validateConfigurationCredentials(newCredentials, integration)
   const scopes = integrations.validateConfigurationScopes(String(req.body.scopes))
 
   await store('configurations')
     .update({
       setup_id: setupId,
-      setup,
+      credentials,
       scopes
     })
     .where({ buid: req.params.integration, setup_id: setupId })
@@ -317,8 +317,8 @@ dashboard.use((err, req, res, next) => {
 const formatCredential = (data): IntegrationCredential => {
   return {
     setupId: data.setup_id,
-    setupKey: data.setup.clientId || data.setup.consumerKey,
-    setupSecret: data.setup.clientSecret || data.setup.consumersecret,
+    setupKey: data.credentials.clientId || data.credentials.consumerKey,
+    setupSecret: data.credentials.clientSecret || data.credentials.consumersecret,
     scopes: data.scopes || [],
     created_at: new Date(data.created_at)
   }

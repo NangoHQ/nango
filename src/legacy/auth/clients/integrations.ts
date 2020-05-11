@@ -96,17 +96,17 @@ export const getConfig = async ({ buid }: { buid: string }) => {
 export const saveSetupDetails = async ({
   buid,
   setupId,
-  setup,
+  credentials,
   scopes,
   store
 }: {
   buid: string
   setupId: string
   store: Knex
-  setup: any
+  credentials: any
   scopes: string[] | undefined
 }) => {
-  await store('configurations').insert({ buid, setup, scopes, setup_id: setupId })
+  await store('configurations').insert({ buid, credentials, scopes, setup_id: setupId })
 }
 
 export const getSetupDetails = async ({
