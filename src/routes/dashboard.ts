@@ -317,7 +317,7 @@ dashboard.use((err, req, res, next) => {
 const formatCredential = (data): IntegrationCredential => {
   return {
     setupId: data.setup_id,
-    setupKey: data.setup.clientID || data.setup.consumerKey,
+    setupKey: data.setup.clientId || data.setup.consumerKey,
     setupSecret: data.setup.clientSecret || data.setup.consumersecret,
     scopes: data.scopes || [],
     created_at: new Date(data.created_at)

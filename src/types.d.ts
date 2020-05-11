@@ -90,7 +90,6 @@ export namespace Types {
   }
 
   export interface OAuth2Credentials {
-    clientID: string // TODO - Get rid of this in the database
     clientId: string
     clientSecret: string
   }

@@ -110,7 +110,7 @@ export const validateConfigurationCredentials = (
     const clientSecret = String(setup.clientSecret)
 
     if (clientId && clientSecret) {
-      return { clientId, clientSecret, clientID: clientId }
+      return { clientId, clientSecret }
     }
   }
 

@@ -24,7 +24,7 @@ export type TOAuth1Payload = ICommonOAuthPayload & {
 
 export type TOAuth2Payload = ICommonOAuthPayload & {
   accessToken: string
-  clientID?: string
+  clientId?: string
   clientSecret?: string
   refreshToken?: string
   expiresIn?: number

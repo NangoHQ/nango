@@ -16,14 +16,14 @@ const fetchConfiguration = async (issuerIdentifierURL: string): Promise<OpenIdCo
 }
 
 const inspectToken = async ({
-  clientID,
+  clientId,
   clientSecret,
   introspectionEndpoint,
   token,
   tokenType
 }: InspectTokenParams): Promise<TokenMetadata | undefined> => {
   const body = querystring.stringify({ token, token_type_hint: tokenType })
-  const options = { auth: { username: clientID, password: clientSecret }, headers: inspectHeaders }
+  const options = { auth: { username: clientId, password: clientSecret }, headers: inspectHeaders }
 
   try {
     return (await axios.post(introspectionEndpoint, body, options)).data
@@ -34,7 +34,7 @@ const inspectToken = async ({
 
 export const inspectAccessToken = async ({
   accessToken,
-  clientID,
+  clientId,
   clientSecret,
   tokenURL
 }: InspectAccessTokenParams) => {
@@ -43,7 +43,7 @@ export const inspectAccessToken = async ({
 
   if (config && config.introspection_endpoint) {
     return inspectToken({
-      clientID,
+      clientId,
       clientSecret,
       introspectionEndpoint: config.introspection_endpoint,
       token: accessToken,
@@ -54,13 +54,13 @@ export const inspectAccessToken = async ({
 
 interface InspectAccessTokenParams {
   accessToken: string
-  clientID: string
+  clientId: string
   clientSecret: string
   tokenURL: string
 }
 
 interface InspectTokenParams {
-  clientID: string
+  clientId: string
   clientSecret: string
   introspectionEndpoint: string
   token: string

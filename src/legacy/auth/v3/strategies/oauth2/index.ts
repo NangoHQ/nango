@@ -58,8 +58,8 @@ export const authenticate = (req: TAuthenticateRequest, res: Response, next: Nex
 //   // setupDetails
 // }) => {
 //   const { refreshToken, idToken } = existingCredentials
-//   // const { clientID, clientSecret } = setupDetails
-//   const { clientID, clientSecret } = { clientID: 'clientID', clientSecret: 'clientSecret' }
+//   // const { clientId, clientSecret } = setupDetails
+//   const { clientId, clientSecret } = { clientId: 'clientId', clientSecret: 'clientSecret' }
 
 //   const { authorizationMethod, bodyFormat, config, grantType, refreshURL, tokenURL } = integrationConfig
 
@@ -70,7 +70,7 @@ export const authenticate = (req: TAuthenticateRequest, res: Response, next: Nex
 //       return await getTokenWithClientCredentials({
 //         authorizationMethod,
 //         bodyFormat,
-//         clientID,
+//         clientId,
 //         clientSecret,
 //         scope,
 //         tokenURL
@@ -81,7 +81,7 @@ export const authenticate = (req: TAuthenticateRequest, res: Response, next: Nex
 //   }
 
 //   return await getTokenWithRefreshToken({
-//     ...{ clientID: 'ClientID', clientSecret: 'clientSecret' },
+//     ...{ clientId: 'ClientID', clientSecret: 'clientSecret' },
 //     // ...setupDetails,
 //     refreshToken,
 //     idToken,
@@ -138,14 +138,14 @@ export const authenticate = (req: TAuthenticateRequest, res: Response, next: Nex
 
 //   const callbackParams = callbackParamsJSON ? JSON.parse(callbackParamsJSON) : undefined
 
-//   // const { clientID, clientSecret } = setupDetails
-//   const { clientID, clientSecret } = { clientID: 'clientID', clientSecret: 'ClientSecret' }
+//   // const { clientId, clientSecret } = setupDetails
+//   const { clientId, clientSecret } = { clientId: 'clientId', clientSecret: 'ClientSecret' }
 //   const { accessToken, expiresIn, idToken, idTokenJwt, refreshToken } = credentials
 
 //   return {
 //     accessToken,
 //     callbackParams,
-//     clientID,
+//     clientId,
 //     clientSecret,
 //     connectParams,
 //     expiresIn,
@@ -199,10 +199,10 @@ export const fetchAuthDetails = async (params: IFetchAuthDetailsParams, integrat
   //   }
   // }
 
-  // const { clientID, clientSecret } = credentials
-  // if (!clientID || !clientSecret) {
+  // const { clientId, clientSecret } = credentials
+  // if (!clientId || !clientSecret) {
   const {
-    setup: { clientID, clientSecret }
+    setup: { clientId, clientSecret }
   } = setup
   // }
 
@@ -217,7 +217,7 @@ export const fetchAuthDetails = async (params: IFetchAuthDetailsParams, integrat
     refreshToken,
     tokenResponse,
     updatedAt,
-    clientID,
+    clientId,
     clientSecret,
     idTokenJwt: idTokenJwt || getIdTokenJwt(idToken)
   }

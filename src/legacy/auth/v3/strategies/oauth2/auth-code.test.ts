@@ -29,7 +29,7 @@ const fullIntegrationConfig = {
 }
 
 const setupDetails = {
-  clientID: 'test-client-id',
+  clientId: 'test-client-id',
   clientSecret: 'test-client-secret'
 }
 
