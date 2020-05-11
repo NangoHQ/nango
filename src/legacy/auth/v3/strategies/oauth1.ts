@@ -14,7 +14,7 @@ import {
 } from '../types'
 import { AuthenticationFailed, InvalidAuthId } from '../errors'
 import { AUTH_CALLBACK_URL } from '../../../../../src/'
-// import { getSetupDetails, getAuth, TOAuth1UserAttributes } from '../../../clients/integrations'
+// import { getSetupDetails, getAuth, TOAuth1Payload } from '../../../clients/integrations'
 import { checkSetupIdConsistency } from './setup-id-consistency'
 
 const responseData = createNamespace('BearerOAuth1ResponseData')
@@ -208,7 +208,7 @@ export const fetchAuthDetails = async (params: IFetchAuthDetailsParams, integrat
     consumerKey: 'consumerKey',
     consumerSecret: 'consumerSecret'
   }
-  // const credentials = await getAuth<TOAuth1UserAttributes>({
+  // const credentials = await getAuth<TOAuth1Payload>({
   //   servicesTableName,
   //   buid: integration.buid,
   //   authId: authId!,

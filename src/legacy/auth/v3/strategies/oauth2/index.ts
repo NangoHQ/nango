@@ -91,7 +91,7 @@ export const authenticate = (req: TAuthenticateRequest, res: Response, next: Nex
 
 // const refreshAndUpdateCredentials = async (
 //   params: IFetchAuthDetailsParams,
-//   existingCredentials: TOAuth2UserAttributes,
+//   existingCredentials: TOAuth2Payload,
 //   integrationConfig: TIntegrationConfig
 // ) => {
 //   const { integration, authId } = params
@@ -115,7 +115,7 @@ export const authenticate = (req: TAuthenticateRequest, res: Response, next: Nex
 //   const tokenResponse = merge.recursive(previousResponse, tokenResult.decodedResponse)
 //   const updatedAt = Date.now()
 
-//   const userAttributes: TOAuth2UserAttributes = {
+//   const oauthPayload: TOAuth2Payload = {
 //     setupId,
 //     updatedAt,
 //     tokenResponseJSON: JSON.stringify(tokenResponse),
@@ -125,12 +125,12 @@ export const authenticate = (req: TAuthenticateRequest, res: Response, next: Nex
 //   }
 
 //   if (callbackParamsJSON) {
-//     userAttributes.callbackParamsJSON = callbackParamsJSON
+//     oauthPayload.callbackParamsJSON = callbackParamsJSON
 //   }
 
 //   // await updateAuthV3({
 //   //   servicesTableName,
-//   //   userAttributes,
+//   //   payload: oauthPayload,
 //   //   buid: integration.buid,
 //   //   authId: authId!,
 //   //   clientId: environmentIdentifier
@@ -166,7 +166,7 @@ export const fetchAuthDetails = async (params: IFetchAuthDetailsParams, integrat
     authId: authId!
   })
 
-  if (!credentials || !credentials.user_attributes || !credentials.user_attributes.accessToken) {
+  if (!credentials || !credentials.payload || !credentials.payload.accessToken) {
     throw new InvalidAuthId(buid, authId!)
   }
 
@@ -180,7 +180,7 @@ export const fetchAuthDetails = async (params: IFetchAuthDetailsParams, integrat
     idTokenJwt,
     refreshToken,
     tokenResponseJSON
-  } = credentials.user_attributes
+  } = credentials.payload
   const tokenResponse = tokenResponseJSON ? JSON.parse(tokenResponseJSON) : undefined
   const callbackParams = callbackParamsJSON ? JSON.parse(callbackParamsJSON) : undefined
 

@@ -22,7 +22,7 @@ api.get('/:integrationId/authentications/:authenticationId', async (req, res) =>
   const authenticationId = req.params.authenticationId
 
   const authentication = await store('authentications')
-    .select('auth_id', 'user_attributes', 'created_at', 'updated_at')
+    .select('auth_id', 'payload', 'created_at', 'updated_at')
     .where({ buid: integrationId, auth_id: authenticationId })
     .first()
 
