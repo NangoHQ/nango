@@ -28,8 +28,10 @@ api.get('/:integrationId/authentications/:authenticationId', async (req, res) =>
 
   if (!authentication) {
     return res.status(404).json({
-      error: true,
-      message: `No authentication found having the id "${authenticationId}" for the integration "${integrationId}".`
+      error: {
+        type: 'unknown_authentication',
+        message: `No authentication found having the id "${authenticationId}" for the integration "${integrationId}".`
+      }
     })
   }
 
@@ -51,8 +53,10 @@ api.delete('/:integrationId/authentications/:authenticationId', async (req, res)
 
   if (!affectedRows) {
     return res.status(404).json({
-      error: true,
-      message: `No authentication found having the id "${authenticationId}" for the integration "${integrationId}".`
+      error: {
+        type: 'unknown_authentication',
+        message: `No authentication found having the id "${authenticationId}" for the integration "${integrationId}".`
+      }
     })
   }
 
@@ -80,7 +84,9 @@ api.post('/:integrationId/configurations', async (req, res, next) => {
   })
 
   if (!integration) {
-    res.status(404).json({ error: true, message: `Integration "${integrationId}" was not found.` })
+    res
+      .status(404)
+      .json({ error: { type: 'unknown_integration', message: `Integration "${integrationId}" was not found.` } })
     return
   }
 
@@ -88,8 +94,10 @@ api.post('/:integrationId/configurations', async (req, res, next) => {
 
   if (!Array.isArray(userScopes)) {
     res.status(400).json({
-      error: true,
-      message: `Scopes are malformed. Must be in the form string[].`
+      error: {
+        type: 'invalid_scopes',
+        message: `Scopes are malformed. Must be in the form string[].`
+      }
     })
     return
   }
@@ -99,8 +107,10 @@ api.post('/:integrationId/configurations', async (req, res, next) => {
 
   if (!credentials) {
     res.status(400).json({
-      error: true,
-      message: `Credentials are malformed. Must be an object in the form "{ clientId:string, clientSecret:string }" for an OAuth2 based API or "{ consumerKey:string, consumerSecret:string }" for an OAuth1 based API.`
+      error: {
+        type: 'invalid_credentials',
+        message: `Credentials are malformed. Must be an object in the form "{ clientId:string, clientSecret:string }" for an OAuth2 based API or "{ consumerKey:string, consumerSecret:string }" for an OAuth1 based API.`
+      }
     })
     return
   }
@@ -142,8 +152,10 @@ api.get('/:integrationId/:configurations/:configurationId', async (req, res) => 
 
   if (!config) {
     return res.status(404).json({
-      error: true,
-      message: `No configuration found having the id "${configurationId}" for the integration "${integrationId}".`
+      error: {
+        type: 'unknown_configuration',
+        message: `No configuration found having the id "${configurationId}" for the integration "${integrationId}".`
+      }
     })
   }
 
@@ -171,8 +183,10 @@ api.delete('/:integrationId/:configurations/:configurationId', async (req, res) 
 
   if (!affectedRows) {
     return res.status(404).json({
-      error: true,
-      message: `No configuration found having the id "${configurationId}" for the integration "${integrationId}".`
+      error: {
+        type: 'unknown_configuration',
+        message: `No configuration found having the id "${configurationId}" for the integration "${integrationId}".`
+      }
     })
   }
 
@@ -192,7 +206,9 @@ api.put('/:integrationId/:configurations/:configurationId', async (req, res) => 
   })
 
   if (!integration) {
-    res.status(404).json({ error: true, message: `Integration "${integrationId}" was not found.` })
+    res
+      .status(404)
+      .json({ error: { type: 'unknown_integration', message: `Integration "${integrationId}" was not found.` } })
     return
   }
 
@@ -200,8 +216,10 @@ api.put('/:integrationId/:configurations/:configurationId', async (req, res) => 
 
   if (!Array.isArray(userScopes)) {
     res.status(400).json({
-      error: true,
-      message: `Scopes are malformed. Must be in the form string[].`
+      error: {
+        type: 'invalid_scopes',
+        message: `Scopes are malformed. Must be in the form string[].`
+      }
     })
     return
   }
@@ -211,8 +229,10 @@ api.put('/:integrationId/:configurations/:configurationId', async (req, res) => 
 
   if (!credentials) {
     res.status(400).json({
-      error: true,
-      message: `Credentials are malformed. Must be an object in the form "{ clientId:string, clientSecret:string }" for an OAuth2 based API or "{ consumerKey:string, consumerSecret:string }" for an OAuth1 based API.`
+      error: {
+        type: 'invalid_credentials',
+        message: `Credentials are malformed. Must be an object in the form "{ clientId:string, clientSecret:string }" for an OAuth2 based API or "{ consumerKey:string, consumerSecret:string }" for an OAuth1 based API.`
+      }
     })
     return
   }
@@ -233,8 +253,10 @@ api.put('/:integrationId/:configurations/:configurationId', async (req, res) => 
 
   if (!affectedRows) {
     res.status(400).json({
-      error: true,
-      message: `No configuration found having the id "${configurationId}" for the integration "${integrationId}".`
+      error: {
+        type: 'unknown_configuration',
+        message: `No configuration found having the id "${configurationId}" for the integration "${integrationId}".`
+      }
     })
     return
   }
@@ -253,12 +275,12 @@ api.put('/:integrationId/:configurations/:configurationId', async (req, res) => 
  */
 
 api.use((req, res, next) => {
-  return res.status(404).json({ error: true, message: 'Ressource not found' })
+  return res.status(404).json({ error: { type: 'missing', message: 'Ressource not found' } })
 })
 
 api.use((err, req, res, next) => {
   console.error(err)
-  return res.status(400).json({ error: true, message: 'Bad request (error logged).' })
+  return res.status(400).json({ error: { type: 'invalid', message: 'Bad request.' } })
 })
 
 /**
