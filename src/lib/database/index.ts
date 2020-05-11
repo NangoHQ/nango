@@ -1,4 +1,5 @@
 import knex from 'knex'
+import express from 'express'
 import { connection } from '../../../config/constants'
 
 export const dbClient = function() {
@@ -13,7 +14,7 @@ export const dbClient = function() {
 }
 
 export const store = dbClient()
-export const initializeDB = function(req, _res, next) {
+export const initializeDB = function(req: express.Request, res: express.Response, next: express.NextFunction) {
   req.store = store
   next()
 }
