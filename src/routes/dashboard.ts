@@ -279,7 +279,7 @@ dashboard.get('/:integration/authentications/connect', (req, res) => {
 dashboard.get('/:integration/authentications/:authId', async (req, res) => {
   const authId = String(req.params.authId)
   const authentication = await store('authentications')
-    .select('auth_id', 'user_attributes', 'created_at', 'updated_at')
+    .select('auth_id', 'payload', 'created_at', 'updated_at')
     .where({ buid: req.params.integration, auth_id: authId })
     .first()
 

@@ -3,7 +3,7 @@ import { TIntegrationConfig, EAuthType } from '../v3/types'
 import '../../../../integrations'
 import Knex from 'knex'
 
-interface ICommonUserAttributes {
+interface ICommonOAuthPayload {
   serviceName: string
   userId: string
   updatedAt: number
@@ -14,7 +14,7 @@ interface ICommonUserAttributes {
   connectParams?: any
 }
 
-export type TOAuth1UserAttributes = ICommonUserAttributes & {
+export type TOAuth1Payload = ICommonOAuthPayload & {
   accessToken: string
   tokenSecret: string
   consumerKey?: string
@@ -22,7 +22,7 @@ export type TOAuth1UserAttributes = ICommonUserAttributes & {
   expiresIn: number
 }
 
-export type TOAuth2UserAttributes = ICommonUserAttributes & {
+export type TOAuth2Payload = ICommonOAuthPayload & {
   accessToken: string
   clientID?: string
   clientSecret?: string
@@ -37,13 +37,13 @@ interface IAuthParams {
   authId: string
 }
 
-export type TAuthUserAttributes = TOAuth1UserAttributes | TOAuth2UserAttributes
+export type TOAuthPayload = TOAuth1Payload | TOAuth2Payload
 
 export interface IAuthResult {
   id: string
   buid: string
   auth_id: string
-  user_attributes: {
+  payload: {
     accessToken: string
     refreshToken: string
     idToken: string
@@ -61,10 +61,10 @@ export const updateAuth = async ({
   buid,
   authId,
   setupId,
-  userAttributes,
+  payload,
   store
-}: IAuthParams & { userAttributes: TAuthUserAttributes } & { store: any; setupId: string }) => {
-  await store('authentications').insert({ buid, auth_id: authId, setup_id: setupId, user_attributes: userAttributes })
+}: IAuthParams & { payload: TOAuthPayload } & { store: any; setupId: string }) => {
+  await store('authentications').insert({ buid, auth_id: authId, setup_id: setupId, payload })
 }
 
 export const getAuth = async <IAuthResult>({ buid, authId, store }: IAuthParams & { store: any }) => {
