@@ -10,7 +10,7 @@ import * as express from 'express'
 import { v4 as uuidv4 } from 'uuid'
 import * as integrations from '../lib/integrations'
 import { store } from '../lib/database'
-import { authentication } from '../lib/authentication'
+import * as access from '../lib/access'
 import { Types } from '../types'
 
 const dashboard = express.Router()
@@ -23,7 +23,7 @@ const dashboard = express.Router()
  * Learn more at https://github.com/Bearer/Pizzly/wiki/Secure
  */
 
-dashboard.use('*', authentication.basic)
+dashboard.use('*', access.basic)
 
 /**
  * General middleware to surchage the request variable with some EJS properties.
