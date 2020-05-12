@@ -1,10 +1,21 @@
 import * as express from 'express'
 import { v4 as uuidv4 } from 'uuid'
 import { store } from '../lib/database'
+import * as access from '../lib/access'
 import * as integrations from '../lib/integrations'
 import { Types } from '../types'
 
 const api = express.Router()
+
+/**
+ * API authentication middleware.
+ *
+ * Authenticate requests to the API using a secret key.
+ * This requires that you've previously secured your Pizzly's instance.
+ * Learn more at https://github.com/Bearer/Pizzly/wiki/Secure
+ */
+
+api.use('*', access.secretKey)
 
 /**
  * Authentications endpoints:

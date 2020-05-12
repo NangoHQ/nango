@@ -6,11 +6,20 @@
  */
 
 import * as express from 'express'
-import { authentication } from '../lib/authentication'
+import * as access from '../lib/access'
 
 const home = express.Router()
 
-home.use('*', authentication.basic)
+/**
+ * Secure access to the homepage using BASIC authentication method
+ */
+
+home.use('*', access.basic)
+
+/**
+ * Render the homepage
+ */
+
 home.get('/', (req, res) => {
   res.render('home')
 })
