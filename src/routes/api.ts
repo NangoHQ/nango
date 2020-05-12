@@ -1,10 +1,14 @@
 import * as express from 'express'
+import bodyParser from 'body-parser'
 import { v4 as uuidv4 } from 'uuid'
 import { store } from '../lib/database'
 import * as integrations from '../lib/integrations'
 import { Types } from '../types'
 
 const api = express.Router()
+
+api.use(bodyParser.urlencoded({ extended: false }))
+api.use(bodyParser.json({ limit: '5mb' }))
 
 /**
  * Authentications endpoints:

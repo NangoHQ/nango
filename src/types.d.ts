@@ -99,6 +99,7 @@ export namespace Types {
     request: {
       baseURL: string
       headers?: { [key: string]: string }
+      params?: { [key: string]: string }
     }
   }
 
@@ -119,5 +120,12 @@ export namespace Types {
     credentials: OAuth1Credentials | OAuth2Credentials
     createdAt?: string
     modifiedAt?: string
+  }
+
+  export interface Authentication {
+    auth_id: string
+    payload: any
+    created_at: string
+    updated_at: string
   }
 }

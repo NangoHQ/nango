@@ -1,5 +1,4 @@
 import express from 'express'
-import bodyParser from 'body-parser'
 import passport from 'passport'
 import cookieParser from 'cookie-parser'
 import * as routes from './routes'
@@ -13,8 +12,6 @@ export const AUTH_CALLBACK_URL = process.env.AUTH_CALLBACK_URL || ''
 
 const app = express()
 
-app.use(bodyParser.urlencoded({ extended: false }))
-app.use(bodyParser.json({ limit: '5mb' }))
 app.use(passport.initialize())
 app.use(cookieParser(COOKIE_SECRET))
 

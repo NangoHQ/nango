@@ -66,9 +66,7 @@ function buid(req, _res, next) {
 }
 
 export async function setupId(req, _res, next) {
-  console.log('[setupId] query.setupId', req.query.setupId)
   const configuration = await getSetupDetails({ buid: req.buid, store: req.store, setupId: req.query.setupId })
-  console.log('[setupId] setup', JSON.stringify(configuration, null, 2))
   req.setupId = configuration.setupId
   req.configuration = configuration
 
