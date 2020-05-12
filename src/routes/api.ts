@@ -18,11 +18,17 @@ const api = express.Router()
 api.use('*', access.secretKey)
 
 /**
- * Authentications endpoints:
+ * List authentications endpoints:
  *
  * - GET /github/authentications/1ab2c3...
  * - DELETE /github/authentications/1ab2c3...
  */
+
+api.get('/', (req, res) => {
+  return res.status(200).json({
+    message: 'Successfully connected to the Pizzly API.'
+  })
+})
 
 /**
  * Retrieves an authentication (including OAuth payload).
@@ -290,8 +296,23 @@ api.use((req, res, next) => {
 })
 
 api.use((err, req, res, next) => {
-  console.error(err)
-  return res.status(400).json({ error: { type: 'invalid', message: 'Bad request.' } })
+  let status = 400
+  let type = 'invalid'
+  let message = 'Bad request.'
+
+  if (err.message === 'missing_secret_key') {
+    status = 401
+    type = err.message
+    message = 'Request is missing a valid secret key. Learn more at https://github.com/Bearer/Pizzly/wiki/Secure'
+  } else if (err.message === 'invalid_secret_key') {
+    status = 401
+    type = err.messsage
+    message = 'Invalid secret key provided.  Learn more at https://github.com/Bearer/Pizzly/wiki/Secure'
+  } else {
+    console.error(err)
+  }
+
+  return res.status(status).json({ error: { type, message } })
 })
 
 /**
