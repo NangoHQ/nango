@@ -22,7 +22,7 @@ api.get('/:integrationId/authentications/:authenticationId', async (req, res) =>
   const authenticationId = req.params.authenticationId
 
   const authentication = await store('authentications')
-    .select('auth_id', 'user_attributes', 'created_at', 'updated_at')
+    .select('auth_id', 'payload', 'created_at', 'updated_at')
     .where({ buid: integrationId, auth_id: authenticationId })
     .first()
 
@@ -126,7 +126,7 @@ api.post('/:integrationId/configurations', async (req, res, next) => {
   await store('configurations').insert({
     buid: integrationId,
     setup_id: configurationId,
-    setup: credentials,
+    credentials,
     scopes
   })
 
@@ -146,7 +146,7 @@ api.get('/:integrationId/:configurations/:configurationId', async (req, res) => 
   const configurationId = String(req.params.configurationId)
 
   const config = await store('configurations')
-    .select('setup', 'scopes', 'created_at', 'updated_at')
+    .select('credentials', 'scopes', 'created_at', 'updated_at')
     .where({ buid: integrationId, setup_id: configurationId })
     .first()
 
@@ -163,7 +163,7 @@ api.get('/:integrationId/:configurations/:configurationId', async (req, res) => 
     id: configurationId,
     object: 'configuration',
     scopes: config.scopes,
-    credentials: config.setup
+    credentials: config.credentials
   }
 
   res.json(configuration)
@@ -247,7 +247,7 @@ api.put('/:integrationId/:configurations/:configurationId', async (req, res) => 
   const affectedRows = await store('configurations')
     .where({ buid: integrationId, setup_id: configurationId })
     .update({
-      setup: credentials,
+      credentials,
       scopes
     })
 

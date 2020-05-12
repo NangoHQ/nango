@@ -36,7 +36,7 @@ Object {
   "callbackParams": Object {
     "callback": "param",
   },
-  "clientID": "test-client-id",
+  "clientId": "test-client-id",
   "clientSecret": "test-client-secret",
   "idToken": Object {
     "active": true,

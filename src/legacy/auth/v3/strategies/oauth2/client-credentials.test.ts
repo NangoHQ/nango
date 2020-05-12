@@ -9,7 +9,7 @@ jest.mock('./common')
 
 describe('authenticate', () => {
   const scope = ['print', 'email']
-  const clientID = 'test-client-id'
+  const clientId = 'test-client-id'
   const clientSecret = 'test-client-secret'
   // const accessToken = 'test-access-token'
   // const refreshToken = 'test-refresh-token'
@@ -27,7 +27,7 @@ describe('authenticate', () => {
           config: { scope },
           tokenURL: 'https://example.com/token'
         }
-        req.setupDetails = { clientID, clientSecret }
+        req.setupDetails = { clientId, clientSecret }
       },
       testMiddleware: authenticate
     })

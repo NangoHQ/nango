@@ -10,11 +10,11 @@ import { OAuthTokenResponse } from '../v3/types'
 
 const headers = { 'User-Agent': 'Bearer' }
 
-const createClientForRedirect = ({ authorizationURL, clientID }: RedirectClientParams) => {
+const createClientForRedirect = ({ authorizationURL, clientId }: RedirectClientParams) => {
   const url = new URL(authorizationURL)
 
   return simpleOauth2.create({
-    client: { id: clientID, secret: '' },
+    client: { id: clientId, secret: '' },
     auth: {
       tokenHost: url.origin,
       authorizeHost: url.origin,
@@ -27,14 +27,14 @@ const createClientForRedirect = ({ authorizationURL, clientID }: RedirectClientP
 const createClientForToken = ({
   authorizationMethod,
   bodyFormat,
-  clientID,
+  clientId,
   clientSecret,
   tokenURL
 }: TokenClientParams) => {
   const url = new URL(tokenURL)
 
   return simpleOauth2.create({
-    client: { id: clientID, secret: clientSecret },
+    client: { id: clientId, secret: clientSecret },
     auth: { tokenHost: url.origin, tokenPath: url.pathname },
     http: { headers, events: true },
     options: {
@@ -79,14 +79,14 @@ const translateNoTokenResponse = (response: any) => {
 }
 
 const getExpiresIn = async (params: TokenClientParams, token: simpleOauth2.Token) => {
-  // const { clientID, clientSecret, tokenURL } = params
+  // const { clientId, clientSecret, tokenURL } = params
 
   // Zoho doesn't follow the spec and returns `expires_in` in ms.
   // They provide the usual value in `expires_in_sec` instead
   const expiresIn = token.expires_in_sec || token.expires_in
 
   // if (!expiresIn) {
-  //   const metadata = await inspectAccessToken({ clientID, clientSecret, tokenURL, accessToken: token.access_token })
+  //   const metadata = await inspectAccessToken({ clientId, clientSecret, tokenURL, accessToken: token.access_token })
 
   //   if (metadata && metadata.exp) {
   //     const issuedAt = metadata.iat || Math.trunc(Date.now() / 1000)
@@ -193,7 +193,7 @@ export const getTokenWithClientCredentials = async (params: GetTokenClientCredsP
 
 interface RedirectClientParams {
   authorizationURL: string
-  clientID: string
+  clientId: string
 }
 
 interface RedirectParams extends RedirectClientParams {
@@ -216,7 +216,7 @@ export enum BodyFormat {
 interface TokenClientParams {
   authorizationMethod?: AuthorizationMethod
   bodyFormat?: BodyFormat
-  clientID: string
+  clientId: string
   clientSecret: string
   tokenURL: string
 }

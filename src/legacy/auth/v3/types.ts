@@ -9,14 +9,14 @@ export interface IAuthContext {
   setupId: string
   isCallback?: boolean
   store: Knex
-  setup: SetupRecord
+  configuration: SetupRecord
 }
 
 interface SetupRecord {
   setup_id: string
   scopes: string[] | undefined
   buid: string
-  setup: any
+  configuration: any
 }
 
 interface IContextSessionData {
@@ -193,7 +193,7 @@ export interface OAuth1AuthDetails extends OAuthAuthDetails {
 export interface OAuth2AuthDetails extends OAuthAuthDetails {
   accessToken: string
   callbackParams: Record<string, string>
-  clientID: string
+  clientId: string
   clientSecret: string
   expiresIn: number
   idToken?: string

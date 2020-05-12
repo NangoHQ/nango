@@ -18,7 +18,7 @@ exports[`authenticate when connecting redirects to the authorization url with co
         },
         "authorizationURL": "https://example.com/auth",
         "callbackURL": "https://example.com/v2/auth/callback",
-        "clientID": "test-client-id",
+        "clientId": "test-client-id",
         "scope": Array [
           "test-scope1",
           "test-scope2",

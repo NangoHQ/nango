@@ -8,7 +8,7 @@ exports[`fetchAuthDetails when the token has NOT expired returns the details fro
 Object {
   "accessToken": "test-access-token",
   "callbackParams": undefined,
-  "clientID": "test-oauth-cient-id",
+  "clientId": "test-oauth-cient-id",
   "clientSecret": "test-client-secret",
   "connectParams": Object {
     "connect": "connect-param",
@@ -48,7 +48,7 @@ exports[`fetchAuthDetails when the token has expired refreshes the token using t
   "calls": Array [
     Array [
       Object {
-        "clientID": "ClientID",
+        "clientId": "ClientID",
         "clientSecret": "clientSecret",
         "idToken": "abc",
         "refreshToken": "abc",
@@ -76,7 +76,7 @@ exports[`fetchAuthDetails when the token has expired refreshes the token using t
 Object {
   "accessToken": "new-access-token",
   "callbackParams": Object {},
-  "clientID": "clientID",
+  "clientId": "clientId",
   "clientSecret": "ClientSecret",
   "connectParams": Object {},
   "expiresIn": 42,
@@ -98,7 +98,7 @@ exports[`fetchAuthDetails when the token has expired when there is no refresh to
 Object {
   "accessToken": "new-access-token",
   "callbackParams": Object {},
-  "clientID": "clientID",
+  "clientId": "clientId",
   "clientSecret": "ClientSecret",
   "connectParams": Object {},
   "expiresIn": 42,
@@ -124,7 +124,7 @@ exports[`fetchAuthDetails when the token never expires returns the details from 
 Object {
   "accessToken": "test-access-token",
   "callbackParams": undefined,
-  "clientID": "test-oauth-cient-id",
+  "clientId": "test-oauth-cient-id",
   "clientSecret": "test-client-secret",
   "connectParams": Object {
     "connect": "connect-param",

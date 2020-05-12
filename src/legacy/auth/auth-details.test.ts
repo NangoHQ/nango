@@ -25,7 +25,7 @@ describe('authDetailsResponse', () => {
   const oauth2AuthDetails = {
     ...commonDetails,
     accessToken: 'test-access-token',
-    clientID: 'test-client-id',
+    clientId: 'test-client-id',
     clientSecret: 'test-client-secret',
     idToken: 'test-id-token',
     idTokenJwt: { jwt: 'token' },

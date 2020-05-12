@@ -80,7 +80,7 @@ Object {
     "prodIntParam": "test-prod-int-value",
   },
   "setupDetails": Object {
-    "clientID": "clientId",
+    "clientId": "clientId",
     "clientSecret": "clientSecret",
   },
 }
