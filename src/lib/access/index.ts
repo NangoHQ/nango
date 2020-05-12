@@ -52,13 +52,13 @@ const secretKey = (req: Request, res: Response, next: NextFunction) => {
   const authorizationHeader = req.get('authorization')
 
   if (!authorizationHeader) {
-    throw new Error('missing_api_key')
+    throw new Error('missing_secret_key')
   }
 
   const { providedUser } = fromBasicAuth(authorizationHeader)
 
   if (providedUser !== secretKey) {
-    throw new Error('invalid_api_key')
+    throw new Error('invalid_secret_key')
   }
 
   next()
