@@ -4,11 +4,11 @@ import { inspectAccessToken } from './openid-connect'
 
 describe('inspectAccessToken', () => {
   const accessToken = 'test-access-token'
-  const clientID = 'test-client-id'
+  const clientId = 'test-client-id'
   const clientSecret = 'test-client-secret'
   const tokenURL = 'http://example.com/oauth/token'
 
-  const basicAuthCredentials = Buffer.from(`${clientID}:${clientSecret}`).toString('base64')
+  const basicAuthCredentials = Buffer.from(`${clientId}:${clientSecret}`).toString('base64')
 
   const config = {
     introspection_endpoint: 'http://example.com/introspection'
@@ -34,7 +34,7 @@ describe('inspectAccessToken', () => {
   })
 
   it('looks up the introspection URL and fetches the token metadata', async () => {
-    const result = await inspectAccessToken({ accessToken, clientID, clientSecret, tokenURL })
+    const result = await inspectAccessToken({ accessToken, clientId, clientSecret, tokenURL })
 
     expect(result).toEqual(tokenMetadata)
   })
@@ -45,7 +45,7 @@ describe('inspectAccessToken', () => {
       .once()
       .reply(404)
 
-    const result = await inspectAccessToken({ accessToken, clientID, clientSecret, tokenURL })
+    const result = await inspectAccessToken({ accessToken, clientId, clientSecret, tokenURL })
 
     expect(result).toBeUndefined()
   })
@@ -56,7 +56,7 @@ describe('inspectAccessToken', () => {
       .once()
       .reply(200, {})
 
-    const result = await inspectAccessToken({ accessToken, clientID, clientSecret, tokenURL })
+    const result = await inspectAccessToken({ accessToken, clientId, clientSecret, tokenURL })
 
     expect(result).toBeUndefined()
   })
@@ -71,7 +71,7 @@ describe('inspectAccessToken', () => {
       .once()
       .reply(500)
 
-    const result = await inspectAccessToken({ accessToken, clientID, clientSecret, tokenURL })
+    const result = await inspectAccessToken({ accessToken, clientId, clientSecret, tokenURL })
 
     expect(result).toBeUndefined()
   })

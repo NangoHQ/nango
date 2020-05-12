@@ -9,7 +9,7 @@ import { AuthenticationFailed } from '../../errors'
 
 export const authenticate = asyncMiddleware(async (req: TAuthenticateRequest, res: Response, next: NextFunction) => {
   const {
-    setup: { clientID, clientSecret },
+    credentials: { clientId, clientSecret },
     scopes = []
   } = req.setupDetails
   const { code, error } = req.query
@@ -31,7 +31,7 @@ export const authenticate = asyncMiddleware(async (req: TAuthenticateRequest, re
     const tokenResult = await getTokenWithCode({
       authorizationMethod,
       bodyFormat,
-      clientID,
+      clientId,
       clientSecret,
       code,
       tokenParams,
@@ -54,7 +54,7 @@ export const authenticate = asyncMiddleware(async (req: TAuthenticateRequest, re
   const redirectURL = getCodeRedirectURL({
     authorizationParams,
     authorizationURL,
-    clientID,
+    clientId,
     state,
     scope: scopes || config!.scope || [],
     callbackURL: AUTH_CALLBACK_URL

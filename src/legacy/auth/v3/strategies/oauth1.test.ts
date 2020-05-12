@@ -5,7 +5,7 @@ import { TAuthenticateRequest, EAuthType, TIntegrationConfig, OAuth1SignatureMet
 import {
   // getSetupDetails,
   // getAuth,
-  TOAuth1UserAttributes
+  TOAuth1Payload
 } from '../../clients/integrations'
 import Integration from '../../../functions/integration'
 
@@ -294,7 +294,7 @@ describe('fetchAuthDetails', () => {
     //   .mockResolvedValueOnce({ consumerKey, consumerSecret })
     //   .mockClear()
 
-    const credentialsToUse = { ...credentials } as TOAuth1UserAttributes
+    const credentialsToUse = { ...credentials } as TOAuth1Payload
 
     if (withCallbackParams) {
       credentialsToUse.callbackParamsJSON = JSON.stringify(callbackParams)

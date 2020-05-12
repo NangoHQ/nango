@@ -112,51 +112,51 @@ Object {
 }
 `;
 
-exports[`setupSave validation for auth type OAUTH2 with input {"clientID":"","clientSecret":"","type":"OAUTH2"} succeeds 1`] = `
+exports[`setupSave validation for auth type OAUTH2 with input {"clientId":"","clientSecret":"","type":"OAUTH2"} succeeds 1`] = `
 Object {
   "Payload": "{\\"data\\":{\\"type\\":\\"OAUTH2\\",\\"setupId\\":\\"test-generated-id\\"},\\"referenceId\\":\\"test-generated-id\\"}",
   "StatusCode": 200,
 }
 `;
 
-exports[`setupSave validation for auth type OAUTH2 with input {"clientID":"a clientId","clientSecre":"a secret","type":"OAUTH2"} fails 1`] = `
+exports[`setupSave validation for auth type OAUTH2 with input {"clientId":"a clientId","clientSecre":"a secret","type":"OAUTH2"} fails 1`] = `
 Object {
-  "Payload": "{\\"error\\":{\\"isJoi\\":true,\\"name\\":\\"ValidationError\\",\\"details\\":[{\\"message\\":\\"\\\\\\"clientSecret\\\\\\" is required\\",\\"path\\":[\\"clientSecret\\"],\\"type\\":\\"any.required\\",\\"context\\":{\\"key\\":\\"clientSecret\\",\\"label\\":\\"clientSecret\\"}},{\\"message\\":\\"\\\\\\"clientSecre\\\\\\" is not allowed\\",\\"path\\":[\\"clientSecre\\"],\\"type\\":\\"object.allowUnknown\\",\\"context\\":{\\"child\\":\\"clientSecre\\",\\"value\\":\\"a secret\\",\\"key\\":\\"clientSecre\\",\\"label\\":\\"clientSecre\\"}}],\\"_object\\":{\\"clientID\\":\\"a clientId\\",\\"clientSecre\\":\\"a secret\\",\\"type\\":\\"OAUTH2\\"}}}",
+  "Payload": "{\\"error\\":{\\"isJoi\\":true,\\"name\\":\\"ValidationError\\",\\"details\\":[{\\"message\\":\\"\\\\\\"clientSecret\\\\\\" is required\\",\\"path\\":[\\"clientSecret\\"],\\"type\\":\\"any.required\\",\\"context\\":{\\"key\\":\\"clientSecret\\",\\"label\\":\\"clientSecret\\"}},{\\"message\\":\\"\\\\\\"clientSecre\\\\\\" is not allowed\\",\\"path\\":[\\"clientSecre\\"],\\"type\\":\\"object.allowUnknown\\",\\"context\\":{\\"child\\":\\"clientSecre\\",\\"value\\":\\"a secret\\",\\"key\\":\\"clientSecre\\",\\"label\\":\\"clientSecre\\"}}],\\"_object\\":{\\"clientId\\":\\"a clientId\\",\\"clientSecre\\":\\"a secret\\",\\"type\\":\\"OAUTH2\\"}}}",
   "StatusCode": 200,
 }
 `;
 
-exports[`setupSave validation for auth type OAUTH2 with input {"clientID":"aClientId","clientSecret":"aSecret","type":"OAUTH2"} succeeds 1`] = `
+exports[`setupSave validation for auth type OAUTH2 with input {"clientId":"aClientId","clientSecret":"aSecret","type":"OAUTH2"} succeeds 1`] = `
 Object {
-  "Payload": "{\\"data\\":{\\"clientID\\":\\"aClientId\\",\\"clientSecret\\":\\"aSecret\\",\\"type\\":\\"OAUTH2\\",\\"setupId\\":\\"test-generated-id\\"},\\"referenceId\\":\\"test-generated-id\\"}",
+  "Payload": "{\\"data\\":{\\"clientId\\":\\"aClientId\\",\\"clientSecret\\":\\"aSecret\\",\\"type\\":\\"OAUTH2\\",\\"setupId\\":\\"test-generated-id\\"},\\"referenceId\\":\\"test-generated-id\\"}",
   "StatusCode": 200,
 }
 `;
 
-exports[`setupSave validation for auth type OAUTH2 with input {"clientID":"aClientId","clientSecret":"aSecret","type":"OaUtH2"} succeeds 1`] = `
+exports[`setupSave validation for auth type OAUTH2 with input {"clientId":"aClientId","clientSecret":"aSecret","type":"OaUtH2"} succeeds 1`] = `
 Object {
-  "Payload": "{\\"data\\":{\\"clientID\\":\\"aClientId\\",\\"clientSecret\\":\\"aSecret\\",\\"type\\":\\"OAUTH2\\",\\"setupId\\":\\"test-generated-id\\"},\\"referenceId\\":\\"test-generated-id\\"}",
+  "Payload": "{\\"data\\":{\\"clientId\\":\\"aClientId\\",\\"clientSecret\\":\\"aSecret\\",\\"type\\":\\"OAUTH2\\",\\"setupId\\":\\"test-generated-id\\"},\\"referenceId\\":\\"test-generated-id\\"}",
   "StatusCode": 200,
 }
 `;
 
-exports[`setupSave validation for auth type OAUTH2 with input {"clientID":1,"clientSecret":4,"type":"OAUTH2"} fails 1`] = `
+exports[`setupSave validation for auth type OAUTH2 with input {"clientId":1,"clientSecret":4,"type":"OAUTH2"} fails 1`] = `
 Object {
-  "Payload": "{\\"error\\":{\\"isJoi\\":true,\\"name\\":\\"ValidationError\\",\\"details\\":[{\\"message\\":\\"\\\\\\"clientID\\\\\\" must be a string\\",\\"path\\":[\\"clientID\\"],\\"type\\":\\"string.base\\",\\"context\\":{\\"value\\":1,\\"key\\":\\"clientID\\",\\"label\\":\\"clientID\\"}},{\\"message\\":\\"\\\\\\"clientSecret\\\\\\" must be a string\\",\\"path\\":[\\"clientSecret\\"],\\"type\\":\\"string.base\\",\\"context\\":{\\"value\\":4,\\"key\\":\\"clientSecret\\",\\"label\\":\\"clientSecret\\"}}],\\"_object\\":{\\"clientID\\":1,\\"clientSecret\\":4,\\"type\\":\\"OAUTH2\\"}}}",
+  "Payload": "{\\"error\\":{\\"isJoi\\":true,\\"name\\":\\"ValidationError\\",\\"details\\":[{\\"message\\":\\"\\\\\\"clientId\\\\\\" must be a string\\",\\"path\\":[\\"clientId\\"],\\"type\\":\\"string.base\\",\\"context\\":{\\"value\\":1,\\"key\\":\\"clientId\\",\\"label\\":\\"clientId\\"}},{\\"message\\":\\"\\\\\\"clientSecret\\\\\\" must be a string\\",\\"path\\":[\\"clientSecret\\"],\\"type\\":\\"string.base\\",\\"context\\":{\\"value\\":4,\\"key\\":\\"clientSecret\\",\\"label\\":\\"clientSecret\\"}}],\\"_object\\":{\\"clientId\\":1,\\"clientSecret\\":4,\\"type\\":\\"OAUTH2\\"}}}",
   "StatusCode": 200,
 }
 `;
 
 exports[`setupSave validation for auth type OAUTH2 with input {"clientId":"aClientId","clientSecret":"a secret","type":"OAUTH2"} fails 1`] = `
 Object {
-  "Payload": "{\\"error\\":{\\"isJoi\\":true,\\"name\\":\\"ValidationError\\",\\"details\\":[{\\"message\\":\\"\\\\\\"clientID\\\\\\" is required\\",\\"path\\":[\\"clientID\\"],\\"type\\":\\"any.required\\",\\"context\\":{\\"key\\":\\"clientID\\",\\"label\\":\\"clientID\\"}},{\\"message\\":\\"\\\\\\"clientId\\\\\\" is not allowed\\",\\"path\\":[\\"clientId\\"],\\"type\\":\\"object.allowUnknown\\",\\"context\\":{\\"child\\":\\"clientId\\",\\"value\\":\\"aClientId\\",\\"key\\":\\"clientId\\",\\"label\\":\\"clientId\\"}}],\\"_object\\":{\\"clientId\\":\\"aClientId\\",\\"clientSecret\\":\\"a secret\\",\\"type\\":\\"OAUTH2\\"}}}",
+  "Payload": "{\\"error\\":{\\"isJoi\\":true,\\"name\\":\\"ValidationError\\",\\"details\\":[{\\"message\\":\\"\\\\\\"clientId\\\\\\" is required\\",\\"path\\":[\\"clientId\\"],\\"type\\":\\"any.required\\",\\"context\\":{\\"key\\":\\"clientId\\",\\"label\\":\\"clientId\\"}},{\\"message\\":\\"\\\\\\"clientId\\\\\\" is not allowed\\",\\"path\\":[\\"clientId\\"],\\"type\\":\\"object.allowUnknown\\",\\"context\\":{\\"child\\":\\"clientId\\",\\"value\\":\\"aClientId\\",\\"key\\":\\"clientId\\",\\"label\\":\\"clientId\\"}}],\\"_object\\":{\\"clientId\\":\\"aClientId\\",\\"clientSecret\\":\\"a secret\\",\\"type\\":\\"OAUTH2\\"}}}",
   "StatusCode": 200,
 }
 `;
 
 exports[`setupSave validation for auth type OAUTH2 with input {"type":"OAUTH2"} fails 1`] = `
 Object {
-  "Payload": "{\\"error\\":{\\"isJoi\\":true,\\"name\\":\\"ValidationError\\",\\"details\\":[{\\"message\\":\\"\\\\\\"clientID\\\\\\" is required\\",\\"path\\":[\\"clientID\\"],\\"type\\":\\"any.required\\",\\"context\\":{\\"key\\":\\"clientID\\",\\"label\\":\\"clientID\\"}},{\\"message\\":\\"\\\\\\"clientSecret\\\\\\" is required\\",\\"path\\":[\\"clientSecret\\"],\\"type\\":\\"any.required\\",\\"context\\":{\\"key\\":\\"clientSecret\\",\\"label\\":\\"clientSecret\\"}}],\\"_object\\":{\\"type\\":\\"OAUTH2\\"}}}",
+  "Payload": "{\\"error\\":{\\"isJoi\\":true,\\"name\\":\\"ValidationError\\",\\"details\\":[{\\"message\\":\\"\\\\\\"clientId\\\\\\" is required\\",\\"path\\":[\\"clientId\\"],\\"type\\":\\"any.required\\",\\"context\\":{\\"key\\":\\"clientId\\",\\"label\\":\\"clientId\\"}},{\\"message\\":\\"\\\\\\"clientSecret\\\\\\" is required\\",\\"path\\":[\\"clientSecret\\"],\\"type\\":\\"any.required\\",\\"context\\":{\\"key\\":\\"clientSecret\\",\\"label\\":\\"clientSecret\\"}}],\\"_object\\":{\\"type\\":\\"OAUTH2\\"}}}",
   "StatusCode": 200,
 }
 `;

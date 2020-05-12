@@ -58,8 +58,8 @@ export const authenticate = (req: TAuthenticateRequest, res: Response, next: Nex
 //   // setupDetails
 // }) => {
 //   const { refreshToken, idToken } = existingCredentials
-//   // const { clientID, clientSecret } = setupDetails
-//   const { clientID, clientSecret } = { clientID: 'clientID', clientSecret: 'clientSecret' }
+//   // const { clientId, clientSecret } = setupDetails
+//   const { clientId, clientSecret } = { clientId: 'clientId', clientSecret: 'clientSecret' }
 
 //   const { authorizationMethod, bodyFormat, config, grantType, refreshURL, tokenURL } = integrationConfig
 
@@ -70,7 +70,7 @@ export const authenticate = (req: TAuthenticateRequest, res: Response, next: Nex
 //       return await getTokenWithClientCredentials({
 //         authorizationMethod,
 //         bodyFormat,
-//         clientID,
+//         clientId,
 //         clientSecret,
 //         scope,
 //         tokenURL
@@ -81,7 +81,7 @@ export const authenticate = (req: TAuthenticateRequest, res: Response, next: Nex
 //   }
 
 //   return await getTokenWithRefreshToken({
-//     ...{ clientID: 'ClientID', clientSecret: 'clientSecret' },
+//     ...{ clientId: 'ClientID', clientSecret: 'clientSecret' },
 //     // ...setupDetails,
 //     refreshToken,
 //     idToken,
@@ -91,7 +91,7 @@ export const authenticate = (req: TAuthenticateRequest, res: Response, next: Nex
 
 // const refreshAndUpdateCredentials = async (
 //   params: IFetchAuthDetailsParams,
-//   existingCredentials: TOAuth2UserAttributes,
+//   existingCredentials: TOAuth2Payload,
 //   integrationConfig: TIntegrationConfig
 // ) => {
 //   const { integration, authId } = params
@@ -115,7 +115,7 @@ export const authenticate = (req: TAuthenticateRequest, res: Response, next: Nex
 //   const tokenResponse = merge.recursive(previousResponse, tokenResult.decodedResponse)
 //   const updatedAt = Date.now()
 
-//   const userAttributes: TOAuth2UserAttributes = {
+//   const oauthPayload: TOAuth2Payload = {
 //     setupId,
 //     updatedAt,
 //     tokenResponseJSON: JSON.stringify(tokenResponse),
@@ -125,12 +125,12 @@ export const authenticate = (req: TAuthenticateRequest, res: Response, next: Nex
 //   }
 
 //   if (callbackParamsJSON) {
-//     userAttributes.callbackParamsJSON = callbackParamsJSON
+//     oauthPayload.callbackParamsJSON = callbackParamsJSON
 //   }
 
 //   // await updateAuthV3({
 //   //   servicesTableName,
-//   //   userAttributes,
+//   //   payload: oauthPayload,
 //   //   buid: integration.buid,
 //   //   authId: authId!,
 //   //   clientId: environmentIdentifier
@@ -138,14 +138,14 @@ export const authenticate = (req: TAuthenticateRequest, res: Response, next: Nex
 
 //   const callbackParams = callbackParamsJSON ? JSON.parse(callbackParamsJSON) : undefined
 
-//   // const { clientID, clientSecret } = setupDetails
-//   const { clientID, clientSecret } = { clientID: 'clientID', clientSecret: 'ClientSecret' }
+//   // const { clientId, clientSecret } = setupDetails
+//   const { clientId, clientSecret } = { clientId: 'clientId', clientSecret: 'ClientSecret' }
 //   const { accessToken, expiresIn, idToken, idTokenJwt, refreshToken } = credentials
 
 //   return {
 //     accessToken,
 //     callbackParams,
-//     clientID,
+//     clientId,
 //     clientSecret,
 //     connectParams,
 //     expiresIn,
@@ -160,13 +160,13 @@ export const authenticate = (req: TAuthenticateRequest, res: Response, next: Nex
 export const fetchAuthDetails = async (params: IFetchAuthDetailsParams, integrationConfig: TIntegrationConfig) => {
   const { buid, integration, authId, store, setup } = params
 
-  const credentials = await getAuth<IAuthResult>({
+  const authentication = await getAuth<IAuthResult>({
     store,
     buid: integration.buid,
     authId: authId!
   })
 
-  if (!credentials || !credentials.user_attributes || !credentials.user_attributes.accessToken) {
+  if (!authentication || !authentication.payload || !authentication.payload.accessToken) {
     throw new InvalidAuthId(buid, authId!)
   }
 
@@ -180,7 +180,7 @@ export const fetchAuthDetails = async (params: IFetchAuthDetailsParams, integrat
     idTokenJwt,
     refreshToken,
     tokenResponseJSON
-  } = credentials.user_attributes
+  } = authentication.payload
   const tokenResponse = tokenResponseJSON ? JSON.parse(tokenResponseJSON) : undefined
   const callbackParams = callbackParamsJSON ? JSON.parse(callbackParamsJSON) : undefined
 
@@ -199,14 +199,12 @@ export const fetchAuthDetails = async (params: IFetchAuthDetailsParams, integrat
   //   }
   // }
 
-  // const { clientID, clientSecret } = credentials
-  // if (!clientID || !clientSecret) {
+  // const { clientId, clientSecret } = credentials
+  // if (!clientId || !clientSecret) {
   const {
-    setup: { clientID, clientSecret }
+    setup: { clientId, clientSecret }
   } = setup
   // }
-
-  console.log('[fetchAuthDetails] credentials', credentials)
 
   return {
     accessToken,
@@ -217,7 +215,7 @@ export const fetchAuthDetails = async (params: IFetchAuthDetailsParams, integrat
     refreshToken,
     tokenResponse,
     updatedAt,
-    clientID,
+    clientId,
     clientSecret,
     idTokenJwt: idTokenJwt || getIdTokenJwt(idToken)
   }

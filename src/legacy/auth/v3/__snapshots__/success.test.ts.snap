@@ -21,7 +21,7 @@ exports[`authSuccess saves the credentials for the given authId 1`] = `
         "buid": "test-buid",
         "clientId": "test-client-id",
         "servicesTableName": "services-table-name",
-        "userAttributes": Object {
+        "payload": Object {
           "accessToken": "test-access-token",
           "connectParams": Object {
             "conParam": "test-con-param",
@@ -55,7 +55,7 @@ exports[`authSuccess saves the credentials with scopes for the given authId 1`] 
         "buid": "test-buid",
         "clientId": "test-client-id",
         "servicesTableName": "services-table-name",
-        "userAttributes": Object {
+        "payload": Object {
           "accessToken": "test-access-token",
           "connectParams": Object {
             "conParam": "test-con-param",
@@ -92,7 +92,7 @@ exports[`authSuccess saves the credentials with token response 1`] = `
         "buid": "test-buid",
         "clientId": "test-client-id",
         "servicesTableName": "services-table-name",
-        "userAttributes": Object {
+        "payload": Object {
           "accessToken": "test-access-token",
           "connectParams": Object {
             "conParam": "test-con-param",
@@ -127,7 +127,7 @@ exports[`authSuccess saves the credentials without scopes for the given authId 1
         "buid": "test-buid",
         "clientId": "test-client-id",
         "servicesTableName": "services-table-name",
-        "userAttributes": Object {
+        "payload": Object {
           "accessToken": "test-access-token",
           "connectParams": Object {
             "conParam": "test-con-param",
@@ -162,7 +162,7 @@ exports[`authSuccess when the request is a callback request saves the query para
         "buid": "test-buid",
         "clientId": "test-client-id",
         "servicesTableName": "services-table-name",
-        "userAttributes": Object {
+        "payload": Object {
           "accessToken": "test-access-token",
           "callbackParamsJSON": "{\\"some_param\\":\\"param value\\"}",
           "connectParams": Object {

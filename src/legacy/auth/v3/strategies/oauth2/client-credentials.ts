@@ -8,12 +8,12 @@ import { responseToCredentials } from './common'
 export const authenticate = asyncMiddleware(async (req: TAuthenticateRequest, _res: Response, next: NextFunction) => {
   const { authorizationMethod, bodyFormat, config, tokenURL } = req.integrationConfig
   const { scope = [] } = config || {}
-  const { clientID, clientSecret } = req.setupDetails
+  const { clientId, clientSecret } = req.setupDetails
 
   const tokenResult = await getTokenWithClientCredentials({
     authorizationMethod,
     bodyFormat,
-    clientID,
+    clientId,
     clientSecret,
     scope,
     tokenURL
