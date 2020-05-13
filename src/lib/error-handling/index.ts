@@ -49,7 +49,28 @@ export class PizzlyError extends Error {
 
       case 'unknown_authentication':
         this.status = 404
-        this.message = 'The provided authId could not be found on the database.'
+        this.message = 'That authentication ID could not be found on the database.'
+        break
+
+      case 'unknown_configuration':
+        this.status = 404
+        this.message = 'That configuration ID could not be found on the database'
+
+      // Invalid params (400)
+      case 'invalid_integration':
+        this.status = 400
+        this.message = 'Scopes are malformed. Must be in the form string[].'
+        break
+
+      case 'invalid_credentials':
+        this.status = 400
+        this.message =
+          'Credentials are malformed. Must be an object in the form "{ clientId:string, clientSecret:string }" for an OAuth2 based API or "{ consumerKey:string, consumerSecret:string }" for an OAuth1 based API.'
+        break
+
+      case 'invalid_scopes':
+        this.status = 400
+        this.message = 'Scopes are malformed. Must be in the form string[].'
         break
 
       // General case for unhandled errors
