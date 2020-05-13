@@ -116,16 +116,16 @@ dashboard.use('/:integration', async (req, res, next) => {
 
 dashboard.get('/:integration', async (req, res) => {
   const integration = String(req.params.integration)
-  const configurations = await store('configurations')
+  const savedConfigs = await store('configurations')
     .select('credentials', 'setup_id', 'scopes', 'created_at')
     .where({ buid: integration })
     .orderBy('created_at', 'desc')
     .limit(5)
     .offset(0)
 
-  const credentials: IntegrationCredential[] = []
-  configurations.forEach(item => {
-    credentials.push(formatCredential(item))
+  const configurations: IntegrationConfiguration[] = []
+  savedConfigs.forEach(item => {
+    configurations.push(formatConfiguration(item))
   })
 
   const authentications = await store('authentications')
@@ -136,52 +136,52 @@ dashboard.get('/:integration', async (req, res) => {
     .offset(0)
 
   // @ts-ignore
-  req.data = { ...req.data, credentials, authentications }
+  req.data = { ...req.data, configurations, authentications }
 
   res.render('dashboard/api', { req })
 })
 
 /**
- * Integration > Credentials
+ * Integration > Configurations
  */
 
 /**
- * List all the credentials saved
+ * List all the configurations saved
  */
 
-dashboard.get('/:integration/credentials', async (req, res) => {
+dashboard.get('/:integration/configurations', async (req, res) => {
   const startAt = Number(req.query.startAt) || 0
-  const configurations = await store('configurations')
+  const savedConfigs = await store('configurations')
     .select('credentials', 'setup_id', 'scopes', 'created_at')
     .where({ buid: req.params.integration })
     .orderBy('updated_at', 'desc')
     .limit(25)
     .offset(startAt > 0 ? startAt : 0)
 
-  const credentials: IntegrationCredential[] = []
-  configurations.forEach(item => {
-    credentials.push(formatCredential(item))
+  const configurations: IntegrationConfiguration[] = []
+  savedConfigs.forEach(item => {
+    configurations.push(formatConfiguration(item))
   })
 
   // @ts-ignore
-  req.data = { ...req.data, credentials }
+  req.data = { ...req.data, configurations }
 
-  res.render('dashboard/api-credentials', { req })
+  res.render('dashboard/api-configurations', { req })
 })
 
 /**
- * New credentials form (GET)
+ * New configuration form (GET)
  */
 
-dashboard.get('/:integration/credentials/new', (req, res) => {
-  res.render('dashboard/api-credentials-new', { req })
+dashboard.get('/:integration/configurations/new', (req, res) => {
+  res.render('dashboard/api-configurations-new', { req })
 })
 
 /**
- * New credentials form handler (POST)
+ * New configuration form handler (POST)
  */
 
-dashboard.post('/:integration/credentials/new', async (req, res) => {
+dashboard.post('/:integration/configurations/new', async (req, res) => {
   const scopes = integrations.validateConfigurationScopes(String(req.body.scopes))
   // @ts-ignore
   const integration = req.data.api as Types.Integration
@@ -201,10 +201,10 @@ dashboard.post('/:integration/credentials/new', async (req, res) => {
 })
 
 /**
- * Update credentials form
+ * Update configuration form
  */
 
-dashboard.get('/:integration/credentials/:setupId', async (req, res, next) => {
+dashboard.get('/:integration/configurations/:setupId', async (req, res, next) => {
   const setupId = String(req.params.setupId)
   const configuration = await store('configurations')
     .select('credentials', 'setup_id', 'scopes', 'created_at')
@@ -217,16 +217,16 @@ dashboard.get('/:integration/credentials/:setupId', async (req, res, next) => {
   }
 
   // @ts-ignore
-  req.data = { ...req.data, credential: formatCredential(configuration) }
+  req.data = { ...req.data, configuration: formatConfiguration(configuration) }
 
-  res.render('dashboard/api-credentials-edit', { req })
+  res.render('dashboard/api-configurations-edit', { req })
 })
 
 /**
- * Update credentials form handler (POST)
+ * Update configuration form handler (POST)
  */
 
-dashboard.post('/:integration/credentials/:setupId', async (req, res) => {
+dashboard.post('/:integration/configurations/:setupId', async (req, res) => {
   const setupId = String(req.params.setupId)
   // @ts-ignore
   const integration = req.data.api as Types.Integration
@@ -319,7 +319,7 @@ dashboard.use((err, req, res, next) => {
  * Helpers
  */
 
-const formatCredential = (data): IntegrationCredential => {
+const formatConfiguration = (data): IntegrationConfiguration => {
   return {
     setupId: data.setup_id,
     setupKey: data.credentials.clientId || data.credentials.consumerKey,
@@ -347,7 +347,7 @@ const formatSetup = (
   return
 }
 
-interface IntegrationCredential {
+interface IntegrationConfiguration {
   setupId: string
   setupKey: string
   setupSecret: string
