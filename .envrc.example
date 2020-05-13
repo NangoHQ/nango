@@ -15,3 +15,9 @@ export AUTHENTICATION_PASSWORD=""
 #
 export SECRET_KEY=""
 export PUBLISHABLE_KEY=""
+#
+# 3. Allow or disable requests to the proxy service using a publishable key.
+#    FALSE by default to allow request with a publishable key or a secret key.
+#    Set to TRUE to only allow access having a valid secret key.
+#
+export PROXY_USES_SECRET_KEY_ONLY=false
