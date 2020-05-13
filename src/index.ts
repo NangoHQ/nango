@@ -1,19 +1,13 @@
 import express from 'express'
-import passport from 'passport'
-import cookieParser from 'cookie-parser'
 import * as routes from './routes'
 import resourceNotFound from './resourceNotFound'
 import errorHandler from './legacy/errorHandler'
 
-const { COOKIE_SECRET } = process.env
 export const BUID = 'bearerUid' // TODO - What is this for?
 export const PORT = process.env.port || 8080
 export const AUTH_CALLBACK_URL = process.env.AUTH_CALLBACK_URL || ''
 
 const app = express()
-
-app.use(passport.initialize())
-app.use(cookieParser(COOKIE_SECRET))
 
 app.set('view engine', 'ejs')
 app.set('views', './views')
