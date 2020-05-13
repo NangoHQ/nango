@@ -5,7 +5,7 @@ import { InvalidAuthType } from './errors'
 import * as oauth1 from './strategies/oauth1'
 import * as oauth2 from './strategies/oauth2'
 import { TBackendRequestV4 } from '../../../types'
-import { asyncMiddleware } from '../../../errorHandler'
+import { asyncMiddleware } from '../../errorHandler'
 
 const strategies = {
   [EAuthType.OAuth1]: oauth1,

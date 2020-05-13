@@ -3,6 +3,7 @@ import { Request } from 'express'
 import { TWithInstrument } from './instrumentation/middleware'
 import { Integration } from './legacy/functions/integration'
 import { AuthDetails } from './legacy/auth/v3/types'
+import Knex from 'knex'
 
 export type Omit<T, K> = Pick<T, Exclude<keyof T, K>>
 
@@ -77,6 +78,14 @@ export type TIdentifiersRequest = Request & {
 
 /**********************/
 
+declare global {
+  namespace Express {
+    export interface Request {
+      store?: Knex
+    }
+  }
+}
+
 export namespace Types {
   export interface Integration {
     id: string
@@ -86,6 +95,11 @@ export namespace Types {
       authType: string
       setupKeyLabel: string
       setupSecretLabel: string
+    }
+    request: {
+      baseURL: string
+      headers?: { [key: string]: string }
+      params?: { [key: string]: string }
     }
   }
 
@@ -106,5 +120,12 @@ export namespace Types {
     credentials: OAuth1Credentials | OAuth2Credentials
     createdAt?: string
     modifiedAt?: string
+  }
+
+  export interface Authentication {
+    auth_id: string
+    payload: any
+    created_at: string
+    updated_at: string
   }
 }

@@ -7,6 +7,7 @@
  */
 
 import * as express from 'express'
+import bodyParser from 'body-parser'
 import { v4 as uuidv4 } from 'uuid'
 import * as integrations from '../lib/integrations'
 import { store } from '../lib/database'
@@ -14,6 +15,9 @@ import * as access from '../lib/access'
 import { Types } from '../types'
 
 const dashboard = express.Router()
+
+dashboard.use(bodyParser.urlencoded({ extended: false }))
+dashboard.use(bodyParser.json({ limit: '5mb' }))
 
 /**
  * Authentication middleware.
