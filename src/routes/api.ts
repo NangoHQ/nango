@@ -5,6 +5,7 @@ import { store } from '../lib/database'
 import * as access from '../lib/access'
 import * as integrations from '../lib/integrations'
 import { Types } from '../types'
+import { PizzlyError } from '../lib/error-handling'
 
 const api = express.Router()
 
@@ -35,16 +36,14 @@ api.get('/', (req, res) => {
  * API test endpoint:
  */
 
-api.get('/:integrationId', async (req, res) => {
+api.get('/:integrationId', async (req, res, next) => {
   const integrationId = req.params.integrationId
   const integration = await integrations.get(integrationId).catch(() => {
     return null
   })
 
   if (!integration) {
-    res
-      .status(404)
-      .json({ error: { type: 'unknown_integration', message: `Integration "${integrationId}" was not found.` } })
+    next(new PizzlyError('unknown_integration'))
     return
   }
 
@@ -59,7 +58,7 @@ api.get('/:integrationId', async (req, res) => {
  * Retrieves an authentication (including OAuth payload).
  */
 
-api.get('/:integrationId/authentications/:authenticationId', async (req, res) => {
+api.get('/:integrationId/authentications/:authenticationId', async (req, res, next) => {
   const integrationId = req.params.integrationId
   const authenticationId = req.params.authenticationId
 
@@ -69,12 +68,8 @@ api.get('/:integrationId/authentications/:authenticationId', async (req, res) =>
     .first()
 
   if (!authentication) {
-    return res.status(404).json({
-      error: {
-        type: 'unknown_authentication',
-        message: `No authentication found having the id "${authenticationId}" for the integration "${integrationId}".`
-      }
-    })
+    next(new PizzlyError('unknown_authentication'))
+    return
   }
 
   res.status(200).json({ id: authenticationId, object: 'authentication', ...authentication })
@@ -85,7 +80,7 @@ api.get('/:integrationId/authentications/:authenticationId', async (req, res) =>
  * (subsequent requests using the same authId will fail).
  */
 
-api.delete('/:integrationId/authentications/:authenticationId', async (req, res) => {
+api.delete('/:integrationId/authentications/:authenticationId', async (req, res, next) => {
   const integrationId = req.params.integrationId
   const authenticationId = req.params.authenticationId
 
@@ -94,12 +89,8 @@ api.delete('/:integrationId/authentications/:authenticationId', async (req, res)
     .del()
 
   if (!affectedRows) {
-    return res.status(404).json({
-      error: {
-        type: 'unknown_authentication',
-        message: `No authentication found having the id "${authenticationId}" for the integration "${integrationId}".`
-      }
-    })
+    next(new PizzlyError('unknown_authentication'))
+    return
   }
 
   res.status(200).json({ message: 'Authentication removed' })
@@ -126,21 +117,14 @@ api.post('/:integrationId/configurations', async (req, res, next) => {
   })
 
   if (!integration) {
-    res
-      .status(404)
-      .json({ error: { type: 'unknown_integration', message: `Integration "${integrationId}" was not found.` } })
+    next(new PizzlyError('unknown_integration'))
     return
   }
 
   const userScopes = req.body.scopes || []
 
   if (!Array.isArray(userScopes)) {
-    res.status(400).json({
-      error: {
-        type: 'invalid_scopes',
-        message: `Scopes are malformed. Must be in the form string[].`
-      }
-    })
+    next(new PizzlyError('invalid_scopes'))
     return
   }
 
@@ -148,12 +132,7 @@ api.post('/:integrationId/configurations', async (req, res, next) => {
   const credentials = integrations.validateConfigurationCredentials(req.body.credentials, integration)
 
   if (!credentials) {
-    res.status(400).json({
-      error: {
-        type: 'invalid_credentials',
-        message: `Credentials are malformed. Must be an object in the form "{ clientId:string, clientSecret:string }" for an OAuth2 based API or "{ consumerKey:string, consumerSecret:string }" for an OAuth1 based API.`
-      }
-    })
+    next(new PizzlyError('invalid_credentials'))
     return
   }
 
@@ -183,29 +162,25 @@ api.post('/:integrationId/configurations', async (req, res, next) => {
  * Retrieve a configuration
  */
 
-api.get('/:integrationId/:configurations/:configurationId', async (req, res) => {
+api.get('/:integrationId/:configurations/:configurationId', async (req, res, next) => {
   const integrationId = String(req.params.integrationId)
   const configurationId = String(req.params.configurationId)
 
-  const config = await store('configurations')
+  const savedConfig = await store('configurations')
     .select('credentials', 'scopes', 'created_at', 'updated_at')
     .where({ buid: integrationId, setup_id: configurationId })
     .first()
 
-  if (!config) {
-    return res.status(404).json({
-      error: {
-        type: 'unknown_configuration',
-        message: `No configuration found having the id "${configurationId}" for the integration "${integrationId}".`
-      }
-    })
+  if (!savedConfig) {
+    next(new PizzlyError('unknown_configuration'))
+    return
   }
 
   const configuration: Types.Configuration = {
     id: configurationId,
     object: 'configuration',
-    scopes: config.scopes,
-    credentials: config.credentials
+    scopes: savedConfig.scopes,
+    credentials: savedConfig.credentials
   }
 
   res.json(configuration)
@@ -215,7 +190,7 @@ api.get('/:integrationId/:configurations/:configurationId', async (req, res) => 
  * Delete a configuration
  */
 
-api.delete('/:integrationId/:configurations/:configurationId', async (req, res) => {
+api.delete('/:integrationId/:configurations/:configurationId', async (req, res, next) => {
   const integrationId = String(req.params.integrationId)
   const configurationId = String(req.params.configurationId)
 
@@ -224,12 +199,8 @@ api.delete('/:integrationId/:configurations/:configurationId', async (req, res) 
     .del()
 
   if (!affectedRows) {
-    return res.status(404).json({
-      error: {
-        type: 'unknown_configuration',
-        message: `No configuration found having the id "${configurationId}" for the integration "${integrationId}".`
-      }
-    })
+    next(new PizzlyError('unknown_configuration'))
+    return
   }
 
   res.status(200).json({ message: 'Configuration removed' })
@@ -239,7 +210,7 @@ api.delete('/:integrationId/:configurations/:configurationId', async (req, res) 
  * Update a configuration
  */
 
-api.put('/:integrationId/:configurations/:configurationId', async (req, res) => {
+api.put('/:integrationId/:configurations/:configurationId', async (req, res, next) => {
   const integrationId = String(req.params.integrationId)
   const configurationId = String(req.params.configurationId)
 
@@ -248,21 +219,14 @@ api.put('/:integrationId/:configurations/:configurationId', async (req, res) => 
   })
 
   if (!integration) {
-    res
-      .status(404)
-      .json({ error: { type: 'unknown_integration', message: `Integration "${integrationId}" was not found.` } })
+    next(new PizzlyError('unknown_integration'))
     return
   }
 
   const userScopes = req.body.scopes || []
 
   if (!Array.isArray(userScopes)) {
-    res.status(400).json({
-      error: {
-        type: 'invalid_scopes',
-        message: `Scopes are malformed. Must be in the form string[].`
-      }
-    })
+    next(new PizzlyError('invalid_scopes'))
     return
   }
 
@@ -270,12 +234,7 @@ api.put('/:integrationId/:configurations/:configurationId', async (req, res) => 
   const credentials = integrations.validateConfigurationCredentials(req.body.credentials, integration)
 
   if (!credentials) {
-    res.status(400).json({
-      error: {
-        type: 'invalid_credentials',
-        message: `Credentials are malformed. Must be an object in the form "{ clientId:string, clientSecret:string }" for an OAuth2 based API or "{ consumerKey:string, consumerSecret:string }" for an OAuth1 based API.`
-      }
-    })
+    next(new PizzlyError('invalid_credentials'))
     return
   }
 
@@ -294,12 +253,7 @@ api.put('/:integrationId/:configurations/:configurationId', async (req, res) => 
     })
 
   if (!affectedRows) {
-    res.status(400).json({
-      error: {
-        type: 'unknown_configuration',
-        message: `No configuration found having the id "${configurationId}" for the integration "${integrationId}".`
-      }
-    })
+    next(new PizzlyError('unknown_configuration'))
     return
   }
 
@@ -323,16 +277,12 @@ api.use((req, res, next) => {
 api.use((err, req, res, next) => {
   let status = 400
   let type = 'invalid'
-  let message = 'Bad request.'
+  let message = 'Bad request'
 
-  if (err.message === 'missing_secret_key') {
-    status = 401
-    type = err.message
-    message = 'Request is missing a valid secret key. Learn more at https://github.com/Bearer/Pizzly/wiki/Secure'
-  } else if (err.message === 'invalid_secret_key') {
-    status = 401
-    type = err.messsage
-    message = 'Invalid secret key provided.  Learn more at https://github.com/Bearer/Pizzly/wiki/Secure'
+  if (err.type && err.status && err.message) {
+    status = err.status
+    type = err.type
+    message = err.message
   } else {
     console.error(err)
   }
