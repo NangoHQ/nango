@@ -39,7 +39,7 @@
         const pizzly = new Pizzly('PUBLISHABLE-KEY')
 
         pizzly
-          .connect('github', { setupId })
+          .connect('<%= req.params.integration %>', { setupId })
           .then(({ authId }) => {
             const input = document.getElementById('authId')
             input.value = authId
