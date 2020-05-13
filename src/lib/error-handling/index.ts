@@ -14,24 +14,24 @@ export class PizzlyError extends Error {
     this.type = type
 
     switch (type) {
-      // Authentications errors (403)
+      // Authentications errors (401)
       case 'missing_publishable_key':
-        this.status = 403
+        this.status = 401
         this.message = 'Authentication failed. The request is missing a valid publishable key.'
         break
 
       case 'invalid_publishable_key':
-        this.status = 403
+        this.status = 401
         this.message = 'Authentication failed. The provided publishable key is invalid.'
         break
 
       case 'missing_secret_key':
-        this.status = 403
+        this.status = 401
         this.message = 'Authentication failed. The request is missing a valid secret key.'
         break
 
       case 'invalid_secret_key':
-        this.status = 403
+        this.status = 401
         this.message = 'Authentication failed. The provided secret key is invalid.'
         break
 

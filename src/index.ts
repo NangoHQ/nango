@@ -64,7 +64,11 @@ app.use((req, res, next) => {
 })
 
 app.use((err, req, res, next) => {
-  res.status(500).render('500')
+  if (err.status && err.status === 401) {
+    res.status(401).render('401')
+  } else {
+    res.status(500).render('500')
+  }
 })
 
 /**
