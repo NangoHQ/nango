@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
+import { PizzlyError } from '../error-handling'
 
 /**
  * Basic Access Authentication Middleware
@@ -39,6 +40,13 @@ const basic = (req: Request, res: Response, next: NextFunction) => {
 
 /**
  * Secret Key Access Authentication
+ *
+ * It uses the BASIC authentication schema
+ * where only the username is provided and
+ * must match the developer's SECRET_KEY.
+ *
+ * To change your SECRET_KEY have a look to
+ * the .envrc file.
  */
 
 const secretKey = (req: Request, res: Response, next: NextFunction) => {
@@ -52,13 +60,13 @@ const secretKey = (req: Request, res: Response, next: NextFunction) => {
   const authorizationHeader = req.get('authorization')
 
   if (!authorizationHeader) {
-    throw new Error('missing_secret_key')
+    throw new PizzlyError('missing_secret_key')
   }
 
   const { providedUser } = fromBasicAuth(authorizationHeader)
 
   if (providedUser !== secretKey) {
-    throw new Error('invalid_secret_key')
+    throw new PizzlyError('invalid_secret_key')
   }
 
   next()
@@ -66,6 +74,14 @@ const secretKey = (req: Request, res: Response, next: NextFunction) => {
 
 /**
  * Publishable Key Access Authentication
+ *
+ * It requires a `?pizzly_pkey=....` in the request
+ * query params. Such query params is remove on the
+ * proxy feature (like all query params starting with
+ * "pizzly_").
+ *
+ * To change your PUBLISHABLE_KEY have a look to
+ * the .envrc file.
  */
 
 const publishableKey = (req: Request, res: Response, next: NextFunction) => {
@@ -76,16 +92,14 @@ const publishableKey = (req: Request, res: Response, next: NextFunction) => {
     return
   }
 
-  const authorizationHeader = req.get('authorization')
+  const providedPublishableKey = req.query['pizzly_pkey']
 
-  if (!authorizationHeader) {
-    throw new Error('missing_publishable_key')
+  if (typeof providedPublishableKey !== 'string') {
+    throw new PizzlyError('missing_publishable_key')
   }
 
-  const { providedUser } = fromBasicAuth(authorizationHeader)
-
-  if (providedUser !== publishableKey) {
-    throw new Error('invalid_publishable_key')
+  if (providedPublishableKey !== publishableKey) {
+    throw new PizzlyError('invalid_publishable_key')
   }
 
   next()
@@ -93,6 +107,7 @@ const publishableKey = (req: Request, res: Response, next: NextFunction) => {
 
 /**
  * Helper to explode a basic authorization header
+ *
  * @param authorizationHeader (string) - The full authorization header
  * @returns Object
  *  - providedUser (string) - The provided user
