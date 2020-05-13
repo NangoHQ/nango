@@ -2,7 +2,7 @@ import { asyncMiddleware } from '../../errorHandler'
 import { TRevokeRequest } from './types'
 // import { revokeAuthV3 } from '../../clients/integrations'
 import { Response } from 'express'
-import { MissingParameter } from '../../../errors'
+import { MissingParameter } from '../../errors'
 
 export const revoke = asyncMiddleware(async (req: TRevokeRequest, res: Response) => {
   // const { authId } = req.params

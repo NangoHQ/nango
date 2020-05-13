@@ -2,8 +2,6 @@ import express from 'express'
 import passport from 'passport'
 import cookieParser from 'cookie-parser'
 import * as routes from './routes'
-import resourceNotFound from './resourceNotFound'
-import errorHandler from './legacy/errorHandler'
 
 const { COOKIE_SECRET } = process.env
 export const BUID = 'bearerUid' // TODO - What is this for?
@@ -64,11 +62,16 @@ app.use('/apis', routes.legacy.apis)
 app.use('/api/v4/functions', routes.legacy.proxy)
 
 /**
- * Error handling - TODO
+ * Error handling
  */
 
-app.use(errorHandler)
-app.use(resourceNotFound)
+app.use((req, res, next) => {
+  res.status(404).render('404')
+})
+
+app.use((err, req, res, next) => {
+  res.status(500).render('500')
+})
 
 /**
  * Starting up the server

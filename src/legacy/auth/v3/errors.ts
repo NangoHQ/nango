@@ -1,4 +1,4 @@
-import { UserError } from '../../../errors'
+import { UserError } from '../../errors'
 import { EAuthType } from './types'
 import { Request } from 'express'
 import { GrantType } from './strategies/oauth2'

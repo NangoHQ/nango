@@ -1,6 +1,6 @@
 import at from 'lodash.at'
 
-import { CustomError } from '../../errors'
+import { CustomError } from '../errors'
 
 // Matches escaped characters eg. "\$" or variables with optional surrounding whitespace eg. "${  name  }"
 const parserRegex = /\\.|\$\{\s*([^}\s]*)\s*\}/g
