@@ -9,36 +9,36 @@
     <main class="container">
       <section>
         <header>
-          <h2>Credentials saved</h2>
+          <h2>Configurations saved</h2>
           <aside>
-            <a href="<%= req.ejs.base_url %>/credentials/new" class="button button-primary">Save new credentials</a>
+            <a href="<%= req.ejs.base_url %>/configurations/new" class="button button-primary">New configuration</a>
           </aside>
         </header>
 
-        <!-- Credentials shortlist (table) -->
-        <%- include('api-credentials-list', { req }) %>
-        <!-- /Credentials shortlist (table) -->
+        <!-- Configurations shortlist (table) -->
+        <%- include('api-configurations-list', { req }) %>
+        <!-- /Configurations shortlist (table) -->
 
-        <!-- Credentials empty state -->
-        <% if (!req.data.credentials.length) {%>
+        <!-- Configurations empty state -->
+        <% if (!req.data.configurations.length) {%>
         <div class="table-empty">
-          <h3>No credentials yet</h3>
-          <a href="<%= req.ejs.base_url %>/credentials/new" class="button button-primary">
-            Save your first credentials
+          <h3>No configurations yet</h3>
+          <a href="<%= req.ejs.base_url %>/configurations/new" class="button button-primary">
+            Create your first configuration
           </a>
         </div>
-        <!-- /Credentials empty state -->
+        <!-- /Configurations empty state -->
 
-        <!-- Credentials pagination (see more) -->
-        <% } else if (req.data.credentials.length > 4) { %>
+        <!-- Configurations pagination (see more) -->
+        <% } else if (req.data.configurations.length > 4) { %>
         <div class="pagination">
-          <a href="<%= req.ejs.base_url %>/credentials" class="button">See more</a>
+          <a href="<%= req.ejs.base_url %>/configurations" class="button">See more</a>
         </div>
         <% } %>
-        <!-- /Credentials pagination (see more) -->
+        <!-- /Configurations pagination (see more) -->
       </section>
 
-      <% if (req.data.credentials.length) { %>
+      <% if (req.data.configurations.length) { %>
       <section>
         <header>
           <h2 class="section-heading">Authenticated users</h2>
