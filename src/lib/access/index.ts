@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
+import { PizzlyError } from '../error-handling'
 
 /**
  * Basic Access Authentication Middleware
@@ -52,13 +53,13 @@ const secretKey = (req: Request, res: Response, next: NextFunction) => {
   const authorizationHeader = req.get('authorization')
 
   if (!authorizationHeader) {
-    throw new Error('missing_secret_key')
+    throw new PizzlyError('missing_secret_key')
   }
 
   const { providedUser } = fromBasicAuth(authorizationHeader)
 
   if (providedUser !== secretKey) {
-    throw new Error('invalid_secret_key')
+    throw new PizzlyError('invalid_secret_key')
   }
 
   next()
@@ -66,6 +67,9 @@ const secretKey = (req: Request, res: Response, next: NextFunction) => {
 
 /**
  * Publishable Key Access Authentication
+ *
+ * It requires a `?pkey=....` in the request
+ * query params.
  */
 
 const publishableKey = (req: Request, res: Response, next: NextFunction) => {
@@ -76,16 +80,14 @@ const publishableKey = (req: Request, res: Response, next: NextFunction) => {
     return
   }
 
-  const authorizationHeader = req.get('authorization')
+  const providedPublishableKey = req.query['pizzly_pkey']
 
-  if (!authorizationHeader) {
-    throw new Error('missing_publishable_key')
+  if (typeof providedPublishableKey !== 'string') {
+    throw new PizzlyError('missing_publishable_key')
   }
 
-  const { providedUser } = fromBasicAuth(authorizationHeader)
-
-  if (providedUser !== publishableKey) {
-    throw new Error('invalid_publishable_key')
+  if (providedPublishableKey !== publishableKey) {
+    throw new PizzlyError('invalid_publishable_key')
   }
 
   next()
