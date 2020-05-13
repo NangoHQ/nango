@@ -2,7 +2,7 @@ import { TConnectContextRequest, TCallbackContextRequest } from './types'
 import { NextFunction, Response } from 'express'
 import { UserError } from '../../../errors'
 import { NoAuthInProgress } from './errors'
-import { asyncMiddleware } from '../../../errorHandler'
+import { asyncMiddleware } from '../../errorHandler'
 
 const getConnectParams = (params?: any) => {
   if (params === undefined) {

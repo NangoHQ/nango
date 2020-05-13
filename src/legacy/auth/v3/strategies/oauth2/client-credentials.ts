@@ -2,7 +2,7 @@ import { NextFunction, Response } from 'express'
 
 import { TAuthenticateRequest } from '../../types'
 import { getTokenWithClientCredentials } from '../../../clients/oauth2'
-import { asyncMiddleware } from '../../../../../errorHandler'
+import { asyncMiddleware } from '../../../../errorHandler'
 import { responseToCredentials } from './common'
 
 export const authenticate = asyncMiddleware(async (req: TAuthenticateRequest, _res: Response, next: NextFunction) => {

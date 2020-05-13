@@ -1,10 +1,9 @@
 import express from 'express'
-import bodyParser from 'body-parser'
 import passport from 'passport'
 import cookieParser from 'cookie-parser'
 import * as routes from './routes'
 import resourceNotFound from './resourceNotFound'
-import errorHandler from './errorHandler'
+import errorHandler from './legacy/errorHandler'
 
 const { COOKIE_SECRET } = process.env
 export const BUID = 'bearerUid' // TODO - What is this for?
@@ -13,8 +12,6 @@ export const AUTH_CALLBACK_URL = process.env.AUTH_CALLBACK_URL || ''
 
 const app = express()
 
-app.use(bodyParser.urlencoded({ extended: false }))
-app.use(bodyParser.json({ limit: '5mb' }))
 app.use(passport.initialize())
 app.use(cookieParser(COOKIE_SECRET))
 

@@ -253,6 +253,11 @@ form .form-actions {
   margin-left: 10.25rem;
 }
 
+.form-input[disabled='disabled'] {
+  cursor: not-allowed;
+  background-color: #d3d3d3;
+}
+
 /**
  * Content > Pagination
  */

@@ -1,6 +1,6 @@
 import { Router, NextFunction } from 'express'
 
-import errorHandler from '../../errorHandler'
+import errorHandler from '../../legacy/errorHandler'
 import { proxyCorsMiddleware } from '../proxy/cors'
 import { fetchAuthDetails } from '../auth/v3/strategy'
 import { middleware as proxyHandler } from './lambda-request'
@@ -66,9 +66,7 @@ function buid(req, _res, next) {
 }
 
 export async function setupId(req, _res, next) {
-  console.log('[setupId] query.setupId', req.query.setupId)
   const configuration = await getSetupDetails({ buid: req.buid, store: req.store, setupId: req.query.setupId })
-  console.log('[setupId] setup', JSON.stringify(configuration, null, 2))
   req.setupId = configuration.setupId
   req.configuration = configuration
 

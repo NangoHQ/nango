@@ -1,10 +1,13 @@
 import * as express from 'express'
+import bodyParser from 'body-parser'
 import { cors } from '../legacy/proxy/cors'
 import authV3, { authRouter } from '../legacy/auth/v3/router'
 import { initializeDB } from '../lib/database'
 import functions from '../legacy/functions/router'
 
 const legacy = express.Router()
+legacy.use(bodyParser.urlencoded({ extended: false }))
+legacy.use(bodyParser.json({ limit: '5mb' }))
 
 /**
  * Legacy endpoints for authentication.
