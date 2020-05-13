@@ -59,7 +59,6 @@ export const incomingRequestHandler = async (req, res, next) => {
 
   try {
     // Replace request options with provided authentication or data
-    //
     // i.e. replace ${auth.accessToken} from the integration template
     // with the authentication access token retrieved from the database.
     const externalRequestOptions = replaceEmbeddedExpressions(rawOptions, authentication)
@@ -74,11 +73,15 @@ export const incomingRequestHandler = async (req, res, next) => {
       throw error
     })
 
-    // TODO handle passing body to the third-party API
-    // @see https://stackoverflow.com/questions/9920208/expressjs-raw-body/13565786
-    // externalRequest.write(body)
+    // Pass body as well
+    req.on('data', function(chunk) {
+      externalRequest.write(chunk)
+    })
 
-    externalRequest.end()
+    // End the external request when the incoming request is ended
+    req.on('end', function(chunk) {
+      externalRequest.end()
+    })
   } catch (err) {
     next(err)
   }
@@ -112,7 +115,7 @@ const externalResponseHandler = (
     }
   }
 
-  // Append data
+  // Append response's data
   externalResponse.on('data', chunk => {
     res.write(chunk)
   })
