@@ -1,4 +1,4 @@
-import { TBackendRequestV4 } from './types'
+import { TBackendRequestV4 } from '../types'
 
 export abstract class CustomError extends Error {
   constructor(message: string) {
