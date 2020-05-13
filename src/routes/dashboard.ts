@@ -204,7 +204,7 @@ dashboard.post('/:integration/credentials/new', async (req, res) => {
  * Update credentials form
  */
 
-dashboard.get('/:integration/credentials/:setupId', async (req, res) => {
+dashboard.get('/:integration/credentials/:setupId', async (req, res, next) => {
   const setupId = String(req.params.setupId)
   const configuration = await store('configurations')
     .select('credentials', 'setup_id', 'scopes', 'created_at')
@@ -212,7 +212,8 @@ dashboard.get('/:integration/credentials/:setupId', async (req, res) => {
     .first()
 
   if (!configuration) {
-    throw new Error('Unknown setupId.')
+    next() // 404 not found
+    return
   }
 
   // @ts-ignore

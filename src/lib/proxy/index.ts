@@ -1,8 +1,9 @@
 import https from 'https'
+import express from 'express'
 import * as integrations from '../integrations'
 import * as authentications from '../authentications'
 import { interpolate } from './interpolation'
-import express from 'express'
+import { PizzlyError } from '../error-handling'
 import { Types } from '../../types'
 import { IncomingMessage } from 'http'
 
@@ -21,7 +22,7 @@ export const incomingRequestHandler = async (req, res, next) => {
   const integrationName = req.params.integration
 
   if (!authId) {
-    return next(new Error('missing_auth_id'))
+    return next(new PizzlyError('missing_auth_id'))
   }
 
   // Retrieve integration & authentication details
@@ -50,6 +51,12 @@ export const incomingRequestHandler = async (req, res, next) => {
       url.searchParams.append(param, integrationParams[param])
     }
   }
+
+  url.searchParams.forEach((value, key) => {
+    if (key.indexOf('pizzly_') === 0) {
+      url.searchParams.delete(key)
+    }
+  })
 
   const rawOptions = {
     url,

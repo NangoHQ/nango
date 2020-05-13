@@ -22,15 +22,36 @@ api.use(bodyParser.json({ limit: '5mb' }))
 api.use('*', access.secretKey)
 
 /**
- * List authentications endpoints:
- *
- * - GET /github/authentications/1ab2c3...
- * - DELETE /github/authentications/1ab2c3...
+ * API test endpoint:
  */
 
 api.get('/', (req, res) => {
   return res.status(200).json({
     message: 'Successfully connected to the Pizzly API.'
+  })
+})
+
+/**
+ * API test endpoint:
+ */
+
+api.get('/:integrationId', async (req, res) => {
+  const integrationId = req.params.integrationId
+  const integration = await integrations.get(integrationId).catch(() => {
+    return null
+  })
+
+  if (!integration) {
+    res
+      .status(404)
+      .json({ error: { type: 'unknown_integration', message: `Integration "${integrationId}" was not found.` } })
+    return
+  }
+
+  return res.status(200).json({
+    id: integrationId,
+    object: 'integration',
+    ...integration
   })
 })
 

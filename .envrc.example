@@ -3,6 +3,7 @@ export AUTH_VHOST=YOUR_AUTH_HOST
 export PROXY_VHOST=YOUR_PROXY_HOST
 export COOKIE_SECRET="CHANGE_ME"
 
+#
 # Secure your instance
 #
 # 1. Secure access to the dashboard

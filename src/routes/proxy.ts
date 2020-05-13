@@ -6,9 +6,18 @@
  */
 
 import express from 'express'
+import * as access from '../lib/access'
 import { incomingRequestHandler } from '../lib/proxy'
 
 const proxy = express.Router()
+
+proxy.use((req, res, next) => {
+  if (req.query['pizzly_pkey']) {
+    return access.publishableKey(req, res, next)
+  } else {
+    return access.secretKey(req, res, next)
+  }
+})
 
 /**
  * Handle proxy requests.
@@ -29,26 +38,18 @@ proxy.use((req, res, next) => {
 })
 
 proxy.use((err, req, res, next) => {
-  console.error(err)
-
   let status = 400
   let type = 'invalid'
   let message = 'Bad request'
 
-  switch (err.message) {
-    case 'missing_auth_id':
-      type = err.message
-      message = 'A valid auth_id is required to proceed with the proxy request.'
-      break
-    case 'unknown_integration':
-      type = err.message
-      message = 'The provided integration could not be found on the server.'
-      break
-    case 'unknown_authentication':
-      type = err.message
-      message = 'The provided authId could not be found on the database.'
-      break
+  if (err.type && err.status && err.message) {
+    status = err.status
+    type = err.type
+    message = err.message
+  } else {
+    console.error(err)
   }
+
   return res.status(status).json({ error: { type, message } })
 })
 
