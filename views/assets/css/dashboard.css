@@ -214,6 +214,13 @@ table .col-actions {
   text-align: right;
 }
 
+table .col-ellipsis {
+  max-width: 12rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 .table-empty {
   text-align: center;
   padding: 3rem;
@@ -243,10 +250,17 @@ form fieldset label {
 }
 
 form fieldset .form-input {
-  min-width: 20rem;
+  width: 100%;
   padding: 0.5rem;
+  box-sizing: border-box;
   font-size: 1rem;
   border: 1px solid #d3d3d3;
+}
+
+@media (min-width: 60rem) {
+  form fieldset .form-input {
+    width: 49rem;
+  }
 }
 
 form .form-actions {
