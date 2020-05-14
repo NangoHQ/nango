@@ -8,8 +8,8 @@ import { PizzlyError } from '../error-handling'
 
 const basic = (req: Request, res: Response, next: NextFunction) => {
   const credentials = {
-    user: process.env.AUTHENTICATION_USER,
-    password: process.env.AUTHENTICATION_PASSWORD
+    user: process.env.DASHBOARD_USER,
+    password: process.env.DASHBOARD_PASSWORD
   }
 
   if (!credentials.user && !credentials.password) {
