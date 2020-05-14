@@ -9,7 +9,7 @@ Pizzly's JS can be used instantly in your page or with a package system.
 ### Directly in your page
 
 ```html
-<script src="TODO-JSDELIVR-LATEST"></script>
+<script src="https://cdn.jsdelivr.net/npm/pizzly-js@latest/dist/index.umd.min.js"></script>
 <script>
   // Initialize your code by passing your `publishableKey` and `hostname` as parameters.
   const pizzly = Pizzly(publishableKey, 'https://...')
@@ -19,9 +19,9 @@ Pizzly's JS can be used instantly in your page or with a package system.
 ### With a build system
 
 ```bash
-yarn add @pizzly/js
+yarn add pizzly-js
 # or
-npm install @pizzly/js
+npm install pizzly-js
 ```
 
 ## Usage

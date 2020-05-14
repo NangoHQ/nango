@@ -1,11 +1,18 @@
 {
   "name": "pizzly-js",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A JavaScript library that enables Pizzly on your website",
   "main": "dist/index.js",
+  "module": "dist/index.min.mjs",
+  "types": "dist/index.d.ts",
+  "unpkg": "dist/index.umd.min.js",
+  "files": [
+    "dist/"
+  ],
   "scripts": {
     "test": "jest",
     "clean": "rimraf dist/",
+    "prepublish": "npm run build",
     "build": "npm run clean && tsc --project tsconfig.json && npm run bundle:esm && npm run bundle:esm:min && npm run bundle:umd && npm run bundle:umd:min && npm run build:stats",
     "build:stats": "(echo '\\033[35;3m' ; cd dist && ls -lh index*js index*gz | tail -n +2 | awk '{print $5,$9}')",
     "bundle:esm": "rollup dist/index.js --file dist/index.mjs --format esm",
@@ -13,7 +20,9 @@
     "bundle:umd": "rollup dist/index.js --file dist/index.umd.js --format umd --name Pizzly",
     "bundle:umd:min": "terser --ecma 6 --compress --mangle -o dist/index.umd.min.js -- dist/index.umd.js && gzip -9 -c dist/index.umd.min.js > dist/index.umd.min.js.gz"
   },
-  "author": "",
+  "repository": "bearer/pizzly",
+  "homepage": "https://github.com/Bearer/Pizzly/tree/master/src/clients/javascript#readme",
+  "author": "Bearer Team<engineering@bearer.sh>",
   "license": "ISC",
   "dependencies": {},
   "devDependencies": {
