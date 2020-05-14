@@ -33,13 +33,15 @@ _But seriously, why Pizzly? We're fan of bears and fell in love with this [sweet
 
 ## How it works?
 
-You can use Pizzly as a **complete API proxy**, it means that each API request will go through the service. Pizzly forwards each request to the third-party API using a config file, it authenticates each request with the right `access_token` and handles token refreshness if needed. Pizzly is also available as a standalone **OAuth manager**, helping you to retrieve the initial token, but you'll have to refresh it when needed. _(see Getting Started below)_.
+You can use Pizzly as a **complete API proxy**, it means that each API request will go through the service. Pizzly forwards each request to the third-party API using a config file, it authenticates each request with the right `access_token` and handles token refreshness if needed.
 
 ![Diagram of Pizzly used in the proxy service mode](views/assets/img/docs/pizzly-diagram-api-proxy-mode.jpg?raw=true)
 
+Pizzly is also available as a standalone **OAuth manager**, helping you to retrieve the initial token, but you'll have to refresh it when needed. _(see Getting Started below)_.
+
 ![Diagram of Pizzly used in the token manager mode](views/assets/img/docs/pizzly-diagram-token-manager-mode.jpg?raw=true)
 
-### Understanding the\*\* **AuthId concept**
+### Understanding the **AuthId** concept
 
 It's important to understand the AuthId concept behind Pizzly. The AuthId is an identifier masking OAuth tokens. Since most OAuth tokens need to be refreshed, and therefore will change, but still represent a common identity _(especially a user identity when performing 3-legged OAuth),_ the AuthId serve as an abstraction layer. To say it differently, an AuthId represents an identity that will have many tokens overtime.
 
@@ -58,7 +60,7 @@ It's important to understand the AuthId concept behind Pizzly. The AuthId is an 
 
 At the heart of Pizzly is a Node.js application that uses PostgreSQL as a database. It straightforward to install on Heroku using the **Deploy to Heroku** button, but you can install it anywhere.
 
-### Manual Install\*\*
+### Manual Install
 
 To run Pizzly on your machine, follow these steps:
 
@@ -78,7 +80,7 @@ http://localhost:8080/
 
 You will need Node.js and PostgreSQL installed first. Read our [getting started](https://github.com/Bearer/Pizzly/wiki/Getting-started) to follow a step-by-step installation guide.
 
-### Heroku Install\*\*
+### Heroku Install
 
 Deploy it to Heroku and test it.
 
