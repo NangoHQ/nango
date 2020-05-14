@@ -23,7 +23,6 @@ Pizzly is made available as an open-source project by [Bearer.sh](https://bearer
 - [Installation](#installation)
 - [Getting Started](#getting-started)
 - [Supported APIs](#supported-apis)
-- [Adding new API](#adding-new-api)
 - [License](#license)
 
 ## Why Pizzly?
@@ -106,9 +105,7 @@ Follow a step-by-step guide on [how to use Pizzly as an OAuth manager](https://g
 
 More than 50 APIs are preconfigured to work out-of-the-box. Including: GitHub, Salesforce, Facebook, Google Sheets, Gmail, LinkedIn, Typeform, Zoom, etc. [Full list here](/integrations).
 
-## Adding new APIs
-
-Each API that Pizzly support consists of a JSON configuration file, stored within the `/integrations` directory.
+Each API consists of a JSON configuration file, stored within the `/integrations` directory.
 
 Here's an example with the GitHub configuration file (`/integration/github.json`):
 
@@ -134,7 +131,7 @@ Here's an example with the GitHub configuration file (`/integration/github.json`
 }
 ```
 
-The `config` property relates to how Pizzly manages the OAuth dance. While the `request` property handles how the proxy service perfoms the requests. Learn more about how to create a full configuration file, in [the configuration reference](https://github.com/Bearer/Pizzly/wiki/TODO).
+Learn how to add a new API by creating a new configuration file, [in this step-by-step guide](https://github.com/Bearer/Pizzly/wiki/TODO).
 
 ## License
 
