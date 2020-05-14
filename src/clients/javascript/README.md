@@ -19,9 +19,9 @@ Pizzly's JS can be used instantly in your page or with a package system.
 ### With a build system
 
 ```bash
-yarn add @pizzly/js
+yarn add pizzly-js
 # or
-npm install @pizzly/js
+npm install pizzly-js
 ```
 
 ## Usage
