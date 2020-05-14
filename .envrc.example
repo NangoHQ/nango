@@ -8,8 +8,8 @@ export COOKIE_SECRET="CHANGE_ME"
 #
 # 1. Secure access to the dashboard
 #
-export AUTHENTICATION_USER=""
-export AUTHENTICATION_PASSWORD=""
+export DASHBOARD_USER=""
+export DASHBOARD_PASSWORD=""
 #
 # 2. Secure requests to the API
 #
