@@ -13,9 +13,9 @@ Pizzly is made available as an open-source project by [Bearer.sh](https://bearer
 
 ## Summary
 
-- Why Pizzly?
-- How it work
-- Key Features
+- [Why Pizzly?](#why-pizzly)
+- [How it works](#how-it-works)
+- [Key Features]
 - Installation
 - Getting Started
 - Supported API
