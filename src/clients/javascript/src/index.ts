@@ -16,15 +16,12 @@ export default class Pizzly {
   /**
    * Initialize Pizzly
    *
+   * const pizzly = new Pizzly()
    * const pizzly = new Pizzly(PUBLISHABLE_KEY)
    * const pizzly = new Pizzly(PUBLISHABLE_KEY, options)
    */
 
   constructor(key: string, options?: { protocol?: string; hostname?: string; port?: number | string }) {
-    if (!key) {
-      throw new Error("Pizzly JS can't be initialized: missing publishable key.")
-    }
-
     if (!window) {
       throw new Error("Couldn't connect. The window object is undefined. Are you using connect from a browser?")
     }
@@ -44,7 +41,7 @@ export default class Pizzly {
    */
 
   public connect(integration: string, options?: Types.ConnectOptions) {
-    const connect = new PizzlyConnect(integration, options || {}, this.origin)
+    const connect = new PizzlyConnect(integration, options || {}, this.key, this.origin)
     return connect.trigger()
   }
 
@@ -53,14 +50,14 @@ export default class Pizzly {
    */
 
   public integration(integration: string, options?: Types.IntegrationOptions) {
-    return new PizzlyIntegration(integration, options || {}, this.origin)
+    return new PizzlyIntegration(integration, options || {}, this.key, this.origin)
   }
 
   /**
    * Save config
    */
 
-  public saveConfig() {}
+  // public saveConfig() {}
 
   /**
    * Some helpers

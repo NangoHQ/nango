@@ -36,7 +36,7 @@
         e.preventDefault()
 
         const setupId = document.getElementById('setupId').value || null
-        const pizzly = new Pizzly('PUBLISHABLE-KEY')
+        const pizzly = new Pizzly('<%= process.env.PUBLISHABLE_KEY %>')
 
         pizzly
           .connect('<%= req.params.integration %>', { setupId })
