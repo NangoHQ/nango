@@ -44,12 +44,12 @@ export const callbackContext = asyncMiddleware(
       throw new NoAuthInProgress()
     }
 
-    const { buid, connectParams, setupId } = req.session.context
+    const { buid, connectParams } = req.session.context
 
     req.isCallback = true
     req.connectParams = connectParams
     req.buid = buid
-    req.setupId = setupId
+    req.setupId = req.session.authConfig.setupDetails.setup_id
 
     next()
   }
