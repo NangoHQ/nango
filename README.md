@@ -90,7 +90,7 @@ Once deployed, go to the heroku application and connect to an API.
 
 ## Getting Started
 
-**Using Pizzly as a complete API proxy**
+### Using Pizzly as a complete API proxy
 
 Follow this step-by-step guide on [how to use Pizzly as a proxy service](https://github.com/Bearer/Pizzly/wiki/TODO) and learn how to:
 
@@ -99,7 +99,7 @@ Follow this step-by-step guide on [how to use Pizzly as a proxy service](https:/
 3. Call the third-party API
 4. Retrieve data from that API
 
-**Using Pizzly as an OAuth manager**
+### Using Pizzly as an OAuth manager
 
 Follow a step-by-step guide on [how to use Pizzly as an OAuth manager](https://github.com/Bearer/Pizzly/wiki/TODO) and learn how to:
 
