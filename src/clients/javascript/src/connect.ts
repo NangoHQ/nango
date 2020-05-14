@@ -14,12 +14,13 @@
 import Types from './types'
 
 export default class PizzlyConnect {
+  private key: string
   private integration: string
   private options?: Types.ConnectOptions
   private status: AuthorizationStatus = AuthorizationStatus.IDLE
   private origin: string
 
-  constructor(integration: string, options: Types.ConnectOptions, origin: string) {
+  constructor(integration: string, options: Types.ConnectOptions, key: string, origin: string) {
     if (!integration) {
       throw new Error("Couldn't connect. Missing argument: integration (string)")
     }
@@ -30,6 +31,7 @@ export default class PizzlyConnect {
 
     this.integration = integration
     this.options = options
+    this.key = key
     this.origin = origin
   }
 
@@ -39,8 +41,8 @@ export default class PizzlyConnect {
    */
 
   trigger(): Promise<Types.ConnectSuccess> {
-    const query = this.connectOptionsToQueryString(this.options)
-    const url = `${this.origin}/auth/${this.integration}?${query}`
+    const query = this.toQueryString(this.key, this.options)
+    const url = `${this.origin}/auth/${this.integration}` + (query ? `?${query}` : '')
 
     return new Promise((resolve, reject) => {
       const handler = (e?: MessageEvent) => {
@@ -93,18 +95,18 @@ export default class PizzlyConnect {
    * e.g. authId=...&setupId=...
    */
 
-  connectOptionsToQueryString(options?: Types.ConnectOptions): string {
+  toQueryString(key?: string, options?: Types.ConnectOptions): string {
     let query: string[] = []
 
-    if (!options) {
-      return ''
+    if (key && typeof key === 'string') {
+      query.push(`pizzly_pkey=${key}`)
     }
 
-    if (typeof options.authId === 'string') {
+    if (options && typeof options.authId === 'string') {
       query.push(`authId=${options.authId}`)
     }
 
-    if (typeof options.setupId === 'string') {
+    if (options && typeof options.setupId === 'string') {
       query.push(`setupId=${options.setupId}`)
     }
 
