@@ -103,9 +103,7 @@ Follow a step-by-step guide on [how to use Pizzly as an OAuth manager](https://g
 
 ## Supported APIs
 
-More than 50 APIs are preconfigured to work out-of-the-box. Including: GitHub, Salesforce, Facebook, Google Sheets, Gmail, LinkedIn, Typeform, Zoom, etc. [Full list here](/integrations).
-
-Each API consists of a JSON configuration file, stored within the `/integrations` directory.
+More than 50 APIs are preconfigured to work out-of-the-box. Including: GitHub, Salesforce, Facebook, Google Sheets, Gmail, LinkedIn, Typeform, Zoom, [and more...](/integrations) Each API consists of a JSON configuration file, stored within the `/integrations` directory.
 
 Here's an example with the GitHub configuration file (`/integration/github.json`):
 
@@ -131,7 +129,7 @@ Here's an example with the GitHub configuration file (`/integration/github.json`
 }
 ```
 
-Learn how to add a new API by creating a new configuration file, [in this step-by-step guide](https://github.com/Bearer/Pizzly/wiki/TODO).
+To add a new API, just create a new configuration file. Here's a step-by-step guide on [how to create a new configuration file](https://github.com/Bearer/Pizzly/wiki/TODO).
 
 ## License
 
