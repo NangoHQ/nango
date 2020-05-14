@@ -1,15 +1,15 @@
 # Pizzly 🐻 - The OAuth Integration Proxy
 
-<div style="text-align: center;">
+<p align="center">
 
-![Pizzly logo](/views/assets/img/logos/pizzly.png)
+<img src="https://raw.githubusercontent.com/Bearer/Pizzly/master/views/assets/img/logos/pizzly.png" width="400">
 
 The OAuth Integration Proxy
 
 <!-- Build badge || License Badge || Heroku badge
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 -->
-</div>
+</p>
 Pizzly is an OAuth Integration Proxy that acts as an abstraction layer to simplify integrating with OAuth API. It let you connect out-of-the-box to 50+ OAuth APIs and automatically manage retrieving, storing and refreshing OAuth tokens. It also supports adding new OAuth API by using a simple file definition.
 
 Pizzly is made available as an open-source project by [Bearer.sh](https://bearer.sh/?ref=pizzly).
