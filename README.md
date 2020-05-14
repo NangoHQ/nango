@@ -1,7 +1,7 @@
 # Pizzly 🐻 - The OAuth Integration Proxy
 
-<div style="text-align:center">
-![Pizzly logo](/views/assets/img/logos/pizzly.png)
+<div style="text-align: center;">
+![Pizzly logo](views/assets/img/logos/pizzly.png)
 
 The OAuth Integration Proxy
 
