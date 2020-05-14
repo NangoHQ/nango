@@ -1,11 +1,13 @@
 # Pizzly 🐻 - The OAuth Integration Proxy
 
 <div style="text-align:center">
-![Pizzly logo](https://raw.githubusercontent.com/Bearer/Pizzly/master/views/assets/img/logos/pizzly.png)
+![Pizzly logo](/views/assets/img/logos/pizzly.png)
 
 The OAuth Integration Proxy
 
-<!-- Build badge || License Badge || Heroku badge -->
+<!-- Build badge || License Badge || Heroku badge
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+-->
 </div>
 Pizzly is an OAuth Integration Proxy that acts as an abstraction layer to simplify integrating with OAuth API. It let you connect out-of-the-box to 50+ OAuth APIs and automatically manage retrieving, storing and refreshing OAuth tokens. It also supports adding new OAuth API by using a simple file definition.
 
@@ -15,12 +17,12 @@ Pizzly is made available as an open-source project by [Bearer.sh](https://bearer
 
 - [Why Pizzly?](#why-pizzly)
 - [How it works](#how-it-works)
-- [Key Features]
-- Installation
-- Getting Started
-- Supported API
-- Adding new APIs
-- Licence
+- [Key Features](#key-features)
+- [Installation](#installation)
+- [Getting Started](#getting-started)
+- [Supported APIs](#supported-apis)
+- [Adding new API](#adding-new-api)
+- [License](#license)
 
 ## Why Pizzly?
 
@@ -32,9 +34,9 @@ _But seriously, why Pizzly? We're fan of bears and fell in love with this [sweet
 
 You can use Pizzly as a **complete API proxy**, it means that each API request will go through the service. Pizzly forwards each request to the third-party API using a config file, it authenticates each request with the right `access_token` and handles token refreshness if needed. Pizzly is also available as a standalone **OAuth manager**, helping you to retrieve the initial token, but you'll have to refresh it when needed. _(see Getting Started below)_.
 
-![](https://raw.githubusercontent.com/Bearer/Pizzly/master/views/assets/img/docs/pizzly-diagram-api-proxy-mode.jpg)
+![Diagram of Pizzly used in the proxy service mode](https://raw.githubusercontent.com/Bearer/Pizzly/master/views/assets/img/docs/pizzly-diagram-api-proxy-mode.jpg)
 
-![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/e6d0c353-70b8-4ea2-8b81-c1f8ae1d0eb5/Pizzly_Diagram_-_Token_Manager_Mode.jpg](https://raw.githubusercontent.com/Bearer/Pizzly/master/views/assets/img/docs/pizzly-diagram-token-manager-mode.jpg)
+![Diagram of Pizzly used in the token manager mode](https://raw.githubusercontent.com/Bearer/Pizzly/master/views/assets/img/docs/pizzly-diagram-token-manager-mode.jpg)
 
 **Understanding the** **AuthId concept**
 
@@ -134,4 +136,4 @@ The `config` property relates to how Pizzly manages the OAuth dance. While the `
 
 ## License
 
-MIT
+This project is licensed under the terms of the MIT license. See the [LICENSE file](LICENSE.md) for more information.
