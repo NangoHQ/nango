@@ -10,19 +10,11 @@ import * as express from 'express'
 import bodyParser from 'body-parser'
 import cookieParser from 'cookie-parser'
 import passport from 'passport'
-import * as access from '../lib/access'
 import authV3 from '../legacy/auth/v3/router'
 import { initializeDB } from '../lib/database'
 
 const { COOKIE_SECRET } = process.env
 const auth = express.Router()
-
-/**
- * Secure requests with
- * a publishable key
- */
-
-auth.use(access.publishableKey)
 
 /**
  * Parse the body
