@@ -5,27 +5,31 @@
 import Types from './types'
 
 export default class PizzlyIntegration {
+  private key: string
   private integration: string
   private options: Types.IntegrationOptions = {}
   private origin: string
 
-  constructor(integration: string, options: Types.IntegrationOptions, origin: string) {
+  constructor(integration: string, options: Types.IntegrationOptions, key: string, origin: string) {
     this.integration = integration
     this.options = options
     this.origin = origin
+    this.key = key
   }
 
   /**
    * `auth` set authId so that API calls are performed with the given identity
    */
 
-  public auth = (authId: string) => new PizzlyIntegration(this.integration, { ...this.options, authId }, this.origin)
+  public auth = (authId: string) =>
+    new PizzlyIntegration(this.integration, { ...this.options, authId }, this.key, this.origin)
 
   /**
    * `setup` specify which setupId to use when calling Integration service
    */
 
-  public setup = (setupId: string) => new PizzlyIntegration(this.integration, { ...this.options, setupId }, this.origin)
+  public setup = (setupId: string) =>
+    new PizzlyIntegration(this.integration, { ...this.options, setupId }, this.key, this.origin)
 
   /**
    * `get` perform get request to integration service
@@ -86,12 +90,10 @@ export default class PizzlyIntegration {
         'Unable to trigger API request. Request parameters should be an object in the form "{ headers: { "Foo": "bar" }, body: "My body" }'
       )
     }
-    console.log(this.options)
 
     const headers: Types.RequestHeaders = {
       'Pizzly-Auth-Id': this.options.authId!,
       'Pizzly-Setup-Id': this.options.setupId!
-      // TODO - 'Pizzly-Publishable-Key': this.key
     }
 
     if (parameters && parameters.headers) {
@@ -100,7 +102,7 @@ export default class PizzlyIntegration {
       }
     }
 
-    const url = this.toURL(this.origin, `/proxy/${this.integration}`, endpoint, parameters.query)
+    const url = this.toURL(this.origin, `/proxy/${this.integration}`, endpoint, this.key, parameters.query)
     const fetch = window.fetch
 
     return fetch(url.toString(), {
@@ -114,7 +116,13 @@ export default class PizzlyIntegration {
    * Helper to build a new URL from different params
    */
 
-  private toURL(origin: string, baseURL: string, endpoint: string, queryString?: Types.RequestQueryString): URL {
+  private toURL(
+    origin: string,
+    baseURL: string,
+    endpoint: string,
+    key: string,
+    queryString?: Types.RequestQueryString
+  ): URL {
     const removeLeadingSlash = (text: string) => {
       return text.replace(/^\//, '')
     }
@@ -129,6 +137,11 @@ export default class PizzlyIntegration {
     urlParts.push(removeLeadingSlash(endpoint))
 
     const url = new URL(urlParts.join('/'))
+
+    if (key) {
+      // Authenticate the request with the provided publishable key
+      url.searchParams.append('pizzly_pkey', key)
+    }
 
     if (queryString) {
       Object.keys(queryString).forEach(key => url.searchParams.append(key, String(queryString[key])))
