@@ -30,7 +30,7 @@
     "express-session": "^1.15.6",
     "js-cookie": "^2.2.0",
     "jsonwebtoken": "^8.5.1",
-    "knex": "^0.20.13",
+    "knex": "^0.21.1",
     "lodash.at": "^4.6.0",
     "lodash.omit": "^4.5.0",
     "lodash.pick": "^4.4.0",
@@ -38,7 +38,7 @@
     "oauth": "^0.9.15",
     "passport": "^0.4.0",
     "passport-oauth1": "^1.1.0",
-    "pg": "^8.0.2",
+    "pg": "^8.0.3",
     "simple-oauth2": "^3.0.0",
     "uuid": "^7.0.3"
   },
