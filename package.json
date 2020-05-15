@@ -67,8 +67,6 @@
     "cz-conventional-changelog": "^2.1.0",
     "file-loader": "^3.0.1",
     "html-loader": "^1.1.0",
-    "html-webpack-inline-source-plugin": "^0.0.10",
-    "html-webpack-plugin": "^3.2.0",
     "jest": "^23.6.0",
     "jest-localstorage-mock": "^2.2.0",
     "lint-staged": "^8.1.0",

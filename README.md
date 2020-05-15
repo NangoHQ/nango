@@ -84,7 +84,7 @@ You will need Node.js and PostgreSQL installed first. Read our [getting started]
 
 Deploy it to Heroku and test it.
 
-[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy?template=https://github.com/Bearer/Pizzly)
+[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
 Once deployed, go to the heroku application and connect to an API.
 
