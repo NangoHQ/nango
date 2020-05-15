@@ -3,7 +3,7 @@ import bodyParser from 'body-parser'
 import { v4 as uuidv4 } from 'uuid'
 import { store } from '../lib/database'
 import * as access from '../lib/access'
-import * as integrations from '../lib/integrations'
+import * as integrations from '../lib/database/integrations'
 import { Types } from '../types'
 import { PizzlyError } from '../lib/error-handling'
 

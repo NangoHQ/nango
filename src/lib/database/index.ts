@@ -1,6 +1,9 @@
 import knex from 'knex'
 import express from 'express'
 import { connection } from '../../../config/constants'
+import * as authentications from './authentications'
+import * as configurations from './configurations'
+import * as integrations from './integrations'
 
 export const dbClient = function() {
   return knex({
@@ -18,3 +21,5 @@ export const initializeDB = function(req: express.Request, res: express.Response
   req.store = store
   next()
 }
+
+export { authentications, configurations, integrations }
