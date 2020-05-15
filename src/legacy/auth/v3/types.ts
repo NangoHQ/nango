@@ -155,7 +155,7 @@ export interface IFetchAuthDetailsParams {
   environmentIdentifier: string
   authId?: string
   setupId?: string
-  setup: any
+  configuration: any
   setupIdFromRequest?: boolean
   store: any
 }

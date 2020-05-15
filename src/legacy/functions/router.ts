@@ -55,7 +55,7 @@ export function proxyFunction() {
 }
 
 function authId(req, _res, next) {
-  req.authId = req.headers['bearer-auth-id'] || req.query.authId
+  req.authId = req.headers['bearer-auth-id'] || req.headers['pizzly-auth-id'] || req.query.authId
   next()
 }
 

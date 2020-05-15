@@ -91,11 +91,7 @@ export namespace Types {
     id: string
     image: string
     name: string
-    config: {
-      authType: string
-      setupKeyLabel: string
-      setupSecretLabel: string
-    }
+    config: any // TODO - Type the config (and rename config to auth?)
     request: {
       baseURL: string
       headers?: { [key: string]: string }
@@ -124,8 +120,50 @@ export namespace Types {
 
   export interface Authentication {
     auth_id: string
-    payload: any
+    setup_id: string
+    payload: OAuthPayload
     created_at: string
     updated_at: string
   }
+
+  /**
+   * OAuth payload types
+   */
+
+  enum AuthType {
+    NoAuth = 'NO_AUTH',
+    OAuth1 = 'OAUTH1',
+    OAuth2 = 'OAUTH2'
+  }
+
+  interface CommonOAuthPayload {
+    serviceName: string
+    userId: string
+    updatedAt: number
+    setupId: string
+    scopes?: any
+    tokenResponseJSON?: string
+    callbackParamsJSON?: string
+    connectParams?: any
+  }
+
+  interface OAuth1Payload extends CommonOAuthPayload {
+    accessToken: string
+    tokenSecret: string
+    consumerKey?: string
+    consumerSecret?: string
+    expiresIn: number
+  }
+
+  interface OAuth2Payload extends CommonOAuthPayload {
+    accessToken: string
+    refreshToken?: string
+    clientId?: string
+    clientSecret?: string
+    expiresIn?: number
+    idToken?: string
+    idTokenJwt?: any
+  }
+
+  type OAuthPayload = OAuth1Payload | OAuth2Payload
 }
