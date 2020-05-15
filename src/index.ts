@@ -2,7 +2,7 @@ import express from 'express'
 import * as routes from './routes'
 
 export const BUID = 'bearerUid' // TODO - What is this for?
-export const PORT = process.env.port || 8080
+export const PORT = process.env.PORT || 8080
 
 const app = express()
 
