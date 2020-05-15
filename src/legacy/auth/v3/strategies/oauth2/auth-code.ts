@@ -1,13 +1,13 @@
 import { NextFunction, Response } from 'express'
 
 import { TAuthenticateRequest } from '../../types'
-import { AUTH_CALLBACK_URL } from '../../../../../../src'
 import { getCodeRedirectURL, getTokenWithCode } from '../../../clients/oauth2'
 import { asyncMiddleware } from '../../../../errorHandler'
 import { responseToCredentials } from './common'
 import { AuthenticationFailed } from '../../errors'
 
 export const authenticate = asyncMiddleware(async (req: TAuthenticateRequest, res: Response, next: NextFunction) => {
+  const callbackURL = process.env.AUTH_CALLBACK_URL || `${req.protocol}://${req.get('host')}/auth/callback`
   const {
     credentials: { clientId, clientSecret },
     scopes = []
@@ -36,7 +36,7 @@ export const authenticate = asyncMiddleware(async (req: TAuthenticateRequest, re
       code,
       tokenParams,
       tokenURL,
-      callbackURL: AUTH_CALLBACK_URL
+      callbackURL
     })
 
     // console.log('tokenResult', tokenResult)
@@ -57,7 +57,7 @@ export const authenticate = asyncMiddleware(async (req: TAuthenticateRequest, re
     clientId,
     state,
     scope: scopes || config!.scope || [],
-    callbackURL: AUTH_CALLBACK_URL
+    callbackURL
   })
 
   res.redirect(redirectURL)

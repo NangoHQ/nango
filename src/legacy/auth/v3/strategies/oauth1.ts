@@ -13,7 +13,6 @@ import {
   OAuth1SignatureMethod
 } from '../types'
 import { AuthenticationFailed, InvalidAuthId } from '../errors'
-import { AUTH_CALLBACK_URL } from '../../../../../src/'
 // import { getSetupDetails, getAuth, TOAuth1Payload } from '../../../clients/integrations'
 import { checkSetupIdConsistency } from './setup-id-consistency'
 
@@ -79,6 +78,7 @@ class Strategy extends OAuth1Strategy {
 }
 
 const strategyOptions = (req: TAuthenticateRequest) => {
+  const callbackURL = process.env.AUTH_CALLBACK_URL || `${req.protocol}://${req.get('host')}/auth/callback`
   const { consumerKey, consumerSecret } = req.setupDetails
   const {
     requestTokenURL,
@@ -98,8 +98,7 @@ const strategyOptions = (req: TAuthenticateRequest) => {
     userAuthorizationURL,
     authorizationParams,
     signatureMethod,
-    callbackURL: AUTH_CALLBACK_URL,
-    customHeaders: { 'User-Agent': 'Bearer' }
+    callbackURL
   }
 }
 
