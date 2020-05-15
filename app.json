@@ -6,13 +6,39 @@
   "keywords": ["OAuth", "node"],
   "addons": ["heroku-postgresql:hobby-dev"],
   "env": {
-    "HOSTNAME": {
-      "description": "",
-      "required": true
+    "DASHBOARD_USER": {
+      "description": "The username to protect access to your Pizzly's dashboard.",
+      "default": "",
+      "required": false
+    },
+    "DASHBOARD_PASSWORD": {
+      "description": "The password to protect access to your Pizzly's dashboard.",
+      "default": "",
+      "required": false
+    },
+    "SECRET_KEY": {
+      "description": "An unguessable string used to authenticate server-to-server requests.",
+      "default": "",
+      "required": false
+    },
+    "PUBLISHABLE_KEY": {
+      "description": "An unguessable string used to authenticate frontend-to-server requests.",
+      "default": "",
+      "required": false
     },
     "COOKIE_SECRET": {
-      "description": "",
+      "description": "An unguessable string to sign and verify cookie session.",
       "default": "cookie_secret",
+      "required": false
+    },
+    "PROXY_USES_SECRET_KEY_ONLY": {
+      "description": "Advanced - Restrict access to the proxy service with a secret key only.",
+      "default": "false",
+      "required": false
+    },
+    "AUTH_CALLBACK_URL": {
+      "description": "Advanced - Force which authentication URL to use.",
+      "default": "",
       "required": false
     }
   }
