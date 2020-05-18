@@ -66,6 +66,7 @@ app.use((err, req, res, next) => {
   if (err.status && err.status === 401) {
     res.status(401).render('401')
   } else {
+    console.error(err)
     res.status(500).render('500')
   }
 })

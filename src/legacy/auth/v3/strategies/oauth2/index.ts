@@ -2,11 +2,7 @@ import { NextFunction, Response } from 'express'
 // import merge from 'merge'
 
 import { TAuthenticateRequest, IFetchAuthDetailsParams, TIntegrationConfig } from '../../types'
-import {
-  // AccessTokenExpired,
-  InvalidGrantType,
-  InvalidAuthId
-} from '../../errors'
+import { /* AccessTokenExpired,*/ InvalidGrantType, InvalidAuthId } from '../../errors'
 import {
   getAuth,
   IAuthResult
@@ -14,15 +10,12 @@ import {
   // updateAuthV3
 } from '../../../clients/integrations'
 // import { checkSetupIdConsistency } from '../setup-id-consistency'
-// import { getTokenWithRefreshToken, getTokenWithClientCredentials } from '../../../../clients/oauth2'
+// import { getTokenWithRefreshToken, getTokenWithClientCredentials } from '../../../clients/oauth2'
 import { authenticate as authCodeAuthenticate } from './auth-code'
 import { authenticate as clientCredentialsAuthenticate } from './client-credentials'
-import {
-  // NO_VALUE,
-  // responseToCredentials,
-  getIdTokenJwt
-} from './common'
+import { /*NO_VALUE, responseToCredentials,*/ getIdTokenJwt } from './common'
 // import { expandAuthConfig } from '../../../../api-config/auth-config'
+// import { TOAuth2Payload } from '../../../clients/integrations'
 
 export enum GrantType {
   AuthCode = 'authorization_code',
@@ -158,7 +151,7 @@ export const authenticate = (req: TAuthenticateRequest, res: Response, next: Nex
 // }
 
 export const fetchAuthDetails = async (params: IFetchAuthDetailsParams, integrationConfig: TIntegrationConfig) => {
-  const { buid, integration, authId, store, setup } = params
+  const { buid, integration, authId, store, configuration } = params
 
   const authentication = await getAuth<IAuthResult>({
     store,
@@ -186,6 +179,11 @@ export const fetchAuthDetails = async (params: IFetchAuthDetailsParams, integrat
 
   // checkSetupIdConsistency({ setupId, setupIdParam, setupIdFromRequest })
 
+  const { clientId, clientSecret } = configuration.credentials
+  if (!clientId || !clientSecret) {
+    throw new Error('Configuration is lacking of a clientId and/or clientSecret')
+  }
+
   // if (expiresIn) {
   //   // Sorry to be that explicit but that's something so hard to understand
   //   const expiredFromThisTime = expiresIn * 1000 + updatedAt
@@ -197,13 +195,6 @@ export const fetchAuthDetails = async (params: IFetchAuthDetailsParams, integrat
   //   if (isNowLaterThanSafeRefreshTime) {
   //     return refreshAndUpdateCredentials(params, credentials, integrationConfig)
   //   }
-  // }
-
-  // const { clientId, clientSecret } = credentials
-  // if (!clientId || !clientSecret) {
-  const {
-    setup: { clientId, clientSecret }
-  } = setup
   // }
 
   return {

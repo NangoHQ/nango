@@ -1,8 +1,8 @@
 import https from 'https'
 import express from 'express'
-import * as integrations from '../integrations'
-import * as authentications from '../authentications'
+import { integrations, authentications } from '../database'
 import { interpolate } from './interpolation'
+import { accessTokenHasExpired, refreshAuthentication } from '../oauth'
 import { PizzlyError } from '../error-handling'
 import { Types } from '../../types'
 import { IncomingMessage } from 'http'
@@ -27,7 +27,7 @@ export const incomingRequestHandler = async (req, res, next) => {
 
   // Retrieve integration & authentication details
   const integration = await integrations.get(integrationName)
-  const authentication = (authId && (await authentications.get(integrationName, authId))) || undefined
+  let authentication = (authId && (await authentications.get(integrationName, authId))) || undefined
 
   // Validate each
   if (!integration) {
@@ -36,6 +36,11 @@ export const incomingRequestHandler = async (req, res, next) => {
 
   if (!authentication) {
     return next(new Error('unknown_authentication'))
+  }
+
+  // Handle the token refreshness (if it has expired)
+  if (accessTokenHasExpired(authentication)) {
+    authentication = await refreshAuthentication(integration, authentication)
   }
 
   // Prepare the request
@@ -172,8 +177,7 @@ const replaceEmbeddedExpressions = (
 
   const variables = {
     auth: {
-      accessToken: oauthPayload.accessToken,
-      refreshToken: oauthPayload.refreshToken
+      accessToken: oauthPayload.accessToken
     },
     headers: options.headers
   }
