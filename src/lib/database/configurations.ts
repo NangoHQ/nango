@@ -2,7 +2,8 @@
  * Handle SQL queries to the configurations' table
  */
 
-import { store } from '../database'
+import { store } from '.'
+import { Types } from '../../types'
 
 /**
  * Retrieve a configuration from the database
@@ -10,7 +11,7 @@ import { store } from '../database'
  * @param id (string)- The configuration ID
  */
 
-export const getConfiguration = async (integration: string, id?: string) => {
+export const getConfiguration = async (integration: string, id?: string): Promise<Types.Configuration> => {
   // Retrieve the matching configuration and id
   if (id) {
     return await store('configurations')

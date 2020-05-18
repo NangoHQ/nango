@@ -9,7 +9,7 @@
 import * as express from 'express'
 import bodyParser from 'body-parser'
 import { v4 as uuidv4 } from 'uuid'
-import * as integrations from '../lib/integrations'
+import * as integrations from '../lib/database/integrations'
 import { store } from '../lib/database'
 import * as access from '../lib/access'
 import { Types } from '../types'
