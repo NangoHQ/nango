@@ -4,12 +4,20 @@
 
 import * as config from './knexfile'
 import { Client } from 'pg'
-
-const { connection, client } = config[process.env.NODE_ENV || 'development']
 ;(async () => {
-  if (connection && connection.database && client === 'pg') {
+  if (process.env.NODE_ENV && process.env.NODE_ENV !== 'development') {
+    return // skip database creation if not on development
+  }
+
+  if (process.env.HEROKU_POSTGRESQL_ONYX_URL || process.env.DATABASE_URL) {
+    return // skip database creation on heroku or special database configuration
+  }
+
+  const { connection, client } = config['development']
+
+  if (client && client === 'pg' && connection && connection.database) {
     const database = connection.database
-    connection.database = 'postgres'
+    connection.database = 'postgres' // pg default database
 
     const client = new Client(connection)
     await client.connect()
