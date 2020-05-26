@@ -21,7 +21,7 @@
               type="text"
               class="form-input"
               name="setupKey"
-              value="<%= req.data.credential.setupKey %>"
+              value="<%= req.data.configuration.setupKey %>"
               required
             />
           </fieldset>
@@ -33,7 +33,7 @@
               type="password"
               class="form-input"
               name="setupSecret"
-              value="<%= req.data.credential.setupSecret %>"
+              value="<%= req.data.configuration.setupSecret %>"
               required
             />
           </fieldset>
@@ -41,7 +41,7 @@
           <fieldset>
             <label for="scopes">Scopes</label>
             <textarea id="scopes" class="form-input" rows="8" name="scopes">
-<%= req.data.credential.scopes.join('\n') %></textarea
+<%= req.data.configuration.scopes.join('\n') %></textarea
             >
           </fieldset>
 
