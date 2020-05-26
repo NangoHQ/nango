@@ -62,17 +62,16 @@ At the heart of Pizzly is a Node.js application that uses PostgreSQL as a databa
 
 ### Manual Install
 
-To run Pizzly on your machine, follow these steps:
+To run Pizzly on your machine, follow these steps (or [follow our step-by-step guides](https://github.com/Bearer/Pizzly/wiki/Getting-started)):
 
 ```bash
 git clone https://github.com/Bearer/Pizzly
 cd pizzly
 yarn install
-yarn prepare
 yarn start
 ```
 
-Then open the dashboard in your browser at
+Then open the dashboard in your browser at:
 
 ```
 http://localhost:8080/
