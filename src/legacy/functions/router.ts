@@ -7,6 +7,7 @@ import { middleware as proxyHandler } from './lambda-request'
 import { PROXY_PREFIX, setProxyFunction } from '../middlewares/v4/intent-info'
 import Integration from './integration'
 import { getSetupDetails } from '../auth/clients/integrations'
+import { PizzlyError } from '../../lib/error-handling'
 
 const BUID = 'bearerUuid'
 
@@ -67,6 +68,11 @@ function buid(req, _res, next) {
 
 export async function setupId(req, _res, next) {
   const configuration = await getSetupDetails({ buid: req.buid, store: req.store, setupId: req.query.setupId })
+
+  if (!configuration) {
+    return next(new PizzlyError('unknown_configuration'))
+  }
+
   req.setupId = configuration.setupId
   req.configuration = configuration
 

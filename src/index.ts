@@ -12,6 +12,15 @@ app.set('trust proxy', 1)
 app.use('/assets', express.static('./views/assets'))
 
 /**
+ * Logging request
+ */
+
+app.use((req, res, next) => {
+  console.log(new Date().toISOString(), req.method, req.originalUrl)
+  next()
+})
+
+/**
  * Project homepage
  */
 

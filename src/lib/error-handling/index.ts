@@ -54,7 +54,8 @@ export class PizzlyError extends Error {
 
       case 'unknown_configuration':
         this.status = 404
-        this.message = 'That configuration ID could not be found on the database'
+        this.message = 'That configuration ID (setupId) could not be found on the database'
+        break
 
       // Invalid params (400)
       case 'invalid_integration':
