@@ -11,13 +11,14 @@
         <h2>Connect to <%= req.data.api.name %></h2>
         <form>
           <fieldset>
-            <label>Setup ID</label>
+            <label>Callback URL</label>
             <input
               type="text"
               class="form-input"
               id="setupId"
-              placeholder="Specify a setupId or left blank to use the last configuration saved"
+              value="<%= process.env.AUTH_CALLBACK_URL || `${req.protocol}://${req.get('host')}/auth/callback` %>"
             />
+            <p class="form-hint">Note: you might need to register this callback URL first.</p>
           </fieldset>
           <fieldset>
             <label>Auth ID</label>

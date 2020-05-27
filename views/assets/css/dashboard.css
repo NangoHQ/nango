@@ -257,10 +257,10 @@ form fieldset .form-input {
   border: 1px solid #d3d3d3;
 }
 
-@media (min-width: 60rem) {
-  form fieldset .form-input {
-    width: 49rem;
-  }
+form fieldset .form-hint {
+  margin: 0;
+  padding: 0.5rem 0 0 0;
+  opacity: 0.8;
 }
 
 form .form-actions {
@@ -270,6 +270,17 @@ form .form-actions {
 .form-input[disabled='disabled'] {
   cursor: not-allowed;
   background-color: #d3d3d3;
+}
+
+@media (min-width: 60rem) {
+  form fieldset .form-input {
+    width: 49rem;
+  }
+
+  form fieldset .form-hint,
+  form .form-actions {
+    margin-left: 10.25rem;
+  }
 }
 
 /**

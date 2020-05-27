@@ -24,7 +24,11 @@ import { Client } from 'pg'
 
     client
       .query(`CREATE DATABASE ${database}`)
-      .catch(console.error)
+      .catch(err => {
+        if (err.message !== `database "${database}" already exists`) {
+          console.error(err)
+        }
+      })
       .then(() => client.end())
   }
 })()
