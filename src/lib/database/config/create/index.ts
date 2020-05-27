@@ -2,7 +2,7 @@
  * Create the Pizzly database if does not exists yet.
  */
 
-import * as config from './knexfile'
+import * as config from '../knexfile'
 import { Client } from 'pg'
 ;(async () => {
   if (process.env.NODE_ENV && process.env.NODE_ENV !== 'development') {

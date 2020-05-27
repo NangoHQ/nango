@@ -2,7 +2,7 @@ import expressSession from 'express-session'
 import { Request, Response, NextFunction } from 'express'
 import _KnexSessionStore from 'connect-session-knex'
 import Knex from 'knex'
-import * as config from '../../../../config/knexfile'
+import * as config from '../../../lib/database/config/knexfile'
 const knexSessionStore = _KnexSessionStore(expressSession)
 
 export const session = () => {

@@ -11,8 +11,8 @@
     "build": "rimraf dist/ && tsc -p tsconfig.json",
     "start": "node dist/src",
     "db:setup": "npm run db:create && npm run db:migrate",
-    "db:create": "node dist/config/createDatabase",
-    "db:migrate": "knex --cwd dist/config migrate:latest",
+    "db:create": "node dist/src/lib/database/config/create",
+    "db:migrate": "knex --cwd dist/src/lib/database/config migrate:latest",
     "test": "jest"
   },
   "engines": {
