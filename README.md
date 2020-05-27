@@ -19,13 +19,20 @@ Pizzly is made available as an open-source project by [Bearer.sh](https://bearer
 
 ## Summary
 
-- [Why Pizzly?](#why-pizzly)
-- [How it works](#how-it-works)
-- [Key Features](#key-features)
-- [Installation](#installation)
-- [Getting Started](#getting-started)
-- [Supported APIs](#supported-apis)
-- [License](#license)
+- [Pizzly 🐻 - The OAuth Integration Proxy](#pizzly----the-oauth-integration-proxy)
+  - [Summary](#summary)
+  - [Why Pizzly?](#why-pizzly)
+  - [How it works?](#how-it-works)
+    - [Understanding the **AuthId** concept](#understanding-the-authid-concept)
+  - [Key Features](#key-features)
+  - [Installation](#installation)
+    - [Manual Install](#manual-install)
+    - [Heroku Install](#heroku-install)
+  - [Getting Started](#getting-started)
+    - [Using Pizzly as a complete API proxy](#using-pizzly-as-a-complete-api-proxy)
+    - [Using Pizzly as an OAuth manager](#using-pizzly-as-an-oauth-manager)
+  - [Supported APIs](#supported-apis)
+  - [License](#license)
 
 ## Why Pizzly?
 
@@ -70,6 +77,7 @@ To run Pizzly on your machine, follow these steps (or [follow our step-by-step g
 git clone https://github.com/Bearer/Pizzly
 cd pizzly
 yarn install
+yarn db:setup
 yarn start
 ```
 
