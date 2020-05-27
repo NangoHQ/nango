@@ -21,16 +21,24 @@ export default class Pizzly {
    * const pizzly = new Pizzly(PUBLISHABLE_KEY, options)
    */
 
-  constructor(key: string, options?: { protocol?: string; hostname?: string; port?: number | string }) {
+  constructor(key: string, options?: { protocol?: string; hostname?: string; port?: number | string } | string) {
     if (!window) {
-      throw new Error("Couldn't connect. The window object is undefined. Are you using connect from a browser?")
+      throw new Error("Couldn't connect. The window object is undefined. Are you using Pizzly from a browser?")
     }
 
     this.key = key
 
-    this.protocol = (options && options.protocol) || window.location.protocol
-    this.hostname = (options && options.hostname) || window.location.hostname
-    this.port = (options && options.port) || window.location.port
+    if (options && typeof options === 'string') {
+      const origin = new URL(options)
+      this.protocol = origin.protocol
+      this.hostname = origin.hostname
+      this.port = origin.port
+    } else {
+      this.protocol = (typeof options === 'object' && options.protocol) || window.location.protocol
+      this.hostname = (typeof options === 'object' && options.hostname) || window.location.hostname
+      this.port = (typeof options === 'object' && options.port) || window.location.port
+    }
+
     this.setOrigin(this.protocol, this.hostname, this.port)
 
     return this

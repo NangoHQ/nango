@@ -7,10 +7,9 @@ describe('Connect', () => {
   })
 
   const publishableKey = 'foo'
-  const hostname = 'bar'
   const integration = 'github'
 
-  const pizzly = new Pizzly(publishableKey, hostname)
+  const pizzly = new Pizzly(publishableKey)
 
   describe('Initialization', () => {
     it('is a function', () => {

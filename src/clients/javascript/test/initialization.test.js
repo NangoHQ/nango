@@ -11,10 +11,10 @@ describe('Pizzly class', () => {
       expect(Pizzly).toBeInstanceOf(Function)
     })
 
-    it('throws an error if no arguments provided', () => {
+    it('accepts no arguments', () => {
       expect(() => {
         new Pizzly()
-      }).toThrowError()
+      }).not.toThrowError()
     })
 
     it('accepts one argument', () => {
@@ -29,16 +29,17 @@ describe('Pizzly class', () => {
       }).toBeInstanceOf(Function)
     })
 
-    it('throws an error if the first argument is undefined', () => {
-      expect(() => {
-        new Pizzly(undefined)
-      }).toThrowError()
-    })
-
     it('accepts invalid options', () => {
       expect(() => {
         new Pizzly(publishableKey, invalidOptions)
       }).toBeInstanceOf(Function)
+    })
+
+    it('accepts a string as options (origin)', () => {
+      const pizzly = new Pizzly(publishableKey, 'https://example.org:4242')
+      expect(pizzly.hostname).toBe('example.org')
+      expect(pizzly.protocol).toBe('https:')
+      expect(pizzly.port).toBe('4242')
     })
   })
 
@@ -53,8 +54,8 @@ describe('Pizzly class', () => {
       expect(pizzly.integration).toBeInstanceOf(Function)
     })
 
-    it('has a "saveConfig" method', () => {
-      expect(pizzly.saveConfig).toBeInstanceOf(Function)
-    })
+    // it('has a "saveConfig" method', () => {
+    //   expect(pizzly.saveConfig).toBeInstanceOf(Function)
+    // })
   })
 })
