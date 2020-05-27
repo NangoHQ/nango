@@ -24,6 +24,23 @@ export PROXY_USES_SECRET_KEY_ONLY=false
 export COOKIE_SECRET="CHANGE_ME"
 #
 ###############################################################################
+#
+# Database connection
+#
+# 1. Use a connection URI
+#
+# export DATABASE_URL=""
+#
+# 2. Provide specific database attributes
+#
+# export DB_USER=""
+# export DB_PASSWORD=""
+# export DB_HOST=""
+# export DB_PORT=""
+# export DB_DATABASE="pizzly"
+#
+#
+###############################################################################
 # 
 # Other options
 #
