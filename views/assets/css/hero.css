@@ -71,7 +71,7 @@ nav ul li label {
   font-size: 0.95rem;
   cursor: pointer;
   outline: none;
-  width: 150px;
+  min-width: 150px;
   text-align: center;
 }
 

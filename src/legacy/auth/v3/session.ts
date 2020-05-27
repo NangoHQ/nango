@@ -1,5 +1,4 @@
 import expressSession from 'express-session'
-import { COOKIE_SECRET } from '../../../../config/constants'
 import { Request, Response, NextFunction } from 'express'
 import _KnexSessionStore from 'connect-session-knex'
 import Knex from 'knex'
@@ -11,7 +10,7 @@ export const session = () => {
   const knex = Knex({ connection, client })
 
   return expressSession({
-    secret: COOKIE_SECRET,
+    secret: process.env.COOKIE_SECRET || 'cookie-secret',
     cookie: { secure: 'auto' },
     resave: false,
     saveUninitialized: true,
