@@ -22,7 +22,7 @@ const auth = express.Router()
 
 auth.use(bodyParser.urlencoded({ extended: false }))
 auth.use(bodyParser.json({ limit: '5mb' }))
-auth.use(cookieParser(COOKIE_SECRET))
+auth.use(cookieParser(COOKIE_SECRET || 'cookie-secret'))
 auth.use(passport.initialize())
 
 /**

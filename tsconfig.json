@@ -12,6 +12,6 @@
     "outDir": "dist/",
     "resolveJsonModule": true
   },
-  "include": ["src", "config", "integrations"],
+  "include": ["src", "integrations"],
   "exclude": ["src/clients/**/*", "**/*.test.*", "dist"]
 }

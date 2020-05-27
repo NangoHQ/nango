@@ -1,5 +1,5 @@
 // Update with your config settings.
-import { connection } from './constants'
+import { connection } from '.'
 
 module.exports = {
   development: {

@@ -1,6 +1,6 @@
 import knex from 'knex'
 import express from 'express'
-import { connection } from '../../../config/constants'
+import { connection } from './config'
 import * as authentications from './authentications'
 import * as configurations from './configurations'
 import * as integrations from './integrations'
