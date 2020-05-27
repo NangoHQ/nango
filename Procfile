@@ -1,2 +1,2 @@
-release: yarn db:migrations --env=production
+release: npm run db:migrate --env=production
 web: yarn start -p $PORT
