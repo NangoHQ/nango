@@ -7,9 +7,10 @@
   "main": "dist/src/index.js",
   "types": "src/types.d.ts",
   "scripts": {
-    "prepare": "npm run build && npm run db:create && npm run db:migrate",
+    "prepare": "npm run build",
     "build": "rimraf dist/ && tsc -p tsconfig.json",
     "start": "node dist/src",
+    "db:setup": "npm run db:create && npm run db:migrate",
     "db:create": "node dist/config/createDatabase",
     "db:migrate": "knex --cwd dist/config migrate:latest",
     "test": "jest"
