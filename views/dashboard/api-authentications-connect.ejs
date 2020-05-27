@@ -15,7 +15,6 @@
             <input
               type="text"
               class="form-input"
-              id="setupId"
               value="<%= process.env.AUTH_CALLBACK_URL || `${req.protocol}://${req.get('host')}/auth/callback` %>"
             />
             <p class="form-hint">Note: you might need to register this callback URL first.</p>
@@ -41,11 +40,10 @@
       document.forms[0].addEventListener('submit', e => {
         e.preventDefault()
 
-        const setupId = document.getElementById('setupId').value || null
         const pizzly = new Pizzly('<%= process.env.PUBLISHABLE_KEY %>')
 
         pizzly
-          .connect('<%= req.params.integration %>', { setupId })
+          .connect('<%= req.params.integration %>')
           .then(({ authId }) => {
             const input = document.getElementById('authId')
             input.value = authId
