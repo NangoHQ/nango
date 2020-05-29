@@ -79,7 +79,7 @@ class Strategy extends OAuth1Strategy {
 
 const strategyOptions = (req: TAuthenticateRequest) => {
   const callbackURL = process.env.AUTH_CALLBACK_URL || `${req.protocol}://${req.get('host')}/auth/callback`
-  const { consumerKey, consumerSecret } = req.setupDetails
+  const { consumerKey, consumerSecret } = req.setupDetails.credentials
   const {
     requestTokenURL,
     tokenParams,
@@ -88,7 +88,6 @@ const strategyOptions = (req: TAuthenticateRequest) => {
     authorizationParams,
     signatureMethod
   } = req.integrationConfig
-
   return {
     consumerKey,
     consumerSecret,
@@ -123,7 +122,6 @@ export const authenticate = (req: TAuthenticateRequest, res: Response, next: Nex
     if (!accessToken) {
       return verified(undefined, undefined, { message: 'No access token returned', response: params })
     }
-
     const { consumerKey, consumerSecret } = req.setupDetails
 
     const credentials: IOAuth1Credentials = {

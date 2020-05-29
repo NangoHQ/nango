@@ -323,7 +323,7 @@ const formatConfiguration = (data): IntegrationConfiguration => {
   return {
     setupId: data.setup_id,
     setupKey: data.credentials.clientId || data.credentials.consumerKey,
-    setupSecret: data.credentials.clientSecret || data.credentials.consumersecret,
+    setupSecret: data.credentials.clientSecret || data.credentials.consumerSecret,
     scopes: data.scopes || [],
     created_at: new Date(data.created_at)
   }
@@ -333,13 +333,13 @@ const formatSetup = (
   setupKey: string,
   setupSecret: string,
   integration: Types.Integration
-): { [key: string]: string } | undefined => {
+): { consumerKey: string; consumerSecret: string } | { clientId: string; clientSecret: string } | undefined => {
   const integrationConfig = integration.config
   const isOAuth2 = integrationConfig.authType == 'OAUTH2'
   const isOAuth1 = integrationConfig.authType == 'OAUTH1'
 
   if (isOAuth1) {
-    return { consumerKey: setupKey, consumersecret: setupSecret }
+    return { consumerKey: setupKey, consumerSecret: setupSecret }
   } else if (isOAuth2) {
     return { clientId: setupKey, clientSecret: setupSecret }
   }
