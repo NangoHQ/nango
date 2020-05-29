@@ -14,8 +14,8 @@
             <a href="/dashboard/<%= api.id %>">
               <figure>
                 <div>
-                  <% if (api.image) { %> <img alt="<%= api.name.substr('"', '\"') %> logo" src="<%= api.image %>" /><%
-                  }%>
+                  <% if (api.image) { %> <img loading="lazy" alt="<%= api.name.substr('"', '\"') %> logo" src="<%=
+                  api.image %>" /><% }%>
                 </div>
                 <figcaption><%= api.name %></figcaption>
               </figure>
