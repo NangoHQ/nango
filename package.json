@@ -83,7 +83,7 @@
     "ts-jest": "^23.10.5",
     "ts-loader": "^5.3.3",
     "ts-node": "^8.10.1",
-    "typescript": "^3.2.2"
+    "typescript": "^3.9.3"
   },
   "jest": {
     "collectCoverageFrom": [
@@ -97,7 +97,7 @@
         "transform": {
           "^.+\\.tsx?$": "ts-jest"
         },
-        "testRegex": "(.*/views/.*)((test|spec))\\.(jsx?|tsx?)$",
+        "testRegex": "(.*/clients/.*)((test|spec))\\.(jsx?|tsx?)$",
         "moduleFileExtensions": [
           "ts",
           "tsx",
@@ -123,13 +123,14 @@
         "transform": {
           "^.+\\.tsx?$": "ts-jest"
         },
-        "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+        "testRegex": "(.*/src/lib/.*)(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
         "modulePathIgnorePatterns": [
           "<rootDir>/dist/"
         ],
         "testPathIgnorePatterns": [
           "/node_modules/",
-          "/views/"
+          "/views/",
+          "legacy"
         ],
         "moduleFileExtensions": [
           "ts",

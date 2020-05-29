@@ -1,4 +1,4 @@
-const Pizzly = require('../dist/index.umd.js')
+import Pizzly from '../src/index'
 
 describe('Pizzly class', () => {
   const publishableKey = 'foo'
@@ -13,6 +13,7 @@ describe('Pizzly class', () => {
 
     it('accepts no arguments', () => {
       expect(() => {
+        // @ts-expect-error
         new Pizzly()
       }).not.toThrowError()
     })
@@ -31,6 +32,7 @@ describe('Pizzly class', () => {
 
     it('accepts invalid options', () => {
       expect(() => {
+        // @ts-expect-error
         new Pizzly(publishableKey, invalidOptions)
       }).toBeInstanceOf(Function)
     })
