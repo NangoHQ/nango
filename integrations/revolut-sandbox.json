@@ -1,5 +1,6 @@
 {
   "name": "Revolut (sandbox)",
+  "image": "http://logo.clearbit.com/revolut.com",
   "config": {
     "authType": "OAUTH2",
     "config": { "scope": ["READ"] },

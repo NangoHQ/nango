@@ -18,6 +18,16 @@ body {
   position: relative;
 }
 
+.sosumi {
+  font-size: 0.85rem;
+  color: #86868b;
+}
+
+.sosumi a {
+  color: #515154 !important;
+  text-decoration: none;
+}
+
 /**
  * General Header
  */
@@ -339,7 +349,8 @@ form fieldset .form-hint {
 }
 
 .api-list figure img {
-  width: 80%;
+  max-width: 100px;
+  max-height: 100px;
 }
 
 .api-list figure figcaption {

@@ -1,12 +1,11 @@
 {
   "name": "Microsoft Teams",
+  "image": "https://upload.wikimedia.org/wikipedia/commons/c/c9/Microsoft_Office_Teams_%282018%E2%80%93present%29.svg",
   "config": {
     "authorizationURL": "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
     "tokenURL": "https://login.microsoftonline.com/common/oauth2/v2.0/token",
     "authType": "OAUTH2",
-    "config": { "scope": ["openid", "offline_access", "https://graph.microsoft.com/user.read"] },
-    "provider": "Microsoft Teams",
-    "hint": "You will find your Microsoft Teams credentials here: https://apps.dev.microsoft.com"
+    "config": { "scope": ["openid", "offline_access", "https://graph.microsoft.com/user.read"] }
   },
   "request": {
     "baseURL": "https://graph.microsoft.com/v1.0/",

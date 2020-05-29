@@ -4,7 +4,7 @@
     "authorizationURL": "https://www.facebook.com/v3.2/dialog/oauth",
     "tokenURL": "https://graph.facebook.com/v3.2/oauth/access_token",
     "authType": "OAUTH2",
-    "tokenParams": { "redirect_uri": "https://int.bearer.sh/v2/auth/callback", "grant_type": "authorization_code" },
+    "tokenParams": { "grant_type": "authorization_code" },
     "authorizationParams": {
       "redirect_uri": "https://int.bearer.sh/v2/auth/callback",
       "state": "{st=state123abc,ds=123456789}"

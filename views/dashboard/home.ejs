@@ -22,8 +22,8 @@
             <a href="/dashboard/<%= api.id %>">
               <figure>
                 <div>
-                  <% if (api.image) { %> <img alt="<%= api.name.substr('"', '\"') %> logo" src="<%= api.image %>" /><%
-                  }%>
+                  <% if (api.image) { %> <img loading="lazy" alt="<%= api.name.substr('"', '\"') %> logo" src="<%=
+                  api.image %>" /><% }%>
                 </div>
                 <figcaption><%= api.name %></figcaption>
               </figure>
@@ -33,6 +33,16 @@
         </ul>
       </section>
     </main>
+
+    <!-- Logos attribution -->
+    <div class="container sosumi">
+      <p>
+        APIs logos are courtesy of <a href="https://clearbit.com">Clearbit</a> or provided by
+        <a href="https://commons.wikimedia.org/wiki/Commons:Reusing_content_outside_Wikimedia"
+          >Wikimedia's individual creators</a
+        >.
+      </p>
+    </div>
 
     <!-- Footer -->
     <%- include('layout-footer') -%>

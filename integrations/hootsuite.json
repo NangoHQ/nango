@@ -4,9 +4,9 @@
     "authorizationURL": "https://platform.hootsuite.com/oauth2/auth",
     "tokenURL": "https://platform.hootsuite.com/oauth2/token",
     "authType": "OAUTH2",
-    "tokenParams": { "redirect_uri": "https://int.bearer.sh/v2/auth/callback", "grant_type": "authorization_code" },
+    "tokenParams": { "grant_type": "authorization_code" },
     "authorizationParams": {},
-    "config": { "callbackURL": "https://int.bearer.sh/v2/auth/callback", "response_type": "code" },
+    "config": { "response_type": "code" },
     "provider": "Hootsuite",
     "hint": "You will find your Hootsuite credentials here: https://hootsuite.com/developers/my-apps/app-directory/app"
   },

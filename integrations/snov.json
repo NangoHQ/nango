@@ -1,5 +1,6 @@
 {
   "name": "Snov.io",
+  "image": "https://logo.clearbit.com/snov.io",
   "config": {
     "authType": "OAUTH2",
     "bodyFormat": "form",

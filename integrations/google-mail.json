@@ -1,10 +1,11 @@
 {
   "name": "Gmail",
+  "image": "https://upload.wikimedia.org/wikipedia/commons/4/45/New_Logo_Gmail.svg",
   "config": {
     "authorizationURL": "https://accounts.google.com/o/oauth2/v2/auth",
     "tokenURL": "https://www.googleapis.com/oauth2/v4/token",
     "authType": "OAUTH2",
-    "tokenParams": { "redirect_uri": "https://int.bearer.sh/v2/auth/callback", "grant_type": "authorization_code" },
+    "tokenParams": { "grant_type": "authorization_code" },
     "authorizationParams": { "prompt": "consent", "access_type": "offline" },
     "config": {
       "callbackURL": "https://int.bearer.sh/v2/auth/callback",
