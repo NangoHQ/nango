@@ -48,9 +48,9 @@ api.get('/:integrationId', async (req, res, next) => {
   }
 
   return res.status(200).json({
+    ...integration,
     id: integrationId,
-    object: 'integration',
-    ...integration
+    object: 'integration'
   })
 })
 
