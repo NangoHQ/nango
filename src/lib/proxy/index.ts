@@ -77,20 +77,11 @@ export const incomingRequestHandler = async (req, res, next) => {
     const externalRequest = https.request(externalRequestOptions.url, externalRequestOptions, externalResponse => {
       externalResponseHandler(externalResponse, req, res, next)
     })
+    req.pipe(externalRequest)
 
     // Handle error
     externalRequest.on('error', error => {
       throw error
-    })
-
-    // Pass body as well
-    req.on('data', function(chunk) {
-      externalRequest.write(chunk)
-    })
-
-    // End the external request when the incoming request is ended
-    req.on('end', function(chunk) {
-      externalRequest.end()
     })
   } catch (err) {
     next(err)
@@ -115,16 +106,7 @@ const externalResponseHandler = (
   // Set headers
 
   res.writeHead(externalResponse.statusCode!, externalResponse.headers)
-
-  // Append response's data
-  externalResponse.on('data', chunk => {
-    res.write(chunk)
-  })
-
-  // Close request
-  externalResponse.on('end', () => {
-    res.end()
-  })
+  externalResponse.pipe(res)
 }
 
 /**
