@@ -4,9 +4,9 @@
     "authorizationURL": "https://bitbucket.org/site/oauth2/authorize",
     "tokenURL": "https://bitbucket.org/site/oauth2/access_token",
     "authType": "OAUTH2",
-    "tokenParams": { "redirect_uri": "https://int.bearer.sh/v2/auth/callback", "grant_type": "authorization_code" },
+    "tokenParams": { "grant_type": "authorization_code" },
     "authorizationParams": {},
-    "config": { "callbackURL": "https://int.bearer.sh/v2/auth/callback", "response_type": "code" },
+    "config": { "response_type": "code" },
     "provider": "BitBucket",
     "hint": "You will find your BitBucket credentials here: https://bitbucket.org/account/user/{username}/api"
   },

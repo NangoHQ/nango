@@ -4,9 +4,9 @@
     "authorizationURL": "https://app.asana.com/-/oauth_authorize",
     "tokenURL": "https://app.asana.com/-/oauth_token",
     "authType": "OAUTH2",
-    "tokenParams": { "redirect_uri": "https://int.bearer.sh/v2/auth/callback", "grant_type": "authorization_code" },
+    "tokenParams": { "grant_type": "authorization_code" },
     "authorizationParams": {},
-    "config": { "callbackURL": "https://int.bearer.sh/v2/auth/callback", "response_type": "code", "scope": [] },
+    "config": { "response_type": "code", "scope": [] },
     "provider": "Asana",
     "hint": "You will find your Asana credentials here: https://app.asana.com"
   },

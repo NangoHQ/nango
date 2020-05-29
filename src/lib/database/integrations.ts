@@ -67,7 +67,8 @@ export const get = async (integrationName: string): Promise<Types.Integration> =
 const formatIntegration = (fileName: string, fileContent: any) => {
   const integration = fileContent as Types.Integration
   integration.id = fileName
-  integration.image = 'http://logo.clearbit.com/' + integration.name.toLowerCase() + '.com'
+  integration.image =
+    integration.image || 'http://logo.clearbit.com/' + integration.name.toLowerCase().replace(' ', '') + '.com'
 
   const isOAuth2 = integration.config.authType === 'OAUTH2'
   integration.config.setupKeyLabel = isOAuth2 ? 'Client ID' : 'Consumer Key'

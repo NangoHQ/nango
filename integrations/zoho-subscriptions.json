@@ -7,7 +7,7 @@
       "callbackURL": "https://int.bearer.sh/v2/auth/callback",
       "scope": ["ZohoSubscriptions.products.READ"]
     },
-    "tokenParams": { "grant_type": "authorization_code", "redirect_uri": "https://int.bearer.sh/v2/auth/callback" },
+    "tokenParams": { "grant_type": "authorization_code" },
     "authorizationParams": { "access_type": "offline", "prompt": "consent" },
     "authorizationURL": "https://accounts.zoho.com/oauth/v2/auth",
     "tokenURL": "https://accounts.zoho.com/oauth/v2/token"

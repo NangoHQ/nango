@@ -4,9 +4,9 @@
     "authorizationURL": "https://gitlab.com/oauth/authorize",
     "tokenURL": "https://gitlab.com/oauth/token",
     "authType": "OAUTH2",
-    "tokenParams": { "redirect_uri": "https://int.bearer.sh/v2/auth/callback", "grant_type": "authorization_code" },
+    "tokenParams": { "grant_type": "authorization_code" },
     "authorizationParams": {},
-    "config": { "callbackURL": "https://int.bearer.sh/v2/auth/callback", "response_type": "code" },
+    "config": { "response_type": "code" },
     "provider": "GitLab",
     "hint": "You will find your GitLab credentials here: https://gitlab.com/oauth/applications"
   },

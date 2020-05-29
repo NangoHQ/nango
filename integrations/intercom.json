@@ -6,7 +6,7 @@
     "authType": "OAUTH2",
     "tokenParams": {},
     "authorizationParams": {},
-    "config": { "callbackURL": "https://int.bearer.sh/v2/auth/callback", "response_type": "code", "scope": [] },
+    "config": { "response_type": "code", "scope": [] },
     "provider": "Intercom",
     "hint": "You will find your Intercom credentials here: https://app.intercom.com/a/apps/_/developer-hub"
   },

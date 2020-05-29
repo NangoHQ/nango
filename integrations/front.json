@@ -1,5 +1,6 @@
 {
   "name": "Front",
+  "image": "https://logo.clearbit.com/frontapp.com",
   "config": {
     "authType": "OAUTH2",
     "config": { "scope": [] },

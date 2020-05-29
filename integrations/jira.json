@@ -4,7 +4,7 @@
     "authorizationURL": "https://auth.atlassian.com/authorize",
     "tokenURL": "https://auth.atlassian.com/oauth/token",
     "authType": "OAUTH2",
-    "tokenParams": { "redirect_uri": "https://int.bearer.sh/v2/auth/callback", "grant_type": "authorization_code" },
+    "tokenParams": { "grant_type": "authorization_code" },
     "authorizationParams": { "prompt": "consent", "state": 1, "audience": "api.atlassian.com" },
     "config": {
       "callbackURL": "https://int.bearer.sh/v2/auth/callback",

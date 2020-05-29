@@ -4,9 +4,9 @@
     "authorizationURL": "https://api.imgur.com/oauth2/authorize",
     "tokenURL": "https://api.imgur.com/oauth2/token",
     "authType": "OAUTH2",
-    "tokenParams": { "redirect_uri": "https://int.bearer.sh/v2/auth/callback", "grant_type": "authorization_code" },
+    "tokenParams": { "grant_type": "authorization_code" },
     "authorizationParams": {},
-    "config": { "callbackURL": "https://int.bearer.sh/v2/auth/callback", "response_type": "code" },
+    "config": { "response_type": "code" },
     "provider": "imgur",
     "hint": "You will find your imgur credentials here: https://api.imgur.com/oauth2/addclient"
   },
