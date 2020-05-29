@@ -27,19 +27,17 @@ export const incomingRequestHandler = async (req, res, next) => {
 
   // Retrieve integration & authentication details
   const integration = await integrations.get(integrationName)
-  let authentication = (authId && (await authentications.get(integrationName, authId))) || undefined
-
-  // Validate each
   if (!integration) {
     return next(new Error('unknown_integration'))
   }
 
+  let authentication = (authId && (await authentications.get(integrationName, authId))) || undefined
   if (!authentication) {
     return next(new Error('unknown_authentication'))
   }
 
   // Handle the token refreshness (if it has expired)
-  if (accessTokenHasExpired(authentication)) {
+  if (await accessTokenHasExpired(authentication)) {
     authentication = await refreshAuthentication(integration, authentication)
   }
 
@@ -79,20 +77,11 @@ export const incomingRequestHandler = async (req, res, next) => {
     const externalRequest = https.request(externalRequestOptions.url, externalRequestOptions, externalResponse => {
       externalResponseHandler(externalResponse, req, res, next)
     })
+    req.pipe(externalRequest)
 
     // Handle error
     externalRequest.on('error', error => {
       throw error
-    })
-
-    // Pass body as well
-    req.on('data', function(chunk) {
-      externalRequest.write(chunk)
-    })
-
-    // End the external request when the incoming request is ended
-    req.on('end', function(chunk) {
-      externalRequest.end()
     })
   } catch (err) {
     next(err)
@@ -114,28 +103,10 @@ const externalResponseHandler = (
   res: express.Response,
   next: express.NextFunction
 ) => {
-  // Set the status code
-  if (externalResponse.statusCode) {
-    res.status(externalResponse.statusCode)
-  }
-
   // Set headers
-  for (let header in externalResponse.headers) {
-    const headerValue = externalResponse.httpVersionMajor[header]
-    if (headerValue) {
-      res.setHeader(header, headerValue)
-    }
-  }
 
-  // Append response's data
-  externalResponse.on('data', chunk => {
-    res.write(chunk)
-  })
-
-  // Close request
-  externalResponse.on('end', () => {
-    res.end()
-  })
+  res.writeHead(externalResponse.statusCode!, externalResponse.headers)
+  externalResponse.pipe(res)
 }
 
 /**

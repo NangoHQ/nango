@@ -10,6 +10,9 @@
     "prepare": "npm run build",
     "build": "rimraf dist/ && tsc -p tsconfig.json",
     "start": "node dist/src",
+    "dev": "concurrently 'yarn dev:build' 'yarn dev:serve' ",
+    "dev:build": "yarn build --watch",
+    "dev:serve": "nodemon --delay 1 --watch dist/src node dist/src",
     "db:setup": "npm run db:create && npm run db:migrate",
     "db:create": "node dist/src/lib/database/config/create",
     "db:migrate": "knex --cwd dist/src/lib/database/config migrate:latest",
@@ -30,6 +33,7 @@
     "ejs": "^3.0.2",
     "express": "^4.16.3",
     "express-session": "^1.15.6",
+    "express-winston": "^4.0.3",
     "js-cookie": "^2.2.0",
     "jsonwebtoken": "^8.5.1",
     "knex": "^0.21.1",
@@ -42,7 +46,8 @@
     "passport-oauth1": "^1.1.0",
     "pg": "^8.0.3",
     "simple-oauth2": "^3.0.0",
-    "uuid": "^7.0.3"
+    "uuid": "^7.0.3",
+    "winston": "^3.2.1"
   },
   "devDependencies": {
     "@commitlint/cli": "^7.2.1",
@@ -65,7 +70,7 @@
     "@types/wreck": "^14.0.0",
     "babel-loader": "^8.0.5",
     "commitlint": "^7.2.1",
-    "concurrently": "^5.1.0",
+    "concurrently": "^5.2.0",
     "cz-conventional-changelog": "^2.1.0",
     "file-loader": "^3.0.1",
     "html-loader": "^1.1.0",
@@ -83,7 +88,7 @@
     "ts-jest": "^23.10.5",
     "ts-loader": "^5.3.3",
     "ts-node": "^8.10.1",
-    "typescript": "^3.2.2"
+    "typescript": "^3.9.3"
   },
   "jest": {
     "collectCoverageFrom": [
@@ -97,7 +102,7 @@
         "transform": {
           "^.+\\.tsx?$": "ts-jest"
         },
-        "testRegex": "(.*/views/.*)((test|spec))\\.(jsx?|tsx?)$",
+        "testRegex": "(.*/clients/.*)((test|spec))\\.(jsx?|tsx?)$",
         "moduleFileExtensions": [
           "ts",
           "tsx",
@@ -123,13 +128,14 @@
         "transform": {
           "^.+\\.tsx?$": "ts-jest"
         },
-        "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+        "testRegex": "(.*/src/lib/.*)(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
         "modulePathIgnorePatterns": [
           "<rootDir>/dist/"
         ],
         "testPathIgnorePatterns": [
           "/node_modules/",
-          "/views/"
+          "/views/",
+          "legacy"
         ],
         "moduleFileExtensions": [
           "ts",
