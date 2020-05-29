@@ -37,7 +37,7 @@ export const incomingRequestHandler = async (req, res, next) => {
   }
 
   // Handle the token refreshness (if it has expired)
-  if (accessTokenHasExpired(authentication)) {
+  if (await accessTokenHasExpired(authentication)) {
     authentication = await refreshAuthentication(integration, authentication)
   }
 
@@ -112,18 +112,9 @@ const externalResponseHandler = (
   res: express.Response,
   next: express.NextFunction
 ) => {
-  // Set the status code
-  if (externalResponse.statusCode) {
-    res.status(externalResponse.statusCode)
-  }
-
   // Set headers
-  for (let header in externalResponse.headers) {
-    const headerValue = externalResponse.httpVersionMajor[header]
-    if (headerValue) {
-      res.setHeader(header, headerValue)
-    }
-  }
+
+  res.writeHead(externalResponse.statusCode!, externalResponse.headers)
 
   // Append response's data
   externalResponse.on('data', chunk => {
