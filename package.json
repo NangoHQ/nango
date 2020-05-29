@@ -33,6 +33,7 @@
     "ejs": "^3.0.2",
     "express": "^4.16.3",
     "express-session": "^1.15.6",
+    "express-winston": "^4.0.3",
     "js-cookie": "^2.2.0",
     "jsonwebtoken": "^8.5.1",
     "knex": "^0.21.1",
@@ -45,7 +46,8 @@
     "passport-oauth1": "^1.1.0",
     "pg": "^8.0.3",
     "simple-oauth2": "^3.0.0",
-    "uuid": "^7.0.3"
+    "uuid": "^7.0.3",
+    "winston": "^3.2.1"
   },
   "devDependencies": {
     "@commitlint/cli": "^7.2.1",

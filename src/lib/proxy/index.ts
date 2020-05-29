@@ -27,13 +27,11 @@ export const incomingRequestHandler = async (req, res, next) => {
 
   // Retrieve integration & authentication details
   const integration = await integrations.get(integrationName)
-  let authentication = (authId && (await authentications.get(integrationName, authId))) || undefined
-
-  // Validate each
   if (!integration) {
     return next(new Error('unknown_integration'))
   }
 
+  let authentication = (authId && (await authentications.get(integrationName, authId))) || undefined
   if (!authentication) {
     return next(new Error('unknown_authentication'))
   }

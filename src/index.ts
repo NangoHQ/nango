@@ -1,5 +1,7 @@
 import express from 'express'
+
 import * as routes from './routes'
+import { requestLogger, errorLogger } from './lib/utils/logger'
 
 export const BUID = 'bearerUid' // TODO - What is this for?
 export const PORT = process.env.PORT || 8080
@@ -12,13 +14,9 @@ app.set('trust proxy', 1)
 app.use('/assets', express.static('./views/assets'))
 
 /**
- * Logging request
+ * Request log
  */
-
-app.use((req, res, next) => {
-  console.log(new Date().toISOString(), req.method, req.originalUrl)
-  next()
-})
+app.use(requestLogger)
 
 /**
  * Project homepage
@@ -67,6 +65,7 @@ app.use('/api/v4/functions', routes.legacy.proxy)
  * Error handling
  */
 
+app.use(errorLogger)
 app.use((req, res, next) => {
   res.status(404).render('404')
 })

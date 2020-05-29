@@ -8,6 +8,7 @@
 import express from 'express'
 import * as access from '../lib/access'
 import { incomingRequestHandler } from '../lib/proxy'
+import { asyncMiddleware } from '../lib/utils/asyncMiddleware'
 
 const proxy = express.Router()
 
@@ -43,14 +44,14 @@ proxy.use((req, res, next) => {
  *  - POST /slack/reminders.add will create a reminder on Slack API "/reminders.add" endpoint.
  */
 
-proxy.all('/:integration*', incomingRequestHandler)
+proxy.all('/:integration*', asyncMiddleware(incomingRequestHandler))
 
 /**
  * Error handling
  */
 
 proxy.use((req, res, next) => {
-  return res.status(404).json({ error: { type: 'missing', message: 'Ressource not found' } })
+  return res.status(404).json({ error: { type: 'missing', message: 'Resource not found' } })
 })
 
 proxy.use((err, req, res, next) => {
