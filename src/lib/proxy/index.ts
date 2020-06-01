@@ -31,18 +31,22 @@ export const incomingRequestHandler = async (req, res, next) => {
     return next(new Error('unknown_integration'))
   }
 
-  let authentication = (authId && (await authentications.get(integrationName, authId))) || undefined
+  let authentication: Types.Authentication | undefined =
+    (authId && (await authentications.get(integrationName, authId))) || undefined
   if (!authentication) {
     return next(new Error('unknown_authentication'))
   }
 
-  // Handle the token refreshness (if it has expired)
+  // Handle the token freshness (if it has expired)
   if (await accessTokenHasExpired(authentication)) {
     authentication = await refreshAuthentication(integration, authentication)
+    if (!authentication) {
+      return next(new Error('token_refresh_failed')) // TODO: improve error verbosity
+    }
   }
 
   // Prepare the request
-  const forwaredHeaders = headersToForward(req.rawHeaders)
+  const forwardedHeaders = headersToForward(req.rawHeaders)
   const integrationHeaders = integration.request.headers
   const integrationParams = integration.request.params
 
@@ -64,7 +68,7 @@ export const incomingRequestHandler = async (req, res, next) => {
   const rawOptions = {
     url,
     method: req.method,
-    headers: { ...integrationHeaders, ...forwaredHeaders }
+    headers: { ...integrationHeaders, ...forwardedHeaders }
   }
 
   try {

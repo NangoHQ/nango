@@ -51,7 +51,10 @@ export class PizzlyError extends Error {
         this.status = 404
         this.message = 'That authentication ID could not be found on the database.'
         break
-
+      case 'token_refresh_failed':
+        this.status = 422
+        this.message = 'Unable to refresh the token.'
+        break
       case 'unknown_configuration':
         this.status = 404
         this.message = 'That configuration ID (setupId) could not be found on the database'

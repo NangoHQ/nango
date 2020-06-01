@@ -125,10 +125,10 @@ export const validateConfigurationCredentials = (
   Helpers
 */
 
-function isOAuth2(integration: Types.Integration): integration is Types.Integration<Types.OAuth2Config> {
+export function isOAuth2(integration: Types.Integration): integration is Types.Integration<Types.OAuth2Config> {
   return integration.auth.authType === 'OAUTH2'
 }
 
-function isOAuth1(integration: Types.Integration): integration is Types.Integration<Types.OAuth1Config> {
+export function isOAuth1(integration: Types.Integration): integration is Types.Integration<Types.OAuth1Config> {
   return integration.auth.authType === 'OAUTH1'
 }

@@ -1,6 +1,7 @@
 import * as OAuth2 from './oauth2'
 import { Types } from '../../types'
 import { configurations, authentications } from '../database'
+import { isOAuth2 } from '../database/integrations'
 
 /**
  * Determine if an access token has expired by comparing
@@ -40,17 +41,18 @@ export const refreshAuthentication = async (
   oldAuthentication: Types.Authentication
 ) => {
   const configuration = await configurations.get(integration.id, oldAuthentication.setup_id)
-  const newPayload = await OAuth2.refresh(integration, configuration, oldAuthentication)
+  if (isOAuth2(integration)) {
+    const newPayload = await OAuth2.refresh(integration, configuration, oldAuthentication)
 
-  const newAuthentication: Types.Authentication = {
-    auth_id: oldAuthentication.auth_id,
-    setup_id: oldAuthentication.setup_id,
-    payload: newPayload,
-    created_at: oldAuthentication.created_at,
-    updated_at: new Date().toISOString()
+    const newAuthentication: Types.Authentication = {
+      auth_id: oldAuthentication.auth_id,
+      setup_id: oldAuthentication.setup_id,
+      payload: newPayload,
+      created_at: oldAuthentication.created_at,
+      updated_at: new Date().toISOString()
+    }
+
+    await authentications.update(oldAuthentication.auth_id, newAuthentication)
+    return newAuthentication
   }
-
-  await authentications.update(oldAuthentication.auth_id, newAuthentication)
-
-  return newAuthentication
 }

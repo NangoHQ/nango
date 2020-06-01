@@ -334,13 +334,9 @@ const formatSetup = (
   setupSecret: string,
   integration: Types.Integration
 ): { consumerKey: string; consumerSecret: string } | { clientId: string; clientSecret: string } | undefined => {
-  const integrationConfig = integration.config
-  const isOAuth2 = integrationConfig.authType == 'OAUTH2'
-  const isOAuth1 = integrationConfig.authType == 'OAUTH1'
-
-  if (isOAuth1) {
+  if (integrations.isOAuth1(integration)) {
     return { consumerKey: setupKey, consumerSecret: setupSecret }
-  } else if (isOAuth2) {
+  } else if (integrations.isOAuth2(integration)) {
     return { clientId: setupKey, clientSecret: setupSecret }
   }
 
