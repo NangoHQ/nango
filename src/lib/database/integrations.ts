@@ -84,7 +84,7 @@ const formatIntegration = (fileName: string, fileContent: any) => {
 export const validateConfigurationScopes = (scopesAsString: string): string[] | null => {
   const scopes: string = ((String(scopesAsString) as string) || '').trim()
 
-  return (scopes && scopes.split('\n')) || null
+  return (scopes && scopes.split(/\r?\n/)) || null
 }
 
 export const validateConfigurationCredentials = (
