@@ -228,7 +228,7 @@ interface CodeParams extends TokenClientParams {
 }
 
 interface RefreshParams extends TokenClientParams {
-  idToken: string
+  idToken?: string
   refreshToken: string
 }
 
