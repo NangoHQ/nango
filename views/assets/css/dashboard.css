@@ -252,6 +252,7 @@ form fieldset label,
 form fieldset .form-input {
   display: inline-block;
   vertical-align: top;
+  font-family: inherit;
 }
 
 form fieldset label {
