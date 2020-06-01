@@ -4,9 +4,8 @@
   "config": {
     "authType": "OAUTH2",
     "bodyFormat": "form",
-    "grantType": "client_credentials",
     "config": { "scope": [] },
-    "tokenParams": {},
+    "tokenParams": { "grant_type": "client_credentials" },
     "tokenURL": "https://app.snov.io/oauth/access_token",
     "authorizationMethod": "body",
     "authorizationParams": {}
