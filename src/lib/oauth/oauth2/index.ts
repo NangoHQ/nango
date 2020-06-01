@@ -27,14 +27,13 @@ export const refresh = async (
       throw new AccessTokenExpired()
     }
 
-    const scope = configuration.scopes
     const tokenResult = await getTokenWithClientCredentials({
       authorizationMethod,
       bodyFormat,
       clientId,
       clientSecret,
-      scope,
-      tokenURL
+      tokenURL,
+      scope: configuration.scopes
     })
 
     const oauthPayload: Types.OAuth2Payload = {

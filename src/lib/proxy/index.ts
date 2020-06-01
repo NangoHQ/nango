@@ -34,7 +34,7 @@ export const incomingRequestHandler = async (req, res, next) => {
   let authentication: Types.Authentication | undefined =
     (authId && (await authentications.get(integrationName, authId))) || undefined
   if (!authentication) {
-    return next(new Error('unknown_authentication'))
+    return next(new PizzlyError('unknown_authentication'))
   }
 
   // Handle the token freshness (if it has expired)
@@ -45,31 +45,30 @@ export const incomingRequestHandler = async (req, res, next) => {
     }
   }
 
+  // TODO: allow oauth1 template interpolation
+
   // Prepare the request
-  const forwardedHeaders = headersToForward(req.rawHeaders)
-  const integrationHeaders = integration.request.headers
-  const integrationParams = integration.request.params
+  const { headers: integrationHeaders, params: integrationParams } = integration.request
+  const headers = { ...integrationHeaders, ...headersToForward(req.rawHeaders) }
 
   const endpoint = req.originalUrl.substring(('/proxy/' + integrationName).length + 1)
   const url = new URL(endpoint, integration.request.baseURL)
 
+  // Remove pizzly related params: ex
+  url.searchParams.forEach((value, key) => {
+    if (key.startsWith('pizzly_')) {
+      url.searchParams.delete(key)
+    }
+  })
+
+  // set default params
   if (integrationParams) {
     for (let param in integrationParams) {
       url.searchParams.append(param, integrationParams[param])
     }
   }
 
-  url.searchParams.forEach((value, key) => {
-    if (key.indexOf('pizzly_') === 0) {
-      url.searchParams.delete(key)
-    }
-  })
-
-  const rawOptions = {
-    url,
-    method: req.method,
-    headers: { ...integrationHeaders, ...forwardedHeaders }
-  }
+  const rawOptions = { url, headers, method: req.method }
 
   try {
     // Replace request options with provided authentication or data
