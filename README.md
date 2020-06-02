@@ -116,7 +116,7 @@ Follow a step-by-step guide on [how to use Pizzly as an OAuth manager](https://g
 2. Initiate the OAuth dance to retrieve a token
 3. Use Pizzly's API to retrieve the OAuth payload (e.g. `access_token`, `refresh_token`, etc.)
 
-> If you're looking to monitor, track performance, detect anomalies to your API requests, have a look to [Bearer.sh](https://bearer.sh/?ref=pizzly), the monitoring agent. If you're using Pizzly in API proxy mode, it's as simple as adding your Bearer Developer Key to the environment variable `$BEARER_AGENT_KEY` - you can [get yours for free here 🚀](https://bearer.sh/?ref=pizzly)
+> If you're looking to monitor, track performance, detect anomalies to your API requests, have a look to [Bearer.sh](https://bearer.sh/?ref=pizzly), the monitoring agent. If you're using Pizzly in API proxy mode, it's as simple as adding your Bearer Developer Key to the environment variable `$BEARER_SECRET_KEY` - you can [get yours for free here 🚀](https://bearer.sh/?ref=pizzly)
 
 ## Supported APIs
 
