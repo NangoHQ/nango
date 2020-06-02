@@ -1,6 +1,7 @@
 import * as OAuth2 from './oauth2'
 import { Types } from '../../types'
 import { configurations, authentications } from '../database'
+import { isOAuth2 } from '../database/integrations'
 
 /**
  * Determine if an access token has expired by comparing
@@ -11,13 +12,12 @@ import { configurations, authentications } from '../database'
  */
 
 export const accessTokenHasExpired = async (authentication: Types.Authentication) => {
-  const payload = authentication.payload
+  const { expiresIn } = authentication.payload
 
-  if (!payload.expiresIn) {
+  if (!expiresIn) {
     return false
   }
 
-  const expiresIn = payload.expiresIn
   const updatedAt = Date.parse(authentication.updated_at)
   const expiredFromThisTime = expiresIn * 1000 + updatedAt
   const safeRefreshTime = expiredFromThisTime - 15 * 60 * 1000 // 15 minutes
@@ -40,17 +40,19 @@ export const refreshAuthentication = async (
   oldAuthentication: Types.Authentication
 ) => {
   const configuration = await configurations.get(integration.id, oldAuthentication.setup_id)
-  const newPayload = await OAuth2.refresh(integration, configuration, oldAuthentication)
+  if (isOAuth2(integration)) {
+    const newPayload = await OAuth2.refresh(integration, configuration, oldAuthentication)
 
-  const newAuthentication: Types.Authentication = {
-    auth_id: oldAuthentication.auth_id,
-    setup_id: oldAuthentication.setup_id,
-    payload: newPayload,
-    created_at: oldAuthentication.created_at,
-    updated_at: new Date().toISOString()
+    const newAuthentication: Types.Authentication = {
+      auth_id: oldAuthentication.auth_id,
+      setup_id: oldAuthentication.setup_id,
+      payload: newPayload,
+      created_at: oldAuthentication.created_at,
+      updated_at: new Date().toISOString()
+    }
+
+    await authentications.update(oldAuthentication.auth_id, newAuthentication)
+    return newAuthentication
   }
-
-  await authentications.update(oldAuthentication.auth_id, newAuthentication)
-
-  return newAuthentication
+  // TODO handle oauth1 token freshness
 }

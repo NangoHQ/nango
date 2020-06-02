@@ -69,10 +69,13 @@ const formatIntegration = (fileName: string, fileContent: any) => {
   integration.id = fileName
   integration.image =
     integration.image || 'http://logo.clearbit.com/' + integration.name.toLowerCase().replace(' ', '') + '.com'
+  // Hack to prevent mix match things
+  // @ts-expect-error
+  integration.auth = integration.config
 
-  const isOAuth2 = integration.config.authType === 'OAUTH2'
-  integration.config.setupKeyLabel = isOAuth2 ? 'Client ID' : 'Consumer Key'
-  integration.config.setupSecretLabel = isOAuth2 ? 'Client Secret' : 'Consumer Secret'
+  const isOAuth2Auth = isOAuth2(integration)
+  integration.auth.setupKeyLabel = isOAuth2Auth ? 'Client ID' : 'Consumer Key'
+  integration.auth.setupSecretLabel = isOAuth2Auth ? 'Client Secret' : 'Consumer Secret'
 
   return integration
 }
@@ -95,9 +98,9 @@ export const validateConfigurationCredentials = (
     return
   }
 
-  const integrationConfig = integration.config
-  const isOAuth2 = integrationConfig.authType == 'OAUTH2'
-  const isOAuth1 = integrationConfig.authType == 'OAUTH1'
+  const authConfig = integration.auth
+  const isOAuth2 = authConfig.authType == 'OAUTH2'
+  const isOAuth1 = authConfig.authType == 'OAUTH1'
 
   if (isOAuth1) {
     const consumerKey = String(setup.consumerKey)
@@ -116,4 +119,16 @@ export const validateConfigurationCredentials = (
   }
 
   return
+}
+
+/*
+  Helpers
+*/
+
+export function isOAuth2(integration: Types.Integration): integration is Types.Integration<Types.OAuth2Config> {
+  return integration.auth.authType === 'OAUTH2'
+}
+
+export function isOAuth1(integration: Types.Integration): integration is Types.Integration<Types.OAuth1Config> {
+  return integration.auth.authType === 'OAUTH1'
 }

@@ -71,7 +71,7 @@ const additionalAuthVariables = ({ auth, authType, baseURL, method, path }: Addi
   }
 }
 
-const getOAuth1Credentials = ({ baseURL, method, path, auth }: IGetOAuth1CredentialsParams) => {
+export const getOAuth1Credentials = ({ baseURL, method, path, auth }: IGetOAuth1CredentialsParams) => {
   const { consumerKey, consumerSecret, accessToken, tokenSecret, signatureMethod } = auth
 
   const absUrl = `${baseURL.replace(/\/+$/, '')}/${path.replace(/^\/+/, '')}`

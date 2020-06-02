@@ -74,6 +74,12 @@ export class PizzlyError extends Error {
         this.message = 'Scopes are malformed. Must be in the form string[].'
         break
 
+      // Something failed
+      case 'token_refresh_failed':
+        this.status = 422
+        this.message = 'Unable to refresh the token. Please re-connect that user.'
+        break
+
       // General case for unhandled errors
       default:
         this.status = 500

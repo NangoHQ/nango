@@ -53,11 +53,9 @@ export const errorHandler = (err: any, req: TErrorHandlerRequest, res: Response,
 
     return respondWithOAuthError(res, err)
   }
-
   respondWithOAuthError(res, {
     statusCode: 500,
     code: 'INTERNAL_ERROR',
     message: 'Encountered an unexpected error. Please contact support'
   })
-  next(err)
 }

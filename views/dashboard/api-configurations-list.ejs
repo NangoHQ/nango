@@ -19,7 +19,7 @@
       >
         <td><%= configuration.setupId %></td>
         <td class="col-ellipsis"><%= configuration.setupKey %></td>
-        <td><%= '*'.repeat(15) %></td>
+        <td><%= '*'.repeat(15) + (configuration.setupSecret || '').slice(-5) %></td>
         <td class="col-center"><%= configuration.scopes.length %></td>
         <td class="col-date">
           <%= configuration.created_at.toLocaleString('en-US', req.ejs.dateOptions) %>

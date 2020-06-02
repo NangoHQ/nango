@@ -12,7 +12,7 @@ import { Types } from '../../../types'
  */
 
 export const refresh = async (
-  integration: Types.Integration,
+  integration: Types.Integration<Types.OAuth2Config>,
   configuration: Types.Configuration,
   oldAuthentication: Types.Authentication
 ): Promise<Types.OAuth2Payload> => {
@@ -21,22 +21,19 @@ export const refresh = async (
   const { clientId, clientSecret } = configuration.credentials as Types.OAuth2Credentials
 
   if (!refreshToken) {
-    const { grantType } = integration.config
-
+    const { tokenParams, tokenURL, authorizationMethod, bodyFormat } = integration.auth
+    const { grant_type: grantType } = tokenParams
     if (grantType !== GrantType.ClientCredentials) {
       throw new AccessTokenExpired()
     }
-
-    const scope = configuration.scopes
-    const { authorizationMethod, bodyFormat, tokenURL } = integration.config
 
     const tokenResult = await getTokenWithClientCredentials({
       authorizationMethod,
       bodyFormat,
       clientId,
       clientSecret,
-      scope,
-      tokenURL
+      tokenURL,
+      scope: configuration.scopes
     })
 
     const oauthPayload: Types.OAuth2Payload = {
@@ -50,7 +47,7 @@ export const refresh = async (
     return oauthPayload
   }
 
-  const { idToken, refreshURL, tokenURL } = integration.config
+  const { idToken, refreshURL, tokenURL } = integration.auth
 
   const tokenResult = await getTokenWithRefreshToken({
     ...{ clientId, clientSecret },

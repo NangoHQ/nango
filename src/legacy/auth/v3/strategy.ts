@@ -16,7 +16,6 @@ export const isOAuthType = (authType: EAuthType) => [EAuthType.OAuth1, EAuthType
 
 export const authenticate = (req: TAuthenticateRequest, res: Response, next: NextFunction) => {
   const { authType } = req.integrationConfig
-
   strategies[authType].authenticate(req, res, next)
 }
 

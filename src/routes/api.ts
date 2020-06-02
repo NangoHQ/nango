@@ -143,7 +143,6 @@ api.post('/:integrationId/configurations', async (req, res, next) => {
     scopes,
     credentials
   }
-
   await store('configurations').insert({
     buid: integrationId,
     setup_id: configurationId,
@@ -162,7 +161,7 @@ api.post('/:integrationId/configurations', async (req, res, next) => {
  * Retrieve a configuration
  */
 
-api.get('/:integrationId/:configurations/:configurationId', async (req, res, next) => {
+api.get('/:integrationId/configurations/:configurationId', async (req, res, next) => {
   const integrationId = String(req.params.integrationId)
   const configurationId = String(req.params.configurationId)
 
@@ -190,7 +189,7 @@ api.get('/:integrationId/:configurations/:configurationId', async (req, res, nex
  * Delete a configuration
  */
 
-api.delete('/:integrationId/:configurations/:configurationId', async (req, res, next) => {
+api.delete('/:integrationId/configurations/:configurationId', async (req, res, next) => {
   const integrationId = String(req.params.integrationId)
   const configurationId = String(req.params.configurationId)
 
@@ -210,7 +209,7 @@ api.delete('/:integrationId/:configurations/:configurationId', async (req, res, 
  * Update a configuration
  */
 
-api.put('/:integrationId/:configurations/:configurationId', async (req, res, next) => {
+api.put('/:integrationId/configurations/:configurationId', async (req, res, next) => {
   const integrationId = String(req.params.integrationId)
   const configurationId = String(req.params.configurationId)
 

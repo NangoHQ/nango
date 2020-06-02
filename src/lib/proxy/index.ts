@@ -1,4 +1,5 @@
 import https from 'https'
+import { URL } from 'url'
 import express from 'express'
 import { integrations, authentications } from '../database'
 import { interpolate } from './interpolation'
@@ -6,6 +7,9 @@ import { accessTokenHasExpired, refreshAuthentication } from '../oauth'
 import { PizzlyError } from '../error-handling'
 import { Types } from '../../types'
 import { IncomingMessage } from 'http'
+import { isOAuth1 } from '../database/integrations'
+import { getConfiguration } from '../database/configurations'
+import { getOAuth1Credentials } from '../../legacy/api-config/request-config'
 
 /**
  * Handle the request sent to Pizzly from the developer's application
@@ -31,50 +35,42 @@ export const incomingRequestHandler = async (req, res, next) => {
     return next(new Error('unknown_integration'))
   }
 
-  let authentication = (authId && (await authentications.get(integrationName, authId))) || undefined
+  let authentication: Types.Authentication | undefined =
+    (authId && (await authentications.get(integrationName, authId))) || undefined
   if (!authentication) {
-    return next(new Error('unknown_authentication'))
+    return next(new PizzlyError('unknown_authentication'))
   }
 
-  // Handle the token refreshness (if it has expired)
+  // Handle the token freshness (if it has expired)
   if (await accessTokenHasExpired(authentication)) {
     authentication = await refreshAuthentication(integration, authentication)
-  }
-
-  // Prepare the request
-  const forwaredHeaders = headersToForward(req.rawHeaders)
-  const integrationHeaders = integration.request.headers
-  const integrationParams = integration.request.params
-
-  const endpoint = req.originalUrl.substring(('/proxy/' + integrationName).length + 1)
-  const url = new URL(endpoint, integration.request.baseURL)
-
-  if (integrationParams) {
-    for (let param in integrationParams) {
-      url.searchParams.append(param, integrationParams[param])
+    if (!authentication) {
+      return next(new PizzlyError('token_refresh_failed')) // TODO: improve error verbosity
     }
   }
-
-  url.searchParams.forEach((value, key) => {
-    if (key.indexOf('pizzly_') === 0) {
-      url.searchParams.delete(key)
-    }
-  })
-
-  const rawOptions = {
-    url,
-    method: req.method,
-    headers: { ...integrationHeaders, ...forwaredHeaders }
-  }
-
   try {
     // Replace request options with provided authentication or data
     // i.e. replace ${auth.accessToken} from the integration template
     // with the authentication access token retrieved from the database.
-    const externalRequestOptions = replaceEmbeddedExpressions(rawOptions, authentication)
 
-    // Make the request
-    const externalRequest = https.request(externalRequestOptions.url, externalRequestOptions, externalResponse => {
+    const forwardedHeaders = headersToForward(req.rawHeaders)
+    const { url, headers } = await buildRequest({
+      authentication,
+      integration,
+      method: req.method,
+      forwardedHeaders: forwardedHeaders,
+      path: req.originalUrl.substring(('/proxy/' + integrationName).length + 1)
+    })
+
+    // Remove pizzly related params: ex
+    url.searchParams.forEach((value, key) => {
+      if (key.startsWith('pizzly_')) {
+        url.searchParams.delete(key)
+      }
+    })
+
+    // Perform external request
+    const externalRequest = https.request(url, { headers, method: req.method }, externalResponse => {
       externalResponseHandler(externalResponse, req, res, next)
     })
     req.pipe(externalRequest)
@@ -99,9 +95,9 @@ export const incomingRequestHandler = async (req, res, next) => {
 
 const externalResponseHandler = (
   externalResponse: IncomingMessage,
-  req: express.Request,
+  _req: express.Request,
   res: express.Response,
-  next: express.NextFunction
+  _next: express.NextFunction
 ) => {
   // Set headers
 
@@ -119,39 +115,85 @@ const externalResponseHandler = (
  * @return (object) - The headers to forward
  */
 
+const HEADER_PROXY = 'Pizzly-Proxy-'
 const headersToForward = (headers: string[]): { [key: string]: string } => {
   const forwardedHeaders = {}
-  const prefix = 'Pizzly-Proxy-'
-  const prefixLength = prefix.length
 
   for (let i = 0, n = headers.length; i < n; i += 2) {
     const headerKey = headers[i]
 
-    if (headerKey.indexOf(prefix) === 0) {
-      forwardedHeaders[headerKey.slice(prefixLength)] = headers[i + 1] || ''
+    if (headerKey.startsWith(HEADER_PROXY)) {
+      forwardedHeaders[headerKey.slice(HEADER_PROXY.length)] = headers[i + 1] || ''
     }
   }
 
   return forwardedHeaders
 }
 
-/**
- * Helper to replace embedded expressions (such as ${auth.accessToken})
- * with data saved on the database or data provided by the developer.
- */
-
-const replaceEmbeddedExpressions = (
-  options: { url: URL; method: string; headers: { [key: string]: string } },
+async function buildRequest({
+  integration,
+  path,
+  authentication,
+  forwardedHeaders,
+  method
+}: {
+  integration: Types.Integration
+  path: string
   authentication: Types.Authentication
-) => {
-  const oauthPayload = authentication.payload
+  forwardedHeaders: Record<string, any>
+  method: string
+}) {
+  const { request: requestConfig } = integration
+  try {
+    // First interpolation phase with utility headers (prefixed with Pizzly)
+    let auth = { ...authentication.payload }
 
-  const variables = {
-    auth: {
-      accessToken: oauthPayload.accessToken
-    },
-    headers: options.headers
+    // edge case: we need consumerKey an consumerSecret availability within templates
+    if (isOAuth1(integration)) {
+      //
+      const config = await getConfiguration(integration.id, authentication.setup_id)
+      if (config) {
+        const configDetails = config.credentials as Types.OAuth1Credentials
+        const callbackParams = auth.callbackParamsJSON ? JSON.parse(auth.callbackParamsJSON) : undefined
+        const oauth1 = getOAuth1Credentials({
+          baseURL: requestConfig.baseURL,
+          method,
+          path,
+          auth: {
+            callbackParams,
+            ...integration.auth,
+            ...(auth as Types.OAuth1Payload),
+            ...configDetails
+          }
+        })
+        auth = {
+          oauth1,
+          ...auth,
+          consumerKey: configDetails.consumerKey
+        } as any
+      }
+    }
+    const interpolatedHeaders = interpolate({ ...(requestConfig.headers || {}), ...forwardedHeaders }, '', {
+      auth
+    })
+
+    // redefine interpolate with interpolated headers
+    const localInterpolate = (template: any) => interpolate(template, '', { auth: auth, headers: interpolatedHeaders })
+
+    // Second interpolation with interpolated headers
+    const url = new URL(localInterpolate(path), localInterpolate(requestConfig.baseURL))
+    const interpolatedParams = localInterpolate(requestConfig.params || {})
+
+    for (let param in interpolatedParams) {
+      url.searchParams.append(param, interpolatedParams[param])
+    }
+
+    return {
+      url,
+      headers: interpolatedHeaders
+    }
+  } catch (e) {
+    // handle incorrect interpolation
+    throw e
   }
-
-  return { ...interpolate(options, '', variables), url: options.url }
 }

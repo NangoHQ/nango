@@ -4,6 +4,7 @@ import { TWithInstrument } from './instrumentation/middleware'
 import { Integration } from './legacy/functions/integration'
 import { AuthDetails } from './legacy/auth/v3/types'
 import Knex from 'knex'
+import { BodyFormat } from './legacy/auth/clients/oauth2'
 
 export type Omit<T, K> = Pick<T, Exclude<keyof T, K>>
 
@@ -87,16 +88,56 @@ declare global {
 }
 
 export namespace Types {
-  export interface Integration {
+  export interface Integration<Config = OAuth2Config | OAuth1Config> {
     id: string
     image: string
     name: string
-    config: any // TODO - Type the config (and rename config to auth?)
+    // TODO - Type the config (and rename config to auth?)
+    auth: Config
     request: {
       baseURL: string
       headers?: { [key: string]: string }
       params?: { [key: string]: string }
     }
+  }
+
+  type OAuth2Config = {
+    authorizationMethod: AuthorizationMethod
+    authorizationParams: Record<string, string> //{ prompt: 'consent'; access_type: 'offline' }
+    authorizationURL: string
+    authType: 'OAUTH2'
+    bodyFormat: BodyFormat
+    config: {
+      response_type: 'code'
+      scope: string[]
+    }
+    idToken?: string // TODO explain how it is possible to have this in the config
+    hint: string
+    provider: string
+    refreshURL?: string
+    setupKeyLabel?: string
+    setupSecretLabel?: string
+    tokenParams: {
+      redirect_uri: 'https://int.bearer.sh/v2/auth/callback'
+      grant_type: 'authorization_code' | 'client_credentials'
+    }
+    tokenURL: string
+  }
+
+  type OAuth1Config = {
+    accessTokenURL: string
+    authorizationParams: Record<string, string> //{ "expiration": "never" },
+    authType: 'OAUTH1'
+    callbackURL: string
+    config: Record<string, string> //{ "scope": ["read"] },
+    hint: string
+    provider: string
+    requestTokenURL: string
+    setupKeyLabel?: string
+    setupSecretLabel?: string
+    signatureMethod: 'HMAC-SHA1' | 'PLAINTEXT' | 'RSA-SHA1'
+    tokenParams: {}
+    userAuthorizationURL: string
   }
 
   export interface OAuth2Credentials {
@@ -147,7 +188,7 @@ export namespace Types {
     connectParams?: any
   }
 
-  interface OAuth1Payload extends CommonOAuthPayload {
+  export interface OAuth1Payload extends CommonOAuthPayload {
     accessToken: string
     tokenSecret: string
     consumerKey?: string
