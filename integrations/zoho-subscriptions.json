@@ -4,7 +4,6 @@
     "authType": "OAUTH2",
     "config": {
       "response_type": "code",
-      "callbackURL": "https://int.bearer.sh/v2/auth/callback",
       "scope": ["ZohoSubscriptions.products.READ"]
     },
     "tokenParams": { "grant_type": "authorization_code" },

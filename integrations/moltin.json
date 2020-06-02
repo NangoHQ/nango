@@ -5,7 +5,6 @@
     "bodyFormat": "form",
     "tokenParams": { "grant_type": "client_credentials" },
     "authorizationMethod": "body",
-    "callbackURL": "https://int.bearer.sh/v2/auth/callback",
     "tokenURL": "https://api.moltin.com/oauth/access_token"
   },
   "request": {

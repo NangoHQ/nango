@@ -4,7 +4,6 @@
     "accessTokenURL": "https://api.xero.com/oauth/AccessToken",
     "authorizationParams": {},
     "authType": "OAUTH1",
-    "callbackURL": "https://int.bearer.sh/v2/auth/callback",
     "config": { "scope": [] },
     "hint": "You will find your Xero credentials here: https://developer.xero.com/myapps",
     "provider": "Xero",

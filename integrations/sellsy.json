@@ -4,7 +4,6 @@
     "requestTokenURL": "https://apifeed.sellsy.com/0/request_token",
     "accessTokenURL": "https://apifeed.sellsy.com/0/access_token",
     "userAuthorizationURL": "https://apifeed.sellsy.com/0/login.php",
-    "callbackURL": "https://int.bearer.sh/v2/auth/callback",
     "authType": "OAUTH1",
     "signatureMethod": "PLAINTEXT",
     "tokenParams": {},
