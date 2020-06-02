@@ -50,7 +50,7 @@ export COOKIE_SECRET="CHANGE_ME"
 # export AUTH_CALLBACK_URL="http://example.org/auth/callback"
 #
 # - Uncomment to enable Bearer.sh to monitor and shield your Pizzly instance.
-#   To get your BEARER_AGENT_KEY, create an account on www.bearer.sh
+#   To get your BEARER_SECRET_KEY, create an account on www.bearer.sh
 #   then heads to https://app.bearer.sh/settings/key
 #
-# export BEARER_AGENT_KEY=""
+# export BEARER_SECRET_KEY=""

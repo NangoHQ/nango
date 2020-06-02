@@ -96,10 +96,10 @@ app.listen(PORT, () => {
  * Bearer will monitor and shield the Pizzly instance from APIs failure.
  * Learn more: https://www.bearer.sh/
  *
- * To get your BEARER_AGENT_KEY, create an account on www.bearer.sh
+ * To get your BEARER_SECRET_KEY, create an account on www.bearer.sh
  * then heads to https://app.bearer.sh/settings/key
  */
 
-if (process.env.BEARER_AGENT_KEY) {
-  Bearer.init({ secretKey: process.env.BEARER_AGENT_KEY })
+if (process.env.BEARER_SECRET_KEY) {
+  Bearer.init()
 }
