@@ -1,4 +1,5 @@
 import https from 'https'
+import { URL } from 'url'
 import express from 'express'
 import { integrations, authentications } from '../database'
 import { interpolate } from './interpolation'
@@ -6,6 +7,8 @@ import { accessTokenHasExpired, refreshAuthentication } from '../oauth'
 import { PizzlyError } from '../error-handling'
 import { Types } from '../../types'
 import { IncomingMessage } from 'http'
+import { isOAuth1 } from '../database/integrations'
+import { getConfiguration } from '../database/configurations'
 
 /**
  * Handle the request sent to Pizzly from the developer's application
@@ -41,18 +44,21 @@ export const incomingRequestHandler = async (req, res, next) => {
   if (await accessTokenHasExpired(authentication)) {
     authentication = await refreshAuthentication(integration, authentication)
     if (!authentication) {
-      return next(new Error('token_refresh_failed')) // TODO: improve error verbosity
+      return next(new PizzlyError('token_refresh_failed')) // TODO: improve error verbosity
     }
   }
 
-  // TODO: allow oauth1 template interpolation
+  // Replace request options with provided authentication or data
+  // i.e. replace ${auth.accessToken} from the integration template
+  // with the authentication access token retrieved from the database.
 
-  // Prepare the request
-  const { headers: integrationHeaders, params: integrationParams } = integration.request
-  const headers = { ...integrationHeaders, ...headersToForward(req.rawHeaders) }
-
-  const endpoint = req.originalUrl.substring(('/proxy/' + integrationName).length + 1)
-  const url = new URL(endpoint, integration.request.baseURL)
+  const forwardedHeaders = headersToForward(req.rawHeaders)
+  const { url, headers } = await buildRequest({
+    authentication,
+    integration,
+    forwardedHeaders: forwardedHeaders,
+    path: req.originalUrl.substring(('/proxy/' + integrationName).length + 1)
+  })
 
   // Remove pizzly related params: ex
   url.searchParams.forEach((value, key) => {
@@ -61,23 +67,9 @@ export const incomingRequestHandler = async (req, res, next) => {
     }
   })
 
-  // set default params
-  if (integrationParams) {
-    for (let param in integrationParams) {
-      url.searchParams.append(param, integrationParams[param])
-    }
-  }
-
-  const rawOptions = { url, headers, method: req.method }
-
   try {
-    // Replace request options with provided authentication or data
-    // i.e. replace ${auth.accessToken} from the integration template
-    // with the authentication access token retrieved from the database.
-    const externalRequestOptions = replaceEmbeddedExpressions(rawOptions, authentication)
-
-    // Make the request
-    const externalRequest = https.request(externalRequestOptions.url, externalRequestOptions, externalResponse => {
+    // Perform external equest
+    const externalRequest = https.request(url, { headers, method: req.method }, externalResponse => {
       externalResponseHandler(externalResponse, req, res, next)
     })
     req.pipe(externalRequest)
@@ -102,9 +94,9 @@ export const incomingRequestHandler = async (req, res, next) => {
 
 const externalResponseHandler = (
   externalResponse: IncomingMessage,
-  req: express.Request,
+  _req: express.Request,
   res: express.Response,
-  next: express.NextFunction
+  _next: express.NextFunction
 ) => {
   // Set headers
 
@@ -122,39 +114,68 @@ const externalResponseHandler = (
  * @return (object) - The headers to forward
  */
 
+const HEADER_PROXY = 'Pizzly-Proxy-'
 const headersToForward = (headers: string[]): { [key: string]: string } => {
   const forwardedHeaders = {}
-  const prefix = 'Pizzly-Proxy-'
-  const prefixLength = prefix.length
 
   for (let i = 0, n = headers.length; i < n; i += 2) {
     const headerKey = headers[i]
 
-    if (headerKey.indexOf(prefix) === 0) {
-      forwardedHeaders[headerKey.slice(prefixLength)] = headers[i + 1] || ''
+    if (headerKey.indexOf(HEADER_PROXY) === 0) {
+      forwardedHeaders[headerKey.slice(HEADER_PROXY.length)] = headers[i + 1] || ''
     }
   }
 
   return forwardedHeaders
 }
 
-/**
- * Helper to replace embedded expressions (such as ${auth.accessToken})
- * with data saved on the database or data provided by the developer.
- */
-
-const replaceEmbeddedExpressions = (
-  options: { url: URL; method: string; headers: { [key: string]: string } },
+async function buildRequest({
+  integration,
+  path,
+  authentication,
+  forwardedHeaders
+}: {
+  integration: Types.Integration
+  path: string
   authentication: Types.Authentication
-) => {
-  const oauthPayload = authentication.payload
+  forwardedHeaders: Record<string, any>
+}) {
+  const { request: requestConfig } = integration
+  try {
+    // First interpolation phase with utility headers (prefixed with Pizzly)
+    let auth = { ...authentication.payload }
 
-  const variables = {
-    auth: {
-      accessToken: oauthPayload.accessToken
-    },
-    headers: options.headers
+    // edge case: we need consumerKey an consumerSecret availability within templates
+    if (isOAuth1(integration)) {
+      const config = await getConfiguration(integration.id, authentication.setup_id)
+      if (config) {
+        auth = {
+          ...auth,
+          consumerKey: (config.credentials as Types.OAuth1Credentials).consumerKey
+        }
+      }
+    }
+    const interpolatedHeaders = interpolate({ ...(requestConfig.headers || {}), ...forwardedHeaders }, '', {
+      auth
+    })
+
+    // redefine interpolate with interpolated headers
+    const localInterpolate = (template: any) => interpolate(template, '', { auth: auth, headers: interpolatedHeaders })
+
+    // Second interpolation with interpolated headers
+    const url = new URL(localInterpolate(path), localInterpolate(requestConfig.baseURL))
+    const interpolatedParams = localInterpolate(requestConfig.params || {})
+
+    for (let param in interpolatedParams) {
+      url.searchParams.append(param, interpolatedParams[param])
+    }
+
+    return {
+      url,
+      headers: interpolatedHeaders
+    }
+  } catch (e) {
+    // handle incorrect interpolation
+    throw e
   }
-
-  return { ...interpolate(options, '', variables), url: options.url }
 }

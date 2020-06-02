@@ -12,13 +12,12 @@ import { isOAuth2 } from '../database/integrations'
  */
 
 export const accessTokenHasExpired = async (authentication: Types.Authentication) => {
-  const payload = authentication.payload
+  const { expiresIn } = authentication.payload
 
-  if (!payload.expiresIn) {
+  if (!expiresIn) {
     return false
   }
 
-  const expiresIn = payload.expiresIn
   const updatedAt = Date.parse(authentication.updated_at)
   const expiredFromThisTime = expiresIn * 1000 + updatedAt
   const safeRefreshTime = expiredFromThisTime - 15 * 60 * 1000 // 15 minutes
@@ -55,4 +54,5 @@ export const refreshAuthentication = async (
     await authentications.update(oldAuthentication.auth_id, newAuthentication)
     return newAuthentication
   }
+  // TODO handle oauth1 token freshness
 }

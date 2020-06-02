@@ -13,6 +13,7 @@ export class PizzlyError extends Error {
 
     this.type = type
 
+    // TODO: move this to the error handler
     switch (type) {
       // Authentications errors (401)
       case 'missing_publishable_key':
