@@ -47,27 +47,26 @@ export const incomingRequestHandler = async (req, res, next) => {
       return next(new PizzlyError('token_refresh_failed')) // TODO: improve error verbosity
     }
   }
-
-  // Replace request options with provided authentication or data
-  // i.e. replace ${auth.accessToken} from the integration template
-  // with the authentication access token retrieved from the database.
-
-  const forwardedHeaders = headersToForward(req.rawHeaders)
-  const { url, headers } = await buildRequest({
-    authentication,
-    integration,
-    forwardedHeaders: forwardedHeaders,
-    path: req.originalUrl.substring(('/proxy/' + integrationName).length + 1)
-  })
-
-  // Remove pizzly related params: ex
-  url.searchParams.forEach((value, key) => {
-    if (key.startsWith('pizzly_')) {
-      url.searchParams.delete(key)
-    }
-  })
-
   try {
+    // Replace request options with provided authentication or data
+    // i.e. replace ${auth.accessToken} from the integration template
+    // with the authentication access token retrieved from the database.
+
+    const forwardedHeaders = headersToForward(req.rawHeaders)
+    const { url, headers } = await buildRequest({
+      authentication,
+      integration,
+      forwardedHeaders: forwardedHeaders,
+      path: req.originalUrl.substring(('/proxy/' + integrationName).length + 1)
+    })
+
+    // Remove pizzly related params: ex
+    url.searchParams.forEach((value, key) => {
+      if (key.startsWith('pizzly_')) {
+        url.searchParams.delete(key)
+      }
+    })
+
     // Perform external equest
     const externalRequest = https.request(url, { headers, method: req.method }, externalResponse => {
       externalResponseHandler(externalResponse, req, res, next)
@@ -121,7 +120,7 @@ const headersToForward = (headers: string[]): { [key: string]: string } => {
   for (let i = 0, n = headers.length; i < n; i += 2) {
     const headerKey = headers[i]
 
-    if (headerKey.indexOf(HEADER_PROXY) === 0) {
+    if (headerKey.startsWith(HEADER_PROXY)) {
       forwardedHeaders[headerKey.slice(HEADER_PROXY.length)] = headers[i + 1] || ''
     }
   }

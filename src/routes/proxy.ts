@@ -9,6 +9,7 @@ import express from 'express'
 import * as access from '../lib/access'
 import { incomingRequestHandler } from '../lib/proxy'
 import { asyncMiddleware } from '../lib/utils/asyncMiddleware'
+import { UndefinedVariable } from '../lib/proxy/interpolation'
 
 const proxy = express.Router()
 
@@ -58,8 +59,11 @@ proxy.use((err, req, res, next) => {
   let status = 400
   let type = 'invalid'
   let message = 'Bad request'
-
-  if (err.type && err.status && err.message) {
+  if (err instanceof UndefinedVariable) {
+    status = 422
+    type = 'invalid_proxy_configuration_interpolation'
+    message = `Proxy configuration template interpolation error: ${err.message}`
+  } else if (err.type && err.status && err.message) {
     status = err.status
     type = err.type
     message = err.message
