@@ -33,6 +33,10 @@
               name="scopes"
               placeholder="Add one scope per line."
             ></textarea>
+            <div class="form-hint">
+              Tip: If needed, here's the callback URL to use:
+              <pre><%= process.env.AUTH_CALLBACK_URL || `${req.protocol}://${req.get('host')}/auth/callback` %></pre>
+            </div>
           </fieldset>
 
           <div class="form-actions">

@@ -1,7 +1,7 @@
 <% const base = `/dashboard/${req.params.api}`; %>
 <!DOCTYPE html>
 <html>
-  <%- include('layout-head', { title: `New configuration - ${req.data.api.name} API`}) %>
+  <%- include('layout-head', { title: `Edit configuration - ${req.data.api.name} API`}) %>
 
   <body>
     <!-- Header -->
@@ -10,7 +10,7 @@
     <main class="container">
       <section>
         <header>
-          <h2>New configuration</h2>
+          <h2>Edit configuration</h2>
         </header>
 
         <form method="POST">
@@ -43,6 +43,10 @@
             <textarea id="scopes" class="form-input" rows="8" name="scopes" placeholder="Add one scope per line.">
 <%= req.data.configuration.scopes.join('\n') %></textarea
             >
+            <div class="form-hint">
+              Tip: If needed, here's the callback URL to use:
+              <pre><%= process.env.AUTH_CALLBACK_URL || `${req.protocol}://${req.get('host')}/auth/callback` %></pre>
+            </div>
           </fieldset>
 
           <div class="form-actions">

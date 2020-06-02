@@ -281,6 +281,13 @@ form fieldset .form-hint {
   opacity: 0.8;
 }
 
+form fieldset .form-hint pre {
+  background: #e1e9fb;
+  display: inline-block;
+  padding: 4px 6px;
+  border-radius: 4px;
+}
+
 .form-input[disabled='disabled'] {
   cursor: not-allowed;
   background-color: #d3d3d3;
