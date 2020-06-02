@@ -8,14 +8,15 @@
 
     <main class="container">
       <section>
-        <h2><%= req.data.authentication.auth_id %></h2>
+        <h2>Auth ID: <%= req.data.authentication.auth_id %></h2>
         <form>
           <fieldset>
-            <label>Payload</label>
+            <label>Content</label>
             <textarea style="min-width: 380px;min-height: 25vh;">
 <%= JSON.stringify(req.data.authentication.payload, null, 4) 
               %></textarea
             >
+            <div class="form-json"></div>
           </fieldset>
           <div class="form-actions">
             <a class="button" href="javascript:history.back()">Cancel</a>
@@ -23,6 +24,17 @@
         </form>
       </section>
     </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/json-formatter-js@2.3.4/dist/json-formatter.umd.min.js"></script>
+    <script>
+      try {
+        const payload = <%- JSON.stringify(req.data.authentication.payload) %>
+        const formatter = new JSONFormatter(payload, "Infinity")
+
+        document.querySelector('.form-json').appendChild(formatter.render())
+        document.querySelector('textarea').remove()
+      } catch (err) { console.error(err) }
+    </script>
 
     <!-- Footer -->
     <%- include('layout-footer') -%>

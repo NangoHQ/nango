@@ -249,7 +249,8 @@ form fieldset {
 }
 
 form fieldset label,
-form fieldset .form-input {
+form fieldset .form-input,
+form fieldset .form-json {
   display: inline-block;
   vertical-align: top;
   font-family: inherit;
@@ -260,12 +261,18 @@ form fieldset label {
   padding: 0.5rem 0;
 }
 
-form fieldset .form-input {
+form fieldset .form-input,
+form fieldset .form-json {
   width: 100%;
   padding: 0.5rem;
   box-sizing: border-box;
   font-size: 1rem;
   border: 1px solid #d3d3d3;
+  background: #fff;
+}
+
+form fieldset .form-json .json-formatter-string {
+  white-space: pre-wrap;
 }
 
 form fieldset .form-hint {
@@ -280,7 +287,8 @@ form fieldset .form-hint {
 }
 
 @media (min-width: 63rem) {
-  form fieldset .form-input {
+  form fieldset .form-input,
+  form fieldset .form-json {
     width: 49rem;
   }
 
