@@ -30,6 +30,15 @@
   dependencies:
     regenerator-runtime "^0.13.4"
 
+"@bearer/node-agent@^3.1.2":
+  version "3.1.2"
+  resolved "https://registry.npmjs.org/@bearer/node-agent/-/node-agent-3.1.2.tgz#e3a7b82a9af4c26a7633156d050973f66ae88894"
+  integrity sha512-mEGUbZPYs77EZlE1hv1bZu4YWB7BalNuEOnJDLHH/omyb1i0Am8TUbmnO0YebBwFjEl6iYxO9SCInAGOz9P5Yw==
+  dependencies:
+    debug "^4.1.1"
+    lodash.throttle "^4.1.1"
+    semver "^6.3.0"
+
 "@commitlint/cli@^7.2.1", "@commitlint/cli@^7.6.1":
   version "7.6.1"
   resolved "https://registry.yarnpkg.com/@commitlint/cli/-/cli-7.6.1.tgz#a93cf995082831999937f6d5ec1a582c8fc0393a"
@@ -4407,6 +4416,11 @@ lodash.templatesettings@^4.0.0:
   integrity sha512-stgLz+i3Aa9mZgnjr/O+v9ruKZsPsndy7qPZOchbqk2cnTU1ZaldKK+v7m54WoKIyxiuMZTKT2H81F8BeAc3ZQ==
   dependencies:
     lodash._reinterpolate "^3.0.0"
+
+lodash.throttle@^4.1.1:
+  version "4.1.1"
+  resolved "https://registry.npmjs.org/lodash.throttle/-/lodash.throttle-4.1.1.tgz#c23e91b710242ac70c37f1e1cda9274cc39bf2f4"
+  integrity sha1-wj6RtxAkKscMN/HhzaknTMOb8vQ=
 
 lodash@4.17.11:
   version "4.17.11"
