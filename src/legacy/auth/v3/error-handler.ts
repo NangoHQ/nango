@@ -53,7 +53,6 @@ export const errorHandler = (err: any, req: TErrorHandlerRequest, res: Response,
 
     return respondWithOAuthError(res, err)
   }
-  console.error(err)
   respondWithOAuthError(res, {
     statusCode: 500,
     code: 'INTERNAL_ERROR',
