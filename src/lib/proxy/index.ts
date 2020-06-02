@@ -9,6 +9,7 @@ import { Types } from '../../types'
 import { IncomingMessage } from 'http'
 import { isOAuth1 } from '../database/integrations'
 import { getConfiguration } from '../database/configurations'
+import { getOAuth1Credentials } from '../../legacy/api-config/request-config'
 
 /**
  * Handle the request sent to Pizzly from the developer's application
@@ -56,6 +57,7 @@ export const incomingRequestHandler = async (req, res, next) => {
     const { url, headers } = await buildRequest({
       authentication,
       integration,
+      method: req.method,
       forwardedHeaders: forwardedHeaders,
       path: req.originalUrl.substring(('/proxy/' + integrationName).length + 1)
     })
@@ -67,7 +69,7 @@ export const incomingRequestHandler = async (req, res, next) => {
       }
     })
 
-    // Perform external equest
+    // Perform external request
     const externalRequest = https.request(url, { headers, method: req.method }, externalResponse => {
       externalResponseHandler(externalResponse, req, res, next)
     })
@@ -132,12 +134,14 @@ async function buildRequest({
   integration,
   path,
   authentication,
-  forwardedHeaders
+  forwardedHeaders,
+  method
 }: {
   integration: Types.Integration
   path: string
   authentication: Types.Authentication
   forwardedHeaders: Record<string, any>
+  method: string
 }) {
   const { request: requestConfig } = integration
   try {
@@ -146,12 +150,27 @@ async function buildRequest({
 
     // edge case: we need consumerKey an consumerSecret availability within templates
     if (isOAuth1(integration)) {
+      //
       const config = await getConfiguration(integration.id, authentication.setup_id)
       if (config) {
+        const configDetails = config.credentials as Types.OAuth1Credentials
+        const callbackParams = auth.callbackParamsJSON ? JSON.parse(auth.callbackParamsJSON) : undefined
+        const oauth1 = getOAuth1Credentials({
+          baseURL: requestConfig.baseURL,
+          method,
+          path,
+          auth: {
+            callbackParams,
+            ...integration.auth,
+            ...(auth as Types.OAuth1Payload),
+            ...configDetails
+          }
+        })
         auth = {
+          oauth1,
           ...auth,
-          consumerKey: (config.credentials as Types.OAuth1Credentials).consumerKey
-        }
+          consumerKey: configDetails.consumerKey
+        } as any
       }
     }
     const interpolatedHeaders = interpolate({ ...(requestConfig.headers || {}), ...forwardedHeaders }, '', {

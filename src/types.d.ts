@@ -135,7 +135,7 @@ export namespace Types {
     requestTokenURL: string
     setupKeyLabel?: string
     setupSecretLabel?: string
-    signatureMethod: 'HMAC-SHA1' | 'PLAINTEXT'
+    signatureMethod: 'HMAC-SHA1' | 'PLAINTEXT' | 'RSA-SHA1'
     tokenParams: {}
     userAuthorizationURL: string
   }
@@ -188,7 +188,7 @@ export namespace Types {
     connectParams?: any
   }
 
-  interface OAuth1Payload extends CommonOAuthPayload {
+  export interface OAuth1Payload extends CommonOAuthPayload {
     accessToken: string
     tokenSecret: string
     consumerKey?: string

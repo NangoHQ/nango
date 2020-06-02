@@ -187,7 +187,7 @@ export interface OAuth1AuthDetails extends OAuthAuthDetails {
   tokenSecret: string
   consumerKey: string
   consumerSecret: string
-  signatureMethod: OAuth1SignatureMethod
+  signatureMethod: 'HMAC-SHA1' | 'PLAINTEXT' | 'RSA-SHA1'
 }
 
 export interface OAuth2AuthDetails extends OAuthAuthDetails {
