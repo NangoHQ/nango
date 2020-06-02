@@ -4,7 +4,6 @@
     "requestTokenURL": "https://trello.com/1/OAuthGetRequestToken",
     "accessTokenURL": "https://trello.com/1/OAuthGetAccessToken",
     "userAuthorizationURL": "https://trello.com/1/OAuthAuthorizeToken",
-    "callbackURL": "https://int.bearer.sh/v2/auth/callback",
     "authType": "OAUTH1",
     "signatureMethod": "HMAC-SHA1",
     "tokenParams": {},

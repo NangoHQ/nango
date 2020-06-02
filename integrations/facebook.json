@@ -6,7 +6,6 @@
     "authType": "OAUTH2",
     "tokenParams": { "grant_type": "authorization_code" },
     "authorizationParams": {
-      "redirect_uri": "https://int.bearer.sh/v2/auth/callback",
       "state": "{st=state123abc,ds=123456789}"
     },
     "config": { "response_type": "code", "scope": ["email"] },

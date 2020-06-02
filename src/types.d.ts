@@ -118,7 +118,6 @@ export namespace Types {
     setupKeyLabel?: string
     setupSecretLabel?: string
     tokenParams: {
-      redirect_uri: 'https://int.bearer.sh/v2/auth/callback'
       grant_type: 'authorization_code' | 'client_credentials'
     }
     tokenURL: string

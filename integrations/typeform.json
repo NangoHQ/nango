@@ -8,7 +8,6 @@
     "authorizationParams": {},
     "config": {
       "scope": ["forms:read"],
-      "callbackURL": "https://int.bearer.sh/v2/auth/callback",
       "response_type": "code"
     },
     "provider": "Typeform",

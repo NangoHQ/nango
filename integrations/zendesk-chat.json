@@ -6,8 +6,7 @@
     "tokenParams": {},
     "authorizationParams": {
       "response_type": "token",
-      "subdomain": "lesalon",
-      "redirect_uri": "https://int.bearer.sh/v2/auth/callback"
+      "subdomain": "lesalon"
     },
     "authorizationURL": "https://www.zopim.com/oauth2/authorizations/new",
     "tokenURL": "https://www.zopim.com/oauth2/token"

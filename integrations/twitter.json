@@ -4,7 +4,6 @@
     "requestTokenURL": "https://api.twitter.com/oauth/request_token",
     "accessTokenURL": "https://api.twitter.com/oauth/access_token",
     "userAuthorizationURL": "https://api.twitter.com/oauth/authorize",
-    "callbackURL": "https://int.bearer.sh/v2/auth/callback",
     "authType": "OAUTH1",
     "signatureMethod": "HMAC-SHA1",
     "tokenParams": {},

@@ -8,7 +8,6 @@
     "tokenParams": { "grant_type": "authorization_code" },
     "authorizationParams": { "prompt": "consent", "access_type": "offline" },
     "config": {
-      "callbackURL": "https://int.bearer.sh/v2/auth/callback",
       "response_type": "code",
       "scope": ["https://www.googleapis.com/auth/contacts.readonly"]
     }
