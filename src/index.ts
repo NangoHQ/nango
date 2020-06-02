@@ -75,7 +75,7 @@ app.use((err, req, res, next) => {
     res.status(401).render('401')
   } else {
     console.error(err)
-    res.status(500).json({ error: 'unhandled error' })
+    res.status(500).render('500')
   }
 })
 

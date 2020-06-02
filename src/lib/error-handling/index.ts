@@ -13,7 +13,6 @@ export class PizzlyError extends Error {
 
     this.type = type
 
-    // TODO: move this to the error handler
     switch (type) {
       // Authentications errors (401)
       case 'missing_publishable_key':
@@ -52,10 +51,7 @@ export class PizzlyError extends Error {
         this.status = 404
         this.message = 'That authentication ID could not be found on the database.'
         break
-      case 'token_refresh_failed':
-        this.status = 422
-        this.message = 'Unable to refresh the token.'
-        break
+
       case 'unknown_configuration':
         this.status = 404
         this.message = 'That configuration ID (setupId) could not be found on the database'
@@ -76,6 +72,12 @@ export class PizzlyError extends Error {
       case 'invalid_scopes':
         this.status = 400
         this.message = 'Scopes are malformed. Must be in the form string[].'
+        break
+
+      // Something failed
+      case 'token_refresh_failed':
+        this.status = 422
+        this.message = 'Unable to refresh the token. Please re-connect that user.'
         break
 
       // General case for unhandled errors
