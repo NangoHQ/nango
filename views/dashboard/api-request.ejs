@@ -1,0 +1,104 @@
+<% const base = `/dashboard/${req.params.api}`; %>
+
+<!DOCTYPE html>
+<html>
+  <%- include('layout-head', { title: `Request - ${req.data.api.name} API`}) %>
+
+  <body>
+    <!-- Header -->
+    <%- include('layout-header-api') -%>
+
+    <main class="container">
+      <section>
+        <h2>Request</h2>
+        <form>
+          <fieldset>
+            <label>Method</label>
+            <select id="proxy-method" class="form-input">
+              <option>GET</option>
+              <option>POST</option>
+              <option>PUT</option>
+              <option>DELETE</option>
+            </select>
+          </fieldset>
+
+          <fieldset>
+            <label>Base URL</label>
+            <input value="<%= req.data.api.request.baseURL %>" disabled="disabled" class="form-input" />
+            <p class="form-hint">The base URL has been inferred from the API configuration file.</p>
+          </fieldset>
+
+          <fieldset>
+            <label>Endpoint</label>
+            <input id="proxy-endpoint" placeholder="The API endpoint to request (e.g. /test)" class="form-input" />
+          </fieldset>
+
+          <fieldset>
+            <label>Auth ID</label>
+            <input id="proxy-authid" placeholder="Provide an authId to authenticate the request" class="form-input" />
+          </fieldset>
+
+          <div class="form-actions">
+            <button class="button button-primary" type="submit">Send</button>
+          </div>
+        </form>
+      </section>
+      <section>
+        <h2 style="margin-bottom: 0.5rem;">Response</h2>
+        <div id="proxy-response"></div>
+        <div id="proxy-response-body" class="form-json"></div>
+      </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/pizzly-js@latest/dist/index.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/json-formatter-js@2.3.4/dist/json-formatter.umd.min.js"></script>
+    <script>
+      document.forms[0].addEventListener('submit', e => {
+        e.preventDefault()
+
+        const pizzly = new Pizzly('<%= process.env.PUBLISHABLE_KEY %>')
+        const integration = pizzly.integration('<%= req.params.integration %>')
+
+        const method = document.getElementById('proxy-method').value
+        const endpoint = document.getElementById('proxy-endpoint').value
+        const authId = document.getElementById('proxy-authid').value
+
+        const responseHeader = document.getElementById('proxy-response')
+        const responseBody = document.getElementById('proxy-response-body')
+        const responseStart = Date.now()
+
+        responseHeader.innerHTML = 'Loading...'
+        responseBody.innerHTML = ''
+
+        integration
+          .auth(authId)
+          .request(method, endpoint)
+          .then(async response => {
+            // Display response header
+            responseHeader.innerHTML = [
+              `Status: <strong>${response.status} ${response.statusText}</strong>`,
+              `Time: <strong>${Date.now() - responseStart}ms</strong>`
+            ].join(' - ')
+
+            // Handle response body
+            const body = await response.text()
+
+            try {
+              const json = JSON.parse(body)
+              const formatter = new JSONFormatter(json, 'Infinity')
+              responseBody.appendChild(formatter.render())
+            } catch (err) {
+              responseBody.innerText = body
+            }
+          })
+          .catch(err => {
+            responseHeader.innerHTML = 'Something went wront. Open the developer console.'
+            console.error(err)
+          })
+      })
+    </script>
+
+    <!-- Footer -->
+    <%- include('layout-footer') -%>
+  </body>
+</html>

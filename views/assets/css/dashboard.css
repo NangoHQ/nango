@@ -262,7 +262,7 @@ form fieldset label {
 }
 
 form fieldset .form-input,
-form fieldset .form-json {
+.form-json {
   width: 100%;
   padding: 0.5rem;
   box-sizing: border-box;
@@ -271,7 +271,7 @@ form fieldset .form-json {
   background: #fff;
 }
 
-form fieldset .form-json .json-formatter-string {
+.form-json .json-formatter-string {
   white-space: pre-wrap;
 }
 
@@ -306,8 +306,21 @@ form fieldset .form-hint pre {
 }
 
 /**
- * Content > Pagination
- */
+* Content > API Request
+*/
+
+#proxy-response {
+  height: 1rem;
+  padding: 0.5rem 0;
+}
+
+#proxy-response-body {
+  min-height: 25vh;
+}
+
+/**
+* Content > Pagination
+*/
 
 .pagination {
   margin: 1rem;
@@ -401,7 +414,7 @@ form fieldset .form-hint pre {
   padding: 0.5rem 1rem;
   font-weight: 500;
   background: #e7e7e9;
-  border-radius: 0.5rem;
+  border-radius: 0.25rem;
   border: 1px solid transparent;
   font-size: 0.95rem;
   cursor: pointer;
