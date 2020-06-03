@@ -84,7 +84,7 @@ export default class PizzlyIntegration {
    * (using axios behind the scene)
    */
 
-  private request = (method: Types.RequestMethod, endpoint: string, parameters: Types.RequestParameters = {}) => {
+  public request = (method: Types.RequestMethod, endpoint: string, parameters: Types.RequestParameters = {}) => {
     if (parameters && typeof parameters !== 'object') {
       throw new Error(
         'Unable to trigger API request. Request parameters should be an object in the form "{ headers: { "Foo": "bar" }, body: "My body" }'

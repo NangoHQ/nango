@@ -295,6 +295,14 @@ dashboard.get('/:integration/authentications/:authId', async (req, res) => {
 })
 
 /**
+ * Integration > Request
+ */
+
+dashboard.get('/:integration/request', (req, res) => {
+  res.render('dashboard/api-request', { req })
+})
+
+/**
  * Integration > Monitoring
  */
 
