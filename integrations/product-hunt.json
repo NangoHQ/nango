@@ -1,17 +1,15 @@
 {
   "name": "Product Hunt",
-  "config": {
+  "auth": {
     "authorizationURL": "https://api.producthunt.com/v2/oauth/authorize",
     "tokenURL": "https://api.producthunt.com/v2/oauth/token",
     "authType": "OAUTH2",
     "tokenParams": { "grant_type": "authorization_code" },
     "authorizationParams": {},
-    "config": { "response_type": "code", "scope": ["public"] },
-    "provider": "Product Hunt",
-    "hint": "You will find your Product Hunt API Key here: https://www.producthunt.com/v2/oauth/applications"
+    "auth": { "response_type": "code" }
   },
   "request": {
-    "baseURL": "https://api.producthunt.com/v2/api",
+    "baseURL": "https://api.producthunt.com/v2/api/",
     "headers": {
       "Accept": "application/json",
       "Authorization": "Bearer ${auth.accessToken}",

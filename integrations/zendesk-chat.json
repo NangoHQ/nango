@@ -1,8 +1,7 @@
 {
   "name": "Zendesk Chat",
-  "config": {
+  "auth": {
     "authType": "OAUTH2",
-    "config": { "scope": ["read", "write", "chat"] },
     "tokenParams": {},
     "authorizationParams": {
       "response_type": "token",

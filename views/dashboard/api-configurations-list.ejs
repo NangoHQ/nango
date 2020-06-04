@@ -3,8 +3,8 @@
     <thead>
       <tr>
         <th>Setup ID</th>
-        <th><%= req.data.api.config.setupKeyLabel %></th>
-        <th><%= req.data.api.config.setupSecretLabel %></th>
+        <th><%= req.data.integration.auth.setupKeyLabel %></th>
+        <th><%= req.data.integration.auth.setupSecretLabel %></th>
         <th class="col-center">Scopes</th>
         <th class="col-date">Creation date</th>
         <th class="col-actions"></th>
@@ -13,7 +13,7 @@
     <tbody>
       <% req.data.configurations.forEach(function(configuration){ %>
       <tr
-        data-item-integration="<%= req.data.api.id %>"
+        data-item-integration="<%= req.data.integration.id %>"
         data-item-type="configuration"
         data-item-id="<%= configuration.setupId %>"
       >

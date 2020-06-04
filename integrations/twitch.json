@@ -1,9 +1,8 @@
 {
   "name": "Twitch",
-  "config": {
+  "auth": {
     "authType": "OAUTH2",
     "bodyFormat": "form",
-    "config": { "scope": ["user:read:email"] },
     "tokenParams": { "grant_type": "authorization_code" },
     "authorizationMethod": "body",
     "authorizationParams": { "responseType": "code" },

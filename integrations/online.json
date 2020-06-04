@@ -1,16 +1,15 @@
 {
   "name": "Scaleway",
   "image": "https://logo.clearbit.com/scaleway.com",
-  "config": {
+  "auth": {
     "authorizationURL": "https://console.online.net/oauth/v2/auth",
     "tokenURL": "https://console.online.net/oauth/v2/token",
     "authType": "OAUTH2",
     "tokenParams": { "grant_type": "authorization_code" },
-    "authorizationParams": { "state": 1 },
-    "config": { "scope": [] }
+    "authorizationParams": { "state": 1 }
   },
   "request": {
-    "baseURL": "https://api.online.net/api/v1",
+    "baseURL": "https://api.online.net/api/v1/",
     "headers": {
       "Accept": "application/json",
       "Authorization": "Bearer ${auth.accessToken}",

@@ -1,6 +1,6 @@
 {
   "name": "Moltin",
-  "config": {
+  "auth": {
     "authType": "OAUTH2",
     "bodyFormat": "form",
     "tokenParams": { "grant_type": "client_credentials" },

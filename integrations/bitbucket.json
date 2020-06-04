@@ -1,14 +1,12 @@
 {
   "name": "BitBucket",
-  "config": {
+  "auth": {
     "authorizationURL": "https://bitbucket.org/site/oauth2/authorize",
     "tokenURL": "https://bitbucket.org/site/oauth2/access_token",
     "authType": "OAUTH2",
     "tokenParams": { "grant_type": "authorization_code" },
     "authorizationParams": {},
-    "config": { "response_type": "code" },
-    "provider": "BitBucket",
-    "hint": "You will find your BitBucket credentials here: https://bitbucket.org/account/user/{username}/api"
+    "auth": { "response_type": "code" }
   },
   "request": {
     "baseURL": "https://api.bitbucket.org/2.0/",

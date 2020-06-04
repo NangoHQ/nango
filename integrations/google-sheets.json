@@ -1,19 +1,18 @@
 {
   "name": "Google Sheets",
   "image": "https://upload.wikimedia.org/wikipedia/commons/1/11/Google-Sheets-Logo-2019.png",
-  "config": {
+  "auth": {
     "authorizationURL": "https://accounts.google.com/o/oauth2/v2/auth",
     "tokenURL": "https://www.googleapis.com/oauth2/v4/token",
     "authType": "OAUTH2",
     "tokenParams": { "grant_type": "authorization_code" },
     "authorizationParams": { "prompt": "consent", "access_type": "offline" },
-    "config": {
-      "response_type": "code",
-      "scope": ["https://www.googleapis.com/auth/spreadsheets.readonly"]
+    "auth": {
+      "response_type": "code"
     }
   },
   "request": {
-    "baseURL": "https://sheets.googleapis.com/v4/spreadsheets",
+    "baseURL": "https://sheets.googleapis.com/v4/spreadsheets/",
     "headers": {
       "Accept": "application/json",
       "Authorization": "Bearer ${auth.accessToken}",

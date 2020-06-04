@@ -1,15 +1,14 @@
 {
   "name": "Adobe Sign",
   "image": "https://logo.clearbit.com/adobe.com",
-  "config": {
+  "auth": {
     "authorizationURL": "https://secure.eu1.echosign.com/public/oauth",
     "tokenURL": "https://api.eu1.echosign.com/oauth/token",
     "refreshURL": "https://api.eu1.echosign.com/oauth/refresh",
-    "authType": "OAUTH2",
-    "config": { "scope": ["agreement_read:account"] }
+    "authType": "OAUTH2"
   },
   "request": {
-    "baseURL": "https://api.eu1.echosign.com/api/rest/v6",
+    "baseURL": "https://api.eu1.echosign.com/api/rest/v6/",
     "headers": {
       "Accept": "application/json",
       "Authorization": "Bearer ${auth.accessToken}",

@@ -99,13 +99,13 @@ dashboard.get('/all', async (req, res) => {
 })
 
 dashboard.use('/:integration', async (req, res, next) => {
-  const api = await integrations.get(req.params.integration).catch(err => next(err))
+  const integration = await integrations.get(req.params.integration).catch(err => next(err))
 
   // @ts-ignore
   req.ejs = { ...req.ejs, base_url: `/dashboard/${req.params.integration}` }
 
   // @ts-ignore
-  req.data = { ...req.data, api }
+  req.data = { ...req.data, integration }
 
   return next()
 })
@@ -184,7 +184,7 @@ dashboard.get('/:integration/configurations/new', (req, res) => {
 dashboard.post('/:integration/configurations/new', async (req, res) => {
   const scopes = integrations.validateConfigurationScopes(String(req.body.scopes))
   // @ts-ignore
-  const integration = req.data.api as Types.Integration
+  const integration = req.data.integration as Types.Integration
   const newCredentials = formatSetup(String(req.body.setupKey), String(req.body.setupSecret), integration)
   const credentials = integrations.validateConfigurationCredentials(newCredentials, integration)
   const setup_id = uuidv4()
@@ -229,7 +229,7 @@ dashboard.get('/:integration/configurations/:setupId', async (req, res, next) =>
 dashboard.post('/:integration/configurations/:setupId', async (req, res) => {
   const setupId = String(req.params.setupId)
   // @ts-ignore
-  const integration = req.data.api as Types.Integration
+  const integration = req.data.integration as Types.Integration
   const newCredentials = formatSetup(String(req.body.setupKey), String(req.body.setupSecret), integration)
   const credentials = integrations.validateConfigurationCredentials(newCredentials, integration)
   const scopes = integrations.validateConfigurationScopes(String(req.body.scopes))

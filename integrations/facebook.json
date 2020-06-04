@@ -1,6 +1,6 @@
 {
   "name": "Facebook",
-  "config": {
+  "auth": {
     "authorizationURL": "https://www.facebook.com/v3.2/dialog/oauth",
     "tokenURL": "https://graph.facebook.com/v3.2/oauth/access_token",
     "authType": "OAUTH2",
@@ -8,12 +8,10 @@
     "authorizationParams": {
       "state": "{st=state123abc,ds=123456789}"
     },
-    "config": { "response_type": "code", "scope": ["email"] },
-    "provider": "Facebook",
-    "hint": "You will find your Facebook credentials here: https://developers.facebook.com/apps/"
+    "auth": { "response_type": "code" }
   },
   "request": {
-    "baseURL": "https://graph.facebook.com",
+    "baseURL": "https://graph.facebook.com/",
     "headers": {
       "Accept": "application/json",
       "Authorization": "Bearer ${auth.accessToken}",

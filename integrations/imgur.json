@@ -1,14 +1,12 @@
 {
   "name": "imgur",
-  "config": {
+  "auth": {
     "authorizationURL": "https://api.imgur.com/oauth2/authorize",
     "tokenURL": "https://api.imgur.com/oauth2/token",
     "authType": "OAUTH2",
     "tokenParams": { "grant_type": "authorization_code" },
     "authorizationParams": {},
-    "config": { "response_type": "code" },
-    "provider": "imgur",
-    "hint": "You will find your imgur credentials here: https://api.imgur.com/oauth2/addclient"
+    "auth": { "response_type": "code" }
   },
   "request": {
     "baseURL": "https://api.imgur.com/3/",

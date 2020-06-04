@@ -1,16 +1,15 @@
 {
   "name": "Reddit",
-  "config": {
+  "auth": {
     "authorizationURL": "https://www.reddit.com/api/v1/authorize",
     "tokenURL": "https://www.reddit.com/api/v1/access_token",
     "authType": "OAUTH2",
     "tokenParams": {},
     "authorizationParams": {},
-    "config": { "scope": ["read"] },
     "authorizationMethod": "header"
   },
   "request": {
-    "baseURL": "https://oauth.reddit.com",
+    "baseURL": "https://oauth.reddit.com/",
     "headers": {
       "Accept": "application/json",
       "User-Agent": "Bearer.sh",

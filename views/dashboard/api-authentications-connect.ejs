@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-  <%- include('layout-head', { title: `Connect to ${req.data.api.name}` }) %>
+  <%- include('layout-head', { title: `Connect to ${req.data.integration.name}` }) %>
 
   <body>
     <!-- Header -->
@@ -8,7 +8,7 @@
 
     <main class="container">
       <section>
-        <h2>Connect to <%= req.data.api.name %></h2>
+        <h2>Connect to <%= req.data.integration.name %></h2>
         <form>
           <fieldset>
             <label>Callback URL</label>
@@ -24,7 +24,7 @@
             <input disabled="disabled" type="text" class="form-input" id="authId" />
           </fieldset>
           <div class="form-actions">
-            <button type="submit" class="button button-primary">Connect to <%= req.data.api.name %></button>
+            <button type="submit" class="button button-primary">Connect to <%= req.data.integration.name %></button>
             <a class="button" href="javascript:history.back()">Cancel</a>
             <p id="status"></p>
           </div>

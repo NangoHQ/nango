@@ -1,8 +1,8 @@
 {
   "name": "Zoho Invoice",
-  "config": {
+  "auth": {
     "authType": "OAUTH2",
-    "config": { "response_type": "code" },
+    "auth": { "response_type": "code" },
     "tokenParams": { "grant_type": "authorization_code" },
     "authorizationParams": { "access_type": "offline", "prompt": "consent" },
     "authorizationURL": "https://accounts.zoho.com/oauth/v2/auth",

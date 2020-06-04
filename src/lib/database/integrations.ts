@@ -69,9 +69,6 @@ const formatIntegration = (fileName: string, fileContent: any) => {
   integration.id = fileName
   integration.image =
     integration.image || 'http://logo.clearbit.com/' + integration.name.toLowerCase().replace(' ', '') + '.com'
-  // Hack to prevent mix match things
-  // @ts-expect-error
-  integration.auth = integration.config
 
   const isOAuth2Auth = isOAuth2(integration)
   integration.auth.setupKeyLabel = isOAuth2Auth ? 'Client ID' : 'Consumer Key'

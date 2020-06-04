@@ -1,8 +1,7 @@
 {
   "name": "Twist",
-  "config": {
+  "auth": {
     "authType": "OAUTH2",
-    "config": { "scope": ["workspaces:read"] },
     "tokenParams": {},
     "authorizationParams": {},
     "authorizationURL": "https://twist.com/oauth/authorize",

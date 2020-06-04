@@ -1,14 +1,12 @@
 {
   "name": "Intercom",
-  "config": {
+  "auth": {
     "authorizationURL": "https://app.intercom.io/oauth",
     "tokenURL": "https://api.intercom.io/auth/eagle/token",
     "authType": "OAUTH2",
     "tokenParams": {},
     "authorizationParams": {},
-    "config": { "response_type": "code", "scope": [] },
-    "provider": "Intercom",
-    "hint": "You will find your Intercom credentials here: https://app.intercom.com/a/apps/_/developer-hub"
+    "auth": { "response_type": "code" }
   },
   "request": {
     "baseURL": "https://api.intercom.io/",

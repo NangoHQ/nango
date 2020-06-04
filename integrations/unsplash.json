@@ -1,8 +1,7 @@
 {
   "name": "Unsplash",
-  "config": {
+  "auth": {
     "authType": "OAUTH2",
-    "config": { "scope": ["public read_user read_collections"] },
     "tokenParams": {},
     "authorizationParams": {},
     "authorizationURL": "https://unsplash.com/oauth/authorize",
@@ -14,6 +13,6 @@
       "User-Agent": "Bearer.sh",
       "Authorization": "Bearer ${auth.accessToken}"
     },
-    "baseURL": "https://api.unsplash.com"
+    "baseURL": "https://api.unsplash.com/"
   }
 }

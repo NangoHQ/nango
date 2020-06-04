@@ -1,15 +1,14 @@
 {
   "name": "Gmail",
   "image": "https://upload.wikimedia.org/wikipedia/commons/4/45/New_Logo_Gmail.svg",
-  "config": {
+  "auth": {
     "authorizationURL": "https://accounts.google.com/o/oauth2/v2/auth",
     "tokenURL": "https://www.googleapis.com/oauth2/v4/token",
     "authType": "OAUTH2",
     "tokenParams": { "grant_type": "authorization_code" },
     "authorizationParams": { "prompt": "consent", "access_type": "offline" },
-    "config": {
-      "response_type": "code",
-      "scope": ["https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/gmail.metadata"]
+    "auth": {
+      "response_type": "code"
     }
   },
   "request": {

@@ -1,14 +1,13 @@
 {
   "name": "Microsoft OneDrive",
   "image": "https://upload.wikimedia.org/wikipedia/commons/d/d3/Microsoft_Office_OneDrive_%282018%E2%80%93present%29.svg",
-  "config": {
+  "auth": {
     "authorizationURL": "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
     "tokenURL": "https://login.microsoftonline.com/common/oauth2/v2.0/token",
-    "authType": "OAUTH2",
-    "config": { "scope": ["Files.ReadWrite.All", "offline_access"] }
+    "authType": "OAUTH2"
   },
   "request": {
-    "baseURL": "https://graph.microsoft.com/v1.0",
+    "baseURL": "https://graph.microsoft.com/v1.0/",
     "headers": {
       "Accept": "application/json",
       "Authorization": "Bearer ${auth.accessToken}",

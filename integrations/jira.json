@@ -1,17 +1,14 @@
 {
   "name": "Jira",
-  "config": {
+  "auth": {
     "authorizationURL": "https://auth.atlassian.com/authorize",
     "tokenURL": "https://auth.atlassian.com/oauth/token",
     "authType": "OAUTH2",
     "tokenParams": { "grant_type": "authorization_code" },
     "authorizationParams": { "prompt": "consent", "state": 1, "audience": "api.atlassian.com" },
-    "config": {
-      "response_type": "code",
-      "scope": ["read:jira-work"]
-    },
-    "provider": "Jira",
-    "hint": "You will find your Jira credentials here: https://developer.atlassian.com/apps/create"
+    "auth": {
+      "response_type": "code"
+    }
   },
   "request": {
     "baseURL": "https://${headers.atlassian_domain}.atlassian.net/rest/api/3/",

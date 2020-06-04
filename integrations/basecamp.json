@@ -1,6 +1,6 @@
 {
   "name": "Basecamp",
-  "config": {
+  "auth": {
     "authorizationURL": "https://launchpad.37signals.com/authorization/new",
     "tokenURL": "https://launchpad.37signals.com/authorization/token",
     "authType": "OAUTH2",
@@ -9,12 +9,10 @@
       "type": "web_server"
     },
     "authorizationParams": { "type": "web_server" },
-    "config": { "response_type": "code", "scope": [] },
-    "provider": "Basecamp",
-    "hint": "You will find your Basecamp credentials here: https://launchpad.37signals.com/integrations"
+    "auth": { "response_type": "code" }
   },
   "request": {
-    "baseURL": "https://3.basecampapi.com/${headers.basecamp_account_id}",
+    "baseURL": "https://3.basecampapi.com/${headers.basecamp_account_id}/",
     "headers": {
       "Accept": "application/json",
       "Authorization": "Bearer ${auth.accessToken}",

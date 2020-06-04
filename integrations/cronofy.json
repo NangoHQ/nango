@@ -1,8 +1,7 @@
 {
   "name": "Cronofy",
-  "config": {
+  "auth": {
     "authType": "OAUTH2",
-    "config": { "scope": ["read_write", "free_busy"] },
     "tokenParams": { "grant_type": "authorization_code" },
     "authorizationParams": { "response_type": "code" },
     "authorizationURL": "https://app.cronofy.com/oauth/authorize",

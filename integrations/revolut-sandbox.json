@@ -1,9 +1,8 @@
 {
   "name": "Revolut (sandbox)",
   "image": "http://logo.clearbit.com/revolut.com",
-  "config": {
+  "auth": {
     "authType": "OAUTH2",
-    "config": { "scope": ["READ"] },
     "tokenParams": { "response_type": "code" },
     "authorizationParams": {},
     "authorizationURL": "https://sandbox-business.revolut.com/app-confirm",

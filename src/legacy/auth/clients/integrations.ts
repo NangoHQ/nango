@@ -85,12 +85,12 @@ export const getConfig = async ({ buid }: { buid: string }) => {
     }
   }
 
-  const configItem = item.config as TIntegrationConfig
+  const configItem = item.auth as TIntegrationConfig
   if (configItem.authType) {
     configItem.authType = configItem.authType.toUpperCase() as EAuthType
   }
 
-  return { ...configItem, requestConfig: item.request }
+  return { ...configItem, authConfig: configItem, requestConfig: item.request }
 }
 
 export const saveSetupDetails = async ({

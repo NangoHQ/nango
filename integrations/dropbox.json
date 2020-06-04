@@ -1,14 +1,12 @@
 {
   "name": "Dropbox",
-  "config": {
+  "auth": {
     "authorizationURL": "https://www.dropbox.com/oauth2/authorize",
     "tokenURL": "https://api.dropboxapi.com/oauth2/token",
     "authType": "OAUTH2",
     "tokenParams": { "grant_type": "authorization_code" },
     "authorizationParams": {},
-    "config": { "response_type": "code" },
-    "provider": "Dropbox",
-    "hint": "You will find your Dropbox credentials here: https://www.dropbox.com/developers/apps"
+    "auth": { "response_type": "code" }
   },
   "request": {
     "baseURL": "https://api.dropboxapi.com/2/",

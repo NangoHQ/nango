@@ -1,10 +1,9 @@
 {
   "name": "Zoho Subscriptions",
-  "config": {
+  "auth": {
     "authType": "OAUTH2",
-    "config": {
-      "response_type": "code",
-      "scope": ["ZohoSubscriptions.products.READ"]
+    "auth": {
+      "response_type": "code"
     },
     "tokenParams": { "grant_type": "authorization_code" },
     "authorizationParams": { "access_type": "offline", "prompt": "consent" },

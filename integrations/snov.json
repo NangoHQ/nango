@@ -1,10 +1,9 @@
 {
   "name": "Snov.io",
   "image": "https://logo.clearbit.com/snov.io",
-  "config": {
+  "auth": {
     "authType": "OAUTH2",
     "bodyFormat": "form",
-    "config": { "scope": [] },
     "tokenParams": { "grant_type": "client_credentials" },
     "tokenURL": "https://app.snov.io/oauth/access_token",
     "authorizationMethod": "body",

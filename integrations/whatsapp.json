@@ -1,6 +1,6 @@
 {
   "name": "WhatsApp",
-  "config": {
+  "auth": {
     "authorizationURL": "https://www.facebook.com/v3.2/dialog/oauth",
     "tokenURL": "https://graph.facebook.com/v3.2/oauth/access_token",
     "authType": "OAUTH2",
@@ -8,12 +8,9 @@
     "authorizationParams": {
       "state": "{st=state123abc,ds=123456789}"
     },
-    "config": {
-      "response_type": "code",
-      "scope": ["whatsapp_business_management"]
-    },
-    "provider": "WhatsApp",
-    "hint": "You will find your WhatsApp credentials here: https://developers.facebook.com/apps/"
+    "auth": {
+      "response_type": "code"
+    }
   },
   "request": {
     "baseURL": "https://graph.facebook.com/v3.3",

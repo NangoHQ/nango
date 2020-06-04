@@ -1,14 +1,12 @@
 {
   "name": "Hootsuite",
-  "config": {
+  "auth": {
     "authorizationURL": "https://platform.hootsuite.com/oauth2/auth",
     "tokenURL": "https://platform.hootsuite.com/oauth2/token",
     "authType": "OAUTH2",
     "tokenParams": { "grant_type": "authorization_code" },
     "authorizationParams": {},
-    "config": { "response_type": "code" },
-    "provider": "Hootsuite",
-    "hint": "You will find your Hootsuite credentials here: https://hootsuite.com/developers/my-apps/app-directory/app"
+    "auth": { "response_type": "code" }
   },
   "request": {
     "baseURL": "https://platform.hootsuite.com/v1/",
