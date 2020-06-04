@@ -6,6 +6,7 @@
  */
 
 import express from 'express'
+import cors from 'cors'
 import * as access from '../lib/access'
 import { incomingRequestHandler } from '../lib/proxy'
 import { asyncMiddleware } from '../lib/utils/asyncMiddleware'
@@ -36,6 +37,12 @@ proxy.use((req, res, next) => {
     return access.secretKey(req, res, next)
   }
 })
+
+/**
+ * Enable CORS on proxy requests
+ */
+
+proxy.use(cors())
 
 /**
  * Handle proxy requests.

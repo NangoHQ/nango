@@ -31,6 +31,7 @@
     "compose-middleware": "^5.0.1",
     "connect-session-knex": "^1.6.0",
     "cookie-parser": "^1.4.3",
+    "cors": "^2.8.5",
     "ejs": "^3.0.2",
     "express": "^4.16.3",
     "express-session": "^1.15.6",
