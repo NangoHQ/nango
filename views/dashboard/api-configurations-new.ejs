@@ -15,12 +15,12 @@
 
         <form method="POST">
           <fieldset>
-            <label for="setupKey"><%= req.data.integrationconfig.setupKeyLabel %></label>
+            <label for="setupKey"><%= req.data.integration.auth.setupKeyLabel %></label>
             <input id="setupKey" type="text" class="form-input" name="setupKey" required />
           </fieldset>
 
           <fieldset>
-            <label for="setupSecret"><%= req.data.integrationconfig.setupSecretLabel %></label>
+            <label for="setupSecret"><%= req.data.integration.auth.setupSecretLabel %></label>
             <input id="setupSecret" type="password" class="form-input" name="setupSecret" required />
           </fieldset>
 
