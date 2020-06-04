@@ -11,7 +11,7 @@
     <tbody>
       <% req.data.authentications.forEach(function(auth){ %>
       <tr
-        data-item-integration="<%= req.data.integrationid %>"
+        data-item-integration="<%= req.data.integration.id %>"
         data-item-type="authentication"
         data-item-id="<%= auth.auth_id %>"
       >
