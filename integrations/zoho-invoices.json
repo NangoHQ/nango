@@ -11,7 +11,7 @@
   "request": {
     "headers": {
       "Accept": "application/json",
-      "User-Agent": "Bearer.sh",
+      "User-Agent": "Pizzly",
       "Authorization": "Zoho-oauthtoken ${auth.accessToken}"
     },
     "baseURL": "https://invoice.zoho.com/api/v3/"

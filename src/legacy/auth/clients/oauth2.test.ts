@@ -66,7 +66,7 @@ const responseHeaders = { useful_header: 'abc' }
 
 const commonHeaders = {
   Accept: 'application/json',
-  'User-Agent': 'Bearer'
+  'User-Agent': 'Pizzly'
 }
 
 // mocked(inspectAccessToken).mockResolvedValue(undefined)

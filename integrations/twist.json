@@ -11,7 +11,7 @@
     "params": {},
     "headers": {
       "Accept": "application/json",
-      "User-Agent": "Bearer.sh",
+      "User-Agent": "Pizzly",
       "Authorization": "Bearer ${auth.accessToken}"
     },
     "baseURL": "https://api.twist.com/api/v3"

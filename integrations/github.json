@@ -13,7 +13,7 @@
     "headers": {
       "Accept": "application/vnd.github.v3+json",
       "Authorization": "token ${auth.accessToken}",
-      "User-Agent": "Bearer.sh"
+      "User-Agent": "Pizzly"
     }
   }
 }

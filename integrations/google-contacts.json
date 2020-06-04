@@ -16,7 +16,7 @@
     "headers": {
       "Accept": "application/json",
       "Authorization": "Bearer ${auth.accessToken}",
-      "User-Agent": "Bearer.sh",
+      "User-Agent": "Pizzly",
       "GData-Version": "3.0"
     }
   }

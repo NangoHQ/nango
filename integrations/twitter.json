@@ -11,6 +11,6 @@
   },
   "request": {
     "baseURL": "https://api.twitter.com/1.1/",
-    "headers": { "Accept": "application/json", "Authorization": "OAuth ${auth.oauth1}", "User-Agent": "Bearer.sh" }
+    "headers": { "Accept": "application/json", "Authorization": "OAuth ${auth.oauth1}", "User-Agent": "Pizzly" }
   }
 }

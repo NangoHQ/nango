@@ -17,7 +17,7 @@
       "Accept": "application/json",
       "Authorization": "Bearer ${auth.accessToken}",
       "Content-Type": "application/json",
-      "User-Agent": "Bearer.sh"
+      "User-Agent": "Pizzly"
     }
   }
 }

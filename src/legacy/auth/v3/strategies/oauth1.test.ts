@@ -50,7 +50,7 @@ describe('authenticate', () => {
     nock('https://example.com')
       .post('/requestToken', requestBody, {
         reqheaders: {
-          'User-Agent': 'Bearer',
+          'User-Agent': 'Pizzly',
           Authorization: new RegExp(
             'OAuth oauth_callback="https%3A%2F%2Fexample\\.com%2Fv2%2Fauth%2Fcallback",' +
               'oauth_consumer_key="test-consumer-key",oauth_nonce="w+",' +
@@ -111,7 +111,7 @@ describe('authenticate', () => {
     const mockAccessTokenReq = () =>
       nock('https://example.com').post('/accessToken', '', {
         reqheaders: {
-          'User-Agent': 'Bearer',
+          'User-Agent': 'Pizzly',
           Authorization: new RegExp(
             'OAuth oauth_consumer_key ="test-consumer-key",oauth_nonce="w+",' +
               'oauth_signature_method="PLAINTEXT",oauth_timestamp="d+",' +

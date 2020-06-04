@@ -12,7 +12,7 @@
   },
   "request": {
     "baseURL": "https://api.pinterest.com/v1/",
-    "headers": { "Accept": "application/json", "User-Agent": "Bearer.sh" },
+    "headers": { "Accept": "application/json", "User-Agent": "Pizzly" },
     "params": { "access_token": "${auth.accessToken}" }
   }
 }

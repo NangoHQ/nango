@@ -12,7 +12,7 @@
   },
   "request": {
     "baseURL": "https://todoist.com/api/v8/",
-    "headers": { "Accept": "application/json", "User-Agent": "Bearer.sh" },
+    "headers": { "Accept": "application/json", "User-Agent": "Pizzly" },
     "params": { "token": "${auth.accessToken}" }
   }
 }

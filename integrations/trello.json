@@ -11,7 +11,7 @@
   },
   "request": {
     "baseURL": "https://api.trello.com/1/",
-    "headers": { "Accept": "application/json", "User-Agent": "Bearer.sh" },
+    "headers": { "Accept": "application/json", "User-Agent": "Pizzly" },
     "params": { "key": "${auth.consumerKey}", "token": "${auth.accessToken}" }
   }
 }
