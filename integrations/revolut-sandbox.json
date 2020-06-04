@@ -1,9 +1,8 @@
 {
   "name": "Revolut (sandbox)",
   "image": "http://logo.clearbit.com/revolut.com",
-  "config": {
+  "auth": {
     "authType": "OAUTH2",
-    "config": { "scope": ["READ"] },
     "tokenParams": { "response_type": "code" },
     "authorizationParams": {},
     "authorizationURL": "https://sandbox-business.revolut.com/app-confirm",
@@ -13,7 +12,7 @@
     "params": {},
     "headers": {
       "Accept": "application/json",
-      "User-Agent": "Bearer.sh",
+      "User-Agent": "Pizzly",
       "Authorization": "Bearer ${auth.accessToken}"
     },
     "baseURL": "https://sandbox-b2b.revolut.com/api/1.0/"

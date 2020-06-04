@@ -1,10 +1,9 @@
 {
   "name": "Zoho Books",
-  "config": {
+  "auth": {
     "authType": "OAUTH2",
-    "config": {
-      "response_type": "code",
-      "scope": ["ZohoBooks.contacts.READ"]
+    "auth": {
+      "response_type": "code"
     },
     "tokenParams": { "grant_type": "authorization_code" },
     "authorizationParams": { "access_type": "offline", "prompt": "consent" },
@@ -14,7 +13,7 @@
   "request": {
     "headers": {
       "Accept": "application/json",
-      "User-Agent": "Bearer.sh",
+      "User-Agent": "Pizzly",
       "Authorization": "Zoho-oauthtoken ${auth.accessToken}"
     },
     "baseURL": "https://books.zoho.com/api/v3/"

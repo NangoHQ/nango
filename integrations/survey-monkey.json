@@ -1,24 +1,21 @@
 {
   "name": "Survey Monkey",
-  "config": {
+  "auth": {
     "authorizationURL": "https://api.surveymonkey.com/oauth/authorize",
     "tokenURL": "https://api.surveymonkey.com/oauth/token",
     "authType": "OAUTH2",
     "tokenParams": { "grant_type": "authorization_code" },
     "authorizationParams": {},
-    "config": {
-      "response_type": "code",
-      "scope": ["users_read"]
-    },
-    "provider": "Survey Monkey",
-    "hint": "You will find your Survey Monkey credentials here: https://developer.surveymonkey.com/apps/"
+    "auth": {
+      "response_type": "code"
+    }
   },
   "request": {
-    "baseURL": "https://api.surveymonkey.com/v3",
+    "baseURL": "https://api.surveymonkey.com/v3/",
     "headers": {
       "Accept": "application/json",
       "Authorization": "Bearer ${auth.accessToken}",
-      "User-Agent": "Bearer.sh"
+      "User-Agent": "Pizzly"
     }
   }
 }

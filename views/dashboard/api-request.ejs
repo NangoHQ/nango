@@ -2,7 +2,7 @@
 
 <!DOCTYPE html>
 <html>
-  <%- include('layout-head', { title: `Request - ${req.data.api.name} API`}) %>
+  <%- include('layout-head', { title: `Request - ${req.data.integration.name} API`}) %>
 
   <body>
     <!-- Header -->
@@ -24,7 +24,7 @@
 
           <fieldset>
             <label>Base URL</label>
-            <input value="<%= req.data.api.request.baseURL %>" disabled="disabled" class="form-input" />
+            <input value="<%= req.data.integration.request.baseURL %>" disabled="disabled" class="form-input" />
             <p class="form-hint">The base URL has been inferred from the API configuration file.</p>
           </fieldset>
 

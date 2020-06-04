@@ -1,7 +1,7 @@
 <% const base = `/dashboard/${req.params.api}`; %>
 <!DOCTYPE html>
 <html>
-  <%- include('layout-head', { title: `Edit configuration - ${req.data.api.name} API`}) %>
+  <%- include('layout-head', { title: `Edit configuration - ${req.data.integration.name} API`}) %>
 
   <body>
     <!-- Header -->
@@ -15,7 +15,7 @@
 
         <form method="POST">
           <fieldset>
-            <label for="setupKey"><%= req.data.api.config.setupKeyLabel %></label>
+            <label for="setupKey"><%= req.data.integration.auth.setupKeyLabel %></label>
             <input
               id="setupKey"
               type="text"
@@ -27,7 +27,7 @@
           </fieldset>
 
           <fieldset>
-            <label for="setupSecret"><%= req.data.api.config.setupSecretLabel %></label>
+            <label for="setupSecret"><%= req.data.integration.auth.setupSecretLabel %></label>
             <input
               id="setupSecret"
               type="password"

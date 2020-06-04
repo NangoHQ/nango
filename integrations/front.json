@@ -1,9 +1,8 @@
 {
   "name": "Front",
   "image": "https://logo.clearbit.com/frontapp.com",
-  "config": {
+  "auth": {
     "authType": "OAUTH2",
-    "config": { "scope": [] },
     "tokenParams": { "grant_type": "authorization_code" },
     "authorizationParams": { "response_type": "code" },
     "authorizationURL": "https://app.frontapp.com/oauth/authorize",
@@ -14,8 +13,8 @@
     "headers": {
       "Accept": "application/json",
       "Authorization": "Bearer ${auth.accessToken}",
-      "User-Agent": "Bearer.sh"
+      "User-Agent": "Pizzly"
     },
-    "baseURL": "https://api2.frontapp.com"
+    "baseURL": "https://api2.frontapp.com/"
   }
 }

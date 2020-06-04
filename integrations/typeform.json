@@ -1,24 +1,21 @@
 {
   "name": "Typeform",
-  "config": {
+  "auth": {
     "authorizationURL": "https://api.typeform.com/oauth/authorize",
     "tokenURL": "https://api.typeform.com/oauth/token",
     "authType": "OAUTH2",
     "tokenParams": { "grant_type": "authorization_code" },
     "authorizationParams": {},
-    "config": {
-      "scope": ["forms:read"],
+    "auth": {
       "response_type": "code"
-    },
-    "provider": "Typeform",
-    "hint": "You will find your Typeform credentials here: https://admin.typeform.com/account#/section/apps"
+    }
   },
   "request": {
     "baseURL": "https://api.typeform.com/",
     "headers": {
       "Accept": "application/json",
       "Authorization": "Bearer ${auth.accessToken}",
-      "User-Agent": "Bearer.sh"
+      "User-Agent": "Pizzly"
     }
   }
 }

@@ -1,13 +1,12 @@
 {
   "name": "Slack",
-  "config": {
+  "auth": {
     "authorizationURL": "https://slack.com/oauth/authorize",
     "tokenURL": "https://slack.com/api/oauth.access",
     "authType": "OAUTH2",
     "authorizationParams": { "access_type": "offline", "consent": true },
-    "config": {
-      "accessType": "offline",
-      "scope": ["reminders:write"]
+    "auth": {
+      "accessType": "offline"
     }
   },
   "request": {
@@ -15,7 +14,7 @@
     "headers": {
       "Accept": "application/json",
       "Authorization": "Bearer ${auth.accessToken}",
-      "User-Agent": "Bearer.sh"
+      "User-Agent": "Pizzly"
     }
   }
 }

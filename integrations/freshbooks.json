@@ -1,12 +1,9 @@
 {
   "name": "Freshbooks",
-  "config": {
+  "auth": {
     "authorizationURL": "https://my.freshbooks.com/service/auth/oauth/authorize",
     "tokenURL": "https://api.freshbooks.com/auth/oauth/token",
-    "authType": "OAUTH2",
-    "config": { "scope": [] },
-    "provider": "Freshbooks",
-    "hint": "You will find your Freshbooks credentials here: https://my.freshbooks.com/#/developer"
+    "authType": "OAUTH2"
   },
   "request": {
     "baseURL": "https://api.freshbooks.com/",
@@ -14,7 +11,7 @@
       "Accept": "application/json",
       "Authorization": "Bearer ${auth.accessToken}",
       "Api-Version": "alpha",
-      "User-Agent": "Bearer.sh"
+      "User-Agent": "Pizzly"
     }
   }
 }

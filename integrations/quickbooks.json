@@ -1,25 +1,22 @@
 {
   "name": "Quickbooks",
-  "config": {
+  "auth": {
     "authorizationURL": "https://appcenter.intuit.com/connect/oauth2",
     "tokenURL": "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer",
     "authType": "OAUTH2",
     "tokenParams": { "grant_type": "authorization_code" },
     "authorizationParams": {},
-    "config": {
+    "auth": {
       "response_type": "code",
-      "scope": ["com.intuit.quickbooks.accounting", "com.intuit.quickbooks.payment", "openid"],
       "state": "test"
-    },
-    "provider": "Quickbooks",
-    "hint": "You will find your Quickbooks credentials here: https://developer.intuit.com/v2/ui#/app/dashboard"
+    }
   },
   "request": {
-    "baseURL": "https://quickbooks.api.intuit.com/v3/company/${auth.idTokenJwt.realmid}",
+    "baseURL": "https://quickbooks.api.intuit.com/v3/company/${auth.idTokenJwt.realmid}/",
     "headers": {
       "Accept": "application/json",
       "Authorization": "Bearer ${auth.accessToken}",
-      "User-Agent": "Bearer.sh"
+      "User-Agent": "Pizzly"
     }
   }
 }

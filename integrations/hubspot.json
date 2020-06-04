@@ -1,24 +1,21 @@
 {
   "name": "Hubspot",
-  "config": {
+  "auth": {
     "authorizationURL": "https://app.hubspot.com/oauth/authorize",
     "tokenURL": "https://api.hubapi.com/oauth/v1/token",
     "authType": "OAUTH2",
     "tokenParams": { "grant_type": "authorization_code" },
     "authorizationParams": {},
-    "config": {
-      "response_type": "code",
-      "scope": ["contacts"]
-    },
-    "provider": "Hubspot",
-    "hint": "You will find your Hubspot credentials here: https://app.hubspot.com"
+    "auth": {
+      "response_type": "code"
+    }
   },
   "request": {
-    "baseURL": "https://api.hubapi.com",
+    "baseURL": "https://api.hubapi.com/",
     "headers": {
       "Accept": "application/json",
       "Authorization": "Bearer ${auth.accessToken}",
-      "User-Agent": "Bearer.sh"
+      "User-Agent": "Pizzly"
     }
   }
 }

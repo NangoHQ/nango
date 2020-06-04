@@ -127,16 +127,16 @@ Here's an example with the GitHub configuration file ([`/integration/github.json
 ```json
 {
   "name": "GitHub",
-  "config": {
+  "auth": {
     "authorizationURL": "https://github.com/login/oauth/authorize",
     "tokenURL": "https://github.com/login/oauth/access_token",
     "authType": "OAUTH2",
     "tokenParams": {},
     "authorizationParams": {},
-    "config": { "accessType": "offline", "scope": [] }
+    "auth": { "accessType": "offline" }
   },
   "request": {
-    "baseURL": "https://api.github.com",
+    "baseURL": "https://api.github.com/",
     "headers": {
       "Accept": "application/vnd.github.v3+json",
       "Authorization": "token ${auth.accessToken}",

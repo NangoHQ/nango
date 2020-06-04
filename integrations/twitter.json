@@ -1,17 +1,16 @@
 {
   "name": "Twitter",
-  "config": {
+  "auth": {
     "requestTokenURL": "https://api.twitter.com/oauth/request_token",
     "accessTokenURL": "https://api.twitter.com/oauth/access_token",
     "userAuthorizationURL": "https://api.twitter.com/oauth/authorize",
     "authType": "OAUTH1",
     "signatureMethod": "HMAC-SHA1",
     "tokenParams": {},
-    "authorizationParams": {},
-    "config": { "scope": ["read"] }
+    "authorizationParams": {}
   },
   "request": {
     "baseURL": "https://api.twitter.com/1.1/",
-    "headers": { "Accept": "application/json", "Authorization": "OAuth ${auth.oauth1}", "User-Agent": "Bearer.sh" }
+    "headers": { "Accept": "application/json", "Authorization": "OAuth ${auth.oauth1}", "User-Agent": "Pizzly" }
   }
 }

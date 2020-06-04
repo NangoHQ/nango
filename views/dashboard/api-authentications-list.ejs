@@ -4,7 +4,6 @@
       <tr>
         <th>Auth ID</th>
         <th>Setup ID</th>
-        <th>Scopes</th>
         <th class="col-date">Last modified</th>
         <th class="col-actions"></th>
       </tr>
@@ -12,13 +11,12 @@
     <tbody>
       <% req.data.authentications.forEach(function(auth){ %>
       <tr
-        data-item-integration="<%= req.data.api.id %>"
+        data-item-integration="<%= req.data.integrationid %>"
         data-item-type="authentication"
         data-item-id="<%= auth.auth_id %>"
       >
         <td><%= auth.auth_id %></td>
         <td><%= auth.setup_id %></td>
-        <td></td>
         <td class="col-date">
           <%= new Date(auth.updated_at).toLocaleString('en-US', req.ejs.datetimeOptions) %>
         </td>

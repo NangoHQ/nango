@@ -1,8 +1,7 @@
 {
   "name": "Zendesk Chat",
-  "config": {
+  "auth": {
     "authType": "OAUTH2",
-    "config": { "scope": ["read", "write", "chat"] },
     "tokenParams": {},
     "authorizationParams": {
       "response_type": "token",
@@ -15,7 +14,7 @@
     "params": {},
     "headers": {
       "Accept": "application/json",
-      "User-Agent": "Bearer.sh",
+      "User-Agent": "Pizzly",
       "Authorization": "Bearer ${auth.accessToken}"
     },
     "baseURL": "https://www.zopim.com/api/v2/"

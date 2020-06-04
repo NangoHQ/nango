@@ -1,19 +1,16 @@
 {
   "name": "Docusign",
-  "config": {
+  "auth": {
     "authorizationURL": "https://account-d.docusign.com/oauth/auth",
     "tokenURL": "https://account-d.docusign.com/oauth/token",
-    "authType": "OAUTH2",
-    "config": { "scope": ["signature", "extended"] },
-    "provider": "DocuSign",
-    "hint": "You will find your DocuSign credentials here: https://admindemo.docusign.com/api-integrator-key"
+    "authType": "OAUTH2"
   },
   "request": {
-    "baseURL": "https://${headers.account_environment}.docusign.net/restapi/v2.1/accounts/${headers.account_id}",
+    "baseURL": "https://${headers.account_environment}.docusign.net/restapi/v2.1/accounts/${headers.account_id}/",
     "headers": {
       "Accept": "application/json",
       "Authorization": "Bearer ${auth.accessToken}",
-      "User-Agent": "Bearer.sh"
+      "User-Agent": "Pizzly"
     }
   }
 }

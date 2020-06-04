@@ -1,21 +1,18 @@
 {
   "name": "Zoho CRM",
-  "config": {
+  "auth": {
     "authorizationURL": "https://accounts.zoho.com/oauth/v2/auth",
     "tokenURL": "https://accounts.zoho.com/oauth/v2/token",
     "authType": "OAUTH2",
     "tokenParams": {},
-    "authorizationParams": { "access_type": "offline", "prompt": "consent" },
-    "config": { "scope": ["ZohoCRM.users.ALL"] },
-    "provider": "Zoho CRM",
-    "hint": "You will find your Zoho CRM credentials here: https://accounts.zoho.com/developerconsole"
+    "authorizationParams": { "access_type": "offline", "prompt": "consent" }
   },
   "request": {
     "baseURL": "https://www.zohoapis.com/crm/v2",
     "headers": {
       "Accept": "application/json",
       "Authorization": "Bearer ${auth.accessToken}",
-      "User-Agent": "Bearer.sh"
+      "User-Agent": "Pizzly"
     }
   }
 }

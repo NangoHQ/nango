@@ -1,24 +1,21 @@
 {
   "name": "Linkedin",
-  "config": {
+  "auth": {
     "authorizationURL": "https://www.linkedin.com/oauth/v2/authorization",
     "tokenURL": "https://www.linkedin.com/oauth/v2/accessToken",
     "authType": "OAUTH2",
     "tokenParams": { "grant_type": "authorization_code" },
     "authorizationParams": {},
-    "config": {
-      "response_type": "code",
-      "scope": ["r_liteprofile"]
-    },
-    "provider": "Linkedin",
-    "hint": "You will find your LinkedIn credentials here: https://www.linkedin.com/developers/apps"
+    "auth": {
+      "response_type": "code"
+    }
   },
   "request": {
-    "baseURL": "https://api.linkedin.com/v2",
+    "baseURL": "https://api.linkedin.com/v2/",
     "headers": {
       "Accept": "application/json",
       "Authorization": "Bearer ${auth.accessToken}",
-      "User-Agent": "Bearer.sh"
+      "User-Agent": "Pizzly"
     }
   }
 }

@@ -1,21 +1,18 @@
 {
   "name": "Pinterest",
-  "config": {
+  "auth": {
     "authorizationURL": " https://api.pinterest.com/oauth/",
     "tokenURL": "https://api.pinterest.com/v1/oauth/token",
     "authType": "OAUTH2",
     "tokenParams": { "grant_type": "authorization_code" },
     "authorizationParams": {},
-    "config": {
-      "response_type": "code",
-      "scope": ["read_public"]
-    },
-    "provider": "Pinterest",
-    "hint": "You will find your Pinterest credentials here: https://developers.pinterest.com/apps/5032758929927488034/"
+    "auth": {
+      "response_type": "code"
+    }
   },
   "request": {
     "baseURL": "https://api.pinterest.com/v1/",
-    "headers": { "Accept": "application/json", "User-Agent": "Bearer.sh" },
+    "headers": { "Accept": "application/json", "User-Agent": "Pizzly" },
     "params": { "access_token": "${auth.accessToken}" }
   }
 }

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-  <%- include('layout-head', { title: `Authentications - ${req.data.api.name} API` }) %>
+  <%- include('layout-head', { title: `Authentications - ${req.data.integration.name} API` }) %>
 
   <body>
     <!-- Header -->
@@ -12,7 +12,7 @@
           <h2>Authentications</h2>
           <aside>
             <a href="<%= req.ejs.base_url %>/authentications/connect" class="button button-primary"
-              >Connect to <%= req.data.api.name %></a
+              >Connect to <%= req.data.integration.name %></a
             >
           </aside>
         </header>

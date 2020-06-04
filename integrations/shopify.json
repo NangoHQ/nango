@@ -1,17 +1,16 @@
 {
   "name": "Shopify",
-  "config": {
+  "auth": {
     "authorizationURL": "https://${connectParams.shop}.myshopify.com/admin/oauth/authorize",
     "authType": "OAUTH2",
-    "config": { "scope": ["read_products"] },
     "tokenURL": "https://${connectParams.shop}.myshopify.com/admin/oauth/access_token"
   },
   "request": {
-    "baseURL": "https://${connectParams.shop}.myshopify.com/admin/api",
+    "baseURL": "https://${connectParams.shop}.myshopify.com/admin/api/",
     "headers": {
       "Accept": "application/json",
       "Authorization": "Bearer ${auth.accessToken}",
-      "User-Agent": "Bearer.sh"
+      "User-Agent": "Pizzly"
     },
     "params": {}
   }

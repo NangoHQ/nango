@@ -1,21 +1,19 @@
 {
   "name": "Eventbrite",
-  "config": {
+  "auth": {
     "authorizationURL": "https://www.eventbrite.com/oauth/authorize",
     "tokenURL": "https://www.eventbrite.com/oauth/token",
     "authType": "OAUTH2",
     "tokenParams": { "grant_type": "authorization_code" },
     "authorizationParams": {},
-    "config": { "response_type": "code", "scope": [] },
-    "provider": "Eventbrite",
-    "hint": "You will find your Eventbrite credentials here: https://www.eventbrite.com/account-settings/apps"
+    "auth": { "response_type": "code" }
   },
   "request": {
     "baseURL": "https://www.eventbriteapi.com/v3/",
     "headers": {
       "Accept": "application/json",
       "Authorization": "Bearer ${auth.accessToken}",
-      "User-Agent": "Bearer.sh"
+      "User-Agent": "Pizzly"
     }
   }
 }

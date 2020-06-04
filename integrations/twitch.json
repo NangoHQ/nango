@@ -1,9 +1,8 @@
 {
   "name": "Twitch",
-  "config": {
+  "auth": {
     "authType": "OAUTH2",
     "bodyFormat": "form",
-    "config": { "scope": ["user:read:email"] },
     "tokenParams": { "grant_type": "authorization_code" },
     "authorizationMethod": "body",
     "authorizationParams": { "responseType": "code" },
@@ -14,7 +13,7 @@
     "params": {},
     "headers": {
       "Accept": "application/json",
-      "User-Agent": "Bearer.sh",
+      "User-Agent": "Pizzly",
       "Authorization": "Bearer ${auth.accessToken}"
     },
     "baseURL": "https://api.twitch.tv/helix/"

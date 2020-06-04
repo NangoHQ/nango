@@ -272,7 +272,7 @@ form fieldset .form-input,
 }
 
 .form-json .json-formatter-string {
-  white-space: pre-wrap;
+  white-space: pre-wrap !important;
 }
 
 form fieldset .form-hint {

@@ -1,8 +1,7 @@
 {
   "name": "Cronofy",
-  "config": {
+  "auth": {
     "authType": "OAUTH2",
-    "config": { "scope": ["read_write", "free_busy"] },
     "tokenParams": { "grant_type": "authorization_code" },
     "authorizationParams": { "response_type": "code" },
     "authorizationURL": "https://app.cronofy.com/oauth/authorize",
@@ -12,7 +11,7 @@
     "params": {},
     "headers": {
       "Accept": "application/json",
-      "User-Agent": "Bearer.sh",
+      "User-Agent": "Pizzly",
       "Authorization": "Bearer ${auth.accessToken}"
     },
     "baseURL": "https://api.cronofy.com/v1/"
