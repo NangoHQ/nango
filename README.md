@@ -122,7 +122,7 @@ Follow a step-by-step guide on [how to use Pizzly as an OAuth manager](https://g
 
 More than 50 APIs are preconfigured to work out-of-the-box. Including: GitHub, Salesforce, Facebook, Google Sheets, Gmail, LinkedIn, Typeform, Zoom, [and more...](/integrations) Each API consists of a JSON configuration file, stored within the `/integrations` directory.
 
-Here's an example with the GitHub configuration file ([`/integration/github.json`](integrations/github.json)):
+Here's an example with the GitHub configuration file ([`/integrations/github.json`](integrations/github.json)):
 
 ```json
 {
