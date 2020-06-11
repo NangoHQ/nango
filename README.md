@@ -46,7 +46,7 @@ You can use Pizzly as a **complete API proxy**, it means that each API request w
 
 ![Diagram of Pizzly used in the proxy service mode](views/assets/img/docs/pizzly-diagram-api-proxy-mode.jpg?raw=true)
 
-Pizzly is also available as a standalone **OAuth manager**, helping you retrieve the initial token, but you'll have to refresh it when needed _(read more with the [Getting Started](./wiki/Getting-started))_.
+Pizzly is also available as a standalone **OAuth manager**, helping you retrieve the initial token, but you'll have to refresh it when needed _(read more with the [Getting Started](/Bearer/Pizzly/wiki/Getting-started))_.
 
 ## Key Features
 
@@ -61,11 +61,11 @@ Pizzly is also available as a standalone **OAuth manager**, helping you retrieve
 
 ## Installation
 
-At the heart of Pizzly is a Node.js application that uses PostgreSQL as a database. It is straightforward to install on Heroku using the **[deploy to Heroku]https://heroku.com/deploy?template=https://github.com/Bearer/Pizzly)** button, but you can install it anywhere.
+At the heart of Pizzly is a Node.js application that uses PostgreSQL as a database. It is straightforward to install on Heroku using the **[deploy to Heroku](https://heroku.com/deploy?template=https://github.com/Bearer/Pizzly)** button, but you can install it anywhere.
 
 ### Manual Install
 
-To run Pizzly on your machine, follow these steps (or [follow our step-by-step guides](https://github.com/Bearer/Pizzly/wiki/Getting-started)):
+To run Pizzly on your machine, follow these steps (or [follow our step-by-step guides](/Bearer/Pizzly/wiki/Getting-started)):
 
 ```bash
 git clone https://github.com/Bearer/Pizzly
@@ -81,7 +81,7 @@ Then open the dashboard in your browser at:
 http://localhost:8080/
 ```
 
-You will need Node.js and PostgreSQL installed first. Read our [getting started](https://github.com/Bearer/Pizzly/wiki/Getting-started) to follow a step-by-step installation guide.
+You will need Node.js and PostgreSQL installed first. Read our [getting started](/Bearer/Pizzly/wiki/Getting-started) to follow a step-by-step installation guide.
 
 ### PaaS Deployment
 
@@ -99,7 +99,7 @@ Follow the links for an automated deployment so you can test it. Once deployed, 
 
 ### Using Pizzly as a complete API proxy
 
-Follow this step-by-step guide on [how to use Pizzly as a proxy service](https://github.com/Bearer/Pizzly/wiki/TODO) and learn how to:
+Follow this step-by-step guide on [how to use Pizzly as a proxy service](/Bearer/Pizzly/wiki/TODO) and learn how to:
 
 1. Save a configuration for an API (with clientId/clientSecret and scopes)
 2. Initiate the OAuth dance to retrieve a token
@@ -108,7 +108,7 @@ Follow this step-by-step guide on [how to use Pizzly as a proxy service](https:/
 
 ### Using Pizzly as an OAuth manager
 
-Follow a step-by-step guide on [how to use Pizzly as an OAuth manager](https://github.com/Bearer/Pizzly/wiki/TODO) and learn how to:
+Follow a step-by-step guide on [how to use Pizzly as an OAuth manager](/Bearer/Pizzly/wiki/TODO) and learn how to:
 
 1. Save a configuration for an API (with clientId/clientSecret and scopes)
 2. Initiate the OAuth dance to retrieve a token
@@ -120,11 +120,11 @@ Follow a step-by-step guide on [how to use Pizzly as an OAuth manager](https://g
 
 Pizzly works as a self-hosted instance that provides different services including:
 
-- [an auth manager](./wiki/Reference-:-Auth);
-- [a proxy service](./wiki/Reference-:-Proxy);
-- [a developer's dashboard](./wiki/Reference-:-Dashboard);
-- [an API](./wiki/Reference-:-API);
-- and [a JavaScript library](./tree/master/src/clients/javascript/) to interact with each service from your frontend;
+- [an auth manager](/Bearer/Pizzly/wiki/Reference-:-Auth);
+- [a proxy service](/Bearer/Pizzly/wiki/Reference-:-Proxy);
+- [a developer's dashboard](/Bearer/Pizzly/wiki/Reference-:-Dashboard);
+- [an API](/Bearer/Pizzly/wiki/Reference-:-API);
+- and [a JavaScript library](/Bearer/Pizzly/tree/master/src/clients/javascript/) to interact with each service from your frontend;
 
 ## Supported APIs
 
@@ -132,7 +132,7 @@ Pizzly works as a self-hosted instance that provides different services includin
 
 More than 50 APIs are preconfigured to work out-of-the-box. Including: GitHub, Salesforce, Facebook, Google Sheets, Gmail, LinkedIn, Typeform, Zoom, [and more...](/integrations) Each API consists of a JSON configuration file, stored within the `/integrations` directory.
 
-Here's an example with the GitHub configuration file ([`/integrations/github.json`](integrations/github.json)):
+Here's an example with the GitHub configuration file ([`/integrations/github.json`](/integrations/github.json)):
 
 ```json
 {
