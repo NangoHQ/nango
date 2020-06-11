@@ -127,9 +127,17 @@ Pizzly works as a self-hosted instance that provides different services includin
 
 <!-- TODO: Image from Arthur -->
 
-More than 50 APIs are preconfigured to work out-of-the-box. Including: GitHub, Salesforce, Facebook, Google Sheets, Gmail, LinkedIn, Typeform, Zoom, [and more...](/integrations) Each API consists of a JSON configuration file, stored within the `/integrations` directory.
+More than 50 APIs are preconfigured to work out-of-the-box. Including:
 
-Here's an example with the GitHub configuration file ([`/integrations/github.json`](/integrations/github.json)):
+- CRM: Front, Hubspot, Salesforce, etc.
+- Developer tools: BitBucket, GitLab, GitHub, etc.
+- Productivity: Asana, Google Drive, Google Sheets, Jira, Trello, etc.
+- Finance: Xero, Sellsy, Zoho Books, etc.
+- Social: Facebook, LinkedIn, Reddit, etc.
+- Communication: Gmail, Microsoft Teams, Slack, Zoom;
+- [and more...](https://github.com/Bearer/Pizzly/wiki/Supported-APIs)
+
+Each API consists of a JSON configuration file, stored within the `/integrations` directory. Here's an example with the GitHub configuration file ([`/integrations/github.json`](/integrations/github.json)):
 
 ```json
 {
@@ -153,7 +161,7 @@ Here's an example with the GitHub configuration file ([`/integrations/github.jso
 }
 ```
 
-To add a new API, create a new configuration file and add it to the `/integrations` folder of your Pizzly's instance. And if you feel like sharing, create a PR so that every developers can use it as well!
+And adding new APIs is very easy. Just create a new configuration file and add it to the `/integrations` folder of your Pizzly's instance. If you feel like sharing, you can even create a PR so that other developers will b able to use it as well!
 
 ## License
 
