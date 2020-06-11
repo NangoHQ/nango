@@ -131,7 +131,7 @@ More than 50 APIs are preconfigured to work out-of-the-box. Including:
 
 - **Communication**: Gmail, Microsoft Teams, Slack, Zoom;
 - **CRM**: Front, Hubspot, Salesforce, etc.
-- **Developer tools**: BitBucket, GitLab, GitHub, etc.
+- **Developer tools**: BitBucket, GitHub, GitLab, etc.
 - **Finance**: Xero, Sellsy, Zoho Books, etc.
 - **Productivity**: Asana, Google Drive, Google Sheets, Jira, Trello, etc.
 - **Social**: Facebook, LinkedIn, Reddit, etc.
@@ -161,7 +161,7 @@ Each API consists of a JSON configuration file, stored within the `/integrations
 }
 ```
 
-And adding new APIs is very easy. Just create a new configuration file and add it to the `/integrations` folder of your Pizzly's instance. If you feel like sharing, you can even create a PR so that other developers will b able to use it as well!
+And adding new APIs is straightforward. Just create a new configuration file within the `/integrations` folder of your Pizzly's instance. If you feel like sharing, you can even create a PR so that other developers will be able to use it as well!
 
 ## License
 
