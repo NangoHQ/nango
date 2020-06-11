@@ -46,13 +46,7 @@ You can use Pizzly as a **complete API proxy**, it means that each API request w
 
 ![Diagram of Pizzly used in the proxy service mode](views/assets/img/docs/pizzly-diagram-api-proxy-mode.jpg?raw=true)
 
-Pizzly is also available as a standalone **OAuth manager**, helping you retrieve the initial token, but you'll have to refresh it when needed. _(see Getting Started below)_.
-
-![Diagram of Pizzly used in the token manager mode](views/assets/img/docs/pizzly-diagram-token-manager-mode.jpg?raw=true)
-
-### Understanding the **AuthId** concept
-
-It's important to understand the AuthId concept behind Pizzly. The AuthId is an identifier masking OAuth tokens. Since most OAuth tokens need to be refreshed, and therefore will change, the AuthId serves as an abstraction layer to the identity itself. To say it differently, an AuthId represents an identity that will have many tokens overtime.
+Pizzly is also available as a standalone **OAuth manager**, helping you retrieve the initial token, but you'll have to refresh it when needed _(read more with the [Getting Started](./wiki/Getting-started))_.
 
 ## Key Features
 
@@ -67,7 +61,7 @@ It's important to understand the AuthId concept behind Pizzly. The AuthId is an 
 
 ## Installation
 
-At the heart of Pizzly is a Node.js application that uses PostgreSQL as a database. It is straightforward to install on Heroku using the **Deploy to Heroku** button, but you can install it anywhere.
+At the heart of Pizzly is a Node.js application that uses PostgreSQL as a database. It is straightforward to install on Heroku using the **[deploy to Heroku]https://heroku.com/deploy?template=https://github.com/Bearer/Pizzly)** button, but you can install it anywhere.
 
 ### Manual Install
 
@@ -122,7 +116,19 @@ Follow a step-by-step guide on [how to use Pizzly as an OAuth manager](https://g
 
 > If you're looking to monitor, track performance, detect anomalies to your API requests, have a look to [Bearer.sh](https://bearer.sh/?ref=pizzly), the monitoring agent. If you're using Pizzly in API proxy mode, it's as simple as adding your Bearer Developer Key to the environment variable `$BEARER_SECRET_KEY` - you can [get yours for free here 🚀](https://bearer.sh/?ref=pizzly)
 
+## Services
+
+Pizzly works as a self-hosted instance that provides different services including:
+
+- [an auth manager](./wiki/Reference-:-Auth);
+- [a proxy service](./wiki/Reference-:-Proxy);
+- [a developer's dashboard](./wiki/Reference-:-Dashboard);
+- [an API](./wiki/Reference-:-API);
+- and [a JavaScript library](./tree/master/src/clients/javascript/) to interact with each service from your frontend;
+
 ## Supported APIs
+
+<!-- TODO: Image from Arthur -->
 
 More than 50 APIs are preconfigured to work out-of-the-box. Including: GitHub, Salesforce, Facebook, Google Sheets, Gmail, LinkedIn, Typeform, Zoom, [and more...](/integrations) Each API consists of a JSON configuration file, stored within the `/integrations` directory.
 
@@ -150,7 +156,7 @@ Here's an example with the GitHub configuration file ([`/integrations/github.jso
 }
 ```
 
-To add a new API, create a new configuration file. Here's a step-by-step guide on [how to create a new configuration file](https://github.com/Bearer/Pizzly/wiki/TODO).
+To add a new API, create a new configuration file and add it to the `/integrations` folder of your Pizzly's instance. And if you feel like sharing, create a PR so that every developers can use it as well!
 
 ## License
 
