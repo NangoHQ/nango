@@ -129,13 +129,13 @@ Pizzly works as a self-hosted instance that provides different services includin
 
 More than 50 APIs are preconfigured to work out-of-the-box. Including:
 
-- CRM: Front, Hubspot, Salesforce, etc.
-- Developer tools: BitBucket, GitLab, GitHub, etc.
-- Productivity: Asana, Google Drive, Google Sheets, Jira, Trello, etc.
-- Finance: Xero, Sellsy, Zoho Books, etc.
-- Social: Facebook, LinkedIn, Reddit, etc.
-- Communication: Gmail, Microsoft Teams, Slack, Zoom;
-- [and more...](https://github.com/Bearer/Pizzly/wiki/Supported-APIs)
+- **Communication**: Gmail, Microsoft Teams, Slack, Zoom;
+- **CRM**: Front, Hubspot, Salesforce, etc.
+- **Developer tools**: BitBucket, GitLab, GitHub, etc.
+- **Finance**: Xero, Sellsy, Zoho Books, etc.
+- **Productivity**: Asana, Google Drive, Google Sheets, Jira, Trello, etc.
+- **Social**: Facebook, LinkedIn, Reddit, etc.
+- **[and more...](https://github.com/Bearer/Pizzly/wiki/Supported-APIs)**
 
 Each API consists of a JSON configuration file, stored within the `/integrations` directory. Here's an example with the GitHub configuration file ([`/integrations/github.json`](/integrations/github.json)):
 
