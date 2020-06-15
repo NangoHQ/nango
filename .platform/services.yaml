@@ -1,0 +1,3 @@
+dbpostgres:
+    type: postgresql:12
+    disk: 2048

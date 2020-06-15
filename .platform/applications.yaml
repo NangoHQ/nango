@@ -1,0 +1,31 @@
+- name: app
+  type: 'nodejs:12'
+  build:
+      flavor: none
+  relationships:
+      postgresdatabase: "dbpostgres:postgresql"
+  dependencies:
+    nodejs:
+        yarn: "*"
+  hooks:
+      build: yarn install
+      deploy: yarn db:setup
+  web:
+      commands:
+          start: yarn start
+  variables:
+      env:
+          DATABASE_URL: postgres://main:main@postgresdatabase.internal:5432/main
+          # Website administration password:
+          DASHBOARD_USER: admin
+          DASHBOARD_PASSWORD: changeme
+          # Secure requests to the API
+          SECRET_KEY: changeme
+          PUBLISHABLE_KEY: changeme
+          PROXY_USES_SECRET_KEY_ONLY: false
+          COOKIE_SECRET: changeme
+          # Optional  Bearer will monitor and shield the Pizzly instance from APIs failure. Learn more: https://www.bearer.sh/
+          #BEARER_SECRET_KEY: ""
+          # Uncomment to set the callback URL used for the OAuth dance.
+          # Otherwise, Pizzly will use the req.hostname.
+          #AUTH_CALLBACK_URL:
