@@ -1,0 +1,19 @@
+{
+  "name": "Platform.sh",
+  "auth": {
+    "authorizationURL": "https://accounts.platform.sh/oauth2/authorize",
+    "tokenURL": "https://accounts.platform.sh/oauth2/token",
+    "authType": "OAUTH2",
+    "tokenParams": { "grant_type": "authorization_code" },
+    "authorizationParams": {},
+    "auth": { "response_type": "code" }
+  },
+  "request": {
+    "baseURL": "/api.platform.sh/",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer ${auth.accessToken}",
+      "User-Agent": "Pizzly"
+    }
+  }
+}
