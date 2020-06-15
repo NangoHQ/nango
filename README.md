@@ -89,13 +89,17 @@ http://localhost:8080/
 
 You will need Node.js and PostgreSQL installed first. Read our [getting started](https://github.com/Bearer/Pizzly/wiki/Getting-started) to follow a step-by-step installation guide.
 
-### Heroku Install
+### PaaS Deployment
 
-Deploy it to Heroku and test it.
+Follow the links for an automated deployment so you can test it. Once deployed, go to the application and connect to an API.
+
+#### Heroku Install
 
 [![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/Bearer/Pizzly)
 
-Once deployed, go to the heroku application and connect to an API.
+#### Platform.sh Install
+
+[![Deploy with Platform.sh](https://platform.sh/images/deploy/deploy-button-lg-blue.svg)](https://console.platform.sh/projects/create-project/?template=https://github.com/Bearer/Pizzly&utm_campaign=deploy_on_platform?utm_medium=button&utm_source=affiliate_links&utm_content=https://github.com/Bearer/Pizzly)
 
 ## Getting Started
 
