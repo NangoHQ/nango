@@ -1,5 +1,6 @@
 {
   "name": "Platform.sh",
+  "image": "https://platform.sh/logos/redesign/Platformsh_logo_black.svg",
   "auth": {
     "authorizationURL": "https://accounts.platform.sh/oauth2/authorize",
     "tokenURL": "https://accounts.platform.sh/oauth2/token",
