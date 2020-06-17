@@ -1,0 +1,20 @@
+{
+  "name": "Platform.sh",
+  "image": "https://platform.sh/logos/redesign/Platformsh_logo_black.svg",
+  "auth": {
+    "authorizationURL": "https://auth.api.platform.sh/oauth2/authorize",
+    "tokenURL": "https://auth.api.platform.sh/oauth2/token",
+    "authType": "OAUTH2",
+    "tokenParams": { "grant_type": "authorization_code" },
+    "authorizationParams": {},
+    "auth": { "response_type": "code" }
+  },
+  "request": {
+    "baseURL": "https://api.platform.sh/",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer ${auth.accessToken}",
+      "User-Agent": "Pizzly"
+    }
+  }
+}
