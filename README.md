@@ -1,6 +1,6 @@
-<a href="https://heroku.com/deploy?template=https://github.com/Bearer/Pizzly" rel="nofollow"><img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy to Heroku" style="height:20px;"></a>
-<a href="https://console.platform.sh/projects/create-project/?template=https://github.com/Bearer/Pizzly&utm_campaign=deploy_on_platform?utm_medium=button&utm_source=affiliate_links&utm_content=https://github.com/Bearer/Pizzly" rel="nofollow"><img src="https://platform.sh/images/deploy/deploy-button-lg-blue.svg" alt="Deploy with Platform.sh" style="height:20px;"></a>
-<a href="https://www.bearer.sh/?ref=pizzly" rel="nofollow"><img src="/views/assets/img/badges/bearer-badge.png?raw=true" alt="Sponsored by Bearer.sh" style="height:20px;"></a>
+<a href="https://heroku.com/deploy?template=https://github.com/Bearer/Pizzly" rel="nofollow"><img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy to Heroku" height="20"></a>
+<a href="https://console.platform.sh/projects/create-project/?template=https://github.com/Bearer/Pizzly&utm_campaign=deploy_on_platform?utm_medium=button&utm_source=affiliate_links&utm_content=https://github.com/Bearer/Pizzly" rel="nofollow"><img src="https://platform.sh/images/deploy/deploy-button-lg-blue.svg" alt="Deploy with Platform.sh" height="20"></a>
+<a href="https://www.bearer.sh/?ref=pizzly" rel="nofollow"><img src="/views/assets/img/badges/bearer-badge.png?raw=true" alt="Sponsored by Bearer.sh" height="20"></a>
 
 # Pizzly 🐻 - The OAuth Integration Proxy
 
