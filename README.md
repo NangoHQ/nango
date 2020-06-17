@@ -1,10 +1,10 @@
-[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/Bearer/Pizzly)
+[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/Bearer/Pizzly) [Deploy with Platform.sh](https://platform.sh/images/deploy/deploy-button-lg-blue.svg)](https://console.platform.sh/projects/create-project/?template=https://github.com/Bearer/Pizzly&utm_campaign=deploy_on_platform?utm_medium=button&utm_source=affiliate_links&utm_content=https://github.com/Bearer/Pizzly) ![Sponsored by Bearer.sh](/views/assets/img/badges/bearer-badge.png?raw=true)
 
 # Pizzly 🐻 - The OAuth Integration Proxy
 
 <div align="center">
 
-<img src="views/assets/img/logos/pizzly.png?raw=true" width="300">
+<img src="/views/assets/img/logos/pizzly.png?raw=true" width="300">
 
 The OAuth Integration Proxy
 
@@ -24,7 +24,7 @@ Pizzly is made available as an open-source project by [Bearer.sh](https://bearer
 - [Key Features](#key-features)
 - [Installation](#installation)
   - [Manual Install](#manual-install)
-  - [Heroku Install](#heroku-install)
+  - [PaaS Deployment](#paas-deployment)
 - [Getting Started](#getting-started)
   - [Using Pizzly as a complete API proxy](#using-pizzly-as-a-complete-api-proxy)
   - [Using Pizzly as an OAuth manager](#using-pizzly-as-an-oauth-manager)
@@ -82,30 +82,25 @@ You will need Node.js and PostgreSQL installed first. Read our [getting started]
 
 ### PaaS Deployment
 
-Follow the links for an automated deployment so you can test it. Once deployed, go to the application and connect to an API.
+Click the buttons below for an automated deployment so you can test it. Once deployed, go to the application and connect to an API.
 
-#### Heroku Install
-
-[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/Bearer/Pizzly)
-
-#### Platform.sh Install
-
-[![Deploy with Platform.sh](https://platform.sh/images/deploy/deploy-button-lg-blue.svg)](https://console.platform.sh/projects/create-project/?template=https://github.com/Bearer/Pizzly&utm_campaign=deploy_on_platform?utm_medium=button&utm_source=affiliate_links&utm_content=https://github.com/Bearer/Pizzly)
+| Heroku Install                                                                                                                          | Platform.sh Install                                                                                                                                                                                                                                                                                                 |
+| --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/Bearer/Pizzly) | [![Deploy with Platform.sh](https://platform.sh/images/deploy/deploy-button-lg-blue.svg)](https://console.platform.sh/projects/create-project/?template=https://github.com/Bearer/Pizzly&utm_campaign=deploy_on_platform?utm_medium=button&utm_source=affiliate_links&utm_content=https://github.com/Bearer/Pizzly) |
 
 ## Getting Started
 
 ### Using Pizzly as a complete API proxy
 
-Follow this step-by-step guide on [how to use Pizzly as a proxy service](https://github.com/Bearer/Pizzly/wiki/TODO) and learn how to:
+Follow this step-by-step guide on [how to use Pizzly as a proxy service](https://github.com/Bearer/Pizzly/wiki/Tutorial-:-Proxy) and learn how to:
 
-1. Save a configuration for an API (with clientId/clientSecret and scopes)
-2. Initiate the OAuth dance to retrieve a token
-3. Call the third-party API
-4. Retrieve data from that API
+1. Initiate the OAuth dance to retrieve a token
+2. Call the third-party API
+3. Retrieve data from that API
 
 ### Using Pizzly as an OAuth manager
 
-Follow a step-by-step guide on [how to use Pizzly as an OAuth manager](https://github.com/Bearer/Pizzly/wiki/TODO) and learn how to:
+Follow a step-by-step guide on [how to use Pizzly as an OAuth manager](https://github.com/Bearer/Pizzly/wiki/Tutorial-:-OAuth) and learn how to:
 
 1. Save a configuration for an API (with clientId/clientSecret and scopes)
 2. Initiate the OAuth dance to retrieve a token
