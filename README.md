@@ -122,7 +122,7 @@ Pizzly works as a self-hosted instance that provides different services includin
 
 ## Supported APIs
 
-<!-- TODO: Image from Arthur -->
+![Some pre-configured APIs with Pizzly](/views/assets/docs/pizzly-preconfigured-apis.jpg)
 
 More than 50 APIs are preconfigured to work out-of-the-box. Including:
 
