@@ -10,7 +10,7 @@
     "auth": { "response_type": "code" }
   },
   "request": {
-    "baseURL": "/api.platform.sh/",
+    "baseURL": "https://api.platform.sh/",
     "headers": {
       "Accept": "application/json",
       "Authorization": "Bearer ${auth.accessToken}",
