@@ -1,10 +1,12 @@
-[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/Bearer/Pizzly)
+<a href="https://heroku.com/deploy?template=https://github.com/Bearer/Pizzly" rel="nofollow"><img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy to Heroku" height="26"></a>
+<a href="https://console.platform.sh/projects/create-project/?template=https://github.com/Bearer/Pizzly&utm_campaign=deploy_on_platform?utm_medium=button&utm_source=affiliate_links&utm_content=https://github.com/Bearer/Pizzly" rel="nofollow"><img src="https://platform.sh/images/deploy/deploy-button-lg-blue.svg" alt="Deploy with Platform.sh" height="26"></a>
+<a href="https://www.bearer.sh/?ref=pizzly" rel="nofollow"><img src="/views/assets/img/badges/bearer-badge.png?raw=true" alt="Sponsored by Bearer.sh" height="26"></a>
 
 # Pizzly 🐻 - The OAuth Integration Proxy
 
 <div align="center">
 
-<img src="views/assets/img/logos/pizzly.png?raw=true" width="300">
+<img src="/views/assets/img/logos/pizzly.png?raw=true" width="300">
 
 The OAuth Integration Proxy
 
@@ -19,20 +21,17 @@ Pizzly is made available as an open-source project by [Bearer.sh](https://bearer
 
 ## Summary
 
-- [Pizzly 🐻 - The OAuth Integration Proxy](#pizzly----the-oauth-integration-proxy)
-  - [Summary](#summary)
-  - [Why Pizzly?](#why-pizzly)
-  - [How it works?](#how-it-works)
-    - [Understanding the **AuthId** concept](#understanding-the-authid-concept)
-  - [Key Features](#key-features)
-  - [Installation](#installation)
-    - [Manual Install](#manual-install)
-    - [Heroku Install](#heroku-install)
-  - [Getting Started](#getting-started)
-    - [Using Pizzly as a complete API proxy](#using-pizzly-as-a-complete-api-proxy)
-    - [Using Pizzly as an OAuth manager](#using-pizzly-as-an-oauth-manager)
-  - [Supported APIs](#supported-apis)
-  - [License](#license)
+- [Why Pizzly?](#why-pizzly)
+- [How it works?](#how-it-works)
+- [Key Features](#key-features)
+- [Installation](#installation)
+  - [Manual Install](#manual-install)
+  - [PaaS Deployment](#paas-deployment)
+- [Getting Started](#getting-started)
+  - [Using Pizzly as a complete API proxy](#using-pizzly-as-a-complete-api-proxy)
+  - [Using Pizzly as an OAuth manager](#using-pizzly-as-an-oauth-manager)
+- [Supported APIs](#supported-apis)
+- [License](#license)
 
 ## Why Pizzly?
 
@@ -46,13 +45,7 @@ You can use Pizzly as a **complete API proxy**, it means that each API request w
 
 ![Diagram of Pizzly used in the proxy service mode](views/assets/img/docs/pizzly-diagram-api-proxy-mode.jpg?raw=true)
 
-Pizzly is also available as a standalone **OAuth manager**, helping you retrieve the initial token, but you'll have to refresh it when needed. _(see Getting Started below)_.
-
-![Diagram of Pizzly used in the token manager mode](views/assets/img/docs/pizzly-diagram-token-manager-mode.jpg?raw=true)
-
-### Understanding the **AuthId** concept
-
-It's important to understand the AuthId concept behind Pizzly. The AuthId is an identifier masking OAuth tokens. Since most OAuth tokens need to be refreshed, and therefore will change, the AuthId serves as an abstraction layer to the identity itself. To say it differently, an AuthId represents an identity that will have many tokens overtime.
+Pizzly is also available as a standalone **OAuth manager**, helping you retrieve the initial token, but you'll have to refresh it when needed _(read more with the [Getting Started](https://github.com/Bearer/Pizzly/wiki/Getting-started))_.
 
 ## Key Features
 
@@ -67,7 +60,7 @@ It's important to understand the AuthId concept behind Pizzly. The AuthId is an 
 
 ## Installation
 
-At the heart of Pizzly is a Node.js application that uses PostgreSQL as a database. It is straightforward to install on Heroku using the **Deploy to Heroku** button, but you can install it anywhere.
+At the heart of Pizzly is a Node.js application that uses PostgreSQL as a database. It is straightforward to install on Heroku using the **[deploy to Heroku](https://heroku.com/deploy?template=https://github.com/Bearer/Pizzly)** button, but you can install it anywhere.
 
 ### Manual Install
 
@@ -91,30 +84,25 @@ You will need Node.js and PostgreSQL installed first. Read our [getting started]
 
 ### PaaS Deployment
 
-Follow the links for an automated deployment so you can test it. Once deployed, go to the application and connect to an API.
+Click the buttons below for an automated deployment so you can test it. Once deployed, go to the application and connect to an API.
 
-#### Heroku Install
-
-[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/Bearer/Pizzly)
-
-#### Platform.sh Install
-
-[![Deploy with Platform.sh](https://platform.sh/images/deploy/deploy-button-lg-blue.svg)](https://console.platform.sh/projects/create-project/?template=https://github.com/Bearer/Pizzly&utm_campaign=deploy_on_platform?utm_medium=button&utm_source=affiliate_links&utm_content=https://github.com/Bearer/Pizzly)
+| Heroku Install                                                                                                                                                                              | Platform.sh Install                                                                                                                                                                                                                                                                                                                                                     |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <a href="https://heroku.com/deploy?template=https://github.com/Bearer/Pizzly" rel="nofollow"><img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy to Heroku" height="40"></a> | <a href="https://console.platform.sh/projects/create-project/?template=https://github.com/Bearer/Pizzly&utm_campaign=deploy_on_platform?utm_medium=button&utm_source=affiliate_links&utm_content=https://github.com/Bearer/Pizzly" rel="nofollow"><img src="https://platform.sh/images/deploy/deploy-button-lg-blue.svg" alt="Deploy with Platform.sh" height="40"></a> |
 
 ## Getting Started
 
 ### Using Pizzly as a complete API proxy
 
-Follow this step-by-step guide on [how to use Pizzly as a proxy service](https://github.com/Bearer/Pizzly/wiki/TODO) and learn how to:
+Follow this step-by-step guide on [how to use Pizzly as a proxy service](https://github.com/Bearer/Pizzly/wiki/Tutorial-:-Proxy) and learn how to:
 
-1. Save a configuration for an API (with clientId/clientSecret and scopes)
-2. Initiate the OAuth dance to retrieve a token
-3. Call the third-party API
-4. Retrieve data from that API
+1. Initiate the OAuth dance to retrieve a token
+2. Call the third-party API
+3. Retrieve data from that API
 
 ### Using Pizzly as an OAuth manager
 
-Follow a step-by-step guide on [how to use Pizzly as an OAuth manager](https://github.com/Bearer/Pizzly/wiki/TODO) and learn how to:
+Follow a step-by-step guide on [how to use Pizzly as an OAuth manager](https://github.com/Bearer/Pizzly/wiki/Tutorial-:-OAuth) and learn how to:
 
 1. Save a configuration for an API (with clientId/clientSecret and scopes)
 2. Initiate the OAuth dance to retrieve a token
@@ -122,11 +110,31 @@ Follow a step-by-step guide on [how to use Pizzly as an OAuth manager](https://g
 
 > If you're looking to monitor, track performance, detect anomalies to your API requests, have a look to [Bearer.sh](https://bearer.sh/?ref=pizzly), the monitoring agent. If you're using Pizzly in API proxy mode, it's as simple as adding your Bearer Developer Key to the environment variable `$BEARER_SECRET_KEY` - you can [get yours for free here 🚀](https://bearer.sh/?ref=pizzly)
 
+## Services
+
+Pizzly works as a self-hosted instance that provides different services including:
+
+- [an auth manager](https://github.com/Bearer/Pizzly/wiki/Reference-:-Auth);
+- [a proxy service](https://github.com/Bearer/Pizzly/wiki/Reference-:-Proxy);
+- [a developer's dashboard](https://github.com/Bearer/Pizzly/wiki/Reference-:-Dashboard);
+- [an API](https://github.com/Bearer/Pizzly/wiki/Reference-:-API);
+- and [a JavaScript library](/src/clients/javascript/) to interact with each service from your frontend;
+
 ## Supported APIs
 
-More than 50 APIs are preconfigured to work out-of-the-box. Including: GitHub, Salesforce, Facebook, Google Sheets, Gmail, LinkedIn, Typeform, Zoom, [and more...](/integrations) Each API consists of a JSON configuration file, stored within the `/integrations` directory.
+[![Some pre-configured APIs with Pizzly](/views/assets/img/docs/pizzly-preconfigured-apis.jpg)](https://github.com/Bearer/Pizzly/wiki/Supported-APIs)
 
-Here's an example with the GitHub configuration file ([`/integrations/github.json`](integrations/github.json)):
+More than 50 APIs are preconfigured to work out-of-the-box. Including:
+
+- **Communication**: Gmail, Microsoft Teams, Slack, Zoom;
+- **CRM**: Front, Hubspot, Salesforce, etc.
+- **Developer tools**: BitBucket, GitHub, GitLab, etc.
+- **Finance**: Xero, Sellsy, Zoho Books, etc.
+- **Productivity**: Asana, Google Drive, Google Sheets, Jira, Trello, etc.
+- **Social**: Facebook, LinkedIn, Reddit, etc.
+- **[and more...](https://github.com/Bearer/Pizzly/wiki/Supported-APIs)**
+
+Each API consists of a JSON configuration file, stored within the `/integrations` directory. Here's an example with the GitHub configuration file ([`/integrations/github.json`](/integrations/github.json)):
 
 ```json
 {
@@ -150,7 +158,7 @@ Here's an example with the GitHub configuration file ([`/integrations/github.jso
 }
 ```
 
-To add a new API, create a new configuration file. Here's a step-by-step guide on [how to create a new configuration file](https://github.com/Bearer/Pizzly/wiki/TODO).
+And adding new APIs is straightforward. Just create a new configuration file within the `/integrations` folder of your Pizzly's instance. If you feel like sharing, you can even create a PR so that other developers will be able to use it as well!
 
 ## License
 
