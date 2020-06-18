@@ -12,7 +12,7 @@ Pizzly's JS can be used instantly in your page or with a package system.
 <script src="https://cdn.jsdelivr.net/npm/pizzly-js@latest/dist/index.umd.min.js"></script>
 <script>
   // Initialize your code by passing your `publishableKey` and `hostname` as parameters.
-  const pizzly = Pizzly(publishableKey, 'https://...')
+  const pizzly = new Pizzly(publishableKey, 'https://...')
 </script>
 ```
 
