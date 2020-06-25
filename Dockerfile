@@ -31,6 +31,7 @@ WORKDIR /home/node/app
 USER node
 
 COPY --chown=node:node --from=0 /app/dist/ .
+COPY --chown=node:node --from=0 /app/views ./views
 COPY --chown=node:node --from=0 /app/node_modules ./node_modules
 
 CMD ["node", "src"]
