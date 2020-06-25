@@ -1,0 +1,26 @@
+{
+  "name": "SmartPension",
+  "auth": {
+    "authType": "OAUTH2",
+    "bodyFormat": "json",
+    "grantType": "authorization_code",
+    "config": {
+      "scope": ["customer"]
+    },
+    "tokenParams": {},
+    "tokenURL": "https://id.autoenrolment.co.uk/oauth/token",
+    "authorizationMethod": "body",
+    "authorizationParams": {
+      "responseType": "code"
+    },
+    "authorizationURL": "https://id.autoenrolment.co.uk/oauth/authorize"
+  },
+  "request": {
+    "headers": {
+      "Accept": "application/json",
+      "User-Agent": "Pizzly",
+      "Authorization": "Bearer ${auth.accessToken}"
+    },
+    "baseURL": "https://api.autoenrolment.co.uk"
+  }
+}
