@@ -108,19 +108,19 @@ const externalResponseHandler = (
 /**
  * Helper to determine which headers to forward.
  *
- * The proxy feature forwards all headers starting with "Pizzly-Proxy-"
+ * The proxy feature forwards all headers starting with "Pizzly-Proxy-" (case insensitive)
  * to the third-party API.
  *
  * @params headers (string[]) - The original request headers
  * @return (object) - The headers to forward
  */
 
-const HEADER_PROXY = 'Pizzly-Proxy-'
+const HEADER_PROXY = 'pizzly-proxy-'
 const headersToForward = (headers: string[]): { [key: string]: string } => {
   const forwardedHeaders = {}
 
   for (let i = 0, n = headers.length; i < n; i += 2) {
-    const headerKey = headers[i]
+    const headerKey = headers[i].toLowerCase()
 
     if (headerKey.startsWith(HEADER_PROXY)) {
       forwardedHeaders[headerKey.slice(HEADER_PROXY.length)] = headers[i + 1] || ''
