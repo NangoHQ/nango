@@ -44,9 +44,9 @@ At the heart of Pizzly is a Node.js application that uses PostgreSQL as a databa
 
 ## Getting started
 
-Pizzly can be installed anywhere (AWS, Heroku, Platform.sh, etc.). Here's a quick guide that gives a great overview:
+Pizzly can be installed anywhere (AWS, Heroku, Platform.sh, etc.). Here's a quick guide using Heroku:
 
-1. First, deploy your instance of Pizzly to Heroku using the button below (you can install it anywhere even locally, but for this getting started we gonna use Heroku):
+1. First, deploy your own instance of Pizzly by clicking the [Deploy to Heroku](https://heroku.com/deploy?template=https://github.com/Bearer/Pizzly) button below:
 
    <a href="https://heroku.com/deploy?template=https://github.com/Bearer/Pizzly" rel="nofollow"><img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy to Heroku" height="40"></a>
 
@@ -73,13 +73,11 @@ Pizzly can be installed anywhere (AWS, Heroku, Platform.sh, etc.). Here's a quic
    ```js
    myAPI
      .auth('xxx-auth-id') // Replace with the authId previously obtained
-     .get('/endpoint') // Replace with the API endpoint
+     .get('/xxx-endpoint') // Replace with a valid endpoint of the API
      .then(response => console.log(response.status))
      .catch(console.error)
    ```
    This example will perform a GET request to `/endpoint` of the API and will use the provided authId to authenticate the request.
-
-To integrate more APIs, repeat the steps 3 to 6 and you're all sets. 50+ APIs are pre-configured and you can even add your own easily ([learn more](https://github.com/Bearer/Pizzly/wiki/Supported-APIs)).
 
 ## Documentation
 
