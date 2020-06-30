@@ -15,7 +15,9 @@ The OAuth Integration Proxy
 -->
 </div>
 
-**Pizzly makes it fast and reliable to build API integrations**. It handles dozens of pre-configured APIs (including Salesforce, Slack, Google Sheets [and many more](#supported-apis)) and lets you quickly add more APIs with a generic JSON configuration schema. Using Pizzly your engineering team can focus on consuming APIs, in a standardized way that scales easily.
+**Pizzly makes it fast and reliable to build API integrations**. It handles dozens of pre-configured APIs (including Salesforce, Slack, Google Sheets [and many more](#supported-apis)) and lets you quickly add more APIs with a generic JSON configuration schema.
+
+Using Pizzly your engineering team can focus on consuming APIs, in a standardized way that will grow as you grow.
 
 ## How it works?
 
@@ -27,7 +29,10 @@ At the heart of Pizzly is a Node.js application that uses PostgreSQL as a databa
 - a JS library - _to connect a user and perform requests from your frontend_;
 - and its own API - _to programmatically do what you can do with the dashboard_.
 
-![Integrate with many APIs, right from Pizzly's dashboard](views/assets/img/docs/pizzly-dashboard-all-apis.png?raw=true)
+<figure>
+  ![Integrate with many APIs, right from Pizzly's dashboard](views/assets/img/docs/pizzly-dashboard-all-apis.png?raw=true)
+  <figcaption>Pizzly's dashboard</figcaption>
+</figure>
 
 <!-- ## Key Features
 
@@ -42,13 +47,15 @@ At the heart of Pizzly is a Node.js application that uses PostgreSQL as a databa
 
 ## Getting started
 
-1. First, deploy your instance of Pizzly to Heroku using the button below (you can install it anywhere even locally, but for this getting started we gonna use Heroku)
+Pizzly needs to be deployed on your servers (or your local machine) to get started with. Have a look to the [Wiki](./wiki) to learn more about how to use it or follow this quick guide that gives a great overview:
+
+1. First, deploy your instance of Pizzly to Heroku using the button below (you can install it anywhere even locally, but for this getting started we gonna use Heroku):
 
    <a href="https://heroku.com/deploy?template=https://github.com/Bearer/Pizzly" rel="nofollow"><img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy to Heroku" height="40"></a>
 
 2. Once deployed, open your Heroku app. You will land on Pizzly's dashboard.
 3. Click on "Open Dashboard" and select the API you want to integrate with.
-4. Now, configure the API by entering your credentials and scopes where prompted.
+4. Now, configure the API by entering your credentials and scopes. That's all it takes to configure a new API.
 5. To connect a user to this API, _in your frontend_, use the code below:
 
    ```js
@@ -74,6 +81,8 @@ At the heart of Pizzly is a Node.js application that uses PostgreSQL as a databa
      .catch(console.error)
    ```
    This example will perform a GET request to `/endpoint` of the API and will use the provided authId to authenticate the request.
+
+To integrate more APIs, repeat the steps 3 to 6 and you're all sets. 50+ APIs are pre-configured and you can even add your own easily ([learn more](https://github.com/Bearer/Pizzly/wiki/Supported-APIs)).
 
 ## Examples
 
