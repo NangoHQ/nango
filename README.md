@@ -161,7 +161,7 @@ All work on Pizzly happens directly on [GitHub](https://github.com/bearer/pizzly
 
 To report a bug or a feedback, use [GitHub Issues](https://github.com/bearer/pizzly/issues). We keep a close eye on this and try to labelize each new request. If you're fixing a bug or working on a new feature, submit a [pull request](https://github.com/Bearer/Pizzly/pulls) with detail on which changes you've made.
 
-While there are no templates yet, we still recommend to provide as much detail as possible. Consider that someone external to the project should understand your request at first glance.
+While there are no templates yet when opening a PR or an issue, we still recommend to provide as much detail as possible. Consider that someone external to the project should understand your request at first glance.
 
 ### License
 
