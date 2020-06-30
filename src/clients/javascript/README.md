@@ -58,22 +58,31 @@ const github = pizzly.integration('github')
 github
   .auth(authId)
   .get('/repos')
-  .then(data => {
-    console.log(data)
-  })
+  .then(response => console.log(response))
   .catch(console.error)
 
 // Passing extra arguments
 github
   .auth(authId)
-  .post('/', { headers: {}, query: {}, body: {} })
-  .then(data => {
-    console.log(data)
-  })
+  .post('/', { headers: {}, query: {}, body: '' })
+  .then(response => console.log(response))
   .catch(console.error)
 ```
 
 Most common HTTP methods are supported out-of-the-box, including `.get()`, `.post()`, `.put()` and `.delete()`.
+
+### Handling the response
+
+Under the hood, we use the [Fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Response) to send requests. As a consequence, each `response` from the API are `Response` interface of the Fetch API. When the API uses JSON response type, you can retrieve the JSON response as follow:
+
+```js
+myAPI
+  .auth('x-auth-id')
+  .get('/x-endpoint')
+  .then(response => response.json())
+  .then(data => console.log(data)) // do something with the JSON payload (aka data)
+  .catch(console.error)
+```
 
 ## Advanced usage
 
@@ -99,14 +108,14 @@ pizzly
 Pizzly also provides an API endpoint to retrieve at any time the OAuth payload:
 
 ```bash
-curl -X GET "http://localhost:8080/api/github/authentications/AUTH_ID"
+curl -X GET "/api/API-SLUGNAME/authentications/AUTH-ID"
 ```
 
 ### Dealing with multiple configurations
 
 By default, each request made through Pizzly uses the latest configuration that you have saved. If you have multiple configurations in place for the same API, you can tell Pizzly which configuration should be used.
 
-```
+```js
 const config1 = '...'
 const config2 = '...'
 
@@ -253,7 +262,7 @@ const Pizzly = (publishableKey, options) => {
      * @params options <object> - The request options:
      * - headers <object> - The headers to send (e.g. { "Content-Type": "application/json" })
      * - query <object> - The query string to use (e.g. { "startAt": "1" } will be transformed into "?startAt=1")
-     * - body <object> - The request's body to append (e.g. { "foo": "bar" })
+     * - body <object> - The request's body to append (e.g. "foo=bar")
      * @returns a Fetch response schema (https://developer.mozilla.org/en-US/docs/Web/API/Response)
      */
 

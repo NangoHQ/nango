@@ -38,11 +38,9 @@ Under the hood, we use `node-fetch` to send requests. As a consequence, each `re
 ```js
 myAPI
   .auth('x-auth-id')
-  .post('/x-endpoint', { body: 'My body' })
+  .get('/x-endpoint')
   .then(response => response.json())
-  .then(response => {
-    console.log(response) // do something with the JSON payload
-  })
+  .then(data => console.log(data)) // do something with the JSON payload (aka data)
   .catch(console.error)
 ```
 
@@ -107,7 +105,7 @@ In that snippet, `response` will be a `Response` interface of the [node-fetch](h
 
 By default, each request made through Pizzly uses the latest configuration that you have saved. If you have multiple configurations in place for the same API, you can tell Pizzly which configuration should be used.
 
-```
+```js
 const config1 = '...'
 const config2 = '...'
 
@@ -169,7 +167,7 @@ const Pizzly = (options) => {
      * @params options <object> - The request options:
      * - headers <object> - The headers to send (e.g. { "Content-Type": "application/json" })
      * - query <object> - The query string to use (e.g. { "startAt": "1" } will be transformed into "?startAt=1")
-     * - body <object> - The request's body to append (e.g. { "foo": "bar" })
+     * - body <object> - The request's body to append (e.g. "foo=bar")
      * @returns a node-fetch response schema (https://www.npmjs.com/package/node-fetch)
      */
 
