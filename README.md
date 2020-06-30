@@ -30,8 +30,10 @@ At the heart of Pizzly is a Node.js application that uses PostgreSQL as a databa
 - and its own API - _to programmatically do what you can do with the dashboard_.
 
 <figure>
-  ![Integrate with many APIs, right from Pizzly's dashboard](views/assets/img/docs/pizzly-dashboard-all-apis.png?raw=true)
-  <figcaption>Pizzly's dashboard</figcaption>
+  
+![Integrate with many APIs, right from Pizzly's dashboard](views/assets/img/docs/pizzly-dashboard-all-apis.png?raw=true)
+
+<figcaption>Pizzly's dashboard</figcaption>
 </figure>
 
 <!-- ## Key Features
