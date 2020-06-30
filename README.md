@@ -44,7 +44,7 @@ At the heart of Pizzly is a Node.js application that uses PostgreSQL as a databa
 
 ## Getting started
 
-Pizzly needs to be deployed on your servers (or your local machine) to get started with. Have a look to the [Wiki](./wiki) to learn more about how to use it or follow this quick guide that gives a great overview:
+Pizzly can be installed anywhere (AWS, Heroku, Platform.sh, etc.). Here's a quick guide that gives a great overview:
 
 1. First, deploy your instance of Pizzly to Heroku using the button below (you can install it anywhere even locally, but for this getting started we gonna use Heroku):
 
@@ -81,6 +81,8 @@ Pizzly needs to be deployed on your servers (or your local machine) to get start
 
 To integrate more APIs, repeat the steps 3 to 6 and you're all sets. 50+ APIs are pre-configured and you can even add your own easily ([learn more](https://github.com/Bearer/Pizzly/wiki/Supported-APIs)).
 
+To learn more about how to use Pizzly, open the [Wiki](wiki).
+
 ## Examples
 
 We have several examples [on the wiki](/wiki/Examples) with different APIs. Here is the first one to get you started:
@@ -98,6 +100,10 @@ github
 This example will trigger an OAuth dance to the GitHub API.
 
 You'll notice that when a user is successfully connected, we received an `authId`; it's a power concept introduced by Pizzly. The `authId` acts as a reference to the OAuth payload (i.e. the `access_token` and `refresh_token`). While the `access_token` and `refresh_token` expire and/or change over time, the `authId` is always the same. Think of it as something like a user identity.
+
+## Documentation
+
+Guides, tutorials and references are all available on the [Wiki](wiki).
 
 ## Supported APIs
 
