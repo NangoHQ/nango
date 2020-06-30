@@ -48,7 +48,7 @@ Pizzly can be installed anywhere (AWS, Heroku, Platform.sh, etc.). Here's a quic
 
 1. First, deploy your own instance of Pizzly by clicking the [Deploy to Heroku](https://heroku.com/deploy?template=https://github.com/Bearer/Pizzly) button below:
 
-   <a href="https://heroku.com/deploy?template=https://github.com/Bearer/Pizzly" rel="nofollow"><img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy to Heroku" height="40"></a>
+   <a href="https://heroku.com/deploy?template=https://github.com/Bearer/Pizzly" rel="nofollow" target="_blank"><img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy to Heroku" height="40"></a>
 
 2. Once deployed, open your Heroku app. You will land on Pizzly's dashboard.
 3. Click on "Open Dashboard" and select the API you want to integrate with.
@@ -99,7 +99,7 @@ github
 
 This example will trigger an OAuth dance to the GitHub API.
 
-You'll notice that when a user is successfully connected, we received an `authId`; it's a power concept introduced by Pizzly. The `authId` acts as a reference to the OAuth payload (i.e. the `access_token` and `refresh_token`). While the `access_token` and `refresh_token` expire and/or change over time, the `authId` is always the same. Think of it as something like a user identity.
+💡 You'll notice that when a user is successfully connected, we received an `authId`; it's a power concept introduced by Pizzly. The `authId` acts as a reference to the OAuth payload (i.e. the `access_token` and `refresh_token`). While the `access_token` and `refresh_token` expire and/or change over time, the `authId` is always the same. Think of it as something like a user identity.
 
 ## Supported APIs
 
@@ -159,7 +159,7 @@ Pizzly has adopted the Contributor Covenant Code of Conduct (version 2.0), avail
 
 All work on Pizzly happens directly on [GitHub](https://github.com/bearer/pizzly). Both Bearer.sh team members and external contributors send pull requests which go through the same review process. Submit all changes directly to the [`master branch`](https://github.com/bearer/pizzly/tree/master). We don’t use separate branches for development or for upcoming releases.
 
-To report a bug or a feedback, use [GitHub Issues](/issues). We keep a close eye on this and try to labelize each new request. If you're fixing a bug or working on a new feature, submit a [pull request]() with detail on which changes you've made.
+To report a bug or a feedback, use [GitHub Issues](https://github.com/bearer/pizzly/issues). We keep a close eye on this and try to labelize each new request. If you're fixing a bug or working on a new feature, submit a [pull request](https://github.com/Bearer/Pizzly/pulls) with detail on which changes you've made.
 
 While there are no templates yet, we still recommend to provide as much detail as possible. Consider that someone external to the project should understand your request at first glance.
 
