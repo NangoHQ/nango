@@ -81,7 +81,9 @@ Pizzly can be installed anywhere (AWS, Heroku, Platform.sh, etc.). Here's a quic
 
 To integrate more APIs, repeat the steps 3 to 6 and you're all sets. 50+ APIs are pre-configured and you can even add your own easily ([learn more](https://github.com/Bearer/Pizzly/wiki/Supported-APIs)).
 
-To learn more about how to use Pizzly, open the [Wiki](https://github.com/Bearer/Pizzly/wiki).
+## Documentation
+
+Guides, tutorials and references are all available on the [Wiki](https://github.com/Bearer/Pizzly/wiki).
 
 ## Examples
 
@@ -100,10 +102,6 @@ github
 This example will trigger an OAuth dance to the GitHub API.
 
 You'll notice that when a user is successfully connected, we received an `authId`; it's a power concept introduced by Pizzly. The `authId` acts as a reference to the OAuth payload (i.e. the `access_token` and `refresh_token`). While the `access_token` and `refresh_token` expire and/or change over time, the `authId` is always the same. Think of it as something like a user identity.
-
-## Documentation
-
-Guides, tutorials and references are all available on the [Wiki](https://github.com/Bearer/Pizzly/wiki).
 
 ## Supported APIs
 
