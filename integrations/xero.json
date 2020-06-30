@@ -1,16 +1,18 @@
 {
   "name": "Xero",
   "auth": {
-    "accessTokenURL": "https://api.xero.com/oauth/AccessToken",
-    "authorizationParams": {},
-    "authType": "OAUTH1",
-    "requestTokenURL": "https://api.xero.com/oauth/RequestToken",
-    "signatureMethod": "HMAC-SHA1",
-    "tokenParams": {},
-    "userAuthorizationURL": "https://api.xero.com/oauth/Authorize"
+    "authType": "OAUTH2",
+    "authorizationParams": { "response_type": "code" },
+    "authorizationURL": "https://login.xero.com/identity/connect/authorize",
+    "tokenParams": { "grant_type": "authorization_code" },
+    "tokenURL": "https://identity.xero.com/connect/token"
   },
   "request": {
-    "baseURL": "https://api.xero.com/api.xro/2.0/",
-    "headers": { "Accept": "application/json", "Authorization": "OAuth ${auth.oauth1}", "User-Agent": "Pizzly" }
+    "baseURL": "https://api.xero.com/",
+    "headers": {
+      "User-Agent": "Pizzly",
+      "Authorization": "Bearer ${auth.accessToken}",
+      "Accept": "application/json"
+    }
   }
 }
