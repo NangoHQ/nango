@@ -20,7 +20,7 @@ Pizzly's JS can be used instantly in your page or with a package system.
 
 ```bash
 npm install pizzly-js
-# or 
+# or
 yarn add pizzly-js
 ```
 
@@ -28,9 +28,11 @@ yarn add pizzly-js
 
 ### Connecting to an OAuth based API
 
-The `connect` method lets you trigger an OAuth-dance. On success, Pizzly returns an `authId` that acts as a unique identifier of the authentication process. 
+The `connect` method lets you trigger an OAuth-dance. On success, Pizzly returns an `authId` that acts as a unique identifier of the authentication process.
 
 ```js
+const pizzly = new Pizzly() // Initialize Pizzly
+
 pizzly
   .connect('github')
   .then(({ authId }) => {
@@ -50,6 +52,7 @@ Using this `authId`, you can make authenticated request to the API using the pro
 Once a user is connected, you can query the API by providing the `authId`.
 
 ```js
+const pizzly = new Pizzly()
 const github = pizzly.integration('github')
 
 github
@@ -79,6 +82,8 @@ Most common HTTP methods are supported out-of-the-box, including `.get()`, `.pos
 When performing a connect, on success the OAuth payload is returned alongside the `authId`. Here's an example:
 
 ```js
+const pizzly = new Pizzly()
+
 pizzly
   .connect('github')
   .then(({ payload }) => {
@@ -182,7 +187,7 @@ For the developers previously using `@bearer/js`, find below a comparison with P
 | Proxy with a setupId        | `github.setup(setupId).get('/')`                                | `github.setup(setupId).get('/')`                                         |
 | Proxy with an authId        | `github.auth(authId).get('/')`                                  | `github.auth(authId).get('/')`                                           |
 | Proxy with both             | `github.setup('').auth('').get('/')`                            | `github.setup(setupId).auth(authId).get('/')`                            |
-| Configurations              | `bearerClient.invoke('github', 'bearer-setup-save', { setup })` | Not supported                                      |
+| Configurations              | `bearerClient.invoke('github', 'bearer-setup-save', { setup })` | Not supported                                                            |
 
 ## Reference
 
@@ -249,7 +254,7 @@ const Pizzly = (publishableKey, options) => {
      * - headers <object> - The headers to send (e.g. { "Content-Type": "application/json" })
      * - query <object> - The query string to use (e.g. { "startAt": "1" } will be transformed into "?startAt=1")
      * - body <object> - The request's body to append (e.g. { "foo": "bar" })
-     * @returns an Axios response schema (https://github.com/axios/axios#response-schema)
+     * @returns a Fetch response schema (https://developer.mozilla.org/en-US/docs/Web/API/Response)
      */
 
     get: (endpoint[, options]) => {},
