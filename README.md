@@ -27,7 +27,7 @@ At the heart of Pizzly is a Node.js application that uses PostgreSQL as a databa
 - a JS library - _to connect a user and perform requests from your frontend_;
 - and its own API - _to programmatically do what you can do with the dashboard_.
 
-![Diagram of Pizzly used in the proxy service mode](views/assets/img/docs/pizzly-dashboard-all-apis.jpg?raw=true)
+![Integrate with many APIs, right from Pizzly's dashboard](views/assets/img/docs/pizzly-dashboard-all-apis.png?raw=true)
 
 <!-- ## Key Features
 
@@ -43,7 +43,9 @@ At the heart of Pizzly is a Node.js application that uses PostgreSQL as a databa
 ## Getting started
 
 1. First, deploy your instance of Pizzly to Heroku using the button below (you can install it anywhere even locally, but for this getting started we gonna use Heroku)
+
    <a href="https://heroku.com/deploy?template=https://github.com/Bearer/Pizzly" rel="nofollow"><img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy to Heroku" height="40"></a>
+
 2. Once deployed, open your Heroku app. You will land on Pizzly's dashboard.
 3. Click on "Open Dashboard" and select the API you want to integrate with.
 4. Now, configure the API by entering your credentials and scopes where prompted.
