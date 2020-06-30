@@ -15,39 +15,21 @@ The OAuth Integration Proxy
 -->
 </div>
 
-Pizzly is an OAuth Integration Proxy that acts as an abstraction layer to simplify integrating with OAuth API. It lets you connect 50+ OAuth APIs out-of-the-box and automatically manages retrieving, storing, and refreshing OAuth tokens. It also supports adding new OAuth APIs by using a simple file definition.
-
-Pizzly is made available as an open-source project by [Bearer.sh](https://bearer.sh/?ref=pizzly).
-
-## Summary
-
-- [Why Pizzly?](#why-pizzly)
-- [How it works?](#how-it-works)
-- [Key Features](#key-features)
-- [Installation](#installation)
-  - [Manual Install](#manual-install)
-  - [PaaS Deployment](#paas-deployment)
-- [Getting Started](#getting-started)
-  - [Using Pizzly as a complete API proxy](#using-pizzly-as-a-complete-api-proxy)
-  - [Using Pizzly as an OAuth manager](#using-pizzly-as-an-oauth-manager)
-- [Supported APIs](#supported-apis)
-- [License](#license)
-
-## Why Pizzly?
-
-Pizzly originally started at Bearer.sh as a way to simplify the developer's journey and ease the building of API integrations. OAuth is a great framework, but the difficulty and wide range of implementation makes it painful to use and tends to slow down the ability to integrate with new APIs.
-
-_But seriously, why Pizzly? We're fan of bears and fell in love with this [sweet hybrid](https://en.wikipedia.org/wiki/Grizzly–polar_bear_hybrid) one 🐻_
+**Pizzly makes it fast and reliable to build API integrations**. It handles dozens of pre-configured APIs (including Salesforce, Slack, Google Sheets [and many more](#supported-apis)) and lets you quickly add more APIs with a generic JSON configuration schema. Using Pizzly your engineering team can focus on consuming APIs, in a standardized way that scales easily.
 
 ## How it works?
 
-You can use Pizzly as a **complete API proxy**, it means that each API request will go through the service. Pizzly forwards each request to the third-party API using a config file, it authenticates each request with the right `access_token` and handles token refreshness if needed.
+At the heart of Pizzly is a Node.js application that uses PostgreSQL as a database. Once deployed on your servers, each instance of Pizzly provides multiple tools to help developers with their API integrations, including:
 
-![Diagram of Pizzly used in the proxy service mode](views/assets/img/docs/pizzly-diagram-api-proxy-mode.jpg?raw=true)
+- **a dashboard** - _to enable and configure APIs_;
+- **an auth service** - _to handle the OAuth-dance_;
+- **a proxy** - _to perform authenticated requests to an API_;
+- a JS library - _to connect a user and perform requests from your frontend_;
+- and its own API - _to programmatically do what you can do with the dashboard_.
 
-Pizzly is also available as a standalone **OAuth manager**, helping you retrieve the initial token, but you'll have to refresh it when needed _(read more with the [Getting Started](https://github.com/Bearer/Pizzly/wiki/Getting-started))_.
+![Diagram of Pizzly used in the proxy service mode](views/assets/img/docs/pizzly-dashboard-all-apis.jpg?raw=true)
 
-## Key Features
+<!-- ## Key Features
 
 - Manage retrieving, storing, and refreshing OAuth tokens _(aka the OAuth dance)_
 - No scope limitations
@@ -56,69 +38,58 @@ Pizzly is also available as a standalone **OAuth manager**, helping you retrieve
 - JavaScript library to connect from your web-app (three-legged OAuth flow)
 - Provides configurations for over 50+ OAuth APIs (see list below)
 - Support adding new OAuth APIs using a file definition
-- 1-click deploy to Heroku or major cloud hosting solutions
+- 1-click deploy to Heroku or major cloud hosting solutions -->
 
-## Installation
+## Getting started
 
-At the heart of Pizzly is a Node.js application that uses PostgreSQL as a database. It is straightforward to install on Heroku using the **[deploy to Heroku](https://heroku.com/deploy?template=https://github.com/Bearer/Pizzly)** button, but you can install it anywhere.
+1. First, deploy your instance of Pizzly to Heroku using the button below (you can install it anywhere even locally, but for this getting started we gonna use Heroku)
+   <a href="https://heroku.com/deploy?template=https://github.com/Bearer/Pizzly" rel="nofollow"><img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy to Heroku" height="40"></a>
+2. Once deployed, open your Heroku app. You will land on Pizzly's dashboard.
+3. Click on "Open Dashboard" and select the API you want to integrate with.
+4. Now, configure the API by entering your credentials and scopes where prompted.
+5. To connect a user to this API, _in your frontend_, use the code below:
 
-### Manual Install
+   ```js
+   import Pizzly from 'pizzly-js'
 
-To run Pizzly on your machine, follow these steps (or [follow our step-by-step guides](https://github.com/Bearer/Pizzly/wiki/Getting-started)):
+   const pizzly = new Pizzly() // Initialize Pizzly
+   const myAPI = pizzly.integration('xxx-api-name') // Replace with the API slugname
 
-```bash
-git clone https://github.com/Bearer/Pizzly
-cd pizzly
-yarn install
-yarn db:setup
-yarn start
+   myAPI
+     .connect()
+     .then(({ authId }) => console.log('Sucessfully connected!', authId))
+     .catch(console.error)
+   ```
+
+   This code will open a popup to start an authorization flow with that API. On success we obtain an `authId` which can be used to authenticate requests to the API.
+
+6. _In your frontend again_, perform a request to the API using the code below:
+   ```js
+   myAPI
+     .auth('xxx-auth-id') // Replace with the authId previously obtained
+     .get('/endpoint') // Replace with the API endpoint
+     .then(response => console.log(response.status))
+     .catch(console.error)
+   ```
+   This example will perform a GET request to `/endpoint` of the API and will use the provided authId to authenticate the request.
+
+## Examples
+
+We have several examples [on the wiki](/wiki/Examples) with different APIs. Here is the first one to get you started:
+
+```js
+const pizzly = new Pizzly() // Initialize Pizzly
+const github = pizzly.integration('github')
+
+github
+  .connect() // Connect to GitHub
+  .then(({ authId }) => console.log('Sucessfully connected! with the authId:', authId))
+  .catch(error => console.error('It failed!', error))
 ```
 
-Then open the dashboard in your browser at:
+This example will trigger an OAuth dance to the GitHub API.
 
-```
-http://localhost:8080/
-```
-
-You will need Node.js and PostgreSQL installed first. Read our [getting started](https://github.com/Bearer/Pizzly/wiki/Getting-started) to follow a step-by-step installation guide.
-
-### PaaS Deployment
-
-Click the buttons below for an automated deployment so you can test it. Once deployed, go to the application and connect to an API.
-
-| Heroku Install                                                                                                                                                                              | Platform.sh Install                                                                                                                                                                                                                                                                                                                                                     |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <a href="https://heroku.com/deploy?template=https://github.com/Bearer/Pizzly" rel="nofollow"><img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy to Heroku" height="40"></a> | <a href="https://console.platform.sh/projects/create-project/?template=https://github.com/Bearer/Pizzly&utm_campaign=deploy_on_platform?utm_medium=button&utm_source=affiliate_links&utm_content=https://github.com/Bearer/Pizzly" rel="nofollow"><img src="https://platform.sh/images/deploy/deploy-button-lg-blue.svg" alt="Deploy with Platform.sh" height="40"></a> |
-
-## Getting Started
-
-### Using Pizzly as a complete API proxy
-
-Follow this step-by-step guide on [how to use Pizzly as a proxy service](https://github.com/Bearer/Pizzly/wiki/Tutorial-:-Proxy) and learn how to:
-
-1. Initiate the OAuth dance to retrieve a token
-2. Call the third-party API
-3. Retrieve data from that API
-
-### Using Pizzly as an OAuth manager
-
-Follow a step-by-step guide on [how to use Pizzly as an OAuth manager](https://github.com/Bearer/Pizzly/wiki/Tutorial-:-OAuth) and learn how to:
-
-1. Save a configuration for an API (with clientId/clientSecret and scopes)
-2. Initiate the OAuth dance to retrieve a token
-3. Use Pizzly's API to retrieve the OAuth payload (e.g. `access_token`, `refresh_token`, etc.)
-
-> If you're looking to monitor, track performance, detect anomalies to your API requests, have a look to [Bearer.sh](https://bearer.sh/?ref=pizzly), the monitoring agent. If you're using Pizzly in API proxy mode, it's as simple as adding your Bearer Developer Key to the environment variable `$BEARER_SECRET_KEY` - you can [get yours for free here 🚀](https://bearer.sh/?ref=pizzly)
-
-## Services
-
-Pizzly works as a self-hosted instance that provides different services including:
-
-- [an auth manager](https://github.com/Bearer/Pizzly/wiki/Reference-:-Auth);
-- [a proxy service](https://github.com/Bearer/Pizzly/wiki/Reference-:-Proxy);
-- [a developer's dashboard](https://github.com/Bearer/Pizzly/wiki/Reference-:-Dashboard);
-- [an API](https://github.com/Bearer/Pizzly/wiki/Reference-:-API);
-- and [a JavaScript library](/src/clients/javascript/) to interact with each service from your frontend;
+You'll notice that when a user is successfully connected, we received an `authId`; it's a power concept introduced by Pizzly. The `authId` acts as a reference to the OAuth payload (i.e. the `access_token` and `refresh_token`). While the `access_token` and `refresh_token` expire and/or change over time, the `authId` is always the same. Think of it as something like a user identity.
 
 ## Supported APIs
 
@@ -160,6 +131,28 @@ Each API consists of a JSON configuration file, stored within the `/integrations
 
 And adding new APIs is straightforward. Just create a new configuration file within the `/integrations` folder of your Pizzly's instance. If you feel like sharing, you can even create a PR so that other developers will be able to use it as well!
 
-## License
+## Why Pizzly?
 
-This project is licensed under the terms of the MIT license. See the [LICENSE file](LICENSE.md) for more information.
+Pizzly originally started at Bearer.sh as a way to simplify the developer's journey and ease the building of API integrations. OAuth is a great framework, but the difficulty and wide range of implementation makes it painful to use and tends to slow down the ability to integrate with new APIs.
+
+_But seriously, why Pizzly? We're fan of bears and fell in love with this [sweet hybrid](https://en.wikipedia.org/wiki/Grizzly–polar_bear_hybrid) one 🐻_
+
+## Contributing
+
+While Pizzly is actively backed by Bearer's engineering team, the main purpose of this repository is to continue to improve Pizzly, making it larged and easier to use. We are grateful to each contributors and encourage you to participate by reporting bugs, ask for improvements and propose changes to the code.
+
+### Covenant Code of Conduct
+
+Pizzly has adopted the Contributor Covenant Code of Conduct (version 2.0), available at https://www.contributor-covenant.org/version/2/0/code_of_conduct.html. We expect project participants to adhere to.
+
+### Contributing Guide
+
+All work on Pizzly happens directly on [GitHub](https://github.com/bearer/pizzly). Both Bearer.sh team members and external contributors send pull requests which go through the same review process. Submit all changes directly to the [`master branch`](https://github.com/bearer/pizzly/tree/master). We don’t use separate branches for development or for upcoming releases.
+
+To report a bug or a feedback, use [GitHub Issues](/issues). We keep a close eye on this and try to labelize each new request. If you're fixing a bug or working on a new feature, submit a [pull request]() with detail on which changes you've made.
+
+While there are no templates yet, we still recommend to provide as much detail as possible. Consider that someone external to the project should understand your request at first glance.
+
+### License
+
+Pizzly is MIT licensed. See the [LICENSE file](https://github.com/Bearer/Pizzly/blob/master/LICENSE.md) for more information.
