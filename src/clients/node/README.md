@@ -1,6 +1,6 @@
 # Pizzly Node.js client
 
-Node client to query any APIs and custom functions using [Pizzly](https://github.com/Bearer/Pizzly).
+Node.js client to query any APIs using [Pizzly](https://github.com/Bearer/Pizzly).
 
 ## Installation
 
@@ -30,6 +30,36 @@ myAPI
 ```
 
 Most common HTTP methods are supported out-of-the-box, including `.get()`, `.post()`, `.put()` and `.delete()`.
+
+### Handling the response
+
+Under the hood, we use `node-fetch` to send requests. As a consequence, each `response` from the API are `Response` class of the [node-fetch](https://github.com/node-fetch/node-fetch#class-response) package. When the API uses JSON response type, you can retrieve the JSON response as follow:
+
+```js
+myAPI
+  .auth('x-auth-id')
+  .post('/x-endpoint', { body: 'My body' })
+  .then(response => response.json())
+  .then(response => {
+    console.log(response) // do something with the JSON payload
+  })
+  .catch(console.error)
+```
+
+## Advanced usage
+
+### Using your secret key
+
+It's highly recommended to secure your Pizzly instance after deployment ([learn more](https://github.com/Bearer/Pizzly/wiki/Secure-your-instance)). Once you've added a secret key, pass it to the client as follow:
+
+```js
+const Pizzly = require('pizzly')
+
+const pizzly = new Pizzly({
+  host: 'x-replace-with-your-pizzly-instance',
+  secretKey: 'x-replace-with-your-secret-key'
+})
+```
 
 ### Passing extra params
 
@@ -61,38 +91,6 @@ myAPI
   .post('/x-endpoint', { body: 'My body' })
   .then(console.log)
   .catch(console.error)
-```
-
-### Handling the response
-
-Under the hood, we use `node-fetch` to send requests. Consequently, each `response` from the API are `Response` class of the [node-fetch](https://github.com/node-fetch/node-fetch#class-response) package.
-
-When the API uses JSON response type, you can retrieve the JSON response as follow:
-
-```js
-myAPI
-  .auth('x-auth-id')
-  .post('/x-endpoint', { body: 'My body' })
-  .then(response => response.json())
-  .then(response => {
-    console.log(response) // do something with the JSON payload
-  })
-  .catch(console.error)
-```
-
-## Advanced usage
-
-### Using your secret key
-
-It's highly recommended to secure your Pizzly instance after deployment ([learn more](https://github.com/Bearer/Pizzly/wiki/Secure-your-instance)). Once you've added a secret key, pass it to the client as follow:
-
-```js
-const Pizzly = require('pizzly')
-
-const pizzly = new Pizzly({
-  host: 'x-replace-with-your-pizzly-instance',
-  secretKey: 'x-replace-with-your-secret-key'
-})
 ```
 
 ### Async / await
