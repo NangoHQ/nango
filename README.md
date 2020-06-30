@@ -53,7 +53,13 @@ Pizzly can be installed anywhere (AWS, Heroku, Platform.sh, etc.). Here's a quic
 2. Once deployed, open your Heroku app. You will land on Pizzly's dashboard.
 3. Click on "Open Dashboard" and select the API you want to integrate with.
 4. Now, configure the API by entering your credentials and scopes. That's all it takes to configure a new API.
-5. To connect a user to this API, _in your frontend_, use the code below:
+5. To connect a user to this API, _in your frontend_, install [`pizzly-js`](src/clients/javascript):
+
+   ```bash
+   npm install pizzly-js
+   ```
+
+6. Then open your frontend app and copy-paste the following code:
 
    ```js
    import Pizzly from 'pizzly-js'
@@ -67,16 +73,18 @@ Pizzly can be installed anywhere (AWS, Heroku, Platform.sh, etc.). Here's a quic
      .catch(console.error)
    ```
 
-   This code will open a popup to start an authorization flow with that API. On success we obtain an `authId` which can be used to authenticate requests to the API.
+   This snippet code will open a popup in your browser to start an authorization flow with the provided API. On success you will obtain an `authId` which will be be used in the next step.
 
-6. _In your frontend again_, perform a request to the API using the code below:
+7. _In your frontend again_, use the previously obtained `authId` to perform a request to the API using the code below:
+
    ```js
    myAPI
      .auth('xxx-auth-id') // Replace with the authId previously obtained
      .get('/xxx-endpoint') // Replace with a valid endpoint of the API
-     .then(response => console.log(response.status))
+     .then(response => console.log(response))
      .catch(console.error)
    ```
+
    This example will perform a GET request to `/endpoint` of the API and will use the provided authId to authenticate the request.
 
 ## Documentation
