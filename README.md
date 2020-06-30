@@ -81,11 +81,11 @@ Pizzly can be installed anywhere (AWS, Heroku, Platform.sh, etc.). Here's a quic
 
 To integrate more APIs, repeat the steps 3 to 6 and you're all sets. 50+ APIs are pre-configured and you can even add your own easily ([learn more](https://github.com/Bearer/Pizzly/wiki/Supported-APIs)).
 
-To learn more about how to use Pizzly, open the [Wiki](wiki).
+To learn more about how to use Pizzly, open the [Wiki](https://github.com/Bearer/Pizzly/wiki).
 
 ## Examples
 
-We have several examples [on the wiki](/wiki/Examples) with different APIs. Here is the first one to get you started:
+We have several examples [on the wiki](https://github.com/Bearer/Pizzly/wiki/Examples) with different APIs. Here is the first one to get you started:
 
 ```js
 const pizzly = new Pizzly() // Initialize Pizzly
@@ -103,7 +103,7 @@ You'll notice that when a user is successfully connected, we received an `authId
 
 ## Documentation
 
-Guides, tutorials and references are all available on the [Wiki](wiki).
+Guides, tutorials and references are all available on the [Wiki](https://github.com/Bearer/Pizzly/wiki).
 
 ## Supported APIs
 
