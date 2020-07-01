@@ -20,7 +20,7 @@ Pizzly's JS can be used instantly in your page or with a package system.
 
 ```bash
 npm install pizzly-js
-# or 
+# or
 yarn add pizzly-js
 ```
 
@@ -28,9 +28,11 @@ yarn add pizzly-js
 
 ### Connecting to an OAuth based API
 
-The `connect` method lets you trigger an OAuth-dance. On success, Pizzly returns an `authId` that acts as a unique identifier of the authentication process. 
+The `connect` method lets you trigger an OAuth-dance. On success, Pizzly returns an `authId` that acts as a unique identifier of the authentication process.
 
 ```js
+const pizzly = new Pizzly() // Initialize Pizzly
+
 pizzly
   .connect('github')
   .then(({ authId }) => {
@@ -50,27 +52,37 @@ Using this `authId`, you can make authenticated request to the API using the pro
 Once a user is connected, you can query the API by providing the `authId`.
 
 ```js
+const pizzly = new Pizzly()
 const github = pizzly.integration('github')
 
 github
   .auth(authId)
   .get('/repos')
-  .then(data => {
-    console.log(data)
-  })
+  .then(response => console.log(response))
   .catch(console.error)
 
 // Passing extra arguments
 github
   .auth(authId)
-  .post('/', { headers: {}, query: {}, body: {} })
-  .then(data => {
-    console.log(data)
-  })
+  .post('/', { headers: {}, query: {}, body: '' })
+  .then(response => console.log(response))
   .catch(console.error)
 ```
 
 Most common HTTP methods are supported out-of-the-box, including `.get()`, `.post()`, `.put()` and `.delete()`.
+
+### Handling the response
+
+Under the hood, we use the [Fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Response) to send requests. As a consequence, each `response` from the API are `Response` interface of the Fetch API. When the API uses JSON response type, you can retrieve the JSON response as follow:
+
+```js
+myAPI
+  .auth('x-auth-id')
+  .get('/x-endpoint')
+  .then(response => response.json())
+  .then(data => console.log(data)) // do something with the JSON payload (aka data)
+  .catch(console.error)
+```
 
 ## Advanced usage
 
@@ -79,6 +91,8 @@ Most common HTTP methods are supported out-of-the-box, including `.get()`, `.pos
 When performing a connect, on success the OAuth payload is returned alongside the `authId`. Here's an example:
 
 ```js
+const pizzly = new Pizzly()
+
 pizzly
   .connect('github')
   .then(({ payload }) => {
@@ -94,14 +108,14 @@ pizzly
 Pizzly also provides an API endpoint to retrieve at any time the OAuth payload:
 
 ```bash
-curl -X GET "http://localhost:8080/api/github/authentications/AUTH_ID"
+curl -X GET "/api/API-SLUGNAME/authentications/AUTH-ID"
 ```
 
 ### Dealing with multiple configurations
 
 By default, each request made through Pizzly uses the latest configuration that you have saved. If you have multiple configurations in place for the same API, you can tell Pizzly which configuration should be used.
 
-```
+```js
 const config1 = '...'
 const config2 = '...'
 
@@ -182,7 +196,7 @@ For the developers previously using `@bearer/js`, find below a comparison with P
 | Proxy with a setupId        | `github.setup(setupId).get('/')`                                | `github.setup(setupId).get('/')`                                         |
 | Proxy with an authId        | `github.auth(authId).get('/')`                                  | `github.auth(authId).get('/')`                                           |
 | Proxy with both             | `github.setup('').auth('').get('/')`                            | `github.setup(setupId).auth(authId).get('/')`                            |
-| Configurations              | `bearerClient.invoke('github', 'bearer-setup-save', { setup })` | Not supported                                      |
+| Configurations              | `bearerClient.invoke('github', 'bearer-setup-save', { setup })` | Not supported                                                            |
 
 ## Reference
 
@@ -248,8 +262,8 @@ const Pizzly = (publishableKey, options) => {
      * @params options <object> - The request options:
      * - headers <object> - The headers to send (e.g. { "Content-Type": "application/json" })
      * - query <object> - The query string to use (e.g. { "startAt": "1" } will be transformed into "?startAt=1")
-     * - body <object> - The request's body to append (e.g. { "foo": "bar" })
-     * @returns an Axios response schema (https://github.com/axios/axios#response-schema)
+     * - body <object> - The request's body to append (e.g. "foo=bar")
+     * @returns a Fetch response schema (https://developer.mozilla.org/en-US/docs/Web/API/Response)
      */
 
     get: (endpoint[, options]) => {},

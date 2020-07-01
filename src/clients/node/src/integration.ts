@@ -2,6 +2,7 @@
  * Pizzly(JS) > Integration
  */
 
+import fetch from 'node-fetch'
 import Types from './types'
 
 export default class PizzlyIntegration {
@@ -25,14 +26,14 @@ export default class PizzlyIntegration {
     new PizzlyIntegration(this.integration, { ...this.options, authId }, this.key, this.origin)
 
   /**
-   * `setup` specify which setupId to use when calling Integration service
+   * `setup` specify which setupId to use when calling Pizzly proxy
    */
 
   public setup = (setupId: string) =>
     new PizzlyIntegration(this.integration, { ...this.options, setupId }, this.key, this.origin)
 
   /**
-   * `get` perform get request to integration service
+   * `get` perform get request
    */
 
   public get = (endpoint: string, parameters?: Types.RequestParameters) => {
@@ -40,7 +41,7 @@ export default class PizzlyIntegration {
   }
 
   /**
-   * `head` perform head request to integration service
+   * `head` perform head request
    */
 
   public head = (endpoint: string, parameters?: Types.RequestParameters) => {
@@ -48,7 +49,7 @@ export default class PizzlyIntegration {
   }
 
   /**
-   * `post` perform post request to integration service
+   * `post` perform post request
    */
 
   public post = (endpoint: string, parameters?: Types.RequestParameters) => {
@@ -56,7 +57,7 @@ export default class PizzlyIntegration {
   }
 
   /**
-   * `put` perform put request to integration service
+   * `put` perform put request
    */
 
   public put = (endpoint: string, parameters?: Types.RequestParameters) => {
@@ -64,7 +65,7 @@ export default class PizzlyIntegration {
   }
 
   /**
-   * `delete` perform delete request to integration service
+   * `delete` perform delete request
    */
 
   public delete = (endpoint: string, parameters?: Types.RequestParameters) => {
@@ -72,7 +73,7 @@ export default class PizzlyIntegration {
   }
 
   /**
-   * `patch` perform patch request to integration service
+   * `patch` perform patch request
    */
 
   public patch = (endpoint: string, parameters?: Types.RequestParameters) => {
@@ -81,7 +82,7 @@ export default class PizzlyIntegration {
 
   /**
    * Make the HTTP request
-   * (using Fetch behind the scene)
+   * (using node-fetch behind the scene)
    */
 
   public request = (method: Types.RequestMethod, endpoint: string, parameters: Types.RequestParameters = {}) => {
@@ -96,14 +97,19 @@ export default class PizzlyIntegration {
       'Pizzly-Setup-Id': this.options.setupId!
     }
 
+    if (this.key) {
+      // Authenticate the request with the provided secret key
+      const authentication = 'Basic ' + Buffer.from(this.key + ':').toString('base64')
+      headers['Authorization'] = authentication
+    }
+
     if (parameters && parameters.headers) {
       for (const key in parameters.headers) {
         headers[`Pizzly-Proxy-${key}`] = parameters.headers[key]
       }
     }
 
-    const url = this.toURL(this.origin, `/proxy/${this.integration}`, endpoint, this.key, parameters.query)
-    const fetch = window.fetch
+    const url = this.toURL(this.origin, `/proxy/${this.integration}`, endpoint, parameters.query)
 
     return fetch(url.toString(), {
       method,
@@ -116,13 +122,7 @@ export default class PizzlyIntegration {
    * Helper to build a new URL from different params
    */
 
-  private toURL(
-    origin: string,
-    baseURL: string,
-    endpoint: string,
-    key: string,
-    queryString?: Types.RequestQueryString
-  ): URL {
+  private toURL(origin: string, baseURL: string, endpoint: string, queryString?: Types.RequestQueryString): URL {
     const removeLeadingSlash = (text: string) => {
       return text.replace(/^\//, '')
     }
@@ -137,11 +137,6 @@ export default class PizzlyIntegration {
     urlParts.push(removeLeadingSlash(endpoint))
 
     const url = new URL(urlParts.join('/'))
-
-    if (key) {
-      // Authenticate the request with the provided publishable key
-      url.searchParams.append('pizzly_pkey', key)
-    }
 
     if (queryString) {
       Object.keys(queryString).forEach(key => url.searchParams.append(key, String(queryString[key])))
