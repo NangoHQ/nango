@@ -1,4 +1,4 @@
-import Pizzly from '../src/index'
+import { Pizzly } from '../src/index'
 
 describe('Pizzly class', () => {
   describe('constructor', () => {
