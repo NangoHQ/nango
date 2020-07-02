@@ -2,6 +2,7 @@
  * Pizzly(JS) > Integration
  */
 
+import PizzlyConnect from './connect'
 import Types from './types'
 
 export default class PizzlyIntegration {
@@ -30,6 +31,16 @@ export default class PizzlyIntegration {
 
   public setup = (setupId: string) =>
     new PizzlyIntegration(this.integration, { ...this.options, setupId }, this.key, this.origin)
+
+  /**
+   * `connect` triggers an OAuth dance for that user
+   */
+
+  public connect(options?: Types.ConnectOptions) {
+    const connectOptions = { ...this.options, ...(options || {}) }
+    const connect = new PizzlyConnect(this.integration, connectOptions, this.key, this.origin)
+    return connect.trigger()
+  }
 
   /**
    * `get` perform get request to integration service

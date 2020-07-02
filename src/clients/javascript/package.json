@@ -33,5 +33,8 @@
     "terser": "^4.6.13",
     "ts-jest": "^25.4.0",
     "typescript": "^3.8.3"
+  },
+  "jest": {
+    "preset": "ts-jest"
   }
 }
