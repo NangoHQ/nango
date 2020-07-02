@@ -17,7 +17,7 @@ yarn add pizzly-node
 Once a user is connected, you can use its [`authId`](https://github.com/Bearer/Pizzly/wiki/Reference-:-Auth#the-authid-concept) to query any endpoint of the API.
 
 ```js
-const Pizzly = require('pizzly-node')
+const Pizzly = require('pizzly-node') // or import { Pizzly } from 'pizzly-node'
 
 const pizzly = new Pizzly({ host: 'pizzly.example.org' }) // Initialize Pizzly with your own instance
 const myAPI = pizzly.integration('x-api') // Replace with the API slugname
@@ -51,7 +51,7 @@ myAPI
 It's highly recommended to secure your Pizzly instance after deployment ([learn more](https://github.com/Bearer/Pizzly/wiki/Secure-your-instance)). Once you've added a secret key, pass it to the client as follow:
 
 ```js
-const Pizzly = require('pizzly-node')
+const Pizzly = require('pizzly-node') // or import { Pizzly } from 'pizzly-node'
 
 const pizzly = new Pizzly({
   host: 'x-replace-with-your-pizzly-instance',
