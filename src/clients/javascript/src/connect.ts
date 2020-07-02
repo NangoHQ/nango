@@ -36,7 +36,7 @@ export default class PizzlyConnect {
 
   trigger(): Promise<Types.ConnectSuccess> {
     const query = this.toQueryString(this.key, this.options)
-    const url = `${this.origin}/auth/${this.integration}` + (query ? `?${query}` : '')
+    const url = new URL(`/auth/${this.integration}` + (query ? `?${query}` : ''), this.origin).href
 
     return new Promise((resolve, reject) => {
       const handler = (e?: MessageEvent) => {
