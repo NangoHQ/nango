@@ -32,9 +32,10 @@ The `connect` method lets you trigger an OAuth-dance. On success, Pizzly returns
 
 ```js
 const pizzly = new Pizzly() // Initialize Pizzly
+const github = pizzly.integration('github')
 
-pizzly
-  .connect('github')
+github
+  .connect()
   .then(({ authId }) => {
     // The authentication was successful
     console.log(`Auth ID is: ${authId}`)
@@ -52,18 +53,15 @@ Using this `authId`, you can make authenticated request to the API using the pro
 Once a user is connected, you can query the API by providing the `authId`.
 
 ```js
-const pizzly = new Pizzly()
-const github = pizzly.integration('github')
-
 github
-  .auth(authId)
+  .auth('x-auth-id') // Replace with a valid authId
   .get('/repos')
   .then(response => console.log(response))
   .catch(console.error)
 
 // Passing extra arguments
 github
-  .auth(authId)
+  .auth('x-auth-id')
   .post('/', { headers: {}, query: {}, body: '' })
   .then(response => console.log(response))
   .catch(console.error)
@@ -91,10 +89,8 @@ myAPI
 When performing a connect, on success the OAuth payload is returned alongside the `authId`. Here's an example:
 
 ```js
-const pizzly = new Pizzly()
-
-pizzly
-  .connect('github')
+github
+  .connect()
   .then(({ payload }) => {
     // The authentication was successful
     console.log(`Access token is: ${payload.accessToken}`)
@@ -160,13 +156,14 @@ This is particularly useful when you are trying to build a marketplace of integr
 For ease of use, you can provide your own `authId` when you connect a user to an API. For instance, you can reuse your own users IDs. This make it easy to keep track of which user is authenticated.
 
 ```js
-pizzly
-  .connect('github', { authId: 'my-own-non-guessable-auth-id' })
+github
+  .auth('my-own-non-guessable-auth-id')
+  .connect()
   .then()
   .catch()
 ```
 
-In that example, Pizzly will use `my-own-non-guessable-auth-id` as the `authId`.
+In that example, Pizzly will not generate an `authId` but instead will use `my-own-non-guessable-auth-id`.
 
 ### Async / await
 
