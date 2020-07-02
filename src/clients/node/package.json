@@ -25,5 +25,8 @@
   "repository": "bearer/pizzly",
   "homepage": "https://github.com/Bearer/Pizzly/tree/master/src/clients/javascript#readme",
   "author": "Bearer Team <engineering@bearer.sh>",
-  "license": "MIT"
+  "license": "MIT",
+  "jest": {
+    "preset": "ts-jest"
+  }
 }
