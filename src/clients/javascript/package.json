@@ -22,8 +22,8 @@
   },
   "repository": "bearer/pizzly",
   "homepage": "https://github.com/Bearer/Pizzly/tree/master/src/clients/javascript#readme",
-  "author": "Bearer Team<engineering@bearer.sh>",
-  "license": "ISC",
+  "author": "Bearer Team <engineering@bearer.sh>",
+  "license": "MIT",
   "dependencies": {},
   "devDependencies": {
     "@types/jest": "^25.2.1",
@@ -33,5 +33,8 @@
     "terser": "^4.6.13",
     "ts-jest": "^25.4.0",
     "typescript": "^3.8.3"
+  },
+  "jest": {
+    "preset": "ts-jest"
   }
 }

@@ -1,0 +1,32 @@
+{
+  "name": "pizzly-node",
+  "version": "0.1.0",
+  "description": "Node.js client for Pizzly",
+  "main": "dist/index.js",
+  "dependencies": {
+    "node-fetch": "^2.6.0"
+  },
+  "devDependencies": {
+    "@types/node-fetch": "^2.5.7",
+    "jest": "^26.1.0",
+    "rimraf": "^3.0.2",
+    "ts-jest": "^26.1.1",
+    "typescript": "^3.9.5"
+  },
+  "files": [
+    "dist/"
+  ],
+  "scripts": {
+    "test": "jest",
+    "prepare": "npm run build",
+    "clean": "rimraf dist",
+    "build": "npm run clean && tsc --project tsconfig.json"
+  },
+  "repository": "bearer/pizzly",
+  "homepage": "https://github.com/Bearer/Pizzly/tree/master/src/clients/javascript#readme",
+  "author": "Bearer Team <engineering@bearer.sh>",
+  "license": "MIT",
+  "jest": {
+    "preset": "ts-jest"
+  }
+}

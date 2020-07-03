@@ -18,9 +18,9 @@
       import Pizzly from '../dist/index.mjs'
 
       function fetchData() {
-        const pizzly = new Pizzly('abc123...', { port: 3000 })
+        const pizzly = new Pizzly({ host: 'localhost:4242', publishableKey: 'abc' })
 
-        const github = pizzly.integration('g2ithub', { setupId: '123...' })
+        const github = pizzly.integration('github', { setupId: '123...' })
         github.get('/search?limit=10', { query: { q: 'pizzly' } })
       }
 

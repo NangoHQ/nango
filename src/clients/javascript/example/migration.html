@@ -19,7 +19,7 @@
       import Pizzly from '../dist/index.mjs'
 
       function fetchData() {
-        const pizzly = new Pizzly('abc123...', { port: 3000 })
+        const pizzly = new Pizzly({ host: 'localhost:4242', publishableKey: 'abc' })
 
         const github = pizzly.integration('g2ithub', { setupId: '123...' })
         github.get('/search?limit=10', { query: { q: 'pizzly' } })
@@ -31,7 +31,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@bearer/js@latest/lib/bearer.production.min.js"></script>
     <script>
       function fetchDataBearer() {
-        const bearerClient = bearer('BEARER_PUBLISHABLE_KEY', { integrationHost: 'http://localhost:3000' })
+        const bearerClient = bearer('BEARER_PUBLISHABLE_KEY', { integrationHost: 'http://localhost:4242' })
 
         const github = bearerClient.integration('github')
         github.get('/search?limit=10', { query: { q: 'pizzly' } })
