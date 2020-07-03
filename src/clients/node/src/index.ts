@@ -48,5 +48,8 @@ class Pizzly {
   }
 }
 
-export default Pizzly
 module.exports = Pizzly
+module.exports.Pizzly = Pizzly
+module.exports.default = Pizzly
+
+export { Pizzly }
