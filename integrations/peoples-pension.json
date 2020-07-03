@@ -1,0 +1,24 @@
+{
+  "name": "Peoples Pension",
+  "auth": {
+    "authType": "OAUTH2",
+    "bodyFormat": "form",
+    "grantType": "authorization_code",
+    "config": {
+      "scope": ["openid", "profile", "read", "write", "offline_access"]
+    },
+    "tokenParams": {},
+    "tokenURL": "https://sbconnect.bandce.co.uk/connect/token",
+    "authorizationMethod": "body",
+    "authorizationParams": {},
+    "authorizationURL": "https://sbconnect.bandce.co.uk/connect/authorize"
+  },
+  "request": {
+    "headers": {
+      "Accept": "application/json",
+      "User-Agent": "Pizzly",
+      "Authorization": "Bearer ${auth.accessToken}"
+    },
+    "baseURL": "https://api.bandce.co.uk/api/v2"
+  }
+}
