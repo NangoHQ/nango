@@ -3,12 +3,6 @@
  *
  * @param integration (string) - The integration to connect with
  * @param options (object) - Connect options (see below)
- * @usage
- * - pizzly.connect('github')
- * - pizzly.connect('github', { authdId: "213d9ee..." })
- * - pizzly.connect('github', { configId: "813bca..." })
- * - pizzly.connect('github', { setupId: "813bca..." }) // legacy, use configId
- * - pizzly.connect('github', { authId: "213d9ee...", configId: "813bca..." })
  */
 
 import Types from './types'
@@ -42,7 +36,7 @@ export default class PizzlyConnect {
 
   trigger(): Promise<Types.ConnectSuccess> {
     const query = this.toQueryString(this.key, this.options)
-    const url = `${this.origin}/auth/${this.integration}` + (query ? `?${query}` : '')
+    const url = new URL(`/auth/${this.integration}` + (query ? `?${query}` : ''), this.origin).href
 
     return new Promise((resolve, reject) => {
       const handler = (e?: MessageEvent) => {

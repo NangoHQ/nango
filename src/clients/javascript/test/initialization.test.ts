@@ -1,63 +1,89 @@
 import Pizzly from '../src/index'
 
 describe('Pizzly class', () => {
-  const publishableKey = 'foo'
-  const emptyOptions = {}
-  const invalidOptions = { foo: 'bar' }
-  const validOptions = { hostname: 'example.org' }
-
   describe('constructor', () => {
-    it('can be instanciated', () => {
-      expect(Pizzly).toBeInstanceOf(Function)
+    it('is a function', () => {
+      expect(new Pizzly()).toBeInstanceOf(Pizzly)
     })
 
     it('accepts no arguments', () => {
       expect(() => {
-        // @ts-expect-error
         new Pizzly()
       }).not.toThrowError()
     })
 
-    it('accepts one argument', () => {
+    it('accepts an host option', () => {
       expect(() => {
-        new Pizzly(publishableKey)
+        new Pizzly({ host: 'example.org' })
       }).toBeInstanceOf(Function)
     })
 
-    it('accepts two arguments', () => {
+    it('accepts a publishableKey option', () => {
       expect(() => {
-        new Pizzly(publishableKey, emptyOptions)
+        new Pizzly({ publishableKey: 'xxx' })
       }).toBeInstanceOf(Function)
     })
 
-    it('accepts invalid options', () => {
+    it('accepts both an host option and a publishableKey option', () => {
       expect(() => {
-        // @ts-expect-error
-        new Pizzly(publishableKey, invalidOptions)
+        new Pizzly({ host: 'example.org', publishableKey: 'xxx' })
       }).toBeInstanceOf(Function)
     })
 
-    it('accepts a string as options (origin)', () => {
-      const pizzly = new Pizzly(publishableKey, 'https://example.org:4242')
-      expect(pizzly.hostname).toBe('example.org')
-      expect(pizzly.protocol).toBe('https:')
-      expect(pizzly.port).toBe('4242')
-    })
-  })
-
-  describe('methods', () => {
-    const pizzly = new Pizzly(publishableKey, validOptions)
-
-    it('has a "connect" method', () => {
-      expect(pizzly.connect).toBeInstanceOf(Function)
+    it('infers the origin from window.location', () => {
+      const pizzly = new Pizzly()
+      expect(pizzly.origin).toBe(new URL(window.location.href).href)
     })
 
-    it('has an "integration" method', () => {
-      expect(pizzly.integration).toBeInstanceOf(Function)
+    it('computes the origin from the host', () => {
+      const host = 'example.org:4242'
+      const origin = window.location.protocol + '//' + host
+      const pizzly = new Pizzly({ host })
+      expect(pizzly.origin).toBe(new URL(origin).href)
     })
 
-    // it('has a "saveConfig" method', () => {
-    //   expect(pizzly.saveConfig).toBeInstanceOf(Function)
-    // })
+    it('expects the origin to match the full host provided', () => {
+      const origin = 'https://example.org:4242'
+      const pizzly = new Pizzly({ host: origin })
+      expect(pizzly.origin).toBe(new URL(origin).href)
+    })
+
+    // Handle legacy initialization
+    describe('legacy', () => {
+      const publishableKey = 'foo'
+
+      const protocol = 'https:'
+      const hostname = 'example.org'
+      const port = 4242
+
+      it('accepts a (legacy) publishableKey argument', () => {
+        expect(() => {
+          new Pizzly(publishableKey)
+        }).toBeInstanceOf(Function)
+      })
+
+      it('accepts both a (legacy) publishableKey argument and (legacy) options', () => {
+        expect(() => {
+          new Pizzly(publishableKey, {})
+        }).toBeInstanceOf(Function)
+      })
+
+      it('infers the origin from window.location', () => {
+        const pizzly = new Pizzly(publishableKey, {})
+        expect(pizzly.origin).toBe(new URL(window.location.href).href)
+      })
+
+      it('computes the origin from the (legacy) options', () => {
+        const origin = protocol + '//' + hostname + ':' + port
+        const pizzly = new Pizzly(publishableKey, { protocol, hostname, port })
+        expect(pizzly.origin).toBe(new URL(origin).href)
+      })
+
+      it('accepts a string as (legacy) options', () => {
+        const origin = 'https://example.org:4242'
+        const pizzly = new Pizzly(publishableKey, origin)
+        expect(pizzly.origin).toBe(new URL(origin).href)
+      })
+    })
   })
 })
