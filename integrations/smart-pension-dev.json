@@ -1,0 +1,27 @@
+{
+  "name": "SmartPension Sandbox",
+  "image": "https://logo.clearbit.com/autoenrolment.co.uk",
+  "auth": {
+    "authType": "OAUTH2",
+    "bodyFormat": "json",
+    "grantType": "authorization_code",
+    "config": {
+      "scope": ["customer"]
+    },
+    "tokenParams": {},
+    "tokenURL": "https://id.sandbox.autoenrolment.co.uk/oauth/token",
+    "authorizationMethod": "body",
+    "authorizationParams": {
+      "responseType": "code"
+    },
+    "authorizationURL": "https://id.sandbox.autoenrolment.co.uk/oauth/authorize"
+  },
+  "request": {
+    "headers": {
+      "Accept": "application/json",
+      "User-Agent": "Pizzly",
+      "Authorization": "Bearer ${auth.accessToken}"
+    },
+    "baseURL": "https://api.sandbox.autoenrolment.co.uk"
+  }
+}

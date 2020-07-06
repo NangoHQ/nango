@@ -1,5 +1,6 @@
 {
-  "name": "Peoples Pension",
+  "name": "The People's Pension Sandbox",
+  "image": "https://logo.clearbit.com/thepeoplespension.co.uk",
   "auth": {
     "authType": "OAUTH2",
     "bodyFormat": "form",
@@ -8,10 +9,10 @@
       "scope": ["openid", "profile", "read", "write", "offline_access"]
     },
     "tokenParams": {},
-    "tokenURL": "https://connect.bandce.co.uk/connect/token",
+    "tokenURL": "https://sbconnect.bandce.co.uk/connect/token",
     "authorizationMethod": "body",
     "authorizationParams": {},
-    "authorizationURL": "https://connect.bandce.co.uk/connect/authorize"
+    "authorizationURL": "https://sbconnect.bandce.co.uk/connect/authorize"
   },
   "request": {
     "headers": {
@@ -19,6 +20,6 @@
       "User-Agent": "Pizzly",
       "Authorization": "Bearer ${auth.accessToken}"
     },
-    "baseURL": "https://api.bandce.co.uk/api/v2"
+    "baseURL": "https://api-sandbox.bandce.co.uk/api/v2"
   }
 }
