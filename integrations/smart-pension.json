@@ -21,6 +21,6 @@
       "User-Agent": "Pizzly",
       "Authorization": "Bearer ${auth.accessToken}"
     },
-    "baseURL": "https://api.autoenrolment.co.uk"
+    "baseURL": "https://api.autoenrolment.co.uk/"
   }
 }

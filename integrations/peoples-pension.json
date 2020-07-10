@@ -19,6 +19,6 @@
       "User-Agent": "Pizzly",
       "Authorization": "Bearer ${auth.accessToken}"
     },
-    "baseURL": "https://api.bandce.co.uk/api/v2"
+    "baseURL": "https://api.bandce.co.uk/api/v2/"
   }
 }

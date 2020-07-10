@@ -20,6 +20,6 @@
       "User-Agent": "Pizzly",
       "Authorization": "Bearer ${auth.accessToken}"
     },
-    "baseURL": "https://api-sandbox.bandce.co.uk/api/v2"
+    "baseURL": "https://api-sandbox.bandce.co.uk/api/v2/"
   }
 }
