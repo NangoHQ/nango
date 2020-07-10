@@ -44,6 +44,14 @@ export default class PizzlyConnect {
           return
         }
 
+        // If the event origin is different from the Pizzly's instance
+        // do not handle that event. Some APIs consent screeens triggers
+        // postMessage. This make sure that it does not interfer with pizzly-js
+        // To learn more: https://github.com/Bearer/Pizzly/issues/75
+        if (e && new URL(e.origin).origin !== new URL(this.origin).origin) {
+          return
+        }
+
         this.status = AuthorizationStatus.DONE
 
         if (!e) {
@@ -52,8 +60,8 @@ export default class PizzlyConnect {
           return reject(new Error(errorMessage))
         }
 
-        if (!e.data) {
-          const errorMessage = 'Authorization failed. The response is not supported.'
+        if (!e.data || !e.data.event) {
+          const errorMessage = 'Authorization failed. The authorization modal sent an unsupported MessageEvent.'
           return reject(new Error(errorMessage))
         }
 
@@ -65,7 +73,7 @@ export default class PizzlyConnect {
           return reject(event.data)
         }
 
-        reject(new Error('Authorization failed. The response type is not supported'))
+        reject(new Error('Authorization failed. That’s all we know.'))
       }
 
       // Add an event listener on authorization modal
