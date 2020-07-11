@@ -60,7 +60,7 @@ export default class PizzlyConnect {
           return reject(new Error(errorMessage))
         }
 
-        if (!e.data || !e.data.event) {
+        if (!e.data || !e.data.eventType) {
           const errorMessage = 'Authorization failed. The authorization modal sent an unsupported MessageEvent.'
           return reject(new Error(errorMessage))
         }
