@@ -45,6 +45,7 @@ export const refreshAuthentication = async (
 
     const newAuthentication: Types.Authentication = {
       object: 'authentication',
+      id: oldAuthentication.auth_id,
       auth_id: oldAuthentication.auth_id,
       setup_id: oldAuthentication.setup_id,
       payload: newPayload,
