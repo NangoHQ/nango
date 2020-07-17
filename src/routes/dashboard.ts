@@ -98,6 +98,29 @@ dashboard.get('/all', async (req, res) => {
   res.render('dashboard/home-all', { req })
 })
 
+/**
+ * Dashboard settings page
+ */
+
+dashboard.get('/settings', async (req, res) => {
+  const keys = [
+    { name: 'DASHBOARD_USERNAME', value: process.env.DASHBOARD_USERNAME, services: ['Dashboard'] },
+    { name: 'DASHBOARD_PASSWORD', value: process.env.DASHBOARD_PASSWORD, services: ['Dashboard'] },
+    { name: 'SECRET_KEY', value: process.env.SECRET_KEY, services: ['API', 'Proxy'] },
+    { name: 'PUBLISHABLE_KEY', value: process.env.PUBLISHABLE_KEY, services: ['Auth', 'Proxy'] },
+    { name: 'BEARER_SECRET_KEY', value: process.env.BEARER_SECRET_KEY, services: ['Auth', 'Proxy'] }
+  ]
+
+  // @ts-ignore
+  req.data = { ...req.data, keys }
+
+  res.render('dashboard/settings-keys', { req })
+})
+
+/**
+ * Integration middleware
+ */
+
 dashboard.use('/:integration', async (req, res, next) => {
   const integration = await integrations.get(req.params.integration).catch(err => next(err))
 

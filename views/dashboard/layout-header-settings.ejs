@@ -1,0 +1,17 @@
+<header>
+  <div class="container">
+    <a href="/dashboard/">
+      <img src="/assets/img/logos/pizzly.png" class="logo" alt="Pizzly" height="80" />
+    </a>
+
+    <h1><a href="/dashboard/">Pizzly</a> <span class="separator">/</span> Settings</h1>
+
+    <nav>
+      <ol>
+        <li class="<%= req.path.indexOf('settings') > 0 ? 'active' : '' %>">
+          <a href="/dashboard/settings">Secure instance</a>
+        </li>
+      </ol>
+    </nav>
+  </div>
+</header>
