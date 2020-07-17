@@ -9,6 +9,7 @@
 import * as express from 'express'
 import bodyParser from 'body-parser'
 import { v4 as uuidv4 } from 'uuid'
+import axios from 'axios'
 import * as integrations from '../lib/database/integrations'
 import { store } from '../lib/database'
 import * as access from '../lib/access'
@@ -247,6 +248,21 @@ dashboard.post('/:integration/configurations/:setupId', async (req, res) => {
 })
 
 /**
+ * Delete a configuration from the dashboar (little trash icon)
+ */
+
+dashboard.delete('/:integration/configurations/:setupId', async (req, res, next) => {
+  const url = req.protocol + '://' + req.get('host') + req.originalUrl.replace('/dashboard/', '/api/')
+
+  const credentials = Buffer.from(`${process.env.SECRET_KEY}:`, 'utf8').toString('base64')
+
+  await axios
+    .delete(url, { headers: { Authorization: `Basic ${credentials}` } })
+    .then(({ data }) => res.json(data))
+    .catch(next)
+})
+
+/**
  * Integration > Authentications
  */
 
@@ -292,6 +308,21 @@ dashboard.get('/:integration/authentications/:authId', async (req, res) => {
   req.data = { ...req.data, authentication }
 
   res.render('dashboard/api-authentications-item', { req })
+})
+
+/**
+ * Delete a configuration from the dashboar (little trash icon)
+ */
+
+dashboard.delete('/:integration/authentications/:setupId', async (req, res, next) => {
+  const url = req.protocol + '://' + req.get('host') + req.originalUrl.replace('/dashboard/', '/api/')
+
+  const credentials = Buffer.from(`${process.env.SECRET_KEY}:`, 'utf8').toString('base64')
+
+  await axios
+    .delete(url, { headers: { Authorization: `Basic ${credentials}` } })
+    .then(({ data }) => res.json(data))
+    .catch(next)
 })
 
 /**

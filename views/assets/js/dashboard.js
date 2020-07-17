@@ -36,5 +36,7 @@ const removeItem = event => {
     item.parentNode.removeChild(item)
   }, 800)
 
-  fetch(`/api/${integration}/${type + 's'}/${id}`, { method: 'DELETE' }).catch(console.error)
+  fetch(`/dashboard/${integration}/${type + 's'}/${id}`, {
+    method: 'DELETE'
+  }).catch(console.error)
 }
