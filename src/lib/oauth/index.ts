@@ -44,6 +44,8 @@ export const refreshAuthentication = async (
     const newPayload = await OAuth2.refresh(integration, configuration, oldAuthentication)
 
     const newAuthentication: Types.Authentication = {
+      object: 'authentication',
+      id: oldAuthentication.auth_id,
       auth_id: oldAuthentication.auth_id,
       setup_id: oldAuthentication.setup_id,
       payload: newPayload,

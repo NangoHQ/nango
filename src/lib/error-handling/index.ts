@@ -38,7 +38,17 @@ export class PizzlyError extends Error {
       // Missing a params errors (400)
       case 'missing_auth_id':
         this.status = 400
-        this.message = 'A valid auth_id is required to proceed with the proxy request.'
+        this.message = 'A valid auth_id (string) is required to proceed with the request.'
+        break
+
+      case 'missing_setup_id':
+        this.status = 400
+        this.message = 'A valid setup_id (string) is required to proceed with the request.'
+        break
+
+      case 'missing_oauth_payload':
+        this.status = 400
+        this.message = 'A valid payload (OAuth2Payload | OAuth1Payload) is required to proceed with the request.'
         break
 
       // Unknown params errors (404)
@@ -49,18 +59,18 @@ export class PizzlyError extends Error {
 
       case 'unknown_authentication':
         this.status = 404
-        this.message = 'That authentication ID could not be found on the database.'
+        this.message = 'That authentication (auth_id) could not be found with the provided integration.'
         break
 
       case 'unknown_configuration':
         this.status = 404
-        this.message = 'That configuration ID (setupId) could not be found on the database'
+        this.message = 'That configuration (setup_id) could not be found with the provided integration.'
         break
 
       // Invalid params (400)
-      case 'invalid_integration':
+      case 'invalid_authentication':
         this.status = 400
-        this.message = 'Scopes are malformed. Must be in the form string[].'
+        this.message = 'The authentication (auth_id) is malformed. Must be in the form string.'
         break
 
       case 'invalid_credentials':
@@ -72,6 +82,12 @@ export class PizzlyError extends Error {
       case 'invalid_scopes':
         this.status = 400
         this.message = 'Scopes are malformed. Must be in the form string[].'
+        break
+
+      case 'invalid_oauth_payload':
+        this.status = 400
+        this.message =
+          'The OAuth payload provided is malformed. Must be an object in the form OAuth1Payload or OAuth2Payload. Learn more at https://github.com/bearer/pizzly/wiki/Reference-:-API'
         break
 
       // Something failed
