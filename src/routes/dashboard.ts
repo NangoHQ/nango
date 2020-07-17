@@ -248,7 +248,7 @@ dashboard.post('/:integration/configurations/:setupId', async (req, res) => {
 })
 
 /**
- * Delete a configuration from the dashboar (little trash icon)
+ * Delete a configuration from the dashboard (little trash icon)
  */
 
 dashboard.delete('/:integration/configurations/:setupId', async (req, res, next) => {
@@ -311,7 +311,7 @@ dashboard.get('/:integration/authentications/:authId', async (req, res) => {
 })
 
 /**
- * Delete a configuration from the dashboar (little trash icon)
+ * Delete an authentication from the dashboard (little trash icon)
  */
 
 dashboard.delete('/:integration/authentications/:setupId', async (req, res, next) => {
