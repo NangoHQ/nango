@@ -1,7 +1,6 @@
 import express from 'express'
 import Bearer from '@bearer/node-agent'
 import * as routes from './routes'
-import { requestLogger, errorLogger } from './lib/utils/logger'
 
 export const BUID = 'bearerUid' // TODO - What is this for?
 export const PORT = process.env.PORT || 8080
@@ -17,7 +16,10 @@ app.use('/assets', express.static('./views/assets'))
  * Request log
  */
 
-app.use(requestLogger)
+app.use((req, _res, next) => {
+  console.log(req.method, req.path)
+  next()
+})
 
 /**
  * Project homepage
@@ -67,16 +69,16 @@ app.use('/api/v4/functions', routes.legacy.proxy)
  */
 
 app.use((_req, res, _next) => {
-  res.status(404).render('404')
+  res.status(404).render('errors/4xx', { status: 404 })
 })
 
-app.use(errorLogger)
 app.use((err, _req, res, _next) => {
-  if (err.status && err.status === 401) {
-    res.status(401).render('401')
+  console.error(err)
+
+  if (err.status && err.status) {
+    res.status(err.status).render('errors/4xx', { status: err.status })
   } else {
-    console.error(err)
-    res.status(500).render('500')
+    res.status(500).render('errors/500')
   }
 })
 

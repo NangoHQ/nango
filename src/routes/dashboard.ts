@@ -14,6 +14,7 @@ import * as integrations from '../lib/database/integrations'
 import { store } from '../lib/database'
 import * as access from '../lib/access'
 import { Types } from '../types'
+import { PizzlyError } from '../lib/error-handling'
 
 const dashboard = express.Router()
 
@@ -123,15 +124,19 @@ dashboard.get('/settings', async (req, res) => {
  */
 
 dashboard.use('/:integration', async (req, res, next) => {
-  const integration = await integrations.get(req.params.integration).catch(err => next(err))
+  try {
+    const integration = await integrations.get(req.params.integration)
 
-  // @ts-ignore
-  req.ejs = { ...req.ejs, base_url: `/dashboard/${req.params.integration}` }
+    // @ts-ignore
+    req.ejs = { ...req.ejs, base_url: `/dashboard/${req.params.integration}` }
 
-  // @ts-ignore
-  req.data = { ...req.data, integration }
+    // @ts-ignore
+    req.data = { ...req.data, integration }
 
-  return next()
+    return next()
+  } catch (err) {
+    next(new PizzlyError('unknown_integration'))
+  }
 })
 
 /**
@@ -362,19 +367,6 @@ dashboard.get('/:integration/request', (req, res) => {
 
 dashboard.get('/:integration/monitoring', (req, res) => {
   res.render('dashboard/api-monitoring', { req })
-})
-
-/**
- * 404 Handler
- */
-
-dashboard.use((req, res, next) => {
-  return res.status(404).render('404')
-})
-
-dashboard.use((err, req, res, next) => {
-  console.error(err)
-  return res.status(500).render('500')
 })
 
 /**
