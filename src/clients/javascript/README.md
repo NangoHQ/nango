@@ -11,8 +11,8 @@ Pizzly's JS can be used instantly in your page or with a package system.
 ```html
 <script src="https://cdn.jsdelivr.net/npm/pizzly-js@latest/dist/index.umd.min.js"></script>
 <script>
-  // Initialize your code by passing your `publishableKey` and `hostname` as parameters.
-  const pizzly = new Pizzly(publishableKey, 'https://...')
+  // Initialize your code by passing your instance `hostname` as parameters.
+  const pizzly = new Pizzly({ host: 'pizzly.example.org' })
 </script>
 ```
 
@@ -105,6 +105,14 @@ Pizzly also provides an API endpoint to retrieve at any time the OAuth payload:
 
 ```bash
 curl -X GET "/api/API-SLUGNAME/authentications/AUTH-ID"
+```
+
+### Using a publishable key
+
+When you've [secured your instance](https://github.com/Bearer/Pizzly/wiki/Secure-your-instance), you'll have to provide a `publishableKey` when initializing Pizzly. Here's how to do it:
+
+```js
+const pizzly = new Pizzly({ host: 'pizzly.example.org', publishableKey: '***' })
 ```
 
 ### Dealing with multiple configurations
@@ -203,16 +211,14 @@ Pizzly JavaScript client's reference:
 /**
  * Pizzly global namespace. Call it to initialize a Pizzly instance.
  *
- * @params publishableKey <string> - Your publishable key to authenticate the request
  * @params options <object>
- *  - protocol <string> - The protocol of your Pizzly's instance (e.g. "https:")
  *  - host <string|number> - The host of your Pizzly's instance (e.g. "example.org")
- *  - port <string|number> - The port of your Pizzly's instance (e.g. "3000")
+ *  - publishableKey <string> - The publishable key of your Pizzly's instance (optional)
  *
  * @returns a new Pizzly instance.
  */
 
-const Pizzly = (publishableKey, options) => {
+const Pizzly = (options) => {
 
   /**
    * OAuth authentication handler
@@ -222,8 +228,9 @@ const Pizzly = (publishableKey, options) => {
    * - authId <string> - The authentication ID
    * - configId <string> - The configuration ID
    * - setupId <string> - Alias of the configuration ID (for legacy)
-   *
-   * @returns TODO
+   * @returns data <object>
+   * - authId <string> - The authentication ID
+   * - payload <object> - The OAuth payload
    */
 
   connect: (integration: string[, options]) => {},
@@ -251,6 +258,16 @@ const Pizzly = (publishableKey, options) => {
      */
 
     auth: (authId) => {},
+
+    /**
+     * Alias for connect. Will reuse auth and setup if provided.
+     *
+     * @returns data <object>
+     * - authId <string> - The authentication ID
+     * - payload <object> - The OAuth payload
+     */
+
+    connect: () => {},
 
     /**
      * Make a proxy request to the API (requests pass through the /proxy/ endpoint)
