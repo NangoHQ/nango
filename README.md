@@ -44,13 +44,13 @@ At the heart of Pizzly is a Node.js application that uses PostgreSQL as a databa
 
 ## Getting started
 
-Pizzly can be installed anywhere (AWS, Heroku, Platform.sh, etc.). Here's a quick guide using Heroku:
+Pizzly can be installed anywhere (AWS, Heroku, Platform.sh, etc.). Here's a quick guide:
 
-1. First, deploy your own instance of Pizzly by clicking the [Deploy to Heroku](https://heroku.com/deploy?template=https://github.com/Bearer/Pizzly) button below:
+1. First, deploy your own instance of Pizzly by clicking a deploy button below:
 
-   <a href="https://heroku.com/deploy?template=https://github.com/Bearer/Pizzly" rel="nofollow" target="_blank"><img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy to Heroku" height="40"></a>
+   | <a href="https://heroku.com/deploy?template=https://github.com/Bearer/Pizzly" rel="nofollow" target="_blank"><img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy to Heroku" height="40"></a> | <a href="https://console.platform.sh/projects/create-project/?template=https://github.com/Bearer/Pizzly&utm_campaign=deploy_on_platform?utm_medium=button&utm_source=affiliate_links&utm_content=https://github.com/Bearer/Pizzly" rel="nofollow"><img src="https://platform.sh/images/deploy/deploy-button-lg-blue.svg" alt="Deploy with Platform.sh" height="26"></a> |
 
-2. Once deployed, open your Heroku app. You will land on Pizzly's dashboard.
+2. Once deployed, open your app. You will land on Pizzly's dashboard.
 3. Click on "Open Dashboard" and select the API you want to integrate with.
 4. Now, configure the API by entering your credentials and scopes. That's all it takes to configure a new API.
 5. To connect a user to this API, _in your frontend_, install [`pizzly-js`](src/clients/javascript):
@@ -64,7 +64,7 @@ Pizzly can be installed anywhere (AWS, Heroku, Platform.sh, etc.). Here's a quic
    ```js
    import Pizzly from 'pizzly-js'
 
-   const pizzly = new Pizzly() // Initialize Pizzly
+   const pizzly = new Pizzly({ host: 'pizzly.example.org' }) // Initialize Pizzly
    const myAPI = pizzly.integration('xxx-api-name') // Replace with the API slugname
 
    myAPI
@@ -96,7 +96,7 @@ Guides, tutorials and references are all available on the [Wiki](https://github.
 We have several examples [on the wiki](https://github.com/Bearer/Pizzly/wiki/Examples) with different APIs. Here is the first one to get you started:
 
 ```js
-const pizzly = new Pizzly() // Initialize Pizzly
+const pizzly = new Pizzly({ host: 'pizzly.example.org' }) // Initialize Pizzly
 const github = pizzly.integration('github')
 
 github
