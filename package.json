@@ -90,5 +90,11 @@
     "ts-loader": "^5.3.3",
     "ts-node": "^8.10.1",
     "typescript": "^3.9.3"
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true,
+    "printWidth": 120,
+    "tabWidth": 2
   }
 }
