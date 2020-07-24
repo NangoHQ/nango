@@ -41,7 +41,7 @@
                 </td>
                 <td class="col-ellipsis">
                   <% if (key.value) { %>
-                  <span><%= (key.value || '').slice(-4) + '*'.repeat(15) %> </span>
+                  <span><%= (key.value || '').slice(0, 5) + '*'.repeat(15) %> </span>
                   <% } else { %>
                   <strong class="text-error">Not set</strong>
                 </td>
@@ -82,7 +82,7 @@
                 </td>
                 <td class="col-ellipsis">
                   <% if (key.value) { %>
-                  <span><%= '*'.repeat(20) %> </span>
+                  <span><%= (key.value || '').slice(0, 5) + '*'.repeat(15) %> </span>
                   <% } else { %>
                   <strong class="text-warning">Not set</strong>
                 </td>
