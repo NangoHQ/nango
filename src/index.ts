@@ -69,14 +69,16 @@ app.use('/api/v4/functions', routes.legacy.proxy)
  */
 
 app.use((_req, res, _next) => {
-  res.status(404).render('errors/4xx', { status: 404 })
+  res.status(404).render('errors/404')
 })
 
 app.use((err, _req, res, _next) => {
   console.error(err)
 
-  if (err.status && err.status) {
-    res.status(err.status).render('errors/4xx', { status: err.status })
+  const status = err.status && Number(err.status)
+
+  if (status && status >= 400 && status < 500) {
+    res.status(status).render('errors/' + err.status)
   } else {
     res.status(500).render('errors/500')
   }
