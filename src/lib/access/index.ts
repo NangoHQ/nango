@@ -8,7 +8,7 @@ import { PizzlyError } from '../error-handling'
 
 const basic = (req: Request, res: Response, next: NextFunction) => {
   const credentials = {
-    user: process.env.DASHBOARD_USER,
+    user: process.env.DASHBOARD_USERNAME || process.env.DASHBOARD_USER,
     password: process.env.DASHBOARD_PASSWORD
   }
 
@@ -22,7 +22,7 @@ const basic = (req: Request, res: Response, next: NextFunction) => {
   if (!authorizationHeader) {
     res.status(401)
     res.setHeader('WWW-Authenticate', 'Basic')
-    res.render('401')
+    res.render('errors/401')
     return
   }
 
@@ -31,7 +31,7 @@ const basic = (req: Request, res: Response, next: NextFunction) => {
   if (providedUser !== credentials.user || providedPassword !== credentials.password) {
     res.status(401)
     res.setHeader('WWW-Authenticate', 'Basic')
-    res.render('401')
+    res.render('errors/401')
     return
   }
 

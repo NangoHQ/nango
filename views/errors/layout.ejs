@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= error.title %></title>
+    <link rel="shorcut icon" sizes="128x128" type="image/x-icon" href="/assets/img/logos/favicon.ico" />
+    <link rel="stylesheet" href="/assets/css/hero.css" />
+  </head>
+  <body>
+    <main class="container hero">
+      <section class="error">
+        <img style="opacity:0.8" src="/assets/img/logos/pizzly.png" height="200" />
+        <h1><%= error.title %></h1>
+        <p><%= error.message %></p>
+      </section>
+    </main>
+  </body>
+</html>
