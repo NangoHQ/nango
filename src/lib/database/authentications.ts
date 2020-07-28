@@ -26,8 +26,18 @@ export const get = getAuthentication // Alias
  * @param authId (string) - The authentication ID
  */
 
-export const update = async (authId: string, newData: Types.Authentication): Promise<Types.Authentication> => {
+export const update = async (
+  authId: string,
+  newAuthentication: Types.Authentication
+): Promise<Types.Authentication> => {
+  const newRecord = {
+    auth_id: newAuthentication.auth_id,
+    setup_id: newAuthentication.setup_id,
+    payload: newAuthentication.payload,
+    updated_at: new Date()
+  }
+
   return await store('authentications')
     .where({ auth_id: authId })
-    .update(newData)
+    .update(newRecord)
 }
