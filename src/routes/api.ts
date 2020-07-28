@@ -4,8 +4,9 @@ import { v4 as uuidv4 } from 'uuid'
 import { store } from '../lib/database'
 import * as access from '../lib/access'
 import * as integrations from '../lib/database/integrations'
-import { Types } from '../types'
 import { PizzlyError } from '../lib/error-handling'
+import { refreshAuthentication } from '../lib/oauth'
+import { Types } from '../types'
 
 const api = express.Router()
 
@@ -266,6 +267,52 @@ api.put('/:integrationId/authentications/:authId', async (req, res, next) => {
     message: 'Authentication saved',
     authentication
   })
+})
+
+/**
+ * Refresh an authentication using the refresh token (if any)
+ */
+
+api.post('/:integrationId/authentications/:authId/refresh', async (req, res, next) => {
+  const integrationId = req.params.integrationId
+  const authId = req.params.authId
+
+  // Make sure the integration exists
+  const integration = await integrations.get(integrationId).catch(() => {
+    return null
+  })
+
+  if (!integration) {
+    next(new PizzlyError('unknown_integration'))
+    return
+  }
+
+  const authenticationInStore = await store('authentications')
+    .select('auth_id', 'setup_id', 'payload', 'created_at', 'updated_at')
+    .where({ buid: integrationId, auth_id: authId })
+    .first()
+
+  if (!authenticationInStore) {
+    next(new PizzlyError('unknown_authentication'))
+    return
+  }
+
+  const oldAuthentication: Types.Authentication = {
+    object: 'authentication',
+    id: authId,
+    auth_id: authId,
+    setup_id: authenticationInStore.setup_id,
+    payload: authenticationInStore.payload,
+    created_at: authenticationInStore.created_at,
+    updated_at: authenticationInStore.updated_at
+  }
+
+  try {
+    const authentication = await refreshAuthentication(integration, oldAuthentication)
+    res.json({ message: 'Authentication refreshed', authentication })
+  } catch (err) {
+    return next(new PizzlyError('token_refresh_failed'))
+  }
 })
 
 /**
