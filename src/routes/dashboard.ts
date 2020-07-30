@@ -9,10 +9,12 @@
 import * as express from 'express'
 import bodyParser from 'body-parser'
 import { v4 as uuidv4 } from 'uuid'
+import axios from 'axios'
 import * as integrations from '../lib/database/integrations'
 import { store } from '../lib/database'
 import * as access from '../lib/access'
 import { Types } from '../types'
+import { PizzlyError } from '../lib/error-handling'
 
 const dashboard = express.Router()
 
@@ -98,16 +100,43 @@ dashboard.get('/all', async (req, res) => {
   res.render('dashboard/home-all', { req })
 })
 
+/**
+ * Dashboard settings page
+ */
+
+dashboard.get('/settings', async (req, res) => {
+  const keys = [
+    { name: 'DASHBOARD_USERNAME', value: process.env.DASHBOARD_USERNAME, services: ['Dashboard'] },
+    { name: 'DASHBOARD_PASSWORD', value: process.env.DASHBOARD_PASSWORD, services: ['Dashboard'] },
+    { name: 'SECRET_KEY', value: process.env.SECRET_KEY, services: ['API', 'Proxy'] },
+    { name: 'PUBLISHABLE_KEY', value: process.env.PUBLISHABLE_KEY, services: ['Auth', 'Proxy'] },
+    { name: 'BEARER_SECRET_KEY', value: process.env.BEARER_SECRET_KEY, services: ['Auth', 'Proxy'] }
+  ]
+
+  // @ts-ignore
+  req.data = { ...req.data, keys }
+
+  res.render('dashboard/settings-keys', { req })
+})
+
+/**
+ * Integration middleware
+ */
+
 dashboard.use('/:integration', async (req, res, next) => {
-  const integration = await integrations.get(req.params.integration).catch(err => next(err))
+  try {
+    const integration = await integrations.get(req.params.integration)
 
-  // @ts-ignore
-  req.ejs = { ...req.ejs, base_url: `/dashboard/${req.params.integration}` }
+    // @ts-ignore
+    req.ejs = { ...req.ejs, base_url: `/dashboard/${req.params.integration}` }
 
-  // @ts-ignore
-  req.data = { ...req.data, integration }
+    // @ts-ignore
+    req.data = { ...req.data, integration }
 
-  return next()
+    return next()
+  } catch (err) {
+    next(new PizzlyError('unknown_integration'))
+  }
 })
 
 /**
@@ -247,6 +276,21 @@ dashboard.post('/:integration/configurations/:setupId', async (req, res) => {
 })
 
 /**
+ * Delete a configuration from the dashboard (little trash icon)
+ */
+
+dashboard.delete('/:integration/configurations/:setupId', async (req, res, next) => {
+  const url = req.protocol + '://' + req.get('host') + req.originalUrl.replace('/dashboard/', '/api/')
+
+  const credentials = Buffer.from(`${process.env.SECRET_KEY}:`, 'utf8').toString('base64')
+
+  await axios
+    .delete(url, { headers: { Authorization: `Basic ${credentials}` } })
+    .then(({ data }) => res.json(data))
+    .catch(next)
+})
+
+/**
  * Integration > Authentications
  */
 
@@ -295,6 +339,21 @@ dashboard.get('/:integration/authentications/:authId', async (req, res) => {
 })
 
 /**
+ * Delete an authentication from the dashboard (little trash icon)
+ */
+
+dashboard.delete('/:integration/authentications/:setupId', async (req, res, next) => {
+  const url = req.protocol + '://' + req.get('host') + req.originalUrl.replace('/dashboard/', '/api/')
+
+  const credentials = Buffer.from(`${process.env.SECRET_KEY}:`, 'utf8').toString('base64')
+
+  await axios
+    .delete(url, { headers: { Authorization: `Basic ${credentials}` } })
+    .then(({ data }) => res.json(data))
+    .catch(next)
+})
+
+/**
  * Integration > Request
  */
 
@@ -308,19 +367,6 @@ dashboard.get('/:integration/request', (req, res) => {
 
 dashboard.get('/:integration/monitoring', (req, res) => {
   res.render('dashboard/api-monitoring', { req })
-})
-
-/**
- * 404 Handler
- */
-
-dashboard.use((req, res, next) => {
-  return res.status(404).render('404')
-})
-
-dashboard.use((err, req, res, next) => {
-  console.error(err)
-  return res.status(500).render('500')
 })
 
 /**

@@ -4,7 +4,7 @@
 #
 # 1. Secure access to the dashboard
 #
-export DASHBOARD_USER=""
+export DASHBOARD_USERNAME=""
 export DASHBOARD_PASSWORD=""
 #
 # 2. Secure requests to the API

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+  <%- include('layout-head') %>
+  <body>
+    <!-- Header -->
+    <%- include('layout-header-settings', { req }); %>
+
+    <main class="container">
+      <section>
+        <header>
+          <h2 class="section-heading">Restrict access</h2>
+          <aside>
+            <a href="https://github.com/Bearer/Pizzly/wiki/Secure-your-instance" class="button button-primary"
+              >Learn more about securing Pizzly →</a
+            >
+          </aside>
+        </header>
+
+        <div class="table">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Value</th>
+                <th>Services protected</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% req.data.keys.forEach(function(key){ if (key.name === "BEARER_SECRET_KEY") {return; } %>
+              <tr>
+                <td>
+                  <div style="display: flex;">
+                    <span style="margin-right: 8px;"><%= key.name %></span>
+                    <a
+                      href="https://github.com/Bearer/Pizzly/wiki/Secure-your-instance#<%= key.name %>"
+                      data-icon="help"
+                      title="Learn more"
+                      >Learn more</a
+                    >
+                  </div>
+                </td>
+                <td class="col-ellipsis">
+                  <% if (key.value) { %>
+                  <span><%= (key.value || '').slice(0, 5) + '*'.repeat(15) %> </span>
+                  <% } else { %>
+                  <strong class="text-error">Not set</strong>
+                </td>
+                <% } %>
+                <td><%= key.services.join(', ') %></td>
+              </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="section-heading">Enable monitoring</h2>
+
+        <div class="table">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Value</th>
+                <th>Services concerned</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% req.data.keys.forEach(function(key){ if (key.name !== "BEARER_SECRET_KEY") {return; } %>
+              <tr>
+                <td>
+                  <div style="display: flex;">
+                    <span style="margin-right: 8px;"><%= key.name %></span>
+                    <a
+                      href="https://github.com/Bearer/Pizzly/wiki/Secure-your-instance#<%= key.name %>"
+                      data-icon="help"
+                      title="Learn more"
+                      >Learn more</a
+                    >
+                  </div>
+                </td>
+                <td class="col-ellipsis">
+                  <% if (key.value) { %>
+                  <span><%= (key.value || '').slice(0, 5) + '*'.repeat(15) %> </span>
+                  <% } else { %>
+                  <strong class="text-warning">Not set</strong>
+                </td>
+                <% } %>
+                <td><%= key.services.join(', ') %></td>
+              </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <%- include('layout-footer') -%>
+  </body>
+</html>

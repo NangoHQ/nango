@@ -150,8 +150,9 @@ export namespace Types {
   }
 
   export interface Configuration {
-    id: string
     object: string
+    id: string
+    setup_id: string
     scopes: string[]
     credentials: OAuth1Credentials | OAuth2Credentials
     createdAt?: string
@@ -159,6 +160,8 @@ export namespace Types {
   }
 
   export interface Authentication {
+    object: string
+    id: string
     auth_id: string
     setup_id: string
     payload: OAuthPayload
@@ -195,7 +198,7 @@ export namespace Types {
     expiresIn: number
   }
 
-  interface OAuth2Payload extends CommonOAuthPayload {
+  export interface OAuth2Payload extends CommonOAuthPayload {
     accessToken: string
     refreshToken?: string
     clientId?: string

@@ -145,6 +145,10 @@ body > main section h2 {
   margin: 0 0 2rem 0;
 }
 
+body > main section p.section-intro {
+  margin-top: -1rem;
+}
+
 body > main section header {
   margin-bottom: 2rem;
   display: flex;
@@ -212,6 +216,10 @@ table tbody td.ellipsis span {
 
 table .col-center {
   text-align: center;
+}
+
+table .col-right {
+  text-align: right;
 }
 
 table .col-date {
@@ -481,6 +489,30 @@ a[data-icon]:hover {
 
 [data-icon='back'] {
   background-image: url(/assets/img/icons/arrow_back-24px.svg);
+}
+
+[data-icon='help'] {
+  background-image: url(/assets/img/icons/help_outline-24px.svg);
+}
+
+/**
+ * Typography
+ */
+
+.text-error {
+  color: #ea4335;
+}
+
+.text-warning {
+  color: #fbbc05;
+}
+
+.text-success {
+  color: #34a853;
+}
+
+.text-info {
+  color: rgb(26, 115, 232);
 }
 
 /**
