@@ -2,14 +2,13 @@
 
 
 # Build image 
-FROM node:13.5.0-alpine3.11
+FROM node:14.5.0-alpine3.11
 
 WORKDIR /app
 
 # Copy in dependencies for building
 COPY *.json ./
 COPY yarn.lock ./
-COPY config ./config
 COPY integrations ./integrations/
 COPY src ./src/
 COPY tests ./tests/
@@ -19,7 +18,7 @@ RUN yarn install
 
 
 # Actual image to run from.
-FROM node:13.5.0-alpine3.11
+FROM node:14.5.0-alpine3.11
 
 # Make sure we have ca certs for TLS
 RUN apk --no-cache add ca-certificates
