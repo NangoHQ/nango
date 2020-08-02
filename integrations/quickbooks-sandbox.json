@@ -1,6 +1,6 @@
 {
   "name": "Quickbooks Sandbox",
-  "image": "http://logo.clearbit.com/quickbooks.com",
+  "image": "https://logo.clearbit.com/quickbooks.com",
   "auth": {
     "authorizationURL": "https://appcenter.intuit.com/connect/oauth2",
     "tokenURL": "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer",
