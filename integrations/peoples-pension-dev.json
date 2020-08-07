@@ -18,7 +18,8 @@
     "headers": {
       "Accept": "application/json",
       "User-Agent": "Pizzly",
-      "Authorization": "Bearer ${auth.accessToken}"
+      "Authorization": "Bearer ${auth.accessToken}",
+      "Content-Type": "application/vnd.api+json"
     },
     "baseURL": "https://api-sandbox.bandce.co.uk/api/v2/"
   }

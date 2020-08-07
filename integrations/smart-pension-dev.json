@@ -20,8 +20,9 @@
     "headers": {
       "Accept": "application/json",
       "User-Agent": "Pizzly",
-      "Authorization": "Bearer ${auth.accessToken}"
+      "Authorization": "Bearer ${auth.accessToken}",
+      "Content-Type": "application/json"
     },
-    "baseURL": "https://api.sandbox.autoenrolment.co.uk/"
+    "baseURL": "https://api.sandbox.autoenrolment.co.uk"
   }
 }
