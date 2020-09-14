@@ -78,7 +78,7 @@
     "jest-localstorage-mock": "^2.2.0",
     "lint-staged": "^8.1.0",
     "nock": "^10.0.1",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^2.6.1",
     "nodemon": "^2.0.2",
     "prettier": "^1.15.3",
     "rimraf": "^3.0.2",
