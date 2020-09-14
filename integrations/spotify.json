@@ -1,0 +1,21 @@
+{
+    "name": "Spotify",
+    "auth": {
+      "authorizationURL": "https://accounts.spotify.com/authorize",
+      "tokenURL": "https://accounts.spotify.com/api/token",
+      "authType": "OAUTH2",
+      "tokenParams": { "grant_type": "authorization_code" },
+      "auth": {
+        "response_type": "code"
+      }
+    },
+    "request": {
+      "baseURL": "https://api.spotify.com/v1/",
+      "headers": { 
+            "Accept": "application/json",
+            "User-Agent": "Pizzly" ,
+            "Authorization": "Bearer ${auth.accessToken}"
+        }
+    }
+  }
+  
