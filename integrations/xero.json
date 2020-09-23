@@ -3,9 +3,16 @@
   "auth": {
     "authorizationURL": "https://login.xero.com/identity/connect/authorize",
     "tokenURL": "https://identity.xero.com/connect/token",
+    "revocationURL": "https://identity.xero.com/connect/revocation",
     "authType": "OAUTH2",
     "bodyFormat": "form",
     "tokenParams": {},
+    "revocationParams": {
+      "token": "${auth.refreshToken}",
+    },
+    "revocationHeaders": {
+      "Authorization": "Basic ${auth.clientCredentialsBasic}"
+    },
     "authorizationParams": {}
   },
   "request": {

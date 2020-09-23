@@ -105,6 +105,9 @@ export namespace Types {
     authorizationMethod: AuthorizationMethod
     authorizationParams: Record<string, string> //{ prompt: 'consent'; access_type: 'offline' }
     authorizationURL: string
+    revocationURL?: string
+    revocationParams?: Record<string, string>
+    revocationHeaders?: Record<string, string>
     authType: 'OAUTH2'
     bodyFormat: BodyFormat
     config: {

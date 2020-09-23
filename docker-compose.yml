@@ -1,8 +1,20 @@
-version: '3'
+version: "3"
 services:
+  pizzly:
+    image: node:lts-pg
+    volumes:
+      - ./:/src/
+    ports:
+      - 8083:8083
+    working_dir: /src/
+    env_file: .env
+    command:
+      - /bin/sh
+      - -c
+      - "sh ./start.sh database"
   database:
     image: postgres
-    environment:
-        POSTGRES_HOST_AUTH_METHOD: trust
     ports:
-      - '5432:5432'
+      - 5432:5432
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
