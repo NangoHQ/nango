@@ -10,9 +10,8 @@
 
 The OAuth Integration Proxy
 
-<!-- Build badge || License Badge || Heroku badge
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
--->
+[How it works?](#how-it-works) - [Demo](#demo) - [Getting started](#getting-started) - [Documentation](#documentation) - [Examples](#examples) - [Contributing](#contributing) - [MIT License](#license)
+
 </div>
 
 **Pizzly makes it fast and reliable to build API integrations**. It handles dozens of pre-configured APIs (including Salesforce, Slack, Google Sheets [and many more](#supported-apis)) and lets you quickly add more APIs with a generic JSON configuration schema.
@@ -41,6 +40,10 @@ At the heart of Pizzly is a Node.js application that uses PostgreSQL as a databa
 - Provides configurations for over 50+ OAuth APIs (see list below)
 - Support adding new OAuth APIs using a file definition
 - 1-click deploy to Heroku or major cloud hosting solutions -->
+
+## Demo
+
+A live demo is available [right here](https://demopizzly.herokuapp.com/dashboard/all), hosted on Heroku. It's a public version of Pizzly, beware of not saving any sensitive credentials on it.
 
 ## Getting started
 
