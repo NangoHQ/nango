@@ -12,7 +12,7 @@
     "baseURL": "https://api.pagerduty.com/",
     "headers": {
       "Accept": "application/vnd.pagerduty+json;version=2",
-      "Authorization": "token ${auth.accessToken}",
+      "Authorization": "Bearer ${auth.accessToken}",
       "User-Agent": "Pizzly"
     }
   }
