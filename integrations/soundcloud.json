@@ -1,0 +1,20 @@
+{
+    "name": "SoundCloud",
+    "auth": {
+      "authorizationURL": "https://soundcloud.com/connect",
+      "tokenURL": "https://api.soundcloud.com/oauth2/token",
+      "authType": "OAUTH2",
+      "tokenParams": { "grant_type": "authorization_code" },
+      "auth": {
+        "response_type": "code"
+      }
+    },
+    "request": {
+      "baseURL": "https://api.soundcloud.com",
+      "headers": {
+            "Accept": "application/json",
+            "User-Agent": "Pizzly" ,
+            "Authorization": "Bearer ${auth.accessToken}"
+        }
+    }
+  }
