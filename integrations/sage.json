@@ -1,0 +1,21 @@
+{
+  "name": "Sage",
+  "auth": {
+    "authorizationURL": "https://www.sageone.com/oauth2/auth/central",
+    "tokenURL": "https://oauth.accounting.sage.com/token",
+    "authType": "OAUTH2",
+    "tokenParams": { "grant_type": "authorization_code" },
+    "authorizationParams": {
+      "response_type": "code",
+      "filter": "apiv3.1"
+    }
+  },
+  "request": {
+    "baseURL": "https://api.accounting.sage.com/v3.1/",
+    "headers": {
+      "Accept": "application/json",
+      "User-Agent": "Pizzly",
+      "Authorization": "Bearer ${auth.accessToken}"
+    }
+  }
+}
