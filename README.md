@@ -6,11 +6,14 @@
 
 <div align="center">
 
-<img src="/views/assets/img/logos/pizzly.png?raw=true" width="300">
+<a href="https://github.com/Bearer/Pizzly/blob/master/HACKTOBERFEST.md">
+<img src="./views/assets/img/docs/pizzly-hacktoberfest.jpg?raw=true" height="219">
 
-The OAuth Integration Proxy
+<strong>Help Pizzly maintainers during Hacktoberfest!</strong>
+</a>
 
-[How it works?](#how-it-works) - [Demo](#demo) - [Getting started](#getting-started) - [Documentation](#documentation) - [Examples](#examples) - [Contributing](#contributing) - [MIT License](#license)
+[How it works?](#how-it-works) - [Demo](#demo) - [Getting started](#getting-started)  
+[Documentation](#documentation) - [Examples](#examples) - [Contributing](#contributing) - [MIT License](#license)
 
 </div>
 
@@ -43,7 +46,12 @@ At the heart of Pizzly is a Node.js application that uses PostgreSQL as a databa
 
 ## Demo
 
-A live demo is available [right here](https://demopizzly.herokuapp.com/dashboard/all), hosted on Heroku. It's a public version of Pizzly, beware of not saving any sensitive credentials on it.
+A live demo of Pizzly is available [right here](https://demopizzly.herokuapp.com/dashboard/all). It's hosted on a free Heroku instance, so expect some latency. Beware also that it is a public version of Pizzly - do not save sensitive credentials on it.
+
+Other live demo of Pizzly includes:
+
+- [Pizzly + React](https://codesandbox.io/s/pizzly-github-react-demo-rq78z)
+- [Pizzly + Vue.js](https://codepen.io/frenchcooc/pen/RwrmXJw)
 
 ## Getting started
 
