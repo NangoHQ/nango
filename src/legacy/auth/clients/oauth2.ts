@@ -45,7 +45,7 @@ const createClientForToken = ({
 }
 
 const translateError = (e: any) => {
-  if (e.data && e.data.isResponseError) {
+  if (e.data?.isResponseError) {
     const {
       payload,
       res: { statusCode }

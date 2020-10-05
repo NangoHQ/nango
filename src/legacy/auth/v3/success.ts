@@ -16,7 +16,7 @@ export const authSuccess = asyncMiddleware(async (req: AuthSuccessRequest, res: 
     ...credentials
   }
 
-  if (configuration && configuration.scopes) {
+  if (configuration?.scopes) {
     console.log('[authSuccess] scopes', configuration.scopes)
     payload.scopes = configuration.scopes
   }

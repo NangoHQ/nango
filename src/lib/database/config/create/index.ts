@@ -15,7 +15,7 @@ import { Client } from 'pg'
 
   const { connection, client } = config['development']
 
-  if (client && client === 'pg' && connection && connection.database) {
+  if (client === 'pg' && connection?.database) {
     const database = connection.database
     connection.database = 'postgres' // pg default database
 

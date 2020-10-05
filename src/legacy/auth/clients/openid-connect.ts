@@ -41,7 +41,7 @@ export const inspectAccessToken = async ({
   const parsedTokenURL = new URL(tokenURL)
   const config = await fetchConfiguration(parsedTokenURL.origin)
 
-  if (config && config.introspection_endpoint) {
+  if (config?.introspection_endpoint) {
     return inspectToken({
       clientId,
       clientSecret,

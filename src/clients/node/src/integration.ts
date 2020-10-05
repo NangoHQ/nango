@@ -103,7 +103,7 @@ export default class PizzlyIntegration {
       headers['Authorization'] = authentication
     }
 
-    if (parameters && parameters.headers) {
+    if (parameters?.headers) {
       for (const key in parameters.headers) {
         headers[`Pizzly-Proxy-${key}`] = parameters.headers[key]
       }

@@ -107,7 +107,7 @@ export default class PizzlyIntegration {
       'Pizzly-Setup-Id': this.options.setupId!
     }
 
-    if (parameters && parameters.headers) {
+    if (parameters?.headers) {
       for (const key in parameters.headers) {
         headers[`Pizzly-Proxy-${key}`] = parameters.headers[key]
       }
