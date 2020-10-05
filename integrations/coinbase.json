@@ -9,7 +9,7 @@
     "authorizationParams": { "response_type": "code" }
   },
   "request": {
-    "baseURL": "https://api.coinbase.com/v2/user",
+    "baseURL": "https://api.coinbase.com/v2/",
     "headers": {
       "Accept": "application/json",
       "Authorization": "Bearer ${auth.access_token}",
