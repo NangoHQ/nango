@@ -1,0 +1,21 @@
+{
+  "name": "Pipedrive",
+  "image": "https://upload.wikimedia.org/wikipedia/commons/5/5d/Pipedrive_Logo.svg",
+  "auth": {
+    "authorizationURL": "https://oauth.pipedrive.com/oauth/authorize",
+    "tokenURL": "https://oauth.pipedrive.com/oauth/token",
+    "authType": "OAUTH2",
+    "tokenParams": {},
+    "authorizationParams": {
+      "grant_type": "authorization_code"
+    }
+  },
+  "request": {
+    "baseURL":"https://${headers.company_domain}.pipedrive.com/api/v1/",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer ${auth.accessToken}",
+      "User-Agent": "Pizzly"
+    }
+  }
+}
