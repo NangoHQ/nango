@@ -1,0 +1,21 @@
+{
+  "name": "Smartsheet",
+  "auth": {
+    "authorizationURL": "https://app.smartsheet.com/b/authorize",
+    "tokenURL": "https://api.smartsheet.com/2.0/token",
+    "authType": "OAUTH2",
+    "tokenParams": { "grant_type": "authorization_code" },
+    "authorizationParams": {
+      "state":"random123"
+    },
+    "auth": { "response_type": "code" }
+  },
+  "request": {
+    "baseURL": "https://api.smartsheet.com/2.0/",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer ${auth.accessToken}",
+      "User-Agent": "Pizzly"
+    }
+  }
+}
