@@ -12,7 +12,7 @@
     "baseURL": "https://api.coinbase.com/v2/user",
     "headers": {
       "Accept": "application/json",
-      "Authorization": "token ${auth.accessToken}",
+      "Authorization": "Bearer ${auth.access_token}",
       "User-Agent": "Pizzly"
     }
   }
