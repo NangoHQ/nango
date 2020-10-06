@@ -1,0 +1,18 @@
+{
+  "name": "Help Scout",
+  "auth": {
+    "authType": "OAUTH2",
+    "authorizationURL": "https://secure.helpscout.net/authentication/authorizeClientApplication",
+    "tokenURL": "https://api.helpscout.net/v2/oauth2/token",
+    "tokenParams": { "grant_type": "authorization_code" },
+    "authorizationParams": {}
+  },
+  "request": {
+    "baseURL": "https://api.helpscout.net/v2/",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer ${auth.accessToken}",
+      "User-Agent": "Pizzly"
+    }
+  }
+}
