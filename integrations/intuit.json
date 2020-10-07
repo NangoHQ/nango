@@ -1,0 +1,19 @@
+{
+  "name": "Intuit",
+  "auth": {
+    "authorizationURL": "https://appcenter.intuit.com/connect/oauth2",
+    "tokenURL": "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer",
+    "authType": "OAUTH2",
+    "tokenParams": { "grant_type": "authorization_code" },
+    "authorizationParams": {},
+    "auth": { "response_type": "code" }
+  },
+  "request": {
+    "baseURL": "https://quickbooks.api.intuit.com/v3/",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer ${auth.accessToken}",
+      "User-Agent": "Pizzly"
+    }
+  }
+}
