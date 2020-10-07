@@ -1,6 +1,6 @@
 {
   "name": "Google Sheets",
-  "image": "https://upload.wikimedia.org/wikipedia/commons/1/11/Google-Sheets-Logo-2019.png",
+  "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Google_Sheets_logo.svg/175px-Google_Sheets_logo.svg.png",
   "auth": {
     "authorizationURL": "https://accounts.google.com/o/oauth2/v2/auth",
     "tokenURL": "https://www.googleapis.com/oauth2/v4/token",

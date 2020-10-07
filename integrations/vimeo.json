@@ -1,0 +1,23 @@
+{
+  "name": "Vimeo",
+  "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Antu_vimeo.svg/240px-Antu_vimeo.svg.png",
+  "auth": {
+    "authorizationURL": "https://api.vimeo.com/oauth/authorize",
+    "tokenURL": "https://api.vimeo.com/oauth/access_token",
+    "authType": "OAUTH2",
+    "authorizationParams": {
+      "state": "{st=state123abc,ds=123456789}"
+    },
+    "auth": {
+      "response_type": "code"
+    }
+  },
+  "request": {
+    "baseURL": "https://api.vimeo.com/",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer ${auth.accessToken}",
+      "User-Agent": "Pizzly"
+    }
+  }
+}
