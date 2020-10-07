@@ -8,7 +8,7 @@ import Boom from 'boom'
 import { OAuthTokenResponse } from '../v3/types'
 // import { inspectAccessToken } from './openid-connect'
 
-const headers = {}
+const headers = { 'User-Agent': 'Pizzly' }
 
 const createClientForRedirect = ({ authorizationURL, clientId }: RedirectClientParams) => {
   const url = new URL(authorizationURL)
