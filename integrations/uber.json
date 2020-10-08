@@ -1,14 +1,14 @@
 {
-  "name": "Discord",
+  "name": "Uber",
   "auth": {
-    "authorizationURL": "https://discord.com/api/oauth2/authorize",
-    "tokenURL": "https://discord.com/api/oauth2/token",
+    "authorizationURL": "https://login.uber.com/oauth/v2/authorize",
+    "tokenURL": "https://login.uber.com/oauth/v2/token",
     "authType": "OAUTH2",
     "tokenParams": {},
     "authorizationParams": { "response_type": "code", "grant_type": "authorization_code" }
   },
   "request": {
-    "baseURL": "https://discord.com/api/",
+    "baseURL": "https://api.uber.com/v1.2",
     "headers": {
       "Accept": "application/json",
       "Authorization": "Bearer ${auth.accessToken}",
