@@ -12,7 +12,7 @@
     "headers": {
       "Accept": "application/json",
       "Authorization": "Bearer ${auth.accessToken}",
-      "User-Agent": "Pizzly (https://github.com/bearer/pizzly, 0.2.0)"
+      "User-Agent": "Pizzly"
     }
   }
 }
