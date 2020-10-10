@@ -1,0 +1,22 @@
+{
+  "name": "Google Hangouts",
+  "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/Hangouts_icon.svg/1200px-Hangouts_icon.svg.png",
+  "auth": {
+    "authorizationURL": "https://accounts.google.com/o/oauth2/v2/auth",
+    "tokenURL": "https://www.googleapis.com/oauth2/v4/token",
+    "authType": "OAUTH2",
+    "tokenParams": { "grant_type": "authorization_code" },
+    "authorizationParams": { "prompt": "consent", "access_type": "offline" },
+    "auth": {
+      "response_type": "code"
+    }
+  },
+  "request": {
+    "baseURL": "https://chat.googleapis.com/v1/",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer ${auth.accessToken}",
+      "User-Agent": "Pizzly"
+    }
+  }
+}
