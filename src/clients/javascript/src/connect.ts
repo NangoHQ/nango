@@ -112,6 +112,15 @@ export default class PizzlyConnect {
       query.push(`setupId=${options.setupId}`)
     }
 
+    if (options && typeof options.params !== 'undefined') {
+      for (const param in options.params) {
+        const val = options.params[param]
+        if (typeof val === 'string') {
+          query.push(`params[${param}]=${val}`)
+        }
+      }
+    }
+
     return query.join('&')
   }
 }
