@@ -1,6 +1,6 @@
 {
   "name": "pizzly-js",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "description": "A JavaScript library that enables Pizzly on your website",
   "main": "dist/index.js",
   "module": "dist/index.min.mjs",
