@@ -1,0 +1,22 @@
+{
+    "name": "Zendesk",
+    "auth": {
+      "authType": "OAUTH2",
+      "tokenParams": {},
+      "authorizationParams": {
+        "response_type": "token",
+        "subdomain": "lesalon"
+      },
+      "authorizationURL": "https://www.zopim.com/oauth2/authorizations/new",
+      "tokenURL": "https://www.zopim.com/oauth2/token"
+    },
+    "request": {
+      "params": {},
+      "headers": {
+        "Accept": "application/json",
+        "User-Agent": "Pizzly",
+        "Authorization": "Bearer ${auth.accessToken}"
+      },
+      "baseURL": "https://www.zopim.com/api/v2/"
+    }
+  }
