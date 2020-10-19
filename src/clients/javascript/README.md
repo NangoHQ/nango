@@ -31,6 +31,9 @@ yarn add pizzly-js
 The `connect` method lets you trigger an OAuth-dance. On success, Pizzly returns an `authId` that acts as a unique identifier of the authentication process.
 
 ```js
+// Import pizzly-js package
+import Pizzly from 'pizzly-js'
+
 const pizzly = new Pizzly({ host: 'pizzly.example.org' }) // Initialize Pizzly
 const github = pizzly.integration('github')
 
