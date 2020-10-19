@@ -1,0 +1,19 @@
+{
+  "name": "Instagram",
+  "auth": {
+    "authorizationURL": "https://api.instagram.com/oauth/authorize",
+    "tokenURL": "https://api.instagram.com/oauth/access_token",
+    "authType": "OAUTH2",
+    "tokenParams": { "grant_type": "authorization_code" },
+    "authorizationParams": {},
+    "auth": { "response_type": "code" }
+  },
+  "request": {
+    "baseURL": "https://graph.instagram.com",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer ${auth.accessToken}",
+      "User-Agent": "Pizzly"
+    }
+  }
+}
