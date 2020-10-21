@@ -1,0 +1,19 @@
+{
+  "name": "Drift",
+  "auth": {
+    "authorizationURL": "https://dev.drift.com/authorize",
+    "tokenURL": "https://driftapi.com/oauth2/token",
+    "authType": "OAUTH2",
+    "tokenParams": { "grant_type": "authorization_code" },
+    "authorizationParams": {},
+    "auth": { "response_type": "code" }
+  },
+  "request": {
+    "baseURL": "https://driftapi.com/",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer ${auth.accessToken}",
+      "User-Agent": "Pizzly"
+    }
+  }
+}

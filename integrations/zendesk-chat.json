@@ -5,7 +5,7 @@
     "tokenParams": {},
     "authorizationParams": {
       "response_type": "token",
-      "subdomain": "lesalon"
+      "subdomain": "${connectParams.subdomain}"
     },
     "authorizationURL": "https://www.zopim.com/oauth2/authorizations/new",
     "tokenURL": "https://www.zopim.com/oauth2/token"
