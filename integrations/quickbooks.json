@@ -14,7 +14,7 @@
     }
   },
   "request": {
-    "baseURL": "https://quickbooks.api.intuit.com/v3/company/${headers.quickbooks_realm_id}/",
+    "baseURL": "https://quickbooks.api.intuit.com/v3/company/${headers.quickbooks-realm-id}/",
     "headers": {
       "Accept": "application/json",
       "Authorization": "Bearer ${auth.accessToken}",
