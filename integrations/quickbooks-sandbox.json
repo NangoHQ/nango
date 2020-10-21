@@ -5,7 +5,9 @@
     "authorizationURL": "https://appcenter.intuit.com/connect/oauth2",
     "tokenURL": "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer",
     "authType": "OAUTH2",
-    "tokenParams": { "grant_type": "authorization_code" },
+    "tokenParams": {
+      "grant_type": "authorization_code"
+    },
     "authorizationParams": {},
     "auth": {
       "response_type": "code",
@@ -13,7 +15,7 @@
     }
   },
   "request": {
-    "baseURL": "https://sandbox-quickbooks.api.intuit.com/v3/company/${auth.idTokenJwt.realmid}/",
+    "baseURL": "https://sandbox-quickbooks.api.intuit.com/v3/company/${headers.quickbooks_realm_id}/",
     "headers": {
       "Accept": "application/json",
       "Authorization": "Bearer ${auth.accessToken}",
