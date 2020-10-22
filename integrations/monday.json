@@ -1,0 +1,16 @@
+{
+  "name": "Monday",
+  "auth": {
+    "authorizationURL": "https://auth.monday.com/oauth2/authorize",
+    "tokenURL": "https://auth.monday.com/oauth2/token",
+    "authType": "OAUTH2",
+  },
+  "request": {
+    "baseURL": "https://api.monday.com/v2/",
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer ${auth.accessToken}",
+      "User-Agent": "Pizzly"
+    }
+  }
+}
