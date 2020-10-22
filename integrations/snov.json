@@ -3,9 +3,9 @@
   "image": "https://logo.clearbit.com/snov.io",
   "auth": {
     "authType": "OAUTH2",
+    "grantType": "client_credentials",
     "bodyFormat": "form",
-    "tokenParams": { "grant_type": "client_credentials" },
-    "tokenURL": "https://app.snov.io/oauth/access_token",
+    "tokenURL": "https://api.snov.io/v1/oauth/access_token",
     "authorizationMethod": "body",
     "authorizationParams": {}
   },
@@ -15,7 +15,7 @@
       "User-Agent": "Pizzly",
       "Authorization": "Bearer ${auth.accessToken}"
     },
-    "baseURL": "https://app.snov.io/restapi/",
+    "baseURL": "https://api.snov.io/",
     "params": {}
   }
 }

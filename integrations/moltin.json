@@ -3,7 +3,7 @@
   "auth": {
     "authType": "OAUTH2",
     "bodyFormat": "form",
-    "tokenParams": { "grant_type": "client_credentials" },
+    "grantType": "client_credentials",
     "authorizationMethod": "body",
     "tokenURL": "https://api.moltin.com/oauth/access_token"
   },
