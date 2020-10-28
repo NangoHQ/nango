@@ -29,11 +29,13 @@
     <script>
       try {
         const payload = <%- JSON.stringify(req.data.authentication.payload) %>
-        const formatter = new JSONFormatter(payload, "Infinity")
+        const formatter = new JSONFormatter(payload, 'Infinity')
 
         document.querySelector('.form-json').appendChild(formatter.render())
         document.querySelector('textarea').remove()
-      } catch (err) { console.error(err) }
+      } catch (err) {
+        console.error(err)
+      }
     </script>
 
     <!-- Footer -->

@@ -49,7 +49,7 @@
             input.value = authId
             input.removeAttribute('disabled')
 
-            setStatus('Connected!')
+            setStatus('Connected! <a href="<%= req.ejs.base_url %>/request?authId=' + authId + '">Try it now</a>')
           })
           .catch(err => {
             setStatus('It failed.')
@@ -58,7 +58,7 @@
       })
 
       function setStatus(status) {
-        document.getElementById('status').innerText = status
+        document.getElementById('status').innerHTML = status
       }
     </script>
   </body>

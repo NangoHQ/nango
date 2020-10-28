@@ -35,7 +35,12 @@
 
           <fieldset>
             <label>Auth ID</label>
-            <input id="proxy-authid" placeholder="Provide an authId to authenticate the request" class="form-input" />
+            <input
+              id="proxy-authid"
+              placeholder="Provide an authId to authenticate the request"
+              class="form-input"
+              value="<%= req.query.authId %>"
+            />
           </fieldset>
 
           <div class="form-actions">
