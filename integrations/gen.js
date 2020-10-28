@@ -5,6 +5,9 @@ const root = __dirname;
 const stream = fs.createWriteStream(path.join(root, "index.ts"), {flags:'w'});
 
 function visit(dir, ext, pkgPrefix) {
+    if (pkgPrefix !== './') {
+        throw new "Error: No directories within integrations allowed."
+    }
     const integrations = fs.readdirSync(dir)
     integrations.forEach(name => {
         const packageName = pkgPrefix + name
