@@ -1,5 +1,6 @@
 import express from 'express'
 import Bearer from '@bearer/node-agent'
+import telemetry from './lib/telemetry'
 import * as routes from './routes'
 
 export const BUID = 'bearerUid' // TODO - What is this for?
@@ -102,11 +103,15 @@ app.use((err, _req, res, _next) => {
  * Starting up the server
  */
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
+  // Log start up
   console.log('Pizzly listening on port', PORT)
   if (PORT === 8080) {
     console.log('http://localhost:8080')
   }
+
+  // Initialize Telemetry (if enabled)
+  process.env.UUID = telemetry()
 })
 
 /**

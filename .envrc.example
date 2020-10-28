@@ -16,7 +16,7 @@ export PUBLISHABLE_KEY=""
 #    FALSE by default to allow request with a publishable key or a secret key.
 #    Set to TRUE to only allow access having a valid secret key.
 #
-export PROXY_USES_SECRET_KEY_ONLY=false
+export PROXY_USES_SECRET_KEY_ONLY=FALSE
 #
 # 4. Replace the default cookie secret to an unguessable string
 #    Learn more: https://github.com/expressjs/cookie-session
@@ -54,3 +54,9 @@ export COOKIE_SECRET="CHANGE_ME"
 #   then heads to https://app.bearer.sh/settings/key
 #
 # export BEARER_SECRET_KEY=""
+#
+# - Pizzly collects telemetry data to help us understand how to improve the project.
+#   While we appreciate the insights this data provides, we also know that
+#   not everyone wants to share usage data. You can disable the telemetry as follow:
+#
+# export TELEMETRY=FALSE
