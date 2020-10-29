@@ -6,14 +6,12 @@
 
 <div align="center">
 
-<a href="https://github.com/Bearer/Pizzly/blob/master/HACKTOBERFEST.md">
-<img src="./views/assets/img/docs/pizzly-hacktoberfest.jpg?raw=true" height="219">
-
-<strong>Help Pizzly maintainers during Hacktoberfest!</strong>
+<a href="https://www.producthunt.com/posts/pizzly">
+<img src="./views/assets/img/docs/pizzly-producthunt.png?raw=true">
 </a>
 
-[How it works?](#how-it-works) - [Demo](#demo) - [Getting started](#getting-started)  
-[Documentation](#documentation) - [Examples](#examples) - [Contributing](#contributing) - [MIT License](#license)
+[How it works?](#how-it-works) - [Demo](#demo) - [Getting started](#getting-started) - [Documentation](#documentation)
+[Examples](#examples) - [Supported APIs](#supported-apis) - [Contributing](#contributing)
 
 </div>
 
@@ -32,17 +30,6 @@ At the heart of Pizzly is a Node.js application that uses PostgreSQL as a databa
 - and its own API - _to programmatically do what you can do with the dashboard_.
 
 [![Integrate with many APIs, right from Pizzly's dashboard](views/assets/img/docs/pizzly-dashboard-all-apis.png?raw=true)](https://demopizzly.herokuapp.com/dashboard/all)
-
-<!-- ## Key Features
-
-- Manage retrieving, storing, and refreshing OAuth tokens _(aka the OAuth dance)_
-- No scope limitations
-- Retrieve and store complete OAuth payload
-- Support of OAuth 1, OAuth 1a and OAuth 2.0
-- JavaScript library to connect from your web-app (three-legged OAuth flow)
-- Provides configurations for over 50+ OAuth APIs (see list below)
-- Support adding new OAuth APIs using a file definition
-- 1-click deploy to Heroku or major cloud hosting solutions -->
 
 ## Demo
 
