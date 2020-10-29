@@ -11,3 +11,6 @@ coverage/
 .DS_Store
 dist/
 yarn-error.log
+
+# Generated
+integrations/index.ts

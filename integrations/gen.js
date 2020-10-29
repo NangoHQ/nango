@@ -33,6 +33,11 @@ function generate(reason) {
 
 generate('Initial generation');
 
-chokidar.watch(root, {ignoreInitial: true, ignored: /.[j|t]s$/})
-    .on('add', path => generate('New file added: ' + path))
-    .on('unlink', path => generate('File removed: ' + path));
+const argv = process.argv;
+if (argv.length > 2 && argv[2] == 'watch') {
+    console.log('Watching enabled')
+    chokidar.watch(root, {ignoreInitial: true, ignored: /.[j|t]s$/})
+        .on('add', path => generate('New file added: ' + path))
+        .on('unlink', path => generate('File removed: ' + path));
+}
+

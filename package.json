@@ -10,7 +10,7 @@
     "prepare": "npm run build",
     "build": "rimraf dist/ && yarn gen:integrations && tsc -p tsconfig.json",
     "start": "node dist/src",
-    "dev": "concurrently 'yarn dev:build' 'yarn dev:serve' 'yarn gen:integrations'",
+    "dev": "concurrently \"yarn dev:build\" \"yarn dev:serve\" \"yarn gen:integrations watch\"",
     "dev:build": "yarn build --watch",
     "gen:integrations": "node integrations/gen.js",
     "dev:serve": "nodemon --delay 1 --watch dist/src node dist/src",
