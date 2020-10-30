@@ -6,11 +6,9 @@
 
 <div align="center">
 
-<a href="https://www.producthunt.com/posts/pizzly">
-<img src="./views/assets/img/docs/pizzly-producthunt.png?raw=true">
-</a>
+<img src="/views/assets/img/logos/pizzly.png?raw=true" width="300">
 
-[How it works?](#how-it-works) - [Demo](#demo) - [Getting started](#getting-started) - [Documentation](#documentation)
+[How it works?](#how-it-works) - [Demo](#demo) - [Getting started](#getting-started) - [Documentation](#documentation)  
 [Examples](#examples) - [Supported APIs](#supported-apis) - [Contributing](#contributing)
 
 </div>
