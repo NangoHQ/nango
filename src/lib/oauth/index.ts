@@ -2,6 +2,8 @@ import * as OAuth2 from './oauth2'
 import { Types } from '../../types'
 import { configurations, authentications } from '../database'
 import { isOAuth2 } from '../database/integrations'
+import { PizzlyError } from '../error-handling'
+import { NO_VALUE } from '../../legacy/auth/v3/strategies/oauth2/common'
 
 /**
  * Determine if an access token has expired by comparing
@@ -41,6 +43,13 @@ export const refreshAuthentication = async (
 ) => {
   const configuration = await configurations.get(integration.id, oldAuthentication.setup_id)
   if (isOAuth2(integration)) {
+    const oldPayload: Types.OAuth2Payload = oldAuthentication.payload
+    const refreshToken = oldPayload.refreshToken
+
+    if (!refreshToken || refreshToken === NO_VALUE) {
+      throw new PizzlyError('token_refresh_missing')
+    }
+
     const newPayload = await OAuth2.refresh(integration, configuration, oldAuthentication)
 
     const newAuthentication: Types.Authentication = {
