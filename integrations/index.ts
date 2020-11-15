@@ -83,3 +83,5 @@ import './zoho-crm.json'
 import './zoho-invoices.json'
 import './zoho-subscriptions.json'
 import './zoom.json'
+
+import './splitwise.json'
