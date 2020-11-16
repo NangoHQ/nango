@@ -41,18 +41,19 @@ export const incomingRequestHandler = async (req, res, next) => {
     return next(new PizzlyError('unknown_authentication'))
   }
 
-  // Handle the token freshness (if it has expired)
-  if (await accessTokenHasExpired(authentication)) {
-    authentication = await refreshAuthentication(integration, authentication)
+  try {
+    // Handle the token freshness (if it has expired)
+    if (await accessTokenHasExpired(authentication)) {
+      authentication = await refreshAuthentication(integration, authentication)
+    }
+
     if (!authentication) {
       return next(new PizzlyError('token_refresh_failed')) // TODO: improve error verbosity
     }
-  }
-  try {
+
     // Replace request options with provided authentication or data
     // i.e. replace ${auth.accessToken} from the integration template
     // with the authentication access token retrieved from the database.
-
     const forwardedHeaders = headersToForward(req.rawHeaders)
     const { url, headers } = await buildRequest({
       authentication,

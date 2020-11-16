@@ -311,6 +311,10 @@ api.post('/:integrationId/authentications/:authId/refresh', async (req, res, nex
     const authentication = await refreshAuthentication(integration, oldAuthentication)
     res.json({ message: 'Authentication refreshed', authentication })
   } catch (err) {
+    if (err instanceof PizzlyError) {
+      return next(err)
+    }
+
     return next(new PizzlyError('token_refresh_failed'))
   }
 })
