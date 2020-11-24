@@ -1,0 +1,26 @@
+{
+  "name": "BambooHR",
+  "auth": {
+    "authorizationURL": "https://${connectParams.subDomain}.bamboohr.com/authorize.php",
+    "tokenURL": "https://${connectParams.subDomain}.bamboohr.com/token.php",
+    "authType": "OAUTH2",
+    "tokenParams": {
+      "grant_type": "authorization_code"
+    },
+    "authorizationParams": {
+      "request": "authorize"
+    },
+    "auth": {
+      "response_type": "code",
+      "scope": "openid email"
+    }
+  },
+  "request": {
+    "baseURL": "https://api.bamboohr.com/api/gateway.php/${connectParams.subDomain}/v1",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer ${auth.accessToken}",
+      "User-Agent": "Pizzly"
+    }
+  }
+}

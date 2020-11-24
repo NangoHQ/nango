@@ -1,5 +1,6 @@
 import './adobe-sign.json'
 import './asana.json'
+import './bamboohr.json'
 import './basecamp.json'
 import './bitbucket.json'
 import './cronofy.json'
