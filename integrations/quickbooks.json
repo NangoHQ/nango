@@ -1,5 +1,6 @@
 {
   "name": "Quickbooks",
+  "image": "https://logo.clearbit.com/quickbooks.com",
   "auth": {
     "authorizationURL": "https://appcenter.intuit.com/connect/oauth2",
     "tokenURL": "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer",
@@ -14,7 +15,7 @@
     }
   },
   "request": {
-    "baseURL": "https://quickbooks.api.intuit.com/v3/company/${headers.quickbooks-realm-id}/",
+    "baseURL": "https://quickbooks.api.intuit.com",
     "headers": {
       "Accept": "application/json",
       "Authorization": "Bearer ${auth.accessToken}",
