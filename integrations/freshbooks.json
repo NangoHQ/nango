@@ -1,7 +1,7 @@
 {
   "name": "Freshbooks",
   "auth": {
-    "authorizationURL": "https://my.freshbooks.com/service/auth/oauth/authorize",
+    "authorizationURL": "https://auth.freshbooks.com/oauth/authorize",
     "tokenURL": "https://api.freshbooks.com/auth/oauth/token",
     "authType": "OAUTH2"
   },
