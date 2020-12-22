@@ -18,8 +18,8 @@ Welcome to the Pizzly docs!
 
 # 🤗 Community and Support
 
-- [GitHub Issues](/Bearer/Pizzly/issues) – bugs, feature requests
-- [How to contribute](/Bearer/Pizzly#contributing-guide) - and be a great contributor
+- [GitHub Issues](https://github.com/Bearer/Pizzly/issues) – bugs, feature requests
+- [How to contribute](https://github.com/Bearer/Pizzly#contributing-guide) - and be a great contributor
 - [Code of Conduct](https://www.contributor-covenant.org/version/2/0/code_of_conduct/) - to be respectful
 - [@Bearersh Twitter](https://twitter.com/bearersh) – anything, really
 <!-- - [Slack Group]() – short questions and discussion-->
