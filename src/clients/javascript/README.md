@@ -43,7 +43,7 @@ github
     // The authentication was successful
     console.log(`Auth ID is: ${authId}`)
   })
-  .catch(error => {
+  .catch((error) => {
     // The authentication failed
     console.error(error)
   })
@@ -59,14 +59,14 @@ Once a user is connected, you can query the API by providing the `authId`.
 github
   .auth('x-auth-id') // Replace with a valid authId
   .get('/repos')
-  .then(response => console.log(response))
+  .then((response) => console.log(response))
   .catch(console.error)
 
 // Passing extra arguments
 github
   .auth('x-auth-id')
   .post('/', { headers: {}, query: {}, body: '' })
-  .then(response => console.log(response))
+  .then((response) => console.log(response))
   .catch(console.error)
 ```
 
@@ -80,14 +80,14 @@ Under the hood, we use the [Fetch API](https://developer.mozilla.org/en-US/docs/
 myAPI
   .auth('x-auth-id')
   .get('/x-endpoint')
-  .then(response => response.json())
-  .then(data => console.log(data)) // do something with the JSON payload (aka data)
+  .then((response) => response.json())
+  .then((data) => console.log(data)) // do something with the JSON payload (aka data)
   .catch(console.error)
 ```
 
 ## Advanced usage
 
-### Retrieving the OAuth payload
+<!-- ### Retrieving the OAuth payload
 
 When performing a connect, on success the OAuth payload is returned alongside the `authId`. Here's an example:
 
@@ -108,7 +108,7 @@ Pizzly also provides an API endpoint to retrieve at any time the OAuth payload:
 
 ```bash
 curl -X GET "/api/API-SLUGNAME/authentications/AUTH-ID"
-```
+``` -->
 
 ### Using a publishable key
 
@@ -167,11 +167,7 @@ This is particularly useful when you are trying to build a marketplace of integr
 For ease of use, you can provide your own `authId` when you connect a user to an API. For instance, you can reuse your own users IDs. This make it easy to keep track of which user is authenticated.
 
 ```js
-github
-  .auth('my-own-non-guessable-auth-id')
-  .connect()
-  .then()
-  .catch()
+github.auth('my-own-non-guessable-auth-id').connect().then().catch()
 ```
 
 In that example, Pizzly will not generate an `authId` but instead will use `my-own-non-guessable-auth-id`.
