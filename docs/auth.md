@@ -30,7 +30,7 @@ By introducing a new and secure authentication method, that provides an excellen
 
 Pizzly acts as an OAuth manager that focus on the developer in three ways:
 
-1. First, [it provides dozens of API configurations](.//Supported-APIs), so a developer can setup a new integration in a few minutes.
+1. First, [it provides dozens of API configurations](/docs/supported-apis.md), so a developer can setup a new integration in a few minutes.
 2. Second, it already works with OAuth 1.0, 1.a, OAuth 2.0 and most common grant types.
 3. Third, it's completely transparent for the end-user and adds no change to the UX.
 
@@ -50,24 +50,24 @@ const github = pizzly.integration('github') // Target the GitHub Integration
 
 github
   .connect() // Trigger an OAuth-dance with GitHub.
-  .then({ payload } => { console.log(payload) }) // Output the OAuth payload
+  .then({ authId } => { console.log(authId) }) // Output the Pizzly authId
   .catch(console.error) // Handle erro
 ```
 
 From a developer's perspective, Pizzly eases the flow by:
 
-- handling on its own the OAuth-dance from A to Z (as well as the refreshness);
+- handling on its own the OAuth-dance from A to Z (as well as the refreshing the token);
 - providing to the developer the payload as well as an `authId`.
 
 ## The `authId` concept
 
-It's important to understand the `authId` concept that Pizzly introduces. When performing an OAuth-dance with Pizzly, the JS library returns both the payload and an `authId`:
+It's important to understand the `authId` concept that Pizzly introduces. When performing an OAuth-dance with Pizzly, the JS library returns an `authId`:
 
 ```js
 // Trigger an OAuth-dance with GitHub.
 github
   .connect()
-  .then({ payload, authId } => { console.log(payload, authId) })
+  .then({ authId } => { console.log(authId) })
 ```
 
 The `authId` acts an identifier masking the OAuth payload. It's a reference to both the `access_token` and the `refresh_token`. In fact, Pizzly provides an endpoint to receive the OAuth payload of an `authId`. But where the `authId` is really powerful is when using Pizzly's proxy mode.
@@ -81,7 +81,7 @@ The concept of `authId` is extremely useful when using Pizzly in its proxy mode.
 const response = await pizzly.integration('github').auth('replace-with-a-valid-auth-id').get('/user')
 ```
 
-What's even better here, is that by using the `authId` Pizzly will handle the token refreshness. While most OAuth tokens need to be refreshed, and therefore will change, the `authId` is stable and unique. To say it differently, an `authId` represents an identity that will have many tokens overtime.
+What's even better here, is that by using the `authId` Pizzly will handle the token refreshes. While most OAuth tokens need to be refreshed, and therefore will change, the `authId` is stable and unique. To say it differently, an `authId` represents an identity that will have many tokens overtime.
 
 ## How to configure a new integration?
 
