@@ -1,4 +1,4 @@
-On top of the dashboard, Pizzly comes with a REST API, that lets you programmatically work with your integrations, their configurations, and the authentications made. If you are looking for the APIs supported by Pizzly, [have a look to this article](./Supported-APIs) instead.
+On top of the dashboard, Pizzly comes with a REST API, that lets you programmatically work with your integrations, their configurations, and the authentications made. If you are looking for the APIs supported by Pizzly, [have a look to this article](/docs/supported-apis.md) instead.
 
 ## Overview
 
