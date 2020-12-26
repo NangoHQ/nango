@@ -91,6 +91,12 @@ export class PizzlyError extends Error {
         break
 
       // Something failed
+      case 'token_refresh_missing':
+        this.status = 422
+        this.message =
+          'Unable to refresh the token. That user has no refresh token. The API might have not providing one.'
+        break
+
       case 'token_refresh_failed':
         this.status = 422
         this.message = 'Unable to refresh the token. Please re-connect that user.'

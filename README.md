@@ -79,7 +79,7 @@ Pizzly can be installed anywhere (AWS, Heroku, Platform.sh, etc.). Here's a quic
    myAPI
      .auth('xxx-auth-id') // Replace with the authId previously obtained
      .get('/xxx-endpoint') // Replace with a valid endpoint of the API
-     .then(response => console.log(response))
+     .then((response) => console.log(response))
      .catch(console.error)
    ```
 
@@ -87,11 +87,11 @@ Pizzly can be installed anywhere (AWS, Heroku, Platform.sh, etc.). Here's a quic
 
 ## Documentation
 
-Guides, tutorials and references are all available on the [Wiki](https://github.com/Bearer/Pizzly/wiki).
+Guides, tutorials and references are all available on the [Docs](/docs).
 
 ## Examples
 
-We have several examples [on the wiki](https://github.com/Bearer/Pizzly/wiki/Examples) with different APIs. Here is the first one to get you started:
+We have several examples [in the docs](/docs/examples.md) with different APIs. Here is the first one to get you started:
 
 ```js
 const pizzly = new Pizzly({ host: 'pizzly.example.org' }) // Initialize Pizzly
@@ -100,7 +100,7 @@ const github = pizzly.integration('github')
 github
   .connect() // Connect to GitHub
   .then(({ authId }) => console.log('Sucessfully connected! with the authId:', authId))
-  .catch(error => console.error('It failed!', error))
+  .catch((error) => console.error('It failed!', error))
 ```
 
 This example will trigger an OAuth dance to the GitHub API.
@@ -109,7 +109,7 @@ This example will trigger an OAuth dance to the GitHub API.
 
 ## Supported APIs
 
-[![Some pre-configured APIs with Pizzly](/views/assets/img/docs/pizzly-preconfigured-apis.jpg)](https://github.com/Bearer/Pizzly/wiki/Supported-APIs)
+[![Some pre-configured APIs with Pizzly](/views/assets/img/docs/pizzly-preconfigured-apis.jpg)](/docs/supported-apis.md)
 
 More than 50 APIs are preconfigured to work out-of-the-box. Including:
 
@@ -119,7 +119,7 @@ More than 50 APIs are preconfigured to work out-of-the-box. Including:
 - **Finance**: Xero, Sellsy, Zoho Books, etc.
 - **Productivity**: Asana, Google Drive, Google Sheets, Jira, Trello, etc.
 - **Social**: Facebook, LinkedIn, Reddit, etc.
-- **[and more...](https://github.com/Bearer/Pizzly/wiki/Supported-APIs)**
+- **[and more...](/docs/supported-apis.md)**
 
 Each API consists of a JSON configuration file, stored within the `/integrations` directory. Here's an example with the GitHub configuration file ([`/integrations/github.json`](/integrations/github.json)):
 
@@ -155,7 +155,7 @@ _But seriously, why Pizzly? We're fan of bears and fell in love with this [sweet
 
 ## Contributing
 
-While Pizzly is actively backed by Bearer's engineering team, the main purpose of this repository is to continue to improve Pizzly, making it larged and easier to use. We are grateful to each contributors and encourage you to participate by reporting bugs, ask for improvements and propose changes to the code.
+While Pizzly is actively backed by Bearer's engineering team, the main purpose of this repository is to continue to improve Pizzly, making it larger and easier to use. We are grateful to each contributors and encourage you to participate by reporting bugs, ask for improvements and propose changes to the code.
 
 ### Covenant Code of Conduct
 
@@ -165,7 +165,7 @@ Pizzly has adopted the Contributor Covenant Code of Conduct (version 2.0), avail
 
 All work on Pizzly happens directly on [GitHub](https://github.com/bearer/pizzly). Both Bearer.sh team members and external contributors send pull requests which go through the same review process. Submit all changes directly to the [`master branch`](https://github.com/bearer/pizzly/tree/master). We don’t use separate branches for development or for upcoming releases.
 
-To report a bug or a feedback, use [GitHub Issues](https://github.com/bearer/pizzly/issues). We keep a close eye on this and try to labelize each new request. If you're fixing a bug or working on a new feature, submit a [pull request](https://github.com/Bearer/Pizzly/pulls) with detail on which changes you've made.
+To report a bug or a feedback, use [GitHub Issues](https://github.com/bearer/pizzly/issues). We keep a close eye on this and try to label each new request. If you're fixing a bug or working on a new feature, submit a [pull request](https://github.com/Bearer/Pizzly/pulls) with detail on which changes you've made.
 
 While there are no templates yet when opening a PR or an issue, we still recommend to provide as much detail as possible. Consider that someone external to the project should understand your request at first glance.
 
