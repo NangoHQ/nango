@@ -15,6 +15,7 @@
       "default": "cookie_secret",
       "generator": "secret",
       "required": false
-    }
+    },
+    "PGSSLMODE": "no-verify"
   }
 }
