@@ -92,7 +92,7 @@ To make sure Pizzly works well and can help your engineering team, you need to c
 On the API developer's website, you'll first need to create an application. Some API call it an "OAuth application" which is more precise, but it's the same. Here are a few links on where to create an OAuth application:
 
 - For GitHub, [open your developer settings](https://github.com/settings/developers)
-- For Google APIs, head to the [Google Cloud Console](console.cloud.google.com/) > API > Credentials
+- For Google APIs, head to the [Google Cloud Console](https://console.cloud.google.com/) > API > Credentials
 - For Slack, [open your apps in the Slack API](https://api.slack.com/apps)
 
 _Websites change and a link might be broken. Feel free to edit the page if you spot something wrong._
