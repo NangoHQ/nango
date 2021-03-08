@@ -1,0 +1,20 @@
+{
+  "name": "Oura",
+  "image": "https://logo.clearbit.com/ouraring.com",
+  "auth": {
+    "authorizationURL": "https://cloud.ouraring.com/oauth/authorize",
+    "tokenURL": "https://api.ouraring.com/oauth/token",
+    "authType": "OAUTH2",
+    "tokenParams": {},
+    "authorizationParams": {},
+    "auth": { "response_type": "code" }
+  },
+  "request": {
+    "baseURL": "https://api.ouraring.com/v1/",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer ${auth.accessToken}",
+      "User-Agent": "Pizzly"
+    }
+  }
+}
