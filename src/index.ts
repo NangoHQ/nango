@@ -1,4 +1,5 @@
 import express from 'express'
+import * as bodyParser from 'body-parser'
 import Bearer from '@bearer/node-agent'
 import telemetry from './lib/telemetry'
 import * as routes from './routes'
@@ -11,6 +12,9 @@ const app = express()
 app.set('view engine', 'ejs')
 app.set('views', './views')
 app.set('trust proxy', 1)
+
+app.use(bodyParser.raw())
+app.use(bodyParser.json())
 
 /**
  * Force HSTS
