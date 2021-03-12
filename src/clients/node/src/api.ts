@@ -6,32 +6,16 @@ import fetch from 'node-fetch'
 import Types from './types'
 import { cleanHeaders, toURL } from './utils'
 
-export default class PizzlyIntegration {
+export default class PizzlyAPI {
   private key: string
   private integration: string
-  private options: Types.IntegrationOptions = {}
   private origin: string
 
-  constructor(integration: string, options: Types.IntegrationOptions, key: string, origin: string) {
+  constructor(integration: string, key: string, origin: string) {
     this.integration = integration
-    this.options = options
     this.origin = origin
     this.key = key
   }
-
-  /**
-   * `auth` set authId so that API calls are performed with the given identity
-   */
-
-  public auth = (authId: string) =>
-    new PizzlyIntegration(this.integration, { ...this.options, authId }, this.key, this.origin)
-
-  /**
-   * `setup` specify which setupId to use when calling Pizzly proxy
-   */
-
-  public setup = (setupId: string) =>
-    new PizzlyIntegration(this.integration, { ...this.options, setupId }, this.key, this.origin)
 
   /**
    * `get` perform get request
@@ -93,10 +77,7 @@ export default class PizzlyIntegration {
       )
     }
 
-    const headers: Types.RequestHeaders = {
-      'Pizzly-Auth-Id': this.options.authId!,
-      'Pizzly-Setup-Id': this.options.setupId!
-    }
+    const headers: Types.RequestHeaders = {}
 
     if (this.key) {
       // Authenticate the request with the provided secret key
@@ -104,13 +85,7 @@ export default class PizzlyIntegration {
       headers['Authorization'] = authentication
     }
 
-    if (parameters && parameters.headers) {
-      for (const key in parameters.headers) {
-        headers[`Pizzly-Proxy-${key}`] = parameters.headers[key]
-      }
-    }
-
-    const url = toURL(this.origin, `/proxy/${this.integration}`, endpoint, parameters.query)
+    const url = toURL(this.origin, `/api/${this.integration}`, endpoint, parameters.query)
 
     return fetch(url.toString(), {
       method,
