@@ -1,0 +1,22 @@
+{
+  "name": "Google Drive Upload",
+  "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/Google_Drive_logo.png/240px-Google_Drive_logo.png",
+  "auth": {
+    "authorizationURL": "https://accounts.google.com/o/oauth2/v2/auth",
+    "tokenURL": "https://www.googleapis.com/oauth2/v4/token",
+    "authType": "OAUTH2",
+    "tokenParams": { "grant_type": "authorization_code" },
+    "authorizationParams": { "prompt": "consent", "access_type": "offline" },
+    "auth": {
+      "response_type": "code"
+    }
+  },
+  "request": {
+    "baseURL": "https://www.googleapis.com/upload/drive/v3/",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer ${auth.accessToken}",
+      "User-Agent": "Pizzly"
+    }
+  }
+}
