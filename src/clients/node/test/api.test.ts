@@ -22,6 +22,10 @@ describe('Pizzly API', () => {
     it('expects basic api url are ok', async () => {
       const apiClient = pizzly.api('foo-bar')
 
+      // Get integration
+      const integration = await apiClient.get('/')
+      expect(integration.url).toEqual('https://example.org/api/foo-bar/')
+
       // Configurations
       const response = await apiClient.get('configurations')
       expect(response.url).toEqual('https://example.org/api/foo-bar/configurations')
