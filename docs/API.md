@@ -13,10 +13,13 @@ The main endpoints are:
 - `/api/:integration/authentications/:authId` - To request a specific authentication
 - `/api/:integration/authentications/:authId/refresh` - To refresh a specific authentication
 
-While most actions are available through the dashboard, there are two common use cases wit Pizzly's API:
+While most actions are available through the dashboard, there are two common use cases with Pizzly's API:
 
 - saving an integration's configuration on-the-fly (`POST /api/:integration/configurations`);
 - retrieving an OAuth payload (`GET /api/:integration/authentications`).
+- delete an authentification (`DELETE /api/:integration/authentications/:id`).
+
+You can directly call the API or use the Node.js client (`pizzly-node`).
 
 ## Authentication
 
@@ -37,6 +40,17 @@ const secretKey = 'secure-secret-key'
 const authentication = 'Basic ' + Buffer.from(secretKey + ':').toString('base64')
 
 fetch(url, { headers: { Authorization: authentication } })
+```
+
+### With Node.js client (`pizzly-node`)
+
+```javascript
+const host = 'locahost:8080'
+const secretKey = 'secure-secret-key'
+const pizzly = new Pizzly({ host, secretKey })
+
+const integration = 'google-drive' // can be any other integration
+const apiClient = pizzly.api(integration) // use to call our API endpoints
 ```
 
 ## Endpoints
@@ -88,6 +102,17 @@ It returns something like:
 }
 ```
 
+##### With Node.js client (`pizzly-node`)
+
+```javascript
+const host = 'locahost:8080'
+const secretKey = 'secure-secret-key'
+const pizzly = new Pizzly({ host, secretKey })
+
+const apiClient = pizzly.api('github')
+const resp = await apiClient.get('/')
+```
+
 ### Configurations
 
 The API provider will provide you an interface to create your application and retrieve a pair of credentials (clientId/clientSecret for OAuth2, consumerKey/consumerSecret for OAuth1). These credentials alongside the scopes form together the configuration of your integration.
@@ -119,6 +144,19 @@ It returns something like:
 }
 ```
 
+##### With Node.js client (`pizzly-node`)
+
+```javascript
+const host = 'locahost:8080'
+const secretKey = 'secure-secret-key'
+const pizzly = new Pizzly({ host, secretKey })
+
+const apiClient = pizzly.api('github')
+const resp = await apiClient.post('configurations', {
+  body: { credentials: { clientId: 'abcd***************', clientSecret: '1234***********************' } }
+})
+```
+
 #### Retrieve a configuration
 
 To retrieve a configuration,
@@ -139,6 +177,17 @@ It returns something like:
     "clientSecret": "a2f0***********************"
   }
 }
+```
+
+##### With Node.js client (`pizzly-node`)
+
+```javascript
+const host = 'locahost:8080'
+const secretKey = 'secure-secret-key'
+const pizzly = new Pizzly({ host, secretKey })
+
+const apiClient = pizzly.api('github')
+const resp = await apiClient.get('configurations/72184458-7751-41fe-8dcc-0251ab2cc578')
 ```
 
 #### Update a configuration
@@ -168,6 +217,19 @@ It returns something like:
 }
 ```
 
+##### With Node.js client (`pizzly-node`)
+
+```javascript
+const host = 'locahost:8080'
+const secretKey = 'secure-secret-key'
+const pizzly = new Pizzly({ host, secretKey })
+
+const apiClient = pizzly.api('github')
+const resp = await apiClient.put('configurations/72184458-7751-41fe-8dcc-0251ab2cc578', {
+  body: { credentials: { clientId: 'abcd***************', clientSecret: '1234***********************' } }
+})
+```
+
 #### Delete a configuration
 
 To delete a configuration:
@@ -180,6 +242,17 @@ It returns something like:
 
 ```json
 { "message": "Configuration removed" }
+```
+
+##### With Node.js client (`pizzly-node`)
+
+```javascript
+const host = 'locahost:8080'
+const secretKey = 'secure-secret-key'
+const pizzly = new Pizzly({ host, secretKey })
+
+const apiClient = pizzly.api('github')
+const resp = await apiClient.delete('configurations/72184458-7751-41fe-8dcc-0251ab2cc578')
 ```
 
 ### Authentications
@@ -210,6 +283,17 @@ It returns something like:
 }
 ```
 
+##### With Node.js client (`pizzly-node`)
+
+```javascript
+const host = 'locahost:8080'
+const secretKey = 'secure-secret-key'
+const pizzly = new Pizzly({ host, secretKey })
+
+const apiClient = pizzly.api('github')
+const resp = await apiClient.get('authentications/1994cc00-a4d6-11ea-9187-b798bad9d2ac')
+```
+
 #### Refresh an authentication
 
 To refresh an access token, perform a `POST` request as follows:
@@ -237,6 +321,17 @@ It returns something like:
 }
 ```
 
+##### With Node.js client (`pizzly-node`)
+
+```javascript
+const host = 'locahost:8080'
+const secretKey = 'secure-secret-key'
+const pizzly = new Pizzly({ host, secretKey })
+
+const apiClient = pizzly.api('github')
+const resp = await apiClient.post('authentications/1994cc00-a4d6-11ea-9187-b798bad9d2ac/refresh')
+```
+
 #### Delete an authentication
 
 To delete an authentication:
@@ -249,4 +344,15 @@ It returns something like:
 
 ```json
 { "message": "Authentication removed" }
+```
+
+##### With Node.js client (`pizzly-node`)
+
+```javascript
+const host = 'locahost:8080'
+const secretKey = 'secure-secret-key'
+const pizzly = new Pizzly({ host, secretKey })
+
+const apiClient = pizzly.api('github')
+const resp = await apiClient.delete('authentications/1994cc00-a4d6-11ea-9187-b798bad9d2ac')
 ```
