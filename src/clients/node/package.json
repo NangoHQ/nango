@@ -1,6 +1,6 @@
 {
   "name": "pizzly-node",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Node.js client for Pizzly",
   "main": "dist/index.js",
   "dependencies": {
