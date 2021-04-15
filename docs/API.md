@@ -17,7 +17,7 @@ While most actions are available through the dashboard, there are two common use
 
 - saving an integration's configuration on-the-fly (`POST /api/:integration/configurations`);
 - retrieving an OAuth payload (`GET /api/:integration/authentications`).
-- delete an authentification (`GET /api/:integration/authentications/:id`).
+- delete an authentification (`DELETE /api/:integration/authentications/:id`).
 
 You can directly call the API or use the Node.js client (`pizzly-node`).
 
