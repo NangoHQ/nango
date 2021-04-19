@@ -362,14 +362,6 @@ dashboard.get('/:integration/request', (req, res) => {
 })
 
 /**
- * Integration > Monitoring
- */
-
-dashboard.get('/:integration/monitoring', (req, res) => {
-  res.render('dashboard/api-monitoring', { req })
-})
-
-/**
  * Helpers
  */
 

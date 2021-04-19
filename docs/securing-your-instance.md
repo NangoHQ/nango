@@ -1,4 +1,4 @@
-By default, your Pizzly's instance does not require an authentication method to access its data. It's great for local development but not recommended if you plan to use it with production data.
+By default, your Pizzly instance does not require an authentication method to access its data. It's great for local development but not recommended if you plan to use it with production data.
 
 In this guide, you will learn how to secure your Pizzly instance.
 
@@ -87,29 +87,11 @@ If you have SSH access to your server, you can use a configuration file.
 
 ## Extra options
 
-### Enable Bearer
-
-Bearer.sh provides an agent that can monitor and shield your Pizzly instance from API failures. For example, the agent will automatically retry a request that fails due to a network issue. You can create your own rules and be alerted when something goes wrong by email and more.
-
-To enable Bearer, follow these steps:
-
-1. [Create an account on Bearer.sh](https://www.bearer.sh/), it's free.
-2. Retrieve your secret key [here](https://app.bearer.sh/settings/key).
-3. Update the following environment variable:
-
-   ```bash
-   BEARER_SECRET_KEY="..."
-   ```
-
-4. Restart or redeploy your instance. On most PaaS (e.g. Heroku), the instance is automatically restarted when you update an environment variables.
-
-Each API request will be logged in your Bearer's dashboard, with monitoring, graphs and more. Please note that some features require a paid account.
-
 ### Disallow frontend requests to the proxy service
 
 Pizzly's proxy accepts requests having a valid `publishableKey`. This means that someone that knows your `publishableKey` can query an API using your Pizzly's instance.
 
-As the key is publicly available on your frontend, this might feel unsecure, but remind that the `publishableKey` is used only to authenticate the request with Pizzly. An attacker would need both a valid `publishableKey` and a valid `authId` to make request to a third-party API.
+As the key is publicly available on your frontend, this might feel insecure, but remind that the `publishableKey` is used only to authenticate the request with Pizzly. An attacker would need both a valid `publishableKey` and a valid `authId` to make request to a third-party API.
 
 Still, if you aren't feeling safe to accept frontend requests, you can easily refuse them.
 
