@@ -1,6 +1,6 @@
 {
-    "name": "AirSales - 1 ustom",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/Google_Drive_logo.png/240px-Google_Drive_logo.png",
+    "name": "Google Custom Integration",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/1200px-Google_%22G%22_Logo.svg.png",
     "auth": {
         "authorizationURL": "https://accounts.google.com/o/oauth2/v2/auth",
         "tokenURL": "https://www.googleapis.com/oauth2/v4/token",
