@@ -55,7 +55,6 @@ export const incomingRequestHandler = async (req, res, next) => {
     // i.e. replace ${auth.accessToken} from the integration template
     // with the authentication access token retrieved from the database.
     const forwardedHeaders = headersToForward(req.rawHeaders)
-
     const { url, headers } = await buildRequest({
       authentication,
       integration,
