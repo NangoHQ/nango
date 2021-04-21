@@ -25,6 +25,7 @@
     "@bearer/node-agent": "^3.2.1",
     "@hapi/joi": "^15.1.1",
     "@types/sleep": "^0.0.7",
+    "amphtml-validator": "^1.0.11",
     "axios": "^0.19.0",
     "body-parser": "^1.18.3",
     "cls-hooked": "^4.2.2",
@@ -96,5 +97,8 @@
     "singleQuote": true,
     "printWidth": 120,
     "tabWidth": 2
+  },
+  "pizzly": {
+    "uuid": "b92d24a3-ce04-42bc-a3e2-417277f71722"
   }
 }

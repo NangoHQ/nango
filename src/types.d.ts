@@ -95,10 +95,12 @@ export namespace Types {
     // TODO - Type the config (and rename config to auth?)
     auth: Config
     request: {
+      service?: string
       baseURL: string
       headers?: { [key: string]: string }
       params?: { [key: string]: string }
     }
+    requests: [request]
   }
 
   type OAuth2Config = {
