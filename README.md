@@ -1,6 +1,6 @@
 <a href="https://heroku.com/deploy?template=https://github.com/Bearer/Pizzly" rel="nofollow"><img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy to Heroku" height="26"></a>
 <a href="https://console.platform.sh/projects/create-project/?template=https://github.com/Bearer/Pizzly&utm_campaign=deploy_on_platform?utm_medium=button&utm_source=affiliate_links&utm_content=https://github.com/Bearer/Pizzly" rel="nofollow"><img src="https://platform.sh/images/deploy/deploy-button-lg-blue.svg" alt="Deploy with Platform.sh" height="26"></a>
-<a href="https://www.bearer.sh/?ref=pizzly" rel="nofollow"><img src="/views/assets/img/badges/bearer-badge.png?raw=true" alt="Sponsored by Bearer.sh" height="26"></a>
+<a href="https://www.bearer.sh/?ref=pizzly"><img src="/views/assets/img/badges/bearer-badge.png?raw=true" alt="The #1 Privacy by Design platform" height="26"></a>
 
 # Pizzly 🐻 - The OAuth Integration Proxy
 
@@ -152,7 +152,7 @@ And adding new APIs is straightforward. Just create a new configuration file wit
 Pizzly originally started at Bearer.sh as a way to simplify the developer's journey and ease the building of API integrations. OAuth is a great framework, but the difficulty and wide range of implementation makes it painful to use and tends to slow down the ability to integrate with new APIs.
 
 _But seriously, why Pizzly? We're fan of bears and fell in love with this [sweet hybrid](https://en.wikipedia.org/wiki/Grizzly–polar_bear_hybrid) one 🐻_
-
+ 
 ## Contributing
 
 While Pizzly is actively backed by Bearer's engineering team, the main purpose of this repository is to continue to improve Pizzly, making it larger and easier to use. We are grateful to each contributors and encourage you to participate by reporting bugs, ask for improvements and propose changes to the code.
@@ -168,6 +168,10 @@ All work on Pizzly happens directly on [GitHub](https://github.com/bearer/pizzly
 To report a bug or a feedback, use [GitHub Issues](https://github.com/bearer/pizzly/issues). We keep a close eye on this and try to label each new request. If you're fixing a bug or working on a new feature, submit a [pull request](https://github.com/Bearer/Pizzly/pulls) with detail on which changes you've made.
 
 While there are no templates yet when opening a PR or an issue, we still recommend to provide as much detail as possible. Consider that someone external to the project should understand your request at first glance.
+
+## Sponsor
+
+Pizzly is proudly sponsored by Bearer, a solution to implement [Privacy by Design](https://www.bearer.sh) processes in developers' workflows and automate GDPR compliance.
 
 ### License
 
