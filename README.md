@@ -169,10 +169,10 @@ To report a bug or a feedback, use [GitHub Issues](https://github.com/bearer/piz
 
 While there are no templates yet when opening a PR or an issue, we still recommend to provide as much detail as possible. Consider that someone external to the project should understand your request at first glance.
 
-## Sponsor
-
-Pizzly is proudly sponsored by Bearer, a solution to implement [Privacy by Design](https://www.bearer.sh) processes in developers' workflows and automate GDPR compliance.
-
 ### License
 
 Pizzly is MIT licensed. See the [LICENSE file](https://github.com/Bearer/Pizzly/blob/master/LICENSE.md) for more information.
+
+## Sponsor
+
+Pizzly is proudly sponsored by Bearer, a solution to implement [Privacy by Design](https://www.bearer.sh) processes in developers' workflows and automate GDPR compliance.
