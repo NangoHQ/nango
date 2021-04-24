@@ -19,7 +19,7 @@
     "requests": [
         {
             "service": "drive",
-            "baseURL": "https://www.googleapis.com/drive/v3/",
+            "baseURL": "https://www.googleapis.com/drive/",
             "headers": {
                 "Accept": "application/json",
                 "Authorization": "Bearer ${auth.accessToken}",
@@ -28,7 +28,7 @@
         },
         {
             "service": "gmail",
-            "baseURL": "https://www.googleapis.com/gmail/v1/",
+            "baseURL": "https://www.googleapis.com/gmail/",
             "headers": {
                 "Accept": "application/json",
                 "Authorization": "Bearer ${auth.accessToken}",
