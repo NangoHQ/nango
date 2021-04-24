@@ -34,6 +34,15 @@
                 "Authorization": "Bearer ${auth.accessToken}",
                 "User-Agent": "Pizzly"
             }
+        },
+        {
+            "service": "spreadsheets",
+            "baseURL": "https://sheets.googleapis.com/v4/spreadsheets/",
+            "headers": {
+                "Accept": "application/json",
+                "Authorization": "Bearer ${auth.accessToken}",
+                "User-Agent": "Pizzly"
+            }
         }
     ],
     "request": {
