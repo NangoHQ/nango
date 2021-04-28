@@ -23,7 +23,7 @@
     "build": "npm run clean && tsc --project tsconfig.json"
   },
   "repository": "bearer/pizzly",
-  "homepage": "https://github.com/Bearer/Pizzly/tree/master/src/clients/javascript#readme",
+  "homepage": "https://github.com/Bearer/Pizzly/tree/master/src/clients/node",
   "author": "Bearer Team <engineering@bearer.sh>",
   "license": "MIT",
   "jest": {
