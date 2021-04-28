@@ -5,6 +5,7 @@
     "target": "es2017",
     "outDir": "dist",
     "declaration": true,
+    "strict": true,
   },
   "include": ["src/**/*"],
   "exclude": ["dist", "node_modules"]
