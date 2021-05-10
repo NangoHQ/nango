@@ -4,7 +4,7 @@ job "pizzly" {
   group "main" {
     count = 1
     network {
-      port "pizzly" { to = 80 }
+      port "pizzly" { to = 8080 }
     }
     task "server" {
       driver = "docker"
@@ -57,6 +57,9 @@ job "pizzly" {
         path     = "/"
         interval = "2s"
         timeout  = "2s"
+        header {
+            Authorization = ["Basic ZWxhc3RpYzpjaGFuZ2VtZQ=="]
+        }
       }
     }
   }
