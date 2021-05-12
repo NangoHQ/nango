@@ -1,6 +1,5 @@
 {
     "name": "Clio",
-    "image": "https://www.clio.com/wp-content/uploads/2015/05/Container-5-Logo.png",
     "auth": {
       "authorizationURL": "https://app.clio.com/oauth/authorize",
       "tokenURL": "https://app.clio.com/oauth/token",
