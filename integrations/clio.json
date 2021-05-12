@@ -1,0 +1,20 @@
+{
+    "name": "Clio",
+    "auth": {
+      "authorizationURL": "https://app.clio.com/oauth/authorize",
+      "tokenURL": "https://app.clio.com/oauth/token",
+      "authType": "OAUTH2",
+      "tokenParams": { "grant_type": "authorization_code" },
+      "authorizationParams": {},
+      "auth": { "response_type": "code" }
+    },
+    "request": {
+      "baseURL": "https://app.clio.com/api/v4/",
+      "headers": {
+        "Accept": "application/json",
+        "Authorization": "Bearer ${auth.accessToken}",
+        "User-Agent": "Pizzly"
+      }
+    }
+  }
+  
