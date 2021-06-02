@@ -2,24 +2,16 @@
 
 
 # Build image 
-FROM node:13.5.0-alpine3.11
+FROM node:14-alpine
 
 WORKDIR /app
 
 # Copy in dependencies for building
-COPY *.json ./
-COPY yarn.lock ./
-COPY config ./config
-COPY integrations ./integrations/
-COPY src ./src/
-COPY tests ./tests/
-COPY views ./views/
-
-RUN yarn install 
-
+COPY . .
+RUN yarn install && yarn build
 
 # Actual image to run from.
-FROM node:13.5.0-alpine3.11
+FROM node:14-alpine
 
 # Make sure we have ca certs for TLS
 RUN apk --no-cache add ca-certificates
@@ -34,4 +26,4 @@ COPY --chown=node:node --from=0 /app/dist/ .
 COPY --chown=node:node --from=0 /app/views ./views
 COPY --chown=node:node --from=0 /app/node_modules ./node_modules
 
-CMD ["node", "src"]
+CMD ["node", "./src/index.js"]
