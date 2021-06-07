@@ -7,7 +7,14 @@ FROM node:14-alpine
 WORKDIR /app
 
 # Copy in dependencies for building
-COPY . .
+COPY *.json ./
+COPY yarn.lock ./
+COPY config ./config
+COPY integrations ./integrations/
+COPY src ./src/
+COPY tests ./tests/
+COPY views ./views/
+
 RUN yarn install && yarn build
 
 # Actual image to run from.
