@@ -27,4 +27,4 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/pizzly:${{ github.event.ref }}
+          tags: ghcr.io/${{ github.repository_owner }}/pizzly:${{ github.event.release.tag_name }}
