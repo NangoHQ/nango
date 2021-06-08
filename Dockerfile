@@ -9,7 +9,6 @@ WORKDIR /app
 # Copy in dependencies for building
 COPY *.json ./
 COPY yarn.lock ./
-COPY config ./config
 COPY integrations ./integrations/
 COPY src ./src/
 COPY tests ./tests/
