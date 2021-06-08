@@ -3,7 +3,7 @@ name: publish-container-image
 on:
   push:
     tags:
-      - "*"
+      - "v*.*.*"
 
 jobs:
   docker:
@@ -27,4 +27,4 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/pizzly:${{ github.event.release.tag_name }}
+          tags: ghcr.io/${{ github.repository_owner }}/pizzly:latest
