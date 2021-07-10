@@ -43,6 +43,15 @@
                 "Authorization": "Bearer ${auth.accessToken}",
                 "User-Agent": "Pizzly"
             }
+        },
+        {
+            "service": "people",
+            "baseURL": "https://people.googleapis.com/v1/people/",
+            "headers": {
+                "Accept": "application/json",
+                "Authorization": "Bearer ${auth.accessToken}",
+                "User-Agent": "Pizzly"
+            }
         }
     ],
     "request": {
