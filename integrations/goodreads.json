@@ -1,0 +1,23 @@
+{
+  "name": "Goodreads",
+  "auth": {
+    "authType": "OAUTH1",
+    "requestTokenURL": "https://www.goodreads.com/oauth/request_token",
+    "accessTokenURL": "https://www.goodreads.com/oauth/access_token",
+    "userAuthorizationURL": "https://www.goodreads.com/oauth/authorize",
+    "tokenParams": {
+      "grant_type": "authorization_code"
+    },
+    "authorizationParams": {
+      "response_type": "code"
+    }
+  },
+  "request": {
+    "baseURL": "https://www.goodreads.com/",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "OAuth ${auth.oauth1}",
+      "User-Agent": "Pizzly"
+    }
+  }
+}

@@ -14,8 +14,7 @@ COPY src ./src/
 COPY tests ./tests/
 COPY views ./views/
 
-RUN yarn install 
-
+RUN yarn install && yarn build
 
 # Actual image to run from.
 FROM node:14.5.0-alpine3.11
@@ -33,4 +32,4 @@ COPY --chown=node:node --from=0 /app/dist/ .
 COPY --chown=node:node --from=0 /app/views ./views
 COPY --chown=node:node --from=0 /app/node_modules ./node_modules
 
-CMD ["node", "src"]
+CMD ["node", "./src/index.js"]

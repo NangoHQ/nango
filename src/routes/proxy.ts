@@ -29,7 +29,7 @@ const proxy = express.Router()
 
 proxy.use((req, res, next) => {
   // Limit access to the requests having a valid secret key only
-  const proxyUsesSecretKeyOnly = Boolean(process.env.PROXY_USES_SECRET_KEY_ONLY)
+  const proxyUsesSecretKeyOnly = process.env.PROXY_USES_SECRET_KEY_ONLY === 'TRUE'
 
   if (!proxyUsesSecretKeyOnly && req.query['pizzly_pkey']) {
     return access.publishableKey(req, res, next)

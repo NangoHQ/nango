@@ -3,7 +3,9 @@
     "lib": ["es2017"],
     "module": "commonjs",
     "target": "es2017",
-    "outDir": "dist"
+    "outDir": "dist",
+    "declaration": true,
+    "strict": true,
   },
   "include": ["src/**/*"],
   "exclude": ["dist", "node_modules"]

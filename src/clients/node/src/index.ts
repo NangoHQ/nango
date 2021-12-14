@@ -2,6 +2,7 @@
  * Node.js client for Pizzly
  */
 
+import PizzlyAPI from './api'
 import PizzlyIntegration from './integration'
 import Types from './types'
 
@@ -45,6 +46,21 @@ class Pizzly {
     }
 
     return new PizzlyIntegration(integration, options || {}, this.key, this.origin)
+  }
+
+  /**
+   * api
+   * @param integration
+   * @returns
+   */
+  public api(integration: string) {
+    if (!integration) {
+      const errorMsg =
+        'Integration name is null or empty. It should be the slugname of an API (e.g. "github", "slack", etc.)'
+      throw new Error(errorMsg)
+    }
+
+    return new PizzlyAPI(integration, this.key, this.origin)
   }
 }
 

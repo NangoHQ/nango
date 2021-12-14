@@ -1,5 +1,6 @@
 import express from 'express'
 import Bearer from '@bearer/node-agent'
+import telemetry from './lib/telemetry'
 import * as routes from './routes'
 
 export const BUID = 'bearerUid' // TODO - What is this for?
@@ -10,10 +11,18 @@ const app = express()
 app.set('view engine', 'ejs')
 app.set('views', './views')
 app.set('trust proxy', 1)
-app.use('/assets', express.static('./views/assets'))
 
 /**
- * Request log
+ * Force HSTS
+ */
+
+app.use((req, res, next) => {
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
+  next()
+})
+
+/**
+ * Log request
  */
 
 app.use((req, _res, next) => {
@@ -22,7 +31,13 @@ app.use((req, _res, next) => {
 })
 
 /**
- * Project homepage
+ * Assets
+ */
+
+app.use('/assets', express.static('./views/assets'))
+
+/**
+ * Pizzly's homepage
  */
 
 app.get('/', routes.home)
@@ -88,11 +103,15 @@ app.use((err, _req, res, _next) => {
  * Starting up the server
  */
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
+  // Log start up
   console.log('Pizzly listening on port', PORT)
   if (PORT === 8080) {
     console.log('http://localhost:8080')
   }
+
+  // Initialize Telemetry (if enabled)
+  process.env.UUID = telemetry()
 })
 
 /**

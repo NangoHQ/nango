@@ -1,0 +1,22 @@
+{
+  "name": "Shutterstock",
+  "auth": {
+    "authorizationURL": "https://api.shutterstock.com/v2/oauth/authorize",
+    "tokenURL": "https://api.shutterstock.com/v2/oauth/access_token",
+    "authType": "OAUTH2",
+    "tokenParams": {
+      "grant_type": "authorization_code",
+      "expires": "true"
+    },
+    "authorizationParams": {},
+    "auth": { "response_type": "code" }
+  },
+  "request": {
+    "baseURL": "https://api.shutterstock.com/v2/",
+    "headers": {
+      "Accept": "application/json",
+      "User-Agent": "Pizzly",
+      "Authorization": "Bearer ${auth.accessToken}"
+    }
+  }
+}

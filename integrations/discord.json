@@ -1,0 +1,18 @@
+{
+  "name": "Discord",
+  "auth": {
+    "authorizationURL": "https://discord.com/api/oauth2/authorize",
+    "tokenURL": "https://discord.com/api/oauth2/token",
+    "authType": "OAUTH2",
+    "tokenParams": {},
+    "authorizationParams": { "response_type": "code", "grant_type": "authorization_code" }
+  },
+  "request": {
+    "baseURL": "https://discord.com/api/",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer ${auth.accessToken}",
+      "User-Agent": "Pizzly"
+    }
+  }
+}

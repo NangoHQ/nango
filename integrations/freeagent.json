@@ -1,0 +1,25 @@
+{
+  "name": "FreeAgent",
+  "image": "https://www.freeagent.com/components/images/company/branding/freeagent-colour-logo-9f035bff.svg",
+  "auth": {
+    "authorizationURL": "https://api.freeagent.com/v2/approve_app",
+    "tokenURL": "https://api.freeagent.com/v2/token_endpoint",
+    "authType": "OAUTH2",
+    "tokenParams": { "grant_type": "authorization_code" },
+    "authorizationParams": {
+      "state": "{st=state123abc,ds=123456789}"
+    },
+    "auth": {
+      "response_type": "code"
+    }
+  },
+  "request": {
+    "baseURL": "https://api.freeagent.com/v2/",
+    "headers": {
+      "Accept": "application/json",
+      "Content-Type": "application/json",
+      "Authorization": "Bearer ${auth.accessToken}",
+      "User-Agent": "Pizzly"
+    }
+  }
+}

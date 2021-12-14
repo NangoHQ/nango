@@ -11,7 +11,7 @@
     "baseURL": "https://www.zohoapis.com/crm/v2",
     "headers": {
       "Accept": "application/json",
-      "Authorization": "Bearer ${auth.accessToken}",
+      "Authorization": "Zoho-oauthtoken ${auth.accessToken}",
       "User-Agent": "Pizzly"
     }
   }

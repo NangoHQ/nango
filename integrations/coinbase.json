@@ -1,0 +1,19 @@
+{
+  "name": "Coinbase",
+  "auth": {
+    "authorizationURL": "https://www.coinbase.com/oauth/authorize",
+    "tokenURL": "http://www.coinbase.com/oauth/token",
+    "accessTokenURL": "https://api.coinbase.com/oauth/token",
+    "authType": "OAUTH2",
+    "tokenParams": { "grant_type": "authorization_code" },
+    "authorizationParams": { "response_type": "code" }
+  },
+  "request": {
+    "baseURL": "https://api.coinbase.com/v2/",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer ${auth.access_token}",
+      "User-Agent": "Pizzly"
+    }
+  }
+}

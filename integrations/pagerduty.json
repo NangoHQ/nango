@@ -1,0 +1,19 @@
+{
+  "name": "Pagerduty",
+  "auth": {
+    "authorizationURL": "https://app.pagerduty.com/oauth/authorize",
+    "tokenURL": "https://app.pagerduty.com/oauth/token",
+    "authType": "OAUTH2",
+    "tokenParams": { "grant_type": "authorization_code" },
+    "authorizationParams": {},
+    "auth": { "response_type": "code" }
+  },
+  "request": {
+    "baseURL": "https://api.pagerduty.com/",
+    "headers": {
+      "Accept": "application/vnd.pagerduty+json;version=2",
+      "Authorization": "Bearer ${auth.accessToken}",
+      "User-Agent": "Pizzly"
+    }
+  }
+}

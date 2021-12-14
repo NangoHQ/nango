@@ -1,0 +1,19 @@
+{
+  "name": "Fitbit",
+  "auth": {
+    "authorizationURL": "https://www.fitbit.com/oauth2/authorize",
+    "tokenURL": "https://api.fitbit.com/oauth2/token",
+    "authType": "OAUTH2",
+        "tokenParams": { "grant_type": "authorization_code" },
+        "authorizationParams": { "response_type": "code" },
+        "authorizationMethod": "header"
+  },
+  "request": {
+    "baseURL": "https://api.fitbit.com",
+    "headers": {
+      "Accept": "application/x-www-form-urlencoded",
+        "Authorization": "Bearer ${auth.accessToken}",
+        "User-Agent": "Pizzly"
+    }
+  }
+}
