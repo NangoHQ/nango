@@ -1,0 +1,19 @@
+{
+  "name": "Salla",
+  "image": "https://salla.sa/site/wp-content/themes/salla/assets/images/logo.svg",
+  "auth": {
+    "authorizationURL": "https://accounts.salla.sa/oauth2/auth",
+    "tokenURL": "https://accounts.salla.sa/oauth2/token",
+    "authType": "OAUTH2",
+    "tokenParams": {},
+    "authorizationParams": {}
+  },
+  "request": {
+    "baseURL": "https://api.salla.dev/admin/v2/",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "Bearer ${auth.accessToken}",
+      "User-Agent": "Pizzly"
+    }
+  }
+}
