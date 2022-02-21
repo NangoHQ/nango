@@ -24,7 +24,7 @@ This tutorial is intended for those interested in consuming OAuth based APIs, su
 2. Change to the directory:
 
    ```bash
-   cd pizzly
+   cd Pizzly
    ```
 
 3. Install dependencies for the project (you can also use `npm`):

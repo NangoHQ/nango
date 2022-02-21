@@ -1,6 +1,6 @@
 {
   "name": "pizzly-node",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Node.js client for Pizzly",
   "main": "dist/index.js",
   "dependencies": {
@@ -23,7 +23,7 @@
     "build": "npm run clean && tsc --project tsconfig.json"
   },
   "repository": "bearer/pizzly",
-  "homepage": "https://github.com/Bearer/Pizzly/tree/master/src/clients/javascript#readme",
+  "homepage": "https://github.com/Bearer/Pizzly/tree/master/src/clients/node",
   "author": "Bearer Team <engineering@bearer.sh>",
   "license": "MIT",
   "jest": {

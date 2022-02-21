@@ -96,5 +96,8 @@
     "singleQuote": true,
     "printWidth": 120,
     "tabWidth": 2
+  },
+  "pizzly": {
+    "uuid": "2f48bd60-4159-4c5d-a540-987f0374d93a"
   }
 }
