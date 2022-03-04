@@ -3,8 +3,9 @@
 # Build image 
 FROM node:14-alpine
 
+# Install make to run tests
 # Make sure we have ca certs for TLS
-RUN apk --no-cache add ca-certificates
+RUN apk add --no-cache ca-certificates make=4.3-r0
 
 WORKDIR /app
 
