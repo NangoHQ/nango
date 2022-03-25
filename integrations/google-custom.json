@@ -55,7 +55,7 @@
         },
         {
             "service": "profile",
-            "baseURL": "https://www.googleapis.com/auth/userinfo.profile",
+            "baseURL": "https://accounts.google.com/o/oauth2/v2/auth",
             "headers": {
                 "Accept": "application/json",
                 "Authorization": "Bearer ${auth.accessToken}",
