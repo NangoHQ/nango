@@ -44,8 +44,7 @@
                 "User-Agent": "Pizzly"
             }
         },
-
-              {
+        {
             "service": "profile",
             "baseURL": "https://www.googleapis.com/oauth2/v2/userinfo",
             "headers": {
