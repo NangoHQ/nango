@@ -44,32 +44,15 @@
                 "User-Agent": "Pizzly"
             }
         },
-        {
-            "service": "people",
-            "baseURL": "https://people.googleapis.com/v1/people/",
+
+              {
+            "service": "profile",
+            "baseURL": "https://www.googleapis.com/oauth2/v2/userinfo",
             "headers": {
                 "Accept": "application/json",
                 "Authorization": "Bearer ${auth.accessToken}",
                 "User-Agent": "Pizzly"
             }
-        },
-        {
-            "service": "profile",
-            "baseURL": "https://accounts.google.com/o/oauth2/v2/auth",
-            "headers": {
-                "Accept": "application/json",
-                "Authorization": "Bearer ${auth.accessToken}",
-                "User-Agent": "Pizzly"
-            }           
-        },
-                {
-            "service": "profilev2",
-            "baseURL": "https://www.googleapis.com/auth/userinfo.profile/",
-            "headers": {
-                "Accept": "application/json",
-                "Authorization": "Bearer ${auth.accessToken}",
-                "User-Agent": "Pizzly"
-            }           
         }
     ],
     "request": {
