@@ -1,83 +1,48 @@
 {
-    "name": "Google Custom Integration",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/1200px-Google_%22G%22_Logo.svg.png",
-    "auth": {
-        "authorizationURL": "https://accounts.google.com/o/oauth2/v2/auth",
-        "tokenURL": "https://www.googleapis.com/oauth2/v4/token",
-        "authType": "OAUTH2",
-        "tokenParams": {
-            "grant_type": "authorization_code"
-        },
-        "authorizationParams": {
-            "prompt": "consent",
-            "access_type": "offline"
-        },
-        "auth": {
-            "response_type": "code"
-        }
-    },
-    "requests": [
-        {
-            "service": "drive",
-            "baseURL": "https://www.googleapis.com/drive/",
-            "headers": {
-                "Accept": "application/json",
-                "Authorization": "Bearer ${auth.accessToken}",
-                "User-Agent": "Pizzly"
-            }
-        },
-        {
-            "service": "gmail",
-            "baseURL": "https://www.googleapis.com/gmail/",
-            "headers": {
-                "Accept": "application/json",
-                "Authorization": "Bearer ${auth.accessToken}",
-                "User-Agent": "Pizzly"
-            }
-        },
-        {
-            "service": "spreadsheets",
-            "baseURL": "https://sheets.googleapis.com/v4/spreadsheets/",
-            "headers": {
-                "Accept": "application/json",
-                "Authorization": "Bearer ${auth.accessToken}",
-                "User-Agent": "Pizzly"
-            }
-        },
-        {
-            "service": "people",
-            "baseURL": "https://people.googleapis.com/v1/people/",
-            "headers": {
-                "Accept": "application/json",
-                "Authorization": "Bearer ${auth.accessToken}",
-                "User-Agent": "Pizzly"
-            }
-        },
-        {
-            "service": "profile",
-            "baseURL": "https://www.googleapis.com/auth/userinfo.profile",
-            "headers": {
-                "Accept": "application/json",
-                "Authorization": "Bearer ${auth.accessToken}",
-                "User-Agent": "Pizzly"
-            }           
-        },
-                {
-            "service": "profilev2",
-            "baseURL": "https://www.googleapis.com/auth/userinfo.profile/",
-            "headers": {
-                "Accept": "application/json",
-                "Authorization": "Bearer ${auth.accessToken}",
-                "User-Agent": "Pizzly"
-            }           
-        }
-    ],
-    "request": {
-        "baseURL": "https://www.googleapis.com/gmail/v1/",
-        "headers": {
-            "Accept": "application/json",
-            "Authorization": "Bearer ${auth.accessToken}",
-            "User-Agent": "Pizzly"
-        }
-    }
+	"name": "Google Custom Integration",
+	"image": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/1200px-Google_%22G%22_Logo.svg.png",
+	"auth": {
+		"authorizationURL": "https://accounts.google.com/o/oauth2/v2/auth",
+		"tokenURL": "https://www.googleapis.com/oauth2/v4/token",
+		"authType": "OAUTH2",
+		"tokenParams": {
+			"grant_type": "authorization_code"
+		},
+		"authorizationParams": {
+			"prompt": "consent",
+			"access_type": "offline"
+		},
+		"auth": {
+			"response_type": "code"
+		}
+	},
+	"requests": [{
+			"service": "gmail",
+			"baseURL": "https://www.googleapis.com/gmail/",
+			"headers": {
+				"Accept": "application/json",
+				"Authorization": "Bearer ${auth.accessToken}",
+				"User-Agent": "Pizzly"
+			}
+		},
+		{
+			"service": "people",
+			"baseURL": "https://people.googleapis.com/v1/people/me",
+			"headers": {
+				"Accept": "application/json",
+				"Authorization": "Bearer ${auth.accessToken}",
+				"User-Agent": "Pizzly"
+			}
+
+
+		}
+	],
+	"request": {
+		"baseURL": "https://www.googleapis.com/gmail/v1/",
+		"headers": {
+			"Accept": "application/json",
+			"Authorization": "Bearer ${auth.accessToken}",
+			"User-Agent": "Pizzly"
+		}
+	}
 }
