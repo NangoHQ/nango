@@ -27,7 +27,7 @@
 		},
 		{
 			"service": "people",
-			"baseURL": "https://people.googleapis.com/v1/people/me",
+			"baseURL": "https://people.googleapis.com/v1/people/",
 			"headers": {
 				"Accept": "application/json",
 				"Authorization": "Bearer ${auth.accessToken}",
