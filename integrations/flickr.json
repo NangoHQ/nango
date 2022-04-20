@@ -7,7 +7,9 @@
     "authType": "OAUTH1",
     "signatureMethod": "HMAC-SHA1",
     "tokenParams": {},
-    "authorizationParams": {}
+    "authorizationParams": {
+      "perms": "write"
+    }
   },
   "request": {
     "baseURL": "https://api.flickr.com/services/",
