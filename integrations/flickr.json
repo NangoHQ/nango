@@ -1,0 +1,20 @@
+{
+  "name": "Flickr",
+  "auth": {
+    "requestTokenURL": "https://www.flickr.com/services/oauth/request_token",
+    "accessTokenURL": "https://www.flickr.com/services/oauth/access_token",
+    "userAuthorizationURL": "https://www.flickr.com/services/oauth/authorize",
+    "authType": "OAUTH1",
+    "signatureMethod": "HMAC-SHA1",
+    "tokenParams": {},
+    "authorizationParams": {}
+  },
+  "request": {
+    "baseURL": "https://api.flickr.com/services/",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "OAuth ${auth.oauth1}",
+      "User-Agent": "Pizzly"
+    }
+  }
+}
