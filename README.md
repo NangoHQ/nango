@@ -1,6 +1,8 @@
+**⭐ Pizzly is looking for new maintainers! If you're interested, check out the [discussion post](https://github.com/Bearer/Pizzly/discussions/259). ⭐**
+
 <a href="https://heroku.com/deploy?template=https://github.com/Bearer/Pizzly" rel="nofollow"><img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy to Heroku" height="26"></a>
 <a href="https://console.platform.sh/projects/create-project/?template=https://github.com/Bearer/Pizzly&utm_campaign=deploy_on_platform?utm_medium=button&utm_source=affiliate_links&utm_content=https://github.com/Bearer/Pizzly" rel="nofollow"><img src="https://platform.sh/images/deploy/deploy-button-lg-blue.svg" alt="Deploy with Platform.sh" height="26"></a>
-<a href="https://www.bearer.sh/?ref=pizzly"><img src="/views/assets/img/badges/bearer-badge.png?raw=true" alt="The #1 Privacy by Design platform" height="26"></a>
+<a href="https://www.bearer.com/?ref=pizzly"><img src="/views/assets/img/badges/bearer-badge.png?raw=true" alt="The #1 data security as code platform" height="26"></a>
 
 # Pizzly 🐻 - The OAuth Integration Proxy
 
@@ -149,7 +151,7 @@ And adding new APIs is straightforward. Just create a new configuration file wit
 
 ## Why Pizzly?
 
-Pizzly originally started at Bearer.sh as a way to simplify the developer's journey and ease the building of API integrations. OAuth is a great framework, but the difficulty and wide range of implementation makes it painful to use and tends to slow down the ability to integrate with new APIs.
+Pizzly originally started at Bearer as a way to simplify the developer's journey and ease the building of API integrations. OAuth is a great framework, but the difficulty and wide range of implementation makes it painful to use and tends to slow down the ability to integrate with new APIs.
 
 _But seriously, why Pizzly? We're fan of bears and fell in love with this [sweet hybrid](https://en.wikipedia.org/wiki/Grizzly–polar_bear_hybrid) one 🐻_
  
@@ -175,4 +177,4 @@ Pizzly is MIT licensed. See the [LICENSE file](https://github.com/Bearer/Pizzly/
 
 ## Sponsor
 
-Pizzly is proudly sponsored by Bearer, a solution to implement [Privacy by Design](https://www.bearer.sh) processes in developers' workflows and automate GDPR compliance.
+Pizzly is proudly sponsored by Bearer, a solution to implement [data security as code](https://www.bearer.com) processes in developers' workflows and automate data detection and data flow mapping.
