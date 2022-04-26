@@ -10,7 +10,7 @@
 
 <img src="/views/assets/img/logos/pizzly.png?raw=true" width="300">
 
-[How it works?](#how-it-works) - [Demo](#demo) - [Getting started](#getting-started) - [Documentation](#documentation)  
+[How it works?](#how-it-works) - [Getting started](#getting-started) - [Documentation](#documentation)  
 [Examples](#examples) - [Supported APIs](#supported-apis) - [Contributing](#contributing)
 
 </div>
@@ -30,15 +30,6 @@ At the heart of Pizzly is a Node.js application that uses PostgreSQL as a databa
 - and its own API - _to programmatically do what you can do with the dashboard_.
 
 [![Integrate with many APIs, right from Pizzly's dashboard](views/assets/img/docs/pizzly-dashboard-all-apis.png?raw=true)](https://demopizzly.herokuapp.com/dashboard/all)
-
-## Demo
-
-A live demo of Pizzly is available [right here](https://demopizzly.herokuapp.com/dashboard/all). It's hosted on a free Heroku instance, so expect some latency. Beware also that it is a public version of Pizzly - do not save sensitive credentials on it.
-
-Other live demo of Pizzly includes:
-
-- [Pizzly + React](https://codesandbox.io/s/pizzly-github-react-demo-rq78z)
-- [Pizzly + Vue.js](https://codepen.io/frenchcooc/pen/RwrmXJw)
 
 ## Getting started
 
