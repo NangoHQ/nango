@@ -12,7 +12,7 @@
     }
   },
   "request": {
-    "baseURL": "https://www.google.com/m8/",
+    "baseURL": "https://people.googleapis.com/v1/people/",
     "headers": {
       "Accept": "application/json",
       "Authorization": "Bearer ${auth.accessToken}",
