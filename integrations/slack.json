@@ -1,8 +1,8 @@
 {
   "name": "Slack",
   "auth": {
-    "authorizationURL": "https://slack.com/oauth/authorize",
-    "tokenURL": "https://slack.com/api/oauth.access",
+    "authorizationURL": "https://slack.com/oauth/v2/authorize",
+    "tokenURL": "https://slack.com/api/oauth.v2.access",
     "authType": "OAUTH2",
     "authorizationParams": { "access_type": "offline", "consent": true },
     "auth": {
