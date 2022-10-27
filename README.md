@@ -1,4 +1,8 @@
-**⭐ Pizzly is looking for new maintainers! If you're interested, check out the [discussion post](https://github.com/Bearer/Pizzly/discussions/259). ⭐**
+
+# :warning: This project is no longer maintained :warning:
+Thanks for all of your time and support. This project is now publically archived. We encourage you to fork the repo and make it your own.
+
+---
 
 <a href="https://heroku.com/deploy?template=https://github.com/Bearer/Pizzly" rel="nofollow"><img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy to Heroku" height="26"></a>
 <a href="https://console.platform.sh/projects/create-project/?template=https://github.com/Bearer/Pizzly&utm_campaign=deploy_on_platform?utm_medium=button&utm_source=affiliate_links&utm_content=https://github.com/Bearer/Pizzly" rel="nofollow"><img src="https://platform.sh/images/deploy/deploy-button-lg-blue.svg" alt="Deploy with Platform.sh" height="26"></a>
