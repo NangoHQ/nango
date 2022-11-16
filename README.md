@@ -1,6 +1,16 @@
 
-# :warning: This project is no longer maintained :warning:
-Thanks for all of your time and support. This project is now publically archived. We encourage you to fork the repo and make it your own.
+# :tada: This project is maintained again! :tada:
+Hello fellow Pizzly users!
+
+We are Nango, a young team working on [open-source tools](https://github.com/NangoHQ/nango) to make working with 3rd party APIs super easy for engineers.
+We just took over Pizzly from the original authors, the [bearer team](https://www.bearer.com/?ref=pizzly) and are very much looking forward to giving it a new life and roadmap!
+
+**The mission to make OAuth fast & simple will stay the same** and we will have more to share soon: Check back here by Friday 25th November to see the next iteration of Pizzly!
+
+Meanwhile, if you want to get involved or talk with us please join our [Slack community](https://nango.dev/slack) here: We would love to hear from you!
+
+BIG THANKS to the Bearer team and all the contributors for their hard work! 🐻 👏  
+Pizzly has been amazing for us and we look forward to building a bright future for it together with the community :)
 
 ---
 
