@@ -1,4 +1,4 @@
-import * as Knex from 'knex'
+import type { Knex } from 'knex'
 
 export async function up(knex: Knex): Promise<any> {
   return knex.schema.alterTable('authentications', function(table) {

@@ -49,7 +49,7 @@ export const callbackContext = asyncMiddleware(
     req.isCallback = true
     req.connectParams = connectParams
     req.buid = buid
-    req.setupId = req.session.authConfig.setupDetails.setup_id
+    req.setupId = req.session['authConfig'].setupDetails.setup_id
 
     next()
   }

@@ -1,7 +1,7 @@
 // import { SetupDetailsNotFound } from '../errors'
 import { TIntegrationConfig, EAuthType } from '../v3/types'
 import '../../../../integrations'
-import Knex from 'knex'
+import type { Knex}  from 'knex'
 
 interface ICommonOAuthPayload {
   serviceName: string

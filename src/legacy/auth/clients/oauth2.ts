@@ -1,10 +1,10 @@
 import simpleOauth2, { Token } from 'simple-oauth2'
-import Wreck from 'wreck'
+import Wreck from '@hapi/wreck'
 import http from 'http'
 import { URL } from 'url'
 
 import { AuthenticationFailed } from '../v3/errors'
-import Boom from 'boom'
+import type { Boom }  from '@hapi/boom'
 import { OAuthTokenResponse } from '../v3/types'
 // import { inspectAccessToken } from './openid-connect'
 

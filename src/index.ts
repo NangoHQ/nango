@@ -1,5 +1,4 @@
 import express from 'express'
-import Bearer from '@bearer/node-agent'
 import telemetry from './lib/telemetry'
 import * as routes from './routes'
 
@@ -113,16 +112,3 @@ app.listen(PORT, async () => {
   // Initialize Telemetry (if enabled)
   process.env.UUID = telemetry()
 })
-
-/**
- * Optional. Initialize the Bearer agent if the environment key is provided.
- * Bearer will monitor and shield the Pizzly instance from APIs failure.
- * Learn more: https://www.bearer.sh/
- *
- * To get your BEARER_SECRET_KEY, create an account on www.bearer.sh
- * then heads to https://app.bearer.sh/settings/key
- */
-
-if (process.env.BEARER_SECRET_KEY) {
-  Bearer.init()
-}

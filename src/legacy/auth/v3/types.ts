@@ -1,6 +1,6 @@
 import { Request } from 'express'
 import Integration from '../../functions/integration'
-import Knex from 'knex'
+import type { Knex } from 'knex'
 
 export interface IAuthContext {
   clientId: string

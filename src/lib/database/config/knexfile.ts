@@ -1,5 +1,5 @@
 // Update with your config settings.
-import { connection } from '.'
+import { connection } from './index.js'
 
 module.exports = {
   development: {
