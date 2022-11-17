@@ -9,7 +9,7 @@ Here is our current plan:
 - Short term (next 1-2 weeks) we are focused on getting Pizzly running again (see next section)
 - Beyond that we are looking to make it better. For this we need your input here: https://github.com/NangoHQ/Pizzly/issues/263
 
-Meanwhile, if you want to get involved or talk with us please join our [Slack community](https://nango.dev/slack) where are very active.
+Meanwhile, if you want to get involved or talk with us please join our [Slack community](https://nango.dev/slack) where we are very active.
 
 BIG THANKS to the Bearer team and all the contributors for their hard work! 🐻 👏  
 Pizzly has gained a strong following because it is one of the fastest and simplest ways to work with APIs that use OAuth. We look forward to continue this mission together with the community :)
