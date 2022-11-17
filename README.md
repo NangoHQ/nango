@@ -1,16 +1,25 @@
 
-# :tada: This project is maintained again! :tada:
+# :tada: This project is maintained again! - [and needs your input](https://github.com/NangoHQ/Pizzly/issues/263) :tada:
 Hello fellow Pizzly users!
 
-We are Nango, a young team working on [open-source tools](https://github.com/NangoHQ/nango) to make working with 3rd party APIs super easy for engineers.
+We are Nango, a young team working on [open-source tools](https://github.com/NangoHQ/nango) to make working with 3rd party APIs fast & simple for engineers.
 We just took over Pizzly from the original authors, the [bearer team](https://www.bearer.com/?ref=pizzly) and are very much looking forward to giving it a new life and roadmap!
 
-**The mission to make OAuth fast & simple will stay the same** and we will have more to share soon: Check back here by Friday 25th November to see the next iteration of Pizzly!
+Here is our current plan:
+- Short term (next 1-2 weeks) we are focused on getting Pizzly running again (see next section)
+- Beyond that we are looking to make it better. For this we need your input here: https://github.com/NangoHQ/Pizzly/issues/263
 
-Meanwhile, if you want to get involved or talk with us please join our [Slack community](https://nango.dev/slack) here: We would love to hear from you!
+Meanwhile, if you want to get involved or talk with us please join our [Slack community](https://nango.dev/slack) where are very active.
 
 BIG THANKS to the Bearer team and all the contributors for their hard work! 🐻 👏  
-Pizzly has been amazing for us and we look forward to building a bright future for it together with the community :)
+Pizzly has gained a strong following because it is one of the fastest and simplest ways to work with APIs that use OAuth. We look forward to continue this mission together with the community :)
+
+## Current state of Pizzly (last update: 16th Nov 2022)
+Pizzly currently does not run locally with the latest stable version of node (18.x)
+
+The 1-click Heroku deployment button still works, but means you will need to pay for the deployment starting November 28th when Heroku expires its free tier.
+
+Fixing Pizzly is our first priority. If you need help with your instance in the meantime please open an issue or reach out to us on the [Slack community](https://nango.dev/slack). We will do our best to help.
 
 ---
 
