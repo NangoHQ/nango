@@ -1,7 +1,7 @@
 // Update with your config settings.
 import { connection } from './index.js'
 
-module.exports = {
+export default {
   development: {
     connection,
     client: 'pg',
