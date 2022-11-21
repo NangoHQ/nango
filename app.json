@@ -1,6 +1,6 @@
 {
   "name": "Pizzly",
-  "description": "A Node Application to simplify OAuth",
+  "description": "A Node Application to simplify OAuth.",
   "image": "heroku/node",
   "repository": "https://github.com/Bearer/Pizzly",
   "keywords": ["OAuth", "node"],
