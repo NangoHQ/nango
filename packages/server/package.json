@@ -1,0 +1,28 @@
+{
+    "name": "@nangohq/pizzly-server",
+    "version": "0.3.0",
+    "description": "Pizzly's server.",
+    "type": "module",
+    "main": "dist/lib/server.js",
+    "scripts": {
+        "start": "tsc && node dist/lib/server.js"
+    },
+    "keywords": [],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/NangoHQ/Pizzly",
+        "directory": "packages/server"
+    },
+    "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
+    "dependencies": {
+    },
+    "engines": {
+        "node": ">=16.7",
+        "npm": ">=6.14.11"
+    },
+    "devDependencies": {
+        "@types/express": "^4.17.13",
+        "@types/node": "^18.7.6",
+        "typescript": "^4.7.4"
+    }
+}
