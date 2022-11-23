@@ -1,22 +1,17 @@
 {
-    "name": "@nangohq/pizzly-cli",
+    "name": "@nangohq/pizzly-frontend",
     "version": "0.3.0",
-    "description": "Pizzly's CLI tool.",
+    "description": "Pizzly's frontend library for OAuth handling.",
     "type": "module",
     "main": "dist/index.js",
-    "bin": "./dist/index.js",
     "keywords": [],
     "author": "bastien@nango.dev",
     "repository": {
         "type": "git",
         "url": "https://github.com/NangoHQ/Pizzly",
-        "directory": "packages/cli"
+        "directory": "packages/frontend"
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
-        "commander": "^9.4.0"
-    },
-    "engines": {
-        "node": ">=16.7"
     }
 }

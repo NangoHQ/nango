@@ -15,6 +15,10 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
+        "oauth": "^0.10.0",
+        "simple-oauth2": "^5.0.0",
+        "uuid": "^9.0.0",
+        "winston": "^3.8.2"
     },
     "engines": {
         "node": ">=16.7",
