@@ -3,8 +3,8 @@ exports.up = function (knex, _) {
     return knex.schema.withSchema(schema).createTable('_pizzly_integrations', function (table) {
         table.increments('id').primary();
         table.timestamps(true, true);
-        table.string('integration_id').NotNullable();
-        table.string('type').NotNullable();
+        table.string('integration_id').notNullable();
+        table.string('type').notNullable();
         table.string('oauth_client_id');
         table.string('oauth_client_secret');
         table.string('oauth_scopes');

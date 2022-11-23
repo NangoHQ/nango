@@ -31,7 +31,7 @@ import db from './database.js';
 // This prints additional useful details.
 
 export function startOAuthServer() {
-    const oAuthCallbackUrl = (process.env['HOST'] || 'localhost') + '/oauth/callback'; // TODO: add env variable
+    const oAuthCallbackUrl = (process.env['HOST'] || 'localhost') + '/oauth/callback';
 
     const port = process.env['PORT'] || 3004;
 
@@ -61,9 +61,11 @@ export function startOAuthServer() {
         }
         connectionId = connectionId.toString();
 
+        let integrationConfig = await integrationsManager.getIntegrationConfig(integrationName);
+
         let integrationTemplate: IntegrationTemplate;
         try {
-            integrationTemplate = integrationsManager.getIntegrationTemplate(integrationName);
+            integrationTemplate = integrationsManager.getIntegrationTemplate(integrationConfig!.type);
         } catch {
             return sendResultHTML(
                 logger,
@@ -74,8 +76,6 @@ export function startOAuthServer() {
                 `Authentication failed: This Pizzly instance does not have a configuration for the integration "${integrationName}". Do you have a typo?`
             );
         }
-
-        let integrationConfig = await integrationsManager.getIntegrationConfig(integrationName);
 
         const authState = uuid.v1();
         const sessionData = {
@@ -442,5 +442,5 @@ Pizzly OAuth flow callback. Read more about how to use it at: https://github.com
 const app = express();
 const sessionStore: OAuthSessionStore = {};
 await db.knex.raw(`CREATE SCHEMA IF NOT EXISTS ${db.schema()}`);
-await db.migrate(process.env['PIZZLY_DB_MIGRATION_FOLDER'] || '../db/migrations');
+await db.migrate(process.env['PIZZLY_DB_MIGRATION_FOLDER'] || './lib/db/migrations');
 startOAuthServer();

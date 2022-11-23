@@ -5,9 +5,8 @@ import type { Integration } from './integration.model.js';
 import db from './database.js';
 
 class IntegrationsManager {
-    getIntegrationTemplate(integrationName: string): IntegrationTemplate {
-        // TODO: fetch the integration config to have the integration type.
-        const integrationPath = path.join('../../../integrations', `${integrationName}.json`); // TODO: make compatible with Docker
+    getIntegrationTemplate(integrationType: string): IntegrationTemplate {
+        const integrationPath = path.join('../../../integrations', `${integrationType}.json`);
         return JSON.parse(fs.readFileSync(integrationPath, 'utf-8'));
     }
 

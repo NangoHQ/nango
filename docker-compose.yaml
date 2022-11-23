@@ -1,0 +1,33 @@
+version: '3.9'
+services:
+    pizzly-db:
+        image: postgres
+        container_name: pizzly-db
+        restart: always
+        environment:
+            POSTGRES_PASSWORD: pizzly
+            POSTGRES_USER: pizzly
+            POSTGRES_DB: pizzly
+        ports:
+            - '5432:5432'
+
+    pizzly-db-admin:
+        image: adminer
+        container_name: pizzly-db-admin
+        restart: always
+        ports:
+            - '8080:8080'
+
+    # pizzly-server:
+    #     image: nangohq/pizzly-server
+    #     container_name: pizzly-server
+    #     restart: always
+    #     environment:
+    #         - HOST=localhost
+    #         - POST=3004
+    #     env_file:
+    #         - .env
+    #     ports:
+    #         - '3004:3004'
+    #     depends_on:
+    #         - pizzly-db

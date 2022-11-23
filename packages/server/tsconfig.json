@@ -24,9 +24,9 @@
         "sourceMap": true,
         "composite": true,
         "checkJs": false,
-        "rootDir": ".",
+        "rootDir": "lib",
         "outDir": "dist"
     },
     "references": [],
-    "include": ["lib/**/*", "db/**/*"]
+    "include": ["lib/**/*"]
 }

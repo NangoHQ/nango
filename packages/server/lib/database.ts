@@ -1,6 +1,6 @@
 import knex from 'knex';
 import type { Knex } from 'knex';
-import { config } from '../db/config.js';
+import { config } from './db/config.js';
 
 class KnexDatabase {
     knex: Knex;

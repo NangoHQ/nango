@@ -3,9 +3,9 @@
     "version": "0.3.0",
     "description": "Pizzly's server.",
     "type": "module",
-    "main": "dist/lib/server.js",
+    "main": "dist/server.js",
     "scripts": {
-        "start": "tsc && node dist/lib/server.js"
+        "start": "tsc && node dist/server.js"
     },
     "keywords": [],
     "repository": {
@@ -17,6 +17,7 @@
     "dependencies": {
         "knex": "^2.3.0",
         "oauth": "^0.10.0",
+        "pg": "^8.8.0",
         "simple-oauth2": "^5.0.0",
         "uuid": "^9.0.0",
         "winston": "^3.8.2"
