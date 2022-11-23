@@ -1,35 +1,17 @@
-# This is the Dockerfile for building a production image with Pizzly
+FROM node:18-slim
 
+ENV PORT=3004
+ENV PIZZLY_SERVER_RUN_MODE=DOCKERIZED
+ENV PIZZLY_DB_MIGRATION_FOLDER=./packages/core/db/migrations
 
-# Build image 
-FROM node:14-alpine
+WORKDIR /usr/pizzly-server/src
 
-WORKDIR /app
-
-# Copy in dependencies for building
-COPY *.json ./
-COPY yarn.lock ./
 COPY integrations ./integrations/
-COPY src ./src/
-COPY tests ./tests/
-COPY views ./views/
+COPY packages/server/ packages/server/
+COPY package*.json ./
 
-RUN yarn install && yarn build
+RUN npm install --omit=dev
 
-# Actual image to run from.
-FROM node:14-alpine
+EXPOSE 3004
 
-# Make sure we have ca certs for TLS
-RUN apk --no-cache add ca-certificates
-
-# Make a directory for the node user. Not running Pizzly as root.
-RUN mkdir /home/node/app && chown -R node:node /home/node/app
-WORKDIR /home/node/app
-
-USER node
-
-COPY --chown=node:node --from=0 /app/dist/ .
-COPY --chown=node:node --from=0 /app/views ./views
-COPY --chown=node:node --from=0 /app/node_modules ./node_modules
-
-CMD ["node", "./src/index.js"]
+ENTRYPOINT [ "node", "packages/server/dist/lib/server.js" ]

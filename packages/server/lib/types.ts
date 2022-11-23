@@ -8,52 +8,28 @@ export enum OAuthAuthorizationMethod {
     HEADER = 'header'
 }
 
-export interface PizzlyCredentialsCommon {
-    type: PizzlyIntegrationAuthModes;
+export interface CredentialsCommon {
+    type: IntegrationAuthModes;
     raw: Record<string, string>; // Raw response for credentials as received by the OAuth server or set by the user
 }
 
-export interface PizzlyOAuth2Credentials extends PizzlyCredentialsCommon {
-    type: PizzlyIntegrationAuthModes.OAuth2;
+export interface OAuth2Credentials extends CredentialsCommon {
+    type: IntegrationAuthModes.OAuth2;
     accessToken: string;
 
     refreshToken?: string;
     expiresAt?: Date;
 }
 
-export interface PizzlyUsernamePasswordCredentials extends PizzlyCredentialsCommon {
-    type: PizzlyIntegrationAuthModes.UsernamePassword;
-    username: string;
-    password: string;
-}
-
-export interface PizzlyApiKeyCredentials extends PizzlyCredentialsCommon {
-    type: PizzlyIntegrationAuthModes.ApiKey;
-    apiKey: string;
-}
-
-export interface PizzlyOAuth1Credentials extends PizzlyCredentialsCommon {
-    type: PizzlyIntegrationAuthModes.OAuth1;
+export interface OAuth1Credentials extends CredentialsCommon {
+    type: IntegrationAuthModes.OAuth1;
     oAuthToken: string;
     oAuthTokenSecret: string;
 }
 
-export interface PizzlyIntegrationConfig {
-    [key: string]: any; // Needed so that TypeScript allows us to index this with strings. Whenever possible access directly through the properties.
-
-    oauth_client_id?: string;
-    oauth_client_secret?: string;
-    oauth_scopes?: string[];
-
-    app_api_key?: string; // App wide api key.
-
-    http_request_timeout_seconds?: number;
-    log_level?: string;
-}
-
-export interface PizzlyIntegrationTemplate {
+export interface IntegrationTemplate {
     // The authentication mode to use (e.g. OAuth 1, OAuth 2)
-    auth_mode: PizzlyIntegrationAuthModes;
+    auth_mode: IntegrationAuthModes;
 
     // Config related to authorization URL forward
     authorization_url: string;
@@ -67,17 +43,15 @@ export interface PizzlyIntegrationTemplate {
     };
 }
 
-export enum PizzlyIntegrationAuthModes {
+export enum IntegrationAuthModes {
     OAuth1 = 'OAUTH1',
-    OAuth2 = 'OAUTH2',
-    UsernamePassword = 'USERNAME_PASSWORD',
-    ApiKey = 'API_KEY'
+    OAuth2 = 'OAUTH2'
 }
 
-export type PizzlyAuthCredentials = PizzlyOAuth2Credentials | PizzlyUsernamePasswordCredentials | PizzlyApiKeyCredentials | PizzlyOAuth1Credentials;
+export type PizzlyAuthCredentials = OAuth2Credentials | OAuth1Credentials;
 
-export interface PizzlyIntegrationTemplateOAuth1 extends PizzlyIntegrationTemplate {
-    auth_mode: PizzlyIntegrationAuthModes.OAuth1;
+export interface IntegrationTemplateOAuth1 extends IntegrationTemplate {
+    auth_mode: IntegrationAuthModes.OAuth1;
 
     request_url: string;
     request_params?: Record<string, string>;
@@ -88,8 +62,8 @@ export interface PizzlyIntegrationTemplateOAuth1 extends PizzlyIntegrationTempla
     signature_method: 'HMAC-SHA1' | 'RSA-SHA1' | 'PLAINTEXT';
 }
 
-export interface PizzlyIntegrationTemplateOAuth2 extends PizzlyIntegrationTemplate {
-    auth_mode: PizzlyIntegrationAuthModes.OAuth2;
+export interface IntegrationTemplateOAuth2 extends IntegrationTemplate {
+    auth_mode: IntegrationAuthModes.OAuth2;
 
     token_params?: {
         grant_type?: 'authorization_code' | 'client_credentials';
@@ -108,9 +82,9 @@ export type OAuth1RequestTokenResult = {
 
 export interface OAuthSession {
     integrationName: string;
-    userId: string;
+    connectionId: string;
     callbackUrl: string;
-    authMode: PizzlyIntegrationAuthModes;
+    authMode: IntegrationAuthModes;
 
     // Needed for OAuth 2.0 PKCE
     codeVerifier: string;
@@ -126,18 +100,5 @@ export interface OAuthSessionStore {
 export interface PizzlyCredentialsRefresh {
     integration: string;
     userId: string;
-    promise: Promise<PizzlyOAuth2Credentials>;
-}
-
-export interface PizzlyConnectionPublic {
-    uuid: string;
-    integration: string;
-    connectionId: string;
-    dateCreated: Date;
-    lastModified: Date;
-    additionalConfig: Record<string, unknown> | undefined;
-}
-
-export interface PizzlyConnection extends PizzlyConnectionPublic {
-    credentials: PizzlyAuthCredentials;
+    promise: Promise<OAuth2Credentials>;
 }

@@ -15,6 +15,7 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
+        "knex": "^2.3.0",
         "oauth": "^0.10.0",
         "simple-oauth2": "^5.0.0",
         "uuid": "^9.0.0",

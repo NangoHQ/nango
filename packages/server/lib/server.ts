@@ -6,17 +6,16 @@ import * as crypto from 'node:crypto';
 import express from 'express';
 import * as uuid from 'uuid';
 import simpleOauth2 from 'simple-oauth2';
-import { PizzlyIntegrationTemplateOAuth2, PizzlyIntegrationAuthModes, OAuthSession, OAuthSessionStore } from './types.js';
-import { getSimpleOAuth2ClientConfig, PizzlyOAuth1Client } from './oauth-clients.js';
+import { IntegrationTemplateOAuth2, IntegrationAuthModes, OAuthSession, OAuthSessionStore } from './types.js';
+import { getSimpleOAuth2ClientConfig } from './oauth2.client.js';
+import { PizzlyOAuth1Client } from './oauth1.client.js';
 import { interpolateString } from './utils.js';
 import type winston from 'winston';
 import logger from './logger.js';
-import integrationsManager from './integrations-manager.js';
-import connectionsManager from './connections-manager.js';
-import type { PizzlyIntegrationTemplate } from './types.js';
-
-const app = express();
-const sessionStore: OAuthSessionStore = {};
+import integrationsManager from './integrations.manager.js';
+import connectionsManager from './connections.manager.js';
+import type { IntegrationTemplate } from './types.js';
+import db from './database.js';
 
 // A simple HTTP(S) server that implements an OAuth 1.0a and OAuth 2.0 dance
 // Yes the code is not very beautiful but IMHO this reflects OAuth:
@@ -36,71 +35,71 @@ export function startOAuthServer() {
 
     const port = process.env['PORT'] || 3004;
 
-    app.get('/oauth/connect/:integration', (req, res) => {
-        const { integration } = req.params;
-        let { userId } = req.query;
-        userId = userId as string;
+    app.get('/oauth/connect/:integrationName', async (req, res) => {
+        const { integrationName } = req.params;
+        let { connectionId } = req.query;
+        connectionId = connectionId as string;
 
-        if (!userId) {
+        if (!connectionId) {
             return sendResultHTML(
                 logger,
                 res,
-                integration,
-                userId,
-                'missing_user_id',
-                'Authentication failed: Missing userId, it is required and cannot be an empty string.'
+                integrationName,
+                connectionId,
+                'missing_connection_id',
+                'Authentication failed: Missing connectionId, it is required and cannot be an empty string.'
             );
-        } else if (!integration) {
+        } else if (!integrationName) {
             return sendResultHTML(
                 logger,
                 res,
-                integration,
-                userId,
+                integrationName,
+                connectionId,
                 'missing_integration',
-                'Authentication failed: Missing integration name, it is required and cannot be an empty string.'
+                'Authentication failed: Missing integration identifier, it is required and cannot be an empty string.'
             );
         }
-        userId = userId.toString();
+        connectionId = connectionId.toString();
 
-        let integrationTemplate: PizzlyIntegrationTemplate;
+        let integrationTemplate: IntegrationTemplate;
         try {
-            integrationTemplate = integrationsManager.getIntegrationTemplate(integration);
+            integrationTemplate = integrationsManager.getIntegrationTemplate(integrationName);
         } catch {
             return sendResultHTML(
                 logger,
                 res,
-                integration,
-                userId,
+                integrationName,
+                connectionId,
                 'unknown_integration',
-                `Authentication failed: This Pizzly instance does not have a configuration for the integration "${integration}". Do you have a typo?`
+                `Authentication failed: This Pizzly instance does not have a configuration for the integration "${integrationName}". Do you have a typo?`
             );
         }
 
-        let integrationConfig = integrationsManager.getIntegrationConfig();
+        let integrationConfig = await integrationsManager.getIntegrationConfig(integrationName);
 
         const authState = uuid.v1();
         const sessionData = {
-            integrationName: integration,
-            userId: userId as string,
+            integrationName: integrationName,
+            connectionId: connectionId as string,
             callbackUrl: oAuthCallbackUrl,
             authMode: integrationTemplate.auth_mode,
             codeVerifier: crypto.randomBytes(24).toString('hex')
         };
         sessionStore[authState] = sessionData;
 
-        if (!integrationConfig.oauth_client_id || !integrationConfig.oauth_client_secret || integrationConfig.oauth_scopes === undefined) {
+        if (integrationConfig?.oauth_client_id == null || integrationConfig?.oauth_client_secret == null || integrationConfig.oauth_scopes == null) {
             return sendResultHTML(
                 logger,
                 res,
-                integration,
-                userId,
+                integrationName,
+                connectionId,
                 'invalid_integration_configuration',
-                `Authentication failed: The configuration for integration "${integration}" is missing required parameters. All of these must be present: oauth_client_id (got: ${integrationConfig.oauth_client_id}), oauth_client_secret (got: ${integrationConfig.oauth_client_secret}) and oauth_scopes (got: ${integrationConfig.oauth_scopes}).`
+                `Authentication failed: The configuration for integration "${integrationName}" is missing required parameters. All of these must be present: oauth_client_id (got: ${integrationConfig?.oauth_client_id}), oauth_client_secret (got: ${integrationConfig?.oauth_client_secret}) and oauth_scopes (got: ${integrationConfig?.oauth_scopes}).`
             );
         }
 
-        if (integrationTemplate.auth_mode === PizzlyIntegrationAuthModes.OAuth2) {
-            const oAuth2AuthConfig = integrationTemplate as PizzlyIntegrationTemplateOAuth2;
+        if (integrationTemplate.auth_mode === IntegrationAuthModes.OAuth2) {
+            const oAuth2AuthConfig = integrationTemplate as IntegrationTemplateOAuth2;
 
             if (
                 oAuth2AuthConfig.token_params === undefined ||
@@ -132,7 +131,7 @@ export function startOAuthServer() {
                 });
 
                 logger.debug(
-                    `OAuth 2.0 flow for "${integration}" and userId "${userId}" - redirecting user to the following URL for authorization: ${authorizationUri}`
+                    `OAuth 2.0 flow for "${integrationName}" and userId "${connectionId}" - redirecting user to the following URL for authorization: ${authorizationUri}`
                 );
 
                 res.redirect(authorizationUri);
@@ -140,13 +139,13 @@ export function startOAuthServer() {
                 return sendResultHTML(
                     logger,
                     res,
-                    integration,
-                    userId,
+                    integrationName,
+                    connectionId,
                     'unsupported_grant_type',
                     `Authentication failed: The grant type "${oAuth2AuthConfig.token_params.grant_type}" is not supported by this OAuth flow. Please check the documentation or contact support.`
                 );
             }
-        } else if (integrationTemplate.auth_mode === PizzlyIntegrationAuthModes.OAuth1) {
+        } else if (integrationTemplate.auth_mode === IntegrationAuthModes.OAuth1) {
             // In OAuth 2 we are guaranteed that the state parameter will be sent back to us
             // for the entire journey. With OAuth 1.0a we have to register the callback URL
             // in a first step and will get called back there. We need to manually include the state
@@ -166,7 +165,7 @@ export function startOAuthServer() {
                     const redirectUrl = oAuth1Client.getAuthorizationURL(tokenResult);
 
                     logger.debug(
-                        `OAuth 1.0a flow for "${integration}" and userId "${userId}" - request token call completed successfully. Redirecting user to the following URL for authorization: ${redirectUrl}`
+                        `OAuth 1.0a flow for "${integrationName}" and userId "${connectionId}" - request token call completed successfully. Redirecting user to the following URL for authorization: ${redirectUrl}`
                     );
 
                     // All worked, let's redirect the user to the authorization page
@@ -176,8 +175,8 @@ export function startOAuthServer() {
                     return sendResultHTML(
                         logger,
                         res,
-                        integration,
-                        userId as string,
+                        integrationName,
+                        connectionId as string,
                         'oauth1_request_token',
                         `Authentication failed: The external server returned an error in the request token step of the OAuth 1.0a flow. Error: ${JSON.stringify(
                             error,
@@ -190,10 +189,10 @@ export function startOAuthServer() {
             return sendResultHTML(
                 logger,
                 res,
-                integration,
-                userId,
+                integrationName,
+                connectionId,
                 'unsupported_auth_mode',
-                `Authentication failed: The integration "${integration}" is configured to use auth mode "${integrationTemplate.auth_mode}" which is not supported by the OAuth flow (only OAuth1 and OAuth2 integrations are supported). Please check the documentation for how to pass in auth credentials for your auth mode or contact support.`
+                `Authentication failed: The integration "${integrationName}" is configured to use auth mode "${integrationTemplate.auth_mode}" which is not supported by the OAuth flow (only OAuth1 and OAuth2 integrations are supported). Please check the documentation for how to pass in auth credentials for your auth mode or contact support.`
             );
         }
     });
@@ -203,25 +202,25 @@ export function startOAuthServer() {
         const sessionData = sessionStore[state as string] as OAuthSession;
         delete sessionStore[state as string];
 
-        if (state === undefined || sessionData === undefined) {
+        if (state == null || sessionData == null || sessionData.integrationName == null) {
             return sendResultHTML(
                 logger,
                 res,
                 sessionData.integrationName,
-                sessionData.userId,
+                sessionData.connectionId,
                 'invalid_state_callback',
                 `Authorization failed: The external server did not send a valid state parameter back in the callback. Got state: ${state}`
             );
         }
 
         logger.debug(
-            `Received OAuth callback for "${sessionData.integrationName}" and userId "${sessionData.userId}" - full callback URI was: ${req.originalUrl}"`
+            `Received OAuth callback for "${sessionData.integrationName}" and userId "${sessionData.connectionId}" - full callback URI was: ${req.originalUrl}"`
         );
 
-        const integrationTemplate = integrationsManager.getIntegrationTemplate(sessionData.integrationName!);
-        const integrationConfig = integrationsManager.getIntegrationConfig();
+        const integrationTemplate = integrationsManager.getIntegrationTemplate(sessionData.integrationName);
+        const integrationConfig = await integrationsManager.getIntegrationConfig(sessionData.integrationName);
 
-        if (sessionData.authMode === PizzlyIntegrationAuthModes.OAuth2) {
+        if (sessionData.authMode === IntegrationAuthModes.OAuth2) {
             const { code } = req.query;
 
             if (!code) {
@@ -235,10 +234,10 @@ export function startOAuthServer() {
                     errorType = 'unknown_external_callback_error';
                     errorMessage = `Authorization failed: The external OAuth2 server did not provide an authorization code in the callback. Unfortunately no additional errors were reported by the server. The full callback URI was: ${req.originalUrl}`;
                 }
-                return sendResultHTML(logger, res, sessionData.integrationName, sessionData.userId, errorType, errorMessage);
+                return sendResultHTML(logger, res, sessionData.integrationName, sessionData.connectionId, errorType, errorMessage);
             }
 
-            const simpleOAuthClient = new simpleOauth2.AuthorizationCode(getSimpleOAuth2ClientConfig(integrationTemplate, integrationTemplate));
+            const simpleOAuthClient = new simpleOauth2.AuthorizationCode(getSimpleOAuth2ClientConfig(integrationConfig!, integrationTemplate));
 
             let additionalTokenParams: Record<string, string> = {};
             if (integrationTemplate.token_params !== undefined) {
@@ -260,45 +259,40 @@ export function startOAuthServer() {
 
                 logger.debug(
                     `OAuth 2 flow for "${sessionData.integrationName}" and userId "${
-                        sessionData.userId
+                        sessionData.connectionId
                     }" - completed successfully. Received access token: ${JSON.stringify(accessToken, undefined, 2)}`
                 );
 
                 try {
-                    connectionsManager.insertOrUpdateConnection(
-                        sessionData.userId,
-                        sessionData.integrationName,
-                        accessToken.token,
-                        PizzlyIntegrationAuthModes.OAuth2
-                    );
+                    connectionsManager.upsertConnection(sessionData.connectionId, sessionData.integrationName, accessToken.token, IntegrationAuthModes.OAuth2);
                 } catch (e) {
                     return sendResultHTML(
                         logger,
                         res,
                         sessionData.integrationName,
-                        sessionData.userId,
+                        sessionData.connectionId,
                         'token_storage_error',
                         `Authentication succeeded but token storage failed: There was a problem storing the access token for user "${
-                            sessionData.userId
+                            sessionData.connectionId
                         }" and integration "${sessionData.integrationName}". Got this error: ${
                             (e as Error).message
                         }.\nToken response from server was: ${JSON.stringify(accessToken, undefined, 2)}`
                     );
                 }
 
-                return sendResultHTML(logger, res, sessionData.integrationName, sessionData.userId, '', '');
+                return sendResultHTML(logger, res, sessionData.integrationName, sessionData.connectionId, '', '');
             } catch (e) {
                 const errorE = e as Error;
                 return sendResultHTML(
                     logger,
                     res,
                     sessionData.integrationName,
-                    sessionData.userId,
+                    sessionData.connectionId,
                     'token_retrieval_error',
                     `Authentication failed: There was a problem exchanging the OAuth 2 authorization code for an access token. Got this error: ${errorE.name} - ${errorE.message}`
                 );
             }
-        } else if (sessionData.authMode === PizzlyIntegrationAuthModes.OAuth1) {
+        } else if (sessionData.authMode === IntegrationAuthModes.OAuth1) {
             const { oauth_token, oauth_verifier } = req.query;
 
             if (!oauth_token || !oauth_verifier) {
@@ -312,50 +306,50 @@ export function startOAuthServer() {
                     errorType = 'unknown_external_callback_error';
                     errorMessage = `Authorization failed: The external OAuth 1.0a server did not provide an oauth_token and/or an oauth_verifier in the callback. Unfortunately no additional errors were reported by the server. The full callback URI was: ${req.originalUrl}`;
                 }
-                return sendResultHTML(logger, res, sessionData.integrationName, sessionData.userId, errorType, errorMessage);
+                return sendResultHTML(logger, res, sessionData.integrationName, sessionData.connectionId, errorType, errorMessage);
             }
 
             const oauth_token_secret = sessionData.request_token_secret!;
 
-            const oAuth1Client = new PizzlyOAuth1Client(integrationConfig, integrationTemplate, '');
+            const oAuth1Client = new PizzlyOAuth1Client(integrationConfig!, integrationTemplate, '');
             oAuth1Client
                 .getOAuthAccessToken(oauth_token as string, oauth_token_secret, oauth_verifier as string)
                 .then((accessTokenResult) => {
                     logger.debug(
                         `OAuth 1.0a flow for "${sessionData.integrationName}" and userId "${
-                            sessionData.userId
+                            sessionData.connectionId
                         }" - completed successfully. Received access token: ${JSON.stringify(accessTokenResult, undefined, 2)}`
                     );
 
                     try {
-                        connectionsManager.insertOrUpdateConnection(
-                            sessionData.userId,
+                        connectionsManager.upsertConnection(
+                            sessionData.connectionId,
                             sessionData.integrationName,
                             accessTokenResult,
-                            PizzlyIntegrationAuthModes.OAuth1
+                            IntegrationAuthModes.OAuth1
                         );
                     } catch (e) {
                         return sendResultHTML(
                             logger,
                             res,
                             sessionData.integrationName,
-                            sessionData.userId,
+                            sessionData.connectionId,
                             'token_storage_error',
                             `Authentication succeeded but token storage failed: There was a problem storing the access token for user "${
-                                sessionData.userId
+                                sessionData.connectionId
                             }" and integration "${sessionData.integrationName}". Got this error: ${
                                 (e as Error).message
                             }.\nToken response from server was: ${JSON.stringify(accessTokenResult, undefined, 2)}`
                         );
                     }
-                    return sendResultHTML(logger, res, sessionData.integrationName, sessionData.userId, '', '');
+                    return sendResultHTML(logger, res, sessionData.integrationName, sessionData.connectionId, '', '');
                 })
                 .catch((error) => {
                     return sendResultHTML(
                         logger,
                         res,
                         sessionData.integrationName,
-                        sessionData.userId,
+                        sessionData.connectionId,
                         'access_token_retrieval_error',
                         `Authentication failed: There was a problem exchanging the OAuth 1.0a request token for an access token. Got this error: ${error}`
                     );
@@ -365,7 +359,7 @@ export function startOAuthServer() {
                 logger,
                 res,
                 sessionData.integrationName,
-                sessionData.userId,
+                sessionData.connectionId,
                 'unsupported_auth_mode_callback',
                 `Authentication failed: The callback was called with an unsupported auth mode. You are seeing ghosts, this should never ever happen. Please contact support, thanks! Got this mode: ${sessionData.authMode}`
             );
@@ -445,4 +439,8 @@ Pizzly OAuth flow callback. Read more about how to use it at: https://github.com
     res.send(Buffer.from(resultHTML));
 }
 
+const app = express();
+const sessionStore: OAuthSessionStore = {};
+await db.knex.raw(`CREATE SCHEMA IF NOT EXISTS ${db.schema()}`);
+await db.migrate(process.env['PIZZLY_DB_MIGRATION_FOLDER'] || '../db/migrations');
 startOAuthServer();

@@ -2,19 +2,9 @@
  * Copyright (c) 2022 Nango, all rights reserved.
  */
 
-import {
-    PizzlyIntegrationTemplateOAuth1,
-    PizzlyIntegrationTemplateOAuth2,
-    PizzlyIntegrationAuthModes,
-    PizzlyIntegrationConfig,
-    PizzlyIntegrationTemplate,
-    PizzlyOAuth2Credentials,
-    OAuthAuthorizationMethod,
-    OAuthBodyFormat
-} from './types.js';
+import type { IntegrationTemplateOAuth1, IntegrationTemplate } from './types.js';
 import oAuth1 from 'oauth';
-import { AuthorizationCode } from 'simple-oauth2';
-import connectionsManager from './connections-manager.js';
+import type { Integration } from './integration.model.js';
 
 type OAuth1RequestTokenResult = {
     request_token: string;
@@ -31,13 +21,13 @@ type OAuth1RequestTokenResult = {
 // For reference, this is a pretty good graphic on the OAuth 1.0a flow: https://oauth.net/core/1.0/#anchor9
 export class PizzlyOAuth1Client {
     private client: oAuth1.OAuth;
-    private integrationConfig: PizzlyIntegrationConfig;
-    private authConfig: PizzlyIntegrationTemplateOAuth1;
+    private integrationConfig: Integration;
+    private authConfig: IntegrationTemplateOAuth1;
 
-    constructor(integrationConfig: PizzlyIntegrationConfig, integrationTemplate: PizzlyIntegrationTemplate, callbackUrl: string) {
+    constructor(integrationConfig: Integration, integrationTemplate: IntegrationTemplate, callbackUrl: string) {
         this.integrationConfig = integrationConfig;
 
-        this.authConfig = integrationTemplate as PizzlyIntegrationTemplateOAuth1;
+        this.authConfig = integrationTemplate as IntegrationTemplateOAuth1;
         const headers = { 'User-Agent': 'Pizzly' };
 
         this.client = new oAuth1.OAuth(
@@ -148,66 +138,5 @@ export class PizzlyOAuth1Client {
         const url = new URL(this.authConfig.authorization_url);
         const params = new URLSearchParams(queryParams);
         return `${url}?${params.toString()}`;
-    }
-}
-
-// Simple OAuth 2 does what it says on the tin: A simple, no-frills client for OAuth 2 that implements the 3 most common grant_types.
-// Well maintained, I like :-)
-export function getSimpleOAuth2ClientConfig(integrationConfig: PizzlyIntegrationConfig, integrationTemplate: PizzlyIntegrationTemplate) {
-    const tokenUrl = new URL(integrationTemplate.token_url);
-    const authorizeUrl = new URL(integrationTemplate.authorization_url);
-    const headers = { 'User-Agent': 'Pizzly' };
-
-    const authConfig = integrationTemplate as PizzlyIntegrationTemplateOAuth2;
-
-    const config = {
-        client: {
-            id: integrationConfig.oauth_client_id!,
-            secret: integrationConfig.oauth_client_secret!
-        },
-        auth: {
-            tokenHost: tokenUrl.origin,
-            tokenPath: tokenUrl.pathname,
-            authorizeHost: authorizeUrl.origin,
-            authorizePath: authorizeUrl.pathname
-        },
-        http: { headers: headers },
-        options: {
-            authorizationMethod: authConfig.authorization_method || OAuthAuthorizationMethod.BODY,
-            bodyFormat: authConfig.body_format || OAuthBodyFormat.FORM,
-            scopeSeparator: integrationTemplate.scope_separator || ' '
-        }
-    };
-
-    return config;
-}
-
-export async function refreshOAuth2Credentials(
-    credentials: PizzlyOAuth2Credentials,
-    integrationConfig: PizzlyIntegrationConfig,
-    integrationTemplate: PizzlyIntegrationTemplate
-): Promise<PizzlyOAuth2Credentials> {
-    const client = new AuthorizationCode(getSimpleOAuth2ClientConfig(integrationConfig, integrationTemplate));
-    const oldAccessToken = client.createToken({
-        access_token: credentials.accessToken,
-        expires_at: credentials.expiresAt,
-        refresh_token: credentials.refreshToken
-    });
-
-    let additionalParams = {};
-    if (integrationTemplate.token_params) {
-        additionalParams = integrationTemplate.token_params;
-    }
-
-    try {
-        const rawNewAccessToken = await oldAccessToken.refresh(additionalParams);
-        const newPizzlyCredentials = connectionsManager.parseRawCredentials(
-            rawNewAccessToken.token,
-            PizzlyIntegrationAuthModes.OAuth2
-        ) as PizzlyOAuth2Credentials;
-
-        return newPizzlyCredentials;
-    } catch (e) {
-        throw new Error(`There was a problem refreshing the OAuth 2 credentials, operation failed: ${(e as Error).message}`);
     }
 }

@@ -1,76 +1,56 @@
-import type { PizzlyAuthCredentials, PizzlyOAuth2Credentials, PizzlyIntegrationConfig, PizzlyIntegrationTemplate, PizzlyCredentialsRefresh } from './types.js';
-import { PizzlyIntegrationAuthModes } from './types.js';
-import { refreshOAuth2Credentials } from './oauth-clients.js';
+import type { PizzlyAuthCredentials, OAuth2Credentials, IntegrationTemplate, PizzlyCredentialsRefresh } from './types.js';
+import { IntegrationAuthModes } from './types.js';
+import { refreshOAuth2Credentials } from './oauth2.client.js';
+import db from './database.js';
+import type { Connection } from './connection.model.js';
+import type { Integration } from './integration.model.js';
 
 class ConnectionsManager {
     private runningCredentialsRefreshes: PizzlyCredentialsRefresh[] = [];
 
-    public insertOrUpdateConnection(connectionId: string, integration: string, credentials: object, authMode: PizzlyIntegrationAuthModes) {
-        console.log(connectionId);
-        console.log(integration);
-        console.log(credentials);
-        console.log(authMode);
-        // TODO: fill out
+    public async upsertConnection(connectionId: string, integration: string, rawCredentials: object, authMode: IntegrationAuthModes) {
+        let connection = await this.getConnection(connectionId, integration);
+        if (connection == null) {
+            await db.knex
+                .withSchema(db.schema())
+                .insert({
+                    connection_id: connectionId,
+                    integration: integration,
+                    credentials: this.parseRawCredentials(rawCredentials, authMode),
+                    raw_response: rawCredentials
+                })
+                .into<Connection>(`_pizzly_connections`);
+        } else {
+            await db.knex
+                .withSchema(db.schema())
+                .from<Connection>(`_pizzly_connections`)
+                .where({ connection_id: connectionId, integration: integration })
+                .update({
+                    credentials: this.parseRawCredentials(rawCredentials, authMode),
+                    raw_response: rawCredentials
+                });
+        }
     }
 
-    public updateConnectionCredentials(connectionId: string, integration: string, credentials: object, authMode: PizzlyIntegrationAuthModes) {
-        console.log(connectionId);
-        console.log(integration);
-        console.log(credentials);
-        console.log(authMode);
-        // TODO: fill out
-    }
+    async getConnection(connectionId: string, integration: string): Promise<Connection | null> {
+        let result: Connection[] | null = await db.knex
+            .withSchema(db.schema())
+            .select('*')
+            .from<Connection>(`_pizzly_connections`)
+            .where({ connection_id: connectionId, integration: integration });
 
-    public updateConnectionConfig(connectionId: string, integration: string, additionalConfig: Record<string, unknown>) {
-        console.log(connectionId);
-        console.log(integration);
-        console.log(additionalConfig);
-        // TODO: fill out
-    }
-
-    public insertConnection(
-        connectionId: string,
-        integration: string,
-        credentials: object,
-        authMode: PizzlyIntegrationAuthModes,
-        additionalConfig?: Record<string, unknown>
-    ) {
-        console.log(connectionId);
-        console.log(integration);
-        console.log(credentials);
-        console.log(authMode);
-        console.log(additionalConfig);
-        // TODO: fill out
-    }
-
-    public getConnection(connectionId: string, integration: string) {
-        // TODO: should return PizzlyConnection | undefined
-        console.log(connectionId);
-        console.log(integration);
-        // TODO: fill out
-    }
-
-    public getConnectionsForUserId(connectionId: string) {
-        // TODO: should return PizzlyConnection[]
-        console.log(connectionId);
-        // TODO: fill out
-    }
-
-    public getConnectionsForIntegration(integration: string) {
-        // TODO: should return PizzlyConnection[]
-        console.log(integration);
-        // TODO: fill out
+        return result == null || result.length == 0 ? null : result[0] || null;
     }
 
     // Parses and arbitrary object (e.g. a server response or a user provided auth object) into PizzlyAuthCredentials.
     // Throws if values are missing/missing the input is malformed.
-    public parseRawCredentials(rawCredentials: object, authMode: PizzlyIntegrationAuthModes): PizzlyAuthCredentials {
+    public parseRawCredentials(rawCredentials: object, authMode: IntegrationAuthModes): PizzlyAuthCredentials {
         const rawAuthCredentials = rawCredentials as Record<string, any>; // Otherwise TS complains
 
         let parsedCredentials: any = {};
         switch (authMode) {
-            case PizzlyIntegrationAuthModes.OAuth2:
-                parsedCredentials.type = PizzlyIntegrationAuthModes.OAuth2;
+            case IntegrationAuthModes.OAuth2:
+                parsedCredentials.type = IntegrationAuthModes.OAuth2;
                 parsedCredentials.accessToken = rawAuthCredentials['access_token'];
                 if (rawAuthCredentials['refresh_token']) {
                     parsedCredentials.refreshToken = rawAuthCredentials['refresh_token'];
@@ -85,19 +65,10 @@ class ConnectionsManager {
                     parsedCredentials.expiresAt = tokenExpirationDate;
                 }
                 break;
-            case PizzlyIntegrationAuthModes.OAuth1:
-                parsedCredentials.type = PizzlyIntegrationAuthModes.OAuth1;
+            case IntegrationAuthModes.OAuth1:
+                parsedCredentials.type = IntegrationAuthModes.OAuth1;
                 parsedCredentials.oAuthToken = rawAuthCredentials['oauth_token'];
                 parsedCredentials.oAuthTokenSecret = rawAuthCredentials['oauth_token_secret'];
-                break;
-            case PizzlyIntegrationAuthModes.ApiKey:
-                parsedCredentials.type = PizzlyIntegrationAuthModes.ApiKey;
-                parsedCredentials.apiKey = rawAuthCredentials['api_key'];
-                break;
-            case PizzlyIntegrationAuthModes.UsernamePassword:
-                parsedCredentials.type = PizzlyIntegrationAuthModes.UsernamePassword;
-                parsedCredentials.username = rawAuthCredentials['username'];
-                parsedCredentials.password = rawAuthCredentials['password'];
                 break;
             default:
                 throw new Error(`Cannot parse credentials, unknown credentials type: ${JSON.stringify(rawAuthCredentials, undefined, 2)}`);
@@ -114,12 +85,12 @@ class ConnectionsManager {
     // If credentials get refreshed it also updates the user's connection object.
     // Once the refresh or check is complete the new/old credentials are returned, always use these moving forward
     public async refreshOauth2CredentialsIfNeeded(
-        credentials: PizzlyOAuth2Credentials,
+        credentials: OAuth2Credentials,
         userId: string,
         integration: string,
-        integrationConfig: PizzlyIntegrationConfig,
-        integrationTemplate: PizzlyIntegrationTemplate
-    ): Promise<PizzlyOAuth2Credentials> {
+        integrationConfig: Integration,
+        integrationTemplate: IntegrationTemplate
+    ): Promise<OAuth2Credentials> {
         // Check if a refresh is already running for this user & integration
         // If it is wait for that to complete
         let runningRefresh: PizzlyCredentialsRefresh | undefined = undefined;
@@ -140,11 +111,11 @@ class ConnectionsManager {
 
             // Check if the expiration is less than 15 minutes away (or has already happened): If so, refresh
             if (credentials.expiresAt < safeExpirationDate) {
-                const promise = new Promise<PizzlyOAuth2Credentials>(async (resolve, reject) => {
+                const promise = new Promise<OAuth2Credentials>(async (resolve, reject) => {
                     try {
                         const newCredentials = await refreshOAuth2Credentials(credentials, integrationConfig, integrationTemplate);
 
-                        this.updateConnectionCredentials(userId, integration, newCredentials.raw, PizzlyIntegrationAuthModes.OAuth2);
+                        this.upsertConnection(userId, integration, newCredentials.raw, IntegrationAuthModes.OAuth2);
 
                         // Remove ourselves from the array of running refreshes
                         this.runningCredentialsRefreshes = this.runningCredentialsRefreshes.filter((value) => {
@@ -187,7 +158,7 @@ class ConnectionsManager {
         }
 
         switch (rawAuthCredentials.type) {
-            case PizzlyIntegrationAuthModes.OAuth2:
+            case IntegrationAuthModes.OAuth2:
                 if (!rawAuthCredentials.accessToken) {
                     throw new Error(
                         `Cannot parse credentials, OAuth2 access token credentials must have "access_token" property: ${JSON.stringify(
@@ -206,28 +177,10 @@ class ConnectionsManager {
                     );
                 }
                 break;
-            case PizzlyIntegrationAuthModes.OAuth1:
+            case IntegrationAuthModes.OAuth1:
                 if (!rawAuthCredentials.oAuthToken || !rawAuthCredentials.oAuthTokenSecret) {
                     throw new Error(
                         `Cannot parse credentials, OAuth1 credentials must have both "oauth_token" and "oauth_token_secret" property: ${JSON.stringify(
-                            rawAuthCredentials,
-                            undefined,
-                            2
-                        )}`
-                    );
-                }
-                break;
-            case PizzlyIntegrationAuthModes.ApiKey:
-                if (!rawAuthCredentials.apiKey) {
-                    throw new Error(
-                        `Cannot parse credentials, ApiKey credentials must have "api_key" property: ${JSON.stringify(rawAuthCredentials, undefined, 2)}`
-                    );
-                }
-                break;
-            case PizzlyIntegrationAuthModes.UsernamePassword:
-                if (!rawAuthCredentials.username || !rawAuthCredentials.password) {
-                    throw new Error(
-                        `Cannot parse credentials, Username & password credentials must have both "username" and "password" property: ${JSON.stringify(
                             rawAuthCredentials,
                             undefined,
                             2

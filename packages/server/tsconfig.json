@@ -28,5 +28,5 @@
         "outDir": "dist"
     },
     "references": [],
-    "include": ["lib/**/*"]
+    "include": ["lib/**/*", "db/**/*"]
 }
