@@ -3,16 +3,18 @@
  */
 
 import {
-    PizzlyIntegrationAuthConfigOAuth1,
-    PizzlyIntegrationAuthConfigOAuth2,
+    PizzlyIntegrationTemplateOAuth1,
+    PizzlyIntegrationTemplateOAuth2,
     PizzlyIntegrationAuthModes,
     PizzlyIntegrationConfig,
+    PizzlyIntegrationTemplate,
     PizzlyOAuth2Credentials,
     OAuthAuthorizationMethod,
     OAuthBodyFormat
 } from './types.js';
 import oAuth1 from 'oauth';
 import { AuthorizationCode } from 'simple-oauth2';
+import connectionsManager from './connections-manager.js';
 
 type OAuth1RequestTokenResult = {
     request_token: string;
@@ -30,12 +32,12 @@ type OAuth1RequestTokenResult = {
 export class PizzlyOAuth1Client {
     private client: oAuth1.OAuth;
     private integrationConfig: PizzlyIntegrationConfig;
-    private authConfig: PizzlyIntegrationAuthConfigOAuth1;
+    private authConfig: PizzlyIntegrationTemplateOAuth1;
 
-    constructor(integrationConfig: PizzlyIntegrationConfig, callbackUrl: string) {
+    constructor(integrationConfig: PizzlyIntegrationConfig, integrationTemplate: PizzlyIntegrationTemplate, callbackUrl: string) {
         this.integrationConfig = integrationConfig;
 
-        this.authConfig = integrationConfig.auth as PizzlyIntegrationAuthConfigOAuth1;
+        this.authConfig = integrationTemplate as PizzlyIntegrationTemplateOAuth1;
         const headers = { 'User-Agent': 'Pizzly' };
 
         this.client = new oAuth1.OAuth(
@@ -151,12 +153,12 @@ export class PizzlyOAuth1Client {
 
 // Simple OAuth 2 does what it says on the tin: A simple, no-frills client for OAuth 2 that implements the 3 most common grant_types.
 // Well maintained, I like :-)
-export function getSimpleOAuth2ClientConfig(integrationConfig: PizzlyIntegrationConfig) {
-    const tokenUrl = new URL(integrationConfig.auth.token_url);
-    const authorizeUrl = new URL(integrationConfig.auth.authorization_url);
+export function getSimpleOAuth2ClientConfig(integrationConfig: PizzlyIntegrationConfig, integrationTemplate: PizzlyIntegrationTemplate) {
+    const tokenUrl = new URL(integrationTemplate.token_url);
+    const authorizeUrl = new URL(integrationTemplate.authorization_url);
     const headers = { 'User-Agent': 'Pizzly' };
 
-    const authConfig = integrationConfig.auth as PizzlyIntegrationAuthConfigOAuth2;
+    const authConfig = integrationTemplate as PizzlyIntegrationTemplateOAuth2;
 
     const config = {
         client: {
@@ -173,7 +175,7 @@ export function getSimpleOAuth2ClientConfig(integrationConfig: PizzlyIntegration
         options: {
             authorizationMethod: authConfig.authorization_method || OAuthAuthorizationMethod.BODY,
             bodyFormat: authConfig.body_format || OAuthBodyFormat.FORM,
-            scopeSeparator: integrationConfig.auth.scope_separator || ' '
+            scopeSeparator: integrationTemplate.scope_separator || ' '
         }
     };
 
@@ -182,9 +184,10 @@ export function getSimpleOAuth2ClientConfig(integrationConfig: PizzlyIntegration
 
 export async function refreshOAuth2Credentials(
     credentials: PizzlyOAuth2Credentials,
-    integrationConfig: PizzlyIntegrationConfig
+    integrationConfig: PizzlyIntegrationConfig,
+    integrationTemplate: PizzlyIntegrationTemplate
 ): Promise<PizzlyOAuth2Credentials> {
-    const client = new AuthorizationCode(getSimpleOAuth2ClientConfig(integrationConfig));
+    const client = new AuthorizationCode(getSimpleOAuth2ClientConfig(integrationConfig, integrationTemplate));
     const oldAccessToken = client.createToken({
         access_token: credentials.accessToken,
         expires_at: credentials.expiresAt,
@@ -192,13 +195,13 @@ export async function refreshOAuth2Credentials(
     });
 
     let additionalParams = {};
-    if (integrationConfig.auth.token_params) {
-        additionalParams = integrationConfig.auth.token_params;
+    if (integrationTemplate.token_params) {
+        additionalParams = integrationTemplate.token_params;
     }
 
     try {
         const rawNewAccessToken = await oldAccessToken.refresh(additionalParams);
-        const newPizzlyCredentials = ConnectionsManager.getInstance().parseRawCredentials(
+        const newPizzlyCredentials = connectionsManager.parseRawCredentials(
             rawNewAccessToken.token,
             PizzlyIntegrationAuthModes.OAuth2
         ) as PizzlyOAuth2Credentials;

@@ -21,55 +21,37 @@ export interface PizzlyOAuth2Credentials extends PizzlyCredentialsCommon {
     expiresAt?: Date;
 }
 
-export interface PizzlyIntegrationRequestsConfig {
-    base_url: string;
-    headers?: Record<string, string>;
-    params?: Record<string, string>;
+export interface PizzlyUsernamePasswordCredentials extends PizzlyCredentialsCommon {
+    type: PizzlyIntegrationAuthModes.UsernamePassword;
+    username: string;
+    password: string;
 }
 
-export interface PizzlyIntegrationConfigCommon {
+export interface PizzlyApiKeyCredentials extends PizzlyCredentialsCommon {
+    type: PizzlyIntegrationAuthModes.ApiKey;
+    apiKey: string;
+}
+
+export interface PizzlyOAuth1Credentials extends PizzlyCredentialsCommon {
+    type: PizzlyIntegrationAuthModes.OAuth1;
+    oAuthToken: string;
+    oAuthTokenSecret: string;
+}
+
+export interface PizzlyIntegrationConfig {
     [key: string]: any; // Needed so that TypeScript allows us to index this with strings. Whenever possible access directly through the properties.
 
     oauth_client_id?: string;
     oauth_client_secret?: string;
     oauth_scopes?: string[];
 
-    app_api_key?: string; // App wide api key, can be used as a variable in PizzlyIntegrationRequestsConfig
+    app_api_key?: string; // App wide api key.
 
     http_request_timeout_seconds?: number;
     log_level?: string;
 }
 
-// Allowed combos are:
-// - extends_blueprint
-// - extends_blueprint + auth and/or requests to override the blueprint
-// - auth + requests (both required if no extends_blueprint is passed)
-// All other params are optional/mandatory as marked here
-export interface PizzlyIntegrationsYamlIntegrationConfig extends PizzlyIntegrationConfigCommon {
-    extends_blueprint?: string;
-
-    auth?: PizzlyIntegrationAuthConfig;
-    requests?: PizzlyIntegrationRequestsConfig;
-}
-
-// PizzlyIntegrationConfig vs PizzlyIntegrationsYamlIntegrationConfig:
-// PizzlyIntegrationsYamlIntegrationConfig = Integration config as specified in integrations.yaml
-// PizzlyIntegrationConfig = fully resolved config ready to be used (may be merged from blueprint + overrides)
-//
-// Unless you work on IntegrationsManager you only ever have to deal with PizzlyIntegrationConfig
-export interface PizzlyIntegrationConfig extends PizzlyIntegrationConfigCommon {
-    auth: PizzlyIntegrationAuthConfig;
-    requests: PizzlyIntegrationRequestsConfig;
-}
-
-export enum PizzlyIntegrationAuthModes {
-    OAuth1 = 'OAUTH1',
-    OAuth2 = 'OAUTH2',
-    UsernamePassword = 'USERNAME_PASSWORD',
-    ApiKey = 'API_KEY'
-}
-
-export interface PizzlyIntegrationAuthConfig {
+export interface PizzlyIntegrationTemplate {
     // The authentication mode to use (e.g. OAuth 1, OAuth 2)
     auth_mode: PizzlyIntegrationAuthModes;
 
@@ -85,7 +67,16 @@ export interface PizzlyIntegrationAuthConfig {
     };
 }
 
-export interface PizzlyIntegrationAuthConfigOAuth1 extends PizzlyIntegrationAuthConfig {
+export enum PizzlyIntegrationAuthModes {
+    OAuth1 = 'OAUTH1',
+    OAuth2 = 'OAUTH2',
+    UsernamePassword = 'USERNAME_PASSWORD',
+    ApiKey = 'API_KEY'
+}
+
+export type PizzlyAuthCredentials = PizzlyOAuth2Credentials | PizzlyUsernamePasswordCredentials | PizzlyApiKeyCredentials | PizzlyOAuth1Credentials;
+
+export interface PizzlyIntegrationTemplateOAuth1 extends PizzlyIntegrationTemplate {
     auth_mode: PizzlyIntegrationAuthModes.OAuth1;
 
     request_url: string;
@@ -97,7 +88,7 @@ export interface PizzlyIntegrationAuthConfigOAuth1 extends PizzlyIntegrationAuth
     signature_method: 'HMAC-SHA1' | 'RSA-SHA1' | 'PLAINTEXT';
 }
 
-export interface PizzlyIntegrationAuthConfigOAuth2 extends PizzlyIntegrationAuthConfig {
+export interface PizzlyIntegrationTemplateOAuth2 extends PizzlyIntegrationTemplate {
     auth_mode: PizzlyIntegrationAuthModes.OAuth2;
 
     token_params?: {
@@ -130,4 +121,23 @@ export interface OAuthSession {
 
 export interface OAuthSessionStore {
     [key: string]: OAuthSession;
+}
+
+export interface PizzlyCredentialsRefresh {
+    integration: string;
+    userId: string;
+    promise: Promise<PizzlyOAuth2Credentials>;
+}
+
+export interface PizzlyConnectionPublic {
+    uuid: string;
+    integration: string;
+    connectionId: string;
+    dateCreated: Date;
+    lastModified: Date;
+    additionalConfig: Record<string, unknown> | undefined;
+}
+
+export interface PizzlyConnection extends PizzlyConnectionPublic {
+    credentials: PizzlyAuthCredentials;
 }

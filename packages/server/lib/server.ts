@@ -6,11 +6,14 @@ import * as crypto from 'node:crypto';
 import express from 'express';
 import * as uuid from 'uuid';
 import simpleOauth2 from 'simple-oauth2';
-import { PizzlyIntegrationAuthConfigOAuth2, PizzlyIntegrationAuthModes, OAuthSession, OAuthSessionStore } from './types.js';
-import { getSimpleOAuth2ClientConfig, PizzlyOAuth1Client } from './clients.js';
+import { PizzlyIntegrationTemplateOAuth2, PizzlyIntegrationAuthModes, OAuthSession, OAuthSessionStore } from './types.js';
+import { getSimpleOAuth2ClientConfig, PizzlyOAuth1Client } from './oauth-clients.js';
 import { interpolateString } from './utils.js';
 import type winston from 'winston';
 import logger from './logger.js';
+import integrationsManager from './integrations-manager.js';
+import connectionsManager from './connections-manager.js';
+import type { PizzlyIntegrationTemplate } from './types.js';
 
 const app = express();
 const sessionStore: OAuthSessionStore = {};
@@ -29,12 +32,9 @@ const sessionStore: OAuthSessionStore = {};
 // This prints additional useful details.
 
 export function startOAuthServer() {
-    const pizzlyConfig = IntegrationsManager.getInstance().getPizzlyConfig();
-    let serverRootUrl = pizzlyConfig.oauth_server_root_url;
-    serverRootUrl = serverRootUrl.slice(-1) !== '/' ? serverRootUrl + '/' : serverRootUrl;
-    const oAuthCallbackUrl = serverRootUrl + 'oauth/callback';
+    const oAuthCallbackUrl = (process.env['HOST'] || 'localhost') + '/oauth/callback'; // TODO: add env variable
 
-    const port = pizzlyConfig.oauth_server_port;
+    const port = process.env['PORT'] || 3004;
 
     app.get('/oauth/connect/:integration', (req, res) => {
         const { integration } = req.params;
@@ -62,9 +62,9 @@ export function startOAuthServer() {
         }
         userId = userId.toString();
 
-        let integrationConfig;
+        let integrationTemplate: PizzlyIntegrationTemplate;
         try {
-            integrationConfig = IntegrationsManager.getInstance().getIntegrationConfig(integration);
+            integrationTemplate = integrationsManager.getIntegrationTemplate(integration);
         } catch {
             return sendResultHTML(
                 logger,
@@ -76,12 +76,14 @@ export function startOAuthServer() {
             );
         }
 
+        let integrationConfig = integrationsManager.getIntegrationConfig();
+
         const authState = uuid.v1();
         const sessionData = {
             integrationName: integration,
             userId: userId as string,
             callbackUrl: oAuthCallbackUrl,
-            authMode: integrationConfig.auth.auth_mode,
+            authMode: integrationTemplate.auth_mode,
             codeVerifier: crypto.randomBytes(24).toString('hex')
         };
         sessionStore[authState] = sessionData;
@@ -97,8 +99,8 @@ export function startOAuthServer() {
             );
         }
 
-        if (integrationConfig.auth.auth_mode === PizzlyIntegrationAuthModes.OAuth2) {
-            const oAuth2AuthConfig = integrationConfig.auth as PizzlyIntegrationAuthConfigOAuth2;
+        if (integrationTemplate.auth_mode === PizzlyIntegrationAuthModes.OAuth2) {
+            const oAuth2AuthConfig = integrationTemplate as PizzlyIntegrationTemplateOAuth2;
 
             if (
                 oAuth2AuthConfig.token_params === undefined ||
@@ -106,8 +108,8 @@ export function startOAuthServer() {
                 oAuth2AuthConfig.token_params.grant_type === 'authorization_code'
             ) {
                 let additionalAuthParams: Record<string, string> = {};
-                if (integrationConfig.auth.authorization_params) {
-                    additionalAuthParams = integrationConfig.auth.authorization_params;
+                if (integrationTemplate.authorization_params) {
+                    additionalAuthParams = integrationTemplate.authorization_params;
                 }
 
                 // We always implement PKCE, no matter whether the server requires it or not
@@ -121,7 +123,7 @@ export function startOAuthServer() {
                 additionalAuthParams['code_challenge'] = code_challenge;
                 additionalAuthParams['code_challenge_method'] = 'S256';
 
-                const simpleOAuthClient = new simpleOauth2.AuthorizationCode(getSimpleOAuth2ClientConfig(integrationConfig));
+                const simpleOAuthClient = new simpleOauth2.AuthorizationCode(getSimpleOAuth2ClientConfig(integrationConfig, integrationTemplate));
                 const authorizationUri = simpleOAuthClient.authorizeURL({
                     redirect_uri: oAuthCallbackUrl,
                     scope: integrationConfig.oauth_scopes,
@@ -144,7 +146,7 @@ export function startOAuthServer() {
                     `Authentication failed: The grant type "${oAuth2AuthConfig.token_params.grant_type}" is not supported by this OAuth flow. Please check the documentation or contact support.`
                 );
             }
-        } else if (integrationConfig.auth.auth_mode === PizzlyIntegrationAuthModes.OAuth1) {
+        } else if (integrationTemplate.auth_mode === PizzlyIntegrationAuthModes.OAuth1) {
             // In OAuth 2 we are guaranteed that the state parameter will be sent back to us
             // for the entire journey. With OAuth 1.0a we have to register the callback URL
             // in a first step and will get called back there. We need to manually include the state
@@ -154,7 +156,7 @@ export function startOAuthServer() {
             });
             const oAuth1CallbackURL = `${oAuthCallbackUrl}?${callbackParams.toString()}`;
 
-            const oAuth1Client = new PizzlyOAuth1Client(integrationConfig, oAuth1CallbackURL);
+            const oAuth1Client = new PizzlyOAuth1Client(integrationConfig, integrationTemplate, oAuth1CallbackURL);
 
             oAuth1Client
                 .getOAuthRequestToken()
@@ -191,7 +193,7 @@ export function startOAuthServer() {
                 integration,
                 userId,
                 'unsupported_auth_mode',
-                `Authentication failed: The integration "${integration}" is configured to use auth mode "${integrationConfig.auth.auth_mode}" which is not supported by the OAuth flow (only OAuth1 and OAuth2 integrations are supported). Please check the documentation for how to pass in auth credentials for your auth mode or contact support.`
+                `Authentication failed: The integration "${integration}" is configured to use auth mode "${integrationTemplate.auth_mode}" which is not supported by the OAuth flow (only OAuth1 and OAuth2 integrations are supported). Please check the documentation for how to pass in auth credentials for your auth mode or contact support.`
             );
         }
     });
@@ -216,7 +218,8 @@ export function startOAuthServer() {
             `Received OAuth callback for "${sessionData.integrationName}" and userId "${sessionData.userId}" - full callback URI was: ${req.originalUrl}"`
         );
 
-        const integrationConfig = IntegrationsManager.getInstance().getIntegrationConfig(sessionData.integrationName!);
+        const integrationTemplate = integrationsManager.getIntegrationTemplate(sessionData.integrationName!);
+        const integrationConfig = integrationsManager.getIntegrationConfig();
 
         if (sessionData.authMode === PizzlyIntegrationAuthModes.OAuth2) {
             const { code } = req.query;
@@ -235,12 +238,12 @@ export function startOAuthServer() {
                 return sendResultHTML(logger, res, sessionData.integrationName, sessionData.userId, errorType, errorMessage);
             }
 
-            const simpleOAuthClient = new simpleOauth2.AuthorizationCode(getSimpleOAuth2ClientConfig(integrationConfig));
+            const simpleOAuthClient = new simpleOauth2.AuthorizationCode(getSimpleOAuth2ClientConfig(integrationTemplate, integrationTemplate));
 
             let additionalTokenParams: Record<string, string> = {};
-            if (integrationConfig.auth.token_params !== undefined) {
+            if (integrationTemplate.token_params !== undefined) {
                 // We need to remove grant_type, simpleOAuth2 handles that for us
-                const deepCopy = JSON.parse(JSON.stringify(integrationConfig.auth.token_params));
+                const deepCopy = JSON.parse(JSON.stringify(integrationTemplate.token_params));
                 delete deepCopy.grant_type;
                 additionalTokenParams = deepCopy;
             }
@@ -262,12 +265,11 @@ export function startOAuthServer() {
                 );
 
                 try {
-                    ConnectionsManager.getInstance().insertOrUpdateConnection(
+                    connectionsManager.insertOrUpdateConnection(
                         sessionData.userId,
                         sessionData.integrationName,
                         accessToken.token,
-                        PizzlyIntegrationAuthModes.OAuth2,
-                        undefined
+                        PizzlyIntegrationAuthModes.OAuth2
                     );
                 } catch (e) {
                     return sendResultHTML(
@@ -315,7 +317,7 @@ export function startOAuthServer() {
 
             const oauth_token_secret = sessionData.request_token_secret!;
 
-            const oAuth1Client = new PizzlyOAuth1Client(integrationConfig, '');
+            const oAuth1Client = new PizzlyOAuth1Client(integrationConfig, integrationTemplate, '');
             oAuth1Client
                 .getOAuthAccessToken(oauth_token as string, oauth_token_secret, oauth_verifier as string)
                 .then((accessTokenResult) => {
@@ -326,12 +328,11 @@ export function startOAuthServer() {
                     );
 
                     try {
-                        ConnectionsManager.getInstance().insertOrUpdateConnection(
+                        connectionsManager.insertOrUpdateConnection(
                             sessionData.userId,
                             sessionData.integrationName,
                             accessTokenResult,
-                            PizzlyIntegrationAuthModes.OAuth1,
-                            undefined
+                            PizzlyIntegrationAuthModes.OAuth1
                         );
                     } catch (e) {
                         return sendResultHTML(
