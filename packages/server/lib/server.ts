@@ -49,8 +49,8 @@ class PizzlyServer {
     };
 
     constructor() {
-        this.port = this.port = 3003; // TODO: uncomment -> process.env['PORT'] || 3004;
-        this.callbackUrl = (process.env['HOST'] || `http://localhost:${this.port}`) + '/oauth/callback';
+        this.port = process.env['PORT'] != null ? +process.env['PORT'] : 3004;
+        this.callbackUrl = (process.env['HOST'] || 'http://localhost') + `:${this.port}` + '/oauth/callback';
     }
 
     start() {

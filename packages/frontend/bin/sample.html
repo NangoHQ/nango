@@ -45,7 +45,7 @@ Then open http://localhost:8000/bin/sample.html in your browser
                     var integrationKey = document.getElementById('integrationKey').value;
                     var connectionId = document.getElementById('connectionId').value;
 
-                    var nango = new Nango('http://localhost:3003'); // TODO: change to 3004
+                    var nango = new Nango('http://localhost:3004');
                     nango
                         .connect(integrationKey, connectionId)
                         .then((result) => {
