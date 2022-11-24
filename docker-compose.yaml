@@ -13,6 +13,7 @@ services:
     pizzly-server:
         image: nangohq/pizzly-server
         container_name: pizzly-server
+        restart: always
         environment:
             - HOST=http://localhost
             - POST=3004
