@@ -85,6 +85,7 @@ export interface OAuthSession {
     connectionId: string;
     callbackUrl: string;
     authMode: IntegrationAuthModes;
+    id: string;
 
     // Needed for OAuth 2.0 PKCE
     codeVerifier: string;
