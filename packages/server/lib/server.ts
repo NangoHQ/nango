@@ -6,7 +6,7 @@ import * as crypto from 'node:crypto';
 import express from 'express';
 import * as uuid from 'uuid';
 import simpleOauth2 from 'simple-oauth2';
-import { IntegrationTemplateOAuth2, IntegrationAuthModes, OAuthSession, OAuthSessionStore } from './types.js';
+import { IntegrationTemplateOAuth2, IntegrationAuthModes, OAuthSession, OAuthSessionStore, OAuth1RequestTokenResult } from './types.js';
 import { getSimpleOAuth2ClientConfig } from './oauth2.client.js';
 import { PizzlyOAuth1Client } from './oauth1.client.js';
 import { interpolateString } from './utils.js';
@@ -31,9 +31,21 @@ import db from './database.js';
 // This prints additional useful details.
 
 export function startOAuthServer() {
-    const oAuthCallbackUrl = (process.env['HOST'] || 'localhost') + '/oauth/callback';
+    const errDesc = {
+        missing_connection_id: () => 'Missing connectionId.',
+        missing_integration: () => 'Missing integration unique key.',
+        unknown_integration: (integrationName: string) => `No config for the integration "${integrationName}".`,
+        integration_config_err: (integrationName: string) => `Config for integration "${integrationName}" is missing params (cliend ID, secret and/or scopes).`,
+        grant_type_err: (grantType: string) => `The grant type "${grantType}" is not supported by this OAuth flow.`,
+        oauth1_request_token: (error: string) => `Error in the request token step of the OAuth 1.0a flow. Error: ${error}`,
+        auth_mode_err: (auth_mode: string) => `Auth mode ${auth_mode}not supported.`,
+        state_err: (state: string) => `Invalid state parameter passed in the callback: ${state}`,
+        token_err: (err: string) => `Error storing/retrieving token: ${err}.`,
+        callback_err: (err: string) => `Did not get oauth_token and/or oauth_verifier in the callback: ${err}.`
+    };
 
-    const port = process.env['PORT'] || 3004;
+    const port = 3003; // TODO: uncomment -> process.env['PORT'] || 3004;
+    const oAuthCallbackUrl = (process.env['HOST'] || `http://localhost:${port}`) + '/oauth/callback';
 
     app.get('/oauth/connect/:integrationName', async (req, res) => {
         const { integrationName } = req.params;
@@ -41,23 +53,9 @@ export function startOAuthServer() {
         connectionId = connectionId as string;
 
         if (!connectionId) {
-            return sendResultHTML(
-                logger,
-                res,
-                integrationName,
-                connectionId,
-                'missing_connection_id',
-                'Authentication failed: Missing connectionId, it is required and cannot be an empty string.'
-            );
+            return sendResultHTML(logger, res, integrationName, connectionId, 'missing_connection_id', errDesc['missing_connection_id']());
         } else if (!integrationName) {
-            return sendResultHTML(
-                logger,
-                res,
-                integrationName,
-                connectionId,
-                'missing_integration',
-                'Authentication failed: Missing integration identifier, it is required and cannot be an empty string.'
-            );
+            return sendResultHTML(logger, res, integrationName, connectionId, 'missing_integration', errDesc['missing_integration']());
         }
         connectionId = connectionId.toString();
 
@@ -67,14 +65,7 @@ export function startOAuthServer() {
         try {
             integrationTemplate = integrationsManager.getIntegrationTemplate(integrationConfig!.type);
         } catch {
-            return sendResultHTML(
-                logger,
-                res,
-                integrationName,
-                connectionId,
-                'unknown_integration',
-                `Authentication failed: This Pizzly instance does not have a configuration for the integration "${integrationName}". Do you have a typo?`
-            );
+            return sendResultHTML(logger, res, integrationName, connectionId, 'unknown_integration', errDesc['unknown_integration'](integrationName));
         }
 
         const authState = uuid.v1();
@@ -88,14 +79,7 @@ export function startOAuthServer() {
         sessionStore[authState] = sessionData;
 
         if (integrationConfig?.oauth_client_id == null || integrationConfig?.oauth_client_secret == null || integrationConfig.oauth_scopes == null) {
-            return sendResultHTML(
-                logger,
-                res,
-                integrationName,
-                connectionId,
-                'invalid_integration_configuration',
-                `Authentication failed: The configuration for integration "${integrationName}" is missing required parameters. All of these must be present: oauth_client_id (got: ${integrationConfig?.oauth_client_id}), oauth_client_secret (got: ${integrationConfig?.oauth_client_secret}) and oauth_scopes (got: ${integrationConfig?.oauth_scopes}).`
-            );
+            return sendResultHTML(logger, res, integrationName, connectionId, 'integration_config_err', errDesc['integration_config_err'](integrationName));
         }
 
         if (integrationTemplate.auth_mode === IntegrationAuthModes.OAuth2) {
@@ -130,20 +114,12 @@ export function startOAuthServer() {
                     ...additionalAuthParams
                 });
 
-                logger.debug(
-                    `OAuth 2.0 flow for "${integrationName}" and userId "${connectionId}" - redirecting user to the following URL for authorization: ${authorizationUri}`
-                );
+                logger.debug(`OAuth 2.0 for ${integrationName} (connection ${connectionId}) - redirecting to: ${authorizationUri}`);
 
                 res.redirect(authorizationUri);
             } else {
-                return sendResultHTML(
-                    logger,
-                    res,
-                    integrationName,
-                    connectionId,
-                    'unsupported_grant_type',
-                    `Authentication failed: The grant type "${oAuth2AuthConfig.token_params.grant_type}" is not supported by this OAuth flow. Please check the documentation or contact support.`
-                );
+                let grandType = oAuth2AuthConfig.token_params.grant_type;
+                return sendResultHTML(logger, res, integrationName, connectionId, 'grant_type_err', errDesc['grant_type_err'](grandType));
             }
         } else if (integrationTemplate.auth_mode === IntegrationAuthModes.OAuth1) {
             // In OAuth 2 we are guaranteed that the state parameter will be sent back to us
@@ -157,84 +133,52 @@ export function startOAuthServer() {
 
             const oAuth1Client = new PizzlyOAuth1Client(integrationConfig, integrationTemplate, oAuth1CallbackURL);
 
-            oAuth1Client
-                .getOAuthRequestToken()
-                .then((tokenResult) => {
-                    const sessionData = sessionStore[authState]!;
-                    sessionData.request_token_secret = tokenResult.request_token_secret;
-                    const redirectUrl = oAuth1Client.getAuthorizationURL(tokenResult);
+            let tokenResult: OAuth1RequestTokenResult | undefined;
+            try {
+                tokenResult = await oAuth1Client.getOAuthRequestToken();
+            } catch (error) {
+                let errStr = JSON.stringify(error, undefined, 2);
+                return sendResultHTML(logger, res, integrationName, connectionId as string, 'oauth1_request_token', errDesc['oauth1_request_token'](errStr));
+            }
 
-                    logger.debug(
-                        `OAuth 1.0a flow for "${integrationName}" and userId "${connectionId}" - request token call completed successfully. Redirecting user to the following URL for authorization: ${redirectUrl}`
-                    );
+            const sessionData = sessionStore[authState]!;
+            sessionData.request_token_secret = tokenResult.request_token_secret;
+            const redirectUrl = oAuth1Client.getAuthorizationURL(tokenResult);
 
-                    // All worked, let's redirect the user to the authorization page
-                    res.redirect(redirectUrl);
-                })
-                .catch((error) => {
-                    return sendResultHTML(
-                        logger,
-                        res,
-                        integrationName,
-                        connectionId as string,
-                        'oauth1_request_token',
-                        `Authentication failed: The external server returned an error in the request token step of the OAuth 1.0a flow. Error: ${JSON.stringify(
-                            error,
-                            undefined,
-                            2
-                        )}`
-                    );
-                });
+            logger.debug(`OAuth 1.0a for ${integrationName} (connection: ${connectionId}) - request token success. Redirecting user to: ${redirectUrl}`);
+
+            // All worked, let's redirect the user to the authorization page
+            return res.redirect(redirectUrl);
         } else {
-            return sendResultHTML(
-                logger,
-                res,
-                integrationName,
-                connectionId,
-                'unsupported_auth_mode',
-                `Authentication failed: The integration "${integrationName}" is configured to use auth mode "${integrationTemplate.auth_mode}" which is not supported by the OAuth flow (only OAuth1 and OAuth2 integrations are supported). Please check the documentation for how to pass in auth credentials for your auth mode or contact support.`
-            );
+            let authMode = integrationTemplate.auth_mode;
+            return sendResultHTML(logger, res, integrationName, connectionId, 'auth_mode_err', errDesc['auth_mode_err'](authMode));
         }
     });
 
     app.get('/oauth/callback', async (req, res) => {
         const { state } = req.query;
         const sessionData = sessionStore[state as string] as OAuthSession;
+        let integrationName = sessionData.integrationName;
+        let connectionId = sessionData.connectionId;
+        let authMode = sessionData.authMode;
         delete sessionStore[state as string];
 
-        if (state == null || sessionData == null || sessionData.integrationName == null) {
-            return sendResultHTML(
-                logger,
-                res,
-                sessionData.integrationName,
-                sessionData.connectionId,
-                'invalid_state_callback',
-                `Authorization failed: The external server did not send a valid state parameter back in the callback. Got state: ${state}`
-            );
+        if (state == null || sessionData == null || integrationName == null) {
+            let stateStr = (state as string) || '';
+            return sendResultHTML(logger, res, integrationName, connectionId, 'state_err', errDesc['state_err'](stateStr));
         }
 
-        logger.debug(
-            `Received OAuth callback for "${sessionData.integrationName}" and userId "${sessionData.connectionId}" - full callback URI was: ${req.originalUrl}"`
-        );
+        logger.debug(`Received OAuth callback for ${integrationName} (connection: ${connectionId}) - full callback URI: ${req.originalUrl}"`);
 
-        const integrationTemplate = integrationsManager.getIntegrationTemplate(sessionData.integrationName);
-        const integrationConfig = await integrationsManager.getIntegrationConfig(sessionData.integrationName);
+        const integrationTemplate = integrationsManager.getIntegrationTemplate(integrationName);
+        const integrationConfig = await integrationsManager.getIntegrationConfig(integrationName);
 
-        if (sessionData.authMode === IntegrationAuthModes.OAuth2) {
+        if (authMode === IntegrationAuthModes.OAuth2) {
             const { code } = req.query;
 
             if (!code) {
-                let errorType = '';
-                let errorMessage = '';
-                const { error } = req.query;
-                if (error) {
-                    errorType = 'external_callback_error';
-                    errorMessage = `Authorization failed: The external OAuth 2 server responded with error in the callback: ${error} => The full callback URI was: ${req.originalUrl}`;
-                } else {
-                    errorType = 'unknown_external_callback_error';
-                    errorMessage = `Authorization failed: The external OAuth2 server did not provide an authorization code in the callback. Unfortunately no additional errors were reported by the server. The full callback URI was: ${req.originalUrl}`;
-                }
-                return sendResultHTML(logger, res, sessionData.integrationName, sessionData.connectionId, errorType, errorMessage);
+                let errStr = JSON.stringify(req.query);
+                return sendResultHTML(logger, res, integrationName, connectionId, 'callback_err', errDesc['callback_err'](errStr));
             }
 
             const simpleOAuthClient = new simpleOauth2.AuthorizationCode(getSimpleOAuth2ClientConfig(integrationConfig!, integrationTemplate));
@@ -257,56 +201,20 @@ export function startOAuthServer() {
                     ...additionalTokenParams
                 });
 
-                logger.debug(
-                    `OAuth 2 flow for "${sessionData.integrationName}" and userId "${
-                        sessionData.connectionId
-                    }" - completed successfully. Received access token: ${JSON.stringify(accessToken, undefined, 2)}`
-                );
+                logger.debug(`OAuth 2 for ${integrationName} (connection ${connectionId}) successful.`);
 
-                try {
-                    connectionsManager.upsertConnection(sessionData.connectionId, sessionData.integrationName, accessToken.token, IntegrationAuthModes.OAuth2);
-                } catch (e) {
-                    return sendResultHTML(
-                        logger,
-                        res,
-                        sessionData.integrationName,
-                        sessionData.connectionId,
-                        'token_storage_error',
-                        `Authentication succeeded but token storage failed: There was a problem storing the access token for user "${
-                            sessionData.connectionId
-                        }" and integration "${sessionData.integrationName}". Got this error: ${
-                            (e as Error).message
-                        }.\nToken response from server was: ${JSON.stringify(accessToken, undefined, 2)}`
-                    );
-                }
+                connectionsManager.upsertConnection(connectionId, integrationName, accessToken.token, IntegrationAuthModes.OAuth2);
 
-                return sendResultHTML(logger, res, sessionData.integrationName, sessionData.connectionId, '', '');
+                return sendResultHTML(logger, res, integrationName, connectionId, '', '');
             } catch (e) {
-                const errorE = e as Error;
-                return sendResultHTML(
-                    logger,
-                    res,
-                    sessionData.integrationName,
-                    sessionData.connectionId,
-                    'token_retrieval_error',
-                    `Authentication failed: There was a problem exchanging the OAuth 2 authorization code for an access token. Got this error: ${errorE.name} - ${errorE.message}`
-                );
+                return sendResultHTML(logger, res, integrationName, connectionId, 'token_err', errDesc['token_err'](JSON.stringify(e)));
             }
-        } else if (sessionData.authMode === IntegrationAuthModes.OAuth1) {
+        } else if (authMode === IntegrationAuthModes.OAuth1) {
             const { oauth_token, oauth_verifier } = req.query;
 
             if (!oauth_token || !oauth_verifier) {
-                let errorType = '';
-                let errorMessage = '';
-                const { error } = req.query;
-                if (error) {
-                    errorType = 'external_callback_error';
-                    errorMessage = `Authorization failed: The external OAuth 1.0a server responded with error in the callback: ${error} => The full callback URI was: ${req.originalUrl}`;
-                } else {
-                    errorType = 'unknown_external_callback_error';
-                    errorMessage = `Authorization failed: The external OAuth 1.0a server did not provide an oauth_token and/or an oauth_verifier in the callback. Unfortunately no additional errors were reported by the server. The full callback URI was: ${req.originalUrl}`;
-                }
-                return sendResultHTML(logger, res, sessionData.integrationName, sessionData.connectionId, errorType, errorMessage);
+                let errStr = JSON.stringify(req.query);
+                return sendResultHTML(logger, res, integrationName, connectionId, 'callback_err', errDesc['callback_err'](errStr));
             }
 
             const oauth_token_secret = sessionData.request_token_secret!;
@@ -315,54 +223,17 @@ export function startOAuthServer() {
             oAuth1Client
                 .getOAuthAccessToken(oauth_token as string, oauth_token_secret, oauth_verifier as string)
                 .then((accessTokenResult) => {
-                    logger.debug(
-                        `OAuth 1.0a flow for "${sessionData.integrationName}" and userId "${
-                            sessionData.connectionId
-                        }" - completed successfully. Received access token: ${JSON.stringify(accessTokenResult, undefined, 2)}`
-                    );
+                    logger.debug(`OAuth 1.0a for ${integrationName} (connection: ${connectionId}) successful.`);
 
-                    try {
-                        connectionsManager.upsertConnection(
-                            sessionData.connectionId,
-                            sessionData.integrationName,
-                            accessTokenResult,
-                            IntegrationAuthModes.OAuth1
-                        );
-                    } catch (e) {
-                        return sendResultHTML(
-                            logger,
-                            res,
-                            sessionData.integrationName,
-                            sessionData.connectionId,
-                            'token_storage_error',
-                            `Authentication succeeded but token storage failed: There was a problem storing the access token for user "${
-                                sessionData.connectionId
-                            }" and integration "${sessionData.integrationName}". Got this error: ${
-                                (e as Error).message
-                            }.\nToken response from server was: ${JSON.stringify(accessTokenResult, undefined, 2)}`
-                        );
-                    }
-                    return sendResultHTML(logger, res, sessionData.integrationName, sessionData.connectionId, '', '');
+                    connectionsManager.upsertConnection(connectionId, integrationName, accessTokenResult, IntegrationAuthModes.OAuth1);
+                    return sendResultHTML(logger, res, integrationName, connectionId, '', '');
                 })
-                .catch((error) => {
-                    return sendResultHTML(
-                        logger,
-                        res,
-                        sessionData.integrationName,
-                        sessionData.connectionId,
-                        'access_token_retrieval_error',
-                        `Authentication failed: There was a problem exchanging the OAuth 1.0a request token for an access token. Got this error: ${error}`
-                    );
+                .catch((e) => {
+                    let errStr = JSON.stringify(e);
+                    return sendResultHTML(logger, res, integrationName, connectionId, 'token_err', errDesc['token_err'](errStr));
                 });
         } else {
-            return sendResultHTML(
-                logger,
-                res,
-                sessionData.integrationName,
-                sessionData.connectionId,
-                'unsupported_auth_mode_callback',
-                `Authentication failed: The callback was called with an unsupported auth mode. You are seeing ghosts, this should never ever happen. Please contact support, thanks! Got this mode: ${sessionData.authMode}`
-            );
+            return sendResultHTML(logger, res, integrationName, connectionId, 'auth_mode_err', errDesc['auth_mode_err'](authMode));
         }
     });
 

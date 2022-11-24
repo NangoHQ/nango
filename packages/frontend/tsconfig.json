@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "lib": ["es2022"],
+        "lib": ["es2022", "dom"],
         "module": "es2022",
         "target": "es2022",
         "strict": true,
@@ -24,7 +24,7 @@
         "sourceMap": true,
         "composite": true,
         "checkJs": false,
-        "rootDir": ".",
+        "rootDir": "lib",
         "outDir": "dist"
     },
     "references": [],

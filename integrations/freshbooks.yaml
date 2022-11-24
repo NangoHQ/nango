@@ -1,0 +1,20 @@
+name: freshbooks
+maintainer: Nango <blueprints@nango.dev>
+docs_url: https://www.freshbooks.com/api/start
+versions:
+    v0:
+        comment: 'Implements Freshbooks OAuth 2.0 for auth & all Zoho CRM APIs for requests'
+        auth:
+            auth_mode: OAUTH2
+            authorization_url: https://auth.freshbooks.com/oauth/authorize
+            token_url: https://api.freshbooks.com/auth/oauth/token
+
+            authorization_params:
+                response_type: code
+
+        requests:
+            base_url: https://api.freshbooks.com/
+            headers:
+                Accept: application/json
+                Authorization: Bearer ${access_token}
+                User-Agent: Nango

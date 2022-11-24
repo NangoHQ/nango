@@ -15,6 +15,7 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
+        "js-yaml": "^4.1.0",
         "knex": "^2.3.0",
         "oauth": "^0.10.0",
         "pg": "^8.8.0",

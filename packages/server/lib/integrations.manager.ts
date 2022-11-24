@@ -3,11 +3,12 @@ import fs from 'fs';
 import type { IntegrationTemplate } from './types.js';
 import type { Integration } from './integration.model.js';
 import db from './database.js';
+import * as yaml from 'js-yaml';
 
 class IntegrationsManager {
     getIntegrationTemplate(integrationType: string): IntegrationTemplate {
-        const integrationPath = path.join('../../../integrations', `${integrationType}.json`);
-        return JSON.parse(fs.readFileSync(integrationPath, 'utf-8'));
+        const integrationPath = path.join(process.env['PIZZLY_INTEGRATIONS_FOLDER'] || '../../integrations', `${integrationType}.yaml`);
+        return yaml.load(fs.readFileSync(integrationPath));
     }
 
     async getIntegrationConfig(integrationName: string): Promise<Integration | null> {

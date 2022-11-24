@@ -1,0 +1,16 @@
+name: airtable
+maintainer: Nango <blueprints@nango.dev>
+docs_url: https://airtable.com/api
+versions:
+    v0:
+        comment: 'Implements the Airtable Base REST API as well as the Metadata API. Authentication happens through api key'
+        auth:
+            auth_mode: API_KEY
+
+        requests:
+            base_url: https://api.airtable.com/
+            headers:
+                Accept: application/json
+                Authorization: Bearer ${api_key}
+                User-Agent: Nango
+                X-Airtable-Client-Secret: $(app_api_key)

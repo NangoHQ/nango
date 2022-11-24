@@ -1,0 +1,20 @@
+name: discord
+maintainer: Nango <blueprints@nango.dev>
+docs_url: https://discord.com/developers/docs/intro
+versions:
+    v0:
+        comment: 'Implements Discord OAuth 2.0 for auth & all Discord APIs for requests'
+        auth:
+            auth_mode: OAUTH2
+            authorization_url: https://discord.com/api/oauth2/authorize
+            token_url: https://discord.com/api/oauth2/token
+
+            authorization_params:
+                response_type: code
+
+        requests:
+            base_url: https://discord.com/api/
+            headers:
+                Accept: application/json
+                Authorization: Bearer ${access_token}
+                User-Agent: Nango

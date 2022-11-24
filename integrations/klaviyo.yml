@@ -1,0 +1,16 @@
+name: klaviyo
+maintainer: Nango <blueprints@nango.dev>
+docs_url: https://developers.klaviyo.com/
+versions:
+  v0:
+    comment: 'Implements the Klaviyo REST API. Authentication happens through api key'
+    auth:
+      auth_mode: API_KEY
+
+    requests:
+      base_url: https://a.klaviyo.com/api/
+      headers:
+        Accept: application/json
+        User-Agent: Nango
+      params:
+        api_key: ${api_key}

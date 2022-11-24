@@ -1,0 +1,20 @@
+name: zoom
+maintainer: Nango <blueprints@nango.dev>
+docs_url: https://marketplace.zoom.us/docs/api-reference/introduction/
+versions:
+    v0:
+        comment: 'Implements OAuth 2.0 flow & the Zoom V2 REST API'
+        auth:
+            auth_mode: OAUTH2
+            authorization_url: https://zoom.us/oauth/authorize
+            token_url: https://zoom.us/oauth/token
+
+            authorization_params:
+                response_type: code
+
+        requests:
+            base_url: https://api.zoom.us/v2/
+            headers:
+                Accept: application/json
+                Authorization: Bearer ${access_token}
+                User-Agent: Nango

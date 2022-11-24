@@ -1,0 +1,18 @@
+name: outreach
+maintainer: Nango <blueprints@nango.dev>
+docs_url: https://api.outreach.io/api/v2/docs
+versions:
+    v0:
+        comment: 'Implements OAuth 2.0 flow & the Outreach V2 REST API'
+        auth:
+            auth_mode: OAUTH2
+            authorization_url: https://api.outreach.io/oauth/authorize
+            token_url: https://api.outreach.io/oauth/token
+
+        requests:
+            base_url: https://api.outreach.io/api/v2
+            headers:
+                Accept: application/json
+                Content-Type: application/vnd.api+json
+                Authorization: Bearer ${access_token}
+                User-Agent: Nango

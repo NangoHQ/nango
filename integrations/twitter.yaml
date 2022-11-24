@@ -1,0 +1,7 @@
+auth_mode: OAUTH1
+request_url: https://api.twitter.com/oauth/request_token
+authorization_url: https://api.twitter.com/oauth/authorize
+token_url: https://api.twitter.com/oauth/access_token
+signature_method: 'HMAC-SHA1'
+request_params:
+    x_auth_access_type: write

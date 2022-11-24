@@ -1,0 +1,20 @@
+name: gitlab
+maintainer: Nango <blueprints@nango.dev>
+docs_url: https://docs.gitlab.com/ee/api/
+versions:
+    v0:
+        comment: 'Implements Gitlab OAuth 2.0 & the Gitlab REST API'
+        auth:
+            auth_mode: OAUTH2
+            authorization_url: https://gitlab.com/oauth/authorize
+            token_url: https://gitlab.com/oauth/token
+
+            authorization_params:
+                response_type: code
+
+        requests:
+            base_url: https://gitlab.com/api/
+            headers:
+                Accept: application/json
+                Authorization: Bearer ${access_token}
+                User-Agent: Nango

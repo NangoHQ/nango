@@ -1,0 +1,22 @@
+name: google-mail
+maintainer: Nango <blueprints@nango.dev>
+docs_url: https://developers.google.com/gmail/api
+versions:
+    v0:
+        comment: 'Implements Google's OAuth 2.0 V2 for auth & the Gmail V1 API for requests'
+        auth:
+            auth_mode: OAUTH2
+            authorization_url: https://accounts.google.com/o/oauth2/v2/auth
+            token_url: https://oauth2.googleapis.com/token
+
+            authorization_params:
+                response_type: code
+                access_type: offline
+
+
+        requests:
+            base_url: https://www.googleapis.com/gmail/v1/
+            headers:
+                Accept: application/json
+                Authorization: Bearer ${access_token}
+                User-Agent: Nango
