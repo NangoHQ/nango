@@ -16,8 +16,8 @@ export default class Pizzly {
         }
     }
 
-    public connect(integrationName: string, connectionId: string): Promise<any> {
-        const url = new URL(`/oauth/connect/${integrationName}?connectionId=${connectionId}`, this.hostBaseUrl).href;
+    public connect(integrationKey: string, connectionId: string): Promise<any> {
+        const url = new URL(`/oauth/connect/${integrationKey}?connectionId=${connectionId}`, this.hostBaseUrl).href;
 
         return new Promise((resolve, reject) => {
             const handler = (e?: MessageEvent) => {

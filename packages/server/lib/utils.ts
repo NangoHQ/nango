@@ -30,7 +30,7 @@ export function parseJsonDateAware(input: string) {
 // Yes including a full HTML template here in a string goes against many best practices.
 // Yet it also felt wrong to add another dependency to simply parse 1 template.
 // If you have an idea on how to improve this feel free to submit a pull request.
-export function html(logger: winston.Logger, res: any, integrationName: string, userId: string, error: string | null, errorDesc: string | null) {
+export function html(logger: winston.Logger, res: any, integrationKey: string, userId: string, error: string | null, errorDesc: string | null) {
     const resultHTMLTemplate = `
 <!--
 Pizzly OAuth flow callback. Read more about how to use it at: https://github.com/NangoHQ/Pizzly
@@ -43,7 +43,7 @@ Pizzly OAuth flow callback. Read more about how to use it at: https://github.com
   <body>
     <noscript>JavaScript is required to proceed with the authentication.</noscript>
     <script type="text/javascript">
-      window.integrationName = \`\${integrationName}\`;
+      window.integrationKey = \`\${integrationKey}\`;
       window.userId = \`\${userId}\`;
       window.authError = \'\${error}\';
       window.authErrorDescription = \'\${errorDesc}\';
@@ -54,7 +54,7 @@ Pizzly OAuth flow callback. Read more about how to use it at: https://github.com
         message.eventType = 'AUTHORIZATION_FAILED';
         message.data = {
             userId: window.userId,
-            integrationName: window.integrationName,
+            integrationKey: window.integrationKey,
             error: {
                 type: window.authError,
                 message: window.authErrorDescription
@@ -63,7 +63,7 @@ Pizzly OAuth flow callback. Read more about how to use it at: https://github.com
       } else {
         console.log('I have success!');
         message.eventType = 'AUTHORIZATION_SUCEEDED';
-        message.data = { userId: window.userId, integrationName: window.integrationName };
+        message.data = { userId: window.userId, integrationKey: window.integrationKey };
       }
 
       // Tell the world what happened
@@ -79,14 +79,14 @@ Pizzly OAuth flow callback. Read more about how to use it at: https://github.com
 `;
 
     const resultHTML = interpolateString(resultHTMLTemplate, {
-        integrationName: integrationName,
+        integrationKey: integrationKey,
         userId: userId,
         error: error?.replace('\n', '\\n'),
         errorDesc: errorDesc?.replace('\n', '\\n')
     });
 
     if (error) {
-        logger.debug(`Got an error in the OAuth flow for integration "${integrationName}" and userId "${userId}": ${error} - ${errorDesc}`);
+        logger.debug(`Got an error in the OAuth flow for integration "${integrationKey}" and userId "${userId}": ${error} - ${errorDesc}`);
         res.status(500);
     } else {
         res.status(200);

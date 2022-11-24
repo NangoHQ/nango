@@ -20,8 +20,8 @@ Then open http://localhost:8000/bin/sample.html in your browser
         <h1>Nango OAuth test page</h1>
         <form>
             <formgroup>
-                <label>Integration Name:</label>
-                <input type="text" id="integrationName" value="slack" />
+                <label>Integration Unique Key:</label>
+                <input type="text" id="integrationKey" value="slack" />
             </formgroup>
             <br />
             <br />
@@ -42,12 +42,12 @@ Then open http://localhost:8000/bin/sample.html in your browser
             link.addEventListener(
                 'click',
                 () => {
-                    var integrationName = document.getElementById('integrationName').value;
+                    var integrationKey = document.getElementById('integrationKey').value;
                     var connectionId = document.getElementById('connectionId').value;
 
                     var nango = new Nango('http://localhost:3003'); // TODO: change to 3004
                     nango
-                        .connect(integrationName, connectionId)
+                        .connect(integrationKey, connectionId)
                         .then((result) => {
                             var resultElement = document.getElementById('result');
                             resultElement.innerHTML = `SUCCESS: ${JSON.stringify(result)}`;

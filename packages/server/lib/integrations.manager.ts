@@ -11,8 +11,8 @@ class IntegrationsManager {
         return yaml.load(fs.readFileSync(integrationPath));
     }
 
-    async getIntegrationConfig(integrationName: string): Promise<Integration | null> {
-        let result = await db.knex.withSchema(db.schema()).select('*').from(`_pizzly_integrations`).where({ integration_id: integrationName });
+    async getIntegrationConfig(integrationKey: string): Promise<Integration | null> {
+        let result = await db.knex.withSchema(db.schema()).select('*').from(`_pizzly_integrations`).where({ unique_key: integrationKey });
 
         if (result == null || result.length == 0 || result[0] == null) {
             return null;
@@ -20,7 +20,7 @@ class IntegrationsManager {
 
         return {
             id: result[0].id,
-            name: result[0].integration_id,
+            unique_key: result[0].unique_key,
             type: result[0].type,
             oauth_client_id: result[0].oauth_client_id || undefined,
             oauth_client_secret: result[0].oauth_client_secret || undefined,

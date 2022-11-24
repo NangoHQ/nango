@@ -81,7 +81,7 @@ export type OAuth1RequestTokenResult = {
 };
 
 export interface OAuthSession {
-    integrationName: string;
+    integrationKey: string;
     connectionId: string;
     callbackUrl: string;
     authMode: IntegrationAuthModes;
