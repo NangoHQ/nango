@@ -1,7 +1,6 @@
 import path from 'path';
 import fs from 'fs';
-import type { IntegrationTemplate } from './types.js';
-import type { Integration } from './integration.model.js';
+import type { IntegrationConfig, IntegrationTemplate } from './models.js';
 import db from './database.js';
 import * as yaml from 'js-yaml';
 
@@ -11,7 +10,7 @@ class IntegrationsManager {
         return yaml.load(fs.readFileSync(integrationPath));
     }
 
-    async getIntegrationConfig(integrationKey: string): Promise<Integration | null> {
+    async getIntegrationConfig(integrationKey: string): Promise<IntegrationConfig | null> {
         let result = await db.knex.withSchema(db.schema()).select('*').from(`_pizzly_integrations`).where({ unique_key: integrationKey });
 
         if (result == null || result.length == 0 || result[0] == null) {

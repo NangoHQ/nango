@@ -9,14 +9,14 @@ import {
     OAuth2Credentials,
     OAuthAuthorizationMethod,
     OAuthBodyFormat
-} from './types.js';
+} from './models.js';
 import { AuthorizationCode } from 'simple-oauth2';
 import connectionsManager from './connections.manager.js';
-import type { Integration } from './integration.model.js';
+import type { IntegrationConfig } from './models.js';
 
 // Simple OAuth 2 does what it says on the tin: A simple, no-frills client for OAuth 2 that implements the 3 most common grant_types.
 // Well maintained, I like :-)
-export function getSimpleOAuth2ClientConfig(integrationConfig: Integration, integrationTemplate: IntegrationTemplate) {
+export function getSimpleOAuth2ClientConfig(integrationConfig: IntegrationConfig, integrationTemplate: IntegrationTemplate) {
     const tokenUrl = new URL(integrationTemplate.token_url);
     const authorizeUrl = new URL(integrationTemplate.authorization_url);
     const headers = { 'User-Agent': 'Pizzly' };
@@ -47,7 +47,7 @@ export function getSimpleOAuth2ClientConfig(integrationConfig: Integration, inte
 
 export async function refreshOAuth2Credentials(
     credentials: OAuth2Credentials,
-    integrationConfig: Integration,
+    integrationConfig: IntegrationConfig,
     integrationTemplate: IntegrationTemplate
 ): Promise<OAuth2Credentials> {
     const client = new AuthorizationCode(getSimpleOAuth2ClientConfig(integrationConfig, integrationTemplate));

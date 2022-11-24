@@ -2,9 +2,9 @@
  * Copyright (c) 2022 Nango, all rights reserved.
  */
 
-import type { IntegrationTemplateOAuth1, IntegrationTemplate } from './types.js';
+import type { IntegrationTemplateOAuth1, IntegrationTemplate } from './models.js';
 import oAuth1 from 'oauth';
-import type { Integration } from './integration.model.js';
+import type { IntegrationConfig } from './models.js';
 
 type OAuth1RequestTokenResult = {
     request_token: string;
@@ -21,10 +21,10 @@ type OAuth1RequestTokenResult = {
 // For reference, this is a pretty good graphic on the OAuth 1.0a flow: https://oauth.net/core/1.0/#anchor9
 export class PizzlyOAuth1Client {
     private client: oAuth1.OAuth;
-    private integrationConfig: Integration;
+    private integrationConfig: IntegrationConfig;
     private authConfig: IntegrationTemplateOAuth1;
 
-    constructor(integrationConfig: Integration, integrationTemplate: IntegrationTemplate, callbackUrl: string) {
+    constructor(integrationConfig: IntegrationConfig, integrationTemplate: IntegrationTemplate, callbackUrl: string) {
         this.integrationConfig = integrationConfig;
 
         this.authConfig = integrationTemplate as IntegrationTemplateOAuth1;

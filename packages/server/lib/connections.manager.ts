@@ -1,9 +1,8 @@
-import type { PizzlyAuthCredentials, OAuth2Credentials, IntegrationTemplate, PizzlyCredentialsRefresh } from './types.js';
-import { IntegrationAuthModes } from './types.js';
+import type { PizzlyAuthCredentials, OAuth2Credentials, IntegrationTemplate, PizzlyCredentialsRefresh } from './models.js';
+import { IntegrationAuthModes } from './models.js';
 import { refreshOAuth2Credentials } from './oauth2.client.js';
 import db from './database.js';
-import type { Connection } from './connection.model.js';
-import type { Integration } from './integration.model.js';
+import type { IntegrationConfig, Connection } from './models.js';
 
 class ConnectionsManager {
     private runningCredentialsRefreshes: PizzlyCredentialsRefresh[] = [];
@@ -88,7 +87,7 @@ class ConnectionsManager {
         credentials: OAuth2Credentials,
         userId: string,
         integration: string,
-        integrationConfig: Integration,
+        integrationConfig: IntegrationConfig,
         integrationTemplate: IntegrationTemplate
     ): Promise<OAuth2Credentials> {
         // Check if a refresh is already running for this user & integration

@@ -1,3 +1,35 @@
+export interface IntegrationConfig {
+    id?: number;
+    created_at?: Date;
+    updated_at?: Date;
+    unique_key: string;
+    type: string;
+    oauth_client_id?: string;
+    oauth_client_secret?: string;
+    oauth_scopes?: string[];
+}
+
+export interface IntegrationTemplate {
+    auth_mode: IntegrationAuthModes;
+    authorization_url: string;
+    authorization_params?: Record<string, string>;
+    scope_separator?: string;
+    token_url: string;
+    token_params?: {
+        [key: string]: string;
+    };
+}
+
+export interface Connection {
+    id?: number;
+    created_at?: Date;
+    updated_at?: Date;
+    integration: string;
+    connection_id: string;
+    credentials: object;
+    raw_response: object;
+}
+
 export enum OAuthBodyFormat {
     FORM = 'form',
     JSON = 'json'
@@ -25,22 +57,6 @@ export interface OAuth1Credentials extends CredentialsCommon {
     type: IntegrationAuthModes.OAuth1;
     oAuthToken: string;
     oAuthTokenSecret: string;
-}
-
-export interface IntegrationTemplate {
-    // The authentication mode to use (e.g. OAuth 1, OAuth 2)
-    auth_mode: IntegrationAuthModes;
-
-    // Config related to authorization URL forward
-    authorization_url: string;
-    authorization_params?: Record<string, string>;
-    scope_separator?: string;
-
-    // Config related to token request
-    token_url: string;
-    token_params?: {
-        [key: string]: string;
-    };
 }
 
 export enum IntegrationAuthModes {

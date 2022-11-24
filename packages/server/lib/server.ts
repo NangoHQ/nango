@@ -6,15 +6,14 @@ import * as crypto from 'node:crypto';
 import express from 'express';
 import * as uuid from 'uuid';
 import simpleOauth2 from 'simple-oauth2';
-import { IntegrationTemplateOAuth2, IntegrationAuthModes, OAuthSession, OAuthSessionStore, OAuth1RequestTokenResult } from './types.js';
+import { IntegrationConfig, IntegrationTemplateOAuth2, IntegrationAuthModes, OAuthSession, OAuthSessionStore, OAuth1RequestTokenResult } from './models.js';
 import { getSimpleOAuth2ClientConfig } from './oauth2.client.js';
 import { PizzlyOAuth1Client } from './oauth1.client.js';
 import logger from './logger.js';
 import integrationsManager from './integrations.manager.js';
 import connectionsManager from './connections.manager.js';
-import type { IntegrationTemplate } from './types.js';
+import type { IntegrationTemplate } from './models.js';
 import db from './database.js';
-import type { Integration } from './integration.model.js';
 import { html } from './utils.js';
 
 // A simple HTTP(S) server that implements an OAuth 1.0a and OAuth 2.0 dance
@@ -112,7 +111,7 @@ class PizzlyServer {
         return html(logger, res, integrationKey, connectionId, 'auth_mode_err', this.errDesc['auth_mode_err'](authMode));
     }
 
-    oauth2Request(integrationTemplate: IntegrationTemplate, config: Integration, session: OAuthSession, res: any) {
+    oauth2Request(integrationTemplate: IntegrationTemplate, config: IntegrationConfig, session: OAuthSession, res: any) {
         const template = integrationTemplate as IntegrationTemplateOAuth2;
 
         if (template.token_params == undefined || template.token_params.grant_type == undefined || template.token_params.grant_type == 'authorization_code') {
@@ -147,7 +146,7 @@ class PizzlyServer {
     // for the entire journey. With OAuth 1.0a we have to register the callback URL
     // in a first step and will get called back there. We need to manually include the state
     // param there, otherwise we won't be able to identify the user in the callback
-    async oauth1Request(template: IntegrationTemplate, config: Integration, session: OAuthSession, res: any) {
+    async oauth1Request(template: IntegrationTemplate, config: IntegrationConfig, session: OAuthSession, res: any) {
         const callbackParams = new URLSearchParams({
             state: session.id
         });
@@ -197,7 +196,7 @@ class PizzlyServer {
         return html(logger, res, session.integrationKey, session.connectionId, 'auth_mode_err', this.errDesc['auth_mode_err'](session.authMode));
     }
 
-    async oauth2Callback(template: IntegrationTemplate, config: Integration, session: OAuthSession, req: any, res: any) {
+    async oauth2Callback(template: IntegrationTemplate, config: IntegrationConfig, session: OAuthSession, req: any, res: any) {
         const { code } = req.query;
         let integrationKey = session.integrationKey;
         let connectionId = session.connectionId;
@@ -237,7 +236,7 @@ class PizzlyServer {
         }
     }
 
-    oauth1Callback(template: IntegrationTemplate, config: Integration, session: OAuthSession, req: any, res: any) {
+    oauth1Callback(template: IntegrationTemplate, config: IntegrationConfig, session: OAuthSession, req: any, res: any) {
         const { oauth_token, oauth_verifier } = req.query;
         let integrationKey = session.integrationKey;
         let connectionId = session.connectionId;
