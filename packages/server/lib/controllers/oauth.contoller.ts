@@ -113,7 +113,7 @@ class OAuthController {
             const simpleOAuthClient = new simpleOauth2.AuthorizationCode(getSimpleOAuth2ClientConfig(config, integrationTemplate));
             const authorizationUri = simpleOAuthClient.authorizeURL({
                 redirect_uri: this.callbackUrl,
-                scope: config.oauth_scopes,
+                scope: config.oauth_scopes.split(',').join(template.scope_separator || ' '),
                 state: session.id,
                 ...additionalAuthParams
             });

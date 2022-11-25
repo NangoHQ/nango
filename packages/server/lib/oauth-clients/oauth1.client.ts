@@ -119,10 +119,7 @@ export class PizzlyOAuth1Client {
     }
 
     getAuthorizationURL(requestToken: OAuth1RequestTokenResult) {
-        const scopeSeparator = this.authConfig.scope_separator ? this.authConfig.scope_separator : ' ';
-        const scopes = Array.isArray(this.integrationConfig.oauth_scopes)
-            ? this.integrationConfig.oauth_scopes.join(scopeSeparator)
-            : this.integrationConfig.oauth_scopes!;
+        const scopes = this.integrationConfig.oauth_scopes.split(',').join(this.authConfig.scope_separator || ' ');
 
         let additionalAuthParams = {};
         if (this.authConfig.authorization_params) {
