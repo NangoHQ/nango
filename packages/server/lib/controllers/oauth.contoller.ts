@@ -30,7 +30,7 @@ class OAuthController {
         integration_config_err: (integrationKey: string) => `Config for integration "${integrationKey}" is missing params (cliend ID, secret and/or scopes).`,
         grant_type_err: (grantType: string) => `The grant type "${grantType}" is not supported by this OAuth flow.`,
         req_token_err: (error: string) => `Error in the request token step of the OAuth 1.0a flow. Error: ${error}`,
-        auth_mode_err: (auth_mode: string) => `Auth mode ${auth_mode}not supported.`,
+        auth_mode_err: (auth_mode: string) => `Auth mode ${auth_mode} not supported.`,
         state_err: (state: string) => `Invalid state parameter passed in the callback: ${state}`,
         token_err: (err: string) => `Error storing/retrieving token: ${err}.`,
         callback_err: (err: string) => `Did not get oauth_token and/or oauth_verifier in the callback: ${err}.`
