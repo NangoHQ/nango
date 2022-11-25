@@ -1,20 +1,20 @@
-import type { PizzlyAuthCredentials, OAuth2Credentials, IntegrationTemplate, PizzlyCredentialsRefresh } from './models.js';
-import { IntegrationAuthModes } from './models.js';
-import { refreshOAuth2Credentials } from './oauth2.client.js';
-import db from './database.js';
-import type { IntegrationConfig, Connection } from './models.js';
+import type { PizzlyAuthCredentials, OAuth2Credentials, IntegrationTemplate, PizzlyCredentialsRefresh } from '../models.js';
+import { IntegrationAuthModes } from '../models.js';
+import { refreshOAuth2Credentials } from '../oauth2.client.js';
+import db from '../db/database.js';
+import type { IntegrationConfig, Connection } from '../models.js';
 
-class ConnectionsManager {
+class ConnectionService {
     private runningCredentialsRefreshes: PizzlyCredentialsRefresh[] = [];
 
-    public async upsertConnection(connectionId: string, integration: string, rawCredentials: object, authMode: IntegrationAuthModes) {
-        let connection = await this.getConnection(connectionId, integration);
+    public async upsertConnection(connectionId: string, integrationKey: string, rawCredentials: object, authMode: IntegrationAuthModes) {
+        let connection = await this.getConnection(connectionId, integrationKey);
         if (connection == null) {
             await db.knex
                 .withSchema(db.schema())
                 .insert({
                     connection_id: connectionId,
-                    integration: integration,
+                    integration_key: integrationKey,
                     credentials: this.parseRawCredentials(rawCredentials, authMode),
                     raw_response: rawCredentials
                 })
@@ -23,7 +23,7 @@ class ConnectionsManager {
             await db.knex
                 .withSchema(db.schema())
                 .from<Connection>(`_pizzly_connections`)
-                .where({ connection_id: connectionId, integration: integration })
+                .where({ connection_id: connectionId, integration_key: integrationKey })
                 .update({
                     credentials: this.parseRawCredentials(rawCredentials, authMode),
                     raw_response: rawCredentials
@@ -31,12 +31,12 @@ class ConnectionsManager {
         }
     }
 
-    async getConnection(connectionId: string, integration: string): Promise<Connection | null> {
+    async getConnection(connectionId: string, integrationKey: string): Promise<Connection | null> {
         let result: Connection[] | null = await db.knex
             .withSchema(db.schema())
             .select('*')
             .from<Connection>(`_pizzly_connections`)
-            .where({ connection_id: connectionId, integration: integration });
+            .where({ connection_id: connectionId, integration_key: integrationKey });
 
         return result == null || result.length == 0 ? null : result[0] || null;
     }
@@ -85,8 +85,8 @@ class ConnectionsManager {
     // Once the refresh or check is complete the new/old credentials are returned, always use these moving forward
     public async refreshOauth2CredentialsIfNeeded(
         credentials: OAuth2Credentials,
-        userId: string,
-        integration: string,
+        connectionId: string,
+        integrationKey: string,
         integrationConfig: IntegrationConfig,
         integrationTemplate: IntegrationTemplate
     ): Promise<OAuth2Credentials> {
@@ -94,7 +94,7 @@ class ConnectionsManager {
         // If it is wait for that to complete
         let runningRefresh: PizzlyCredentialsRefresh | undefined = undefined;
         for (const refresh of this.runningCredentialsRefreshes) {
-            if (refresh.userId === userId && refresh.integration === integration) {
+            if (refresh.connectionId === connectionId && refresh.integrationKey === integrationKey) {
                 runningRefresh = refresh;
             }
         }
@@ -114,11 +114,11 @@ class ConnectionsManager {
                     try {
                         const newCredentials = await refreshOAuth2Credentials(credentials, integrationConfig, integrationTemplate);
 
-                        this.upsertConnection(userId, integration, newCredentials.raw, IntegrationAuthModes.OAuth2);
+                        this.upsertConnection(connectionId, integrationKey, newCredentials.raw, IntegrationAuthModes.OAuth2);
 
                         // Remove ourselves from the array of running refreshes
                         this.runningCredentialsRefreshes = this.runningCredentialsRefreshes.filter((value) => {
-                            return !(value.integration === integration && value.userId === userId);
+                            return !(value.integrationKey === integrationKey && value.connectionId === connectionId);
                         });
 
                         resolve(newCredentials);
@@ -128,8 +128,8 @@ class ConnectionsManager {
                 });
 
                 const refresh = {
-                    userId: userId,
-                    integration: integration,
+                    connectionId: connectionId,
+                    integrationKey: integrationKey,
                     promise: promise
                 } as PizzlyCredentialsRefresh;
 
@@ -209,4 +209,4 @@ class ConnectionsManager {
     }
 }
 
-export default new ConnectionsManager();
+export default new ConnectionService();

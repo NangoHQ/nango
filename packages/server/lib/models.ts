@@ -4,9 +4,9 @@ export interface IntegrationConfig {
     updated_at?: Date;
     unique_key: string;
     type: string;
-    oauth_client_id?: string;
-    oauth_client_secret?: string;
-    oauth_scopes?: string[];
+    oauth_client_id: string;
+    oauth_client_secret: string;
+    oauth_scopes: string[];
 }
 
 export interface IntegrationTemplate {
@@ -24,7 +24,7 @@ export interface Connection {
     id?: number;
     created_at?: Date;
     updated_at?: Date;
-    integration: string;
+    integration_key: string;
     connection_id: string;
     credentials: object;
     raw_response: object;
@@ -115,7 +115,7 @@ export interface OAuthSessionStore {
 }
 
 export interface PizzlyCredentialsRefresh {
-    integration: string;
-    userId: string;
+    integrationKey: string;
+    connectionId: string;
     promise: Promise<OAuth2Credentials>;
 }
