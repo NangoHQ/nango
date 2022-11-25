@@ -2,9 +2,9 @@
  * Copyright (c) 2022 Nango, all rights reserved.
  */
 
-import type { IntegrationTemplateOAuth1, IntegrationTemplate } from './models.js';
+import type { IntegrationTemplateOAuth1, IntegrationTemplate } from '../models.js';
 import oAuth1 from 'oauth';
-import type { IntegrationConfig } from './models.js';
+import type { IntegrationConfig } from '../models.js';
 
 type OAuth1RequestTokenResult = {
     request_token: string;

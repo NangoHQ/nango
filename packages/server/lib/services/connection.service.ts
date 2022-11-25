@@ -1,6 +1,6 @@
 import type { PizzlyAuthCredentials, OAuth2Credentials, IntegrationTemplate, PizzlyCredentialsRefresh } from '../models.js';
 import { IntegrationAuthModes } from '../models.js';
-import { refreshOAuth2Credentials } from '../oauth2.client.js';
+import { refreshOAuth2Credentials } from '../oauth-clients/oauth2.client.js';
 import db from '../db/database.js';
 import type { IntegrationConfig, Connection } from '../models.js';
 
