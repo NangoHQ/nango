@@ -18,6 +18,8 @@ import {
 } from '../models.js';
 import logger from '../utils/logger.js';
 import type { NextFunction } from 'express';
+import yaml from 'js-yaml';
+import fs from 'fs';
 
 class OAuthController {
     sessionStore: OAuthSessionStore = {};
@@ -34,6 +36,11 @@ class OAuthController {
         callback_err: (err: string) => `Did not get oauth_token and/or oauth_verifier in the callback: ${err}.`
     };
     callbackUrl = getOauthCallbackUrl();
+    templates: { [key: string]: IntegrationTemplate };
+
+    constructor() {
+        this.templates = yaml.load(fs.readFileSync('./templates.yaml').toString()) as { string: IntegrationTemplate };
+    }
 
     public async oauthRequest(req: Request, res: Response, next: NextFunction) {
         try {
@@ -50,15 +57,20 @@ class OAuthController {
 
             let integrationConfig = await integrationsManager.getIntegrationConfig(integrationKey);
 
+            if (integrationConfig == null) {
+                return html(logger, res, integrationKey, connectionId, 'unknown_integration', this.errDesc['unknown_integration'](integrationKey));
+            }
+
             let integrationTemplate: IntegrationTemplate;
             try {
-                integrationTemplate = integrationsManager.getIntegrationTemplate(integrationConfig!.type);
+                integrationTemplate = this.templates[integrationConfig.type]!;
             } catch {
                 return html(logger, res, integrationKey, connectionId, 'unknown_integration', this.errDesc['unknown_integration'](integrationKey));
             }
 
             const session: OAuthSession = {
                 integrationKey: integrationKey,
+                integrationType: integrationConfig.type,
                 connectionId: connectionId as string,
                 callbackUrl: this.callbackUrl,
                 authMode: integrationTemplate.auth_mode,
@@ -158,7 +170,7 @@ class OAuthController {
 
             logger.debug(`Received callback for ${session.integrationKey} (connection: ${session.connectionId}) - full callback URI: ${req.originalUrl}"`);
 
-            const integrationTemplate = integrationsManager.getIntegrationTemplate(session.integrationKey);
+            const integrationTemplate = this.templates[session.integrationType]!;
             const integrationConfig = await integrationsManager.getIntegrationConfig(session.integrationKey);
 
             if (session.authMode === IntegrationAuthModes.OAuth2) {

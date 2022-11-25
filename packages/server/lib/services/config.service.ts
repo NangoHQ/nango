@@ -1,15 +1,7 @@
-import path from 'path';
-import fs from 'fs';
-import type { IntegrationConfig, IntegrationTemplate } from '../models.js';
+import type { IntegrationConfig } from '../models.js';
 import db from '../db/database.js';
-import * as yaml from 'js-yaml';
 
 class ConfigService {
-    getIntegrationTemplate(integrationType: string): IntegrationTemplate {
-        const integrationPath = path.join(process.env['PIZZLY_INTEGRATIONS_FOLDER'] || '../../integrations', `${integrationType}.yaml`);
-        return yaml.load(fs.readFileSync(integrationPath).toString()) as IntegrationTemplate;
-    }
-
     async getIntegrationConfig(integrationKey: string): Promise<IntegrationConfig | null> {
         let result = await db.knex.withSchema(db.schema()).select('*').from(`_pizzly_configs`).where({ unique_key: integrationKey });
 

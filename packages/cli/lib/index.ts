@@ -99,7 +99,7 @@ program
         let url = path.join(hostport, `/config`);
         await axios
             .put(url, body)
-            .then((res) => {
+            .then((_) => {
                 console.log('\n\n✅ Successfully edited existing configuration!\n\n');
             })
             .catch((err) => {
@@ -115,7 +115,7 @@ program
         let url = path.join(hostport, `/config/${integration_key}`);
         await axios
             .delete(url)
-            .then((res) => {
+            .then((_) => {
                 console.log('\n\n✅ Successfully deleted configuration!\n\n');
             })
             .catch((err) => {
