@@ -25,7 +25,7 @@ app.route('/config').get(configController.listIntegrationConfigs);
 app.route('/config/:integrationKey').get(configController.getIntegrationConfig);
 app.route('/config').post(configController.createIntegrationConfig);
 app.route('/config').put(configController.editIntegrationConfig);
-app.route('/config').delete(configController.deleteIntegrationConfig);
+app.route('/config/:integrationKey').delete(configController.deleteIntegrationConfig);
 
 app.route('/connection/:connectionId').get(connectionController.getConnectionCredentials);
 

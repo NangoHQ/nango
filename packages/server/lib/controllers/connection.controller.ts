@@ -4,7 +4,7 @@ import connectionService from '../services/connection.service.js';
 class ConnectionController {
     async getConnectionCredentials(req: Request, res: Response) {
         let connectionId = req.query['connection_id'] as string;
-        let integrationKey = req.query['integration_key'] as string;
+        let integrationKey = req.params['integration_key'] as string;
 
         if (connectionId == null) {
             res.status(400).send({ error: `Missing param connection_id.` });
