@@ -9,10 +9,10 @@ import {
     OAuth2Credentials,
     OAuthAuthorizationMethod,
     OAuthBodyFormat
-} from './models.js';
+} from '../models.js';
 import { AuthorizationCode } from 'simple-oauth2';
-import connectionsManager from './services/connection.service.js';
-import type { IntegrationConfig } from './models.js';
+import connectionsManager from '../services/connection.service.js';
+import type { IntegrationConfig } from '../models.js';
 
 // Simple OAuth 2 does what it says on the tin: A simple, no-frills client for OAuth 2 that implements the 3 most common grant_types.
 // Well maintained, I like :-)

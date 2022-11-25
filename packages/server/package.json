@@ -30,6 +30,7 @@
     },
     "devDependencies": {
         "@types/express": "^4.17.13",
+        "@types/js-yaml": "^4.0.5",
         "@types/node": "^18.7.6",
         "@types/oauth": "^0.9.1",
         "@types/simple-oauth2": "^4.1.1",

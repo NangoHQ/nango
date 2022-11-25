@@ -7,7 +7,7 @@ import * as yaml from 'js-yaml';
 class ConfigService {
     getIntegrationTemplate(integrationType: string): IntegrationTemplate {
         const integrationPath = path.join(process.env['PIZZLY_INTEGRATIONS_FOLDER'] || '../../integrations', `${integrationType}.yaml`);
-        return yaml.load(fs.readFileSync(integrationPath));
+        return yaml.load(fs.readFileSync(integrationPath).toString()) as IntegrationTemplate;
     }
 
     async getIntegrationConfig(integrationKey: string): Promise<IntegrationConfig | null> {
