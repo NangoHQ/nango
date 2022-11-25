@@ -124,8 +124,8 @@ program
     });
 
 program
-    .command('connection:get')
-    .description('Get a Connection with associated credentials.')
+    .command('auth')
+    .description('Get authorization credentials.')
     .argument('<connection_id>', 'The ID of the Connection.')
     .argument('<integration_key>', 'The unique key of the Integration.')
     .action(async (connection_id, integration_key) => {
@@ -134,7 +134,7 @@ program
             .get(url, { params: { integration_key: integration_key } })
             .then((res) => {
                 console.log('\n\nHere is the requested connection with credentials:\n\n');
-                console.log(res.data);
+                console.log(res.data.credentials);
             })
             .catch((err) => {
                 console.log(`❌ Error: ${err.response?.data?.error || err}`);

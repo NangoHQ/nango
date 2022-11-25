@@ -1,4 +1,4 @@
 {
     "files": [],
-    "references": [{ "path": "packages/cli" }, { "path": "packages/server" }, { "path": "packages/frontend" }]
+    "references": [{ "path": "packages/cli" }, { "path": "packages/server" }, { "path": "packages/frontend" }, { "path": "packages/node-client" }]
 }

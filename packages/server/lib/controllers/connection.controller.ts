@@ -61,7 +61,7 @@ class ConnectionController {
                 );
             }
 
-            res.status(200).send({ connection: connection });
+            res.status(200).send(connection);
         } catch (err) {
             next(err);
         }

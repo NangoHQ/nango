@@ -1,0 +1,27 @@
+{
+    "name": "@nangohq/pizzly-node",
+    "version": "0.2.8",
+    "description": "Pizzly's NodeJS client.",
+    "type": "module",
+    "main": "dist/lib/index.js",
+    "typings": "dist/lib/index.d.ts",
+    "keywords": [],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/NangoHQ/Pizzly",
+        "directory": "packages/node-client"
+    },
+    "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
+    "dependencies": {
+        "axios": "^0.27.2"
+    },
+    "devDependencies": {},
+    "engines": {
+        "node": ">=16.7"
+    },
+    "files": [
+        "dist/**/*",
+        "!**/*.json",
+        "README.md"
+    ]
+}
