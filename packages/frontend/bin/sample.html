@@ -26,8 +26,8 @@ Then open http://localhost:8000/bin/sample.html in your browser
             <br />
             <br />
             <formgroup>
-                <label>Connection ID:</label>
-                <input type="text" id="connectionId" value="1" />
+                <label>User ID:</label>
+                <input type="text" id="userId" value="1" />
             </formgroup>
         </form>
         <p><button id="connect">Start OAuth flow</button></p>
@@ -36,18 +36,18 @@ Then open http://localhost:8000/bin/sample.html in your browser
         </div>
 
         <script type="module">
-            import Nango from '/dist/index.js';
+            import Pizzly from '/dist/index.js';
 
             var link = document.getElementById('connect');
             link.addEventListener(
                 'click',
                 () => {
                     var integrationKey = document.getElementById('integrationKey').value;
-                    var connectionId = document.getElementById('connectionId').value;
+                    var userId = document.getElementById('userId').value;
 
-                    var nango = new Nango('http://localhost:3004');
-                    nango
-                        .connect(integrationKey, connectionId)
+                    var pizzly = new Pizzly('http://localhost:3004');
+                    pizzly
+                        .connect(integrationKey, userId)
                         .then((result) => {
                             var resultElement = document.getElementById('result');
                             resultElement.innerHTML = `SUCCESS: ${JSON.stringify(result)}`;
