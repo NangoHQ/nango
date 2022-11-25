@@ -17,6 +17,7 @@ import {
     OAuthSessionStore
 } from '../models.js';
 import logger from '../utils/logger.js';
+import type { NextFunction } from 'express';
 
 class OAuthController {
     sessionStore: OAuthSessionStore = {};
@@ -34,49 +35,53 @@ class OAuthController {
     };
     callbackUrl = getOauthCallbackUrl();
 
-    public async oauthRequest(req: Request, res: Response) {
-        const { integrationKey } = req.params;
-        let connectionId = req.query['connection_id'];
-        connectionId = connectionId as string;
-
-        if (connectionId == null) {
-            return html(logger, res, integrationKey, connectionId, 'missing_connection_id', this.errDesc['missing_connection_id']());
-        } else if (integrationKey == null) {
-            return html(logger, res, integrationKey, connectionId, 'missing_integration', this.errDesc['missing_integration']());
-        }
-        connectionId = connectionId.toString();
-
-        let integrationConfig = await integrationsManager.getIntegrationConfig(integrationKey);
-
-        let integrationTemplate: IntegrationTemplate;
+    public async oauthRequest(req: Request, res: Response, next: NextFunction) {
         try {
-            integrationTemplate = integrationsManager.getIntegrationTemplate(integrationConfig!.type);
-        } catch {
-            return html(logger, res, integrationKey, connectionId, 'unknown_integration', this.errDesc['unknown_integration'](integrationKey));
+            const { integrationKey } = req.params;
+            let connectionId = req.query['connection_id'];
+            connectionId = connectionId as string;
+
+            if (connectionId == null) {
+                return html(logger, res, integrationKey, connectionId, 'missing_connection_id', this.errDesc['missing_connection_id']());
+            } else if (integrationKey == null) {
+                return html(logger, res, integrationKey, connectionId, 'missing_integration', this.errDesc['missing_integration']());
+            }
+            connectionId = connectionId.toString();
+
+            let integrationConfig = await integrationsManager.getIntegrationConfig(integrationKey);
+
+            let integrationTemplate: IntegrationTemplate;
+            try {
+                integrationTemplate = integrationsManager.getIntegrationTemplate(integrationConfig!.type);
+            } catch {
+                return html(logger, res, integrationKey, connectionId, 'unknown_integration', this.errDesc['unknown_integration'](integrationKey));
+            }
+
+            const session: OAuthSession = {
+                integrationKey: integrationKey,
+                connectionId: connectionId as string,
+                callbackUrl: this.callbackUrl,
+                authMode: integrationTemplate.auth_mode,
+                codeVerifier: crypto.randomBytes(24).toString('hex'),
+                id: uuid.v1()
+            };
+            this.sessionStore[session.id] = session;
+
+            if (integrationConfig?.oauth_client_id == null || integrationConfig?.oauth_client_secret == null || integrationConfig.oauth_scopes == null) {
+                return html(logger, res, integrationKey, connectionId, 'integration_config_err', this.errDesc['integration_config_err'](integrationKey));
+            }
+
+            if (integrationTemplate.auth_mode === IntegrationAuthModes.OAuth2) {
+                return this.oauth2Request(integrationTemplate, integrationConfig, session, res);
+            } else if (integrationTemplate.auth_mode === IntegrationAuthModes.OAuth1) {
+                return this.oauth1Request(integrationTemplate, integrationConfig, session, res);
+            }
+
+            let authMode = integrationTemplate.auth_mode;
+            return html(logger, res, integrationKey, connectionId, 'auth_mode_err', this.errDesc['auth_mode_err'](authMode));
+        } catch (err) {
+            next(err);
         }
-
-        const session: OAuthSession = {
-            integrationKey: integrationKey,
-            connectionId: connectionId as string,
-            callbackUrl: this.callbackUrl,
-            authMode: integrationTemplate.auth_mode,
-            codeVerifier: crypto.randomBytes(24).toString('hex'),
-            id: uuid.v1()
-        };
-        this.sessionStore[session.id] = session;
-
-        if (integrationConfig?.oauth_client_id == null || integrationConfig?.oauth_client_secret == null || integrationConfig.oauth_scopes == null) {
-            return html(logger, res, integrationKey, connectionId, 'integration_config_err', this.errDesc['integration_config_err'](integrationKey));
-        }
-
-        if (integrationTemplate.auth_mode === IntegrationAuthModes.OAuth2) {
-            return this.oauth2Request(integrationTemplate, integrationConfig, session, res);
-        } else if (integrationTemplate.auth_mode === IntegrationAuthModes.OAuth1) {
-            return this.oauth1Request(integrationTemplate, integrationConfig, session, res);
-        }
-
-        let authMode = integrationTemplate.auth_mode;
-        return html(logger, res, integrationKey, connectionId, 'auth_mode_err', this.errDesc['auth_mode_err'](authMode));
     }
 
     private oauth2Request(integrationTemplate: IntegrationTemplate, config: IntegrationConfig, session: OAuthSession, res: any) {
@@ -140,28 +145,32 @@ class OAuthController {
         return res.redirect(redirectUrl);
     }
 
-    public async oauthCallback(req: Request, res: Response) {
-        const { state } = req.query;
-        const session: OAuthSession = this.sessionStore[state as string] as OAuthSession;
-        delete this.sessionStore[state as string];
+    public async oauthCallback(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { state } = req.query;
+            const session: OAuthSession = this.sessionStore[state as string] as OAuthSession;
+            delete this.sessionStore[state as string];
 
-        if (state == null || session == null || session.integrationKey == null) {
-            let stateStr = (state as string) || '';
-            return html(logger, res, session.integrationKey, session.connectionId, 'state_err', this.errDesc['state_err'](stateStr));
+            if (state == null || session == null || session.integrationKey == null) {
+                let stateStr = (state as string) || '';
+                return html(logger, res, session.integrationKey, session.connectionId, 'state_err', this.errDesc['state_err'](stateStr));
+            }
+
+            logger.debug(`Received callback for ${session.integrationKey} (connection: ${session.connectionId}) - full callback URI: ${req.originalUrl}"`);
+
+            const integrationTemplate = integrationsManager.getIntegrationTemplate(session.integrationKey);
+            const integrationConfig = await integrationsManager.getIntegrationConfig(session.integrationKey);
+
+            if (session.authMode === IntegrationAuthModes.OAuth2) {
+                return this.oauth2Callback(integrationTemplate, integrationConfig!, session, req, res);
+            } else if (session.authMode === IntegrationAuthModes.OAuth1) {
+                return this.oauth1Callback(integrationTemplate, integrationConfig!, session, req, res);
+            }
+
+            return html(logger, res, session.integrationKey, session.connectionId, 'auth_mode_err', this.errDesc['auth_mode_err'](session.authMode));
+        } catch (err) {
+            next(err);
         }
-
-        logger.debug(`Received callback for ${session.integrationKey} (connection: ${session.connectionId}) - full callback URI: ${req.originalUrl}"`);
-
-        const integrationTemplate = integrationsManager.getIntegrationTemplate(session.integrationKey);
-        const integrationConfig = await integrationsManager.getIntegrationConfig(session.integrationKey);
-
-        if (session.authMode === IntegrationAuthModes.OAuth2) {
-            return this.oauth2Callback(integrationTemplate, integrationConfig!, session, req, res);
-        } else if (session.authMode === IntegrationAuthModes.OAuth1) {
-            return this.oauth1Callback(integrationTemplate, integrationConfig!, session, req, res);
-        }
-
-        return html(logger, res, session.integrationKey, session.connectionId, 'auth_mode_err', this.errDesc['auth_mode_err'](session.authMode));
     }
 
     private async oauth2Callback(template: IntegrationTemplate, config: IntegrationConfig, session: OAuthSession, req: any, res: any) {

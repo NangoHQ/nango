@@ -14,14 +14,24 @@ let hostport = process.env['PIZZLY_HOSTPORT'] || 'http://localhost:3004';
 
 program
     .name('pizzly')
-    .description('A CLI tool to configure Pizzly\n IMPORTANT: You need to set the PIZZLY_HOSTPORT environment variables for the CLI to work.');
+    .description(
+        "A CLI tool to configure Pizzly.\n\n IMPORTANT: You need to set the PIZZLY_HOSTPORT environment variable if Pizzly Server doesn't run on http://localhost:3004."
+    );
 
 program
-    .command('list')
+    .command('config:list')
     .description('List all Integration configurations.')
     .action(async () => {
         let url = path.join(hostport, '/config');
-        return await axios.get(url);
+        await axios
+            .get(url)
+            .then((res) => {
+                console.log('\n\nHere is the list of configured Integrations:\n\n');
+                console.log(res.data);
+            })
+            .catch((err) => {
+                console.log(`❌ Error: ${err.response?.data?.error || err}`);
+            });
     });
 
 program
@@ -30,7 +40,15 @@ program
     .argument('<integration_key>', 'The unique key of the Integration.')
     .action(async (integration_key) => {
         let url = path.join(hostport, `/config/${integration_key}`);
-        return await axios.get(url);
+        await axios
+            .get(url)
+            .then((res) => {
+                console.log('\n\nHere is the requested Integration configuration:\n\n');
+                console.log(res.data);
+            })
+            .catch((err) => {
+                console.log(`❌ Error: ${err.response?.data?.error || err}`);
+            });
     });
 
 program
@@ -51,7 +69,14 @@ program
         };
 
         let url = path.join(hostport, `/config`);
-        return await axios.post(url, { data: body });
+        await axios
+            .post(url, body)
+            .then((_) => {
+                console.log('\n\n✅ Successfully created new configuration!\n\n');
+            })
+            .catch((err) => {
+                console.log(`❌ Error: ${err.response?.data?.error || err}`);
+            });
     });
 
 program
@@ -72,7 +97,14 @@ program
         };
 
         let url = path.join(hostport, `/config`);
-        return await axios.put(url, { data: body });
+        await axios
+            .put(url, body)
+            .then((res) => {
+                console.log('\n\n✅ Successfully edited existing configuration!\n\n');
+            })
+            .catch((err) => {
+                console.log(`❌ Error: ${err.response?.data?.error || err}`);
+            });
     });
 
 program
@@ -81,7 +113,14 @@ program
     .argument('<integration_key>', 'The unique key of the Integration.')
     .action(async (integration_key) => {
         let url = path.join(hostport, `/config/${integration_key}`);
-        return await axios.delete(url);
+        await axios
+            .delete(url)
+            .then((res) => {
+                console.log('\n\n✅ Successfully deleted configuration!\n\n');
+            })
+            .catch((err) => {
+                console.log(`❌ Error: ${err.response?.data?.error || err}`);
+            });
     });
 
 program
@@ -91,7 +130,15 @@ program
     .argument('<integration_key>', 'The unique key of the Integration.')
     .action(async (connection_id, integration_key) => {
         let url = path.join(hostport, `/connection/${connection_id}`);
-        return await axios.get(url, { params: { integration_key: integration_key } });
+        await axios
+            .get(url, { params: { integration_key: integration_key } })
+            .then((res) => {
+                console.log('\n\nHere is the requested connection with credentials:\n\n');
+                console.log(res.data);
+            })
+            .catch((err) => {
+                console.log(`❌ Error: ${err.response?.data?.error || err}`);
+            });
     });
 
 program.parseAsync(process.argv);
