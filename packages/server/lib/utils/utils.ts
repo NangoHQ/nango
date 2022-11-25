@@ -1,12 +1,12 @@
 import type winston from 'winston';
 
 export function getPort() {
-    return process.env['PORT'] != null ? +process.env['PORT'] : 3004;
+    return process.env['SERVER_PORT'] != null ? + process.env['PORT'] : 3004;
 }
 
 export function getOauthCallbackUrl() {
     let port = getPort();
-    return (process.env['HOST'] || 'http://localhost') + `:${port}` + '/oauth/callback';
+    return (process.env['SERVER_HOST'] || 'http://localhost') + `:${port}` + '/oauth/callback';
 }
 
 // A helper function to interpolate a string.

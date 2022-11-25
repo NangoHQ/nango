@@ -15,8 +15,8 @@ services:
         container_name: pizzly-server
         restart: always
         environment:
-            - HOST=http://localhost
-            - POST=3004
+            - SERVER_HOST=http://localhost
+            - SERVER_PORT=3004
         env_file:
             - .env
         ports:
