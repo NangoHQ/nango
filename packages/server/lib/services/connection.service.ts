@@ -25,8 +25,7 @@ class ConnectionService {
                 .from<Connection>(`_pizzly_connections`)
                 .where({ connection_id: connectionId, integration_key: integrationKey })
                 .update({
-                    credentials: this.parseRawCredentials(rawCredentials, authMode),
-                    raw_response: rawCredentials
+                    credentials: this.parseRawCredentials(rawCredentials, authMode)
                 });
         }
     }

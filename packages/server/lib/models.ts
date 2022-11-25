@@ -26,8 +26,7 @@ export interface Connection {
     updated_at?: Date;
     integration_key: string;
     connection_id: string;
-    credentials: object;
-    raw_response: object;
+    credentials: PizzlyAuthCredentials;
 }
 
 export enum OAuthBodyFormat {
