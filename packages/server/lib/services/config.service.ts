@@ -1,15 +1,7 @@
-import path from 'path';
-import fs from 'fs';
-import type { IntegrationConfig, IntegrationTemplate } from '../models.js';
+import type { IntegrationConfig } from '../models.js';
 import db from '../db/database.js';
-import * as yaml from 'js-yaml';
 
 class ConfigService {
-    getIntegrationTemplate(integrationType: string): IntegrationTemplate {
-        const integrationPath = path.join(process.env['PIZZLY_INTEGRATIONS_FOLDER'] || '../../integrations', `${integrationType}.yaml`);
-        return yaml.load(fs.readFileSync(integrationPath).toString()) as IntegrationTemplate;
-    }
-
     async getIntegrationConfig(integrationKey: string): Promise<IntegrationConfig | null> {
         let result = await db.knex.withSchema(db.schema()).select('*').from(`_pizzly_configs`).where({ unique_key: integrationKey });
 
@@ -17,14 +9,7 @@ class ConfigService {
             return null;
         }
 
-        return {
-            id: result[0].id,
-            unique_key: result[0].unique_key,
-            type: result[0].type,
-            oauth_client_id: result[0].oauth_client_id || undefined,
-            oauth_client_secret: result[0].oauth_client_secret || undefined,
-            oauth_scopes: result[0].oauth_scopes != null ? result[0].oauth_scopes.split(',') : undefined
-        };
+        return result[0];
     }
 
     async listIntegrationConfigs(): Promise<IntegrationConfig[]> {
@@ -32,7 +17,7 @@ class ConfigService {
     }
 
     async createIntegrationConfig(config: IntegrationConfig): Promise<void | Pick<IntegrationConfig, 'id'>[]> {
-        return await db.knex.withSchema(db.schema()).insert(config, ['id']).into<IntegrationConfig>(`_pizzly_configs`);
+        return await db.knex.withSchema(db.schema()).from<IntegrationConfig>(`_pizzly_configs`).insert(config, ['id']);
     }
 
     async deleteIntegrationConfig(integrationKey: string): Promise<number> {

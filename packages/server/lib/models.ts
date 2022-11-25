@@ -6,7 +6,7 @@ export interface IntegrationConfig {
     type: string;
     oauth_client_id: string;
     oauth_client_secret: string;
-    oauth_scopes: string[];
+    oauth_scopes: string;
 }
 
 export interface IntegrationTemplate {
@@ -98,6 +98,7 @@ export type OAuth1RequestTokenResult = {
 
 export interface OAuthSession {
     integrationKey: string;
+    integrationType: string;
     connectionId: string;
     callbackUrl: string;
     authMode: IntegrationAuthModes;
