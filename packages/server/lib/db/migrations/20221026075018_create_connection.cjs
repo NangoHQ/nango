@@ -6,7 +6,6 @@ exports.up = function (knex, _) {
         table.string('integration_key').notNullable();
         table.string('connection_id').notNullable();
         table.json('credentials').notNullable();
-        table.json('raw_response').notNullable();
         table.unique(['integration_key', 'connection_id']);
     });
 };
