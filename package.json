@@ -1,5 +1,5 @@
 {
-    "name": "pizzly",
+    "name": "@nangohq/pizzly",
     "type": "module",
     "workspaces": [
         "packages/*"

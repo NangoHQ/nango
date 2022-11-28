@@ -47,7 +47,7 @@ Then open http://localhost:8000/bin/sample.html in your browser
 
                     var pizzly = new Pizzly('http://localhost:3004');
                     pizzly
-                        .connect(providerConfigKey, connectionId)
+                        .auth(providerConfigKey, connectionId)
                         .then((result) => {
                             var resultElement = document.getElementById('result');
                             resultElement.innerHTML = `SUCCESS: ${JSON.stringify(result)}`;

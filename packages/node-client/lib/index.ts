@@ -7,7 +7,7 @@ export class Pizzly {
         this.serverUrl = serverUrl || 'http://localhost:3004';
     }
 
-    async authRaw(connectionId: string, providerConfigKey: string) {
+    async rawTokenResponse(connectionId: string, providerConfigKey: string) {
         let url = `${this.serverUrl}/connection/${connectionId}`;
 
         let headers = {
@@ -23,7 +23,7 @@ export class Pizzly {
         return response.data.credentials.raw;
     }
 
-    async auth(connectionId: string, providerConfigKey: string) {
+    async accessToken(connectionId: string, providerConfigKey: string) {
         let url = `${this.serverUrl}/connection/${connectionId}`;
 
         let headers = {

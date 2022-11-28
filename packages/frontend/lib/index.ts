@@ -16,7 +16,7 @@ export default class Pizzly {
         }
     }
 
-    public connect(providerConfigKey: string, connectionId: string): Promise<any> {
+    public auth(providerConfigKey: string, connectionId: string): Promise<any> {
         const url = new URL(`/oauth/connect/${providerConfigKey}?connection_id=${connectionId}`, this.hostBaseUrl).href;
 
         return new Promise((resolve, reject) => {

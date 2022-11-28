@@ -1,5 +1,5 @@
 {
-    "name": "pizzly",
+    "name": "@nangohq/pizzly-cli",
     "version": "0.3.0",
     "description": "Pizzly's CLI tool.",
     "type": "module",

@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/pizzly-node",
-    "version": "0.2.8",
+    "version": "0.3.0",
     "description": "Pizzly's NodeJS client.",
     "type": "module",
     "main": "dist/lib/index.js",
@@ -13,9 +13,8 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
-        "axios": "^0.27.2"
+        "axios": "^1.2.0"
     },
-    "devDependencies": {},
     "engines": {
         "node": ">=16.7"
     },
