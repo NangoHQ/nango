@@ -12,6 +12,7 @@ const program = new Command();
 
 let hostport = process.env['PIZZLY_HOSTPORT'] || 'http://localhost:3004';
 
+// Test from the package rool (/packages/cli) with 'node dist/index.js'
 program
     .name('pizzly')
     .description(
