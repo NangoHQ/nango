@@ -4,7 +4,7 @@ exports.up = function (knex, _) {
         table.increments('id').primary();
         table.timestamps(true, true);
         table.string('unique_key').notNullable();
-        table.string('type').notNullable();
+        table.string('provider').notNullable();
         table.string('oauth_client_id').notNullable();
         table.string('oauth_client_secret').notNullable();
         table.string('oauth_scopes').notNullable();

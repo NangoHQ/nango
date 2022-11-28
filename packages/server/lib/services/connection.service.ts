@@ -1,54 +1,53 @@
-import type { PizzlyAuthCredentials, OAuth2Credentials, IntegrationTemplate, PizzlyCredentialsRefresh } from '../models.js';
-import { IntegrationAuthModes } from '../models.js';
+import type { PizzlyAuthCredentials, OAuth2Credentials, ProviderTemplate, PizzlyCredentialsRefresh } from '../models.js';
+import { ProviderAuthModes } from '../models.js';
 import { refreshOAuth2Credentials } from '../oauth-clients/oauth2.client.js';
 import db from '../db/database.js';
-import type { IntegrationConfig, Connection } from '../models.js';
+import type { ProviderConfig, Connection } from '../models.js';
 
 class ConnectionService {
     private runningCredentialsRefreshes: PizzlyCredentialsRefresh[] = [];
 
-    public async upsertConnection(connectionId: string, integrationKey: string, rawCredentials: object, authMode: IntegrationAuthModes) {
-        let connection = await this.getConnection(connectionId, integrationKey);
+    public async upsertConnection(connectionId: string, providerConfigKey: string, rawCredentials: object, authMode: ProviderAuthModes) {
+        let connection = await this.getConnection(connectionId, providerConfigKey);
         if (connection == null) {
             await db.knex
                 .withSchema(db.schema())
+                .from<Connection>(`_pizzly_connections`)
                 .insert({
                     connection_id: connectionId,
-                    integration_key: integrationKey,
-                    credentials: this.parseRawCredentials(rawCredentials, authMode),
-                    raw_response: rawCredentials
-                })
-                .into<Connection>(`_pizzly_connections`);
+                    provider_config_key: providerConfigKey,
+                    credentials: this.parseRawCredentials(rawCredentials, authMode)
+                });
         } else {
             await db.knex
                 .withSchema(db.schema())
                 .from<Connection>(`_pizzly_connections`)
-                .where({ connection_id: connectionId, integration_key: integrationKey })
+                .where({ connection_id: connectionId, provider_config_key: providerConfigKey })
                 .update({
                     credentials: this.parseRawCredentials(rawCredentials, authMode)
                 });
         }
     }
 
-    async getConnection(connectionId: string, integrationKey: string): Promise<Connection | null> {
+    async getConnection(connectionId: string, providerConfigKey: string): Promise<Connection | null> {
         let result: Connection[] | null = await db.knex
             .withSchema(db.schema())
             .select('*')
             .from<Connection>(`_pizzly_connections`)
-            .where({ connection_id: connectionId, integration_key: integrationKey });
+            .where({ connection_id: connectionId, provider_config_key: providerConfigKey });
 
         return result == null || result.length == 0 ? null : result[0] || null;
     }
 
     // Parses and arbitrary object (e.g. a server response or a user provided auth object) into PizzlyAuthCredentials.
     // Throws if values are missing/missing the input is malformed.
-    public parseRawCredentials(rawCredentials: object, authMode: IntegrationAuthModes): PizzlyAuthCredentials {
+    public parseRawCredentials(rawCredentials: object, authMode: ProviderAuthModes): PizzlyAuthCredentials {
         const rawAuthCredentials = rawCredentials as Record<string, any>; // Otherwise TS complains
 
         let parsedCredentials: any = {};
         switch (authMode) {
-            case IntegrationAuthModes.OAuth2:
-                parsedCredentials.type = IntegrationAuthModes.OAuth2;
+            case ProviderAuthModes.OAuth2:
+                parsedCredentials.type = ProviderAuthModes.OAuth2;
                 parsedCredentials.accessToken = rawAuthCredentials['access_token'];
                 if (rawAuthCredentials['refresh_token']) {
                     parsedCredentials.refreshToken = rawAuthCredentials['refresh_token'];
@@ -63,8 +62,8 @@ class ConnectionService {
                     parsedCredentials.expiresAt = tokenExpirationDate;
                 }
                 break;
-            case IntegrationAuthModes.OAuth1:
-                parsedCredentials.type = IntegrationAuthModes.OAuth1;
+            case ProviderAuthModes.OAuth1:
+                parsedCredentials.type = ProviderAuthModes.OAuth1;
                 parsedCredentials.oAuthToken = rawAuthCredentials['oauth_token'];
                 parsedCredentials.oAuthTokenSecret = rawAuthCredentials['oauth_token_secret'];
                 break;
@@ -85,15 +84,15 @@ class ConnectionService {
     public async refreshOauth2CredentialsIfNeeded(
         credentials: OAuth2Credentials,
         connectionId: string,
-        integrationKey: string,
-        integrationConfig: IntegrationConfig,
-        integrationTemplate: IntegrationTemplate
+        providerConfigKey: string,
+        config: ProviderConfig,
+        template: ProviderTemplate
     ): Promise<OAuth2Credentials> {
-        // Check if a refresh is already running for this user & integration
+        // Check if a refresh is already running for this user & provider configuration
         // If it is wait for that to complete
         let runningRefresh: PizzlyCredentialsRefresh | undefined = undefined;
         for (const refresh of this.runningCredentialsRefreshes) {
-            if (refresh.connectionId === connectionId && refresh.integrationKey === integrationKey) {
+            if (refresh.connectionId === connectionId && refresh.providerConfigKey === providerConfigKey) {
                 runningRefresh = refresh;
             }
         }
@@ -111,13 +110,13 @@ class ConnectionService {
             if (credentials.expiresAt < safeExpirationDate) {
                 const promise = new Promise<OAuth2Credentials>(async (resolve, reject) => {
                     try {
-                        const newCredentials = await refreshOAuth2Credentials(credentials, integrationConfig, integrationTemplate);
+                        const newCredentials = await refreshOAuth2Credentials(credentials, config, template);
 
-                        this.upsertConnection(connectionId, integrationKey, newCredentials.raw, IntegrationAuthModes.OAuth2);
+                        this.upsertConnection(connectionId, providerConfigKey, newCredentials.raw, ProviderAuthModes.OAuth2);
 
                         // Remove ourselves from the array of running refreshes
                         this.runningCredentialsRefreshes = this.runningCredentialsRefreshes.filter((value) => {
-                            return !(value.integrationKey === integrationKey && value.connectionId === connectionId);
+                            return !(value.providerConfigKey === providerConfigKey && value.connectionId === connectionId);
                         });
 
                         resolve(newCredentials);
@@ -128,7 +127,7 @@ class ConnectionService {
 
                 const refresh = {
                     connectionId: connectionId,
-                    integrationKey: integrationKey,
+                    providerConfigKey: providerConfigKey,
                     promise: promise
                 } as PizzlyCredentialsRefresh;
 
@@ -156,7 +155,7 @@ class ConnectionService {
         }
 
         switch (rawAuthCredentials.type) {
-            case IntegrationAuthModes.OAuth2:
+            case ProviderAuthModes.OAuth2:
                 if (!rawAuthCredentials.accessToken) {
                     throw new Error(
                         `Cannot parse credentials, OAuth2 access token credentials must have "access_token" property: ${JSON.stringify(
@@ -175,7 +174,7 @@ class ConnectionService {
                     );
                 }
                 break;
-            case IntegrationAuthModes.OAuth1:
+            case ProviderAuthModes.OAuth1:
                 if (!rawAuthCredentials.oAuthToken || !rawAuthCredentials.oAuthTokenSecret) {
                     throw new Error(
                         `Cannot parse credentials, OAuth1 credentials must have both "oauth_token" and "oauth_token_secret" property: ${JSON.stringify(

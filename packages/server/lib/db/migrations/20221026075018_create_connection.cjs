@@ -3,10 +3,10 @@ exports.up = function (knex, _) {
     return knex.schema.withSchema(schema).createTable('_pizzly_connections', function (table) {
         table.increments('id').primary();
         table.timestamps(true, true);
-        table.string('integration_key').notNullable();
+        table.string('provider_config_key').notNullable();
         table.string('connection_id').notNullable();
         table.json('credentials').notNullable();
-        table.unique(['integration_key', 'connection_id']);
+        table.unique(['provider_config_key', 'connection_id']);
     });
 };
 

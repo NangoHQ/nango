@@ -4,14 +4,14 @@ import * as uuid from 'uuid';
 import simpleOauth2 from 'simple-oauth2';
 import { getSimpleOAuth2ClientConfig } from '../oauth-clients/oauth2.client.js';
 import { PizzlyOAuth1Client } from '../oauth-clients/oauth1.client.js';
-import integrationsManager from '../services/config.service.js';
-import connectionsManager from '../services/connection.service.js';
+import configService from '../services/config.service.js';
+import connectionService from '../services/connection.service.js';
 import { html, getOauthCallbackUrl } from '../utils/utils.js';
 import {
-    IntegrationConfig,
-    IntegrationTemplate,
-    IntegrationTemplateOAuth2,
-    IntegrationAuthModes,
+    ProviderConfig,
+    ProviderTemplate,
+    ProviderTemplateOAuth2,
+    ProviderAuthModes,
     OAuthSession,
     OAuth1RequestTokenResult,
     OAuthSessionStore
@@ -25,9 +25,10 @@ class OAuthController {
     sessionStore: OAuthSessionStore = {};
     errDesc = {
         missing_connection_id: () => 'Missing connectionId.',
-        missing_integration: () => 'Missing integration unique key.',
-        unknown_integration: (integrationKey: string) => `No config for the integration "${integrationKey}".`,
-        integration_config_err: (integrationKey: string) => `Config for integration "${integrationKey}" is missing params (cliend ID, secret and/or scopes).`,
+        no_provider_config_key: () => 'Missing provider unique key.',
+        unknown_config_key: (providerConfigKey: string) => `No Provider configuration with key "${providerConfigKey}".`,
+        provider_config_err: (providerConfigKey: string) =>
+            `Provider config w/ key "${providerConfigKey}" is missing params (cliend ID, secret and/or scopes).`,
         grant_type_err: (grantType: string) => `The grant type "${grantType}" is not supported by this OAuth flow.`,
         req_token_err: (error: string) => `Error in the request token step of the OAuth 1.0a flow. Error: ${error}`,
         auth_mode_err: (auth_mode: string) => `Auth mode ${auth_mode} not supported.`,
@@ -36,73 +37,77 @@ class OAuthController {
         callback_err: (err: string) => `Did not get oauth_token and/or oauth_verifier in the callback: ${err}.`
     };
     callbackUrl = getOauthCallbackUrl();
-    templates: { [key: string]: IntegrationTemplate };
+    templates: { [key: string]: ProviderTemplate };
 
     constructor() {
-        this.templates = yaml.load(fs.readFileSync('./templates.yaml').toString()) as { string: IntegrationTemplate };
+        this.templates = yaml.load(fs.readFileSync('./templates.yaml').toString()) as { string: ProviderTemplate };
     }
 
     public async oauthRequest(req: Request, res: Response, next: NextFunction) {
         try {
-            const { integrationKey } = req.params;
+            const { providerConfigKey } = req.params;
             let connectionId = req.query['connection_id'];
             connectionId = connectionId as string;
 
             if (connectionId == null) {
-                return html(logger, res, integrationKey, connectionId, 'missing_connection_id', this.errDesc['missing_connection_id']());
-            } else if (integrationKey == null) {
-                return html(logger, res, integrationKey, connectionId, 'missing_integration', this.errDesc['missing_integration']());
+                return html(logger, res, providerConfigKey, connectionId, 'missing_connection_id', this.errDesc['missing_connection_id']());
+            } else if (providerConfigKey == null) {
+                return html(logger, res, providerConfigKey, connectionId, 'no_provider_config_key', this.errDesc['no_provider_config_key']());
             }
             connectionId = connectionId.toString();
 
-            let integrationConfig = await integrationsManager.getIntegrationConfig(integrationKey);
+            let config = await configService.getProviderConfig(providerConfigKey);
 
-            if (integrationConfig == null) {
-                return html(logger, res, integrationKey, connectionId, 'unknown_integration', this.errDesc['unknown_integration'](integrationKey));
+            if (config == null) {
+                return html(logger, res, providerConfigKey, connectionId, 'unknown_config_key', this.errDesc['unknown_config_key'](providerConfigKey));
             }
 
-            let integrationTemplate: IntegrationTemplate;
+            let template: ProviderTemplate;
             try {
-                integrationTemplate = this.templates[integrationConfig.type]!;
+                template = this.templates[config.provider]!;
             } catch {
-                return html(logger, res, integrationKey, connectionId, 'unknown_integration', this.errDesc['unknown_integration'](integrationKey));
+                return html(logger, res, providerConfigKey, connectionId, 'unknown_config_key', this.errDesc['unknown_config_key'](providerConfigKey));
             }
 
             const session: OAuthSession = {
-                integrationKey: integrationKey,
-                integrationType: integrationConfig.type,
+                providerConfigKey: providerConfigKey,
+                provider: config.provider,
                 connectionId: connectionId as string,
                 callbackUrl: this.callbackUrl,
-                authMode: integrationTemplate.auth_mode,
+                authMode: template.auth_mode,
                 codeVerifier: crypto.randomBytes(24).toString('hex'),
                 id: uuid.v1()
             };
             this.sessionStore[session.id] = session;
 
-            if (integrationConfig?.oauth_client_id == null || integrationConfig?.oauth_client_secret == null || integrationConfig.oauth_scopes == null) {
-                return html(logger, res, integrationKey, connectionId, 'integration_config_err', this.errDesc['integration_config_err'](integrationKey));
+            if (config?.oauth_client_id == null || config?.oauth_client_secret == null || config.oauth_scopes == null) {
+                return html(logger, res, providerConfigKey, connectionId, 'provider_config_err', this.errDesc['provider_config_err'](providerConfigKey));
             }
 
-            if (integrationTemplate.auth_mode === IntegrationAuthModes.OAuth2) {
-                return this.oauth2Request(integrationTemplate, integrationConfig, session, res);
-            } else if (integrationTemplate.auth_mode === IntegrationAuthModes.OAuth1) {
-                return this.oauth1Request(integrationTemplate, integrationConfig, session, res);
+            if (template.auth_mode === ProviderAuthModes.OAuth2) {
+                return this.oauth2Request(template, config, session, res);
+            } else if (template.auth_mode === ProviderAuthModes.OAuth1) {
+                return this.oauth1Request(template, config, session, res);
             }
 
-            let authMode = integrationTemplate.auth_mode;
-            return html(logger, res, integrationKey, connectionId, 'auth_mode_err', this.errDesc['auth_mode_err'](authMode));
+            let authMode = template.auth_mode;
+            return html(logger, res, providerConfigKey, connectionId, 'auth_mode_err', this.errDesc['auth_mode_err'](authMode));
         } catch (err) {
             next(err);
         }
     }
 
-    private oauth2Request(integrationTemplate: IntegrationTemplate, config: IntegrationConfig, session: OAuthSession, res: any) {
-        const template = integrationTemplate as IntegrationTemplateOAuth2;
+    private oauth2Request(template: ProviderTemplate, config: ProviderConfig, session: OAuthSession, res: any) {
+        const oauth2Template = template as ProviderTemplateOAuth2;
 
-        if (template.token_params == undefined || template.token_params.grant_type == undefined || template.token_params.grant_type == 'authorization_code') {
+        if (
+            oauth2Template.token_params == undefined ||
+            oauth2Template.token_params.grant_type == undefined ||
+            oauth2Template.token_params.grant_type == 'authorization_code'
+        ) {
             let additionalAuthParams: Record<string, string> = {};
-            if (template.authorization_params) {
-                additionalAuthParams = template.authorization_params;
+            if (oauth2Template.authorization_params) {
+                additionalAuthParams = oauth2Template.authorization_params;
             }
 
             // We always implement PKCE, no matter whether the server requires it or not
@@ -110,20 +115,20 @@ class OAuthController {
             additionalAuthParams['code_challenge'] = h;
             additionalAuthParams['code_challenge_method'] = 'S256';
 
-            const simpleOAuthClient = new simpleOauth2.AuthorizationCode(getSimpleOAuth2ClientConfig(config, integrationTemplate));
+            const simpleOAuthClient = new simpleOauth2.AuthorizationCode(getSimpleOAuth2ClientConfig(config, template));
             const authorizationUri = simpleOAuthClient.authorizeURL({
                 redirect_uri: this.callbackUrl,
-                scope: config.oauth_scopes.split(',').join(template.scope_separator || ' '),
+                scope: config.oauth_scopes.split(',').join(oauth2Template.scope_separator || ' '),
                 state: session.id,
                 ...additionalAuthParams
             });
 
-            logger.debug(`OAuth 2.0 for ${session.integrationKey} (connection ${session.connectionId}) - redirecting to: ${authorizationUri}`);
+            logger.debug(`OAuth 2.0 for ${session.providerConfigKey} (connection ${session.connectionId}) - redirecting to: ${authorizationUri}`);
 
             res.redirect(authorizationUri);
         } else {
-            let grandType = template.token_params.grant_type;
-            return html(logger, res, session.integrationKey, session.connectionId, 'grant_type_err', this.errDesc['grant_type_err'](grandType));
+            let grandType = oauth2Template.token_params.grant_type;
+            return html(logger, res, session.providerConfigKey, session.connectionId, 'grant_type_err', this.errDesc['grant_type_err'](grandType));
         }
     }
 
@@ -131,7 +136,7 @@ class OAuthController {
     // for the entire journey. With OAuth 1.0a we have to register the callback URL
     // in a first step and will get called back there. We need to manually include the state
     // param there, otherwise we won't be able to identify the user in the callback
-    private async oauth1Request(template: IntegrationTemplate, config: IntegrationConfig, session: OAuthSession, res: any) {
+    private async oauth1Request(template: ProviderTemplate, config: ProviderConfig, session: OAuthSession, res: any) {
         const callbackParams = new URLSearchParams({
             state: session.id
         });
@@ -144,14 +149,16 @@ class OAuthController {
             tokenResult = await oAuth1Client.getOAuthRequestToken();
         } catch (error) {
             let errStr = JSON.stringify(error, undefined, 2);
-            return html(logger, res, session.integrationKey, session.connectionId as string, 'req_token_err', this.errDesc['req_token_err'](errStr));
+            return html(logger, res, session.providerConfigKey, session.connectionId as string, 'req_token_err', this.errDesc['req_token_err'](errStr));
         }
 
         const sessionData = this.sessionStore[session.id]!;
         sessionData.request_token_secret = tokenResult.request_token_secret;
         const redirectUrl = oAuth1Client.getAuthorizationURL(tokenResult);
 
-        logger.debug(`OAuth 1.0a for ${session.integrationKey} (connection: ${session.connectionId}). Request token success. Redirecting to: ${redirectUrl}`);
+        logger.debug(
+            `OAuth 1.0a for ${session.providerConfigKey} (connection: ${session.connectionId}). Request token success. Redirecting to: ${redirectUrl}`
+        );
 
         // All worked, let's redirect the user to the authorization page
         return res.redirect(redirectUrl);
@@ -163,36 +170,36 @@ class OAuthController {
             const session: OAuthSession = this.sessionStore[state as string] as OAuthSession;
             delete this.sessionStore[state as string];
 
-            if (state == null || session == null || session.integrationKey == null) {
+            if (state == null || session == null || session.providerConfigKey == null) {
                 let stateStr = (state as string) || '';
-                return html(logger, res, session.integrationKey, session.connectionId, 'state_err', this.errDesc['state_err'](stateStr));
+                return html(logger, res, session.providerConfigKey, session.connectionId, 'state_err', this.errDesc['state_err'](stateStr));
             }
 
-            logger.debug(`Received callback for ${session.integrationKey} (connection: ${session.connectionId}) - full callback URI: ${req.originalUrl}"`);
+            logger.debug(`Received callback for ${session.providerConfigKey} (connection: ${session.connectionId}) - full callback URI: ${req.originalUrl}"`);
 
-            const integrationTemplate = this.templates[session.integrationType]!;
-            const integrationConfig = await integrationsManager.getIntegrationConfig(session.integrationKey);
+            const template = this.templates[session.provider]!;
+            const config = await configService.getProviderConfig(session.providerConfigKey);
 
-            if (session.authMode === IntegrationAuthModes.OAuth2) {
-                return this.oauth2Callback(integrationTemplate, integrationConfig!, session, req, res);
-            } else if (session.authMode === IntegrationAuthModes.OAuth1) {
-                return this.oauth1Callback(integrationTemplate, integrationConfig!, session, req, res);
+            if (session.authMode === ProviderAuthModes.OAuth2) {
+                return this.oauth2Callback(template, config!, session, req, res);
+            } else if (session.authMode === ProviderAuthModes.OAuth1) {
+                return this.oauth1Callback(template, config!, session, req, res);
             }
 
-            return html(logger, res, session.integrationKey, session.connectionId, 'auth_mode_err', this.errDesc['auth_mode_err'](session.authMode));
+            return html(logger, res, session.providerConfigKey, session.connectionId, 'auth_mode_err', this.errDesc['auth_mode_err'](session.authMode));
         } catch (err) {
             next(err);
         }
     }
 
-    private async oauth2Callback(template: IntegrationTemplate, config: IntegrationConfig, session: OAuthSession, req: any, res: any) {
+    private async oauth2Callback(template: ProviderTemplate, config: ProviderConfig, session: OAuthSession, req: any, res: any) {
         const { code } = req.query;
-        let integrationKey = session.integrationKey;
+        let providerConfigKey = session.providerConfigKey;
         let connectionId = session.connectionId;
 
         if (!code) {
             let errStr = JSON.stringify(req.query);
-            return html(logger, res, integrationKey, connectionId, 'callback_err', this.errDesc['callback_err'](errStr));
+            return html(logger, res, providerConfigKey, connectionId, 'callback_err', this.errDesc['callback_err'](errStr));
         }
 
         const simpleOAuthClient = new simpleOauth2.AuthorizationCode(getSimpleOAuth2ClientConfig(config, template));
@@ -215,24 +222,24 @@ class OAuthController {
                 ...additionalTokenParams
             });
 
-            logger.debug(`OAuth 2 for ${integrationKey} (connection ${connectionId}) successful.`);
+            logger.debug(`OAuth 2 for ${providerConfigKey} (connection ${connectionId}) successful.`);
 
-            connectionsManager.upsertConnection(connectionId, integrationKey, accessToken.token, IntegrationAuthModes.OAuth2);
+            connectionService.upsertConnection(connectionId, providerConfigKey, accessToken.token, ProviderAuthModes.OAuth2);
 
-            return html(logger, res, integrationKey, connectionId, '', '');
+            return html(logger, res, providerConfigKey, connectionId, '', '');
         } catch (e) {
-            return html(logger, res, integrationKey, connectionId, 'token_err', this.errDesc['token_err'](JSON.stringify(e)));
+            return html(logger, res, providerConfigKey, connectionId, 'token_err', this.errDesc['token_err'](JSON.stringify(e)));
         }
     }
 
-    private oauth1Callback(template: IntegrationTemplate, config: IntegrationConfig, session: OAuthSession, req: any, res: any) {
+    private oauth1Callback(template: ProviderTemplate, config: ProviderConfig, session: OAuthSession, req: any, res: any) {
         const { oauth_token, oauth_verifier } = req.query;
-        let integrationKey = session.integrationKey;
+        let providerConfigKey = session.providerConfigKey;
         let connectionId = session.connectionId;
 
         if (!oauth_token || !oauth_verifier) {
             let errStr = JSON.stringify(req.query);
-            return html(logger, res, integrationKey, connectionId, 'callback_err', this.errDesc['callback_err'](errStr));
+            return html(logger, res, providerConfigKey, connectionId, 'callback_err', this.errDesc['callback_err'](errStr));
         }
 
         const oauth_token_secret = session.request_token_secret!;
@@ -241,14 +248,14 @@ class OAuthController {
         oAuth1Client
             .getOAuthAccessToken(oauth_token as string, oauth_token_secret, oauth_verifier as string)
             .then((accessTokenResult) => {
-                logger.debug(`OAuth 1.0a for ${integrationKey} (connection: ${connectionId}) successful.`);
+                logger.debug(`OAuth 1.0a for ${providerConfigKey} (connection: ${connectionId}) successful.`);
 
-                connectionsManager.upsertConnection(connectionId, integrationKey, accessTokenResult, IntegrationAuthModes.OAuth1);
-                return html(logger, res, integrationKey, connectionId, '', '');
+                connectionService.upsertConnection(connectionId, providerConfigKey, accessTokenResult, ProviderAuthModes.OAuth1);
+                return html(logger, res, providerConfigKey, connectionId, '', '');
             })
             .catch((e) => {
                 let errStr = JSON.stringify(e);
-                return html(logger, res, integrationKey, connectionId, 'token_err', this.errDesc['token_err'](errStr));
+                return html(logger, res, providerConfigKey, connectionId, 'token_err', this.errDesc['token_err'](errStr));
             });
     }
 }

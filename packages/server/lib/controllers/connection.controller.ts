@@ -2,60 +2,60 @@ import type { Request, Response } from 'express';
 import connectionService from '../services/connection.service.js';
 import type { NextFunction } from 'express';
 import configService from '../services/config.service.js';
-import { IntegrationConfig, IntegrationTemplate, Connection, IntegrationAuthModes } from '../models.js';
+import { ProviderConfig, ProviderTemplate, Connection, ProviderAuthModes } from '../models.js';
 import yaml from 'js-yaml';
 import fs from 'fs';
 
 class ConnectionController {
-    templates: { [key: string]: IntegrationTemplate };
+    templates: { [key: string]: ProviderTemplate };
 
     constructor() {
-        this.templates = yaml.load(fs.readFileSync('./templates.yaml').toString()) as { string: IntegrationTemplate };
+        this.templates = yaml.load(fs.readFileSync('./templates.yaml').toString()) as { string: ProviderTemplate };
     }
 
     async getConnectionCredentials(req: Request, res: Response, next: NextFunction) {
         try {
             let connectionId = req.params['connectionId'] as string;
-            let integrationKey = req.query['integration_key'] as string;
+            let providerConfigKey = req.query['provider_config_key'] as string;
 
             if (connectionId == null) {
                 res.status(400).send({ error: `Missing param connection_id.` });
                 return;
             }
 
-            if (integrationKey == null) {
-                res.status(400).send({ error: `Missing param integration_key.` });
+            if (providerConfigKey == null) {
+                res.status(400).send({ error: `Missing param provider_config_key.` });
                 return;
             }
 
-            let connection: Connection | null = await connectionService.getConnection(connectionId, integrationKey);
+            let connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey);
 
             if (connection == null) {
-                res.status(400).send({ error: `No matching connection for connection_id: ${connectionId} and integration_key: ${integrationKey}` });
+                res.status(400).send({ error: `No matching connection for connection_id: ${connectionId} and provider_config_key: ${providerConfigKey}` });
                 return;
             }
 
-            let config: IntegrationConfig | null = await configService.getIntegrationConfig(connection.integration_key);
+            let config: ProviderConfig | null = await configService.getProviderConfig(connection.provider_config_key);
 
             if (config == null) {
-                res.status(400).send({ error: `No matching Integration configuration for integration_key: ${integrationKey}` });
+                res.status(400).send({ error: `No matching provider configuration for key: ${providerConfigKey}` });
                 return;
             }
 
-            let template: IntegrationTemplate | undefined = this.templates[config.type];
+            let template: ProviderTemplate | undefined = this.templates[config.provider];
 
             if (template == null) {
                 res.status(400).send({
-                    error: `No matching template '${config.type}' (integration_key: ${integrationKey}, connection_id: ${connectionId})`
+                    error: `No matching template '${config.provider}' (provider_config_key: ${providerConfigKey}, connection_id: ${connectionId})`
                 });
                 return;
             }
 
-            if (connection.credentials.type === IntegrationAuthModes.OAuth2) {
+            if (connection.credentials.type === ProviderAuthModes.OAuth2) {
                 connection.credentials = await connectionService.refreshOauth2CredentialsIfNeeded(
                     connection.credentials,
                     connection.connection_id,
-                    connection.integration_key,
+                    connection.provider_config_key,
                     config,
                     template
                 );

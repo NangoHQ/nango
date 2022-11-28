@@ -20,13 +20,13 @@ Then open http://localhost:8000/bin/sample.html in your browser
         <h1>Nango OAuth test page</h1>
         <form>
             <formgroup>
-                <label>Integration Unique Key:</label>
-                <input type="text" id="integrationKey" value="slack" />
+                <label>Provider Configuration Unique Key (choose a friendly unique name, e.g. hubspot_staging):</label>
+                <input type="text" id="providerConfigKey" value="slack" />
             </formgroup>
             <br />
             <br />
             <formgroup>
-                <label>Connection ID:</label>
+                <label>Connection ID (reuse the ID of the entity initiating the connection, e.g. a user, company, etc.):</label>
                 <input type="text" id="connectionId" value="1" />
             </formgroup>
         </form>
@@ -42,12 +42,12 @@ Then open http://localhost:8000/bin/sample.html in your browser
             link.addEventListener(
                 'click',
                 () => {
-                    var integrationKey = document.getElementById('integrationKey').value;
+                    var providerConfigKey = document.getElementById('providerConfigKey').value;
                     var connectionId = document.getElementById('connectionId').value;
 
                     var pizzly = new Pizzly('http://localhost:3004');
                     pizzly
-                        .connect(integrationKey, connectionId)
+                        .connect(providerConfigKey, connectionId)
                         .then((result) => {
                             var resultElement = document.getElementById('result');
                             resultElement.innerHTML = `SUCCESS: ${JSON.stringify(result)}`;

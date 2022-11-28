@@ -2,9 +2,9 @@
  * Copyright (c) 2022 Nango, all rights reserved.
  */
 
-import type { IntegrationTemplateOAuth1, IntegrationTemplate } from '../models.js';
+import type { ProviderTemplateOAuth1, ProviderTemplate } from '../models.js';
 import oAuth1 from 'oauth';
-import type { IntegrationConfig } from '../models.js';
+import type { ProviderConfig } from '../models.js';
 
 type OAuth1RequestTokenResult = {
     request_token: string;
@@ -21,20 +21,20 @@ type OAuth1RequestTokenResult = {
 // For reference, this is a pretty good graphic on the OAuth 1.0a flow: https://oauth.net/core/1.0/#anchor9
 export class PizzlyOAuth1Client {
     private client: oAuth1.OAuth;
-    private integrationConfig: IntegrationConfig;
-    private authConfig: IntegrationTemplateOAuth1;
+    private config: ProviderConfig;
+    private authConfig: ProviderTemplateOAuth1;
 
-    constructor(integrationConfig: IntegrationConfig, integrationTemplate: IntegrationTemplate, callbackUrl: string) {
-        this.integrationConfig = integrationConfig;
+    constructor(config: ProviderConfig, template: ProviderTemplate, callbackUrl: string) {
+        this.config = config;
 
-        this.authConfig = integrationTemplate as IntegrationTemplateOAuth1;
+        this.authConfig = template as ProviderTemplateOAuth1;
         const headers = { 'User-Agent': 'Pizzly' };
 
         this.client = new oAuth1.OAuth(
             this.authConfig.request_url,
             this.authConfig.token_url,
-            this.integrationConfig.oauth_client_id!,
-            this.integrationConfig.oauth_client_secret!,
+            this.config.oauth_client_id!,
+            this.config.oauth_client_secret!,
             '1.0A',
             callbackUrl,
             this.authConfig.signature_method,
@@ -119,7 +119,7 @@ export class PizzlyOAuth1Client {
     }
 
     getAuthorizationURL(requestToken: OAuth1RequestTokenResult) {
-        const scopes = this.integrationConfig.oauth_scopes.split(',').join(this.authConfig.scope_separator || ' ');
+        const scopes = this.config.oauth_scopes.split(',').join(this.authConfig.scope_separator || ' ');
 
         let additionalAuthParams = {};
         if (this.authConfig.authorization_params) {

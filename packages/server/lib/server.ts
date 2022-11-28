@@ -21,14 +21,14 @@ let app = express();
 app.use(express.json());
 app.use(cors());
 
-app.route('/oauth/connect/:integrationKey').get(oauthController.oauthRequest.bind(oauthController));
+app.route('/oauth/connect/:providerConfigKey').get(oauthController.oauthRequest.bind(oauthController));
 app.route('/oauth/callback').get(oauthController.oauthCallback.bind(oauthController));
 
-app.route('/config').get(configController.listIntegrationConfigs.bind(configController));
-app.route('/config/:integrationKey').get(configController.getIntegrationConfig.bind(configController));
-app.route('/config').post(configController.createIntegrationConfig.bind(configController));
-app.route('/config').put(configController.editIntegrationConfig.bind(configController));
-app.route('/config/:integrationKey').delete(configController.deleteIntegrationConfig.bind(configController));
+app.route('/config').get(configController.listProviderConfigs.bind(configController));
+app.route('/config/:providerConfigKey').get(configController.getProviderConfig.bind(configController));
+app.route('/config').post(configController.createProviderConfig.bind(configController));
+app.route('/config').put(configController.editProviderConfig.bind(configController));
+app.route('/config/:providerConfigKey').delete(configController.deleteProviderConfig.bind(configController));
 
 app.route('/connection/:connectionId').get(connectionController.getConnectionCredentials.bind(connectionController));
 

@@ -42,7 +42,7 @@ export function parseJsonDateAware(input: string) {
 export function html(
     logger: winston.Logger,
     res: any,
-    integrationKey: string | undefined,
+    providerConfigKey: string | undefined,
     connectionId: string | undefined,
     error: string | null,
     errorDesc: string | null
@@ -59,7 +59,7 @@ Pizzly OAuth flow callback. Read more about how to use it at: https://github.com
   <body>
     <noscript>JavaScript is required to proceed with the authentication.</noscript>
     <script type="text/javascript">
-      window.integrationKey = \`\${integrationKey}\`;
+      window.providerConfigKey = \`\${providerConfigKey}\`;
       window.connectionId = \`\${connectionId}\`;
       window.authError = \'\${error}\';
       window.authErrorDescription = \'\${errorDesc}\';
@@ -70,7 +70,7 @@ Pizzly OAuth flow callback. Read more about how to use it at: https://github.com
         message.eventType = 'AUTHORIZATION_FAILED';
         message.data = {
             connectionId: window.connectionId,
-            integrationKey: window.integrationKey,
+            providerConfigKey: window.providerConfigKey,
             error: {
                 type: window.authError,
                 message: window.authErrorDescription
@@ -79,7 +79,7 @@ Pizzly OAuth flow callback. Read more about how to use it at: https://github.com
       } else {
         console.log('I have success!');
         message.eventType = 'AUTHORIZATION_SUCEEDED';
-        message.data = { connectionId: window.connectionId, integrationKey: window.integrationKey };
+        message.data = { connectionId: window.connectionId, providerConfigKey: window.providerConfigKey };
       }
 
       // Tell the world what happened
@@ -95,14 +95,14 @@ Pizzly OAuth flow callback. Read more about how to use it at: https://github.com
 `;
 
     const resultHTML = interpolateString(resultHTMLTemplate, {
-        integrationKey: integrationKey,
+        providerConfigKey: providerConfigKey,
         connectionId: connectionId,
         error: error?.replace('\n', '\\n'),
         errorDesc: errorDesc?.replace('\n', '\\n')
     });
 
     if (error) {
-        logger.debug(`Got an error in the OAuth flow for integration "${integrationKey}" and connectionId "${connectionId}": ${error} - ${errorDesc}`);
+        logger.debug(`Got an error in the OAuth flow for provider config "${providerConfigKey}" and connectionId "${connectionId}": ${error} - ${errorDesc}`);
         res.status(500);
     } else {
         res.status(200);

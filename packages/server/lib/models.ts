@@ -1,16 +1,16 @@
-export interface IntegrationConfig {
+export interface ProviderConfig {
     id?: number;
     created_at?: Date;
     updated_at?: Date;
     unique_key: string;
-    type: string;
+    provider: string;
     oauth_client_id: string;
     oauth_client_secret: string;
     oauth_scopes: string;
 }
 
-export interface IntegrationTemplate {
-    auth_mode: IntegrationAuthModes;
+export interface ProviderTemplate {
+    auth_mode: ProviderAuthModes;
     authorization_url: string;
     authorization_params?: Record<string, string>;
     scope_separator?: string;
@@ -24,7 +24,7 @@ export interface Connection {
     id?: number;
     created_at?: Date;
     updated_at?: Date;
-    integration_key: string;
+    provider_config_key: string;
     connection_id: string;
     credentials: PizzlyAuthCredentials;
 }
@@ -40,12 +40,12 @@ export enum OAuthAuthorizationMethod {
 }
 
 export interface CredentialsCommon {
-    type: IntegrationAuthModes;
+    type: ProviderAuthModes;
     raw: Record<string, string>; // Raw response for credentials as received by the OAuth server or set by the user
 }
 
 export interface OAuth2Credentials extends CredentialsCommon {
-    type: IntegrationAuthModes.OAuth2;
+    type: ProviderAuthModes.OAuth2;
     accessToken: string;
 
     refreshToken?: string;
@@ -53,20 +53,20 @@ export interface OAuth2Credentials extends CredentialsCommon {
 }
 
 export interface OAuth1Credentials extends CredentialsCommon {
-    type: IntegrationAuthModes.OAuth1;
+    type: ProviderAuthModes.OAuth1;
     oAuthToken: string;
     oAuthTokenSecret: string;
 }
 
-export enum IntegrationAuthModes {
+export enum ProviderAuthModes {
     OAuth1 = 'OAUTH1',
     OAuth2 = 'OAUTH2'
 }
 
 export type PizzlyAuthCredentials = OAuth2Credentials | OAuth1Credentials;
 
-export interface IntegrationTemplateOAuth1 extends IntegrationTemplate {
-    auth_mode: IntegrationAuthModes.OAuth1;
+export interface ProviderTemplateOAuth1 extends ProviderTemplate {
+    auth_mode: ProviderAuthModes.OAuth1;
 
     request_url: string;
     request_params?: Record<string, string>;
@@ -77,8 +77,8 @@ export interface IntegrationTemplateOAuth1 extends IntegrationTemplate {
     signature_method: 'HMAC-SHA1' | 'RSA-SHA1' | 'PLAINTEXT';
 }
 
-export interface IntegrationTemplateOAuth2 extends IntegrationTemplate {
-    auth_mode: IntegrationAuthModes.OAuth2;
+export interface ProviderTemplateOAuth2 extends ProviderTemplate {
+    auth_mode: ProviderAuthModes.OAuth2;
 
     token_params?: {
         grant_type?: 'authorization_code' | 'client_credentials';
@@ -96,11 +96,11 @@ export type OAuth1RequestTokenResult = {
 };
 
 export interface OAuthSession {
-    integrationKey: string;
-    integrationType: string;
+    providerConfigKey: string;
+    provider: string;
     connectionId: string;
     callbackUrl: string;
-    authMode: IntegrationAuthModes;
+    authMode: ProviderAuthModes;
     id: string;
 
     // Needed for OAuth 2.0 PKCE
@@ -115,7 +115,7 @@ export interface OAuthSessionStore {
 }
 
 export interface PizzlyCredentialsRefresh {
-    integrationKey: string;
+    providerConfigKey: string;
     connectionId: string;
     promise: Promise<OAuth2Credentials>;
 }

@@ -7,7 +7,7 @@ export class Pizzly {
         this.serverUrl = serverUrl || 'http://localhost:3004';
     }
 
-    async auth(connectionId: string, integrationKey: string) {
+    async auth(connectionId: string, providerConfigKey: string) {
         let url = `${this.serverUrl}/connection/${connectionId}`;
 
         let headers = {
@@ -15,7 +15,7 @@ export class Pizzly {
         };
 
         let params = {
-            integration_key: integrationKey
+            provider_config_key: providerConfigKey
         };
 
         let response = await axios.get(url, { params: params, headers: headers });
