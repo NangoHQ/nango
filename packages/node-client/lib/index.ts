@@ -31,7 +31,7 @@ export class Pizzly {
         };
 
         let params = {
-            providerConfigKey: providerConfigKey
+            provider_config_key: providerConfigKey
         };
 
         let response = await axios.get(url, { params: params, headers: headers });

@@ -103,11 +103,11 @@ class ConnectionService {
 
         // Check if we need to refresh the credentials
         if (credentials.refreshToken && credentials.expiresAt) {
-            const safeExpirationDate = new Date();
-            safeExpirationDate.setMinutes(safeExpirationDate.getMinutes() + 15); // Surprisingly this does handle the wraparound correct
-
             // Check if the expiration is less than 15 minutes away (or has already happened): If so, refresh
-            if (credentials.expiresAt < safeExpirationDate) {
+            let expireDate = new Date(credentials.expiresAt);
+            let currDate = new Date();
+            let dateDiffMs = expireDate.getTime() - currDate.getTime();
+            if (dateDiffMs < 15 * 60 * 1000) {
                 const promise = new Promise<OAuth2Credentials>(async (resolve, reject) => {
                     try {
                         const newCredentials = await refreshOAuth2Credentials(credentials, config, template);
