@@ -12,6 +12,10 @@ discord:
     token_url: https://discord.com/api/oauth2/token
     authorization_params:
         response_type: code
+dropbox:
+    auth_mode: OAUTH2
+    authorization_url: https://www.dropbox.com/oauth2/authorize
+    token_url: https://api.dropboxapi.com/oauth2/token
 freshbooks:
     auth_mode: OAUTH2
     authorization_url: https://auth.freshbooks.com/oauth/authorize
@@ -54,6 +58,10 @@ intercom:
     auth_mode: OAUTH2
     authorization_url: https://app.intercom.io/oauth
     token_url: https://api.intercom.io/auth/eagle/token
+intuit:
+    auth_mode: OAUTH2
+    authorization_url: https://appcenter.intuit.com/connect/oauth2
+    token_url: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
 jira:
     auth_mode: OAUTH2
     authorization_url: https://auth.atlassian.com/authorize
@@ -66,13 +74,17 @@ lever:
         response_type: code
         prompt: consent
         audience: https://api.lever.co/v1
-ms-teams:
+microsoft-teams:
     auth_mode: OAUTH2
     authorization_url: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
     token_url: https://login.microsoftonline.com/common/oauth2/v2.0/token
     authorization_params:
         response_type: code
         response_mode: query
+monday:
+    auth_mode: OAUTH2
+    authorization_url: https://auth.monday.com/oauth2/authorize
+    token_url: https://auth.monday.com/oauth2/token
 notion:
     auth_mode: OAUTH2
     authorization_url: https://api.notion.com/v1/oauth/authorize
