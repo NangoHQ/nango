@@ -1,6 +1,6 @@
 {
-    "name": "@nangohq/pizzly-cli",
-    "version": "0.3.0",
+    "name": "pizzly",
+    "version": "0.3.5",
     "description": "Pizzly's CLI tool.",
     "type": "module",
     "main": "dist/index.js",

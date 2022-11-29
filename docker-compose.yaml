@@ -2,13 +2,15 @@ version: '3.9'
 services:
     pizzly-db:
         image: postgres
-        container_name: pizzly-db
+        container_name: nango-db
         environment:
-            POSTGRES_PASSWORD: pizzly
-            POSTGRES_USER: pizzly
-            POSTGRES_DB: pizzly
+            POSTGRES_PASSWORD: nango
+            POSTGRES_USER: nango
+            POSTGRES_DB: nango
         ports:
             - '5432:5432'
+        networks:
+            - nango
 
     pizzly-server:
         image: nangohq/pizzly-server
@@ -23,3 +25,7 @@ services:
             - '3004:3004'
         depends_on:
             - pizzly-db
+        networks:
+            - nango
+networks:
+    nango:

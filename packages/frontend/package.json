@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/pizzly-frontend",
-    "version": "0.3.0",
+    "version": "0.3.4",
     "description": "Pizzly's frontend library for OAuth handling.",
     "type": "module",
     "main": "dist/index.js",
@@ -12,6 +12,5 @@
         "directory": "packages/frontend"
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
-    "dependencies": {
-    }
+    "dependencies": {}
 }

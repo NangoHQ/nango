@@ -10,7 +10,7 @@ class KnexDatabase {
     }
 
     async migrate(directory: string): Promise<any> {
-        return this.knex.migrate.latest({ directory: directory });
+        return this.knex.migrate.latest({ directory: directory, tableName: '_pizzly_migrations', schemaName: this.schema() });
     }
 
     schema() {
