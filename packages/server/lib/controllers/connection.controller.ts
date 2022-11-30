@@ -3,15 +3,9 @@ import connectionService from '../services/connection.service.js';
 import type { NextFunction } from 'express';
 import configService from '../services/config.service.js';
 import { ProviderConfig, ProviderTemplate, Connection, ProviderAuthModes } from '../models.js';
-import yaml from 'js-yaml';
-import fs from 'fs';
 
 class ConnectionController {
-    templates: { [key: string]: ProviderTemplate };
-
-    constructor() {
-        this.templates = yaml.load(fs.readFileSync('./templates.yaml').toString()) as { string: ProviderTemplate };
-    }
+    templates: { [key: string]: ProviderTemplate } = configService.getTemplates();
 
     async getConnectionCredentials(req: Request, res: Response, next: NextFunction) {
         try {

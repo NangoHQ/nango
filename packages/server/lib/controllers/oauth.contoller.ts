@@ -18,8 +18,6 @@ import {
 } from '../models.js';
 import logger from '../utils/logger.js';
 import type { NextFunction } from 'express';
-import yaml from 'js-yaml';
-import fs from 'fs';
 
 class OAuthController {
     sessionStore: OAuthSessionStore = {};
@@ -37,11 +35,7 @@ class OAuthController {
         callback_err: (err: string) => `Did not get oauth_token and/or oauth_verifier in the callback: ${err}.`
     };
     callbackUrl = getOauthCallbackUrl();
-    templates: { [key: string]: ProviderTemplate };
-
-    constructor() {
-        this.templates = yaml.load(fs.readFileSync('./templates.yaml').toString()) as { string: ProviderTemplate };
-    }
+    templates: { [key: string]: ProviderTemplate } = configService.getTemplates();
 
     public async oauthRequest(req: Request, res: Response, next: NextFunction) {
         try {
