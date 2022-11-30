@@ -1,194 +1,147 @@
-
-# :tada: This project is maintained again! - [and needs your input](https://github.com/NangoHQ/Pizzly/issues/263) :tada:
-Hello fellow Pizzly users!
-
-We are Nango, a young team working on [open-source tools](https://github.com/NangoHQ/nango) to make working with 3rd party APIs fast & simple for engineers.
-We just took over Pizzly from the original authors, the [bearer team](https://www.bearer.com/?ref=pizzly) and are very much looking forward to giving it a new life and roadmap!
-
-Here is our current plan:
-- Short term (next 1-2 weeks) we are focused on getting Pizzly running again (see next section)
-- Beyond that we are looking to make it better. For this we need your input here: https://github.com/NangoHQ/Pizzly/issues/263
-
-Meanwhile, if you want to get involved or talk with us please join our [Slack community](https://nango.dev/slack) where we are very active.
-
-BIG THANKS to the Bearer team and all the contributors for their hard work! 🐻 👏  
-Pizzly has gained a strong following because it is one of the fastest and simplest ways to work with APIs that use OAuth. We look forward to continue this mission together with the community :)
-
-## Current state of Pizzly (last update: 16th Nov 2022)
-Pizzly currently does not run locally with the latest stable version of node (18.x)
-
-The 1-click Heroku deployment button still works, but means you will need to pay for the deployment starting November 28th when Heroku expires its free tier.
-
-Fixing Pizzly is our first priority. If you need help with your instance in the meantime please open an issue or reach out to us on the [Slack community](https://nango.dev/slack). We will do our best to help.
-
----
-
-<a href="https://heroku.com/deploy?template=https://github.com/Bearer/Pizzly" rel="nofollow"><img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy to Heroku" height="26"></a>
-<a href="https://console.platform.sh/projects/create-project/?template=https://github.com/Bearer/Pizzly&utm_campaign=deploy_on_platform?utm_medium=button&utm_source=affiliate_links&utm_content=https://github.com/Bearer/Pizzly" rel="nofollow"><img src="https://platform.sh/images/deploy/deploy-button-lg-blue.svg" alt="Deploy with Platform.sh" height="26"></a>
-<a href="https://www.bearer.com/?ref=pizzly"><img src="/views/assets/img/badges/bearer-badge.png?raw=true" alt="The #1 data security as code platform" height="26"></a>
-
-# Pizzly 🐻 - The OAuth Integration Proxy
+```diff
++ Using Pizzly v0.2.x? Please read this about migrating to v0.3+: https://docs.nango.dev/pizzly/migration +
+```
 
 <div align="center">
-
-<img src="/views/assets/img/logos/pizzly.png?raw=true" width="300">
-
-[How it works?](#how-it-works) - [Getting started](#getting-started) - [Documentation](#documentation)  
-[Examples](#examples) - [Supported APIs](#supported-apis) - [Contributing](#contributing)
+  
+<img src="/assets/pizzly-logo.png?raw=true" width="350">
 
 </div>
 
-**Pizzly makes it fast and reliable to build API integrations**. It handles dozens of pre-configured APIs (including Salesforce, Slack, Google Sheets [and many more](#supported-apis)) and lets you quickly add more APIs with a generic JSON configuration schema.
+<h1 align="center">The fast & flexible way to get OAuth tokens for 50+ APIs</h1>
 
-Using Pizzly your engineering team can focus on consuming APIs, in a standardized way that will grow as you grow.
+<div align="center">
+Pizzly takes care of the OAuth dance for you and makes sure your access tokens always stay fresh.
+</div>
 
-## How it works?
+<p align="center">
+    <br />
+    <a href="https://docs.nango.dev" rel="dofollow"><strong>Explore the docs »</strong></a>
+    <br />
 
-At the heart of Pizzly is a Node.js application that uses PostgreSQL as a database. Once deployed on your servers, each instance of Pizzly provides multiple tools to help developers with their API integrations, including:
+  <br/>
+    <a href="https://docs.nango.dev/">All supported APIs</a>
+    ·
+    <a href="https://github.com/nangohq/nango/issues">Contribute an API</a>
+    ·
+    <a href="https://github.com/nangohq/nango/issues">Report Bug</a>
+    ·
+    <a href="https://nango.dev/slack">Community Slack</a>
+</p>
 
-- **a dashboard** - _to enable and configure APIs_;
-- **an auth service** - _to handle the OAuth-dance_;
-- **a proxy** - _to perform authenticated requests to an API_;
-- a JS library - _to connect a user and perform requests from your frontend_;
-- and its own API - _to programmatically do what you can do with the dashboard_.
+## ⭐ Pizzly at a glance
 
-[![Integrate with many APIs, right from Pizzly's dashboard](views/assets/img/docs/pizzly-dashboard-all-apis.png?raw=true)](https://demopizzly.herokuapp.com/dashboard/all)
+Pizzly is a small, self-contained service (docker container) that contains everything you need to work with APIs that use OAuth.
 
-## Getting started
+Pizzly has been designed for modern web apps/backends and contains:
 
-Pizzly can be installed anywhere (AWS, Heroku, Platform.sh, etc.). Here's a quick guide:
+- a full OAuth 2 and OAuth 1.0a dance implementation for 50+ APIs (and more coming)
+- a frontend SDK that makes it easy to trigger new OAuth flows from your web app
+- a backend SDK & REST API that make it easy to get always-fresh access tokens for your API calls
+- a CLI that makes it easy to manage your OAuth provider configs, setup different environments and debug OAuth issues
 
-1. First, deploy your own instance of Pizzly by clicking a deploy button below:
+Pizzly is easy to try in 5 minutes and can be deployed in 15.
 
-   | Heroku                                                                                                                                                                                                                  | Platform.sh                                                                                                                                                                                                                                                                                                                                                                         |
-   | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-   | <a href="https://heroku.com/deploy?template=https://github.com/Bearer/Pizzly" rel="nofollow" target="_blank"><img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy to Heroku" width="184" height="40"></a> | <a href="https://console.platform.sh/projects/create-project/?template=https://github.com/Bearer/Pizzly&utm_campaign=deploy_on_platform?utm_medium=button&utm_source=affiliate_links&utm_content=https://github.com/Bearer/Pizzly" rel="nofollow"><img src="https://platform.sh/images/deploy/deploy-button-lg-blue.svg" alt="Deploy with Platform.sh" width="180" height="40"></a> |
+Start a **new OAuth flow with 2 lines of code in your frontend**:
 
-2. Once deployed, open your app. You will land on Pizzly's dashboard.
-3. Click on "Open Dashboard" and select the API you want to integrate with.
-4. Now, configure the API by entering your credentials and scopes. That's all it takes to configure a new API.
-5. To connect a user to this API, _in your frontend_, install [`pizzly-js`](src/clients/javascript):
+```ts
+var pizzly = new Pizzly('https://localhost:3004')
 
-   ```bash
-   npm install pizzly-js
-   ```
-
-6. Then open your frontend app and copy-paste the following code:
-
-   ```js
-   import Pizzly from 'pizzly-js'
-
-   const pizzly = new Pizzly({ host: 'pizzly.example.org' }) // Initialize Pizzly
-   const myAPI = pizzly.integration('xxx-api-name') // Replace with the API slugname
-
-   myAPI
-     .connect()
-     .then(({ authId }) => console.log('Sucessfully connected!', authId))
-     .catch(console.error)
-   ```
-
-   This snippet code will open a popup in your browser to start an authorization flow with the provided API. On success you will obtain an `authId` which will be be used in the next step.
-
-7. _In your frontend again_, use the previously obtained `authId` to perform a request to the API using the code below:
-
-   ```js
-   myAPI
-     .auth('xxx-auth-id') // Replace with the authId previously obtained
-     .get('/xxx-endpoint') // Replace with a valid endpoint of the API
-     .then((response) => console.log(response))
-     .catch(console.error)
-   ```
-
-   This example will perform a GET request to `/endpoint` of the API and will use the provided authId to authenticate the request.
-
-## Documentation
-
-Guides, tutorials and references are all available on the [Docs](/docs).
-
-## Examples
-
-We have several examples [in the docs](/docs/examples.md) with different APIs. Here is the first one to get you started:
-
-```js
-const pizzly = new Pizzly({ host: 'pizzly.example.org' }) // Initialize Pizzly
-const github = pizzly.integration('github')
-
-github
-  .connect() // Connect to GitHub
-  .then(({ authId }) => console.log('Sucessfully connected! with the authId:', authId))
-  .catch((error) => console.error('It failed!', error))
+// Trigger an OAuth flow for the user to authenticate with Slack
+let result = await pizzly.auth('slack', '<user-id>')
 ```
 
-This example will trigger an OAuth dance to the GitHub API.
+Then **get and use the current access token in your backend** (with our SDK or a simple REST API):
 
-💡 You'll notice that when a user is successfully connected, we received an `authId`; it's a power concept introduced by Pizzly. The `authId` acts as a reference to the OAuth payload (i.e. the `access_token` and `refresh_token`). While the `access_token` and `refresh_token` expire and/or change over time, the `authId` is always the same. Think of it as something like a user identity.
+```ts
+var slackAccessToken = await pizzly.accessToken('slack', '<user-id>') // Always fresh & ready to use
+```
 
-## Supported APIs
-
-[![Some pre-configured APIs with Pizzly](/views/assets/img/docs/pizzly-preconfigured-apis.jpg)](/docs/supported-apis.md)
+## 👾 Out of the box support for 50+ APIs
 
 More than 50 APIs are preconfigured to work out-of-the-box. Including:
 
-- **Communication**: Gmail, Microsoft Teams, Slack, Zoom;
 - **CRM**: Front, Hubspot, Salesforce, etc.
-- **Developer tools**: BitBucket, GitHub, GitLab, etc.
-- **Finance**: Xero, Sellsy, Zoho Books, etc.
-- **Productivity**: Asana, Google Drive, Google Sheets, Jira, Trello, etc.
-- **Social**: Facebook, LinkedIn, Reddit, etc.
-- **[and more...](/docs/supported-apis.md)**
+- **Accounting**: Xero, Sellsy, Zoho Books, etc.
+- **Developer tools**: GitHub, GitLab, BitBucket, Jira etc.
+- **Communication**: Gmail, Microsoft Teams, Slack, Zoom etc.
+- **Productivity**: Asana, Airtable, Google Drive, Google Calendar, Trello, Google sheets etc.
+- **Social**: Twitter, LinkedIn, Reddit, Facebook etc.
+- [and more...](https://github.com/NangoHQ/Pizzly/blob/master/packages/server/templates.yaml)
 
-Each API consists of a JSON configuration file, stored within the `/integrations` directory. Here's an example with the GitHub configuration file ([`/integrations/github.json`](/integrations/github.json)):
+If your favorite API is missing [open a GitHub issue](https://github.com/NangoHQ/Pizzly/issues/new) or [contribute it right away](https://docs.nango.dev/pizzly/contribute-api): The API configurations are just simple [entries in a YAML file](https://github.com/NangoHQ/Pizzly/blob/master/packages/server/templates.yaml).
 
-```json
-{
-  "name": "GitHub",
-  "auth": {
-    "authorizationURL": "https://github.com/login/oauth/authorize",
-    "tokenURL": "https://github.com/login/oauth/access_token",
-    "authType": "OAUTH2",
-    "tokenParams": {},
-    "authorizationParams": {},
-    "auth": { "accessType": "offline" }
-  },
-  "request": {
-    "baseURL": "https://api.github.com/",
-    "headers": {
-      "Accept": "application/vnd.github.v3+json",
-      "Authorization": "token ${auth.accessToken}",
-      "User-Agent": "Pizzly"
-    }
-  }
-}
+## 🛡️ Small, self-contained & ready for production
+
+We built Pizzly because we wanted a simple and fast way to get (fresh) access tokens for any API that requires OAuth.
+
+On purpose Pizzly is small, focused on its one task and easy to deploy in production:
+
+- It runs as a single docker container in your stack
+- Updating it is as simple as `docker pull` and restarting the container
+- Securing it for production is quick & easy
+- Our CLI helps you with all admin tasks (such as setting scopes, enabling APIs etc.)
+
+Last but not least, Pizzly's active community continuously expands & updates the 50+ blueprints. So your OAuth flows & tokens will keep on working even 5 years down the road.
+
+## 🚀 Quickstart
+
+Clone the repo and start Pizzly:
+
+```bash
+git clone https://github.com/NangoHQ/Pizzly.git
+cd Pizzly
+docker compose up
 ```
 
-And adding new APIs is straightforward. Just create a new configuration file within the `/integrations` folder of your Pizzly's instance. If you feel like sharing, you can even create a PR so that other developers will be able to use it as well!
+Make sure you have a client ID & secret ready for the API you want to use, e.g. for GitHub [register it here](https://docs.github.com/en/developers/apps/building-oauth-apps/creating-an-oauth-app). Use `http://localhost:3004/oauth/callback` as the callback URL.
 
-## Why Pizzly?
+Enable the GitHub API and add your OAuth client id & secret with the CLI:
 
-Pizzly originally started at Bearer as a way to simplify the developer's journey and ease the building of API integrations. OAuth is a great framework, but the difficulty and wide range of implementation makes it painful to use and tends to slow down the ability to integrate with new APIs.
+```bash
+npx pizzly config:create github github <client-id> <client-secret> "user,public_repo"
+```
 
-_But seriously, why Pizzly? We're fan of bears and fell in love with this [sweet hybrid](https://en.wikipedia.org/wiki/Grizzly–polar_bear_hybrid) one 🐻_
- 
-## Contributing
+CD to the demo page and start a small webserver to serve the demo page:
 
-While Pizzly is actively backed by Bearer's engineering team, the main purpose of this repository is to continue to improve Pizzly, making it larger and easier to use. We are grateful to each contributors and encourage you to participate by reporting bugs, ask for improvements and propose changes to the code.
+```bash
+cd packages/frontend
+python3 -m http.server 8080
+```
 
-### Covenant Code of Conduct
+Open the demo page in your browser at [http://localhost:8080/bin/sample.html](http://localhost:8080/bin/sample.html) and try the OAuth flow with `github` as the config key and `1` as the connection id.
 
-Pizzly has adopted the Contributor Covenant Code of Conduct (version 2.0), available at https://www.contributor-covenant.org/version/2/0/code_of_conduct.html. We expect project participants to adhere to.
+Once the flow is finished you can use our SDKs or REST API to get access tokens in the backend (automatically refreshed) and make API calls:
+```ts
+import Pizzly from '@nangohq/pizzly-node'
+let pizzly = new Pizzly('http://localhost:3004');
+var githubAccessToken = await pizzly.accessToken('github', '1') // Always fresh & ready to use
+```
 
-### Contributing Guide
+When you are ready to add Pizzly to your application read our [Getting started](https://docs.nango.dev/pizzly/getting-started) guide.
 
-All work on Pizzly happens directly on [GitHub](https://github.com/bearer/pizzly). Both Bearer.sh team members and external contributors send pull requests which go through the same review process. Submit all changes directly to the [`master branch`](https://github.com/bearer/pizzly/tree/master). We don’t use separate branches for development or for upcoming releases.
+## ♻️ Easily sync data with Nango.Sync
 
-To report a bug or a feedback, use [GitHub Issues](https://github.com/bearer/pizzly/issues). We keep a close eye on this and try to label each new request. If you're fixing a bug or working on a new feature, submit a [pull request](https://github.com/Bearer/Pizzly/pulls) with detail on which changes you've made.
+Pizzly gets you OAuth tokens so you can start making API calls.
 
-While there are no templates yet when opening a PR or an issue, we still recommend to provide as much detail as possible. Consider that someone external to the project should understand your request at first glance.
+If you need to continuously sync data from the external API (e.g. syncing in contacts, users, notes, tasks, issues, repos etc.) take a look at our sister project [Nango.Sync](https://github.com/NangoHQ/nango) (works with Pizzly tokens out of the box):
 
-### License
+```ts
+Nango.sync('https://any.rest.api/any/endpoint', options) // Sync data from endpoint to your DB & keep it fresh
+```
 
-Pizzly is MIT licensed. See the [LICENSE file](https://github.com/Bearer/Pizzly/blob/master/LICENSE.md) for more information.
+Nango make syncing data from APIs to your database fast & flexible: It takes care of all the heavy lifting whilst giving you access to the full power of the API.
 
-## Sponsor
+## 🔍 Where to learn more
 
-Pizzly is proudly sponsored by Bearer, a solution to implement [data security as code](https://www.bearer.com) processes in developers' workflows and automate data detection and data flow mapping.
+⭐  Follow our development by starring us here on GitHub ⭐
+
+- Explore [the full list of supported APIs](https://github.com/NangoHQ/Pizzly/blob/master/packages/server/templates.yaml)
+- Easily sync data from any API with [`Nango.sync`](https://github.com/NangoHQ/nango)
+- [Contribute a new API](https://docs.nango.dev/pizzly/contribute-api)
+- Share feedback or ask questions on the [Slack community](https://nango.dev/slack)
+- Check our [blog on native integrations](https://www.nango.dev/blog)
+
+## 🐻 History
+
+Pizzly was originally developed by the team at [Bearer](https://www.bearer.com/?ref=pizzly) with contributions of more than 40+ individuals. Over time the focus of Bearer shifted and they could no longer maintain Pizzly. In late 2022 the team at [Nango](https://www.nango.dev) adopted the project and has since maintained and evolved it together with the growing Pizzly community.
