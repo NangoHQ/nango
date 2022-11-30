@@ -1,0 +1,31 @@
+version: '3.9'
+services:
+    pizzly-db:
+        image: postgres
+        container_name: nango-db
+        environment:
+            POSTGRES_PASSWORD: nango
+            POSTGRES_USER: nango
+            POSTGRES_DB: nango
+        ports:
+            - '5432:5432'
+        networks:
+            - nango
+
+    pizzly-server:
+        image: nangohq/pizzly-server
+        container_name: pizzly-server
+        restart: always
+        environment:
+            - SERVER_HOST=http://localhost
+            - SERVER_PORT=3004
+        env_file:
+            - .env
+        ports:
+            - '3004:3004'
+        depends_on:
+            - pizzly-db
+        networks:
+            - nango
+networks:
+    nango:

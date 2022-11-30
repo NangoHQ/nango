@@ -1,0 +1,23 @@
+{
+    "name": "pizzly",
+    "version": "0.3.5",
+    "description": "Pizzly's CLI tool.",
+    "type": "module",
+    "main": "dist/index.js",
+    "bin": "./dist/index.js",
+    "keywords": [],
+    "author": "bastien@nango.dev",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/NangoHQ/Pizzly",
+        "directory": "packages/cli"
+    },
+    "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
+    "dependencies": {
+        "axios": "^1.2.0",
+        "commander": "^9.4.0"
+    },
+    "engines": {
+        "node": ">=16.7"
+    }
+}

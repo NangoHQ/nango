@@ -1,0 +1,16 @@
+{
+    "name": "@nangohq/pizzly-frontend",
+    "version": "0.3.4",
+    "description": "Pizzly's frontend library for OAuth handling.",
+    "type": "module",
+    "main": "dist/index.js",
+    "keywords": [],
+    "author": "bastien@nango.dev",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/NangoHQ/Pizzly",
+        "directory": "packages/frontend"
+    },
+    "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
+    "dependencies": {}
+}

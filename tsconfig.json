@@ -1,17 +1,10 @@
 {
+  "extends": "@tsconfig/node18-strictest-esm/tsconfig.json",
   "compilerOptions": {
-    "target": "es2018",
-    "module": "commonjs",
-    "allowSyntheticDefaultImports": true,
-    "downlevelIteration": true,
-    "esModuleInterop": true,
-    "lib": ["es5", "es6", "dom", "es2015", "es2015.symbol", "esnext.asynciterable", "es2017", "dom"],
-    "noUnusedLocals": true,
-    "strictNullChecks": true,
-    "skipLibCheck": true,
-    "outDir": "dist/",
-    "resolveJsonModule": true
-  },
-  "include": ["src", "integrations"],
-  "exclude": ["src/clients/**/*", "**/*.test.*", "dist"]
+    //"incremental": true,
+    "declaration": true,
+    "sourceMap": true,
+    "composite": true,
+    "checkJs": false
+  }
 }

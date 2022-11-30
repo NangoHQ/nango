@@ -1,0 +1,47 @@
+# This file is provided by the package "node-editorconfig":
+#     https://github.com/webextensions/node-editorconfig
+#     https://www.npmjs.com/package/node-editorconfig
+#
+# To generate this file:
+#     $ npx node-editorconfig@latest
+#
+# To update this file:
+#     $ npx node-editorconfig@latest --overwrite
+#
+# References:
+#     http://editorconfig.org/ (Official Site)
+#     http://editorconfig.org/#download (Plugins)
+#     http://davidensinger.com/2013/07/why-i-use-editorconfig/ (Reference)
+#     https://github.com/eslint/eslint/blob/master/.editorconfig (Sample file)
+
+# No .editorconfig files above the root directory
+root = true
+
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_size = 4
+indent_style = space
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[{.babelrc,bower.json,nodemon.json,*.yml}]
+indent_size = 2
+
+[Makefile]
+indent_style = tab
+
+[{*.json,.node-version,.nvmrc,*.svg}]
+insert_final_newline = false
+
+[{*.markdown,*.md,*.mdown,*.mkd,*.mkdn,*.text}] # https://superuser.com/questions/249436/file-extension-for-markdown-files/285878#285878
+trim_trailing_whitespace = false                # https://stackoverflow.com/editing-help#linebreaks
+
+[/node_modules/**] # Glob/minimatch pattern to match the "node_modules" directory at the project root
+charset = unset
+end_of_line = unset
+indent_size = unset
+indent_style = unset
+insert_final_newline = false
+trim_trailing_whitespace = false

@@ -1,0 +1,142 @@
+asana:
+    auth_mode: OAUTH2
+    authorization_url: https://app.asana.com/-/oauth_authorize
+    token_url: https://app.asana.com/-/oauth_token
+    token_params:
+        grant_type: authorization_code
+    auth:
+        response_type: code
+discord:
+    auth_mode: OAUTH2
+    authorization_url: https://discord.com/api/oauth2/authorize
+    token_url: https://discord.com/api/oauth2/token
+    authorization_params:
+        response_type: code
+dropbox:
+    auth_mode: OAUTH2
+    authorization_url: https://www.dropbox.com/oauth2/authorize
+    token_url: https://api.dropboxapi.com/oauth2/token
+freshbooks:
+    auth_mode: OAUTH2
+    authorization_url: https://auth.freshbooks.com/oauth/authorize
+    token_url: https://api.freshbooks.com/auth/oauth/token
+    authorization_params:
+        response_type: code
+github:
+    auth_mode: OAUTH2
+    authorization_url: https://github.com/login/oauth/authorize
+    token_url: https://github.com/login/oauth/access_token
+gitlab:
+    auth_mode: OAUTH2
+    authorization_url: https://gitlab.com/oauth/authorize
+    token_url: https://gitlab.com/oauth/token
+    authorization_params:
+        response_type: code
+google-calendar:
+    auth_mode: OAUTH2
+    authorization_url: https://accounts.google.com/o/oauth2/v2/auth
+    token_url: https://oauth2.googleapis.com/token
+    authorization_params:
+        response_type: code
+        access_type: offline
+google-mail:
+    auth_mode: OAUTH2
+    authorization_url: https://accounts.google.com/o/oauth2/v2/auth
+    token_url: https://oauth2.googleapis.com/token
+    authorization_params:
+        response_type: code
+        access_type: offline
+greenhouse:
+    auth_mode: OAUTH2
+    authorization_url: https://api.greenhouse.io/oauth/authorize
+    token_url: https://api.greenhouse.io/oauth/token
+hubspot:
+    auth_mode: OAUTH2
+    authorization_url: https://app.hubspot.com/oauth/authorize
+    token_url: https://api.hubapi.com/oauth/v1/token
+intercom:
+    auth_mode: OAUTH2
+    authorization_url: https://app.intercom.io/oauth
+    token_url: https://api.intercom.io/auth/eagle/token
+intuit:
+    auth_mode: OAUTH2
+    authorization_url: https://appcenter.intuit.com/connect/oauth2
+    token_url: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+jira:
+    auth_mode: OAUTH2
+    authorization_url: https://auth.atlassian.com/authorize
+    token_url: https://auth.atlassian.com/oauth/token
+lever:
+    auth_mode: OAUTH2
+    authorization_url: https://auth.lever.co/authorize
+    token_url: https://auth.lever.co/oauth/token
+    authorization_params:
+        response_type: code
+        prompt: consent
+        audience: https://api.lever.co/v1
+microsoft-teams:
+    auth_mode: OAUTH2
+    authorization_url: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
+    token_url: https://login.microsoftonline.com/common/oauth2/v2.0/token
+    authorization_params:
+        response_type: code
+        response_mode: query
+monday:
+    auth_mode: OAUTH2
+    authorization_url: https://auth.monday.com/oauth2/authorize
+    token_url: https://auth.monday.com/oauth2/token
+notion:
+    auth_mode: OAUTH2
+    authorization_url: https://api.notion.com/v1/oauth/authorize
+    token_url: https://api.notion.com/v1/oauth/token
+    authorization_params:
+        response_type: code
+        owner: user
+outreach:
+    auth_mode: OAUTH2
+    authorization_url: https://api.outreach.io/oauth/authorize
+    token_url: https://api.outreach.io/oauth/token
+salesloft:
+    auth_mode: OAUTH2
+    authorization_url: https://accounts.salesloft.com/oauth/authorize
+    token_url: https://accounts.salesloft.com/oauth/token
+slack:
+    auth_mode: OAUTH2
+    authorization_url: https://slack.com/oauth/v2/authorize
+    token_url: https://slack.com/api/oauth.v2.access
+trello:
+    auth_mode: OAUTH1
+    request_url: https://trello.com/1/OAuthGetRequestToken
+    authorization_url: https://trello.com/1/OAuthAuthorizeToken
+    token_url: https://trello.com/1/OAuthGetAccessToken
+    signature_method: 'HMAC-SHA1'
+    scope_separator: ','
+    authorization_params:
+        expiration: never
+twitter:
+    auth_mode: OAUTH1
+    request_url: https://api.twitter.com/oauth/request_token
+    authorization_url: https://api.twitter.com/oauth/authorize
+    token_url: https://api.twitter.com/oauth/access_token
+    signature_method: 'HMAC-SHA1'
+    request_params:
+        x_auth_access_type: write
+xero:
+    auth_mode: OAUTH2
+    authorization_url: https://login.xero.com/identity/connect/authorize
+    token_url: https://identity.xero.com/connect/token
+    authorization_params:
+        response_type: code
+zoho-crm:
+    auth_mode: OAUTH2
+    authorization_url: https://accounts.zoho.com/oauth/v2/auth
+    token_url: https://accounts.zoho.com/oauth/v2/token
+    authorization_params:
+        response_type: code
+        access_type: offline
+zoom:
+    auth_mode: OAUTH2
+    authorization_url: https://zoom.us/oauth/authorize
+    token_url: https://zoom.us/oauth/token
+    authorization_params:
+        response_type: code
