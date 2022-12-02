@@ -6,6 +6,10 @@ asana:
         grant_type: authorization_code
     auth:
         response_type: code
+bitbucket:
+    auth_mode: OAUTH2
+    authorization_url: https://bitbucket.org/site/oauth2/authorize
+    token_url: https://bitbucket.org/site/oauth2/access_token
 discord:
     auth_mode: OAUTH2
     authorization_url: https://discord.com/api/oauth2/authorize
@@ -16,12 +20,20 @@ dropbox:
     auth_mode: OAUTH2
     authorization_url: https://www.dropbox.com/oauth2/authorize
     token_url: https://api.dropboxapi.com/oauth2/token
+facebook:
+    auth_mode: OAUTH2
+    authorization_url: https://www.facebook.com/v15.0/dialog/oauth
+    token_url: https://graph.facebook.com/v15.0/oauth/access_token
 freshbooks:
     auth_mode: OAUTH2
     authorization_url: https://auth.freshbooks.com/oauth/authorize
     token_url: https://api.freshbooks.com/auth/oauth/token
     authorization_params:
         response_type: code
+front:
+    auth_mode: OAUTH2
+    authorization_url: https://app.frontapp.com/oauth/authorize
+    token_url: https://app.frontapp.com/oauth/token
 github:
     auth_mode: OAUTH2
     authorization_url: https://github.com/login/oauth/authorize
@@ -74,6 +86,10 @@ lever:
         response_type: code
         prompt: consent
         audience: https://api.lever.co/v1
+linkedin:
+    auth_mode: OAUTH2
+    authorization_url: https://www.linkedin.com/oauth/v2/authorization
+    token_url: https://www.linkedin.com/oauth/v2/accessToken
 microsoft-teams:
     auth_mode: OAUTH2
     authorization_url: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
@@ -96,6 +112,29 @@ outreach:
     auth_mode: OAUTH2
     authorization_url: https://api.outreach.io/oauth/authorize
     token_url: https://api.outreach.io/oauth/token
+pagerduty:
+    auth_mode: OAUTH2
+    authorization_url: https://app.pagerduty.com/oauth/authorize
+    token_url: https://app.pagerduty.com/oauth/token
+pipedrive:
+    auth_mode: OAUTH2
+    authorization_url: https://oauth.pipedrive.com/oauth/authorize
+    token_url: https://oauth.pipedrive.com/oauth/token
+quickbooks:
+    auth_mode: OAUTH2
+    authorization_url: https://appcenter.intuit.com/connect/oauth2
+    token_url: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+reddit:
+    auth_mode: OAUTH2
+    authorization_url: https://www.reddit.com/api/v1/authorize
+    token_url: https://www.reddit.com/api/v1/access_token
+    authorization_method: header
+sage:
+    auth_mode: OAUTH2
+    authorization_url: https://www.sageone.com/oauth2/auth/central
+    token_url: https://oauth.accounting.sage.com/token
+    authorization_params:
+        filter: apiv3.1
 salesloft:
     auth_mode: OAUTH2
     authorization_url: https://accounts.salesloft.com/oauth/authorize
@@ -104,6 +143,10 @@ slack:
     auth_mode: OAUTH2
     authorization_url: https://slack.com/oauth/v2/authorize
     token_url: https://slack.com/api/oauth.v2.access
+splitwise:
+    auth_mode: OAUTH2
+    authorization_url: https://secure.splitwise.com/oauth/authorize
+    token_url: https://secure.splitwise.com/oauth/token
 trello:
     auth_mode: OAUTH1
     request_url: https://trello.com/1/OAuthGetRequestToken
@@ -133,6 +176,20 @@ zoho-crm:
     token_url: https://accounts.zoho.com/oauth/v2/token
     authorization_params:
         response_type: code
+        access_type: offline
+zoho-invoice:
+    auth_mode: OAUTH2
+    authorization_url: https://accounts.zoho.com/oauth/v2/auth
+    token_url: https://accounts.zoho.com/oauth/v2/token
+    authorization_params:
+        prompt: consent
+        access_type: offline
+zoho-books:
+    auth_mode: OAUTH2
+    authorization_url: https://accounts.zoho.com/oauth/v2/auth
+    token_url: https://accounts.zoho.com/oauth/v2/token
+    authorization_params:
+        prompt: consent
         access_type: offline
 zoom:
     auth_mode: OAUTH2
