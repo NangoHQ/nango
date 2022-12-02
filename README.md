@@ -16,13 +16,13 @@ Pizzly takes care of the OAuth dance for you and makes sure your access tokens a
 
 <p align="center">
     <br />
-    <a href="https://docs.nango.dev" rel="dofollow"><strong>Explore the docs »</strong></a>
+    <a href="https://docs.nango.dev/pizzly" rel="dofollow"><strong>Explore the docs »</strong></a>
     <br />
 
   <br/>
-    <a href="https://docs.nango.dev/">All supported APIs</a>
+    <a href="https://github.com/NangoHQ/Pizzly/blob/master/packages/server/templates.yaml">All supported APIs</a>
     ·
-    <a href="https://github.com/nangohq/nango/issues">Contribute an API</a>
+    <a href="https://docs.nango.dev/pizzly/contribute-api">Contribute an API</a>
     ·
     <a href="https://github.com/nangohq/nango/issues">Report Bug</a>
     ·
