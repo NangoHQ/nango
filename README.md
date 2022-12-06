@@ -63,9 +63,9 @@ More than 50 APIs are preconfigured to work out-of-the-box. Including:
 
 - **CRM**: Front, Hubspot, Salesforce, etc.
 - **Accounting**: Xero, Sellsy, Zoho Books, etc.
-- **Developer tools**: GitHub, GitLab, BitBucket, Jira etc.
+- **Developer tools**: GitHub, GitLab, Linear, Jira etc.
 - **Communication**: Gmail, Microsoft Teams, Slack, Zoom etc.
-- **Productivity**: Asana, Airtable, Google Drive, Google Calendar, Trello, Google sheets etc.
+- **Productivity**: Asana, Airtable, Google Drive, Google Calendar, Trello, Google sheets, ClickUp etc.
 - **Social**: Twitter, LinkedIn, Reddit, Facebook etc.
 - [and more...](https://github.com/NangoHQ/Pizzly/blob/master/packages/server/templates.yaml)
 
