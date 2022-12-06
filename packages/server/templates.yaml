@@ -10,6 +10,10 @@ bitbucket:
     auth_mode: OAUTH2
     authorization_url: https://bitbucket.org/site/oauth2/authorize
     token_url: https://bitbucket.org/site/oauth2/access_token
+clickup:
+    auth_mode: OAUTH2
+    authorization_url: https://app.clickup.com/api
+    token_url: https://api.clickup.com/api/v2/oauth/token
 discord:
     auth_mode: OAUTH2
     authorization_url: https://discord.com/api/oauth2/authorize
@@ -86,6 +90,13 @@ lever:
         response_type: code
         prompt: consent
         audience: https://api.lever.co/v1
+linear:
+    auth_mode: OAUTH2
+    authorization_url: https://linear.app/oauth/authorize
+    token_url: https://api.linear.app/oauth/token
+    scope_separator: ','
+    authorization_params:
+        prompt: consent
 linkedin:
     auth_mode: OAUTH2
     authorization_url: https://www.linkedin.com/oauth/v2/authorization
