@@ -140,6 +140,8 @@ reddit:
     authorization_url: https://www.reddit.com/api/v1/authorize
     token_url: https://www.reddit.com/api/v1/access_token
     authorization_method: header
+    authorization_params:
+        duration: permanent
 sage:
     auth_mode: OAUTH2
     authorization_url: https://www.sageone.com/oauth2/auth/central
