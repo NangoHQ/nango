@@ -113,7 +113,7 @@ Open the demo page in your browser at [http://localhost:8080/bin/sample.html](ht
 
 Once the flow is finished you can use our SDKs or REST API to get access tokens in the backend (automatically refreshed) and make API calls:
 ```ts
-import Pizzly from '@nangohq/pizzly-node'
+import { Pizzly } from '@nangohq/pizzly-node'
 let pizzly = new Pizzly('http://localhost:3004');
 var githubAccessToken = await pizzly.accessToken('github', '1') // Always fresh & ready to use
 ```
