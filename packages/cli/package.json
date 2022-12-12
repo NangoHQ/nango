@@ -19,5 +19,10 @@
     },
     "engines": {
         "node": ">=16.7"
-    }
+    },
+    "files": [
+        "dist/**/*",
+        "!**/*.json",
+        "README.md"
+    ]
 }

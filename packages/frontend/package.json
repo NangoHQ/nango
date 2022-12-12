@@ -12,5 +12,10 @@
         "directory": "packages/frontend"
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
-    "dependencies": {}
+    "dependencies": {},
+    "files": [
+        "dist/**/*",
+        "!**/*.json",
+        "README.md"
+    ]
 }
