@@ -12,7 +12,7 @@ const program = new Command();
 
 let hostport = process.env['PIZZLY_HOSTPORT'] || 'http://localhost:3004';
 
-// Test from the package rool (/packages/cli) with 'node dist/index.js'
+// Test from the package root (/packages/cli) with 'node dist/index.js'
 program
     .name('pizzly')
     .description(
@@ -25,7 +25,7 @@ program
     .action(async () => {
         let url = path.join(hostport, '/config');
         await axios
-            .get(url)
+            .get(url, { headers: enrichHeaders() })
             .then((res) => {
                 console.log('\n\nHere is the list of provider configuraitons:\n\n');
                 console.log(res.data);
@@ -42,7 +42,7 @@ program
     .action(async (provider_config_key) => {
         let url = path.join(hostport, `/config/${provider_config_key}`);
         await axios
-            .get(url)
+            .get(url, { headers: enrichHeaders() })
             .then((res) => {
                 console.log('\n\nHere is the requested provider configuration:\n\n');
                 console.log(res.data);
@@ -74,7 +74,7 @@ program
 
         let url = path.join(hostport, `/config`);
         await axios
-            .post(url, body)
+            .post(url, body, { headers: enrichHeaders() })
             .then((_) => {
                 console.log('\n\n✅ Successfully created a new provider configuration!\n\n');
             })
@@ -105,7 +105,7 @@ program
 
         let url = path.join(hostport, `/config`);
         await axios
-            .put(url, body)
+            .put(url, body, { headers: enrichHeaders() })
             .then((_) => {
                 console.log('\n\n✅ Successfully edited an existing provider configuration!\n\n');
             })
@@ -121,7 +121,7 @@ program
     .action(async (provider_config_key) => {
         let url = path.join(hostport, `/config/${provider_config_key}`);
         await axios
-            .delete(url)
+            .delete(url, { headers: enrichHeaders() })
             .then((_) => {
                 console.log('\n\n✅ Successfully a deleted provider configuration!\n\n');
             })
@@ -138,7 +138,7 @@ program
     .action(async (connection_id, provider_config_key) => {
         let url = path.join(hostport, `/connection/${connection_id}`);
         await axios
-            .get(url, { params: { provider_config_key: provider_config_key } })
+            .get(url, { params: { provider_config_key: provider_config_key }, headers: enrichHeaders() })
             .then((res) => {
                 console.log('\n\nHere is the requested connection with credentials:\n\n');
                 console.log(res.data.credentials);
@@ -149,3 +149,11 @@ program
     });
 
 program.parseAsync(process.argv);
+
+function enrichHeaders(headers: Record<string, string | number | boolean> = {}) {
+    if (process.env['PIZZLY_SECRET_KEY'] != null) {
+        headers['Authorization'] = 'Basic ' + Buffer.from(process.env['PIZZLY_SECRET_KEY'] + ':').toString('base64');
+    }
+
+    return headers;
+}
