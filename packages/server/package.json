@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/pizzly-server",
-    "version": "0.3.6",
+    "version": "0.3.7",
     "description": "Pizzly's server.",
     "type": "module",
     "main": "dist/server.js",
