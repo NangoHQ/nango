@@ -5,10 +5,12 @@
 export default class Pizzly {
     private hostBaseUrl: string;
     private status: AuthorizationStatus;
+    private publishableKey: string;
 
-    constructor(hostBaseUrl: string) {
+    constructor(hostBaseUrl: string, publishableKey: string) {
         this.hostBaseUrl = hostBaseUrl;
         this.status = AuthorizationStatus.IDLE;
+        this.publishableKey = publishableKey;
 
         if (!window) {
             const errorMessage = "Couldn't initialize Pizzly frontend. The window object is undefined. Are you using Pizzly frontend from a browser?";
@@ -17,7 +19,7 @@ export default class Pizzly {
     }
 
     public auth(providerConfigKey: string, connectionId: string): Promise<any> {
-        const url = new URL(`/oauth/connect/${providerConfigKey}?connection_id=${connectionId}`, this.hostBaseUrl).href;
+        const url = new URL(`/oauth/connect/${providerConfigKey}?connection_id=${connectionId}&pizzly_pkey=${this.publishableKey}`, this.hostBaseUrl).href;
 
         return new Promise((resolve, reject) => {
             const handler = (e?: MessageEvent) => {

@@ -7,7 +7,7 @@ import { ProviderConfig, ProviderTemplate, Connection, ProviderAuthModes } from 
 class ConnectionController {
     templates: { [key: string]: ProviderTemplate } = configService.getTemplates();
 
-    async getConnectionCredentials(req: Request, res: Response, next: NextFunction) {
+    async getConnectionCreds(req: Request, res: Response, next: NextFunction) {
         try {
             let connectionId = req.params['connectionId'] as string;
             let providerConfigKey = req.query['provider_config_key'] as string;
