@@ -5,8 +5,10 @@ export function getPort() {
 }
 
 export function getOauthCallbackUrl() {
-    let port = getPort();
-    return (process.env['SERVER_HOST'] || 'http://localhost') + `:${port}` + '/oauth/callback';
+    return (
+        process.env['AUTH_CALLBACK_URL'] ||
+        ((process.env['SERVER_HOST'] || 'http://localhost') + `:${getPort()}` + '/oauth/callback')
+    );
 }
 
 // A helper function to interpolate a string.
