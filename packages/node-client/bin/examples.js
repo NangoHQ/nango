@@ -1,8 +1,8 @@
 import { Pizzly } from '../dist/index.js';
 
-let pizzly = new Pizzly('http://localhost:3004', '36a49164-c5d5-4df2-995a-0d2dfa07e406');
+let pizzly = new Pizzly('http://localhost:3004');
 pizzly
-    .accessToken('trello', 123)
+    .accessToken('hubspot', 1)
     .then((creds) => {
         console.log(creds);
     })
