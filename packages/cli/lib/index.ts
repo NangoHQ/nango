@@ -10,13 +10,13 @@ import path from 'path';
 
 const program = new Command();
 
-let hostport = process.env['PIZZLY_HOSTPORT'] || 'http://localhost:3004';
+let hostport = process.env['PIZZLY_HOSTPORT'] || 'http://localhost:3003';
 
 // Test from the package root (/packages/cli) with 'node dist/index.js'
 program
     .name('pizzly')
     .description(
-        "A CLI tool to configure Pizzly.\n\n IMPORTANT: You need to set the PIZZLY_HOSTPORT environment variable if Pizzly Server doesn't run on http://localhost:3004."
+        "A CLI tool to configure Pizzly.\n\n IMPORTANT: You need to set the PIZZLY_HOSTPORT environment variable if Pizzly Server doesn't run on http://localhost:3003."
     );
 
 program
@@ -58,7 +58,7 @@ program
     .argument('<provider_config_key>', 'The unique key of the provider configuration (choose a friendly name, e.g. hubspot_staging).')
     .argument(
         '<provider>',
-        'The provider of the 3rd-party API, must match the template keys in https://github.com/NangoHQ/Pizzly/tree/main/packages/server/templates.yaml (e.g. hubspot).'
+        'The provider of the 3rd-party API, must match the template keys in nango.dev/oauth-providers (e.g. hubspot).'
     )
     .argument('<oauth_client_id>', 'The OAuth Client ID obtained from the API provider.')
     .argument('<oauth_client_secret>', 'The OAuth Client Secret obtained from the API provider.')
@@ -89,7 +89,7 @@ program
     .argument('<provider_config_key>', 'The unique key of the provider configuration (choose a friendly name, e.g. hubspot_staging).')
     .argument(
         '<provider>',
-        'The provider of the 3rd-party API, must match the template keys in https://github.com/NangoHQ/Pizzly/tree/main/packages/server/templates.yaml (e.g. hubspot).'
+        'The provider of the 3rd-party API, must match the template keys in nango.dev/oauth-providers (e.g. hubspot).'
     )
     .argument('<oauth_client_id>', 'The OAuth Client ID obtained from the API provider.')
     .argument('<oauth_client_secret>', 'The OAuth Client Secret obtained from the API provider.')

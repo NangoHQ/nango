@@ -78,6 +78,8 @@ class OAuthController {
                 return html(logger, res, providerConfigKey, connectionId, 'provider_config_err', this.errDesc['provider_config_err'](providerConfigKey));
             }
 
+            logger.info(`OAuth request - mode: ${template.auth_mode}, provider: ${config.provider}, key: ${config.unique_key}, connection ID: ${connectionId}, auth URL: ${template.authorization_url}, callback URL: ${this.callbackUrl}`);
+
             if (template.auth_mode === ProviderAuthModes.OAuth2) {
                 return this.oauth2Request(template, config, session, res);
             } else if (template.auth_mode === ProviderAuthModes.OAuth1) {
@@ -172,12 +174,14 @@ class OAuthController {
             logger.debug(`Received callback for ${session.providerConfigKey} (connection: ${session.connectionId}) - full callback URI: ${req.originalUrl}"`);
 
             const template = this.templates[session.provider]!;
-            const config = await configService.getProviderConfig(session.providerConfigKey);
+            const config = (await configService.getProviderConfig(session.providerConfigKey))!;
+
+            logger.info(`OAuth callback - mode: ${template.auth_mode}, provider: ${config.provider}, key: ${config.unique_key}, connection ID: ${session.connectionId}`);
 
             if (session.authMode === ProviderAuthModes.OAuth2) {
-                return this.oauth2Callback(template, config!, session, req, res);
+                return this.oauth2Callback(template, config, session, req, res);
             } else if (session.authMode === ProviderAuthModes.OAuth1) {
-                return this.oauth1Callback(template, config!, session, req, res);
+                return this.oauth1Callback(template, config, session, req, res);
             }
 
             return html(logger, res, session.providerConfigKey, session.connectionId, 'auth_mode_err', this.errDesc['auth_mode_err'](session.authMode));
