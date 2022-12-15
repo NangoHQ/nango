@@ -1,0 +1,22 @@
+name: Pizzly Build
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  nango_build_job:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [19.x]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm install
+      - run: npm run build
