@@ -4,6 +4,7 @@ ENV SERVER_RUN_MODE=DOCKERIZED
 
 WORKDIR /usr/pizzly-server/src
 
+COPY packages/auth/ packages/auth/
 COPY packages/server/ packages/server/
 COPY package*.json ./
 
