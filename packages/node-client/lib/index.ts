@@ -5,7 +5,7 @@ export class Pizzly {
     secretKey: string;
 
     constructor(serverUrl?: string, secretKey = '') {
-        this.serverUrl = serverUrl || 'http://localhost:3004';
+        this.serverUrl = serverUrl || 'http://localhost:3003';
         this.secretKey = secretKey;
     }
 

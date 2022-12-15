@@ -1,14 +1,25 @@
 import type winston from 'winston';
+import { fileURLToPath } from 'url';
+import path from 'path';
+
+export function dirname() {
+    return path.dirname(fileURLToPath(import.meta.url));
+}
 
 export function getPort() {
-    return process.env['SERVER_PORT'] != null ? +process.env['SERVER_PORT'] : 3004;
+    return process.env['SERVER_PORT'] != null ? +process.env['SERVER_PORT'] : 3003;
+}
+
+export function getHost() {
+    return process.env['SERVER_HOST'] || 'http://localhost';
+}
+
+export function getBaseUrl() {
+    return getHost() + `:${getPort()}`;
 }
 
 export function getOauthCallbackUrl() {
-    return (
-        process.env['AUTH_CALLBACK_URL'] ||
-        ((process.env['SERVER_HOST'] || 'http://localhost') + `:${getPort()}` + '/oauth/callback')
-    );
+    return process.env['AUTH_CALLBACK_URL'] || (getBaseUrl() + '/oauth/callback');
 }
 
 // A helper function to interpolate a string.

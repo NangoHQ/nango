@@ -20,7 +20,7 @@ Pizzly takes care of the OAuth dance for you and makes sure your access tokens a
     <br />
 
   <br/>
-    <a href="https://github.com/NangoHQ/Pizzly/blob/master/packages/server/templates.yaml">All supported APIs</a>
+    <a href="nango.dev/oauth-providers">All supported APIs</a>
     ·
     <a href="https://docs.nango.dev/pizzly/contribute-api">Contribute an API</a>
     ·
@@ -45,7 +45,7 @@ Pizzly is easy to try in 5 minutes and can be deployed in 15.
 Start a **new OAuth flow with 2 lines of code in your frontend**:
 
 ```ts
-var pizzly = new Pizzly('https://localhost:3004')
+var pizzly = new Pizzly('https://localhost:3003')
 
 // Trigger an OAuth flow for the user to authenticate with Slack
 let result = await pizzly.auth('slack', '<user-id>')
@@ -67,9 +67,9 @@ More than 50 APIs are preconfigured to work out-of-the-box. Including:
 - **Communication**: Gmail, Microsoft Teams, Slack, Zoom etc.
 - **Productivity**: Asana, Airtable, Google Drive, Google Calendar, Trello, Google sheets, ClickUp etc.
 - **Social**: Twitter, LinkedIn, Reddit, Facebook etc.
-- [and more...](https://github.com/NangoHQ/Pizzly/blob/master/packages/server/templates.yaml)
+- [and more...](nango.dev/oauth-providers)
 
-If your favorite API is missing [open a GitHub issue](https://github.com/NangoHQ/Pizzly/issues/new) or [contribute it right away](https://docs.nango.dev/pizzly/contribute-api): The API configurations are just simple [entries in a YAML file](https://github.com/NangoHQ/Pizzly/blob/master/packages/server/templates.yaml).
+If your favorite API is missing [open a GitHub issue](https://github.com/NangoHQ/Pizzly/issues/new) or [contribute it right away](https://docs.nango.dev/pizzly/contribute-api): The API configurations are just simple [entries in a YAML file](nango.dev/oauth-providers).
 
 ## 🛡️ Small, self-contained & ready for production
 
@@ -94,7 +94,7 @@ cd Pizzly
 docker compose up
 ```
 
-Make sure you have a client ID & secret ready for the API you want to use, e.g. for GitHub [register it here](https://docs.github.com/en/developers/apps/building-oauth-apps/creating-an-oauth-app). Use `http://localhost:3004/oauth/callback` as the callback URL.
+Make sure you have a client ID & secret ready for the API you want to use, e.g. for GitHub [register it here](https://docs.github.com/en/developers/apps/building-oauth-apps/creating-an-oauth-app). Use `http://localhost:3003/oauth/callback` as the callback URL.
 
 Enable the GitHub API and add your OAuth client id & secret with the CLI:
 
@@ -114,7 +114,7 @@ Open the demo page in your browser at [http://localhost:8080/bin/sample.html](ht
 Once the flow is finished you can use our SDKs or REST API to get access tokens in the backend (automatically refreshed) and make API calls:
 ```ts
 import { Pizzly } from '@nangohq/pizzly-node'
-let pizzly = new Pizzly('http://localhost:3004');
+let pizzly = new Pizzly('http://localhost:3003');
 var githubAccessToken = await pizzly.accessToken('github', '1') // Always fresh & ready to use
 ```
 
@@ -136,7 +136,7 @@ Nango make syncing data from APIs to your database fast & flexible: It takes car
 
 ⭐  Follow our development by starring us here on GitHub ⭐
 
-- Explore [the full list of supported APIs](https://github.com/NangoHQ/Pizzly/blob/master/packages/server/templates.yaml)
+- Explore [the full list of supported APIs](nango.dev/oauth-providers)
 - Easily sync data from any API with [`Nango.sync`](https://github.com/NangoHQ/nango)
 - [Contribute a new API](https://docs.nango.dev/pizzly/contribute-api)
 - Share feedback or ask questions on the [Slack community](https://nango.dev/slack)

@@ -2,14 +2,15 @@ import type { ProviderConfig, ProviderTemplate } from '../models.js';
 import db from '../db/database.js';
 import yaml from 'js-yaml';
 import fs from 'fs';
+import path from 'path';
+import { dirname } from '../utils/utils.js';
 
 class ConfigService {
     templates: { [key: string]: ProviderTemplate };
 
     constructor() {
-        this.templates = yaml.load(
-            fs.readFileSync(process.env['PIZZLY_SERVER_RUN_MODE'] ? './packages/server/templates.yaml' : './templates.yaml').toString()
-        ) as { string: ProviderTemplate };
+        let templatesPath = path.join(dirname(), '../../providers.yaml');
+        this.templates = yaml.load(fs.readFileSync(templatesPath).toString()) as { string: ProviderTemplate };
     }
 
     async getProviderConfig(providerConfigKey: string): Promise<ProviderConfig | null> {

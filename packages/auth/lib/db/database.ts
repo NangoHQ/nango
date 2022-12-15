@@ -14,7 +14,7 @@ class KnexDatabase {
     }
 
     schema() {
-        return process.env['PIZZLY_DB_SCHEMA'] || 'pizzly';
+        return 'pizzly';
     }
 }
 

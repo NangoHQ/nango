@@ -1,6 +1,6 @@
 import { Pizzly } from '../dist/index.js';
 
-let pizzly = new Pizzly('http://localhost:3004');
+let pizzly = new Pizzly('http://localhost:3003');
 pizzly
     .accessToken('hubspot', 1)
     .then((creds) => {

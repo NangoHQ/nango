@@ -45,7 +45,7 @@ Then open http://localhost:8000/bin/sample.html in your browser
                     var providerConfigKey = document.getElementById('providerConfigKey').value;
                     var connectionId = document.getElementById('connectionId').value;
 
-                    var pizzly = new Pizzly('http://localhost:3004');
+                    var pizzly = new Pizzly('http://localhost:3003');
                     pizzly
                         .auth(providerConfigKey, connectionId)
                         .then((result) => {
