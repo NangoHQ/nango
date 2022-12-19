@@ -20,7 +20,7 @@ Pizzly takes care of the OAuth dance for you and makes sure your access tokens a
     <br />
 
   <br/>
-    <a href="nango.dev/oauth-providers">All supported APIs</a>
+    <a href="https://www.nango.dev/oauth-providers">All supported APIs</a>
     ·
     <a href="https://docs.nango.dev/pizzly/contribute-api">Contribute an API</a>
     ·
@@ -67,9 +67,9 @@ More than 50 APIs are preconfigured to work out-of-the-box. Including:
 - **Communication**: Gmail, Microsoft Teams, Slack, Zoom etc.
 - **Productivity**: Asana, Airtable, Google Drive, Google Calendar, Trello, Google sheets, ClickUp etc.
 - **Social**: Twitter, LinkedIn, Reddit, Facebook etc.
-- [and more...](nango.dev/oauth-providers)
+- [and more...](https://www.nango.dev/oauth-providers)
 
-If your favorite API is missing [open a GitHub issue](https://github.com/NangoHQ/Pizzly/issues/new) or [contribute it right away](https://docs.nango.dev/pizzly/contribute-api): The API configurations are just simple [entries in a YAML file](nango.dev/oauth-providers).
+If your favorite API is missing [open a GitHub issue](https://github.com/NangoHQ/Pizzly/issues/new) or [contribute it right away](https://docs.nango.dev/pizzly/contribute-api): The API configurations are just simple [entries in a YAML file](https://www.nango.dev/oauth-providers).
 
 ## 🛡️ Small, self-contained & ready for production
 
@@ -136,7 +136,7 @@ Nango make syncing data from APIs to your database fast & flexible: It takes car
 
 ⭐  Follow our development by starring us here on GitHub ⭐
 
-- Explore [the full list of supported APIs](nango.dev/oauth-providers)
+- Explore [the full list of supported APIs](https://www.nango.dev/oauth-providers)
 - Easily sync data from any API with [`Nango.sync`](https://github.com/NangoHQ/nango)
 - [Contribute a new API](https://docs.nango.dev/pizzly/contribute-api)
 - Share feedback or ask questions on the [Slack community](https://nango.dev/slack)
