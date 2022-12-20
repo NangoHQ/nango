@@ -61,15 +61,25 @@ var slackAccessToken = await pizzly.accessToken('slack', '<user-id>'); // Always
 
 More than 50 APIs are preconfigured to work out-of-the-box. Including:
 
+<<<<<<< HEAD
+
 -   **CRM**: Front, Hubspot, Salesforce, etc.
 -   **Accounting**: Xero, Sellsy, Zoho Books, etc.
 -   **Developer tools**: GitHub, GitLab, Linear, Jira etc.
 -   **Communication**: Gmail, Microsoft Teams, Slack, Zoom etc.
 -   **Productivity**: Asana, Airtable, Google Drive, Google Calendar, Trello, Google sheets, ClickUp etc.
 -   **Social**: Twitter, LinkedIn, Reddit, Facebook etc.
--   [and more...](https://nango.dev/oauth-providers)
+-   # [and more...](https://nango.dev/oauth-providers)
+-   **CRM**: Front, Hubspot, Salesforce, etc.
+-   **Accounting**: Xero, Sellsy, Zoho Books, etc.
+-   **Developer tools**: GitHub, GitLab, Linear, Jira etc.
+-   **Communication**: Gmail, Microsoft Teams, Slack, Zoom etc.
+-   **Productivity**: Asana, Airtable, Google Drive, Google Calendar, Trello, Google sheets, ClickUp etc.
+-   **Social**: Twitter, LinkedIn, Reddit, Facebook etc.
+-   [and more...](https://www.nango.dev/oauth-providers)
+    > > > > > > > 698d272eec9e368e5cb6ee7b4ed986d35680f434
 
-If your favorite API is missing [open a GitHub issue](https://github.com/NangoHQ/Pizzly/issues/new) or [contribute it right away](https://docs.nango.dev/pizzly/contribute-api): The API configurations are just simple [entries in a YAML file](nango.dev/oauth-providers).
+If your favorite API is missing [open a GitHub issue](https://github.com/NangoHQ/Pizzly/issues/new) or [contribute it right away](https://docs.nango.dev/pizzly/contribute-api): The API configurations are just simple [entries in a YAML file](https://www.nango.dev/oauth-providers).
 
 ## 🛡️ Small, self-contained & ready for production
 
@@ -137,11 +147,19 @@ Nango make syncing data from APIs to your database fast & flexible: It takes car
 
 ⭐  Follow our development by starring us here on GitHub ⭐
 
+<<<<<<< HEAD
+
 -   Explore [the full list of supported APIs](https://nango.dev/oauth-providers)
 -   Easily sync data from any API with [`Nango.sync`](https://github.com/NangoHQ/nango)
 -   [Contribute a new API](https://docs.nango.dev/pizzly/contribute-api)
 -   Share feedback or ask questions on the [Slack community](https://nango.dev/slack)
+-   # Check our [blog on native integrations](https://www.nango.dev/blog)
+-   Explore [the full list of supported APIs](https://www.nango.dev/oauth-providers)
+-   Easily sync data from any API with [`Nango.sync`](https://github.com/NangoHQ/nango)
+-   [Contribute a new API](https://docs.nango.dev/pizzly/contribute-api)
+-   Share feedback or ask questions on the [Slack community](https://nango.dev/slack)
 -   Check our [blog on native integrations](https://www.nango.dev/blog)
+    > > > > > > > 698d272eec9e368e5cb6ee7b4ed986d35680f434
 
 ## 🐻 History
 
