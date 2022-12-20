@@ -56,10 +56,7 @@ program
     .command('config:create')
     .description('Create an provider configuration.')
     .argument('<provider_config_key>', 'The unique key of the provider configuration (choose a friendly name, e.g. hubspot_staging).')
-    .argument(
-        '<provider>',
-        'The provider of the 3rd-party API, must match the template keys in nango.dev/oauth-providers (e.g. hubspot).'
-    )
+    .argument('<provider>', 'The provider of the 3rd-party API, must match the template keys in https://nango.dev/oauth-providers (e.g. hubspot).')
     .argument('<oauth_client_id>', 'The OAuth Client ID obtained from the API provider.')
     .argument('<oauth_client_secret>', 'The OAuth Client Secret obtained from the API provider.')
     .argument('<oauth_scopes>', 'The OAuth Scopes obtained from the API provider (comma-separated).')
@@ -87,10 +84,7 @@ program
     .command('config:edit')
     .description('Edit an provider configuration.')
     .argument('<provider_config_key>', 'The unique key of the provider configuration (choose a friendly name, e.g. hubspot_staging).')
-    .argument(
-        '<provider>',
-        'The provider of the 3rd-party API, must match the template keys in nango.dev/oauth-providers (e.g. hubspot).'
-    )
+    .argument('<provider>', 'The provider of the 3rd-party API, must match the template keys in https://nango.dev/oauth-providers (e.g. hubspot).')
     .argument('<oauth_client_id>', 'The OAuth Client ID obtained from the API provider.')
     .argument('<oauth_client_secret>', 'The OAuth Client Secret obtained from the API provider.')
     .argument('<oauth_scopes>', 'The OAuth Scopes obtained from the API provider (comma-separated).')
