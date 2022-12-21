@@ -67,14 +67,7 @@ More than 50 APIs are preconfigured to work out-of-the-box. Including:
 -   **Communication**: Gmail, Microsoft Teams, Slack, Zoom etc.
 -   **Productivity**: Asana, Airtable, Google Drive, Google Calendar, Trello, Google sheets, ClickUp etc.
 -   **Social**: Twitter, LinkedIn, Reddit, Facebook etc.
--   # [and more...](https://nango.dev/oauth-providers)
--   **CRM**: Front, Hubspot, Salesforce, etc.
--   **Accounting**: Xero, Sellsy, Zoho Books, etc.
--   **Developer tools**: GitHub, GitLab, Linear, Jira etc.
--   **Communication**: Gmail, Microsoft Teams, Slack, Zoom etc.
--   **Productivity**: Asana, Airtable, Google Drive, Google Calendar, Trello, Google sheets, ClickUp etc.
--   **Social**: Twitter, LinkedIn, Reddit, Facebook etc.
--   [and more...](https://www.nango.dev/oauth-providers)
+-   [and more...](https://nango.dev/oauth-providers)
 
 If your favorite API is missing [open a GitHub issue](https://github.com/NangoHQ/Pizzly/issues/new) or [contribute it right away](https://docs.nango.dev/pizzly/contribute-api): The API configurations are just simple [entries in a YAML file](https://www.nango.dev/oauth-providers).
 
