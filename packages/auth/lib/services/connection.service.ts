@@ -56,9 +56,9 @@ class ConnectionService {
         switch (authMode) {
             case ProviderAuthModes.OAuth2:
                 parsedCredentials.type = ProviderAuthModes.OAuth2;
-                parsedCredentials.accessToken = rawAuthCredentials['access_token'];
+                parsedCredentials.access_token = rawAuthCredentials['access_token'];
                 if (rawAuthCredentials['refresh_token']) {
-                    parsedCredentials.refreshToken = rawAuthCredentials['refresh_token'];
+                    parsedCredentials.refresh_token = rawAuthCredentials['refresh_token'];
                     let tokenExpirationDate: Date;
                     if (rawAuthCredentials['expires_at']) {
                         tokenExpirationDate = this.parseTokenExpirationDate(rawAuthCredentials['expires_at']);
@@ -67,13 +67,13 @@ class ConnectionService {
                     } else {
                         throw new Error(`Got a refresh token but no information about expiration: ${JSON.stringify(rawAuthCredentials, undefined, 2)}`);
                     }
-                    parsedCredentials.expiresAt = tokenExpirationDate;
+                    parsedCredentials.expires_at = tokenExpirationDate;
                 }
                 break;
             case ProviderAuthModes.OAuth1:
                 parsedCredentials.type = ProviderAuthModes.OAuth1;
-                parsedCredentials.oAuthToken = rawAuthCredentials['oauth_token'];
-                parsedCredentials.oAuthTokenSecret = rawAuthCredentials['oauth_token_secret'];
+                parsedCredentials.oauth_token = rawAuthCredentials['oauth_token'];
+                parsedCredentials.oauth_token_secret = rawAuthCredentials['oauth_token_secret'];
                 break;
             default:
                 throw new Error(`Cannot parse credentials, unknown credentials type: ${JSON.stringify(rawAuthCredentials, undefined, 2)}`);
