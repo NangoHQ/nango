@@ -13,7 +13,7 @@ services:
             - nango
 
     pizzly-server:
-        image: nangohq/pizzly-server
+        image: nango.docker.scarf.sh/nangohq/pizzly-server
         container_name: pizzly-server
         restart: always
         env_file:

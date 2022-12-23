@@ -19,13 +19,16 @@ export function getBaseUrl() {
 }
 
 export function getOauthCallbackUrl() {
-    return process.env['AUTH_CALLBACK_URL'] || (getBaseUrl() + '/oauth/callback');
+    return process.env['AUTH_CALLBACK_URL'] || getBaseUrl() + '/oauth/callback';
 }
 
-// A helper function to interpolate a string.
-// Example:
-// interpolateString('Hello ${name} of ${age} years", {name: 'Tester', age: 234})
-// Copied from https://stackoverflow.com/a/1408373/250880
+/**
+ * A helper function to interpolate a string.
+ * interpolateString('Hello ${name} of ${age} years", {name: 'Tester', age: 234}) -> returns 'Hello Tester of age 234 years'
+ *
+ * @remarks
+ * Copied from https://stackoverflow.com/a/1408373/250880
+ */
 export function interpolateString(str: string, replacers: Record<string, any>) {
     return str.replace(/\${([^{}]*)}/g, (a, b) => {
         var r = replacers[b];
@@ -33,9 +36,32 @@ export function interpolateString(str: string, replacers: Record<string, any>) {
     });
 }
 
-// A version of JSON.parse that detects Date strings and transforms them back into
-// Date objects. This depends on how dates were serialized obviously.
-// Source: https://stackoverflow.com/questions/3143070/javascript-regex-iso-datetime
+/**
+ * A helper function to check if replacers contains all necessary params to interpolate string.
+ * interpolateString('Hello ${name} of ${age} years", {name: 'Tester'}) -> returns false
+ */
+export function missesInterpolationParam(str: string, replacers: Record<string, any>) {
+    let interpolatedStr = interpolateString(str, replacers);
+    return /\${([^{}]*)}/g.test(interpolatedStr);
+}
+
+/**
+ * A helper function to extract the additional connection configuration options from the frontend Auth request.
+ */
+export function getConnectionConfig(queryParams: any): Record<string, string> {
+    var arr = Object.entries(queryParams);
+    arr = arr.filter(([_, v]) => typeof v === 'string'); // Filter strings
+    arr = arr.map(([k, v]) => [`connectionConfig.params.${k}`, v]); // Format keys to 'connectionConfig.params.[key]'
+    return Object.fromEntries(arr) as Record<string, string>;
+}
+
+/**
+ * A version of JSON.parse that detects Date strings and transforms them back into
+ * Date objects. This depends on how dates were serialized obviously.
+ *
+ * @remarks
+ * Source: https://stackoverflow.com/questions/3143070/javascript-regex-iso-datetime
+ */
 export function parseJsonDateAware(input: string) {
     const dateFormat =
         /(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))/;
@@ -49,9 +75,13 @@ export function parseJsonDateAware(input: string) {
     });
 }
 
-// Yes including a full HTML template here in a string goes against many best practices.
-// Yet it also felt wrong to add another dependency to simply parse 1 template.
-// If you have an idea on how to improve this feel free to submit a pull request.
+/**
+ *
+ * @remarks
+ * Yes including a full HTML template here in a string goes against many best practices.
+ * Yet it also felt wrong to add another dependency to simply parse 1 template.
+ * If you have an idea on how to improve this feel free to submit a pull request.
+ */
 export function html(
     logger: winston.Logger,
     res: any,

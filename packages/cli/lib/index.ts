@@ -117,7 +117,7 @@ program
         await axios
             .delete(url, { headers: enrichHeaders() })
             .then((_) => {
-                console.log('\n\n✅ Successfully a deleted provider configuration!\n\n');
+                console.log('\n\n✅ Successfully deleted a provider configuration!\n\n');
             })
             .catch((err) => {
                 console.log(`❌ Error: ${err.response?.data?.error || err}`);
@@ -125,8 +125,8 @@ program
     });
 
 program
-    .command('auth')
-    .description('Get authorization credentials.')
+    .command('connection:get')
+    .description('Get a connection with credentials.')
     .argument('<connection_id>', 'The ID of the Connection.')
     .argument('<provider_config_key>', 'The unique key of the provider configuration (chosen by you upon creating this provider configuration).')
     .action(async (connection_id, provider_config_key) => {
@@ -135,7 +135,7 @@ program
             .get(url, { params: { provider_config_key: provider_config_key }, headers: enrichHeaders() })
             .then((res) => {
                 console.log('\n\nHere is the requested connection with credentials:\n\n');
-                console.log(res.data.credentials);
+                console.log(res.data);
             })
             .catch((err) => {
                 console.log(`❌ Error: ${err.response?.data?.error || err}`);

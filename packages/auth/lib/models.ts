@@ -27,6 +27,7 @@ export interface Connection {
     provider_config_key: string;
     connection_id: string;
     credentials: PizzlyAuthCredentials;
+    connection_config: Record<string, string>;
 }
 
 export enum OAuthBodyFormat {
@@ -46,16 +47,16 @@ export interface CredentialsCommon {
 
 export interface OAuth2Credentials extends CredentialsCommon {
     type: ProviderAuthModes.OAuth2;
-    accessToken: string;
+    access_token: string;
 
-    refreshToken?: string;
-    expiresAt?: Date;
+    refresh_token?: string;
+    expires_at?: Date;
 }
 
 export interface OAuth1Credentials extends CredentialsCommon {
     type: ProviderAuthModes.OAuth1;
-    oAuthToken: string;
-    oAuthTokenSecret: string;
+    oauth_token: string;
+    oauth_token_secret: string;
 }
 
 export enum ProviderAuthModes {
@@ -102,6 +103,7 @@ export interface OAuthSession {
     callbackUrl: string;
     authMode: ProviderAuthModes;
     id: string;
+    connectionConfig: Record<string, string>;
 
     // Needed for OAuth 2.0 PKCE
     codeVerifier: string;

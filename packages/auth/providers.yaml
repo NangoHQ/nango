@@ -62,6 +62,7 @@ google-mail:
     authorization_params:
         response_type: code
         access_type: offline
+        prompt: consent
 greenhouse:
     auth_mode: OAUTH2
     authorization_url: https://api.greenhouse.io/oauth/authorize
@@ -183,6 +184,10 @@ xero:
     token_url: https://identity.xero.com/connect/token
     authorization_params:
         response_type: code
+zendesk:
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.params.subdomain}.zendesk.com/oauth/authorizations/new
+    token_url: https://${connectionConfig.params.subdomain}.zendesk.com/oauth/tokens
 zoho-crm:
     auth_mode: OAUTH2
     authorization_url: https://accounts.zoho.com/oauth/v2/auth

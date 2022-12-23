@@ -5,12 +5,18 @@
 export default class Pizzly {
     private hostBaseUrl: string;
     private status: AuthorizationStatus;
-    private publishableKey: string;
+    private publishableKey: string | undefined;
 
-    constructor(hostBaseUrl: string, publishableKey: string) {
-        this.hostBaseUrl = hostBaseUrl;
+    constructor(hostBaseUrl: string, publishableKey?: string) {
+        this.hostBaseUrl = hostBaseUrl.slice(-1) === '/' ? hostBaseUrl.slice(0, -1) : hostBaseUrl;
         this.status = AuthorizationStatus.IDLE;
         this.publishableKey = publishableKey;
+
+        try {
+            new URL(this.hostBaseUrl);
+        } catch (err) {
+            throw new Error(`Invalid URL provided for the Pizzly host: ${this.hostBaseUrl}`);
+        }
 
         if (!window) {
             const errorMessage = "Couldn't initialize Pizzly frontend. The window object is undefined. Are you using Pizzly frontend from a browser?";
@@ -18,8 +24,16 @@ export default class Pizzly {
         }
     }
 
-    public auth(providerConfigKey: string, connectionId: string): Promise<any> {
-        const url = new URL(`/oauth/connect/${providerConfigKey}?connection_id=${connectionId}&pizzly_pkey=${this.publishableKey}`, this.hostBaseUrl).href;
+    public auth(providerConfigKey: string, connectionId: string, connectionConfig?: ConnectionConfig): Promise<any> {
+        const url = this.hostBaseUrl + `/oauth/connect/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig)}`;
+
+        try {
+            new URL(url);
+        } catch (err) {
+            throw new Error(`Could not construct valid Pizzly URL based on provided parameters: ${url}`);
+        }
+
+        console.log(`blah: ${url}`);
 
         return new Promise((resolve, reject) => {
             const handler = (e?: MessageEvent) => {
@@ -71,6 +85,33 @@ export default class Pizzly {
             modal.addEventListener('close', handler);
         });
     }
+
+    toQueryString(connectionId: string, connectionConfig?: ConnectionConfig): string {
+        let query: string[] = [];
+
+        if (this.publishableKey) {
+            query.push(`pizzly_pkey=${this.publishableKey}`);
+        }
+
+        if (connectionId) {
+            query.push(`connection_id=${connectionId}`);
+        }
+
+        if (connectionConfig != null) {
+            for (const param in connectionConfig.params) {
+                const val = connectionConfig.params[param];
+                if (typeof val === 'string') {
+                    query.push(`params[${param}]=${val}`);
+                }
+            }
+        }
+
+        return query.length === 0 ? '' : '?' + query.join('&');
+    }
+}
+
+interface ConnectionConfig {
+    params: Record<string, string>;
 }
 
 enum AuthorizationStatus {

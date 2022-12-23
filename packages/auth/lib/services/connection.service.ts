@@ -7,26 +7,34 @@ import type { ProviderConfig, Connection } from '../models.js';
 class ConnectionService {
     private runningCredentialsRefreshes: PizzlyCredentialsRefresh[] = [];
 
-    public async upsertConnection(connectionId: string, providerConfigKey: string, rawCredentials: object, authMode: ProviderAuthModes) {
-        let connection = await this.getConnection(connectionId, providerConfigKey);
-        if (connection == null) {
-            await db.knex
-                .withSchema(db.schema())
-                .from<Connection>(`_pizzly_connections`)
-                .insert({
-                    connection_id: connectionId,
-                    provider_config_key: providerConfigKey,
-                    credentials: this.parseRawCredentials(rawCredentials, authMode)
-                });
-        } else {
-            await db.knex
-                .withSchema(db.schema())
-                .from<Connection>(`_pizzly_connections`)
-                .where({ connection_id: connectionId, provider_config_key: providerConfigKey })
-                .update({
-                    credentials: this.parseRawCredentials(rawCredentials, authMode)
-                });
-        }
+    public async upsertConnection(
+        connectionId: string,
+        providerConfigKey: string,
+        rawCredentials: object,
+        authMode: ProviderAuthModes,
+        connectionConfig: Record<string, string>
+    ) {
+        await db.knex
+            .withSchema(db.schema())
+            .from<Connection>(`_pizzly_connections`)
+            .insert({
+                connection_id: connectionId,
+                provider_config_key: providerConfigKey,
+                credentials: this.parseRawCredentials(rawCredentials, authMode),
+                connection_config: connectionConfig
+            })
+            .onConflict(['provider_config_key', 'connection_id'])
+            .merge();
+    }
+
+    public async updateConnection(connectionId: string, providerConfigKey: string, rawCredentials: object, authMode: ProviderAuthModes) {
+        await db.knex
+            .withSchema(db.schema())
+            .from<Connection>(`_pizzly_connections`)
+            .where({ connection_id: connectionId, provider_config_key: providerConfigKey })
+            .update({
+                credentials: this.parseRawCredentials(rawCredentials, authMode)
+            });
     }
 
     async getConnection(connectionId: string, providerConfigKey: string): Promise<Connection | null> {
@@ -48,9 +56,9 @@ class ConnectionService {
         switch (authMode) {
             case ProviderAuthModes.OAuth2:
                 parsedCredentials.type = ProviderAuthModes.OAuth2;
-                parsedCredentials.accessToken = rawAuthCredentials['access_token'];
+                parsedCredentials.access_token = rawAuthCredentials['access_token'];
                 if (rawAuthCredentials['refresh_token']) {
-                    parsedCredentials.refreshToken = rawAuthCredentials['refresh_token'];
+                    parsedCredentials.refresh_token = rawAuthCredentials['refresh_token'];
                     let tokenExpirationDate: Date;
                     if (rawAuthCredentials['expires_at']) {
                         tokenExpirationDate = this.parseTokenExpirationDate(rawAuthCredentials['expires_at']);
@@ -59,13 +67,13 @@ class ConnectionService {
                     } else {
                         throw new Error(`Got a refresh token but no information about expiration: ${JSON.stringify(rawAuthCredentials, undefined, 2)}`);
                     }
-                    parsedCredentials.expiresAt = tokenExpirationDate;
+                    parsedCredentials.expires_at = tokenExpirationDate;
                 }
                 break;
             case ProviderAuthModes.OAuth1:
                 parsedCredentials.type = ProviderAuthModes.OAuth1;
-                parsedCredentials.oAuthToken = rawAuthCredentials['oauth_token'];
-                parsedCredentials.oAuthTokenSecret = rawAuthCredentials['oauth_token_secret'];
+                parsedCredentials.oauth_token = rawAuthCredentials['oauth_token'];
+                parsedCredentials.oauth_token_secret = rawAuthCredentials['oauth_token_secret'];
                 break;
             default:
                 throw new Error(`Cannot parse credentials, unknown credentials type: ${JSON.stringify(rawAuthCredentials, undefined, 2)}`);
@@ -82,12 +90,14 @@ class ConnectionService {
     // If credentials get refreshed it also updates the user's connection object.
     // Once the refresh or check is complete the new/old credentials are returned, always use these moving forward
     public async refreshOauth2CredentialsIfNeeded(
-        credentials: OAuth2Credentials,
-        connectionId: string,
-        providerConfigKey: string,
-        config: ProviderConfig,
+        connection: Connection,
+        providerConfig: ProviderConfig,
         template: ProviderTemplate
     ): Promise<OAuth2Credentials> {
+        let connectionId = connection.connection_id;
+        let credentials = connection.credentials as OAuth2Credentials;
+        let providerConfigKey = connection.provider_config_key;
+
         // Check if a refresh is already running for this user & provider configuration
         // If it is wait for that to complete
         let runningRefresh: PizzlyCredentialsRefresh | undefined = undefined;
@@ -102,17 +112,17 @@ class ConnectionService {
         }
 
         // Check if we need to refresh the credentials
-        if (credentials.refreshToken && credentials.expiresAt) {
+        if (credentials.refresh_token && credentials.expires_at) {
             // Check if the expiration is less than 15 minutes away (or has already happened): If so, refresh
-            let expireDate = new Date(credentials.expiresAt);
+            let expireDate = new Date(credentials.expires_at);
             let currDate = new Date();
             let dateDiffMs = expireDate.getTime() - currDate.getTime();
             if (dateDiffMs < 15 * 60 * 1000) {
                 const promise = new Promise<OAuth2Credentials>(async (resolve, reject) => {
                     try {
-                        const newCredentials = await refreshOAuth2Credentials(credentials, config, template);
+                        const newCredentials = await refreshOAuth2Credentials(connection, providerConfig, template);
 
-                        this.upsertConnection(connectionId, providerConfigKey, newCredentials.raw, ProviderAuthModes.OAuth2);
+                        this.updateConnection(connectionId, providerConfigKey, newCredentials.raw, ProviderAuthModes.OAuth2);
 
                         // Remove ourselves from the array of running refreshes
                         this.runningCredentialsRefreshes = this.runningCredentialsRefreshes.filter((value) => {
@@ -156,7 +166,7 @@ class ConnectionService {
 
         switch (rawAuthCredentials.type) {
             case ProviderAuthModes.OAuth2:
-                if (!rawAuthCredentials.accessToken) {
+                if (!rawAuthCredentials.access_token) {
                     throw new Error(
                         `Cannot parse credentials, OAuth2 access token credentials must have "access_token" property: ${JSON.stringify(
                             rawAuthCredentials,
@@ -164,7 +174,7 @@ class ConnectionService {
                             2
                         )}`
                     );
-                } else if (rawAuthCredentials.refreshToken && !rawAuthCredentials.expiresAt) {
+                } else if (rawAuthCredentials.refresh_token && !rawAuthCredentials.expires_at) {
                     throw new Error(
                         `Cannot parse credentials, if OAuth2 access token credentials have a "refresh_token" property the "expires_at" property must also be set: ${JSON.stringify(
                             rawAuthCredentials,
@@ -175,7 +185,7 @@ class ConnectionService {
                 }
                 break;
             case ProviderAuthModes.OAuth1:
-                if (!rawAuthCredentials.oAuthToken || !rawAuthCredentials.oAuthTokenSecret) {
+                if (!rawAuthCredentials.oauth_token || !rawAuthCredentials.oauth_token_secret) {
                     throw new Error(
                         `Cannot parse credentials, OAuth1 credentials must have both "oauth_token" and "oauth_token_secret" property: ${JSON.stringify(
                             rawAuthCredentials,
