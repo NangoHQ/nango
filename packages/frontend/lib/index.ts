@@ -8,9 +8,15 @@ export default class Pizzly {
     private publishableKey: string | undefined;
 
     constructor(hostBaseUrl: string, publishableKey?: string) {
-        this.hostBaseUrl = hostBaseUrl;
+        this.hostBaseUrl = hostBaseUrl.slice(-1) === '/' ? hostBaseUrl.slice(0, -1) : hostBaseUrl;
         this.status = AuthorizationStatus.IDLE;
         this.publishableKey = publishableKey;
+
+        try {
+            new URL(this.hostBaseUrl);
+        } catch (err) {
+            throw new Error(`Invalid URL provided for the Pizzly host: ${this.hostBaseUrl}`);
+        }
 
         if (!window) {
             const errorMessage = "Couldn't initialize Pizzly frontend. The window object is undefined. Are you using Pizzly frontend from a browser?";
@@ -18,8 +24,16 @@ export default class Pizzly {
         }
     }
 
-    public auth(providerConfigKey: string, connectionId: string, connectionConfig: ConnectionConfig): Promise<any> {
-        const url = new URL(`/oauth/connect/${providerConfigKey}?${this.toQueryString(connectionId, connectionConfig)}`, this.hostBaseUrl).href;
+    public auth(providerConfigKey: string, connectionId: string, connectionConfig?: ConnectionConfig): Promise<any> {
+        const url = this.hostBaseUrl + `/oauth/connect/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig)}`;
+
+        try {
+            new URL(url);
+        } catch (err) {
+            throw new Error(`Could not construct valid Pizzly URL based on provided parameters: ${url}`);
+        }
+
+        console.log(`blah: ${url}`);
 
         return new Promise((resolve, reject) => {
             const handler = (e?: MessageEvent) => {
@@ -92,7 +106,7 @@ export default class Pizzly {
             }
         }
 
-        return query.join('&');
+        return query.length === 0 ? '' : '?' + query.join('&');
     }
 }
 

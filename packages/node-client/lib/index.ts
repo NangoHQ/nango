@@ -6,6 +6,17 @@ export class Pizzly {
 
     constructor(serverUrl?: string, secretKey = '') {
         this.serverUrl = serverUrl || 'http://localhost:3003';
+
+        if (this.serverUrl.slice(-1) === '/') {
+            this.serverUrl = this.serverUrl.slice(0, -1);
+        }
+
+        try {
+            new URL(this.serverUrl);
+        } catch (err) {
+            throw new Error(`Invalid URL provided for the Pizzly host: ${this.serverUrl}`);
+        }
+
         this.secretKey = secretKey;
     }
 
@@ -40,9 +51,9 @@ export class Pizzly {
 
         switch (response.data.credentials.type) {
             case 'OAUTH2':
-                return response.data.credentials.accessToken;
+                return response.data.credentials.access_token;
             case 'OAUTH1':
-                return { oAuthToken: response.data.credentials.oAuthToken, oAuthTokenSecret: response.data.credentials.oAuthTokenSecret };
+                return { oAuthToken: response.data.credentials.oauth_token, oAuthTokenSecret: response.data.credentials.oauth_token_secret };
             default:
                 throw Error(`Unrecognized OAuth type '${response.data.credentials.type}' in stored credentials.`);
         }

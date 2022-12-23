@@ -49,9 +49,9 @@ export async function refreshOAuth2Credentials(connection: Connection, config: P
     let credentials = connection.credentials as OAuth2Credentials;
     const client = new AuthorizationCode(getSimpleOAuth2ClientConfig(config, template, connection.connection_config));
     const oldAccessToken = client.createToken({
-        access_token: credentials.accessToken,
-        expires_at: credentials.expiresAt,
-        refresh_token: credentials.refreshToken
+        access_token: credentials.access_token,
+        expires_at: credentials.expires_at,
+        refresh_token: credentials.refresh_token
     });
 
     let additionalParams = {};

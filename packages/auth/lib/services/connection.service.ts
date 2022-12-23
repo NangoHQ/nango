@@ -112,9 +112,9 @@ class ConnectionService {
         }
 
         // Check if we need to refresh the credentials
-        if (credentials.refreshToken && credentials.expiresAt) {
+        if (credentials.refresh_token && credentials.expires_at) {
             // Check if the expiration is less than 15 minutes away (or has already happened): If so, refresh
-            let expireDate = new Date(credentials.expiresAt);
+            let expireDate = new Date(credentials.expires_at);
             let currDate = new Date();
             let dateDiffMs = expireDate.getTime() - currDate.getTime();
             if (dateDiffMs < 15 * 60 * 1000) {
@@ -166,7 +166,7 @@ class ConnectionService {
 
         switch (rawAuthCredentials.type) {
             case ProviderAuthModes.OAuth2:
-                if (!rawAuthCredentials.accessToken) {
+                if (!rawAuthCredentials.access_token) {
                     throw new Error(
                         `Cannot parse credentials, OAuth2 access token credentials must have "access_token" property: ${JSON.stringify(
                             rawAuthCredentials,
@@ -174,7 +174,7 @@ class ConnectionService {
                             2
                         )}`
                     );
-                } else if (rawAuthCredentials.refreshToken && !rawAuthCredentials.expiresAt) {
+                } else if (rawAuthCredentials.refresh_token && !rawAuthCredentials.expires_at) {
                     throw new Error(
                         `Cannot parse credentials, if OAuth2 access token credentials have a "refresh_token" property the "expires_at" property must also be set: ${JSON.stringify(
                             rawAuthCredentials,
@@ -185,7 +185,7 @@ class ConnectionService {
                 }
                 break;
             case ProviderAuthModes.OAuth1:
-                if (!rawAuthCredentials.oAuthToken || !rawAuthCredentials.oAuthTokenSecret) {
+                if (!rawAuthCredentials.oauth_token || !rawAuthCredentials.oauth_token_secret) {
                     throw new Error(
                         `Cannot parse credentials, OAuth1 credentials must have both "oauth_token" and "oauth_token_secret" property: ${JSON.stringify(
                             rawAuthCredentials,

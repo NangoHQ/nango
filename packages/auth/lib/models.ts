@@ -47,16 +47,16 @@ export interface CredentialsCommon {
 
 export interface OAuth2Credentials extends CredentialsCommon {
     type: ProviderAuthModes.OAuth2;
-    accessToken: string;
+    access_token: string;
 
-    refreshToken?: string;
-    expiresAt?: Date;
+    refresh_token?: string;
+    expires_at?: Date;
 }
 
 export interface OAuth1Credentials extends CredentialsCommon {
     type: ProviderAuthModes.OAuth1;
-    oAuthToken: string;
-    oAuthTokenSecret: string;
+    oauth_token: string;
+    oauth_token_secret: string;
 }
 
 export enum ProviderAuthModes {
