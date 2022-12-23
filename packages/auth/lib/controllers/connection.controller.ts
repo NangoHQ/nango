@@ -46,13 +46,7 @@ class ConnectionController {
             }
 
             if (connection.credentials.type === ProviderAuthModes.OAuth2) {
-                connection.credentials = await connectionService.refreshOauth2CredentialsIfNeeded(
-                    connection.credentials,
-                    connection.connection_id,
-                    connection.provider_config_key,
-                    config,
-                    template
-                );
+                connection.credentials = await connectionService.refreshOauth2CredentialsIfNeeded(connection, config, template);
             }
 
             res.status(200).send(connection);

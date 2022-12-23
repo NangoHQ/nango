@@ -27,6 +27,7 @@ export interface Connection {
     provider_config_key: string;
     connection_id: string;
     credentials: PizzlyAuthCredentials;
+    connection_config: Record<string, string>;
 }
 
 export enum OAuthBodyFormat {
@@ -102,6 +103,7 @@ export interface OAuthSession {
     callbackUrl: string;
     authMode: ProviderAuthModes;
     id: string;
+    connectionConfig: Record<string, string>;
 
     // Needed for OAuth 2.0 PKCE
     codeVerifier: string;

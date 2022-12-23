@@ -5,9 +5,9 @@
 export default class Pizzly {
     private hostBaseUrl: string;
     private status: AuthorizationStatus;
-    private publishableKey: string;
+    private publishableKey: string | undefined;
 
-    constructor(hostBaseUrl: string, publishableKey: string) {
+    constructor(hostBaseUrl: string, publishableKey?: string) {
         this.hostBaseUrl = hostBaseUrl;
         this.status = AuthorizationStatus.IDLE;
         this.publishableKey = publishableKey;
@@ -18,8 +18,8 @@ export default class Pizzly {
         }
     }
 
-    public auth(providerConfigKey: string, connectionId: string): Promise<any> {
-        const url = new URL(`/oauth/connect/${providerConfigKey}?connection_id=${connectionId}&pizzly_pkey=${this.publishableKey}`, this.hostBaseUrl).href;
+    public auth(providerConfigKey: string, connectionId: string, connectionConfig: ConnectionConfig): Promise<any> {
+        const url = new URL(`/oauth/connect/${providerConfigKey}?${this.toQueryString(connectionId, connectionConfig)}`, this.hostBaseUrl).href;
 
         return new Promise((resolve, reject) => {
             const handler = (e?: MessageEvent) => {
@@ -71,6 +71,33 @@ export default class Pizzly {
             modal.addEventListener('close', handler);
         });
     }
+
+    toQueryString(connectionId: string, connectionConfig?: ConnectionConfig): string {
+        let query: string[] = [];
+
+        if (this.publishableKey) {
+            query.push(`pizzly_pkey=${this.publishableKey}`);
+        }
+
+        if (connectionId) {
+            query.push(`connection_id=${connectionId}`);
+        }
+
+        if (connectionConfig != null) {
+            for (const param in connectionConfig.params) {
+                const val = connectionConfig.params[param];
+                if (typeof val === 'string') {
+                    query.push(`params[${param}]=${val}`);
+                }
+            }
+        }
+
+        return query.join('&');
+    }
+}
+
+interface ConnectionConfig {
+    params: Record<string, string>;
 }
 
 enum AuthorizationStatus {

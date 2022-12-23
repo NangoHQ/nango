@@ -6,7 +6,7 @@ import { getSimpleOAuth2ClientConfig } from '../oauth-clients/oauth2.client.js';
 import { PizzlyOAuth1Client } from '../oauth-clients/oauth1.client.js';
 import configService from '../services/config.service.js';
 import connectionService from '../services/connection.service.js';
-import { html, getOauthCallbackUrl } from '../utils/utils.js';
+import { html, getOauthCallbackUrl, getConnectionConfig, missesInterpolationParam } from '../utils/utils.js';
 import {
     ProviderConfig,
     ProviderTemplate,
@@ -32,7 +32,8 @@ class OAuthController {
         auth_mode_err: (auth_mode: string) => `Auth mode ${auth_mode} not supported.`,
         state_err: (state: string) => `Invalid state parameter passed in the callback: ${state}`,
         token_err: (err: string) => `Error storing/retrieving token: ${err}.`,
-        callback_err: (err: string) => `Did not get oauth_token and/or oauth_verifier in the callback: ${err}.`
+        callback_err: (err: string) => `Did not get oauth_token and/or oauth_verifier in the callback: ${err}.`,
+        url_param_err: (url: string, params: string) => `Missing param(s) in Auth request to interpolate url ${url}. Provided params: ${params}`
     };
     callbackUrl = getOauthCallbackUrl();
     templates: { [key: string]: ProviderTemplate } = configService.getTemplates();
@@ -40,8 +41,8 @@ class OAuthController {
     public async oauthRequest(req: Request, res: Response, next: NextFunction) {
         try {
             const { providerConfigKey } = req.params;
-            let connectionId = req.query['connection_id'];
-            connectionId = connectionId as string;
+            let connectionId = req.query['connection_id'] as string;
+            let connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
 
             if (connectionId == null) {
                 return html(logger, res, providerConfigKey, connectionId, 'missing_connection_id', this.errDesc['missing_connection_id']());
@@ -70,7 +71,8 @@ class OAuthController {
                 callbackUrl: this.callbackUrl,
                 authMode: template.auth_mode,
                 codeVerifier: crypto.randomBytes(24).toString('hex'),
-                id: uuid.v1()
+                id: uuid.v1(),
+                connectionConfig: connectionConfig
             };
             this.sessionStore[session.id] = session;
 
@@ -78,10 +80,12 @@ class OAuthController {
                 return html(logger, res, providerConfigKey, connectionId, 'provider_config_err', this.errDesc['provider_config_err'](providerConfigKey));
             }
 
-            logger.info(`OAuth request - mode: ${template.auth_mode}, provider: ${config.provider}, key: ${config.unique_key}, connection ID: ${connectionId}, auth URL: ${template.authorization_url}, callback URL: ${this.callbackUrl}`);
+            logger.info(
+                `OAuth request - mode: ${template.auth_mode}, provider: ${config.provider}, key: ${config.unique_key}, connection ID: ${connectionId}, auth URL: ${template.authorization_url}, callback URL: ${this.callbackUrl}`
+            );
 
             if (template.auth_mode === ProviderAuthModes.OAuth2) {
-                return this.oauth2Request(template, config, session, res);
+                return this.oauth2Request(template, config, session, res, connectionConfig);
             } else if (template.auth_mode === ProviderAuthModes.OAuth1) {
                 return this.oauth1Request(template, config, session, res);
             }
@@ -93,8 +97,24 @@ class OAuthController {
         }
     }
 
-    private oauth2Request(template: ProviderTemplate, config: ProviderConfig, session: OAuthSession, res: any) {
+    private oauth2Request(
+        template: ProviderTemplate,
+        providerConfig: ProviderConfig,
+        session: OAuthSession,
+        res: any,
+        connectionConfig: Record<string, string>
+    ) {
         const oauth2Template = template as ProviderTemplateOAuth2;
+
+        if (missesInterpolationParam(template.authorization_url, connectionConfig)) {
+            let errDesc = this.errDesc['url_param_err'](template.authorization_url, JSON.stringify(connectionConfig));
+            return html(logger, res, session.providerConfigKey, session.connectionId, 'url_param_err', errDesc);
+        }
+
+        if (missesInterpolationParam(template.token_url, connectionConfig)) {
+            let errDesc = this.errDesc['url_param_err'](template.token_url, JSON.stringify(connectionConfig));
+            return html(logger, res, session.providerConfigKey, session.connectionId, 'url_param_err', errDesc);
+        }
 
         if (
             oauth2Template.token_params == undefined ||
@@ -111,10 +131,10 @@ class OAuthController {
             additionalAuthParams['code_challenge'] = h;
             additionalAuthParams['code_challenge_method'] = 'S256';
 
-            const simpleOAuthClient = new simpleOauth2.AuthorizationCode(getSimpleOAuth2ClientConfig(config, template));
+            const simpleOAuthClient = new simpleOauth2.AuthorizationCode(getSimpleOAuth2ClientConfig(providerConfig, template, connectionConfig));
             const authorizationUri = simpleOAuthClient.authorizeURL({
                 redirect_uri: this.callbackUrl,
-                scope: config.oauth_scopes.split(',').join(oauth2Template.scope_separator || ' '),
+                scope: providerConfig.oauth_scopes.split(',').join(oauth2Template.scope_separator || ' '),
                 state: session.id,
                 ...additionalAuthParams
             });
@@ -176,7 +196,9 @@ class OAuthController {
             const template = this.templates[session.provider]!;
             const config = (await configService.getProviderConfig(session.providerConfigKey))!;
 
-            logger.info(`OAuth callback - mode: ${template.auth_mode}, provider: ${config.provider}, key: ${config.unique_key}, connection ID: ${session.connectionId}`);
+            logger.info(
+                `OAuth callback - mode: ${template.auth_mode}, provider: ${config.provider}, key: ${config.unique_key}, connection ID: ${session.connectionId}`
+            );
 
             if (session.authMode === ProviderAuthModes.OAuth2) {
                 return this.oauth2Callback(template, config, session, req, res);
@@ -200,7 +222,7 @@ class OAuthController {
             return html(logger, res, providerConfigKey, connectionId, 'callback_err', this.errDesc['callback_err'](errStr));
         }
 
-        const simpleOAuthClient = new simpleOauth2.AuthorizationCode(getSimpleOAuth2ClientConfig(config, template));
+        const simpleOAuthClient = new simpleOauth2.AuthorizationCode(getSimpleOAuth2ClientConfig(config, template, session.connectionConfig));
 
         let additionalTokenParams: Record<string, string> = {};
         if (template.token_params !== undefined) {
@@ -222,7 +244,7 @@ class OAuthController {
 
             logger.debug(`OAuth 2 for ${providerConfigKey} (connection ${connectionId}) successful.`);
 
-            connectionService.upsertConnection(connectionId, providerConfigKey, accessToken.token, ProviderAuthModes.OAuth2);
+            connectionService.upsertConnection(connectionId, providerConfigKey, accessToken.token, ProviderAuthModes.OAuth2, session.connectionConfig);
 
             return html(logger, res, providerConfigKey, connectionId, '', '');
         } catch (e) {
@@ -248,7 +270,7 @@ class OAuthController {
             .then((accessTokenResult) => {
                 logger.debug(`OAuth 1.0a for ${providerConfigKey} (connection: ${connectionId}) successful.`);
 
-                connectionService.upsertConnection(connectionId, providerConfigKey, accessTokenResult, ProviderAuthModes.OAuth1);
+                connectionService.upsertConnection(connectionId, providerConfigKey, accessTokenResult, ProviderAuthModes.OAuth1, {});
                 return html(logger, res, providerConfigKey, connectionId, '', '');
             })
             .catch((e) => {

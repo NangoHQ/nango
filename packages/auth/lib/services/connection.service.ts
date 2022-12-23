@@ -7,26 +7,34 @@ import type { ProviderConfig, Connection } from '../models.js';
 class ConnectionService {
     private runningCredentialsRefreshes: PizzlyCredentialsRefresh[] = [];
 
-    public async upsertConnection(connectionId: string, providerConfigKey: string, rawCredentials: object, authMode: ProviderAuthModes) {
-        let connection = await this.getConnection(connectionId, providerConfigKey);
-        if (connection == null) {
-            await db.knex
-                .withSchema(db.schema())
-                .from<Connection>(`_pizzly_connections`)
-                .insert({
-                    connection_id: connectionId,
-                    provider_config_key: providerConfigKey,
-                    credentials: this.parseRawCredentials(rawCredentials, authMode)
-                });
-        } else {
-            await db.knex
-                .withSchema(db.schema())
-                .from<Connection>(`_pizzly_connections`)
-                .where({ connection_id: connectionId, provider_config_key: providerConfigKey })
-                .update({
-                    credentials: this.parseRawCredentials(rawCredentials, authMode)
-                });
-        }
+    public async upsertConnection(
+        connectionId: string,
+        providerConfigKey: string,
+        rawCredentials: object,
+        authMode: ProviderAuthModes,
+        connectionConfig: Record<string, string>
+    ) {
+        await db.knex
+            .withSchema(db.schema())
+            .from<Connection>(`_pizzly_connections`)
+            .insert({
+                connection_id: connectionId,
+                provider_config_key: providerConfigKey,
+                credentials: this.parseRawCredentials(rawCredentials, authMode),
+                connection_config: connectionConfig
+            })
+            .onConflict(['provider_config_key', 'connection_id'])
+            .merge();
+    }
+
+    public async updateConnection(connectionId: string, providerConfigKey: string, rawCredentials: object, authMode: ProviderAuthModes) {
+        await db.knex
+            .withSchema(db.schema())
+            .from<Connection>(`_pizzly_connections`)
+            .where({ connection_id: connectionId, provider_config_key: providerConfigKey })
+            .update({
+                credentials: this.parseRawCredentials(rawCredentials, authMode)
+            });
     }
 
     async getConnection(connectionId: string, providerConfigKey: string): Promise<Connection | null> {
@@ -82,12 +90,14 @@ class ConnectionService {
     // If credentials get refreshed it also updates the user's connection object.
     // Once the refresh or check is complete the new/old credentials are returned, always use these moving forward
     public async refreshOauth2CredentialsIfNeeded(
-        credentials: OAuth2Credentials,
-        connectionId: string,
-        providerConfigKey: string,
-        config: ProviderConfig,
+        connection: Connection,
+        providerConfig: ProviderConfig,
         template: ProviderTemplate
     ): Promise<OAuth2Credentials> {
+        let connectionId = connection.connection_id;
+        let credentials = connection.credentials as OAuth2Credentials;
+        let providerConfigKey = connection.provider_config_key;
+
         // Check if a refresh is already running for this user & provider configuration
         // If it is wait for that to complete
         let runningRefresh: PizzlyCredentialsRefresh | undefined = undefined;
@@ -110,9 +120,9 @@ class ConnectionService {
             if (dateDiffMs < 15 * 60 * 1000) {
                 const promise = new Promise<OAuth2Credentials>(async (resolve, reject) => {
                     try {
-                        const newCredentials = await refreshOAuth2Credentials(credentials, config, template);
+                        const newCredentials = await refreshOAuth2Credentials(connection, providerConfig, template);
 
-                        this.upsertConnection(connectionId, providerConfigKey, newCredentials.raw, ProviderAuthModes.OAuth2);
+                        this.updateConnection(connectionId, providerConfigKey, newCredentials.raw, ProviderAuthModes.OAuth2);
 
                         // Remove ourselves from the array of running refreshes
                         this.runningCredentialsRefreshes = this.runningCredentialsRefreshes.filter((value) => {
