@@ -248,6 +248,9 @@ class OAuthController {
 
             return html(logger, res, providerConfigKey, connectionId, '', '');
         } catch (e) {
+            if (e instanceof Error) {
+                return html(logger, res, providerConfigKey, connectionId, 'token_err', this.errDesc['token_err'](e.message));
+            }
             return html(logger, res, providerConfigKey, connectionId, 'token_err', this.errDesc['token_err'](JSON.stringify(e)));
         }
     }
