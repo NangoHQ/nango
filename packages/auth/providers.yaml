@@ -153,6 +153,10 @@ salesloft:
     auth_mode: OAUTH2
     authorization_url: https://accounts.salesloft.com/oauth/authorize
     token_url: https://accounts.salesloft.com/oauth/token
+shopify:
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.params.subdomain}.myshopify.com/admin/oauth/authorize
+    token_url: https://${connectionConfig.params.subdomain}.myshopify.com/admin/oauth/access_token
 slack:
     auth_mode: OAUTH2
     authorization_url: https://slack.com/oauth/v2/authorize
