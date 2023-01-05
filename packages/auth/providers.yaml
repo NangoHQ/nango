@@ -1,3 +1,10 @@
+airtable:
+    auth_mode: OAUTH2
+    authorization_url: https://airtable.com/oauth2/v1/authorize
+    token_url: https://airtable.com/oauth2/v1/token
+    authorization_method: header
+    auth:
+        response_type: code
 asana:
     auth_mode: OAUTH2
     authorization_url: https://app.asana.com/-/oauth_authorize
