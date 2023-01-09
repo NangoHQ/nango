@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/pizzly-node",
-    "version": "0.4.1",
+    "version": "0.5.0",
     "description": "Pizzly's NodeJS client.",
     "type": "module",
     "main": "dist/index.js",
