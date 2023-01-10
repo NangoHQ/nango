@@ -81,6 +81,8 @@ export interface ProviderTemplateOAuth1 extends ProviderTemplate {
 export interface ProviderTemplateOAuth2 extends ProviderTemplate {
     auth_mode: ProviderAuthModes.OAuth2;
 
+    disable_pkce?: boolean; // Defaults to false (=PKCE used) if not provided
+
     token_params?: {
         grant_type?: 'authorization_code' | 'client_credentials';
     };

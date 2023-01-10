@@ -109,6 +109,7 @@ linkedin:
     auth_mode: OAUTH2
     authorization_url: https://www.linkedin.com/oauth/v2/authorization
     token_url: https://www.linkedin.com/oauth/v2/accessToken
+    disable_pkce: true
 microsoft-teams:
     auth_mode: OAUTH2
     authorization_url: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
