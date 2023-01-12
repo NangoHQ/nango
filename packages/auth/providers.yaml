@@ -190,6 +190,10 @@ twitter:
     signature_method: 'HMAC-SHA1'
     request_params:
         x_auth_access_type: write
+wave_accounting:
+    auth_mode: OAUTH2
+    authorization_url: https://api.waveapps.com/oauth2/authorize
+    token_url: https://api.waveapps.com/oauth2/token
 xero:
     auth_mode: OAUTH2
     authorization_url: https://login.xero.com/identity/connect/authorize
