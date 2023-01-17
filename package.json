@@ -8,7 +8,7 @@
         "prettier-format": "prettier --config .prettierrc './**/*.ts' --write",
         "prettier-watch": "onchange './**/*.ts' -- prettier --write {{changed}}",
         "lint": "eslint . --ext .ts",
-        "docker-build": "docker buildx build --platform linux/amd64 -f packages/server/Dockerfile -t nango.docker.scarf.sh/nangohq/pizzly-server:latest .",
+        "docker-build": "docker build -f packages/server/Dockerfile -t nango.docker.scarf.sh/nangohq/pizzly-server:latest .",
         "ts-build": "./node_modules/typescript/bin/tsc -b --clean packages/server packages/cli && ./node_modules/typescript/bin/tsc -b tsconfig.build.json",
         "build": "npm run ts-build && npm run docker-build"
     },
