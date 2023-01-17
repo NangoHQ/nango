@@ -13,6 +13,10 @@ asana:
         grant_type: authorization_code
     auth:
         response_type: code
+brex:
+    auth_mode: OAUTH2
+    authorization_url: https://accounts-api.brex.com/oauth2/default/v1/authorize
+    token_url: https://accounts-api.brex.com/oauth2/default/v1/token
 bitbucket:
     auth_mode: OAUTH2
     authorization_url: https://bitbucket.org/site/oauth2/authorize
@@ -109,6 +113,7 @@ linkedin:
     auth_mode: OAUTH2
     authorization_url: https://www.linkedin.com/oauth/v2/authorization
     token_url: https://www.linkedin.com/oauth/v2/accessToken
+    disable_pkce: true
 microsoft-teams:
     auth_mode: OAUTH2
     authorization_url: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
@@ -189,6 +194,10 @@ twitter:
     signature_method: 'HMAC-SHA1'
     request_params:
         x_auth_access_type: write
+wave_accounting:
+    auth_mode: OAUTH2
+    authorization_url: https://api.waveapps.com/oauth2/authorize
+    token_url: https://api.waveapps.com/oauth2/token
 xero:
     auth_mode: OAUTH2
     authorization_url: https://login.xero.com/identity/connect/authorize

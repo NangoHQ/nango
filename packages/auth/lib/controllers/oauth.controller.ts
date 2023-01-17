@@ -85,7 +85,7 @@ class OAuthController {
             );
 
             if (template.auth_mode === ProviderAuthModes.OAuth2) {
-                return this.oauth2Request(template, config, session, res, connectionConfig);
+                return this.oauth2Request(template as ProviderTemplateOAuth2, config, session, res, connectionConfig);
             } else if (template.auth_mode === ProviderAuthModes.OAuth1) {
                 return this.oauth1Request(template, config, session, res);
             }
@@ -98,7 +98,7 @@ class OAuthController {
     }
 
     private oauth2Request(
-        template: ProviderTemplate,
+        template: ProviderTemplateOAuth2,
         providerConfig: ProviderConfig,
         session: OAuthSession,
         res: any,
@@ -126,10 +126,13 @@ class OAuthController {
                 additionalAuthParams = oauth2Template.authorization_params;
             }
 
-            // We always implement PKCE, no matter whether the server requires it or not
-            const h = crypto.createHash('sha256').update(session.codeVerifier).digest('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-            additionalAuthParams['code_challenge'] = h;
-            additionalAuthParams['code_challenge_method'] = 'S256';
+            // We always implement PKCE, no matter whether the server requires it or not,
+            // unless it has been explicitly turned off for this template
+            if (!template.disable_pkce) {
+                const h = crypto.createHash('sha256').update(session.codeVerifier).digest('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+                additionalAuthParams['code_challenge'] = h;
+                additionalAuthParams['code_challenge_method'] = 'S256';
+            }
 
             const simpleOAuthClient = new simpleOauth2.AuthorizationCode(getSimpleOAuth2ClientConfig(providerConfig, template, connectionConfig));
             const authorizationUri = simpleOAuthClient.authorizeURL({
@@ -201,7 +204,7 @@ class OAuthController {
             );
 
             if (session.authMode === ProviderAuthModes.OAuth2) {
-                return this.oauth2Callback(template, config, session, req, res);
+                return this.oauth2Callback(template as ProviderTemplateOAuth2, config, session, req, res);
             } else if (session.authMode === ProviderAuthModes.OAuth1) {
                 return this.oauth1Callback(template, config, session, req, res);
             }
@@ -212,7 +215,7 @@ class OAuthController {
         }
     }
 
-    private async oauth2Callback(template: ProviderTemplate, config: ProviderConfig, session: OAuthSession, req: any, res: any) {
+    private async oauth2Callback(template: ProviderTemplateOAuth2, config: ProviderConfig, session: OAuthSession, req: any, res: any) {
         const { code } = req.query;
         let providerConfigKey = session.providerConfigKey;
         let connectionId = session.connectionId;
@@ -232,8 +235,11 @@ class OAuthController {
             additionalTokenParams = deepCopy;
         }
 
-        // We always implement PKCE, no matter whether the server requires it or not
-        additionalTokenParams['code_verifier'] = session.codeVerifier;
+        // We always implement PKCE, no matter whether the server requires it or not,
+        // unless it has been explicitly disabled for this provider template
+        if (!template.disable_pkce) {
+            additionalTokenParams['code_verifier'] = session.codeVerifier;
+        }
 
         try {
             const accessToken = await simpleOAuthClient.getToken({
