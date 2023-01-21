@@ -94,6 +94,9 @@ jira:
     auth_mode: OAUTH2
     authorization_url: https://auth.atlassian.com/authorize
     token_url: https://auth.atlassian.com/oauth/token
+    authorization_params:
+        audience: api.atlassian.com
+        prompt: consent
 lever:
     auth_mode: OAUTH2
     authorization_url: https://auth.lever.co/authorize
