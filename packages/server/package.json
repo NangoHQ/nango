@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/pizzly-server",
-    "version": "0.5.0",
+    "version": "0.5.1",
     "description": "Pizzly's server.",
     "type": "module",
     "main": "dist/server.js",
@@ -19,6 +19,6 @@
         "npm": ">=6.14.11"
     },
     "dependencies": {
-        "@nangohq/auth": "^0.5.0"
+        "@nangohq/auth": "^0.5.1"
     }
 }

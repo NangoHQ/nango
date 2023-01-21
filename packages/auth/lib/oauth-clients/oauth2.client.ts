@@ -63,6 +63,10 @@ export async function refreshOAuth2Credentials(connection: Connection, config: P
         const rawNewAccessToken = await oldAccessToken.refresh(additionalParams);
         const newPizzlyCredentials = connectionsManager.parseRawCredentials(rawNewAccessToken.token, ProviderAuthModes.OAuth2) as OAuth2Credentials;
 
+        if (!newPizzlyCredentials.refresh_token && credentials.refresh_token != null) {
+            newPizzlyCredentials.refresh_token = credentials.refresh_token;
+        }
+
         return newPizzlyCredentials;
     } catch (e) {
         throw new Error(`There was a problem refreshing the OAuth 2 credentials, operation failed: ${(e as Error).message}`);

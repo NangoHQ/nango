@@ -27,13 +27,13 @@ class ConnectionService {
             .merge();
     }
 
-    public async updateConnection(connectionId: string, providerConfigKey: string, rawCredentials: object, authMode: ProviderAuthModes) {
+    public async updateConnection(connectionId: string, providerConfigKey: string, credentials: OAuth2Credentials, authMode: ProviderAuthModes) {
         await db.knex
             .withSchema(db.schema())
             .from<Connection>(`_pizzly_connections`)
             .where({ connection_id: connectionId, provider_config_key: providerConfigKey })
             .update({
-                credentials: this.parseRawCredentials(rawCredentials, authMode)
+                credentials: this.parseRawCredentials(credentials, authMode)
             });
     }
 
@@ -121,8 +121,7 @@ class ConnectionService {
                 const promise = new Promise<OAuth2Credentials>(async (resolve, reject) => {
                     try {
                         const newCredentials = await refreshOAuth2Credentials(connection, providerConfig, template);
-
-                        this.updateConnection(connectionId, providerConfigKey, newCredentials.raw, ProviderAuthModes.OAuth2);
+                        this.updateConnection(connectionId, providerConfigKey, newCredentials, ProviderAuthModes.OAuth2);
 
                         // Remove ourselves from the array of running refreshes
                         this.runningCredentialsRefreshes = this.runningCredentialsRefreshes.filter((value) => {
