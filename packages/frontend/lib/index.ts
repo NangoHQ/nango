@@ -33,8 +33,6 @@ export default class Pizzly {
             throw new Error(`Could not construct valid Pizzly URL based on provided parameters: ${url}`);
         }
 
-        console.log(`blah: ${url}`);
-
         return new Promise((resolve, reject) => {
             const handler = (e?: MessageEvent) => {
                 if (this.status !== AuthorizationStatus.BUSY) {
