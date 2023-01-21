@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/pizzly-frontend",
-    "version": "0.5.1",
+    "version": "0.5.2",
     "description": "Pizzly's frontend library for OAuth handling.",
     "type": "module",
     "main": "dist/index.js",

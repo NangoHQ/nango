@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/auth",
-    "version": "0.5.1",
+    "version": "0.5.2",
     "description": "Pizzly's auth features, used by Pizzly and Nango.",
     "type": "module",
     "main": "dist/index.js",
