@@ -1,1 +1,1 @@
-FROM nangohq/server:latest
+FROM nangohq/pizzly-server:latest
