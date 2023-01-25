@@ -7,6 +7,7 @@
 import { Command } from 'commander';
 import axios from 'axios';
 import path from 'path';
+import https from 'https';
 
 const program = new Command();
 
@@ -25,13 +26,13 @@ program
     .action(async () => {
         let url = path.join(hostport, '/config');
         await axios
-            .get(url, { headers: enrichHeaders() })
+            .get(url, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
             .then((res) => {
-                console.log('\n\nHere is the list of provider configuraitons:\n\n');
+                console.log('\n\nHere is the list of provider configurations:\n\n');
                 console.log(res.data);
             })
             .catch((err) => {
-                console.log(`❌ Error: ${err.response?.data?.error || err}`);
+                console.log(`❌ ${err.response?.data?.error || err}`);
             });
     });
 
@@ -42,13 +43,13 @@ program
     .action(async (provider_config_key) => {
         let url = path.join(hostport, `/config/${provider_config_key}`);
         await axios
-            .get(url, { headers: enrichHeaders() })
+            .get(url, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
             .then((res) => {
                 console.log('\n\nHere is the requested provider configuration:\n\n');
                 console.log(res.data);
             })
             .catch((err) => {
-                console.log(`❌ Error: ${err.response?.data?.error || err}`);
+                console.log(`❌ ${err.response?.data?.error || err}`);
             });
     });
 
@@ -71,12 +72,12 @@ program
 
         let url = path.join(hostport, `/config`);
         await axios
-            .post(url, body, { headers: enrichHeaders() })
+            .post(url, body, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
             .then((_) => {
                 console.log('\n\n✅ Successfully created a new provider configuration!\n\n');
             })
             .catch((err) => {
-                console.log(`❌ Error: ${err.response?.data?.error || err}`);
+                console.log(`❌ ${err.response?.data?.error || err}`);
             });
     });
 
@@ -99,12 +100,12 @@ program
 
         let url = path.join(hostport, `/config`);
         await axios
-            .put(url, body, { headers: enrichHeaders() })
+            .put(url, body, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
             .then((_) => {
                 console.log('\n\n✅ Successfully edited an existing provider configuration!\n\n');
             })
             .catch((err) => {
-                console.log(`❌ Error: ${err.response?.data?.error || err}`);
+                console.log(`❌ ${err.response?.data?.error || err}`);
             });
     });
 
@@ -115,12 +116,12 @@ program
     .action(async (provider_config_key) => {
         let url = path.join(hostport, `/config/${provider_config_key}`);
         await axios
-            .delete(url, { headers: enrichHeaders() })
+            .delete(url, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
             .then((_) => {
                 console.log('\n\n✅ Successfully deleted a provider configuration!\n\n');
             })
             .catch((err) => {
-                console.log(`❌ Error: ${err.response?.data?.error || err}`);
+                console.log(`❌ ${err.response?.data?.error || err}`);
             });
     });
 
@@ -132,13 +133,13 @@ program
     .action(async (connection_id, provider_config_key) => {
         let url = path.join(hostport, `/connection/${connection_id}`);
         await axios
-            .get(url, { params: { provider_config_key: provider_config_key }, headers: enrichHeaders() })
+            .get(url, { params: { provider_config_key: provider_config_key }, headers: enrichHeaders(), httpsAgent: httpsAgent() })
             .then((res) => {
                 console.log('\n\nHere is the requested connection with credentials:\n\n');
                 console.log(res.data);
             })
             .catch((err) => {
-                console.log(`❌ Error: ${err.response?.data?.error || err}`);
+                console.log(`❌ ${err.response?.data?.error || err}`);
             });
     });
 
@@ -150,4 +151,10 @@ function enrichHeaders(headers: Record<string, string | number | boolean> = {}) 
     }
 
     return headers;
+}
+
+function httpsAgent() {
+    return new https.Agent({
+        rejectUnauthorized: false
+    });
 }

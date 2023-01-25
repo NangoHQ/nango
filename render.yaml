@@ -1,0 +1,33 @@
+services:
+    - type: web
+      name: nango-server
+      env: docker
+      repo: https://github.com/NangoHQ/Pizzly
+      plan: free
+      branch: main
+      rootDir: ./render/server/
+      envVars:
+          - key: NANGO_DB_NAME
+            fromDatabase:
+                name: nango-db
+                property: database
+          - key: NANGO_DB_PASSWORD
+            fromDatabase:
+                name: nango-db
+                property: password
+          - key: NANGO_DB_HOST
+            fromDatabase:
+                name: nango-db
+                property: host
+          - key: NANGO_DB_PORT
+            fromDatabase:
+                name: nango-db
+                property: port
+          - key: NANGO_DB_SSL
+            value: TRUE
+
+databases:
+    - name: nango-db
+      databaseName: nango
+      user: nango
+      plan: free
