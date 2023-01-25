@@ -4,7 +4,7 @@ services:
       env: docker
       repo: https://github.com/NangoHQ/Pizzly
       plan: free
-      branch: main
+      branch: master
       rootDir: ./render/server/
       envVars:
           - key: NANGO_DB_NAME
