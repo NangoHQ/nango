@@ -11,13 +11,13 @@ import https from 'https';
 
 const program = new Command();
 
-let hostport = process.env['PIZZLY_HOSTPORT'] || 'http://localhost:3003';
+let hostport = process.env['NANGO_HOSTPORT'] || 'http://localhost:3003';
 
 // Test from the package root (/packages/cli) with 'node dist/index.js'
 program
     .name('pizzly')
     .description(
-        "A CLI tool to configure Pizzly.\n\n IMPORTANT: You need to set the PIZZLY_HOSTPORT environment variable if Pizzly Server doesn't run on http://localhost:3003."
+        "A CLI tool to configure Pizzly.\n\n IMPORTANT: You need to set the NANGO_HOSTPORT environment variable if Pizzly Server doesn't run on http://localhost:3003."
     );
 
 program
@@ -146,8 +146,8 @@ program
 program.parseAsync(process.argv);
 
 function enrichHeaders(headers: Record<string, string | number | boolean> = {}) {
-    if (process.env['PIZZLY_SECRET_KEY'] != null) {
-        headers['Authorization'] = 'Basic ' + Buffer.from(process.env['PIZZLY_SECRET_KEY'] + ':').toString('base64');
+    if (process.env['NANGO_SECRET_KEY'] != null) {
+        headers['Authorization'] = 'Basic ' + Buffer.from(process.env['NANGO_SECRET_KEY'] + ':').toString('base64');
     }
 
     return headers;

@@ -1,5 +1,5 @@
 ```diff
-+ Using Pizzly v0.2.x? Please read this about migrating to v0.3+: https://docs.nango.dev/pizzly/migration +
++ Using Pizzly v0.2.x? Please read this about migrating to Nango v0.3+: https://docs.nango.dev/pizzly/migration +
 ```
 
 <div align="center">

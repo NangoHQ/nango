@@ -1,7 +1,7 @@
 {
-    "name": "@nangohq/pizzly-server",
+    "name": "@nangohq/nango-server",
     "version": "0.5.2",
-    "description": "Pizzly's server.",
+    "description": "Nango OAuth's server.",
     "type": "module",
     "main": "dist/server.js",
     "scripts": {
@@ -10,7 +10,7 @@
     "keywords": [],
     "repository": {
         "type": "git",
-        "url": "https://github.com/NangoHQ/Pizzly",
+        "url": "https://github.com/NangoHQ/nango",
         "directory": "packages/server"
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",

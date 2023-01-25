@@ -92,7 +92,7 @@ export function html(
 ) {
     const resultHTMLTemplate = `
 <!--
-Pizzly OAuth flow callback. Read more about how to use it at: https://github.com/NangoHQ/Pizzly
+Nango OAuth flow callback. Read more about how to use it at: https://github.com/NangoHQ/nango
 -->
 <html>
   <head>

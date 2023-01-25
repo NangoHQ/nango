@@ -12,7 +12,6 @@ import { authServer, getOauthCallbackUrl, getPort } from '@nangohq/auth';
 import express from 'express';
 import cors from 'cors';
 
-
 let port = getPort();
 
 let app = express();

@@ -16,10 +16,7 @@ class AuthServer {
         await db.knex.raw(`CREATE SCHEMA IF NOT EXISTS ${db.schema()}`);
         await db.migrate(path.join(dirname(), '../../lib/db/migrations'));
 
-        app.route('/oauth/connect/:providerConfigKey').get(
-            accessMiddleware.checkPkey.bind(accessMiddleware),
-            oauthController.oauthRequest.bind(oauthController)
-        );
+        app.route('/oauth/connect/:providerConfigKey').get(oauthController.oauthRequest.bind(oauthController));
         app.route('/oauth/callback').get(oauthController.oauthCallback.bind(oauthController));
         app.route('/config').get(accessMiddleware.checkSecret.bind(accessMiddleware), configController.listProviderConfigs.bind(configController));
         app.route('/config/:providerConfigKey').get(
