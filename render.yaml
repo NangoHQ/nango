@@ -3,7 +3,7 @@ services:
       name: nango-server
       env: docker
       repo: https://github.com/NangoHQ/Pizzly
-      plan: free
+      plan: starter
       branch: master
       rootDir: ./render/server/
       envVars:
@@ -27,8 +27,10 @@ services:
             value: TRUE
           - key: NANGO_SECRET_KEY
             generateValue: true
+          - key: SERVER_PORT
+            value: 443
 databases:
     - name: nango-db
       databaseName: nango
       user: nango
-      plan: free
+      plan: starter
