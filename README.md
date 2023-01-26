@@ -4,7 +4,7 @@
 
 <div align="center">
   
-<img src="/assets/pizzly-logo.png?raw=true" width="350">
+<img src="/assets/nango-logo.png?raw=true" width="350">
 
 </div>
 
