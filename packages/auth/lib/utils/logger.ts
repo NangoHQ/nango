@@ -5,7 +5,7 @@ const nangoLogFormat = winston.format.printf((info) => {
     return `${info['timestamp']} [${info['level'].toUpperCase()}] ${info['message']}`;
 });
 
-class PizzlyLogger {
+class NangoLogger {
     logger: Logger;
 
     constructor() {
@@ -17,4 +17,4 @@ class PizzlyLogger {
     }
 }
 
-export default new PizzlyLogger().logger;
+export default new NangoLogger().logger;

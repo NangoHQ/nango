@@ -1,7 +1,7 @@
 {
-    "name": "pizzly",
-    "version": "0.5.2",
-    "description": "Pizzly's CLI tool.",
+    "name": "nango",
+    "version": "0.7.0",
+    "description": "Nango's CLI tool.",
     "type": "module",
     "main": "dist/index.js",
     "bin": "./dist/index.js",
@@ -9,7 +9,7 @@
     "author": "bastien@nango.dev",
     "repository": {
         "type": "git",
-        "url": "https://github.com/NangoHQ/Pizzly",
+        "url": "https://github.com/NangoHQ/nango",
         "directory": "packages/cli"
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",

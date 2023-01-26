@@ -1,5 +1,5 @@
 exports.up = function (knex, _) {
-    return knex.schema.withSchema('pizzly').createTable('_pizzly_configs', function (table) {
+    return knex.schema.withSchema('nango').createTable('_nango_configs', function (table) {
         table.increments('id').primary();
         table.timestamps(true, true);
         table.string('unique_key').notNullable();
@@ -12,5 +12,5 @@ exports.up = function (knex, _) {
 };
 
 exports.down = function (knex, _) {
-    return knex.schema.withSchema('pizzly').dropTable('_pizzly_configs');
+    return knex.schema.withSchema('nango').dropTable('_nango_configs');
 };

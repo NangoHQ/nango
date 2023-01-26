@@ -21,7 +21,7 @@ import { interpolateString } from '../utils/utils.js';
 export function getSimpleOAuth2ClientConfig(providerConfig: ProviderConfig, template: ProviderTemplate, connectionConfig: Record<string, string>) {
     const tokenUrl = new URL(interpolateString(template.token_url, connectionConfig));
     const authorizeUrl = new URL(interpolateString(template.authorization_url, connectionConfig));
-    const headers = { 'User-Agent': 'Pizzly' };
+    const headers = { 'User-Agent': 'Nango' };
 
     const authConfig = template as ProviderTemplateOAuth2;
 
@@ -61,13 +61,13 @@ export async function refreshOAuth2Credentials(connection: Connection, config: P
 
     try {
         const rawNewAccessToken = await oldAccessToken.refresh(additionalParams);
-        const newPizzlyCredentials = connectionsManager.parseRawCredentials(rawNewAccessToken.token, ProviderAuthModes.OAuth2) as OAuth2Credentials;
+        const newCredentials = connectionsManager.parseRawCredentials(rawNewAccessToken.token, ProviderAuthModes.OAuth2) as OAuth2Credentials;
 
-        if (!newPizzlyCredentials.refresh_token && credentials.refresh_token != null) {
-            newPizzlyCredentials.refresh_token = credentials.refresh_token;
+        if (!newCredentials.refresh_token && credentials.refresh_token != null) {
+            newCredentials.refresh_token = credentials.refresh_token;
         }
 
-        return newPizzlyCredentials;
+        return newCredentials;
     } catch (e) {
         throw new Error(`There was a problem refreshing the OAuth 2 credentials, operation failed: ${(e as Error).message}`);
     }

@@ -2,7 +2,7 @@ import type { Request, Response, NextFunction } from 'express';
 
 export class AccessMiddleware {
     checkSecret(req: Request, res: Response, next: NextFunction) {
-        const secretKey = process.env['PIZZLY_SECRET_KEY'];
+        const secretKey = process.env['NANGO_SECRET_KEY'];
 
         if (!secretKey) {
             next();
@@ -20,29 +20,6 @@ export class AccessMiddleware {
 
         if (providedUser !== secretKey) {
             res.status(401).send({ error: 'Authentication failed. The provided secret key is invalid.' });
-            return;
-        }
-
-        next();
-    }
-
-    checkPkey(req: Request, res: Response, next: NextFunction) {
-        const publishableKey = process.env['PIZZLY_PUBLISHABLE_KEY'];
-
-        if (!publishableKey) {
-            next();
-            return;
-        }
-
-        const providedPublishableKey = req.query['pizzly_pkey'];
-
-        if (typeof providedPublishableKey !== 'string') {
-            res.status(401).send({ error: 'Authentication failed. The request is missing a valid publishable key.' });
-            return;
-        }
-
-        if (providedPublishableKey !== publishableKey) {
-            res.status(401).send({ error: 'Authentication failed. The provided publishable key is invalid.' });
             return;
         }
 

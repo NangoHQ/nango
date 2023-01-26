@@ -1,8 +1,8 @@
-import { Pizzly } from '../dist/index.js';
+import { Nango } from '../dist/index.js';
 
-let pizzly = new Pizzly('http://localhost:3003');
-pizzly
-    .accessToken('hubspot', 1)
+let nango = new Nango('http://localhost:3003');
+nango
+    .getToken('hubspot', 1)
     .then((creds) => {
         console.log(creds);
     })

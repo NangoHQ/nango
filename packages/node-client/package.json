@@ -1,14 +1,14 @@
 {
-    "name": "@nangohq/pizzly-node",
-    "version": "0.5.2",
-    "description": "Pizzly's NodeJS client.",
+    "name": "@nangohq/node",
+    "version": "0.7.0",
+    "description": "Nango's Node client.",
     "type": "module",
     "main": "dist/index.js",
     "typings": "dist/index.d.ts",
     "keywords": [],
     "repository": {
         "type": "git",
-        "url": "https://github.com/NangoHQ/Pizzly",
+        "url": "https://github.com/NangoHQ/nango",
         "directory": "packages/node-client"
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",

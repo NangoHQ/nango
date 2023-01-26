@@ -12,7 +12,6 @@ import { authServer, getOauthCallbackUrl, getPort } from '@nangohq/auth';
 import express from 'express';
 import cors from 'cors';
 
-
 let port = getPort();
 
 let app = express();
@@ -28,5 +27,5 @@ app.use((error: any, _: express.Request, response: express.Response, __: express
 });
 
 app.listen(port, () => {
-    console.log(`✅ Pizzly Server is listening on port ${port}. OAuth callback URL: ${getOauthCallbackUrl()}`);
+    console.log(`✅ Nango Server is listening on port ${port}. OAuth callback URL: ${getOauthCallbackUrl()}`);
 });

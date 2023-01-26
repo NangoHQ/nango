@@ -26,7 +26,7 @@ export interface Connection {
     updated_at?: Date;
     provider_config_key: string;
     connection_id: string;
-    credentials: PizzlyAuthCredentials;
+    credentials: AuthCredentials;
     connection_config: Record<string, string>;
 }
 
@@ -64,7 +64,7 @@ export enum ProviderAuthModes {
     OAuth2 = 'OAUTH2'
 }
 
-export type PizzlyAuthCredentials = OAuth2Credentials | OAuth1Credentials;
+export type AuthCredentials = OAuth2Credentials | OAuth1Credentials;
 
 export interface ProviderTemplateOAuth1 extends ProviderTemplate {
     auth_mode: ProviderAuthModes.OAuth1;
@@ -118,7 +118,7 @@ export interface OAuthSessionStore {
     [key: string]: OAuthSession;
 }
 
-export interface PizzlyCredentialsRefresh {
+export interface CredentialsRefresh {
     providerConfigKey: string;
     connectionId: string;
     promise: Promise<OAuth2Credentials>;

@@ -1,6 +1,6 @@
 version: '3.9'
 services:
-    pizzly-db:
+    nango-db:
         image: postgres
         container_name: nango-db
         environment:
@@ -12,16 +12,16 @@ services:
         networks:
             - nango
 
-    pizzly-server:
-        image: nango.docker.scarf.sh/nangohq/pizzly-server
-        container_name: pizzly-server
+    nango-server:
+        image: nango.docker.scarf.sh/nangohq/nango-server
+        container_name: nango-server
         restart: always
         env_file:
             - .env
         ports:
             - '3003:3003'
         depends_on:
-            - pizzly-db
+            - nango-db
         networks:
             - nango
 networks:

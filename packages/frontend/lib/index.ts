@@ -2,24 +2,22 @@
  * Copyright (c) 2022 Nango, all rights reserved.
  */
 
-export default class Pizzly {
+export default class Nango {
     private hostBaseUrl: string;
     private status: AuthorizationStatus;
-    private publishableKey: string | undefined;
 
-    constructor(hostBaseUrl: string, publishableKey?: string) {
+    constructor(hostBaseUrl: string) {
         this.hostBaseUrl = hostBaseUrl.slice(-1) === '/' ? hostBaseUrl.slice(0, -1) : hostBaseUrl;
         this.status = AuthorizationStatus.IDLE;
-        this.publishableKey = publishableKey;
 
         try {
             new URL(this.hostBaseUrl);
         } catch (err) {
-            throw new Error(`Invalid URL provided for the Pizzly host: ${this.hostBaseUrl}`);
+            throw new Error(`Invalid URL provided for the Nango host: ${this.hostBaseUrl}`);
         }
 
         if (!window) {
-            const errorMessage = "Couldn't initialize Pizzly frontend. The window object is undefined. Are you using Pizzly frontend from a browser?";
+            const errorMessage = "Couldn't initialize Nango frontend. The window object is undefined. Are you using Nango frontend from a browser?";
             throw new Error(errorMessage);
         }
     }
@@ -30,7 +28,7 @@ export default class Pizzly {
         try {
             new URL(url);
         } catch (err) {
-            throw new Error(`Could not construct valid Pizzly URL based on provided parameters: ${url}`);
+            throw new Error(`Could not construct valid Nango URL based on provided parameters: ${url}`);
         }
 
         return new Promise((resolve, reject) => {
@@ -40,7 +38,7 @@ export default class Pizzly {
                 }
 
                 // All sorts of extensions and pages might send messages so we need to filter the relevant ones.
-                // Pizzly messages will always have the data.eventType attribute set.
+                // Nango messages will always have the data.eventType attribute set.
                 if (e && !e.data.eventType) {
                     return;
                 }
@@ -86,10 +84,6 @@ export default class Pizzly {
 
     toQueryString(connectionId: string, connectionConfig?: ConnectionConfig): string {
         let query: string[] = [];
-
-        if (this.publishableKey) {
-            query.push(`pizzly_pkey=${this.publishableKey}`);
-        }
 
         if (connectionId) {
             query.push(`connection_id=${connectionId}`);

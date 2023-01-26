@@ -19,7 +19,7 @@ type OAuth1RequestTokenResult = {
 // Unfortunately it is dated and still uses callbacks, this wrapper here makes it easier to use with a promise API
 
 // For reference, this is a pretty good graphic on the OAuth 1.0a flow: https://oauth.net/core/1.0/#anchor9
-export class PizzlyOAuth1Client {
+export class OAuth1Client {
     private client: oAuth1.OAuth;
     private config: ProviderConfig;
     private authConfig: ProviderTemplateOAuth1;
@@ -28,7 +28,7 @@ export class PizzlyOAuth1Client {
         this.config = config;
 
         this.authConfig = template as ProviderTemplateOAuth1;
-        const headers = { 'User-Agent': 'Pizzly' };
+        const headers = { 'User-Agent': 'Nango' };
 
         this.client = new oAuth1.OAuth(
             this.authConfig.request_url,
