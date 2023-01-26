@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export class Pizzly {
+export class Nango {
     serverUrl: string;
     secretKey: string;
 
@@ -14,7 +14,7 @@ export class Pizzly {
         try {
             new URL(this.serverUrl);
         } catch (err) {
-            throw new Error(`Invalid URL provided for the Pizzly host: ${this.serverUrl}`);
+            throw new Error(`Invalid URL provided for the Nango host: ${this.serverUrl}`);
         }
 
         this.secretKey = secretKey;
@@ -27,8 +27,8 @@ export class Pizzly {
      * For OAuth 2: returns the access token directly as a string.
      * For OAuth 1: returns an object with 'oAuthToken' and 'oAuthTokenSecret' fields.
      */
-    public async accessToken(providerConfigKey: string, connectionId: string) {
-        let response = await this.getConnection(providerConfigKey, connectionId);
+    public async getToken(providerConfigKey: string, connectionId: string) {
+        let response = await this.getConnectionDetails(providerConfigKey, connectionId);
 
         switch (response.data.credentials.type) {
             case 'OAUTH2':
@@ -43,20 +43,20 @@ export class Pizzly {
     /**
      * Get the full (fresh) credentials payload returned by the external API, which also contains access credentials.
      */
-    public async rawTokenResponse(providerConfigKey: string, connectionId: string) {
-        let response = await this.getConnection(providerConfigKey, connectionId);
+    public async getRawTokenResponse(providerConfigKey: string, connectionId: string) {
+        let response = await this.getConnectionDetails(providerConfigKey, connectionId);
         return response.data.credentials.raw;
     }
 
     /**
      * Get the Connection object, which also contains access credentials and full credentials payload returned by the external API.
      */
-    public async connection(providerConfigKey: string, connectionId: string) {
-        let response = await this.getConnection(providerConfigKey, connectionId);
+    public async getConnection(providerConfigKey: string, connectionId: string) {
+        let response = await this.getConnectionDetails(providerConfigKey, connectionId);
         return response.data;
     }
 
-    private async getConnection(providerConfigKey: string, connectionId: string) {
+    private async getConnectionDetails(providerConfigKey: string, connectionId: string) {
         let url = `${this.serverUrl}/connection/${connectionId}`;
 
         let headers = {

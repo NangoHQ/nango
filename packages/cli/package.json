@@ -1,7 +1,7 @@
 {
     "name": "nango",
-    "version": "0.5.2",
-    "description": "Pizzly's CLI tool.",
+    "version": "0.6.0",
+    "description": "Nango's CLI tool.",
     "type": "module",
     "main": "dist/index.js",
     "bin": "./dist/index.js",

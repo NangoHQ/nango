@@ -15,9 +15,9 @@ let hostport = process.env['NANGO_HOSTPORT'] || 'http://localhost:3003';
 
 // Test from the package root (/packages/cli) with 'node dist/index.js'
 program
-    .name('pizzly')
+    .name('nango')
     .description(
-        "A CLI tool to configure Pizzly.\n\n IMPORTANT: You need to set the NANGO_HOSTPORT environment variable if Pizzly Server doesn't run on http://localhost:3003."
+        "A CLI tool to configure Nango.\n\n IMPORTANT: You need to set the NANGO_HOSTPORT environment variable if Nango Server doesn't run on http://localhost:3003."
     );
 
 program
