@@ -2,7 +2,7 @@ FROM node:18-slim
 
 ENV SERVER_RUN_MODE=DOCKERIZED
 
-WORKDIR /usr/pizzly-server/src
+WORKDIR /usr/nango-server/src
 
 COPY packages/auth/ packages/auth/
 COPY packages/server/ packages/server/

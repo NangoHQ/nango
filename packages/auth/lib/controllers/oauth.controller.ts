@@ -3,7 +3,7 @@ import * as crypto from 'node:crypto';
 import * as uuid from 'uuid';
 import simpleOauth2 from 'simple-oauth2';
 import { getSimpleOAuth2ClientConfig } from '../oauth-clients/oauth2.client.js';
-import { PizzlyOAuth1Client } from '../oauth-clients/oauth1.client.js';
+import { OAuth1Client } from '../oauth-clients/oauth1.client.js';
 import configService from '../services/config.service.js';
 import connectionService from '../services/connection.service.js';
 import { html, getOauthCallbackUrl, getConnectionConfig, missesInterpolationParam } from '../utils/utils.js';
@@ -161,7 +161,7 @@ class OAuthController {
         });
         const oAuth1CallbackURL = `${this.callbackUrl}?${callbackParams.toString()}`;
 
-        const oAuth1Client = new PizzlyOAuth1Client(config, template, oAuth1CallbackURL);
+        const oAuth1Client = new OAuth1Client(config, template, oAuth1CallbackURL);
 
         let tokenResult: OAuth1RequestTokenResult | undefined;
         try {
@@ -273,7 +273,7 @@ class OAuthController {
 
         const oauth_token_secret = session.request_token_secret!;
 
-        const oAuth1Client = new PizzlyOAuth1Client(config, template, '');
+        const oAuth1Client = new OAuth1Client(config, template, '');
         oAuth1Client
             .getOAuthAccessToken(oauth_token as string, oauth_token_secret, oauth_verifier as string)
             .then((accessTokenResult) => {

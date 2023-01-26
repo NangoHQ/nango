@@ -1,11 +1,11 @@
-import type { PizzlyAuthCredentials, OAuth2Credentials, ProviderTemplate, PizzlyCredentialsRefresh } from '../models.js';
+import type { AuthCredentials, OAuth2Credentials, ProviderTemplate, CredentialsRefresh } from '../models.js';
 import { ProviderAuthModes } from '../models.js';
 import { refreshOAuth2Credentials } from '../oauth-clients/oauth2.client.js';
 import db from '../db/database.js';
 import type { ProviderConfig, Connection } from '../models.js';
 
 class ConnectionService {
-    private runningCredentialsRefreshes: PizzlyCredentialsRefresh[] = [];
+    private runningCredentialsRefreshes: CredentialsRefresh[] = [];
 
     public async upsertConnection(
         connectionId: string,
@@ -16,7 +16,7 @@ class ConnectionService {
     ) {
         await db.knex
             .withSchema(db.schema())
-            .from<Connection>(`_pizzly_connections`)
+            .from<Connection>(`_nango_connections`)
             .insert({
                 connection_id: connectionId,
                 provider_config_key: providerConfigKey,
@@ -30,7 +30,7 @@ class ConnectionService {
     public async updateConnection(connectionId: string, providerConfigKey: string, credentials: OAuth2Credentials, authMode: ProviderAuthModes) {
         await db.knex
             .withSchema(db.schema())
-            .from<Connection>(`_pizzly_connections`)
+            .from<Connection>(`_nango_connections`)
             .where({ connection_id: connectionId, provider_config_key: providerConfigKey })
             .update({
                 credentials: this.parseRawCredentials(credentials, authMode)
@@ -41,15 +41,15 @@ class ConnectionService {
         let result: Connection[] | null = await db.knex
             .withSchema(db.schema())
             .select('*')
-            .from<Connection>(`_pizzly_connections`)
+            .from<Connection>(`_nango_connections`)
             .where({ connection_id: connectionId, provider_config_key: providerConfigKey });
 
         return result == null || result.length == 0 ? null : result[0] || null;
     }
 
-    // Parses and arbitrary object (e.g. a server response or a user provided auth object) into PizzlyAuthCredentials.
+    // Parses and arbitrary object (e.g. a server response or a user provided auth object) into AuthCredentials.
     // Throws if values are missing/missing the input is malformed.
-    public parseRawCredentials(rawCredentials: object, authMode: ProviderAuthModes): PizzlyAuthCredentials {
+    public parseRawCredentials(rawCredentials: object, authMode: ProviderAuthModes): AuthCredentials {
         const rawAuthCredentials = rawCredentials as Record<string, any>; // Otherwise TS complains
 
         let parsedCredentials: any = {};
@@ -81,9 +81,9 @@ class ConnectionService {
         parsedCredentials.raw = rawAuthCredentials;
 
         // Checks if the credentials are well formed, if not it will throw
-        const parsedPizzlyAuthCredentials = this.checkCredentials(parsedCredentials);
+        const parsedAuthCredentials = this.checkCredentials(parsedCredentials);
 
-        return parsedPizzlyAuthCredentials;
+        return parsedAuthCredentials;
     }
 
     // Checks if the OAuth2 credentials need to be refreshed and refreshes them if neccessary.
@@ -100,7 +100,7 @@ class ConnectionService {
 
         // Check if a refresh is already running for this user & provider configuration
         // If it is wait for that to complete
-        let runningRefresh: PizzlyCredentialsRefresh | undefined = undefined;
+        let runningRefresh: CredentialsRefresh | undefined = undefined;
         for (const refresh of this.runningCredentialsRefreshes) {
             if (refresh.connectionId === connectionId && refresh.providerConfigKey === providerConfigKey) {
                 runningRefresh = refresh;
@@ -138,7 +138,7 @@ class ConnectionService {
                     connectionId: connectionId,
                     providerConfigKey: providerConfigKey,
                     promise: promise
-                } as PizzlyCredentialsRefresh;
+                } as CredentialsRefresh;
 
                 this.runningCredentialsRefreshes.push(refresh);
 
@@ -152,13 +152,13 @@ class ConnectionService {
 
     /** -------------------- Private Methods -------------------- */
 
-    // private parseCredentials(rawCredentials: string): PizzlyAuthCredentials {
+    // private parseCredentials(rawCredentials: string): AuthCredentials {
     //     const credentialsObj = parseJsonDateAware(rawCredentials);
-    //     return credentialsObj as PizzlyAuthCredentials;
+    //     return credentialsObj as AuthCredentials;
     // }
 
-    private checkCredentials(rawCredentials: object): PizzlyAuthCredentials {
-        const rawAuthCredentials = rawCredentials as PizzlyAuthCredentials;
+    private checkCredentials(rawCredentials: object): AuthCredentials {
+        const rawAuthCredentials = rawCredentials as AuthCredentials;
         if (!rawAuthCredentials.type) {
             throw new Error(`Cannot parse credentials, has no property "type" which is required: ${JSON.stringify(rawAuthCredentials, undefined, 2)}`);
         }

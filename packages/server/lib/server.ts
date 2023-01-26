@@ -27,5 +27,5 @@ app.use((error: any, _: express.Request, response: express.Response, __: express
 });
 
 app.listen(port, () => {
-    console.log(`✅ Pizzly Server is listening on port ${port}. OAuth callback URL: ${getOauthCallbackUrl()}`);
+    console.log(`✅ Nango Server is listening on port ${port}. OAuth callback URL: ${getOauthCallbackUrl()}`);
 });
