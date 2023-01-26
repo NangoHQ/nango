@@ -7,11 +7,11 @@ export function dirname() {
 }
 
 export function getPort() {
-    return process.env['SERVER_PORT'] != null ? +process.env['SERVER_PORT'] : 3003;
+    return process.env['port'] != null ? +process.env['port'] : process.env['SERVER_PORT'] != null ? +process.env['SERVER_PORT'] : 3003;
 }
 
 export function getHost() {
-    return process.env['SERVER_HOST'] || 'http://localhost';
+    return process.env['SERVER_HOST'] || process.env['host'] || 'http://localhost';
 }
 
 export function getBaseUrl() {

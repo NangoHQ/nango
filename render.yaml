@@ -25,15 +25,7 @@ services:
                 property: port
           - key: NANGO_DB_SSL
             value: TRUE
-          - key: SERVER_HOST
-            fromService:
-                name: nango-server
-                property: host
-          - key: SERVER_PORT
-            fromService:
-                name: nango-server
-                property: port
-          - key: PIZZLY_SECRET_KEY
+          - key: NANGO_SECRET_KEY
             generateValue: true
 databases:
     - name: nango-db
