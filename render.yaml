@@ -2,7 +2,7 @@ services:
     - type: web
       name: nango-server
       env: docker
-      repo: https://github.com/NangoHQ/nango
+      repo: https://github.com/NangoHQ/Pizzly
       plan: free
       branch: master
       rootDir: ./render/server/
