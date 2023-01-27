@@ -1,4 +1,5 @@
 import axios from 'axios';
+import https from 'https';
 
 export class Nango {
     serverUrl: string;
@@ -60,7 +61,8 @@ export class Nango {
         let url = `${this.serverUrl}/connection/${connectionId}`;
 
         let headers = {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Accept-Encoding': 'application/json'
         };
 
         let params = {
