@@ -94,7 +94,7 @@ docker compose up
 
 Make sure you have a client ID & secret ready for the API you want to use, e.g. for GitHub [register it here](https://docs.github.com/en/developers/apps/building-oauth-apps/creating-an-oauth-app). Use `http://localhost:3003/oauth/callback` as the callback URL.
 
-Enable the GitHub API and add your OAuth client id & secret with the CLI:
+Enable the GitHub API and add your OAuth client id & secret with the CLI (make sure to run this outside of the cloned nango repo):
 
 ```bash
 npx nango config:create github github <client-id> <client-secret> "user,public_repo"
@@ -107,7 +107,7 @@ cd packages/frontend
 python3 -m http.server 8080
 ```
 
-Open the demo page in your browser at [http://localhost:8080/bin/sample.html](http://localhost:8080/bin/sample.html) and try the OAuth flow with `github` as the config key and `1` as the connection id.
+Open the demo page in your browser at [http://localhost:8080/bin/quickstart.html](http://localhost:8080/bin/quickstart.html) and try the OAuth flow with `github` as the config key and `1` as the connection id.
 
 Once the flow is finished you can use our SDKs or REST API to get access tokens in the backend (automatically refreshed) and make API calls:
 
