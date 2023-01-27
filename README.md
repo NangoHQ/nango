@@ -16,13 +16,13 @@ Nango takes care of the OAuth dance for you and makes sure your access tokens al
 
 <p align="center">
     <br />
-    <a href="https://docs.nango.dev/pizzly" rel="dofollow"><strong>Explore the docs »</strong></a>
+    <a href="https://docs.nango.dev/" rel="dofollow"><strong>Explore the docs »</strong></a>
     <br />
 
   <br/>
     <a href="https://nango.dev/oauth-providers">All supported APIs</a>
     ·
-    <a href="https://docs.nango.dev/pizzly/contribute-api">Contribute an API</a>
+    <a href="https://docs.nango.dev/contribute-api">Contribute an API</a>
     ·
     <a href="https://github.com/nangohq/nango/issues">Report Bug</a>
     ·
@@ -67,7 +67,7 @@ More than 50 APIs are preconfigured to work out-of-the-box. Including:
 -   **Social**: Twitter, LinkedIn, Reddit, Facebook etc.
 -   [and more...](https://nango.dev/oauth-providers)
 
-If your favorite API is missing [open a GitHub issue](https://github.com/NangoHQ/Pizzly/issues/new) or [contribute it right away](https://docs.nango.dev/pizzly/contribute-api): The API configurations are just simple [entries in a YAML file](https://www.nango.dev/oauth-providers).
+If your favorite API is missing [open a GitHub issue](https://github.com/NangoHQ/nango/issues/new) or [contribute it right away](https://docs.nango.dev/contribute-api): The API configurations are just simple [entries in a YAML file](https://www.nango.dev/oauth-providers).
 
 ## 🛡️ Small, self-contained & ready for production
 
@@ -87,7 +87,7 @@ Last but not least, Nango's active community continuously expands & updates the 
 Clone the repo and start Nango:
 
 ```bash
-git clone https://github.com/NangoHQ/Pizzly.git
+git clone https://github.com/NangoHQ/nango.git
 cd nango
 docker compose up
 ```
@@ -117,14 +117,14 @@ let nango = new Nango();
 var githubAccessToken = await nango.accessToken('github', '1'); // Always fresh & ready to use
 ```
 
-When you are ready to add Nango to your application read our [Getting started](https://docs.nango.dev/pizzly/getting-started) guide.
+When you are ready to add Nango to your application read our [Getting started](https://docs.nango.dev/quickstart) guide.
 
 ## 🔍 Where to learn more
 
 ⭐  Follow our development by starring us here on GitHub ⭐
 
 -   Explore [the full list of supported APIs](https://nango.dev/oauth-providers)
--   [Contribute a new API](https://docs.nango.dev/pizzly/contribute-api)
+-   [Contribute a new API](https://docs.nango.dev/contribute-api)
 -   Share feedback or ask questions on the [Slack community](https://nango.dev/slack)
 -   Check our [blog on native integrations](https://www.nango.dev/blog)
 
