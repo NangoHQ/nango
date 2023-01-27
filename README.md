@@ -8,7 +8,7 @@
 
 </div>
 
-<h1 align="center">Get OAuth tokens for external APIs, fast</h1>
+<h1 align="center">Access to OAuth APIs. Fast & secure.</h1>
 
 <div align="center">
 Nango takes care of the OAuth dance for you and makes sure your access tokens always stay fresh.
