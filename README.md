@@ -100,8 +100,7 @@ Go to the demo [page](http://localhost:8080/bin/quickstart.html) and start an OA
 Finally, fetch a fresh access token to make API calls with the API:
 ```bash
 curl -XGET -G \
-  'http://localhost:3003/connection/1' \
-  -d provider-config_key=github
+  'http://localhost:3003/connection/1?provider-config_key=github'
 ```
 
 or with Node:
