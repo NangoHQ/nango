@@ -22,10 +22,14 @@ class Analytics {
             return;
         }
 
+        let baseUrl = getBaseUrl();
+        properties = properties || {};
+        properties['host'] = baseUrl;
+
         this.client.capture({
             event: name,
-            distinctId: getBaseUrl(),
-            properties: properties || {}
+            distinctId: baseUrl,
+            properties: properties
         });
     }
 
