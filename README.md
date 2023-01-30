@@ -110,7 +110,7 @@ npm i nangohq/node
 ```ts
 import { Nango } from '@nangohq/node';
 let nango = new Nango();
-var githubAccessToken = await nango.accessToken('github', '1');
+var githubAccessToken = await nango.getToken('github', '1');
 ```
 
 Et voilà ! Nango will permanently store & refresh your tokens safely. For production usage, read our docs about [Self-Hosted](https://docs.nango.dev/category/deploy-nango-sync-open-source) & [Cloud](https://docs.nango.dev/cloud) options.
