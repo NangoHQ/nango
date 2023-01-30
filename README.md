@@ -113,7 +113,7 @@ let nango = new Nango();
 var githubAccessToken = await nango.getToken('github', '1');
 ```
 
-Et voilà ! Nango will permanently store & refresh your tokens safely. For production usage, read our docs about [Self-Hosted](https://docs.nango.dev/category/deploy-nango-sync-open-source) & [Cloud](https://docs.nango.dev/cloud) options.
+Et voilà ! Nango will permanently store & refresh your tokens safely. Wanna go live? Check out the [Self-Hosted](https://docs.nango.dev/category/deploy-nango-sync-open-source) & [Cloud](https://docs.nango.dev/cloud) options.
 
 ## 🔍 Where to learn more
 
