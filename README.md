@@ -1,5 +1,5 @@
 ```diff
-+ Looking for Pizzly? You are in the right place. Pizzly has been renamed Nango. Using Pizzly v0.2.x? Please read this about migrating to Nango v0.3+: https://docs.nango.dev/pizzly/migration +
++ Looking for Pizzly? You are in the right place. Pizzly has been renamed Nango. Using Pizzly v0.2.x? Check out: https://docs.nango.dev/pizzly/migration +
 ```
 
 <div align="center">
@@ -8,10 +8,10 @@
 
 </div>
 
-<h1 align="center">Access to OAuth APIs. Fast & secure.</h1>
+<h1 align="center">Get OAuth tokens for APIs. Fast & secure.</h1>
 
 <div align="center">
-Nango takes care of the OAuth dance for you and makes sure your access tokens always stay fresh.
+Pre-built OAuth flows & secure token management for 40+ APIs. 100% open source.
 </div>
 
 <p align="center">
@@ -26,39 +26,33 @@ Nango takes care of the OAuth dance for you and makes sure your access tokens al
     ·
     <a href="https://github.com/nangohq/nango/issues">Report Bug</a>
     ·
-    <a href="https://nango.dev/slack">Community Slack</a>
+    <a href="https://nango.dev/slack">Slack Community</a>
 </p>
 
 ## ⭐ Nango at a glance
 
-Nango is a small, self-contained service (docker container) that contains everything you need to work with APIs that use OAuth.
+Nango is a service that contains everything you need to work with APIs that use OAuth.
 
-Nango has been designed for modern web apps/backends and contains:
+It contains:
+- a full OAuth dance for 40+ APIs
+- a frontend SDK to trigger new OAuth flows from your frontend
+- a backend SDK & REST API to retrieve fresh access tokens for your API calls
 
--   a full OAuth 2 and OAuth 1.0a dance implementation for 50+ APIs (and more coming)
--   a frontend SDK that makes it easy to trigger new OAuth flows from your web app
--   a backend SDK & REST API that make it easy to get always-fresh access tokens for your API calls
--   a CLI that makes it easy to manage your OAuth provider configs, setup different environments and debug OAuth issues
+Nango is easy to try in 5 minutes and can be deployed in 15:
 
-Nango is easy to try in 5 minutes and can be deployed in 15.
-
-Start a **new OAuth flow with 1 line of code in your frontend**:
-
+- 1-liner to start a new OAuth flow in your frontend:
 ```ts
-// Trigger an OAuth flow for the user to authenticate with Slack
-let result = await new Nango().auth('slack', '<user-id>');
+let result = await new Nango().auth('github', '<user-id>');
 ```
 
-Then **get and use the current access token in your backend** (with our SDK or a simple REST API):
-
+- 1-liner to retrieve a token (with our SDK or REST API):
 ```ts
-var slackAccessToken = await nango.getToken('slack', '<user-id>'); // Always fresh & ready to use
+let token = await nango.getToken('github', '<user-id>');
 ```
 
-## 👾 Out of the box support for 50+ APIs
+## 👾 Out of the box support for 40+ APIs
 
-More than 50 APIs are preconfigured to work out-of-the-box. Including:
-
+40+ APIs are preconfigured to work out-of-the-box. Including:
 -   **CRM**: Front, Hubspot, Salesforce, etc.
 -   **Accounting**: Xero, Sellsy, Zoho Books, etc.
 -   **Developer tools**: GitHub, GitLab, Linear, Jira etc.
@@ -71,53 +65,56 @@ If your favorite API is missing [open a GitHub issue](https://github.com/NangoHQ
 
 ## 🛡️ Small, self-contained & ready for production
 
-We built Nango because we wanted a simple and fast way to get (fresh) access tokens for any API that requires OAuth.
+Nango is purposely small, focused on its one task and easy to deploy in production:
 
-On purpose Nango is small, focused on its one task and easy to deploy in production:
+-   Runs as a single docker container
+-   Updates easily (`docker pull`)
+-   Secured with an API key
+-   Managed with a CLI
 
--   It runs as a single docker container in your stack
--   Updating it is as simple as `docker pull` and restarting the container
--   Securing it for production is quick & easy
--   Our CLI helps you with all admin tasks (such as setting scopes, enabling APIs etc.)
-
-Last but not least, Nango's active community continuously expands & updates the 50+ blueprints. So your OAuth flows & tokens will keep on working even 5 years down the road.
+Nango's community continuously maintains & expands API templates.
 
 ## 🚀 Quickstart
 
 Clone the repo and start Nango:
 
 ```bash
-git clone https://github.com/NangoHQ/nango.git
-cd nango
+git clone https://github.com/NangoHQ/nango.git && cd nango
 docker compose up
 ```
 
-Make sure you have a client ID & secret ready for the API you want to use, e.g. for GitHub [register it here](https://docs.github.com/en/developers/apps/building-oauth-apps/creating-an-oauth-app). Use `http://localhost:3003/oauth/callback` as the callback URL.
+Make sure you have a client ID & secret ready for the API you want to use, e.g. for GitHub [register here](https://docs.github.com/en/developers/apps/building-oauth-apps/creating-an-oauth-app). Use `http://localhost:3003/oauth/callback` as the callback URL.
 
-Enable the GitHub API and add your OAuth client id & secret with the CLI (make sure to run this outside of the cloned nango repo):
-
+In a new terminal window, configure a new Github integration with our CLI (outside the `nango` repo):
 ```bash
-npx nango config:create github github <client-id> <client-secret> "user,public_repo"
+cd ~ && npx nango config:create github github <client-id> <client-secret> "user,public_repo"
 ```
 
-CD to the demo page and start a small webserver to serve the demo page:
-
+In a new terminal window, go to the `nango` repo and serve the demo page: 
 ```bash
-cd packages/frontend
-python3 -m http.server 8080
+cd packages/frontend && python3 -m http.server 8080
 ```
 
-Open the demo page in your browser at [http://localhost:8080/bin/quickstart.html](http://localhost:8080/bin/quickstart.html) and try the OAuth flow with `github` as the config key and `1` as the connection id.
+Go to the demo [page](http://localhost:8080/bin/quickstart.html) and start an OAuth flow with `github` as the config key and `1` as the connection ID.
 
-Once the flow is finished you can use our SDKs or REST API to get access tokens in the backend (automatically refreshed) and make API calls:
+Finally, fetch a fresh access token to make API calls with the API:
+```bash
+curl -XGET -G \
+  'http://localhost:3003/connection/1' \
+  -d provider-config_key=github
+```
 
+or with Node:
+```bash
+npm i nangohq/node
+```
 ```ts
 import { Nango } from '@nangohq/node';
 let nango = new Nango();
-var githubAccessToken = await nango.accessToken('github', '1'); // Always fresh & ready to use
+var githubAccessToken = await nango.accessToken('github', '1');
 ```
 
-When you are ready to add Nango to your application read our [Getting started](https://docs.nango.dev/quickstart) guide.
+Et voilà ! Nango will permanently store & refresh your tokens safely. For production usage, read our docs about [Self-Hosted](https://docs.nango.dev/category/deploy-nango-sync-open-source) & [Cloud](https://docs.nango.dev/cloud) options.
 
 ## 🔍 Where to learn more
 
