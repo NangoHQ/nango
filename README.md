@@ -118,8 +118,6 @@ Et voilà ! Nango will permanently store & refresh your tokens safely. For produ
 
 ## 🔍 Where to learn more
 
-⭐  Follow our development by starring us here on GitHub ⭐
-
 -   Explore [the full list of supported APIs](https://nango.dev/oauth-providers)
 -   [Contribute a new API](https://docs.nango.dev/contribute-api)
 -   Share feedback or ask questions on the [Slack community](https://nango.dev/slack)
