@@ -3,6 +3,7 @@ import { ProviderAuthModes } from '../models.js';
 import { refreshOAuth2Credentials } from '../oauth-clients/oauth2.client.js';
 import db from '../db/database.js';
 import type { ProviderConfig, Connection } from '../models.js';
+import analytics from '../utils/analytics.js';
 
 class ConnectionService {
     private runningCredentialsRefreshes: CredentialsRefresh[] = [];
@@ -10,6 +11,7 @@ class ConnectionService {
     public async upsertConnection(
         connectionId: string,
         providerConfigKey: string,
+        provider: string,
         rawCredentials: object,
         authMode: ProviderAuthModes,
         connectionConfig: Record<string, string>
@@ -25,6 +27,7 @@ class ConnectionService {
             })
             .onConflict(['provider_config_key', 'connection_id'])
             .merge();
+        analytics.track('server:connection_upserted', { provider: provider, connection: analytics.hash(connectionId) });
     }
 
     public async updateConnection(connectionId: string, providerConfigKey: string, credentials: OAuth2Credentials, authMode: ProviderAuthModes) {

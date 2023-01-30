@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import configService from '../services/config.service.js';
 import type { ProviderConfig } from '../models.js';
 import type { NextFunction } from 'express';
+import analytics from '../utils/analytics.js';
 
 class ConfigController {
     async listProviderConfigs(_: Request, res: Response, next: NextFunction) {
@@ -77,6 +78,8 @@ class ConfigController {
 
             if (Array.isArray(result) && result.length === 1 && result[0] != null && 'id' in result[0]) {
                 let configId = result[0]['id'];
+
+                analytics.track('server:config_created', { provider: config.provider });
                 res.status(200).send({ config_id: configId });
             } else {
                 res.status(500).send({

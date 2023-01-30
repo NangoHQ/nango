@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/auth",
-    "version": "0.7.2",
+    "version": "0.7.3",
     "description": "Nango's OAuth-related features.",
     "type": "module",
     "main": "dist/index.js",
@@ -25,7 +25,8 @@
         "pg": "^8.8.0",
         "simple-oauth2": "^5.0.0",
         "uuid": "^9.0.0",
-        "winston": "^3.8.2"
+        "winston": "^3.8.2",
+        "posthog-node": "^2.3.0"
     },
     "engines": {
         "node": ">=16.7",

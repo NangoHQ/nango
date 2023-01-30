@@ -19,7 +19,7 @@ export function getBaseUrl() {
 }
 
 export function getOauthCallbackUrl() {
-    return process.env['AUTH_CALLBACK_URL'] || getBaseUrl() + '/oauth/callback';
+    return getBaseUrl() + '/oauth/callback';
 }
 
 /**

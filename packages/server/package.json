@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/nango-server",
-    "version": "0.7.2",
+    "version": "0.7.3",
     "description": "Nango OAuth's server.",
     "type": "module",
     "main": "dist/server.js",
@@ -19,6 +19,6 @@
         "npm": ">=6.14.11"
     },
     "dependencies": {
-        "@nangohq/auth": "^0.7.2"
+        "@nangohq/auth": "^0.7.3"
     }
 }

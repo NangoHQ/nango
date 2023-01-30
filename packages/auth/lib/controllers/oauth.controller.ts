@@ -250,7 +250,14 @@ class OAuthController {
 
             logger.debug(`OAuth 2 for ${providerConfigKey} (connection ${connectionId}) successful.`);
 
-            connectionService.upsertConnection(connectionId, providerConfigKey, accessToken.token, ProviderAuthModes.OAuth2, session.connectionConfig);
+            connectionService.upsertConnection(
+                connectionId,
+                providerConfigKey,
+                session.provider,
+                accessToken.token,
+                ProviderAuthModes.OAuth2,
+                session.connectionConfig
+            );
 
             return html(logger, res, providerConfigKey, connectionId, '', '');
         } catch (e) {
@@ -279,7 +286,7 @@ class OAuthController {
             .then((accessTokenResult) => {
                 logger.debug(`OAuth 1.0a for ${providerConfigKey} (connection: ${connectionId}) successful.`);
 
-                connectionService.upsertConnection(connectionId, providerConfigKey, accessTokenResult, ProviderAuthModes.OAuth1, {});
+                connectionService.upsertConnection(connectionId, providerConfigKey, session.provider, accessTokenResult, ProviderAuthModes.OAuth1, {});
                 return html(logger, res, providerConfigKey, connectionId, '', '');
             })
             .catch((e) => {

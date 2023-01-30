@@ -3,6 +3,7 @@ import connectionService from '../services/connection.service.js';
 import type { NextFunction } from 'express';
 import configService from '../services/config.service.js';
 import { ProviderConfig, ProviderTemplate, Connection, ProviderAuthModes } from '../models.js';
+import analytics from '../utils/analytics.js';
 
 class ConnectionController {
     templates: { [key: string]: ProviderTemplate } = configService.getTemplates();
@@ -48,6 +49,8 @@ class ConnectionController {
             if (connection.credentials.type === ProviderAuthModes.OAuth2) {
                 connection.credentials = await connectionService.refreshOauth2CredentialsIfNeeded(connection, config, template);
             }
+
+            analytics.track('server:connection_fetched', { provider: config.provider, connection: analytics.hash(connectionId) });
 
             res.status(200).send(connection);
         } catch (err) {
