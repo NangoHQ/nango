@@ -35,7 +35,7 @@ Nango is a service that contains everything you need to work with APIs that use 
 
 It contains:
 - a full OAuth dance for 40+ APIs
-- a frontend SDK to trigger new OAuth flows from your frontend
+- a frontend SDK to trigger new OAuth flows 
 - a backend SDK & REST API to retrieve fresh access tokens for your API calls
 
 Nango is easy to try in 5 minutes and can be deployed in 15:
