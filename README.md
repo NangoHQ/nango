@@ -113,7 +113,7 @@ curl -XGET -G \
 or with Node:
 
 ```bash
-npm i nangohq/node
+npm i @nangohq/node
 ```
 
 ```ts
