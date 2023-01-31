@@ -120,7 +120,7 @@ const sidebars = {
     },
     {
       type: 'category',
-      label: 'Providers',
+      label: 'Provider Wikis',
       items: [
         'providers/airtable',
         'providers/asana',
