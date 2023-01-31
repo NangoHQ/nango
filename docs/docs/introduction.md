@@ -10,18 +10,21 @@ sidebar_label: Introduction
 Nango is a service that contains everything you need to work with APIs that use OAuth.
 
 It contains:
-- a full OAuth dance for 40+ APIs
-- a frontend SDK to trigger new OAuth flows
-- a backend SDK & REST API to retrieve fresh access tokens for your API calls
+
+-   a full OAuth dance for 40+ APIs
+-   a frontend SDK to trigger new OAuth flows
+-   a backend SDK & REST API to retrieve fresh access tokens for your API calls
 
 Nango is easy to try in 5 minutes and can be deployed in 15:
 
-- 1-liner to start a new OAuth flow in your frontend:
+-   1-liner to start a new OAuth flow in your frontend:
+
 ```ts
 let result = await nango.auth('github', '<user-id>');
 ```
 
-- 1-liner to retrieve a fresh access token (with our SDK or REST API):
+-   1-liner to retrieve a fresh access token (with our SDK or REST API):
+
 ```ts
 let token = await nango.getToken('github', '<user-id>');
 ```
@@ -29,6 +32,7 @@ let token = await nango.getToken('github', '<user-id>');
 ## 👾 Out of the box support for 40+ APIs
 
 40+ APIs are preconfigured to work out-of-the-box. Including:
+
 -   **CRM**: Front, Hubspot, Salesforce, etc.
 -   **Accounting**: Xero, Sellsy, Zoho Books, etc.
 -   **Developer tools**: GitHub, GitLab, Linear, Jira etc.
@@ -59,4 +63,4 @@ Nango's community continuously maintains & expands API templates.
 
 ## 🐻 History
 
-Pizzly was originally developed by the team at [Bearer](https://www.bearer.com/?ref=pizzly) with contributions of more than 40+ individuals. Over time the focus of Bearer shifted and they could no longer maintain Pizzly. In late 2022 the team at [Nango](https://www.nango.dev) adopted the project and has since maintained and evolved it together with the growing Nango community.
+Pizzly was originally developed by the team at [Bearer](https://www.bearer.com/?ref=pizzly) with contributions of more than 40+ individuals. Over time the focus of Bearer shifted and they could no longer maintain Pizzly. In late 2022 the team at [Nango](https://www.nango.dev) adopted the project and has since developed it together with the growing Nango community.
