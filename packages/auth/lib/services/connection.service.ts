@@ -30,13 +30,13 @@ class ConnectionService {
         analytics.track('server:connection_upserted', { provider: provider, connection: analytics.hash(connectionId) });
     }
 
-    public async updateConnection(connectionId: string, providerConfigKey: string, credentials: OAuth2Credentials, authMode: ProviderAuthModes) {
+    public async updateConnection(connectionId: string, providerConfigKey: string, credentials: OAuth2Credentials) {
         await db.knex
             .withSchema(db.schema())
             .from<Connection>(`_nango_connections`)
             .where({ connection_id: connectionId, provider_config_key: providerConfigKey })
             .update({
-                credentials: this.parseRawCredentials(credentials, authMode)
+                credentials: credentials
             });
     }
 
@@ -60,18 +60,22 @@ class ConnectionService {
             case ProviderAuthModes.OAuth2:
                 parsedCredentials.type = ProviderAuthModes.OAuth2;
                 parsedCredentials.access_token = rawAuthCredentials['access_token'];
+
                 if (rawAuthCredentials['refresh_token']) {
                     parsedCredentials.refresh_token = rawAuthCredentials['refresh_token'];
-                    let tokenExpirationDate: Date;
-                    if (rawAuthCredentials['expires_at']) {
-                        tokenExpirationDate = this.parseTokenExpirationDate(rawAuthCredentials['expires_at']);
-                    } else if (rawAuthCredentials['expires_in']) {
-                        tokenExpirationDate = new Date(Date.now() + Number.parseInt(rawAuthCredentials['expires_in'], 10) * 1000);
-                    } else {
-                        throw new Error(`Got a refresh token but no information about expiration: ${JSON.stringify(rawAuthCredentials, undefined, 2)}`);
-                    }
-                    parsedCredentials.expires_at = tokenExpirationDate;
                 }
+
+                let tokenExpirationDate: Date;
+                if (rawAuthCredentials['expires_at']) {
+                    tokenExpirationDate = this.parseTokenExpirationDate(rawAuthCredentials['expires_at']);
+                } else if (rawAuthCredentials['expires_in']) {
+                    tokenExpirationDate = new Date(Date.now() + Number.parseInt(rawAuthCredentials['expires_in'], 10) * 1000);
+                } else {
+                    throw new Error(`Got a refresh token but no information about expiration: ${JSON.stringify(rawAuthCredentials, undefined, 2)}`);
+                }
+
+                parsedCredentials.expires_at = tokenExpirationDate;
+
                 break;
             case ProviderAuthModes.OAuth1:
                 parsedCredentials.type = ProviderAuthModes.OAuth1;
@@ -124,7 +128,7 @@ class ConnectionService {
                 const promise = new Promise<OAuth2Credentials>(async (resolve, reject) => {
                     try {
                         const newCredentials = await refreshOAuth2Credentials(connection, providerConfig, template);
-                        this.updateConnection(connectionId, providerConfigKey, newCredentials, ProviderAuthModes.OAuth2);
+                        this.updateConnection(connectionId, providerConfigKey, newCredentials);
 
                         // Remove ourselves from the array of running refreshes
                         this.runningCredentialsRefreshes = this.runningCredentialsRefreshes.filter((value) => {
