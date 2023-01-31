@@ -1,5 +1,5 @@
 ```diff
-+ Looking for Pizzly? You are in the right place. Pizzly has been renamed Nango. Using Pizzly v0.2.x? Check out: https://docs.nango.dev/pizzly/migration +
++ Looking for Pizzly? You are in the right place. Pizzly has been renamed Nango. Using Pizzly v0.2.x? Check out: https://docs.nango.dev/migration +
 ```
 
 <div align="center">
@@ -113,7 +113,7 @@ let nango = new Nango();
 var githubAccessToken = await nango.getToken('github', '1');
 ```
 
-Et voilà ! Nango will permanently store & refresh your tokens safely. Wanna go live? Check out the [Self-Hosted](https://docs.nango.dev/category/deploy-nango-sync-open-source) & [Cloud](https://docs.nango.dev/cloud) options.
+Et voilà ! Nango will permanently store & refresh your tokens safely. Want to go live? Check out the [Self-Hosted](https://docs.nango.dev/category/deploy-nango-sync-open-source) & [Cloud](https://docs.nango.dev/cloud) options.
 
 ## 🔍 Where to learn more
 
