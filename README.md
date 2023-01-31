@@ -103,14 +103,15 @@ cd packages/frontend && python3 -m http.server 8000
 
 Go to the demo [page](http://localhost:8000/bin/quickstart.html) and start an OAuth flow with `github` as the config key and `1` as the connection ID.
 
-Finally, fetch a fresh access token to make API calls with the API:
+Finally, let's fetch a fresh access token to start making Github API calls!
+
+-   Option 1: Fetch the token with Nango's REST API:
 
 ```bash
-curl -XGET -G \
-  'http://localhost:3003/connection/1?provider-config_key=github'
+curl -XGET -G 'http://localhost:3003/connection/1?provider-config_key=github'
 ```
 
-or with Node:
+-   Option 2: Fetch the token with Nango's Node SDK:
 
 ```bash
 npm i @nangohq/node
