@@ -100,8 +100,7 @@ Go to the demo [page](http://localhost:8080/bin/quickstart.html) and start an OA
 Finally, fetch a fresh access token to make API calls with the API:
 ```bash
 curl -XGET -G \
-  'http://localhost:3003/connection/1' \
-  -d provider-config_key=github
+  'http://localhost:3003/connection/1?provider-config_key=github'
 ```
 
 or with Node:
@@ -111,10 +110,10 @@ npm i nangohq/node
 ```ts
 import { Nango } from '@nangohq/node';
 let nango = new Nango();
-var githubAccessToken = await nango.accessToken('github', '1');
+var githubAccessToken = await nango.getToken('github', '1');
 ```
 
-Et voilà ! Nango will permanently store & refresh your tokens safely. For production usage, read our docs about [Self-Hosted](https://docs.nango.dev/category/deploy-nango-sync-open-source) & [Cloud](https://docs.nango.dev/cloud) options.
+Et voilà ! Nango will permanently store & refresh your tokens safely. Wanna go live? Check out the [Self-Hosted](https://docs.nango.dev/category/deploy-nango-sync-open-source) & [Cloud](https://docs.nango.dev/cloud) options.
 
 ## 🔍 Where to learn more
 
