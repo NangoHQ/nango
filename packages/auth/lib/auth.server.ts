@@ -16,6 +16,12 @@ class AuthServer {
         await db.knex.raw(`CREATE SCHEMA IF NOT EXISTS ${db.schema()}`);
         await db.migrate(path.join(dirname(), '../../lib/db/migrations'));
 
+        // Healthcheck.
+        app.get('/', (_, res) => {
+            res.status(200).send();
+        });
+
+        // All routes.
         app.route('/oauth/connect/:providerConfigKey').get(oauthController.oauthRequest.bind(oauthController));
         app.route('/oauth/callback').get(oauthController.oauthCallback.bind(oauthController));
         app.route('/config').get(accessMiddleware.checkSecret.bind(accessMiddleware), configController.listProviderConfigs.bind(configController));
@@ -34,6 +40,7 @@ class AuthServer {
             connectionController.getConnectionCreds.bind(connectionController)
         );
 
+        // Error handling.
         app.use((error: any, _: any, response: any, __: any) => {
             const status = error.status || 500;
             response.status(status).send(error.message);
