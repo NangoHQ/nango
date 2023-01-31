@@ -34,18 +34,21 @@ Pre-built OAuth flows & secure token management for 40+ APIs. 100% open source.
 Nango is a service that contains everything you need to work with APIs that use OAuth.
 
 It contains:
-- a full OAuth dance for 40+ APIs
-- a frontend SDK to trigger new OAuth flows 
-- a backend SDK & REST API to retrieve fresh access tokens for your API calls
+
+-   a full OAuth dance for 40+ APIs
+-   a frontend SDK to trigger new OAuth flows
+-   a backend SDK & REST API to retrieve fresh access tokens for your API calls
 
 Nango is easy to try in 5 minutes and can be deployed in 15:
 
-- 1-liner to start a new OAuth flow in your frontend:
+-   1-liner to start a new OAuth flow in your frontend:
+
 ```ts
 let result = await new Nango().auth('github', '<user-id>');
 ```
 
-- 1-liner to retrieve a token (with our SDK or REST API):
+-   1-liner to retrieve a token (with our SDK or REST API):
+
 ```ts
 let token = await nango.getToken('github', '<user-id>');
 ```
@@ -53,6 +56,7 @@ let token = await nango.getToken('github', '<user-id>');
 ## 👾 Out of the box support for 40+ APIs
 
 40+ APIs are preconfigured to work out-of-the-box. Including:
+
 -   **CRM**: Front, Hubspot, Salesforce, etc.
 -   **Accounting**: Xero, Sellsy, Zoho Books, etc.
 -   **Developer tools**: GitHub, GitLab, Linear, Jira etc.
@@ -86,27 +90,32 @@ docker compose up
 Make sure you have a client ID & secret ready for the API you want to use, e.g. for GitHub [register here](https://docs.github.com/en/developers/apps/building-oauth-apps/creating-an-oauth-app). Use `http://localhost:3003/oauth/callback` as the callback URL.
 
 In a new terminal window, configure a new Github integration with our CLI (outside the `nango` repo):
+
 ```bash
 cd ~ && npx nango config:create github github <client-id> <client-secret> "user,public_repo"
 ```
 
-In a new terminal window, go to the `nango` repo and serve the demo page: 
+In a new terminal window, go to the `nango` repo and serve the demo page:
+
 ```bash
-cd packages/frontend && python3 -m http.server 8080
+cd packages/frontend && python3 -m http.server 8000
 ```
 
-Go to the demo [page](http://localhost:8080/bin/quickstart.html) and start an OAuth flow with `github` as the config key and `1` as the connection ID.
+Go to the demo [page](http://localhost:8000/bin/quickstart.html) and start an OAuth flow with `github` as the config key and `1` as the connection ID.
 
 Finally, fetch a fresh access token to make API calls with the API:
+
 ```bash
 curl -XGET -G \
   'http://localhost:3003/connection/1?provider-config_key=github'
 ```
 
 or with Node:
+
 ```bash
 npm i nangohq/node
 ```
+
 ```ts
 import { Nango } from '@nangohq/node';
 let nango = new Nango();
