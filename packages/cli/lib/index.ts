@@ -32,7 +32,7 @@ program
                 console.log(res.data);
             })
             .catch((err) => {
-                console.log(`❌ ${err.response?.data?.error || err}`);
+                console.log(`❌ ${err.response?.data || err}`);
             });
     });
 
@@ -49,7 +49,7 @@ program
                 console.log(res.data);
             })
             .catch((err) => {
-                console.log(`❌ ${err.response?.data?.error || err}`);
+                console.log(`❌ ${err.response?.data || err}`);
             });
     });
 
@@ -77,7 +77,7 @@ program
                 console.log('\n\n✅ Successfully created a new provider configuration!\n\n');
             })
             .catch((err) => {
-                console.log(`❌ ${err.response?.data?.error || err}`);
+                console.log(`❌ ${err.response?.data || err}`);
             });
     });
 
@@ -105,7 +105,7 @@ program
                 console.log('\n\n✅ Successfully edited an existing provider configuration!\n\n');
             })
             .catch((err) => {
-                console.log(`❌ ${err.response?.data?.error || err}`);
+                console.log(`❌ ${err.response?.data || err}`);
             });
     });
 
@@ -121,7 +121,7 @@ program
                 console.log('\n\n✅ Successfully deleted a provider configuration!\n\n');
             })
             .catch((err) => {
-                console.log(`❌ ${err.response?.data?.error || err}`);
+                console.log(`❌ ${err.response?.data || err}`);
             });
     });
 
@@ -139,7 +139,7 @@ program
                 console.log(res.data);
             })
             .catch((err) => {
-                console.log(`❌ ${err.response?.data?.error || err}`);
+                console.log(`❌ ${err.response?.data || err}`);
             });
     });
 

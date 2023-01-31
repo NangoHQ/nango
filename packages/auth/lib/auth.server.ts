@@ -33,6 +33,11 @@ class AuthServer {
             accessMiddleware.checkSecret.bind(accessMiddleware),
             connectionController.getConnectionCreds.bind(connectionController)
         );
+
+        app.use((error: any, _: any, response: any, __: any) => {
+            const status = error.status || 500;
+            response.status(status).send(error.message);
+        });
     }
 }
 

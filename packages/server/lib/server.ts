@@ -20,12 +20,6 @@ app.use(cors());
 
 authServer.setup(app);
 
-app.use((error: any, _: express.Request, response: express.Response, __: express.NextFunction) => {
-    console.log(error);
-    const status = error.status || 500;
-    response.status(status).send(error.message);
-});
-
 app.listen(port, () => {
     console.log(`✅ Nango Server is listening on port ${port}. OAuth callback URL: ${getOauthCallbackUrl()}`);
 });
