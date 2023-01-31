@@ -44,7 +44,7 @@ Nango is easy to try in 5 minutes and can be deployed in 15:
 -   1-liner to start a new OAuth flow in your frontend:
 
 ```ts
-let result = await new Nango().auth('github', '<user-id>');
+let result = await nango.auth('github', '<user-id>');
 ```
 
 -   1-liner to retrieve a token (with our SDK or REST API):
