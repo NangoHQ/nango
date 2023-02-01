@@ -57,6 +57,18 @@ class ConnectionController {
             next(err);
         }
     }
+
+    async listConnections(_: Request, res: Response, next: NextFunction) {
+        try {
+            let connections: Object[] = await connectionService.listConnections();
+
+            analytics.track('server:connection_list_fetched');
+
+            res.status(200).send({ connections: connections });
+        } catch (err) {
+            next(err);
+        }
+    }
 }
 
 export default new ConnectionController();

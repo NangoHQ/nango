@@ -50,6 +50,13 @@ class ConnectionService {
         return result == null || result.length == 0 ? null : result[0] || null;
     }
 
+    async listConnections(): Promise<Object[]> {
+        return await db.knex
+            .withSchema(db.schema())
+            .from<Connection>(`_nango_connections`)
+            .select({ conection_id: 'connection_id' }, { provider: 'provider_config_key' }, { created: 'created_at' });
+    }
+
     // Parses and arbitrary object (e.g. a server response or a user provided auth object) into AuthCredentials.
     // Throws if values are missing/missing the input is malformed.
     public parseRawCredentials(rawCredentials: object, authMode: ProviderAuthModes): AuthCredentials {

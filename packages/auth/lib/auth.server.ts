@@ -39,6 +39,7 @@ class AuthServer {
             accessMiddleware.checkSecret.bind(accessMiddleware),
             connectionController.getConnectionCreds.bind(connectionController)
         );
+        app.route('/connection').get(accessMiddleware.checkSecret.bind(accessMiddleware), connectionController.listConnections.bind(connectionController));
 
         // Error handling.
         app.use((error: any, _: any, response: any, __: any) => {

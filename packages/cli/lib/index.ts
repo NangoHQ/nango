@@ -28,8 +28,12 @@ program
         await axios
             .get(url, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
             .then((res) => {
-                console.log('\n\nHere is the list of provider configurations:\n\n');
                 console.log(res.data);
+                console.table(
+                    res.data['configs'].map((o: any) => {
+                        return { unique_key: o.unique_key, provider: o.provider, created: o.created_at };
+                    })
+                );
             })
             .catch((err) => {
                 console.log(`❌ ${err.response?.data || err}`);
@@ -45,8 +49,7 @@ program
         await axios
             .get(url, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
             .then((res) => {
-                console.log('\n\nHere is the requested provider configuration:\n\n');
-                console.log(res.data);
+                console.table(res.data['config']);
             })
             .catch((err) => {
                 console.log(`❌ ${err.response?.data || err}`);
@@ -135,8 +138,22 @@ program
         await axios
             .get(url, { params: { provider_config_key: provider_config_key }, headers: enrichHeaders(), httpsAgent: httpsAgent() })
             .then((res) => {
-                console.log('\n\nHere is the requested connection with credentials:\n\n');
                 console.log(res.data);
+            })
+            .catch((err) => {
+                console.log(`❌ ${err.response?.data || err}`);
+            });
+    });
+
+program
+    .command('connection:list')
+    .description('List connections without credentials.')
+    .action(async () => {
+        let url = path.join(hostport, `/connection`);
+        await axios
+            .get(url, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
+            .then((res) => {
+                console.table(res.data['connections']);
             })
             .catch((err) => {
                 console.log(`❌ ${err.response?.data || err}`);

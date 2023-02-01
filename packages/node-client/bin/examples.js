@@ -2,9 +2,9 @@ import { Nango } from '../dist/index.js';
 
 let nango = new Nango('http://localhost:3003');
 nango
-    .getToken('hubspot', 1)
-    .then((creds) => {
-        console.log(creds);
+    .listConnections('hubspot', 1)
+    .then((connections) => {
+        console.log(connections);
     })
     .catch((err) => {
         console.log(err.message);

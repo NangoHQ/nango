@@ -71,6 +71,25 @@ export class Nango {
         return await axios.get(url, { params: params, headers: this.enrichHeaders(headers) });
     }
 
+    /**
+     * Get the list of Connections, which does not contain access credentials.
+     */
+    public async listConnections() {
+        let response = await this.listConnectionDetails();
+        return response.data;
+    }
+
+    private async listConnectionDetails() {
+        let url = `${this.serverUrl}/connection`;
+
+        let headers = {
+            'Content-Type': 'application/json',
+            'Accept-Encoding': 'application/json'
+        };
+
+        return await axios.get(url, { headers: this.enrichHeaders(headers) });
+    }
+
     private enrichHeaders(headers: Record<string, string | number | boolean> = {}) {
         if (this.secretKey) {
             headers['Authorization'] = 'Basic ' + Buffer.from(this.secretKey + ':').toString('base64');
