@@ -22,6 +22,8 @@ Pre-built OAuth flows & secure token management for 40+ APIs. 100% open source.
   <br/>
     <a href="https://nango.dev/oauth-providers">All supported APIs</a>
     ·
+    <a href="https://nango.dev">Website</a>
+    ·
     <a href="https://docs.nango.dev/contribute-api">Contribute an API</a>
     ·
     <a href="https://github.com/nangohq/nango/issues">Report Bug</a>
@@ -75,6 +77,7 @@ Nango is purposely small, focused on its one task and easy to deploy in producti
 -   Updates easily (`docker pull`)
 -   Secured with an API key
 -   Managed with a CLI
+-   [Cloud hosting available](https://www.nango.dev/pricing)
 
 Nango's community continuously maintains & expands API templates.
 
