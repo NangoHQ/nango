@@ -19,6 +19,6 @@
         "npm": ">=6.14.11"
     },
     "dependencies": {
-        "@nangohq/auth": "^0.7.7"
+        "@nangohq/auth": "^0.7.8"
     }
 }
