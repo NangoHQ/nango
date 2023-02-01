@@ -80,14 +80,16 @@ Nango's community continuously maintains & expands API templates.
 
 ## 🚀 Quickstart
 
-Clone the repo and start Nango:
+In less than 5 minutes, you will learn how to access & manage any API's OAuth tokens, using Github as an example. Ready? Go! ⏰
+
+First, clone and start Nango:
 
 ```bash
 git clone https://github.com/NangoHQ/nango.git && cd nango
 docker compose up
 ```
 
-Make sure you have a client ID & secret ready for the API you want to use, e.g. for GitHub [register here](https://docs.github.com/en/developers/apps/building-oauth-apps/creating-an-oauth-app). Use `http://localhost:3003/oauth/callback` as the callback URL.
+Make sure you have a client ID & secret ready for the API you want to use, in our case GitHub ([register here](https://docs.github.com/en/developers/apps/building-oauth-apps/creating-an-oauth-app), specifying `http://localhost:3003/oauth/callback` as the callback URL).
 
 In a new terminal window, configure a new Github integration with our CLI (outside the `nango` repo):
 
@@ -101,9 +103,9 @@ In a new terminal window, go to the `nango` repo and serve the demo page:
 cd packages/frontend && python3 -m http.server 8000
 ```
 
-Go to the demo [page](http://localhost:8000/bin/quickstart.html) and start an OAuth flow with `github` as the config key and `1` as the connection ID.
+Visit the demo [demo page](http://localhost:8000/bin/quickstart.html) and start an OAuth flow, using `github` as config key and `1` as connection ID.
 
-Finally, let's fetch a fresh access token to start making Github API calls!
+Finally, fetch a fresh access token to start making Github API calls!
 
 -   Option 1: Fetch the token with Nango's REST API:
 
@@ -123,7 +125,9 @@ let nango = new Nango();
 var githubAccessToken = await nango.getToken('github', '1');
 ```
 
-Et voilà ! Nango will permanently store & refresh your tokens safely. Want to go live? Check out the [Self-Hosted](https://docs.nango.dev/category/deploy-nango-sync-open-source) & [Cloud](https://docs.nango.dev/cloud) options.
+Et voilà ! Nango will permanently store & refresh your tokens safely.
+
+Wanna go live? Check out the [Self-Hosted](https://docs.nango.dev/category/deploy-nango-sync-open-source) or [Cloud](https://docs.nango.dev/cloud) options.
 
 ## 🔍 Where to learn more
 

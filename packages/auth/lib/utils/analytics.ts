@@ -10,8 +10,8 @@ class Analytics {
     constructor() {
         this.distinctId = uuidv4();
 
-        // Do not log if opted out or local dev.
-        if (process.env['TELEMETRY']?.toLowerCase() !== 'false' && !getBaseUrl().includes('localhost')) {
+        // Do not log if opted out.
+        if (process.env['TELEMETRY']?.toLowerCase() !== 'false') {
             this.client = new PostHog('phc_4S2pWFTyPYT1i7zwC8YYQqABvGgSAzNHubUkdEFvcTl');
             this.client.enable();
         }
