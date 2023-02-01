@@ -110,7 +110,7 @@ Finally, fetch a fresh access token to start making Github API calls!
 -   Option 1: Fetch the token with Nango's REST API:
 
 ```bash
-curl -XGET -G 'http://localhost:3003/connection/1?provider-config_key=github'
+curl -XGET -G 'http://localhost:3003/connection/1?provider_config_key=github'
 ```
 
 -   Option 2: Fetch the token with Nango's Node SDK:
