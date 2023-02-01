@@ -59,6 +59,14 @@ gitlab:
     token_url: https://gitlab.com/oauth/token
     authorization_params:
         response_type: code
+google:
+    auth_mode: OAUTH2
+    authorization_url: https://accounts.google.com/o/oauth2/v2/auth
+    token_url: https://oauth2.googleapis.com/token
+    authorization_params:
+        response_type: code
+        access_type: offline
+        prompt: consent
 google-calendar:
     auth_mode: OAUTH2
     authorization_url: https://accounts.google.com/o/oauth2/v2/auth
@@ -66,7 +74,16 @@ google-calendar:
     authorization_params:
         response_type: code
         access_type: offline
+        prompt: consent
 google-mail:
+    auth_mode: OAUTH2
+    authorization_url: https://accounts.google.com/o/oauth2/v2/auth
+    token_url: https://oauth2.googleapis.com/token
+    authorization_params:
+        response_type: code
+        access_type: offline
+        prompt: consent
+google-sheet:
     auth_mode: OAUTH2
     authorization_url: https://accounts.google.com/o/oauth2/v2/auth
     token_url: https://oauth2.googleapis.com/token
