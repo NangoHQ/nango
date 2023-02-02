@@ -72,6 +72,10 @@ class ConfigController {
                 oauth_client_id: req.body['oauth_client_id'],
                 oauth_client_secret: req.body['oauth_client_secret'],
                 oauth_scopes: req.body['oauth_scopes']
+                    .replace(/ /g, ',')
+                    .split(',')
+                    .filter((w: string) => w)
+                    .join(',') // Make coma-separated if needed
             };
 
             let result = await configService.createProviderConfig(config);
