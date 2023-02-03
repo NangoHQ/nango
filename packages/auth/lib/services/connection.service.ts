@@ -4,6 +4,7 @@ import { refreshOAuth2Credentials } from '../oauth-clients/oauth2.client.js';
 import db from '../db/database.js';
 import type { ProviderConfig, Connection } from '../models.js';
 import analytics from '../utils/analytics.js';
+import logger from '../utils/logger.js';
 
 class ConnectionService {
     private runningCredentialsRefreshes: CredentialsRefresh[] = [];
@@ -75,13 +76,13 @@ class ConnectionService {
                 let tokenExpirationDate: Date;
                 if (rawAuthCredentials['expires_at']) {
                     tokenExpirationDate = this.parseTokenExpirationDate(rawAuthCredentials['expires_at']);
+                    parsedCredentials.expires_at = tokenExpirationDate;
                 } else if (rawAuthCredentials['expires_in']) {
                     tokenExpirationDate = new Date(Date.now() + Number.parseInt(rawAuthCredentials['expires_in'], 10) * 1000);
+                    parsedCredentials.expires_at = tokenExpirationDate;
                 } else {
-                    throw new Error(`Got a refresh token but no information about expiration: ${JSON.stringify(rawAuthCredentials, undefined, 2)}`);
+                    logger.info(`Got a refresh token but no information about expiration. Assuming the access token doesn't expire.`);
                 }
-
-                parsedCredentials.expires_at = tokenExpirationDate;
 
                 break;
             case ProviderAuthModes.OAuth1:

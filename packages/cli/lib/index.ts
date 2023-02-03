@@ -141,7 +141,7 @@ program
                 console.log(res.data);
             })
             .catch((err) => {
-                console.log(`❌ ${err.response?.data || err}`);
+                console.log(`❌ ${err.response?.data.error || err}`);
             });
     });
 
@@ -157,15 +157,17 @@ program
             .then((response) => {
                 switch (response.data.credentials.type) {
                     case 'OAUTH2':
-                        return response.data.credentials.access_token;
+                        console.table({ token: response.data.credentials.access_token });
+                        break;
                     case 'OAUTH1':
-                        return { oAuthToken: response.data.credentials.oauth_token, oAuthTokenSecret: response.data.credentials.oauth_token_secret };
+                        console.table(`token:${response.data.credentials.oauth_token}\nsecret:${response.data.credentials.oauth_token_secret}`);
+                        break;
                     default:
                         throw Error(`Unrecognized OAuth type '${response.data.credentials.type}' in stored credentials.`);
                 }
             })
             .catch((err) => {
-                console.log(`❌ ${err.response?.data || err}`);
+                console.log(`❌ ${err.response?.data.error || err.message}`);
             });
     });
 
