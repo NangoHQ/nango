@@ -22,7 +22,7 @@ npx nango config:create github-dev github 57876b21174fed02b905 e43242c9a67fa0614
 Authorize Github on this [example page](https://docs.nango.dev/demo/github). Nango securely retrieves, stores and refreshes OAuth credentials. Now try:
 
 ```bash
-npx token:get 1 github-dev
+npx nango token:get 1 github-dev
 ```
 
 Congrats 🥳 You have a fresh token to access the Github API! Let's fetch the repos of any user (❗️replace `TOKEN`):
