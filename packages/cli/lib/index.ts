@@ -146,6 +146,30 @@ program
     });
 
 program
+    .command('token:get')
+    .description('Get an access token.')
+    .argument('<connection_id>', 'The ID of the Connection.')
+    .argument('<provider_config_key>', 'The unique key of the provider configuration (chosen by you upon creating this provider configuration).')
+    .action(async (connection_id, provider_config_key) => {
+        let url = path.join(hostport, `/connection/${connection_id}`);
+        await axios
+            .get(url, { params: { provider_config_key: provider_config_key }, headers: enrichHeaders(), httpsAgent: httpsAgent() })
+            .then((response) => {
+                switch (response.data.credentials.type) {
+                    case 'OAUTH2':
+                        return response.data.credentials.access_token;
+                    case 'OAUTH1':
+                        return { oAuthToken: response.data.credentials.oauth_token, oAuthTokenSecret: response.data.credentials.oauth_token_secret };
+                    default:
+                        throw Error(`Unrecognized OAuth type '${response.data.credentials.type}' in stored credentials.`);
+                }
+            })
+            .catch((err) => {
+                console.log(`❌ ${err.response?.data || err}`);
+            });
+    });
+
+program
     .command('connection:list')
     .description('List connections without credentials.')
     .action(async () => {

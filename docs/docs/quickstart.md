@@ -4,51 +4,33 @@ sidebar_label: Quickstart
 
 # 🚀 Quickstart
 
-In less than 5 minutes, you will learn how to access & manage any API's OAuth tokens, using Github as an example. Ready? Go! ⏰
+In <5mins, learn how to access & manage OAuth tokens for any API, using Github as an example. Ready? Go! ⏰
 
 First, clone and start Nango:
 
 ```bash
-git clone https://github.com/NangoHQ/nango.git && cd nango
+git clone https://github.com/NangoHQ/quickstart.git && cd quickstart
 docker compose up
 ```
 
-Make sure you have a client ID & secret ready for the API you want to use, in our case GitHub ([register here](https://docs.github.com/en/developers/apps/building-oauth-apps/creating-an-oauth-app), specifying `http://localhost:3003/oauth/callback` as the callback URL).
-
-In a new terminal window, configure a new Github integration with our CLI (outside of the `nango` repo):
+In a new console, add any Github OAuth App to Nango (optionally [register your own Github OAuth App](https://docs.github.com/en/developers/apps/building-oauth-apps/creating-an-oauth-app)):
 
 ```bash
-cd ~ && npx nango config:create github github <client-id> <client-secret> "user,public_repo"
+npx nango config:create github-dev github 57876b21174fed02b905 e43242c9a67fa06141e8d219c2364283d14f9ad1 "user,public_repo"
 ```
 
-In a new terminal window, go to the `nango` repo and serve the demo page:
+Authorize Github on this [example page](https://docs.nango.dev/demo/github). Nango securely retrieves, stores and refreshes OAuth credentials. Now try:
 
 ```bash
-cd packages/frontend && python3 -m http.server 8000
+npx token:get 1 github-dev
 ```
 
-Visit the [demo page](http://localhost:8000/bin/quickstart.html) and start an OAuth flow, using `github` as config key and `1` as connection ID.
-
-Finally, fetch a fresh access token to start making Github API calls!
-
--   Option 1: Fetch the token with Nango's REST API:
+Congrats 🥳 You have a fresh token to access the Github API! Let's fetch the repos of any user (❗️replace `TOKEN`):
 
 ```bash
-curl -XGET -G 'http://localhost:3003/connection/1?provider_config_key=github'
+curl -XGET -G "https://api.github.com/users/bastienbeurier/repos" -H "Authorization: Bearer TOKEN"
 ```
 
--   Option 2: Fetch the token with Nango's Node SDK:
+(In practice, you probably want to use our [backend SDKs](https://docs.nango.dev/reference/guide#node-sdk) to fetch tokens from your codebase.)
 
-```bash
-npm i nangohq/node
-```
-
-```ts
-import { Nango } from '@nangohq/node';
-let nango = new Nango();
-var githubAccessToken = await nango.accessToken('github', '1');
-```
-
-Et voilà ! Nango will permanently store & refresh your tokens safely.
-
-Wanna to go live? Check out the [Self-Hosted](category/deploy-nango-sync-open-source) or [Cloud](cloud) options.
+Wanna to go live? Check out the [Self-Hosted](category/deploy-nango-sync-open-source) or [Cloud](cloud) options!
