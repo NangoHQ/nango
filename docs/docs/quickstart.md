@@ -19,18 +19,18 @@ In a new tab, add any Github OAuth App to Nango (optionally [register your own G
 npx nango config:create github-dev github 57876b21174fed02b905 e43242c9a67fa06141e8d219c2364283d14f9ad1 "user,public_repo"
 ```
 
-Authorize Github on this [example page](https://docs.nango.dev/demo/github). Nango securely retrieves, stores and refreshes OAuth credentials. Now try:
+Authorize Github on this [example page](https://docs.nango.dev/demo/github). Nango will securely retrieve, store and refresh OAuth credentials. Now try:
 
 ```bash
 npx nango token:get 1 github-dev
 ```
 
-Congrats 🥳 You have a fresh token to access the Github API! Let's fetch the repos of any user (❗️replace `TOKEN`):
+Congrats 🥳 You have a fresh token to access the Github API! Let's make sure it works (❗️replace `TOKEN`):
 
 ```bash
 curl -XGET -G "https://api.github.com/users/bastienbeurier/repos" -H "Authorization: Bearer TOKEN"
 ```
 
-(In practice, you probably want to use our [backend SDKs](https://docs.nango.dev/reference/guide#node-sdk) to fetch tokens from your codebase.)
+(In practice, you should use our [backend SDKs](https://docs.nango.dev/reference/guide#node-sdk) to fetch tokens from your codebase.)
 
-Wanna to go live? Check out the [Self-Hosted](category/deploy-nango-sync-open-source) or [Cloud](cloud) options!
+Wanna go live? Go through the more detailed [Step-By-Step Guide](reference/guide.md). You can [self-host Nango](category/deploy-nango-sync-open-source) or use [Nango Cloud](cloud).

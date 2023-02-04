@@ -13,45 +13,21 @@
 
 Other feature ideas or questions? We would love to help or hear your input on the [Slack community](https://nango.dev/slack)!
 
-## Use Nango Cloud
+## Get Started
 
-To get a Cloud instance fill out the brief [form here](https://nango.dev/start). Then check your email for your instance URL and secret key.
+[Sign up](https://nango.dev/start) to Nango Cloud and check your emails for an instance URL and secret key.
 
-To use the cloud instance, first connect the Nango CLI (see next paragraph).  
-Then go through the [Quickstart](quickstart.md), but replace the instructions for instantiating the frontend and backend SDK with the code snippets below.
-
-Please don't hesitate to reach out on our [Slack community](https://nango.dev/slack) if you run into any issues!
-
-### Connecting the Nango CLI to your cloud instance
-
-You need to set two environment variables so the CLI can connect to your cloud instance:
-
--   `NANGO_HOSTPORT` = URL of your cloud instance (see instance details email)
--   `NANGO_SECRET_KEY` = your instance's secret key (see instance details email)
-
-We recommend adding these to your `.zshrc` (or equivalent) so they load for every terminal:
+On your local machine, add these two lines to your `.zshrc` or `.bashrc`:
 
 ```bash
-export NANGO_HOSTPORT=https://nango<instance-id>.onrender.com;
-export NANGO_SECRET_KEY=<secret-key>;
+export NANGO_HOSTPORT=INSTANCE_URL;
+export NANGO_SECRET_KEY=SECRET_KEY;
 ```
 
-### Instantiating the frontend SDK
+❗️Restart your console to activate the new config
 
-Use the instance URL to instantiate the Nango frontend SDK:
+You can now follow the instructions from the [Quickstart](quickstart) or more detailed [Step-By-Step Guide](guide), with a couple differences:
 
-```ts
-import Nango from '@nangohq/frontend';
-var nango = new Nango('https://nango<instance-id>.onrender.com');
-nango.auth('github', '<connection-id>');
-```
-
-### Instantiating the backend SDK {#backend-sdk-cloud}
-
-Use the instance URL and the secret key to instantiate the Nango backend SDK (or API requests):
-
-```ts
-import { Nango } from '@nangohq/node';
-
-let nango = new Nango('https://nango<instance-id>.onrender.com', '<your-secret-key>');
-```
+-   You don't need to clone and start Nango
+-   Replace `http://localhost:3003` by your instance URL
+-   Initialize the Node SDK with the secret: `new Nango(INSTANCE_URL, SECRET_KEY)` (or if you're using the Nango REST API, use [Simple Auth](https://en.wikipedia.org/wiki/Basic_access_authentication) or [ask us](https://nango.dev/slack))
