@@ -26,7 +26,7 @@ export NANGO_SECRET_KEY=SECRET_KEY;
 
 ❗️Restart your console to activate the new config
 
-You can now follow the instructions from the [Quickstart](quickstart) or more detailed [Step-By-Step Guide](guide), with a couple differences:
+You can now follow the instructions from the [Quickstart](quickstart) or more detailed [Step-By-Step Guide](reference/guide.md), with a couple differences:
 
 -   You don't need to clone and start Nango
 -   Replace `http://localhost:3003` by your instance URL
