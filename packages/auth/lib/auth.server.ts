@@ -18,7 +18,7 @@ class AuthServer {
 
         // Healthcheck.
         app.get('/', (_, res) => {
-            res.status(200).send();
+            res.status(200).send({ result: 'ok' });
         });
 
         // All routes.

@@ -6,7 +6,6 @@
 
 import { Command } from 'commander';
 import axios from 'axios';
-import path from 'path';
 import https from 'https';
 
 const program = new Command();
@@ -24,7 +23,7 @@ program
     .command('config:list')
     .description('List all provider configurations.')
     .action(async () => {
-        let url = path.join(hostport, '/config');
+        let url = hostport + '/config';
         await axios
             .get(url, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
             .then((res) => {
@@ -45,7 +44,7 @@ program
     .description('Get an provider configuration.')
     .argument('<provider_config_key>', 'The unique key of the provider configuration (chosen by you upon creating this provider configuration).')
     .action(async (provider_config_key) => {
-        let url = path.join(hostport, `/config/${provider_config_key}`);
+        let url = hostport + `/config/${provider_config_key}`;
         await axios
             .get(url, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
             .then((res) => {
@@ -73,7 +72,7 @@ program
             oauth_scopes: oauth_scopes
         };
 
-        let url = path.join(hostport, `/config`);
+        let url = hostport + `/config`;
         await axios
             .post(url, body, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
             .then((_) => {
@@ -101,7 +100,7 @@ program
             oauth_scopes: oauth_scopes
         };
 
-        let url = path.join(hostport, `/config`);
+        let url = hostport + `/config`;
         await axios
             .put(url, body, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
             .then((_) => {
@@ -117,7 +116,7 @@ program
     .description('Delete an provider configuration.')
     .argument('<provider_config_key>', 'The unique key of the provider configuration (chosen by you upon creating this provider configuration).')
     .action(async (provider_config_key) => {
-        let url = path.join(hostport, `/config/${provider_config_key}`);
+        let url = hostport + `/config/${provider_config_key}`;
         await axios
             .delete(url, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
             .then((_) => {
@@ -134,7 +133,7 @@ program
     .argument('<connection_id>', 'The ID of the Connection.')
     .argument('<provider_config_key>', 'The unique key of the provider configuration (chosen by you upon creating this provider configuration).')
     .action(async (connection_id, provider_config_key) => {
-        let url = path.join(hostport, `/connection/${connection_id}`);
+        let url = hostport + `/connection/${connection_id}`;
         await axios
             .get(url, { params: { provider_config_key: provider_config_key }, headers: enrichHeaders(), httpsAgent: httpsAgent() })
             .then((res) => {
@@ -151,7 +150,7 @@ program
     .argument('<connection_id>', 'The ID of the Connection.')
     .argument('<provider_config_key>', 'The unique key of the provider configuration (chosen by you upon creating this provider configuration).')
     .action(async (connection_id, provider_config_key) => {
-        let url = path.join(hostport, `/connection/${connection_id}`);
+        let url = hostport + `/connection/${connection_id}`;
         await axios
             .get(url, { params: { provider_config_key: provider_config_key }, headers: enrichHeaders(), httpsAgent: httpsAgent() })
             .then((response) => {
@@ -175,7 +174,7 @@ program
     .command('connection:list')
     .description('List connections without credentials.')
     .action(async () => {
-        let url = path.join(hostport, `/connection`);
+        let url = hostport + `/connection`;
         await axios
             .get(url, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
             .then((res) => {
