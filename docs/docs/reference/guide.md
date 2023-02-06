@@ -14,6 +14,9 @@ Clone and start Nango:
 
 ```bash
 git clone https://github.com/NangoHQ/quickstart.git && cd quickstart
+```
+
+```bash
 docker compose up # Keep the tab open
 ```
 

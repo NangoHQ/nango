@@ -13,7 +13,7 @@ export NANGO_SECRET_KEY=SECRET # Replace
 
 ❗️ Restart your console to activate the new config.
 
-🙌 You can now follow the instructions from the [Quickstart](quickstart) or more detailed [Step-By-Step Guide](reference/guide.md).
+🙌 You can now follow the instructions from the [Step-By-Step Guide](reference/guide.md).
 
 ## Cloud Features
 

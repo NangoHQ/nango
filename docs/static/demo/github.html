@@ -17,45 +17,9 @@ Then open http://localhost:8000/bin/sample.html in your browser
         <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css" />
         <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
     </head>
-    <style>
-        .list-control {
-            width: 130px;
-        }
-
-        .ist-radio {
-            display: inline;
-        }
-    </style>
     <body>
         <noscript>JavaScript is required to proceed with the authentication.</noscript>
-        <ul class="list-control mdl-list" style="list-style-type: none">
-            <li class="mdl-list__item">
-                <span class="mdl-list__item-primary-content" style="width: 100px">Local </span>
-                <span class="mdl-list__item-secondary-action">
-                    <label class="list-radio mdl-radio mdl-js-radio mdl-js-ripple-effect" for="list-option-1">
-                        <input type="radio" id="list-option-1" class="mdl-radio__button" name="options" value="1" checked />
-                    </label>
-                </span>
-            </li>
-            <li class="mdl-list__item">
-                <span class="mdl-list__item-primary-content">Cloud </span>
-                <span class="mdl-list__item-secondary-action">
-                    <label class="list-radio mdl-radio mdl-js-radio mdl-js-ripple-effect" for="list-option-2">
-                        <input type="radio" id="list-option-2" class="mdl-radio__button" name="options" value="2" />
-                    </label>
-                </span>
-            </li>
-        </ul>
-        <form action="#" id="server-url-container" style="display: none">
-            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="margin-left: 20px">
-                <input class="mdl-textfield__input" type="text" id="server-url" />
-                <label class="mdl-textfield__label" for="sample3">Server URL</label>
-            </div>
-        </form>
-        <button id="connect" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" style="margin: 10px">Connect to Github</button>
-        <p id="server-url-error" style="display: none; margin-left: 10px; color: red">
-            Invalid Server URL. It should match: https://nango-server-[INSTANCE-ID].onrender.com
-        </p>
+        <p><button id="connect" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" style="margin: 10px">Connect to Github</button></p>
 
         <div style="margin: 10px">
             <p id="result"></p>
@@ -65,28 +29,10 @@ Then open http://localhost:8000/bin/sample.html in your browser
             import Nango from 'https://unpkg.com/@nangohq/frontend/dist/index.js';
 
             var link = document.getElementById('connect');
-            var localSelect = document.getElementById('list-option-1');
-            var cloudSelect = document.getElementById('list-option-2');
-            var serverUrlInput = document.getElementById('server-url');
-            var serverUrlInputContainer = document.getElementById('server-url-container');
-            var serverUrlInputError = document.getElementById('server-url-error');
-
             link.addEventListener(
                 'click',
                 () => {
-                    var localHost = 'http://localhost:3003';
-                    var serverUrl = localSelect.checked ? localHost : serverUrlInput.value;
-
-                    if (serverUrl !== localHost) {
-                        try {
-                            new URL(serverUrl);
-                        } catch (err) {
-                            serverUrlInputError.style.display = 'block';
-                            return;
-                        }
-                    }
-
-                    var nango = new Nango(serverUrl);
+                    var nango = new Nango('http://localhost:3003');
                     nango
                         .auth('github-dev', '1')
                         .then((result) => {
@@ -101,20 +47,6 @@ Then open http://localhost:8000/bin/sample.html in your browser
                 },
                 false
             );
-
-            cloudSelect.addEventListener('change', () => {
-                serverUrlInputError.style.display = 'none';
-                serverUrlInputContainer.style.display = cloudSelect.checked ? 'block' : 'none';
-            });
-
-            localSelect.addEventListener('change', () => {
-                serverUrlInputError.style.display = 'none';
-                serverUrlInputContainer.style.display = cloudSelect.checked ? 'block' : 'none';
-            });
-
-            serverUrlInput.addEventListener('input', () => {
-                serverUrlInputError.style.display = 'none';
-            });
         </script>
     </body>
 </html>

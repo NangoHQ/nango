@@ -6,11 +6,14 @@ sidebar_label: Quickstart
 
 In <5mins, learn how to access & manage OAuth tokens for any API, using Github as an example. Ready? Go! ⏰
 
-First, clone and start Nango (❗️skip this if you use [Nango Cloud](cloud)):
+First, clone and start Nango:
 
 ```bash
 git clone https://github.com/NangoHQ/quickstart.git && cd quickstart
-docker compose up
+```
+
+```bash
+docker compose up # Keep the tab open
 ```
 
 In a new tab, add any Github OAuth App to Nango (optionally [register your own Github OAuth App](https://docs.github.com/en/developers/apps/building-oauth-apps/creating-an-oauth-app)):
