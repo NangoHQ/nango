@@ -6,7 +6,7 @@ sidebar_label: Quickstart
 
 In <5mins, learn how to access & manage OAuth tokens for any API, using Github as an example. Ready? Go! ⏰
 
-First, clone and start Nango:
+First, clone and start Nango (❗️skip this if you use [Nango Cloud](cloud)):
 
 ```bash
 git clone https://github.com/NangoHQ/quickstart.git && cd quickstart
@@ -28,7 +28,8 @@ npx nango token:get 1 github-dev
 Congrats 🥳 You have a fresh token to access the Github API! Let's make sure it works (❗️replace `TOKEN`):
 
 ```bash
-curl -XGET -G "https://api.github.com/users/bastienbeurier/repos" -H "Authorization: Bearer TOKEN"
+curl -XGET -G "https://api.github.com/users/bastienbeurier/repos" \
+    -H "Authorization: Bearer TOKEN"
 ```
 
 (In practice, you should use our [backend SDKs](https://docs.nango.dev/reference/guide#node-sdk) to fetch tokens from your codebase.)

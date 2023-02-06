@@ -1,5 +1,5 @@
 import { Nango } from '../dist/index.js';
-let nango = new Nango('http://localhost:3003');
+let nango = new Nango('localhost:3000');
 nango
     .listConnections('hubspot', 1)
     .then((connections) => {
