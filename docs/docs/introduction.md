@@ -3,7 +3,7 @@ slug: '/'
 sidebar_label: Introduction
 ---
 
-# Get OAuth tokens for APIs. Fast & secure.
+# Nango: Get OAuth tokens for APIs. Fast & secure.
 
 ## ⭐ Nango at a glance
 

@@ -3,7 +3,7 @@
 In about **15-20 minutes**, let's set up an OAuth integration in your app for any external API.
 
 :::tip
-If using [Nango Cloud](../cloud.md), replace all mentions of `http://localhost:3003` by your Server URL. You should also have configured local env variables to enable the CLI ([instructions](../cloud.md)).
+If using [Nango Cloud](../cloud.md), replace all mentions of `http://localhost:3003` by your Server URL. You should also have configured local env variables to enable the CLI (cf. [instructions](../cloud.md#quickstart)).
 :::
 
 ## Step 0: Start Nango
@@ -20,7 +20,7 @@ git clone https://github.com/NangoHQ/quickstart.git && cd quickstart
 docker compose up # Keep the tab open
 ```
 
-## Step 2: Configure a provider
+## Step 1: Configure a provider
 
 To access an OAuth API, you need a few things from the OAuth provider/API:
 
@@ -45,7 +45,7 @@ Now run `npx nango config:list` and you should see your freshly added config ðŸŽ
 Run `npx nango` to display all available CLI commands + help.
 :::
 
-## Step 3: Trigger the OAuth flow (frontend)
+## Step 2: Trigger the OAuth flow (frontend)
 
 For quick testing you can call Nango directly from within a `<script>` tag on your page:
 
@@ -89,7 +89,7 @@ nango
 
 With the frontend part ready, you should now be able to run a full OAuth flow from your app while Nango will retrieve, store and refresh tokens automatically. Go ahead & try it! ðŸ™Œ
 
-## Step 4: Retrieve tokens (backend)
+## Step 3: Retrieve tokens (backend)
 
 The last step is to retrieve fresh access tokens whenever you need to make authenticated API requests on behalf of users.
 

@@ -7,7 +7,7 @@ const sidebars = {
         'nango-sync/quickstart',
         {
             type: 'category',
-            label: 'Use Nango',
+            label: 'Use Nango Sync',
             items: [
                 {
                     id: 'nango-sync/use-nango/core-concepts',
