@@ -22,6 +22,8 @@ Pre-built OAuth flows & secure token management for 40+ APIs. 100% open source.
   <br/>
     <a href="https://nango.dev/oauth-providers">All supported APIs</a>
     ·
+    <a href="https://docs.nango.dev/">Docs</a>
+    ·
     <a href="https://nango.dev">Website</a>
     ·
     <a href="https://docs.nango.dev/contribute-api">Contribute an API</a>
@@ -114,16 +116,17 @@ curl -XGET -G "https://api.github.com/users/bastienbeurier/repos" \
     -H "Authorization: Bearer TOKEN"
 ```
 
-(In practice, you should use our [backend SDKs](https://docs.nango.dev/reference/guide#node-sdk) to fetch tokens from your codebase.)
+(In practice, you should use our [backend SDK](https://docs.nango.dev/reference/guide#node-sdk) or [REST API](https://docs.nango.dev/reference/guide#rest-api) to fetch tokens from your codebase.)
 
 Wanna go live? Go through the more detailed [Step-By-Step Guide](https://docs.nango.dev/reference/guide). You can [self-host Nango](https://docs.nango.dev/category/deploy-nango-sync-open-source) or use [Nango Cloud](https://docs.nango.dev/cloud).
 
 ## 🔍 Where to learn more
 
 -   Explore [the full list of supported APIs](https://nango.dev/oauth-providers)
+-   Explore the [documentation](https://docs.nango.dev)
 -   [Contribute a new API](https://docs.nango.dev/contribute-api)
 -   Share feedback or ask questions on the [Slack community](https://nango.dev/slack)
--   Check our [blog on native integrations](https://www.nango.dev/blog)
+-   Check out our [blog on native integrations](https://www.nango.dev/blog)
 
 ## 🐻 History
 

@@ -3,12 +3,12 @@
 In about **15-20 minutes**, let's set up an OAuth integration in your app for any external API.
 
 :::tip
-If using [Nango Cloud](cloud), replace all mentions of `http://localhost:3003` by your Server URL. You should also have configured local env variables to enable the CLI ([instructions](cloud)).
+If using [Nango Cloud](../cloud.md), replace all mentions of `http://localhost:3003` by your Server URL. You should also have configured local env variables to enable the CLI ([instructions](../cloud.md)).
 :::
 
 ## Step 0: Start Nango
 
-❗️Skip this step if you use [Nango Cloud](cloud).
+❗️Skip this step if you use [Nango Cloud](../cloud.md).
 
 Clone and start Nango:
 
@@ -130,7 +130,7 @@ let accessToken = await nango.getToken('<config-key>', '<connection-id>'); // To
 let connection = await nango.getConnection('<config-key>', '<connection-id>'); // Token + Connection info
 ```
 
-❗️If using [Nango Cloud](cloud), you should use env variables for your `Server Url` and `Secret Key`.
+❗️If using [Nango Cloud](../cloud.md), you should use env variables for your `Server Url` and `Secret Key`.
 
 ### REST API {#rest-api}
 
