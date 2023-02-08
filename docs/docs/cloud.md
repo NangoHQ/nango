@@ -34,7 +34,7 @@ export NANGO_SECRET_KEY=SECRET # Replace
 npx nango config:create github-cloud github 2682fa17f945844c2586 6d0f95b851a9d37c03f548762a9133ac87455f22 "user,public_repo"
 ```
 
-Authorize Github on this [example page](https://docs.nango.dev/demo/github-cloud). Nango will securely retrieve, store and refresh OAuth credentials. Now try:
+Complete the Github [OAuth flow](https://docs.nango.dev/demo/github-cloud). Nango will securely retrieve, store and refresh OAuth credentials. Now try:
 
 ```bash
 npx nango token:get 1 github-cloud
