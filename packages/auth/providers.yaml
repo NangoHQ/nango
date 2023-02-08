@@ -35,6 +35,14 @@ clickup:
     auth_mode: OAUTH2
     authorization_url: https://app.clickup.com/api
     token_url: https://api.clickup.com/api/v2/oauth/token
+digitalocean:
+    auth_mode: OAUTH2
+    authorization_url: https://cloud.digitalocean.com/v1/oauth/authorize
+    token_url: https://cloud.digitalocean.com/v1/oauth/token
+    token_params:
+        grant_type: authorization_code
+    authorization_params:
+        response_type: code
 discord:
     auth_mode: OAUTH2
     authorization_url: https://discord.com/api/oauth2/authorize
