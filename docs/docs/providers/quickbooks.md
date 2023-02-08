@@ -4,12 +4,12 @@ sidebar_label: Quickbooks
 # Quickbooks API wiki
 
 :::note Working with the Quickbooks API?
-Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/main/docs/docs/providers/quickbooks.md).  
+Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/master/docs/docs/providers/quickbooks.md).
 
 :::
 
 ## Using Quickbooks with Nango
-Provider template name in Nango: `quickbooks`  
+Provider template name in Nango: `quickbooks`
 Follow our [getting started guide](../reference/guide.md) to add an OAuth integration with Quickbooks in 5 minutes.
 
 ## App registration & publishing

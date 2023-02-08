@@ -4,12 +4,12 @@ sidebar_label: Microsoft Teams
 # Microsoft Teams API wiki
 
 :::note Working with the Microsoft Teams API?
-Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/main/docs/docs/providers/microsoft-teams.md).  
+Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/master/docs/docs/providers/microsoft-teams.md).
 
 :::
 
 ## Using Microsoft Teams with Nango
-Provider template name in Nango: `microsoft-teams`  
+Provider template name in Nango: `microsoft-teams`
 Follow our [getting started guide](../reference/guide.md) to add an OAuth integration with Microsoft Teams in 5 minutes.
 
 ## App registration & publishing

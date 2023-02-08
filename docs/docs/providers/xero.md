@@ -4,12 +4,12 @@ sidebar_label: Xero
 # Xero API wiki
 
 :::note Working with the Xero API?
-Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/main/docs/docs/providers/xero.md).  
+Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/master/docs/docs/providers/xero.md).
 
 :::
 
 ## Using Xero with Nango
-Provider template name in Nango: `xero`  
+Provider template name in Nango: `xero`
 Follow our [getting started guide](../reference/guide.md) to add an OAuth integration with Xero in 5 minutes.
 
 ## App registration & publishing

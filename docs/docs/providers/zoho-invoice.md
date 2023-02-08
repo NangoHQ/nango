@@ -4,12 +4,12 @@ sidebar_label: Zoho Invoice
 # Zoho Invoice API wiki
 
 :::note Working with the Zoho Invoice API?
-Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/main/docs/docs/providers/zoho-invoice.md).  
+Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/master/docs/docs/providers/zoho-invoice.md).
 
 :::
 
 ## Using Zoho Invoice with Nango
-Provider template name in Nango: `zoho-invoice`  
+Provider template name in Nango: `zoho-invoice`
 Follow our [getting started guide](../reference/guide.md) to add an OAuth integration with Zoho Invoice in 5 minutes.
 
 ## App registration & publishing

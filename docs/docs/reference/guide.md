@@ -75,7 +75,7 @@ var nango = new Nango('http://localhost:3003'); // Local
 var nango = new Nango('Server URL'); // Nango Cloud
 
 // Trigger an OAuth flow
-// Param 1: unique config key from Step 2 (bullet 4)
+// Param 1: unique config key from Step 1 (bullet 4)
 // Param 2: ID you will use to retrieve the connection (most often the user ID)
 nango
     .auth('github', '<connection-id>')
@@ -105,7 +105,7 @@ Nango offers a couple ways to retrieve fresh access tokens:
 
 In all cases, you need to tell Nango two things to get the access token:
 
--   The **Provider Config Key**, which identifies the OAuth provider configuration (from Step 2, bullet 4)
+-   The **Provider Config Key**, which identifies the OAuth provider configuration (from Step 1, bullet 4)
 -   The **Connection ID**, which identifies the connection containing the access token (from Step 3)
 
 ### Node SDK {#node-sdk}

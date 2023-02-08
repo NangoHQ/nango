@@ -4,12 +4,12 @@ sidebar_label: Asana
 # Asana API wiki
 
 :::note Working with the Asana API?
-Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/main/docs/docs/providers/asana.md).  
+Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/master/docs/docs/providers/asana.md).
 
 :::
 
 ## Using Asana with Nango
-Provider template name in Nango: `asana`  
+Provider template name in Nango: `asana`
 Follow our [getting started guide](../reference/guide.md) to add an OAuth integration with Asana in 5 minutes.
 
 ## App registration & publishing

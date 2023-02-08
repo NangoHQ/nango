@@ -4,12 +4,12 @@ sidebar_label: Trello
 # Trello API wiki
 
 :::note Working with the Trello API?
-Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/main/docs/docs/providers/trello.md).  
+Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/master/docs/docs/providers/trello.md).
 
 :::
 
 ## Using Trello with Nango
-Provider template name in Nango: `trello`  
+Provider template name in Nango: `trello`
 Follow our [getting started guide](../reference/guide.md) to add an OAuth integration with Trello in 5 minutes.
 
 ## App registration & publishing

@@ -4,12 +4,12 @@ sidebar_label: Linear
 # Linear API wiki
 
 :::note Working with the Linear API?
-Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/main/docs/docs/providers/linear.md).  
+Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/master/docs/docs/providers/linear.md).
 
 :::
 
 ## Using Linear with Nango
-Provider template name in Nango: `linear`  
+Provider template name in Nango: `linear`
 Follow our [getting started guide](../reference/guide.md) to add an OAuth integration with Linear in 5 minutes.
 
 ## App registration & publishing

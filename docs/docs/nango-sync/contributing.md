@@ -12,7 +12,7 @@ Here are some ideas on how to get started:
 * Join the [Slack community](https://nango.dev/slack) to get the latest news and discuss Nango with fellow contributors
 * Contribute [an example](real-world-examples.md) of using Nango with your favorite API
 * We have marked some [good first issues](https://github.com/NangoHQ/nango/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) for you
-* These docs are just [markdown pages in our repo](https://github.com/NangoHQ/nango/tree/main/docs/docs), feel free to edit them and submit PRs with improvements
+* These docs are just [markdown pages in our repo](https://github.com/nangohq/nango/tree/master/docs/docs), feel free to edit them and submit PRs with improvements
 
 If you need help with setting up your local development environment, want to chat with us first or just get to know the people behind the project don't be shy: We are online in the Slack Community all day and look forward to seeing you there.
 

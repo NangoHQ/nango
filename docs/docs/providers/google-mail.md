@@ -5,13 +5,13 @@ sidebar_label: Gmail
 # Gmail API wiki
 
 :::note Working with the Gmail API?
-Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/main/docs/docs/providers/google-mail.md).
+Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/master/docs/docs/providers/google-mail.md).
 
 :::
 
 ## Using Gmail with Nango
 
-Provider template name in Nango: `google-mail`  
+Provider template name in Nango: `google-mail`
 Follow our [getting started guide](../reference/guide.md) to add an OAuth integration with Gmail in 5 minutes.
 
 ## App registration & publishing

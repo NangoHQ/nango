@@ -5,12 +5,12 @@ sidebar_label: Google Calendar
 # Google Calendar API wiki
 
 :::note Working with the Google Calendar API?
-Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/main/docs/docs/providers/google-calendar.md).
+Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/master/docs/docs/providers/google-calendar.md).
 :::
 
 ## Using Google Calendar with Nango
 
-Provider template name in Nango: `google-calendar`  
+Provider template name in Nango: `google-calendar`
 Follow our [getting started guide](../reference/guide.md) to add an OAuth integration with Google Calendar in 5 minutes.
 
 ## App registration & publishing

@@ -4,17 +4,17 @@ sidebar_label: Airtable
 # Airtable API wiki
 
 :::note Working with the Airtable API?
-Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/main/docs/docs/providers/airtable.md).  
+Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/master/docs/docs/providers/airtable.md).
 
 :::
 
 ## Using Airtable with Nango
-Provider template name in Nango: `airtable`  
+Provider template name in Nango: `airtable`
 Follow our [getting started guide](../reference/guide.md) to add an OAuth integration with Airtable in 5 minutes.
 
 ## App registration & publishing
-**Rating: `Easy & fast`**  
-Registering an app takes only a few minutes and you can start building immediately: [App registration docs](https://airtable.com/developers/web/guides/oauth-integrations)  
+**Rating: `Easy & fast`**
+Registering an app takes only a few minutes and you can start building immediately: [App registration docs](https://airtable.com/developers/web/guides/oauth-integrations)
 To publish it (so any airtable user can install it) a few more details are needed (support email, terms) but no manual review: [Publishing docs](https://airtable.com/developers/web/guides/oauth-integrations#distributing-your-integration)
 
 

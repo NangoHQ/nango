@@ -4,12 +4,12 @@ sidebar_label: Twitter
 # Twitter API wiki
 
 :::note Working with the Twitter API?
-Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/main/docs/docs/providers/twitter.md).  
+Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/master/docs/docs/providers/twitter.md).
 
 :::
 
 ## Using Twitter with Nango
-Provider template name in Nango: `twitter`  
+Provider template name in Nango: `twitter`
 Follow our [getting started guide](../reference/guide.md) to add an OAuth integration with Twitter in 5 minutes.
 
 ## App registration & publishing
