@@ -7,9 +7,10 @@ import db from './db/database.js';
 import oauthController from './controllers/oauth.controller.js';
 import configController from './controllers/config.controller.js';
 import connectionController from './controllers/connection.controller.js';
-import accessMiddleware from './controllers/access.middleware.js';
+import auth from './controllers/access.middleware.js';
 import path from 'path';
 import { dirname } from './utils/utils.js';
+import accountController from './controllers/account.controller.js';
 
 class AuthServer {
     async setup(app: Express) {
@@ -21,25 +22,19 @@ class AuthServer {
             res.status(200).send({ result: 'ok' });
         });
 
-        // All routes.
-        app.route('/oauth/connect/:providerConfigKey').get(oauthController.oauthRequest.bind(oauthController));
+        // Main routes.
+        app.route('/oauth/connect/:providerConfigKey').get(auth.public.bind(auth), oauthController.oauthRequest.bind(oauthController));
         app.route('/oauth/callback').get(oauthController.oauthCallback.bind(oauthController));
-        app.route('/config').get(accessMiddleware.checkSecret.bind(accessMiddleware), configController.listProviderConfigs.bind(configController));
-        app.route('/config/:providerConfigKey').get(
-            accessMiddleware.checkSecret.bind(accessMiddleware),
-            configController.getProviderConfig.bind(configController)
-        );
-        app.route('/config').post(accessMiddleware.checkSecret.bind(accessMiddleware), configController.createProviderConfig.bind(configController));
-        app.route('/config').put(accessMiddleware.checkSecret.bind(accessMiddleware), configController.editProviderConfig.bind(configController));
-        app.route('/config/:providerConfigKey').delete(
-            accessMiddleware.checkSecret.bind(accessMiddleware),
-            configController.deleteProviderConfig.bind(configController)
-        );
-        app.route('/connection/:connectionId').get(
-            accessMiddleware.checkSecret.bind(accessMiddleware),
-            connectionController.getConnectionCreds.bind(connectionController)
-        );
-        app.route('/connection').get(accessMiddleware.checkSecret.bind(accessMiddleware), connectionController.listConnections.bind(connectionController));
+        app.route('/config').get(auth.secret.bind(auth), configController.listProviderConfigs.bind(configController));
+        app.route('/config/:providerConfigKey').get(auth.secret.bind(auth), configController.getProviderConfig.bind(configController));
+        app.route('/config').post(auth.secret.bind(auth), configController.createProviderConfig.bind(configController));
+        app.route('/config').put(auth.secret.bind(auth), configController.editProviderConfig.bind(configController));
+        app.route('/config/:providerConfigKey').delete(auth.secret.bind(auth), configController.deleteProviderConfig.bind(configController));
+        app.route('/connection/:connectionId').get(auth.secret.bind(auth), connectionController.getConnectionCreds.bind(connectionController));
+        app.route('/connection').get(auth.secret.bind(auth), connectionController.listConnections.bind(connectionController));
+
+        // Admin routes.
+        app.route('/account').post(auth.admin.bind(auth), accountController.createAccount.bind(accountController));
 
         // Error handling.
         app.use((error: any, _: any, response: any, __: any) => {

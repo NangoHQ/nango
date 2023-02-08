@@ -1,6 +1,9 @@
 import type winston from 'winston';
 import { fileURLToPath } from 'url';
 import path from 'path';
+import type { Response } from 'express';
+
+export const isCloud = process.env['NANGO_CLOUD']?.toLowerCase() === 'true';
 
 export function dirname() {
     return path.dirname(fileURLToPath(import.meta.url));
@@ -20,6 +23,21 @@ export function getBaseUrl() {
 
 export function getOauthCallbackUrl() {
     return getBaseUrl() + '/oauth/callback';
+}
+
+export function getAccount(res: Response): number | null {
+    let accountId: any = res.locals['nangoAccountId'];
+
+    // Account ID is null if self-hosted.
+    if (Number.isInteger(accountId) || accountId == null) {
+        return accountId;
+    } else {
+        throw new Error('Invalid account ID.');
+    }
+}
+
+export function setAccount(accountId: number | null, res: Response) {
+    res.locals['nangoAccountId'] = accountId;
 }
 
 /**

@@ -3,11 +3,13 @@ import configService from '../services/config.service.js';
 import type { ProviderConfig } from '../models.js';
 import type { NextFunction } from 'express';
 import analytics from '../utils/analytics.js';
+import { getAccount } from '../utils/utils.js';
 
 class ConfigController {
     async listProviderConfigs(_: Request, res: Response, next: NextFunction) {
         try {
-            let configs = await configService.listProviderConfigs();
+            let accountId = getAccount(res);
+            let configs = await configService.listProviderConfigs(accountId);
             res.status(200).send({ configs: configs });
         } catch (err) {
             next(err);
@@ -16,6 +18,7 @@ class ConfigController {
 
     async getProviderConfig(req: Request, res: Response, next: NextFunction) {
         try {
+            let accountId = getAccount(res);
             let providerConfigKey = req.params['providerConfigKey'] as string;
 
             if (providerConfigKey == null) {
@@ -23,7 +26,7 @@ class ConfigController {
                 return;
             }
 
-            let config = await configService.getProviderConfig(providerConfigKey);
+            let config = await configService.getProviderConfig(providerConfigKey, accountId);
 
             if (config == null) {
                 res.status(400).send({ error: `There is no matching provider configuration with key: ${providerConfigKey}` });
@@ -38,6 +41,7 @@ class ConfigController {
 
     async createProviderConfig(req: Request, res: Response, next: NextFunction) {
         try {
+            let accountId = getAccount(res);
             if (req.body == null) {
                 res.status(400).send({ error: `Missing request body.` });
                 return;
@@ -75,7 +79,8 @@ class ConfigController {
                     .replace(/ /g, ',')
                     .split(',')
                     .filter((w: string) => w)
-                    .join(',') // Make coma-separated if needed
+                    .join(','), // Make coma-separated if needed
+                account_id: accountId
             };
 
             let result = await configService.createProviderConfig(config);
@@ -83,7 +88,7 @@ class ConfigController {
             if (Array.isArray(result) && result.length === 1 && result[0] != null && 'id' in result[0]) {
                 let configId = result[0]['id'];
 
-                analytics.track('server:config_created', { provider: config.provider });
+                analytics.track('server:config_created', accountId, { provider: config.provider });
                 res.status(200).send({ config_id: configId });
             } else {
                 res.status(500).send({
@@ -97,6 +102,7 @@ class ConfigController {
 
     async editProviderConfig(req: Request, res: Response, next: NextFunction) {
         try {
+            let accountId = getAccount(res);
             if (req.body == null) {
                 res.status(400).send({ error: `Missing request body.` });
                 return;
@@ -130,10 +136,11 @@ class ConfigController {
                 provider: req.body['provider'],
                 oauth_client_id: req.body['oauth_client_id'],
                 oauth_client_secret: req.body['oauth_client_secret'],
-                oauth_scopes: req.body['oauth_scopes']
+                oauth_scopes: req.body['oauth_scopes'],
+                account_id: accountId
             };
 
-            let oldConfig = await configService.getProviderConfig(newConfig.unique_key);
+            let oldConfig = await configService.getProviderConfig(newConfig.unique_key, accountId);
 
             if (oldConfig == null) {
                 res.status(400).send({ error: `There is no matching provider configuration for provider_config_key: ${newConfig.unique_key}` });
@@ -149,6 +156,7 @@ class ConfigController {
 
     async deleteProviderConfig(req: Request, res: Response, next: NextFunction) {
         try {
+            let accountId = getAccount(res);
             let providerConfigKey = req.params['providerConfigKey'] as string;
 
             if (providerConfigKey == null) {
@@ -156,7 +164,7 @@ class ConfigController {
                 return;
             }
 
-            await configService.deleteProviderConfig(providerConfigKey);
+            await configService.deleteProviderConfig(providerConfigKey, accountId);
 
             res.status(200).send();
         } catch (err) {

@@ -15,7 +15,8 @@ class ConnectionService {
         provider: string,
         rawCredentials: object,
         authMode: ProviderAuthModes,
-        connectionConfig: Record<string, string>
+        connectionConfig: Record<string, string>,
+        accountId: number | null
     ) {
         await db.knex
             .withSchema(db.schema())
@@ -24,38 +25,40 @@ class ConnectionService {
                 connection_id: connectionId,
                 provider_config_key: providerConfigKey,
                 credentials: this.parseRawCredentials(rawCredentials, authMode),
-                connection_config: connectionConfig
+                connection_config: connectionConfig,
+                account_id: accountId
             })
-            .onConflict(['provider_config_key', 'connection_id'])
+            .onConflict(['provider_config_key', 'connection_id', 'account_id'])
             .merge();
-        analytics.track('server:connection_upserted', { provider: provider, connection: analytics.hash(connectionId) });
+        analytics.track('server:connection_upserted', accountId, { provider: provider });
     }
 
-    public async updateConnection(connectionId: string, providerConfigKey: string, credentials: OAuth2Credentials) {
+    public async updateConnection(connectionId: string, providerConfigKey: string, credentials: OAuth2Credentials, accountId: number | null) {
         await db.knex
             .withSchema(db.schema())
             .from<Connection>(`_nango_connections`)
-            .where({ connection_id: connectionId, provider_config_key: providerConfigKey })
+            .where({ connection_id: connectionId, provider_config_key: providerConfigKey, account_id: accountId })
             .update({
                 credentials: credentials
             });
     }
 
-    async getConnection(connectionId: string, providerConfigKey: string): Promise<Connection | null> {
+    async getConnection(connectionId: string, providerConfigKey: string, accountId: number | null): Promise<Connection | null> {
         let result: Connection[] | null = await db.knex
             .withSchema(db.schema())
             .select('*')
             .from<Connection>(`_nango_connections`)
-            .where({ connection_id: connectionId, provider_config_key: providerConfigKey });
+            .where({ connection_id: connectionId, provider_config_key: providerConfigKey, account_id: accountId });
 
         return result == null || result.length == 0 ? null : result[0] || null;
     }
 
-    async listConnections(): Promise<Object[]> {
+    async listConnections(accountId: number | null): Promise<Object[]> {
         return await db.knex
             .withSchema(db.schema())
             .from<Connection>(`_nango_connections`)
-            .select({ conection_id: 'connection_id' }, { provider: 'provider_config_key' }, { created: 'created_at' });
+            .select({ conection_id: 'connection_id' }, { provider: 'provider_config_key' }, { created: 'created_at' })
+            .where({ account_id: accountId });
     }
 
     // Parses and arbitrary object (e.g. a server response or a user provided auth object) into AuthCredentials.
@@ -107,7 +110,8 @@ class ConnectionService {
     public async refreshOauth2CredentialsIfNeeded(
         connection: Connection,
         providerConfig: ProviderConfig,
-        template: ProviderTemplate
+        template: ProviderTemplate,
+        accountId: number | null
     ): Promise<OAuth2Credentials> {
         let connectionId = connection.connection_id;
         let credentials = connection.credentials as OAuth2Credentials;
@@ -136,7 +140,7 @@ class ConnectionService {
                 const promise = new Promise<OAuth2Credentials>(async (resolve, reject) => {
                     try {
                         const newCredentials = await refreshOAuth2Credentials(connection, providerConfig, template);
-                        this.updateConnection(connectionId, providerConfigKey, newCredentials);
+                        this.updateConnection(connectionId, providerConfigKey, newCredentials, accountId);
 
                         // Remove ourselves from the array of running refreshes
                         this.runningCredentialsRefreshes = this.runningCredentialsRefreshes.filter((value) => {
