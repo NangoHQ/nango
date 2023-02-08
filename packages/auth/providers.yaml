@@ -144,6 +144,10 @@ linkedin:
     authorization_url: https://www.linkedin.com/oauth/v2/authorization
     token_url: https://www.linkedin.com/oauth/v2/accessToken
     disable_pkce: true
+linkhut:
+    auth_mode: OAUTH2
+    authorization_url: https://ln.ht/_/oauth/authorize
+    token_url: https://api.ln.ht/v1/oauth/token
 microsoft-teams:
     auth_mode: OAUTH2
     authorization_url: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
