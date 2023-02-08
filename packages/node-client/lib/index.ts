@@ -4,8 +4,8 @@ export class Nango {
     serverUrl: string;
     secretKey: string;
 
-    constructor(serverUrl?: string, secretKey = '') {
-        this.serverUrl = serverUrl || 'http://localhost:3003';
+    constructor(config: { host: string; secret?: string } = { host: 'https://api.nango.dev' }) {
+        this.serverUrl = config.host;
 
         if (this.serverUrl.slice(-1) === '/') {
             this.serverUrl = this.serverUrl.slice(0, -1);
@@ -17,7 +17,7 @@ export class Nango {
             throw new Error(`Invalid URL provided for the Nango host: ${this.serverUrl}`);
         }
 
-        this.secretKey = secretKey;
+        this.secretKey = config.secret || '';
     }
 
     /**
