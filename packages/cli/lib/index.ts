@@ -10,7 +10,12 @@ import https from 'https';
 
 const program = new Command();
 
-let hostport = process.env['NANGO_HOSTPORT'] || 'http://localhost:3003';
+let localhost = 'http://localhost:3003';
+var hostport = process.env['NANGO_HOSTPORT'] || 'https://api.nango.dev';
+
+if (hostport.slice(-1) === '/') {
+    hostport = hostport.slice(0, -1);
+}
 
 // Test from the package root (/packages/cli) with 'node dist/index.js'
 program
@@ -22,10 +27,12 @@ program
 program
     .command('config:list')
     .description('List all provider configurations.')
-    .action(async () => {
-        let url = hostport + '/config';
+    .option('-l, --local', 'Running Nango on localhost.')
+    .action(async (_, options, __) => {
+        let isLocal = options.local;
+        let url = getHost(isLocal) + '/config';
         await axios
-            .get(url, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
+            .get(url, { headers: enrichHeaders(options), httpsAgent: httpsAgent() })
             .then((res) => {
                 console.log(res.data);
                 console.table(
@@ -43,8 +50,10 @@ program
     .command('config:get')
     .description('Get an provider configuration.')
     .argument('<provider_config_key>', 'The unique key of the provider configuration (chosen by you upon creating this provider configuration).')
-    .action(async (provider_config_key) => {
-        let url = hostport + `/config/${provider_config_key}`;
+    .option('-l, --local', 'Running Nango on localhost.')
+    .action(async (_, options, command) => {
+        let isLocal = options.local;
+        let url = getHost(isLocal) + `/config/${command.provider_config_key()}`;
         await axios
             .get(url, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
             .then((res) => {
@@ -63,16 +72,18 @@ program
     .argument('<oauth_client_id>', 'The OAuth Client ID obtained from the API provider.')
     .argument('<oauth_client_secret>', 'The OAuth Client Secret obtained from the API provider.')
     .argument('<oauth_scopes>', 'The OAuth Scopes obtained from the API provider (comma-separated).')
-    .action(async (provider_config_key, provider, oauth_client_id, oauth_client_secret, oauth_scopes) => {
+    .option('-l, --local', 'Running Nango on localhost.')
+    .action(async (_, options, command) => {
+        let isLocal = options.local;
         let body = {
-            provider_config_key: provider_config_key,
-            provider: provider,
-            oauth_client_id: oauth_client_id,
-            oauth_client_secret: oauth_client_secret,
-            oauth_scopes: oauth_scopes
+            provider_config_key: command.provider_config_key(),
+            provider: command.provider(),
+            oauth_client_id: command.oauth_client_id(),
+            oauth_client_secret: command.oauth_client_secret(),
+            oauth_scopes: command.oauth_scopes()
         };
 
-        let url = hostport + `/config`;
+        let url = getHost(isLocal) + `/config`;
         await axios
             .post(url, body, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
             .then((_) => {
@@ -91,16 +102,18 @@ program
     .argument('<oauth_client_id>', 'The OAuth Client ID obtained from the API provider.')
     .argument('<oauth_client_secret>', 'The OAuth Client Secret obtained from the API provider.')
     .argument('<oauth_scopes>', 'The OAuth Scopes obtained from the API provider (comma-separated).')
-    .action(async (provider_config_key, provider, oauth_client_id, oauth_client_secret, oauth_scopes) => {
+    .option('-l, --local', 'Running Nango on localhost.')
+    .action(async (_, options, command) => {
+        let isLocal = options.local;
         let body = {
-            provider_config_key: provider_config_key,
-            provider: provider,
-            oauth_client_id: oauth_client_id,
-            oauth_client_secret: oauth_client_secret,
-            oauth_scopes: oauth_scopes
+            provider_config_key: command.provider_config_key(),
+            provider: command.provider(),
+            oauth_client_id: command.oauth_client_id(),
+            oauth_client_secret: command.oauth_client_secret(),
+            oauth_scopes: command.oauth_scopes()
         };
 
-        let url = hostport + `/config`;
+        let url = getHost(isLocal) + `/config`;
         await axios
             .put(url, body, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
             .then((_) => {
@@ -115,8 +128,10 @@ program
     .command('config:delete')
     .description('Delete an provider configuration.')
     .argument('<provider_config_key>', 'The unique key of the provider configuration (chosen by you upon creating this provider configuration).')
-    .action(async (provider_config_key) => {
-        let url = hostport + `/config/${provider_config_key}`;
+    .option('-l, --local', 'Running Nango on localhost.')
+    .action(async (_, options, command) => {
+        let isLocal = options.local;
+        let url = getHost(isLocal) + `/config/${command.provider_config_key()}`;
         await axios
             .delete(url, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
             .then((_) => {
@@ -132,10 +147,12 @@ program
     .description('Get a connection with credentials.')
     .argument('<connection_id>', 'The ID of the Connection.')
     .argument('<provider_config_key>', 'The unique key of the provider configuration (chosen by you upon creating this provider configuration).')
-    .action(async (connection_id, provider_config_key) => {
-        let url = hostport + `/connection/${connection_id}`;
+    .option('-l, --local', 'Running Nango on localhost.')
+    .action(async (_, options, command) => {
+        let isLocal = options.local;
+        let url = getHost(isLocal) + `/connection/${command.connection_id()}`;
         await axios
-            .get(url, { params: { provider_config_key: provider_config_key }, headers: enrichHeaders(), httpsAgent: httpsAgent() })
+            .get(url, { params: { provider_config_key: command.provider_config_key() }, headers: enrichHeaders(), httpsAgent: httpsAgent() })
             .then((res) => {
                 console.log(res.data);
             })
@@ -149,10 +166,12 @@ program
     .description('Get an access token.')
     .argument('<connection_id>', 'The ID of the Connection.')
     .argument('<provider_config_key>', 'The unique key of the provider configuration (chosen by you upon creating this provider configuration).')
-    .action(async (connection_id, provider_config_key) => {
-        let url = hostport + `/connection/${connection_id}`;
+    .option('-l, --local', 'Running Nango on localhost.')
+    .action(async (_, options, command) => {
+        let isLocal = options.local;
+        let url = getHost(isLocal) + `/connection/${command.connection_id()}`;
         await axios
-            .get(url, { params: { provider_config_key: provider_config_key }, headers: enrichHeaders(), httpsAgent: httpsAgent() })
+            .get(url, { params: { provider_config_key: command.provider_config_key() }, headers: enrichHeaders(), httpsAgent: httpsAgent() })
             .then((response) => {
                 switch (response.data.credentials.type) {
                     case 'OAUTH2':
@@ -173,8 +192,10 @@ program
 program
     .command('connection:list')
     .description('List connections without credentials.')
-    .action(async () => {
-        let url = hostport + `/connection`;
+    .option('-l, --local', 'Running Nango on localhost.')
+    .action(async (_, options, __) => {
+        let isLocal = options.local;
+        let url = getHost(isLocal) + `/connection`;
         await axios
             .get(url, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
             .then((res) => {
@@ -187,9 +208,17 @@ program
 
 program.parseAsync(process.argv);
 
+function getHost(isLocal: boolean) {
+    return isLocal ? localhost : hostport;
+}
+
 function enrichHeaders(headers: Record<string, string | number | boolean> = {}) {
-    if (process.env['NANGO_SECRET_KEY'] != null) {
-        headers['Authorization'] = 'Basic ' + Buffer.from(process.env['NANGO_SECRET_KEY'] + ':').toString('base64');
+    if (process.env['NANGO_SECRET_KEY']) {
+        if (hostport.includes('https://api.nango.dev')) {
+            headers['Authorization'] = 'Bearer ' + process.env['NANGO_SECRET_KEY'];
+        } else {
+            headers['Authorization'] = 'Basic ' + Buffer.from(process.env['NANGO_SECRET_KEY'] + ':').toString('base64');
+        }
     }
 
     return headers;
