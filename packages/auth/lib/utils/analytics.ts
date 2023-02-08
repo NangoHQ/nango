@@ -1,7 +1,6 @@
 import { PostHog } from 'posthog-node';
 import { v4 as uuidv4 } from 'uuid';
 import { getBaseUrl } from '../utils/utils.js';
-import crypto from 'crypto';
 
 class Analytics {
     client: PostHog | undefined;
@@ -17,7 +16,7 @@ class Analytics {
         }
     }
 
-    public track(name: string, properties?: Record<string | number, any>) {
+    public track(name: string, accountId: number | null, properties?: Record<string | number, any>) {
         if (this.client == null) {
             return;
         }
@@ -25,16 +24,13 @@ class Analytics {
         let baseUrl = getBaseUrl();
         properties = properties || {};
         properties['host'] = baseUrl;
+        properties['account'] = accountId == null ? 'self-hosted' : accountId.toString();
 
         this.client.capture({
             event: name,
-            distinctId: baseUrl,
+            distinctId: accountId == null ? 'self-hosted' : accountId.toString(),
             properties: properties
         });
-    }
-
-    public hash(str: string) {
-        return crypto.createHash('md5').update(str).digest('hex');
     }
 }
 

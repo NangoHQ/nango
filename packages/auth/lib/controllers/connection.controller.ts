@@ -4,12 +4,14 @@ import type { NextFunction } from 'express';
 import configService from '../services/config.service.js';
 import { ProviderConfig, ProviderTemplate, Connection, ProviderAuthModes } from '../models.js';
 import analytics from '../utils/analytics.js';
+import { getAccount } from '../utils/utils.js';
 
 class ConnectionController {
     templates: { [key: string]: ProviderTemplate } = configService.getTemplates();
 
     async getConnectionCreds(req: Request, res: Response, next: NextFunction) {
         try {
+            let accountId = getAccount(res);
             let connectionId = req.params['connectionId'] as string;
             let providerConfigKey = req.query['provider_config_key'] as string;
 
@@ -23,14 +25,14 @@ class ConnectionController {
                 return;
             }
 
-            let connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey);
+            let connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, accountId);
 
             if (connection == null) {
                 res.status(400).send({ error: `No matching connection for connection_id: ${connectionId} and provider_config_key: ${providerConfigKey}` });
                 return;
             }
 
-            let config: ProviderConfig | null = await configService.getProviderConfig(connection.provider_config_key);
+            let config: ProviderConfig | null = await configService.getProviderConfig(connection.provider_config_key, accountId);
 
             if (config == null) {
                 res.status(400).send({ error: `No matching provider configuration for key: ${providerConfigKey}` });
@@ -47,10 +49,10 @@ class ConnectionController {
             }
 
             if (connection.credentials.type === ProviderAuthModes.OAuth2) {
-                connection.credentials = await connectionService.refreshOauth2CredentialsIfNeeded(connection, config, template);
+                connection.credentials = await connectionService.refreshOauth2CredentialsIfNeeded(connection, config, template, accountId);
             }
 
-            analytics.track('server:connection_fetched', { provider: config.provider, connection: analytics.hash(connectionId) });
+            analytics.track('server:connection_fetched', accountId, { provider: config.provider });
 
             res.status(200).send(connection);
         } catch (err) {
@@ -60,9 +62,10 @@ class ConnectionController {
 
     async listConnections(_: Request, res: Response, next: NextFunction) {
         try {
-            let connections: Object[] = await connectionService.listConnections();
+            let accountId = getAccount(res);
+            let connections: Object[] = await connectionService.listConnections(accountId);
 
-            analytics.track('server:connection_list_fetched');
+            analytics.track('server:connection_list_fetched', accountId);
 
             res.status(200).send({ connections: connections });
         } catch (err) {

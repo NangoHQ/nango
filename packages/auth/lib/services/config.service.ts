@@ -13,8 +13,12 @@ class ConfigService {
         this.templates = yaml.load(fs.readFileSync(templatesPath).toString()) as { string: ProviderTemplate };
     }
 
-    async getProviderConfig(providerConfigKey: string): Promise<ProviderConfig | null> {
-        let result = await db.knex.withSchema(db.schema()).select('*').from(`_nango_configs`).where({ unique_key: providerConfigKey });
+    async getProviderConfig(providerConfigKey: string, accountId: number | null): Promise<ProviderConfig | null> {
+        let result = await db.knex
+            .withSchema(db.schema())
+            .select('*')
+            .from<ProviderConfig>(`_nango_configs`)
+            .where({ unique_key: providerConfigKey, account_id: accountId });
 
         if (result == null || result.length == 0 || result[0] == null) {
             return null;
@@ -23,16 +27,16 @@ class ConfigService {
         return result[0];
     }
 
-    async listProviderConfigs(): Promise<ProviderConfig[]> {
-        return await db.knex.withSchema(db.schema()).from<ProviderConfig>(`_nango_configs`).select('*');
+    async listProviderConfigs(accountId: number | null): Promise<ProviderConfig[]> {
+        return await db.knex.withSchema(db.schema()).select('*').from<ProviderConfig>(`_nango_configs`).where({ account_id: accountId });
     }
 
     async createProviderConfig(config: ProviderConfig): Promise<void | Pick<ProviderConfig, 'id'>[]> {
         return await db.knex.withSchema(db.schema()).from<ProviderConfig>(`_nango_configs`).insert(config, ['id']);
     }
 
-    async deleteProviderConfig(providerConfigKey: string): Promise<number> {
-        return db.knex.withSchema(db.schema()).from<ProviderConfig>(`_nango_configs`).where('unique_key', providerConfigKey).del();
+    async deleteProviderConfig(providerConfigKey: string, accountId: number | null): Promise<number> {
+        return db.knex.withSchema(db.schema()).from<ProviderConfig>(`_nango_configs`).where({ unique_key: providerConfigKey, account_id: accountId }).del();
     }
 
     async editProviderConfig(config: ProviderConfig) {

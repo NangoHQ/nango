@@ -5,10 +5,16 @@
 export default class Nango {
     private hostBaseUrl: string;
     private status: AuthorizationStatus;
+    private publicKey: string | undefined;
 
-    constructor(hostBaseUrl: string) {
-        this.hostBaseUrl = hostBaseUrl.slice(-1) === '/' ? hostBaseUrl.slice(0, -1) : hostBaseUrl;
+    constructor(config: { host: string; publicKey?: string } = { host: 'https://api.nango.dev' }) {
+        if (config.host === 'https://api.nango.dev' && !config.publicKey) {
+            throw new Error('You should specify the Public Key obtained upon signup when using Nango Cloud.');
+        }
+
+        this.hostBaseUrl = config.host.slice(-1) === '/' ? config.host.slice(0, -1) : config.host;
         this.status = AuthorizationStatus.IDLE;
+        this.publicKey = config.publicKey;
 
         try {
             new URL(this.hostBaseUrl);
@@ -87,6 +93,10 @@ export default class Nango {
 
         if (connectionId) {
             query.push(`connection_id=${connectionId}`);
+        }
+
+        if (this.publicKey) {
+            query.push(`public_key=${this.publicKey}`);
         }
 
         if (connectionConfig != null) {

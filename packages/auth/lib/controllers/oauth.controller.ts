@@ -6,7 +6,7 @@ import { getSimpleOAuth2ClientConfig } from '../oauth-clients/oauth2.client.js';
 import { OAuth1Client } from '../oauth-clients/oauth1.client.js';
 import configService from '../services/config.service.js';
 import connectionService from '../services/connection.service.js';
-import { html, getOauthCallbackUrl, getConnectionConfig, missesInterpolationParam } from '../utils/utils.js';
+import { html, getOauthCallbackUrl, getConnectionConfig, missesInterpolationParam, getAccount } from '../utils/utils.js';
 import {
     ProviderConfig,
     ProviderTemplate,
@@ -40,6 +40,7 @@ class OAuthController {
 
     public async oauthRequest(req: Request, res: Response, next: NextFunction) {
         try {
+            let accountId = getAccount(res);
             const { providerConfigKey } = req.params;
             let connectionId = req.query['connection_id'] as string;
             let connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
@@ -51,7 +52,7 @@ class OAuthController {
             }
             connectionId = connectionId.toString();
 
-            let config = await configService.getProviderConfig(providerConfigKey);
+            let config = await configService.getProviderConfig(providerConfigKey, accountId);
 
             if (config == null) {
                 return html(logger, res, providerConfigKey, connectionId, 'unknown_config_key', this.errDesc['unknown_config_key'](providerConfigKey));
@@ -72,7 +73,8 @@ class OAuthController {
                 authMode: template.auth_mode,
                 codeVerifier: crypto.randomBytes(24).toString('hex'),
                 id: uuid.v1(),
-                connectionConfig: connectionConfig
+                connectionConfig: connectionConfig,
+                accountId: accountId
             };
             this.sessionStore[session.id] = session;
 
@@ -197,7 +199,7 @@ class OAuthController {
             logger.debug(`Received callback for ${session.providerConfigKey} (connection: ${session.connectionId}) - full callback URI: ${req.originalUrl}"`);
 
             const template = this.templates[session.provider]!;
-            const config = (await configService.getProviderConfig(session.providerConfigKey))!;
+            const config = (await configService.getProviderConfig(session.providerConfigKey, session.accountId))!;
 
             logger.info(
                 `OAuth callback - mode: ${template.auth_mode}, provider: ${config.provider}, key: ${config.unique_key}, connection ID: ${session.connectionId}`
@@ -256,7 +258,8 @@ class OAuthController {
                 session.provider,
                 accessToken.token,
                 ProviderAuthModes.OAuth2,
-                session.connectionConfig
+                session.connectionConfig,
+                session.accountId
             );
 
             return html(logger, res, providerConfigKey, connectionId, '', '');
@@ -286,7 +289,15 @@ class OAuthController {
             .then((accessTokenResult) => {
                 logger.debug(`OAuth 1.0a for ${providerConfigKey} (connection: ${connectionId}) successful.`);
 
-                connectionService.upsertConnection(connectionId, providerConfigKey, session.provider, accessTokenResult, ProviderAuthModes.OAuth1, {});
+                connectionService.upsertConnection(
+                    connectionId,
+                    providerConfigKey,
+                    session.provider,
+                    accessTokenResult,
+                    ProviderAuthModes.OAuth1,
+                    {},
+                    session.accountId
+                );
                 return html(logger, res, providerConfigKey, connectionId, '', '');
             })
             .catch((e) => {
