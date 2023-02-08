@@ -30,7 +30,7 @@ To access an OAuth API, you need a few things from the OAuth provider/API:
 
 3.  Look up the **scopes** (aka permissions) you want to request from users. Scopes are specific to individual OAuth providers, so you should look them up in the OAuth provider's API documentation.
 
-4.  Finally, decide on a **unique key** for you provider configuration. If you only have one configuration per API provider, we recommend you use the API's name in all lowercase, e.g. `github` for GitHub, `salesforce` for Salesforce etc.
+4.  Finally, decide on a **unique key** for your provider configuration. If you only have one configuration per API provider, we recommend you use the API's name in all lowercase, e.g. `github` for GitHub, `salesforce` for Salesforce etc.
 
 With this information you are now ready to configure & enable your first OAuth provider:
 
