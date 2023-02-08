@@ -5,12 +5,12 @@ sidebar_label: GSheet
 # GSheet API wiki
 
 :::note Working with the Google Sheet API?
-Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/main/docs/docs/providers/google-sheet.md).
+Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/master/docs/docs/providers/google-sheet.md).
 :::
 
 ## Using GSheet with Nango
 
-Provider template name in Nango: `google-sheet`  
+Provider template name in Nango: `google-sheet`
 Follow our [getting started guide](../reference/guide.md) to add an OAuth integration with GSheet in 5 minutes.
 
 ## App registration & publishing

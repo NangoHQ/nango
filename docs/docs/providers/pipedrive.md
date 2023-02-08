@@ -4,12 +4,12 @@ sidebar_label: Pipedrive
 # Pipedrive API wiki
 
 :::note Working with the Pipedrive API?
-Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/main/docs/docs/providers/pipedrive.md).  
+Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/master/docs/docs/providers/pipedrive.md).
 
 :::
 
 ## Using Pipedrive with Nango
-Provider template name in Nango: `pipedrive`  
+Provider template name in Nango: `pipedrive`
 Follow our [getting started guide](../reference/guide.md) to add an OAuth integration with Pipedrive in 5 minutes.
 
 ## App registration & publishing

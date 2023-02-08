@@ -4,12 +4,12 @@ sidebar_label: Monday
 # Monday API wiki
 
 :::note Working with the Monday API?
-Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/main/docs/docs/providers/monday.md).  
+Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/master/docs/docs/providers/monday.md).
 
 :::
 
 ## Using Monday with Nango
-Provider template name in Nango: `monday`  
+Provider template name in Nango: `monday`
 Follow our [getting started guide](../reference/guide.md) to add an OAuth integration with Monday in 5 minutes.
 
 ## App registration & publishing

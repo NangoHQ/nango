@@ -4,12 +4,12 @@ sidebar_label: Lever
 # Lever API wiki
 
 :::note Working with the Lever API?
-Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/main/docs/docs/providers/lever.md).  
+Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/master/docs/docs/providers/lever.md).
 
 :::
 
 ## Using Lever with Nango
-Provider template name in Nango: `lever`  
+Provider template name in Nango: `lever`
 Follow our [getting started guide](../reference/guide.md) to add an OAuth integration with Lever in 5 minutes.
 
 ## App registration & publishing

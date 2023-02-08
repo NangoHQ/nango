@@ -4,12 +4,12 @@ sidebar_label: Github
 # Github API wiki
 
 :::note Working with the Github API?
-Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/main/docs/docs/providers/github.md).  
+Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/master/docs/docs/providers/github.md).
 
 :::
 
 ## Using Github with Nango
-Provider template name in Nango: `github`  
+Provider template name in Nango: `github`
 Follow our [getting started guide](../reference/guide.md) to add an OAuth integration with Github in 5 minutes.
 
 ## App registration & publishing

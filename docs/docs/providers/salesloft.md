@@ -4,12 +4,12 @@ sidebar_label: Salesloft
 # Salesloft API wiki
 
 :::note Working with the Salesloft API?
-Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/main/docs/docs/providers/salesloft.md).  
+Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/master/docs/docs/providers/salesloft.md).
 
 :::
 
 ## Using Salesloft with Nango
-Provider template name in Nango: `salesloft`  
+Provider template name in Nango: `salesloft`
 Follow our [getting started guide](../reference/guide.md) to add an OAuth integration with Salesloft in 5 minutes.
 
 ## App registration & publishing

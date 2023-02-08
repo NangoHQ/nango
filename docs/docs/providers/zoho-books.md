@@ -4,12 +4,12 @@ sidebar_label: Zoho books
 # Zoho books API wiki
 
 :::note Working with the Zoho books API?
-Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/main/docs/docs/providers/zoho-books.md).  
+Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/master/docs/docs/providers/zoho-books.md).
 
 :::
 
 ## Using Zoho books with Nango
-Provider template name in Nango: `zoho-books`  
+Provider template name in Nango: `zoho-books`
 Follow our [getting started guide](../reference/guide.md) to add an OAuth integration with Zoho books in 5 minutes.
 
 ## App registration & publishing

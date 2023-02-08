@@ -4,12 +4,12 @@ sidebar_label: Dropbox
 # Dropbox API wiki
 
 :::note Working with the Dropbox API?
-Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/main/docs/docs/providers/dropbox.md).  
+Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/master/docs/docs/providers/dropbox.md).
 
 :::
 
 ## Using Dropbox with Nango
-Provider template name in Nango: `dropbox`  
+Provider template name in Nango: `dropbox`
 Follow our [getting started guide](../reference/guide.md) to add an OAuth integration with Dropbox in 5 minutes.
 
 ## App registration & publishing

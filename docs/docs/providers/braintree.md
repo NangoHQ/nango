@@ -5,19 +5,19 @@ sidebar_label: Braintree
 # Braintree API wiki
 
 :::note Working with the Braintree API?
-Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/main/docs/docs/providers/braintree.md).
+Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/master/docs/docs/providers/braintree.md).
 
 :::
 
 ## Using Braintree with Nango
 
-Provider template name in Nango: `braintree`  
-If you want to connect to the Sandbox system use `braintree-sandbox`  
+Provider template name in Nango: `braintree`
+If you want to connect to the Sandbox system use `braintree-sandbox`
 Follow our [getting started guide](../reference/guide.md) to add an OAuth integration with Braintree in 5 minutes.
 
 ## App registration & publishing
 
-**Rating: `Unknown`**  
+**Rating: `Unknown`**
 [According to their docs](https://developer.paypal.com/braintree/docs/guides/extend/oauth/overview) OAuth is in private beta testing for production, you need to contact them. You can sign up for an open beta with the Sandbox environment.
 
 ## Useful links

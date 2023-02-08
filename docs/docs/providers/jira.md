@@ -4,12 +4,12 @@ sidebar_label: Jira
 # Jira API wiki
 
 :::note Working with the Jira API?
-Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/main/docs/docs/providers/jira.md).  
+Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/master/docs/docs/providers/jira.md).
 
 :::
 
 ## Using Jira with Nango
-Provider template name in Nango: `jira`  
+Provider template name in Nango: `jira`
 Follow our [getting started guide](../reference/guide.md) to add an OAuth integration with Jira in 5 minutes.
 
 ## App registration & publishing

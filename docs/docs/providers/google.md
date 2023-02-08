@@ -5,12 +5,12 @@ sidebar_label: Google
 # Google API wiki
 
 :::note Working with the Google API?
-Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/main/docs/docs/providers/google-mail.md).
+Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/master/docs/docs/providers/google-mail.md).
 :::
 
 ## Using Google with Nango
 
-Provider template name in Nango: `google`  
+Provider template name in Nango: `google`
 Follow our [getting started guide](../reference/guide.md) to add an OAuth integration with Google in 5 minutes.
 
 ## App registration & publishing

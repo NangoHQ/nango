@@ -4,12 +4,12 @@ sidebar_label: Intuit
 # Intuit API wiki
 
 :::note Working with the Intuit API?
-Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/main/docs/docs/providers/intuit.md).  
+Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/master/docs/docs/providers/intuit.md).
 
 :::
 
 ## Using Intuit with Nango
-Provider template name in Nango: `intuit`  
+Provider template name in Nango: `intuit`
 Follow our [getting started guide](../reference/guide.md) to add an OAuth integration with Intuit in 5 minutes.
 
 ## App registration & publishing
