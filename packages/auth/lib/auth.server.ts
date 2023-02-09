@@ -9,7 +9,7 @@ import configController from './controllers/config.controller.js';
 import connectionController from './controllers/connection.controller.js';
 import auth from './controllers/access.middleware.js';
 import path from 'path';
-import { dirname } from './utils/utils.js';
+import { dirname, isCloud } from './utils/utils.js';
 import accountController from './controllers/account.controller.js';
 
 class AuthServer {
@@ -34,7 +34,9 @@ class AuthServer {
         app.route('/connection').get(auth.secret.bind(auth), connectionController.listConnections.bind(connectionController));
 
         // Admin routes.
-        app.route('/account').post(auth.admin.bind(auth), accountController.createAccount.bind(accountController));
+        if (isCloud()) {
+            app.route('/account').post(auth.admin.bind(auth), accountController.createAccount.bind(accountController));
+        }
 
         // Error handling.
         app.use((error: any, _: any, response: any, __: any) => {

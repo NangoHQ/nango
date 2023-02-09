@@ -3,7 +3,9 @@ import { fileURLToPath } from 'url';
 import path from 'path';
 import type { Response } from 'express';
 
-export const isCloud = process.env['NANGO_CLOUD']?.toLowerCase() === 'true';
+export function isCloud() {
+    return process.env['NANGO_CLOUD']?.toLowerCase() === 'true';
+}
 
 export function dirname() {
     return path.dirname(fileURLToPath(import.meta.url));

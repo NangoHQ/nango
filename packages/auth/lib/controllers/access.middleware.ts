@@ -5,7 +5,7 @@ import { isCloud, setAccount } from '../utils/utils.js';
 
 export class AccessMiddleware {
     async secret(req: Request, res: Response, next: NextFunction) {
-        if (isCloud) {
+        if (isCloud()) {
             let authorizationHeader = req.get('authorization');
 
             if (!authorizationHeader) {
@@ -20,7 +20,13 @@ export class AccessMiddleware {
                 return;
             }
 
-            let account: Account | null = await accountService.getAccountBySecret(secret);
+            var account: Account | null;
+            try {
+                account = await accountService.getAccountBySecret(secret);
+            } catch (_) {
+                res.status(401).send({ error: 'Authentication failed. The Authorization header is malformed.' });
+                return;
+            }
 
             if (account == null) {
                 res.status(401).send({ error: 'Authentication failed. The provided secret does not match any account.' });
@@ -57,7 +63,7 @@ export class AccessMiddleware {
     }
 
     async public(req: Request, res: Response, next: NextFunction) {
-        if (isCloud) {
+        if (isCloud()) {
             let publicKey = req.query['public_key'] as string;
 
             if (!publicKey) {
@@ -81,7 +87,7 @@ export class AccessMiddleware {
     }
 
     admin(req: Request, res: Response, next: NextFunction) {
-        if (!isCloud) {
+        if (!isCloud()) {
             res.status(401).send({ error: 'This endpoint is only available for Nango Cloud.' });
             return;
         }
@@ -96,7 +102,7 @@ export class AccessMiddleware {
         let authorizationHeader = req.get('authorization');
 
         if (!authorizationHeader) {
-            res.status(401).send({ error: 'Authentication failed. The request is missing a valid secret key.' });
+            res.status(401).send({ error: 'Authentication failed. The request is missing a valid admin secret key.' });
             return;
         }
 

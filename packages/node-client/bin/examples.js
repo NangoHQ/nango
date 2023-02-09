@@ -1,11 +1,10 @@
 import { Nango } from '../dist/index.js';
-let nango = new Nango('localhost:3000');
+let nango = new Nango({ host: 'http://localhost:3003' });
 nango
-    .listConnections('hubspot', 1)
+    .getConnection('github-dev', 2)
     .then((connections) => {
         console.log(connections);
     })
     .catch((err) => {
-        console.log(err.message);
-        console.log(err.response.data);
+        console.log(err.response?.data || err.message);
     });

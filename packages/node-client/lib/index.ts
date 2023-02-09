@@ -1,10 +1,12 @@
 import axios from 'axios';
 
+const cloudHost = 'https://api.nango.dev';
+
 export class Nango {
     serverUrl: string;
     secretKey: string;
 
-    constructor(config: { host: string; secret?: string } = { host: 'https://api.nango.dev' }) {
+    constructor(config: { host: string; secret?: string } = { host: cloudHost }) {
         this.serverUrl = config.host;
 
         if (this.serverUrl.slice(-1) === '/') {
@@ -91,7 +93,9 @@ export class Nango {
     }
 
     private enrichHeaders(headers: Record<string, string | number | boolean> = {}) {
-        if (this.secretKey) {
+        if (this.serverUrl === cloudHost) {
+            headers['Authorization'] = 'Bearer ' + this.secretKey;
+        } else if (this.secretKey) {
             headers['Authorization'] = 'Basic ' + Buffer.from(this.secretKey + ':').toString('base64');
         }
 

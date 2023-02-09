@@ -2,16 +2,19 @@
  * Copyright (c) 2022 Nango, all rights reserved.
  */
 
+const cloudHost = 'https://api.nango.dev';
+
 export default class Nango {
     private hostBaseUrl: string;
     private status: AuthorizationStatus;
     private publicKey: string | undefined;
 
-    constructor(config: { host: string; publicKey?: string } = { host: 'https://api.nango.dev' }) {
-        if (config.host === 'https://api.nango.dev' && !config.publicKey) {
-            throw new Error('You should specify the Public Key obtained upon signup when using Nango Cloud.');
+    constructor(config: { host: string; publicKey?: string } = { host: cloudHost }) {
+        if (config.host === cloudHost && !config.publicKey) {
+            throw new Error('You should specify a Public Key when using Nango Cloud (cf. documentation).');
         }
 
+        this.hostBaseUrl = config.host;
         this.hostBaseUrl = config.host.slice(-1) === '/' ? config.host.slice(0, -1) : config.host;
         this.status = AuthorizationStatus.IDLE;
         this.publicKey = config.publicKey;
