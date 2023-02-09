@@ -43,7 +43,7 @@ class AccountService {
     }
 
     async createAccount(email: string): Promise<Account | null> {
-        let result: void | Pick<Account, 'id'> = await db.knex.withSchema(db.schema()).from<Account>(`_nango_configs`).insert({ email: email }, ['id']);
+        let result: void | Pick<Account, 'id'> = await db.knex.withSchema(db.schema()).from<Account>(`_nango_accounts`).insert({ email: email }, ['id']);
 
         if (Array.isArray(result) && result.length === 1 && result[0] != null && 'id' in result[0]) {
             let accountId = result[0]['id'];

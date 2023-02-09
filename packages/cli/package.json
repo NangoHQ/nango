@@ -17,6 +17,9 @@
         "axios": "^1.2.0",
         "commander": "^9.4.0"
     },
+    "devDependencies": {
+        "@types/commander": "^2.12.2"
+    },
     "engines": {
         "node": ">=16.7"
     },

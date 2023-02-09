@@ -1,9 +1,10 @@
-exports.up = function (knex, _) {
+exports.up = async function (knex, _) {
+    await knex.raw('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"');
     return knex.schema.withSchema('nango').createTable('_nango_accounts', function (table) {
         table.increments('id').primary();
         table.timestamps(true, true);
-        table.uuid('secret_key').defaultTo(knex.raw('get_random_uuid()')).notNullable();
-        table.uuid('public_key').defaultTo(knex.raw('get_random_uuid()')).notNullable();
+        table.uuid('secret_key').defaultTo(knex.raw('uuid_generate_v4()')).notNullable();
+        table.uuid('public_key').defaultTo(knex.raw('uuid_generate_v4()')).notNullable();
         table.string('email').notNullable();
         table.unique('secret_key');
         table.unique('public_key');

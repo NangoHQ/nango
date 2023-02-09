@@ -52,7 +52,7 @@ Then open http://localhost:8000/bin/sample.html in your browser
                         params: JSON.parse(params)
                     };
 
-                    var nango = new Nango('http://localhost:3003');
+                    var nango = new Nango({ host: 'http://localhost:3003' });
                     nango
                         .auth(providerConfigKey, connectionId, config)
                         .then((result) => {
