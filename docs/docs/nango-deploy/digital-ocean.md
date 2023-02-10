@@ -4,12 +4,13 @@ Deploy Nango on Digital Ocean in less than 5 minutes.
 
 ## Create a VM {#create-vm}
 
-Go to [DigitalOcean](https://cloud.digitalocean.com/) and click *CREATE > Droplets*. Create a default VM instance with options: 
-- $20/month for testing, $40/month for production
+Go to [DigitalOcean](https://cloud.digitalocean.com/) and click _CREATE > Droplets_. Create a default VM instance with options:
+
+-   $20/month for testing, $40/month for production
 
 ## Install Docker
 
-Go to your Droplet instance page and click *Console*.
+Go to your Droplet instance page and click _Console_.
 
 Install Docker & Docker Compose with the following commands:
 
@@ -31,7 +32,7 @@ Refresh the VM console page to activate the new configuration.
 
 ## Run Nango
 
-Still in your VM’s console, install Nango by running: 
+Still in your VM’s console, install Nango by running:
 
 ```bash
 mkdir nango && cd nango
@@ -52,4 +53,4 @@ docker-compose up -d
 
 ## Limitations & production use
 
-The open-source setup has been optimized for quick deployment and local usage. Before you deploy open source Nango to production we recommend you read about the [production limitations](oss-limitations.md) and mitigate them.
+The default open-source setup has been optimized for quick deployment and local usage. To deploy Nango to production on a self-hosted instance please follow the [self-hosting instructions](oss-instructions.md).
