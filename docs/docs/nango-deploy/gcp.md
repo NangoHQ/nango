@@ -4,13 +4,14 @@ Deploy Nango on GCP in less than 5 minutes.
 
 ## Create a VM {#create-vm}
 
-Go to the [Compute Engine service](https://console.cloud.google.com/compute/instances) and click *CREATE INSTANCE*. Create an instance with default settings except: 
-- `e2-medium` for testing, `e2-standard-2` for production
-- Enable *Allow HTTP traffic* and *Allow HTTPS traffic*
+Go to the [Compute Engine service](https://console.cloud.google.com/compute/instances) and click _CREATE INSTANCE_. Create an instance with default settings except:
+
+-   `e2-medium` for testing, `e2-standard-2` for production
+-   Enable _Allow HTTP traffic_ and _Allow HTTPS traffic_
 
 ## Install Docker
 
-Go to your Compute Engine instance page and click *SSH*.
+Go to your Compute Engine instance page and click _SSH_.
 
 Install Docker & Docker Compose with the following commands:
 
@@ -32,7 +33,7 @@ Refresh the VM console page to activate the new configuration.
 
 ## Run Nango
 
-Still in your VM’s console, install Nango by running: 
+Still in your VM’s console, install Nango by running:
 
 ```bash
 mkdir nango && cd nango
@@ -53,4 +54,4 @@ docker-compose up -d
 
 ## Limitations & production use
 
-The open-source setup has been optimized for quick deployment and local usage. Before you deploy open source Nango to production we recommend you read about the [production limitations](oss-limitations.md) and mitigate them.
+The default open-source setup has been optimized for quick deployment and local usage. To deploy Nango to production on a self-hosted instance please follow the [self-hosting instructions](oss-instructions.md).
