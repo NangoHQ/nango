@@ -103,7 +103,7 @@ In a new tab, add any Github OAuth App to Nango (optionally [register your own G
 npx nango config:create github-dev github 57876b21174fed02b905 e43242c9a67fa06141e8d219c2364283d14f9ad1 "public_repo"
 ```
 
-Authorize Github on this [example page](https://docs.nango.dev/demo/github). Nango will securely retrieve, store and refresh OAuth credentials. Now try:
+Complete the Github [OAuth flow](https://docs.nango.dev/demo/github). Nango will securely retrieve, store and refresh OAuth credentials. Now try:
 
 ```bash
 npx nango token:get 1 github-dev
@@ -127,6 +127,14 @@ Wanna go live? Go through the more detailed [Step-By-Step Guide](https://docs.na
 -   [Contribute a new API](https://docs.nango.dev/contribute-api)
 -   Share feedback or ask questions on the [Slack community](https://nango.dev/slack)
 -   Check out our [blog on native integrations](https://www.nango.dev/blog)
+
+## 💪 Contributors
+
+Thank you for continuously making Nango better ❤️
+
+<a href="https://github.com/NangoHQ/nango/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=NangoHQ/nango" />
+</a>
 
 ## 🐻 History
 
