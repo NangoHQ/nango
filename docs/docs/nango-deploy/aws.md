@@ -4,13 +4,14 @@ Deploy Nango on AWS in less than 5 minutes.
 
 ## Create a VM {#create-vm}
 
-Go to the [EC2 service](https://console.aws.amazon.com/ec2/v2/home) and click *Launch Instance*. Create an instance with default settings except: 
-- `t2.medium` for testing, `t2.large` for production
-- Enable *Allow HTTPS traffic from the internet* and *Allow HTTP traffic from the internet*
+Go to the [EC2 service](https://console.aws.amazon.com/ec2/v2/home) and click _Launch Instance_. Create an instance with default settings except:
+
+-   `t2.medium` for testing, `t2.large` for production
+-   Enable _Allow HTTPS traffic from the internet_ and _Allow HTTP traffic from the internet_
 
 ## Install Docker
 
-Go to your EC2 instance page and click *Connect,* then *Connect* again on the next page to access your instance’s console via SSH. 
+Go to your EC2 instance page and click _Connect,_ then _Connect_ again on the next page to access your instance’s console via SSH.
 
 Install Docker & Docker Compose with the following commands:
 
@@ -27,7 +28,7 @@ Refresh the VM console page to activate the new configuration.
 
 ## Run Nango
 
-Still in your VM’s console, install Nango by running: 
+Still in your VM’s console, install Nango by running:
 
 ```bash
 mkdir nango && cd nango
@@ -48,4 +49,4 @@ docker-compose up -d
 
 ## Limitations & production use
 
-The open-source setup has been optimized for quick deployment and local usage. Before you deploy open source Nango to production we recommend you read about the [production limitations](oss-limitations.md) and mitigate them.
+The default open-source setup has been optimized for quick deployment and local usage. To deploy Nango to production on a self-hosted instance please follow the [self-hosting instructions](oss-instructions.md).
