@@ -22,17 +22,18 @@ In a new tab, add any Github OAuth App to Nango (optionally [register your own G
 npx nango config:create github-dev github 57876b21174fed02b905 e43242c9a67fa06141e8d219c2364283d14f9ad1 "public_repo"
 ```
 
-Complete the Github [OAuth flow](https://docs.nango.dev/demo/github). Nango will securely retrieve, store and refresh OAuth credentials. Now try:
+Complete the Github [OAuth flow](https://docs.nango.dev/demo/github). Nango will securely retrieve, store and refresh OAuth credentials.
+
+Now run:
 
 ```bash
 npx nango token:get github-dev 1
 ```
 
-Congrats 🥳 You have a fresh token to access the Github API! Let's make sure it works (❗️replace `TOKEN`):
+Congrats 🥳 You have a fresh token to access the Github API! Let's make sure it works (❗️replace `<TOKEN>`):
 
 ```bash
-curl -XGET -G "https://api.github.com/users/bastienbeurier/repos" \
-    -H "Authorization: Bearer TOKEN"
+curl "https://api.github.com/users/bastienbeurier/repos" -H "Authorization: Bearer <TOKEN>"
 ```
 
 (In practice, you should use our [backend SDK](https://docs.nango.dev/reference/guide#node-sdk) or [REST API](https://docs.nango.dev/reference/guide#rest-api) to fetch tokens from your codebase.)
