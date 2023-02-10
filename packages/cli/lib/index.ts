@@ -221,16 +221,14 @@ function httpsAgent() {
 
 function checkEnvVars() {
     if (hostport === 'http://localhost:3003') {
-        console.log(`You are running Nango on localhost:3003. That's not right?\n- Specify a NANGO_HOSTPORT environment variable.\n\n`);
+        console.log(`Assuming you are running Nango on localhost:3003 because you did not set the NANGO_HOSTPORT env var.\n\n`);
     } else if (hostport === 'https://api.nango.dev') {
-        if (process.env['NANGO_SECRET']) {
-            console.log(
-                `You are using Nango Cloud (the NANGO_HOSTPORT env var is set to https://api.nango.dev) but your are lacking the NANGO_SECRET environment variable.`
-            );
+        if (!process.env['NANGO_SECRET']) {
+            console.log(`Assuming you are using Nango Cloud but your are lacking the NANGO_SECRET env var.`);
         } else {
-            console.log(`You are using Nango Cloud (the NANGO_HOSTPORT env var is set to https://api.nango.dev).`);
+            console.log(`Assuming you are using Nango Cloud (because you set the NANGO_HOSTPORT env var to https://api.nango.dev).`);
         }
     } else {
-        console.log(`You are self-hosting Nango (the NANGO_HOSTPORT env var is set to ${hostport}).`);
+        console.log(`Assuming you are self-hosting Nango (becauses you set the NANGO_HOSTPORT env var to ${hostport}).`);
     }
 }

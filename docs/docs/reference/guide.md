@@ -69,7 +69,7 @@ Trigger a user OAuth flow:
 ```ts
 var nango = new Nango({ host: 'http://localhost:3003' }); // Local
 // or
-var nango = new Nango({ publicKey: '<PUBLIC-KEY-IN-SIGNUP-EMAIL>' }); // Nango Cloud
+var nango = new Nango({ publicKey: '<PUBLIC-KEY-FROM-SIGNUP-EMAIL>' }); // Nango Cloud
 
 // Trigger an OAuth flow
 // Param 1: unique config key from Step 1 (bullet 4)
