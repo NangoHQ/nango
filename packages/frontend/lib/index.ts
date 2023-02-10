@@ -9,7 +9,9 @@ export default class Nango {
     private status: AuthorizationStatus;
     private publicKey: string | undefined;
 
-    constructor(config: { host: string; publicKey?: string } = { host: cloudHost }) {
+    constructor(config: { host?: string; publicKey?: string } = {}) {
+        config.host = config.host || cloudHost;
+        console.log(`Host: ${config.host}`);
         if (config.host === cloudHost && !config.publicKey) {
             throw new Error('You should specify a Public Key when using Nango Cloud (cf. documentation).');
         }

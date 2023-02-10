@@ -92,9 +92,9 @@ export class AccessMiddleware {
             return;
         }
 
-        const adminSecretKey = process.env['NANGO_ADMIN_SECRET_KEY'];
+        const adminKey = process.env['NANGO_ADMIN_KEY'];
 
-        if (!adminSecretKey) {
+        if (!adminKey) {
             next();
             return;
         }
@@ -107,7 +107,7 @@ export class AccessMiddleware {
         }
 
         let candidateKey = authorizationHeader.split('Bearer ').pop();
-        if (candidateKey !== adminSecretKey) {
+        if (candidateKey !== adminKey) {
             res.status(401).send({ error: 'Authentication failed. The provided admin secret key is invalid.' });
             return;
         }
