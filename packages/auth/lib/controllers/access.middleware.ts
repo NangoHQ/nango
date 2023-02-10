@@ -57,7 +57,7 @@ export class AccessMiddleware {
                 return;
             }
 
-            setAccount(null, res);
+            setAccount(0, res);
             next();
         }
     }
@@ -81,7 +81,7 @@ export class AccessMiddleware {
             setAccount(account.id, res);
             next();
         } else {
-            setAccount(null, res);
+            setAccount(0, res);
             next();
         }
     }
