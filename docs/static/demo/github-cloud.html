@@ -1,14 +1,3 @@
-<!---
-USAGE NOTE:
-
-You cannot directly open this in the browser as ES modules are not supported on file://
-Instead cd to packages/frontend dir (this and no other dir!) and run a local HTTP server with python:
-
-% cd packages/frontend
-% python3 -m http.server 8000
-
-Then open http://localhost:8000/bin/sample.html in your browser
--->
 <html>
     <head>
         <meta charset="utf-8" />
@@ -20,10 +9,10 @@ Then open http://localhost:8000/bin/sample.html in your browser
     <body>
         <noscript>JavaScript is required to proceed with the authentication.</noscript>
 
-        <form action="#" id="server-url-container">
+        <form action="#" id="public-key-container">
             <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="margin-left: 20px">
-                <input class="mdl-textfield__input" type="text" id="server-url" value="https://nango-server-ID.onrender.com" />
-                <label class="mdl-textfield__label" for="sample3">Server URL</label>
+                <input class="mdl-textfield__input" type="text" id="public-key" />
+                <label class="mdl-textfield__label" for="sample3">Public Key</label>
             </div>
         </form>
 
@@ -31,8 +20,8 @@ Then open http://localhost:8000/bin/sample.html in your browser
 
         <p><button id="connect" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" style="margin: 10px">Connect to Github</button></p>
 
-        <p id="server-url-error" style="display: none; margin-left: 10px; color: red">
-            Invalid Server URL. It should match: https://nango-server-[INSTANCE-ID].onrender.com
+        <p id="public-key-error" style="display: none; margin-left: 10px; color: red">
+            Invalid Public Key. Please retrieve your Nango signup email to copy/paste the Public Key.
         </p>
 
         <div style="margin: 10px">
@@ -43,20 +32,20 @@ Then open http://localhost:8000/bin/sample.html in your browser
             import Nango from 'https://unpkg.com/@nangohq/frontend/dist/index.js';
 
             var link = document.getElementById('connect');
-            var serverUrlInput = document.getElementById('server-url');
-            var serverUrlInputError = document.getElementById('server-url-error');
+            var publicKeyInput = document.getElementById('public-key');
+            var publicKeyInputError = document.getElementById('public-key-error');
 
             link.addEventListener(
                 'click',
                 () => {
-                    var serverUrl = serverUrlInput.value;
+                    var publicKey = publicKeyInput.value;
 
-                    if (!/(^https:\/\/nango-server-.{4,}.onrender\.com$)|(^https:\/\/nango-server.onrender\.com$)/.test(serverUrl)) {
-                        serverUrlInputError.style.display = 'block';
+                    if (!/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i.test(publicKey)) {
+                        publicKeyInputError.style.display = 'block';
                         return;
                     }
 
-                    var nango = new Nango(serverUrl);
+                    var nango = new Nango({ publicKey: publicKey });
                     nango
                         .auth('github-cloud', '1')
                         .then((result) => {
@@ -72,8 +61,8 @@ Then open http://localhost:8000/bin/sample.html in your browser
                 false
             );
 
-            serverUrlInput.addEventListener('input', () => {
-                serverUrlInputError.style.display = 'none';
+            publicKeyInput.addEventListener('input', () => {
+                publicKeyInputError.style.display = 'none';
             });
         </script>
     </body>

@@ -19,25 +19,24 @@ Other feature ideas or questions? We would love to help or hear your input on th
 
 In <5mins, learn how to access & manage OAuth tokens for any API, using Github as an example. Ready? Go! ⏰
 
-[Sign up](https://nango.dev/start) to Nango Cloud (no credit card required) and get your `Server URL` and `Secret` (don't share!).
+[Sign up](https://nango.dev/start) to Nango Cloud (no credit card required), then open the signup email your received from Nango.
 
-On your local machine, configure them as environment variables (in your `.zshrc` or `.bashrc`):
+Copy/paste the `Secret` from the signup email and add it in your terminal (❗️replace `SECRET`):
 
 ```bash
-export NANGO_HOSTPORT=SERVER_URL # Replace
-export NANGO_SECRET_KEY=SECRET # Replace
+export NANGO_SECRET=SECRET
 ```
 
-**Restart your console** and add a new Github OAuth App (created by us) to Nango:
+Register a new Github OAuth App (created by us) with Nango:
 
 ```bash
-npx nango config:create github-cloud github 2682fa17f945844c2586 6d0f95b851a9d37c03f548762a9133ac87455f22 "public_repo"
+npx nango config:create github-cloud github 85e9ebdf0a725e006153 2e8c1a53c9d3684fef65ce214da241a6c041dc9b "public_repo"
 ```
 
-Complete the Github [OAuth flow](https://docs.nango.dev/demo/github-cloud). Nango will securely retrieve, store and refresh OAuth credentials. Now try:
+Copy/paste the `Public Key` from the signup email and complete the Github [OAuth flow](https://docs.nango.dev/demo/github-cloud). Nango will securely retrieve, store and refresh OAuth credentials. Now try:
 
 ```bash
-npx nango token:get 1 github-cloud
+npx nango token:get github-cloud 1
 ```
 
 Congrats 🥳 You have a fresh token to access the Github API! Let's make sure it works (❗️replace `TOKEN`):
@@ -49,4 +48,4 @@ curl -XGET -G "https://api.github.com/users/bastienbeurier/repos" \
 
 (In practice, you should use our [backend SDK](https://docs.nango.dev/reference/guide#node-sdk) or [REST API](https://docs.nango.dev/reference/guide#rest-api) to fetch tokens from your codebase.)
 
-Wanna go live? Go through the more detailed [Step-By-Step Guide](reference/guide.md).
+Wanna better understand what happened? Go through the more detailed [Step-By-Step Guide](reference/guide.md).

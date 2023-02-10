@@ -6,7 +6,8 @@ export class Nango {
     serverUrl: string;
     secretKey: string;
 
-    constructor(config: { host: string; secret?: string } = { host: cloudHost }) {
+    constructor(config: { host?: string; secret?: string } = {}) {
+        config.host = config.host || cloudHost;
         this.serverUrl = config.host;
 
         if (this.serverUrl.slice(-1) === '/') {

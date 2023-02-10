@@ -15,16 +15,12 @@ export function getPort() {
     return process.env['SERVER_PORT'] != null ? +process.env['SERVER_PORT'] : 3003;
 }
 
-export function getHost() {
-    return process.env['SERVER_HOST'] || 'http://localhost';
-}
-
 export function getBaseUrl() {
-    return process.env['RENDER_EXTERNAL_URL'] || getHost() + `:${getPort()}`;
+    return process.env['NANGO_SERVER_URL'] || process.env['RENDER_EXTERNAL_URL'];
 }
 
 export function getOauthCallbackUrl() {
-    return getBaseUrl() + '/oauth/callback';
+    return process.env['NANGO_CALLBACK_URL'] || getBaseUrl() + '/oauth/callback';
 }
 
 export function getAccount(res: Response): number | null {
