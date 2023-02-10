@@ -30,7 +30,7 @@ export NANGO_HOSTPORT=https://api.nango.dev && export NANGO_SECRET=<SECRET>
 Register a new Github OAuth App (created by us) with Nango:
 
 ```bash
-npx nango config:create github-cloud github 85e9ebdf0a725e006153 2e8c1a53c9d3684fef65ce214da241a6c041dc9b "user,public_repo"
+npx nango config:create github-cloud github 85e9ebdf0a725e006153 2e8c1a53c9d3684fef65ce214da241a6c041dc9b "public_repo"
 ```
 
 Copy/paste the `Public Key` from the signup email and complete the Github [OAuth flow](https://docs.nango.dev/demo/github-cloud). Nango will securely retrieve, store and refresh OAuth credentials.
