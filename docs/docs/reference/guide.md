@@ -2,13 +2,22 @@
 
 In about **15-20 minutes**, let's set up an OAuth integration in your app for any external API.
 
-:::tip
-If using [Nango Cloud](../cloud.md), replace all mentions of `http://localhost:3003` by your Server URL. You should also have configured local env variables to enable the CLI (cf. [instructions](../cloud.md#quickstart)).
-:::
+## Step 0: Initial Configuration
 
-## Step 0: Start Nango
+**If using Nango Cloud:**
 
-❗️Skip this step if you use [Nango Cloud](../cloud.md).
+If you haven't, [sign up](https://nango.dev/start) and open the signup email you received from Nango.
+
+Configure a new environment variable in your `.bashrc` (or equivalent) by copy/pasting (❗️replace `<YOUR_SECRET>` with the secret you got from the signup email):
+
+```bash
+export NANGO_SECRET=<YOUR_SECRET>
+export NANGO_HOSTPORT=https://api.nango.dev
+```
+
+❗️Restart your terminal to activate the new configuration.
+
+**If running Nango locally or self-hosted:**
 
 Clone and start Nango:
 
@@ -26,7 +35,7 @@ To access an OAuth API, you need a few things from the OAuth provider/API:
 
 1.  Find the **template name** for the OAuth provider from the [list of pre-configured APIs](https://nango.dev/oauth-providers) (usually the name of the API in lowercase, e.g. `github`, `asana`, `linkedin` etc.)
 
-2.  Obtain a **Client ID** and **Client Secret** from the OAuth provider. These credentials identify your application towards the OAuth API. You find them in the OAuth provider's developer portal. While obtaining them, the OAuth provider should ask you to specify a **Callback URL**, which is `http://localhost:3003/oauth/callback` (if running Nango locally) or `SERVER_URL/oauth/callback` (if using Nango Cloud).
+2.  Obtain a **Client ID** and **Client Secret** from the OAuth provider. These credentials identify your application towards the OAuth API. You find them in the OAuth provider's developer portal. While obtaining them, the OAuth provider should ask you to specify a **Callback URL**, which is `http://localhost:3003/oauth/callback` (if running Nango locally) or `https://api.nango.dev/oauth/callback` (if using Nango Cloud).
 
 3.  Look up the **scopes** (aka permissions) you want to request from users. Scopes are specific to individual OAuth providers, so you should look them up in the OAuth provider's API documentation.
 
@@ -35,8 +44,8 @@ To access an OAuth API, you need a few things from the OAuth provider/API:
 With this information you are now ready to configure & enable your first OAuth provider:
 
 ```bash
-npx nango config:create <unique-config-key-from-4> <template-name-from-1> <cliend-id-from-2> <client-secret-from-2> <scopes-from-2>
-# e.g. for github: npx nango config:create github github <some-id> <some-secret> "comma,separated,scopes,with,quotes"
+npx nango config:create <CONFIG-KEY-FROM-4> <TEMPLATE-NAME-FROM-1> <CLIENT-ID-FROM-2> <CLIENT-SECRET-FROM-2> <SCOPES-FROM-2>
+# e.g. for github: npx nango config:create github github <GITHUB-APP-ID> <GITHUB-APP-SECRET> "comma,separated,scopes,with,quotes"
 ```
 
 Now run `npx nango config:list` and you should see your freshly added config 🎉
@@ -47,38 +56,26 @@ Run `npx nango` to display all available CLI commands + help.
 
 ## Step 2: Trigger the OAuth flow (frontend)
 
-For quick testing you can call Nango directly from within a `<script>` tag on your page:
-
-```html
-<script type="module">
-    import Nango from 'https://unpkg.com/@nangohq/frontend/dist/index.js';
-
-    var nango = new Nango('http://localhost:3003'); // Local
-    // or
-    var nango = new Nango('Server URL'); // Nango Cloud
-
-    //... see below
-</script>
-```
-
-For single page apps, install the `@nangohq/frontend` package:
+In your frontend code, import the Nango frontend SDK:
 
 ```ts
-import Nango from '@nangohq/frontend';
+import Nango from 'https://unpkg.com/@nangohq/frontend/dist/index.js'; // For quick testing
+// or
+import Nango from '@nangohq/frontend'; // After installing the npm package
 ```
 
 Trigger a user OAuth flow:
 
 ```ts
-var nango = new Nango('http://localhost:3003'); // Local
+var nango = new Nango({ host: 'http://localhost:3003' }); // Local
 // or
-var nango = new Nango('Server URL'); // Nango Cloud
+var nango = new Nango({ publicKey: '<PUBLIC-KEY-IN-SIGNUP-EMAIL>' }); // Nango Cloud
 
 // Trigger an OAuth flow
 // Param 1: unique config key from Step 1 (bullet 4)
 // Param 2: ID you will use to retrieve the connection (most often the user ID)
 nango
-    .auth('github', '<connection-id>')
+    .auth('<CONFIG-KEY>', '<CONNECTION-ID>')
     .then((result) => {
         console.log(`OAuth flow succeeded for provider "${result.providerConfigKey}" and connection-id "${result.connectionId}"!`);
     })
@@ -121,16 +118,14 @@ Retrieve access tokens:
 ```ts
 import { Nango } from '@nangohq/node';
 
-let nango = new Nango('http://localhost:3003'); // Local
+let nango = new Nango({ host: 'http://localhost:3003' }); // Local
 // or
-let nango = new Nango('Server Url', 'Secret Key'); // Nango Cloud
+let nango = new Nango({ secret: '<SECRET-FROM-SIGNUP-EMAIL>' }); // Nango Cloud
 
-let accessToken = await nango.getToken('<config-key>', '<connection-id>'); // Token
-//or
-let connection = await nango.getConnection('<config-key>', '<connection-id>'); // Token + Connection info
+let accessToken = await nango.getToken('<CONFIG-KEY>', '<CONNECTION-ID>');
 ```
 
-❗️If using [Nango Cloud](../cloud.md), you should use env variables for your `Server Url` and `Secret Key`.
+If using Nango Cloud, you should store the secret in an an environment variable on your backend, to avoid committing it.
 
 ### REST API {#rest-api}
 
@@ -138,10 +133,10 @@ Your can test the Nango API endpoint to retrieve connections & tokens:
 
 ```bash
 # Local
-curl -XGET 'http://localhost:3003/connection/<connection-id>?provider_config_key=<config-key>'
+curl 'http://localhost:3003/connection/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>'
 
 # Nango Cloud
-curl -XGET 'SERVER_URL/connection/<connection-id>?provider_config_key=<config-key>' -H 'Authorization: Basic <encodeInBase64(secret + ":")>' # Notice the ':' character appended to the Secret before encoding!
+curl 'https://api.nango.dev/connection/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>' -H 'Authorization: Bearer <SECRET-FROM-SIGNUP-EMAIL>'
 ```
 
 ### CLI
@@ -149,9 +144,7 @@ curl -XGET 'SERVER_URL/connection/<connection-id>?provider_config_key=<config-ke
 For development convenience, use the CLI to retrieve connections and tokens:
 
 ```bash
-npx nango token:get <connection-id> <unique-config-key> # Token
-npx nango connection:get <connection-id> <unique-config-key> # Token + Connection info
-npx nango connection:list # All Connections
+npx nango token:get <CONFIG-KEY> <CONNECTION-ID>
 ```
 
 ## Need help?
