@@ -19,7 +19,7 @@ Other feature ideas or questions? We would love to help or hear your input on th
 
 In <5mins, learn how to access & manage OAuth tokens for any API, using Github as an example. Ready? Go! ⏰
 
-[Sign up](https://nango.dev/start) to Nango Cloud (no credit card required) and open the signup email you received from Nango.
+If you haven't already, [sign up](https://nango.dev/start) to Nango Cloud (no credit card required) and open the signup email you received from Nango.
 
 Copy/paste the `Secret` from the signup email and run in your terminal (❗️replace `<SECRET>`):
 

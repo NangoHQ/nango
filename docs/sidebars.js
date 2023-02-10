@@ -107,11 +107,6 @@ const sidebars = {
                     label: 'Step-By-Step Guide'
                 },
                 {
-                    id: 'reference/cli',
-                    type: 'doc',
-                    label: 'CLI'
-                },
-                {
                     id: 'reference/configuration',
                     type: 'doc',
                     label: 'Other Configuration'
@@ -177,18 +172,23 @@ const sidebars = {
         },
         {
             type: 'category',
-            label: 'Deploy Nango Open Source',
+            label: 'Nango Open Source',
             link: {
                 type: 'generated-index',
-                title: 'Deploy Nango Open Source',
-                description: 'Self-host Nango on a single machine using Docker (❗️read Limitations below before deploying to production).',
+                title: 'Nango Open Source',
+                description: 'Self-host Nango on a single machine using Docker.',
                 slug: '/category/deploy-nango-sync-open-source'
             },
             items: [
                 {
+                    id: 'nango-deploy/oss-instructions',
+                    type: 'doc',
+                    label: 'Self-Hosting Instructions'
+                },
+                {
                     id: 'nango-deploy/local',
                     type: 'doc',
-                    label: 'On your local machine'
+                    label: 'On Your Local Machine'
                 },
                 {
                     id: 'nango-deploy/aws',
@@ -209,16 +209,10 @@ const sidebars = {
                     id: 'nango-deploy/render',
                     type: 'doc',
                     label: 'On Render'
-                },
-                {
-                    id: 'nango-deploy/oss-limitations',
-                    type: 'doc',
-                    label: 'Limitations'
                 }
             ]
         },
-        'contribute-api',
-        'migration'
+        'contribute-api'
     ]
 
     // But you can create a sidebar manually

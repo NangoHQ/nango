@@ -1,8 +1,8 @@
-# Step-by-step guide
+# Step-By-Step Guide
 
 In about **15-20 minutes**, let's set up an OAuth integration in your app for any external API.
 
-## Step 0: Initial Configuration
+## Step 0: Initial Configuration {#config}
 
 **If using Nango Cloud:**
 

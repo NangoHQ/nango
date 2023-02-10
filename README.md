@@ -1,5 +1,5 @@
 ```diff
-+ Looking for Pizzly? You are in the right place. Pizzly has been renamed Nango. Using Pizzly v0.2.x? Check out: https://docs.nango.dev/migration +
++ Looking for Pizzly? You are in the right place. Pizzly has been renamed Nango. +
 ```
 
 <div align="center">
@@ -112,14 +112,13 @@ npx nango config:create github-dev github 57876b21174fed02b905 e43242c9a67fa0614
 Complete the Github [OAuth flow](https://docs.nango.dev/demo/github). Nango will securely retrieve, store and refresh OAuth credentials. Now try:
 
 ```bash
-npx nango token:get 1 github-dev
+npx nango token:get github-dev 1
 ```
 
-Congrats 🥳 You have a fresh token to access the Github API! Let's make sure it works (❗️replace `TOKEN`):
+Congrats 🥳 You have a fresh token to access the Github API! Let's make sure it works (❗️replace `<TOKEN>`):
 
 ```bash
-curl -XGET -G "https://api.github.com/users/bastienbeurier/repos" \
-    -H "Authorization: Bearer TOKEN"
+curl "https://api.github.com/users/bastienbeurier/repos" -H "Authorization: Bearer <TOKEN>"
 ```
 
 (In practice, you should use our [backend SDK](https://docs.nango.dev/reference/guide#node-sdk) or [REST API](https://docs.nango.dev/reference/guide#rest-api) to fetch tokens from your codebase.)
