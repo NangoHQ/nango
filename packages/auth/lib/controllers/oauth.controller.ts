@@ -35,7 +35,6 @@ class OAuthController {
         callback_err: (err: string) => `Did not get oauth_token and/or oauth_verifier in the callback: ${err}.`,
         url_param_err: (url: string, params: string) => `Missing param(s) in Auth request to interpolate url ${url}. Provided params: ${params}`
     };
-    callbackUrl = getOauthCallbackUrl();
     templates: { [key: string]: ProviderTemplate } = configService.getTemplates();
 
     public async oauthRequest(req: Request, res: Response, next: NextFunction) {
@@ -69,7 +68,7 @@ class OAuthController {
                 providerConfigKey: providerConfigKey,
                 provider: config.provider,
                 connectionId: connectionId as string,
-                callbackUrl: this.callbackUrl,
+                callbackUrl: getOauthCallbackUrl(),
                 authMode: template.auth_mode,
                 codeVerifier: crypto.randomBytes(24).toString('hex'),
                 id: uuid.v1(),
@@ -83,7 +82,9 @@ class OAuthController {
             }
 
             logger.info(
-                `OAuth request - mode: ${template.auth_mode}, provider: ${config.provider}, key: ${config.unique_key}, connection ID: ${connectionId}, auth URL: ${template.authorization_url}, callback URL: ${this.callbackUrl}`
+                `OAuth request - mode: ${template.auth_mode}, provider: ${config.provider}, key: ${
+                    config.unique_key
+                }, connection ID: ${connectionId}, auth URL: ${template.authorization_url}, callback URL: ${getOauthCallbackUrl()}`
             );
 
             if (template.auth_mode === ProviderAuthModes.OAuth2) {
@@ -138,7 +139,7 @@ class OAuthController {
 
             const simpleOAuthClient = new simpleOauth2.AuthorizationCode(getSimpleOAuth2ClientConfig(providerConfig, template, connectionConfig));
             const authorizationUri = simpleOAuthClient.authorizeURL({
-                redirect_uri: this.callbackUrl,
+                redirect_uri: getOauthCallbackUrl(),
                 scope: providerConfig.oauth_scopes.split(',').join(oauth2Template.scope_separator || ' '),
                 state: session.id,
                 ...additionalAuthParams
@@ -161,7 +162,7 @@ class OAuthController {
         const callbackParams = new URLSearchParams({
             state: session.id
         });
-        const oAuth1CallbackURL = `${this.callbackUrl}?${callbackParams.toString()}`;
+        const oAuth1CallbackURL = `${getOauthCallbackUrl()}?${callbackParams.toString()}`;
 
         const oAuth1Client = new OAuth1Client(config, template, oAuth1CallbackURL);
 

@@ -36,6 +36,8 @@ export class AccessMiddleware {
             setAccount(account.id, res);
             next();
         } else {
+            setAccount(0, res);
+
             const secretKey = process.env['NANGO_SECRET_KEY'];
 
             if (!secretKey) {
@@ -57,7 +59,6 @@ export class AccessMiddleware {
                 return;
             }
 
-            setAccount(0, res);
             next();
         }
     }
