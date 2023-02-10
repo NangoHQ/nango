@@ -128,6 +128,14 @@ Wanna go live? Go through the more detailed [Step-By-Step Guide](https://docs.na
 -   Share feedback or ask questions on the [Slack community](https://nango.dev/slack)
 -   Check out our [blog on native integrations](https://www.nango.dev/blog)
 
+## 💪 Contributors
+
+Thank you for continuously making Nango better ❤️
+
+<a href="https://github.com/NangoHQ/nango/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=NangoHQ/nango" />
+</a>
+
 ## 🐻 History
 
 Pizzly (the original name of this project) was initially developed by the team at [Bearer](https://www.bearer.com/?ref=pizzly) with contributions of more than 40 individuals. Over time the focus of Bearer shifted and they could no longer maintain Pizzly. In late 2022 the team at [Nango](https://www.nango.dev) adopted the project and has since maintained and evolved it together with the growing Nango community.
