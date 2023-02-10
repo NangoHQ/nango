@@ -20,7 +20,7 @@ export function getBaseUrl() {
 }
 
 export function getOauthCallbackUrl() {
-    return process.env['NANGO_CALLBACK_URL'] || getBaseUrl() + '/oauth/callback';
+    return getBaseUrl() + '/oauth/callback';
 }
 
 export function getAccount(res: Response): number | null {

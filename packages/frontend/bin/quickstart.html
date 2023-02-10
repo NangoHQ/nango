@@ -44,7 +44,7 @@ Then open http://localhost:8000/bin/sample.html in your browser
                     var providerConfigKey = document.getElementById('providerConfigKey').value;
                     var connectionId = document.getElementById('connectionId').value;
 
-                    var nango = new Nango('http://localhost:3003');
+                    var nango = new Nango({ host: 'http://localhost:3003' });
                     nango
                         .auth(providerConfigKey, connectionId)
                         .then((result) => {
