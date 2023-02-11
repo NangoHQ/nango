@@ -206,6 +206,11 @@ const sidebars = {
                     label: 'On Digital Ocean'
                 },
                 {
+                    id: 'nango-deploy/render',
+                    type: 'doc',
+                    label: 'On Render'
+                },
+                {
                     id: 'nango-deploy/oss-limitations',
                     type: 'doc',
                     label: 'Limitations'
