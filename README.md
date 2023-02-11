@@ -83,8 +83,14 @@ Nango is purposely small, focused on its one task and easy to deploy in producti
 
 Nango's community continuously maintains & expands API templates.
 
-## 🚀 Quickstart
+## 🚀 Quickstart
 
+### 1 -click deploy
+Deploy Nango with 1-click ( free options available )
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/NangoHQ/nango)
+
+### Run locally
 In <5mins, learn how to access & manage OAuth tokens for any API, using Github as an example. Ready? Go! ⏰
 
 First, clone and start Nango:
