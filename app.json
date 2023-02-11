@@ -1,0 +1,52 @@
+{
+    "name": "Nango",
+    "description": "Get OAuth tokens for APIs - fast & secure",
+    "website": "https://www.namgo.dev",
+    "repository": "https://github.com/NangoHQ/nango",
+    "logo": "https://raw.githubusercontent.com/NangoHQ/nango/master/docs/static/img/nango-favicon.svg",
+    "stack": "container",
+    "image": "nango.docker.scarf.sh/nangohq/nango-server",
+    "env": {
+        "NANGO_INSTALL_ID": {
+            "generator": "secret",
+            "description": "Unique install ID"
+        },
+        "SITE_URL": {
+            "description": "Use https://<your-app-name>.herokuapp.com replacing <your-app-name> with the value above. Or use a custom domain name if you plan to add one to the app later."
+        },
+        "SERVER_PORT": {
+            "description": "Port to listen to https requests on",
+            "default": "443"
+        },
+        "NANGO_SERVER_URL": {
+            "description": "Environment variable for the url where the nango server is deployed on"
+        },
+        "NANGO_DB_SSL": {
+            "description": "Whether to use SSL to connect to DB. Should be true. Changing to false may have unintended consequences",
+            "default": "true"
+        },
+        "NANGO_DB_USER": {
+            "description": "Name of the user to connect to the DB"
+        },
+        "NANGO_DB_PASSWORD": {
+            "description": "Password for the above user to connect to the DB"
+        },
+        "NANGO_DB_HOST": {
+            "description": "Host value of the DB"
+        },
+        "NANGO_DB_PORT": {
+            "description": "Port on which the DB runs"
+        },
+        "NANGO_DB_NAME":{
+            "description": "Name of the DB to use"
+        }
+    },
+    "addons": [
+        {
+            "plan": "heroku-postgresql",
+            "options": {
+                "version": "13"
+            }
+        }
+    ]
+}

@@ -209,6 +209,16 @@ const sidebars = {
                     id: 'nango-deploy/render',
                     type: 'doc',
                     label: 'On Render'
+                },
+                {
+                    id: 'nango-deploy/heroku',
+                    type: 'doc',
+                    label: 'On Heroku'
+                },
+                {
+                    id: 'nango-deploy/oss-limitations',
+                    type: 'doc',
+                    label: 'Limitations'
                 }
             ]
         },
