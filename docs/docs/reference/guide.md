@@ -123,7 +123,7 @@ import { Nango } from '@nangohq/node';
 
 let nango = new Nango({ host: 'http://localhost:3003' }); // Local
 // or
-let nango = new Nango({ secret: '<SECRET-KEY-FROM-SIGNUP-EMAIL>' }); // Nango Cloud
+let nango = new Nango({ secretKey: '<SECRET-KEY-FROM-SIGNUP-EMAIL>' }); // Nango Cloud
 
 let accessToken = await nango.getToken('<CONFIG-KEY>', '<CONNECTION-ID>');
 ```
