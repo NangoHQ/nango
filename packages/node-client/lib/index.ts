@@ -6,7 +6,7 @@ export class Nango {
     serverUrl: string;
     secretKey: string;
 
-    constructor(config: { host?: string; secret?: string } = {}) {
+    constructor(config: { host?: string; secretKey?: string } = {}) {
         config.host = config.host || cloudHost;
         this.serverUrl = config.host;
 
@@ -20,7 +20,7 @@ export class Nango {
             throw new Error(`Invalid URL provided for the Nango host: ${this.serverUrl}`);
         }
 
-        this.secretKey = config.secret || '';
+        this.secretKey = config.secretKey || '';
     }
 
     /**

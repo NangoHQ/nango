@@ -11,6 +11,7 @@ import https from 'https';
 const program = new Command();
 
 let hostport = process.env['NANGO_HOSTPORT'] || 'http://localhost:3003';
+let cloudHost = 'https://api.nango.dev';
 
 if (hostport.slice(-1) === '/') {
     hostport = hostport.slice(0, -1);
@@ -20,7 +21,7 @@ if (hostport.slice(-1) === '/') {
 program
     .name('nango')
     .description(
-        `A CLI tool to configure Nango:\n- By defaults, the CLI assumes that you are running Nango on localhost:3003\n- For Nango Cloud: Set the NANGO_HOSTPORT & NANGO_SECRET env variables\n- For Self-Hosting: set the NANGO_HOSTPORT env variable`
+        `A CLI tool to configure Nango:\n- By defaults, the CLI assumes that you are running Nango on localhost:3003\n- For Nango Cloud: Set the NANGO_HOSTPORT & NANGO_SECRET_KEY env variables\n- For Self-Hosting: set the NANGO_HOSTPORT env variable`
     );
 
 program
@@ -200,9 +201,9 @@ program
 program.parseAsync(process.argv);
 
 function enrichHeaders(headers: Record<string, string | number | boolean> = {}) {
-    if (process.env['NANGO_SECRET']) {
+    if (process.env['NANGO_HOSTPORT'] === cloudHost && process.env['NANGO_SECRET_KEY']) {
         // For Nango Cloud (unified)
-        headers['Authorization'] = 'Bearer ' + process.env['NANGO_SECRET'];
+        headers['Authorization'] = 'Bearer ' + process.env['NANGO_SECRET_KEY'];
     } else if (process.env['NANGO_SECRET_KEY']) {
         // For Nango OSS
         headers['Authorization'] = 'Basic ' + Buffer.from(process.env['NANGO_SECRET_KEY'] + ':').toString('base64');
@@ -222,9 +223,9 @@ function httpsAgent() {
 function checkEnvVars() {
     if (hostport === 'http://localhost:3003') {
         console.log(`Assuming you are running Nango on localhost:3003 because you did not set the NANGO_HOSTPORT env var.\n\n`);
-    } else if (hostport === 'https://api.nango.dev') {
-        if (!process.env['NANGO_SECRET']) {
-            console.log(`Assuming you are using Nango Cloud but your are lacking the NANGO_SECRET env var.`);
+    } else if (hostport === cloudHost) {
+        if (!process.env['NANGO_SECRET_KEY']) {
+            console.log(`Assuming you are using Nango Cloud but your are lacking the NANGO_SECRET_KEY env var.`);
         } else {
             console.log(`Assuming you are using Nango Cloud (because you set the NANGO_HOSTPORT env var to https://api.nango.dev).`);
         }
