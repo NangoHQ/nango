@@ -2,8 +2,8 @@ import type { Account } from '../models.js';
 import db from '../db/database.js';
 
 class AccountService {
-    async getAccountBySecret(secret: string): Promise<Account | null> {
-        let result = await db.knex.withSchema(db.schema()).select('*').from<Account>(`_nango_accounts`).where({ secret_key: secret });
+    async getAccountBySecretKey(secretKey: string): Promise<Account | null> {
+        let result = await db.knex.withSchema(db.schema()).select('*').from<Account>(`_nango_accounts`).where({ secret_key: secretKey });
 
         if (result == null || result.length == 0 || result[0] == null) {
             return null;

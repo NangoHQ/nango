@@ -49,19 +49,31 @@ NANGO_DB_SSL=<REPLACE>
 
 You can secure your instance by adding the `NANGO_SECRET_KEY` variable to the `.env` file at the root of the `nango` folder (and restarting the Docker container).
 
-This will require Basic Authentication for all sensitive requests, e.g.:
+This will require [Basic Auth](https://en.wikipedia.org/wiki/Basic_access_authentication) for all sensitive requests, e.g.:
 
 ```bash
-curl '<INSTANCE-URL>/connection/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>' -u '<NANGO-SECRET-KEY>:'
+curl '<INSTANCE-URL>/connection/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>' -u '<SECRET-KEY>:'
 ```
 
-❗️Notice the `:` character appended after `<NANGO-SECRET-KEY>`.
+❗️Notice the `:` character appended after `<SECRET-KEY>`.
+
+If you are using the Node SDK, when initializing the `Nango` object, pass in the Secret key in the `secretKey` parameter.
+
+```ts
+import { Nango } from '@nangohq/node';
+
+let nango = new Nango({ host: 'http://localhost:3003', secretKey: '<SECRET-KEY>' });
+```
 
 You should also configure the CLI to authenticate with Nango. Add to your `.bashrc` (or equivalent):
 
 ```bash
-export NANGO_SECRET_KEY=<NANGO-SECRET-KEY>
+export NANGO_SECRET_KEY=<SECRET-KEY>
 ```
+
+:::tip
+The Frontend SDK does not need the Secret key to initiate OAuth flows.
+:::
 
 ## Updating your instance
 

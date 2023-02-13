@@ -22,7 +22,7 @@ export class AccessMiddleware {
 
             var account: Account | null;
             try {
-                account = await accountService.getAccountBySecret(secret);
+                account = await accountService.getAccountBySecretKey(secret);
             } catch (_) {
                 res.status(401).send({ error: 'Authentication failed. The Authorization header is malformed.' });
                 return;

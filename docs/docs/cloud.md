@@ -21,10 +21,10 @@ In <5mins, learn how to access & manage OAuth tokens for any API, using Github a
 
 If you haven't already, [sign up](https://nango.dev/start) to Nango Cloud (no credit card required) and open the signup email you received from Nango.
 
-Copy/paste the `Secret key` from the signup email and run in your terminal (❗️replace `<SECRET_KEY>`):
+Copy/paste the `Secret key` from the signup email and run in your terminal (❗️replace `<SECRET-KEY>`):
 
 ```bash
-export NANGO_HOSTPORT=https://api.nango.dev && export NANGO_SECRET=<SECRET_KEY>
+export NANGO_HOSTPORT=https://api.nango.dev && export NANGO_SECRET_KEY=<SECRET-KEY>
 ```
 
 Register a new Github OAuth App (created by us) with Nango:

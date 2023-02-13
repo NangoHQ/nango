@@ -9,10 +9,10 @@ In about **15-20 minutes**, let's set up an OAuth integration in your app for an
 If you haven't, [sign up](https://nango.dev/start) and open the signup email you received from Nango.
 
 Now let's configure the CLI for your cloud instance:  
-Set two new environment variables in your `.bashrc` (or equivalent) by copy/pasting (❗️replace `<SECRET_KEY>` with the secret key you got from the signup email):
+Set two new environment variables in your `.bashrc` (or equivalent) by copy/pasting (❗️replace `<SECRET-KEY>` with the secret key you got from the signup email):
 
 ```bash
-export NANGO_SECRET=<SECRET_KEY>
+export NANGO_SECRET_KEY=<SECRET-KEY>
 export NANGO_HOSTPORT=https://api.nango.dev
 ```
 
@@ -123,7 +123,7 @@ import { Nango } from '@nangohq/node';
 
 let nango = new Nango({ host: 'http://localhost:3003' }); // Local
 // or
-let nango = new Nango({ secret: '<SECRET_KEY-FROM-SIGNUP-EMAIL>' }); // Nango Cloud
+let nango = new Nango({ secret: '<SECRET-KEY-FROM-SIGNUP-EMAIL>' }); // Nango Cloud
 
 let accessToken = await nango.getToken('<CONFIG-KEY>', '<CONNECTION-ID>');
 ```
@@ -139,7 +139,7 @@ Your can test the Nango API endpoint to retrieve connections & tokens:
 curl 'http://localhost:3003/connection/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>'
 
 # Nango Cloud
-curl 'https://api.nango.dev/connection/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>' -H 'Authorization: Bearer <SECRET_KEY-FROM-SIGNUP-EMAIL>'
+curl 'https://api.nango.dev/connection/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>' -H 'Authorization: Bearer <SECRET-KEY-FROM-SIGNUP-EMAIL>'
 ```
 
 ### CLI
