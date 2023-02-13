@@ -8,14 +8,15 @@ In about **15-20 minutes**, let's set up an OAuth integration in your app for an
 
 If you haven't, [sign up](https://nango.dev/start) and open the signup email you received from Nango.
 
-Configure a new environment variable in your `.bashrc` (or equivalent) by copy/pasting (❗️replace `<YOUR_SECRET>` with the secret you got from the signup email):
+Now let's configure the CLI for your cloud instance:  
+Set two new environment variables in your `.bashrc` (or equivalent) by copy/pasting (❗️replace `<SECRET_KEY>` with the secret key you got from the signup email):
 
 ```bash
-export NANGO_SECRET=<YOUR_SECRET>
+export NANGO_SECRET=<SECRET_KEY>
 export NANGO_HOSTPORT=https://api.nango.dev
 ```
 
-❗️Restart your terminal to activate the new configuration.
+❗️Don't forget to restart your terminal to activate the new configuration.
 
 **If running Nango locally or self-hosted:**
 
@@ -35,7 +36,9 @@ To access an OAuth API, you need a few things from the OAuth provider/API:
 
 1.  Find the **template name** for the OAuth provider from the [list of pre-configured APIs](https://nango.dev/oauth-providers) (usually the name of the API in lowercase, e.g. `github`, `asana`, `linkedin` etc.)
 
-2.  Obtain a **Client ID** and **Client Secret** from the OAuth provider. These credentials identify your application towards the OAuth API. You find them in the OAuth provider's developer portal. While obtaining them, the OAuth provider should ask you to specify a **Callback URL**, which is `http://localhost:3003/oauth/callback` (if running Nango locally) or `https://api.nango.dev/oauth/callback` (if using Nango Cloud).
+2.  Obtain a **Client ID** and **Client Secret** from the OAuth provider. These credentials identify your application towards the OAuth API. Check the OAuth provider's developer portal, where you registered your application with them.
+
+    -   You will be asked to provide a **Callback URL**. Set it to `http://localhost:3003/oauth/callback` if running Nango locally, or `https://api.nango.dev/oauth/callback` if you are using Nango Cloud.
 
 3.  Look up the **scopes** (aka permissions) you want to request from users. Scopes are specific to individual OAuth providers, so you should look them up in the OAuth provider's API documentation.
 
@@ -44,7 +47,7 @@ To access an OAuth API, you need a few things from the OAuth provider/API:
 With this information you are now ready to configure & enable your first OAuth provider:
 
 ```bash
-npx nango config:create <CONFIG-KEY-FROM-4> <TEMPLATE-NAME-FROM-1> <CLIENT-ID-FROM-2> <CLIENT-SECRET-FROM-2> <SCOPES-FROM-2>
+npx nango config:create <CONFIG-KEY-FROM-4> <TEMPLATE-NAME-FROM-1> <CLIENT-ID-FROM-2> <CLIENT-SECRET-FROM-2> "<SCOPES-FROM-2>"
 # e.g. for github: npx nango config:create github github <GITHUB-APP-ID> <GITHUB-APP-SECRET> "comma,separated,scopes,with,quotes"
 ```
 
@@ -69,7 +72,7 @@ Trigger a user OAuth flow:
 ```ts
 var nango = new Nango({ host: 'http://localhost:3003' }); // Local
 // or
-var nango = new Nango({ publicKey: '<PUBLIC-KEY-IN-SIGNUP-EMAIL>' }); // Nango Cloud
+var nango = new Nango({ publicKey: '<PUBLIC_KEY-FROM-SIGNUP-EMAIL>' }); // Nango Cloud
 
 // Trigger an OAuth flow
 // Param 1: unique config key from Step 1 (bullet 4)
@@ -120,7 +123,7 @@ import { Nango } from '@nangohq/node';
 
 let nango = new Nango({ host: 'http://localhost:3003' }); // Local
 // or
-let nango = new Nango({ secret: '<SECRET-FROM-SIGNUP-EMAIL>' }); // Nango Cloud
+let nango = new Nango({ secret: '<SECRET_KEY-FROM-SIGNUP-EMAIL>' }); // Nango Cloud
 
 let accessToken = await nango.getToken('<CONFIG-KEY>', '<CONNECTION-ID>');
 ```
@@ -136,7 +139,7 @@ Your can test the Nango API endpoint to retrieve connections & tokens:
 curl 'http://localhost:3003/connection/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>'
 
 # Nango Cloud
-curl 'https://api.nango.dev/connection/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>' -H 'Authorization: Bearer <SECRET-FROM-SIGNUP-EMAIL>'
+curl 'https://api.nango.dev/connection/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>' -H 'Authorization: Bearer <SECRET_KEY-FROM-SIGNUP-EMAIL>'
 ```
 
 ### CLI
