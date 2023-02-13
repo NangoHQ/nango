@@ -4,14 +4,14 @@ import type { NextFunction } from 'express';
 import configService from '../services/config.service.js';
 import { ProviderConfig, ProviderTemplate, Connection, ProviderAuthModes } from '../models.js';
 import analytics from '../utils/analytics.js';
-import { getAccount } from '../utils/utils.js';
+import { getAccountIdFromLocals } from '../utils/utils.js';
 
 class ConnectionController {
     templates: { [key: string]: ProviderTemplate } = configService.getTemplates();
 
     async getConnectionCreds(req: Request, res: Response, next: NextFunction) {
         try {
-            let accountId = getAccount(res);
+            let accountId = getAccountIdFromLocals(res);
             let connectionId = req.params['connectionId'] as string;
             let providerConfigKey = req.query['provider_config_key'] as string;
 
@@ -62,7 +62,7 @@ class ConnectionController {
 
     async listConnections(_: Request, res: Response, next: NextFunction) {
         try {
-            let accountId = getAccount(res);
+            let accountId = getAccountIdFromLocals(res);
             let connections: Object[] = await connectionService.listConnections(accountId);
 
             analytics.track('server:connection_list_fetched', accountId);

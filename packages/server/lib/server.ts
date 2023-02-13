@@ -20,6 +20,8 @@ app.use(cors());
 
 authServer.setup(app);
 
+let callbackUrl = await getOauthCallbackUrl();
+
 app.listen(port, () => {
-    console.log(`✅ Nango Server is listening on port ${port}. OAuth callback URL: ${getOauthCallbackUrl()}`);
+    console.log(`✅ Nango Server is listening on port ${port}. OAuth callback URL: ${callbackUrl}`);
 });

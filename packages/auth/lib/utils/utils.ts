@@ -2,6 +2,8 @@ import type winston from 'winston';
 import { fileURLToPath } from 'url';
 import path from 'path';
 import type { Response } from 'express';
+import accountService from '../services/account.service.js';
+import type { Account } from '../models.js';
 
 export function isCloud() {
     return process.env['NANGO_CLOUD']?.toLowerCase() === 'true';
@@ -19,11 +21,12 @@ export function getBaseUrl() {
     return process.env['NANGO_SERVER_URL'] || process.env['RENDER_EXTERNAL_URL'];
 }
 
-export function getOauthCallbackUrl() {
-    return getBaseUrl() + '/oauth/callback';
+export async function getOauthCallbackUrl(accountId?: number) {
+    let account: Account | null = isCloud() && accountId != null ? await accountService.getAccountById(accountId) : null;
+    return account?.callback_url || getBaseUrl() + '/oauth/callback';
 }
 
-export function getAccount(res: Response): number | null {
+export function getAccountIdFromLocals(res: Response): number | null {
     let accountId: any = res.locals['nangoAccountId'];
 
     // Account ID is null if self-hosted.

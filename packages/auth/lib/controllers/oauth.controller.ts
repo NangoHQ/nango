@@ -6,7 +6,7 @@ import { getSimpleOAuth2ClientConfig } from '../oauth-clients/oauth2.client.js';
 import { OAuth1Client } from '../oauth-clients/oauth1.client.js';
 import configService from '../services/config.service.js';
 import connectionService from '../services/connection.service.js';
-import { html, getOauthCallbackUrl, getConnectionConfig, missesInterpolationParam, getAccount } from '../utils/utils.js';
+import { html, getOauthCallbackUrl, getConnectionConfig, missesInterpolationParam, getAccountIdFromLocals } from '../utils/utils.js';
 import {
     ProviderConfig,
     ProviderTemplate,
@@ -39,7 +39,8 @@ class OAuthController {
 
     public async oauthRequest(req: Request, res: Response, next: NextFunction) {
         try {
-            let accountId = getAccount(res);
+            let accountId = getAccountIdFromLocals(res) || 0;
+            let callbackUrl = await getOauthCallbackUrl(accountId);
             const { providerConfigKey } = req.params;
             let connectionId = req.query['connection_id'] as string;
             let connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
@@ -68,7 +69,7 @@ class OAuthController {
                 providerConfigKey: providerConfigKey,
                 provider: config.provider,
                 connectionId: connectionId as string,
-                callbackUrl: getOauthCallbackUrl(),
+                callbackUrl: callbackUrl,
                 authMode: template.auth_mode,
                 codeVerifier: crypto.randomBytes(24).toString('hex'),
                 id: uuid.v1(),
@@ -82,15 +83,13 @@ class OAuthController {
             }
 
             logger.info(
-                `OAuth request - mode: ${template.auth_mode}, provider: ${config.provider}, key: ${
-                    config.unique_key
-                }, connection ID: ${connectionId}, auth URL: ${template.authorization_url}, callback URL: ${getOauthCallbackUrl()}`
+                `OAuth request - mode: ${template.auth_mode}, provider: ${config.provider}, key: ${config.unique_key}, connection ID: ${connectionId}, auth URL: ${template.authorization_url}, callback URL: ${callbackUrl}`
             );
 
             if (template.auth_mode === ProviderAuthModes.OAuth2) {
-                return this.oauth2Request(template as ProviderTemplateOAuth2, config, session, res, connectionConfig);
+                return this.oauth2Request(template as ProviderTemplateOAuth2, config, session, res, connectionConfig, callbackUrl);
             } else if (template.auth_mode === ProviderAuthModes.OAuth1) {
-                return this.oauth1Request(template, config, session, res);
+                return this.oauth1Request(template, config, session, res, callbackUrl);
             }
 
             let authMode = template.auth_mode;
@@ -100,12 +99,13 @@ class OAuthController {
         }
     }
 
-    private oauth2Request(
+    private async oauth2Request(
         template: ProviderTemplateOAuth2,
         providerConfig: ProviderConfig,
         session: OAuthSession,
         res: any,
-        connectionConfig: Record<string, string>
+        connectionConfig: Record<string, string>,
+        callbackUrl: string
     ) {
         const oauth2Template = template as ProviderTemplateOAuth2;
 
@@ -139,7 +139,7 @@ class OAuthController {
 
             const simpleOAuthClient = new simpleOauth2.AuthorizationCode(getSimpleOAuth2ClientConfig(providerConfig, template, connectionConfig));
             const authorizationUri = simpleOAuthClient.authorizeURL({
-                redirect_uri: getOauthCallbackUrl(),
+                redirect_uri: callbackUrl,
                 scope: providerConfig.oauth_scopes.split(',').join(oauth2Template.scope_separator || ' '),
                 state: session.id,
                 ...additionalAuthParams
@@ -158,11 +158,11 @@ class OAuthController {
     // for the entire journey. With OAuth 1.0a we have to register the callback URL
     // in a first step and will get called back there. We need to manually include the state
     // param there, otherwise we won't be able to identify the user in the callback
-    private async oauth1Request(template: ProviderTemplate, config: ProviderConfig, session: OAuthSession, res: any) {
+    private async oauth1Request(template: ProviderTemplate, config: ProviderConfig, session: OAuthSession, res: any, callbackUrl: string) {
         const callbackParams = new URLSearchParams({
             state: session.id
         });
-        const oAuth1CallbackURL = `${getOauthCallbackUrl()}?${callbackParams.toString()}`;
+        const oAuth1CallbackURL = `${callbackUrl}?${callbackParams.toString()}`;
 
         const oAuth1Client = new OAuth1Client(config, template, oAuth1CallbackURL);
 

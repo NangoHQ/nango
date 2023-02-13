@@ -37,6 +37,7 @@ export interface Account {
     email: string;
     secret_key: string;
     public_key: string;
+    callback_url: string | null;
 }
 
 export enum OAuthBodyFormat {
