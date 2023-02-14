@@ -9,7 +9,7 @@ In <5mins, learn how to access & manage OAuth tokens for any API, using Github a
 First, clone and start Nango:
 
 ```bash
-git clone https://github.com/NangoHQ/quickstart.git && cd quickstart
+git clone https://github.com/NangoHQ/nango-quickstart.git && cd nango-quickstart
 ```
 
 ```bash

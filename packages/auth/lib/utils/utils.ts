@@ -14,16 +14,28 @@ export function dirname() {
 }
 
 export function getPort() {
-    return process.env['SERVER_PORT'] != null ? +process.env['SERVER_PORT'] : 3003;
+    if (process.env['SERVER_PORT'] != null) {
+        return +process.env['SERVER_PORT'];
+    } else if (process.env['PORT'] != null) {
+        return +process.env['PORT']; // For Heroku (dynamic port)
+    } else {
+        return 3003;
+    }
 }
 
 export function getBaseUrl() {
-    return process.env['NANGO_SERVER_URL'] || process.env['RENDER_EXTERNAL_URL'];
+    return process.env['NANGO_SERVER_URL'] || 'http://localhost:3003';
 }
 
 export async function getOauthCallbackUrl(accountId?: number) {
-    let account: Account | null = isCloud() && accountId != null ? await accountService.getAccountById(accountId) : null;
-    return account?.callback_url || getBaseUrl() + '/oauth/callback';
+    let defaultCallbackUrl = getBaseUrl() + '/oauth/callback';
+
+    if (isCloud() && accountId != null) {
+        let account: Account | null = await accountService.getAccountById(accountId);
+        return account?.callback_url || defaultCallbackUrl;
+    }
+
+    return process.env['NANGO_CALLBACK_URL'] || getBaseUrl() + '/oauth/callback';
 }
 
 export function getAccountIdFromLocals(res: Response): number | null {

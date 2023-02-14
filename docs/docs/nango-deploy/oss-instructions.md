@@ -18,23 +18,32 @@ Let the CLI know where to query Nango by adding the `NANGO_HOSTPORT` env variabl
 export NANGO_HOSTPORT=<YOUR-INSTANCE-URL>
 ```
 
-## Server URL & Callback URL
+## Server URL, Callback URL & Custom Domains
 
-Add you instance url to the `.env` file at the root of the `nango` folder (and restart the Docker container):
+Add server environment variables for the instance URL and port (in the `.env` file or directly on Heroku/Render):
 
 ```
 NANGO_SERVER_URL=<INSTANCE-URL>
+SERVER_PORT=<PORT>
 ```
 
 The resulting callback URL for OAuth will be `<INSTANCE-URL>/oauth/callback`.
 
+:::info
+Your can customize the callback URL by adding a `NANGO_CALLBACK_URL` environment variable (in the `.env` file or directly on Heroku/Render).
+:::
+
+:::info
+If your are using a custom domain, you should change the `NANGO_SERVER_URL` server environment variable accordingly (in the `.env` file or directly on Heroku/Render).
+:::
+
 ## Persistent storage
 
-By default, the database is bundled in the docker container with transient storage. This means that updating the Docker image causes configs/credentials loss. This is a no-go for production.
+If deploying with Docker Compose (e.g. AWS, GCP, DO), the database is bundled in a docker container with transient storage. This means that updating the Docker image causes configs/credentials loss. This is a no-go for production.
 
 Connect Nango to an external Postgres DB that lives outside the docker setup to mitigate this.
 
-To do so, replace the values of the following env variables in the `.env` file at the root of the `nango` folder (and restart the container):
+To do so, modify the default values of the following server env variables (in the `.env` file):
 
 ```
 NANGO_DB_USER=<REPLACE>
@@ -42,12 +51,18 @@ NANGO_DB_PASSWORD=<REPLACE>
 NANGO_DB_HOST=<REPLACE>
 NANGO_DB_PORT=<REPLACE>
 NANGO_DB_NAME=<REPLACE>
-NANGO_DB_SSL=<REPLACE>
+NANGO_DB_SSL=true
 ```
+
+:::tip
+Deploying with Render or Heroku automatically generates a persistent database connected to your Nango instance.
+
+For Render, the environment variables above are automatically set for you. For Heroku, check out our Heroku docs page for specific instructions.
+:::
 
 ## Securing your instance
 
-You can secure your instance by adding the `NANGO_SECRET_KEY` variable to the `.env` file at the root of the `nango` folder (and restarting the Docker container).
+You can secure your instance by adding the `NANGO_SECRET_KEY` env variable (in the `.env` file or directly on Heroku/Render).
 
 This will require [Basic Auth](https://en.wikipedia.org/wiki/Basic_access_authentication) for all sensitive requests, e.g.:
 
@@ -75,13 +90,10 @@ export NANGO_SECRET_KEY=<SECRET-KEY>
 The Frontend SDK does not need the Secret key to initiate OAuth flows.
 :::
 
-## Updating your instance
+## Telemetry
 
-When self-hosting Nango, you will need to update your instance yourself to benefit from improvements and new API templates. It should be as simple as running:
+We use telemetry to understand Nango's usage at a high-level and improve it over time.
 
-```bash
-docker-compose stop
-docker-compose rm -f
-docker-compose pull
-docker-compose up -d
-```
+Telemetry on self-hosted instances is very light by default. We only track core actions and do not track sensitive information.
+
+You can disable telemetry by setting the env var `TELEMETRY=false` (in the `.env` file or directly on Heroku/Render).

@@ -23,7 +23,7 @@ export NANGO_HOSTPORT=https://api.nango.dev
 Clone and start Nango:
 
 ```bash
-git clone https://github.com/NangoHQ/quickstart.git && cd quickstart
+git clone https://github.com/NangoHQ/nango-quickstart.git && cd nango-quickstart
 ```
 
 ```bash

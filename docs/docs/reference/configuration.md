@@ -22,6 +22,10 @@ nango.auth('shopify', '<connection-id>', { params: { subdomain: '<shopify-subdom
 
 Nango will then build the correct authorization URL before forwarding your user.
 
+### Custom Callback URL
+
+Nango Cloud supports custom callback URLs so that your OAuth Apps redirect to your domain instead of `https://api.nango.dev`. Reach out directly on the [Slack community](https://nango.dev/slack) to enable it for your account.
+
 ### Something not working as expected? Need help?
 
 If you run into any trouble with Nango or have any questions please do not hesitate to contact us - we are happy to help!

@@ -1,5 +1,9 @@
 # Deploy Nango to GCP (Compute Engine)
 
+:::info
+Your should read the [Open Source Instructions](./oss-instructions.md) before deploying to production.
+:::
+
 Deploy Nango on GCP in less than 5 minutes.
 
 ## Create a VM {#create-vm}
@@ -51,7 +55,3 @@ docker-compose rm -f
 docker-compose pull
 docker-compose up -d
 ```
-
-## Limitations & production use
-
-The default open-source setup has been optimized for quick deployment and local usage. To deploy Nango to production on a self-hosted instance please follow the [self-hosting instructions](oss-instructions.md).
