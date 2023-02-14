@@ -24,8 +24,6 @@ services:
                 property: port
           - key: NANGO_DB_SSL
             value: TRUE
-          - key: NANGO_SECRET_KEY
-            generateValue: true
           - key: SERVER_PORT
             value: 443
 databases:
