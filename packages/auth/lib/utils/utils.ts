@@ -22,8 +22,14 @@ export function getBaseUrl() {
 }
 
 export async function getOauthCallbackUrl(accountId?: number) {
-    let account: Account | null = isCloud() && accountId != null ? await accountService.getAccountById(accountId) : null;
-    return account?.callback_url || getBaseUrl() + '/oauth/callback';
+    let defaultCallbackUrl = getBaseUrl() + '/oauth/callback';
+
+    if (isCloud() && accountId != null) {
+        let account: Account | null = await accountService.getAccountById(accountId);
+        return account?.callback_url || defaultCallbackUrl;
+    }
+
+    return process.env['NANGO_CALLBACK_URL'] || getBaseUrl() + '/oauth/callback';
 }
 
 export function getAccountIdFromLocals(res: Response): number | null {
