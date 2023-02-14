@@ -119,6 +119,7 @@ const sidebars = {
             items: [
                 'providers/airtable',
                 'providers/asana',
+                'providers/braintree',
                 'providers/brex',
                 'providers/bitbucket',
                 'providers/clickup',
@@ -150,6 +151,7 @@ const sidebars = {
                 'providers/quickbooks',
                 'providers/reddit',
                 'providers/sage',
+                'providers/salesforce',
                 'providers/salesloft',
                 'providers/shopify',
                 'providers/slack',
