@@ -89,7 +89,7 @@ Nango's community continuously maintains & expands API templates.
 
 Deploy Nango with 1-click ( free options available )
 
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/NangoHQ/nango)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/NangoHQ/nango-render)
 
 ### Run locally
 
