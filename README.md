@@ -87,12 +87,16 @@ Nango's community continuously maintains & expands API templates.
 
 ### 1 -click deploy
 
-Deploy Nango with 1-click ( free options available )
+Deploy Nango with 1-click (free options available)
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/NangoHQ/nango-render)
 <a href="https://heroku.com/deploy?template=https://github.com/NangoHQ/nango-heroku">
   <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy to heroku" width="200">
 </a>
+<a href="https://nango.dev/start">
+  <img src="https://raw.githubusercontent.com/NangoHQ/nango/6f49ab92c0ffc18c1d0f44d9bd96c62ac97aaa8d/docs/static/img/nango-deploy-button.svg" alt="Try Nango Cloud" width="215">
+</a>
+
 <!--- need to use html 'a' tag here to ensure that the button sizes are the same --->
 
 ### Run locally
