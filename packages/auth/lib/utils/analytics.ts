@@ -1,6 +1,7 @@
 import { PostHog } from 'posthog-node';
 import { v4 as uuidv4 } from 'uuid';
-import { getBaseUrl } from '../utils/utils.js';
+import { getBaseUrl, localhostUrl } from '../utils/utils.js';
+import ip from 'ip';
 
 class Analytics {
     client: PostHog | undefined;
@@ -24,11 +25,24 @@ class Analytics {
         let baseUrl = getBaseUrl();
         properties = properties || {};
         properties['host'] = baseUrl;
-        properties['account'] = accountId == null ? 'self-hosted' : accountId.toString();
+
+        var userId: string;
+        if (baseUrl === localhostUrl) {
+            // Localhost user.
+            userId = ip.address() || 'localhost';
+        } else if (!accountId || accountId === 0) {
+            // Self-hosted user.
+            userId = baseUrl;
+        } else {
+            // Cloud user.
+            userId = accountId.toString();
+        }
+
+        properties['account'] = userId;
 
         this.client.capture({
             event: name,
-            distinctId: accountId == null ? 'self-hosted' : accountId.toString(),
+            distinctId: userId,
             properties: properties
         });
     }
