@@ -1,10 +1,11 @@
 import type { AuthCredentials, OAuth2Credentials, ProviderTemplate, CredentialsRefresh } from '../models.js';
 import { ProviderAuthModes } from '../models.js';
-import { refreshOAuth2Credentials } from '../oauth-clients/oauth2.client.js';
+import { getFreshOAuth2Credentials } from '../oauth-clients/oauth2.client.js';
 import db from '../db/database.js';
 import type { ProviderConfig, Connection } from '../models.js';
 import analytics from '../utils/analytics.js';
 import logger from '../utils/logger.js';
+import providerClientManager from '../provider-clients/provider-client.manager.js';
 
 class ConnectionService {
     private runningCredentialsRefreshes: CredentialsRefresh[] = [];
@@ -139,8 +140,16 @@ class ConnectionService {
             if (dateDiffMs < 15 * 60 * 1000) {
                 const promise = new Promise<OAuth2Credentials>(async (resolve, reject) => {
                     try {
-                        const newCredentials = await refreshOAuth2Credentials(connection, providerConfig, template);
-                        this.updateConnection(connectionId, providerConfigKey, newCredentials, accountId);
+                        var newCredentials: OAuth2Credentials;
+
+                        if (providerClientManager.shouldUseProviderClient(providerConfig.provider)) {
+                            let rawCreds = await providerClientManager.refreshToken(providerConfig, connection);
+                            newCredentials = this.parseRawCredentials(rawCreds, ProviderAuthModes.OAuth2) as OAuth2Credentials;
+                        } else {
+                            newCredentials = await getFreshOAuth2Credentials(connection, providerConfig, template);
+                        }
+
+                        await this.updateConnection(connectionId, providerConfigKey, newCredentials, accountId);
 
                         // Remove ourselves from the array of running refreshes
                         this.runningCredentialsRefreshes = this.runningCredentialsRefreshes.filter((value) => {
@@ -149,6 +158,11 @@ class ConnectionService {
 
                         resolve(newCredentials);
                     } catch (e) {
+                        // Remove ourselves from the array of running refreshes
+                        this.runningCredentialsRefreshes = this.runningCredentialsRefreshes.filter((value) => {
+                            return !(value.providerConfigKey === providerConfigKey && value.connectionId === connectionId);
+                        });
+
                         reject(e);
                     }
                 });

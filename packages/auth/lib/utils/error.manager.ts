@@ -15,7 +15,7 @@ class ErrorManager {
             sentry.captureException(e);
         }
 
-        logger.error(`Exception caught: ${JSON.stringify(e)}`);
+        logger.error(`Exception caught: ${JSON.stringify(e, Object.getOwnPropertyNames(e))}`);
     }
 
     public res(res: any, type: string) {

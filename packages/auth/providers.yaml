@@ -18,11 +18,19 @@ braintree:
     authorization_url: https://api.braintreegateway.com/oauth/connect
     token_url: https://api.braintreegateway.com/oauth/access_tokens
     scope_separator: ','
+    authorization_method: header
+    body_format: json
+    token_params:
+        grant_type: authorization_code
 braintree-sandbox:
     auth_mode: OAUTH2
     authorization_url: https://api.sandbox.braintreegateway.com/oauth/connect
     token_url: https://api.sandbox.braintreegateway.com/oauth/access_tokens
     scope_separator: ','
+    authorization_method: header
+    body_format: json
+    token_params:
+        grant_type: authorization_code
 brex:
     auth_mode: OAUTH2
     authorization_url: https://accounts-api.brex.com/oauth2/default/v1/authorize

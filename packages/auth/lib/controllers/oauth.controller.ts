@@ -18,6 +18,8 @@ import {
 } from '../models.js';
 import logger from '../utils/logger.js';
 import type { NextFunction } from 'express';
+import errorManager from '../utils/error.manager.js';
+import providerClientManager from '../provider-clients/provider-client.manager.js';
 
 class OAuthController {
     sessionStore: OAuthSessionStore = {};
@@ -94,8 +96,9 @@ class OAuthController {
 
             let authMode = template.auth_mode;
             return html(logger, res, providerConfigKey, connectionId, 'auth_mode_err', this.errDesc['auth_mode_err'](authMode));
-        } catch (err) {
-            next(err);
+        } catch (e) {
+            errorManager.report(e);
+            next(e);
         }
     }
 
@@ -169,8 +172,9 @@ class OAuthController {
         let tokenResult: OAuth1RequestTokenResult | undefined;
         try {
             tokenResult = await oAuth1Client.getOAuthRequestToken();
-        } catch (error) {
-            let errStr = JSON.stringify(error, undefined, 2);
+        } catch (e) {
+            errorManager.report(e);
+            let errStr = JSON.stringify(e, undefined, 2);
             return html(logger, res, session.providerConfigKey, session.connectionId as string, 'req_token_err', this.errDesc['req_token_err'](errStr));
         }
 
@@ -213,8 +217,9 @@ class OAuthController {
             }
 
             return html(logger, res, session.providerConfigKey, session.connectionId, 'auth_mode_err', this.errDesc['auth_mode_err'](session.authMode));
-        } catch (err) {
-            next(err);
+        } catch (e) {
+            errorManager.report(e);
+            next(e);
         }
     }
 
@@ -234,7 +239,6 @@ class OAuthController {
         if (template.token_params !== undefined) {
             // We need to remove grant_type, simpleOAuth2 handles that for us
             const deepCopy = JSON.parse(JSON.stringify(template.token_params));
-            delete deepCopy.grant_type;
             additionalTokenParams = deepCopy;
         }
 
@@ -245,11 +249,17 @@ class OAuthController {
         }
 
         try {
-            const accessToken = await simpleOAuthClient.getToken({
-                code: code as string,
-                redirect_uri: session.callbackUrl,
-                ...additionalTokenParams
-            });
+            var token: object;
+            if (providerClientManager.shouldUseProviderClient(session.provider)) {
+                token = await providerClientManager.getToken(config, code);
+            } else {
+                let accessToken = await simpleOAuthClient.getToken({
+                    code: code as string,
+                    redirect_uri: session.callbackUrl,
+                    ...additionalTokenParams
+                });
+                token = accessToken.token;
+            }
 
             logger.debug(`OAuth 2 for ${providerConfigKey} (connection ${connectionId}) successful.`);
 
@@ -257,7 +267,7 @@ class OAuthController {
                 connectionId,
                 providerConfigKey,
                 session.provider,
-                accessToken.token,
+                token,
                 ProviderAuthModes.OAuth2,
                 session.connectionConfig,
                 session.accountId
@@ -265,6 +275,8 @@ class OAuthController {
 
             return html(logger, res, providerConfigKey, connectionId, '', '');
         } catch (e) {
+            errorManager.report(e);
+
             if (e instanceof Error) {
                 return html(logger, res, providerConfigKey, connectionId, 'token_err', this.errDesc['token_err'](e.message));
             }
@@ -302,6 +314,7 @@ class OAuthController {
                 return html(logger, res, providerConfigKey, connectionId, '', '');
             })
             .catch((e) => {
+                errorManager.report(e);
                 let errStr = JSON.stringify(e);
                 return html(logger, res, providerConfigKey, connectionId, 'token_err', this.errDesc['token_err'](errStr));
             });
