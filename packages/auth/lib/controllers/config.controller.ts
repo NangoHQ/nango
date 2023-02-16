@@ -4,6 +4,7 @@ import type { ProviderConfig } from '../models.js';
 import type { NextFunction } from 'express';
 import analytics from '../utils/analytics.js';
 import { getAccountIdFromLocals } from '../utils/utils.js';
+import errorManager from '../utils/error.manager.js';
 
 class ConfigController {
     async listProviderConfigs(_: Request, res: Response, next: NextFunction) {
@@ -22,14 +23,14 @@ class ConfigController {
             let providerConfigKey = req.params['providerConfigKey'] as string;
 
             if (providerConfigKey == null) {
-                res.status(400).send({ error: `Missing param provider_config_key.` });
+                errorManager.res(res, 'missing_provider_config');
                 return;
             }
 
             let config = await configService.getProviderConfig(providerConfigKey, accountId);
 
             if (config == null) {
-                res.status(400).send({ error: `There is no matching provider configuration with key: ${providerConfigKey}` });
+                errorManager.res(res, 'unknown_provider_config');
                 return;
             }
 
@@ -43,30 +44,32 @@ class ConfigController {
         try {
             let accountId = getAccountIdFromLocals(res);
             if (req.body == null) {
-                res.status(400).send({ error: `Missing request body.` });
+                errorManager.res(res, 'missing_body');
                 return;
             }
 
             if (req.body['provider_config_key'] == null) {
-                res.status(400).send({ error: `Missing param provider_config_key.` });
+                errorManager.res(res, 'missing_provider_config');
                 return;
             }
 
             if (req.body['provider'] == null) {
-                res.status(400).send({ error: `Missing param provider.` });
+                errorManager.res(res, 'missing_provider_template');
                 return;
             }
+
             if (req.body['oauth_client_id'] == null) {
-                res.status(400).send({ error: `Missing param oauth_client_id.` });
+                errorManager.res(res, 'missing_client_id');
                 return;
             }
+
             if (req.body['oauth_client_secret'] == null) {
-                res.status(400).send({ error: `Missing param oauth_client_secret.` });
+                errorManager.res(res, 'missing_client_secret');
                 return;
             }
 
             if (req.body['oauth_scopes'] == null) {
-                res.status(400).send({ error: `Missing param oauth_scopes` });
+                errorManager.res(res, 'missing_scopes');
                 return;
             }
 
@@ -91,9 +94,7 @@ class ConfigController {
                 analytics.track('server:config_created', accountId, { provider: config.provider });
                 res.status(200).send({ config_id: configId });
             } else {
-                res.status(500).send({
-                    error: `There was an unknown error creating your provider config.`
-                });
+                throw new Error('provider_config_creation_failure');
             }
         } catch (err) {
             next(err);
@@ -104,30 +105,30 @@ class ConfigController {
         try {
             let accountId = getAccountIdFromLocals(res);
             if (req.body == null) {
-                res.status(400).send({ error: `Missing request body.` });
+                errorManager.res(res, 'missing_body');
                 return;
             }
 
             if (req.body['provider_config_key'] == null) {
-                res.status(400).send({ error: `Missing param provider_config_key.` });
+                errorManager.res(res, 'missing_provider_config');
                 return;
             }
 
             if (req.body['provider'] == null) {
-                res.status(400).send({ error: `Missing param provider.` });
+                errorManager.res(res, 'missing_provider_template');
                 return;
             }
             if (req.body['oauth_client_id'] == null) {
-                res.status(400).send({ error: `Missing param oauth_client_id.` });
+                errorManager.res(res, 'missing_client_id');
                 return;
             }
             if (req.body['oauth_client_secret'] == null) {
-                res.status(400).send({ error: `Missing param oauth_client_secret.` });
+                errorManager.res(res, 'missing_client_secret');
                 return;
             }
 
             if (req.body['oauth_scopes'] == null) {
-                res.status(400).send({ error: `Missing param oauth_scopes` });
+                errorManager.res(res, 'missing_scopes');
                 return;
             }
 
@@ -143,7 +144,7 @@ class ConfigController {
             let oldConfig = await configService.getProviderConfig(newConfig.unique_key, accountId);
 
             if (oldConfig == null) {
-                res.status(400).send({ error: `There is no matching provider configuration for provider_config_key: ${newConfig.unique_key}` });
+                errorManager.res(res, 'unknown_provider_config');
                 return;
             }
 
@@ -160,7 +161,7 @@ class ConfigController {
             let providerConfigKey = req.params['providerConfigKey'] as string;
 
             if (providerConfigKey == null) {
-                res.status(400).send({ error: `Missing param provider_config_key.` });
+                errorManager.res(res, 'missing_provider_config');
                 return;
             }
 

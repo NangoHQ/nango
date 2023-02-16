@@ -47,7 +47,7 @@ class AccountService {
 
         if (Array.isArray(result) && result.length === 1 && result[0] != null && 'id' in result[0]) {
             let accountId = result[0]['id'];
-            return await this.getAccountById(accountId);
+            return this.getAccountById(accountId);
         }
 
         return null;

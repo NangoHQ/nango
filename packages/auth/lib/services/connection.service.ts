@@ -54,7 +54,7 @@ class ConnectionService {
     }
 
     async listConnections(accountId: number | null): Promise<Object[]> {
-        return await db.knex
+        return db.knex
             .withSchema(db.schema())
             .from<Connection>(`_nango_connections`)
             .select({ conection_id: 'connection_id' }, { provider: 'provider_config_key' }, { created: 'created_at' })

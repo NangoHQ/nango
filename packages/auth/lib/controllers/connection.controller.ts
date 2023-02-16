@@ -5,6 +5,7 @@ import configService from '../services/config.service.js';
 import { ProviderConfig, ProviderTemplate, Connection, ProviderAuthModes } from '../models.js';
 import analytics from '../utils/analytics.js';
 import { getAccountIdFromLocals } from '../utils/utils.js';
+import errorManager from '../utils/error.manager.js';
 
 class ConnectionController {
     templates: { [key: string]: ProviderTemplate } = configService.getTemplates();
@@ -16,35 +17,33 @@ class ConnectionController {
             let providerConfigKey = req.query['provider_config_key'] as string;
 
             if (connectionId == null) {
-                res.status(400).send({ error: `Missing param connection_id.` });
+                errorManager.res(res, 'missing_connection');
                 return;
             }
 
             if (providerConfigKey == null) {
-                res.status(400).send({ error: `Missing param provider_config_key.` });
+                errorManager.res(res, 'missing_provider_config');
                 return;
             }
 
             let connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, accountId);
 
             if (connection == null) {
-                res.status(400).send({ error: `No matching connection for connection_id: ${connectionId} and provider_config_key: ${providerConfigKey}` });
+                errorManager.res(res, 'unkown_connection');
                 return;
             }
 
             let config: ProviderConfig | null = await configService.getProviderConfig(connection.provider_config_key, accountId);
 
             if (config == null) {
-                res.status(400).send({ error: `No matching provider configuration for key: ${providerConfigKey}` });
+                errorManager.res(res, 'unknown_provider_config');
                 return;
             }
 
             let template: ProviderTemplate | undefined = this.templates[config.provider];
 
             if (template == null) {
-                res.status(400).send({
-                    error: `No matching template '${config.provider}' (provider_config_key: ${providerConfigKey}, connection_id: ${connectionId})`
-                });
+                errorManager.res(res, 'unknown_provider_template');
                 return;
             }
 

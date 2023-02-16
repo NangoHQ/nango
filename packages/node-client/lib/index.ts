@@ -71,7 +71,7 @@ export class Nango {
             provider_config_key: providerConfigKey
         };
 
-        return await axios.get(url, { params: params, headers: this.enrichHeaders(headers) });
+        return axios.get(url, { params: params, headers: this.enrichHeaders(headers) });
     }
 
     /**
@@ -90,7 +90,7 @@ export class Nango {
             'Accept-Encoding': 'application/json'
         };
 
-        return await axios.get(url, { headers: this.enrichHeaders(headers) });
+        return axios.get(url, { headers: this.enrichHeaders(headers) });
     }
 
     private enrichHeaders(headers: Record<string, string | number | boolean> = {}) {

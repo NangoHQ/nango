@@ -33,7 +33,6 @@ program
         await axios
             .get(url, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
             .then((res) => {
-                console.log(res.data);
                 console.table(
                     res.data['configs'].map((o: any) => {
                         return { unique_key: o.unique_key, provider: o.provider, created: o.created_at };
@@ -41,7 +40,7 @@ program
                 );
             })
             .catch((err) => {
-                console.log(`❌ ${err.response?.data.error || err}`);
+                console.log(`❌ ${err.response?.data.error || JSON.stringify(err)}`);
             });
     });
 
@@ -58,7 +57,7 @@ program
                 console.table(res.data['config']);
             })
             .catch((err) => {
-                console.log(`❌ ${err.response?.data.error || err}`);
+                console.log(`❌ ${err.response?.data.error || JSON.stringify(err)}`);
             });
     });
 
@@ -87,7 +86,7 @@ program
                 console.log('\n\n✅ Successfully created a new provider configuration!\n\n');
             })
             .catch((err) => {
-                console.log(`❌ ${err.response?.data.error || err}`);
+                console.log(`❌ ${err.response?.data.error || JSON.stringify(err)}`);
             });
     });
 
@@ -116,7 +115,7 @@ program
                 console.log('\n\n✅ Successfully edited an existing provider configuration!\n\n');
             })
             .catch((err) => {
-                console.log(`❌ ${err.response?.data.error || err}`);
+                console.log(`❌ ${err.response?.data.error || JSON.stringify(err)}`);
             });
     });
 
@@ -133,7 +132,7 @@ program
                 console.log('\n\n✅ Successfully deleted a provider configuration!\n\n');
             })
             .catch((err) => {
-                console.log(`❌ ${err.response?.data.error || err}`);
+                console.log(`❌ ${err.response?.data.error || JSON.stringify(err)}`);
             });
     });
 
@@ -151,7 +150,7 @@ program
                 console.log(res.data);
             })
             .catch((err) => {
-                console.log(`❌ ${err.response?.data.error || err}`);
+                console.log(`❌ ${err.response?.data.error || JSON.stringify(err)}`);
             });
     });
 
@@ -178,7 +177,7 @@ program
                 }
             })
             .catch((err) => {
-                console.log(`❌ ${err.response?.data.error || err.message}`);
+                console.log(`❌ ${err.response?.data.error || JSON.stringify(err)}`);
             });
     });
 
@@ -194,7 +193,7 @@ program
                 console.table(res.data['connections']);
             })
             .catch((err) => {
-                console.log(`❌ ${err.response?.data.error || err}`);
+                console.log(`❌ ${err.response?.data.error || JSON.stringify(err)}`);
             });
     });
 

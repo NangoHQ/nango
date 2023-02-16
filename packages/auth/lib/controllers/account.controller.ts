@@ -3,31 +3,31 @@ import accountService from '../services/account.service.js';
 import type { Account } from '../models.js';
 import type { NextFunction } from 'express';
 import analytics from '../utils/analytics.js';
+import errorManager from '../utils/error.manager.js';
 
 class AccountController {
     async createAccount(req: Request, res: Response, next: NextFunction) {
         try {
             if (req.body == null) {
-                res.status(400).send({ error: `Missing request body.` });
+                errorManager.res(res, 'missing_body');
                 return;
             }
 
             let email = req.body['email'];
             if (email == null) {
-                res.status(400).send({ error: `Missing param email.` });
+                errorManager.res(res, 'missing_email_param');
                 return;
             }
 
             if ((await accountService.getAccountByEmail(email)) != null) {
-                res.status(400).send({ error: `Email already exists.` });
+                errorManager.res(res, 'duplicate_account');
                 return;
             }
 
             let account: Account | null = await accountService.createAccount(email);
 
             if (account == null) {
-                res.status(400).send({ error: `Account creating failed for an unknown reason.` });
-                return;
+                throw new Error('account_creation_failure');
             }
 
             analytics.track('server:account_created', account.id);

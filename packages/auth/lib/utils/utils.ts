@@ -5,6 +5,8 @@ import type { Response } from 'express';
 import accountService from '../services/account.service.js';
 import type { Account } from '../models.js';
 
+export const localhostUrl: string = 'http://localhost:3003';
+
 export function isCloud() {
     return process.env['NANGO_CLOUD']?.toLowerCase() === 'true';
 }
@@ -24,7 +26,7 @@ export function getPort() {
 }
 
 export function getBaseUrl() {
-    return process.env['NANGO_SERVER_URL'] || 'http://localhost:3003';
+    return process.env['NANGO_SERVER_URL'] || localhostUrl;
 }
 
 export async function getOauthCallbackUrl(accountId?: number) {
@@ -151,7 +153,7 @@ Nango OAuth flow callback. Read more about how to use it at: https://github.com/
             }
         };
       } else {
-        console.log('I have success!');
+        console.log('I have succeeded!');
         message.eventType = 'AUTHORIZATION_SUCEEDED';
         message.data = { connectionId: window.connectionId, providerConfigKey: window.providerConfigKey };
       }

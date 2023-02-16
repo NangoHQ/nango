@@ -11,6 +11,7 @@ import auth from './controllers/access.middleware.js';
 import path from 'path';
 import { dirname, isCloud } from './utils/utils.js';
 import accountController from './controllers/account.controller.js';
+import errorManager from './utils/error.manager.js';
 
 class AuthServer {
     async setup(app: Express) {
@@ -39,9 +40,9 @@ class AuthServer {
         }
 
         // Error handling.
-        app.use((error: any, _: any, response: any, __: any) => {
-            const status = error.status || 500;
-            response.status(status).send(error.message);
+        app.use((e: any, _: any, res: any, __: any) => {
+            errorManager.report(e);
+            errorManager.res(res, 'server_error');
         });
     }
 }

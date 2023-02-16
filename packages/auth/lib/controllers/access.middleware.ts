@@ -2,6 +2,7 @@ import type { Request, Response, NextFunction } from 'express';
 import accountService from '../services/account.service.js';
 import type { Account } from '../models.js';
 import { isCloud, setAccount } from '../utils/utils.js';
+import errorManager from '../utils/error.manager.js';
 
 export class AccessMiddleware {
     async secret(req: Request, res: Response, next: NextFunction) {
@@ -9,14 +10,14 @@ export class AccessMiddleware {
             let authorizationHeader = req.get('authorization');
 
             if (!authorizationHeader) {
-                res.status(401).send({ error: 'Authentication failed. The request is missing a valid secret key.' });
+                errorManager.res(res, 'missing_auth_header');
                 return;
             }
 
             let secret = authorizationHeader.split('Bearer ').pop();
 
             if (!secret) {
-                res.status(401).send({ error: 'Authentication failed. The Authorization header is malformed.' });
+                errorManager.res(res, 'malformed_auth_header');
                 return;
             }
 
@@ -24,12 +25,12 @@ export class AccessMiddleware {
             try {
                 account = await accountService.getAccountBySecretKey(secret);
             } catch (_) {
-                res.status(401).send({ error: 'Authentication failed. The Authorization header is malformed.' });
+                errorManager.res(res, 'malformed_auth_header');
                 return;
             }
 
             if (account == null) {
-                res.status(401).send({ error: 'Authentication failed. The provided secret does not match any account.' });
+                errorManager.res(res, 'unkown_account');
                 return;
             }
 
@@ -48,14 +49,14 @@ export class AccessMiddleware {
             const authorizationHeader = req.get('authorization');
 
             if (!authorizationHeader) {
-                res.status(401).send({ error: 'Authentication failed. The request is missing a valid secret key.' });
+                errorManager.res(res, 'missing_auth_header');
                 return;
             }
 
             const { providedUser } = this.fromBasicAuth(authorizationHeader);
 
             if (providedUser !== secretKey) {
-                res.status(401).send({ error: 'Authentication failed. The provided secret key is invalid.' });
+                errorManager.res(res, 'invalid_secret_key');
                 return;
             }
 
@@ -68,14 +69,14 @@ export class AccessMiddleware {
             let publicKey = req.query['public_key'] as string;
 
             if (!publicKey) {
-                res.status(401).send({ error: 'Authentication failed. The Authorization header is malformed.' });
+                errorManager.res(res, 'missing_public_key');
                 return;
             }
 
             let account: Account | null = await accountService.getAccountByPublicKey(publicKey);
 
             if (account == null) {
-                res.status(401).send({ error: 'Authentication failed. The provided public key does not match any account.' });
+                errorManager.res(res, 'unkown_account');
                 return;
             }
 
@@ -89,27 +90,27 @@ export class AccessMiddleware {
 
     admin(req: Request, res: Response, next: NextFunction) {
         if (!isCloud()) {
-            res.status(401).send({ error: 'This endpoint is only available for Nango Cloud.' });
+            errorManager.res(res, 'only_nango_cloud');
             return;
         }
 
         const adminKey = process.env['NANGO_ADMIN_KEY'];
 
         if (!adminKey) {
-            next();
+            errorManager.res(res, 'admin_key_configuration');
             return;
         }
 
         let authorizationHeader = req.get('authorization');
 
         if (!authorizationHeader) {
-            res.status(401).send({ error: 'Authentication failed. The request is missing a valid admin secret key.' });
+            errorManager.res(res, 'missing_auth_header');
             return;
         }
 
         let candidateKey = authorizationHeader.split('Bearer ').pop();
         if (candidateKey !== adminKey) {
-            res.status(401).send({ error: 'Authentication failed. The provided admin secret key is invalid.' });
+            errorManager.res(res, 'invalid_admin_key');
             return;
         }
 

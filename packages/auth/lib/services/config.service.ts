@@ -28,11 +28,11 @@ class ConfigService {
     }
 
     async listProviderConfigs(accountId: number | null): Promise<ProviderConfig[]> {
-        return await db.knex.withSchema(db.schema()).select('*').from<ProviderConfig>(`_nango_configs`).where({ account_id: accountId });
+        return db.knex.withSchema(db.schema()).select('*').from<ProviderConfig>(`_nango_configs`).where({ account_id: accountId });
     }
 
     async createProviderConfig(config: ProviderConfig): Promise<void | Pick<ProviderConfig, 'id'>[]> {
-        return await db.knex.withSchema(db.schema()).from<ProviderConfig>(`_nango_configs`).insert(config, ['id']);
+        return db.knex.withSchema(db.schema()).from<ProviderConfig>(`_nango_configs`).insert(config, ['id']);
     }
 
     async deleteProviderConfig(providerConfigKey: string, accountId: number | null): Promise<number> {
