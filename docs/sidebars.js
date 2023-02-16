@@ -126,6 +126,7 @@ const sidebars = {
                 'providers/discord',
                 'providers/dropbox',
                 'providers/facebook',
+                'providers/fitbit',
                 'providers/freshbooks',
                 'providers/front',
                 'providers/github',
@@ -217,7 +218,6 @@ const sidebars = {
                     type: 'doc',
                     label: 'On Heroku'
                 }
-
             ]
         },
         'contribute-api'
