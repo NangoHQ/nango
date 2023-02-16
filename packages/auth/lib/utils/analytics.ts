@@ -1,6 +1,6 @@
 import { PostHog } from 'posthog-node';
 import { v4 as uuidv4 } from 'uuid';
-import { getBaseUrl, localhostUrl } from '../utils/utils.js';
+import { getBaseUrl, getNangoVersion, localhostUrl } from '../utils/utils.js';
 import ip from 'ip';
 
 class Analytics {
@@ -40,13 +40,21 @@ class Analytics {
             userId = `${userType}-${accountId.toString()}`;
         }
 
+        let userProperties = {} as Record<string | number, any>;
+        userProperties['user-type'] = userType;
+        userProperties['account'] = userType;
         properties['user-type'] = userType;
-        properties['account'] = userId;
+        properties['user-account'] = userId;
+
+        properties['nango-version'] = getNangoVersion();
+
+        // Add the user properties
+        properties['$set'] = userProperties;
 
         this.client.capture({
             event: name,
             distinctId: userId,
-            properties: { $set: properties }
+            properties: properties
         });
     }
 }
