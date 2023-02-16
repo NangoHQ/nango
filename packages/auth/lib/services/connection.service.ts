@@ -58,7 +58,7 @@ class ConnectionService {
         return db.knex
             .withSchema(db.schema())
             .from<Connection>(`_nango_connections`)
-            .select({ conection_id: 'connection_id' }, { provider: 'provider_config_key' }, { created: 'created_at' })
+            .select({ connection_id: 'connection_id' }, { provider: 'provider_config_key' }, { created: 'created_at' })
             .where({ account_id: accountId });
     }
 
