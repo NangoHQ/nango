@@ -27,23 +27,26 @@ class Analytics {
         properties['host'] = baseUrl;
 
         var userId: string;
+        var userType: string;
+
         if (baseUrl === localhostUrl) {
-            // Localhost user.
-            userId = ip.address() || 'localhost';
+            userType = 'localhost';
+            userId = `${userType}-${ip.address()}`;
         } else if (!accountId || accountId === 0) {
-            // Self-hosted user.
-            userId = baseUrl;
+            userType = 'self-hosted';
+            userId = `${userType}-${baseUrl}`;
         } else {
-            // Cloud user.
-            userId = accountId.toString();
+            userType = 'cloud';
+            userId = `${userType}-${accountId.toString()}`;
         }
 
+        properties['user-type'] = userType;
         properties['account'] = userId;
 
         this.client.capture({
             event: name,
             distinctId: userId,
-            properties: properties
+            properties: { $set: properties }
         });
     }
 }
