@@ -18,7 +18,7 @@ Let the CLI know where to query Nango by adding the `NANGO_HOSTPORT` env variabl
 export NANGO_HOSTPORT=<YOUR-INSTANCE-URL>
 ```
 
-## Server URL, Callback URL & Custom Domains
+## Server URL, Callback URL & Custom Domains {#custom-urls}
 
 Add server environment variables for the instance URL and port (in the `.env` file or directly on Heroku/Render):
 

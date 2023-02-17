@@ -24,8 +24,8 @@ The most commonly used configuration options are:
 provider_slug: # Shorthand for the provider, ideally the provider's name. Must be unique.
     # Mandatory fields
     auth_mode: OAUTH2 # Either OAUTH1 (for OAuth 1.0a) or OAUTH2
-    authorization_url: https://gitlab.com/oauth/authorize # The URL of the authorization page for the OAuth service
-    token_url: https://gitlab.com/oauth/token # The URL for the token request
+    authorization_url: https://${connectionConfig.params.subdomain}.gitlab.com/oauth/authorize # The URL of the authorization page for the OAuth service (supports string interpolation)
+    token_url: https://${connectionConfig.params.subdomain}.gitlab.com/oauth/token # The URL for the token request (supports string interpolation)
 
     # Optional fields
     authorization_params: # Additional parameters to pass along in the authorization step
@@ -34,9 +34,19 @@ provider_slug: # Shorthand for the provider, ideally the provider's name. Must b
         mycoolparam: value
     refresh_url: https://api.example.com/oauth/refresh # The URL to use for refreshing the access token, if different from token_url
     scope_separator: ',' # String to use to separate scopes. Defaults to ' ' (1 space) if not provided
+    redirect_uri_metadata:
+        - subdomain # Save the 'subdomain' query parameter value returned in the Redirect URI (Connection Metadata)
+    token_response_metadata:
+        - scopes # Save the 'scopes' query parameter value returned in the token response (Connection Metadata)
 ```
 
-Templates support [string interpolation for dynamic URLs](./reference/configuration.md#connection-config).
+:::info
+Templates support parameters using string interpolation (cf. [Connection Configuration](./reference/configuration.md#connection-config)) for dynamic URLs, etc.
+:::
+
+:::info
+Verify if some [Connection Metadata](./reference/configuration.md#connection-metadata) should be captured during the OAuth flow.
+:::
 
 ## Step 1: Add your new provider to `providers.yaml`
 

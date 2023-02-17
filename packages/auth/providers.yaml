@@ -22,6 +22,8 @@ braintree:
     body_format: json
     token_params:
         grant_type: authorization_code
+    redirect_uri_metadata:
+        - merchantId
 braintree-sandbox:
     auth_mode: OAUTH2
     authorization_url: https://api.sandbox.braintreegateway.com/oauth/connect
@@ -31,6 +33,8 @@ braintree-sandbox:
     body_format: json
     token_params:
         grant_type: authorization_code
+    redirect_uri_metadata:
+        - merchantId
 brex:
     auth_mode: OAUTH2
     authorization_url: https://accounts-api.brex.com/oauth2/default/v1/authorize

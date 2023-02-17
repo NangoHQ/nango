@@ -6,7 +6,7 @@ import { getSimpleOAuth2ClientConfig } from '../oauth-clients/oauth2.client.js';
 import { OAuth1Client } from '../oauth-clients/oauth1.client.js';
 import configService from '../services/config.service.js';
 import connectionService from '../services/connection.service.js';
-import { html, getOauthCallbackUrl, getConnectionConfig, missesInterpolationParam, getAccountIdFromLocals } from '../utils/utils.js';
+import { html, getOauthCallbackUrl, getConnectionConfig, getConnectionMetadata, missesInterpolationParam, getAccountIdFromLocals } from '../utils/utils.js';
 import {
     ProviderConfig,
     ProviderTemplate,
@@ -106,7 +106,7 @@ class OAuthController {
         template: ProviderTemplateOAuth2,
         providerConfig: ProviderConfig,
         session: OAuthSession,
-        res: any,
+        res: Response,
         connectionConfig: Record<string, string>,
         callbackUrl: string
     ) {
@@ -161,7 +161,7 @@ class OAuthController {
     // for the entire journey. With OAuth 1.0a we have to register the callback URL
     // in a first step and will get called back there. We need to manually include the state
     // param there, otherwise we won't be able to identify the user in the callback
-    private async oauth1Request(template: ProviderTemplate, config: ProviderConfig, session: OAuthSession, res: any, callbackUrl: string) {
+    private async oauth1Request(template: ProviderTemplate, config: ProviderConfig, session: OAuthSession, res: Response, callbackUrl: string) {
         const callbackParams = new URLSearchParams({
             state: session.id
         });
@@ -223,10 +223,11 @@ class OAuthController {
         }
     }
 
-    private async oauth2Callback(template: ProviderTemplateOAuth2, config: ProviderConfig, session: OAuthSession, req: any, res: any) {
+    private async oauth2Callback(template: ProviderTemplateOAuth2, config: ProviderConfig, session: OAuthSession, req: Request, res: Response) {
         const { code } = req.query;
         let providerConfigKey = session.providerConfigKey;
         let connectionId = session.connectionId;
+        let metadata = getConnectionMetadata(req.query, template);
 
         if (!code) {
             let errStr = JSON.stringify(req.query);
@@ -251,7 +252,7 @@ class OAuthController {
         try {
             var token: object;
             if (providerClientManager.shouldUseProviderClient(session.provider)) {
-                token = await providerClientManager.getToken(config, code);
+                token = await providerClientManager.getToken(config, code as string);
             } else {
                 let accessToken = await simpleOAuthClient.getToken({
                     code: code as string,
@@ -270,7 +271,8 @@ class OAuthController {
                 token,
                 ProviderAuthModes.OAuth2,
                 session.connectionConfig,
-                session.accountId
+                session.accountId,
+                metadata
             );
 
             return html(logger, res, providerConfigKey, connectionId, '', '');
@@ -284,10 +286,11 @@ class OAuthController {
         }
     }
 
-    private oauth1Callback(template: ProviderTemplate, config: ProviderConfig, session: OAuthSession, req: any, res: any) {
+    private oauth1Callback(template: ProviderTemplate, config: ProviderConfig, session: OAuthSession, req: Request, res: Response) {
         const { oauth_token, oauth_verifier } = req.query;
         let providerConfigKey = session.providerConfigKey;
         let connectionId = session.connectionId;
+        let metadata = getConnectionMetadata(req.query, template);
 
         if (!oauth_token || !oauth_verifier) {
             let errStr = JSON.stringify(req.query);
@@ -308,8 +311,9 @@ class OAuthController {
                     session.provider,
                     accessTokenResult,
                     ProviderAuthModes.OAuth1,
-                    {},
-                    session.accountId
+                    session.connectionConfig,
+                    session.accountId,
+                    metadata
                 );
                 return html(logger, res, providerConfigKey, connectionId, '', '');
             })
