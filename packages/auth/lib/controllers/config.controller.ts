@@ -73,8 +73,15 @@ class ConfigController {
                 return;
             }
 
+            let uniqueConfigKey = req.body['provider_config_key'];
+
+            if ((await configService.getProviderConfig(uniqueConfigKey, accountId)) != null) {
+                errorManager.res(res, 'duplicate_provider_config');
+                return;
+            }
+
             let config: ProviderConfig = {
-                unique_key: req.body['provider_config_key'],
+                unique_key: uniqueConfigKey,
                 provider: req.body['provider'],
                 oauth_client_id: req.body['oauth_client_id'],
                 oauth_client_secret: req.body['oauth_client_secret'],

@@ -109,6 +109,11 @@ export class NangoError extends Error {
                 this.message = `No Provider Template matching your Provider Configuration.`;
                 break;
 
+            case 'duplicate_provider_config':
+                this.status = 400;
+                this.message = `There is already a Provider Configuration matching the param 'provider_config_key'.`;
+                break;
+
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;
