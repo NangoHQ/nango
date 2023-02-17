@@ -150,6 +150,7 @@ const sidebars = {
                 'providers/pagerduty',
                 'providers/pipedrive',
                 'providers/quickbooks',
+                'providers/ramp',
                 'providers/reddit',
                 'providers/sage',
                 'providers/salesforce',
