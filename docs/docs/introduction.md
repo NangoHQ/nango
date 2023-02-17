@@ -29,7 +29,7 @@ let result = await nango.auth('github', '<user-id>');
 let token = await nango.getToken('github', '<user-id>');
 ```
 
-## 📺 1 minute demo
+## 📺 1 minute demo {#demo}
 
 Watch us add GitHub OAuth in 1 minute:
 

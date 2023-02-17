@@ -116,6 +116,12 @@ const sidebars = {
         {
             type: 'category',
             label: 'Provider Wikis',
+            link: {
+                type: 'generated-index',
+                title: 'Nango Provider API Wikis',
+                description: 'For every API that Nango supports we maintain a small API wiki with all our learnings. Feel free to contribute yours as well!',
+                slug: '/providers'
+            },
             items: [
                 'providers/airtable',
                 'providers/asana',
