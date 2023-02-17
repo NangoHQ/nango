@@ -51,6 +51,10 @@ class ConfigService {
     getTemplates(): { [key: string]: ProviderTemplate } {
         return this.templates;
     }
+
+    checkProviderTemplateExists(provider: string) {
+        return provider in this.templates;
+    }
 }
 
 export default new ConfigService();

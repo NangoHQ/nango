@@ -43,8 +43,7 @@ class ConnectionController {
             let template: ProviderTemplate | undefined = this.templates[config.provider];
 
             if (template == null) {
-                errorManager.res(res, 'unknown_provider_template');
-                return;
+                throw Error('unknown_provider_template_in_config');
             }
 
             if (connection.credentials.type === ProviderAuthModes.OAuth2) {
@@ -67,6 +66,37 @@ class ConnectionController {
             analytics.track('server:connection_list_fetched', accountId);
 
             res.status(200).send({ connections: connections });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async deleteConnection(req: Request, res: Response, next: NextFunction) {
+        try {
+            let accountId = getAccountIdFromLocals(res);
+            let connectionId = req.params['connectionId'] as string;
+            let providerConfigKey = req.query['provider_config_key'] as string;
+
+            if (connectionId == null) {
+                errorManager.res(res, 'missing_connection');
+                return;
+            }
+
+            if (providerConfigKey == null) {
+                errorManager.res(res, 'missing_provider_config');
+                return;
+            }
+
+            let connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, accountId);
+
+            if (connection == null) {
+                errorManager.res(res, 'unkown_connection');
+                return;
+            }
+
+            await connectionService.deleteConnection(connection.connection_id, providerConfigKey, accountId);
+
+            res.status(200).send();
         } catch (err) {
             next(err);
         }
