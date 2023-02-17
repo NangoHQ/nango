@@ -15,5 +15,5 @@ The environment variables related to the server URL (`NANGO_SERVER_URL`), port (
 If you use a custom domain, you should set the right value for the `NANGO_SERVER_URL` environment variable on your Render dashboard.
 
 :::info
-Your should read the [Open Source Instructions](./oss-instructions.md) before deploying to production.
+Your should read the [self-hosting instructions](./oss-instructions.md) before deploying to production.
 :::

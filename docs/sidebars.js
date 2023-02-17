@@ -176,12 +176,12 @@ const sidebars = {
         },
         {
             type: 'category',
-            label: 'Nango Open Source',
+            label: 'Nango Self Hosted',
             link: {
                 type: 'generated-index',
-                title: 'Nango Open Source',
+                title: 'Nango Self Hosted',
                 description: 'Self-host Nango on a single machine using Docker.',
-                slug: '/category/deploy-nango-sync-open-source'
+                slug: '/category/deploy-nango-self-hosted'
             },
             items: [
                 {
