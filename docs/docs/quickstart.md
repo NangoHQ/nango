@@ -74,7 +74,7 @@ You can self-host Nango on a single machine with our docker images. Check the [N
 <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy to heroku" width="200"/>
 </a>
 
-Once you have setup your instance [configure the Nango CLI](oss-instructions.md#cli) and return here.
+Once you have setup your instance [configure the Nango CLI](nango-deploy/oss-instructions.md#cli) and return here.
 
 Your Nango callback url is: `[HOSTNAME-AND-PORT]/oauth/callback`  
 You will need this for the next step.
