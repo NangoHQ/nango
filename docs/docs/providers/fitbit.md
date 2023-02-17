@@ -11,7 +11,7 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 
 ## Using Fitbit with Nango
 
-Provider template name in Nango: `fitbit`
+Provider template name in Nango: `fitbit`  
 Follow our [getting started guide](../reference/guide.md) to add an OAuth integration with Fitbit in 5 minutes.
 
 ## App registration & publishing
@@ -26,4 +26,4 @@ There does not seem to be any approval process and you can immediately use your 
 
 ## API specific gotchas
 
-_No gotchas yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+-   During the authorization flow, users need to manually select which scopes they grant to your application (from the ones you requested). They can complete the flow without granting all the requested scopes. The raw token response (which you can get from the Nango backend SDK) contains the `scope` key that lists the granted scopes.
