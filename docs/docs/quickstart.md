@@ -38,4 +38,4 @@ curl "https://api.github.com/users/bastienbeurier/repos" -H "Authorization: Bear
 
 (In practice, you should use our [backend SDK](./reference/guide.md#node-sdk) or [REST API](./reference/guide.md#rest-api) to fetch tokens from your codebase.)
 
-Wanna better understand what happened? Go through the more detailed [Step-By-Step Guide](reference/guide.md). You can [self-host Nango](category/deploy-nango-sync-open-source) or use [Nango Cloud](cloud).
+Wanna better understand what happened? Go through the more detailed [Step-By-Step Guide](reference/guide.md). You can [self-host Nango](category/deploy-nango-self-hosted) or use [Nango Cloud](cloud).
