@@ -1,7 +1,7 @@
 # Deploy Nango to AWS (EC2)
 
 :::info
-Your should read the [Open Source Instructions](./oss-instructions.md) before deploying to production.
+Your should read the [self-hosting instructions](./oss-instructions.md) before deploying to production.
 :::
 
 Deploy Nango on AWS in less than 5 minutes.

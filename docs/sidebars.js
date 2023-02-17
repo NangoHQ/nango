@@ -126,6 +126,7 @@ const sidebars = {
                 'providers/discord',
                 'providers/dropbox',
                 'providers/facebook',
+                'providers/fitbit',
                 'providers/freshbooks',
                 'providers/front',
                 'providers/github',
@@ -149,6 +150,7 @@ const sidebars = {
                 'providers/pagerduty',
                 'providers/pipedrive',
                 'providers/quickbooks',
+                'providers/ramp',
                 'providers/reddit',
                 'providers/sage',
                 'providers/salesforce',
@@ -174,12 +176,12 @@ const sidebars = {
         },
         {
             type: 'category',
-            label: 'Nango Open Source',
+            label: 'Nango Self Hosted',
             link: {
                 type: 'generated-index',
-                title: 'Nango Open Source',
+                title: 'Nango Self Hosted',
                 description: 'Self-host Nango on a single machine using Docker.',
-                slug: '/category/deploy-nango-sync-open-source'
+                slug: '/category/deploy-nango-self-hosted'
             },
             items: [
                 {
@@ -217,7 +219,6 @@ const sidebars = {
                     type: 'doc',
                     label: 'On Heroku'
                 }
-
             ]
         },
         'contribute-api'

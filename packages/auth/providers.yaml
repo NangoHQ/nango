@@ -65,6 +65,11 @@ facebook:
     auth_mode: OAUTH2
     authorization_url: https://www.facebook.com/v15.0/dialog/oauth
     token_url: https://graph.facebook.com/v15.0/oauth/access_token
+fitbit:
+    auth_mode: OAUTH2
+    authorization_url: https://www.fitbit.com/oauth2/authorize
+    token_url: https://api.fitbit.com/oauth2/token
+    authorization_method: header
 freshbooks:
     auth_mode: OAUTH2
     authorization_url: https://auth.freshbooks.com/oauth/authorize
@@ -198,6 +203,10 @@ quickbooks:
     auth_mode: OAUTH2
     authorization_url: https://appcenter.intuit.com/connect/oauth2
     token_url: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+ramp:
+    auth_mode: OAUTH2
+    authorization_url: https://app.ramp.com/v1/authorize
+    token_url: https://api.ramp.com/developer/v1/token
 reddit:
     auth_mode: OAUTH2
     authorization_url: https://www.reddit.com/api/v1/authorize
