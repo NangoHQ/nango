@@ -39,7 +39,7 @@ Nango is a service that contains everything you need to work with APIs that use 
 
 It contains:
 
--   a full OAuth dance for 40+ APIs
+-   a full OAuth dance for 50+ APIs
 -   a frontend SDK to trigger new OAuth flows
 -   a backend SDK & REST API to retrieve fresh access tokens for your API calls
 
@@ -57,14 +57,15 @@ let result = await nango.auth('github', '<user-id>');
 let token = await nango.getToken('github', '<user-id>');
 ```
 
-## 👾 Out of the box support for 40+ APIs
+## 👾 Out of the box support for 50+ APIs
 
-40+ APIs are preconfigured to work out-of-the-box. Including:
+50+ APIs are preconfigured to work out-of-the-box. Including:
 
 -   **CRM**: Front, Hubspot, Salesforce, etc.
 -   **Accounting**: Xero, Sellsy, Zoho Books, etc.
+-   **Fintech:** Brex, Stripe, Braintree, Ramp etc.
 -   **Developer tools**: GitHub, GitLab, Linear, Jira etc.
--   **Communication**: Gmail, Microsoft Teams, Slack, Zoom etc.
+-   **Communication**: Gmail, Microsoft Teams, Slack, Discord, Zoom etc.
 -   **Productivity**: Asana, Airtable, Google Drive, Google Calendar, Trello, Google sheets, ClickUp etc.
 -   **Social**: Twitter, LinkedIn, Reddit, Facebook etc.
 -   [and more...](https://nango.dev/oauth-providers)
@@ -89,12 +90,12 @@ Nango's community continuously maintains & expands API templates.
 
 Deploy Nango with 1-click (free options available)
 
+<a href="https://nango.dev/start">
+  <img src="https://raw.githubusercontent.com/NangoHQ/nango/6f49ab92c0ffc18c1d0f44d9bd96c62ac97aaa8d/docs/static/img/nango-deploy-button.svg" alt="Try Nango Cloud" width="215">
+</a>
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/NangoHQ/nango-render)
 <a href="https://heroku.com/deploy?template=https://github.com/NangoHQ/nango-heroku">
   <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy to heroku" width="200">
-</a>
-<a href="https://nango.dev/start">
-  <img src="https://raw.githubusercontent.com/NangoHQ/nango/6f49ab92c0ffc18c1d0f44d9bd96c62ac97aaa8d/docs/static/img/nango-deploy-button.svg" alt="Try Nango Cloud" width="215">
 </a>
 
 <!--- need to use html 'a' tag here to ensure that the button sizes are the same --->
