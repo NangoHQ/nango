@@ -4,17 +4,11 @@ import path from 'path';
 import type { Response } from 'express';
 import accountService from '../services/account.service.js';
 import type { Account } from '../models.js';
-import { readFileSync } from 'fs';
 
 export const localhostUrl: string = 'http://localhost:3003';
 
 export function isCloud() {
     return process.env['NANGO_CLOUD']?.toLowerCase() === 'true';
-}
-
-export function getNangoVersion() {
-    let nangoPackage = JSON.parse(readFileSync('../../package.json', 'utf8'));
-    return nangoPackage.version;
 }
 
 export function dirname() {
