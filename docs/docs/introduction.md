@@ -29,6 +29,12 @@ let result = await nango.auth('github', '<user-id>');
 let token = await nango.getToken('github', '<user-id>');
 ```
 
+## 📺 1 minute demo
+
+Watch us add GitHub OAuth in 1 minute:
+
+<iframe width="864" height="486" src="https://www.youtube.com/embed/o-qwrdWDeHg" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+
 ## 👾 Out of the box support for 50+ APIs
 
 50+ APIs are preconfigured to work out-of-the-box. Including:
