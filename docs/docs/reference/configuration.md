@@ -1,30 +1,42 @@
 # Other Configuration
 
-### Dynamic OAuth URLs (Shopify & Zendesk) {#connection-config}
+### Connection Configuration {#connection-config}
 
-Certain APIs have dynamic OAuth URLs.
+Some API Providers require some Connection-specific configuration (e.g. Zendesk, Shopify).
 
 For example, Zendesk has the following authorization URL, where the subdomain is specific to a user's Zendesk account:
 
 ```
-https://[USER-SUBDOMAIN].zendesk.com/oauth/authorizations/new
+https://<USER-SUBDOMAIN>.zendesk.com/oauth/authorizations/new
 ```
 
-Shopify has the same setup: `https://[STORE-SUBDOMAIN].myshopify.com/admin/oauth/authorize`.
-
-To use Nango with these provider you have to tell it the subdomain when calling `nango.auth(...)` in your frontend:
+This configuration needs to be passed in the frontend `nango.auth()` call:
 
 ```javascript
-// For Zendesk replace 'shopify' with 'zendesk'
-// This assumes that your provider config key is set to 'shopify'/'zendesk'
-nango.auth('shopify', '<connection-id>', { params: { subdomain: '<shopify-subdomain>' } });
+nango.auth('zendesk', '<CONNECTION-ID>', { params: { subdomain: '<ZENDESK-SUBDOMAIN>' } });
 ```
 
-Nango will then build the correct authorization URL before forwarding your user.
+Check whether your API Provider requires specific Connection Configuration in the [providers.yaml](https://nango.dev/oauth-providers) file, shown as `${connectionConfig.params.anyParamKey}`. In this case, call the Nango frontend SDK with:
+
+```javascript
+nango.auth('<CONFIG-KEY>', '<CONNECTION-ID>', connectionConfig: { anyParamKey: '<PARAM-VALUE>'})
+```
+
+### Connection Metadata {#connection-metadata}
+
+Some API Providers provide important metadata during the OAuth flow that needs to be captured.
+
+For example, Braintree provides the subdomain that needs to be used to perform API requests. Fitbit provides the specific scopes that the user agreed to grant, etc.
+
+This information is captured in the `metadata` field of the Connection object.
+
+You can verify which metadata is captured for your API Provider in the [providers.yaml](https://nango.dev/oauth-providers) file under the `redirect_uri_metadata` and `token_response_metadata` fields.
 
 ### Custom Callback URL
 
 Nango Cloud supports custom callback URLs so that your OAuth Apps redirect to your domain instead of `https://api.nango.dev`. Reach out directly on the [Slack community](https://nango.dev/slack) to enable it for your account.
+
+Nango Self-Hosted also supports custom callback URLs (cf. [docs](../nango-deploy/oss-instructions.md#custom-urls)).
 
 ### Something not working as expected? Need help?
 
