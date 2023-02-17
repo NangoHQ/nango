@@ -11,7 +11,7 @@
 <h1 align="center">Get OAuth tokens for APIs. Fast & secure.</h1>
 
 <div align="center">
-Pre-built OAuth flows & secure token management for 40+ APIs. 100% open source.
+Pre-built OAuth flows & secure token management for 50+ APIs. 100% open source.
 </div>
 
 <p align="center">
@@ -90,12 +90,12 @@ Nango's community continuously maintains & expands API templates.
 
 Deploy Nango with 1-click (free options available)
 
-<a href="https://nango.dev/start">
-  <img src="https://raw.githubusercontent.com/NangoHQ/nango/6f49ab92c0ffc18c1d0f44d9bd96c62ac97aaa8d/docs/static/img/nango-deploy-button.svg" alt="Try Nango Cloud" width="215">
-</a>
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/NangoHQ/nango-render)
 <a href="https://heroku.com/deploy?template=https://github.com/NangoHQ/nango-heroku">
   <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy to heroku" width="200">
+</a>
+<a href="https://nango.dev/start">
+  <img src="https://raw.githubusercontent.com/NangoHQ/nango/6f49ab92c0ffc18c1d0f44d9bd96c62ac97aaa8d/docs/static/img/nango-deploy-button.svg" alt="Try Nango Cloud" width="215">
 </a>
 
 <!--- need to use html 'a' tag here to ensure that the button sizes are the same --->
