@@ -58,6 +58,13 @@ class ConfigController {
                 return;
             }
 
+            let provider = req.body['provider'];
+
+            if (!configService.checkProviderTemplateExists(provider)) {
+                errorManager.res(res, 'unknown_provider_template');
+                return;
+            }
+
             if (req.body['oauth_client_id'] == null) {
                 errorManager.res(res, 'missing_client_id');
                 return;
@@ -82,7 +89,7 @@ class ConfigController {
 
             let config: ProviderConfig = {
                 unique_key: uniqueConfigKey,
-                provider: req.body['provider'],
+                provider: provider,
                 oauth_client_id: req.body['oauth_client_id'],
                 oauth_client_secret: req.body['oauth_client_secret'],
                 oauth_scopes: req.body['oauth_scopes']

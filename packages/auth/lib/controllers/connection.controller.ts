@@ -43,8 +43,7 @@ class ConnectionController {
             let template: ProviderTemplate | undefined = this.templates[config.provider];
 
             if (template == null) {
-                errorManager.res(res, 'unknown_provider_template');
-                return;
+                throw Error('unknown_provider_template_in_config');
             }
 
             if (connection.credentials.type === ProviderAuthModes.OAuth2) {

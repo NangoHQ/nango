@@ -106,7 +106,7 @@ export class NangoError extends Error {
 
             case 'unknown_provider_template':
                 this.status = 400;
-                this.message = `No Provider Template matching your Provider Configuration.`;
+                this.message = `No Provider Template matching the 'provider' parameter.`;
                 break;
 
             case 'duplicate_provider_config':
