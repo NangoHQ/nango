@@ -19,6 +19,7 @@ export interface ProviderTemplate {
     token_params?: {
         [key: string]: string;
     };
+    redirect_uri_metadata?: Array<string>;
 }
 
 export interface Connection {
@@ -30,6 +31,7 @@ export interface Connection {
     credentials: AuthCredentials;
     connection_config: Record<string, string>;
     account_id: number | null;
+    metadata: Record<string, string>;
 }
 
 export interface Account {

@@ -40,7 +40,7 @@ class Analytics {
 
             let userProperties = {} as Record<string | number, any>;
             userProperties['user-type'] = userType;
-            userProperties['account'] = userType;
+            userProperties['account'] = userId;
             properties['user-type'] = userType;
             properties['user-account'] = userId;
 

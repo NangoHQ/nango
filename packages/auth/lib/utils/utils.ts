@@ -3,7 +3,7 @@ import { fileURLToPath } from 'url';
 import path from 'path';
 import type { Response } from 'express';
 import accountService from '../services/account.service.js';
-import type { Account } from '../models.js';
+import type { Account, ProviderTemplate } from '../models.js';
 
 export const localhostUrl: string = 'http://localhost:3003';
 
@@ -85,6 +85,22 @@ export function getConnectionConfig(queryParams: any): Record<string, string> {
     var arr = Object.entries(queryParams);
     arr = arr.filter(([_, v]) => typeof v === 'string'); // Filter strings
     arr = arr.map(([k, v]) => [`connectionConfig.params.${k}`, v]); // Format keys to 'connectionConfig.params.[key]'
+    return Object.fromEntries(arr) as Record<string, string>;
+}
+
+/**
+ * A helper function to extract the additional connection metadata return from the Provider.
+ */
+export function getConnectionMetadata(queryParams: any, template: ProviderTemplate): Record<string, string> {
+    if (!queryParams || !template.redirect_uri_metadata) {
+        return {};
+    }
+
+    let whitelistedKeys = template.redirect_uri_metadata;
+
+    // Filter out non-strings & non-whitelisted keys.
+    let arr = Object.entries(queryParams).filter(([k, v]) => typeof v === 'string' && whitelistedKeys.includes(k));
+
     return Object.fromEntries(arr) as Record<string, string>;
 }
 

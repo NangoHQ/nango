@@ -17,7 +17,8 @@ class ConnectionService {
         rawCredentials: object,
         authMode: ProviderAuthModes,
         connectionConfig: Record<string, string>,
-        accountId: number | null
+        accountId: number | null,
+        metadata: Record<string, string>
     ) {
         await db.knex
             .withSchema(db.schema())
@@ -27,7 +28,8 @@ class ConnectionService {
                 provider_config_key: providerConfigKey,
                 credentials: this.parseRawCredentials(rawCredentials, authMode),
                 connection_config: connectionConfig,
-                account_id: accountId
+                account_id: accountId,
+                metadata: metadata
             })
             .onConflict(['provider_config_key', 'connection_id', 'account_id'])
             .merge();
