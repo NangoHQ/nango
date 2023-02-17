@@ -12,7 +12,7 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 ## Using Bitbucket with Nango
 
 Provider template name in Nango: `bitbucket`  
-Follow our [getting started guide](../reference/guide.md) to add an OAuth integration with Bitbucket in 5 minutes.
+Follow our [quickstart](../quickstart.md) to add an OAuth integration with Bitbucket in 5 minutes.
 
 ## App registration & publishing
 

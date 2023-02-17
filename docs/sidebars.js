@@ -102,14 +102,24 @@ const sidebars = {
             label: 'Reference',
             items: [
                 {
-                    id: 'reference/guide',
+                    id: 'reference/cli',
                     type: 'doc',
-                    label: 'Step-By-Step Guide'
+                    label: 'Nango CLI'
                 },
+                {
+                    id: 'reference/frontend-sdk',
+                    type: 'doc',
+                    label: 'Frontend SDK'
+                },
+                // {
+                //     id: 'reference/backend-sdk-rest-api',
+                //     type: 'doc',
+                //     label: 'Backend SDK & REST API'
+                // },
                 {
                     id: 'reference/configuration',
                     type: 'doc',
-                    label: 'Other Configuration'
+                    label: 'Advanced Configuration'
                 }
             ]
         },

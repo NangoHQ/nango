@@ -88,14 +88,14 @@ You will need this for the next step.
 
 2. To run OAuth flows your application needs to register with the OAuth provider/API and obtain a `client_id` and `client_secret`. Get them now and then return here.
 
-3. You should also get a list of scopes you want to request. Prepare them in a comma separated list (no matter what the provider says, Nano will reformat them as needed): `"scope1,scope2,scope3"`
+3. You should also get a list of scopes you want to request. Prepare them in a comma separated list (no matter what the provider says, Nango will reformat them as needed): `"scope1,scope2,scope3"`
 
-4. Decide what this config should be called in Nango. We call this the `Config-Key` and it must be unique. Unless you have multiple configurations for the same API we recommend making this the same as the template name, e.g. `github`
+4. Decide what this config should be called in Nango. We call this the `CONFIG-KEY` and it must be unique. Unless you have multiple configurations for the same API we recommend making this the same as the template name, e.g. `github`
 
 Now add a new provider configuration with the Nango CLI:
 
 ```bash
-npx nango config:create <Config-Key> <template> <client_id> <client_secret> "<scopes>"
+npx nango config:create <CONFIG-KEY> <template> <client_id> <client_secret> "<scopes>"
 # e.g. for github: npx nango config:create github github <GITHUB-APP-ID> <GITHUB-APP-SECRET> "comma,separated,scopes,with,quotes"
 ```
 
@@ -197,12 +197,12 @@ Many OAuth providers provide short-lived access tokens (30-60 minutes). Nango re
 To obtain the (current) access token use this command:
 
 ```bash
-npx nango token:get <connection-id> <Config-key>
+npx nango token:get <CONNECTION-ID> <CONFIG-KEY>
 ```
 
 ### Backend SDK
 
-If you work with Node Nango offers a backend SDK to retrieve the token (more languages coming).
+If you work with Node, Nango offers a backend SDK to retrieve the token (more languages coming).
 
 <Tabs groupId="deployment" queryString>
   <TabItem value="cloud" label="Nango Cloud">

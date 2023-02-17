@@ -11,8 +11,8 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 
 ## Using Gmail with Nango
 
-Provider template name in Nango: `google-mail`
-Follow our [getting started guide](../reference/guide.md) to add an OAuth integration with Gmail in 5 minutes.
+Provider template name in Nango: `google-mail`  
+Follow our [quickstart](../quickstart.md) to add an OAuth integration with Gmail in 5 minutes.
 
 ## App registration & publishing
 

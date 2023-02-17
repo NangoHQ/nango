@@ -1,6 +1,7 @@
 ---
 sidebar_label: Wave
 ---
+
 # Wave API wiki
 
 :::note Working with the Wave API?
@@ -9,15 +10,18 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 :::
 
 ## Using Wave with Nango
-Provider template name in Nango: `wave-accounting`
-Follow our [getting started guide](../reference/guide.md) to add an OAuth integration with Wave in 5 minutes.
+
+Provider template name in Nango: `wave-accounting`  
+Follow our [quickstart](../quickstart.md) to add an OAuth integration with Wave in 5 minutes.
 
 ## App registration & publishing
-*No information yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)*
 
+_No information yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
 
 ## Useful links
-*No links yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)*
+
+_No links yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
 
 ## API specific gotchas
-*No gotchas yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)*
+
+_No gotchas yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
