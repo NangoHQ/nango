@@ -129,7 +129,7 @@ program
         await axios
             .delete(url, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
             .then((_) => {
-                console.log('\n\n✅ Successfully deleted a provider configuration!\n\n');
+                console.log('\n\n✅ Successfully deleted the provider configuration!\n\n');
             })
             .catch((err) => {
                 console.log(`❌ ${err.response?.data.error || JSON.stringify(err)}`);
@@ -191,6 +191,24 @@ program
             .get(url, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
             .then((res) => {
                 console.table(res.data['connections']);
+            })
+            .catch((err) => {
+                console.log(`❌ ${err.response?.data.error || JSON.stringify(err)}`);
+            });
+    });
+
+program
+    .command('connection:delete')
+    .description('Delete a connection.')
+    .argument('<provider_config_key>', 'The unique key of the provider configuration (chosen by you upon creating this provider configuration).')
+    .argument('<connection_id>', 'The ID of the Connection.')
+    .action(async function (this: Command) {
+        checkEnvVars();
+        let url = hostport + `/connection/${this.args[1]}`;
+        await axios
+            .delete(url, { params: { provider_config_key: this.args[0] }, headers: enrichHeaders(), httpsAgent: httpsAgent() })
+            .then((_) => {
+                console.log('\n\n✅ Successfully deleted the connection!\n\n');
             })
             .catch((err) => {
                 console.log(`❌ ${err.response?.data.error || JSON.stringify(err)}`);

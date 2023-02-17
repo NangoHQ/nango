@@ -62,6 +62,14 @@ class ConnectionService {
             .where({ account_id: accountId });
     }
 
+    async deleteConnection(connectionId: string, providerConfigKey: string, accountId: number | null): Promise<number> {
+        return db.knex
+            .withSchema(db.schema())
+            .from<Connection>(`_nango_connections`)
+            .where({ connection_id: connectionId, provider_config_key: providerConfigKey, account_id: accountId })
+            .del();
+    }
+
     // Parses and arbitrary object (e.g. a server response or a user provided auth object) into AuthCredentials.
     // Throws if values are missing/missing the input is malformed.
     public parseRawCredentials(rawCredentials: object, authMode: ProviderAuthModes): AuthCredentials {

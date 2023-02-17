@@ -70,6 +70,37 @@ class ConnectionController {
             next(err);
         }
     }
+
+    async deleteConnection(req: Request, res: Response, next: NextFunction) {
+        try {
+            let accountId = getAccountIdFromLocals(res);
+            let connectionId = req.params['connectionId'] as string;
+            let providerConfigKey = req.query['provider_config_key'] as string;
+
+            if (connectionId == null) {
+                errorManager.res(res, 'missing_connection');
+                return;
+            }
+
+            if (providerConfigKey == null) {
+                errorManager.res(res, 'missing_provider_config');
+                return;
+            }
+
+            let connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, accountId);
+
+            if (connection == null) {
+                errorManager.res(res, 'unkown_connection');
+                return;
+            }
+
+            await connectionService.deleteConnection(connection.connection_id, providerConfigKey, accountId);
+
+            res.status(200).send();
+        } catch (err) {
+            next(err);
+        }
+    }
 }
 
 export default new ConnectionController();

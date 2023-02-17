@@ -33,6 +33,7 @@ class AuthServer {
         app.route('/config/:providerConfigKey').delete(auth.secret.bind(auth), configController.deleteProviderConfig.bind(configController));
         app.route('/connection/:connectionId').get(auth.secret.bind(auth), connectionController.getConnectionCreds.bind(connectionController));
         app.route('/connection').get(auth.secret.bind(auth), connectionController.listConnections.bind(connectionController));
+        app.route('/connection/:connectionId').delete(auth.secret.bind(auth), connectionController.deleteConnection.bind(connectionController));
 
         // Admin routes.
         if (isCloud()) {
