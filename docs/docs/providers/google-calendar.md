@@ -10,8 +10,8 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 
 ## Using Google Calendar with Nango
 
-Provider template name in Nango: `google-calendar`
-Follow our [getting started guide](../reference/guide.md) to add an OAuth integration with Google Calendar in 5 minutes.
+Provider template name in Nango: `google-calendar`  
+Follow our [quickstart](../quickstart.md) to add an OAuth integration with Google Calendar in 5 minutes.
 
 ## App registration & publishing
 

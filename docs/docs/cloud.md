@@ -1,6 +1,12 @@
 # Nango Cloud
 
-Nango Cloud is hosted and managed by Nango.
+[Nango Cloud](https://www.nango.dev/pricing) is Nango hosted and managed by Nango.
+
+<a href="https://www.nango.dev/start" style={{cursor: 'pointer'}}>
+<img src="https://raw.githubusercontent.com/NangoHQ/nango/6f49ab92c0ffc18c1d0f44d9bd96c62ac97aaa8d/docs/static/img/nango-deploy-button.svg" alt="Try Nango Cloud" width="215"/>
+</a>
+
+Get your cloud instance by clicking on the button above. Then follow our [Quickstart](quickstart.md) to add OAuth with Nango to your app.
 
 ## Cloud Features
 
@@ -14,39 +20,3 @@ Nango Cloud is hosted and managed by Nango.
 -   Production-grade support & 24h turnaround to implement new integrations
 
 Other feature ideas or questions? We would love to help or hear your input on the [Slack community](https://nango.dev/slack)!
-
-## 🚀 Cloud Quickstart {#quickstart}
-
-In <5mins, learn how to access & manage OAuth tokens for any API, using Github as an example. Ready? Go! ⏰
-
-If you haven't already, [sign up](https://nango.dev/start) to Nango Cloud (no credit card required).
-
-Open the signup email and copy/paste the `Secret key`. Run in your terminal (❗️replace `<SECRET-KEY>`):
-
-```bash
-export NANGO_HOSTPORT=https://api.nango.dev && export NANGO_SECRET_KEY=<SECRET-KEY>
-```
-
-Register a new Github OAuth App (created by us) with Nango:
-
-```bash
-npx nango config:create github-cloud github 85e9ebdf0a725e006153 2e8c1a53c9d3684fef65ce214da241a6c041dc9b "public_repo"
-```
-
-Copy/paste the `Public Key` from the signup email and complete the Github [OAuth flow](https://docs.nango.dev/demo/github-cloud). Nango will securely retrieve, store and refresh OAuth credentials.
-
-Now run:
-
-```bash
-npx nango token:get github-cloud 1
-```
-
-Congrats 🥳 You have a fresh token to access the Github API! Let's make sure it works (❗️replace `<TOKEN>`):
-
-```bash
-curl "https://api.github.com/users/bastienbeurier/repos" -H "Authorization: Bearer <TOKEN>"
-```
-
-(In practice, you should use our [backend SDK](https://docs.nango.dev/reference/guide#node-sdk) or [REST API](https://docs.nango.dev/reference/guide#rest-api) to fetch tokens from your codebase.)
-
-Wanna better understand what happened? Go through the more detailed [Step-By-Step Guide](reference/guide.md).

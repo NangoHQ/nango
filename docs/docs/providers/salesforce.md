@@ -12,7 +12,7 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 ## Using Salesforce with Nango
 
 Provider template name in Nango: `salesforce`  
-Follow our [getting started guide](../reference/guide.md) to add an OAuth integration with Salesforce in 5 minutes.
+Follow our [quickstart](../quickstart.md) to add an OAuth integration with Salesforce in 5 minutes.
 
 After you obtain an access token you will also need to retrieve the `instance_url` from the raw token response. See "gotchas" below.
 

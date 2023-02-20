@@ -84,57 +84,16 @@ Nango is purposely small, focused on its one task and easy to deploy in producti
 
 Nango's community continuously maintains & expands API templates.
 
-## 🚀 Quickstart
+## 🚀 Demo & Quickstart
 
-### 1 -click deploy
+### 1 minute demo
+[![Watch demo on YouTube](https://docs.nango.dev/img/nango-demo-video-yt-thumbnail.png)](https://www.youtube.com/watch?v=o-qwrdWDeHg)
 
-Deploy Nango with 1-click (free options available)
+### Implement OAuth for any API in 15 minutes
 
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/NangoHQ/nango-render)
-<a href="https://heroku.com/deploy?template=https://github.com/NangoHQ/nango-heroku">
-  <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy to heroku" width="200">
-</a>
-<a href="https://nango.dev/start">
-  <img src="https://raw.githubusercontent.com/NangoHQ/nango/6f49ab92c0ffc18c1d0f44d9bd96c62ac97aaa8d/docs/static/img/nango-deploy-button.svg" alt="Try Nango Cloud" width="215">
-</a>
+Ready to try Nango in your own app?  
+Follow our [Quickstart](https://docs.nango.dev/quickstart) to implement OAuth for your favorite API in your application in 15 minutes.
 
-<!--- need to use html 'a' tag here to ensure that the button sizes are the same --->
-
-### Run locally
-
-In <5mins, learn how to access & manage OAuth tokens for any API, using Github as an example. Ready? Go! ⏰
-
-First, clone and start Nango:
-
-```bash
-git clone https://github.com/NangoHQ/nango-quickstart.git && cd nango-quickstart
-```
-
-```bash
-docker compose up # Keep the tab open
-```
-
-In a new tab, add any Github OAuth App to Nango (optionally [register your own Github OAuth App](https://docs.github.com/en/developers/apps/building-oauth-apps/creating-an-oauth-app)):
-
-```bash
-npx nango config:create github-dev github 57876b21174fed02b905 e43242c9a67fa06141e8d219c2364283d14f9ad1 "public_repo"
-```
-
-Complete the Github [OAuth flow](https://docs.nango.dev/demo/github). Nango will securely retrieve, store and refresh OAuth credentials. Now try:
-
-```bash
-npx nango token:get github-dev 1
-```
-
-Congrats 🥳 You have a fresh token to access the Github API! Let's make sure it works (❗️replace `<TOKEN>`):
-
-```bash
-curl "https://api.github.com/users/bastienbeurier/repos" -H "Authorization: Bearer <TOKEN>"
-```
-
-(In practice, you should use our [backend SDK](https://docs.nango.dev/reference/guide#node-sdk) or [REST API](https://docs.nango.dev/reference/guide#rest-api) to fetch tokens from your codebase.)
-
-Wanna go live? Go through the more detailed [Step-By-Step Guide](https://docs.nango.dev/reference/guide). You can [self-host Nango](https://docs.nango.dev/category/deploy-nango-sync-open-source) or use [Nango Cloud](https://docs.nango.dev/cloud).
 
 ## 🔍 Where to learn more
 
