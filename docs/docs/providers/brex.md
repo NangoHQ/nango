@@ -16,12 +16,13 @@ Follow our [quickstart](../quickstart.md) to add an OAuth integration with Brex 
 
 ## App registration & publishing
 
-_No information yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+You need to [register as Partner](https://www.brex.com/partners) with Brex to get access to the OAuth API.
 
 ## Useful links
 
-_No links yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+-   [List of OAuth scopes](https://developer.brex.com/docs/roles_permissions_scopes/#scopes)
 
 ## API specific gotchas
 
-_No gotchas yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+-   Include the scope `offline_access` to get a refresh token (access tokens expire after 1h)
+-   Refresh tokens expire after 90 days of non use. Make sure you regularly make an API request as long as you need the connection.
