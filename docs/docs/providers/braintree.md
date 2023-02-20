@@ -15,7 +15,7 @@ Provider template name in Nango: `braintree`
 If you want to connect to the Sandbox system use `braintree-sandbox`
 Follow our [quickstart](../quickstart.md) to add an OAuth integration with Braintree in 5 minutes.
 
-The `merchandId` is be stored in the metadata of the Connection.
+The `merchandId` is be stored in the [Connection Metadata](../reference/configuration.md#connection-metadata).
 
 ## App registration & publishing
 
