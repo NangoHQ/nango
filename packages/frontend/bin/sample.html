@@ -52,7 +52,7 @@ Then open http://localhost:8000/bin/sample.html in your browser
                         params: JSON.parse(params)
                     };
 
-                    var nango = new Nango({ host: 'http://localhost:3003' });
+                    var nango = new Nango({ publicKey: 'c0c6498f-0f37-4352-91f4-ed58da0df827', debug: true });
                     nango
                         .auth(providerConfigKey, connectionId, config)
                         .then((result) => {
@@ -60,9 +60,9 @@ Then open http://localhost:8000/bin/sample.html in your browser
                             resultElement.innerHTML = `SUCCESS: ${JSON.stringify(result)}`;
                         })
                         .catch((error) => {
-                            console.log('Error');
+                            console.error(`There was an error in the OAuth flow for integration: ${error.message}`);
                             var resultElement = document.getElementById('result');
-                            resultElement.innerHTML = `ERROR: ${JSON.stringify(error)}`;
+                            resultElement.innerHTML = `ERROR: ${error.message}`;
                         });
                 },
                 false

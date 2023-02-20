@@ -3,15 +3,22 @@
  */
 
 const cloudHost = 'https://api.nango.dev';
+const debugLogPrefix = 'NANGO DEBUG LOG: ';
 
 export default class Nango {
     private hostBaseUrl: string;
     private status: AuthorizationStatus;
     private publicKey: string | undefined;
+    private debug: boolean = false;
 
-    constructor(config: { host?: string; publicKey?: string } = {}) {
+    constructor(config: { host?: string; publicKey?: string; debug?: boolean } = {}) {
         config.host = config.host || cloudHost;
-        console.log(`Host: ${config.host}`);
+        this.debug = config.debug || false;
+
+        if (this.debug) {
+            console.log(debugLogPrefix, 'Debug mode is enabled.');
+        }
+
         if (config.host === cloudHost && !config.publicKey) {
             throw new Error('You should specify a Public Key when using Nango Cloud (cf. documentation).');
         }
@@ -58,10 +65,8 @@ export default class Nango {
 
                 if (!e) {
                     const error = {
-                        error: {
-                            type: 'authorization_cancelled',
-                            message: 'Authorization cancelled. The user has likely interrupted the process by closing the modal.'
-                        }
+                        type: 'authorization_cancelled',
+                        message: 'Authorization cancelled. The user has likely interrupted the process by closing the modal.'
                     };
                     return reject(error);
                 }
@@ -87,7 +92,7 @@ export default class Nango {
             this.status = AuthorizationStatus.BUSY;
 
             // Open authorization modal
-            const modal = new AuthorizationModal(url);
+            const modal = new AuthorizationModal(url, this.debug);
             modal.open();
             modal.addEventListener('close', handler);
         });
@@ -130,15 +135,17 @@ enum AuthorizationStatus {
 /**
  * AuthorizationModal class
  */
-
 class AuthorizationModal {
     private url: string;
     private features: { [key: string]: string | number };
     private width = 500;
     private height = 600;
     private modal!: Window | null;
+    private debug: boolean = false;
 
-    constructor(url: string) {
+    constructor(url: string, debug?: boolean) {
+        this.debug = debug || false;
+
         // Window modal URL
         this.url = url;
 
@@ -152,13 +159,8 @@ class AuthorizationModal {
             left,
             scrollbars: 'yes',
             resizable: 'yes',
-            // noopener: 'no'
-            //
-            // Note: using "noopener=yes" seems safer here, as the modal will run on third-party websites.
-            // But we need detect if the modal has been closed by the user, during the authorization process,
-            // To do so, we are polling the modal status of the modal (using the read-only closed property).
-            // If we can find a workaround that provides both the ability to use "noopener=yes"
-            // and detect the modal close status, it will be safer to proceed so.
+            noopener: 'no',
+            // Using "noopener=yes" would be safer but we needa access to the 'closed' property on the modal.
             status: 'no',
             toolbar: 'no',
             location: 'no',
@@ -171,7 +173,6 @@ class AuthorizationModal {
     /**
      * The modal is expected to be in the center of the screen.
      */
-
     layout(expectedWidth: number, expectedHeight: number) {
         const screenWidth = window.screen.width;
         const screenHeight = window.screen.height;
@@ -193,6 +194,7 @@ class AuthorizationModal {
         const windowName = '';
         const windowFeatures = this.featuresToString();
         this.modal = window.open(url, windowName, windowFeatures);
+        console.log(debugLogPrefix, `Modal opened. Modal exists? ${this.modal != null}`);
         return this.modal;
     }
 
@@ -201,8 +203,16 @@ class AuthorizationModal {
      */
 
     addEventListener(eventType: string, handler: (e: any) => any): void {
+        if (this.debug) {
+            console.log(debugLogPrefix, `Adding 'close' event listener on modal: 1st step.`);
+        }
+
         if (eventType !== 'close') {
             return;
+        }
+
+        if (this.debug) {
+            console.log(debugLogPrefix, `Adding 'close' event listener on modal: 2nd step.`);
         }
 
         if (!this.modal) {
@@ -210,16 +220,26 @@ class AuthorizationModal {
             return;
         }
 
+        if (this.debug) {
+            console.log(debugLogPrefix, `Adding 'close' event listener on modal: 3rd step.`);
+        }
+
         const interval = window.setInterval(() => {
+            if (this.debug) {
+                console.log(debugLogPrefix, `Polling modal status. Exists? ${this.modal != null}, closed? ${this.modal?.closed}`);
+            }
+
             if (!this.modal || this.modal.closed) {
+                if (this.debug) {
+                    console.log(debugLogPrefix, `Modal closed.`);
+                }
+
                 let e = {
                     data: {
                         eventType: 'AUTHORIZATION_FAILED',
                         data: {
-                            error: {
-                                type: 'authorization_cancelled',
-                                message: 'Authorization fail: The user has closed the authorization modal before the process was complete.'
-                            }
+                            type: 'authorization_cancelled',
+                            message: 'The user has closed the authorization modal before the process was complete.'
                         }
                     }
                 };
@@ -234,7 +254,6 @@ class AuthorizationModal {
      * to the comma-separated list of window features required
      * by the window.open() function.
      */
-
     featuresToString(): string {
         const features = this.features;
         const featuresAsString: string[] = [];
