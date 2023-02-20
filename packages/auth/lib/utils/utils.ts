@@ -6,6 +6,7 @@ import accountService from '../services/account.service.js';
 import type { Account, ProviderTemplate } from '../models.js';
 
 export const localhostUrl: string = 'http://localhost:3003';
+const accountIdLocalsKey = 'nangoAccountId';
 
 export function isCloud() {
     return process.env['NANGO_CLOUD']?.toLowerCase() === 'true';
@@ -40,19 +41,17 @@ export async function getOauthCallbackUrl(accountId?: number) {
     return process.env['NANGO_CALLBACK_URL'] || getBaseUrl() + '/oauth/callback';
 }
 
-export function getAccountIdFromLocals(res: Response): number | null {
-    let accountId: any = res.locals['nangoAccountId'];
-
-    // Account ID is null if self-hosted.
-    if (Number.isInteger(accountId) || accountId == null) {
-        return accountId;
-    } else {
-        throw new Error('Invalid account ID.');
+export function getAccount(res: Response): number | null {
+    if (res.locals == null || !(accountIdLocalsKey in res.locals)) {
+        return null;
     }
+
+    let accountId = res.locals[accountIdLocalsKey];
+    return Number.isInteger(accountId) ? accountId : null;
 }
 
 export function setAccount(accountId: number | null, res: Response) {
-    res.locals['nangoAccountId'] = accountId;
+    res.locals[accountIdLocalsKey] = accountId;
 }
 
 /**

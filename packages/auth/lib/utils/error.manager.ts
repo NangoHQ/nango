@@ -10,9 +10,14 @@ class ErrorManager {
         }
     }
 
-    public report(e: any) {
+    public report(e: any, accountId?: number | null) {
         if (isCloud()) {
+            if (accountId != null) {
+                sentry.setUser({ id: String(accountId) });
+            }
+
             sentry.captureException(e);
+            sentry.setUser(null);
         }
 
         logger.error(`Exception caught: ${JSON.stringify(e, Object.getOwnPropertyNames(e))}`);

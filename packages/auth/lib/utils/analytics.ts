@@ -53,7 +53,7 @@ class Analytics {
                 properties: properties
             });
         } catch (e) {
-            errorManager.report(e);
+            errorManager.report(e, accountId);
         }
     }
 }

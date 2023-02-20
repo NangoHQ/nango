@@ -9,7 +9,7 @@ import configController from './controllers/config.controller.js';
 import connectionController from './controllers/connection.controller.js';
 import auth from './controllers/access.middleware.js';
 import path from 'path';
-import { dirname, isCloud } from './utils/utils.js';
+import { dirname, isCloud, getAccount } from './utils/utils.js';
 import accountController from './controllers/account.controller.js';
 import errorManager from './utils/error.manager.js';
 
@@ -42,7 +42,7 @@ class AuthServer {
 
         // Error handling.
         app.use((e: any, _: any, res: any, __: any) => {
-            errorManager.report(e);
+            errorManager.report(e, getAccount(res));
             errorManager.res(res, 'server_error');
         });
     }

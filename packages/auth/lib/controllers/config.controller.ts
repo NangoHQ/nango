@@ -3,13 +3,13 @@ import configService from '../services/config.service.js';
 import type { ProviderConfig } from '../models.js';
 import type { NextFunction } from 'express';
 import analytics from '../utils/analytics.js';
-import { getAccountIdFromLocals } from '../utils/utils.js';
+import { getAccount } from '../utils/utils.js';
 import errorManager from '../utils/error.manager.js';
 
 class ConfigController {
     async listProviderConfigs(_: Request, res: Response, next: NextFunction) {
         try {
-            let accountId = getAccountIdFromLocals(res);
+            let accountId = getAccount(res);
             let configs = await configService.listProviderConfigs(accountId);
             res.status(200).send({ configs: configs });
         } catch (err) {
@@ -19,7 +19,7 @@ class ConfigController {
 
     async getProviderConfig(req: Request, res: Response, next: NextFunction) {
         try {
-            let accountId = getAccountIdFromLocals(res);
+            let accountId = getAccount(res);
             let providerConfigKey = req.params['providerConfigKey'] as string;
 
             if (providerConfigKey == null) {
@@ -42,7 +42,7 @@ class ConfigController {
 
     async createProviderConfig(req: Request, res: Response, next: NextFunction) {
         try {
-            let accountId = getAccountIdFromLocals(res);
+            let accountId = getAccount(res);
             if (req.body == null) {
                 errorManager.res(res, 'missing_body');
                 return;
@@ -117,7 +117,7 @@ class ConfigController {
 
     async editProviderConfig(req: Request, res: Response, next: NextFunction) {
         try {
-            let accountId = getAccountIdFromLocals(res);
+            let accountId = getAccount(res);
             if (req.body == null) {
                 errorManager.res(res, 'missing_body');
                 return;
@@ -171,7 +171,7 @@ class ConfigController {
 
     async deleteProviderConfig(req: Request, res: Response, next: NextFunction) {
         try {
-            let accountId = getAccountIdFromLocals(res);
+            let accountId = getAccount(res);
             let providerConfigKey = req.params['providerConfigKey'] as string;
 
             if (providerConfigKey == null) {

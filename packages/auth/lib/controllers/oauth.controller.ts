@@ -6,7 +6,7 @@ import { getSimpleOAuth2ClientConfig } from '../oauth-clients/oauth2.client.js';
 import { OAuth1Client } from '../oauth-clients/oauth1.client.js';
 import configService from '../services/config.service.js';
 import connectionService from '../services/connection.service.js';
-import { html, getOauthCallbackUrl, getConnectionConfig, getConnectionMetadata, missesInterpolationParam, getAccountIdFromLocals } from '../utils/utils.js';
+import { html, getOauthCallbackUrl, getConnectionConfig, getConnectionMetadata, missesInterpolationParam, getAccount } from '../utils/utils.js';
 import {
     ProviderConfig,
     ProviderTemplate,
@@ -41,7 +41,7 @@ class OAuthController {
 
     public async oauthRequest(req: Request, res: Response, next: NextFunction) {
         try {
-            let accountId = getAccountIdFromLocals(res) || 0;
+            let accountId = getAccount(res) || 0;
             let callbackUrl = await getOauthCallbackUrl(accountId);
             const { providerConfigKey } = req.params;
             let connectionId = req.query['connection_id'] as string;
@@ -97,7 +97,7 @@ class OAuthController {
             let authMode = template.auth_mode;
             return html(logger, res, providerConfigKey, connectionId, 'auth_mode_err', this.errDesc['auth_mode_err'](authMode));
         } catch (e) {
-            errorManager.report(e);
+            errorManager.report(e, getAccount(res));
             next(e);
         }
     }
@@ -173,7 +173,7 @@ class OAuthController {
         try {
             tokenResult = await oAuth1Client.getOAuthRequestToken();
         } catch (e) {
-            errorManager.report(e);
+            errorManager.report(e, session.accountId);
             let errStr = JSON.stringify(e, undefined, 2);
             return html(logger, res, session.providerConfigKey, session.connectionId as string, 'req_token_err', this.errDesc['req_token_err'](errStr));
         }
@@ -191,9 +191,10 @@ class OAuthController {
     }
 
     public async oauthCallback(req: Request, res: Response, next: NextFunction) {
+        const { state } = req.query;
+        const session: OAuthSession = this.sessionStore[state as string] as OAuthSession;
+
         try {
-            const { state } = req.query;
-            const session: OAuthSession = this.sessionStore[state as string] as OAuthSession;
             delete this.sessionStore[state as string];
 
             if (state == null || session == null || session.providerConfigKey == null) {
@@ -218,7 +219,7 @@ class OAuthController {
 
             return html(logger, res, session.providerConfigKey, session.connectionId, 'auth_mode_err', this.errDesc['auth_mode_err'](session.authMode));
         } catch (e) {
-            errorManager.report(e);
+            errorManager.report(e, session.accountId);
             next(e);
         }
     }
@@ -277,7 +278,7 @@ class OAuthController {
 
             return html(logger, res, providerConfigKey, connectionId, '', '');
         } catch (e) {
-            errorManager.report(e);
+            errorManager.report(e, session.accountId);
 
             if (e instanceof Error) {
                 return html(logger, res, providerConfigKey, connectionId, 'token_err', this.errDesc['token_err'](e.message));
@@ -318,7 +319,7 @@ class OAuthController {
                 return html(logger, res, providerConfigKey, connectionId, '', '');
             })
             .catch((e) => {
-                errorManager.report(e);
+                errorManager.report(e, session.accountId);
                 let errStr = JSON.stringify(e);
                 return html(logger, res, providerConfigKey, connectionId, 'token_err', this.errDesc['token_err'](errStr));
             });
