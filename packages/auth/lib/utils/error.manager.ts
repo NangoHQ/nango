@@ -10,7 +10,7 @@ class ErrorManager {
         }
     }
 
-    public report(e: any, accountId?: number | null) {
+    public report(e: any, accountId?: number) {
         if (isCloud()) {
             if (accountId != null) {
                 sentry.setUser({ id: String(accountId) });

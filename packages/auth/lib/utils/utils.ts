@@ -8,6 +8,12 @@ import type { Account, ProviderTemplate } from '../models.js';
 export const localhostUrl: string = 'http://localhost:3003';
 const accountIdLocalsKey = 'nangoAccountId';
 
+export enum UserType {
+    Local = 'localhost',
+    SelfHosted = 'self-hosted',
+    Cloud = 'cloud'
+}
+
 export function isCloud() {
     return process.env['NANGO_CLOUD']?.toLowerCase() === 'true';
 }
@@ -41,16 +47,25 @@ export async function getOauthCallbackUrl(accountId?: number) {
     return process.env['NANGO_CALLBACK_URL'] || getBaseUrl() + '/oauth/callback';
 }
 
-export function getAccount(res: Response): number | null {
+export function isAuthenticated(res: Response): boolean {
+    return res.locals != null && accountIdLocalsKey in res.locals && Number.isInteger(res.locals[accountIdLocalsKey]);
+}
+
+export function getAccount(res: Response): number {
     if (res.locals == null || !(accountIdLocalsKey in res.locals)) {
-        return null;
+        throw Error('account_not_set_in_locals');
     }
 
     let accountId = res.locals[accountIdLocalsKey];
-    return Number.isInteger(accountId) ? accountId : null;
+
+    if (Number.isInteger(accountId)) {
+        return accountId;
+    } else {
+        throw Error('account_malformed_in_locals');
+    }
 }
 
-export function setAccount(accountId: number | null, res: Response) {
+export function setAccount(accountId: number, res: Response) {
     res.locals[accountIdLocalsKey] = accountId;
 }
 

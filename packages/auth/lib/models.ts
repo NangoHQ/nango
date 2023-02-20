@@ -7,7 +7,7 @@ export interface ProviderConfig {
     oauth_client_id: string;
     oauth_client_secret: string;
     oauth_scopes: string;
-    account_id: number | null;
+    account_id: number;
 }
 
 export interface ProviderTemplate {
@@ -30,7 +30,7 @@ export interface Connection {
     connection_id: string;
     credentials: AuthCredentials;
     connection_config: Record<string, string>;
-    account_id: number | null;
+    account_id: number;
     metadata: Record<string, string>;
 }
 
@@ -118,7 +118,7 @@ export interface OAuthSession {
     authMode: ProviderAuthModes;
     id: string;
     connectionConfig: Record<string, string>;
-    accountId: number | null;
+    accountId: number;
 
     // Needed for OAuth 2.0 PKCE
     codeVerifier: string;

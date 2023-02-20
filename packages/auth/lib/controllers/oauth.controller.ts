@@ -41,7 +41,7 @@ class OAuthController {
 
     public async oauthRequest(req: Request, res: Response, next: NextFunction) {
         try {
-            let accountId = getAccount(res) || 0;
+            let accountId = getAccount(res);
             let callbackUrl = await getOauthCallbackUrl(accountId);
             const { providerConfigKey } = req.params;
             let connectionId = req.query['connection_id'] as string;

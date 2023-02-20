@@ -17,7 +17,7 @@ class ConnectionService {
         rawCredentials: object,
         authMode: ProviderAuthModes,
         connectionConfig: Record<string, string>,
-        accountId: number | null,
+        accountId: number,
         metadata: Record<string, string>
     ) {
         await db.knex
@@ -36,7 +36,7 @@ class ConnectionService {
         analytics.track('server:connection_upserted', accountId, { provider: provider });
     }
 
-    public async updateConnection(connectionId: string, providerConfigKey: string, credentials: OAuth2Credentials, accountId: number | null) {
+    public async updateConnection(connectionId: string, providerConfigKey: string, credentials: OAuth2Credentials, accountId: number) {
         await db.knex
             .withSchema(db.schema())
             .from<Connection>(`_nango_connections`)
@@ -46,7 +46,7 @@ class ConnectionService {
             });
     }
 
-    async getConnection(connectionId: string, providerConfigKey: string, accountId: number | null): Promise<Connection | null> {
+    async getConnection(connectionId: string, providerConfigKey: string, accountId: number): Promise<Connection | null> {
         let result: Connection[] | null = await db.knex
             .withSchema(db.schema())
             .select('*')
@@ -56,7 +56,7 @@ class ConnectionService {
         return result == null || result.length == 0 ? null : result[0] || null;
     }
 
-    async listConnections(accountId: number | null): Promise<Object[]> {
+    async listConnections(accountId: number): Promise<Object[]> {
         return db.knex
             .withSchema(db.schema())
             .from<Connection>(`_nango_connections`)
@@ -64,7 +64,7 @@ class ConnectionService {
             .where({ account_id: accountId });
     }
 
-    async deleteConnection(connectionId: string, providerConfigKey: string, accountId: number | null): Promise<number> {
+    async deleteConnection(connectionId: string, providerConfigKey: string, accountId: number): Promise<number> {
         return db.knex
             .withSchema(db.schema())
             .from<Connection>(`_nango_connections`)
@@ -122,7 +122,7 @@ class ConnectionService {
         connection: Connection,
         providerConfig: ProviderConfig,
         template: ProviderTemplate,
-        accountId: number | null
+        accountId: number
     ): Promise<OAuth2Credentials> {
         let connectionId = connection.connection_id;
         let credentials = connection.credentials as OAuth2Credentials;

@@ -30,6 +30,7 @@ class AccountController {
                 throw new Error('account_creation_failure');
             }
 
+            analytics.identify(account.id, account.email);
             analytics.track('server:account_created', account.id);
             res.status(200).send({ account: account });
         } catch (err) {

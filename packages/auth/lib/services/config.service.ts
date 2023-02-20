@@ -13,7 +13,7 @@ class ConfigService {
         this.templates = yaml.load(fs.readFileSync(templatesPath).toString()) as { string: ProviderTemplate };
     }
 
-    async getProviderConfig(providerConfigKey: string, accountId: number | null): Promise<ProviderConfig | null> {
+    async getProviderConfig(providerConfigKey: string, accountId: number): Promise<ProviderConfig | null> {
         let result = await db.knex
             .withSchema(db.schema())
             .select('*')
@@ -27,7 +27,7 @@ class ConfigService {
         return result[0];
     }
 
-    async listProviderConfigs(accountId: number | null): Promise<ProviderConfig[]> {
+    async listProviderConfigs(accountId: number): Promise<ProviderConfig[]> {
         return db.knex.withSchema(db.schema()).select('*').from<ProviderConfig>(`_nango_configs`).where({ account_id: accountId });
     }
 
@@ -35,7 +35,7 @@ class ConfigService {
         return db.knex.withSchema(db.schema()).from<ProviderConfig>(`_nango_configs`).insert(config, ['id']);
     }
 
-    async deleteProviderConfig(providerConfigKey: string, accountId: number | null): Promise<number> {
+    async deleteProviderConfig(providerConfigKey: string, accountId: number): Promise<number> {
         return db.knex.withSchema(db.schema()).from<ProviderConfig>(`_nango_configs`).where({ unique_key: providerConfigKey, account_id: accountId }).del();
     }
 
