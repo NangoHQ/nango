@@ -30,7 +30,8 @@
         "posthog-node": "^2.3.0",
         "simple-oauth2": "^5.0.0",
         "uuid": "^9.0.0",
-        "winston": "^3.8.2"
+        "winston": "^3.8.2",
+        "ws": "^8.12.1"
     },
     "engines": {
         "node": ">=16.7",
@@ -46,6 +47,7 @@
         "@types/oauth": "^0.9.1",
         "@types/simple-oauth2": "^4.1.1",
         "@types/uuid": "^8.3.4",
+        "@types/ws": "^8.5.4",
         "typescript": "^4.7.4"
     },
     "files": [
