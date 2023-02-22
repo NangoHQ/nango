@@ -60,7 +60,6 @@ Then open http://localhost:8000/bin/sample.html in your browser
                             resultElement.innerHTML = `SUCCESS: ${JSON.stringify(result)}`;
                         })
                         .catch((error) => {
-                            console.error(`There was an error in the OAuth flow for integration: ${error.message}`);
                             var resultElement = document.getElementById('result');
                             resultElement.innerHTML = `ERROR: ${error.message}`;
                         });

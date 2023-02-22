@@ -2,7 +2,6 @@
  * Copyright (c) 2022 Nango, all rights reserved.
  */
 
-import type { Express } from 'express';
 import db from './db/database.js';
 import oauthController from './controllers/oauth.controller.js';
 import configController from './controllers/config.controller.js';
@@ -12,9 +11,18 @@ import path from 'path';
 import { dirname, isCloud, getAccount, isAuthenticated } from './utils/utils.js';
 import accountController from './controllers/account.controller.js';
 import errorManager from './utils/error.manager.js';
+import { WebSocketServer, WebSocket } from 'ws';
+import http from 'http';
+import express from 'express';
+import cors from 'cors';
+import webSocketClient from './clients/web-socket.client.js';
 
 class AuthServer {
-    async setup(app: Express) {
+    async setup() {
+        let app = express();
+        app.use(express.json());
+        app.use(cors());
+
         await db.knex.raw(`CREATE SCHEMA IF NOT EXISTS ${db.schema()}`);
         await db.migrate(path.join(dirname(), '../../lib/db/migrations'));
 
@@ -49,6 +57,15 @@ class AuthServer {
             }
             errorManager.res(res, 'server_error');
         });
+
+        const server = http.createServer(app);
+        const wsServer = new WebSocketServer({ server });
+
+        wsServer.on('connection', (ws: WebSocket) => {
+            webSocketClient.addClient(ws);
+        });
+
+        return server;
     }
 }
 

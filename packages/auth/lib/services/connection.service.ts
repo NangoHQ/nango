@@ -1,11 +1,11 @@
 import type { AuthCredentials, OAuth2Credentials, ProviderTemplate, CredentialsRefresh } from '../models.js';
 import { ProviderAuthModes } from '../models.js';
-import { getFreshOAuth2Credentials } from '../oauth-clients/oauth2.client.js';
+import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import db from '../db/database.js';
 import type { ProviderConfig, Connection } from '../models.js';
 import analytics from '../utils/analytics.js';
 import logger from '../utils/logger.js';
-import providerClientManager from '../provider-clients/provider-client.manager.js';
+import providerClientManager from '../clients/provider.client.js';
 
 class ConnectionService {
     private runningCredentialsRefreshes: CredentialsRefresh[] = [];

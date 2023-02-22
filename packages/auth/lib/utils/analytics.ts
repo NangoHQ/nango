@@ -1,5 +1,5 @@
 import { PostHog } from 'posthog-node';
-import { getBaseUrl, localhostUrl, dirname, isCloud, UserType } from '../utils/utils.js';
+import { getBaseUrl, localhostUrl, dirname, UserType } from '../utils/utils.js';
 import ip from 'ip';
 import errorManager from './error.manager.js';
 import { readFileSync } from 'fs';
@@ -21,32 +21,32 @@ class Analytics {
         }
     }
 
-    public track(name: string, accountId: number, properties?: Record<string | number, any>) {
+    public track(name: string, accountId: number, eventProperties?: Record<string | number, any>, userProperties?: Record<string | number, any>) {
         try {
             if (this.client == null) {
                 return;
             }
 
-            properties = properties || {};
-            let userProperties = {} as Record<string | number, any>;
+            eventProperties = eventProperties || {};
+            userProperties = userProperties || {};
 
             let baseUrl = getBaseUrl();
             let userType = this.getUserType(accountId, baseUrl);
             let userId = this.getUserIdWithType(userType, accountId, baseUrl);
 
-            properties['host'] = baseUrl;
-            properties['user-type'] = userType;
-            properties['user-account'] = userId;
-            properties['nango-server-version'] = this.packageVersion || 'unkown';
+            eventProperties['host'] = baseUrl;
+            eventProperties['user-type'] = userType;
+            eventProperties['user-account'] = userId;
+            eventProperties['nango-server-version'] = this.packageVersion || 'unkown';
 
             userProperties['user-type'] = userType;
             userProperties['account'] = userId;
-            properties['$set'] = userProperties;
+            eventProperties['$set'] = userProperties;
 
             this.client.capture({
                 event: name,
                 distinctId: userId,
-                properties: properties
+                properties: eventProperties
             });
         } catch (e) {
             errorManager.report(e, accountId);
@@ -73,26 +73,6 @@ class Analytics {
                 return `${userType}-${(accountId || 0).toString()}`;
             default:
                 return 'unknown';
-        }
-    }
-
-    public identify(accountId: number, email: string) {
-        try {
-            if (this.client == null || !isCloud()) {
-                return;
-            }
-
-            let baseUrl = getBaseUrl();
-            let userType = this.getUserType(accountId, baseUrl);
-
-            this.client.identify({
-                distinctId: this.getUserIdWithType(userType, accountId, getBaseUrl()),
-                properties: {
-                    email: email
-                }
-            });
-        } catch (e) {
-            errorManager.report(e, accountId);
         }
     }
 }

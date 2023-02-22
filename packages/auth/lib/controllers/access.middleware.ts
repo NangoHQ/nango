@@ -73,7 +73,13 @@ export class AccessMiddleware {
                 return;
             }
 
-            let account: Account | null = await accountService.getAccountByPublicKey(publicKey);
+            var account: Account | null | undefined;
+            try {
+                account = await accountService.getAccountByPublicKey(publicKey);
+            } catch (e) {
+                errorManager.report(e);
+                errorManager.res(res, 'unkown_account');
+            }
 
             if (account == null) {
                 errorManager.res(res, 'unkown_account');
