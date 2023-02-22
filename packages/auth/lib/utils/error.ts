@@ -29,9 +29,19 @@ export class NangoError extends Error {
                 this.message = 'Authentication failed. The provided secret key is invalid.';
                 break;
 
+            case 'invalid_secret_key_format':
+                this.status = 401;
+                this.message = 'Authentication failed. The provided secret key is not a UUID v4.';
+                break;
+
             case 'missing_public_key':
                 this.status = 401;
                 this.message = 'Authentication failed. The request is missing a valid public key parameter.';
+                break;
+
+            case 'invalid_public_key':
+                this.status = 401;
+                this.message = 'Authentication failed. The provided public key is not a UUID v4.';
                 break;
 
             case 'only_nango_cloud':
