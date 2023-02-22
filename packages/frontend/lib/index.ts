@@ -11,11 +11,6 @@ const enum WSMessageType {
     Success = 'success'
 }
 
-const enum AuthResultType {
-    Success = 'AUTHORIZATION_SUCEEDED',
-    Error = 'AUTHORIZATION_FAILED'
-}
-
 export default class Nango {
     private hostBaseUrl: string;
     private status: AuthorizationStatus;
@@ -27,7 +22,7 @@ export default class Nango {
         this.debug = config.debug || false;
 
         if (this.debug) {
-            console.log(debugLogPrefix, `Debug mode is enabled.`);
+            console.log(debugLogPrefix, `Debug mode is enabled (1).`);
             console.log(debugLogPrefix, `Using host: ${config.host}.`);
         }
 
@@ -62,25 +57,37 @@ export default class Nango {
         }
 
         return new Promise((resolve, reject) => {
-            const handler = (e: { result: AuthResultType; errorType?: string; errorDesc?: string; providerConfigKey?: string; connectionId?: string }) => {
+            const successHandler = (providerConfigKey: string, connectionId: string) => {
                 if (this.status !== AuthorizationStatus.BUSY) {
                     return;
                 }
 
                 this.status = AuthorizationStatus.DONE;
 
-                if (e.result === AuthResultType.Success) {
-                    return resolve(e);
+                return resolve({
+                    providerConfigKey: providerConfigKey,
+                    connectionId: connectionId
+                });
+            };
+
+            const errorHandler = (errorType: string, errorDesc: string) => {
+                if (this.status !== AuthorizationStatus.BUSY) {
+                    return;
                 }
 
-                return reject(e);
+                this.status = AuthorizationStatus.DONE;
+
+                return reject({
+                    message: errorDesc,
+                    type: errorType
+                });
             };
 
             // Save authorization status (for handler)
             this.status = AuthorizationStatus.BUSY;
 
             // Open authorization modal
-            new AuthorizationModal(this.hostBaseUrl, url, handler, this.debug);
+            new AuthorizationModal(this.hostBaseUrl, url, successHandler, errorHandler, this.debug);
         });
     }
 
@@ -130,7 +137,13 @@ class AuthorizationModal {
     private swClient: WebSocket;
     private debug: boolean;
 
-    constructor(host: string, url: string, handler: (e: any) => any, debug?: boolean) {
+    constructor(
+        host: string,
+        url: string,
+        successHandler: (providerConfigKey: string, connectionId: string) => any,
+        errorHandler: (errorType: string, errorDesc: string) => any,
+        debug?: boolean
+    ) {
         // Window modal URL
         this.url = url;
         this.debug = debug || false;
@@ -157,14 +170,18 @@ class AuthorizationModal {
         this.swClient = new WebSocket(host.replace('https://', 'wss://').replace('http://', 'ws://'));
 
         this.swClient.onmessage = (message: MessageEvent<any>) => {
-            this.handleMessage(message, handler);
+            this.handleMessage(message, successHandler, errorHandler);
         };
     }
 
     /**
      * Handles the messages received from the Nango server via WebSocket.
      */
-    handleMessage(message: MessageEvent<any>, handler: (e: any) => any) {
+    handleMessage(
+        message: MessageEvent<any>,
+        successHandler: (providerConfigKey: string, connectionId: string) => any,
+        errorHandler: (errorType: string, errorDesc: string) => any
+    ) {
         let data = JSON.parse(message.data);
 
         switch (data.message_type) {
@@ -181,11 +198,7 @@ class AuthorizationModal {
                     console.log(debugLogPrefix, 'Error received. Rejecting authorization...');
                 }
 
-                handler({
-                    result: AuthResultType.Error,
-                    error_type: data.error_type,
-                    message: data.error_desc
-                });
+                errorHandler(data.error_type, data.error_desc);
                 this.swClient.close();
                 break;
             case WSMessageType.Success:
@@ -193,14 +206,13 @@ class AuthorizationModal {
                     console.log(debugLogPrefix, 'Success received. Resolving authorization...');
                 }
 
-                handler({
-                    result: AuthResultType.Success,
-                    provider_config_key: data.provider_config_key,
-                    connection_id: data.connection_id
-                });
+                successHandler(data.provider_config_key, data.connection_id);
                 this.swClient.close();
                 break;
             default:
+                if (this.debug) {
+                    console.log(debugLogPrefix, 'Unkown message type received from Nango server. Ignoring...');
+                }
                 return;
         }
     }
