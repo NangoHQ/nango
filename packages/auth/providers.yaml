@@ -191,6 +191,8 @@ notion:
     authorization_params:
         response_type: code
         owner: user
+    authorization_method: header
+    body_format: json
 outreach:
     auth_mode: OAUTH2
     authorization_url: https://api.outreach.io/oauth/authorize

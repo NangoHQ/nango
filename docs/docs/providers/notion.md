@@ -16,12 +16,14 @@ Follow our [quickstart](../quickstart.md) to add an OAuth integration with Notio
 
 ## App registration & publishing
 
-_No information yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+Register your app [here](https://www.notion.com/my-integrations)  
+By default your app is internal only, once you created it you will be able to make it public. There is no review process, unless you want to get listed in the Notion App Gallery.
 
 ## Useful links
 
-_No links yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+-   [Notion API docs](https://developers.notion.com/docs/getting-started)
+-   [List of available Notion API OAuth scopes](https://developers.notion.com/reference/capabilities) (Notion calls these "capabilities")
 
 ## API specific gotchas
 
-_No gotchas yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+-   Notion does not let you pass OAuth scopes (called "capabilities" in the Notion API) with the authorization. Instead you set them when you register your OAuth app (called "integrations" in Notion). When you add a Notion config in Nango, just pass a single whitespace as scopes: `" "`
