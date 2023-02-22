@@ -4,6 +4,7 @@ import type { Account } from '../models.js';
 import type { NextFunction } from 'express';
 import analytics from '../utils/analytics.js';
 import errorManager from '../utils/error.manager.js';
+import { isCloud } from '../utils/utils.js';
 
 class AccountController {
     async createAccount(req: Request, res: Response, next: NextFunction) {
@@ -30,8 +31,7 @@ class AccountController {
                 throw new Error('account_creation_failure');
             }
 
-            analytics.identify(account.id, account.email);
-            analytics.track('server:account_created', account.id);
+            analytics.track('server:account_created', account.id, {}, isCloud() ? { email: email } : {});
             res.status(200).send({ account: account });
         } catch (err) {
             next(err);

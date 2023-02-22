@@ -2,11 +2,11 @@ import type { Request, Response } from 'express';
 import * as crypto from 'node:crypto';
 import * as uuid from 'uuid';
 import simpleOauth2 from 'simple-oauth2';
-import { getSimpleOAuth2ClientConfig } from '../oauth-clients/oauth2.client.js';
-import { OAuth1Client } from '../oauth-clients/oauth1.client.js';
+import { getSimpleOAuth2ClientConfig } from '../clients/oauth2.client.js';
+import { OAuth1Client } from '../clients/oauth1.client.js';
 import configService from '../services/config.service.js';
 import connectionService from '../services/connection.service.js';
-import { html, getOauthCallbackUrl, getConnectionConfig, getConnectionMetadata, missesInterpolationParam, getAccount } from '../utils/utils.js';
+import { getOauthCallbackUrl, getConnectionConfig, getConnectionMetadata, missesInterpolationParam, getAccount } from '../utils/utils.js';
 import {
     ProviderConfig,
     ProviderTemplate,
@@ -19,52 +19,48 @@ import {
 import logger from '../utils/logger.js';
 import type { NextFunction } from 'express';
 import errorManager from '../utils/error.manager.js';
-import providerClientManager from '../provider-clients/provider-client.manager.js';
+import providerClientManager from '../clients/provider.client.js';
+import wsClient from '../clients/web-socket.client.js';
+import { WSErrBuilder } from '../utils/web-socket-error.js';
+import analytics from '../utils/analytics.js';
 
 class OAuthController {
     sessionStore: OAuthSessionStore = {};
-    errDesc = {
-        missing_connection_id: () => 'Missing connectionId.',
-        no_provider_config_key: () => 'Missing provider unique key.',
-        unknown_config_key: (providerConfigKey: string) => `No Provider configuration with key "${providerConfigKey}".`,
-        provider_config_err: (providerConfigKey: string) =>
-            `Provider config w/ key "${providerConfigKey}" is missing params (cliend ID, secret and/or scopes).`,
-        grant_type_err: (grantType: string) => `The grant type "${grantType}" is not supported by this OAuth flow.`,
-        req_token_err: (error: string) => `Error in the request token step of the OAuth 1.0a flow. Error: ${error}`,
-        auth_mode_err: (auth_mode: string) => `Auth mode ${auth_mode} not supported.`,
-        state_err: (state: string) => `Invalid state parameter passed in the callback: ${state}`,
-        token_err: (err: string) => `Error storing/retrieving token: ${err}.`,
-        callback_err: (err: string) => `Did not get oauth_token and/or oauth_verifier in the callback: ${err}.`,
-        url_param_err: (url: string, params: string) => `Missing param(s) in Auth request to interpolate url ${url}. Provided params: ${params}`
-    };
+
     templates: { [key: string]: ProviderTemplate } = configService.getTemplates();
 
-    public async oauthRequest(req: Request, res: Response, next: NextFunction) {
+    public async oauthRequest(req: Request, res: Response, _: NextFunction) {
+        let accountId = getAccount(res);
+        const { providerConfigKey } = req.params;
+        let connectionId = req.query['connection_id'] as string | undefined;
+        let wsClientId = req.query['ws_client_id'] as string | undefined;
+
         try {
-            let accountId = getAccount(res);
+            if (!wsClientId) {
+                analytics.track('server:pre_ws_oauth', accountId);
+            }
+
             let callbackUrl = await getOauthCallbackUrl(accountId);
-            const { providerConfigKey } = req.params;
-            let connectionId = req.query['connection_id'] as string;
             let connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
 
             if (connectionId == null) {
-                return html(logger, res, providerConfigKey, connectionId, 'missing_connection_id', this.errDesc['missing_connection_id']());
+                return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.MissingConnectionId());
             } else if (providerConfigKey == null) {
-                return html(logger, res, providerConfigKey, connectionId, 'no_provider_config_key', this.errDesc['no_provider_config_key']());
+                return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.MissingProviderConfigKey());
             }
             connectionId = connectionId.toString();
 
             let config = await configService.getProviderConfig(providerConfigKey, accountId);
 
             if (config == null) {
-                return html(logger, res, providerConfigKey, connectionId, 'unknown_config_key', this.errDesc['unknown_config_key'](providerConfigKey));
+                return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnknownProviderConfigKey(providerConfigKey));
             }
 
             let template: ProviderTemplate;
             try {
                 template = this.templates[config.provider]!;
             } catch {
-                return html(logger, res, providerConfigKey, connectionId, 'unknown_config_key', this.errDesc['unknown_config_key'](providerConfigKey));
+                return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownProviderTemplate(config.provider));
             }
 
             const session: OAuthSession = {
@@ -76,12 +72,13 @@ class OAuthController {
                 codeVerifier: crypto.randomBytes(24).toString('hex'),
                 id: uuid.v1(),
                 connectionConfig: connectionConfig,
-                accountId: accountId
+                accountId: accountId,
+                webSocketClientId: wsClientId
             };
             this.sessionStore[session.id] = session;
 
             if (config?.oauth_client_id == null || config?.oauth_client_secret == null || config.oauth_scopes == null) {
-                return html(logger, res, providerConfigKey, connectionId, 'provider_config_err', this.errDesc['provider_config_err'](providerConfigKey));
+                return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.InvalidProviderConfig(providerConfigKey));
             }
 
             logger.info(
@@ -94,11 +91,10 @@ class OAuthController {
                 return this.oauth1Request(template, config, session, res, callbackUrl);
             }
 
-            let authMode = template.auth_mode;
-            return html(logger, res, providerConfigKey, connectionId, 'auth_mode_err', this.errDesc['auth_mode_err'](authMode));
+            return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownAuthMode(template.auth_mode));
         } catch (e) {
-            errorManager.report(e, getAccount(res));
-            next(e);
+            errorManager.report(e, accountId);
+            return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError());
         }
     }
 
@@ -111,15 +107,28 @@ class OAuthController {
         callbackUrl: string
     ) {
         const oauth2Template = template as ProviderTemplateOAuth2;
+        let wsClientId = session.webSocketClientId;
+        let providerConfigKey = session.providerConfigKey;
+        let connectionId = session.connectionId;
 
         if (missesInterpolationParam(template.authorization_url, connectionConfig)) {
-            let errDesc = this.errDesc['url_param_err'](template.authorization_url, JSON.stringify(connectionConfig));
-            return html(logger, res, session.providerConfigKey, session.connectionId, 'url_param_err', errDesc);
+            return wsClient.notifyErr(
+                res,
+                wsClientId,
+                providerConfigKey,
+                connectionId,
+                WSErrBuilder.InvalidConnectionConfig(template.authorization_url, JSON.stringify(connectionConfig))
+            );
         }
 
         if (missesInterpolationParam(template.token_url, connectionConfig)) {
-            let errDesc = this.errDesc['url_param_err'](template.token_url, JSON.stringify(connectionConfig));
-            return html(logger, res, session.providerConfigKey, session.connectionId, 'url_param_err', errDesc);
+            return wsClient.notifyErr(
+                res,
+                wsClientId,
+                providerConfigKey,
+                connectionId,
+                WSErrBuilder.InvalidConnectionConfig(template.token_url, JSON.stringify(connectionConfig))
+            );
         }
 
         if (
@@ -148,12 +157,13 @@ class OAuthController {
                 ...additionalAuthParams
             });
 
-            logger.debug(`OAuth 2.0 for ${session.providerConfigKey} (connection ${session.connectionId}) - redirecting to: ${authorizationUri}`);
+            logger.debug(`OAuth 2.0 for ${providerConfigKey} (connection ${connectionId}) - redirecting to: ${authorizationUri}`);
 
             res.redirect(authorizationUri);
         } else {
             let grandType = oauth2Template.token_params.grant_type;
-            return html(logger, res, session.providerConfigKey, session.connectionId, 'grant_type_err', this.errDesc['grant_type_err'](grandType));
+
+            return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownGrantType(grandType));
         }
     }
 
@@ -165,6 +175,10 @@ class OAuthController {
         const callbackParams = new URLSearchParams({
             state: session.id
         });
+        let wsClientId = session.webSocketClientId;
+        let providerConfigKey = session.providerConfigKey;
+        let connectionId = session.connectionId;
+
         const oAuth1CallbackURL = `${callbackUrl}?${callbackParams.toString()}`;
 
         const oAuth1Client = new OAuth1Client(config, template, oAuth1CallbackURL);
@@ -174,8 +188,7 @@ class OAuthController {
             tokenResult = await oAuth1Client.getOAuthRequestToken();
         } catch (e) {
             errorManager.report(e, session.accountId);
-            let errStr = JSON.stringify(e, undefined, 2);
-            return html(logger, res, session.providerConfigKey, session.connectionId as string, 'req_token_err', this.errDesc['req_token_err'](errStr));
+            return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.TokenError());
         }
 
         const sessionData = this.sessionStore[session.id]!;
@@ -190,18 +203,26 @@ class OAuthController {
         return res.redirect(redirectUrl);
     }
 
-    public async oauthCallback(req: Request, res: Response, next: NextFunction) {
+    public async oauthCallback(req: Request, res: Response, _: NextFunction) {
         const { state } = req.query;
+
+        if (state == null) {
+            throw Error('No state found in callback');
+        }
+
         const session: OAuthSession = this.sessionStore[state as string] as OAuthSession;
 
-        try {
+        if (session == null) {
+            throw Error('No session found for state: ' + state);
+        } else {
             delete this.sessionStore[state as string];
+        }
 
-            if (state == null || session == null || session.providerConfigKey == null) {
-                let stateStr = (state as string) || '';
-                return html(logger, res, session.providerConfigKey, session.connectionId, 'state_err', this.errDesc['state_err'](stateStr));
-            }
+        let wsClientId = session.webSocketClientId;
+        let providerConfigKey = session.providerConfigKey;
+        let connectionId = session.connectionId;
 
+        try {
             logger.debug(`Received callback for ${session.providerConfigKey} (connection: ${session.connectionId}) - full callback URI: ${req.originalUrl}"`);
 
             const template = this.templates[session.provider]!;
@@ -217,10 +238,10 @@ class OAuthController {
                 return this.oauth1Callback(template, config, session, req, res);
             }
 
-            return html(logger, res, session.providerConfigKey, session.connectionId, 'auth_mode_err', this.errDesc['auth_mode_err'](session.authMode));
+            return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownAuthMode(session.authMode));
         } catch (e) {
-            errorManager.report(e, session.accountId);
-            next(e);
+            errorManager.report(e, session?.accountId);
+            return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError());
         }
     }
 
@@ -228,11 +249,11 @@ class OAuthController {
         const { code } = req.query;
         let providerConfigKey = session.providerConfigKey;
         let connectionId = session.connectionId;
+        let wsClientId = session.webSocketClientId;
         let metadata = getConnectionMetadata(req.query, template);
 
         if (!code) {
-            let errStr = JSON.stringify(req.query);
-            return html(logger, res, providerConfigKey, connectionId, 'callback_err', this.errDesc['callback_err'](errStr));
+            return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.InvalidCallback());
         }
 
         const simpleOAuthClient = new simpleOauth2.AuthorizationCode(getSimpleOAuth2ClientConfig(config, template, session.connectionConfig));
@@ -276,14 +297,10 @@ class OAuthController {
                 metadata
             );
 
-            return html(logger, res, providerConfigKey, connectionId, '', '');
+            return wsClient.notifySuccess(res, wsClientId, providerConfigKey, connectionId);
         } catch (e) {
             errorManager.report(e, session.accountId);
-
-            if (e instanceof Error) {
-                return html(logger, res, providerConfigKey, connectionId, 'token_err', this.errDesc['token_err'](e.message));
-            }
-            return html(logger, res, providerConfigKey, connectionId, 'token_err', this.errDesc['token_err'](JSON.stringify(e)));
+            return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError());
         }
     }
 
@@ -291,11 +308,11 @@ class OAuthController {
         const { oauth_token, oauth_verifier } = req.query;
         let providerConfigKey = session.providerConfigKey;
         let connectionId = session.connectionId;
+        let wsClientId = session.webSocketClientId;
         let metadata = getConnectionMetadata(req.query, template);
 
         if (!oauth_token || !oauth_verifier) {
-            let errStr = JSON.stringify(req.query);
-            return html(logger, res, providerConfigKey, connectionId, 'callback_err', this.errDesc['callback_err'](errStr));
+            return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.InvalidCallback());
         }
 
         const oauth_token_secret = session.request_token_secret!;
@@ -316,12 +333,11 @@ class OAuthController {
                     session.accountId,
                     metadata
                 );
-                return html(logger, res, providerConfigKey, connectionId, '', '');
+                return wsClient.notifySuccess(res, wsClientId, providerConfigKey, connectionId);
             })
             .catch((e) => {
                 errorManager.report(e, session.accountId);
-                let errStr = JSON.stringify(e);
-                return html(logger, res, providerConfigKey, connectionId, 'token_err', this.errDesc['token_err'](errStr));
+                return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError());
             });
     }
 }

@@ -1,9 +1,10 @@
-import type winston from 'winston';
 import { fileURLToPath } from 'url';
 import path from 'path';
 import type { Response } from 'express';
 import accountService from '../services/account.service.js';
 import type { Account, ProviderTemplate } from '../models.js';
+import logger from './logger.js';
+import type { WSErr } from './web-socket-error.js';
 
 export const localhostUrl: string = 'http://localhost:3003';
 const accountIdLocalsKey = 'nangoAccountId';
@@ -145,14 +146,113 @@ export function parseJsonDateAware(input: string) {
  * Yet it also felt wrong to add another dependency to simply parse 1 template.
  * If you have an idea on how to improve this feel free to submit a pull request.
  */
-export function html(
-    logger: winston.Logger,
-    res: any,
-    providerConfigKey: string | undefined,
-    connectionId: string | undefined,
-    error: string | null,
-    errorDesc: string | null
-) {
+function html(res: any, error: boolean) {
+    const resultHTML = `
+<!--
+Nango OAuth flow callback. Read more about how to use it at: https://github.com/NangoHQ/nango
+-->
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Authorization callback</title>
+  </head>
+  <body>
+    <noscript>JavaScript is required to proceed with the authentication.</noscript>
+    <script type="text/javascript">
+      // Close the modal
+      window.setTimeout(function() {
+        window.close()
+      }, 300);
+    </script>
+  </body>
+</html>
+`;
+
+    if (error) {
+        res.status(500);
+    } else {
+        res.status(200);
+    }
+    res.set('Content-Type', 'text/html');
+    res.send(Buffer.from(resultHTML));
+}
+
+function oldErrorHtml(res: any, wsErr: WSErr) {
+    const resultHTMLTemplate = `
+<!--
+Nango OAuth flow callback. Read more about how to use it at: https://github.com/NangoHQ/nango
+-->
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Authorization callback</title>
+  </head>
+  <body>
+    <noscript>JavaScript is required to proceed with the authentication.</noscript>
+    <script type="text/javascript">
+      window.authErrorType = \'\${errorType}\';
+      window.authErrorDesc = \'\${errorDesc}\';
+
+      const message = {};
+      message.eventType = 'AUTHORIZATION_FAILED';
+      message.data = {
+        error: {
+            type: window.authErrorType,
+            message: window.authErrorDesc
+        }
+      };
+
+      // Tell the world what happened
+      window.opener && window.opener.postMessage(message, '*');
+
+      // Close the modal
+      window.setTimeout(function() {
+        window.close()
+      }, 300);
+    </script>
+  </body>
+</html>
+`;
+    const resultHTML = interpolateString(resultHTMLTemplate, {
+        errorType: wsErr.type.replace('\n', '\\n'),
+        errorDesc: wsErr.message.replace('\n', '\\n')
+    });
+
+    logger.debug(`Got an error in the OAuth flow: ${wsErr.type} - ${wsErr.message}`);
+    res.status(500);
+    res.set('Content-Type', 'text/html');
+    res.send(Buffer.from(resultHTML));
+}
+
+/**
+ *
+ * Legacy method to support old frontend SDKs.
+ */
+export function errorHtml(res: any, wsClientId: string | undefined, wsErr: WSErr) {
+    if (wsClientId != null) {
+        return html(res, true);
+    } else {
+        return oldErrorHtml(res, wsErr);
+    }
+}
+
+/**
+ *
+ * Legacy method to support old frontend SDKs.
+ */
+export function successHtml(res: any, wsClientId: string | undefined, providerConfigKey: string, connectionId: string) {
+    if (wsClientId != null) {
+        return html(res, false);
+    } else {
+        return oldSuccessHtml(res, providerConfigKey, connectionId);
+    }
+}
+
+/**
+ *
+ * Legacy method to support old frontend SDKs.
+ */
+function oldSuccessHtml(res: any, providerConfigKey: string, connectionId: string) {
     const resultHTMLTemplate = `
 <!--
 Nango OAuth flow callback. Read more about how to use it at: https://github.com/NangoHQ/nango
@@ -167,26 +267,10 @@ Nango OAuth flow callback. Read more about how to use it at: https://github.com/
     <script type="text/javascript">
       window.providerConfigKey = \`\${providerConfigKey}\`;
       window.connectionId = \`\${connectionId}\`;
-      window.authError = \'\${error}\';
-      window.authErrorDescription = \'\${errorDesc}\';
 
       const message = {};
-
-      if (window.authError !== '') {
-        message.eventType = 'AUTHORIZATION_FAILED';
-        message.data = {
-            connectionId: window.connectionId,
-            providerConfigKey: window.providerConfigKey,
-            error: {
-                type: window.authError,
-                message: window.authErrorDescription
-            }
-        };
-      } else {
-        console.log('I have succeeded!');
-        message.eventType = 'AUTHORIZATION_SUCEEDED';
-        message.data = { connectionId: window.connectionId, providerConfigKey: window.providerConfigKey };
-      }
+      message.eventType = 'AUTHORIZATION_SUCEEDED';
+      message.data = { connectionId: window.connectionId, providerConfigKey: window.providerConfigKey };
 
       // Tell the world what happened
       window.opener && window.opener.postMessage(message, '*');
@@ -199,20 +283,12 @@ Nango OAuth flow callback. Read more about how to use it at: https://github.com/
   </body>
 </html>
 `;
-
     const resultHTML = interpolateString(resultHTMLTemplate, {
         providerConfigKey: providerConfigKey,
-        connectionId: connectionId,
-        error: error?.replace('\n', '\\n'),
-        errorDesc: errorDesc?.replace('\n', '\\n')
+        connectionId: connectionId
     });
 
-    if (error) {
-        logger.debug(`Got an error in the OAuth flow for provider config "${providerConfigKey}" and connectionId "${connectionId}": ${error} - ${errorDesc}`);
-        res.status(500);
-    } else {
-        res.status(200);
-    }
+    res.status(200);
     res.set('Content-Type', 'text/html');
     res.send(Buffer.from(resultHTML));
 }

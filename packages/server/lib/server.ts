@@ -9,19 +9,13 @@ if (process.env['SERVER_RUN_MODE'] !== 'DOCKERIZED') {
 }
 
 import { authServer, getOauthCallbackUrl, getPort } from '@nangohq/auth';
-import express from 'express';
-import cors from 'cors';
 
 let port = getPort();
 
-let app = express();
-app.use(express.json());
-app.use(cors());
-
-authServer.setup(app);
+let server = await authServer.setup();
 
 let callbackUrl = await getOauthCallbackUrl();
 
-app.listen(port, () => {
+server.listen(port, () => {
     console.log(`✅ Nango Server is listening on port ${port}. OAuth callback URL: ${callbackUrl}`);
 });

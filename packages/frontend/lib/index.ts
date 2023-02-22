@@ -5,6 +5,12 @@
 const cloudHost = 'https://api.nango.dev';
 const debugLogPrefix = 'NANGO DEBUG LOG: ';
 
+const enum WSMessageType {
+    ConnectionAck = 'connection_ack',
+    Error = 'error',
+    Success = 'success'
+}
+
 export default class Nango {
     private hostBaseUrl: string;
     private status: AuthorizationStatus;
@@ -16,7 +22,8 @@ export default class Nango {
         this.debug = config.debug || false;
 
         if (this.debug) {
-            console.log(debugLogPrefix, 'Debug mode is enabled.');
+            console.log(debugLogPrefix, `Debug mode is enabled (1).`);
+            console.log(debugLogPrefix, `Using host: ${config.host}.`);
         }
 
         if (config.host === cloudHost && !config.publicKey) {
@@ -50,51 +57,37 @@ export default class Nango {
         }
 
         return new Promise((resolve, reject) => {
-            const handler = (e?: MessageEvent) => {
+            const successHandler = (providerConfigKey: string, connectionId: string) => {
                 if (this.status !== AuthorizationStatus.BUSY) {
-                    return;
-                }
-
-                // All sorts of extensions and pages might send messages so we need to filter the relevant ones.
-                // Nango messages will always have the data.eventType attribute set.
-                if (e && !e.data.eventType) {
                     return;
                 }
 
                 this.status = AuthorizationStatus.DONE;
 
-                if (!e) {
-                    const error = {
-                        type: 'authorization_cancelled',
-                        message: 'Authorization cancelled. The user has likely interrupted the process by closing the modal.'
-                    };
-                    return reject(error);
-                }
-
-                const { data: event } = e;
-
-                if (event.eventType === 'AUTHORIZATION_SUCEEDED') {
-                    return resolve(event.data);
-                } else if (event.eventType === 'AUTHORIZATION_FAILED') {
-                    return reject(event.data);
-                }
-
-                reject(new Error('Authorization failed. That’s all we know.'));
+                return resolve({
+                    providerConfigKey: providerConfigKey,
+                    connectionId: connectionId
+                });
             };
 
-            // Add an event listener on authorization modal
-            //
-            // Note: this adds one event listener for each authorization process.
-            // In an application doing lots of connect, this can cause a memory issue.
-            window.addEventListener('message', handler, false);
+            const errorHandler = (errorType: string, errorDesc: string) => {
+                if (this.status !== AuthorizationStatus.BUSY) {
+                    return;
+                }
+
+                this.status = AuthorizationStatus.DONE;
+
+                return reject({
+                    message: errorDesc,
+                    type: errorType
+                });
+            };
 
             // Save authorization status (for handler)
             this.status = AuthorizationStatus.BUSY;
 
             // Open authorization modal
-            const modal = new AuthorizationModal(url, this.debug);
-            modal.open();
-            modal.addEventListener('close', handler);
+            new AuthorizationModal(this.hostBaseUrl, url, successHandler, errorHandler, this.debug);
         });
     }
 
@@ -141,13 +134,19 @@ class AuthorizationModal {
     private width = 500;
     private height = 600;
     private modal!: Window | null;
-    private debug: boolean = false;
+    private swClient: WebSocket;
+    private debug: boolean;
 
-    constructor(url: string, debug?: boolean) {
-        this.debug = debug || false;
-
+    constructor(
+        host: string,
+        url: string,
+        successHandler: (providerConfigKey: string, connectionId: string) => any,
+        errorHandler: (errorType: string, errorDesc: string) => any,
+        debug?: boolean
+    ) {
         // Window modal URL
         this.url = url;
+        this.debug = debug || false;
 
         const { left, top, computedWidth, computedHeight } = this.layout(this.width, this.height);
 
@@ -159,8 +158,7 @@ class AuthorizationModal {
             left,
             scrollbars: 'yes',
             resizable: 'yes',
-            noopener: 'no',
-            // Using "noopener=yes" would be safer but we needa access to the 'closed' property on the modal.
+            noopener: 'yes', // safer
             status: 'no',
             toolbar: 'no',
             location: 'no',
@@ -168,6 +166,55 @@ class AuthorizationModal {
             menubar: 'no',
             directories: 'no'
         };
+
+        this.swClient = new WebSocket(host.replace('https://', 'wss://').replace('http://', 'ws://'));
+
+        this.swClient.onmessage = (message: MessageEvent<any>) => {
+            this.handleMessage(message, successHandler, errorHandler);
+        };
+    }
+
+    /**
+     * Handles the messages received from the Nango server via WebSocket.
+     */
+    handleMessage(
+        message: MessageEvent<any>,
+        successHandler: (providerConfigKey: string, connectionId: string) => any,
+        errorHandler: (errorType: string, errorDesc: string) => any
+    ) {
+        let data = JSON.parse(message.data);
+
+        switch (data.message_type) {
+            case WSMessageType.ConnectionAck:
+                if (this.debug) {
+                    console.log(debugLogPrefix, 'Connection ack received. Opening modal...');
+                }
+
+                let wsClientId = data.ws_client_id;
+                this.open(wsClientId);
+                break;
+            case WSMessageType.Error:
+                if (this.debug) {
+                    console.log(debugLogPrefix, 'Error received. Rejecting authorization...');
+                }
+
+                errorHandler(data.error_type, data.error_desc);
+                this.swClient.close();
+                break;
+            case WSMessageType.Success:
+                if (this.debug) {
+                    console.log(debugLogPrefix, 'Success received. Resolving authorization...');
+                }
+
+                successHandler(data.provider_config_key, data.connection_id);
+                this.swClient.close();
+                break;
+            default:
+                if (this.debug) {
+                    console.log(debugLogPrefix, 'Unkown message type received from Nango server. Ignoring...');
+                }
+                return;
+        }
     }
 
     /**
@@ -188,65 +235,12 @@ class AuthorizationModal {
     /**
      * Open the modal
      */
-
-    open() {
-        const url = this.url;
+    open(wsClientId: string) {
+        const url = this.url + '&ws_client_id=' + wsClientId;
         const windowName = '';
         const windowFeatures = this.featuresToString();
         this.modal = window.open(url, windowName, windowFeatures);
-        console.log(debugLogPrefix, `Modal opened. Modal exists? ${this.modal != null}`);
         return this.modal;
-    }
-
-    /**
-     * Add event listener on the modal
-     */
-
-    addEventListener(eventType: string, handler: (e: any) => any): void {
-        if (this.debug) {
-            console.log(debugLogPrefix, `Adding 'close' event listener on modal: 1st step.`);
-        }
-
-        if (eventType !== 'close') {
-            return;
-        }
-
-        if (this.debug) {
-            console.log(debugLogPrefix, `Adding 'close' event listener on modal: 2nd step.`);
-        }
-
-        if (!this.modal) {
-            handler(undefined);
-            return;
-        }
-
-        if (this.debug) {
-            console.log(debugLogPrefix, `Adding 'close' event listener on modal: 3rd step.`);
-        }
-
-        const interval = window.setInterval(() => {
-            if (this.debug) {
-                console.log(debugLogPrefix, `Polling modal status. Exists? ${this.modal != null}, closed? ${this.modal?.closed}`);
-            }
-
-            if (!this.modal || this.modal.closed) {
-                if (this.debug) {
-                    console.log(debugLogPrefix, `Modal closed.`);
-                }
-
-                let e = {
-                    data: {
-                        eventType: 'AUTHORIZATION_FAILED',
-                        data: {
-                            type: 'authorization_cancelled',
-                            message: 'The user has closed the authorization modal before the process was complete.'
-                        }
-                    }
-                };
-                handler(e);
-                window.clearInterval(interval);
-            }
-        }, 100);
     }
 
     /**

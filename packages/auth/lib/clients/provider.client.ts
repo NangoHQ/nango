@@ -1,7 +1,7 @@
 import braintree from 'braintree';
 import type { ProviderConfig, Connection, OAuth2Credentials } from '../models.js';
 
-class ProviderClientManager {
+class ProviderClient {
     constructor() {}
 
     public shouldUseProviderClient(provider: string): boolean {
@@ -78,4 +78,4 @@ class ProviderClientManager {
     }
 }
 
-export default new ProviderClientManager();
+export default new ProviderClient();
