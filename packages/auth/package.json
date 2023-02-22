@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/auth",
-    "version": "0.8.8",
+    "version": "0.8.9",
     "description": "Nango's OAuth-related features.",
     "type": "module",
     "main": "dist/index.js",
