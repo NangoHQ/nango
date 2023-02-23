@@ -62,30 +62,38 @@ The docker compose configuration in the root of the repo `docker-compose.yaml` w
 
 1. Postres
 2. Nango Server
-3. A simple test frontend
+3. A Simple Test Website to Trigger the OAuth Flow
 
 The providers.yaml file from step 1 is synced between the host machine (your laptop) and the running Nango Server container. When you add new provider templates to that yaml the running Nango Server will pick them up.
 
-If your changes don't seem to be getting picked up you can call `docker compose restart nango-server` to force it to restart which will load in the yaml again. You can also run `docker compose run nango-server cat packages/auth/providers.yaml` which will print the contents of the providers file as the container sees it.
+If your changes don't seem to be getting picked up you:
+
+```
+# Force a restart, which will load in the yaml again
+docker compose restart nango-server
+
+# print the contents of the providers file from inside the container
+docker compose run nango-server cat packages/auth/providers.yaml
+```
 
 When you are ready to test your new provider template:
 
-1. Add your client credentials to the local server by running the npx nango command
+### 1. Add your client credentials to the local server by running the npx nango command
 
 ```
-npx nango config:create <unique-config-key-from-4> <template-name-from-1> <cliend-id-from-2> <client-secret-from-2> <scopes-from-2>
+npx nango config:create <unique-config-key> <template-name> <cliend-id> <client-secret> <scopes>
 
 ```
 
 Note: if you've already configured environment variables for Nango Cloud or your own remote instance of Nango then you may need to unset those variables as they will interfere with your local testing.
 
-2. Navigate to the Test Website and Trigger the OAuth Flow
+### 2. Navigate to the Test Website and Trigger the OAuth Flow
 
 The test site should be running at [http://localhost:8001/bin/quickstart.html](http://localhost:8001/bin/quickstart.html)
 
 You can modify the ports in the docker compose if there are any conflicts with other local services on your host machine.
 
-3. Request an Access Token from Your New Provider
+### 3. Request an Access Token from Your New Provider
 
 In the cli run the npx nango command to fetch a new token or make a curl request to the locally running Nango Server.
 
