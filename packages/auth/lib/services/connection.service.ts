@@ -216,8 +216,6 @@ class ConnectionService {
                             2
                         )}`
                     );
-                } else if (rawAuthCredentials.refresh_token && !rawAuthCredentials.expires_at) {
-                    logger.info(`Got a refresh token but no information about expiration. Assuming the access token doesn't expire.`);
                 }
                 break;
             case ProviderAuthModes.OAuth1:
