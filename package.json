@@ -8,7 +8,7 @@
         "prettier-format": "prettier --config .prettierrc './**/*.ts' --write",
         "prettier-watch": "onchange './**/*.ts' -- prettier --write {{changed}}",
         "lint": "eslint . --ext .ts",
-        "docker-build": "docker build -f packages/server/Dockerfile -t nango.docker.scarf.sh/nangohq/nango-server:latest .",
+        "docker-build": "docker build -f packages/server/Dockerfile -t nango.docker.scarf.sh/nangohq/nango-server:latest . && ls && cd ./webapp/ && docker build -f ./Dockerfile -t nangohq/nango-web:latest . && cd ..",
         "ts-build": "./node_modules/typescript/bin/tsc -b --clean packages/server packages/cli && ./node_modules/typescript/bin/tsc -b tsconfig.build.json",
         "build": "npm run ts-build && npm run docker-build"
     },
