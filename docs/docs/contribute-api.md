@@ -60,13 +60,13 @@ To test your new provider:
 
 The docker compose configuration in the root of the repo `docker-compose.yaml` will run 3 containers.
 
-1. Postres
+1. Postgres DB
 2. Nango Server
-3. A Simple Test Website to Trigger the OAuth Flow
+3. Test Website to Trigger the OAuth Flow
 
 The providers.yaml file from step 1 is synced between the host machine (your laptop) and the running Nango Server container. When you add new provider templates to that yaml the running Nango Server will pick them up.
 
-If your changes don't seem to be getting picked up you:
+If your changes don't seem to be getting picked up, then try:
 
 ```
 # Force a restart, which will load in the yaml again
@@ -78,7 +78,7 @@ docker compose run nango-server cat packages/auth/providers.yaml
 
 When you are ready to test your new provider template:
 
-### 1. Add your client credentials to the local server by running the npx nango command
+### 1. Add your client credentials to the local Nango Server by running the npx nango command
 
 ```
 npx nango config:create <unique-config-key> <template-name> <cliend-id> <client-secret> <scopes>
@@ -98,9 +98,10 @@ You can modify the ports in the docker compose if there are any conflicts with o
 In the cli run the npx nango command to fetch a new token or make a curl request to the locally running Nango Server.
 
 ```
-npx nango token:get <unique-config-key> <connection-id>
+> npx nango token:get <unique-config-key> <connection-id>
 
-curl 'http://localhost:3003/connection/<connection-id>?provider_config_key=<unique-config-key>'
+
+> curl 'http://localhost:3003/connection/<connection-id>?provider_config_key=<unique-config-key>'
 ```
 
 Once you've confirmed the access token was returned, then you are ready to submit a PR.
