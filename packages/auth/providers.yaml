@@ -242,6 +242,10 @@ splitwise:
     auth_mode: OAUTH2
     authorization_url: https://secure.splitwise.com/oauth/authorize
     token_url: https://secure.splitwise.com/oauth/token
+stripe:
+    auth_mode: OAUTH2
+    authorization_url: https://connect.stripe.com/oauth/authorize
+    token_url: https://connect.stripe.com/oauth/token
 trello:
     auth_mode: OAUTH1
     request_url: https://trello.com/1/OAuthGetRequestToken
