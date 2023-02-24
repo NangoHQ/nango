@@ -216,14 +216,6 @@ class ConnectionService {
                             2
                         )}`
                     );
-                } else if (rawAuthCredentials.refresh_token && !rawAuthCredentials.expires_at) {
-                    throw new Error(
-                        `Cannot parse credentials, if OAuth2 access token credentials have a "refresh_token" property the "expires_at" property must also be set: ${JSON.stringify(
-                            rawAuthCredentials,
-                            undefined,
-                            2
-                        )}`
-                    );
                 }
                 break;
             case ProviderAuthModes.OAuth1:
