@@ -36,10 +36,20 @@ export interface Connection {
 
 export interface Account {
     id: number;
-    email: string;
+    name: string;
     secret_key: string;
     public_key: string;
     callback_url: string | null;
+    owner_id: number | undefined;
+}
+
+export interface User {
+    id: number;
+    email: string;
+    name: string;
+    hashed_password: string;
+    salt: string;
+    account_id: number;
 }
 
 export enum OAuthBodyFormat {

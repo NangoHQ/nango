@@ -22,16 +22,6 @@ class AccountService {
         return result[0];
     }
 
-    async getAccountByEmail(email: string): Promise<Account | null> {
-        let result = await db.knex.withSchema(db.schema()).select('*').from<Account>(`_nango_accounts`).where({ email: email });
-
-        if (result == null || result.length == 0 || result[0] == null) {
-            return null;
-        }
-
-        return result[0];
-    }
-
     async getAccountById(id: number): Promise<Account | null> {
         let result = await db.knex.withSchema(db.schema()).select('*').from<Account>(`_nango_accounts`).where({ id: id });
 
@@ -42,8 +32,8 @@ class AccountService {
         return result[0];
     }
 
-    async createAccount(email: string): Promise<Account | null> {
-        let result: void | Pick<Account, 'id'> = await db.knex.withSchema(db.schema()).from<Account>(`_nango_accounts`).insert({ email: email }, ['id']);
+    async createAccount(name: string): Promise<Account | null> {
+        let result: void | Pick<Account, 'id'> = await db.knex.withSchema(db.schema()).from<Account>(`_nango_accounts`).insert({ name: name }, ['id']);
 
         if (Array.isArray(result) && result.length === 1 && result[0] != null && 'id' in result[0]) {
             let accountId = result[0]['id'];
@@ -51,6 +41,10 @@ class AccountService {
         }
 
         return null;
+    }
+
+    async editAccount(accountId: number, name: string, ownerId: number): Promise<Account | null> {
+        return db.knex.withSchema(db.schema()).from<Account>(`_nango_accounts`).where({ id: accountId }).update({ name: name, owner_id: ownerId }, ['id']);
     }
 }
 

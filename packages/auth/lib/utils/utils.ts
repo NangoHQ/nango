@@ -1,10 +1,11 @@
 import { fileURLToPath } from 'url';
 import path from 'path';
-import type { Response } from 'express';
+import type { Response, Request } from 'express';
 import accountService from '../services/account.service.js';
-import type { Account, ProviderTemplate } from '../models.js';
+import type { Account, ProviderTemplate, User } from '../models.js';
 import logger from './logger.js';
 import type { WSErr } from './web-socket-error.js';
+import userService from '../services/user.service.js';
 
 export const localhostUrl: string = 'http://localhost:3003';
 const accountIdLocalsKey = 'nangoAccountId';
@@ -48,13 +49,21 @@ export async function getOauthCallbackUrl(accountId?: number) {
     return process.env['NANGO_CALLBACK_URL'] || getBaseUrl() + '/oauth/callback';
 }
 
-export function isAuthenticated(res: Response): boolean {
+export function isApiAuthenticated(res: Response): boolean {
     return res.locals != null && accountIdLocalsKey in res.locals && Number.isInteger(res.locals[accountIdLocalsKey]);
+}
+
+export function isUserAuthenticated(req: Request): boolean {
+    return req.isAuthenticated() && req.user != null && req.user.id != null;
+}
+
+export async function getUserFromSession(req: Request): Promise<User | null> {
+    return req.user?.id != null ? userService.getUserById(req.user.id) : null;
 }
 
 export function getAccount(res: Response): number {
     if (res.locals == null || !(accountIdLocalsKey in res.locals)) {
-        throw Error('account_not_set_in_locals');
+        throw new Error('account_not_set_in_locals');
     }
 
     let accountId = res.locals[accountIdLocalsKey];
@@ -62,7 +71,7 @@ export function getAccount(res: Response): number {
     if (Number.isInteger(accountId)) {
         return accountId;
     } else {
-        throw Error('account_malformed_in_locals');
+        throw new Error('account_malformed_in_locals');
     }
 }
 

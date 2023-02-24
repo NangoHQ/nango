@@ -10,10 +10,12 @@ class ErrorManager {
         }
     }
 
-    public report(e: any, accountId?: number | undefined) {
+    public report(e: any, accountId?: number | undefined, userId?: number | undefined) {
         if (isCloud()) {
             if (accountId != null) {
-                sentry.setUser({ id: String(accountId) });
+                sentry.setUser({ id: `account-${accountId}` });
+            } else if (userId != null) {
+                sentry.setUser({ id: `account-${userId}` });
             }
 
             sentry.captureException(e);

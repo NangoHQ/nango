@@ -207,13 +207,13 @@ class OAuthController {
         const { state } = req.query;
 
         if (state == null) {
-            throw Error('No state found in callback');
+            throw new Error('No state found in callback');
         }
 
         const session: OAuthSession = this.sessionStore[state as string] as OAuthSession;
 
         if (session == null) {
-            throw Error('No session found for state: ' + state);
+            throw new Error('No session found for state: ' + state);
         } else {
             delete this.sessionStore[state as string];
         }

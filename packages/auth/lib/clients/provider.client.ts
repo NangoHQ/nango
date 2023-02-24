@@ -22,7 +22,7 @@ class ProviderClient {
             case 'braintree-sandbox':
                 return this.createBraintreeToken(code, config.oauth_client_id, config.oauth_client_secret);
             default:
-                throw Error('unknown_provider_client');
+                throw new Error('unknown_provider_client');
         }
     }
 
@@ -30,7 +30,7 @@ class ProviderClient {
         let credentials = connection.credentials as OAuth2Credentials;
 
         if (!credentials.refresh_token) {
-            throw Error('missing_refresh_token');
+            throw new Error('missing_refresh_token');
         }
 
         switch (config.provider) {
@@ -39,7 +39,7 @@ class ProviderClient {
             case 'braintree-sandbox':
                 return this.refreshBraintreeToken(credentials.refresh_token, config.oauth_client_id, config.oauth_client_secret);
             default:
-                throw Error('unknown_provider_client');
+                throw new Error('unknown_provider_client');
         }
     }
 
@@ -48,7 +48,7 @@ class ProviderClient {
         let res = await gateway.oauth.createTokenFromCode({ code: code });
 
         if (!('credentials' in res && 'accessToken' in res.credentials && 'refreshToken' in res.credentials && 'expiresAt' in res.credentials)) {
-            throw Error('braintree_token_request_error');
+            throw new Error('braintree_token_request_error');
         }
 
         let creds = res['credentials'];
@@ -65,7 +65,7 @@ class ProviderClient {
         let res = await gateway.oauth.createTokenFromRefreshToken({ refreshToken: refreshToken });
 
         if (!('credentials' in res && 'accessToken' in res.credentials && 'refreshToken' in res.credentials && 'expiresAt' in res.credentials)) {
-            throw Error('braintree_token_refresh_error');
+            throw new Error('braintree_token_refresh_error');
         }
 
         let creds = res['credentials'];

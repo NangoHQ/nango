@@ -39,7 +39,7 @@ export class Nango {
             case 'OAUTH1':
                 return { oAuthToken: response.data.credentials.oauth_token, oAuthTokenSecret: response.data.credentials.oauth_token_secret };
             default:
-                throw Error(`Unrecognized OAuth type '${response.data.credentials.type}' in stored credentials.`);
+                throw new Error(`Unrecognized OAuth type '${response.data.credentials.type}' in stored credentials.`);
         }
     }
 

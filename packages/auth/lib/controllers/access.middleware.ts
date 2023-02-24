@@ -94,6 +94,17 @@ export class AccessMiddleware {
         }
     }
 
+    async session(req: Request, res: Response, next: NextFunction) {
+        if (isCloud()) {
+            if (!req.isAuthenticated()) {
+                res.status(401).send({ error: 'Not authenticated.' });
+                return;
+            }
+        }
+
+        next();
+    }
+
     admin(req: Request, res: Response, next: NextFunction) {
         if (!isCloud()) {
             return errorManager.res(res, 'only_nango_cloud');

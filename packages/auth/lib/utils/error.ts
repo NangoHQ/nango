@@ -69,6 +69,16 @@ export class NangoError extends Error {
                 this.message = `Missing parameter 'email'.`;
                 break;
 
+            case 'missing_name_param':
+                this.status = 400;
+                this.message = `Missing parameter 'name'.`;
+                break;
+
+            case 'missing_password_param':
+                this.status = 400;
+                this.message = `Missing parameter 'password'.`;
+                break;
+
             case 'duplicate_account':
                 this.status = 400;
                 this.message = 'Email already exists.';

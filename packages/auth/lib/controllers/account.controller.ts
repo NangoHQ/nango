@@ -1,37 +1,22 @@
-import type { Request, Response } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import accountService from '../services/account.service.js';
-import type { Account } from '../models.js';
-import type { NextFunction } from 'express';
-import analytics from '../utils/analytics.js';
-import errorManager from '../utils/error.manager.js';
-import { isCloud } from '../utils/utils.js';
+import { getUserFromSession } from '../utils/utils.js';
 
 class AccountController {
-    async createAccount(req: Request, res: Response, next: NextFunction) {
+    async getAccount(req: Request, res: Response, next: NextFunction) {
         try {
-            if (req.body == null) {
-                errorManager.res(res, 'missing_body');
-                return;
+            let user = await getUserFromSession(req);
+
+            if (user == null) {
+                throw new Error('user_not_found');
             }
 
-            let email = req.body['email'];
-            if (email == null) {
-                errorManager.res(res, 'missing_email_param');
-                return;
-            }
-
-            if ((await accountService.getAccountByEmail(email)) != null) {
-                errorManager.res(res, 'duplicate_account');
-                return;
-            }
-
-            let account: Account | null = await accountService.createAccount(email);
+            let account = await accountService.getAccountById(user.account_id);
 
             if (account == null) {
-                throw new Error('account_creation_failure');
+                throw new Error('account_not_found');
             }
 
-            analytics.track('server:account_created', account.id, {}, isCloud() ? { email: email } : {});
             res.status(200).send({ account: account });
         } catch (err) {
             next(err);

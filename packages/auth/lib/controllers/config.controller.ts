@@ -1,7 +1,6 @@
-import type { Request, Response } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import configService from '../services/config.service.js';
 import type { ProviderConfig } from '../models.js';
-import type { NextFunction } from 'express';
 import analytics from '../utils/analytics.js';
 import { getAccount } from '../utils/utils.js';
 import errorManager from '../utils/error.manager.js';

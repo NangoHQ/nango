@@ -40,7 +40,7 @@ class ConfigService {
     }
 
     async editProviderConfig(config: ProviderConfig) {
-        await db.knex.withSchema(db.schema()).from<ProviderConfig>(`_nango_configs`).where({ unique_key: config.unique_key }).update({
+        return db.knex.withSchema(db.schema()).from<ProviderConfig>(`_nango_configs`).where({ unique_key: config.unique_key }).update({
             provider: config.provider,
             oauth_client_id: config.oauth_client_id,
             oauth_client_secret: config.oauth_client_secret,
