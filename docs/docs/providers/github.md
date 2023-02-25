@@ -24,4 +24,4 @@ _No links yet, feel free to contribute it (or check out [airtable](airtable.md) 
 
 ## API specific gotchas
 
-_No gotchas yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+* The API seems to always require `user-agent` header
