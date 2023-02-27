@@ -142,6 +142,10 @@ intuit:
     auth_mode: OAUTH2
     authorization_url: https://appcenter.intuit.com/connect/oauth2
     token_url: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+instagram:
+    auth_mode: OAUTH2
+    authorization_url: https://api.instagram.com/oauth/authorize
+    token_url: https://api.instagram.com/oauth/access_token
 jira:
     auth_mode: OAUTH2
     authorization_url: https://auth.atlassian.com/authorize
