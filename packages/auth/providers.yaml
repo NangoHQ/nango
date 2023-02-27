@@ -248,6 +248,10 @@ splitwise:
     auth_mode: OAUTH2
     authorization_url: https://secure.splitwise.com/oauth/authorize
     token_url: https://secure.splitwise.com/oauth/token
+stackexchange:
+    auth_mode: OAUTH2
+    authorization_url: https://stackoverflow.com/oauth
+    token_url: https://stackoverflow.com/oauth/access_token/json
 stripe:
     auth_mode: OAUTH2
     authorization_url: https://connect.stripe.com/oauth/authorize

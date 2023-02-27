@@ -176,6 +176,8 @@ const sidebars = {
                 'providers/shopify',
                 'providers/slack',
                 'providers/splitwise',
+                'providers/stackexchange',
+                'providers/stripe',
                 'providers/trello',
                 'providers/twitter',
                 'providers/wave_accounting',
