@@ -125,10 +125,10 @@ const sidebars = {
         },
         {
             type: 'category',
-            label: 'Provider Wikis',
+            label: 'Supported APIs',
             link: {
                 type: 'generated-index',
-                title: 'Nango Provider API Wikis',
+                title: 'Nango Supported APIs and API Wikis',
                 description: 'For every API that Nango supports we maintain a small API wiki with all our learnings. Feel free to contribute yours as well!',
                 slug: '/providers'
             },

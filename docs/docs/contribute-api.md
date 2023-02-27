@@ -56,6 +56,19 @@ Fork the repo and edit the `packages/auth/providers.yaml` file as explained abov
 
 ## Step 2: Test your new provider
 
+:::tip
+Some OAuth providers are very restrictive with callback URIs and require https or don't allow `localhost` as a domain/URL. This can make it very hard to test things locally.
+
+The easiest workaround we found is to use this simple service: [https://redirectmeto.com](https://redirectmeto.com/).
+
+With this the Nango localhost callback URL becomes `https://redirectmeto.com/http://localhost:3003/oauth/callback` and you will need to update the `NANGO_CALLBACK_URL` in the `.env` file:
+
+```bash
+NANGO_CALLBACK_URL=https://redirectmeto.com/http://localhost:3003/oauth/callback
+```
+
+:::
+
 To test your new provider:
 
 The docker compose configuration in the root of the repo `docker-compose.yaml` will run 3 containers.
