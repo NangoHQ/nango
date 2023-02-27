@@ -224,6 +224,12 @@ ramp:
     auth_mode: OAUTH2
     authorization_url: https://app.ramp.com/v1/authorize
     token_url: https://api.ramp.com/developer/v1/token
+    authorization_method: header
+ramp-sandbox:
+    auth_mode: OAUTH2
+    authorization_url: https://demo.ramp.com/v1/authorize
+    token_url: https://demo-api.ramp.com/developer/v1/token
+    authorization_method: header
 reddit:
     auth_mode: OAUTH2
     authorization_url: https://www.reddit.com/api/v1/authorize
