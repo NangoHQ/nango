@@ -156,6 +156,7 @@ const sidebars = {
                 'providers/hubspot',
                 'providers/intercom',
                 'providers/intuit',
+                'providers/instagram',
                 'providers/jira',
                 'providers/lever',
                 'providers/linear',
