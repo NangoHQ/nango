@@ -65,6 +65,11 @@ dropbox:
     auth_mode: OAUTH2
     authorization_url: https://www.dropbox.com/oauth2/authorize
     token_url: https://api.dropboxapi.com/oauth2/token
+epic-games:
+    auth_mode: OAUTH2
+    authorization_url: https://www.epicgames.com/id/authorize
+    token_url: https://api.epicgames.dev/epic/oauth/v1/token
+    authorization_method: header
 facebook:
     auth_mode: OAUTH2
     authorization_url: https://www.facebook.com/v15.0/dialog/oauth

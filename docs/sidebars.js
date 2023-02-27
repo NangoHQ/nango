@@ -142,6 +142,7 @@ const sidebars = {
                 'providers/confluence',
                 'providers/discord',
                 'providers/dropbox',
+                'providers/epic-games',
                 'providers/facebook',
                 'providers/fitbit',
                 'providers/freshbooks',
