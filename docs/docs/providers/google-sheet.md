@@ -10,19 +10,20 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 
 ## Using GSheet with Nango
 
-Provider template name in Nango: `google-sheet`  
-Follow our [quickstart](../quickstart.md) to add an OAuth integration with GSheet in 5 minutes.
+Google Sheets uses the same OAuth mechanism as other Google services. Please use the Google template for it in Nango: `google`  
+Follow our [quickstart](../quickstart.md) to add an OAuth integration with the Google Sheets API in 5 minutes.
 
 ## App registration & publishing
 
-_No information yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+Google's APIs all use the same OAuth service. To which APIs you get access is determined by the scopes that you request.
+
+Please check the main [Google OAuth API wiki](google.md) here for details on how to register an OAuth app with Google.
 
 ## Useful links
 
 -   [GSheet access token specs](https://cloud.google.com/iam/docs/reference/sts/rest/v1/TopLevel/token#response-body)
--   [GSheet scopes](https://developers.google.com/identity/protocols/oauth2/scopes)
+-   [Google Sheets OAuth scopes](https://developers.google.com/identity/protocols/oauth2/scopes#sheets)
 
 ## API specific gotchas
 
 -   While setting up the OAuth app, use the `https://www.googleapis.com/auth/spreadsheets` scope for extended capabilities
--   While setting up the OAuth credentials, the _Authorized JavaScript origins_ should be your site URL (`http://localhost:8000` if you're doing the [Quickstart](../quickstart.md) locally)

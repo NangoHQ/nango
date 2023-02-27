@@ -11,19 +11,20 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 
 ## Using Gmail with Nango
 
-Provider template name in Nango: `google-mail`  
-Follow our [quickstart](../quickstart.md) to add an OAuth integration with Gmail in 5 minutes.
+Gmail uses the same OAuth mechanism as other Google services. Please use the Google template for it in Nango: `google`  
+Follow our [quickstart](../quickstart.md) to add an OAuth integration with the Gmail API in 5 minutes.
 
 ## App registration & publishing
 
-_No information yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+Google's APIs all use the same OAuth service. To which APIs you get access is determined by the scopes that you request.
+
+Please check the main [Google OAuth API wiki](google.md) here for details on how to register an OAuth app with Google.
 
 ## Useful links
 
 -   [Gmail access token specs](https://cloud.google.com/iam/docs/reference/sts/rest/v1/TopLevel/token#response-body)
--   [Gmail scopes](https://developers.google.com/identity/protocols/oauth2/scopes)
+-   [Gmail OAuth scopes](https://developers.google.com/identity/protocols/oauth2/scopes#gmail)
 
 ## API specific gotchas
 
 -   While setting up the OAuth app, use the `https://mail.google.com/` scope for extended capabilities
--   While setting up the OAuth credentials, the _Authorized JavaScript origins_ should be your site URL (`http://localhost:8000` if you're doing the [Quickstart](../quickstart.md) locally)
