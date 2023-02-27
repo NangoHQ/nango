@@ -58,38 +58,53 @@ Fork the repo and edit the `packages/auth/providers.yaml` file as explained abov
 
 To test your new provider:
 
-1. Add a provider config for the new provider with the CLI (see [Quickstart](quickstart.md) if needed)
-2. Start Nango locally (see below)
-3. Use the built-in test page to trigger an OAuth flow of your new provider. For this CD to `packages/frontend` and run a local Python web server with `python3 -m http.server 8000`. You can now access the test page at [http://localhost:8000/bin/sample.html](http://localhost:8000/bin/sample.html).
-4. Run a full OAuth dance and make sure it works as expected
+The docker compose configuration in the root of the repo `docker-compose.yaml` will run 3 containers.
 
-**To run Nango locally follow these steps:**
+1. Postgres DB
+2. Nango Server
+3. Test Website to Trigger the OAuth Flow
 
-You need the latest stable node version as well as a recent version of npm (or npm compatible package manager) installed on your machine.
+The providers.yaml file from step 1 is synced between the host machine (your laptop) and the running Nango Server container. When you add new provider templates to that yaml the running Nango Server will pick them up.
 
-In the root of the repo run:
+If your changes don't seem to be getting picked up, then try:
 
-```bash
-npm i
-npm run ts-build
+```
+# Force a restart, which will load in the yaml again
+docker compose restart nango-server
+
+# print the contents of the providers file from inside the container
+docker compose run nango-server cat packages/auth/providers.yaml
 ```
 
-Then start the Postgresql docker container. The easiest way to do this is to run docker compose and then stop the Nango server (but keep the DB running):
+When you are ready to test your new provider template:
 
-```bash
-docker compose up
+### 1. Add your client credentials to the local Nango Server by running the npx nango command
+
+```
+npx nango config:create <unique-config-key> <template-name> <cliend-id> <client-secret> <scopes>
+
 ```
 
-Then stop the Nango server and keep the postgres container running.
+Note: if you've already configured environment variables for Nango Cloud or your own remote instance of Nango then you may need to unset those variables as they will interfere with your local testing.
 
-Now you can start the Nango server locally:
+### 2. Navigate to the Test Website and Trigger the OAuth Flow
 
-```bash
-cd packages/server
-npm run start
+The test site should be running at [http://localhost:8001/bin/quickstart.html](http://localhost:8001/bin/quickstart.html)
+
+You can modify the ports in the docker compose if there are any conflicts with other local services on your host machine.
+
+### 3. Request an Access Token from Your New Provider
+
+In the cli run the npx nango command to fetch a new token or make a curl request to the locally running Nango Server.
+
+```
+> npx nango token:get <unique-config-key> <connection-id>
+
+
+> curl 'http://localhost:3003/connection/<connection-id>?provider_config_key=<unique-config-key>'
 ```
 
-After a short while you should see a message that the server is running an listening on port 3003.
+Once you've confirmed the access token was returned, then you are ready to submit a PR.
 
 ## Step 3: Submit your PR
 
