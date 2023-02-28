@@ -33,7 +33,10 @@ export class AuthClient {
                 resave: false,
                 saveUninitialized: false,
                 store: new sessionStore({ db: 'sessions.sqlite3', dir: path.join(dirname(), './../..') }) as session.Store,
-                name: 'nango_session'
+                name: 'nango_session',
+                unset: 'destroy',
+                cookie: { maxAge: 60 * 60 * 1000, secure: false },
+                rolling: true
             })
         );
 

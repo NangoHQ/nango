@@ -1,18 +1,26 @@
 import { useRouter } from 'next/router';
 import { useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
 
 export default function Signup() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');
     const router = useRouter();
 
-    const handleSubmit = async (event: any) => {
-        event.preventDefault();
+    const handleSubmit = async (e: React.SyntheticEvent) => {
+        e.preventDefault();
         setServerErrorMessage('');
 
+        const target = e.target as typeof e.target & {
+            name: { value: string };
+            email: { value: string };
+            password: { value: string };
+        };
+
         const data = {
-            name: event.target.name.value,
-            email: event.target.email.value,
-            password: event.target.password.value
+            name: target.name.value,
+            email: target.email.value,
+            password: target.password.value
         };
 
         const options = {
@@ -30,7 +38,7 @@ export default function Signup() {
             router.push('/home');
         } else {
             try {
-                let errorMessage = (await res.json()).error;
+                const errorMessage = (await res.json()).error;
                 setServerErrorMessage(errorMessage);
             } catch (_) {
                 setServerErrorMessage('Unknown error.');
@@ -42,7 +50,7 @@ export default function Signup() {
         <>
             <div className="flex min-h-full flex-col justify-center py-12 sm:px-6 lg:px-8">
                 <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-md">
-                    <img className="mx-auto h-20 w-auto" src="/logo-dark-background-vertical.svg" alt="Your Company" />
+                    <Image className="mx-auto h-20 w-auto" src="/logo-dark-background-vertical.svg" alt="Your Company" />
                 </div>
 
                 <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-md">
@@ -115,9 +123,9 @@ export default function Signup() {
                     <div className="grid">
                         <div className="mt-4 flex place-self-center text-sm">
                             <p className="text-text-light-gray">Already have an account?</p>
-                            <a href="/" className="text-text-blue hover:text-text-light-blue ml-1">
+                            <Link href="/" className="text-text-blue hover:text-text-light-blue ml-1">
                                 Sign in
-                            </a>
+                            </Link>
                         </div>
                     </div>
                 </div>

@@ -1,9 +1,12 @@
 import { PostHog } from 'posthog-node';
-import { getBaseUrl, localhostUrl, dirname, UserType } from '../utils/utils.js';
+import { getBaseUrl, localhostUrl, dirname, UserType, isCloud } from '../utils/utils.js';
 import ip from 'ip';
 import errorManager from './error.manager.js';
 import { readFileSync } from 'fs';
 import path from 'path';
+import accountService from '../services/account.service.js';
+import userService from '../services/user.service.js';
+import type { Account, User } from '../models.js';
 
 class Analytics {
     client: PostHog | undefined;
@@ -21,7 +24,7 @@ class Analytics {
         }
     }
 
-    public track(name: string, accountId: number, eventProperties?: Record<string | number, any>, userProperties?: Record<string | number, any>) {
+    public async track(name: string, accountId: number, eventProperties?: Record<string | number, any>, userProperties?: Record<string | number, any>) {
         try {
             if (this.client == null) {
                 return;
@@ -38,6 +41,18 @@ class Analytics {
             eventProperties['user-type'] = userType;
             eventProperties['user-account'] = userId;
             eventProperties['nango-server-version'] = this.packageVersion || 'unkown';
+
+            if (isCloud() && accountId != null) {
+                let account: Account | null = await accountService.getAccountById(accountId);
+                if (account != null && account.owner_id != null) {
+                    let user: User | null = await userService.getUserById(account.owner_id);
+
+                    if (user != null) {
+                        userProperties['email'] = user.email;
+                        userProperties['name'] = user.name;
+                    }
+                }
+            }
 
             userProperties['user-type'] = userType;
             userProperties['account'] = userId;

@@ -17,12 +17,17 @@ class AuthController {
     }
 
     async logout(req: Request, res: Response, next: NextFunction) {
-        req.logout(function (err) {
-            if (err) {
-                return next(err);
-            }
-            res.redirect('/');
-        });
+        try {
+            req.session.destroy((err) => {
+                if (err) {
+                    next(err);
+                }
+
+                res.status(200).send();
+            });
+        } catch (err) {
+            next(err);
+        }
     }
 
     async signup(req: Request, res: Response, next: NextFunction) {
