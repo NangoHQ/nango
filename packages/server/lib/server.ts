@@ -26,6 +26,7 @@ import { AuthClient } from './clients/auth.client.js';
 import passport from 'passport';
 import accountController from './controllers/account.controller.js';
 import type { Response, Request } from 'express';
+import Logger from './utils/logger.js';
 
 let port = getPort();
 
@@ -40,7 +41,7 @@ await db.knex.raw(`CREATE SCHEMA IF NOT EXISTS ${db.schema()}`);
 await db.migrate(path.join(dirname(), '../../lib/db/migrations'));
 
 // Healthcheck.
-app.get('/', (_, res) => {
+app.get('/health', (_, res) => {
     res.status(200).send({ result: 'ok' });
 });
 
@@ -75,6 +76,19 @@ app.use((e: any, req: Request, res: Response, __: any) => {
     errorManager.res(res, 'server_error');
 });
 
+const webappBuildPath = '../../../../webapp/build';
+
+// Webapp assets - immutable because vite appends hash to filenames
+app.use('/assets', express.static(path.join(dirname(), webappBuildPath), { immutable: true, maxAge: '1y' }));
+
+// Webapp static files - no cache
+app.use(express.static(path.join(dirname(), webappBuildPath), { setHeaders: () => ({ 'Cache-Control': 'no-cache, private' }) }));
+
+// Webapp build
+app.get('*', (_, res) => {
+    res.sendFile(path.join(dirname(), webappBuildPath, 'index.html'), { headers: { 'Cache-Control': 'no-cache, private' } });
+});
+
 const server = http.createServer(app);
 const wsServer = new WebSocketServer({ server });
 
@@ -85,5 +99,8 @@ wsServer.on('connection', (ws: WebSocket) => {
 let callbackUrl = await getOauthCallbackUrl();
 
 server.listen(port, () => {
-    console.log(`✅ Nango Server is listening on port ${port}. OAuth callback URL: ${callbackUrl}`);
+    Logger.info(`✅ Nango Server is listening on port ${port}. OAuth callback URL: ${callbackUrl}`);
+    Logger.info(
+        `\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |  \n \\ | / \\ | / \\ | / \\ | / \\ | / \\ | / \\ | /\n  \\|/   \\|/   \\|/   \\|/   \\|/   \\|/   \\|/\n------------------------------------------\nLaunch Nango at http://localhost:${port}\n------------------------------------------\n  /|\\   /|\\   /|\\   /|\\   /|\\   /|\\   /|\\\n / | \\ / | \\ / | \\ / | \\ / | \\ / | \\ / | \\\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |`
+    );
 });
