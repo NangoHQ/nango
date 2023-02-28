@@ -49,11 +49,10 @@ clickup:
     token_url: https://api.clickup.com/api/v2/oauth/token
 contentstack:
     auth_mode: OAUTH2
-    authorization_url: https://${connectionConfig.params.subdomain}.contentstack.com/#!/apps/${connectionConfig.params.appId}/authorize
+    authorization_url: https://${connectionConfig.params.subdomain}.contentstack.com/apps/${connectionConfig.params.appId}/authorize
     token_url: https://${connectionConfig.params.subdomain}.contentstack.com/apps-api/apps/token
     authorization_params:
         response_type: code
-        client_id: ${connectionConfig.params.clientId}
     scope_separator: ','
     refresh_url: https://${connectionConfig.params.subdomain}.contentstack.com/apps-api/apps/token  
 digitalocean:
