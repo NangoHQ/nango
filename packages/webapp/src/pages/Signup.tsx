@@ -1,11 +1,10 @@
-import { useRouter } from 'next/router';
 import { useState } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 export default function Signup() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');
-    const router = useRouter();
+    const navigate = useNavigate();
 
     const handleSubmit = async (e: React.SyntheticEvent) => {
         e.preventDefault();
@@ -32,10 +31,11 @@ export default function Signup() {
             credentials: 'include' as RequestCredentials
         };
 
-        const res = await fetch('http://localhost:3003/signup', options);
+        const res = await fetch('/api/v1/signup', options);
 
         if (res.status === 200) {
-            router.push('/home');
+            localStorage.setItem('auth', 'true');
+            navigate('/');
         } else {
             try {
                 const errorMessage = (await res.json()).error;
@@ -50,7 +50,7 @@ export default function Signup() {
         <>
             <div className="flex min-h-full flex-col justify-center py-12 sm:px-6 lg:px-8">
                 <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-md">
-                    <Image className="mx-auto h-20 w-auto" src="/logo-dark-background-vertical.svg" alt="Your Company" />
+                    <img className="mx-auto h-20 w-auto" src="/logo-dark-background-vertical.svg" alt="Your Company" />
                 </div>
 
                 <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-md">
@@ -123,7 +123,7 @@ export default function Signup() {
                     <div className="grid">
                         <div className="mt-4 flex place-self-center text-sm">
                             <p className="text-text-light-gray">Already have an account?</p>
-                            <Link href="/" className="text-text-blue hover:text-text-light-blue ml-1">
+                            <Link to="/signin" className="text-text-blue hover:text-text-light-blue ml-1">
                                 Sign in
                             </Link>
                         </div>

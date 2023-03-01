@@ -1,7 +1,9 @@
-import { useRouter } from 'next/router';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { Code, Snippet } from '@geist-ui/core';
 
 export default function Home() {
-    const router = useRouter();
+    const navigate = useNavigate();
 
     const getAccountButtonClicked = async () => {
         const options: RequestInit = {
@@ -13,7 +15,14 @@ export default function Home() {
             cache: 'no-store' as RequestCache
         };
 
-        fetch('http://localhost:3003/account', options);
+        let res = await fetch('/api/v1/account', options);
+
+        if (res.status === 200) {
+            const account = await res.json();
+            console.log(account);
+        } else {
+            toast.error('Server error...', { position: toast.POSITION.BOTTOM_CENTER });
+        }
     };
 
     const logoutButtonClicked = async () => {
@@ -24,10 +33,11 @@ export default function Home() {
             }
         };
 
-        const res = await fetch('http://localhost:3003/logout', options);
+        const res = await fetch('/api/v1/logout', options);
 
         if (res.status === 200) {
-            router.push('/');
+            localStorage.clear();
+            navigate('/signin', { replace: true });
         }
     };
 
@@ -45,6 +55,10 @@ export default function Home() {
             >
                 Logout
             </button>
+            <Code block my={0}>
+                This is code
+            </Code>
+            <Snippet text="yarn add @geist-ui/core" width="300px" />
         </div>
     );
 }

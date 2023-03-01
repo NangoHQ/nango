@@ -15,7 +15,7 @@ import connectionController from './controllers/connection.controller.js';
 import authController from './controllers/auth.controller.js';
 import auth from './controllers/access.middleware.js';
 import path from 'path';
-import { dirname, getAccount, isApiAuthenticated, isUserAuthenticated, getPort, getOauthCallbackUrl } from './utils/utils.js';
+import { dirname, getAccount, isApiAuthenticated, isUserAuthenticated, getPort, getGlobalOAuthCallbackUrl } from './utils/utils.js';
 import errorManager from './utils/error.manager.js';
 import { WebSocketServer, WebSocket } from 'ws';
 import http from 'http';
@@ -28,24 +28,21 @@ import accountController from './controllers/account.controller.js';
 import type { Response, Request } from 'express';
 import Logger from './utils/logger.js';
 
-let port = getPort();
-
 let app = express();
 
+// Passport setup.
 AuthClient.setup(app);
 
 app.use(express.json());
-app.use(cors({ credentials: true, origin: ['http://localhost:3000'] }));
+app.use(cors());
 
 await db.knex.raw(`CREATE SCHEMA IF NOT EXISTS ${db.schema()}`);
 await db.migrate(path.join(dirname(), '../../lib/db/migrations'));
 
-// Healthcheck.
+// API routes.
 app.get('/health', (_, res) => {
     res.status(200).send({ result: 'ok' });
 });
-
-// API routes.
 app.route('/oauth/connect/:providerConfigKey').get(auth.public.bind(auth), oauthController.oauthRequest.bind(oauthController));
 app.route('/oauth/callback').get(oauthController.oauthCallback.bind(oauthController));
 app.route('/config').get(auth.secret.bind(auth), configController.listProviderConfigs.bind(configController));
@@ -57,11 +54,11 @@ app.route('/connection/:connectionId').get(auth.secret.bind(auth), connectionCon
 app.route('/connection').get(auth.secret.bind(auth), connectionController.listConnections.bind(connectionController));
 app.route('/connection/:connectionId').delete(auth.secret.bind(auth), connectionController.deleteConnection.bind(connectionController));
 
-// Webapp routes.
-app.route('/signup').post(authController.signup.bind(authController));
-app.route('/logout').post(authController.logout.bind(authController));
-app.route('/login').post(passport.authenticate('local'), authController.login.bind(authController));
-app.route('/account').get([passport.authenticate('session'), auth.session.bind(auth)], accountController.getAccount.bind(accountController));
+// Webapp API routes.
+app.route('/api/v1/signup').post(authController.signup.bind(authController));
+app.route('/api/v1/logout').post(authController.logout.bind(authController));
+app.route('/api/v1/signin').post(passport.authenticate('local'), authController.signin.bind(authController));
+app.route('/api/v1/account').get([passport.authenticate('session'), auth.session.bind(auth)], accountController.getAccount.bind(accountController));
 
 // Error handling.
 app.use((e: any, req: Request, res: Response, __: any) => {
@@ -76,15 +73,10 @@ app.use((e: any, req: Request, res: Response, __: any) => {
     errorManager.res(res, 'server_error');
 });
 
-const webappBuildPath = '../../../../webapp/build';
-
-// Webapp assets - immutable because vite appends hash to filenames
+// Webapp assets, static files and build.
+const webappBuildPath = '../../../webapp/build';
 app.use('/assets', express.static(path.join(dirname(), webappBuildPath), { immutable: true, maxAge: '1y' }));
-
-// Webapp static files - no cache
 app.use(express.static(path.join(dirname(), webappBuildPath), { setHeaders: () => ({ 'Cache-Control': 'no-cache, private' }) }));
-
-// Webapp build
 app.get('*', (_, res) => {
     res.sendFile(path.join(dirname(), webappBuildPath, 'index.html'), { headers: { 'Cache-Control': 'no-cache, private' } });
 });
@@ -96,10 +88,9 @@ wsServer.on('connection', (ws: WebSocket) => {
     webSocketClient.addClient(ws);
 });
 
-let callbackUrl = await getOauthCallbackUrl();
-
+let port = getPort();
 server.listen(port, () => {
-    Logger.info(`✅ Nango Server is listening on port ${port}. OAuth callback URL: ${callbackUrl}`);
+    Logger.info(`✅ Nango Server is listening on port ${port}. OAuth callback URL: ${getGlobalOAuthCallbackUrl()}`);
     Logger.info(
         `\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |  \n \\ | / \\ | / \\ | / \\ | / \\ | / \\ | / \\ | /\n  \\|/   \\|/   \\|/   \\|/   \\|/   \\|/   \\|/\n------------------------------------------\nLaunch Nango at http://localhost:${port}\n------------------------------------------\n  /|\\   /|\\   /|\\   /|\\   /|\\   /|\\   /|\\\n / | \\ / | \\ / | \\ / | \\ / | \\ / | \\ / | \\\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |`
     );

@@ -2,7 +2,10 @@
     "name": "@nangohq/nango",
     "type": "module",
     "workspaces": [
-        "packages/*"
+        "packages/cli",
+        "packages/frontend",
+        "packages/node-client",
+        "packages/server"
     ],
     "scripts": {
         "prettier-format": "prettier --config .prettierrc './**/*.ts' --write",

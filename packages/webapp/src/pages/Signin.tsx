@@ -1,11 +1,11 @@
-import { useRouter } from 'next/router';
 import { useState } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 export default function Signin() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');
-    const router = useRouter();
+    const navigate = useNavigate();
 
     const handleSubmit = async (e: React.SyntheticEvent) => {
         e.preventDefault();
@@ -31,17 +31,18 @@ export default function Signin() {
         };
 
         try {
-            const res = await fetch('http://localhost:3003/login', options);
+            const res = await fetch('/api/v1/signin', options);
 
             if (res.status === 200) {
-                router.push('/home');
+                localStorage.setItem('auth', 'true');
+                navigate('/');
             } else if (res.status === 401) {
                 setServerErrorMessage('Invalid email or password.');
             } else {
-                setServerErrorMessage('Unkown error.');
+                toast.error('Server error...', { position: toast.POSITION.BOTTOM_CENTER });
             }
         } catch (e) {
-            setServerErrorMessage('Unkown error.');
+            toast.error('Server error...', { position: toast.POSITION.BOTTOM_CENTER });
         }
     };
 
@@ -49,7 +50,7 @@ export default function Signin() {
         <>
             <div className="flex min-h-full flex-col justify-center py-12 sm:px-6 lg:px-8">
                 <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-md">
-                    <Image className="mx-auto h-20 w-auto" src="/logo-dark-background-vertical.svg" alt="Your Company" />
+                    <img className="mx-auto h-20 w-auto" src="/logo-dark-background-vertical.svg" alt="Your Company" />
                 </div>
 
                 <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-md">
@@ -111,7 +112,7 @@ export default function Signin() {
                     <div className="grid">
                         <div className="mt-4 flex place-self-center text-sm">
                             <p className="text-text-light-gray">Need an account?</p>
-                            <Link href="/signup" className="text-text-blue hover:text-text-light-blue ml-1">
+                            <Link to="/signup" className="text-text-blue hover:text-text-light-blue ml-1">
                                 Sign up
                             </Link>
                         </div>

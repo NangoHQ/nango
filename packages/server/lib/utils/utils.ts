@@ -39,13 +39,17 @@ export function getBaseUrl() {
 }
 
 export async function getOauthCallbackUrl(accountId?: number) {
-    let defaultCallbackUrl = getBaseUrl() + '/oauth/callback';
+    let globalCallbackUrl = getGlobalOAuthCallbackUrl();
 
     if (isCloud() && accountId != null) {
         let account: Account | null = await accountService.getAccountById(accountId);
-        return account?.callback_url || defaultCallbackUrl;
+        return account?.callback_url || globalCallbackUrl;
     }
 
+    return globalCallbackUrl;
+}
+
+export function getGlobalOAuthCallbackUrl() {
     return process.env['NANGO_CALLBACK_URL'] || getBaseUrl() + '/oauth/callback';
 }
 

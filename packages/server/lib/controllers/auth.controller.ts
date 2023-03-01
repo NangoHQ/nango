@@ -8,7 +8,7 @@ import analytics from '../utils/analytics.js';
 import { isCloud } from '../utils/utils.js';
 
 class AuthController {
-    async login(_: Request, res: Response, next: NextFunction) {
+    async signin(_: Request, res: Response, next: NextFunction) {
         try {
             res.status(200).send();
         } catch (err) {
