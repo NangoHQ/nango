@@ -2,7 +2,7 @@
 
 [Nango Cloud](https://www.nango.dev/pricing) is Nango hosted and managed by Nango.
 
-<a href="https://www.nango.dev/start" style={{cursor: 'pointer'}}>
+<a href="https://https://app.nango.dev/signup" style={{cursor: 'pointer'}}>
 <img src="https://raw.githubusercontent.com/NangoHQ/nango/6f49ab92c0ffc18c1d0f44d9bd96c62ac97aaa8d/docs/static/img/nango-deploy-button.svg" alt="Try Nango Cloud" width="215"/>
 </a>
 

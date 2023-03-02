@@ -1,0 +1,86 @@
+import passport from 'passport';
+import { Strategy as LocalStrategy } from 'passport-local';
+import express from 'express';
+import session from 'express-session';
+import path from 'path';
+import { dirname } from '../utils/utils.js';
+import crypto from 'crypto';
+import userService from '../services/user.service.js';
+import util from 'util';
+import cookieParser from 'cookie-parser';
+import connectSessionKnex from 'connect-session-knex';
+import database from '../db/database.js';
+declare global {
+    namespace Express {
+        interface User {
+            email: string;
+            name: string;
+            id: number;
+        }
+    }
+}
+
+const KnexSessionStore = connectSessionKnex(session);
+
+const sessionStore = new KnexSessionStore({
+    knex: database.knex,
+    tablename: '_nango_sessions',
+    sidfieldname: 'sid'
+});
+
+export class AuthClient {
+    static setup(app: express.Express) {
+        app.use(cookieParser());
+        app.use(express.static(path.join(dirname(), 'public')));
+
+        app.use(
+            session({
+                secret: process.env['NANGO_ADMIN_KEY'] || process.env['NANGO_SECRET_KEY'] || 'nango',
+                resave: false,
+                saveUninitialized: false,
+                store: sessionStore,
+                name: 'nango_session',
+                unset: 'destroy',
+                cookie: { maxAge: 60 * 60 * 1000, secure: false },
+                rolling: true
+            })
+        );
+
+        app.use(passport.initialize());
+        app.use(passport.session());
+
+        passport.use(
+            new LocalStrategy({ usernameField: 'email', passwordField: 'password' }, async function (
+                email: string,
+                password: string,
+                cb: (error: any, user?: Express.User | false, options?: any) => void
+            ) {
+                let user = await userService.getUserByEmail(email);
+
+                if (user == null) {
+                    return cb(null, false, { message: 'Incorrect email or password.' });
+                }
+
+                let hashedPassword = await util.promisify(crypto.pbkdf2)(password, user.salt, 310000, 32, 'sha256');
+
+                if (!crypto.timingSafeEqual(Buffer.from(user.hashed_password, 'base64'), hashedPassword)) {
+                    return cb(null, false, { message: 'Incorrect email or password.' });
+                }
+
+                return cb(null, user);
+            })
+        );
+
+        passport.serializeUser(function (user: Express.User, cb) {
+            process.nextTick(function () {
+                cb(null, { id: user.id, email: user.email, name: user.name });
+            });
+        });
+
+        passport.deserializeUser(function (user: Express.User, cb) {
+            process.nextTick(function () {
+                return cb(null, user);
+            });
+        });
+    }
+}

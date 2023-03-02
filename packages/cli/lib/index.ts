@@ -174,7 +174,7 @@ program
                         console.table(`token:${response.data.credentials.oauth_token}\nsecret:${response.data.credentials.oauth_token_secret}`);
                         break;
                     default:
-                        throw Error(`Unrecognized OAuth type '${response.data.credentials.type}' in stored credentials.`);
+                        throw new Error(`Unrecognized OAuth type '${response.data.credentials.type}' in stored credentials.`);
                 }
             })
             .catch((err) => {

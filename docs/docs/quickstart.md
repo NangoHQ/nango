@@ -19,14 +19,14 @@ The easiest and fastest way to get a production ready Nango instance is with Nan
 
 <Tabs groupId="deployment" queryString>
   <TabItem value="cloud" label="Nango Cloud">
-    Sign up for a Nango Cloud account in 30 seconds:
+    Sign up for a Nango Cloud (no credit card required):
     <br/>
-    <a href="https://www.nango.dev/start" style={{cursor: 'pointer'}}>
+    <a href="https://app.nango.dev/signup" style={{cursor: 'pointer'}}>
       <img src="https://raw.githubusercontent.com/NangoHQ/nango/6f49ab92c0ffc18c1d0f44d9bd96c62ac97aaa8d/docs/static/img/nango-deploy-button.svg" alt="Try Nango Cloud" width="215" style={{marginTop: 10+'px'}}/>
     </a>
 <br /><br />
 
-Copy the `Secret Key` from the welcome email. In your terminal open your `.bashrc`/`.zshrc` (or equivalent) and add:
+In your terminal open your `.bashrc`/`.zshrc` (or equivalent) and add:
 
 ```bash
 export NANGO_HOSTPORT=https://api.nango.dev
@@ -40,9 +40,6 @@ npx nango config:list
 ```
 
 If all is good you should see an empty list of configurations.
-
-Your Nango callback url is: `https://api.nango.dev/oauth/callback`  
-You will need this for the next step.
 
   </TabItem>
   <TabItem value="localhost" label="Localhost">
@@ -61,9 +58,6 @@ npx nango config:list
 
 If all is good you should see an empty list of configurations.
 
-Your Nango callback url is: `http://localhost:3003/oauth/callback`  
-You will need this for the next step.
-
   </TabItem>
   <TabItem value="self-hosted" label="Self-hosted">
 
@@ -76,27 +70,24 @@ You can self-host Nango on a single machine with our docker images. Check the [N
 
 Once you have setup your instance [configure the Nango CLI](nango-deploy/oss-instructions.md#cli) and return here.
 
-Your Nango callback url is: `[HOSTNAME-AND-PORT]/oauth/callback`  
-You will need this for the next step.
-
   </TabItem>
 </Tabs>
 
-## Step 2: Configure your API/OAuth provider
+## Step 2: Configure your API/OAuth Provider
 
-1. Find your API/provider in our [provider list](/providers). Copy the template name, e.g. `github`
+1. Find your Provider in our [provider list](/providers). The template name (e.g. `github`) is later referenced as `<TEMPLATE>`.
 
-2. To run OAuth flows your application needs to register with the OAuth provider/API and obtain a `client_id` and `client_secret`. Get them now and then return here.
+2. Create an OAuth app on your Provider's developer portal. Obtain the app ID & secret, later referenced as `<APP-ID>` and `<APP-SECRET>`.
 
-3. You should also get a list of scopes you want to request. Prepare them in a comma separated list (no matter what the provider says, Nango will reformat them as needed): `"scope1,scope2,scope3"`
+3. You should also get a list of scopes you want to request. Prepare them in a comma separated list: `"scope1,scope2,scope3"` (later referenced as `<SCOPES>`).
 
-4. Decide what this config should be called in Nango. We call this the `CONFIG-KEY` and it must be unique. Unless you have multiple configurations for the same API we recommend making this the same as the template name, e.g. `github`
+4. Decide what this config should be called in Nango, referenced as `<CONFIG-KEY>`.
 
 Now add a new provider configuration with the Nango CLI:
 
 ```bash
-npx nango config:create <CONFIG-KEY> <template> <client_id> <client_secret> "<scopes>"
-# e.g. for github: npx nango config:create github github <GITHUB-APP-ID> <GITHUB-APP-SECRET> "comma,separated,scopes,with,quotes"
+npx nango config:create <CONFIG-KEY> <TEMPLATE> <APP-ID> <APP-SECRET> <SCOPES>
+# e.g. for github: npx nango config:create github github some-id some-secret "comma,separated,scopes,with,quotes"
 ```
 
 You should see a success message. To check if it worked you can run `npx nango config:list`
@@ -108,7 +99,7 @@ To trigger an OAuth flow in your frontend use our frontend SDK.
 <Tabs groupId="deployment" queryString>
   <TabItem value="cloud" label="Nango Cloud">
 
-You will need the `Public Key` from your welcome email and the `Config-Key` from the last step.
+You will need the `Public Key` from your [Dashboard](https://app.nango.dev/) and the `<CONFIG-KEY>` from the last step.
 
 ```js
 import Nango from 'https://unpkg.com/@nangohq/frontend/dist/index.js'; // For quick testing
@@ -118,7 +109,7 @@ import Nango from '@nangohq/frontend'; // After installing the npm package
 var nango = new Nango({ publicKey: '<PUBLIC-KEY>' });
 
 // Trigger an OAuth flow
-// Param 1: unique config key from Step 2 (bullet 4)
+// Param 1: config key from Step 2 (bullet 4)
 // Param 2: ID you will use to retrieve the connection (most often the user ID)
 nango
     .auth('<CONFIG-KEY>', '<CONNECTION-ID>')
@@ -141,7 +132,7 @@ import Nango from '@nangohq/frontend'; // After installing the npm package
 var nango = new Nango({ host: 'http://localhost:3003' });
 
 // Trigger an OAuth flow
-// Param 1: unique config key from Step 2 (bullet 4)
+// Param 1: config key from Step 2 (bullet 4)
 // Param 2: ID you will use to retrieve the connection (most often the user ID)
 nango
     .auth('<CONFIG-KEY>', '<CONNECTION-ID>')
@@ -164,7 +155,7 @@ import Nango from '@nangohq/frontend'; // After installing the npm package
 var nango = new Nango({ host: '<NANGO-HOST-AND-PORT>' });
 
 // Trigger an OAuth flow
-// Param 1: unique config key from Step 2 (bullet 4)
+// Param 1: config key from Step 2 (bullet 4)
 // Param 2: ID you will use to retrieve the connection (most often the user ID)
 nango
     .auth('<CONFIG-KEY>', '<CONNECTION-ID>')
@@ -194,7 +185,7 @@ Many OAuth providers provide short-lived access tokens (30-60 minutes). Nango re
 
 ### CLI
 
-To obtain the (current) access token use this command:
+To obtain an access token use this command:
 
 ```bash
 npx nango token:get <CONNECTION-ID> <CONFIG-KEY>
@@ -202,17 +193,17 @@ npx nango token:get <CONNECTION-ID> <CONFIG-KEY>
 
 ### Backend SDK
 
-If you work with Node, Nango offers a backend SDK to retrieve the token (more languages coming).
+If you work with Node, Nango offers a backend SDK to retrieve tokens (more languages coming).
 
 <Tabs groupId="deployment" queryString>
   <TabItem value="cloud" label="Nango Cloud">
 
-You will need the `Secret Key` from your welcome email.
+You will need the `Secret Key` from your [Dashboard](https://app.nango.dev/).
 
 ```js
 import { Nango } from '@nangohq/node';
 
-let nango = new Nango({ secretKey: '<SECRET-KEY-FROM-SIGNUP-EMAIL>' });
+let nango = new Nango({ secretKey: '<SECRET-KEY>' });
 
 let accessToken = await nango.getToken('<CONFIG-KEY>', '<CONNECTION-ID>');
 ```
@@ -249,11 +240,11 @@ You can use the Nango REST API to retrieve connection details & the current acce
 <Tabs groupId="deployment" queryString>
   <TabItem value="cloud" label="Nango Cloud">
 
-You will need the `Secret Key` from your welcome email.
+You will need the `Secret Key` from your [Dashboard](https://app.nango.dev/).
 
 ```bash
 curl 'https://api.nango.dev/connection/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>'\
--H 'Authorization: Bearer <SECRET-KEY-FROM-SIGNUP-EMAIL>'
+-H 'Authorization: Bearer <SECRET-KEY>'
 ```
 
   </TabItem>
