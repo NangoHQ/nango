@@ -2,16 +2,14 @@ import passport from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
 import express from 'express';
 import session from 'express-session';
-import SQLiteStore from 'connect-sqlite3';
 import path from 'path';
 import { dirname } from '../utils/utils.js';
 import crypto from 'crypto';
 import userService from '../services/user.service.js';
 import util from 'util';
 import cookieParser from 'cookie-parser';
-
-const sessionStore = SQLiteStore(session);
-
+import connectSessionKnex from 'connect-session-knex';
+import database from '../db/database.js';
 declare global {
     namespace Express {
         interface User {
@@ -22,6 +20,14 @@ declare global {
     }
 }
 
+const KnexSessionStore = connectSessionKnex(session);
+
+const sessionStore = new KnexSessionStore({
+    knex: database.knex,
+    tablename: '_nango_sessions',
+    sidfieldname: 'sid'
+});
+
 export class AuthClient {
     static setup(app: express.Express) {
         app.use(cookieParser());
@@ -29,10 +35,10 @@ export class AuthClient {
 
         app.use(
             session({
-                secret: 'nango',
+                secret: process.env['NANGO_ADMIN_KEY'] || process.env['NANGO_SECRET_KEY'] || 'nango',
                 resave: false,
                 saveUninitialized: false,
-                store: new sessionStore({ db: 'sessions.sqlite3', dir: path.join(dirname(), './../..') }) as session.Store,
+                store: sessionStore,
                 name: 'nango_session',
                 unset: 'destroy',
                 cookie: { maxAge: 60 * 60 * 1000, secure: false },
