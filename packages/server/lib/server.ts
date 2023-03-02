@@ -59,6 +59,10 @@ app.route('/api/v1/signup').post(authController.signup.bind(authController));
 app.route('/api/v1/logout').post(authController.logout.bind(authController));
 app.route('/api/v1/signin').post(passport.authenticate('local'), authController.signin.bind(authController));
 app.route('/api/v1/account').get([passport.authenticate('session'), auth.session.bind(auth)], accountController.getAccount.bind(accountController));
+app.route('/api/v1/account/callback').post(
+    [passport.authenticate('session'), auth.session.bind(auth)],
+    accountController.updateCallback.bind(accountController)
+);
 
 // Error handling.
 app.use((e: any, req: Request, res: Response, __: any) => {

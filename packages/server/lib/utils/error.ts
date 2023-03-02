@@ -89,6 +89,11 @@ export class NangoError extends Error {
                 this.message = `Missing param 'provider_config_key'.`;
                 break;
 
+            case 'missing_callback_url':
+                this.status = 400;
+                this.message = `Missing param 'callback_url'.`;
+                break;
+
             case 'unknown_provider_config':
                 this.status = 400;
                 this.message = `There is no Provider Configuration matching this key.`;

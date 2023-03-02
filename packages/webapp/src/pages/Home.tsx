@@ -1,40 +1,32 @@
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { Prism } from '@mantine/prism';
-import { Tabs } from '@mantine/core';
 import { useState, useEffect } from 'react';
+import { Book, Slack, Github, HelpCircle } from '@geist-ui/icons';
 
 export default function Home() {
     const [secretKey, setSecretKey] = useState('');
     const [publicKey, setPublicKey] = useState('');
+    const [callbackUrl, setCallbackUrl] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
-        getAccount();
-    }, []);
+        const getAccount = async () => {
+            let res = await fetch('/api/v1/account');
 
-    const getAccount = async () => {
-        const options: RequestInit = {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            credentials: 'include' as RequestCredentials,
-            cache: 'no-store' as RequestCache
+            if (res.status === 200) {
+                const account = (await res.json())['account'];
+                setSecretKey(account.secret_key);
+                setPublicKey(account.public_key);
+                setCallbackUrl(account.callback_url);
+            } else if (res.status === 401) {
+                navigate('/signin', { replace: true });
+            } else {
+                toast.error('Server error...', { position: toast.POSITION.BOTTOM_CENTER });
+            }
         };
-
-        let res = await fetch('/api/v1/account', options);
-
-        if (res.status === 200) {
-            const account = (await res.json())['account'];
-            setSecretKey(account.secret_key);
-            setPublicKey(account.public_key);
-        } else if (res.status === 401) {
-            navigate('/signin', { replace: true });
-        } else {
-            toast.error('Server error...', { position: toast.POSITION.BOTTOM_CENTER });
-        }
-    };
+        getAccount();
+    }, [navigate]);
 
     const logoutButtonClicked = async () => {
         const options = {
@@ -52,109 +44,148 @@ export default function Home() {
         }
     };
 
-    const frontendCode = `
-    import Nango from '@nangohq/frontend'; // After installing the npm package
+    const handleCallbackSubmit = async (e: React.SyntheticEvent) => {
+        e.preventDefault();
 
-var nango = new Nango({ publicKey: '${publicKey}' });
+        const target = e.target as typeof e.target & {
+            callback_url: { value: string };
+        };
 
-nango.auth('<CONFIG-KEY>', '<CONNECTION-ID>').then((result) => {
-    alert(\`Success!\`);
-}).catch((e) => {
-    alert(e.message);
-});
-    `;
+        const data = {
+            callback_url: target.callback_url.value
+        };
 
-    const backendCode = `
-import { Nango } from '@nangohq/node';
+        const options = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        };
 
-let nango = new Nango({ secretKey: '${secretKey}' });
+        try {
+            const res = await fetch('/api/v1/account/callback', options);
 
-let accessToken = await nango.getToken('<CONFIG-KEY>', '<CONNECTION-ID>');
-`;
-
-    const envVariables = `
-export NANGO_HOSTPORT=https://api.nango.dev
-export NANGO_SECRET_KEY=${secretKey}
-`;
-
-    const bashTokenCommand = `
-curl 'https://api.nango.dev/connection/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>' \\
-    -H 'Authorization: Bearer ${secretKey}'    
-`;
+            if (res.status === 200) {
+                toast.success('Callback URL updated!', { position: toast.POSITION.BOTTOM_CENTER });
+            } else if (res.status === 401) {
+                navigate('/signin', { replace: true });
+            } else {
+                toast.error('Server error...', { position: toast.POSITION.BOTTOM_CENTER });
+            }
+        } catch (e) {
+            toast.error('Server error...', { position: toast.POSITION.BOTTOM_CENTER });
+        }
+    };
 
     return (
         <div>
-            <button
-                className="border-border-blue bg-bg-dark-blue active:ring-border-blue mt-4 flex h-12 place-self-center rounded-md border px-4 pt-3 text-base font-semibold text-blue-500 shadow-sm hover:border-2 active:ring-2 active:ring-offset-2"
-                onClick={logoutButtonClicked}
-            >
-                Logout
-            </button>
-            <h2 className="mt-24 text-left text-3xl font-semibold tracking-tight text-white ml-40 mb-10">Get Started</h2>
-            <div className="border-2 border-border-gray rounded-md h-fit w-fit mx-40">
-                <div>
-                    <div className="mx-8 my-8">
-                        <p className="text-white mb-6">To use Nango's CLI, add the following environment variables to your .bashrc (or equivalent):</p>
-                        <Prism language="bash" colorScheme="dark">
-                            {envVariables}
-                        </Prism>
-                    </div>
+            <div className="border border-border-gray flex justify-between">
+                <div className="">
+                    <img className="h-8 my-3 ml-6" src="/logo-circled.svg" alt="Your Company" />
                 </div>
-                <div>
-                    <div className="mx-8 my-8">
-                        <ul>
-                            <li>
-                                <p className="text-white mb-6">Give a name to your OAuth app configuration (e.g. 'hubspot-prod')</p>
-                            </li>
-                            <li>
-                                <p className="text-white mb-6">Select a template key in our provider list (e.g. 'github')</p>
-                            </li>
-                            <li>
-                                <p className="text-white mb-6">Register with the OAuth provider to obtain the app ID, secret and scopes.</p>
-                            </li>
-                        </ul>
-
-                        <p className="text-white mb-6">In your console, register your OAuth app with Nango:</p>
-                        <Prism language="bash" colorScheme="dark">
-                            {"npx nango config:create '<APP-CONFIG-NAME>' '<TEMPLATE>' '<APP_ID>' '<APP_SECRET>' '<SCOPES>'"}
-                        </Prism>
-                    </div>
+                <div className="flex">
+                    <a
+                        href="https://nango.dev/slack"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex h-8 rounded-md ml-4 pl-2 pr-3 pt-1.5 text-sm hover:bg-gray-700 bg-gray-800 text-white mt-3"
+                    >
+                        <Slack className="h-4 mr-1 mt-0.5"></Slack>
+                        <p>Community</p>
+                    </a>
+                    <a
+                        href="https://docs.nango.dev/quickstart"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex h-8 rounded-md ml-4 pl-2 pr-3 pt-1.5 text-sm hover:bg-gray-700 bg-gray-800 text-white  mt-3"
+                    >
+                        <Book className="h-4 mr-1 mt-0.5"></Book>
+                        <p>Documentation</p>
+                    </a>
+                    <a
+                        href="https://github.com/NangoHQ/nango"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex h-8 rounded-md ml-4 pl-2 pr-3 pt-1.5 text-sm hover:bg-gray-700 bg-gray-800 text-white  mt-3"
+                    >
+                        <Github className="h-4 mr-1 mt-0.5"></Github>
+                        <p>Github</p>
+                    </a>
+                    <button
+                        onClick={logoutButtonClicked}
+                        className="flex h-8 rounded-md ml-4 px-3 pt-1.5 text-sm hover:bg-gray-700 bg-gray-800 text-red-600 font-semibold mt-3 mr-6"
+                    >
+                        <p>Log Out</p>
+                    </button>
                 </div>
-                <div>
-                    <div className="mx-8 my-8">
-                        <p className="text-white mb-6">In your frontend code, trigger the OAuth flow:</p>
-                        <Prism language="typescript" colorScheme="dark">
-                            {frontendCode}
-                        </Prism>
-                    </div>
-                </div>
-                <div>
-                    <div className="mx-8 my-8">
-                        <p className="text-white mb-6">In your backend code, retrieve the OAuth token:</p>
-
-                        <Tabs defaultValue="Typescript" variant="outline">
-                            <Tabs.List>
-                                <Tabs.Tab value="Typescript">
-                                    <p className="text-white">Typescript</p>
-                                </Tabs.Tab>
-                                <Tabs.Tab value="REST">
-                                    {' '}
-                                    <p className="text-white">REST</p>
-                                </Tabs.Tab>
-                            </Tabs.List>
-
-                            <Tabs.Panel value="Typescript" pt="xs">
-                                <Prism language="typescript" colorScheme="dark">
-                                    {backendCode}
-                                </Prism>
-                            </Tabs.Panel>
-
-                            <Tabs.Panel value="REST" pt="xs">
+            </div>
+            <div className="flex justify-center">
+                <div className="w-full mx-20 max-w-7xl h-full mb-20">
+                    <h2 className="mt-24 text-left text-3xl font-semibold tracking-tight text-white mb-6">Get Started</h2>
+                    <div className="border border-border-gray rounded-md h-fit w-full py-14">
+                        <div>
+                            <div className="mx-8">
+                                <p className="text-white mb-2 text-sm">Public Key</p>
                                 <Prism language="bash" colorScheme="dark">
-                                    {bashTokenCommand}
+                                    {publicKey}
                                 </Prism>
-                            </Tabs.Panel>
-                        </Tabs>
+                            </div>
+                        </div>
+                        <div>
+                            <div className="mx-8 mt-8">
+                                <div className="flex">
+                                    <p className="text-white text-sm mb-2">Secret Key</p>
+                                    <p className="ml-2 text-text-dark-gray text-sm">(do not share!)</p>
+                                </div>
+                                <Prism language="bash" colorScheme="dark">
+                                    {secretKey}
+                                </Prism>
+                            </div>
+                        </div>
+                        <div>
+                            <div className="mx-8 mt-8">
+                                <div className="flex text-white">
+                                    <p className="text-white text-sm">Custom Callback URL</p>
+                                    <a href="https://docs.nango.dev/reference/configuration#custom-callback-url" target="_blank" rel="noreferrer">
+                                        <HelpCircle className="text-white h-5 ml-1"></HelpCircle>
+                                    </a>
+                                    <p className="ml-2 text-text-dark-gray text-sm">(default: https://api.nango.dev/oauth/callback)</p>
+                                </div>
+                                <form className="mt-2 space-y-6" onSubmit={handleCallbackSubmit}>
+                                    <div className="flex">
+                                        <input
+                                            id="callback_url"
+                                            name="callback_url"
+                                            type="url"
+                                            required
+                                            placeholder="https://oauth.yourdomain.com/ or https://yourdomain.com/oauth/"
+                                            defaultValue={callbackUrl}
+                                            className="border-border-gray bg-bg-black text-text-light-gray focus:ring-blue block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-600 shadow-sm focus:border-blue-500 focus:outline-none"
+                                        />
+
+                                        <button
+                                            type="submit"
+                                            className="border-border-blue bg-bg-dark-blue active:ring-border-blue flex h-11 rounded-md border ml-4 px-4 pt-3 text-sm font-semibold text-blue-500 shadow-sm hover:border-2 active:ring-2 active:ring-offset-2"
+                                        >
+                                            Update
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div className="mx-8 mt-16">
+                                <p className="text-white text-sm">
+                                    Follow the{' '}
+                                    <a href="https://docs.nango.dev/quickstart" className="text-text-blue" target="_blank" rel="noreferrer">
+                                        Quickstart
+                                    </a>{' '}
+                                    to add a new OAuth integration to your app.
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
