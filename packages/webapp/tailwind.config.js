@@ -12,7 +12,7 @@ module.exports = {
                 'text-light-gray': '#A9A9A9',
                 'bg-cta-green': '#75E270',
                 'text-cta-green1': '#224421',
-                'border-gray': '#474747',
+                'border-gray': '#333333',
                 'border-blue': '#1489DF',
                 'text-blue': '#1489DF',
                 'text-light-blue': '#76C5FF',
