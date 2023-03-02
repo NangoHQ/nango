@@ -119,7 +119,11 @@ In the cli run the npx nango command to fetch a new token or make a curl request
 
 Once you've confirmed the access token was returned, then you are ready to submit a PR.
 
-## Step 3: Submit your PR
+## Step 3: Add your integration to the Documentation
+
+Add a file named `<provider_slug>.md` (e.g. `github.md`) corresponding to your new integration to the `docs/docs/providers` folder. You can check out check out [airtable](./providers/airtable.md) for an example.
+
+## Step 4: Submit your PR
 
 Submit your PR with the new provider to the Nango repo. Please make sure to mention that you tested the full flow and that it works. We will review your PR asap and merge it into the main Nango repo for inclusion with the next release.
 
