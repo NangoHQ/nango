@@ -1,11 +1,12 @@
-import type { AuthCredentials, OAuth2Credentials, ProviderTemplate, CredentialsRefresh } from '../models.js';
+import type { AuthCredentials, OAuth2Credentials, OAuth1Credentials, ProviderTemplate, CredentialsRefresh } from '../models.js';
 import { ProviderAuthModes } from '../models.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import db from '../db/database.js';
 import type { ProviderConfig, Connection } from '../models.js';
 import analytics from '../utils/analytics.js';
-import logger from '../utils/logger.js';
 import providerClientManager from '../clients/provider.client.js';
+import { parseTokenExpirationDate, isTokenExpired } from '../utils/utils.js';
+import providerClient from '../clients/provider.client.js';
 
 class ConnectionService {
     private runningCredentialsRefreshes: CredentialsRefresh[] = [];
@@ -53,7 +54,16 @@ class ConnectionService {
             .from<Connection>(`_nango_connections`)
             .where({ connection_id: connectionId, provider_config_key: providerConfigKey, account_id: accountId });
 
-        return result == null || result.length == 0 ? null : result[0] || null;
+        let connection = result == null || result.length == 0 ? null : result[0] || null;
+
+        // Parse the token expiration date.
+        if (connection != null && connection.credentials.type === ProviderAuthModes.OAuth2) {
+            let creds = connection.credentials as OAuth2Credentials;
+            creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
+            connection.credentials = creds;
+        }
+
+        return connection;
     }
 
     async listConnections(accountId: number): Promise<Object[]> {
@@ -75,44 +85,48 @@ class ConnectionService {
     // Parses and arbitrary object (e.g. a server response or a user provided auth object) into AuthCredentials.
     // Throws if values are missing/missing the input is malformed.
     public parseRawCredentials(rawCredentials: object, authMode: ProviderAuthModes): AuthCredentials {
-        const rawAuthCredentials = rawCredentials as Record<string, any>; // Otherwise TS complains
+        const rawCreds = rawCredentials as Record<string, any>;
 
-        let parsedCredentials: any = {};
         switch (authMode) {
             case ProviderAuthModes.OAuth2:
-                parsedCredentials.type = ProviderAuthModes.OAuth2;
-                parsedCredentials.access_token = rawAuthCredentials['access_token'];
-
-                if (rawAuthCredentials['refresh_token']) {
-                    parsedCredentials.refresh_token = rawAuthCredentials['refresh_token'];
+                if (!rawCreds['access_token']) {
+                    throw new Error(`incomplete_raw_credentials`);
                 }
 
-                let tokenExpirationDate: Date;
-                if (rawAuthCredentials['expires_at']) {
-                    tokenExpirationDate = this.parseTokenExpirationDate(rawAuthCredentials['expires_at']);
-                    parsedCredentials.expires_at = tokenExpirationDate;
-                } else if (rawAuthCredentials['expires_in']) {
-                    tokenExpirationDate = new Date(Date.now() + Number.parseInt(rawAuthCredentials['expires_in'], 10) * 1000);
-                    parsedCredentials.expires_at = tokenExpirationDate;
-                } else {
-                    logger.info(`Got a refresh token but no information about expiration. Assuming the access token doesn't expire.`);
+                var expiresAt: Date | undefined;
+
+                if (rawCreds['expires_at']) {
+                    expiresAt = parseTokenExpirationDate(rawCreds['expires_at']);
+                } else if (rawCreds['expires_in']) {
+                    expiresAt = new Date(Date.now() + Number.parseInt(rawCreds['expires_in'], 10) * 1000);
                 }
 
-                break;
+                let oauth2Creds: OAuth2Credentials = {
+                    type: ProviderAuthModes.OAuth2,
+                    access_token: rawCreds['access_token'],
+                    refresh_token: rawCreds['refresh_token'],
+                    expires_at: expiresAt,
+                    raw: rawCreds
+                };
+
+                return oauth2Creds;
             case ProviderAuthModes.OAuth1:
-                parsedCredentials.type = ProviderAuthModes.OAuth1;
-                parsedCredentials.oauth_token = rawAuthCredentials['oauth_token'];
-                parsedCredentials.oauth_token_secret = rawAuthCredentials['oauth_token_secret'];
-                break;
+                if (!rawCreds['oauth_token'] || !rawCreds['oauth_token_secret']) {
+                    throw new Error(`incomplete_raw_credentials`);
+                }
+
+                let oauth1Creds: OAuth1Credentials = {
+                    type: ProviderAuthModes.OAuth1,
+                    oauth_token: rawCreds['oauth_token'],
+                    oauth_token_secret: rawCreds['oauth_token_secret'],
+                    raw: rawCreds
+                };
+
+                return oauth1Creds;
+
             default:
-                throw new Error(`Cannot parse credentials, unknown credentials type: ${JSON.stringify(rawAuthCredentials, undefined, 2)}`);
+                throw new Error(`Cannot parse credentials, unknown credentials type: ${JSON.stringify(rawCreds, undefined, 2)}`);
         }
-        parsedCredentials.raw = rawAuthCredentials;
-
-        // Checks if the credentials are well formed, if not it will throw
-        const parsedAuthCredentials = this.checkCredentials(parsedCredentials);
-
-        return parsedAuthCredentials;
     }
 
     // Checks if the OAuth2 credentials need to be refreshed and refreshes them if neccessary.
@@ -141,113 +155,53 @@ class ConnectionService {
             return runningRefresh.promise;
         }
 
-        // Check if we need to refresh the credentials
-        if (credentials.refresh_token && credentials.expires_at) {
-            // Check if the expiration is less than 15 minutes away (or has already happened): If so, refresh
-            let expireDate = new Date(credentials.expires_at);
-            let currDate = new Date();
-            let dateDiffMs = expireDate.getTime() - currDate.getTime();
-            if (dateDiffMs < 15 * 60 * 1000) {
-                const promise = new Promise<OAuth2Credentials>(async (resolve, reject) => {
-                    try {
-                        var newCredentials: OAuth2Credentials;
+        let refresh =
+            providerClient.shouldIntrospectToken(providerConfig.provider) && (await providerClient.introspectedTokenExpired(providerConfig, connection));
 
-                        if (providerClientManager.shouldUseProviderClient(providerConfig.provider)) {
-                            let rawCreds = await providerClientManager.refreshToken(providerConfig, connection);
-                            newCredentials = this.parseRawCredentials(rawCreds, ProviderAuthModes.OAuth2) as OAuth2Credentials;
-                        } else {
-                            newCredentials = await getFreshOAuth2Credentials(connection, providerConfig, template);
-                        }
+        // If not expiration date is set, e.g. Github, we assume the token doesn't expire (unless introspection enable like Salesforce).
+        if (credentials.refresh_token && (refresh || (credentials.expires_at && isTokenExpired(credentials.expires_at)))) {
+            const promise = new Promise<OAuth2Credentials>(async (resolve, reject) => {
+                try {
+                    var newCredentials: OAuth2Credentials;
 
-                        await this.updateConnection(connectionId, providerConfigKey, newCredentials, accountId);
-
-                        // Remove ourselves from the array of running refreshes
-                        this.runningCredentialsRefreshes = this.runningCredentialsRefreshes.filter((value) => {
-                            return !(value.providerConfigKey === providerConfigKey && value.connectionId === connectionId);
-                        });
-
-                        resolve(newCredentials);
-                    } catch (e) {
-                        // Remove ourselves from the array of running refreshes
-                        this.runningCredentialsRefreshes = this.runningCredentialsRefreshes.filter((value) => {
-                            return !(value.providerConfigKey === providerConfigKey && value.connectionId === connectionId);
-                        });
-
-                        reject(e);
+                    if (providerClientManager.shouldUseProviderClient(providerConfig.provider)) {
+                        let rawCreds = await providerClientManager.refreshToken(providerConfig, connection);
+                        newCredentials = this.parseRawCredentials(rawCreds, ProviderAuthModes.OAuth2) as OAuth2Credentials;
+                    } else {
+                        newCredentials = await getFreshOAuth2Credentials(connection, providerConfig, template);
                     }
-                });
 
-                const refresh = {
-                    connectionId: connectionId,
-                    providerConfigKey: providerConfigKey,
-                    promise: promise
-                } as CredentialsRefresh;
+                    await this.updateConnection(connectionId, providerConfigKey, newCredentials, accountId);
 
-                this.runningCredentialsRefreshes.push(refresh);
+                    // Remove ourselves from the array of running refreshes
+                    this.runningCredentialsRefreshes = this.runningCredentialsRefreshes.filter((value) => {
+                        return !(value.providerConfigKey === providerConfigKey && value.connectionId === connectionId);
+                    });
 
-                return promise;
-            }
+                    resolve(newCredentials);
+                } catch (e) {
+                    // Remove ourselves from the array of running refreshes
+                    this.runningCredentialsRefreshes = this.runningCredentialsRefreshes.filter((value) => {
+                        return !(value.providerConfigKey === providerConfigKey && value.connectionId === connectionId);
+                    });
+
+                    reject(e);
+                }
+            });
+
+            const refresh = {
+                connectionId: connectionId,
+                providerConfigKey: providerConfigKey,
+                promise: promise
+            } as CredentialsRefresh;
+
+            this.runningCredentialsRefreshes.push(refresh);
+
+            return promise;
         }
 
         // All good, no refresh needed
         return credentials;
-    }
-
-    /** -------------------- Private Methods -------------------- */
-
-    // private parseCredentials(rawCredentials: string): AuthCredentials {
-    //     const credentialsObj = parseJsonDateAware(rawCredentials);
-    //     return credentialsObj as AuthCredentials;
-    // }
-
-    private checkCredentials(rawCredentials: object): AuthCredentials {
-        const rawAuthCredentials = rawCredentials as AuthCredentials;
-        if (!rawAuthCredentials.type) {
-            throw new Error(`Cannot parse credentials, has no property "type" which is required: ${JSON.stringify(rawAuthCredentials, undefined, 2)}`);
-        }
-
-        switch (rawAuthCredentials.type) {
-            case ProviderAuthModes.OAuth2:
-                if (!rawAuthCredentials.access_token) {
-                    throw new Error(
-                        `Cannot parse credentials, OAuth2 access token credentials must have "access_token" property: ${JSON.stringify(
-                            rawAuthCredentials,
-                            undefined,
-                            2
-                        )}`
-                    );
-                }
-                break;
-            case ProviderAuthModes.OAuth1:
-                if (!rawAuthCredentials.oauth_token || !rawAuthCredentials.oauth_token_secret) {
-                    throw new Error(
-                        `Cannot parse credentials, OAuth1 credentials must have both "oauth_token" and "oauth_token_secret" property: ${JSON.stringify(
-                            rawAuthCredentials,
-                            undefined,
-                            2
-                        )}`
-                    );
-                }
-                break;
-            default:
-                throw new Error(`Cannot parse credentials, unknown credentials type: ${JSON.stringify(rawAuthCredentials, undefined, 2)}`);
-        }
-
-        return rawAuthCredentials;
-    }
-
-    private parseTokenExpirationDate(expirationDate: any): Date {
-        if (expirationDate instanceof Date) {
-            return expirationDate;
-        }
-
-        // UNIX timestamp
-        if (typeof expirationDate === 'number') {
-            return new Date(expirationDate * 1000);
-        }
-
-        // ISO 8601 string
-        return new Date(expirationDate);
     }
 }
 

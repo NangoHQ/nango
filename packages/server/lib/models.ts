@@ -20,6 +20,7 @@ export interface ProviderTemplate {
         [key: string]: string;
     };
     redirect_uri_metadata?: Array<string>;
+    token_response_metadata?: Array<string>;
 }
 
 export interface Connection {
@@ -72,7 +73,7 @@ export interface OAuth2Credentials extends CredentialsCommon {
     access_token: string;
 
     refresh_token?: string;
-    expires_at?: Date;
+    expires_at?: Date | undefined;
 }
 
 export interface OAuth1Credentials extends CredentialsCommon {

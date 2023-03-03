@@ -6,7 +6,14 @@ import { getSimpleOAuth2ClientConfig } from '../clients/oauth2.client.js';
 import { OAuth1Client } from '../clients/oauth1.client.js';
 import configService from '../services/config.service.js';
 import connectionService from '../services/connection.service.js';
-import { getOauthCallbackUrl, getConnectionConfig, getConnectionMetadata, missesInterpolationParam, getAccount } from '../utils/utils.js';
+import {
+    getOauthCallbackUrl,
+    getConnectionConfig,
+    getConnectionMetadataFromCallbackRequest,
+    missesInterpolationParam,
+    getAccount,
+    getConnectionMetadataFromTokenResponse
+} from '../utils/utils.js';
 import {
     ProviderConfig,
     ProviderTemplate,
@@ -250,7 +257,7 @@ class OAuthController {
         let providerConfigKey = session.providerConfigKey;
         let connectionId = session.connectionId;
         let wsClientId = session.webSocketClientId;
-        let metadata = getConnectionMetadata(req.query, template);
+        let callbackMetadata = getConnectionMetadataFromCallbackRequest(req.query, template);
 
         if (!code) {
             return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.InvalidCallback());
@@ -272,29 +279,31 @@ class OAuthController {
         }
 
         try {
-            var token: object;
+            var rawCredentials: object;
             if (providerClientManager.shouldUseProviderClient(session.provider)) {
-                token = await providerClientManager.getToken(config, code as string);
+                rawCredentials = await providerClientManager.getToken(config, code as string);
             } else {
                 let accessToken = await simpleOAuthClient.getToken({
                     code: code as string,
                     redirect_uri: session.callbackUrl,
                     ...additionalTokenParams
                 });
-                token = accessToken.token;
+                rawCredentials = accessToken.token;
             }
 
             logger.debug(`OAuth 2 for ${providerConfigKey} (connection ${connectionId}) successful.`);
+
+            let tokenMetadata = getConnectionMetadataFromTokenResponse(rawCredentials, template);
 
             connectionService.upsertConnection(
                 connectionId,
                 providerConfigKey,
                 session.provider,
-                token,
+                rawCredentials,
                 ProviderAuthModes.OAuth2,
                 session.connectionConfig,
                 session.accountId,
-                metadata
+                { ...callbackMetadata, ...tokenMetadata }
             );
 
             return wsClient.notifySuccess(res, wsClientId, providerConfigKey, connectionId);
@@ -309,7 +318,7 @@ class OAuthController {
         let providerConfigKey = session.providerConfigKey;
         let connectionId = session.connectionId;
         let wsClientId = session.webSocketClientId;
-        let metadata = getConnectionMetadata(req.query, template);
+        let metadata = getConnectionMetadataFromCallbackRequest(req.query, template);
 
         if (!oauth_token || !oauth_verifier) {
             return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.InvalidCallback());

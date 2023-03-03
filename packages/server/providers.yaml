@@ -243,6 +243,12 @@ sage:
     token_url: https://oauth.accounting.sage.com/token
     authorization_params:
         filter: apiv3.1
+salesforce:
+    auth_mode: OAUTH2
+    authorization_url: https://login.salesforce.com/services/oauth2/authorize
+    token_url: https://login.salesforce.com/services/oauth2/token
+    token_response_metadata:
+        - instance_url
 salesloft:
     auth_mode: OAUTH2
     authorization_url: https://accounts.salesloft.com/oauth/authorize

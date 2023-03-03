@@ -97,6 +97,26 @@ export function getAccount(res: Response): number {
     }
 }
 
+export function parseTokenExpirationDate(expirationDate: any): Date {
+    if (expirationDate instanceof Date) {
+        return expirationDate;
+    }
+
+    // UNIX timestamp
+    if (typeof expirationDate === 'number') {
+        return new Date(expirationDate * 1000);
+    }
+
+    // ISO 8601 string
+    return new Date(expirationDate);
+}
+
+export function isTokenExpired(expireDate: Date): boolean {
+    let currDate = new Date();
+    let dateDiffMs = expireDate.getTime() - currDate.getTime();
+    return dateDiffMs < 15 * 60 * 1000;
+}
+
 export function setAccount(accountId: number, res: Response) {
     res.locals[accountIdLocalsKey] = accountId;
 }
@@ -135,9 +155,9 @@ export function getConnectionConfig(queryParams: any): Record<string, string> {
 }
 
 /**
- * A helper function to extract the additional connection metadata return from the Provider.
+ * A helper function to extract the additional connection metadata returned from the Provider in the callback request.
  */
-export function getConnectionMetadata(queryParams: any, template: ProviderTemplate): Record<string, string> {
+export function getConnectionMetadataFromCallbackRequest(queryParams: any, template: ProviderTemplate): Record<string, string> {
     if (!queryParams || !template.redirect_uri_metadata) {
         return {};
     }
@@ -147,7 +167,23 @@ export function getConnectionMetadata(queryParams: any, template: ProviderTempla
     // Filter out non-strings & non-whitelisted keys.
     let arr = Object.entries(queryParams).filter(([k, v]) => typeof v === 'string' && whitelistedKeys.includes(k));
 
-    return Object.fromEntries(arr) as Record<string, string>;
+    return arr != null && arr.length > 0 ? (Object.fromEntries(arr) as Record<string, string>) : {};
+}
+
+/**
+ * A helper function to extract the additional connection metadata returned from the Provider in the token response.
+ */
+export function getConnectionMetadataFromTokenResponse(params: any, template: ProviderTemplate): Record<string, string> {
+    if (!params || !template.token_response_metadata) {
+        return {};
+    }
+
+    let whitelistedKeys = template.token_response_metadata;
+
+    // Filter out non-strings & non-whitelisted keys.
+    let arr = Object.entries(params).filter(([k, v]) => typeof v === 'string' && whitelistedKeys.includes(k));
+
+    return arr != null && arr.length > 0 ? (Object.fromEntries(arr) as Record<string, string>) : {};
 }
 
 /**
