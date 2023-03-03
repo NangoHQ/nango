@@ -64,7 +64,7 @@ class Analytics {
                 properties: eventProperties
             });
         } catch (e) {
-            errorManager.report(e, accountId);
+            errorManager.report(e, { accountId: accountId });
         }
     }
 

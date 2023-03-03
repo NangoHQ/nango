@@ -67,9 +67,9 @@ app.route('/api/v1/account/callback').post(
 // Error handling.
 app.use((e: any, req: Request, res: Response, __: any) => {
     if (isApiAuthenticated(res)) {
-        errorManager.report(e, getAccount(res));
+        errorManager.report(e, { accountId: getAccount(res) });
     } else if (isUserAuthenticated(req)) {
-        errorManager.report(e, undefined, req.user!.id);
+        errorManager.report(e, { userId: req.user!.id });
     } else {
         errorManager.report(e);
     }

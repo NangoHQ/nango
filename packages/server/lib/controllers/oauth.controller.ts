@@ -93,7 +93,7 @@ class OAuthController {
 
             return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownAuthMode(template.auth_mode));
         } catch (e) {
-            errorManager.report(e, accountId);
+            errorManager.report(e, { accountId: accountId });
             return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError());
         }
     }
@@ -187,7 +187,7 @@ class OAuthController {
         try {
             tokenResult = await oAuth1Client.getOAuthRequestToken();
         } catch (e) {
-            errorManager.report(e, session.accountId);
+            errorManager.report(e, { accountId: session.accountId });
             return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.TokenError());
         }
 
@@ -240,7 +240,7 @@ class OAuthController {
 
             return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownAuthMode(session.authMode));
         } catch (e) {
-            errorManager.report(e, session?.accountId);
+            errorManager.report(e, { accountId: session?.accountId, metadata: { request: JSON.stringify(req) } });
             return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError());
         }
     }
@@ -299,7 +299,7 @@ class OAuthController {
 
             return wsClient.notifySuccess(res, wsClientId, providerConfigKey, connectionId);
         } catch (e) {
-            errorManager.report(e, session.accountId);
+            errorManager.report(e, { accountId: session.accountId });
             return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError());
         }
     }
@@ -336,7 +336,7 @@ class OAuthController {
                 return wsClient.notifySuccess(res, wsClientId, providerConfigKey, connectionId);
             })
             .catch((e) => {
-                errorManager.report(e, session.accountId);
+                errorManager.report(e, { accountId: session.accountId });
                 return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError());
             });
     }

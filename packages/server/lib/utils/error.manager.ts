@@ -10,16 +10,21 @@ class ErrorManager {
         }
     }
 
-    public report(e: any, accountId?: number | undefined, userId?: number | undefined) {
+    public report(e: any, config: { accountId?: number | undefined; userId?: number | undefined; metadata?: { [key: string]: string | undefined } } = {}) {
         if (isCloud()) {
-            if (accountId != null) {
-                sentry.setUser({ id: `account-${accountId}` });
-            } else if (userId != null) {
-                sentry.setUser({ id: `account-${userId}` });
-            }
+            sentry.withScope(function (scope) {
+                if (config.accountId != null) {
+                    scope.setUser({ id: `account-${config.accountId}` });
+                } else if (config.userId != null) {
+                    scope.setUser({ id: `user-${config.userId}` });
+                }
 
-            sentry.captureException(e);
-            sentry.setUser(null);
+                if (config.metadata != null) {
+                    scope.setContext('metadata', config.metadata);
+                }
+
+                sentry.captureException(e);
+            });
         }
 
         logger.error(`Exception caught: ${JSON.stringify(e, Object.getOwnPropertyNames(e))}`);
