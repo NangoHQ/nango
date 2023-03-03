@@ -1,5 +1,5 @@
 import { PostHog } from 'posthog-node';
-import { getBaseUrl, localhostUrl, dirname, UserType, isCloud } from '../utils/utils.js';
+import { getBaseUrl, localhostUrl, dirname, UserType, isCloud, isStaging } from '../utils/utils.js';
 import ip from 'ip';
 import errorManager from './error.manager.js';
 import { readFileSync } from 'fs';
@@ -14,7 +14,7 @@ class Analytics {
 
     constructor() {
         try {
-            if (process.env['TELEMETRY']?.toLowerCase() !== 'false') {
+            if (process.env['TELEMETRY']?.toLowerCase() !== 'false' && !isStaging()) {
                 this.client = new PostHog('phc_4S2pWFTyPYT1i7zwC8YYQqABvGgSAzNHubUkdEFvcTl');
                 this.client.enable();
                 this.packageVersion = JSON.parse(readFileSync(path.resolve(dirname(), '../../package.json'), 'utf8')).version;

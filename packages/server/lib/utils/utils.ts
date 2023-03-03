@@ -10,6 +10,24 @@ import userService from '../services/user.service.js';
 export const localhostUrl: string = 'http://localhost:3003';
 const accountIdLocalsKey = 'nangoAccountId';
 
+export enum NodeEnv {
+    Dev = 'development',
+    Staging = 'staging',
+    Prod = 'production'
+}
+
+export function isDev() {
+    return process.env['NODE_ENV'] === NodeEnv.Dev;
+}
+
+export function isStaging() {
+    return process.env['NODE_ENV'] === NodeEnv.Staging;
+}
+
+export function isProd() {
+    return process.env['NODE_ENV'] === NodeEnv.Prod;
+}
+
 export enum UserType {
     Local = 'localhost',
     SelfHosted = 'self-hosted',
