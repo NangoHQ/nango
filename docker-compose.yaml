@@ -27,13 +27,5 @@ services:
         networks:
             - nango
 
-    test-website:
-        build: ./packages/frontend/bin/
-        restart: always
-        ports:
-            - '8001:7000'
-        depends_on:
-            - nango-db
-
 networks:
     nango:

@@ -4,9 +4,9 @@ ENV SERVER_RUN_MODE=DOCKERIZED
 
 WORKDIR /usr/nango-server/src
 
-COPY packages/auth/ packages/auth/
 COPY packages/server/ packages/server/
 COPY package*.json ./
+COPY packages/webapp/build/ packages/webapp/build/
 
 RUN npm install --omit=dev
 
