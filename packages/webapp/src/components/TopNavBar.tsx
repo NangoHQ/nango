@@ -1,0 +1,67 @@
+import { useNavigate } from 'react-router-dom';
+import { Book, Slack, Github } from '@geist-ui/icons';
+
+export default function NavBar() {
+    const navigate = useNavigate();
+
+    const logoutButtonClicked = async () => {
+        const options = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        };
+
+        const res = await fetch('/api/v1/logout', options);
+
+        if (res.status === 200) {
+            localStorage.clear();
+            navigate('/signin', { replace: true });
+        }
+    };
+
+    return (
+        <div>
+            <div className="border-b-2 border-border-gray flex justify-between">
+                <div className="">
+                    <img className="h-8 my-3 ml-6" src="/logo-circled.svg" alt="Your Company" />
+                </div>
+                <div className="flex">
+                    <a
+                        href="https://nango.dev/slack"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex h-8 rounded-md ml-4 pl-2 pr-3 pt-1.5 text-sm hover:bg-gray-700 text-white mt-3"
+                    >
+                        <Slack className="h-4 mr-1 mt-0.5"></Slack>
+                        <p>Community</p>
+                    </a>
+                    <a
+                        href="https://docs.nango.dev/quickstart"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex h-8 rounded-md ml-4 pl-2 pr-3 pt-1.5 text-sm hover:bg-gray-700 text-white  mt-3"
+                    >
+                        <Book className="h-4 mr-1 mt-0.5"></Book>
+                        <p>Documentation</p>
+                    </a>
+                    <a
+                        href="https://github.com/NangoHQ/nango"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex h-8 rounded-md ml-4 pl-2 pr-3 pt-1.5 text-sm hover:bg-gray-700 text-white  mt-3"
+                    >
+                        <Github className="h-4 mr-1 mt-0.5"></Github>
+                        <p>Github</p>
+                    </a>
+                    <button
+                        onClick={logoutButtonClicked}
+                        className="flex h-8 rounded-md ml-4 px-3 pt-1.5 text-sm hover:bg-gray-700 text-red-600 font-semibold mt-3 mr-6"
+                    >
+                        <p>Log Out</p>
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}

@@ -4,6 +4,11 @@ html {
     background-color: #0e1014;
 }
 
+body,
+#root {
+    height: 100%;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
