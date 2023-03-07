@@ -97,11 +97,13 @@ export default function Signin() {
                                             Password
                                         </label>
                                     </div>
-                                    {/* <div className="flex text-sm">
-                                        <a href="/verify-email" className="text-text-blue hover:text-text-light-blue ml-1">
-                                            Forgot your password?
-                                        </a>
-                                    </div> */}
+                                    {isCloud() && (
+                                        <div className="flex text-sm">
+                                            <a href="/forgot-password" className="text-text-blue hover:text-text-light-blue ml-1">
+                                                Forgot your password?
+                                            </a>
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="mt-1">
                                     <input

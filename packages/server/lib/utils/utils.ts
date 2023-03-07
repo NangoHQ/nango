@@ -359,3 +359,7 @@ Nango OAuth flow callback. Read more about how to use it at: https://github.com/
     res.set('Content-Type', 'text/html');
     res.send(Buffer.from(resultHTML));
 }
+
+export function resetPasswordSecret() {
+    return process.env['NANGO_ADMIN_KEY'] || 'nango';
+}

@@ -5,7 +5,11 @@ import errorManager from '../utils/error.manager.js';
 import accountService from '../services/account.service.js';
 import util from 'util';
 import analytics from '../utils/analytics.js';
-import { isCloud } from '../utils/utils.js';
+import { isCloud, resetPasswordSecret, getBaseUrl } from '../utils/utils.js';
+import jwt from 'jsonwebtoken';
+import Mailgun from 'mailgun.js';
+import type { User } from '../models.js';
+import formData from 'form-data';
 
 class AuthController {
     async signin(_: Request, res: Response, next: NextFunction) {
@@ -86,6 +90,100 @@ class AuthController {
             });
         } catch (err) {
             next(err);
+        }
+    }
+
+    async forgotPassword(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { email } = req.body;
+
+            if (email == null) {
+                errorManager.res(res, 'missing_email_param');
+                return;
+            }
+
+            let user = await userService.getUserByEmail(email);
+
+            if (user == null) {
+                errorManager.res(res, 'unkown_user');
+                return;
+            }
+
+            const resetToken = jwt.sign({ user: email }, resetPasswordSecret(), { expiresIn: '10m' });
+
+            user.reset_password_token = resetToken;
+            await userService.editUser(user);
+
+            this.sendResetPasswordEmail(user, resetToken);
+
+            res.status(200).json();
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async resetPassword(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { password, token } = req.body;
+
+            if (!token && !password) {
+                errorManager.res(res, 'missing_password_reset_token');
+                return;
+            }
+
+            if (token) {
+                jwt.verify(token, resetPasswordSecret(), async (error: any, _: any) => {
+                    if (error) {
+                        errorManager.res(res, 'unkown_password_reset_token');
+                        return;
+                    }
+
+                    let user = await userService.getUserByResetPasswordToken(token);
+
+                    if (!user) {
+                        errorManager.res(res, 'unkown_password_reset_token');
+                        return;
+                    }
+
+                    let hashedPassword = (await util.promisify(crypto.pbkdf2)(password, user.salt, 310000, 32, 'sha256')).toString('base64');
+
+                    user.hashed_password = hashedPassword;
+                    user.reset_password_token = undefined;
+                    await userService.editUser(user);
+
+                    res.status(200).json();
+                });
+            }
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async sendResetPasswordEmail(user: User, token: string) {
+        try {
+            const mailgun = new Mailgun(formData);
+            const mg = mailgun.client({
+                username: 'api',
+                key: process.env['MAILGUN_API_KEY']!
+            });
+
+            mg.messages
+                .create('sandbox1daf037b8e274cef83a932a134bfb4d2.mailgun.org', {
+                    from: 'Nango <support@nango.dev>',
+                    to: [user.email],
+                    subject: 'Nango password reset',
+                    html: `
+                <p><b>Reset your password</b></p>
+                <p>Someone requested a password reset.</p>
+                <p><a href="${getBaseUrl()}/reset-password/${token}">Reset password</a></p>
+                <p>If you didn't initiate this request, please contact us immediately at support@nango.dev</p>
+                `
+                })
+                .catch((e: Error) => {
+                    errorManager.report(e, { userId: user.id });
+                });
+        } catch (e) {
+            errorManager.report(e, { userId: user.id });
         }
     }
 }

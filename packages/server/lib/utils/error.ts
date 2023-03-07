@@ -84,6 +84,11 @@ export class NangoError extends Error {
                 this.message = 'Email already exists.';
                 break;
 
+            case 'unkown_user':
+                this.status = 404;
+                this.message = 'No user matching this email.';
+                break;
+
             case 'missing_provider_config':
                 this.status = 400;
                 this.message = `Missing param 'provider_config_key'.`;
@@ -137,6 +142,16 @@ export class NangoError extends Error {
             case 'duplicate_provider_config':
                 this.status = 400;
                 this.message = `There is already a Provider Configuration matching the param 'provider_config_key'.`;
+                break;
+
+            case 'missing_password_reset_token':
+                this.status = 400;
+                this.message = 'Missing reset token (or password).';
+                break;
+
+            case 'unkown_password_reset_token':
+                this.status = 404;
+                this.message = 'Reset password token expired on unknown.';
                 break;
 
             default:

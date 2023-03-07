@@ -236,6 +236,34 @@ class API {
             this.requestErrorToast();
         }
     }
+
+    async requestPasswordReset(email: string) {
+        try {
+            let res = await fetch(`/api/v1/forgot-password`, {
+                method: 'PUT',
+                headers: this.getHeaders(),
+                body: JSON.stringify({ email: email })
+            });
+
+            return res;
+        } catch (e) {
+            this.requestErrorToast();
+        }
+    }
+
+    async resetPassword(token: string, password: string) {
+        try {
+            let res = await fetch(`/api/v1/reset-password`, {
+                method: 'PUT',
+                headers: this.getHeaders(),
+                body: JSON.stringify({ password: password, token: token })
+            });
+
+            return res;
+        } catch (e) {
+            this.requestErrorToast();
+        }
+    }
 }
 
 const api = new API();

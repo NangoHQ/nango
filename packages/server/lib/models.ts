@@ -51,6 +51,7 @@ export interface User {
     hashed_password: string;
     salt: string;
     account_id: number;
+    reset_password_token: string | undefined;
 }
 
 export enum OAuthBodyFormat {
