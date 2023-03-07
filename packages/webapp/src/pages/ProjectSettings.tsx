@@ -76,30 +76,16 @@ export default function ProjectSettings() {
             <TopNavBar />
             <div className="flex h-full">
                 <LeftNavBar selectedItem={LeftNavBarItems.ProjectSettings} />
-                <div>
-                    <div className="flex justify-center">
-                        <div className="w-full mx-20 max-w-7xl h-full">
-                            <h2 className="mt-16 text-left text-3xl font-semibold tracking-tight text-white mb-6">Add an OAuth integration to your app</h2>
-                            <div>
-                                <div className="mr-8 mt-8">
-                                    <p className="text-white text-sm">
-                                        You will soon be able to manage Nango with this dashboard. For now, please use the CLI as explained in the{' '}
-                                        <a href="https://docs.nango.dev/quickstart" className="text-text-blue" target="_blank" rel="noreferrer">
-                                            Quickstart
-                                        </a>
-                                        .
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="flex justify-center">
-                        <div className="w-full mx-20 max-w-7xl h-full mb-20">
-                            <h2 className="mt-24 text-left text-3xl font-semibold tracking-tight text-white mb-6">Project Details</h2>
-                            <div className="border border-border-gray rounded-md h-fit w-full py-14">
+                {secretKey && (
+                    <div className="mx-auto mt-14 w-largebox">
+                        <div className="mx-20 h-full mb-20">
+                            <h2 className="mt-16 text-left text-3xl font-semibold tracking-tight text-white mb-12">Project Details</h2>
+                            <div className="border border-border-gray rounded-md h-fit py-14">
                                 <div>
                                     <div className="mx-8">
-                                        <p className="text-white mb-2 text-sm">Public Key</p>
+                                        <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold  mb-2">
+                                            Public Key
+                                        </label>
                                         <Prism language="bash" colorScheme="dark">
                                             {publicKey}
                                         </Prism>
@@ -107,8 +93,10 @@ export default function ProjectSettings() {
                                 </div>
                                 <div>
                                     <div className="mx-8 mt-8">
-                                        <div className="flex">
-                                            <p className="text-white text-sm mb-2">Secret Key</p>
+                                        <div className="flex mb-2">
+                                            <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
+                                                Secret Key
+                                            </label>
                                             <p className="ml-2 text-text-dark-gray text-sm">(do not share!)</p>
                                         </div>
                                         <Prism language="bash" colorScheme="dark">
@@ -118,10 +106,12 @@ export default function ProjectSettings() {
                                 </div>
                                 <div>
                                     <div className="mx-8 mt-8">
-                                        <div className="flex text-white">
-                                            <p className="text-white text-sm mb-2">Callback URL</p>
+                                        <div className="flex text-white  mb-2">
+                                            <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
+                                                Callback URL
+                                            </label>
                                             <a href="https://docs.nango.dev/reference/configuration#custom-callback-url" target="_blank" rel="noreferrer">
-                                                <HelpCircle className="text-white h-5 ml-1"></HelpCircle>
+                                                <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
                                             </a>
                                         </div>
                                         {callbackEditMode && (
@@ -166,7 +156,7 @@ export default function ProjectSettings() {
                             </div>
                         </div>
                     </div>
-                </div>
+                )}
             </div>
         </div>
     );

@@ -13,11 +13,11 @@ export interface LeftNavBarProps {
 export default function LeftNavBar(props: LeftNavBarProps) {
     return (
         <div>
-            <div className="border-r-2 border-border-gray flex justify-between h-full w-60">
-                <div className="ml-4 mt-12">
+            <div className="mt-14 border-r-2 border-border-gray flex justify-between h-full w-60">
+                <div className="ml-4 mt-16">
                     <Link
-                        to="/integrations"
-                        className={`flex h-8 rounded-md ml-4 pl-2 pr-3 pt-1.5 text-sm text-white mt-3 ${
+                        to="/integration"
+                        className={`flex h-10 rounded-md ml-4 pl-2 pr-3 pt-2.5 text-sm text-white mt-3 w-44 ${
                             props.selectedItem === LeftNavBarItems.Integrations ? 'bg-gray-800' : 'hover:bg-gray-700'
                         }`}
                     >
@@ -25,8 +25,8 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                         <p>Integrations</p>
                     </Link>
                     <Link
-                        to="/connections"
-                        className={`flex h-8 rounded-md ml-4 pl-2 pr-3 pt-1.5 text-sm text-white mt-3 ${
+                        to="/connection"
+                        className={`flex h-10 rounded-md ml-4 pl-2 pr-3 pt-2.5 text-sm text-white w-44 ${
                             props.selectedItem === LeftNavBarItems.Connections ? 'bg-gray-800' : 'hover:bg-gray-700'
                         }`}
                     >
@@ -35,7 +35,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                     </Link>
                     <Link
                         to="/project-settings"
-                        className={`flex h-8 rounded-md ml-4 pl-2 pr-3 pt-1.5 text-sm text-white mt-3 ${
+                        className={`flex h-10 rounded-md ml-4 pl-2 pr-3 pt-2.5 text-sm text-white w-44 ${
                             props.selectedItem === LeftNavBarItems.ProjectSettings ? 'bg-gray-800' : 'hover:bg-gray-700'
                         }`}
                     >

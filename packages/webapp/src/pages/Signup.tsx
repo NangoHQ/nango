@@ -27,8 +27,7 @@ export default function Signup() {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(data),
-            credentials: 'include' as RequestCredentials
+            body: JSON.stringify(data)
         };
 
         const res = await fetch('/api/v1/signup', options);

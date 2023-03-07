@@ -1,13 +1,12 @@
-html {
+html,
+body,
+#root {
     width: 100%;
     height: 100%;
     background-color: #0e1014;
 }
 
-body,
-#root {
-    height: 100%;
-}
+@import url('https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;

@@ -3,7 +3,8 @@ module.exports = {
     content: ['./src/**/*.{js,ts,jsx,tsx,html}', './public/**/*.{js,ts,jsx,tsx,html}'],
     theme: {
         fontFamily: {
-            sans: ['Inter', 'sans-serif']
+            sans: ['Inter', 'sans-serif'],
+            mono: ['"Source Code Pro"', 'sans-serif']
         },
         extend: {
             colors: {
@@ -19,6 +20,10 @@ module.exports = {
                 'text-light-blue': '#76C5FF',
                 'bg-dark-blue': '#182633',
                 white: '#FFFFFF'
+            },
+            width: {
+                largebox: '1200px',
+                largecell: '600px'
             }
         }
     },

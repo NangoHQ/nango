@@ -66,11 +66,11 @@ class ConnectionService {
         return connection;
     }
 
-    async listConnections(accountId: number): Promise<Object[]> {
+    async listConnections(accountId: number): Promise<{ id: number; connection_id: number; provider: string; created: string }[]> {
         return db.knex
             .withSchema(db.schema())
             .from<Connection>(`_nango_connections`)
-            .select({ connection_id: 'connection_id' }, { provider: 'provider_config_key' }, { created: 'created_at' })
+            .select({ id: 'id' }, { connection_id: 'connection_id' }, { provider: 'provider_config_key' }, { created: 'created_at' })
             .where({ account_id: accountId });
     }
 

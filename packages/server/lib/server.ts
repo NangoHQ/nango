@@ -63,6 +63,17 @@ app.route('/api/v1/account/callback').post(
     [passport.authenticate('session'), auth.session.bind(auth)],
     accountController.updateCallback.bind(accountController)
 );
+app.route('/api/v1/integration').get([passport.authenticate('session'), auth.session.bind(auth)], configController.listIntegrations.bind(configController));
+app.route('/api/v1/provider').get(connectionController.listProviders.bind(connectionController));
+app.route('/api/v1/integration').post([passport.authenticate('session'), auth.session.bind(auth)], configController.createIntegration.bind(configController));
+app.route('/api/v1/connection').get(
+    [passport.authenticate('session'), auth.session.bind(auth)],
+    connectionController.getConnections.bind(connectionController)
+);
+app.route('/api/v1/connection/details').get(
+    [passport.authenticate('session'), auth.session.bind(auth)],
+    connectionController.getConnection.bind(connectionController)
+);
 
 // Error handling.
 app.use((e: any, req: Request, res: Response, __: any) => {
