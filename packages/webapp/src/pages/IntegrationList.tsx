@@ -2,7 +2,7 @@ import TopNavBar from '../components/TopNavBar';
 import LeftNavBar, { LeftNavBarItems } from '../components/LeftNavBar';
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import API from '../utils/api';
 
 interface Integration {
     uniqueKey: string;
@@ -17,15 +17,11 @@ export default function IntegrationList() {
 
     useEffect(() => {
         const getIntegrations = async () => {
-            let res = await fetch('/api/v1/integration');
+            let res = await API.getIntegrationList(navigate);
 
-            if (res.status === 200) {
+            if (res?.status === 200) {
                 let data = await res.json();
                 setIntegrations(data['integrations']);
-            } else if (res.status === 401) {
-                navigate('/signin', { replace: true });
-            } else {
-                toast.error('Server error...', { position: toast.POSITION.BOTTOM_CENTER });
             }
         };
         getIntegrations();

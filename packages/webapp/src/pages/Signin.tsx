@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import API from '../utils/api';
 
 export default function Signin() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');
@@ -16,33 +16,13 @@ export default function Signin() {
             password: { value: string };
         };
 
-        const data = {
-            email: target.email.value,
-            password: target.password.value
-        };
+        const res = await API.signin(target.email.value, target.password.value);
 
-        const options = {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data),
-            credentials: 'include' as RequestCredentials
-        };
-
-        try {
-            const res = await fetch('/api/v1/signin', options);
-
-            if (res.status === 200) {
-                localStorage.setItem('auth', 'true');
-                navigate('/');
-            } else if (res.status === 401) {
-                setServerErrorMessage('Invalid email or password.');
-            } else {
-                toast.error('Server error...', { position: toast.POSITION.BOTTOM_CENTER });
-            }
-        } catch (e) {
-            toast.error('Server error...', { position: toast.POSITION.BOTTOM_CENTER });
+        if (res?.status === 200) {
+            localStorage.setItem('auth', 'true');
+            navigate('/');
+        } else if (res?.status === 401) {
+            setServerErrorMessage('Invalid email or password.');
         }
     };
 

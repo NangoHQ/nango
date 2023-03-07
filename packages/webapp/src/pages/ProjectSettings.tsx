@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { HelpCircle } from '@geist-ui/icons';
 import TopNavBar from '../components/TopNavBar';
 import LeftNavBar, { LeftNavBarItems } from '../components/LeftNavBar';
+import API from '../utils/api';
 
 export default function ProjectSettings() {
     const [secretKey, setSecretKey] = useState('');
@@ -12,20 +13,17 @@ export default function ProjectSettings() {
     const [callbackUrl, setCallbackUrl] = useState('');
     const [callbackEditMode, setCallbackEditMode] = useState(false);
     const navigate = useNavigate();
+    const defaultCloudCallback = 'https://api.nango.dev/oauth/callback';
 
     useEffect(() => {
         const getAccount = async () => {
-            let res = await fetch('/api/v1/account');
+            let res = await API.getProjectInfo(navigate);
 
-            if (res.status === 200) {
+            if (res?.status === 200) {
                 const account = (await res.json())['account'];
                 setSecretKey(account.secret_key);
                 setPublicKey(account.public_key);
-                setCallbackUrl(account.callback_url || 'https://api.nango.dev/oauth/callback');
-            } else if (res.status === 401) {
-                navigate('/signin', { replace: true });
-            } else {
-                toast.error('Server error...', { position: toast.POSITION.BOTTOM_CENTER });
+                setCallbackUrl(account.callback_url || defaultCloudCallback);
             }
         };
         getAccount();
@@ -38,32 +36,12 @@ export default function ProjectSettings() {
             callback_url: { value: string };
         };
 
-        const data = {
-            callback_url: target.callback_url.value
-        };
+        const res = await API.editCallbackUrl(target.callback_url.value, navigate);
 
-        const options = {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        };
-
-        try {
-            const res = await fetch('/api/v1/account/callback', options);
-
-            if (res.status === 200) {
-                toast.success('Callback URL updated!', { position: toast.POSITION.BOTTOM_CENTER });
-                setCallbackEditMode(false);
-                setCallbackUrl(target.callback_url.value || 'https://api.nango.dev/oauth/callback');
-            } else if (res.status === 401) {
-                navigate('/signin', { replace: true });
-            } else {
-                toast.error('Server error...', { position: toast.POSITION.BOTTOM_CENTER });
-            }
-        } catch (e) {
-            toast.error('Server error...', { position: toast.POSITION.BOTTOM_CENTER });
+        if (res?.status === 200) {
+            toast.success('Callback URL updated!', { position: toast.POSITION.BOTTOM_CENTER });
+            setCallbackEditMode(false);
+            setCallbackUrl(target.callback_url.value || defaultCloudCallback);
         }
     };
 

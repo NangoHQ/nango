@@ -95,11 +95,9 @@ export class AccessMiddleware {
     }
 
     async session(req: Request, res: Response, next: NextFunction) {
-        if (isCloud()) {
-            if (!req.isAuthenticated()) {
-                res.status(401).send({ error: 'Not authenticated.' });
-                return;
-            }
+        if (!req.isAuthenticated()) {
+            res.status(401).send({ error: 'Not authenticated.' });
+            return;
         }
 
         next();

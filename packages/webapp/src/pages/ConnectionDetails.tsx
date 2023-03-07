@@ -2,8 +2,8 @@ import TopNavBar from '../components/TopNavBar';
 import LeftNavBar, { LeftNavBarItems } from '../components/LeftNavBar';
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { toast } from 'react-toastify';
 import { Prism } from '@mantine/prism';
+import API from '../utils/api';
 
 interface Connection {
     id: number;
@@ -32,24 +32,11 @@ export default function ConnectionDetails() {
         if (!connectionId || !providerConfigKey) return;
 
         const getConnections = async () => {
-            const options = {
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            };
+            let res = await API.getConnectionDetails(connectionId, providerConfigKey, navigate);
 
-            let res = await fetch(
-                `/api/v1/connection/details?connection_id=${encodeURIComponent(connectionId)}&provider_config_key=${encodeURIComponent(providerConfigKey)}`,
-                options
-            );
-
-            if (res.status === 200) {
+            if (res?.status === 200) {
                 let data = await res.json();
                 setConnection(data['connection']);
-            } else if (res.status === 401) {
-                navigate('/signin', { replace: true });
-            } else {
-                toast.error('Server error...', { position: toast.POSITION.BOTTOM_CENTER });
             }
         };
         getConnections();

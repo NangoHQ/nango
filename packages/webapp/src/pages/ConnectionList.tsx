@@ -2,7 +2,7 @@ import TopNavBar from '../components/TopNavBar';
 import LeftNavBar, { LeftNavBarItems } from '../components/LeftNavBar';
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import API from '../utils/api';
 
 interface Connection {
     id: number;
@@ -18,15 +18,11 @@ export default function ConnectionList() {
 
     useEffect(() => {
         const getConnections = async () => {
-            let res = await fetch('/api/v1/connection');
+            let res = await API.getConnectionList(navigate);
 
-            if (res.status === 200) {
+            if (res?.status === 200) {
                 let data = await res.json();
                 setConnections(data['connections']);
-            } else if (res.status === 401) {
-                navigate('/signin', { replace: true });
-            } else {
-                toast.error('Server error...', { position: toast.POSITION.BOTTOM_CENTER });
             }
         };
         getConnections();

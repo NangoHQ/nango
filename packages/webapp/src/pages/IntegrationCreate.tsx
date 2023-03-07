@@ -3,6 +3,7 @@ import LeftNavBar, { LeftNavBarItems } from '../components/LeftNavBar';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useState, useEffect } from 'react';
+import API from '../utils/api';
 
 export default function IntegrationCreate() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');
@@ -11,15 +12,11 @@ export default function IntegrationCreate() {
 
     useEffect(() => {
         const getProviders = async () => {
-            let res = await fetch('/api/v1/provider');
+            let res = await API.getProviders(navigate);
 
-            if (res.status === 200) {
+            if (res?.status === 200) {
                 let data = await res.json();
                 setProviders(data['providers']);
-            } else if (res.status === 401) {
-                navigate('/signin', { replace: true });
-            } else {
-                toast.error('Server error...', { position: toast.POSITION.BOTTOM_CENTER });
             }
         };
         getProviders();
@@ -37,31 +34,18 @@ export default function IntegrationCreate() {
             scopes: { value: string };
         };
 
-        const data = {
-            provider: target.provider.value,
-            provider_config_key: target.unique_key.value,
-            client_id: target.client_id.value,
-            client_secret: target.client_secret.value,
-            scopes: target.scopes.value
-        };
+        let res = await API.createIntegration(
+            target.provider.value,
+            target.unique_key.value,
+            target.client_id.value,
+            target.client_secret.value,
+            target.scopes.value,
+            navigate
+        );
 
-        const options = {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        };
-
-        let res = await fetch('/api/v1/integration', options);
-
-        if (res.status === 200) {
+        if (res?.status === 200) {
             toast.success('Integration created!', { position: toast.POSITION.BOTTOM_CENTER });
             navigate('/integration', { replace: true });
-        } else if (res.status === 401) {
-            navigate('/signin', { replace: true });
-        } else {
-            toast.error('Server error...', { position: toast.POSITION.BOTTOM_CENTER });
         }
     };
 

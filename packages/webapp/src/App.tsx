@@ -31,7 +31,7 @@ const App = () => {
                     <Route path="/project-settings" element={<ProjectSettings />} />
                 </Route>
                 <Route path="/signin" element={<Signin />} />
-                <Route path="/signup" element={<Signup />} />
+                {process.env.REACT_APP_ENV === 'cloud' && <Route path="/signup" element={<Signup />} />}
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
             <ToastContainer />
