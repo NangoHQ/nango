@@ -51,6 +51,17 @@ clickup:
     auth_mode: OAUTH2
     authorization_url: https://app.clickup.com/api
     token_url: https://api.clickup.com/api/v2/oauth/token
+contentstack:
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.params.subdomain}.contentstack.com/apps/${connectionConfig.params.appId}/authorize
+    token_url: https://${connectionConfig.params.subdomain}.contentstack.com/apps-api/apps/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_url: https://${connectionConfig.params.subdomain}.contentstack.com/apps-api/apps/token
+    refresh_params:
+        grant_type: refresh_token
 digitalocean:
     auth_mode: OAUTH2
     authorization_url: https://cloud.digitalocean.com/v1/oauth/authorize
