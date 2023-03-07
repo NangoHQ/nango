@@ -1,23 +1,12 @@
 import { useNavigate } from 'react-router-dom';
 import { Book, Slack, Github } from '@geist-ui/icons';
+import API from '../utils/api';
 
 export default function NavBar() {
     const navigate = useNavigate();
 
     const logoutButtonClicked = async () => {
-        const options = {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        };
-
-        const res = await fetch('/api/v1/logout', options);
-
-        if (res.status === 200) {
-            localStorage.clear();
-            navigate('/signin', { replace: true });
-        }
+        API.logout(navigate);
     };
 
     return (

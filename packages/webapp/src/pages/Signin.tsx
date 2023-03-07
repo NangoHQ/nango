@@ -2,27 +2,44 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import API from '../utils/api';
+import { isCloud } from '../utils/utils';
+import storage, { LocalStorageKeys } from '../utils/local-storage';
 
 export default function Signin() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');
     const navigate = useNavigate();
+    const defaultHostedUsername = 'nango';
+    const defaultHostedPassword = 'nango';
 
     const handleSubmit = async (e: React.SyntheticEvent) => {
         e.preventDefault();
         setServerErrorMessage('');
 
         const target = e.target as typeof e.target & {
-            email: { value: string };
+            emailOrUsername: { value: string };
             password: { value: string };
         };
 
-        const res = await API.signin(target.email.value, target.password.value);
+        if (isCloud()) {
+            const res = await API.signin(target.emailOrUsername.value, target.password.value);
 
-        if (res?.status === 200) {
-            localStorage.setItem('auth', 'true');
-            navigate('/');
-        } else if (res?.status === 401) {
-            setServerErrorMessage('Invalid email or password.');
+            if (res?.status === 200) {
+                storage.setItem(LocalStorageKeys.Authorized, true);
+                navigate('/');
+            } else if (res?.status === 401) {
+                setServerErrorMessage('Invalid email or password.');
+            }
+        } else {
+            storage.setItem(LocalStorageKeys.Username, target.emailOrUsername.value);
+            storage.setItem(LocalStorageKeys.Password, target.password.value);
+            const res = await API.hostedSignin();
+
+            if (res?.status === 200) {
+                storage.setItem(LocalStorageKeys.Authorized, true);
+                navigate('/');
+            } else if (res?.status === 401) {
+                setServerErrorMessage('Invalid username or password.');
+            }
         }
     };
 
@@ -37,21 +54,41 @@ export default function Signin() {
                     <div className="bg-bg-dark-gray py-8 px-4 shadow sm:rounded-lg sm:px-10">
                         <h2 className="mt-2 text-center text-3xl font-semibold tracking-tight text-white">Sign in</h2>
                         <form className="mt-6 space-y-6" onSubmit={handleSubmit}>
-                            <div>
-                                <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                    Email
-                                </label>
-                                <div className="mt-1">
-                                    <input
-                                        id="email"
-                                        name="email"
-                                        type="email"
-                                        autoComplete="email"
-                                        required
-                                        className="border-border-gray bg-bg-black text-text-light-gray focus:ring-blue block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:border-blue-500 focus:outline-none"
-                                    />
+                            {!isCloud() && (
+                                <div>
+                                    <label htmlFor="username" className="text-text-light-gray block text-sm font-semibold">
+                                        Username
+                                    </label>
+                                    <div className="mt-1">
+                                        <input
+                                            id="emailOrUsername"
+                                            name="emailOrUsername"
+                                            type="text"
+                                            autoComplete="username"
+                                            defaultValue={defaultHostedUsername}
+                                            required
+                                            className="border-border-gray bg-bg-black text-text-light-gray focus:ring-blue block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:border-blue-500 focus:outline-none"
+                                        />
+                                    </div>
                                 </div>
-                            </div>
+                            )}
+                            {isCloud() && (
+                                <div>
+                                    <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
+                                        Email
+                                    </label>
+                                    <div className="mt-1">
+                                        <input
+                                            id="emailOrUsername"
+                                            name="emailOrUsername"
+                                            type="email"
+                                            autoComplete="email"
+                                            required
+                                            className="border-border-gray bg-bg-black text-text-light-gray focus:ring-blue block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:border-blue-500 focus:outline-none"
+                                        />
+                                    </div>
+                                </div>
+                            )}
 
                             <div>
                                 <div className="flex justify-between">
@@ -72,6 +109,7 @@ export default function Signin() {
                                         name="password"
                                         type="password"
                                         autoComplete="current-password"
+                                        defaultValue={isCloud() ? '' : defaultHostedPassword}
                                         required
                                         className="border-border-gray bg-bg-black text-text-light-gray block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
                                     />
@@ -89,14 +127,16 @@ export default function Signin() {
                             </div>
                         </form>
                     </div>
-                    <div className="grid">
-                        <div className="mt-4 flex place-self-center text-sm">
-                            <p className="text-text-light-gray">Need an account?</p>
-                            <Link to="/signup" className="text-text-blue hover:text-text-light-blue ml-1">
-                                Sign up
-                            </Link>
+                    {isCloud() && (
+                        <div className="grid">
+                            <div className="mt-4 flex place-self-center text-sm">
+                                <p className="text-text-light-gray">Need an account?</p>
+                                <Link to="/signup" className="text-text-blue hover:text-text-light-blue ml-1">
+                                    Sign up
+                                </Link>
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
             </div>
         </>

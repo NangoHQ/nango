@@ -61,9 +61,11 @@ app.route('/connection').get(apiAuth, connectionController.listConnections.bind(
 app.route('/connection/:connectionId').delete(apiAuth, connectionController.deleteConnection.bind(connectionController));
 
 // Webapp routes (no auth).
-app.route('/api/v1/signup').post(authController.signup.bind(authController));
-app.route('/api/v1/logout').post(authController.logout.bind(authController));
-app.route('/api/v1/signin').post(passport.authenticate('local'), authController.signin.bind(authController));
+if (isCloud()) {
+    app.route('/api/v1/signup').post(authController.signup.bind(authController));
+    app.route('/api/v1/logout').post(authController.logout.bind(authController));
+    app.route('/api/v1/signin').post(passport.authenticate('local'), authController.signin.bind(authController));
+}
 
 // Webapp routes (session auth).
 app.route('/api/v1/account').get(webAuth, accountController.getAccount.bind(accountController));
@@ -73,6 +75,13 @@ app.route('/api/v1/provider').get(connectionController.listProviders.bind(connec
 app.route('/api/v1/integration').post(webAuth, configController.createIntegration.bind(configController));
 app.route('/api/v1/connection').get(webAuth, connectionController.getConnections.bind(connectionController));
 app.route('/api/v1/connection/details').get(webAuth, connectionController.getConnection.bind(connectionController));
+
+// Hosted signin
+if (!isCloud()) {
+    app.route('/api/v1/basic').get(webAuth, (_: Request, res: Response) => {
+        res.status(200).send();
+    });
+}
 
 // Error handling.
 app.use((e: any, req: Request, res: Response, __: any) => {
@@ -105,7 +114,7 @@ wsServer.on('connection', (ws: WebSocket) => {
 let port = getPort();
 server.listen(port, () => {
     Logger.info(`✅ Nango Server is listening on port ${port}. OAuth callback URL: ${getGlobalOAuthCallbackUrl()}`);
-    // Logger.info(
-    //     `\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |  \n \\ | / \\ | / \\ | / \\ | / \\ | / \\ | / \\ | /\n  \\|/   \\|/   \\|/   \\|/   \\|/   \\|/   \\|/\n------------------------------------------\nLaunch Nango at http://localhost:${port}\n------------------------------------------\n  /|\\   /|\\   /|\\   /|\\   /|\\   /|\\   /|\\\n / | \\ / | \\ / | \\ / | \\ / | \\ / | \\ / | \\\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |`
-    // );
+    Logger.info(
+        `\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |  \n \\ | / \\ | / \\ | / \\ | / \\ | / \\ | / \\ | /\n  \\|/   \\|/   \\|/   \\|/   \\|/   \\|/   \\|/\n------------------------------------------\nLaunch Nango at http://localhost:${port}\n------------------------------------------\n  /|\\   /|\\   /|\\   /|\\   /|\\   /|\\   /|\\\n / | \\ / | \\ / | \\ / | \\ / | \\ / | \\ / | \\\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |`
+    );
 });

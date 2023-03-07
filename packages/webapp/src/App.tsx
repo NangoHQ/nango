@@ -9,6 +9,7 @@ import ProjectSettings from './pages/ProjectSettings';
 import PrivateRoute from './components/PrivateRoute';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { isCloud } from './utils/utils';
 
 const App = () => {
     return (
@@ -31,7 +32,7 @@ const App = () => {
                     <Route path="/project-settings" element={<ProjectSettings />} />
                 </Route>
                 <Route path="/signin" element={<Signin />} />
-                {process.env.REACT_APP_ENV === 'cloud' && <Route path="/signup" element={<Signup />} />}
+                {isCloud() && <Route path="/signup" element={<Signup />} />}
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
             <ToastContainer />

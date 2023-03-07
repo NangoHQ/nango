@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import accountService from '../services/account.service.js';
-import { getUserFromSession } from '../utils/utils.js';
+import { getUserFromSession, isCloud, getOauthCallbackUrl } from '../utils/utils.js';
 import errorManager from '../utils/error.manager.js';
 
 class AccountController {
@@ -16,6 +16,11 @@ class AccountController {
 
             if (account == null) {
                 throw new Error('account_not_found');
+            }
+
+            if (!isCloud()) {
+                account.callback_url = await getOauthCallbackUrl();
+                account.secret_key = process.env['NANGO_SECRET_KEY'] || '(none)';
             }
 
             res.status(200).send({ account: account });

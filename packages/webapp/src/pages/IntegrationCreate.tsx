@@ -88,7 +88,6 @@ export default function IntegrationCreate() {
                                             type="text"
                                             required
                                             minLength={1}
-                                            maxLength={100}
                                             className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none"
                                         />
                                     </div>
@@ -105,7 +104,6 @@ export default function IntegrationCreate() {
                                             type="text"
                                             required
                                             minLength={1}
-                                            maxLength={100}
                                             className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none"
                                         />
                                     </div>
@@ -136,8 +134,7 @@ export default function IntegrationCreate() {
                                             name="scopes"
                                             type="text"
                                             required
-                                            minLength={8}
-                                            maxLength={50}
+                                            minLength={1}
                                             className="border-border-gray bg-bg-black text-text-light-gray block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:border-white focus:outline-none focus:ring-white"
                                         />
                                     </div>

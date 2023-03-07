@@ -1,22 +1,52 @@
 import { toast } from 'react-toastify';
 import { NavigateFunction } from 'react-router';
+import storage, { LocalStorageKeys } from './local-storage';
+import { Buffer } from 'buffer';
 
 class API {
-    static async requestErrorToast() {
+    private requestErrorToast() {
         toast.error('Request error...', { position: toast.POSITION.BOTTOM_CENTER });
     }
 
-    static async serverErrorToast() {
+    private serverErrorToast() {
         toast.error('Server error...', { position: toast.POSITION.BOTTOM_CENTER });
     }
 
-    static async signup(name: string, email: string, password: string) {
+    private logoutFromClient(nav: NavigateFunction) {
+        storage.clear();
+        nav('/signin', { replace: true });
+    }
+
+    private getHeaders() {
+        let headers: Record<string, string> = { 'Content-Type': 'application/json' };
+
+        if (process.env['REACT_APP_ENV'] === 'hosted') {
+            let username = storage.getItem(LocalStorageKeys.Username);
+            let password = storage.getItem(LocalStorageKeys.Password);
+
+            if (username && password) {
+                headers['Authorization'] = 'Basic ' + Buffer.from(`${username}:${password}`).toString('base64');
+            }
+        }
+
+        return headers;
+    }
+
+    async logout(nav: NavigateFunction) {
+        const options = {
+            method: 'POST',
+            headers: this.getHeaders()
+        };
+
+        await fetch('/api/v1/logout', options);
+        this.logoutFromClient(nav);
+    }
+
+    async signup(name: string, email: string, password: string) {
         try {
             const options = {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: this.getHeaders(),
                 body: JSON.stringify({ name: name, email: email, password: password })
             };
 
@@ -26,13 +56,11 @@ class API {
         }
     }
 
-    static async signin(email: string, password: string) {
+    async signin(email: string, password: string) {
         try {
             const options = {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: this.getHeaders(),
                 body: JSON.stringify({ email: email, password: password })
             };
 
@@ -48,12 +76,26 @@ class API {
         }
     }
 
-    static async getProjectInfo(nav: NavigateFunction) {
+    async hostedSignin() {
         try {
-            let res = await fetch('/api/v1/account');
+            let res = await fetch('/api/v1/basic', { headers: this.getHeaders() });
+
+            if (res.status !== 200 && res.status !== 401) {
+                return this.serverErrorToast();
+            }
+
+            return res;
+        } catch (e) {
+            this.requestErrorToast();
+        }
+    }
+
+    async getProjectInfo(nav: NavigateFunction) {
+        try {
+            let res = await fetch('/api/v1/account', { headers: this.getHeaders() });
 
             if (res.status === 401) {
-                return nav('/signin', { replace: true });
+                return this.logoutFromClient(nav);
             }
 
             if (res.status !== 200) {
@@ -66,20 +108,18 @@ class API {
         }
     }
 
-    static async editCallbackUrl(callbackUrl: string, nav: NavigateFunction) {
+    async editCallbackUrl(callbackUrl: string, nav: NavigateFunction) {
         try {
             const options = {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: this.getHeaders(),
                 body: JSON.stringify({ callback_url: callbackUrl })
             };
 
             let res = await fetch('/api/v1/account/callback', options);
 
             if (res.status === 401) {
-                return nav('/signin', { replace: true });
+                return this.logoutFromClient(nav);
             }
 
             if (res.status !== 200) {
@@ -92,12 +132,12 @@ class API {
         }
     }
 
-    static async getIntegrationList(nav: NavigateFunction) {
+    async getIntegrationList(nav: NavigateFunction) {
         try {
-            let res = await fetch('/api/v1/integration');
+            let res = await fetch('/api/v1/integration', { headers: this.getHeaders() });
 
             if (res.status === 401) {
-                return nav('/signin', { replace: true });
+                return this.logoutFromClient(nav);
             }
 
             if (res.status !== 200) {
@@ -110,13 +150,11 @@ class API {
         }
     }
 
-    static async createIntegration(provider: string, providerConfigKey: string, clientId: string, clientSecret: string, scopes: string, nav: NavigateFunction) {
+    async createIntegration(provider: string, providerConfigKey: string, clientId: string, clientSecret: string, scopes: string, nav: NavigateFunction) {
         try {
             const options = {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: this.getHeaders(),
                 body: JSON.stringify({
                     provider: provider,
                     provider_config_key: providerConfigKey,
@@ -129,7 +167,7 @@ class API {
             let res = await fetch('/api/v1/integration', options);
 
             if (res.status === 401) {
-                return nav('/signin', { replace: true });
+                return this.logoutFromClient(nav);
             }
 
             if (res.status !== 200) {
@@ -142,12 +180,12 @@ class API {
         }
     }
 
-    static async getProviders(nav: NavigateFunction) {
+    async getProviders(nav: NavigateFunction) {
         try {
-            let res = await fetch('/api/v1/provider');
+            let res = await fetch('/api/v1/provider', { headers: this.getHeaders() });
 
             if (res.status === 401) {
-                return nav('/signin', { replace: true });
+                return this.logoutFromClient(nav);
             }
 
             if (res.status !== 200) {
@@ -160,12 +198,12 @@ class API {
         }
     }
 
-    static async getConnectionList(nav: NavigateFunction) {
+    async getConnectionList(nav: NavigateFunction) {
         try {
-            let res = await fetch('/api/v1/connection');
+            let res = await fetch('/api/v1/connection', { headers: this.getHeaders() });
 
             if (res.status === 401) {
-                return nav('/signin', { replace: true });
+                return this.logoutFromClient(nav);
             }
 
             if (res.status !== 200) {
@@ -178,14 +216,15 @@ class API {
         }
     }
 
-    static async getConnectionDetails(connectionId: string, providerConfigKey: string, nav: NavigateFunction) {
+    async getConnectionDetails(connectionId: string, providerConfigKey: string, nav: NavigateFunction) {
         try {
             let res = await fetch(
-                `/api/v1/connection/details?connection_id=${encodeURIComponent(connectionId)}&provider_config_key=${encodeURIComponent(providerConfigKey)}`
+                `/api/v1/connection/details?connection_id=${encodeURIComponent(connectionId)}&provider_config_key=${encodeURIComponent(providerConfigKey)}`,
+                { headers: this.getHeaders() }
             );
 
             if (res.status === 401) {
-                return nav('/signin', { replace: true });
+                return this.logoutFromClient(nav);
             }
 
             if (res.status !== 200) {
@@ -198,4 +237,6 @@ class API {
         }
     }
 }
-export default API;
+
+const api = new API();
+export default api;

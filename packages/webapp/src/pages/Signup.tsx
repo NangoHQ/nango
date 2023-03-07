@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import API from '../utils/api';
+import storage, { LocalStorageKeys } from '../utils/local-storage';
 
 export default function Signup() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');
@@ -20,7 +21,7 @@ export default function Signup() {
         const res = await API.signup(target.name.value, target.email.value, target.password.value);
 
         if (res?.status === 200) {
-            localStorage.setItem('auth', 'true');
+            storage.setItem(LocalStorageKeys.Authorized, true);
             navigate('/');
         } else if (res != null) {
             const errorMessage = (await res.json()).error;
