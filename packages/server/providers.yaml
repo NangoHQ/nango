@@ -39,6 +39,10 @@ brex:
     auth_mode: OAUTH2
     authorization_url: https://accounts-api.brex.com/oauth2/default/v1/authorize
     token_url: https://accounts-api.brex.com/oauth2/default/v1/token
+brex-staging:
+    auth_mode: OAUTH2
+    authorization_url: https://accounts-api.staging.brexapps.com/oauth2/default/v1/authorize
+    token_url: https://accounts-api.staging.brexapps.com/oauth2/default/v1/token
 bitbucket:
     auth_mode: OAUTH2
     authorization_url: https://bitbucket.org/site/oauth2/authorize
