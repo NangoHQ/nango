@@ -168,7 +168,7 @@ class AuthController {
             });
 
             mg.messages
-                .create('sandbox1daf037b8e274cef83a932a134bfb4d2.mailgun.org', {
+                .create('email.nango.dev', {
                     from: 'Nango <support@nango.dev>',
                     to: [user.email],
                     subject: 'Nango password reset',
