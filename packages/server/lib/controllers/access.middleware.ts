@@ -3,6 +3,7 @@ import accountService from '../services/account.service.js';
 import type { Account } from '../models.js';
 import { isCloud, setAccount, isBasicAuthEnabled } from '../utils/utils.js';
 import errorManager from '../utils/error.manager.js';
+import userService from '../services/user.service.js';
 
 export class AccessMiddleware {
     async secretKeyAuth(req: Request, res: Response, next: NextFunction) {
@@ -101,6 +102,22 @@ export class AccessMiddleware {
         }
 
         next();
+    }
+
+    async noAuth(req: Request, _: Response, next: NextFunction) {
+        if (!req.isAuthenticated()) {
+            let user = await userService.getUserById(0);
+
+            req.login(user!, function (err) {
+                if (err) {
+                    return next(err);
+                }
+
+                next();
+            });
+        } else {
+            next();
+        }
     }
 
     async basicAuth(req: Request, res: Response, next: NextFunction) {

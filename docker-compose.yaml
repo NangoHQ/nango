@@ -16,7 +16,7 @@ services:
         image: nango.docker.scarf.sh/nangohq/nango-server
         container_name: nango-server
         volumes:
-            - ${PWD}/packages/auth/providers.yaml:/usr/nango-server/src/packages/auth/providers.yaml
+            - ${PWD}/packages/server/providers.yaml:/usr/nango-server/src/packages/server/providers.yaml
         restart: always
         env_file:
             - .env

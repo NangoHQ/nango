@@ -15,7 +15,16 @@ import connectionController from './controllers/connection.controller.js';
 import authController from './controllers/auth.controller.js';
 import authMiddleware from './controllers/access.middleware.js';
 import path from 'path';
-import { dirname, getAccount, isApiAuthenticated, isUserAuthenticated, getPort, getGlobalOAuthCallbackUrl, isCloud } from './utils/utils.js';
+import {
+    dirname,
+    getAccount,
+    isApiAuthenticated,
+    isUserAuthenticated,
+    getPort,
+    getGlobalOAuthCallbackUrl,
+    isCloud,
+    isBasicAuthEnabled
+} from './utils/utils.js';
 import errorManager from './utils/error.manager.js';
 import { WebSocketServer, WebSocket } from 'ws';
 import http from 'http';
@@ -35,7 +44,9 @@ AuthClient.setup(app);
 let apiAuth = authMiddleware.publicKeyAuth.bind(authMiddleware);
 let webAuth = isCloud()
     ? [passport.authenticate('session'), authMiddleware.sessionAuth.bind(authMiddleware)]
-    : [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth.bind(authMiddleware)];
+    : isBasicAuthEnabled()
+    ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth.bind(authMiddleware)]
+    : [authMiddleware.noAuth.bind(authMiddleware)];
 
 app.use(express.json());
 app.use(cors());
