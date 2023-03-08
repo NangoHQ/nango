@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
+import API from '../utils/api';
+import storage, { LocalStorageKeys } from '../utils/local-storage';
 
 export default function Signup() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');
@@ -16,33 +18,14 @@ export default function Signup() {
             password: { value: string };
         };
 
-        const data = {
-            name: target.name.value,
-            email: target.email.value,
-            password: target.password.value
-        };
+        const res = await API.signup(target.name.value, target.email.value, target.password.value);
 
-        const options = {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data),
-            credentials: 'include' as RequestCredentials
-        };
-
-        const res = await fetch('/api/v1/signup', options);
-
-        if (res.status === 200) {
-            localStorage.setItem('auth', 'true');
+        if (res?.status === 200) {
+            storage.setItem(LocalStorageKeys.Authorized, true);
             navigate('/');
-        } else {
-            try {
-                const errorMessage = (await res.json()).error;
-                setServerErrorMessage(errorMessage);
-            } catch (_) {
-                setServerErrorMessage('Unknown error.');
-            }
+        } else if (res != null) {
+            const errorMessage = (await res.json()).error;
+            setServerErrorMessage(errorMessage);
         }
     };
 

@@ -1,6 +1,6 @@
 {
     "name": "webapp",
-    "version": "0.9.4",
+    "version": "0.10.1",
     "private": true,
     "dependencies": {
         "@geist-ui/icons": "^1.0.2",
@@ -14,6 +14,8 @@
         "@types/node": "^16.18.13",
         "@types/react": "^18.0.28",
         "@types/react-dom": "^18.0.11",
+        "buffer": "^6.0.3",
+        "env-cmd": "^10.1.0",
         "react": "^18.2.0",
         "react-code-blocks": "^0.0.9-0",
         "react-dom": "^18.2.0",
@@ -27,7 +29,11 @@
         "start": "react-scripts start",
         "build": "react-scripts build",
         "test": "react-scripts test",
-        "eject": "react-scripts eject"
+        "eject": "react-scripts eject",
+        "start:hosted": "env-cmd -f .env.hosted npm run start",
+        "start:cloud": "env-cmd -f .env.cloud npm run start",
+        "build:hosted": "env-cmd -f .env.hosted npm run build",
+        "build:cloud": "env-cmd -f .env.cloud npm run build"
     },
     "eslintConfig": {
         "extends": [

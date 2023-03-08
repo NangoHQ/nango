@@ -22,6 +22,16 @@ class UserService {
         return result[0];
     }
 
+    async getUserByResetPasswordToken(link: string): Promise<User | null> {
+        let result = await db.knex.withSchema(db.schema()).select('*').from<User>(`_nango_users`).where({ reset_password_token: link });
+
+        if (result == null || result.length == 0 || result[0] == null) {
+            return null;
+        }
+
+        return result[0];
+    }
+
     async createUser(email: string, name: string, hashedPassword: string, salt: string, accountId: number): Promise<User | null> {
         let result: void | Pick<User, 'id'> = await db.knex
             .withSchema(db.schema())
@@ -34,6 +44,13 @@ class UserService {
         }
 
         return null;
+    }
+
+    async editUser(user: User) {
+        return db.knex.withSchema(db.schema()).from<User>(`_nango_users`).where({ id: user.id }).update({
+            reset_password_token: user.reset_password_token,
+            hashed_password: user.hashed_password
+        });
     }
 }
 

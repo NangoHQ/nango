@@ -1,29 +1,35 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import API from '../utils/api';
-import storage, { LocalStorageKeys } from '../utils/local-storage';
+import { toast } from 'react-toastify';
 
 export default function Signin() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');
     const navigate = useNavigate();
+    const { token } = useParams();
 
     const handleSubmit = async (e: React.SyntheticEvent) => {
         e.preventDefault();
         setServerErrorMessage('');
 
         const target = e.target as typeof e.target & {
-            email: { value: string };
             password: { value: string };
         };
 
-        const res = await API.signin(target.email.value, target.password.value);
+        if (!token) {
+            setServerErrorMessage('Invalid reset token.');
+            return;
+        }
+
+        const res = await API.resetPassword(token, target.password.value);
 
         if (res?.status === 200) {
-            storage.setItem(LocalStorageKeys.Authorized, true);
+            toast.success('Password updated!', { position: toast.POSITION.BOTTOM_CENTER });
             navigate('/');
-        } else if (res?.status === 401) {
-            setServerErrorMessage('Invalid email or password.');
+        } else if (res?.status === 404) {
+            setServerErrorMessage('Your reset token is invalid or expired.');
+        } else {
+            setServerErrorMessage('Unkown error...');
         }
     };
 
@@ -36,35 +42,14 @@ export default function Signin() {
 
                 <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-md">
                     <div className="bg-bg-dark-gray py-8 px-4 shadow sm:rounded-lg sm:px-10">
-                        <h2 className="mt-2 text-center text-3xl font-semibold tracking-tight text-white">Sign in</h2>
+                        <h2 className="mt-2 text-center text-3xl font-semibold tracking-tight text-white">Reset Password</h2>
                         <form className="mt-6 space-y-6" onSubmit={handleSubmit}>
-                            <div>
-                                <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                    Email
-                                </label>
-                                <div className="mt-1">
-                                    <input
-                                        id="email"
-                                        name="email"
-                                        type="email"
-                                        autoComplete="email"
-                                        required
-                                        className="border-border-gray bg-bg-black text-text-light-gray focus:ring-blue block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:border-blue-500 focus:outline-none"
-                                    />
-                                </div>
-                            </div>
-
                             <div>
                                 <div className="flex justify-between">
                                     <div className="flex text-sm">
                                         <label htmlFor="password" className="text-text-light-gray block text-sm font-semibold">
-                                            Password
+                                            New Password
                                         </label>
-                                    </div>
-                                    <div className="flex text-sm">
-                                        <a href="/forgot-password" className="text-text-blue hover:text-text-light-blue ml-1">
-                                            Forgot your password?
-                                        </a>
                                     </div>
                                 </div>
                                 <div className="mt-1">
@@ -84,19 +69,11 @@ export default function Signin() {
                                     type="submit"
                                     className="border-border-blue bg-bg-dark-blue active:ring-border-blue mt-4 flex h-12 place-self-center rounded-md border px-4 pt-3 text-base font-semibold text-blue-500 shadow-sm hover:border-2 active:ring-2 active:ring-offset-2"
                                 >
-                                    Sign in
+                                    Reset
                                 </button>
                                 {serverErrorMessage && <p className="mt-6 place-self-center text-sm text-red-600">{serverErrorMessage}</p>}
                             </div>
                         </form>
-                    </div>
-                    <div className="grid">
-                        <div className="mt-4 flex place-self-center text-sm">
-                            <p className="text-text-light-gray">Need an account?</p>
-                            <Link to="/signup" className="text-text-blue hover:text-text-light-blue ml-1">
-                                Sign up
-                            </Link>
-                        </div>
                     </div>
                 </div>
             </div>

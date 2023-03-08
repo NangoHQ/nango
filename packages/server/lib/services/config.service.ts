@@ -1,4 +1,4 @@
-import type { ProviderConfig, ProviderTemplate } from '../models.js';
+import type { ProviderConfig, ProviderTemplate, Connection } from '../models.js';
 import db from '../db/database.js';
 import yaml from 'js-yaml';
 import fs from 'fs';
@@ -36,6 +36,11 @@ class ConfigService {
     }
 
     async deleteProviderConfig(providerConfigKey: string, accountId: number): Promise<number> {
+        await db.knex
+            .withSchema(db.schema())
+            .from<Connection>(`_nango_connections`)
+            .where({ provider_config_key: providerConfigKey, account_id: accountId })
+            .del();
         return db.knex.withSchema(db.schema()).from<ProviderConfig>(`_nango_configs`).where({ unique_key: providerConfigKey, account_id: accountId }).del();
     }
 
