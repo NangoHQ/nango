@@ -315,6 +315,10 @@ xero:
     token_url: https://identity.xero.com/connect/token
     authorization_params:
         response_type: code
+yahoo:
+    auth_mode: OAUTH2
+    authorization_url: https://api.login.yahoo.com/oauth2/request_auth
+    token_url: https://api.login.yahoo.com/oauth2/get_token
 zendesk:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.params.subdomain}.zendesk.com/oauth/authorizations/new
