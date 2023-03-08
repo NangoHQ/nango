@@ -41,7 +41,8 @@ let app = express();
 
 // Auth
 AuthClient.setup(app);
-let apiAuth = authMiddleware.publicKeyAuth.bind(authMiddleware);
+let apiAuth = authMiddleware.secretKeyAuth.bind(authMiddleware);
+let apiPublicAuth = authMiddleware.publicKeyAuth.bind(authMiddleware);
 let webAuth = isCloud()
     ? [passport.authenticate('session'), authMiddleware.sessionAuth.bind(authMiddleware)]
     : isBasicAuthEnabled()
@@ -54,14 +55,14 @@ app.use(cors());
 await db.knex.raw(`CREATE SCHEMA IF NOT EXISTS ${db.schema()}`);
 await db.migrate(path.join(dirname(), '../../lib/db/migrations'));
 
-// API routes (no auth).
+// API routes (no/public auth).
 app.get('/health', (_, res) => {
     res.status(200).send({ result: 'ok' });
 });
 app.route('/oauth/callback').get(oauthController.oauthCallback.bind(oauthController));
+app.route('/oauth/connect/:providerConfigKey').get(apiPublicAuth, oauthController.oauthRequest.bind(oauthController));
 
 // API routes (API key auth).
-app.route('/oauth/connect/:providerConfigKey').get(apiAuth, oauthController.oauthRequest.bind(oauthController));
 app.route('/config').get(apiAuth, configController.listProviderConfigs.bind(configController));
 app.route('/config/:providerConfigKey').get(apiAuth, configController.getProviderConfig.bind(configController));
 app.route('/config').post(apiAuth, configController.createProviderConfig.bind(configController));
