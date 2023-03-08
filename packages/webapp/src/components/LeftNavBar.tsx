@@ -13,7 +13,7 @@ export interface LeftNavBarProps {
 export default function LeftNavBar(props: LeftNavBarProps) {
     return (
         <div>
-            <div className="mt-14 border-r-2 border-border-gray flex justify-between h-full w-60">
+            <div className="mt-14 border-r-2 border-t-2 border-border-gray flex justify-between h-full w-60 fixed bg-bg-black z-50">
                 <div className="ml-4 mt-16">
                     <Link
                         to="/integration"

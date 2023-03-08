@@ -47,147 +47,149 @@ export default function ConnectionDetails() {
             <TopNavBar />
             <div className="flex h-full">
                 <LeftNavBar selectedItem={LeftNavBarItems.Connections} />
-                {connection && (
-                    <div className="mx-auto mt-14 w-largebox">
-                        <div className="mx-16 pb-40">
-                            <div className="flex justify-between">
-                                <h2 className="mt-16 text-left text-3xl font-semibold tracking-tight text-white mb-12">Connection</h2>
-                            </div>
-                            <div className="border border-border-gray rounded-md h-fit py-14 text-white text-sm">
-                                <div>
-                                    <div className="mx-8">
-                                        <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                            Connection ID
-                                        </label>
-                                        <Prism language="bash" colorScheme="dark">
-                                            {connection.connectionId}
-                                        </Prism>
-                                    </div>
+                <div className="ml-60 w-full mt-14">
+                    {connection && (
+                        <div className="mx-auto w-largebox">
+                            <div className="mx-16 pb-40">
+                                <div className="flex justify-between">
+                                    <h2 className="mt-16 text-left text-3xl font-semibold tracking-tight text-white mb-12">Connection</h2>
                                 </div>
-                                <div>
-                                    <div className="mx-8 mt-8">
-                                        <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                            Creation Date
-                                        </label>
-                                        <p className="mt-3 mb-5">{new Date(connection.creationDate).toLocaleString()}</p>
-                                    </div>
-                                </div>
-                                <div>
-                                    <div className="mx-8 mt-8">
-                                        <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                            Provider Configuration Unique Key
-                                        </label>
-                                        <p className="mt-3 mb-5">{`${connection.providerConfigKey}`}</p>
-                                    </div>
-                                </div>
-                                <div>
-                                    <div className="mx-8 mt-8">
-                                        <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                            Provider Template
-                                        </label>
-                                        <p className="mt-3 mb-5">{`${connection.provider}`}</p>
-                                    </div>
-                                </div>
-                                <div>
-                                    <div className="mx-8 mt-8">
-                                        <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                            OAuth Type
-                                        </label>
-                                        <p className="mt-3 mb-5">{connection.oauthType}</p>
-                                    </div>
-                                </div>
-                                {connection.accessToken && (
+                                <div className="border border-border-gray rounded-md h-fit py-14 text-white text-sm">
                                     <div>
-                                        <div className="mx-8 mt-8">
+                                        <div className="mx-8">
                                             <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                                Access Token
+                                                Connection ID
                                             </label>
                                             <Prism language="bash" colorScheme="dark">
-                                                {connection.accessToken}
+                                                {connection.connectionId}
                                             </Prism>
                                         </div>
                                     </div>
-                                )}
-                                {connection.expiresAt && (
                                     <div>
                                         <div className="mx-8 mt-8">
                                             <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                                Access Token
+                                                Creation Date
                                             </label>
-                                            <p className="mt-3 mb-5">{connection.expiresAt}</p>
+                                            <p className="mt-3 mb-5">{new Date(connection.creationDate).toLocaleString()}</p>
                                         </div>
                                     </div>
-                                )}
-                                {connection.refreshToken && (
                                     <div>
                                         <div className="mx-8 mt-8">
                                             <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                                Access Token
+                                                Provider Configuration Unique Key
+                                            </label>
+                                            <p className="mt-3 mb-5">{`${connection.providerConfigKey}`}</p>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div className="mx-8 mt-8">
+                                            <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
+                                                Provider Template
+                                            </label>
+                                            <p className="mt-3 mb-5">{`${connection.provider}`}</p>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div className="mx-8 mt-8">
+                                            <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
+                                                OAuth Type
+                                            </label>
+                                            <p className="mt-3 mb-5">{connection.oauthType}</p>
+                                        </div>
+                                    </div>
+                                    {connection.accessToken && (
+                                        <div>
+                                            <div className="mx-8 mt-8">
+                                                <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
+                                                    Access Token
+                                                </label>
+                                                <Prism language="bash" colorScheme="dark">
+                                                    {connection.accessToken}
+                                                </Prism>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {connection.expiresAt && (
+                                        <div>
+                                            <div className="mx-8 mt-8">
+                                                <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
+                                                    Access Token
+                                                </label>
+                                                <p className="mt-3 mb-5">{connection.expiresAt}</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {connection.refreshToken && (
+                                        <div>
+                                            <div className="mx-8 mt-8">
+                                                <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
+                                                    Access Token
+                                                </label>
+                                                <Prism language="bash" colorScheme="dark">
+                                                    {connection.refreshToken}
+                                                </Prism>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {connection.oauthToken && (
+                                        <div>
+                                            <div className="mx-8 mt-8">
+                                                <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
+                                                    OAuth Token
+                                                </label>
+                                                <Prism language="bash" colorScheme="dark">
+                                                    {connection.oauthToken}
+                                                </Prism>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {connection.oauthTokenSecret && (
+                                        <div>
+                                            <div className="mx-8 mt-8">
+                                                <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
+                                                    OAuth Token Secret
+                                                </label>
+                                                <Prism language="bash" colorScheme="dark">
+                                                    {connection.oauthTokenSecret}
+                                                </Prism>
+                                            </div>
+                                        </div>
+                                    )}
+                                    <div>
+                                        <div className="mx-8 mt-8">
+                                            <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
+                                                Connection Configuration
                                             </label>
                                             <Prism language="bash" colorScheme="dark">
-                                                {connection.refreshToken}
+                                                {JSON.stringify(connection.connectionConfig, null, 4) || '{}'}
                                             </Prism>
                                         </div>
                                     </div>
-                                )}
-                                {connection.oauthToken && (
                                     <div>
                                         <div className="mx-8 mt-8">
                                             <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                                OAuth Token
+                                                Connection Metadata
                                             </label>
                                             <Prism language="bash" colorScheme="dark">
-                                                {connection.oauthToken}
+                                                {JSON.stringify(connection.connectionMetadata, null, 4) || '{}'}
                                             </Prism>
                                         </div>
                                     </div>
-                                )}
-                                {connection.oauthTokenSecret && (
                                     <div>
                                         <div className="mx-8 mt-8">
                                             <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                                OAuth Token Secret
+                                                Raw Token Response
                                             </label>
                                             <Prism language="bash" colorScheme="dark">
-                                                {connection.oauthTokenSecret}
+                                                {JSON.stringify(connection.rawCredentials, null, 4) || '{}'}
                                             </Prism>
                                         </div>
-                                    </div>
-                                )}
-                                <div>
-                                    <div className="mx-8 mt-8">
-                                        <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                            Connection Configuration
-                                        </label>
-                                        <Prism language="bash" colorScheme="dark">
-                                            {JSON.stringify(connection.connectionConfig, null, 4) || '{}'}
-                                        </Prism>
-                                    </div>
-                                </div>
-                                <div>
-                                    <div className="mx-8 mt-8">
-                                        <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                            Connection Metadata
-                                        </label>
-                                        <Prism language="bash" colorScheme="dark">
-                                            {JSON.stringify(connection.connectionMetadata, null, 4) || '{}'}
-                                        </Prism>
-                                    </div>
-                                </div>
-                                <div>
-                                    <div className="mx-8 mt-8">
-                                        <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                            Raw Token Response
-                                        </label>
-                                        <Prism language="bash" colorScheme="dark">
-                                            {JSON.stringify(connection.rawCredentials, null, 4) || '{}'}
-                                        </Prism>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
         </div>
     );

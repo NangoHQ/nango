@@ -33,9 +33,9 @@ export default function ConnectionList() {
             <TopNavBar />
             <div className="flex h-full">
                 <LeftNavBar selectedItem={LeftNavBarItems.Connections} />
-                {connections && connections.length > 0 && (
-                    <div className="mx-auto mt-14 ">
-                        <div className="mx-16">
+                <div className="ml-60 w-full mt-14">
+                    {connections && connections.length > 0 && (
+                        <div className="px-16 w-fit mx-auto">
                             <div className="flex justify-between">
                                 <h2 className="mt-16 text-left text-3xl font-semibold tracking-tight text-white mb-12">Connections</h2>
                             </div>
@@ -70,28 +70,28 @@ export default function ConnectionList() {
                                 </table>
                             </div>
                         </div>
-                    </div>
-                )}
-                {connections && connections.length === 0 && (
-                    <div className="mx-auto mt-14 ">
-                        <div className="mx-16">
-                            <h2 className="mt-16 text-left text-3xl font-semibold tracking-tight text-white mb-12">Connections</h2>
-                            <div className="text-sm w-largebox h-40">
-                                <p className="text-white text-sm">
-                                    No Connection yet. Start by creating & testing an{' '}
-                                    <Link to="integration" className="text-text-blue">
-                                        Integration
-                                    </Link>
-                                    . Follow the{' '}
-                                    <a href="https://docs.nango.dev/quickstart" className="text-text-blue" target="_blank" rel="noreferrer">
-                                        Quickstart
-                                    </a>{' '}
-                                    for more instructions.
-                                </p>
+                    )}
+                    {connections && connections.length === 0 && (
+                        <div className="mx-auto">
+                            <div className="mx-16">
+                                <h2 className="mt-16 text-left text-3xl font-semibold tracking-tight text-white mb-12">Connections</h2>
+                                <div className="text-sm w-largebox h-40">
+                                    <p className="text-white text-sm">
+                                        No Connection yet. Start by creating & testing an{' '}
+                                        <Link to="integration" className="text-text-blue">
+                                            Integration
+                                        </Link>
+                                        . Follow the{' '}
+                                        <a href="https://docs.nango.dev/quickstart" className="text-text-blue" target="_blank" rel="noreferrer">
+                                            Quickstart
+                                        </a>{' '}
+                                        for more instructions.
+                                    </p>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
         </div>
     );

@@ -32,9 +32,9 @@ export default function IntegrationList() {
             <TopNavBar />
             <div className="flex h-full">
                 <LeftNavBar selectedItem={LeftNavBarItems.Integrations} />
-                {integrations && integrations.length > 0 && (
-                    <div className="mx-auto mt-14 ">
-                        <div className="mx-16">
+                <div className="ml-60 w-full  mt-14">
+                    {integrations && integrations.length > 0 && (
+                        <div className="px-16 w-fit mx-auto">
                             <div className="flex justify-between">
                                 <h2 className="mt-16 text-left text-3xl font-semibold tracking-tight text-white mb-12">Integrations</h2>
                                 <Link
@@ -44,7 +44,7 @@ export default function IntegrationList() {
                                     Add New
                                 </Link>
                             </div>
-                            <div className="h-fit border border-border-gray rounded-md text-white text-sm">
+                            <div className="h-fit w-fit border border-border-gray rounded-md text-white text-sm">
                                 <table className="table-auto">
                                     <tbody className="px-4">
                                         {integrations.map(({ uniqueKey, provider, connectionCount, creationDate }) => (
@@ -76,20 +76,20 @@ export default function IntegrationList() {
                                 </table>
                             </div>
                         </div>
-                    </div>
-                )}
-                {integrations && integrations.length === 0 && (
-                    <div className="mx-auto mt-14 ">
-                        <div className="mx-16">
-                            <h2 className="mt-16 text-left text-3xl font-semibold tracking-tight text-white mb-12">Integrations</h2>
-                            <div className="text-sm w-largebox h-40">
-                                <Link to="/integration/create" className="py-3 px-4 rounded-md text-sm text-black bg-white hover:bg-gray-300">
-                                    Add your first integration
-                                </Link>
+                    )}
+                    {integrations && integrations.length === 0 && (
+                        <div className="mx-auto">
+                            <div className="mx-16">
+                                <h2 className="mt-16 text-left text-3xl font-semibold tracking-tight text-white mb-12">Integrations</h2>
+                                <div className="text-sm w-largebox h-40">
+                                    <Link to="/integration/create" className="py-3 px-4 rounded-md text-sm text-black bg-white hover:bg-gray-300">
+                                        Add your first integration
+                                    </Link>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
         </div>
     );
