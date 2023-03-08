@@ -188,7 +188,7 @@ Many OAuth providers provide short-lived access tokens (30-60 minutes). Nango re
 To obtain an access token use this command:
 
 ```bash
-npx nango token:get <CONNECTION-ID> <CONFIG-KEY>
+npx nango token:get <CONFIG-KEY> <CONNECTION-ID>
 ```
 
 ### Backend SDK
