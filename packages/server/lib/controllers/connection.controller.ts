@@ -4,78 +4,21 @@ import type { NextFunction } from 'express';
 import configService from '../services/config.service.js';
 import { ProviderConfig, ProviderTemplate, Connection, ProviderAuthModes } from '../models.js';
 import analytics from '../utils/analytics.js';
-import { getAccount, getUserFromSession } from '../utils/utils.js';
+import { getAccount, getUserAndAccountFromSesstion } from '../utils/utils.js';
 import errorManager from '../utils/error.manager.js';
-import accountService from '../services/account.service.js';
 
 class ConnectionController {
     templates: { [key: string]: ProviderTemplate } = configService.getTemplates();
 
-    // Used by the CLI.
-    async getConnectionCreds(req: Request, res: Response, next: NextFunction) {
+    /**
+     * Webapp
+     */
+
+    async getConnectionWeb(req: Request, res: Response, next: NextFunction) {
         try {
-            let accountId = getAccount(res);
+            let account = (await getUserAndAccountFromSesstion(req)).account;
+
             let connectionId = req.params['connectionId'] as string;
-            let providerConfigKey = req.query['provider_config_key'] as string;
-
-            if (connectionId == null) {
-                errorManager.res(res, 'missing_connection');
-                return;
-            }
-
-            if (providerConfigKey == null) {
-                errorManager.res(res, 'missing_provider_config');
-                return;
-            }
-
-            let connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, accountId);
-
-            if (connection == null) {
-                errorManager.res(res, 'unkown_connection');
-                return;
-            }
-
-            let config: ProviderConfig | null = await configService.getProviderConfig(connection.provider_config_key, accountId);
-
-            if (config == null) {
-                errorManager.res(res, 'unknown_provider_config');
-                return;
-            }
-
-            let template: ProviderTemplate | undefined = this.templates[config.provider];
-
-            if (template == null) {
-                throw new Error('unknown_provider_template_in_config');
-            }
-
-            if (connection.credentials.type === ProviderAuthModes.OAuth2) {
-                connection.credentials = await connectionService.refreshOauth2CredentialsIfNeeded(connection, config, template, accountId);
-            }
-
-            analytics.track('server:connection_fetched', accountId, { provider: config.provider });
-
-            res.status(200).send(connection);
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    // Used by the webapp.
-    async getConnection(req: Request, res: Response, next: NextFunction) {
-        try {
-            let user = await getUserFromSession(req);
-
-            if (user == null) {
-                throw new Error('user_not_found');
-            }
-
-            let account = await accountService.getAccountById(user.account_id);
-
-            if (account == null) {
-                throw new Error('account_not_found');
-            }
-
-            let connectionId = req.query['connection_id'] as string;
             let providerConfigKey = req.query['provider_config_key'] as string;
 
             if (connectionId == null) {
@@ -135,34 +78,9 @@ class ConnectionController {
         }
     }
 
-    // Used by the CLI.
-    async listConnections(_: Request, res: Response, next: NextFunction) {
+    async getConnectionsWeb(req: Request, res: Response, next: NextFunction) {
         try {
-            let accountId = getAccount(res);
-            let connections: Object[] = await connectionService.listConnections(accountId);
-
-            analytics.track('server:connection_list_fetched', accountId);
-
-            res.status(200).send({ connections: connections });
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    // Used by the webapp.
-    async getConnections(req: Request, res: Response, next: NextFunction) {
-        try {
-            let user = await getUserFromSession(req);
-
-            if (user == null) {
-                throw new Error('user_not_found');
-            }
-
-            let account = await accountService.getAccountById(user.account_id);
-
-            if (account == null) {
-                throw new Error('account_not_found');
-            }
+            let account = (await getUserAndAccountFromSesstion(req)).account;
 
             let connections = await connectionService.listConnections(account.id);
 
@@ -187,7 +105,107 @@ class ConnectionController {
                 };
             });
 
-            res.status(200).send({ connections: result });
+            res.status(200).send({
+                connections: result.sort(function (a, b) {
+                    return new Date(b.creationDate).getTime() - new Date(a.creationDate).getTime();
+                })
+            });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async deleteConnectionWeb(req: Request, res: Response, next: NextFunction) {
+        try {
+            let account = (await getUserAndAccountFromSesstion(req)).account;
+            let connectionId = req.params['connectionId'] as string;
+            let providerConfigKey = req.query['provider_config_key'] as string;
+
+            if (connectionId == null) {
+                errorManager.res(res, 'missing_connection');
+                return;
+            }
+
+            if (providerConfigKey == null) {
+                errorManager.res(res, 'missing_provider_config');
+                return;
+            }
+
+            let connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, account.id);
+
+            if (connection == null) {
+                errorManager.res(res, 'unkown_connection');
+                return;
+            }
+
+            await connectionService.deleteConnection(connection.connection_id, providerConfigKey, account.id);
+
+            res.status(200).send();
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    /**
+     * CLI
+     */
+
+    async getConnectionCreds(req: Request, res: Response, next: NextFunction) {
+        try {
+            let accountId = getAccount(res);
+            let connectionId = req.params['connectionId'] as string;
+            let providerConfigKey = req.query['provider_config_key'] as string;
+
+            if (connectionId == null) {
+                errorManager.res(res, 'missing_connection');
+                return;
+            }
+
+            if (providerConfigKey == null) {
+                errorManager.res(res, 'missing_provider_config');
+                return;
+            }
+
+            let connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, accountId);
+
+            if (connection == null) {
+                errorManager.res(res, 'unkown_connection');
+                return;
+            }
+
+            let config: ProviderConfig | null = await configService.getProviderConfig(connection.provider_config_key, accountId);
+
+            if (config == null) {
+                errorManager.res(res, 'unknown_provider_config');
+                return;
+            }
+
+            let template: ProviderTemplate | undefined = this.templates[config.provider];
+
+            if (template == null) {
+                throw new Error('unknown_provider_template_in_config');
+            }
+
+            if (connection.credentials.type === ProviderAuthModes.OAuth2) {
+                connection.credentials = await connectionService.refreshOauth2CredentialsIfNeeded(connection, config, template, accountId);
+            }
+
+            analytics.track('server:connection_fetched', accountId, { provider: config.provider });
+
+            res.status(200).send(connection);
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async listConnections(_: Request, res: Response, next: NextFunction) {
+        try {
+            let accountId = getAccount(res);
+            let connections: Object[] = await connectionService.listConnections(accountId);
+
+            analytics.track('server:connection_list_fetched', accountId);
+
+            res.status(200).send({ connections: connections });
         } catch (err) {
             next(err);
         }

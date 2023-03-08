@@ -17,15 +17,18 @@ const App = () => {
     return (
         <>
             <Routes>
-                <Route path="/" element={<Navigate to="/integration" replace />} />
-                <Route path="/integration" element={<PrivateRoute />}>
-                    <Route path="/integration" element={<IntegrationList />} />
+                <Route path="/" element={<Navigate to="/integrations" replace />} />
+                <Route path="/integrations" element={<PrivateRoute />}>
+                    <Route path="/integrations" element={<IntegrationList />} />
                 </Route>
                 <Route path="/integration/create" element={<PrivateRoute />}>
                     <Route path="/integration/create" element={<IntegrationCreate />} />
                 </Route>
-                <Route path="/connection" element={<PrivateRoute />}>
-                    <Route path="/connection" element={<ConnectionList />} />
+                <Route path="/integration/:providerConfigKey" element={<PrivateRoute />}>
+                    <Route path="/integration/:providerConfigKey" element={<IntegrationCreate />} />
+                </Route>
+                <Route path="/connections" element={<PrivateRoute />}>
+                    <Route path="/connections" element={<ConnectionList />} />
                 </Route>
                 <Route path="/connection/:providerConfigKey/:connectionId" element={<PrivateRoute />}>
                     <Route path="/connection/:providerConfigKey/:connectionId" element={<ConnectionDetails />} />

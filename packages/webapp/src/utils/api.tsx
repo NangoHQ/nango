@@ -140,6 +140,26 @@ class API {
         }
     }
 
+    async getIntegrationDetails(providerConfigKey: string, nav: NavigateFunction) {
+        try {
+            let res = await fetch(`/api/v1/integration/${encodeURIComponent(providerConfigKey)}`, {
+                headers: this.getHeaders()
+            });
+
+            if (res.status === 401) {
+                return this.logoutFromClient(nav);
+            }
+
+            if (res.status !== 200) {
+                return this.serverErrorToast();
+            }
+
+            return res;
+        } catch (e) {
+            this.requestErrorToast();
+        }
+    }
+
     async createIntegration(provider: string, providerConfigKey: string, clientId: string, clientSecret: string, scopes: string, nav: NavigateFunction) {
         try {
             const options = {
@@ -155,6 +175,57 @@ class API {
             };
 
             let res = await fetch('/api/v1/integration', options);
+
+            if (res.status === 401) {
+                return this.logoutFromClient(nav);
+            }
+
+            if (res.status !== 200) {
+                return this.serverErrorToast();
+            }
+
+            return res;
+        } catch (e) {
+            this.requestErrorToast();
+        }
+    }
+
+    async editIntegration(provider: string, providerConfigKey: string, clientId: string, clientSecret: string, scopes: string, nav: NavigateFunction) {
+        try {
+            const options = {
+                method: 'PUT',
+                headers: this.getHeaders(),
+                body: JSON.stringify({
+                    provider: provider,
+                    provider_config_key: providerConfigKey,
+                    client_id: clientId,
+                    client_secret: clientSecret,
+                    scopes: scopes
+                })
+            };
+
+            let res = await fetch('/api/v1/integration', options);
+
+            if (res.status === 401) {
+                return this.logoutFromClient(nav);
+            }
+
+            if (res.status !== 200) {
+                return this.serverErrorToast();
+            }
+
+            return res;
+        } catch (e) {
+            this.requestErrorToast();
+        }
+    }
+
+    async deleteIntegration(providerConfigKey: string, nav: NavigateFunction) {
+        try {
+            let res = await fetch(`/api/v1/integration/${encodeURIComponent(providerConfigKey)}`, {
+                headers: this.getHeaders(),
+                method: 'DELETE'
+            });
 
             if (res.status === 401) {
                 return this.logoutFromClient(nav);
@@ -208,10 +279,30 @@ class API {
 
     async getConnectionDetails(connectionId: string, providerConfigKey: string, nav: NavigateFunction) {
         try {
-            let res = await fetch(
-                `/api/v1/connection/details?connection_id=${encodeURIComponent(connectionId)}&provider_config_key=${encodeURIComponent(providerConfigKey)}`,
-                { headers: this.getHeaders() }
-            );
+            let res = await fetch(`/api/v1/connection/${encodeURIComponent(connectionId)}?provider_config_key=${encodeURIComponent(providerConfigKey)}`, {
+                headers: this.getHeaders()
+            });
+
+            if (res.status === 401) {
+                return this.logoutFromClient(nav);
+            }
+
+            if (res.status !== 200) {
+                return this.serverErrorToast();
+            }
+
+            return res;
+        } catch (e) {
+            this.requestErrorToast();
+        }
+    }
+
+    async deleteConnection(connectionId: string, providerConfigKey: string, nav: NavigateFunction) {
+        try {
+            let res = await fetch(`/api/v1/connection/${encodeURIComponent(connectionId)}?provider_config_key=${encodeURIComponent(providerConfigKey)}`, {
+                headers: this.getHeaders(),
+                method: 'DELETE'
+            });
 
             if (res.status === 401) {
                 return this.logoutFromClient(nav);

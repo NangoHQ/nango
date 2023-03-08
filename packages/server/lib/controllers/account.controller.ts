@@ -1,22 +1,12 @@
 import type { Request, Response, NextFunction } from 'express';
 import accountService from '../services/account.service.js';
-import { getUserFromSession, isCloud, getOauthCallbackUrl } from '../utils/utils.js';
+import { getUserAndAccountFromSesstion, isCloud, getOauthCallbackUrl } from '../utils/utils.js';
 import errorManager from '../utils/error.manager.js';
 
 class AccountController {
     async getAccount(req: Request, res: Response, next: NextFunction) {
         try {
-            let user = await getUserFromSession(req);
-
-            if (user == null) {
-                throw new Error('user_not_found');
-            }
-
-            let account = await accountService.getAccountById(user.account_id);
-
-            if (account == null) {
-                throw new Error('account_not_found');
-            }
+            let account = (await getUserAndAccountFromSesstion(req)).account;
 
             if (!isCloud()) {
                 account.callback_url = await getOauthCallbackUrl();
@@ -41,13 +31,9 @@ class AccountController {
                 return;
             }
 
-            let user = await getUserFromSession(req);
+            let account = (await getUserAndAccountFromSesstion(req)).account;
 
-            if (user == null) {
-                throw new Error('user_not_found');
-            }
-
-            await accountService.editAccountCallbackUrl(req.body['callback_url'], user.account_id);
+            await accountService.editAccountCallbackUrl(req.body['callback_url'], account.id);
             res.status(200).send();
         } catch (err) {
             next(err);

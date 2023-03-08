@@ -72,11 +72,15 @@ if (isCloud()) {
 // Webapp routes (session auth).
 app.route('/api/v1/account').get(webAuth, accountController.getAccount.bind(accountController));
 app.route('/api/v1/account/callback').post(webAuth, accountController.updateCallback.bind(accountController));
-app.route('/api/v1/integration').get(webAuth, configController.listIntegrations.bind(configController));
+app.route('/api/v1/integration').get(webAuth, configController.listProviderConfigsWeb.bind(configController));
+app.route('/api/v1/integration/:providerConfigKey').get(webAuth, configController.getProviderConfigWeb.bind(configController));
+app.route('/api/v1/integration').put(webAuth, configController.editProviderConfigWeb.bind(connectionController));
+app.route('/api/v1/integration').post(webAuth, configController.createProviderConfigWeb.bind(configController));
+app.route('/api/v1/integration/:providerConfigKey').delete(webAuth, configController.deleteProviderConfigWeb.bind(connectionController));
 app.route('/api/v1/provider').get(connectionController.listProviders.bind(connectionController));
-app.route('/api/v1/integration').post(webAuth, configController.createIntegration.bind(configController));
-app.route('/api/v1/connection').get(webAuth, connectionController.getConnections.bind(connectionController));
-app.route('/api/v1/connection/details').get(webAuth, connectionController.getConnection.bind(connectionController));
+app.route('/api/v1/connection').get(webAuth, connectionController.getConnectionsWeb.bind(connectionController));
+app.route('/api/v1/connection/:connectionId').get(webAuth, connectionController.getConnectionWeb.bind(connectionController));
+app.route('/api/v1/connection/:connectionId').delete(webAuth, connectionController.deleteConnectionWeb.bind(connectionController));
 
 // Hosted signin
 if (!isCloud()) {

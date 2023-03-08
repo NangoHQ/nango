@@ -83,8 +83,26 @@ export function isUserAuthenticated(req: Request): boolean {
     return req.isAuthenticated() && req.user != null && req.user.id != null;
 }
 
-export async function getUserFromSession(req: Request): Promise<User | null> {
-    return req.user?.id != null ? userService.getUserById(req.user.id) : null;
+export async function getUserAndAccountFromSesstion(req: Request): Promise<{ user: User; account: Account }> {
+    let sessionUser = req.user;
+
+    if (sessionUser == null) {
+        throw new Error('user_not_found');
+    }
+
+    let user = await userService.getUserById(sessionUser.id);
+
+    if (user == null) {
+        throw new Error('user_not_found');
+    }
+
+    let account = await accountService.getAccountById(user.account_id);
+
+    if (account == null) {
+        throw new Error('account_not_found');
+    }
+
+    return { user: user, account: account };
 }
 
 export function getAccount(res: Response): number {

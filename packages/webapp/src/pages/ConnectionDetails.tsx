@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Prism } from '@mantine/prism';
 import API from '../utils/api';
+import { toast } from 'react-toastify';
 
 interface Connection {
     id: number;
@@ -41,6 +42,17 @@ export default function ConnectionDetails() {
         };
         getConnections();
     }, [navigate, connectionId, providerConfigKey]);
+
+    const deleteButtonClicked = async () => {
+        if (!connectionId || !providerConfigKey) return;
+
+        let res = await API.deleteConnection(connectionId, providerConfigKey, navigate);
+
+        if (res?.status === 200) {
+            toast.success('Connection deleted!', { position: toast.POSITION.BOTTOM_CENTER });
+            navigate('/connections', { replace: true });
+        }
+    };
 
     return (
         <div className="h-full">
@@ -185,6 +197,12 @@ export default function ConnectionDetails() {
                                             </Prism>
                                         </div>
                                     </div>
+                                    <button
+                                        className="mx-8 mt-16 flex h-8 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white hover:bg-red-400 bg-red-600"
+                                        onClick={deleteButtonClicked}
+                                    >
+                                        <p>Delete</p>
+                                    </button>
                                 </div>
                             </div>
                         </div>

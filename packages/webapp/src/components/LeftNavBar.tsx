@@ -16,7 +16,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
             <div className="mt-14 border-r-2 border-t-2 border-border-gray flex justify-between h-full w-60 fixed bg-bg-black z-50">
                 <div className="ml-4 mt-16">
                     <Link
-                        to="/integration"
+                        to="/integrations"
                         className={`flex h-10 rounded-md ml-4 pl-2 pr-3 pt-2.5 text-sm text-white mt-3 w-44 ${
                             props.selectedItem === LeftNavBarItems.Integrations ? 'bg-gray-800' : 'hover:bg-gray-700'
                         }`}
@@ -25,7 +25,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                         <p>Integrations</p>
                     </Link>
                     <Link
-                        to="/connection"
+                        to="/connections"
                         className={`flex h-10 rounded-md ml-4 pl-2 pr-3 pt-2.5 text-sm text-white w-44 ${
                             props.selectedItem === LeftNavBarItems.Connections ? 'bg-gray-800' : 'hover:bg-gray-700'
                         }`}

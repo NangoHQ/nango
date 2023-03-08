@@ -65,9 +65,12 @@ export default function IntegrationList() {
                                                     </div>
                                                     <div className="pl-8 flex pt-4">
                                                         <p className="mt-1.5 mr-4 text-text-dark-gray">{new Date(creationDate).toLocaleDateString()}</p>
-                                                        <button className="flex h-8 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white bg-gray-800 hover:bg-gray-700">
+                                                        <Link
+                                                            to={`/integration/${uniqueKey}`}
+                                                            className="flex h-8 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white bg-gray-800 hover:bg-gray-700"
+                                                        >
                                                             <p>View</p>
-                                                        </button>
+                                                        </Link>
                                                     </div>
                                                 </td>
                                             </tr>
