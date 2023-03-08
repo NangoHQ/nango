@@ -1,11 +1,11 @@
 import type { Request, Response, NextFunction } from 'express';
 import accountService from '../services/account.service.js';
 import type { Account } from '../models.js';
-import { isCloud, setAccount } from '../utils/utils.js';
+import { isCloud, setAccount, isBasicAuthEnabled } from '../utils/utils.js';
 import errorManager from '../utils/error.manager.js';
 
 export class AccessMiddleware {
-    async secret(req: Request, res: Response, next: NextFunction) {
+    async secretKeyAuth(req: Request, res: Response, next: NextFunction) {
         if (isCloud()) {
             let authorizationHeader = req.get('authorization');
 
@@ -62,7 +62,7 @@ export class AccessMiddleware {
         }
     }
 
-    async public(req: Request, res: Response, next: NextFunction) {
+    async publicKeyAuth(req: Request, res: Response, next: NextFunction) {
         if (isCloud()) {
             let publicKey = req.query['public_key'] as string;
 
@@ -94,13 +94,27 @@ export class AccessMiddleware {
         }
     }
 
-    async session(req: Request, res: Response, next: NextFunction) {
+    async sessionAuth(req: Request, res: Response, next: NextFunction) {
         if (!req.isAuthenticated()) {
             res.status(401).send({ error: 'Not authenticated.' });
             return;
         }
 
         next();
+    }
+
+    async basicAuth(req: Request, res: Response, next: NextFunction) {
+        // Already signed in.
+        if (req.isAuthenticated()) {
+            next();
+            return;
+        }
+
+        // Protected by basic auth: should be signed in.
+        if (isBasicAuthEnabled()) {
+            res.status(401).send({ error: 'Not authenticated.' });
+            return;
+        }
     }
 
     admin(req: Request, res: Response, next: NextFunction) {

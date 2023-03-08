@@ -38,6 +38,10 @@ export function isCloud() {
     return process.env['NANGO_CLOUD']?.toLowerCase() === 'true';
 }
 
+export function isBasicAuthEnabled() {
+    return !isCloud() && process.env['NANGO_DASHBOARD_USERNAME'] && process.env['NANGO_DASHBOARD_PASSWORD'];
+}
+
 export function dirname() {
     return path.dirname(fileURLToPath(import.meta.url));
 }

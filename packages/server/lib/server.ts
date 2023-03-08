@@ -32,10 +32,10 @@ let app = express();
 
 // Auth
 AuthClient.setup(app);
-let apiAuth = authMiddleware.public.bind(authMiddleware);
+let apiAuth = authMiddleware.publicKeyAuth.bind(authMiddleware);
 let webAuth = isCloud()
-    ? [passport.authenticate('session'), authMiddleware.session.bind(authMiddleware)]
-    : [passport.authenticate('basic', { session: false }), authMiddleware.session.bind(authMiddleware)];
+    ? [passport.authenticate('session'), authMiddleware.sessionAuth.bind(authMiddleware)]
+    : [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth.bind(authMiddleware)];
 
 app.use(express.json());
 app.use(cors());

@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Book, Slack, Github } from '@geist-ui/icons';
 import API from '../utils/api';
+import { isCloud } from '../utils/utils';
 
 export default function NavBar() {
     const navigate = useNavigate();
@@ -15,7 +16,7 @@ export default function NavBar() {
                 <div className="">
                     <img className="h-8 my-3 ml-6" src="/logo-circled.svg" alt="Your Company" />
                 </div>
-                <div className="flex">
+                <div className="flex pr-6">
                     <a
                         href="https://docs.nango.dev/quickstart"
                         target="_blank"
@@ -38,17 +39,19 @@ export default function NavBar() {
                         href="https://github.com/NangoHQ/nango"
                         target="_blank"
                         rel="noreferrer"
-                        className="flex h-8 rounded-md ml-4 pl-2 pr-3 pt-1.5 text-sm hover:bg-gray-700 text-white  mt-3"
+                        className="flex h-8 rounded-md ml-4 pl-2 pr-3 pt-1.5 text-sm hover:bg-gray-700 text-white mt-3"
                     >
                         <Github className="h-4 mr-1 mt-0.5"></Github>
                         <p>Github</p>
                     </a>
-                    <button
-                        onClick={logoutButtonClicked}
-                        className="flex h-8 rounded-md ml-4 px-3 pt-1.5 text-sm hover:bg-gray-700 text-red-600 font-semibold mt-3 mr-6"
-                    >
-                        <p>Log Out</p>
-                    </button>
+                    {isCloud() && (
+                        <button
+                            onClick={logoutButtonClicked}
+                            className="flex h-8 rounded-md ml-4 px-3 pt-1.5 text-sm hover:bg-gray-700 text-red-600 font-semibold mt-3"
+                        >
+                            <p>Log Out</p>
+                        </button>
+                    )}
                 </div>
             </div>
         </div>

@@ -1,7 +1,6 @@
 import { toast } from 'react-toastify';
 import { NavigateFunction } from 'react-router';
-import storage, { LocalStorageKeys } from './local-storage';
-import { Buffer } from 'buffer';
+import storage from './local-storage';
 
 class API {
     private requestErrorToast() {
@@ -19,15 +18,6 @@ class API {
 
     private getHeaders() {
         let headers: Record<string, string> = { 'Content-Type': 'application/json' };
-
-        if (process.env['REACT_APP_ENV'] === 'hosted') {
-            let username = storage.getItem(LocalStorageKeys.Username);
-            let password = storage.getItem(LocalStorageKeys.Password);
-
-            if (username && password) {
-                headers['Authorization'] = 'Basic ' + Buffer.from(`${username}:${password}`).toString('base64');
-            }
-        }
 
         return headers;
     }

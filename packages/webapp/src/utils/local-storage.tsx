@@ -32,8 +32,6 @@ class LocalStorage implements PersistentStorage {
 }
 
 export enum LocalStorageKeys {
-    Username = 'nango_dashboard_username',
-    Password = 'nango_dashboard_password',
     Authorized = 'nango_authorized'
 }
 

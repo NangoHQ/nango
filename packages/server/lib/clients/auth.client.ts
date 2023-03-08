@@ -4,7 +4,7 @@ import { BasicStrategy } from 'passport-http';
 import express from 'express';
 import session from 'express-session';
 import path from 'path';
-import { dirname, isCloud } from '../utils/utils.js';
+import { dirname, isCloud, isBasicAuthEnabled } from '../utils/utils.js';
 import crypto from 'crypto';
 import userService from '../services/user.service.js';
 import util from 'util';
@@ -77,8 +77,7 @@ export class AuthClient {
                 new BasicStrategy(async function (username, password, done) {
                     let user = await userService.getUserById(0);
 
-                    // Not protected.
-                    if (!process.env['NANGO_DASHBOARD_USERNAME'] || !process.env['NANGO_DASHBOARD_PASSWORD']) {
+                    if (!isBasicAuthEnabled()) {
                         return done(null, user);
                     }
 
