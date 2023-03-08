@@ -62,9 +62,11 @@ For Render, the environment variables above are automatically set for you. For H
 
 ## Securing your instance
 
-You can secure your instance by adding the `NANGO_SECRET_KEY` env variable (in the `.env` file or directly on Heroku/Render).
+### Securing the API
 
-This will require [Basic Auth](https://en.wikipedia.org/wiki/Basic_access_authentication) for all sensitive requests, e.g.:
+You can secure your instance's API by adding the `NANGO_SECRET_KEY` env variable (in the `.env` file or directly on Heroku/Render).
+
+This will require [Basic Auth](https://en.wikipedia.org/wiki/Basic_access_authentication) for all sensitive API requests, e.g.:
 
 ```bash
 curl '<INSTANCE-URL>/connection/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>' -u '<SECRET-KEY>:'
@@ -89,6 +91,19 @@ export NANGO_SECRET_KEY=<SECRET-KEY>
 :::tip
 The Frontend SDK does not need the Secret key to initiate OAuth flows.
 :::
+
+### Securing the dashboard
+
+By default, unless you used "Deploy to Render" or "Deploy to Heroku", the dashboard of your Nango instance (with access to credentials) is open to anybody who has access to the instance URL.
+
+You can secure it with Basic Auth by setting the following environment variables and restarting the server:
+
+```bash
+NANGO_DASHBOARD_USERNAME=<PICK-A-USERNAME>
+NANGO_DASHBOARD_PASSWORD=<PICK-A-PASSWORD>
+```
+
+If you used the "Deploy to Render" or "Deploy to Heroku" option these two environment variables have already been set with a random value for you. Edit them if needed.
 
 ## Telemetry
 
