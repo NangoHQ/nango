@@ -1,15 +1,5 @@
 # Advanced Configurations
 
-## Connection Metadata {#connection-metadata}
-
-Some API Providers provide important metadata during the OAuth flow that needs to be captured.
-
-For example, Braintree provides the subdomain that needs to be used to perform API requests. Fitbit provides the specific scopes that the user agreed to grant, etc.
-
-This information is captured in the `metadata` field of the Connection object.
-
-You can verify which metadata is captured for your API Provider in the [providers.yaml](https://nango.dev/oauth-providers) file under the `redirect_uri_metadata` and `token_response_metadata` fields.
-
 ## Custom Callback URL
 
 The Callback URL is the URL used by the OAuth Provider to communicate with your OAuth server, in this case the Nango server. You specify which Callback URL to use when you create an OAuth app on the Provider's developer portal.

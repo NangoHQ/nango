@@ -102,14 +102,30 @@ const sidebars = {
             label: 'Reference',
             items: [
                 {
-                    id: 'reference/cli',
+                    id: 'reference/core-concepts',
                     type: 'doc',
-                    label: 'Nango CLI'
+                    label: 'Core Concepts'
                 },
                 {
                     id: 'reference/frontend-sdk',
                     type: 'doc',
                     label: 'Frontend SDK'
+                },
+                {
+                    type: 'category',
+                    label: 'Backend SDKs & API',
+                    items: [
+                        {
+                            id: 'reference/node-sdk',
+                            type: 'doc',
+                            label: 'Node SDK'
+                        },
+                        {
+                            id: 'reference/connections-api',
+                            type: 'doc',
+                            label: 'Connections API'
+                        }
+                    ]
                 },
                 // {
                 //     id: 'reference/backend-sdk-rest-api',
@@ -120,6 +136,11 @@ const sidebars = {
                     id: 'reference/configuration',
                     type: 'doc',
                     label: 'Advanced Configuration'
+                },
+                {
+                    id: 'reference/cli',
+                    type: 'doc',
+                    label: 'Nango CLI'
                 }
             ]
         },

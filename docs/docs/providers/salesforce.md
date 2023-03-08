@@ -14,7 +14,8 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 Provider template name in Nango: `salesforce`  
 Follow our [quickstart](../quickstart.md) to add an OAuth integration with Salesforce in 5 minutes.
 
-After you obtain an access token you will also need to retrieve the `instance_url` from the raw token response. See "gotchas" below.
+**Metadata captured by Nango**  
+The `instance_url` is automatically stored in the [Connection Metadata](reference/core-concepts.md#metadata) when it gets the access token.
 
 ## App registration & publishing
 
@@ -34,4 +35,4 @@ Quick & easy for testing:
 -   Salesforce calls the `client_id` and `client_secret` the `Consumer Key` and `Consumer Secret`
 -   To enable offline data access with a refresh token, add the `refresh_token` (or its synonym, `offline_access`) scope. By default access tokens expire in ~2h (but customers can configure this value).
 -   If you encounter an error in your flow that says `invalid_client_id` [make sure your (developer) User's password does not contain any special characters](https://developer.salesforce.com/forums/?id=906F00000009ABLIA2) (yes, really.)
--   Besides the access token Salesforce also returns the `instance_url` (e.g. `https://yourInstance.salesforce.com/`), which you will need to make API calls. To access this with Nango, use the `getRawTokenResponse()` method of the Nango backend SDK.
+-   Nango automatically stores the `instance_url` (e.g. `https://yourInstance.salesforce.com/`) in the [Connection metadata](reference/core-concepts.md#metadata) for you. You can easily retrieve this with the [backend SDK](reference/node-sdk.md#connectionDetails) or [Connections API](reference/connections-api.md#connectionDetails)
