@@ -18,6 +18,10 @@ Before changing the Callback URL in Nango, you should make sure that your redire
 
 Nango Self-Hosted also supports custom callback URLs (cf. [docs](../nango-deploy/oss-instructions.md#custom-urls)).
 
+## Configuration API (programmatic integrations configuration)
+
+If you need a way to programmatically create integrations in your Nango instance please reach out to us on the [Slack community](https://www.nango.dev/slack). A Configuration API is available, but we would love to hear more about your use case first.
+
 ## Something not working as expected? Need help?
 
 If you run into any trouble with Nango or have any questions please do not hesitate to contact us - we are happy to help!

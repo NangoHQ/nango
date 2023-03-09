@@ -21,7 +21,7 @@ How you instantiate the SDK depends on your Nango deployment method:
 <Tabs groupId="deployment" queryString>
 <TabItem value="cloud" label="Nango Cloud">
 
-You will need the `Secret Key` from your [Dashboard](https://app.nango.dev/).
+You will need the `Secret Key` from your [Dashboard's project settings](https://app.nango.dev/project-settings).
 
 ```js
 import { Nango } from '@nangohq/node';
@@ -86,7 +86,7 @@ We take great care to make sure that this call to get an access token is blazing
 ## Getting Connection Details & Metadata {#connectionDetails}
 
 ```js
-let connectionDetails = await nango.getConnection('<PROVIDER-CONFIG-KEY>', '<CONNECTION-ID>');
+let connectionDetails = await nango.getConnection('<CONFIG-KEY>', '<CONNECTION-ID>');
 ```
 
 This retrieves the full Connection object from Nango, which looks like this:
@@ -120,7 +120,7 @@ The metadata field contains [structured metadata](reference/core-concepts.md#met
 ## Accessing the raw token response
 
 ```js
-let rawTokenResponse = await nango.getRawTokenResponse('<PROVIDER-CONFIG-KEY>', '<CONNECTION-ID>');
+let rawTokenResponse = await nango.getRawTokenResponse('<CONFIG-KEY>', '<CONNECTION-ID>');
 ```
 
 A fast access method for obtaining the raw token response, as returned by the OAuth provider, for a given connection. This is equivalent to getting the full connection details and then reading `fullDetails.credentials.raw`.
@@ -140,7 +140,7 @@ The return value looks like this:
     connections: [
         {
             connection_id: '<CONNECTION-ID-1>',
-            provider: '<PROVIDER-CONFIG-KEY-1>',
+            provider: '<CONFIG-KEY-1>',
             created: '2023-03-08T09:43:03.725Z'
         },
         {

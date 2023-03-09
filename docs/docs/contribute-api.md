@@ -22,18 +22,24 @@ The most commonly used configuration options are:
 ```yaml
 # All keys & slugs use lowercase and snake_case
 provider_slug: # Shorthand for the provider, ideally the provider's name. Must be unique.
+    ##########
     # Mandatory fields
+    ##########
     auth_mode: OAUTH2 # Either OAUTH1 (for OAuth 1.0a) or OAUTH2
     authorization_url: https://${connectionConfig.params.subdomain}.gitlab.com/oauth/authorize # The URL of the authorization page for the OAuth service (supports string interpolation)
     token_url: https://${connectionConfig.params.subdomain}.gitlab.com/oauth/token # The URL for the token request (supports string interpolation)
 
+    ##########
     # Optional fields
+    ##########
     authorization_params: # Additional parameters to pass along in the authorization step
         response_type: code
     token_params: # Additional parameters to pass along in the token request
         mycoolparam: value
     refresh_url: https://api.example.com/oauth/refresh # The URL to use for refreshing the access token, if different from token_url
     scope_separator: ',' # String to use to separate scopes. Defaults to ' ' (1 space) if not provided
+
+    # Metadata capture
     redirect_uri_metadata:
         - subdomain # Save the 'subdomain' query parameter value returned in the Redirect URI (Connection Metadata)
     token_response_metadata:
@@ -41,16 +47,16 @@ provider_slug: # Shorthand for the provider, ideally the provider's name. Must b
 ```
 
 :::info
-Templates support parameters using string interpolation (cf. [Connection Configuration](./reference/configuration.md#connection-config)) for dynamic URLs, etc.
+Templates support parameters using string interpolation (cf. [flow Configuration](./reference/frontend-sdk.md#connection-config)) for dynamic URLs, etc.
 :::
 
 :::info
-Verify if some [Connection Metadata](./reference/configuration.md#connection-metadata) should be captured during the OAuth flow.
+Verify if some [Connection Metadata](./reference/core-concepts.md#metadata) should be captured during the OAuth flow.
 :::
 
 ## Step 1: Add your new provider to `providers.yaml`
 
-Fork the repo and edit the `packages/auth/providers.yaml` file as explained above to add support for the new provider. The API documentation should contain all the details you need on the OAuth flow to complete this step.
+Fork the repo and edit the `packages/server/providers.yaml` file as explained above to add support for the new provider. The API documentation should contain all the details you need on the OAuth flow to complete this step.
 
 [We are here](https://nango.dev/slack) if you need help with this.
 
@@ -86,19 +92,14 @@ If your changes don't seem to be getting picked up, then try:
 docker compose restart nango-server
 
 # print the contents of the providers file from inside the container
-docker compose run nango-server cat packages/auth/providers.yaml
+docker compose run nango-server cat packages/server/providers.yaml
 ```
 
 When you are ready to test your new provider template:
 
-### 1. Add your client credentials to the local Nango Server by running the npx nango command
+### 1. Add your client credentials to the local Nango Server
 
-```
-npx nango config:create <unique-config-key> <template-name> <cliend-id> <client-secret> <scopes>
-
-```
-
-Note: if you've already configured environment variables for Nango Cloud or your own remote instance of Nango then you may need to unset those variables as they will interfere with your local testing.
+Open the [local dashboard](http://localhost:3003) in your browser and add a new Integration with your freshly added provider (it should show up in the provider dropdown).
 
 ### 2. Navigate to the Test Website and Trigger the OAuth Flow
 
@@ -106,18 +107,11 @@ The test site should be running at [http://localhost:8001/bin/quickstart.html](h
 
 You can modify the ports in the docker compose if there are any conflicts with other local services on your host machine.
 
-### 3. Request an Access Token from Your New Provider
+### 3. Check the access token in the dashboard
 
-In the cli run the npx nango command to fetch a new token or make a curl request to the locally running Nango Server.
+If all goes well you should see your new Connection in the [Connections list](http://localhost:3003/connections) in the dashboard.
 
-```
-> npx nango token:get <unique-config-key> <connection-id>
-
-
-> curl 'http://localhost:3003/connection/<connection-id>?provider_config_key=<unique-config-key>'
-```
-
-Once you've confirmed the access token was returned, then you are ready to submit a PR.
+Check the Connection details and make sure all looks as expected (access token, refresh token, metadata).
 
 ## Step 3: Add your integration to the Documentation
 
@@ -126,6 +120,8 @@ Add a file named `<provider_slug>.md` (e.g. `github.md`) corresponding to your n
 ## Step 4: Submit your PR
 
 Submit your PR with the new provider to the Nango repo. Please make sure to mention that you tested the full flow and that it works. We will review your PR asap and merge it into the main Nango repo for inclusion with the next release.
+
+Thanks a lot for your contribution!! ❤️
 
 ## Where to get help
 

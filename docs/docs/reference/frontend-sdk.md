@@ -4,7 +4,7 @@ sidebar_label: Frontend SDK
 
 # Nango Frontend SDK
 
-The Nango frontend SDK is available on NPM with the package `@nangohq/frontend`.
+The Nango frontend SDK is [available on NPM](https://www.npmjs.com/package/@nangohq/frontend) with the package `@nangohq/frontend`.
 
 ## Instantiating the frontend SDK
 

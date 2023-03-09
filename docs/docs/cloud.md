@@ -14,9 +14,10 @@ Get your cloud instance by clicking on the button above. Then follow our [Quicks
 -   Auto-updates: Always enjoy the latest & greatest provider templates with no work
 -   Encryption at rest
 -   SSL
+-   Admin panel for handling configs & metrics
 -   Server authentication: Access is protected with a secret key
+-   Multi users & team management (soon)
 -   Monitoring & alerting (soon)
--   Admin panel for handling configs & metrics (soon)
 -   Production-grade support & 24h turnaround to implement new integrations
 
 Other feature ideas or questions? We would love to help or hear your input on the [Slack community](https://nango.dev/slack)!

@@ -4,6 +4,12 @@ sidebar_label: CLI
 
 # Nango CLI
 
+:::caution
+The CLI is now deprecated in favor of the new Dashboard that ships with all Nango instance. Please use the UI moving forward.
+
+If your use case is not supported with the UI (e.g. programmatic creation of integrations/provider configs) please reach out to us on the [Slack community](https://www.nango.dev/slack). We have a workaround for you.
+:::
+
 ## Setting up the CLI
 
 The Nango CLI makes use of two environment variables to connect to your Nango instance:

@@ -12,7 +12,7 @@ For each OAuth Provider Nango has one or more Provider Templates, e.g. `brex` an
 
 Note that some OAuth Providers cover OAuth for multiple APIs: For instance, Google and Microsoft have one central OAuth service that gives you access tokens. These can be used for dozens of different APIs from these companies.
 
-## Provider Configuration & Provider Config Keys {#providerConfig}
+## Integrations & Config Keys {#integrations}
 
 To run OAuth flows for you Nango needs a few details from your app:
 
@@ -20,17 +20,17 @@ To run OAuth flows for you Nango needs a few details from your app:
 -   Your app's `client_id` and `client_secret` (this is how the OAuth provider identifies your application)
 -   The `scope`s you would like to use with the API
 
-Nango calls this bundle a Provider Configuration. You add and manage them in [your dashboard](https://app.nango.dev) or with our configuration API.
+Nango calls this bundle an Integration. You add and manage them in [your dashboard](https://app.nango.dev/integrations).
 
-### Provider Config Key {#providerConfigKey}
+### Integration Config Key {#configKey}
 
-Each Provider Configuration in Nango is identified by a unique Provider Config Key. You get to choose it.
+Each Integration in Nango is identified by a unique Config Key. You get to choose it.
 
 You use this Config Key to tell Nango for which configuration the OAuth flow should run, or for which provider the access token should be retrieved (more on this below).
 
-For most use cases we recommend you use the Provider Template name as the Provider Config Key, e.g. `google`, `slack`, `salesforce` etc.
+For most use cases we recommend you use the Provider Template name as the Config Key, e.g. `google`, `slack`, `salesforce` etc.
 
-But in some situations you may have multiple configurations for the same provider: For instance one Google config for accessing Google Calendar and one for accessing Google Drive. In this case you will need to pick unique names for each, e.g. `google-calendar` and `google-drive`.
+But in some situations you may have multiple integrations for the same provider: For instance one Google integration for accessing Google Calendar and one for accessing Google Drive. In this case you will need to pick unique names for each, e.g. `google-calendar` and `google-drive`.
 
 ## Connections and the Connection Id: How we store access tokens {#connections}
 
@@ -43,11 +43,11 @@ You tell us this Connection Id when you start the OAuth flow, and you later use 
 
 ### Picking a good Connection Id {#connectionId}
 
-The pair of `<Provider Config Key, Connection Id>` needs to be unique in your Nango instance. This means you can use the same Connection Id across different Provider Configs (e.g. use Connection Id `1` with a `google` and a `github` config).
+The pair of `<Config Key, Connection Id>` needs to be unique in your Nango instance. This means you can use the same Connection Id across different Integrations (e.g. use Connection Id `1` with a `google` and a `github` config).
 
 We recommend you use the User ID, Account ID or similar unique identifier for the Connection Id.
 
-The only exception is if you expect a user to setup multiple connections with the same Provider Configuration: For instance, if your app lets a user connect multiple Google Calendar accounts or multiple Slack workspaces. In this case you will need to pick a different value for the Connection Id, so it is unique again.
+The only exception is if you expect a user to setup multiple connections with the same Integration: For instance, if your app lets a user connect multiple Google Calendar accounts or multiple Slack workspaces. In this case you will need to pick a different value for the Connection Id, so it is unique again.
 
 ### Connection Metadata (and raw token responses) {#metadata}
 

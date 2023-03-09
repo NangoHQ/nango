@@ -204,6 +204,7 @@ const sidebars = {
                 'providers/twitter',
                 'providers/wave_accounting',
                 'providers/xero',
+                'providers/yahoo',
                 'providers/youtube',
                 'providers/zendesk',
                 'providers/zoho-crm',
