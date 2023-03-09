@@ -161,6 +161,7 @@ const sidebars = {
                 'providers/bitbucket',
                 'providers/clickup',
                 'providers/confluence',
+                'providers/contentstack',
                 'providers/discord',
                 'providers/dropbox',
                 'providers/epic-games',

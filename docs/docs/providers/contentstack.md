@@ -21,8 +21,8 @@ You need to [register as a User](https://www.contentstack.com/login/) with Conte
 ## Useful links
 
 -   [List of OAuth scopes](https://www.contentstack.com/docs/developers/developer-hub/oauth-scopes/)
--  [Contentstack Oauth2 Documentation](https://www.contentstack.com/docs/developers/developer-hub/contentstack-oauth)
+-   [Contentstack Oauth2 Documentation](https://www.contentstack.com/docs/developers/developer-hub/contentstack-oauth)
 
 ## API specific gotchas
 
-- Access Tokens
+_No gotchas yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
