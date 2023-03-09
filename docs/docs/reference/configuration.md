@@ -2,21 +2,28 @@
 
 ## Custom Callback URL
 
-The Callback URL is the URL used by the OAuth Provider to communicate with your OAuth server, in this case the Nango server. You specify which Callback URL to use when you create an OAuth app on the Provider's developer portal.
-
-Nango Cloud uses the following Callback URL: `https://api.nango.dev/oauth/callback`.
-
 :::info
-When specifying this callback URL to the Provider, please copy/paste it exactly. Any difference (e.g. a trailing `/`) could cause the Provider to reject the OAuth requests.
+When specifying the callback URL to the Provider, please copy/paste it exactly. Any difference (e.g. a trailing `/`) could cause the Provider to reject the OAuth requests.
 :::
 
-Nango Cloud lets you customize the Callback URL, to use your own domain instead of `https://api.nango.dev`, on your [Dashboard](https://app.nango.dev/). When using a custom Callback URL, you should redirect any request made to your Callback URL to `https://api.nango.dev/oauth/callback`, passing all parameters along. The simplest way to do this is to use a 308 redirect.
+By default, Nango Cloud uses the following callback URL: `https://api.nango.dev/oauth/callback`.
 
-:::info
-Before changing the Callback URL in Nango, you should make sure that your redirect works and that your OAuth app is configured to use the new Callback URL, otherwise the OAuth requests will be rejected by the Provider.
+Because most OAuth providers show the callback URL on the Authorization page to the user, you may want to use a callback URL hosted on your own domain. For instance: `https://my-awesome-app.com/oauth-callback`.
+
+Nango Cloud lets you customize the callback URL on your [Dashboard's project settings](https://app.nango.dev/project-settings).
+
+When using a custom callback URL you should redirect any request made to your callback URL to `https://api.nango.dev/oauth/callback` AND pass along all parameters exactly as you received them. The simplest way to do this is to use a 308 redirect.
+
+:::caution
+Before changing the callback URL in Nango:
+
+1. You should make sure that your redirect works
+2. That your OAuth app, as registered with the provider, has the new callback URL whitelisted.
+
+Otherwise the OAuth requests will fail or get rejected by the provider.
 :::
 
-Nango Self-Hosted also supports custom callback URLs (cf. [docs](../nango-deploy/oss-instructions.md#custom-urls)).
+Nango Self-Hosted also supports [custom callback URLs](nango-deploy/oss-instructions.md#custom-urls).
 
 ## Configuration API (programmatic integrations configuration)
 
