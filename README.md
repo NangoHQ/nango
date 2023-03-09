@@ -87,13 +87,13 @@ Nango's community continuously maintains & expands API templates.
 ## 🚀 Demo & Quickstart
 
 ### 1 minute demo
-[![Watch demo on YouTube](https://docs.nango.dev/img/nango-demo-video-yt-thumbnail.png)](https://www.youtube.com/watch?v=o-qwrdWDeHg)
+
+[![Watch demo on YouTube](https://docs.nango.dev/img/nango-demo-video-yt-thumbnail.png)](https://youtu.be/S0VJx2KPCQg)
 
 ### Implement OAuth for any API in 15 minutes
 
 Ready to try Nango in your own app?  
 Follow our [Quickstart](https://docs.nango.dev/quickstart) to implement OAuth for your favorite API in your application in 15 minutes.
-
 
 ## 🔍 Where to learn more
 
