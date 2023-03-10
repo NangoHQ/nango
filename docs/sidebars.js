@@ -159,6 +159,7 @@ const sidebars = {
                 'providers/braintree',
                 'providers/brex',
                 'providers/bitbucket',
+                'providers/calendly',
                 'providers/clickup',
                 'providers/confluence',
                 'providers/contentstack',
