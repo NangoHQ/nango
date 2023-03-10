@@ -350,3 +350,9 @@ zoom:
     token_url: https://zoom.us/oauth/token
     authorization_params:
         response_type: code
+calendly:
+    auth_mode: OAUTH2
+    authorization_url: https://auth.calendly.com/oauth/authorize
+    token_url: https://auth.calendly.com/oauth/token
+    authorization_params:
+        response_type: code
