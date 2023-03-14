@@ -214,7 +214,9 @@ class OAuthController {
         const { state } = req.query;
 
         if (state == null) {
-            throw new Error('No state found in callback');
+            let e = new Error('No state found in callback');
+            errorManager.report(e, { metadata: { request: JSON.stringify(req) } });
+            throw e;
         }
 
         const session: OAuthSession = this.sessionStore[state as string] as OAuthSession;

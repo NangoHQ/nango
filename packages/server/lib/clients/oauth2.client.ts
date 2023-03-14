@@ -70,7 +70,7 @@ export async function getFreshOAuth2Credentials(connection: Connection, config: 
 
         return newCredentials;
     } catch (e) {
-        errorManager.report(e, { accountId: connection.account_id, metadata: { request: JSON.stringify(e) } });
+        errorManager.report(e, { accountId: connection.account_id });
         throw new Error(`There was a problem refreshing the OAuth 2 credentials, operation failed: ${(e as Error).message}`);
     }
 }
