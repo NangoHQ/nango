@@ -63,9 +63,13 @@ export class AuthClient {
                         return cb(null, false, { message: 'Incorrect email or password.' });
                     }
 
-                    let hashedPassword = await util.promisify(crypto.pbkdf2)(password, user.salt, 310000, 32, 'sha256');
+                    let proposedHashedPassword = await util.promisify(crypto.pbkdf2)(password, user.salt, 310000, 32, 'sha256');
+                    let actualHashedPassword = Buffer.from(user.hashed_password, 'base64');
 
-                    if (!crypto.timingSafeEqual(Buffer.from(user.hashed_password, 'base64'), hashedPassword)) {
+                    if (
+                        proposedHashedPassword.length !== actualHashedPassword.length ||
+                        !crypto.timingSafeEqual(actualHashedPassword, proposedHashedPassword)
+                    ) {
                         return cb(null, false, { message: 'Incorrect email or password.' });
                     }
 
