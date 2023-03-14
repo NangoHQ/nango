@@ -94,7 +94,7 @@ The Frontend SDK does not need the Secret key to initiate OAuth flows.
 
 ### Securing the dashboard
 
-By default, unless you used "Deploy to Render" or "Deploy to Heroku", the dashboard of your Nango instance (with access to credentials) is open to anybody who has access to the instance URL.
+By default, the dashboard of your Nango instance is open to anybody who has access to your instance URL.
 
 You can secure it with Basic Auth by setting the following environment variables and restarting the server:
 
@@ -102,8 +102,6 @@ You can secure it with Basic Auth by setting the following environment variables
 NANGO_DASHBOARD_USERNAME=<PICK-A-USERNAME>
 NANGO_DASHBOARD_PASSWORD=<PICK-A-PASSWORD>
 ```
-
-If you used the "Deploy to Render" or "Deploy to Heroku" option these two environment variables have already been set with a random value for you. Edit them if needed.
 
 ## Telemetry
 

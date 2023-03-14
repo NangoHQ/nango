@@ -8,7 +8,7 @@ import TabItem from '@theme/TabItem';
 # Quickstart: Add Nango to your app
 
 :::tip
-Just want to see Nango in Action? Check out our [1 minute demo video](introduction.md#demo)
+Just want to see Nango in Action? Check out our [1min demo video](introduction.md#demo)
 :::
 
 Follow these 4 steps to run OAuth flows with Nango in your app in 15 minutes.
@@ -26,7 +26,7 @@ The easiest and fastest way to get a production ready Nango instance is with Nan
     </a>
 <br /><br />
 
-After you sign up you should be redirected to the [Integrations page](https://app.nango.dev/integrations). You are ready for step 2!
+After signing up, open the [dashboard](https://app.nango.dev/integrations).
 
   </TabItem>
   <TabItem value="localhost" label="Localhost">
@@ -37,7 +37,7 @@ git clone https://github.com/NangoHQ/nango-quickstart.git && cd nango-quickstart
 docker compose up # Keep the tab open
 ```
 
-After you see the message that Nango is running, open the [dashboard](http://localhost:3003/) in your browser.
+Once Nango is running locally, open the [dashboard](http://localhost:3003/) in your browser.
 
   </TabItem>
   <TabItem value="self-hosted" label="Self-hosted">
@@ -49,16 +49,16 @@ You can self-host Nango on a single machine with our docker images. Check the [N
 <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy to heroku" width="200"/>
 </a>
 
-Once you have setup your instance, open the dashboard at `https://<NANGO-HOST-AND-PORT>`.
+Once Nango is running on your instance, open the dashboard at `https://<INSTANCE-URL>:3003`.
 
   </TabItem>
 </Tabs>
 
 ## Step 2: Configure your API/Integration
 
-Click the "Add New" button on the dashboard's integrations page, it will ask for you for 4 things:
+Click the "Add New" button on the dashboard's `Integrations` page, it will ask for you for 4 things:
 
-1. Find your Provider/API in the dropdown. If needed, we also have a [list of supported APIs](/providers) in the docs here.
+1. Find your Provider/API in the dropdown.
 
 2. Decide what this config should be called in Nango, we call this the `<CONFIG-KEY>` here and the UI calls it the "Unique Key". Most people pick the same name as the API, e.g. `github`.
 
@@ -163,11 +163,11 @@ Many OAuth providers provide short-lived access tokens (30-60 minutes). Nango re
 
 ### Dashboard
 
-Find the Connection in your [dashboard's "Connections" page](https://app.nango.dev/connections). Click "View" to see the current access token and details.
+Find the Connection in your dashboard's `Connections` page. Click "View" to see the current access token and details.
 
 ### Backend SDK
 
-If you work with Node, Nango offers a [node SDK](reference/node-sdk.md) to retrieve tokens (more languages coming).
+If you work with Node, Nango offers a [Node SDK](reference/node-sdk.md) to retrieve tokens (more languages coming).
 
 <Tabs groupId="deployment" queryString>
   <TabItem value="cloud" label="Nango Cloud">
@@ -209,7 +209,7 @@ let accessToken = await nango.getToken('<CONFIG-KEY>', '<CONNECTION-ID>');
 
 ### REST API
 
-You can use the Nango [Connections REST API](reference/connections-api.md) to retrieve connection details & the current access token:
+You can also use the Nango [Connections REST API](reference/connections-api.md) to retrieve connection details & the current access token:
 
 <Tabs groupId="deployment" queryString>
   <TabItem value="cloud" label="Nango Cloud">

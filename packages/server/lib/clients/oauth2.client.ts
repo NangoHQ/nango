@@ -15,6 +15,7 @@ import { AuthorizationCode } from 'simple-oauth2';
 import connectionsManager from '../services/connection.service.js';
 import type { ProviderConfig } from '../models.js';
 import { interpolateString } from '../utils/utils.js';
+import errorManager from '../utils/error.manager.js';
 
 // Simple OAuth 2 does what it says on the tin: A simple, no-frills client for OAuth 2 that implements the 3 most common grant_types.
 // Well maintained, I like :-)
@@ -69,6 +70,7 @@ export async function getFreshOAuth2Credentials(connection: Connection, config: 
 
         return newCredentials;
     } catch (e) {
+        errorManager.report(e, { accountId: connection.account_id, metadata: { request: JSON.stringify(e) } });
         throw new Error(`There was a problem refreshing the OAuth 2 credentials, operation failed: ${(e as Error).message}`);
     }
 }
