@@ -319,6 +319,10 @@ yahoo:
     auth_mode: OAUTH2
     authorization_url: https://api.login.yahoo.com/oauth2/request_auth
     token_url: https://api.login.yahoo.com/oauth2/get_token
+zapier-nla:
+    auth_mode: OAUTH2
+    authorization_url: https://nla.zapier.com/oauth/authorize/
+    token_url: https://nla.zapier.com/oauth/token/
 zendesk:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.params.subdomain}.zendesk.com/oauth/authorizations/new
