@@ -11,7 +11,7 @@ import {
     OAuthBodyFormat,
     Connection
 } from '../models.js';
-import { AuthorizationCode } from 'simple-oauth2';
+import { AuthorizationCode, AccessToken } from 'simple-oauth2';
 import connectionsManager from '../services/connection.service.js';
 import type { ProviderConfig } from '../models.js';
 import { interpolateString } from '../utils/utils.js';
@@ -60,9 +60,19 @@ export async function getFreshOAuth2Credentials(connection: Connection, config: 
         additionalParams = template.token_params;
     }
 
+    var rawNewAccessToken: AccessToken;
+
     try {
-        const rawNewAccessToken = await oldAccessToken.refresh(additionalParams);
-        const newCredentials = connectionsManager.parseRawCredentials(rawNewAccessToken.token, ProviderAuthModes.OAuth2) as OAuth2Credentials;
+        rawNewAccessToken = await oldAccessToken.refresh(additionalParams);
+    } catch (e) {
+        e = new Error(`refresh_token_external_error: ${JSON.stringify(e)}`);
+        errorManager.report(e, { accountId: connection.account_id });
+        throw e;
+    }
+
+    var newCredentials: OAuth2Credentials;
+    try {
+        newCredentials = connectionsManager.parseRawCredentials(rawNewAccessToken.token, ProviderAuthModes.OAuth2) as OAuth2Credentials;
 
         if (!newCredentials.refresh_token && credentials.refresh_token != null) {
             newCredentials.refresh_token = credentials.refresh_token;
@@ -70,7 +80,7 @@ export async function getFreshOAuth2Credentials(connection: Connection, config: 
 
         return newCredentials;
     } catch (e) {
-        errorManager.report(e, { accountId: connection.account_id });
-        throw new Error(`There was a problem refreshing the OAuth 2 credentials, operation failed: ${(e as Error).message}`);
+        errorManager.report('refresh_token_parsing_error', { accountId: connection.account_id });
+        throw e;
     }
 }

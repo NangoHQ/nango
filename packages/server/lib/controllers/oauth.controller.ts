@@ -194,7 +194,7 @@ class OAuthController {
         try {
             tokenResult = await oAuth1Client.getOAuthRequestToken();
         } catch (e) {
-            errorManager.report(e, { accountId: session.accountId });
+            errorManager.report(new Error('token_retrieval_error'), { accountId: session.accountId, metadata: e as { statusCode: number; data?: any } });
             return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.TokenError());
         }
 
@@ -215,7 +215,7 @@ class OAuthController {
 
         if (state == null) {
             let e = new Error('No state found in callback');
-            errorManager.report(e, { metadata: { request: JSON.stringify(req) } });
+            errorManager.report(e, { metadata: errorManager.getExpressRequestContext(req) });
             throw e;
         }
 
