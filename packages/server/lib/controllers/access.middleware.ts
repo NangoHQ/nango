@@ -11,28 +11,28 @@ export class AccessMiddleware {
             let authorizationHeader = req.get('authorization');
 
             if (!authorizationHeader) {
-                return errorManager.res(res, 'missing_auth_header');
+                return errorManager.errRes(res, 'missing_auth_header');
             }
 
             let secret = authorizationHeader.split('Bearer ').pop();
 
             if (!secret) {
-                return errorManager.res(res, 'malformed_auth_header');
+                return errorManager.errRes(res, 'malformed_auth_header');
             }
 
             if (!/^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i.test(secret)) {
-                return errorManager.res(res, 'invalid_secret_key_format');
+                return errorManager.errRes(res, 'invalid_secret_key_format');
             }
 
             var account: Account | null;
             try {
                 account = await accountService.getAccountBySecretKey(secret);
             } catch (_) {
-                return errorManager.res(res, 'malformed_auth_header');
+                return errorManager.errRes(res, 'malformed_auth_header');
             }
 
             if (account == null) {
-                return errorManager.res(res, 'unkown_account');
+                return errorManager.errRes(res, 'unkown_account');
             }
 
             setAccount(account.id, res);
@@ -50,13 +50,13 @@ export class AccessMiddleware {
             const authorizationHeader = req.get('authorization');
 
             if (!authorizationHeader) {
-                return errorManager.res(res, 'missing_auth_header');
+                return errorManager.errRes(res, 'missing_auth_header');
             }
 
             const { providedUser } = this.fromBasicAuth(authorizationHeader);
 
             if (providedUser !== secretKey) {
-                return errorManager.res(res, 'invalid_secret_key');
+                return errorManager.errRes(res, 'invalid_secret_key');
             }
 
             next();
@@ -68,11 +68,11 @@ export class AccessMiddleware {
             let publicKey = req.query['public_key'] as string;
 
             if (!publicKey) {
-                return errorManager.res(res, 'missing_public_key');
+                return errorManager.errRes(res, 'missing_public_key');
             }
 
             if (!/^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i.test(publicKey)) {
-                return errorManager.res(res, 'invalid_public_key');
+                return errorManager.errRes(res, 'invalid_public_key');
             }
 
             var account: Account | null | undefined;
@@ -80,11 +80,11 @@ export class AccessMiddleware {
                 account = await accountService.getAccountByPublicKey(publicKey);
             } catch (e) {
                 errorManager.report(e);
-                return errorManager.res(res, 'unkown_account');
+                return errorManager.errRes(res, 'unkown_account');
             }
 
             if (account == null) {
-                return errorManager.res(res, 'unkown_account');
+                return errorManager.errRes(res, 'unkown_account');
             }
 
             setAccount(account.id, res);
@@ -136,24 +136,24 @@ export class AccessMiddleware {
 
     admin(req: Request, res: Response, next: NextFunction) {
         if (!isCloud()) {
-            return errorManager.res(res, 'only_nango_cloud');
+            return errorManager.errRes(res, 'only_nango_cloud');
         }
 
         const adminKey = process.env['NANGO_ADMIN_KEY'];
 
         if (!adminKey) {
-            return errorManager.res(res, 'admin_key_configuration');
+            return errorManager.errRes(res, 'admin_key_configuration');
         }
 
         let authorizationHeader = req.get('authorization');
 
         if (!authorizationHeader) {
-            return errorManager.res(res, 'missing_auth_header');
+            return errorManager.errRes(res, 'missing_auth_header');
         }
 
         let candidateKey = authorizationHeader.split('Bearer ').pop();
         if (candidateKey !== adminKey) {
-            return errorManager.res(res, 'invalid_admin_key');
+            return errorManager.errRes(res, 'invalid_admin_key');
         }
 
         next();

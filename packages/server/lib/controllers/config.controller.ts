@@ -5,6 +5,7 @@ import analytics from '../utils/analytics.js';
 import { getAccount, getUserAndAccountFromSesstion } from '../utils/utils.js';
 import errorManager from '../utils/error.manager.js';
 import connectionService from '../services/connection.service.js';
+import { NangoError } from '../utils/error.js';
 
 class ConfigController {
     /**
@@ -43,46 +44,46 @@ class ConfigController {
             let account = (await getUserAndAccountFromSesstion(req)).account;
 
             if (req.body == null) {
-                errorManager.res(res, 'missing_body');
+                errorManager.errRes(res, 'missing_body');
                 return;
             }
 
             if (req.body['provider_config_key'] == null) {
-                errorManager.res(res, 'missing_provider_config');
+                errorManager.errRes(res, 'missing_provider_config');
                 return;
             }
 
             if (req.body['provider'] == null) {
-                errorManager.res(res, 'missing_provider_template');
+                errorManager.errRes(res, 'missing_provider_template');
                 return;
             }
 
             let provider = req.body['provider'];
 
             if (!configService.checkProviderTemplateExists(provider)) {
-                errorManager.res(res, 'unknown_provider_template');
+                errorManager.errRes(res, 'unknown_provider_template');
                 return;
             }
 
             if (req.body['client_id'] == null) {
-                errorManager.res(res, 'missing_client_id');
+                errorManager.errRes(res, 'missing_client_id');
                 return;
             }
 
             if (req.body['client_secret'] == null) {
-                errorManager.res(res, 'missing_client_secret');
+                errorManager.errRes(res, 'missing_client_secret');
                 return;
             }
 
             if (req.body['scopes'] == null) {
-                errorManager.res(res, 'missing_scopes');
+                errorManager.errRes(res, 'missing_scopes');
                 return;
             }
 
             let uniqueConfigKey = req.body['provider_config_key'];
 
             if ((await configService.getProviderConfig(uniqueConfigKey, account.id)) != null) {
-                errorManager.res(res, 'duplicate_provider_config');
+                errorManager.errRes(res, 'duplicate_provider_config');
                 return;
             }
 
@@ -105,7 +106,7 @@ class ConfigController {
                 analytics.track('server:config_created', account.id, { provider: config.provider });
                 res.status(200).send();
             } else {
-                throw new Error('provider_config_creation_failure');
+                throw new NangoError('provider_config_creation_failure');
             }
         } catch (err) {
             next(err);
@@ -117,30 +118,30 @@ class ConfigController {
             let account = (await getUserAndAccountFromSesstion(req)).account;
 
             if (req.body == null) {
-                errorManager.res(res, 'missing_body');
+                errorManager.errRes(res, 'missing_body');
                 return;
             }
 
             if (req.body['provider_config_key'] == null) {
-                errorManager.res(res, 'missing_provider_config');
+                errorManager.errRes(res, 'missing_provider_config');
                 return;
             }
 
             if (req.body['provider'] == null) {
-                errorManager.res(res, 'missing_provider_template');
+                errorManager.errRes(res, 'missing_provider_template');
                 return;
             }
             if (req.body['client_id'] == null) {
-                errorManager.res(res, 'missing_client_id');
+                errorManager.errRes(res, 'missing_client_id');
                 return;
             }
             if (req.body['client_secret'] == null) {
-                errorManager.res(res, 'missing_client_secret');
+                errorManager.errRes(res, 'missing_client_secret');
                 return;
             }
 
             if (req.body['scopes'] == null) {
-                errorManager.res(res, 'missing_scopes');
+                errorManager.errRes(res, 'missing_scopes');
                 return;
             }
 
@@ -156,7 +157,7 @@ class ConfigController {
             let oldConfig = await configService.getProviderConfig(newConfig.unique_key, account.id);
 
             if (oldConfig == null) {
-                errorManager.res(res, 'unknown_provider_config');
+                errorManager.errRes(res, 'unknown_provider_config');
                 return;
             }
 
@@ -173,7 +174,7 @@ class ConfigController {
             let providerConfigKey = req.params['providerConfigKey'] as string;
 
             if (providerConfigKey == null) {
-                errorManager.res(res, 'missing_provider_config');
+                errorManager.errRes(res, 'missing_provider_config');
                 return;
             }
 
@@ -191,14 +192,14 @@ class ConfigController {
             let providerConfigKey = req.params['providerConfigKey'] as string;
 
             if (providerConfigKey == null) {
-                errorManager.res(res, 'missing_provider_config');
+                errorManager.errRes(res, 'missing_provider_config');
                 return;
             }
 
             let config = await configService.getProviderConfig(providerConfigKey, account.id);
 
             if (config == null) {
-                errorManager.res(res, 'unknown_provider_config');
+                errorManager.errRes(res, 'unknown_provider_config');
                 return;
             }
 
@@ -236,14 +237,14 @@ class ConfigController {
             let providerConfigKey = req.params['providerConfigKey'] as string;
 
             if (providerConfigKey == null) {
-                errorManager.res(res, 'missing_provider_config');
+                errorManager.errRes(res, 'missing_provider_config');
                 return;
             }
 
             let config = await configService.getProviderConfig(providerConfigKey, accountId);
 
             if (config == null) {
-                errorManager.res(res, 'unknown_provider_config');
+                errorManager.errRes(res, 'unknown_provider_config');
                 return;
             }
 
@@ -257,46 +258,46 @@ class ConfigController {
         try {
             let accountId = getAccount(res);
             if (req.body == null) {
-                errorManager.res(res, 'missing_body');
+                errorManager.errRes(res, 'missing_body');
                 return;
             }
 
             if (req.body['provider_config_key'] == null) {
-                errorManager.res(res, 'missing_provider_config');
+                errorManager.errRes(res, 'missing_provider_config');
                 return;
             }
 
             if (req.body['provider'] == null) {
-                errorManager.res(res, 'missing_provider_template');
+                errorManager.errRes(res, 'missing_provider_template');
                 return;
             }
 
             let provider = req.body['provider'];
 
             if (!configService.checkProviderTemplateExists(provider)) {
-                errorManager.res(res, 'unknown_provider_template');
+                errorManager.errRes(res, 'unknown_provider_template');
                 return;
             }
 
             if (req.body['oauth_client_id'] == null) {
-                errorManager.res(res, 'missing_client_id');
+                errorManager.errRes(res, 'missing_client_id');
                 return;
             }
 
             if (req.body['oauth_client_secret'] == null) {
-                errorManager.res(res, 'missing_client_secret');
+                errorManager.errRes(res, 'missing_client_secret');
                 return;
             }
 
             if (req.body['oauth_scopes'] == null) {
-                errorManager.res(res, 'missing_scopes');
+                errorManager.errRes(res, 'missing_scopes');
                 return;
             }
 
             let uniqueConfigKey = req.body['provider_config_key'];
 
             if ((await configService.getProviderConfig(uniqueConfigKey, accountId)) != null) {
-                errorManager.res(res, 'duplicate_provider_config');
+                errorManager.errRes(res, 'duplicate_provider_config');
                 return;
             }
 
@@ -321,7 +322,7 @@ class ConfigController {
                 analytics.track('server:config_created', accountId, { provider: config.provider });
                 res.status(200).send({ config_id: configId });
             } else {
-                throw new Error('provider_config_creation_failure');
+                throw new NangoError('provider_config_creation_failure');
             }
         } catch (err) {
             next(err);
@@ -332,30 +333,30 @@ class ConfigController {
         try {
             let accountId = getAccount(res);
             if (req.body == null) {
-                errorManager.res(res, 'missing_body');
+                errorManager.errRes(res, 'missing_body');
                 return;
             }
 
             if (req.body['provider_config_key'] == null) {
-                errorManager.res(res, 'missing_provider_config');
+                errorManager.errRes(res, 'missing_provider_config');
                 return;
             }
 
             if (req.body['provider'] == null) {
-                errorManager.res(res, 'missing_provider_template');
+                errorManager.errRes(res, 'missing_provider_template');
                 return;
             }
             if (req.body['oauth_client_id'] == null) {
-                errorManager.res(res, 'missing_client_id');
+                errorManager.errRes(res, 'missing_client_id');
                 return;
             }
             if (req.body['oauth_client_secret'] == null) {
-                errorManager.res(res, 'missing_client_secret');
+                errorManager.errRes(res, 'missing_client_secret');
                 return;
             }
 
             if (req.body['oauth_scopes'] == null) {
-                errorManager.res(res, 'missing_scopes');
+                errorManager.errRes(res, 'missing_scopes');
                 return;
             }
 
@@ -371,7 +372,7 @@ class ConfigController {
             let oldConfig = await configService.getProviderConfig(newConfig.unique_key, accountId);
 
             if (oldConfig == null) {
-                errorManager.res(res, 'unknown_provider_config');
+                errorManager.errRes(res, 'unknown_provider_config');
                 return;
             }
 
@@ -388,7 +389,7 @@ class ConfigController {
             let providerConfigKey = req.params['providerConfigKey'] as string;
 
             if (providerConfigKey == null) {
-                errorManager.res(res, 'missing_provider_config');
+                errorManager.errRes(res, 'missing_provider_config');
                 return;
             }
 

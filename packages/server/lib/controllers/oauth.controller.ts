@@ -249,7 +249,7 @@ class OAuthController {
 
             return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownAuthMode(session.authMode));
         } catch (e) {
-            errorManager.report(e, { accountId: session?.accountId, metadata: { request: JSON.stringify(req) } });
+            errorManager.report(e, { accountId: session?.accountId, metadata: errorManager.getExpressRequestContext(req) });
             return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError());
         }
     }

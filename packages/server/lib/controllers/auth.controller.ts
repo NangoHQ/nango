@@ -10,6 +10,7 @@ import jwt from 'jsonwebtoken';
 import Mailgun from 'mailgun.js';
 import type { User } from '../models.js';
 import formData from 'form-data';
+import { NangoError } from '../utils/error.js';
 
 class AuthController {
     async signin(_: Request, res: Response, next: NextFunction) {
@@ -37,37 +38,37 @@ class AuthController {
     async signup(req: Request, res: Response, next: NextFunction) {
         try {
             if (req.body == null) {
-                errorManager.res(res, 'missing_body');
+                errorManager.errRes(res, 'missing_body');
                 return;
             }
 
             let email = req.body['email'];
             if (email == null) {
-                errorManager.res(res, 'missing_email_param');
+                errorManager.errRes(res, 'missing_email_param');
                 return;
             }
 
             let name = req.body['name'];
             if (name == null) {
-                errorManager.res(res, 'missing_name_param');
+                errorManager.errRes(res, 'missing_name_param');
                 return;
             }
 
             let password = req.body['password'];
             if (password == null) {
-                errorManager.res(res, 'missing_password_param');
+                errorManager.errRes(res, 'missing_password_param');
                 return;
             }
 
             if ((await userService.getUserByEmail(email)) != null) {
-                errorManager.res(res, 'duplicate_account');
+                errorManager.errRes(res, 'duplicate_account');
                 return;
             }
 
             let account = await accountService.createAccount(`${name}'s Organization`);
 
             if (account == null) {
-                throw new Error('account_creation_failure');
+                throw new NangoError('account_creation_failure');
             }
 
             let salt = crypto.randomBytes(16).toString('base64');
@@ -75,7 +76,7 @@ class AuthController {
             let user = await userService.createUser(email, name, hashedPassword, salt, account!.id);
 
             if (user == null) {
-                throw new Error('user_creation_failure');
+                throw new NangoError('user_creation_failure');
             }
 
             await accountService.editAccount(account!.id, account!.name, user.id);
@@ -98,14 +99,14 @@ class AuthController {
             const { email } = req.body;
 
             if (email == null) {
-                errorManager.res(res, 'missing_email_param');
+                errorManager.errRes(res, 'missing_email_param');
                 return;
             }
 
             let user = await userService.getUserByEmail(email);
 
             if (user == null) {
-                errorManager.res(res, 'unkown_user');
+                errorManager.errRes(res, 'unkown_user');
                 return;
             }
 
@@ -127,21 +128,21 @@ class AuthController {
             const { password, token } = req.body;
 
             if (!token && !password) {
-                errorManager.res(res, 'missing_password_reset_token');
+                errorManager.errRes(res, 'missing_password_reset_token');
                 return;
             }
 
             if (token) {
                 jwt.verify(token, resetPasswordSecret(), async (error: any, _: any) => {
                     if (error) {
-                        errorManager.res(res, 'unkown_password_reset_token');
+                        errorManager.errRes(res, 'unkown_password_reset_token');
                         return;
                     }
 
                     let user = await userService.getUserByResetPasswordToken(token);
 
                     if (!user) {
-                        errorManager.res(res, 'unkown_password_reset_token');
+                        errorManager.errRes(res, 'unkown_password_reset_token');
                         return;
                     }
 

@@ -6,6 +6,7 @@ import type { Account, ProviderTemplate, User } from '../models.js';
 import logger from './logger.js';
 import type { WSErr } from './web-socket-error.js';
 import userService from '../services/user.service.js';
+import { NangoError } from './error.js';
 
 export const localhostUrl: string = 'http://localhost:3003';
 const accountIdLocalsKey = 'nangoAccountId';
@@ -87,19 +88,19 @@ export async function getUserAndAccountFromSesstion(req: Request): Promise<{ use
     let sessionUser = req.user;
 
     if (sessionUser == null) {
-        throw new Error('user_not_found');
+        throw new NangoError('user_not_found');
     }
 
     let user = await userService.getUserById(sessionUser.id);
 
     if (user == null) {
-        throw new Error('user_not_found');
+        throw new NangoError('user_not_found');
     }
 
     let account = await accountService.getAccountById(user.account_id);
 
     if (account == null) {
-        throw new Error('account_not_found');
+        throw new NangoError('account_not_found');
     }
 
     return { user: user, account: account };
@@ -107,7 +108,7 @@ export async function getUserAndAccountFromSesstion(req: Request): Promise<{ use
 
 export function getAccount(res: Response): number {
     if (res.locals == null || !(accountIdLocalsKey in res.locals)) {
-        throw new Error('account_not_set_in_locals');
+        throw new NangoError('account_not_set_in_locals');
     }
 
     let accountId = res.locals[accountIdLocalsKey];
@@ -115,7 +116,7 @@ export function getAccount(res: Response): number {
     if (Number.isInteger(accountId)) {
         return accountId;
     } else {
-        throw new Error('account_malformed_in_locals');
+        throw new NangoError('account_malformed_in_locals');
     }
 }
 

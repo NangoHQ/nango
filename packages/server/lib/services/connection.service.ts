@@ -7,6 +7,7 @@ import analytics from '../utils/analytics.js';
 import providerClientManager from '../clients/provider.client.js';
 import { parseTokenExpirationDate, isTokenExpired } from '../utils/utils.js';
 import providerClient from '../clients/provider.client.js';
+import { NangoError } from '../utils/error.js';
 
 class ConnectionService {
     private runningCredentialsRefreshes: CredentialsRefresh[] = [];
@@ -90,7 +91,7 @@ class ConnectionService {
         switch (authMode) {
             case ProviderAuthModes.OAuth2:
                 if (!rawCreds['access_token']) {
-                    throw new Error(`incomplete_raw_credentials`);
+                    throw new NangoError(`incomplete_raw_credentials`);
                 }
 
                 var expiresAt: Date | undefined;
@@ -112,7 +113,7 @@ class ConnectionService {
                 return oauth2Creds;
             case ProviderAuthModes.OAuth1:
                 if (!rawCreds['oauth_token'] || !rawCreds['oauth_token_secret']) {
-                    throw new Error(`incomplete_raw_credentials`);
+                    throw new NangoError(`incomplete_raw_credentials`);
                 }
 
                 let oauth1Creds: OAuth1Credentials = {
@@ -125,7 +126,7 @@ class ConnectionService {
                 return oauth1Creds;
 
             default:
-                throw new Error(`Cannot parse credentials, unknown credentials type: ${JSON.stringify(rawCreds, undefined, 2)}`);
+                throw new NangoError(`Cannot parse credentials, unknown credentials type: ${JSON.stringify(rawCreds, undefined, 2)}`);
         }
     }
 

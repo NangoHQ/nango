@@ -1,12 +1,14 @@
 export class NangoError extends Error {
     public readonly status: number;
     public readonly type: string;
+    public payload: { [key: string]: unknown };
     public override readonly message: string;
 
-    constructor(type: string) {
+    constructor(type: string, payload = {}) {
         super();
 
         this.type = type;
+        this.payload = payload;
 
         switch (type) {
             case 'missing_auth_header':
@@ -157,7 +159,7 @@ export class NangoError extends Error {
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;
-                this.message = 'An unhandled error has occured.';
+                this.message = `An unhandled error has occured: ${type}`;
         }
     }
 }

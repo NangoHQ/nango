@@ -22,12 +22,12 @@ class AccountController {
     async updateCallback(req: Request, res: Response, next: NextFunction) {
         try {
             if (req.body == null) {
-                errorManager.res(res, 'missing_body');
+                errorManager.errRes(res, 'missing_body');
                 return;
             }
 
             if (req.body['callback_url'] == null) {
-                errorManager.res(res, 'missing_callback_url');
+                errorManager.errRes(res, 'missing_callback_url');
                 return;
             }
 
