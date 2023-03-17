@@ -23,6 +23,10 @@ export interface ProviderTemplate {
     token_response_metadata?: Array<string>;
 }
 
+export interface ProviderTemplateAlias {
+    alias?: string;
+}
+
 export interface Connection {
     id?: number;
     created_at?: Date;

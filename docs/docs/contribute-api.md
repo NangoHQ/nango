@@ -12,7 +12,7 @@ If you find a bug with one of the existing providers feel free to use these step
 
 Support for the OAuth flow of different providers in Nango is implemented with templates: A small config that tells Nango how to perform the OAuth flow for the specific provider.
 
-All templates of Nango live in a single file called [providers.yaml](https://nango.dev/oauth-providers) in the server package. [More about YAML here](https://yaml.org/).
+All templates of Nango live in a single file called [providers.yaml](https://nango.dev/oauth-providers) in the `server` package. [More about YAML here](https://yaml.org/).
 
 Most templates only need to make use of 2-3 configuration keys, but in some cases you might need more.
 For a full list of configuration options please check the [type definitions here](https://github.com/NangoHQ/Nango/blob/master/packages/auth/lib/models.ts).
@@ -20,8 +20,7 @@ For a full list of configuration options please check the [type definitions here
 The most commonly used configuration options are:
 
 ```yaml
-# All keys & slugs use lowercase and snake_case
-provider_slug: # Shorthand for the provider, ideally the provider's name. Must be unique.
+provider-slug: # Shorthand for the provider, ideally the provider's name. Must be unique. Kebab case.
     ##########
     # Mandatory fields
     ##########
@@ -36,7 +35,7 @@ provider_slug: # Shorthand for the provider, ideally the provider's name. Must b
         response_type: code
     token_params: # Additional parameters to pass along in the token request
         mycoolparam: value
-    refresh_url: https://api.example.com/oauth/refresh # The URL to use for refreshing the access token, if different from token_url
+    refresh_url: https://api.example.com/oauth/refresh # The URL to use for refreshing the access token (only if different from token_url)
     scope_separator: ',' # String to use to separate scopes. Defaults to ' ' (1 space) if not provided
 
     # Metadata capture
@@ -51,7 +50,7 @@ Templates support parameters using string interpolation (cf. [flow Configuration
 :::
 
 :::info
-Verify if some [Connection Metadata](./reference/core-concepts.md#metadata) should be captured during the OAuth flow.
+You can configure some [Connection Metadata](./reference/core-concepts.md#metadata), which is additional metadata that you want to capture during the OAuth flow and store in the Connection.
 :::
 
 ## Step 1: Add your new provider to `providers.yaml`
@@ -83,16 +82,11 @@ The docker compose configuration in the root of the repo `docker-compose.yaml` w
 2. Nango Server
 3. Test Website to Trigger the OAuth Flow
 
-The providers.yaml file from step 1 is synced between the host machine (your laptop) and the running Nango Server container. When you add new provider templates to that yaml the running Nango Server will pick them up.
-
-If your changes don't seem to be getting picked up, then try:
+To propagate your changes after editing the `providers.yaml` file, run:
 
 ```
-# Force a restart, which will load in the yaml again
-docker compose restart nango-server
-
-# print the contents of the providers file from inside the container
-docker compose run nango-server cat packages/server/providers.yaml
+docker compose restart nango-server # Force a restart, which will load in the yaml again
+docker compose run nango-server cat packages/server/providers.yaml # print the contents of the providers file from inside the container
 ```
 
 When you are ready to test your new provider template:
@@ -117,9 +111,15 @@ Check the Connection details and make sure all looks as expected (access token, 
 
 Add a file named `<provider_slug>.md` (e.g. `github.md`) corresponding to your new integration to the `docs/docs/providers` folder. You can check out check out [airtable](./providers/airtable.md) for an example.
 
+Also, add your new documentation page to [`docs/sidebar.js`](https://github.com/NangoHQ/nango/blob/master/docs/sidebars.js) in the `items` array (in alphabetical order):
+
+[![Provider Sidebar List](/img/provider-sidebar.png)]
+
 ## Step 4: Submit your PR
 
-Submit your PR with the new provider to the Nango repo. Please make sure to mention that you tested the full flow and that it works. We will review your PR asap and merge it into the main Nango repo for inclusion with the next release.
+Submit your PR with the new provider to the Nango repo. Please thoroughly test the integration and include the following mention in your PR: "I successfully tested the provider config creation, OAuth flow & valid token."
+
+We will review your PR asap and merge it into the main Nango repo for inclusion with the next release.
 
 Thanks a lot for your contribution!! ❤️
 

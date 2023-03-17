@@ -9,8 +9,6 @@ import errorManager from '../utils/error.manager.js';
 import { NangoError } from '../utils/error.js';
 
 class ConnectionController {
-    templates: { [key: string]: ProviderTemplate } = configService.getTemplates();
-
     /**
      * Webapp
      */
@@ -46,11 +44,7 @@ class ConnectionController {
                 return;
             }
 
-            let template: ProviderTemplate | undefined = this.templates[config.provider];
-
-            if (template == null) {
-                throw new NangoError('unknown_provider_template_in_config');
-            }
+            let template: ProviderTemplate | undefined = configService.getTemplate(config.provider);
 
             if (connection.credentials.type === ProviderAuthModes.OAuth2) {
                 connection.credentials = await connectionService.refreshOauth2CredentialsIfNeeded(connection, config, template, account.id);
@@ -181,11 +175,7 @@ class ConnectionController {
                 return;
             }
 
-            let template: ProviderTemplate | undefined = this.templates[config.provider];
-
-            if (template == null) {
-                throw new NangoError('unknown_provider_template_in_config');
-            }
+            let template: ProviderTemplate | undefined = configService.getTemplate(config.provider);
 
             if (connection.credentials.type === ProviderAuthModes.OAuth2) {
                 connection.credentials = await connectionService.refreshOauth2CredentialsIfNeeded(connection, config, template, accountId);
@@ -245,11 +235,7 @@ class ConnectionController {
 
     async listProviders(_: Request, res: Response, next: NextFunction) {
         try {
-            if (this.templates == null || Object.keys(this.templates) == null) {
-                throw new NangoError('error_loading_templates');
-            }
-
-            res.status(200).send({ providers: Object.keys(this.templates).sort() });
+            res.status(200).send({ providers: Object.keys(configService.getTemplates()).sort() });
         } catch (err) {
             next(err);
         }
