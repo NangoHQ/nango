@@ -115,7 +115,11 @@ Also, add your new documentation page to [`docs/sidebar.js`](https://github.com/
 
 [![Provider Sidebar List](/img/provider-sidebar.png)]
 
-## Step 4: Submit your PR
+## Step 4: Add the integration logo (optional)
+
+To be displayed in the app and docs, optionally add the provider logo in SVG to `packages/webapp/public/images/template-logos/`. The name of the file should be `<provider_slug>.svg`. Ideally, the logo should be 44px on its longest side (width or height), inside a 62x62px transparent box.
+
+## Step 5: Submit your PR
 
 Submit your PR with the new provider to the Nango repo. Please thoroughly test the integration and include the following mention in your PR: "I successfully tested the provider config creation, OAuth flow & valid token."
 

@@ -93,6 +93,11 @@ export default function IntegrationCreate() {
             if (res?.status === 200) {
                 toast.success('Integration created!', { position: toast.POSITION.BOTTOM_CENTER });
                 navigate('/integration', { replace: true });
+            } else if (res != null) {
+                let payload = await res.json();
+                toast.error(payload.type == 'duplicate_provider_config' ? 'Unique Key already exists.' : payload.error, {
+                    position: toast.POSITION.BOTTOM_CENTER
+                });
             }
         }
     };
@@ -139,7 +144,7 @@ export default function IntegrationCreate() {
                                                 </div>
                                             </div>
                                             <div>
-                                                <label htmlFor="unique_key" className="text-text-light-gray block text-sm font-semibold">
+                                                <label htmlFor="unique_key" className="text-text-light-gray block text-sm font-semibold mt-6">
                                                     Unique Key
                                                 </label>
                                                 <div className="mt-1">
@@ -167,7 +172,10 @@ export default function IntegrationCreate() {
                                                 <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
                                                     Provider Template
                                                 </label>
-                                                <p className="mt-3 mb-5">{`${integration.provider}`}</p>
+                                                <div className="mt-3 mb-5 flex">
+                                                    <img src={`images/template-logos/${integration.provider}.svg`} alt="" className="h-7 mr-0.5" />
+                                                    <p className="">{`${integration.provider}`}</p>
+                                                </div>
                                             </div>
                                         </div>
                                     )}

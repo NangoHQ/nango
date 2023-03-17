@@ -6,7 +6,6 @@ import { ProviderConfig, ProviderTemplate, Connection, ProviderAuthModes } from 
 import analytics from '../utils/analytics.js';
 import { getAccount, getUserAndAccountFromSesstion } from '../utils/utils.js';
 import errorManager from '../utils/error.manager.js';
-import { NangoError } from '../utils/error.js';
 
 class ConnectionController {
     /**
