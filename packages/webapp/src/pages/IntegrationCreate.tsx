@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useState, useEffect } from 'react';
 import API from '../utils/api';
+import AlertOverLay from '../components/AlertOverLay';
 
 interface Integration {
     uniqueKey: string;
@@ -17,6 +18,7 @@ export default function IntegrationCreate() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');
     const [providers, setProviders] = useState<string[] | null>(null);
     const [integration, setIntegration] = useState<Integration | null>(null);
+    const [deleteAlertState, setDeleteAlertState] = useState<boolean>(false);
     const navigate = useNavigate();
     const { providerConfigKey } = useParams();
 
@@ -98,6 +100,10 @@ export default function IntegrationCreate() {
     };
 
     const deleteButtonClicked = async () => {
+        setDeleteAlertState(true);
+    };
+
+    const acceptDeleteButtonClicked = async () => {
         if (!providerConfigKey) return;
 
         let res = await API.deleteIntegration(providerConfigKey, navigate);
@@ -108,10 +114,22 @@ export default function IntegrationCreate() {
         }
     };
 
+    const rejectDeleteButtonClicked = () => {
+        setDeleteAlertState(false);
+    };
+
     return (
         <div className="h-full">
             <TopNavBar />
             <div className="flex h-full">
+                {deleteAlertState && (
+                    <AlertOverLay
+                        message={'Deleting an integration will also permanently delete all associated connections. Are you sure you want to delete it'}
+                        title={`Delete ${providerConfigKey}`}
+                        onAccept={acceptDeleteButtonClicked}
+                        onCancel={rejectDeleteButtonClicked}
+                    />
+                )}
                 <LeftNavBar selectedItem={LeftNavBarItems.Integrations} />
                 <div className="ml-60 w-full mt-14">
                     {(providers || integration) && (
