@@ -157,6 +157,7 @@ const sidebars = {
                 'providers/airtable',
                 'providers/asana',
                 'providers/bitbucket',
+                'providers/box',
                 'providers/braintree',
                 'providers/brex',
                 'providers/calendly',

@@ -17,6 +17,10 @@ bitbucket:
     auth_mode: OAUTH2
     authorization_url: https://bitbucket.org/site/oauth2/authorize
     token_url: https://bitbucket.org/site/oauth2/access_token
+box:
+    auth_mode: OAUTH2
+    authorization_url: https://account.box.com/api/oauth2/authorize
+    token_url: https://api.box.com/oauth2/token
 braintree:
     auth_mode: OAUTH2
     authorization_url: https://api.braintreegateway.com/oauth/connect
