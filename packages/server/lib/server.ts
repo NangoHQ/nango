@@ -15,7 +15,7 @@ import connectionController from './controllers/connection.controller.js';
 import authController from './controllers/auth.controller.js';
 import authMiddleware from './controllers/access.middleware.js';
 import path from 'path';
-import { dirname, getPort, getGlobalOAuthCallbackUrl, isCloud, isBasicAuthEnabled } from './utils/utils.js';
+import { dirname, getPort, getGlobalOAuthCallbackUrl, isCloud, isBasicAuthEnabled, packageJsonFile } from './utils/utils.js';
 import errorManager from './utils/error.manager.js';
 import { WebSocketServer, WebSocket } from 'ws';
 import http from 'http';
@@ -114,7 +114,7 @@ wsServer.on('connection', (ws: WebSocket) => {
 
 let port = getPort();
 server.listen(port, () => {
-    Logger.info(`✅ Nango Server is listening on port ${port}. OAuth callback URL: ${getGlobalOAuthCallbackUrl()}`);
+    Logger.info(`✅ Nango Server with version ${packageJsonFile().version} is listening on port ${port}. OAuth callback URL: ${getGlobalOAuthCallbackUrl()}`);
     Logger.info(
         `\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |  \n \\ | / \\ | / \\ | / \\ | / \\ | / \\ | / \\ | /\n  \\|/   \\|/   \\|/   \\|/   \\|/   \\|/   \\|/\n------------------------------------------\nLaunch Nango at http://localhost:${port}\n------------------------------------------\n  /|\\   /|\\   /|\\   /|\\   /|\\   /|\\   /|\\\n / | \\ / | \\ / | \\ / | \\ / | \\ / | \\ / | \\\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |`
     );
