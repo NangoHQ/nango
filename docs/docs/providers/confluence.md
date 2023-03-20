@@ -11,7 +11,7 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 
 ## Using Confluence with Nango
 
-Confluence uses the same OAuth mechanism as Jira. Please use the Jira template for it in Nango: `jira`  
+Provider template name in Nango: `confluence`  
 Follow our [quickstart](../quickstart.md) to add an OAuth integration with Confluence in 5 minutes.
 
 ## App registration & publishing

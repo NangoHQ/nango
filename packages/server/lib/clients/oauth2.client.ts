@@ -15,7 +15,8 @@ import { AuthorizationCode, AccessToken } from 'simple-oauth2';
 import connectionsManager from '../services/connection.service.js';
 import type { ProviderConfig } from '../models.js';
 import { interpolateString } from '../utils/utils.js';
-import errorManager from '../utils/error.manager.js';
+import Boom from '@hapi/boom';
+import { NangoError } from '../utils/error.js';
 
 // Simple OAuth 2 does what it says on the tin: A simple, no-frills client for OAuth 2 that implements the 3 most common grant_types.
 // Well maintained, I like :-)
@@ -65,8 +66,12 @@ export async function getFreshOAuth2Credentials(connection: Connection, config: 
     try {
         rawNewAccessToken = await oldAccessToken.refresh(additionalParams);
     } catch (e) {
-        e = new Error(`refresh_token_external_error: ${JSON.stringify(e)}`);
-        errorManager.report(e, { accountId: connection.account_id });
+        let nangoErr = new NangoError(`refresh_token_external_error`);
+
+        if (Boom.isBoom(e)) {
+            nangoErr.payload = { external_message: e.message, external_request_details: JSON.stringify(e.output) };
+        }
+
         throw e;
     }
 
@@ -80,7 +85,6 @@ export async function getFreshOAuth2Credentials(connection: Connection, config: 
 
         return newCredentials;
     } catch (e) {
-        errorManager.report('refresh_token_parsing_error', { accountId: connection.account_id });
-        throw e;
+        throw new NangoError(`refresh_token_parsing_error`);
     }
 }

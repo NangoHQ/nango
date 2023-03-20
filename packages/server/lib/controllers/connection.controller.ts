@@ -8,8 +8,6 @@ import { getAccount, getUserAndAccountFromSesstion } from '../utils/utils.js';
 import errorManager from '../utils/error.manager.js';
 
 class ConnectionController {
-    templates: { [key: string]: ProviderTemplate } = configService.getTemplates();
-
     /**
      * Webapp
      */
@@ -22,34 +20,30 @@ class ConnectionController {
             let providerConfigKey = req.query['provider_config_key'] as string;
 
             if (connectionId == null) {
-                errorManager.res(res, 'missing_connection');
+                errorManager.errRes(res, 'missing_connection');
                 return;
             }
 
             if (providerConfigKey == null) {
-                errorManager.res(res, 'missing_provider_config');
+                errorManager.errRes(res, 'missing_provider_config');
                 return;
             }
 
             let connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, account.id);
 
             if (connection == null) {
-                errorManager.res(res, 'unkown_connection');
+                errorManager.errRes(res, 'unkown_connection');
                 return;
             }
 
             let config: ProviderConfig | null = await configService.getProviderConfig(connection.provider_config_key, account.id);
 
             if (config == null) {
-                errorManager.res(res, 'unknown_provider_config');
+                errorManager.errRes(res, 'unknown_provider_config');
                 return;
             }
 
-            let template: ProviderTemplate | undefined = this.templates[config.provider];
-
-            if (template == null) {
-                throw new Error('unknown_provider_template_in_config');
-            }
+            let template: ProviderTemplate | undefined = configService.getTemplate(config.provider);
 
             if (connection.credentials.type === ProviderAuthModes.OAuth2) {
                 connection.credentials = await connectionService.refreshOauth2CredentialsIfNeeded(connection, config, template, account.id);
@@ -122,19 +116,19 @@ class ConnectionController {
             let providerConfigKey = req.query['provider_config_key'] as string;
 
             if (connectionId == null) {
-                errorManager.res(res, 'missing_connection');
+                errorManager.errRes(res, 'missing_connection');
                 return;
             }
 
             if (providerConfigKey == null) {
-                errorManager.res(res, 'missing_provider_config');
+                errorManager.errRes(res, 'missing_provider_config');
                 return;
             }
 
             let connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, account.id);
 
             if (connection == null) {
-                errorManager.res(res, 'unkown_connection');
+                errorManager.errRes(res, 'unkown_connection');
                 return;
             }
 
@@ -147,7 +141,7 @@ class ConnectionController {
     }
 
     /**
-     * CLI
+     * CLI/SDK/API
      */
 
     async getConnectionCreds(req: Request, res: Response, next: NextFunction) {
@@ -157,34 +151,30 @@ class ConnectionController {
             let providerConfigKey = req.query['provider_config_key'] as string;
 
             if (connectionId == null) {
-                errorManager.res(res, 'missing_connection');
+                errorManager.errRes(res, 'missing_connection');
                 return;
             }
 
             if (providerConfigKey == null) {
-                errorManager.res(res, 'missing_provider_config');
+                errorManager.errRes(res, 'missing_provider_config');
                 return;
             }
 
             let connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, accountId);
 
             if (connection == null) {
-                errorManager.res(res, 'unkown_connection');
+                errorManager.errRes(res, 'unkown_connection');
                 return;
             }
 
             let config: ProviderConfig | null = await configService.getProviderConfig(connection.provider_config_key, accountId);
 
             if (config == null) {
-                errorManager.res(res, 'unknown_provider_config');
+                errorManager.errRes(res, 'unknown_provider_config');
                 return;
             }
 
-            let template: ProviderTemplate | undefined = this.templates[config.provider];
-
-            if (template == null) {
-                throw new Error('unknown_provider_template_in_config');
-            }
+            let template: ProviderTemplate | undefined = configService.getTemplate(config.provider);
 
             if (connection.credentials.type === ProviderAuthModes.OAuth2) {
                 connection.credentials = await connectionService.refreshOauth2CredentialsIfNeeded(connection, config, template, accountId);
@@ -218,19 +208,19 @@ class ConnectionController {
             let providerConfigKey = req.query['provider_config_key'] as string;
 
             if (connectionId == null) {
-                errorManager.res(res, 'missing_connection');
+                errorManager.errRes(res, 'missing_connection');
                 return;
             }
 
             if (providerConfigKey == null) {
-                errorManager.res(res, 'missing_provider_config');
+                errorManager.errRes(res, 'missing_provider_config');
                 return;
             }
 
             let connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, accountId);
 
             if (connection == null) {
-                errorManager.res(res, 'unkown_connection');
+                errorManager.errRes(res, 'unkown_connection');
                 return;
             }
 
@@ -244,11 +234,7 @@ class ConnectionController {
 
     async listProviders(_: Request, res: Response, next: NextFunction) {
         try {
-            if (this.templates == null || Object.keys(this.templates) == null) {
-                throw new Error('error_loading_templates');
-            }
-
-            res.status(200).send({ providers: Object.keys(this.templates).sort() });
+            res.status(200).send({ providers: Object.keys(configService.getTemplates()).sort() });
         } catch (err) {
             next(err);
         }

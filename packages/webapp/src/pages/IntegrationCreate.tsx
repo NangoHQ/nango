@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useState, useEffect } from 'react';
 import API from '../utils/api';
+import AlertOverLay from '../components/AlertOverLay';
 
 interface Integration {
     uniqueKey: string;
@@ -17,6 +18,7 @@ export default function IntegrationCreate() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');
     const [providers, setProviders] = useState<string[] | null>(null);
     const [integration, setIntegration] = useState<Integration | null>(null);
+    const [deleteAlertState, setDeleteAlertState] = useState<boolean>(false);
     const navigate = useNavigate();
     const { providerConfigKey } = useParams();
 
@@ -93,11 +95,20 @@ export default function IntegrationCreate() {
             if (res?.status === 200) {
                 toast.success('Integration created!', { position: toast.POSITION.BOTTOM_CENTER });
                 navigate('/integration', { replace: true });
+            } else if (res != null) {
+                let payload = await res.json();
+                toast.error(payload.type == 'duplicate_provider_config' ? 'Unique Key already exists.' : payload.error, {
+                    position: toast.POSITION.BOTTOM_CENTER
+                });
             }
         }
     };
 
     const deleteButtonClicked = async () => {
+        setDeleteAlertState(true);
+    };
+
+    const acceptDeleteButtonClicked = async () => {
         if (!providerConfigKey) return;
 
         let res = await API.deleteIntegration(providerConfigKey, navigate);
@@ -108,10 +119,22 @@ export default function IntegrationCreate() {
         }
     };
 
+    const rejectDeleteButtonClicked = () => {
+        setDeleteAlertState(false);
+    };
+
     return (
         <div className="h-full">
             <TopNavBar />
             <div className="flex h-full">
+                {deleteAlertState && (
+                    <AlertOverLay
+                        message={'Deleting an integration will also permanently delete all associated connections. Are you sure you want to delete it'}
+                        title={`Delete ${providerConfigKey}!`}
+                        onAccept={acceptDeleteButtonClicked}
+                        onCancel={rejectDeleteButtonClicked}
+                    />
+                )}
                 <LeftNavBar selectedItem={LeftNavBarItems.Integrations} />
                 <div className="ml-60 w-full mt-14">
                     {(providers || integration) && (
@@ -139,7 +162,7 @@ export default function IntegrationCreate() {
                                                 </div>
                                             </div>
                                             <div>
-                                                <label htmlFor="unique_key" className="text-text-light-gray block text-sm font-semibold">
+                                                <label htmlFor="unique_key" className="text-text-light-gray block text-sm font-semibold mt-6">
                                                     Unique Key
                                                 </label>
                                                 <div className="mt-1">
@@ -167,7 +190,10 @@ export default function IntegrationCreate() {
                                                 <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
                                                     Provider Template
                                                 </label>
-                                                <p className="mt-3 mb-5">{`${integration.provider}`}</p>
+                                                <div className="mt-3 mb-5 flex">
+                                                    <img src={`images/template-logos/${integration.provider}.svg`} alt="" className="h-7 mr-0.5" />
+                                                    <p className="">{`${integration.provider}`}</p>
+                                                </div>
                                             </div>
                                         </div>
                                     )}

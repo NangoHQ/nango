@@ -3,6 +3,7 @@ import sentry from '@sentry/node';
 import logger from './logger.js';
 import { NangoError } from './error.js';
 import type { Request } from 'express';
+import { getAccount, isApiAuthenticated, isUserAuthenticated } from './utils.js';
 
 class ErrorManager {
     constructor() {
@@ -29,9 +30,33 @@ class ErrorManager {
         logger.error(`Exception caught: ${JSON.stringify(e, Object.getOwnPropertyNames(e))}`);
     }
 
-    public res(res: any, type: string) {
+    public errResFromNangoErr(res: any, err: NangoError) {
+        res.status(err.status).send({ error: err.message, type: err.type, payload: err.payload });
+    }
+
+    public errRes(res: any, type: string) {
         let err = new NangoError(type);
-        res.status(err.status).send({ error: err.message });
+        this.errResFromNangoErr(res, err);
+    }
+
+    public handleGenericError(err: any, req: Request, res: any) {
+        if (!(err instanceof Error)) {
+            err = new NangoError('generic_error_malformed');
+        } else if (!(err instanceof NangoError)) {
+            err = new NangoError(err.message);
+        }
+
+        let nangoErr = err as NangoError;
+
+        if (isApiAuthenticated(res)) {
+            this.report(nangoErr, { accountId: getAccount(res), metadata: err.payload });
+        } else if (isUserAuthenticated(req)) {
+            this.report(nangoErr, { userId: req.user!.id, metadata: err.payload });
+        } else {
+            this.report(nangoErr, { metadata: err.payload });
+        }
+
+        this.errResFromNangoErr(res, nangoErr);
     }
 
     public getExpressRequestContext(req: Request): { [key: string]: unknown } {

@@ -98,7 +98,10 @@ export default function ConnectionDetails() {
                                             <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
                                                 Provider Template
                                             </label>
-                                            <p className="mt-3 mb-5">{`${connection.provider}`}</p>
+                                            <div className="mt-3 mb-5 flex">
+                                                <img src={`images/template-logos/${connection.provider}.svg`} alt="" className="h-7 mt-0.5 mr-0.5" />
+                                                <p className="">{`${connection.provider}`}</p>
+                                            </div>
                                         </div>
                                     </div>
                                     <div>
@@ -125,9 +128,9 @@ export default function ConnectionDetails() {
                                         <div>
                                             <div className="mx-8 mt-8">
                                                 <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                                    Access Token
+                                                    Access Token Expiration
                                                 </label>
-                                                <p className="mt-3 mb-5">{connection.expiresAt}</p>
+                                                <p className="mt-3 mb-5">{new Date(connection.expiresAt).toLocaleString()}</p>
                                             </div>
                                         </div>
                                     )}
@@ -135,7 +138,7 @@ export default function ConnectionDetails() {
                                         <div>
                                             <div className="mx-8 mt-8">
                                                 <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                                    Access Token
+                                                    Refresh Token
                                                 </label>
                                                 <Prism language="bash" colorScheme="dark">
                                                     {connection.refreshToken}

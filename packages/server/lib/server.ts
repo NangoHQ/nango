@@ -15,16 +15,7 @@ import connectionController from './controllers/connection.controller.js';
 import authController from './controllers/auth.controller.js';
 import authMiddleware from './controllers/access.middleware.js';
 import path from 'path';
-import {
-    dirname,
-    getAccount,
-    isApiAuthenticated,
-    isUserAuthenticated,
-    getPort,
-    getGlobalOAuthCallbackUrl,
-    isCloud,
-    isBasicAuthEnabled
-} from './utils/utils.js';
+import { dirname, getPort, getGlobalOAuthCallbackUrl, isCloud, isBasicAuthEnabled } from './utils/utils.js';
 import errorManager from './utils/error.manager.js';
 import { WebSocketServer, WebSocket } from 'ws';
 import http from 'http';
@@ -103,15 +94,7 @@ if (!isCloud()) {
 
 // Error handling.
 app.use((e: any, req: Request, res: Response, __: any) => {
-    if (isApiAuthenticated(res)) {
-        errorManager.report(e, { accountId: getAccount(res) });
-    } else if (isUserAuthenticated(req)) {
-        errorManager.report(e, { userId: req.user!.id });
-    } else {
-        errorManager.report(e);
-    }
-
-    errorManager.res(res, 'server_error');
+    errorManager.handleGenericError(e, req, res);
 });
 
 // Webapp assets, static files and build.

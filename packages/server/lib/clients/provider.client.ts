@@ -2,6 +2,7 @@ import braintree from 'braintree';
 import { ProviderConfig, Connection, OAuth2Credentials, ProviderAuthModes } from '../models.js';
 import axios from 'axios';
 import { isTokenExpired, parseTokenExpirationDate } from '../utils/utils.js';
+import { NangoError } from '../utils/error.js';
 
 class ProviderClient {
     constructor() {}
@@ -33,19 +34,19 @@ class ProviderClient {
             case 'braintree-sandbox':
                 return this.createBraintreeToken(code, config.oauth_client_id, config.oauth_client_secret);
             default:
-                throw new Error('unknown_provider_client');
+                throw new NangoError('unknown_provider_client');
         }
     }
 
     public async refreshToken(config: ProviderConfig, connection: Connection): Promise<object> {
         if (connection.credentials.type != ProviderAuthModes.OAuth2) {
-            throw new Error('wrong_credentials_type');
+            throw new NangoError('wrong_credentials_type');
         }
 
         let credentials = connection.credentials as OAuth2Credentials;
 
         if (!credentials.refresh_token) {
-            throw new Error('missing_refresh_token');
+            throw new NangoError('missing_refresh_token');
         }
 
         switch (config.provider) {
@@ -54,13 +55,13 @@ class ProviderClient {
             case 'braintree-sandbox':
                 return this.refreshBraintreeToken(credentials.refresh_token, config.oauth_client_id, config.oauth_client_secret);
             default:
-                throw new Error('unknown_provider_client');
+                throw new NangoError('unknown_provider_client');
         }
     }
 
     public async introspectedTokenExpired(config: ProviderConfig, connection: Connection): Promise<boolean> {
         if (connection.credentials.type != ProviderAuthModes.OAuth2) {
-            throw new Error('wrong_credentials_type');
+            throw new NangoError('wrong_credentials_type');
         }
 
         let credentials = connection.credentials as OAuth2Credentials;
@@ -74,7 +75,7 @@ class ProviderClient {
                     connection.metadata
                 );
             default:
-                throw new Error('unknown_provider_client');
+                throw new NangoError('unknown_provider_client');
         }
     }
 
@@ -83,7 +84,7 @@ class ProviderClient {
         let res = await gateway.oauth.createTokenFromCode({ code: code });
 
         if (!('credentials' in res && 'accessToken' in res.credentials && 'refreshToken' in res.credentials && 'expiresAt' in res.credentials)) {
-            throw new Error('braintree_token_request_error');
+            throw new NangoError('braintree_token_request_error');
         }
 
         let creds = res['credentials'];
@@ -100,7 +101,7 @@ class ProviderClient {
         let res = await gateway.oauth.createTokenFromRefreshToken({ refreshToken: refreshToken });
 
         if (!('credentials' in res && 'accessToken' in res.credentials && 'refreshToken' in res.credentials && 'expiresAt' in res.credentials)) {
-            throw new Error('braintree_token_refresh_error');
+            throw new NangoError('braintree_token_refresh_error');
         }
 
         let creds = res['credentials'];
@@ -119,7 +120,7 @@ class ProviderClient {
         metadata: Record<string, string>
     ): Promise<boolean> {
         if (!metadata['instance_url']) {
-            throw new Error('salesforce_instance_url_missing');
+            throw new NangoError('salesforce_instance_url_missing');
         }
 
         let url = `${metadata['instance_url']}/services/oauth2/introspect`;

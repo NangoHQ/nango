@@ -1,16 +1,36 @@
-import type { ProviderConfig, ProviderTemplate, Connection } from '../models.js';
+import type { ProviderConfig, ProviderTemplate, ProviderTemplateAlias, Connection } from '../models.js';
 import db from '../db/database.js';
 import yaml from 'js-yaml';
 import fs from 'fs';
 import path from 'path';
 import { dirname } from '../utils/utils.js';
+import { NangoError } from '../utils/error.js';
 
 class ConfigService {
     templates: { [key: string]: ProviderTemplate };
 
     constructor() {
+        this.templates = this.getTemplatesFromFile();
+    }
+
+    getTemplatesFromFile() {
         let templatesPath = path.join(dirname(), '../../providers.yaml');
-        this.templates = yaml.load(fs.readFileSync(templatesPath).toString()) as { string: ProviderTemplate };
+
+        let fileEntries = yaml.load(fs.readFileSync(templatesPath).toString()) as { [key: string]: ProviderTemplate | ProviderTemplateAlias };
+
+        if (fileEntries == null) {
+            throw new NangoError('provider_template_loading_failed');
+        }
+
+        for (let key in fileEntries) {
+            let alias = (fileEntries[key] as ProviderTemplateAlias).alias;
+
+            if (alias && fileEntries[alias] != null) {
+                fileEntries[key] = fileEntries[alias] as ProviderTemplate;
+            }
+        }
+
+        return fileEntries as { [key: string]: ProviderTemplate };
     }
 
     async getProviderConfig(providerConfigKey: string, accountId: number): Promise<ProviderConfig | null> {
@@ -57,12 +77,22 @@ class ConfigService {
             });
     }
 
-    getTemplates(): { [key: string]: ProviderTemplate } {
-        return this.templates;
-    }
-
     checkProviderTemplateExists(provider: string) {
         return provider in this.templates;
+    }
+
+    getTemplate(provider: string): ProviderTemplate {
+        let template = this.templates[provider];
+
+        if (template == null) {
+            throw new NangoError('unknown_provider_template_in_config');
+        }
+
+        return template;
+    }
+
+    getTemplates(): { [key: string]: ProviderTemplate } {
+        return this.templates;
     }
 }
 

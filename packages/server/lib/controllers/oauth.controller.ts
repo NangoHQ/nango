@@ -34,8 +34,6 @@ import analytics from '../utils/analytics.js';
 class OAuthController {
     sessionStore: OAuthSessionStore = {};
 
-    templates: { [key: string]: ProviderTemplate } = configService.getTemplates();
-
     public async oauthRequest(req: Request, res: Response, _: NextFunction) {
         let accountId = getAccount(res);
         const { providerConfigKey } = req.params;
@@ -65,7 +63,7 @@ class OAuthController {
 
             let template: ProviderTemplate;
             try {
-                template = this.templates[config.provider]!;
+                template = configService.getTemplate(config.provider);
             } catch {
                 return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownProviderTemplate(config.provider));
             }
@@ -234,7 +232,7 @@ class OAuthController {
         try {
             logger.debug(`Received callback for ${session.providerConfigKey} (connection: ${session.connectionId}) - full callback URI: ${req.originalUrl}"`);
 
-            const template = this.templates[session.provider]!;
+            const template = configService.getTemplate(session.provider);
             const config = (await configService.getProviderConfig(session.providerConfigKey, session.accountId))!;
 
             logger.info(
@@ -249,7 +247,7 @@ class OAuthController {
 
             return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownAuthMode(session.authMode));
         } catch (e) {
-            errorManager.report(e, { accountId: session?.accountId, metadata: { request: JSON.stringify(req) } });
+            errorManager.report(e, { accountId: session?.accountId, metadata: errorManager.getExpressRequestContext(req) });
             return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError());
         }
     }

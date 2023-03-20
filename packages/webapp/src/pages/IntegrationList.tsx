@@ -56,7 +56,7 @@ export default function IntegrationList() {
                                                 >
                                                     <div className="mt-5 w-80">{uniqueKey}</div>
                                                     <div className="mt-4 w-80 flex pl-8">
-                                                        {/* <img src="images/connections-icon.svg" alt="Connections" className="h-5 mt-1.5 mr-1.5" /> */}
+                                                        <img src={`images/template-logos/${provider}.svg`} alt="" className="h-7 mt-0.5 mr-0.5" />
                                                         <p className="mt-1.5 mr-4">{provider}</p>
                                                     </div>
                                                     <div className="pl-8 mt-4 flex w-40">
