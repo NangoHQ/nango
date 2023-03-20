@@ -9,6 +9,8 @@ services:
             POSTGRES_DB: nango
         ports:
             - '5432:5432'
+        volumes:
+            - ./nango-data:/var/lib/postgresql/data
         networks:
             - nango
 
