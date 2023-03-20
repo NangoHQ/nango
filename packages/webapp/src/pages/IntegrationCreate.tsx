@@ -125,7 +125,7 @@ export default function IntegrationCreate() {
                 {deleteAlertState && (
                     <AlertOverLay
                         message={'Deleting an integration will also permanently delete all associated connections. Are you sure you want to delete it'}
-                        title={`Delete ${providerConfigKey}`}
+                        title={`Delete ${providerConfigKey}!`}
                         onAccept={acceptDeleteButtonClicked}
                         onCancel={rejectDeleteButtonClicked}
                     />
