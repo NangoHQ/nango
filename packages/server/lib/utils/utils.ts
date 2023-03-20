@@ -1,12 +1,13 @@
 import { fileURLToPath } from 'url';
-import path from 'path';
-import type { Response, Request } from 'express';
+import path, { resolve } from 'path';
+import type { Request, Response } from 'express';
 import accountService from '../services/account.service.js';
 import type { Account, ProviderTemplate, User } from '../models.js';
 import logger from './logger.js';
 import type { WSErr } from './web-socket-error.js';
 import userService from '../services/user.service.js';
 import { NangoError } from './error.js';
+import { readFileSync } from 'fs';
 
 export const localhostUrl: string = 'http://localhost:3003';
 const accountIdLocalsKey = 'nangoAccountId';
@@ -16,6 +17,10 @@ export enum NodeEnv {
     Staging = 'staging',
     Prod = 'production'
 }
+
+type PackageJson = {
+    version: string;
+};
 
 export function isDev() {
     return process.env['NODE_ENV'] === NodeEnv.Dev;
@@ -385,4 +390,13 @@ Nango OAuth flow callback. Read more about how to use it at: https://github.com/
 
 export function resetPasswordSecret() {
     return process.env['NANGO_ADMIN_KEY'] || 'nango';
+}
+
+
+export function packageJsonFile(): PackageJson {
+    return JSON.parse(
+        readFileSync(resolve(process.cwd(), 'package.json')).toString(
+            'utf-8'
+        )
+    );
 }
