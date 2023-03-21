@@ -4,6 +4,7 @@ import Signin from './pages/Signin';
 import IntegrationList from './pages/IntegrationList';
 import IntegrationCreate from './pages/IntegrationCreate';
 import ConnectionList from './pages/ConnectionList';
+import ConnectionCreate from './pages/ConnectionCreate';
 import ConnectionDetails from './pages/ConnectionDetails';
 import ProjectSettings from './pages/ProjectSettings';
 import PrivateRoute from './components/PrivateRoute';
@@ -29,6 +30,9 @@ const App = () => {
                 </Route>
                 <Route path="/connections" element={<PrivateRoute />}>
                     <Route path="/connections" element={<ConnectionList />} />
+                </Route>
+                <Route path="/connection/create" element={<PrivateRoute />}>
+                    <Route path="/connection/create" element={<ConnectionCreate />} />
                 </Route>
                 <Route path="/connection/:providerConfigKey/:connectionId" element={<PrivateRoute />}>
                     <Route path="/connection/:providerConfigKey/:connectionId" element={<ConnectionDetails />} />

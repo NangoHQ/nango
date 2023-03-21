@@ -32,7 +32,7 @@ export default function IntegrationList() {
             <TopNavBar />
             <div className="flex h-full">
                 <LeftNavBar selectedItem={LeftNavBarItems.Integrations} />
-                <div className="ml-60 w-full  mt-14">
+                <div className="ml-60 w-full mt-14">
                     {integrations && integrations.length > 0 && (
                         <div className="px-16 w-fit mx-auto">
                             <div className="flex justify-between">
@@ -66,6 +66,12 @@ export default function IntegrationList() {
                                                     <div className="pl-8 flex pt-4">
                                                         <p className="mt-1.5 mr-4 text-text-dark-gray">{new Date(creationDate).toLocaleDateString()}</p>
                                                         <Link
+                                                            to={`/connection/create`}
+                                                            className="flex mr-2 h-8 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white bg-gray-800 hover:bg-gray-700"
+                                                        >
+                                                            <p>OAuth</p>
+                                                        </Link>
+                                                        <Link
                                                             to={`/integration/${uniqueKey}`}
                                                             className="flex h-8 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white bg-gray-800 hover:bg-gray-700"
                                                         >
@@ -86,7 +92,7 @@ export default function IntegrationList() {
                                 <h2 className="mt-16 text-left text-3xl font-semibold tracking-tight text-white mb-12">Integrations</h2>
                                 <div className="text-sm w-largebox h-40">
                                     <Link to="/integration/create" className="py-3 px-4 rounded-md text-sm text-black bg-white hover:bg-gray-300">
-                                        Add your first integration
+                                        Add your 1st Integration
                                     </Link>
                                 </div>
                             </div>

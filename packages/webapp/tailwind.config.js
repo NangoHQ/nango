@@ -23,7 +23,7 @@ module.exports = {
             },
             width: {
                 largebox: '1200px',
-                largecell: '600px'
+                largecell: '480px'
             }
         }
     },

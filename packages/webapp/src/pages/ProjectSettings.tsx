@@ -6,7 +6,7 @@ import { HelpCircle } from '@geist-ui/icons';
 import TopNavBar from '../components/TopNavBar';
 import LeftNavBar, { LeftNavBarItems } from '../components/LeftNavBar';
 import API from '../utils/api';
-import { isCloud } from '../utils/utils';
+import { isCloud, defaultCallback } from '../utils/utils';
 
 export default function ProjectSettings() {
     const [secretKey, setSecretKey] = useState('');
@@ -14,7 +14,6 @@ export default function ProjectSettings() {
     const [callbackUrl, setCallbackUrl] = useState('');
     const [callbackEditMode, setCallbackEditMode] = useState(false);
     const navigate = useNavigate();
-    const defaultCloudCallback = isCloud() ? 'https://api.nango.dev/oauth/callback' : 'http://localhost:3003/oauth/callback';
 
     useEffect(() => {
         const getAccount = async () => {
@@ -24,11 +23,11 @@ export default function ProjectSettings() {
                 const account = (await res.json())['account'];
                 setSecretKey(account.secret_key);
                 setPublicKey(account.public_key);
-                setCallbackUrl(account.callback_url || defaultCloudCallback);
+                setCallbackUrl(account.callback_url || defaultCallback());
             }
         };
         getAccount();
-    }, [navigate, defaultCloudCallback]);
+    }, [navigate]);
 
     const handleCallbackSave = async (e: React.SyntheticEvent) => {
         e.preventDefault();
@@ -42,7 +41,7 @@ export default function ProjectSettings() {
         if (res?.status === 200) {
             toast.success('Callback URL updated!', { position: toast.POSITION.BOTTOM_CENTER });
             setCallbackEditMode(false);
-            setCallbackUrl(target.callback_url.value || defaultCloudCallback);
+            setCallbackUrl(target.callback_url.value || defaultCallback());
         }
     };
 

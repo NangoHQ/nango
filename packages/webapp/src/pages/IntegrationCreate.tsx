@@ -72,7 +72,7 @@ export default function IntegrationCreate() {
 
             if (res?.status === 200) {
                 toast.success('Integration updated!', { position: toast.POSITION.BOTTOM_CENTER });
-                navigate('/integration', { replace: true });
+                navigate('/integrations', { replace: true });
             }
         } else {
             const target = e.target as typeof e.target & {
@@ -94,10 +94,10 @@ export default function IntegrationCreate() {
 
             if (res?.status === 200) {
                 toast.success('Integration created!', { position: toast.POSITION.BOTTOM_CENTER });
-                navigate('/integration', { replace: true });
+                navigate('/integrations', { replace: true });
             } else if (res != null) {
                 let payload = await res.json();
-                toast.error(payload.type == 'duplicate_provider_config' ? 'Unique Key already exists.' : payload.error, {
+                toast.error(payload.type === 'duplicate_provider_config' ? 'Unique Key already exists.' : payload.error, {
                     position: toast.POSITION.BOTTOM_CENTER
                 });
             }
@@ -129,7 +129,7 @@ export default function IntegrationCreate() {
             <div className="flex h-full">
                 {deleteAlertState && (
                     <AlertOverLay
-                        message={'Deleting an integration will also permanently delete all associated connections. Are you sure you want to delete it'}
+                        message={'Deleting an integration will also permanently delete all associated connections. Are you sure you want to delete it?'}
                         title={`Delete ${providerConfigKey}!`}
                         onAccept={acceptDeleteButtonClicked}
                         onCancel={rejectDeleteButtonClicked}
@@ -153,7 +153,6 @@ export default function IntegrationCreate() {
                                                         id="provider"
                                                         name="provider"
                                                         className="border-border-gray bg-bg-black text-text-light-gray block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base shadow-sm active:outline-none focus:outline-none active:border-white focus:border-white"
-                                                        defaultValue="Canada"
                                                     >
                                                         {providers.map((provider) => (
                                                             <option>{provider}</option>

@@ -283,10 +283,6 @@ class API {
                 return this.logoutFromClient(nav);
             }
 
-            if (res.status !== 200) {
-                return this.serverErrorToast();
-            }
-
             return res;
         } catch (e) {
             this.requestErrorToast();
