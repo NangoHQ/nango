@@ -13,7 +13,7 @@ services:
             - nango
 
     nango-server:
-        image: nango.docker.scarf.sh/nangohq/nango-server
+        image: nangohq/nango-server
         container_name: nango-server
         restart: always
         env_file:

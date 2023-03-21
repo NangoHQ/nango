@@ -15,7 +15,7 @@ services:
             - nango
 
     nango-server:
-        image: nango.docker.scarf.sh/nangohq/nango-server
+        image: nangohq/nango-server
         container_name: nango-server
         volumes:
             - ${PWD}/packages/server/providers.yaml:/usr/nango-server/src/packages/server/providers.yaml

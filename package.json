@@ -12,14 +12,14 @@
         "prettier-watch": "onchange './**/*.ts' -- prettier --write {{changed}}",
         "lint": "eslint . --ext .ts",
         "install:all": "npm i && cd packages/webapp && npm i && cd ../..",
-        "docker-build": "docker build -f packages/server/Dockerfile -t nango.docker.scarf.sh/nangohq/nango-server:latest .",
         "ts-build": "./node_modules/typescript/bin/tsc -b --clean packages/server packages/cli && ./node_modules/typescript/bin/tsc -b tsconfig.build.json && ./packages/webapp/node_modules/typescript/bin/tsc -b packages/webapp/tsconfig.json",
+        "docker-build": "docker build -f packages/server/Dockerfile -t nango-server:latest .",
         "webapp-build:hosted": "cd ./packages/webapp && npm run build:hosted && cd ../..",
         "webapp-build:staging": "cd ./packages/webapp && npm run build:staging && cd ../..",
         "webapp-build:prod": "cd ./packages/webapp && npm run build:prod && cd ../..",
-        "build:hosted": "npm run install:all && npm run ts-build && npm run webapp-build:hosted && npm run docker-build",
-        "build:staging": "npm run install:all && npm run ts-build && npm run webapp-build:staging && npm run docker-build",
-        "build:prod": "npm run install:all && npm run ts-build && npm run webapp-build:prod && npm run docker-build"
+        "build:hosted": "npm run install:all && npm run ts-build && npm run webapp-build:hosted ",
+        "build:staging": "npm run install:all && npm run ts-build && npm run webapp-build:staging",
+        "build:prod": "npm run install:all && npm run ts-build && npm run webapp-build:prod"
     },
     "dependencies": {},
     "devDependencies": {

@@ -1,6 +1,6 @@
 export const localhostUrl: string = 'http://localhost:3003';
-export const stagingUrl: string = 'https://api.nango.dev';
-export const prodUrl: string = 'https://api-staging.nango.dev';
+export const stagingUrl: string = 'https://api-staging.nango.dev';
+export const prodUrl: string = 'https://api.nango.dev';
 
 export enum NodeEnv {
     Hosted = 'hosted',
