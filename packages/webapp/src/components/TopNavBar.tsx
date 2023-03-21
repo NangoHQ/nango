@@ -24,7 +24,7 @@ export default function NavBar() {
                         className="flex h-8 rounded-md ml-4 pl-2 pr-3 pt-1.5 text-sm hover:bg-gray-700 text-white  mt-3"
                     >
                         <Book className="h-4 mr-1 mt-0.5"></Book>
-                        <p>Quickstart</p>
+                        <p>Documentation</p>
                     </a>
                     <a
                         href="https://nango.dev/slack"

@@ -5,8 +5,10 @@ import { toast } from 'react-toastify';
 import { useState, useEffect } from 'react';
 import API from '../utils/api';
 import Nango from '@nangohq/frontend';
-import { isHosted, isStaging, baseUrl } from '../utils/utils';
+import { isHosted, isStaging, baseUrl, isCloud } from '../utils/utils';
 import { Prism } from '@mantine/prism';
+import { HelpCircle } from '@geist-ui/icons';
+import { Tooltip } from '@geist-ui/core';
 
 interface Integration {
     uniqueKey: string;
@@ -22,6 +24,7 @@ export default function IntegrationCreate() {
     const [integrationUniqueKey, setIntegrationUniqueKey] = useState<string>('');
     const [connectionId, setConnectionId] = useState<string>('test-connection-id');
     const [connectionConfigParams, setConnectionConfigParams] = useState<string>('{ }');
+    const [publicKey, setPublicKey] = useState('');
 
     useEffect(() => {
         const getIntegrations = async () => {
@@ -38,6 +41,16 @@ export default function IntegrationCreate() {
                 }
             };
             getIntegrations();
+
+            const getAccount = async () => {
+                let res = await API.getProjectInfo(navigate);
+
+                if (res?.status === 200) {
+                    const account = (await res.json())['account'];
+                    setPublicKey(account.public_key);
+                }
+            };
+            getAccount();
         };
         getIntegrations();
     }, [navigate]);
@@ -52,7 +65,7 @@ export default function IntegrationCreate() {
             connection_config_params: { value: string };
         };
 
-        let nango = new Nango({ host: baseUrl() });
+        let nango = new Nango({ host: baseUrl(), publicKey: isCloud() ? publicKey : undefined });
 
         nango
             .auth(target.integration_unique_key.value, target.connection_id.value, { params: JSON.parse(target.connection_config_params.value) })
@@ -84,6 +97,10 @@ export default function IntegrationCreate() {
             args.push(`host: '${baseUrl()}'`);
         }
 
+        if (isCloud() && publicKey) {
+            args.push(`publicKey: '${publicKey}'`);
+        }
+
         if (!['{', '{}', ''].includes(connectionConfigParams.replace(/ /g, ''))) {
             args.push(`config: { params: ${connectionConfigParams}}`);
         }
@@ -107,16 +124,18 @@ nango.auth('${integrationUniqueKey}', '${connectionId}').then((result: { integra
             <div className="flex h-full">
                 <LeftNavBar selectedItem={LeftNavBarItems.Integrations} />
                 <div className="ml-60 w-full mt-14">
-                    {integrations && integrations.length > 0 && (
-                        <div className="mx-auto w-largebox">
+                    {integrations && integrations.length > 0 && (!isCloud() || publicKey) && (
+                        <div className="mx-auto w-largebox pb-40">
                             <h2 className="mx-20 mt-16 text-left text-3xl font-semibold tracking-tight text-white mb-12">Add New Connection</h2>
                             <div className="mx-20 h-fit border border-border-gray rounded-md text-white text-sm py-14 px-8">
                                 <form className="space-y-6" onSubmit={handleCreate}>
                                     <div>
                                         <div>
-                                            <label htmlFor="integration_unique_key" className="text-text-light-gray block text-sm font-semibold">
-                                                Integration Unique Key
-                                            </label>
+                                            <div className="flex">
+                                                <label htmlFor="client_id" className="text-text-light-gray block text-sm font-semibold">
+                                                    Integration Unique Key
+                                                </label>
+                                            </div>
                                             <div className="mt-1">
                                                 <select
                                                     id="integration_unique_key"
@@ -131,9 +150,22 @@ nango.auth('${integrationUniqueKey}', '${connectionId}').then((result: { integra
                                             </div>
                                         </div>
                                         <div>
-                                            <label htmlFor="connection_id" className="text-text-light-gray block text-sm font-semibold mt-6">
-                                                Connection ID
-                                            </label>
+                                            <div className="flex mt-6">
+                                                <label htmlFor="client_id" className="text-text-light-gray block text-sm font-semibold">
+                                                    Connection ID
+                                                </label>
+                                                <Tooltip
+                                                    text={
+                                                        <>
+                                                            <div className="flex text-black text-sm">
+                                                                <p>{`The ID you will use to retrieve the connection (most often the user ID).`}</p>
+                                                            </div>
+                                                        </>
+                                                    }
+                                                >
+                                                    <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                                </Tooltip>
+                                            </div>
                                             <div className="mt-1">
                                                 <input
                                                     id="connection_id"
@@ -149,9 +181,31 @@ nango.auth('${integrationUniqueKey}', '${connectionId}').then((result: { integra
                                     </div>
 
                                     <div>
-                                        <label htmlFor="connection_config_params" className="text-text-light-gray block text-sm font-semibold">
-                                            Connection Configuration Parameters
-                                        </label>
+                                        <div className="flex mt-6">
+                                            <label htmlFor="client_id" className="text-text-light-gray block text-sm font-semibold">
+                                                Extra Configuration
+                                            </label>
+                                            <Tooltip
+                                                text={
+                                                    <>
+                                                        <div className="flex text-black text-sm">
+                                                            <p className="ml-1">{`Some integrations require extra configuration (cf.`}</p>
+                                                            <a
+                                                                href="https://docs.nango.dev/reference/frontend-sdk#connection-config"
+                                                                target="_blank"
+                                                                rel="noreferrer"
+                                                                className="text-text-blue hover:text-text-light-blue ml-1"
+                                                            >
+                                                                docs
+                                                            </a>
+                                                            <p>{`).`}</p>
+                                                        </div>
+                                                    </>
+                                                }
+                                            >
+                                                <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                            </Tooltip>
+                                        </div>
                                         <div className="mt-1">
                                             <input
                                                 id="connection_config_params"
@@ -173,8 +227,8 @@ nango.auth('${integrationUniqueKey}', '${connectionId}').then((result: { integra
                                             >
                                                 Start OAuth Flow
                                             </button>
-                                            <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold pt-5 ml-4">
-                                                or start from frontend:
+                                            <label htmlFor="email" className="text-text-light-gray block text-sm pt-5 ml-4">
+                                                or from your frontend:
                                             </label>
                                         </div>
                                         <div>

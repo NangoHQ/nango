@@ -2,7 +2,8 @@
  * Copyright (c) 2022 Nango, all rights reserved.
  */
 
-const cloudHost = 'https://api.nango.dev';
+const prodHost = 'https://api.nango.dev';
+const stagingHost = 'https://staging.nango.dev';
 const debugLogPrefix = 'NANGO DEBUG LOG: ';
 
 const enum WSMessageType {
@@ -18,22 +19,21 @@ export default class Nango {
     private debug: boolean = false;
 
     constructor(config: { host?: string; publicKey?: string; debug?: boolean } = {}) {
-        config.host = config.host || cloudHost;
+        config.host = config.host || prodHost; // Default to Nango Cloud.
         this.debug = config.debug || false;
 
         if (this.debug) {
-            console.log(debugLogPrefix, `Debug mode is enabled (1).`);
+            console.log(debugLogPrefix, `Debug mode is enabled.`);
             console.log(debugLogPrefix, `Using host: ${config.host}.`);
         }
 
-        if (config.host === cloudHost && !config.publicKey) {
-            throw new Error('You should specify a Public Key when using Nango Cloud (cf. documentation).');
-        }
-
-        this.hostBaseUrl = config.host;
-        this.hostBaseUrl = config.host.slice(-1) === '/' ? config.host.slice(0, -1) : config.host;
+        this.hostBaseUrl = config.host.slice(-1) === '/' ? config.host.slice(0, -1) : config.host; // Remove trailing slash.
         this.status = AuthorizationStatus.IDLE;
         this.publicKey = config.publicKey;
+
+        if (this.isCloud() && !config.publicKey) {
+            throw new Error('You should specify a Public Key when using Nango Cloud (cf. documentation).');
+        }
 
         try {
             new URL(this.hostBaseUrl);
@@ -91,7 +91,7 @@ export default class Nango {
         });
     }
 
-    toQueryString(connectionId: string, connectionConfig?: ConnectionConfig): string {
+    private toQueryString(connectionId: string, connectionConfig?: ConnectionConfig): string {
         let query: string[] = [];
 
         if (connectionId) {
@@ -112,6 +112,10 @@ export default class Nango {
         }
 
         return query.length === 0 ? '' : '?' + query.join('&');
+    }
+
+    private isCloud() {
+        return this.hostBaseUrl === prodHost || this.hostBaseUrl === stagingHost;
     }
 }
 

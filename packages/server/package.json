@@ -1,13 +1,12 @@
 {
     "name": "@nangohq/nango-server",
-    "version": "0.11.3",
+    "version": "0.11.6",
     "description": "Nango OAuth's server.",
     "type": "module",
     "main": "dist/server.js",
     "scripts": {
         "start": "tsc && node dist/server.js",
         "dev": "nodemon"
-
     },
     "keywords": [],
     "repository": {
