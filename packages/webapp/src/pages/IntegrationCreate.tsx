@@ -97,7 +97,7 @@ export default function IntegrationCreate() {
                 navigate('/integration', { replace: true });
             } else if (res != null) {
                 let payload = await res.json();
-                toast.error(payload.type == 'duplicate_provider_config' ? 'Unique Key already exists.' : payload.error, {
+                toast.error(payload.type === 'duplicate_provider_config' ? 'Unique Key already exists.' : payload.error, {
                     position: toast.POSITION.BOTTOM_CENTER
                 });
             }
