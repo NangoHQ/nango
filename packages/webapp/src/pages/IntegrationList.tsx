@@ -3,12 +3,19 @@ import LeftNavBar, { LeftNavBarItems } from '../components/LeftNavBar';
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import API from '../utils/api';
+import { hotjar } from 'react-hotjar';
+import { isCloud } from '../utils/utils';
 
 interface Integration {
     uniqueKey: string;
     provider: string;
     connectionCount: number;
     creationDate: string;
+}
+
+interface User {
+    id: number;
+    accountId: number;
 }
 
 export default function IntegrationList() {
@@ -25,6 +32,19 @@ export default function IntegrationList() {
             }
         };
         getIntegrations();
+
+        if (isCloud()) {
+            const getUser = async () => {
+                let res = await API.getUser(navigate);
+
+                if (res?.status === 200) {
+                    let data = await res.json();
+                    let user: User = data['user'];
+                    hotjar.identify(`${user.id}`, { accountId: `${user.accountId}` });
+                }
+            };
+            getUser();
+        }
     }, [navigate]);
 
     return (

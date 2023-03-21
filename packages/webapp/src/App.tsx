@@ -13,8 +13,13 @@ import ResetPassword from './pages/ResetPassword';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { isCloud } from './utils/utils';
+import { hotjar } from 'react-hotjar';
 
 const App = () => {
+    if (isCloud()) {
+        hotjar.initialize(3412485, 6);
+    }
+
     return (
         <>
             <Routes>

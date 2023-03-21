@@ -337,6 +337,18 @@ class API {
             this.requestErrorToast();
         }
     }
+
+    async getUser(nav: NavigateFunction) {
+        let res = await fetch(`/api/v1/user`, {
+            headers: this.getHeaders()
+        });
+
+        if (res.status === 401) {
+            return this.logoutFromClient(nav);
+        }
+
+        return res;
+    }
 }
 
 const api = new API();
