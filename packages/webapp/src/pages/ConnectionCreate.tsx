@@ -9,6 +9,7 @@ import { isHosted, isStaging, baseUrl, isCloud } from '../utils/utils';
 import { Prism } from '@mantine/prism';
 import { HelpCircle } from '@geist-ui/icons';
 import { Tooltip } from '@geist-ui/core';
+import { useAnalyticsTrack } from '../utils/analytics';
 
 interface Integration {
     uniqueKey: string;
@@ -21,12 +22,13 @@ export default function IntegrationCreate() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');
     const [integrations, setIntegrations] = useState<Integration[] | null>(null);
     const navigate = useNavigate();
-    const [integrationUniqueKey, setIntegrationUniqueKey] = useState<string>('');
+    const [integration, setIntegration] = useState<Integration | null>(null);
     const [connectionId, setConnectionId] = useState<string>('test-connection-id');
     const [connectionConfigParams, setConnectionConfigParams] = useState<string>('{ }');
     const [publicKey, setPublicKey] = useState('');
     const getIntegrationListAPI = useGetIntegrationListAPI();
     const getProjectInfoAPI = useGetProjectInfoAPI();
+    const analyticsTrack = useAnalyticsTrack();
 
     useEffect(() => {
         const getIntegrations = async () => {
@@ -38,7 +40,7 @@ export default function IntegrationCreate() {
                     setIntegrations(data['integrations']);
 
                     if (data['integrations'] && data['integrations'].length > 0) {
-                        setIntegrationUniqueKey(data['integrations'][0].uniqueKey);
+                        setIntegration(data['integrations'][0]);
                     }
                 }
             };
@@ -76,12 +78,17 @@ export default function IntegrationCreate() {
             })
             .then(() => {
                 toast.success('Connection created!', { position: toast.POSITION.BOTTOM_CENTER });
+                analyticsTrack('web:connection_created', { provider: integration?.provider || 'unknown' });
                 navigate('/connections', { replace: true });
             });
     };
 
     const handleIntegrationUniqueKeyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setIntegrationUniqueKey(e.target.value);
+        let integration: Integration | undefined = integrations?.find((i) => i.uniqueKey === e.target.value);
+
+        if (integration != null) {
+            setIntegration(integration);
+        }
     };
 
     const handleConnectionIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -113,7 +120,7 @@ export default function IntegrationCreate() {
         
 let nango = new Nango(${argsStr});
 
-nango.auth('${integrationUniqueKey}', '${connectionId}').then((result: { integrationUniqueKey: string; connectionId: string}) => {
+nango.auth('${integration?.uniqueKey}', '${connectionId}').then((result: { integrationUniqueKey: string; connectionId: string}) => {
     // do something
 }).catch((err: { message: string; type: string }) => {
     // handle error
@@ -146,7 +153,7 @@ nango.auth('${integrationUniqueKey}', '${connectionId}').then((result: { integra
                                                     onChange={handleIntegrationUniqueKeyChange}
                                                 >
                                                     {integrations.map((integration) => (
-                                                        <option>{integration.uniqueKey}</option>
+                                                        <option key={integration.uniqueKey}>{integration.uniqueKey}</option>
                                                     ))}
                                                 </select>
                                             </div>

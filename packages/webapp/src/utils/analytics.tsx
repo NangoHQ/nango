@@ -4,7 +4,7 @@ import { User } from './user';
 export function useAnalyticsTrack() {
     const posthog = usePostHog();
 
-    return (event: string, properties: Record<string, string | number>) => {
+    return (event: string, properties?: Record<string, string | number>) => {
         posthog?.capture(event, properties);
     };
 }
