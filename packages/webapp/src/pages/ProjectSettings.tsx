@@ -1,11 +1,10 @@
-import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { Prism } from '@mantine/prism';
 import { useState, useEffect } from 'react';
 import { HelpCircle } from '@geist-ui/icons';
 import TopNavBar from '../components/TopNavBar';
 import LeftNavBar, { LeftNavBarItems } from '../components/LeftNavBar';
-import API from '../utils/api';
+import { useGetProjectInfoAPI, useEditCallbackUrlAPI } from '../utils/api';
 import { isCloud, defaultCallback } from '../utils/utils';
 
 export default function ProjectSettings() {
@@ -13,11 +12,12 @@ export default function ProjectSettings() {
     const [publicKey, setPublicKey] = useState('');
     const [callbackUrl, setCallbackUrl] = useState('');
     const [callbackEditMode, setCallbackEditMode] = useState(false);
-    const navigate = useNavigate();
+    const getProjectInfoAPI = useGetProjectInfoAPI();
+    const editCallbackUrlAPI = useEditCallbackUrlAPI();
 
     useEffect(() => {
         const getAccount = async () => {
-            let res = await API.getProjectInfo(navigate);
+            let res = await getProjectInfoAPI();
 
             if (res?.status === 200) {
                 const account = (await res.json())['account'];
@@ -27,7 +27,7 @@ export default function ProjectSettings() {
             }
         };
         getAccount();
-    }, [navigate]);
+    }, [getProjectInfoAPI]);
 
     const handleCallbackSave = async (e: React.SyntheticEvent) => {
         e.preventDefault();
@@ -36,7 +36,7 @@ export default function ProjectSettings() {
             callback_url: { value: string };
         };
 
-        const res = await API.editCallbackUrl(target.callback_url.value, navigate);
+        const res = await editCallbackUrlAPI(target.callback_url.value);
 
         if (res?.status === 200) {
             toast.success('Callback URL updated!', { position: toast.POSITION.BOTTOM_CENTER });

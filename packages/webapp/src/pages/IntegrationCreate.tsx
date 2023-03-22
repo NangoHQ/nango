@@ -3,7 +3,14 @@ import LeftNavBar, { LeftNavBarItems } from '../components/LeftNavBar';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useState, useEffect } from 'react';
-import API from '../utils/api';
+import {
+    useGetIntegrationDetailsAPI,
+    useGetProvidersAPI,
+    useGetProjectInfoAPI,
+    useEditIntegrationAPI,
+    useCreateIntegrationAPI,
+    useDeleteIntegrationAPI
+} from '../utils/api';
 import AlertOverLay from '../components/AlertOverLay';
 import { HelpCircle } from '@geist-ui/icons';
 import { Tooltip } from '@geist-ui/core';
@@ -27,12 +34,18 @@ export default function IntegrationCreate() {
     const { providerConfigKey } = useParams();
     const [templateLogo, setTemplateLogo] = useState<string>('');
     const [callbackUrl, setCallbackUrl] = useState('');
+    const getIntegrationDetailsAPI = useGetIntegrationDetailsAPI();
+    const getProvidersAPI = useGetProvidersAPI();
+    const getProjectInfoAPI = useGetProjectInfoAPI();
+    const editIntegrationAPI = useEditIntegrationAPI();
+    const createIntegrationAPI = useCreateIntegrationAPI();
+    const deleteIntegrationAPI = useDeleteIntegrationAPI();
 
     useEffect(() => {
         const getProviders = async () => {
             if (providerConfigKey) {
                 // Edit integration.
-                let res = await API.getIntegrationDetails(providerConfigKey, navigate);
+                let res = await getIntegrationDetailsAPI(providerConfigKey);
 
                 if (res?.status === 200) {
                     let data = await res.json();
@@ -40,7 +53,7 @@ export default function IntegrationCreate() {
                 }
             } else {
                 // Create integration
-                let res = await API.getProviders(navigate);
+                let res = await getProvidersAPI();
 
                 if (res?.status === 200) {
                     let data = await res.json();
@@ -51,7 +64,7 @@ export default function IntegrationCreate() {
         getProviders();
 
         const getAccount = async () => {
-            let res = await API.getProjectInfo(navigate);
+            let res = await getProjectInfoAPI();
 
             if (res?.status === 200) {
                 const account = (await res.json())['account'];
@@ -59,7 +72,7 @@ export default function IntegrationCreate() {
             }
         };
         getAccount();
-    }, [navigate, providerConfigKey]);
+    }, [providerConfigKey, getIntegrationDetailsAPI, getProvidersAPI, getProjectInfoAPI]);
 
     const handleSave = async (e: React.SyntheticEvent) => {
         e.preventDefault();
@@ -76,13 +89,12 @@ export default function IntegrationCreate() {
                 scopes: { value: string };
             };
 
-            let res = await API.editIntegration(
+            let res = await editIntegrationAPI(
                 integration.provider,
                 providerConfigKey,
                 target.client_id.value,
                 target.client_secret.value,
-                target.scopes.value,
-                navigate
+                target.scopes.value
             );
 
             if (res?.status === 200) {
@@ -98,13 +110,12 @@ export default function IntegrationCreate() {
                 scopes: { value: string };
             };
 
-            let res = await API.createIntegration(
+            let res = await createIntegrationAPI(
                 target.provider.value,
                 target.unique_key.value,
                 target.client_id.value,
                 target.client_secret.value,
-                target.scopes.value,
-                navigate
+                target.scopes.value
             );
 
             if (res?.status === 200) {
@@ -126,7 +137,7 @@ export default function IntegrationCreate() {
     const acceptDeleteButtonClicked = async () => {
         if (!providerConfigKey) return;
 
-        let res = await API.deleteIntegration(providerConfigKey, navigate);
+        let res = await deleteIntegrationAPI(providerConfigKey);
 
         if (res?.status === 200) {
             toast.success('Integration deleted!', { position: toast.POSITION.BOTTOM_CENTER });

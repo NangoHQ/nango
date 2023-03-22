@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
-import API from '../utils/api';
-import storage, { LocalStorageKeys } from '../utils/local-storage';
+import { useSigninAPI } from '../utils/api';
+import { useSignin, User } from '../utils/user';
 
 export default function Signin() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');
     const navigate = useNavigate();
+    const signin = useSignin();
+    const signinAPI = useSigninAPI();
 
     const handleSubmit = async (e: React.SyntheticEvent) => {
         e.preventDefault();
@@ -17,10 +19,12 @@ export default function Signin() {
             password: { value: string };
         };
 
-        const res = await API.signin(target.email.value, target.password.value);
+        const res = await signinAPI(target.email.value, target.password.value);
 
         if (res?.status === 200) {
-            storage.setItem(LocalStorageKeys.Authorized, true);
+            let data = await res.json();
+            let user: User = data['user'];
+            signin(user);
             navigate('/');
         } else if (res?.status === 401) {
             setServerErrorMessage('Invalid email or password.');

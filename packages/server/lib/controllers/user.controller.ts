@@ -9,7 +9,9 @@ class UserController {
             res.status(200).send({
                 user: {
                     id: user.id,
-                    accountId: user.account_id
+                    accountId: user.account_id,
+                    email: user.email,
+                    name: user.name
                 }
             });
         } catch (err) {

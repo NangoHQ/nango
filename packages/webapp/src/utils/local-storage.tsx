@@ -32,7 +32,10 @@ class LocalStorage implements PersistentStorage {
 }
 
 export enum LocalStorageKeys {
-    Authorized = 'nango_authorized'
+    UserEmail = 'nango_user_email',
+    UserName = 'nango_user_name',
+    UserId = 'nango_user_id',
+    AccountId = 'nango_account_id'
 }
 
 const storage = new LocalStorage();

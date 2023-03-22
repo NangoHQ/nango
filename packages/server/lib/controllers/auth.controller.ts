@@ -5,17 +5,31 @@ import errorManager from '../utils/error.manager.js';
 import accountService from '../services/account.service.js';
 import util from 'util';
 import analytics from '../utils/analytics.js';
-import { isCloud, resetPasswordSecret, getBaseUrl } from '../utils/utils.js';
+import { isCloud, resetPasswordSecret, getBaseUrl, getUserAndAccountFromSesstion } from '../utils/utils.js';
 import jwt from 'jsonwebtoken';
 import Mailgun from 'mailgun.js';
 import type { User } from '../models.js';
 import formData from 'form-data';
 import { NangoError } from '../utils/error.js';
 
+export interface WebUser {
+    id: number;
+    accountId: number;
+    email: string;
+    name: string;
+}
+
 class AuthController {
-    async signin(_: Request, res: Response, next: NextFunction) {
+    async signin(req: Request, res: Response, next: NextFunction) {
         try {
-            res.status(200).send();
+            let user = (await getUserAndAccountFromSesstion(req)).user;
+            let webUser: WebUser = {
+                id: user.id,
+                accountId: user.account_id,
+                email: user.email,
+                name: user.name
+            };
+            res.status(200).send({ user: webUser });
         } catch (err) {
             next(err);
         }
@@ -87,7 +101,13 @@ class AuthController {
                     return next(err);
                 }
 
-                res.status(200).send();
+                let webUser: WebUser = {
+                    id: user!.id,
+                    accountId: user!.account_id,
+                    email: user!.email,
+                    name: user!.name
+                };
+                res.status(200).send({ user: webUser });
             });
         } catch (err) {
             next(err);

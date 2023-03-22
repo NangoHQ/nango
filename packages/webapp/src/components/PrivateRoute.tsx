@@ -1,10 +1,9 @@
 import { Outlet, Navigate } from 'react-router-dom';
-import storage, { LocalStorageKeys } from '../utils/local-storage';
 import { isCloud } from '../utils/utils';
+import { isSignedIn } from '../utils/user';
 
-const PrivateRoute = (props: any) => {
-    const token = storage.getItem(LocalStorageKeys.Authorized);
-    return <>{token || !isCloud() ? <Outlet /> : <Navigate to="/signin" replace />}</>;
+const PrivateRoute = (_: any) => {
+    return <>{!isCloud() || isSignedIn() ? <Outlet /> : <Navigate to="/signin" replace />}</>;
 };
 
 export default PrivateRoute;

@@ -1,13 +1,12 @@
-import { useNavigate } from 'react-router-dom';
 import { Book, Slack, Github } from '@geist-ui/icons';
-import API from '../utils/api';
 import { isCloud } from '../utils/utils';
+import { useSignout } from '../utils/user';
 
 export default function NavBar() {
-    const navigate = useNavigate();
+    const signout = useSignout();
 
     const logoutButtonClicked = async () => {
-        API.logout(navigate);
+        signout();
     };
 
     return (

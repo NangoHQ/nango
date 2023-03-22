@@ -1,8 +1,8 @@
 import TopNavBar from '../components/TopNavBar';
 import LeftNavBar, { LeftNavBarItems } from '../components/LeftNavBar';
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import API from '../utils/api';
+import { Link } from 'react-router-dom';
+import { useGetConnectionListAPI } from '../utils/api';
 
 interface Connection {
     id: number;
@@ -14,11 +14,11 @@ interface Connection {
 
 export default function ConnectionList() {
     const [connections, setConnections] = useState<Connection[] | null>(null);
-    const navigate = useNavigate();
+    const getConnectionListAPI = useGetConnectionListAPI();
 
     useEffect(() => {
         const getConnections = async () => {
-            let res = await API.getConnectionList(navigate);
+            let res = await getConnectionListAPI();
 
             if (res?.status === 200) {
                 let data = await res.json();
@@ -26,7 +26,7 @@ export default function ConnectionList() {
             }
         };
         getConnections();
-    }, [navigate]);
+    }, [getConnectionListAPI]);
 
     return (
         <div className="h-full">

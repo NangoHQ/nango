@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import API from '../utils/api';
+import { useResetPasswordAPI } from '../utils/api';
 import { toast } from 'react-toastify';
 
 export default function Signin() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');
     const navigate = useNavigate();
     const { token } = useParams();
+    const resetPasswordAPI = useResetPasswordAPI();
 
     const handleSubmit = async (e: React.SyntheticEvent) => {
         e.preventDefault();
@@ -21,7 +22,7 @@ export default function Signin() {
             return;
         }
 
-        const res = await API.resetPassword(token, target.password.value);
+        const res = await resetPasswordAPI(token, target.password.value);
 
         if (res?.status === 200) {
             toast.success('Password updated!', { position: toast.POSITION.BOTTOM_CENTER });

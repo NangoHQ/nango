@@ -3,7 +3,7 @@ import LeftNavBar, { LeftNavBarItems } from '../components/LeftNavBar';
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Prism } from '@mantine/prism';
-import API from '../utils/api';
+import { useGetConnectionDetailsAPI, useDeleteConnectionAPI } from '../utils/api';
 import { toast } from 'react-toastify';
 import { Tooltip } from '@geist-ui/core';
 import { HelpCircle } from '@geist-ui/icons';
@@ -29,6 +29,8 @@ export default function ConnectionDetails() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');
     const [connection, setConnection] = useState<Connection | null>(null);
     const navigate = useNavigate();
+    const getConnectionDetailsAPI = useGetConnectionDetailsAPI();
+    const deleteConnectionAPI = useDeleteConnectionAPI();
 
     const { connectionId, providerConfigKey } = useParams();
 
@@ -36,7 +38,7 @@ export default function ConnectionDetails() {
         if (!connectionId || !providerConfigKey) return;
 
         const getConnections = async () => {
-            let res = await API.getConnectionDetails(connectionId, providerConfigKey, navigate);
+            let res = await getConnectionDetailsAPI(connectionId, providerConfigKey);
 
             console.log(res);
 
@@ -52,12 +54,12 @@ We could not retrieve and/or refresh your access token due to the following erro
             }
         };
         getConnections();
-    }, [navigate, connectionId, providerConfigKey]);
+    }, [connectionId, providerConfigKey, getConnectionDetailsAPI]);
 
     const deleteButtonClicked = async () => {
         if (!connectionId || !providerConfigKey) return;
 
-        let res = await API.deleteConnection(connectionId, providerConfigKey, navigate);
+        let res = await deleteConnectionAPI(connectionId, providerConfigKey);
 
         if (res?.status === 200) {
             toast.success('Connection deleted!', { position: toast.POSITION.BOTTOM_CENTER });

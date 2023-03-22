@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import API from '../utils/api';
+import { useRequestPasswordResetAPI } from '../utils/api';
 import { toast } from 'react-toastify';
 
 export default function Signin() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');
+    const requestPasswordResetAPI = useRequestPasswordResetAPI();
 
     const handleSubmit = async (e: React.SyntheticEvent) => {
         e.preventDefault();
@@ -13,7 +14,7 @@ export default function Signin() {
             email: { value: string };
         };
 
-        const res = await API.requestPasswordReset(target.email.value);
+        const res = await requestPasswordResetAPI(target.email.value);
 
         if (res?.status === 200) {
             toast.success('Email sent!', { position: toast.POSITION.BOTTOM_CENTER });

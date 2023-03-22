@@ -3,7 +3,7 @@ import LeftNavBar, { LeftNavBarItems } from '../components/LeftNavBar';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useState, useEffect } from 'react';
-import API from '../utils/api';
+import { useGetIntegrationListAPI, useGetProjectInfoAPI } from '../utils/api';
 import Nango from '@nangohq/frontend';
 import { isHosted, isStaging, baseUrl, isCloud } from '../utils/utils';
 import { Prism } from '@mantine/prism';
@@ -25,11 +25,13 @@ export default function IntegrationCreate() {
     const [connectionId, setConnectionId] = useState<string>('test-connection-id');
     const [connectionConfigParams, setConnectionConfigParams] = useState<string>('{ }');
     const [publicKey, setPublicKey] = useState('');
+    const getIntegrationListAPI = useGetIntegrationListAPI();
+    const getProjectInfoAPI = useGetProjectInfoAPI();
 
     useEffect(() => {
         const getIntegrations = async () => {
             const getIntegrations = async () => {
-                let res = await API.getIntegrationList(navigate);
+                let res = await getIntegrationListAPI();
 
                 if (res?.status === 200) {
                     let data = await res.json();
@@ -43,7 +45,7 @@ export default function IntegrationCreate() {
             getIntegrations();
 
             const getAccount = async () => {
-                let res = await API.getProjectInfo(navigate);
+                let res = await getProjectInfoAPI();
 
                 if (res?.status === 200) {
                     const account = (await res.json())['account'];
@@ -53,7 +55,7 @@ export default function IntegrationCreate() {
             getAccount();
         };
         getIntegrations();
-    }, [navigate]);
+    }, [getIntegrationListAPI, getProjectInfoAPI]);
 
     const handleCreate = async (e: React.SyntheticEvent) => {
         e.preventDefault();
