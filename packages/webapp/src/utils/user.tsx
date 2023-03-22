@@ -1,7 +1,7 @@
 import storage, { LocalStorageKeys } from '../utils/local-storage';
-import { usePostHog } from 'posthog-js/react';
 import { useLogoutAPI } from '../utils/api';
 import { useNavigate } from 'react-router';
+import { useAnalyticsIdentify, useAnalyticsReset } from './analytics';
 
 export interface User {
     id: number;
@@ -15,7 +15,7 @@ export function isSignedIn() {
 }
 
 export function useSignin() {
-    const posthog = usePostHog();
+    const analyticsIdentify = useAnalyticsIdentify();
 
     return (user: User) => {
         storage.setItem(LocalStorageKeys.UserEmail, user.email);
@@ -23,25 +23,18 @@ export function useSignin() {
         storage.setItem(LocalStorageKeys.UserId, user.id);
         storage.setItem(LocalStorageKeys.AccountId, user.accountId);
 
-        posthog?.identify(user.email, {
-            email: user.email,
-            name: user.name,
-            userId: user.id,
-            accountId: user.accountId
-        });
-
-        posthog?.group('company', `${user.accountId}`);
+        analyticsIdentify(user);
     };
 }
 
 export function useSignout() {
-    const posthog = usePostHog();
+    const analyticsReset = useAnalyticsReset();
     const nav = useNavigate();
     const logoutAPI = useLogoutAPI();
 
     return () => {
         storage.clear();
-        posthog?.reset();
+        analyticsReset();
         logoutAPI(); // Destroy server session.
         nav('/signin', { replace: true });
     };
