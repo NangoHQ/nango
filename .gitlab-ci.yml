@@ -1,0 +1,37 @@
+variables:
+  IMAGE_NAME: $DOCKER_USERNAME/novo-nango-dev-image
+  IMAGE_TAG: novo-nango-dev-1.0.0
+  NANGO: nango
+
+
+stages:
+  - build_push
+  - deploy
+
+
+build_push:
+  stage: build_push
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - apk add --no-cache npm
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  script:
+    - npm run build:hosted
+    - docker-compose up -d --force-recreate --build nango-db nango-server && docker-compose push nango-db nango-server
+
+deploy:
+  stage: deploy
+  script:
+    - echo "$EC2_SSH_PRIVATE_KEY" > novo-dev-server-key.pem
+    - chmod 400 novo-dev-server-key.pem
+    - ssh -o StrictHostKeyChecking=no -i "novo-dev-server-key.pem" $EC2_USERNAME@$EC2_HOST "
+      sudo docker pull $IMAGE_NAME:$IMAGE_TAG &&
+      sudo docker stop nango-server || true &&
+      sudo docker rm nango-server || true &&
+      sudo docker stop nango-db || true &&
+      sudo docker rm nango-db || true &&
+      sudo docker network create $NANGO || true &&
+      sudo docker run --network $NANGO -e POSTGRES_PASSWORD=$NANGO -e POSTGRES_USER=$NANGO -e POSTGRES_DB=$NANGO -d --name nango-db -p 5432:5432 postgres:latest || true &&
+      sudo docker run --network $NANGO -e NANGO_CALLBACK_URL=$NANGO_CALLBACK_URL -d --name nango-server -p 3003:3003 $IMAGE_NAME:$IMAGE_TAG"
