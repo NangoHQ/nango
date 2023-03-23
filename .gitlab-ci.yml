@@ -34,4 +34,4 @@ deploy:
       sudo docker rm nango-db || true &&
       sudo docker network create $NANGO || true &&
       sudo docker run --network $NANGO -e POSTGRES_PASSWORD=$NANGO -e POSTGRES_USER=$NANGO -e POSTGRES_DB=$NANGO -d --name nango-db -p 5432:5432 postgres:latest || true &&
-      sudo docker run --network $NANGO -e NANGO_CALLBACK_URL=$NANGO_CALLBACK_URL -d --name nango-server -p 3003:3003 $IMAGE_NAME:$IMAGE_TAG"
+      sudo docker run --network $NANGO -e NANGO_CALLBACK_URL=$NANGO_SERVER -d --name nango-server -p 3003:3003 $IMAGE_NAME:$IMAGE_TAG"
