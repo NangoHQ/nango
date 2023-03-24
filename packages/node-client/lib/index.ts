@@ -1,13 +1,15 @@
 import axios from 'axios';
 
-const cloudHost = 'https://api.nango.dev';
+const prodHost = 'https://api.nango.dev';
+const stagingHost = 'https://api-staging.nango.dev';
+const forceBearerAuth = true; // For development.
 
 export class Nango {
     serverUrl: string;
     secretKey: string;
 
     constructor(config: { host?: string; secretKey?: string } = {}) {
-        config.host = config.host || cloudHost;
+        config.host = config.host || prodHost;
         this.serverUrl = config.host;
 
         if (this.serverUrl.slice(-1) === '/') {
@@ -94,7 +96,7 @@ export class Nango {
     }
 
     private enrichHeaders(headers: Record<string, string | number | boolean> = {}) {
-        if (this.serverUrl === cloudHost) {
+        if (this.serverUrl === prodHost || this.serverUrl === stagingHost || forceBearerAuth) {
             headers['Authorization'] = 'Bearer ' + this.secretKey;
         } else if (this.secretKey) {
             headers['Authorization'] = 'Basic ' + Buffer.from(this.secretKey + ':').toString('base64');

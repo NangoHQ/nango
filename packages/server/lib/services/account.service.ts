@@ -3,14 +3,31 @@ import db from '../db/database.js';
 import encryptionManager from '../utils/encryption.manager.js';
 
 class AccountService {
-    async getAccountBySecretKey(secretKey: string): Promise<Account | null> {
-        let result = await db.knex.withSchema(db.schema()).select('*').from<Account>(`_nango_accounts`).where({ secret_key: secretKey });
+    private accountSecrets: { [key: string]: number } = {};
 
-        if (result == null || result.length == 0 || result[0] == null) {
-            return null;
+    async cacheAccountSecrets(): Promise<void> {
+        let accounts = await db.knex.withSchema(db.schema()).select('*').from<Account>(`_nango_accounts`);
+
+        let accountSecrets: { [key: string]: number } = {};
+
+        for (let account of accounts) {
+            let decryptedAccount = encryptionManager.decryptAccount(account);
+
+            if (decryptedAccount != null) {
+                accountSecrets[decryptedAccount.secret_key] = decryptedAccount.id;
+            }
         }
 
-        return encryptionManager.decryptAccount(result[0]);
+        this.accountSecrets = accountSecrets;
+    }
+
+    private addToAccountSecretCache(account: Account) {
+        this.accountSecrets[account.secret_key] = account.id;
+    }
+
+    async getAccountBySecretKey(secretKey: string): Promise<Account | null> {
+        let accountId = this.accountSecrets[secretKey];
+        return accountId != null ? await this.getAccountById(accountId) : null;
     }
 
     async getAccountByPublicKey(publicKey: string): Promise<Account | null> {
@@ -43,6 +60,7 @@ class AccountService {
             if (account != null) {
                 let encryptedAccount = encryptionManager.encryptAccount(account);
                 await db.knex.withSchema(db.schema()).from<Account>(`_nango_accounts`).where({ id: accountId }).update(encryptedAccount, ['id']);
+                this.addToAccountSecretCache(account);
                 return account;
             }
         }
