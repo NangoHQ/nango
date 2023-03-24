@@ -120,7 +120,7 @@ export default function IntegrationCreate() {
         
 let nango = new Nango(${argsStr});
 
-nango.auth('${integration?.uniqueKey}', '${connectionId}').then((result: { integrationUniqueKey: string; connectionId: string}) => {
+nango.auth('${integration?.uniqueKey}', '${connectionId}').then((result: { providerConfigKey: string; connectionId: string}) => {
     // do something
 }).catch((err: { message: string; type: string }) => {
     // handle error

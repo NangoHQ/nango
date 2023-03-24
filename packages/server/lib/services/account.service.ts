@@ -1,5 +1,6 @@
 import type { Account } from '../models.js';
 import db from '../db/database.js';
+import encryptionManager from '../utils/encryption.manager.js';
 
 class AccountService {
     async getAccountBySecretKey(secretKey: string): Promise<Account | null> {
@@ -9,7 +10,7 @@ class AccountService {
             return null;
         }
 
-        return result[0];
+        return encryptionManager.decryptAccount(result[0]);
     }
 
     async getAccountByPublicKey(publicKey: string): Promise<Account | null> {
@@ -19,7 +20,7 @@ class AccountService {
             return null;
         }
 
-        return result[0];
+        return encryptionManager.decryptAccount(result[0]);
     }
 
     async getAccountById(id: number): Promise<Account | null> {
@@ -29,7 +30,7 @@ class AccountService {
             return null;
         }
 
-        return result[0];
+        return encryptionManager.decryptAccount(result[0]);
     }
 
     async createAccount(name: string): Promise<Account | null> {
@@ -37,7 +38,13 @@ class AccountService {
 
         if (Array.isArray(result) && result.length === 1 && result[0] != null && 'id' in result[0]) {
             let accountId = result[0]['id'];
-            return this.getAccountById(accountId);
+            let account = await this.getAccountById(accountId);
+
+            if (account != null) {
+                let encryptedAccount = encryptionManager.encryptAccount(account);
+                await db.knex.withSchema(db.schema()).from<Account>(`_nango_accounts`).where({ id: accountId }).update(encryptedAccount, ['id']);
+                return account;
+            }
         }
 
         return null;

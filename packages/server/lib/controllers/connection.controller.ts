@@ -46,7 +46,7 @@ class ConnectionController {
             let template: ProviderTemplate | undefined = configService.getTemplate(config.provider);
 
             if (connection.credentials.type === ProviderAuthModes.OAuth2) {
-                connection.credentials = await connectionService.refreshOauth2CredentialsIfNeeded(connection, config, template, account.id);
+                connection.credentials = await connectionService.refreshOauth2CredentialsIfNeeded(connection, config, template);
             }
 
             res.status(200).send({
@@ -177,7 +177,7 @@ class ConnectionController {
             let template: ProviderTemplate | undefined = configService.getTemplate(config.provider);
 
             if (connection.credentials.type === ProviderAuthModes.OAuth2) {
-                connection.credentials = await connectionService.refreshOauth2CredentialsIfNeeded(connection, config, template, accountId);
+                connection.credentials = await connectionService.refreshOauth2CredentialsIfNeeded(connection, config, template);
             }
 
             analytics.track('server:connection_fetched', accountId, { provider: config.provider });

@@ -1,12 +1,13 @@
 import knex from 'knex';
 import type { Knex } from 'knex';
-import { config } from './config.js';
+import { dbConfig } from './db.config.js';
 
 class KnexDatabase {
     knex: Knex;
 
     constructor() {
-        this.knex = knex(config.development);
+        let config = dbConfig.development;
+        this.knex = knex(config);
     }
 
     async migrate(directory: string): Promise<any> {

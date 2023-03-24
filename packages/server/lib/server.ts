@@ -3,11 +3,7 @@
  */
 
 // Import environment variables (if running server locally).
-import * as dotenv from 'dotenv';
-if (process.env['SERVER_RUN_MODE'] !== 'DOCKERIZED') {
-    dotenv.config({ path: '../../.env' });
-}
-
+import _ from './utils/config.js';
 import db from './db/database.js';
 import oauthController from './controllers/oauth.controller.js';
 import configController from './controllers/config.controller.js';
@@ -28,6 +24,7 @@ import passport from 'passport';
 import accountController from './controllers/account.controller.js';
 import type { Response, Request } from 'express';
 import Logger from './utils/logger.js';
+import encryptionManager from './utils/encryption.manager.js';
 
 let app = express();
 
@@ -46,6 +43,7 @@ app.use(cors());
 
 await db.knex.raw(`CREATE SCHEMA IF NOT EXISTS ${db.schema()}`);
 await db.migrate(path.join(dirname(), '../../lib/db/migrations'));
+await encryptionManager.encryptDatabaseIfNeeded();
 
 // API routes (no/public auth).
 app.get('/health', (_, res) => {

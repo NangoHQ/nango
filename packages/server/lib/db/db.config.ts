@@ -1,6 +1,6 @@
 import type { Knex } from 'knex';
 
-let config: { development: Knex.Config<any>; production: Knex.Config<any> } = {
+let dbConfig: { development: Knex.Config<any>; production: Knex.Config<any> } = {
     development: {
         client: 'pg',
         connection: process.env['NANGO_DATABASE_URL'] || {
@@ -20,4 +20,4 @@ let config: { development: Knex.Config<any>; production: Knex.Config<any> } = {
     production: {}
 };
 
-export { config };
+export { dbConfig };
