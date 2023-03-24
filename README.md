@@ -80,15 +80,16 @@ If your favorite API is missing [open a GitHub issue](https://github.com/NangoHQ
 
 ### Test Nango in 5 minutes
 
-Run
-```
-git clone https://github.com/NangoHQ/nango.git && cd nango
-```
-```
-docker compose up # Keep the tab open
+Run locally:
+```shell
+git clone https://github.com/NangoHQ/nango.git && cd nango && docker compose up # Keep the tab open
 ```
 
-Go to http://localhost:3003 to configure your 1st OAuth flow!
+Or sign up for free:
+
+<a href="https://app.nango.dev/signup">
+  <img src="https://raw.githubusercontent.com/NangoHQ/nango/6f49ab92c0ffc18c1d0f44d9bd96c62ac97aaa8d/docs/static/img/nango-deploy-button.svg" alt="Try Nango Cloud" width="215"/>
+</a>
 
 ## 🔍 Where to learn more
 
