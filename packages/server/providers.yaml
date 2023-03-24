@@ -97,6 +97,11 @@ epic-games:
     authorization_url: https://www.epicgames.com/id/authorize
     token_url: https://api.epicgames.dev/epic/oauth/v1/token
     authorization_method: header
+factorial:
+    auth_mode: OAUTH2
+    authorization_url: https://api.factorialhr.com/oauth/authorize
+    token_url: https://api.factorialhr.com/oauth/token
+    disable_pkce: true
 facebook:
     auth_mode: OAUTH2
     authorization_url: https://www.facebook.com/v15.0/dialog/oauth
