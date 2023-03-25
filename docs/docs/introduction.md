@@ -29,11 +29,9 @@ let result = await nango.auth('github', '<user-id>');
 let token = await nango.getToken('github', '<user-id>');
 ```
 
-## 📺 1 minute demo {#demo}
+## 📺 30-second demo {#demo}
 
-Watch us add GitHub OAuth in 1 minute:
-
-<iframe width="864" height="486" src="https://www.youtube.com/embed/BK15QI-jWi0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+<iframe width="500" height="281" src="https://www.youtube.com/embed/BK15QI-jWi0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 
 ## 👾 Out of the box support for 60+ APIs
 
@@ -49,17 +47,6 @@ Watch us add GitHub OAuth in 1 minute:
 -   [and more...](https://nango.dev/oauth-providers)
 
 If your favorite API is missing [open a GitHub issue](https://github.com/NangoHQ/nango/issues/new) or [contribute it right away](https://docs.nango.dev/contribute-api): The API configurations are just simple [entries in a YAML file](https://www.nango.dev/oauth-providers).
-
-## 🛡️ Small, self-contained & ready for production
-
-Nango is purposely small, focused on its one task and easy to deploy in production:
-
--   Runs as a single docker container
--   Updates easily (`docker pull`)
--   Secured with an API key
--   Managed with a CLI
-
-Nango's community continuously maintains & expands API templates.
 
 ## 🔍 Where to learn more
 
