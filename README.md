@@ -11,7 +11,7 @@
 <h1 align="center">Get OAuth tokens for APIs. Fast & secure.</h1>
 
 <div align="center">
-Pre-built OAuth flows & secure token management for 50+ APIs. 100% open source.
+Pre-built OAuth flows & secure token management for 60+ APIs. 100% open source.
 </div>
 
 <p align="center">
@@ -39,11 +39,11 @@ Nango is a service that contains everything you need to work with APIs that use 
 
 It contains:
 
--   a full OAuth dance for 50+ APIs
+-   a full OAuth dance for 60+ APIs
 -   a frontend SDK to trigger new OAuth flows
 -   a backend SDK & REST API to retrieve fresh access tokens for your API calls
 
-Nango is easy to try in 5 minutes and can be deployed in 15:
+Nango is easy to try in 5 minutes:
 
 -   1-liner to start a new OAuth flow in your frontend:
 
@@ -51,15 +51,15 @@ Nango is easy to try in 5 minutes and can be deployed in 15:
 let result = await nango.auth('github', '<user-id>');
 ```
 
--   1-liner to retrieve a token (with our SDK or REST API):
+-   1-liner to retrieve a fresh token (with our SDK or REST API):
 
 ```ts
 let token = await nango.getToken('github', '<user-id>');
 ```
 
-## 👾 Out of the box support for 50+ APIs
+## 👾 Out of the box support for 60+ APIs
 
-50+ APIs are preconfigured to work out-of-the-box. Including:
+60+ APIs are preconfigured to work out-of-the-box. Including:
 
 -   **CRM**: Front, Hubspot, Salesforce, etc.
 -   **Accounting**: Xero, Sellsy, Zoho Books, etc.
@@ -72,28 +72,26 @@ let token = await nango.getToken('github', '<user-id>');
 
 If your favorite API is missing [open a GitHub issue](https://github.com/NangoHQ/nango/issues/new) or [contribute it right away](https://docs.nango.dev/contribute-api): The API configurations are just simple [entries in a YAML file](https://github.com/NangoHQ/nango/blob/master/packages/auth/providers.yaml).
 
-## 🛡️ Small, self-contained & ready for production
+## 📺 Demo
 
-Nango is purposely small, focused on its one task and easy to deploy in production:
+<a href="https://www.youtube.com/watch?v=BK15QI-jWi0">
+  <img src="https://uploads-ssl.webflow.com/63c092e946f9b71ff6874169/641e4d295d27291494411377_youtube-thumbnail.jpg" width="500">
+</a>
 
--   Runs as a single docker container
--   Updates easily (`docker pull`)
--   Secured with an API key
--   Managed with a CLI
--   [Cloud hosting available](https://www.nango.dev/pricing)
+## 🚀 Quickstart
 
-Nango's community continuously maintains & expands API templates.
+### Test Nango in 5 minutes
 
-## 🚀 Demo & Quickstart
+Run locally:
+```shell
+git clone https://github.com/NangoHQ/nango.git && cd nango && docker compose up # Keep the tab open
+```
 
-### 1 minute demo
+Or sign up for free:
 
-[![Watch demo on YouTube](https://docs.nango.dev/img/nango-demo-video-yt-thumbnail.png)](https://youtu.be/S0VJx2KPCQg)
-
-### Implement OAuth for any API in 15 minutes
-
-Ready to try Nango in your own app?  
-Follow our [Quickstart](https://docs.nango.dev/quickstart) to implement OAuth for your favorite API in your application in 15 minutes.
+<a href="https://app.nango.dev/signup" target="_blank">
+  <img src="https://raw.githubusercontent.com/NangoHQ/nango/6f49ab92c0ffc18c1d0f44d9bd96c62ac97aaa8d/docs/static/img/nango-deploy-button.svg" alt="Try Nango Cloud" width="215"/>
+</a>
 
 ## 🔍 Where to learn more
 
@@ -107,8 +105,8 @@ Follow our [Quickstart](https://docs.nango.dev/quickstart) to implement OAuth fo
 
 Thank you for continuously making Nango better ❤️
 
-<a href="https://github.com/NangoHQ/nango/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=NangoHQ/nango" />
+<a href="https://github.com/nangohq/nango/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=nangohq/nango" />
 </a>
 
 ## 🐻 History

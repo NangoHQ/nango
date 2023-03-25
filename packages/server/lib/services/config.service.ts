@@ -5,6 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import { dirname } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
+import encryptionManager from '../utils/encryption.manager.js';
 
 class ConfigService {
     templates: { [key: string]: ProviderTemplate };
@@ -13,7 +14,7 @@ class ConfigService {
         this.templates = this.getTemplatesFromFile();
     }
 
-    getTemplatesFromFile() {
+    private getTemplatesFromFile() {
         let templatesPath = path.join(dirname(), '../../providers.yaml');
 
         let fileEntries = yaml.load(fs.readFileSync(templatesPath).toString()) as { [key: string]: ProviderTemplate | ProviderTemplateAlias };
@@ -44,15 +45,17 @@ class ConfigService {
             return null;
         }
 
-        return result[0];
+        return encryptionManager.decryptProviderConfig(result[0]);
     }
 
     async listProviderConfigs(accountId: number): Promise<ProviderConfig[]> {
-        return db.knex.withSchema(db.schema()).select('*').from<ProviderConfig>(`_nango_configs`).where({ account_id: accountId });
+        return (await db.knex.withSchema(db.schema()).select('*').from<ProviderConfig>(`_nango_configs`).where({ account_id: accountId }))
+            .map((config) => encryptionManager.decryptProviderConfig(config))
+            .filter((config) => config != null) as ProviderConfig[];
     }
 
     async createProviderConfig(config: ProviderConfig): Promise<void | Pick<ProviderConfig, 'id'>[]> {
-        return db.knex.withSchema(db.schema()).from<ProviderConfig>(`_nango_configs`).insert(config, ['id']);
+        return db.knex.withSchema(db.schema()).from<ProviderConfig>(`_nango_configs`).insert(encryptionManager.encryptProviderConfig(config), ['id']);
     }
 
     async deleteProviderConfig(providerConfigKey: string, accountId: number): Promise<number> {
@@ -69,12 +72,7 @@ class ConfigService {
             .withSchema(db.schema())
             .from<ProviderConfig>(`_nango_configs`)
             .where({ unique_key: config.unique_key, account_id: config.account_id })
-            .update({
-                provider: config.provider,
-                oauth_client_id: config.oauth_client_id,
-                oauth_client_secret: config.oauth_client_secret,
-                oauth_scopes: config.oauth_scopes
-            });
+            .update(encryptionManager.encryptProviderConfig(config));
     }
 
     checkProviderTemplateExists(provider: string) {

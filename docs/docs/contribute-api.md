@@ -76,11 +76,10 @@ NANGO_CALLBACK_URL=https://redirectmeto.com/http://localhost:3003/oauth/callback
 
 To test your new provider:
 
-The docker compose configuration in the root of the repo `docker-compose.yaml` will run 3 containers.
+The docker compose configuration in the root of the repo `docker-compose.yaml` will run 2 containers.
 
 1. Postgres DB
 2. Nango Server
-3. Test Website to Trigger the OAuth Flow
 
 To propagate your changes after editing the `providers.yaml` file, run:
 
@@ -95,9 +94,9 @@ When you are ready to test your new provider template:
 
 Open the [local dashboard](http://localhost:3003) in your browser and add a new Integration with your freshly added provider (it should show up in the provider dropdown).
 
-### 2. Navigate to the Test Website and Trigger the OAuth Flow
+### 2. Trigger the OAuth Flow
 
-The test site should be running at [http://localhost:8001/bin/quickstart.html](http://localhost:8001/bin/quickstart.html)
+Run an OAuth flow on the [local dashboard](http://localhost:3003/connection/create).
 
 You can modify the ports in the docker compose if there are any conflicts with other local services on your host machine.
 
