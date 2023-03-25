@@ -48,6 +48,16 @@ export function isBasicAuthEnabled() {
     return !isCloud() && process.env['NANGO_DASHBOARD_USERNAME'] && process.env['NANGO_DASHBOARD_PASSWORD'];
 }
 
+export function useInMemorySession() {
+    const redisConnectionUrl = process.env['REDIS_CONNECTION_URL'] as string;
+    try {
+        new URL(redisConnectionUrl);
+        return false;
+    } catch (e) {
+        return true;
+    }
+}
+
 export function dirname() {
     return path.dirname(fileURLToPath(import.meta.url));
 }
@@ -248,12 +258,12 @@ Nango OAuth flow callback. Read more about how to use it at: https://github.com/
 -->
 <html>
   <head>
-    <meta charset="utf-8" />
+    <meta charset='utf-8' />
     <title>Authorization callback</title>
   </head>
   <body>
     <noscript>JavaScript is required to proceed with the authentication.</noscript>
-    <script type="text/javascript">
+    <script type='text/javascript'>
       // Close the modal
       window.setTimeout(function() {
         window.close()

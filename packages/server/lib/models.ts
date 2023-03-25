@@ -144,10 +144,6 @@ export interface OAuthSession {
     request_token_secret?: string;
 }
 
-export interface OAuthSessionStore {
-    [key: string]: OAuthSession;
-}
-
 export interface CredentialsRefresh {
     providerConfigKey: string;
     connectionId: string;

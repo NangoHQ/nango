@@ -12,6 +12,16 @@ services:
         networks:
             - nango
 
+    redis:
+        image: redis
+        container_name: redis
+        volumes:
+            - ./redis-data:/data
+        ports:
+            - '6379:6379'
+        networks:
+            - nango
+
     nango-server:
         image: nangohq/nango-server
         container_name: nango-server

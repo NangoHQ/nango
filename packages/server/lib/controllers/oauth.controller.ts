@@ -20,8 +20,7 @@ import {
     ProviderTemplateOAuth2,
     ProviderAuthModes,
     OAuthSession,
-    OAuth1RequestTokenResult,
-    OAuthSessionStore
+    OAuth1RequestTokenResult
 } from '../models.js';
 import logger from '../utils/logger.js';
 import type { NextFunction } from 'express';
@@ -30,9 +29,10 @@ import providerClientManager from '../clients/provider.client.js';
 import wsClient from '../clients/web-socket.client.js';
 import { WSErrBuilder } from '../utils/web-socket-error.js';
 import analytics from '../utils/analytics.js';
+import inMemoryDb from '../db/inmemory.db.js';
+
 
 class OAuthController {
-    sessionStore: OAuthSessionStore = {};
 
     public async oauthRequest(req: Request, res: Response, _: NextFunction) {
         let accountId = getAccount(res);
@@ -80,7 +80,7 @@ class OAuthController {
                 accountId: accountId,
                 webSocketClientId: wsClientId
             };
-            this.sessionStore[session.id] = session;
+            await inMemoryDb.set(session.id, session);
 
             if (config?.oauth_client_id == null || config?.oauth_client_secret == null || config.oauth_scopes == null) {
                 return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.InvalidProviderConfig(providerConfigKey));
@@ -192,11 +192,14 @@ class OAuthController {
         try {
             tokenResult = await oAuth1Client.getOAuthRequestToken();
         } catch (e) {
-            errorManager.report(new Error('token_retrieval_error'), { accountId: session.accountId, metadata: e as { statusCode: number; data?: any } });
+            errorManager.report(new Error('token_retrieval_error'), {
+                accountId: session.accountId,
+                metadata: e as { statusCode: number; data?: any }
+            });
             return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.TokenError());
         }
 
-        const sessionData = this.sessionStore[session.id]!;
+        const sessionData = await inMemoryDb.get(session.id) as OAuthSession;
         sessionData.request_token_secret = tokenResult.request_token_secret;
         const redirectUrl = oAuth1Client.getAuthorizationURL(tokenResult);
 
@@ -217,12 +220,12 @@ class OAuthController {
             throw e;
         }
 
-        const session: OAuthSession = this.sessionStore[state as string] as OAuthSession;
+        const session = await inMemoryDb.get(state as string) as OAuthSession;
 
         if (session == null) {
             throw new Error('No session found for state: ' + state);
         } else {
-            delete this.sessionStore[state as string];
+            await inMemoryDb.delete(state as string);
         }
 
         let wsClientId = session.webSocketClientId;
@@ -247,7 +250,10 @@ class OAuthController {
 
             return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownAuthMode(session.authMode));
         } catch (e) {
-            errorManager.report(e, { accountId: session?.accountId, metadata: errorManager.getExpressRequestContext(req) });
+            errorManager.report(e, {
+                accountId: session?.accountId,
+                metadata: errorManager.getExpressRequestContext(req)
+            });
             return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError());
         }
     }

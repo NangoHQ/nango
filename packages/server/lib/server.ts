@@ -4,6 +4,7 @@
 
 // Import environment variables (if running server locally).
 import * as dotenv from 'dotenv';
+
 if (process.env['SERVER_RUN_MODE'] !== 'DOCKERIZED') {
     dotenv.config({ path: '../../.env' });
 }
@@ -16,7 +17,14 @@ import authController from './controllers/auth.controller.js';
 import authMiddleware from './controllers/access.middleware.js';
 import userController from './controllers/user.controller.js';
 import path from 'path';
-import { dirname, getPort, getGlobalOAuthCallbackUrl, isCloud, isBasicAuthEnabled, packageJsonFile } from './utils/utils.js';
+import {
+    dirname,
+    getPort,
+    getGlobalOAuthCallbackUrl,
+    isCloud,
+    isBasicAuthEnabled,
+    packageJsonFile
+} from './utils/utils.js';
 import errorManager from './utils/error.manager.js';
 import { WebSocketServer, WebSocket } from 'ws';
 import http from 'http';
@@ -28,6 +36,7 @@ import passport from 'passport';
 import accountController from './controllers/account.controller.js';
 import type { Response, Request } from 'express';
 import Logger from './utils/logger.js';
+import inMemoryDB from './db/inmemory.db.js';
 
 let app = express();
 
@@ -38,14 +47,15 @@ let apiPublicAuth = authMiddleware.publicKeyAuth.bind(authMiddleware);
 let webAuth = isCloud()
     ? [passport.authenticate('session'), authMiddleware.sessionAuth.bind(authMiddleware)]
     : isBasicAuthEnabled()
-    ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth.bind(authMiddleware)]
-    : [authMiddleware.noAuth.bind(authMiddleware)];
+        ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth.bind(authMiddleware)]
+        : [authMiddleware.noAuth.bind(authMiddleware)];
 
 app.use(express.json());
 app.use(cors());
 
 await db.knex.raw(`CREATE SCHEMA IF NOT EXISTS ${db.schema()}`);
 await db.migrate(path.join(dirname(), '../../lib/db/migrations'));
+inMemoryDB.start();
 
 // API routes (no/public auth).
 app.get('/health', (_, res) => {
