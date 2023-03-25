@@ -72,23 +72,26 @@ let token = await nango.getToken('github', '<user-id>');
 
 If your favorite API is missing [open a GitHub issue](https://github.com/NangoHQ/nango/issues/new) or [contribute it right away](https://docs.nango.dev/contribute-api): The API configurations are just simple [entries in a YAML file](https://github.com/NangoHQ/nango/blob/master/packages/auth/providers.yaml).
 
-## 🚀 Demo & Quickstart
+## 📺 Demo
 
-### 1 minute demo
+<a href="https://www.youtube.com/watch?v=BK15QI-jWi0">
+  <img src="https://uploads-ssl.webflow.com/63c092e946f9b71ff6874169/641e4d295d27291494411377_youtube-thumbnail.jpg" width="500">
+</a>
 
-[![Watch demo on YouTube](https://docs.nango.dev/img/nango-demo-video-yt-thumbnail.png)](https://youtu.be/S0VJx2KPCQg)
+## 🚀 Quickstart
 
 ### Test Nango in 5 minutes
 
-Run
-```
-git clone https://github.com/NangoHQ/nango.git && cd nango
-```
-```
-docker compose up # Keep the tab open
+Run locally:
+```shell
+git clone https://github.com/NangoHQ/nango.git && cd nango && docker compose up # Keep the tab open
 ```
 
-Go to http://localhost:3003 to configure your 1st OAuth flow!
+Or sign up for free:
+
+<a href="https://app.nango.dev/signup" target="_blank">
+  <img src="https://raw.githubusercontent.com/NangoHQ/nango/6f49ab92c0ffc18c1d0f44d9bd96c62ac97aaa8d/docs/static/img/nango-deploy-button.svg" alt="Try Nango Cloud" width="215"/>
+</a>
 
 ## 🔍 Where to learn more
 
