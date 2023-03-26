@@ -17,11 +17,6 @@ The Nango server will not work right away after you deploy the app on Heroku. Yo
 -   `NANGO_SERVER_URL`: the full URL of your Heroku app (or your custom domain)
 -   `NANGO_DATABASE_URL`: the value for the `DATABASE_URL` Heroku config var, to which you should append `?sslmode=no-verify` (i.e. `<DATABASE_URL>?sslmode=no-verify`)
 
-If you want to use a persistent storage for the OAuthSession then you will need to set the environment below.
-- `REDIS_CONNECTION_URL`: the fill URL of the redis connection for storage.
-By not setting the redis connection URL, the OAuth session will be lost in the case that the app restarts
-
-
 Finally, you should restart the app and it will work.
 
 You do not need to set the `SERVER_PORT` environment variable.

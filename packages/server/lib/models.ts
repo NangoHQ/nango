@@ -167,3 +167,8 @@ export interface DBConfig {
     encryption_key_hash?: string | null;
     encryption_complete: boolean;
 }
+
+export interface Cache {
+    key: string;
+    value: string;
+}
