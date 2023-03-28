@@ -157,10 +157,6 @@ export interface OAuthSession {
     request_token_secret?: string;
 }
 
-export interface OAuthSessionStore {
-    [key: string]: OAuthSession;
-}
-
 export interface CredentialsRefresh {
     providerConfigKey: string;
     connectionId: string;
@@ -170,4 +166,9 @@ export interface CredentialsRefresh {
 export interface DBConfig {
     encryption_key_hash?: string | null;
     encryption_complete: boolean;
+}
+
+export interface Cache {
+    key: string;
+    value: string;
 }
