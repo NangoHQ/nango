@@ -1,4 +1,5 @@
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
+import { TokenResponse, ConnectionDetailsResponse, ConnectionsResponse } from './types';
 
 const prodHost = 'https://api.nango.dev';
 const stagingHost = 'https://api-staging.nango.dev';
@@ -32,7 +33,7 @@ export class Nango {
      * For OAuth 2: returns the access token directly as a string.
      * For OAuth 1: returns an object with 'oAuthToken' and 'oAuthTokenSecret' fields.
      */
-    public async getToken(providerConfigKey: string, connectionId: string) {
+    public async getToken(providerConfigKey: string, connectionId: string): Promise<TokenResponse> {
         let response = await this.getConnectionDetails(providerConfigKey, connectionId);
 
         switch (response.data.credentials.type) {
@@ -48,7 +49,7 @@ export class Nango {
     /**
      * Get the full (fresh) credentials payload returned by the external API, which also contains access credentials.
      */
-    public async getRawTokenResponse(providerConfigKey: string, connectionId: string) {
+    public async getRawTokenResponse(providerConfigKey: string, connectionId: string): Promise<JSON> {
         let response = await this.getConnectionDetails(providerConfigKey, connectionId);
         return response.data.credentials.raw;
     }
@@ -56,12 +57,12 @@ export class Nango {
     /**
      * Get the Connection object, which also contains access credentials and full credentials payload returned by the external API.
      */
-    public async getConnection(providerConfigKey: string, connectionId: string) {
+    public async getConnection(providerConfigKey: string, connectionId: string): Promise<ConnectionDetailsResponse> {
         let response = await this.getConnectionDetails(providerConfigKey, connectionId);
         return response.data;
     }
 
-    private async getConnectionDetails(providerConfigKey: string, connectionId: string) {
+    private async getConnectionDetails(providerConfigKey: string, connectionId: string): Promise<AxiosResponse<ConnectionDetailsResponse>> {
         let url = `${this.serverUrl}/connection/${connectionId}`;
 
         let headers = {
@@ -79,12 +80,12 @@ export class Nango {
     /**
      * Get the list of Connections, which does not contain access credentials.
      */
-    public async listConnections() {
+    public async listConnections(): Promise<ConnectionsResponse[]> {
         let response = await this.listConnectionDetails();
         return response.data;
     }
 
-    private async listConnectionDetails() {
+    private async listConnectionDetails(): Promise<AxiosResponse<ConnectionsResponse[]>> {
         let url = `${this.serverUrl}/connection`;
 
         let headers = {
