@@ -214,13 +214,15 @@ class OAuthController {
         if (state == null) {
             let e = new Error('No state found in callback');
             errorManager.report(e, { metadata: errorManager.getExpressRequestContext(req) });
-            throw e;
+            return;
         }
 
         const session: OAuthSession = this.sessionStore[state as string] as OAuthSession;
 
         if (session == null) {
-            throw new Error('No session found for state: ' + state);
+            let e = new Error('No session found for state: ' + state);
+            errorManager.report(e, { metadata: errorManager.getExpressRequestContext(req) });
+            return;
         } else {
             delete this.sessionStore[state as string];
         }
@@ -278,16 +280,27 @@ class OAuthController {
             additionalTokenParams['code_verifier'] = session.codeVerifier;
         }
 
+        let headers: Record<string, string> = {};
+
+        if (template.token_request_auth_method === 'basic') {
+            headers['Authorization'] = 'Basic ' + Buffer.from(config.oauth_client_id + ':' + config.oauth_client_secret).toString('base64');
+        }
+
         try {
             var rawCredentials: object;
             if (providerClientManager.shouldUseProviderClient(session.provider)) {
                 rawCredentials = await providerClientManager.getToken(config, code as string);
             } else {
-                let accessToken = await simpleOAuthClient.getToken({
-                    code: code as string,
-                    redirect_uri: session.callbackUrl,
-                    ...additionalTokenParams
-                });
+                let accessToken = await simpleOAuthClient.getToken(
+                    {
+                        code: code as string,
+                        redirect_uri: session.callbackUrl,
+                        ...additionalTokenParams
+                    },
+                    {
+                        headers
+                    }
+                );
                 rawCredentials = accessToken.token;
             }
 

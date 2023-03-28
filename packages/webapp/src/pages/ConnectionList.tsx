@@ -58,7 +58,7 @@ export default function ConnectionList() {
                                                     <div className="mt-5 w-largecell text-t font-mono">`{connectionId}`</div>
                                                     <div className="mt-4 w-80 flex pl-8">
                                                         <img src={`images/template-logos/${provider}.svg`} alt="" className="h-7 mt-0.5 mr-0.5" />
-                                                        <p className="mt-1.5 mr-4">{providerConfigKey}</p>
+                                                        <p className="mt-1.5 mr-4 ml-0.5">{providerConfigKey}</p>
                                                     </div>
                                                     <div className="pl-8 flex pt-4">
                                                         <p className="mt-1.5 mr-4 text-text-dark-gray">{new Date(creationDate).toLocaleDateString()}</p>
