@@ -6,6 +6,11 @@ const prodHost = 'https://api.nango.dev';
 const stagingHost = 'https://staging.nango.dev';
 const debugLogPrefix = 'NANGO DEBUG LOG: ';
 
+export type AuthResponse = {
+    providerConfigKey: string;
+    connectionId: string;
+};
+
 const enum WSMessageType {
     ConnectionAck = 'connection_ack',
     Error = 'error',
@@ -16,7 +21,7 @@ export default class Nango {
     private hostBaseUrl: string;
     private status: AuthorizationStatus;
     private publicKey: string | undefined;
-    private debug: boolean = false;
+    private debug = false;
 
     constructor(config: { host?: string; publicKey?: string; debug?: boolean } = {}) {
         config.host = config.host || prodHost; // Default to Nango Cloud.
@@ -47,7 +52,7 @@ export default class Nango {
         }
     }
 
-    public auth(providerConfigKey: string, connectionId: string, connectionConfig?: ConnectionConfig): Promise<any> {
+    public auth(providerConfigKey: string, connectionId: string, connectionConfig?: ConnectionConfig): Promise<AuthResponse> {
         const url = this.hostBaseUrl + `/oauth/connect/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig)}`;
 
         try {
@@ -56,7 +61,7 @@ export default class Nango {
             throw new Error(`Could not construct valid Nango URL based on provided parameters: ${url}`);
         }
 
-        return new Promise((resolve, reject) => {
+        return new Promise<AuthResponse>((resolve, reject) => {
             const successHandler = (providerConfigKey: string, connectionId: string) => {
                 if (this.status !== AuthorizationStatus.BUSY) {
                     return;
@@ -92,7 +97,7 @@ export default class Nango {
     }
 
     private toQueryString(connectionId: string, connectionConfig?: ConnectionConfig): string {
-        let query: string[] = [];
+        const query: string[] = [];
 
         if (connectionId) {
             query.push(`connection_id=${connectionId}`);
@@ -129,6 +134,14 @@ enum AuthorizationStatus {
     DONE
 }
 
+type MessageEventData = {
+    message_type: WSMessageType;
+    ws_client_id: string;
+    error_type?: string;
+    error_desc?: string;
+    provider_config_key?: string;
+    connection_id?: string;
+};
 /**
  * AuthorizationModal class
  */
@@ -144,8 +157,8 @@ class AuthorizationModal {
     constructor(
         host: string,
         url: string,
-        successHandler: (providerConfigKey: string, connectionId: string) => any,
-        errorHandler: (errorType: string, errorDesc: string) => any,
+        successHandler: (providerConfigKey: string, connectionId: string) => void,
+        errorHandler: (errorType: string, errorDesc: string) => void,
         debug?: boolean
     ) {
         // Window modal URL
@@ -173,7 +186,7 @@ class AuthorizationModal {
 
         this.swClient = new WebSocket(host.replace('https://', 'wss://').replace('http://', 'ws://'));
 
-        this.swClient.onmessage = (message: MessageEvent<any>) => {
+        this.swClient.onmessage = (message: MessageEvent<string>) => {
             this.handleMessage(message, successHandler, errorHandler);
         };
     }
@@ -182,11 +195,11 @@ class AuthorizationModal {
      * Handles the messages received from the Nango server via WebSocket.
      */
     handleMessage(
-        message: MessageEvent<any>,
-        successHandler: (providerConfigKey: string, connectionId: string) => any,
-        errorHandler: (errorType: string, errorDesc: string) => any
+        message: MessageEvent<string>,
+        successHandler: (providerConfigKey: string, connectionId: string) => void,
+        errorHandler: (errorType: string, errorDesc: string) => void
     ) {
-        let data = JSON.parse(message.data);
+        const data: MessageEventData = JSON.parse(message.data);
 
         switch (data.message_type) {
             case WSMessageType.ConnectionAck:
@@ -194,7 +207,7 @@ class AuthorizationModal {
                     console.log(debugLogPrefix, 'Connection ack received. Opening modal...');
                 }
 
-                let wsClientId = data.ws_client_id;
+                const wsClientId = data.ws_client_id;
                 this.open(wsClientId);
                 break;
             case WSMessageType.Error:
@@ -256,7 +269,7 @@ class AuthorizationModal {
         const features = this.features;
         const featuresAsString: string[] = [];
 
-        for (let key in features) {
+        for (const key in features) {
             featuresAsString.push(key + '=' + features[key]);
         }
 
