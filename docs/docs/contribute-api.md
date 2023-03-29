@@ -4,7 +4,9 @@ sidebar_label: Contribute a New Provider
 
 # Contribute a New API Provider
 
-Adding support for a new provider to Nango is fast & easy. Please follow the steps below and we will be happy to accept your PR!
+Adding support for a new API provider to Nango is fast & easy. Please follow the steps below and we will be happy to accept your PR!
+
+Don't know which API provider to contribute? Here's a [list](https://github.com/orgs/NangoHQ/projects/2) you can pick from!
 
 ### Step 0: Provider Template overview
 
