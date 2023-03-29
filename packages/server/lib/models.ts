@@ -131,6 +131,8 @@ export interface ProviderTemplateOAuth2 extends ProviderTemplate {
     body_format?: OAuthBodyFormat;
 
     refresh_url?: string;
+
+    token_request_auth_method?: 'basic';
 }
 
 export type OAuth1RequestTokenResult = {
