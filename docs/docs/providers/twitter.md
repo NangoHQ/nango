@@ -41,13 +41,13 @@ Follow our [quickstart](../quickstart.md) to add an OAuth integration with Twitt
 - Create a new app on [Twitter's developer portal](https://developer.twitter.com/en/portal)
 - Register the app's callback URL in "Settings" > "User authentication set up"
 
-![](../../static/img/providers/twitter/settings.png)
+![Settings](/img/providers/twitter/settings.png)
 
-![](../../static/img/providers/twitter/callback.png)
+![Register callback URL](/img/providers/twitter/callback.png)
 
 - Get your client ID and secret from "Keys and tokens" > "OAuth 2.0 Client ID and Client Secret"
 
-![](../../static/img/providers/twitter/keys.png)
+![Client ID and secret](/img/providers/twitter/keys.png)
 
 
 ### Useful links
