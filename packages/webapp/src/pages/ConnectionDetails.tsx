@@ -26,6 +26,7 @@ interface Connection {
 }
 
 export default function ConnectionDetails() {
+    const [loaded, setLoaded] = useState(false);
     const [serverErrorMessage, setServerErrorMessage] = useState('');
     const [connection, setConnection] = useState<Connection | null>(null);
     const navigate = useNavigate();
@@ -39,21 +40,22 @@ export default function ConnectionDetails() {
         const getConnections = async () => {
             let res = await getConnectionDetailsAPI(connectionId, providerConfigKey);
 
-            console.log(res);
-
             if (res?.status === 200) {
                 let data = await res.json();
                 setConnection(data['connection']);
             } else if (res != null) {
-                console.log('hey!!!');
                 setServerErrorMessage(`
 We could not retrieve and/or refresh your access token due to the following error: 
 \n\n${(await res.json()).error}
 `);
             }
         };
-        getConnections();
-    }, [connectionId, providerConfigKey, getConnectionDetailsAPI]);
+
+        if (!loaded) {
+            setLoaded(true);
+            getConnections();
+        }
+    }, [connectionId, providerConfigKey, getConnectionDetailsAPI, loaded, setLoaded]);
 
     const deleteButtonClicked = async () => {
         if (!connectionId || !providerConfigKey) return;

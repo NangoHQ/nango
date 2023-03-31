@@ -12,6 +12,7 @@ interface Integration {
 }
 
 export default function IntegrationList() {
+    const [loaded, setLoaded] = useState(false);
     const [integrations, setIntegrations] = useState<Integration[] | null>(null);
     const getIntegrationListAPI = useGetIntegrationListAPI();
 
@@ -24,8 +25,12 @@ export default function IntegrationList() {
                 setIntegrations(data['integrations']);
             }
         };
-        getIntegrations();
-    }, [getIntegrationListAPI]);
+
+        if (!loaded) {
+            setLoaded(true);
+            getIntegrations();
+        }
+    }, [getIntegrationListAPI, setIntegrations, loaded]);
 
     return (
         <div className="h-full">

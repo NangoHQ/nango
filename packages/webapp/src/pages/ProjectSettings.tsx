@@ -8,6 +8,7 @@ import { useGetProjectInfoAPI, useEditCallbackUrlAPI } from '../utils/api';
 import { isCloud, defaultCallback } from '../utils/utils';
 
 export default function ProjectSettings() {
+    const [loaded, setLoaded] = useState(false);
     const [secretKey, setSecretKey] = useState('');
     const [publicKey, setPublicKey] = useState('');
     const [callbackUrl, setCallbackUrl] = useState('');
@@ -26,8 +27,12 @@ export default function ProjectSettings() {
                 setCallbackUrl(account.callback_url || defaultCallback());
             }
         };
-        getAccount();
-    }, [getProjectInfoAPI]);
+
+        if (!loaded) {
+            setLoaded(true);
+            getAccount();
+        }
+    }, [getProjectInfoAPI, loaded, setLoaded]);
 
     const handleCallbackSave = async (e: React.SyntheticEvent) => {
         e.preventDefault();

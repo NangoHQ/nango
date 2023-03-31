@@ -13,6 +13,7 @@ interface Connection {
 }
 
 export default function ConnectionList() {
+    const [loaded, setLoaded] = useState(false);
     const [connections, setConnections] = useState<Connection[] | null>(null);
     const getConnectionListAPI = useGetConnectionListAPI();
 
@@ -25,8 +26,12 @@ export default function ConnectionList() {
                 setConnections(data['connections']);
             }
         };
-        getConnections();
-    }, [getConnectionListAPI]);
+
+        if (!loaded) {
+            setLoaded(true);
+            getConnections();
+        }
+    }, [getConnectionListAPI, loaded, setLoaded]);
 
     return (
         <div className="h-full">

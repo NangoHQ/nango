@@ -19,6 +19,7 @@ interface Integration {
 }
 
 export default function IntegrationCreate() {
+    const [loaded, setLoaded] = useState(false);
     const [serverErrorMessage, setServerErrorMessage] = useState('');
     const [integrations, setIntegrations] = useState<Integration[] | null>(null);
     const navigate = useNavigate();
@@ -32,32 +33,33 @@ export default function IntegrationCreate() {
 
     useEffect(() => {
         const getIntegrations = async () => {
-            const getIntegrations = async () => {
-                let res = await getIntegrationListAPI();
+            let res = await getIntegrationListAPI();
 
-                if (res?.status === 200) {
-                    let data = await res.json();
-                    setIntegrations(data['integrations']);
+            if (res?.status === 200) {
+                let data = await res.json();
+                setIntegrations(data['integrations']);
 
-                    if (data['integrations'] && data['integrations'].length > 0) {
-                        setIntegration(data['integrations'][0]);
-                    }
+                if (data['integrations'] && data['integrations'].length > 0) {
+                    setIntegration(data['integrations'][0]);
                 }
-            };
-            getIntegrations();
-
-            const getAccount = async () => {
-                let res = await getProjectInfoAPI();
-
-                if (res?.status === 200) {
-                    const account = (await res.json())['account'];
-                    setPublicKey(account.public_key);
-                }
-            };
-            getAccount();
+            }
         };
-        getIntegrations();
-    }, [getIntegrationListAPI, getProjectInfoAPI]);
+
+        const getAccount = async () => {
+            let res = await getProjectInfoAPI();
+
+            if (res?.status === 200) {
+                const account = (await res.json())['account'];
+                setPublicKey(account.public_key);
+            }
+        };
+
+        if (!loaded) {
+            setLoaded(true);
+            getIntegrations();
+            getAccount();
+        }
+    }, [loaded, setLoaded, setIntegrations, setIntegration, getIntegrationListAPI, getProjectInfoAPI, setPublicKey]);
 
     const handleCreate = async (e: React.SyntheticEvent) => {
         e.preventDefault();
