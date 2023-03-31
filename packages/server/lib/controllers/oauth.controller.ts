@@ -14,7 +14,14 @@ import {
     getAccount,
     getConnectionMetadataFromTokenResponse
 } from '../utils/utils.js';
-import { ProviderConfig, ProviderTemplate, ProviderTemplateOAuth2, ProviderAuthModes, OAuthSession, OAuth1RequestTokenResult } from '../models.js';
+import {
+    ProviderConfig,
+    ProviderTemplate,
+    ProviderTemplateOAuth2,
+    ProviderAuthModes,
+    OAuthSession,
+    OAuth1RequestTokenResult
+} from '../models.js';
 import logger from '../utils/logger.js';
 import type { NextFunction } from 'express';
 import errorManager from '../utils/error.manager.js';
@@ -187,8 +194,8 @@ class OAuthController {
             return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.TokenError());
         }
 
-        const sessionData = (await oAuthSessionService.findById(session.id)) as OAuthSession;
-        sessionData.request_token_secret = tokenResult.request_token_secret;
+        session.request_token_secret = tokenResult.request_token_secret;
+        await oAuthSessionService.create(session);
         const redirectUrl = oAuth1Client.getAuthorizationURL(tokenResult);
 
         logger.debug(
@@ -215,7 +222,7 @@ class OAuthController {
             errorManager.report(e, { metadata: errorManager.getExpressRequestContext(req) });
             return;
         } else {
-            await oAuthSessionService.delete(state as string);
+           await oAuthSessionService.delete(state as string);
         }
 
         let wsClientId = session.webSocketClientId;
@@ -240,7 +247,10 @@ class OAuthController {
 
             return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownAuthMode(session.authMode));
         } catch (e) {
-            errorManager.report(e, { accountId: session?.accountId, metadata: errorManager.getExpressRequestContext(req) });
+            errorManager.report(e, {
+                accountId: session?.accountId,
+                metadata: errorManager.getExpressRequestContext(req)
+            });
             return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError());
         }
     }

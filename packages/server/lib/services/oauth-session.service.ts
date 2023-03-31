@@ -2,7 +2,13 @@ import type { OAuthSession } from '../models.js';
 import db from '../db/database.js';
 
 class OAuthSessionService {
-    async create(oAuthSession: OAuthSession): Promise<string> {
+    async create(oAuthSession: OAuthSession): Promise<OAuthSession> {
+        const { id, ...session } = oAuthSession;
+        let existingSession = await this.findById(id);
+        if (existingSession) {
+            await this.queryBuilder().update(session);
+            return oAuthSession;
+        }
         return this.queryBuilder().insert({ ...oAuthSession });
     }
 
@@ -34,7 +40,7 @@ class OAuthSessionService {
             .delete();
     }
 
-   private queryBuilder() {
+    private queryBuilder() {
         return db.knex.withSchema(db.schema()).select('*').from<OAuthSession>('_nango_oauth_sessions');
     }
 }
