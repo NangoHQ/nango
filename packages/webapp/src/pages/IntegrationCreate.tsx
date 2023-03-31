@@ -26,6 +26,7 @@ interface Integration {
 }
 
 export default function IntegrationCreate() {
+    const [loaded, setLoaded] = useState(false);
     const [serverErrorMessage, setServerErrorMessage] = useState('');
     const [providers, setProviders] = useState<string[] | null>(null);
     const [integration, setIntegration] = useState<Integration | null>(null);
@@ -61,7 +62,6 @@ export default function IntegrationCreate() {
                 }
             }
         };
-        getProviders();
 
         const getAccount = async () => {
             let res = await getProjectInfoAPI();
@@ -71,8 +71,13 @@ export default function IntegrationCreate() {
                 setCallbackUrl(account.callback_url || defaultCallback());
             }
         };
-        getAccount();
-    }, [providerConfigKey, getIntegrationDetailsAPI, getProvidersAPI, getProjectInfoAPI]);
+
+        if (!loaded) {
+            setLoaded(true);
+            getProviders();
+            getAccount();
+        }
+    }, [providerConfigKey, getIntegrationDetailsAPI, getProvidersAPI, getProjectInfoAPI, loaded, setLoaded]);
 
     const handleSave = async (e: React.SyntheticEvent) => {
         e.preventDefault();

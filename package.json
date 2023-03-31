@@ -19,9 +19,9 @@
         "webapp-build:prod": "cd ./packages/webapp && npm run build:prod && cd ../..",
         "build:hosted": "npm run install:all && npm run ts-build && npm run webapp-build:hosted ",
         "build:staging": "npm run install:all && npm run ts-build && npm run webapp-build:staging",
-        "build:prod": "npm run install:all && npm run ts-build && npm run webapp-build:prod"
+        "build:prod": "npm run install:all && npm run ts-build && npm run webapp-build:prod",
+        "prepare": "husky install"
     },
-    "dependencies": {},
     "devDependencies": {
         "@tsconfig/node18-strictest-esm": "^1.0.1",
         "@types/node": "^18.7.6",
@@ -30,6 +30,7 @@
         "eslint": "^8.22.0",
         "eslint-config-prettier": "^8.5.0",
         "eslint-plugin-prettier": "^4.2.1",
+        "husky": "^8.0.3",
         "onchange": "^7.1.0",
         "prettier": "^2.7.1",
         "typescript": "^4.7.4"

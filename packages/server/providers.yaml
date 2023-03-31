@@ -67,13 +67,6 @@ contentstack:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.params.subdomain}.contentstack.com/apps/${connectionConfig.params.appId}/authorize
     token_url: https://${connectionConfig.params.subdomain}.contentstack.com/apps-api/apps/token
-    authorization_params:
-        response_type: code
-    token_params:
-        grant_type: authorization_code
-    refresh_url: https://${connectionConfig.params.subdomain}.contentstack.com/apps-api/apps/token
-    refresh_params:
-        grant_type: refresh_token
 digitalocean:
     auth_mode: OAUTH2
     authorization_url: https://cloud.digitalocean.com/v1/oauth/authorize
@@ -304,6 +297,18 @@ twitter:
     signature_method: 'HMAC-SHA1'
     request_params:
         x_auth_access_type: write
+twitter-v2:
+    auth_mode: OAUTH2
+    authorization_url: https://twitter.com/i/oauth2/authorize
+    token_url: https://api.twitter.com/2/oauth2/token
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+        response_mode: query
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 wave-accounting:
     auth_mode: OAUTH2
     authorization_url: https://api.waveapps.com/oauth2/authorize

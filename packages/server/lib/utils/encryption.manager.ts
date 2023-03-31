@@ -46,12 +46,14 @@ class EncryptionManager {
             return account;
         }
 
-        const [encryptedClientSecret, iv, authTag] = this.encrypt(account.secret_key);
-        account.secret_key = encryptedClientSecret;
-        account.secret_key_iv = iv;
-        account.secret_key_tag = authTag;
+        let encryptedAccount: Account = Object.assign({}, account);
 
-        return account;
+        const [encryptedClientSecret, iv, authTag] = this.encrypt(encryptedAccount.secret_key);
+        encryptedAccount.secret_key = encryptedClientSecret;
+        encryptedAccount.secret_key_iv = iv;
+        encryptedAccount.secret_key_tag = authTag;
+
+        return encryptedAccount;
     }
 
     public decryptAccount(account: Account | null): Account | null {
@@ -60,8 +62,10 @@ class EncryptionManager {
             return account;
         }
 
-        account.secret_key = this.decrypt(account.secret_key, account.secret_key_iv, account.secret_key_tag);
-        return account;
+        let decryptedAccount: Account = Object.assign({}, account);
+
+        decryptedAccount.secret_key = this.decrypt(account.secret_key, account.secret_key_iv, account.secret_key_tag);
+        return decryptedAccount;
     }
 
     public encryptConnection(connection: Connection): StoredConnection {
@@ -69,10 +73,11 @@ class EncryptionManager {
             return connection as StoredConnection;
         }
 
+        let storedConnection: StoredConnection = Object.assign({}, connection);
+
         const [encryptedClientSecret, iv, authTag] = this.encrypt(JSON.stringify(connection.credentials));
         let encryptedCreds = { encrypted_credentials: encryptedClientSecret };
 
-        let storedConnection: StoredConnection = Object.assign({}, connection); // Shallow copy.
         storedConnection.credentials = encryptedCreds;
         storedConnection.credentials_iv = iv;
         storedConnection.credentials_tag = authTag;
@@ -86,10 +91,13 @@ class EncryptionManager {
             return connection as Connection;
         }
 
-        connection.credentials = JSON.parse(
+        let decryptedConnection: StoredConnection = Object.assign({}, connection);
+
+        decryptedConnection.credentials = JSON.parse(
             this.decrypt(connection.credentials['encrypted_credentials'], connection.credentials_iv, connection.credentials_tag)
         );
-        return connection as Connection;
+
+        return decryptedConnection as Connection;
     }
 
     public encryptProviderConfig(config: ProviderConfig): ProviderConfig {
@@ -97,12 +105,14 @@ class EncryptionManager {
             return config;
         }
 
-        const [encryptedClientSecret, iv, authTag] = this.encrypt(config.oauth_client_secret);
-        config.oauth_client_secret = encryptedClientSecret;
-        config.oauth_client_secret_iv = iv;
-        config.oauth_client_secret_tag = authTag;
+        let encryptedConfig: ProviderConfig = Object.assign({}, config);
 
-        return config;
+        const [encryptedClientSecret, iv, authTag] = this.encrypt(config.oauth_client_secret);
+        encryptedConfig.oauth_client_secret = encryptedClientSecret;
+        encryptedConfig.oauth_client_secret_iv = iv;
+        encryptedConfig.oauth_client_secret_tag = authTag;
+
+        return encryptedConfig;
     }
 
     public decryptProviderConfig(config: ProviderConfig | null): ProviderConfig | null {
@@ -111,8 +121,10 @@ class EncryptionManager {
             return config;
         }
 
-        config.oauth_client_secret = this.decrypt(config.oauth_client_secret, config.oauth_client_secret_iv, config.oauth_client_secret_tag);
-        return config;
+        let decryptedConfig: ProviderConfig = Object.assign({}, config);
+
+        decryptedConfig.oauth_client_secret = this.decrypt(config.oauth_client_secret, config.oauth_client_secret_iv, config.oauth_client_secret_tag);
+        return decryptedConfig;
     }
 
     private async saveDbConfig(dbConfig: DBConfig) {
