@@ -14,14 +14,7 @@ import {
     getAccount,
     getConnectionMetadataFromTokenResponse
 } from '../utils/utils.js';
-import {
-    ProviderConfig,
-    ProviderTemplate,
-    ProviderTemplateOAuth2,
-    ProviderAuthModes,
-    OAuthSession,
-    OAuth1RequestTokenResult
-} from '../models.js';
+import { ProviderConfig, ProviderTemplate, ProviderTemplateOAuth2, ProviderAuthModes, OAuthSession, OAuth1RequestTokenResult } from '../models.js';
 import logger from '../utils/logger.js';
 import type { NextFunction } from 'express';
 import errorManager from '../utils/error.manager.js';
@@ -29,7 +22,7 @@ import providerClientManager from '../clients/provider.client.js';
 import wsClient from '../clients/web-socket.client.js';
 import { WSErrBuilder } from '../utils/web-socket-error.js';
 import analytics from '../utils/analytics.js';
-import cache from '../services/cache.service.js';
+import oAuthSessionService from '../services/oauth-session.service.js';
 
 class OAuthController {
     public async oauthRequest(req: Request, res: Response, _: NextFunction) {
@@ -78,7 +71,7 @@ class OAuthController {
                 accountId: accountId,
                 webSocketClientId: wsClientId
             };
-            await cache.set(session.id, session);
+            await oAuthSessionService.create(session);
 
             if (config?.oauth_client_id == null || config?.oauth_client_secret == null || config.oauth_scopes == null) {
                 return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.InvalidProviderConfig(providerConfigKey));
@@ -194,7 +187,7 @@ class OAuthController {
             return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.TokenError());
         }
 
-        const sessionData = (await cache.get(session.id)) as OAuthSession;
+        const sessionData = (await oAuthSessionService.findById(session.id)) as OAuthSession;
         sessionData.request_token_secret = tokenResult.request_token_secret;
         const redirectUrl = oAuth1Client.getAuthorizationURL(tokenResult);
 
@@ -215,14 +208,14 @@ class OAuthController {
             return;
         }
 
-        const session = (await cache.get(state as string)) as OAuthSession;
+        const session = await oAuthSessionService.findById(state as string);
 
         if (session == null) {
             let e = new Error('No session found for state: ' + state);
             errorManager.report(e, { metadata: errorManager.getExpressRequestContext(req) });
             return;
         } else {
-            await cache.delete(state as string);
+            await oAuthSessionService.delete(state as string);
         }
 
         let wsClientId = session.webSocketClientId;
