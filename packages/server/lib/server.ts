@@ -26,6 +26,7 @@ import type { Response, Request } from 'express';
 import Logger from './utils/logger.js';
 import encryptionManager from './utils/encryption.manager.js';
 import accountService from './services/account.service.js';
+import oAuthSessionService from './services/oauth-session.service.js';
 
 let app = express();
 
@@ -46,6 +47,7 @@ await db.knex.raw(`CREATE SCHEMA IF NOT EXISTS ${db.schema()}`);
 await db.migrate(path.join(dirname(), '../../lib/db/migrations'));
 await encryptionManager.encryptDatabaseIfNeeded();
 await accountService.cacheAccountSecrets();
+await oAuthSessionService.clearStaleSessions();
 
 // API routes (no/public auth).
 app.get('/health', (_, res) => {
