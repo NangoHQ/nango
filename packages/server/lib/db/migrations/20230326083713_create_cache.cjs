@@ -6,15 +6,14 @@ exports.up = function(knex, _) {
         table.string('connectionId').notNullable();
         table.string('callbackUrl').notNullable();
         table.string('authMode').notNullable();
-        table.string('codeVerifier');
+        table.string('accountId').notNullable();
         table.json('connectionConfig');
-        table.string('accountId');
         table.string('webSocketClientId');
         table.string('codeVerifier');
         table.string('request_token_secret');
         table.timestamps(true, true);
 
-        table.unique('id');
+        table.unique(['id']);
     });
 };
 
