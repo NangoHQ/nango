@@ -57,9 +57,9 @@ export async function getFreshOAuth2Credentials(connection: Connection, config: 
     });
 
     let additionalParams = {};
-    if(template.refresh_params?.grant_type){
+    if (template.refresh_params?.grant_type) {
         additionalParams = template.refresh_params;
-    }else if (template.token_params){
+    } else if (template.token_params) {
         additionalParams = template.token_params;
     }
 
