@@ -127,6 +127,10 @@ export interface ProviderTemplateOAuth2 extends ProviderTemplate {
     token_params?: {
         grant_type?: 'authorization_code' | 'client_credentials';
     };
+
+    refresh_params?: {
+        grant_type: 'refresh_token';
+    }
     authorization_method?: OAuthAuthorizationMethod;
     body_format?: OAuthBodyFormat;
 
