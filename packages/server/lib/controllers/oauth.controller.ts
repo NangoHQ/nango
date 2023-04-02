@@ -163,7 +163,8 @@ class OAuthController {
             };
 
             /**
-             *  When scope is added to some provided it fails to authorize the,
+             *  When scope is added to some provided it fails to authorize
+             *  if a scope is not allowed as a query param,
              *  The disable_scope defaults to false when it is not provided
              */
             if (!template.disable_scope) {
