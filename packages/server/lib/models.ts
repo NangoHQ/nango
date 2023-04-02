@@ -133,6 +133,8 @@ export interface ProviderTemplateOAuth2 extends ProviderTemplate {
     refresh_url?: string;
 
     token_request_auth_method?: 'basic';
+
+    extra_scopes?: string; //Some providers expect you to update their scopes
 }
 
 export type OAuth1RequestTokenResult = {

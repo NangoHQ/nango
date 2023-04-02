@@ -1,0 +1,33 @@
+---
+sidebar_label: Atlassian
+---
+
+# Atlassian API wiki
+
+:::note Working with the Atlassian API?
+Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/master/docs/docs/providers/atlassian.md).
+
+:::
+
+## Using Atlassian with Nango
+
+Provider template name in Nango: `atlassian`  
+Follow our [quickstart](../quickstart.md) to add an OAuth integration with Atlassian in 5 minutes.
+
+## App registration & publishing
+
+**Rating: `Easy & fast`**
+Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/)
+
+
+## Useful links
+
+-   [Web API docs (their REST API)](https://developer.atlassian.com/cloud/confluence/oauth-2-3lo-apps)
+-   [List of OAuth scopes](https://developer.atlassian.com/cloud/jira/platform/scopes-for-oauth-2-3LO-and-forge-apps/#classic-scopes)
+
+## API specific gotchas
+
+- When you create an OAuth 2.0 (3LO) app, it's private by default. This mean that third party users cannot be authorized. If you want to make your app public find the how-to [here](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/#distributing-your-oauth-2-0--3lo--apps)
+- Refresh tokens will expire after 365 days of non use and will expire by 90 days if the resource owner is inactive for 90 days, Make sure you call `nango.getToken()` at least every 365 days to trigger a refresh. See reference [here](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/#how-do-i-get-a-new-access-token--if-my-access-token-expires-or-is-revoked-).
+- To allow the possibility of refreshing the token the scope is updated with `offline_access`
+

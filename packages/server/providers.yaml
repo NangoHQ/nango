@@ -360,3 +360,14 @@ zoom:
     token_url: https://zoom.us/oauth/token
     authorization_params:
         response_type: code
+atlassian:
+    auth_mode: OAUTH2
+    authorization_url: https://auth.atlassian.com/authorize
+    token_url: https://auth.atlassian.com/oauth/token
+    authorization_params:
+        audience: api.atlassian.com
+        prompt: consent
+    refresh_params:
+        grant_type: refresh_token
+    extra_scopes: offline_access
+

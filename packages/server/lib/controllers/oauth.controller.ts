@@ -154,10 +154,16 @@ class OAuthController {
                 additionalAuthParams['code_challenge_method'] = 'S256';
             }
 
+            let scopes = providerConfig.oauth_scopes.split(',');
+            if (oauth2Template.extra_scopes) {
+                const extraScopes = oauth2Template.extra_scopes?.split(',')!;
+                scopes = [...scopes, ...extraScopes];
+            }
+
             const simpleOAuthClient = new simpleOauth2.AuthorizationCode(getSimpleOAuth2ClientConfig(providerConfig, template, connectionConfig));
             const authorizationUri = simpleOAuthClient.authorizeURL({
                 redirect_uri: callbackUrl,
-                scope: providerConfig.oauth_scopes.split(',').join(oauth2Template.scope_separator || ' '),
+                scope: scopes,
                 state: session.id,
                 ...additionalAuthParams
             });
