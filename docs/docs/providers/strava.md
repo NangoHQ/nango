@@ -22,7 +22,7 @@ Registering an app takes only a few minutes, and you can start building immediat
 
 ## Useful links
 
--   [Web API docs (their REST API)](https://developers.strava.com/docs/authentication)
+-   [Web API docs (their REST API)](https://developers.strava.com/playground)
 -   [List of OAuth scopes](https://developers.strava.com/docs/authentication/#:~:text=is%20auto.-,scope,-required%20string%2C%20in)
 
 ## API specific gotchas
