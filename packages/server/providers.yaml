@@ -323,6 +323,16 @@ yahoo:
     auth_mode: OAUTH2
     authorization_url: https://api.login.yahoo.com/oauth2/request_auth
     token_url: https://api.login.yahoo.com/oauth2/get_token
+yandex:
+    auth_mode: OAUTH2
+    authorization_url: https://oauth.yandex.com/authorize
+    token_url: https://oauth.yandex.com/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 youtube:
     alias: google
 zapier-nla:
