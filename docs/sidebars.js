@@ -207,6 +207,7 @@ const sidebars = {
                 'providers/strava',
                 'providers/stripe',
                 'providers/trello',
+                'providers/twitch',
                 'providers/twitter',
                 'providers/wave_accounting',
                 'providers/xero',
