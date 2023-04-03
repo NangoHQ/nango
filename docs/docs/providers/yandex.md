@@ -22,7 +22,9 @@ Registering an app takes only a few minutes, and you can start building immediat
 
 ## Useful links
 
--   [Web API docs (their REST API)](https://cloud.yandex.com/en/docs/overview/api)
+- [OAuth-related docs](https://yandex.com/dev/id/doc/en/codes/code-url)
+- [Web API docs (their REST API)](https://cloud.yandex.com/en/docs/overview/api)
+- [How Register an Application](https://yandex.com/dev/id/doc/en/register-client)
 
 ## API specific gotchas
 
