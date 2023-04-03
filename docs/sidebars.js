@@ -211,6 +211,7 @@ const sidebars = {
                 'providers/wave_accounting',
                 'providers/xero',
                 'providers/yahoo',
+                'providers/yandex',
                 'providers/youtube',
                 'providers/zapier-nla',
                 'providers/zendesk',
