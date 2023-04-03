@@ -155,22 +155,13 @@ class OAuthController {
             }
 
             const simpleOAuthClient = new simpleOauth2.AuthorizationCode(getSimpleOAuth2ClientConfig(providerConfig, template, connectionConfig));
-            let scope = providerConfig.oauth_scopes.split(',').join(oauth2Template.scope_separator || ' ');
-            const authorizeUrlParams: any = {
+            const authorizationUri = simpleOAuthClient.authorizeURL({
                 redirect_uri: callbackUrl,
+                scope: providerConfig.oauth_scopes.split(',').join(oauth2Template.scope_separator || ' '),
                 state: session.id,
                 ...additionalAuthParams
-            };
+            });
 
-            /**
-             *  When scope is added to some provided it fails to authorize
-             *  if a scope is not allowed as a query param,
-             *  The disable_scope defaults to false when it is not provided
-             */
-            if (!template.disable_scope) {
-                authorizeUrlParams['scope'] = scope;
-            }
-            const authorizationUri = simpleOAuthClient.authorizeURL(authorizeUrlParams);
             logger.debug(`OAuth 2.0 for ${providerConfigKey} (connection ${connectionId}) - redirecting to: ${authorizationUri}`);
 
             res.redirect(authorizationUri);
