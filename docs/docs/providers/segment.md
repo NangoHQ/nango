@@ -20,6 +20,8 @@ You need to [register as a Developer](https://app.segment.com/developer/apps) wi
 
 ## Useful links
 
+-   [Segment Partner Documentation](https://segment.com/docs/partners/)
+-   [Segment App Creation](https://segment.com/docs/partners/enable-with-segment/#set-up-guide)
 -   [Segment Oauth2 Documentation](https://segment.com/docs/partners/enable-with-segment/#oauth-implementation)
 
 ## API specific gotchas
