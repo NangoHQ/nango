@@ -289,6 +289,18 @@ trello:
     scope_separator: ','
     authorization_params:
         expiration: never
+twitch:
+    auth_mode: OAUTH2
+    authorization_url: https://id.twitch.tv/oauth2/authorize
+    token_url: https://id.twitch.tv/oauth2/token
+    refresh_url: https://id.twitch.tv/oauth2/token
+    authorization_params:
+        force_verify: false
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 twitter:
     auth_mode: OAUTH1
     request_url: https://api.twitter.com/oauth/request_token
