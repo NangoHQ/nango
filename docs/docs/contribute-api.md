@@ -34,6 +34,8 @@ provider-slug: # Shorthand for the provider, ideally the provider's name. Must b
         response_type: code
     token_params: # Additional parameters to pass along in the token request
         mycoolparam: value
+    refresh_params: # Additional parameters to pass along in the refresh token request, if this is not provided it will use the token_params if it exist
+        grant_type: refresh_token
     refresh_url: https://api.example.com/oauth/refresh # The URL to use for refreshing the access token (only if different from token_url)
     scope_separator: ',' # String to use to separate scopes. Defaults to ' ' (1 space) if not provided
 

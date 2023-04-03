@@ -13,6 +13,18 @@ asana:
         grant_type: authorization_code
     auth:
         response_type: code
+atlassian:
+    auth_mode: OAUTH2
+    authorization_url: https://auth.atlassian.com/authorize
+    token_url: https://auth.atlassian.com/oauth/token
+    authorization_params:
+        response_type: code
+        audience: api.atlassian.com
+        prompt: consent
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 bitbucket:
     auth_mode: OAUTH2
     authorization_url: https://bitbucket.org/site/oauth2/authorize
@@ -25,7 +37,7 @@ braintree:
     auth_mode: OAUTH2
     authorization_url: https://api.braintreegateway.com/oauth/connect
     token_url: https://api.braintreegateway.com/oauth/access_tokens
-    scope_separator: ','
+    scope_separator: ","
     authorization_method: header
     body_format: json
     token_params:
@@ -36,7 +48,7 @@ braintree-sandbox:
     auth_mode: OAUTH2
     authorization_url: https://api.sandbox.braintreegateway.com/oauth/connect
     token_url: https://api.sandbox.braintreegateway.com/oauth/access_tokens
-    scope_separator: ','
+    scope_separator: ","
     authorization_method: header
     body_format: json
     token_params:
@@ -177,7 +189,7 @@ linear:
     auth_mode: OAUTH2
     authorization_url: https://linear.app/oauth/authorize
     token_url: https://api.linear.app/oauth/token
-    scope_separator: ','
+    scope_separator: ","
     authorization_params:
         prompt: consent
 linkedin:
@@ -189,6 +201,12 @@ linkhut:
     auth_mode: OAUTH2
     authorization_url: https://ln.ht/_/oauth/authorize
     token_url: https://api.ln.ht/v1/oauth/token
+mailchimp:
+    auth_mode: OAUTH2
+    authorization_url: https://login.mailchimp.com/oauth2/authorize
+    token_url: https://login.mailchimp.com/oauth2/token
+    authorization_params:
+        response_type: code
 microsoft-teams:
     auth_mode: OAUTH2
     authorization_url: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
@@ -244,6 +262,10 @@ reddit:
     authorization_method: header
     authorization_params:
         duration: permanent
+segment:
+    auth_mode: OAUTH2
+    authorization_url: https://id.segmentapis.com/oauth2/auth
+    token_url: https://id.segmentapis.com/oauth2/token
 sage:
     auth_mode: OAUTH2
     authorization_url: https://www.sageone.com/oauth2/auth/central
@@ -272,10 +294,33 @@ splitwise:
     auth_mode: OAUTH2
     authorization_url: https://secure.splitwise.com/oauth/authorize
     token_url: https://secure.splitwise.com/oauth/token
+spotify:
+    auth_mode: OAUTH2
+    authorization_url: https://accounts.spotify.com/authorize
+    token_url: https://accounts.spotify.com/api/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 stackexchange:
     auth_mode: OAUTH2
     authorization_url: https://stackoverflow.com/oauth
     token_url: https://stackoverflow.com/oauth/access_token/json
+strava:
+    auth_mode: OAUTH2
+    authorization_url: https://www.strava.com/oauth/mobile/authorize
+    token_url: https://www.strava.com/api/v3/oauth/token
+    refresh_url: https://www.strava.com/oauth/token
+    scope_separator: ','
+    authorization_params:
+        response_type: code
+        approval_prompt: auto
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 stripe:
     auth_mode: OAUTH2
     authorization_url: https://connect.stripe.com/oauth/authorize
@@ -285,16 +330,28 @@ trello:
     request_url: https://trello.com/1/OAuthGetRequestToken
     authorization_url: https://trello.com/1/OAuthAuthorizeToken
     token_url: https://trello.com/1/OAuthGetAccessToken
-    signature_method: 'HMAC-SHA1'
-    scope_separator: ','
+    signature_method: "HMAC-SHA1"
+    scope_separator: ","
     authorization_params:
         expiration: never
+twitch:
+    auth_mode: OAUTH2
+    authorization_url: https://id.twitch.tv/oauth2/authorize
+    token_url: https://id.twitch.tv/oauth2/token
+    refresh_url: https://id.twitch.tv/oauth2/token
+    authorization_params:
+        force_verify: false
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 twitter:
     auth_mode: OAUTH1
     request_url: https://api.twitter.com/oauth/request_token
     authorization_url: https://api.twitter.com/oauth/authorize
     token_url: https://api.twitter.com/oauth/access_token
-    signature_method: 'HMAC-SHA1'
+    signature_method: "HMAC-SHA1"
     request_params:
         x_auth_access_type: write
 twitter-v2:
@@ -323,6 +380,16 @@ yahoo:
     auth_mode: OAUTH2
     authorization_url: https://api.login.yahoo.com/oauth2/request_auth
     token_url: https://api.login.yahoo.com/oauth2/get_token
+yandex:
+    auth_mode: OAUTH2
+    authorization_url: https://oauth.yandex.com/authorize
+    token_url: https://oauth.yandex.com/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 youtube:
     alias: google
 zapier-nla:
@@ -360,3 +427,4 @@ zoom:
     token_url: https://zoom.us/oauth/token
     authorization_params:
         response_type: code
+
