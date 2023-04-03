@@ -117,10 +117,6 @@ figma:
     token_url: https://www.figma.com/api/oauth/token
     refresh_url: https://www.figma.com/api/oauth/refresh
     disable_pkce: true
-    authorization_params:
-        response_type: code
-    token_params:
-        grant_type: authorization_code
 fitbit:
     auth_mode: OAUTH2
     authorization_url: https://www.fitbit.com/oauth2/authorize
