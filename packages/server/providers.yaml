@@ -13,6 +13,18 @@ asana:
         grant_type: authorization_code
     auth:
         response_type: code
+atlassian:
+    auth_mode: OAUTH2
+    authorization_url: https://auth.atlassian.com/authorize
+    token_url: https://auth.atlassian.com/oauth/token
+    authorization_params:
+        response_type: code
+        audience: api.atlassian.com
+        prompt: consent
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 bitbucket:
     auth_mode: OAUTH2
     authorization_url: https://bitbucket.org/site/oauth2/authorize
@@ -399,3 +411,4 @@ zoom:
     token_url: https://zoom.us/oauth/token
     authorization_params:
         response_type: code
+
