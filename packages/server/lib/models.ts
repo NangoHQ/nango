@@ -177,3 +177,11 @@ export interface DBConfig {
     encryption_key_hash?: string | null;
     encryption_complete: boolean;
 }
+
+export interface AuthorizationTokenResponse extends Omit<OAuth2Credentials, 'type' | 'raw'>{
+    expires_in?: number;
+}
+
+export interface RefreshTokenResponse extends AuthorizationTokenResponse{
+
+}

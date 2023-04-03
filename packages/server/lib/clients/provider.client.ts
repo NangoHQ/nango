@@ -1,5 +1,5 @@
 import braintree from 'braintree';
-import { ProviderConfig, Connection, OAuth2Credentials, ProviderAuthModes } from '../models.js';
+import { ProviderConfig, Connection, OAuth2Credentials, ProviderAuthModes, AuthorizationTokenResponse, RefreshTokenResponse } from '../models.js';
 import axios from 'axios';
 import { isTokenExpired, parseTokenExpirationDate } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
@@ -12,6 +12,8 @@ class ProviderClient {
             case 'braintree':
                 return true;
             case 'braintree-sandbox':
+                return true;
+            case 'figma':
                 return true;
             default:
                 return false;
@@ -27,12 +29,14 @@ class ProviderClient {
         }
     }
 
-    public async getToken(config: ProviderConfig, code: string): Promise<object> {
+    public async getToken(config: ProviderConfig, code: string, callBackUrl: string): Promise<object> {
         switch (config.provider) {
             case 'braintree':
                 return this.createBraintreeToken(code, config.oauth_client_id, config.oauth_client_secret);
             case 'braintree-sandbox':
                 return this.createBraintreeToken(code, config.oauth_client_id, config.oauth_client_secret);
+            case 'figma':
+                return this.createFigmaToken(code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
             default:
                 throw new NangoError('unknown_provider_client');
         }
@@ -54,6 +58,9 @@ class ProviderClient {
                 return this.refreshBraintreeToken(credentials.refresh_token, config.oauth_client_id, config.oauth_client_secret);
             case 'braintree-sandbox':
                 return this.refreshBraintreeToken(credentials.refresh_token, config.oauth_client_id, config.oauth_client_secret);
+            case 'figma':
+                return this.refreshFigmaToken(credentials.refresh_token, config.oauth_client_id, config.oauth_client_secret);
+
             default:
                 throw new NangoError('unknown_provider_client');
         }
@@ -77,6 +84,42 @@ class ProviderClient {
             default:
                 throw new NangoError('unknown_provider_client');
         }
+    }
+
+    private async createFigmaToken(code: string, clientId: string, clientSecret: string, callBackUrl: string): Promise<AuthorizationTokenResponse> {
+        let params = new URLSearchParams();
+        params.set('client_id', clientId);
+        params.set('client_secret', clientSecret);
+        params.set('code', code);
+        params.set('grant_type', 'authorization_code');
+        params.set('redirect_uri', callBackUrl);
+        const url = `https://www.figma.com/api/oauth/token?${params.toString()}`;
+        let response = await axios.post(url);
+        if (response.status === 200 && response.data !== null) {
+            return {
+                access_token: response.data['access_token'],
+                refresh_token: response.data['refresh_token'],
+                expires_in: response.data['expires_in']
+            };
+        }
+        throw new NangoError('figma_token_request_error');
+    }
+
+    private async refreshFigmaToken(refreshToken: string, clientId: string, clientSecret: string): Promise<RefreshTokenResponse> {
+        let params = new URLSearchParams();
+        params.set('client_id', clientId);
+        params.set('client_secret', clientSecret);
+        params.set('refresh_token', refreshToken);
+        const url = `https://www.figma.com/api/oauth/refresh?${params.toString()}`;
+        let response = await axios.post(url);
+        if (response.status === 200 && response.data !== null) {
+            return {
+                refresh_token: refreshToken,
+                access_token: response.data['access_token'],
+                expires_in: response.data['expires_in']
+            };
+        }
+        throw new NangoError('figma_refresh_token_request_error');
     }
 
     private async createBraintreeToken(code: string, clientId: string, clientSecret: string): Promise<object> {
