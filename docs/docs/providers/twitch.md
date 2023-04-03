@@ -22,9 +22,10 @@ Registering an app takes only a few minutes, and you can start building immediat
 
 ## Useful links
 
-- [Web API docs (their REST API)](https://dev.twitch.tv/docs/api)
+- [OAuth-related docs](https://dev.twitch.tv/docs/authentication/getting-tokens-oauth/#authorization-code-grant-flow)
 - [How Register an Application](https://dev.twitch.tv/docs/authentication/register-app)
 - [Scopes](https://dev.twitch.tv/docs/authentication/scopes/#twitch-api-scopes)
+- [Web API docs (their REST API)](https://dev.twitch.tv/docs/api)
 
 ## API specific gotchas
 - To register an application you will need to set up 2factor Authentication. [Here](https://dev.twitch.tv/docs/authentication/register-app/#:~:text=You%20must%20also%20enable%20two%2Dfactor%20authentication) is how to do it
