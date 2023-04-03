@@ -189,6 +189,7 @@ const sidebars = {
                 'providers/lever',
                 'providers/linear',
                 'providers/linkedin',
+                'providers/mailchimp',
                 'providers/microsoft-teams',
                 'providers/monday',
                 'providers/notion',

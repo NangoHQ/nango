@@ -201,6 +201,12 @@ linkhut:
     auth_mode: OAUTH2
     authorization_url: https://ln.ht/_/oauth/authorize
     token_url: https://api.ln.ht/v1/oauth/token
+mailchimp:
+    auth_mode: OAUTH2
+    authorization_url: https://login.mailchimp.com/oauth2/authorize
+    token_url: https://login.mailchimp.com/oauth2/token
+    authorization_params:
+        response_type: code
 microsoft-teams:
     auth_mode: OAUTH2
     authorization_url: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
