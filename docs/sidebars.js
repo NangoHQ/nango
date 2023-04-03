@@ -202,6 +202,7 @@ const sidebars = {
                 'providers/sage',
                 'providers/salesforce',
                 'providers/salesloft',
+                'providers/segment',
                 'providers/shopify',
                 'providers/slack',
                 'providers/splitwise',
