@@ -204,6 +204,7 @@ const sidebars = {
                 'providers/shopify',
                 'providers/slack',
                 'providers/splitwise',
+                'providers/spotify',
                 'providers/stackexchange',
                 'providers/strava',
                 'providers/stripe',
