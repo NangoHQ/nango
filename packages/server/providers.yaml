@@ -280,6 +280,19 @@ stackexchange:
     auth_mode: OAUTH2
     authorization_url: https://stackoverflow.com/oauth
     token_url: https://stackoverflow.com/oauth/access_token/json
+strava:
+    auth_mode: OAUTH2
+    authorization_url: https://www.strava.com/oauth/mobile/authorize
+    token_url: https://www.strava.com/api/v3/oauth/token
+    refresh_url: https://www.strava.com/oauth/token
+    scope_separator: ','
+    authorization_params:
+        response_type: code
+        approval_prompt: auto
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 stripe:
     auth_mode: OAUTH2
     authorization_url: https://connect.stripe.com/oauth/authorize

@@ -204,6 +204,7 @@ const sidebars = {
                 'providers/slack',
                 'providers/splitwise',
                 'providers/stackexchange',
+                'providers/strava',
                 'providers/stripe',
                 'providers/trello',
                 'providers/twitch',
