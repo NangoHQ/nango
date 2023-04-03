@@ -17,13 +17,14 @@ Follow our [quickstart](../quickstart.md) to add an OAuth integration with Atlas
 ## App registration & publishing
 
 **Rating: `Easy & fast`**
-Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/)
+Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://developer.atlassian.com/cloud/confluence/oauth-2-3lo-apps/#enabling-oauth-2-0--3lo-)
 
 
 ## Useful links
 
--   [Web API docs (their REST API)](https://developer.atlassian.com/cloud/confluence/oauth-2-3lo-apps)
--   [List of OAuth scopes](https://developer.atlassian.com/cloud/jira/platform/scopes-for-oauth-2-3LO-and-forge-apps/#classic-scopes)
+- [Registering an App](https://developer.atlassian.com/cloud/confluence/oauth-2-3lo-apps/#enabling-oauth-2-0--3lo-)
+- [OAuth-related docs](https://developer.atlassian.com/cloud/confluence/oauth-2-3lo-apps)
+- [List of OAuth scopes](https://developer.atlassian.com/cloud/jira/platform/scopes-for-oauth-2-3LO-and-forge-apps/#classic-scopes)
 
 ## API specific gotchas
 
