@@ -17,14 +17,15 @@ Follow our [quickstart](../quickstart.md) to add an OAuth integration with mailc
 ## App registration & publishing
 
 **Rating: `Easy & fast`**
-Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://mailchimp.com/developer/marketing/guides/access-user-data-oauth-2)
+Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://mailchimp.com/developer/marketing/guides/access-user-data-oauth-2/#register-your-application)
 
 
 ## Useful links
 
-- [Web API docs (their REST API)](https://mailchimp.com/developer/marketing/guides/access-user-data-oauth-2)
+- [OAuth-related docs](https://mailchimp.com/developer/marketing/guides/access-user-data-oauth-2)
 - [How Register an Application](https://mailchimp.com/developer/marketing/guides/access-user-data-oauth-2/#register-your-application)
+- [Web API docs (their REST api)](https://mailchimp.com/developer/marketing/api/root/)
 
 ## API specific gotchas
 
-- Scopes are not used as a query param in the authorization url hence we ignore the scope 
+- Mailchimp do not use scopes during Authorization. hence, when providing scopes in the provider configuration in the Nango UI, you can ignore.
