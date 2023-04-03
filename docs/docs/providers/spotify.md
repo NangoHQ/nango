@@ -22,9 +22,9 @@ Registering an app takes only a few minutes, and you can start building immediat
 
 ## Useful links
 
-- [Web API docs (their REST API)](https://developer.spotify.com/documentation/web-api)
+- [OAuth-related docs](https://developer.spotify.com/documentation/web-api/tutorials/code-flow)
 - [How Register an Application](https://developer.spotify.com/documentation/web-api/concepts/apps)
 - [Scopes](https://developer.spotify.com/documentation/web-api/concepts/scopes)
-- [OAuth-related docs](https://developer.spotify.com/documentation/web-api/tutorials/code-flow)
+- [Web API docs (their REST API)](https://developer.spotify.com/documentation/web-api)
 
 ## API specific gotchas
