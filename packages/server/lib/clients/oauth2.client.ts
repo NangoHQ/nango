@@ -72,7 +72,7 @@ export async function getFreshOAuth2Credentials(connection: Connection, config: 
             nangoErr.payload = { external_message: e.message, external_request_details: JSON.stringify(e.output) };
         }
 
-        throw e;
+        throw nangoErr;
     }
 
     var newCredentials: OAuth2Credentials;
