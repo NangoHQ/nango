@@ -25,7 +25,6 @@ atlassian:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
-    extra_scopes: offline_access
 bitbucket:
     auth_mode: OAUTH2
     authorization_url: https://bitbucket.org/site/oauth2/authorize

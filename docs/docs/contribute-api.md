@@ -36,7 +36,6 @@ provider-slug: # Shorthand for the provider, ideally the provider's name. Must b
         mycoolparam: value
     refresh_url: https://api.example.com/oauth/refresh # The URL to use for refreshing the access token (only if different from token_url)
     scope_separator: ',' # String to use to separate scopes. Defaults to ' ' (1 space) if not provided
-    extra_scopes: 'offline_access,read' #  Comma seperated string that will update the  connection scope 
 
     # Metadata capture
     redirect_uri_metadata:
