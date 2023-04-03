@@ -25,7 +25,7 @@ braintree:
     auth_mode: OAUTH2
     authorization_url: https://api.braintreegateway.com/oauth/connect
     token_url: https://api.braintreegateway.com/oauth/access_tokens
-    scope_separator: ','
+    scope_separator: ","
     authorization_method: header
     body_format: json
     token_params:
@@ -36,7 +36,7 @@ braintree-sandbox:
     auth_mode: OAUTH2
     authorization_url: https://api.sandbox.braintreegateway.com/oauth/connect
     token_url: https://api.sandbox.braintreegateway.com/oauth/access_tokens
-    scope_separator: ','
+    scope_separator: ","
     authorization_method: header
     body_format: json
     token_params:
@@ -177,7 +177,7 @@ linear:
     auth_mode: OAUTH2
     authorization_url: https://linear.app/oauth/authorize
     token_url: https://api.linear.app/oauth/token
-    scope_separator: ','
+    scope_separator: ","
     authorization_params:
         prompt: consent
 linkedin:
@@ -244,6 +244,10 @@ reddit:
     authorization_method: header
     authorization_params:
         duration: permanent
+segment:
+    auth_mode: OAUTH2
+    authorization_url: https://id.segmentapis.com/oauth2/auth
+    token_url: https://id.segmentapis.com/oauth2/token
 sage:
     auth_mode: OAUTH2
     authorization_url: https://www.sageone.com/oauth2/auth/central
@@ -295,16 +299,28 @@ trello:
     request_url: https://trello.com/1/OAuthGetRequestToken
     authorization_url: https://trello.com/1/OAuthAuthorizeToken
     token_url: https://trello.com/1/OAuthGetAccessToken
-    signature_method: 'HMAC-SHA1'
-    scope_separator: ','
+    signature_method: "HMAC-SHA1"
+    scope_separator: ","
     authorization_params:
         expiration: never
+twitch:
+    auth_mode: OAUTH2
+    authorization_url: https://id.twitch.tv/oauth2/authorize
+    token_url: https://id.twitch.tv/oauth2/token
+    refresh_url: https://id.twitch.tv/oauth2/token
+    authorization_params:
+        force_verify: false
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 twitter:
     auth_mode: OAUTH1
     request_url: https://api.twitter.com/oauth/request_token
     authorization_url: https://api.twitter.com/oauth/authorize
     token_url: https://api.twitter.com/oauth/access_token
-    signature_method: 'HMAC-SHA1'
+    signature_method: "HMAC-SHA1"
     request_params:
         x_auth_access_type: write
 twitter-v2:
