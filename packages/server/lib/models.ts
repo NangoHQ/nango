@@ -178,10 +178,8 @@ export interface DBConfig {
     encryption_complete: boolean;
 }
 
-export interface AuthorizationTokenResponse extends Omit<OAuth2Credentials, 'type' | 'raw'>{
+export interface AuthorizationTokenResponse extends Omit<OAuth2Credentials, 'type' | 'raw'> {
     expires_in?: number;
 }
 
-export interface RefreshTokenResponse extends AuthorizationTokenResponse{
-
-}
+export interface RefreshTokenResponse extends AuthorizationTokenResponse {}
