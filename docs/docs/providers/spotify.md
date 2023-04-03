@@ -17,13 +17,14 @@ Follow our [quickstart](../quickstart.md) to add an OAuth integration with Spoti
 ## App registration & publishing
 
 **Rating: `Easy & fast`**
-Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://developer.spotify.com/documentation/web-api/concepts/authorization)
+Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://developer.spotify.com/documentation/web-api/concepts/apps)
 
 
 ## Useful links
 
-- [Web API docs (their REST API)](https://developer.spotify.com/documentation/web-api#:~:text=the%20API%20specification-,API%20reference,-The%20Spotify%20Web)
+- [Web API docs (their REST API)](https://developer.spotify.com/documentation/web-api)
 - [How Register an Application](https://developer.spotify.com/documentation/web-api/concepts/apps)
 - [Scopes](https://developer.spotify.com/documentation/web-api/concepts/scopes)
+- [OAuth-related docs](https://developer.spotify.com/documentation/web-api/tutorials/code-flow)
 
 ## API specific gotchas
