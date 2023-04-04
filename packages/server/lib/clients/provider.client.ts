@@ -88,13 +88,15 @@ class ProviderClient {
 
     private async createFigmaToken(code: string, clientId: string, clientSecret: string, callBackUrl: string): Promise<AuthorizationTokenResponse> {
         let params = new URLSearchParams();
-        params.set('client_id', clientId);
-        params.set('client_secret', clientSecret);
-        params.set('code', code);
-        params.set('grant_type', 'authorization_code');
+        const body = {
+            client_id: clientId,
+            client_secret: clientSecret,
+            code: code,
+            grant_type: 'authorization_code'
+        };
         params.set('redirect_uri', callBackUrl);
         const url = `https://www.figma.com/api/oauth/token?${params.toString()}`;
-        let response = await axios.post(url);
+        let response = await axios.post(url, body);
         if (response.status === 200 && response.data !== null) {
             return {
                 access_token: response.data['access_token'],
@@ -106,12 +108,13 @@ class ProviderClient {
     }
 
     private async refreshFigmaToken(refreshToken: string, clientId: string, clientSecret: string): Promise<RefreshTokenResponse> {
-        let params = new URLSearchParams();
-        params.set('client_id', clientId);
-        params.set('client_secret', clientSecret);
-        params.set('refresh_token', refreshToken);
-        const url = `https://www.figma.com/api/oauth/refresh?${params.toString()}`;
-        let response = await axios.post(url);
+        const body = {
+            client_id: clientId,
+            client_secret: clientSecret,
+            refresh_token: refreshToken
+        };
+        const url = `https://www.figma.com/api/oauth/refresh`;
+        let response = await axios.post(url, body);
         if (response.status === 200 && response.data !== null) {
             return {
                 refresh_token: refreshToken,
