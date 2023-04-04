@@ -214,6 +214,17 @@ microsoft-teams:
     authorization_params:
         response_type: code
         response_mode: query
+miro:
+    auth_mode: OAUTH2
+    authorization_url: https://miro.com/oauth/authorize
+    token_url: https://api.miro.com/v1/oauth/token
+    refresh_url: https://api.miro.com/v1/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 monday:
     auth_mode: OAUTH2
     authorization_url: https://auth.monday.com/oauth2/authorize
