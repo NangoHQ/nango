@@ -40,7 +40,7 @@ braintree:
     auth_mode: OAUTH2
     authorization_url: https://api.braintreegateway.com/oauth/connect
     token_url: https://api.braintreegateway.com/oauth/access_tokens
-    scope_separator: ","
+    scope_separator: ','
     authorization_method: header
     body_format: json
     token_params:
@@ -51,7 +51,7 @@ braintree-sandbox:
     auth_mode: OAUTH2
     authorization_url: https://api.sandbox.braintreegateway.com/oauth/connect
     token_url: https://api.sandbox.braintreegateway.com/oauth/access_tokens
-    scope_separator: ","
+    scope_separator: ','
     authorization_method: header
     body_format: json
     token_params:
@@ -192,7 +192,7 @@ linear:
     auth_mode: OAUTH2
     authorization_url: https://linear.app/oauth/authorize
     token_url: https://api.linear.app/oauth/token
-    scope_separator: ","
+    scope_separator: ','
     authorization_params:
         prompt: consent
 linkedin:
@@ -242,6 +242,10 @@ pipedrive:
     auth_mode: OAUTH2
     authorization_url: https://oauth.pipedrive.com/oauth/authorize
     token_url: https://oauth.pipedrive.com/oauth/token
+qualtrics:
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.params.subdomain}.qualtrics.com/oauth2/auth
+    token_url: https://${connectionConfig.params.subdomain}.qualtrics.com/oauth2/token
 quickbooks:
     auth_mode: OAUTH2
     authorization_url: https://appcenter.intuit.com/connect/oauth2
@@ -333,8 +337,8 @@ trello:
     request_url: https://trello.com/1/OAuthGetRequestToken
     authorization_url: https://trello.com/1/OAuthAuthorizeToken
     token_url: https://trello.com/1/OAuthGetAccessToken
-    signature_method: "HMAC-SHA1"
-    scope_separator: ","
+    signature_method: 'HMAC-SHA1'
+    scope_separator: ','
     authorization_params:
         expiration: never
 twitch:
@@ -354,7 +358,7 @@ twitter:
     request_url: https://api.twitter.com/oauth/request_token
     authorization_url: https://api.twitter.com/oauth/authorize
     token_url: https://api.twitter.com/oauth/access_token
-    signature_method: "HMAC-SHA1"
+    signature_method: 'HMAC-SHA1'
     request_params:
         x_auth_access_type: write
 twitter-v2:
@@ -430,4 +434,3 @@ zoom:
     token_url: https://zoom.us/oauth/token
     authorization_params:
         response_type: code
-
