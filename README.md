@@ -11,7 +11,7 @@
 <h1 align="center">Get OAuth tokens for APIs. Fast & secure.</h1>
 
 <div align="center">
-Pre-built OAuth flows & secure token management for 60+ APIs. 100% open source.
+Pre-built OAuth flows & secure token management for 70+ APIs. 100% open source.
 </div>
 
 <p align="center">
@@ -39,7 +39,7 @@ Nango is a service that contains everything you need to work with APIs that use 
 
 It contains:
 
--   a full OAuth dance for 60+ APIs
+-   a full OAuth dance for 70+ APIs
 -   a frontend SDK to trigger new OAuth flows
 -   a backend SDK & REST API to retrieve fresh access tokens for your API calls
 
@@ -57,9 +57,9 @@ let result = await nango.auth('github', '<user-id>');
 let token = await nango.getToken('github', '<user-id>');
 ```
 
-## 👾 Out of the box support for 60+ APIs
+## 👾 Out of the box support for 70+ APIs
 
-60+ APIs are preconfigured to work out-of-the-box. Including:
+70+ APIs are preconfigured to work out-of-the-box. Including:
 
 -   **CRM**: Front, Hubspot, Salesforce, etc.
 -   **Accounting**: Xero, Sellsy, Zoho Books, etc.
@@ -83,6 +83,7 @@ If your favorite API is missing [open a GitHub issue](https://github.com/NangoHQ
 ### Test Nango in 5 minutes
 
 Run locally:
+
 ```shell
 git clone https://github.com/NangoHQ/nango.git && cd nango && docker compose up # Keep the tab open
 ```
