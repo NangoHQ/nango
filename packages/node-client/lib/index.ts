@@ -30,10 +30,12 @@ export class Nango {
      *
      * @remarks
      * For OAuth 2: returns the access token directly as a string.
+     * For OAuth 2: If you want to obtain a new refresh token from the provider before the current token has expired,
+     * you can set the instantRefresh argument to true."
      * For OAuth 1: returns an object with 'oAuthToken' and 'oAuthTokenSecret' fields.
      */
-    public async getToken(providerConfigKey: string, connectionId: string) {
-        let response = await this.getConnectionDetails(providerConfigKey, connectionId);
+    public async getToken(providerConfigKey: string, connectionId: string, instantRefresh = false) {
+        let response = await this.getConnectionDetails(providerConfigKey, connectionId, instantRefresh);
 
         switch (response.data.credentials.type) {
             case 'OAUTH2':
@@ -61,7 +63,7 @@ export class Nango {
         return response.data;
     }
 
-    private async getConnectionDetails(providerConfigKey: string, connectionId: string) {
+    private async getConnectionDetails(providerConfigKey: string, connectionId: string, instantRefresh = false) {
         let url = `${this.serverUrl}/connection/${connectionId}`;
 
         let headers = {
@@ -70,7 +72,8 @@ export class Nango {
         };
 
         let params = {
-            provider_config_key: providerConfigKey
+            provider_config_key: providerConfigKey,
+            instant_refresh: instantRefresh
         };
 
         return axios.get(url, { params: params, headers: this.enrichHeaders(headers) });

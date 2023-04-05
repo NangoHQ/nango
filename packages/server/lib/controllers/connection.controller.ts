@@ -149,7 +149,7 @@ class ConnectionController {
             let accountId = getAccount(res);
             let connectionId = req.params['connectionId'] as string;
             let providerConfigKey = req.query['provider_config_key'] as string;
-
+            const instantRefresh = req.query['instant_refresh'] === 'true'; // This allows us to instantly refresh the token instead of waiting for the token to expire
             if (connectionId == null) {
                 errorManager.errRes(res, 'missing_connection');
                 return;
@@ -177,7 +177,12 @@ class ConnectionController {
             let template: ProviderTemplate | undefined = configService.getTemplate(config.provider);
 
             if (connection.credentials.type === ProviderAuthModes.OAuth2) {
-                connection.credentials = await connectionService.refreshOauth2CredentialsIfNeeded(connection, config, template as ProviderTemplateOAuth2);
+                connection.credentials = await connectionService.refreshOauth2CredentialsIfNeeded(
+                    connection,
+                    config,
+                    template as ProviderTemplateOAuth2,
+                    instantRefresh
+                );
             }
 
             analytics.track('server:connection_fetched', accountId, { provider: config.provider });
