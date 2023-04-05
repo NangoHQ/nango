@@ -154,6 +154,7 @@ const sidebars = {
                 slug: '/providers'
             },
             items: [
+                'providers/adobe',
                 'providers/airtable',
                 'providers/asana',
                 'providers/atlassian',
