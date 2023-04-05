@@ -9,7 +9,6 @@ asana:
     auth_mode: OAUTH2
     authorization_url: https://app.asana.com/-/oauth_authorize
     token_url: https://app.asana.com/-/oauth_token
-    refresh_url: https://app.asana.com/-/oauth_token
     token_params:
         grant_type: authorization_code
     auth:
