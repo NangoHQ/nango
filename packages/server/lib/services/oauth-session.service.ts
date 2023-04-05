@@ -2,7 +2,7 @@ import type { OAuthSession } from '../models.js';
 import db from '../db/database.js';
 
 class OAuthSessionService {
-    async create(oAuthSession: OAuthSession): Promise<OAuthSession> {
+    async createOrUpdate(oAuthSession: OAuthSession): Promise<OAuthSession> {
         const { id, ...session } = oAuthSession;
         let existingSession = await this.findById(id);
         if (existingSession) {
@@ -25,7 +25,6 @@ class OAuthSessionService {
         await this.queryBuilder().where({ id }).delete();
     }
 
-
     /**
      * This will clear the sessions that have been created for more than 24hrs,
      * it's possible that some sessions are created but at the end the callback url
@@ -34,10 +33,8 @@ class OAuthSessionService {
      */
     async clearStaleSessions() {
         const currentTime = new Date().getTime();
-        const time24HoursAgo = new Date(currentTime - (24 * 60 * 60 * 1000));
-        return this.queryBuilder()
-            .where('created_at', '<', time24HoursAgo)
-            .delete();
+        const time24HoursAgo = new Date(currentTime - 24 * 60 * 60 * 1000);
+        return this.queryBuilder().where('created_at', '<', time24HoursAgo).delete();
     }
 
     private queryBuilder() {

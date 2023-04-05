@@ -1,15 +1,15 @@
 exports.up = function(knex, _) {
     return knex.schema.withSchema('nango').createTable('_nango_oauth_sessions', function(table) {
         table.uuid('id').notNullable();
-        table.string('providerConfigKey').notNullable();
+        table.string('provider_config_Key').notNullable();
         table.string('provider').notNullable();
-        table.string('connectionId').notNullable();
-        table.string('callbackUrl').notNullable();
-        table.string('authMode').notNullable();
-        table.string('accountId').notNullable();
-        table.json('connectionConfig');
-        table.string('webSocketClientId');
-        table.string('codeVerifier');
+        table.string('connection_id').notNullable();
+        table.string('callback_url').notNullable();
+        table.string('auth_mode').notNullable();
+        table.string('account_id').notNullable();
+        table.json('connection_config');
+        table.string('web_socket_client_id');
+        table.string('code_verifier');
         table.string('request_token_secret');
         table.timestamps(true, true);
 
