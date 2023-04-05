@@ -21,7 +21,7 @@ class ProviderClient {
                 return true;
             case 'braintree-sandbox':
                 return true;
-            case 'figma':
+            case 'figma' || 'figjam':
                 return true;
             default:
                 return false;
@@ -43,7 +43,7 @@ class ProviderClient {
                 return this.createBraintreeToken(code, config.oauth_client_id, config.oauth_client_secret);
             case 'braintree-sandbox':
                 return this.createBraintreeToken(code, config.oauth_client_id, config.oauth_client_secret);
-            case 'figma':
+            case 'figma' || 'figjam':
                 return this.createFigmaToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
             default:
                 throw new NangoError('unknown_provider_client');
@@ -66,9 +66,8 @@ class ProviderClient {
                 return this.refreshBraintreeToken(credentials.refresh_token, config.oauth_client_id, config.oauth_client_secret);
             case 'braintree-sandbox':
                 return this.refreshBraintreeToken(credentials.refresh_token, config.oauth_client_id, config.oauth_client_secret);
-            case 'figma':
+            case 'figma' || 'figjam':
                 return this.refreshFigmaToken(template.refresh_url as string, credentials.refresh_token, config.oauth_client_id, config.oauth_client_secret);
-
             default:
                 throw new NangoError('unknown_provider_client');
         }
