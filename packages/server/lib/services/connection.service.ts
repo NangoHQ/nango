@@ -1,4 +1,4 @@
-import type { AuthCredentials, OAuth2Credentials, OAuth1Credentials, ProviderTemplate, CredentialsRefresh, StoredConnection } from '../models.js';
+import type { AuthCredentials, OAuth2Credentials, OAuth1Credentials, CredentialsRefresh, StoredConnection } from '../models.js';
 import { ProviderAuthModes, ProviderTemplateOAuth2 } from '../models.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import db from '../db/database.js';
@@ -138,7 +138,7 @@ class ConnectionService {
     public async refreshOauth2CredentialsIfNeeded(
         connection: Connection,
         providerConfig: ProviderConfig,
-        template: ProviderTemplate
+        template: ProviderTemplateOAuth2
     ): Promise<OAuth2Credentials> {
         let connectionId = connection.connection_id;
         let credentials = connection.credentials as OAuth2Credentials;
@@ -167,7 +167,7 @@ class ConnectionService {
                     var newCredentials: OAuth2Credentials;
 
                     if (providerClientManager.shouldUseProviderClient(providerConfig.provider)) {
-                        let rawCreds = await providerClientManager.refreshToken(providerConfig, connection);
+                        let rawCreds = await providerClientManager.refreshToken(template, providerConfig, connection);
                         newCredentials = this.parseRawCredentials(rawCreds, ProviderAuthModes.OAuth2) as OAuth2Credentials;
                     } else {
                         newCredentials = await getFreshOAuth2Credentials(connection, providerConfig, template as ProviderTemplateOAuth2);
