@@ -289,7 +289,7 @@ class OAuthController {
         try {
             var rawCredentials: object;
             if (providerClientManager.shouldUseProviderClient(session.provider)) {
-                rawCredentials = await providerClientManager.getToken(config, code as string, session.callbackUrl);
+                rawCredentials = await providerClientManager.getToken(config, template.token_url, code as string, session.callbackUrl);
             } else {
                 let accessToken = await simpleOAuthClient.getToken(
                     {
