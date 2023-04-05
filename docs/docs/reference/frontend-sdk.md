@@ -50,8 +50,12 @@ https://<USER-SUBDOMAIN>.zendesk.com/oauth/authorizations/new
 To set the subdomain pass in an additional configuration object to `nango.auth()`:
 
 ```javascript
+// For Zendesk
 nango.auth('zendesk', '<CONNECTION-ID>', { params: { subdomain: '<ZENDESK-SUBDOMAIN>' } });
 
-// Or for Shopify
+// For Shopify
 nango.auth('shopify', '<CONNECTION-ID>', { params: { subdomain: '<SHOPIFY-SUBDOMAIN>' } });
+
+// For Qualtrics
+nango.auth('qualtrics', '<CONNECTION-ID>', { params: { subdomain: '<ACCOUNT-DATACENTER>' } });
 ```
