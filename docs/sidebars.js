@@ -196,6 +196,7 @@ const sidebars = {
                 'providers/outreach',
                 'providers/pagerduty',
                 'providers/pipedrive',
+                'providers/qualtrics',
                 'providers/quickbooks',
                 'providers/ramp',
                 'providers/reddit',
