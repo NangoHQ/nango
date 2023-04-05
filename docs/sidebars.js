@@ -171,6 +171,7 @@ const sidebars = {
                 'providers/epic-games',
                 'providers/facebook',
                 'providers/factorial',
+                'providers/figjam',
                 'providers/fitbit',
                 'providers/freshbooks',
                 'providers/front',
