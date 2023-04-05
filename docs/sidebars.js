@@ -192,6 +192,7 @@ const sidebars = {
                 'providers/linkedin',
                 'providers/mailchimp',
                 'providers/microsoft-teams',
+                'providers/miro',
                 'providers/monday',
                 'providers/notion',
                 'providers/outreach',
