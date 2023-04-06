@@ -346,7 +346,6 @@ strava:
     auth_mode: OAUTH2
     authorization_url: https://www.strava.com/oauth/mobile/authorize
     token_url: https://www.strava.com/api/v3/oauth/token
-    refresh_url: https://www.strava.com/oauth/token
     scope_separator: ','
     authorization_params:
         response_type: code
@@ -372,7 +371,6 @@ twitch:
     auth_mode: OAUTH2
     authorization_url: https://id.twitch.tv/oauth2/authorize
     token_url: https://id.twitch.tv/oauth2/token
-    refresh_url: https://id.twitch.tv/oauth2/token
     authorization_params:
         force_verify: false
         response_type: code
