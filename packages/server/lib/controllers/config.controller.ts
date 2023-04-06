@@ -1,4 +1,4 @@
-import type { Request, Response, NextFunction } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import configService from '../services/config.service.js';
 import type { ProviderConfig } from '../models.js';
 import analytics from '../utils/analytics.js';
@@ -22,15 +22,16 @@ class ConfigController {
 
             let integrations = configs.map((config) => {
                 let template = configService.getTemplates()[config.provider];
-                let connectionConfigParams = parseConnectionConfigParamsFromTemplate(template!);
-
-                return {
+                let integration: any = {
                     uniqueKey: config.unique_key,
                     provider: config.provider,
                     connectionCount: connections.filter((connection) => connection.provider === config.unique_key).length,
-                    creationDate: config.created_at,
-                    connectionConfigParams: connectionConfigParams
+                    creationDate: config.created_at
                 };
+                if (template) {
+                    integration['connectionConfigParams'] = parseConnectionConfigParamsFromTemplate(template!);
+                }
+                return integration;
             });
 
             res.status(200).send({
@@ -39,6 +40,7 @@ class ConfigController {
                 })
             });
         } catch (err) {
+            console.log(err);
             next(err);
         }
     }
