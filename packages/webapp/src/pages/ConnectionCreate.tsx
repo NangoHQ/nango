@@ -42,6 +42,7 @@ export default function IntegrationCreate() {
 
                 if (data['integrations'] && data['integrations'].length > 0) {
                     setIntegration(data['integrations'][0]);
+                    setUpConnectionConfigParams(data['integrations'][0]);
                 }
             }
         };
