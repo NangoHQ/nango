@@ -194,6 +194,7 @@ const sidebars = {
                 'providers/microsoft-teams',
                 'providers/miro',
                 'providers/monday',
+                'providers/mural',
                 'providers/notion',
                 'providers/outreach',
                 'providers/pagerduty',

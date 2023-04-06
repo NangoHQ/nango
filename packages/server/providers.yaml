@@ -236,6 +236,16 @@ monday:
     auth_mode: OAUTH2
     authorization_url: https://auth.monday.com/oauth2/authorize
     token_url: https://auth.monday.com/oauth2/token
+mural:
+    auth_mode: OAUTH2
+    authorization_url: https://app.mural.md/api/public/v1/authorization/oauth2
+    token_url: https://app.mural.md/api/public/v1/authorization/oauth2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 notion:
     auth_mode: OAUTH2
     authorization_url: https://api.notion.com/v1/oauth/authorize
