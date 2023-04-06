@@ -113,6 +113,8 @@ facebook:
     auth_mode: OAUTH2
     authorization_url: https://www.facebook.com/v15.0/dialog/oauth
     token_url: https://graph.facebook.com/v15.0/oauth/access_token
+figjam:
+    alias: figma
 figma:
     auth_mode: OAUTH2
     authorization_url: https://www.figma.com/oauth
