@@ -185,7 +185,6 @@ class ConnectionService {
 
                     resolve(newCredentials);
                 } catch (e) {
-                    console.log(e);
                     // Remove ourselves from the array of running refreshes
                     this.runningCredentialsRefreshes = this.runningCredentialsRefreshes.filter((value) => {
                         return !(value.providerConfigKey === providerConfigKey && value.connectionId === connectionId);
