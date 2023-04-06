@@ -14,6 +14,8 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 Provider template name in Nango: `contentstack`  
 Follow our [quickstart](../quickstart.md) to add an OAuth integration with Contentstack in 5 minutes.
 
+Make sure you [read this](../reference/frontend-sdk.md#connection-config) to set the correct subdomain and app ID before starting an OAuth flow for Contentstack.
+
 ## App registration & publishing
 
 You need to [register as a User](https://www.contentstack.com/login/) with Contentstack to get access to the OAuth API.
@@ -25,4 +27,4 @@ You need to [register as a User](https://www.contentstack.com/login/) with Conte
 
 ## API specific gotchas
 
-_No gotchas yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+-   You are required to pass in the correct subdomain and App ID before starting an OAuth flow (cf. [Connection configuration](../reference/frontend-sdk.md#connection-config)).

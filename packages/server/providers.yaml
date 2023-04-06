@@ -113,6 +113,8 @@ facebook:
     auth_mode: OAUTH2
     authorization_url: https://www.facebook.com/v15.0/dialog/oauth
     token_url: https://graph.facebook.com/v15.0/oauth/access_token
+figjam:
+    alias: figma
 figma:
     auth_mode: OAUTH2
     authorization_url: https://www.figma.com/oauth
@@ -236,6 +238,16 @@ monday:
     auth_mode: OAUTH2
     authorization_url: https://auth.monday.com/oauth2/authorize
     token_url: https://auth.monday.com/oauth2/token
+mural:
+    auth_mode: OAUTH2
+    authorization_url: https://app.mural.md/api/public/v1/authorization/oauth2
+    token_url: https://app.mural.md/api/public/v1/authorization/oauth2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 notion:
     auth_mode: OAUTH2
     authorization_url: https://api.notion.com/v1/oauth/authorize
@@ -334,7 +346,6 @@ strava:
     auth_mode: OAUTH2
     authorization_url: https://www.strava.com/oauth/mobile/authorize
     token_url: https://www.strava.com/api/v3/oauth/token
-    refresh_url: https://www.strava.com/oauth/token
     scope_separator: ','
     authorization_params:
         response_type: code
@@ -360,7 +371,6 @@ twitch:
     auth_mode: OAUTH2
     authorization_url: https://id.twitch.tv/oauth2/authorize
     token_url: https://id.twitch.tv/oauth2/token
-    refresh_url: https://id.twitch.tv/oauth2/token
     authorization_params:
         force_verify: false
         response_type: code
