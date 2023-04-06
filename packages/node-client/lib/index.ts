@@ -26,16 +26,17 @@ export class Nango {
     }
 
     /**
-     * Get fresh access credentials to authenticate your requests.
-     *
-     * @remarks
      * For OAuth 2: returns the access token directly as a string.
      * For OAuth 2: If you want to obtain a new refresh token from the provider before the current token has expired,
-     * you can set the instantRefresh argument to true."
+     * you can set the forceRefresh argument to true."
      * For OAuth 1: returns an object with 'oAuthToken' and 'oAuthTokenSecret' fields.
-     */
-    public async getToken(providerConfigKey: string, connectionId: string, instantRefresh = false) {
-        let response = await this.getConnectionDetails(providerConfigKey, connectionId, instantRefresh);
+     * @param providerConfigKey - This is the unique Config Key for the integration
+     * @param connectionId - This is the unique connection identifier used to identify this connection
+     * @param [forceRefresh] - When set, this is used to  obtain a new refresh token from the provider before the current token has expired,
+     * you can set the forceRefresh argument to true.
+     * */
+    public async getToken(providerConfigKey: string, connectionId: string, forceRefresh?: boolean) {
+        let response = await this.getConnectionDetails(providerConfigKey, connectionId, forceRefresh);
 
         switch (response.data.credentials.type) {
             case 'OAUTH2':
@@ -48,22 +49,32 @@ export class Nango {
     }
 
     /**
-     * Get the full (fresh) credentials payload returned by the external API, which also contains access credentials.
-     */
-    public async getRawTokenResponse(providerConfigKey: string, connectionId: string) {
-        let response = await this.getConnectionDetails(providerConfigKey, connectionId);
+     * Get the full (fresh) credentials payload returned by the external API,
+     * which also contains access credentials.
+     * @param providerConfigKey - This is the unique Config Key for the integration
+     * @param connectionId - This is the unique connection identifier used to identify this connection
+     * @param [forceRefresh] - When set, this is used to  obtain a new refresh token from the provider before the current token has expired,
+     * you can set the forceRefresh argument to true.
+     * */
+    public async getRawTokenResponse(providerConfigKey: string, connectionId: string, forceRefresh?: boolean) {
+        let response = await this.getConnectionDetails(providerConfigKey, connectionId, forceRefresh);
         return response.data.credentials.raw;
     }
 
     /**
-     * Get the Connection object, which also contains access credentials and full credentials payload returned by the external API.
+     * Get the Connection object, which also contains access credentials and full credentials payload
+     * returned by the external API.
+     * @param providerConfigKey - This is the unique Config Key for the integration
+     * @param connectionId - This is the unique connection identifier used to identify this connection
+     * @param [forceRefresh] - When set, this is used to  obtain a new refresh token from the provider before the current token has expired,
+     * you can set the forceRefresh argument to true.
      */
-    public async getConnection(providerConfigKey: string, connectionId: string) {
-        let response = await this.getConnectionDetails(providerConfigKey, connectionId);
+    public async getConnection(providerConfigKey: string, connectionId: string, forceRefresh?: boolean) {
+        let response = await this.getConnectionDetails(providerConfigKey, connectionId, forceRefresh);
         return response.data;
     }
 
-    private async getConnectionDetails(providerConfigKey: string, connectionId: string, instantRefresh = false) {
+    private async getConnectionDetails(providerConfigKey: string, connectionId: string, forceRefresh = false) {
         let url = `${this.serverUrl}/connection/${connectionId}`;
 
         let headers = {
@@ -73,7 +84,7 @@ export class Nango {
 
         let params = {
             provider_config_key: providerConfigKey,
-            instant_refresh: instantRefresh
+            force_refresh: forceRefresh
         };
 
         return axios.get(url, { params: params, headers: this.enrichHeaders(headers) });

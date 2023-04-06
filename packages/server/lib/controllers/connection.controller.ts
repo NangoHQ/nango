@@ -149,7 +149,7 @@ class ConnectionController {
             let accountId = getAccount(res);
             let connectionId = req.params['connectionId'] as string;
             let providerConfigKey = req.query['provider_config_key'] as string;
-            const instantRefresh = req.query['instant_refresh'] === 'true'; // This allows us to instantly refresh the token instead of waiting for the token to expire
+            const instantRefresh = req.query['force_refresh'] === 'true'; // This allows us to instantly refresh the token instead of waiting for the token to expire
             if (connectionId == null) {
                 errorManager.errRes(res, 'missing_connection');
                 return;
