@@ -184,6 +184,7 @@ const sidebars = {
                 'providers/google-mail',
                 'providers/google-sheet',
                 'providers/greenhouse',
+                'providers/gusto',
                 'providers/hubspot',
                 'providers/instagram',
                 'providers/intercom',
