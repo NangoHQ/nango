@@ -201,6 +201,7 @@ const sidebars = {
                 'providers/notion',
                 'providers/outreach',
                 'providers/pagerduty',
+                'providers/payfit',
                 'providers/pipedrive',
                 'providers/qualtrics',
                 'providers/quickbooks',
