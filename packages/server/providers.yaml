@@ -1,3 +1,13 @@
+adobe:
+    auth_mode: OAUTH2
+    authorization_url: https://ims-na1.adobelogin.com/ims/authorize/v2
+    token_url: https://ims-na1.adobelogin.com/ims/token/v3
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 airtable:
     auth_mode: OAUTH2
     authorization_url: https://airtable.com/oauth2/v1/authorize
