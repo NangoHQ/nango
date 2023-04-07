@@ -97,7 +97,7 @@ docker compose run nango-server cat packages/server/providers.yaml # Print the c
 
 Open the [Dashboard's home page](http://localhost:3003) and add a new Integration with your freshly added provider.
 
-Run an OAuth flow from the [Dashboard's connection creation page](http://localhost:3003/connection/create).
+Run an OAuth flow from the [Dashboard's connection creation page](http://localhost:3003/connections/create).
 
 If all goes well you should see your new Connection in the [Dashboard's connection list page](http://localhost:3003/connections).
 
