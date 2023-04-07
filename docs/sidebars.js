@@ -183,6 +183,7 @@ const sidebars = {
                 'providers/google-calendar',
                 'providers/google-mail',
                 'providers/google-sheet',
+                'providers/gorgias',
                 'providers/greenhouse',
                 'providers/gusto',
                 'providers/hubspot',
