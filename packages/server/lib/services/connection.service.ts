@@ -138,7 +138,8 @@ class ConnectionService {
     public async refreshOauth2CredentialsIfNeeded(
         connection: Connection,
         providerConfig: ProviderConfig,
-        template: ProviderTemplateOAuth2
+        template: ProviderTemplateOAuth2,
+        instantRefresh = false
     ): Promise<OAuth2Credentials> {
         let connectionId = connection.connection_id;
         let credentials = connection.credentials as OAuth2Credentials;
@@ -158,8 +159,8 @@ class ConnectionService {
         }
 
         let refresh =
-            providerClient.shouldIntrospectToken(providerConfig.provider) && (await providerClient.introspectedTokenExpired(providerConfig, connection));
-
+            instantRefresh ||
+            (providerClient.shouldIntrospectToken(providerConfig.provider) && (await providerClient.introspectedTokenExpired(providerConfig, connection)));
         // If not expiration date is set, e.g. Github, we assume the token doesn't expire (unless introspection enable like Salesforce).
         if (credentials.refresh_token && (refresh || (credentials.expires_at && isTokenExpired(credentials.expires_at)))) {
             const promise = new Promise<OAuth2Credentials>(async (resolve, reject) => {

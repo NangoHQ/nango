@@ -1,3 +1,13 @@
+adobe:
+    auth_mode: OAUTH2
+    authorization_url: https://ims-na1.adobelogin.com/ims/authorize/v2
+    token_url: https://ims-na1.adobelogin.com/ims/token/v3
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 airtable:
     auth_mode: OAUTH2
     authorization_url: https://airtable.com/oauth2/v1/authorize
@@ -164,6 +174,16 @@ greenhouse:
     auth_mode: OAUTH2
     authorization_url: https://api.greenhouse.io/oauth/authorize
     token_url: https://api.greenhouse.io/oauth/token
+gusto:
+    auth_mode: OAUTH2
+    authorization_url: https://api.gusto.com/oauth/authorize
+    token_url:  https://api.gusto.com/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 hubspot:
     auth_mode: OAUTH2
     authorization_url: https://app.hubspot.com/oauth/authorize
@@ -446,6 +466,16 @@ zoho-invoice:
     authorization_params:
         prompt: consent
         access_type: offline
+zenefits:
+    auth_mode: OAUTH2
+    authorization_url: https://secure.zenefits.com/oauth2/platform-authorize
+    token_url: https://secure.zenefits.com/oauth2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 zoho-books:
     auth_mode: OAUTH2
     authorization_url: https://accounts.zoho.com/oauth/v2/auth

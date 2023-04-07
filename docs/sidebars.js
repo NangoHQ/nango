@@ -154,6 +154,7 @@ const sidebars = {
                 slug: '/providers'
             },
             items: [
+                'providers/adobe',
                 'providers/airtable',
                 'providers/asana',
                 'providers/atlassian',
@@ -183,6 +184,7 @@ const sidebars = {
                 'providers/google-mail',
                 'providers/google-sheet',
                 'providers/greenhouse',
+                'providers/gusto',
                 'providers/hubspot',
                 'providers/instagram',
                 'providers/intercom',
@@ -225,6 +227,7 @@ const sidebars = {
                 'providers/youtube',
                 'providers/zapier-nla',
                 'providers/zendesk',
+                'providers/zenefits',
                 'providers/zoho-crm',
                 'providers/zoho-invoice',
                 'providers/zoho-books',
