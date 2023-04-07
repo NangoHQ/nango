@@ -225,6 +225,7 @@ const sidebars = {
                 'providers/youtube',
                 'providers/zapier-nla',
                 'providers/zendesk',
+                'providers/zenefits',
                 'providers/zoho-crm',
                 'providers/zoho-invoice',
                 'providers/zoho-books',
