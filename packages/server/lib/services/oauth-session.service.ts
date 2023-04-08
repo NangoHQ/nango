@@ -1,20 +1,21 @@
 import type { OAuthSession } from '../models.js';
 import db from '../db/database.js';
+import { convertJsonKeysToCamelCase, convertJsonKeysToSnakeCase } from '../utils/utils.js';
 
 class OAuthSessionService {
-    async createOrUpdate(oAuthSession: OAuthSession): Promise<OAuthSession> {
-        const { id, ...session } = oAuthSession;
+    async createOrUpdate(oAuthSession: OAuthSession) {
+        const authSession = convertJsonKeysToSnakeCase<OAuthSession>(oAuthSession);
+        const { id, ...session } = authSession!;
         let existingSession = await this.findById(id);
         if (existingSession) {
             await this.queryBuilder().update(session);
-            return oAuthSession;
         }
-        return this.queryBuilder().insert({ ...oAuthSession });
+        await this.queryBuilder().insert({ ...authSession });
     }
 
     async findById(id: string): Promise<OAuthSession | null> {
-        const session = await this.queryBuilder().where({ id }).first();
-        return session as OAuthSession;
+        let session = await this.queryBuilder().where({ id }).first();
+        return convertJsonKeysToCamelCase<OAuthSession>(session as Record<string, any>);
     }
 
     async delete(id: string) {
