@@ -4,7 +4,7 @@ sidebar_label: Contribute a New Provider
 
 # Contribute a New API Provider
 
-Adding support for a new API provider to Nango is fast & easy. Please follow the steps below and we will be happy to accept your PR!
+Adding support for a new API provider to Nango is fast & easy. Please follow the steps below and we will be happy to accept your PR! You should also join the `#contribution` channel on our [Slack community](https://nango.dev/slack).
 
 Don't know which API provider to contribute? Here's a [list](https://github.com/orgs/NangoHQ/projects/2) you can pick from!
 
@@ -23,7 +23,7 @@ provider-slug: # Shorthand for the provider, ideally the provider's name. Must b
     ##########
     # Mandatory fields
     ##########
-    auth_mode: OAUTH2 # Either OAUTH1 or OAUTH2
+    auth_mode: OAUTH2 # Either 'OAUTH1' or 'OAUTH2'
     authorization_url: https://${connectionConfig.params.subdomain}.gitlab.com/oauth/authorize # The URL of the authorization page for the OAuth service (supports string interpolation)
     token_url: https://${connectionConfig.params.subdomain}.gitlab.com/oauth/token # The URL for the token request (supports string interpolation)
 
@@ -34,7 +34,9 @@ provider-slug: # Shorthand for the provider, ideally the provider's name. Must b
         response_type: code
     token_params: # Additional parameters to pass along in the token request
         mycoolparam: value
-    refresh_url: https://api.example.com/oauth/refresh # The URL to use for refreshing the access token (only if different from token_url)
+    refresh_params: # Additional parameters to pass along in the refresh token request (defauts to the 'token_params')
+        grant_type: refresh_token
+    refresh_url: https://api.example.com/oauth/refresh # The URL to use for refreshing the access token (only if different from token_url) Warning: currently unused, requires code change before using
     scope_separator: ',' # String to use to separate scopes. Defaults to ' ' (1 space) if not provided
 
     # Metadata capture

@@ -47,7 +47,7 @@ export function getSimpleOAuth2ClientConfig(providerConfig: ProviderConfig, temp
     };
 }
 
-export async function getFreshOAuth2Credentials(connection: Connection, config: ProviderConfig, template: ProviderTemplate): Promise<OAuth2Credentials> {
+export async function getFreshOAuth2Credentials(connection: Connection, config: ProviderConfig, template: ProviderTemplateOAuth2): Promise<OAuth2Credentials> {
     let credentials = connection.credentials as OAuth2Credentials;
     const client = new AuthorizationCode(getSimpleOAuth2ClientConfig(config, template, connection.connection_config));
     const oldAccessToken = client.createToken({
@@ -57,7 +57,9 @@ export async function getFreshOAuth2Credentials(connection: Connection, config: 
     });
 
     let additionalParams = {};
-    if (template.token_params) {
+    if (template.refresh_params) {
+        additionalParams = template.refresh_params;
+    } else if (template.token_params) {
         additionalParams = template.token_params;
     }
 
@@ -72,7 +74,7 @@ export async function getFreshOAuth2Credentials(connection: Connection, config: 
             nangoErr.payload = { external_message: e.message, external_request_details: JSON.stringify(e.output) };
         }
 
-        throw e;
+        throw nangoErr;
     }
 
     var newCredentials: OAuth2Credentials;

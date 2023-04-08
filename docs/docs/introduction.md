@@ -11,7 +11,7 @@ Nango is a service that contains everything you need to work with APIs that use 
 
 It contains:
 
--   a full OAuth dance for 60+ APIs
+-   a full OAuth dance for 70+ APIs
 -   a frontend SDK to trigger new OAuth flows
 -   a backend SDK & REST API to retrieve fresh access tokens for your API calls
 
@@ -31,11 +31,11 @@ let token = await nango.getToken('github', '<user-id>');
 
 ## 📺 30-second demo {#demo}
 
-<iframe width="500" height="281" src="https://www.youtube.com/embed/BK15QI-jWi0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+<iframe width="864" height="486" src="https://www.youtube.com/embed/BK15QI-jWi0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 
-## 👾 Out of the box support for 60+ APIs
+## 👾 Out of the box support for 70+ APIs
 
-60+ APIs are preconfigured to work out-of-the-box. Including:
+70+ APIs are preconfigured to work out-of-the-box. Including:
 
 -   **CRM**: Front, Hubspot, Salesforce, etc.
 -   **Accounting**: Xero, Sellsy, Zoho Books, etc.

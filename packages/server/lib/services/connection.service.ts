@@ -1,5 +1,5 @@
-import type { AuthCredentials, OAuth2Credentials, OAuth1Credentials, ProviderTemplate, CredentialsRefresh, StoredConnection } from '../models.js';
-import { ProviderAuthModes } from '../models.js';
+import type { AuthCredentials, OAuth2Credentials, OAuth1Credentials, CredentialsRefresh, StoredConnection } from '../models.js';
+import { ProviderAuthModes, ProviderTemplateOAuth2 } from '../models.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import db from '../db/database.js';
 import type { ProviderConfig, Connection } from '../models.js';
@@ -138,7 +138,8 @@ class ConnectionService {
     public async refreshOauth2CredentialsIfNeeded(
         connection: Connection,
         providerConfig: ProviderConfig,
-        template: ProviderTemplate
+        template: ProviderTemplateOAuth2,
+        instantRefresh = false
     ): Promise<OAuth2Credentials> {
         let connectionId = connection.connection_id;
         let credentials = connection.credentials as OAuth2Credentials;
@@ -158,8 +159,8 @@ class ConnectionService {
         }
 
         let refresh =
-            providerClient.shouldIntrospectToken(providerConfig.provider) && (await providerClient.introspectedTokenExpired(providerConfig, connection));
-
+            instantRefresh ||
+            (providerClient.shouldIntrospectToken(providerConfig.provider) && (await providerClient.introspectedTokenExpired(providerConfig, connection)));
         // If not expiration date is set, e.g. Github, we assume the token doesn't expire (unless introspection enable like Salesforce).
         if (credentials.refresh_token && (refresh || (credentials.expires_at && isTokenExpired(credentials.expires_at)))) {
             const promise = new Promise<OAuth2Credentials>(async (resolve, reject) => {
@@ -167,10 +168,10 @@ class ConnectionService {
                     var newCredentials: OAuth2Credentials;
 
                     if (providerClientManager.shouldUseProviderClient(providerConfig.provider)) {
-                        let rawCreds = await providerClientManager.refreshToken(providerConfig, connection);
+                        let rawCreds = await providerClientManager.refreshToken(template, providerConfig, connection);
                         newCredentials = this.parseRawCredentials(rawCreds, ProviderAuthModes.OAuth2) as OAuth2Credentials;
                     } else {
-                        newCredentials = await getFreshOAuth2Credentials(connection, providerConfig, template);
+                        newCredentials = await getFreshOAuth2Credentials(connection, providerConfig, template as ProviderTemplateOAuth2);
                     }
 
                     connection.credentials = newCredentials;

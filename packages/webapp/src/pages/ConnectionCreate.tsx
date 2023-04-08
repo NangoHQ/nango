@@ -16,6 +16,7 @@ interface Integration {
     provider: string;
     connectionCount: number;
     creationDate: string;
+    connectionConfigParams: string[];
 }
 
 export default function IntegrationCreate() {
@@ -25,7 +26,7 @@ export default function IntegrationCreate() {
     const navigate = useNavigate();
     const [integration, setIntegration] = useState<Integration | null>(null);
     const [connectionId, setConnectionId] = useState<string>('test-connection-id');
-    const [connectionConfigParams, setConnectionConfigParams] = useState<string>('{ }');
+    const [connectionConfigParams, setConnectionConfigParams] = useState<Record<string, string> | null>(null);
     const [publicKey, setPublicKey] = useState('');
     const getIntegrationListAPI = useGetIntegrationListAPI();
     const getProjectInfoAPI = useGetProjectInfoAPI();
@@ -41,6 +42,7 @@ export default function IntegrationCreate() {
 
                 if (data['integrations'] && data['integrations'].length > 0) {
                     setIntegration(data['integrations'][0]);
+                    setUpConnectionConfigParams(data['integrations'][0]);
                 }
             }
         };
@@ -74,7 +76,7 @@ export default function IntegrationCreate() {
         let nango = new Nango({ host: baseUrl(), publicKey: isCloud() ? publicKey : undefined });
 
         nango
-            .auth(target.integration_unique_key.value, target.connection_id.value, { params: JSON.parse(target.connection_config_params.value) })
+            .auth(target.integration_unique_key.value, target.connection_id.value, { params: connectionConfigParams || {} })
             .catch((err: { message: string; type: string }) => {
                 setServerErrorMessage(`${err.type} error: ${err.message}`);
             })
@@ -85,11 +87,30 @@ export default function IntegrationCreate() {
             });
     };
 
+    const setUpConnectionConfigParams = (integration: Integration) => {
+        if (integration == null) {
+            return;
+        }
+
+        if (integration.connectionConfigParams == null || integration.connectionConfigParams.length === 0) {
+            setConnectionConfigParams(null);
+            return;
+        }
+
+        let params: Record<string, string> = {};
+        console.log(integration.connectionConfigParams);
+        for (let i in integration.connectionConfigParams) {
+            params[integration.connectionConfigParams[i]] = '';
+        }
+        setConnectionConfigParams(params);
+    };
+
     const handleIntegrationUniqueKeyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         let integration: Integration | undefined = integrations?.find((i) => i.uniqueKey === e.target.value);
 
         if (integration != null) {
             setIntegration(integration);
+            setUpConnectionConfigParams(integration);
         }
     };
 
@@ -98,7 +119,9 @@ export default function IntegrationCreate() {
     };
 
     const handleConnectionConfigParamsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setConnectionConfigParams(e.target.value);
+        let params = connectionConfigParams ? Object.assign({}, connectionConfigParams) : {}; // Copy object to update UI.
+        params[e.target.name.replace('connection-config-', '')] = e.target.value;
+        setConnectionConfigParams(params);
     };
 
     const snippet = () => {
@@ -112,17 +135,26 @@ export default function IntegrationCreate() {
             args.push(`publicKey: '${publicKey}'`);
         }
 
-        if (!['{', '{}', ''].includes(connectionConfigParams.replace(/ /g, ''))) {
-            args.push(`config: { params: ${connectionConfigParams}}`);
-        }
-
         let argsStr = args.length > 0 ? `{ ${args.join(', ')}}` : '';
+
+        var connectionConfigStr = '';
+
+        // Iterate of connectionConfigParams and create a string.
+        if (connectionConfigParams != null && Object.keys(connectionConfigParams).length >= 0) {
+            connectionConfigStr = ', { params: { ';
+            console.log(connectionConfigParams);
+            for (const [key, value] of Object.entries(connectionConfigParams)) {
+                connectionConfigStr += `${key}: '${value}', `;
+            }
+            connectionConfigStr = connectionConfigStr.slice(0, -2);
+            connectionConfigStr += ' }}';
+        }
 
         return `import Nango from '@nangohq/frontend';
         
 let nango = new Nango(${argsStr});
 
-nango.auth('${integration?.uniqueKey}', '${connectionId}').then((result: { providerConfigKey: string; connectionId: string}) => {
+nango.auth('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr}).then((result: { providerConfigKey: string; connectionId: string }) => {
     // do something
 }).catch((err: { message: string; type: string }) => {
     // handle error
@@ -190,44 +222,45 @@ nango.auth('${integration?.uniqueKey}', '${connectionId}').then((result: { provi
                                             </div>
                                         </div>
                                     </div>
-
-                                    <div>
-                                        <div className="flex mt-6">
-                                            <label htmlFor="client_id" className="text-text-light-gray block text-sm font-semibold">
-                                                Extra Configuration
-                                            </label>
-                                            <Tooltip
-                                                text={
-                                                    <>
-                                                        <div className="flex text-black text-sm">
-                                                            <p className="ml-1">{`Some integrations require extra configuration (cf.`}</p>
-                                                            <a
-                                                                href="https://docs.nango.dev/reference/frontend-sdk#connection-config"
-                                                                target="_blank"
-                                                                rel="noreferrer"
-                                                                className="text-text-blue hover:text-text-light-blue ml-1"
-                                                            >
-                                                                docs
-                                                            </a>
-                                                            <p>{`).`}</p>
-                                                        </div>
-                                                    </>
-                                                }
-                                            >
-                                                <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
-                                            </Tooltip>
+                                    {integration?.connectionConfigParams.map((paramName: string) => (
+                                        <div key={paramName}>
+                                            <div className="flex mt-6">
+                                                <label htmlFor="client_id" className="text-text-light-gray block text-sm font-semibold">
+                                                    Extra Configuration: {paramName}
+                                                </label>
+                                                <Tooltip
+                                                    text={
+                                                        <>
+                                                            <div className="flex text-black text-sm">
+                                                                <p className="ml-1">{`Some integrations require extra configuration (cf.`}</p>
+                                                                <a
+                                                                    href="https://docs.nango.dev/reference/frontend-sdk#connection-config"
+                                                                    target="_blank"
+                                                                    rel="noreferrer"
+                                                                    className="text-text-blue hover:text-text-light-blue ml-1"
+                                                                >
+                                                                    docs
+                                                                </a>
+                                                                <p>{`).`}</p>
+                                                            </div>
+                                                        </>
+                                                    }
+                                                >
+                                                    <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                                </Tooltip>
+                                            </div>
+                                            <div className="mt-1">
+                                                <input
+                                                    id={`connection-config-${paramName}`}
+                                                    name={`connection-config-${paramName}`}
+                                                    type="text"
+                                                    required
+                                                    className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none"
+                                                    onChange={handleConnectionConfigParamsChange}
+                                                />
+                                            </div>
                                         </div>
-                                        <div className="mt-1">
-                                            <input
-                                                id="connection_config_params"
-                                                name="connection_config_params"
-                                                type="text"
-                                                defaultValue={connectionConfigParams}
-                                                className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none"
-                                                onChange={handleConnectionConfigParamsChange}
-                                            />
-                                        </div>
-                                    </div>
+                                    ))}
 
                                     <div>
                                         {serverErrorMessage && <p className="mt-6 text-sm text-red-600">{serverErrorMessage}</p>}

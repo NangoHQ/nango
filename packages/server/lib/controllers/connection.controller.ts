@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 import connectionService from '../services/connection.service.js';
 import type { NextFunction } from 'express';
 import configService from '../services/config.service.js';
-import { ProviderConfig, ProviderTemplate, Connection, ProviderAuthModes } from '../models.js';
+import { ProviderConfig, ProviderTemplate, Connection, ProviderAuthModes, ProviderTemplateOAuth2 } from '../models.js';
 import analytics from '../utils/analytics.js';
 import { getAccount, getUserAndAccountFromSesstion } from '../utils/utils.js';
 import errorManager from '../utils/error.manager.js';
@@ -46,7 +46,7 @@ class ConnectionController {
             let template: ProviderTemplate | undefined = configService.getTemplate(config.provider);
 
             if (connection.credentials.type === ProviderAuthModes.OAuth2) {
-                connection.credentials = await connectionService.refreshOauth2CredentialsIfNeeded(connection, config, template);
+                connection.credentials = await connectionService.refreshOauth2CredentialsIfNeeded(connection, config, template as ProviderTemplateOAuth2);
             }
 
             res.status(200).send({
@@ -149,7 +149,7 @@ class ConnectionController {
             let accountId = getAccount(res);
             let connectionId = req.params['connectionId'] as string;
             let providerConfigKey = req.query['provider_config_key'] as string;
-
+            const instantRefresh = req.query['force_refresh'] === 'true'; // This allows us to instantly refresh the token instead of waiting for the token to expire
             if (connectionId == null) {
                 errorManager.errRes(res, 'missing_connection');
                 return;
@@ -177,7 +177,12 @@ class ConnectionController {
             let template: ProviderTemplate | undefined = configService.getTemplate(config.provider);
 
             if (connection.credentials.type === ProviderAuthModes.OAuth2) {
-                connection.credentials = await connectionService.refreshOauth2CredentialsIfNeeded(connection, config, template);
+                connection.credentials = await connectionService.refreshOauth2CredentialsIfNeeded(
+                    connection,
+                    config,
+                    template as ProviderTemplateOAuth2,
+                    instantRefresh
+                );
             }
 
             analytics.track('server:connection_fetched', accountId, { provider: config.provider });
