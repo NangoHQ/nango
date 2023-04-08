@@ -1,5 +1,13 @@
 import braintree from 'braintree';
-import { ProviderConfig, Connection, OAuth2Credentials, ProviderAuthModes } from '../models.js';
+import {
+    ProviderConfig,
+    Connection,
+    OAuth2Credentials,
+    ProviderAuthModes,
+    AuthorizationTokenResponse,
+    RefreshTokenResponse,
+    ProviderTemplateOAuth2
+} from '../models.js';
 import axios from 'axios';
 import { isTokenExpired, parseTokenExpirationDate } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
@@ -12,6 +20,9 @@ class ProviderClient {
             case 'braintree':
                 return true;
             case 'braintree-sandbox':
+                return true;
+            case 'figma':
+            case 'figjam':
                 return true;
             default:
                 return false;
@@ -27,18 +38,21 @@ class ProviderClient {
         }
     }
 
-    public async getToken(config: ProviderConfig, code: string): Promise<object> {
+    public async getToken(config: ProviderConfig, tokenUrl: string, code: string, callBackUrl: string): Promise<object> {
         switch (config.provider) {
             case 'braintree':
                 return this.createBraintreeToken(code, config.oauth_client_id, config.oauth_client_secret);
             case 'braintree-sandbox':
                 return this.createBraintreeToken(code, config.oauth_client_id, config.oauth_client_secret);
+            case 'figma':
+            case 'figjam':
+                return this.createFigmaToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
             default:
                 throw new NangoError('unknown_provider_client');
         }
     }
 
-    public async refreshToken(config: ProviderConfig, connection: Connection): Promise<object> {
+    public async refreshToken(template: ProviderTemplateOAuth2, config: ProviderConfig, connection: Connection): Promise<object> {
         if (connection.credentials.type != ProviderAuthModes.OAuth2) {
             throw new NangoError('wrong_credentials_type');
         }
@@ -54,6 +68,9 @@ class ProviderClient {
                 return this.refreshBraintreeToken(credentials.refresh_token, config.oauth_client_id, config.oauth_client_secret);
             case 'braintree-sandbox':
                 return this.refreshBraintreeToken(credentials.refresh_token, config.oauth_client_id, config.oauth_client_secret);
+            case 'figma':
+            case 'figjam':
+                return this.refreshFigmaToken(template.refresh_url as string, credentials.refresh_token, config.oauth_client_id, config.oauth_client_secret);
             default:
                 throw new NangoError('unknown_provider_client');
         }
@@ -77,6 +94,50 @@ class ProviderClient {
             default:
                 throw new NangoError('unknown_provider_client');
         }
+    }
+
+    private async createFigmaToken(
+        tokenUrl: string,
+        code: string,
+        clientId: string,
+        clientSecret: string,
+        callBackUrl: string
+    ): Promise<AuthorizationTokenResponse> {
+        let params = new URLSearchParams();
+        params.set('redirect_uri', callBackUrl);
+        const body = {
+            client_id: clientId,
+            client_secret: clientSecret,
+            code: code,
+            grant_type: 'authorization_code'
+        };
+        const url = `${tokenUrl}?${params.toString()}`;
+        let response = await axios.post(url, body);
+        if (response.status === 200 && response.data !== null) {
+            return {
+                access_token: response.data['access_token'],
+                refresh_token: response.data['refresh_token'],
+                expires_in: response.data['expires_in']
+            };
+        }
+        throw new NangoError('figma_token_request_error');
+    }
+
+    private async refreshFigmaToken(refreshTokenUrl: string, refreshToken: string, clientId: string, clientSecret: string): Promise<RefreshTokenResponse> {
+        const body = {
+            client_id: clientId,
+            client_secret: clientSecret,
+            refresh_token: refreshToken
+        };
+        let response = await axios.post(refreshTokenUrl, body);
+        if (response.status === 200 && response.data !== null) {
+            return {
+                refresh_token: refreshToken,
+                access_token: response.data['access_token'],
+                expires_in: response.data['expires_in']
+            };
+        }
+        throw new NangoError('figma_refresh_token_request_error');
     }
 
     private async createBraintreeToken(code: string, clientId: string, clientSecret: string): Promise<object> {

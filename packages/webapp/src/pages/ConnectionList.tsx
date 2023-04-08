@@ -13,6 +13,7 @@ interface Connection {
 }
 
 export default function ConnectionList() {
+    const [loaded, setLoaded] = useState(false);
     const [connections, setConnections] = useState<Connection[] | null>(null);
     const getConnectionListAPI = useGetConnectionListAPI();
 
@@ -25,8 +26,12 @@ export default function ConnectionList() {
                 setConnections(data['connections']);
             }
         };
-        getConnections();
-    }, [getConnectionListAPI]);
+
+        if (!loaded) {
+            setLoaded(true);
+            getConnections();
+        }
+    }, [getConnectionListAPI, loaded, setLoaded]);
 
     return (
         <div className="h-full">
@@ -58,12 +63,12 @@ export default function ConnectionList() {
                                                     <div className="mt-5 w-largecell text-t font-mono">`{connectionId}`</div>
                                                     <div className="mt-4 w-80 flex pl-8">
                                                         <img src={`images/template-logos/${provider}.svg`} alt="" className="h-7 mt-0.5 mr-0.5" />
-                                                        <p className="mt-1.5 mr-4">{providerConfigKey}</p>
+                                                        <p className="mt-1.5 mr-4 ml-0.5">{providerConfigKey}</p>
                                                     </div>
                                                     <div className="pl-8 flex pt-4">
                                                         <p className="mt-1.5 mr-4 text-text-dark-gray">{new Date(creationDate).toLocaleDateString()}</p>
                                                         <Link
-                                                            to={`/connection/${providerConfigKey}/${connectionId}`}
+                                                            to={`/connection/${encodeURIComponent(providerConfigKey)}/${encodeURIComponent(connectionId)}`}
                                                             className="flex h-8 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white bg-gray-800 hover:bg-gray-700"
                                                         >
                                                             <p>View</p>

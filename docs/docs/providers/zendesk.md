@@ -14,7 +14,7 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 Provider template name in Nango: `zendesk`  
 Follow our [quickstart](../quickstart.md) to add an OAuth integration with Zendesk in 5 minutes.
 
-Make sure you [read this](reference/frontend-sdk.md#connection-config) to set the correct subdomain before starting an OAuth flow for Zendesk.
+Make sure you [read this](../reference/frontend-sdk.md#connection-config) to set the correct subdomain before starting an OAuth flow for Zendesk.
 
 ## App registration & publishing
 
@@ -26,4 +26,4 @@ _No links yet, feel free to contribute it (or check out [airtable](airtable.md) 
 
 ## API specific gotchas
 
-_No gotchas yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+-   You are required to pass in the correct subdomain before starting an OAuth flow (cf. [Connection configuration](../reference/frontend-sdk.md#connection-config)).

@@ -33,7 +33,7 @@ After signing up, open the [dashboard](https://app.nango.dev/integrations).
     You can try Nango on your local machine with docker compose:
 
 ```bash
-git clone https://github.com/NangoHQ/nango-quickstart.git && cd nango-quickstart
+git clone https://github.com/NangoHQ/nango.git && cd nango
 docker compose up # Keep the tab open
 ```
 

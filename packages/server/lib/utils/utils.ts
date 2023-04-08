@@ -234,6 +234,13 @@ export function parseJsonDateAware(input: string) {
     });
 }
 
+export function parseConnectionConfigParamsFromTemplate(template: ProviderTemplate): string[] {
+    let tokenUrlMatches = template.token_url.match(/\${connectionConfig\.params\.([^{}]*)}/g);
+    let authorizationUrlMatches = template.authorization_url.match(/\${connectionConfig\.params\.([^{}]*)}/g);
+    let params = [...(tokenUrlMatches || []), ...(authorizationUrlMatches || [])].filter((value, index, array) => array.indexOf(value) === index);
+    return params.map((param) => param.replace('${connectionConfig.params.', '').replace('}', '')); // Remove the ${connectionConfig.params.'} and return only the param name.
+}
+
 /**
  *
  * @remarks

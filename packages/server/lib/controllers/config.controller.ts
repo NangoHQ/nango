@@ -1,8 +1,8 @@
-import type { Request, Response, NextFunction } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import configService from '../services/config.service.js';
 import type { ProviderConfig } from '../models.js';
 import analytics from '../utils/analytics.js';
-import { getAccount, getUserAndAccountFromSesstion } from '../utils/utils.js';
+import { getAccount, getUserAndAccountFromSesstion, parseConnectionConfigParamsFromTemplate } from '../utils/utils.js';
 import errorManager from '../utils/error.manager.js';
 import connectionService from '../services/connection.service.js';
 import { NangoError } from '../utils/error.js';
@@ -21,12 +21,17 @@ class ConfigController {
             let connections = await connectionService.listConnections(account.id);
 
             let integrations = configs.map((config) => {
-                return {
+                let template = configService.getTemplates()[config.provider];
+                let integration: any = {
                     uniqueKey: config.unique_key,
                     provider: config.provider,
                     connectionCount: connections.filter((connection) => connection.provider === config.unique_key).length,
                     creationDate: config.created_at
                 };
+                if (template) {
+                    integration['connectionConfigParams'] = parseConnectionConfigParamsFromTemplate(template!);
+                }
+                return integration;
             });
 
             res.status(200).send({
@@ -35,6 +40,7 @@ class ConfigController {
                 })
             });
         } catch (err) {
+            console.log(err);
             next(err);
         }
     }

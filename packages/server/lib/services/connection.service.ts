@@ -1,5 +1,5 @@
-import type { AuthCredentials, OAuth2Credentials, OAuth1Credentials, ProviderTemplate, CredentialsRefresh } from '../models.js';
-import { ProviderAuthModes } from '../models.js';
+import type { AuthCredentials, OAuth2Credentials, OAuth1Credentials, CredentialsRefresh, StoredConnection } from '../models.js';
+import { ProviderAuthModes, ProviderTemplateOAuth2 } from '../models.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import db from '../db/database.js';
 import type { ProviderConfig, Connection } from '../models.js';
@@ -8,6 +8,7 @@ import providerClientManager from '../clients/provider.client.js';
 import { parseTokenExpirationDate, isTokenExpired } from '../utils/utils.js';
 import providerClient from '../clients/provider.client.js';
 import { NangoError } from '../utils/error.js';
+import encryptionManager from '../utils/encryption.manager.js';
 
 class ConnectionService {
     private runningCredentialsRefreshes: CredentialsRefresh[] = [];
@@ -24,38 +25,39 @@ class ConnectionService {
     ) {
         await db.knex
             .withSchema(db.schema())
-            .from<Connection>(`_nango_connections`)
-            .insert({
-                connection_id: connectionId,
-                provider_config_key: providerConfigKey,
-                credentials: this.parseRawCredentials(rawCredentials, authMode),
-                connection_config: connectionConfig,
-                account_id: accountId,
-                metadata: metadata
-            })
+            .from<StoredConnection>(`_nango_connections`)
+            .insert(
+                encryptionManager.encryptConnection({
+                    connection_id: connectionId,
+                    provider_config_key: providerConfigKey,
+                    credentials: this.parseRawCredentials(rawCredentials, authMode),
+                    connection_config: connectionConfig,
+                    account_id: accountId,
+                    metadata: metadata
+                })
+            )
             .onConflict(['provider_config_key', 'connection_id', 'account_id'])
             .merge();
         analytics.track('server:connection_upserted', accountId, { provider: provider });
     }
 
-    public async updateConnection(connectionId: string, providerConfigKey: string, credentials: OAuth2Credentials, accountId: number) {
+    public async updateConnection(connection: Connection) {
         await db.knex
             .withSchema(db.schema())
-            .from<Connection>(`_nango_connections`)
-            .where({ connection_id: connectionId, provider_config_key: providerConfigKey, account_id: accountId })
-            .update({
-                credentials: credentials
-            });
+            .from<StoredConnection>(`_nango_connections`)
+            .where({ connection_id: connection.connection_id, provider_config_key: connection.provider_config_key, account_id: connection.account_id })
+            .update(encryptionManager.encryptConnection(connection));
     }
 
     async getConnection(connectionId: string, providerConfigKey: string, accountId: number): Promise<Connection | null> {
-        let result: Connection[] | null = await db.knex
+        let result: StoredConnection[] | null = await db.knex
             .withSchema(db.schema())
             .select('*')
-            .from<Connection>(`_nango_connections`)
+            .from<StoredConnection>(`_nango_connections`)
             .where({ connection_id: connectionId, provider_config_key: providerConfigKey, account_id: accountId });
 
-        let connection = result == null || result.length == 0 ? null : result[0] || null;
+        let storedConnection = result == null || result.length == 0 ? null : result[0] || null;
+        let connection = encryptionManager.decryptConnection(storedConnection);
 
         // Parse the token expiration date.
         if (connection != null && connection.credentials.type === ProviderAuthModes.OAuth2) {
@@ -136,8 +138,8 @@ class ConnectionService {
     public async refreshOauth2CredentialsIfNeeded(
         connection: Connection,
         providerConfig: ProviderConfig,
-        template: ProviderTemplate,
-        accountId: number
+        template: ProviderTemplateOAuth2,
+        instantRefresh = false
     ): Promise<OAuth2Credentials> {
         let connectionId = connection.connection_id;
         let credentials = connection.credentials as OAuth2Credentials;
@@ -157,8 +159,8 @@ class ConnectionService {
         }
 
         let refresh =
-            providerClient.shouldIntrospectToken(providerConfig.provider) && (await providerClient.introspectedTokenExpired(providerConfig, connection));
-
+            instantRefresh ||
+            (providerClient.shouldIntrospectToken(providerConfig.provider) && (await providerClient.introspectedTokenExpired(providerConfig, connection)));
         // If not expiration date is set, e.g. Github, we assume the token doesn't expire (unless introspection enable like Salesforce).
         if (credentials.refresh_token && (refresh || (credentials.expires_at && isTokenExpired(credentials.expires_at)))) {
             const promise = new Promise<OAuth2Credentials>(async (resolve, reject) => {
@@ -166,13 +168,15 @@ class ConnectionService {
                     var newCredentials: OAuth2Credentials;
 
                     if (providerClientManager.shouldUseProviderClient(providerConfig.provider)) {
-                        let rawCreds = await providerClientManager.refreshToken(providerConfig, connection);
+                        let rawCreds = await providerClientManager.refreshToken(template, providerConfig, connection);
                         newCredentials = this.parseRawCredentials(rawCreds, ProviderAuthModes.OAuth2) as OAuth2Credentials;
                     } else {
-                        newCredentials = await getFreshOAuth2Credentials(connection, providerConfig, template);
+                        newCredentials = await getFreshOAuth2Credentials(connection, providerConfig, template as ProviderTemplateOAuth2);
                     }
 
-                    await this.updateConnection(connectionId, providerConfigKey, newCredentials, accountId);
+                    connection.credentials = newCredentials;
+
+                    await this.updateConnection(connection);
 
                     // Remove ourselves from the array of running refreshes
                     this.runningCredentialsRefreshes = this.runningCredentialsRefreshes.filter((value) => {

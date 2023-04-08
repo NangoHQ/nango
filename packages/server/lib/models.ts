@@ -8,6 +8,8 @@ export interface ProviderConfig {
     oauth_client_secret: string;
     oauth_scopes: string;
     account_id: number;
+    oauth_client_secret_iv?: string | null;
+    oauth_client_secret_tag?: string | null;
 }
 
 export interface ProviderTemplate {
@@ -27,16 +29,25 @@ export interface ProviderTemplateAlias {
     alias?: string;
 }
 
-export interface Connection {
+export interface BaseConnection {
     id?: number;
     created_at?: Date;
     updated_at?: Date;
     provider_config_key: string;
     connection_id: string;
-    credentials: AuthCredentials;
     connection_config: Record<string, string>;
     account_id: number;
     metadata: Record<string, string>;
+    credentials_iv?: string | null;
+    credentials_tag?: string | null;
+}
+
+export interface StoredConnection extends BaseConnection {
+    credentials: Record<string, any>;
+}
+
+export interface Connection extends BaseConnection {
+    credentials: AuthCredentials;
 }
 
 export interface Account {
@@ -46,6 +57,8 @@ export interface Account {
     public_key: string;
     callback_url: string | null;
     owner_id: number | undefined;
+    secret_key_iv?: string | null;
+    secret_key_tag?: string | null;
 }
 
 export interface User {
@@ -114,10 +127,16 @@ export interface ProviderTemplateOAuth2 extends ProviderTemplate {
     token_params?: {
         grant_type?: 'authorization_code' | 'client_credentials';
     };
+
+    refresh_params?: {
+        grant_type: 'refresh_token';
+    };
     authorization_method?: OAuthAuthorizationMethod;
     body_format?: OAuthBodyFormat;
 
     refresh_url?: string;
+
+    token_request_auth_method?: 'basic';
 }
 
 export type OAuth1RequestTokenResult = {
@@ -153,3 +172,14 @@ export interface CredentialsRefresh {
     connectionId: string;
     promise: Promise<OAuth2Credentials>;
 }
+
+export interface DBConfig {
+    encryption_key_hash?: string | null;
+    encryption_complete: boolean;
+}
+
+export interface AuthorizationTokenResponse extends Omit<OAuth2Credentials, 'type' | 'raw'> {
+    expires_in?: number;
+}
+
+export interface RefreshTokenResponse extends AuthorizationTokenResponse {}

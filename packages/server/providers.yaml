@@ -1,3 +1,13 @@
+adobe:
+    auth_mode: OAUTH2
+    authorization_url: https://ims-na1.adobelogin.com/ims/authorize/v2
+    token_url: https://ims-na1.adobelogin.com/ims/token/v3
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 airtable:
     auth_mode: OAUTH2
     authorization_url: https://airtable.com/oauth2/v1/authorize
@@ -13,6 +23,20 @@ asana:
         grant_type: authorization_code
     auth:
         response_type: code
+    refresh_params:
+        grant_type: refresh_token
+atlassian:
+    auth_mode: OAUTH2
+    authorization_url: https://auth.atlassian.com/authorize
+    token_url: https://auth.atlassian.com/oauth/token
+    authorization_params:
+        response_type: code
+        audience: api.atlassian.com
+        prompt: consent
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 bitbucket:
     auth_mode: OAUTH2
     authorization_url: https://bitbucket.org/site/oauth2/authorize
@@ -67,13 +91,6 @@ contentstack:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.params.subdomain}.contentstack.com/apps/${connectionConfig.params.appId}/authorize
     token_url: https://${connectionConfig.params.subdomain}.contentstack.com/apps-api/apps/token
-    authorization_params:
-        response_type: code
-    token_params:
-        grant_type: authorization_code
-    refresh_url: https://${connectionConfig.params.subdomain}.contentstack.com/apps-api/apps/token
-    refresh_params:
-        grant_type: refresh_token
 digitalocean:
     auth_mode: OAUTH2
     authorization_url: https://cloud.digitalocean.com/v1/oauth/authorize
@@ -106,6 +123,14 @@ facebook:
     auth_mode: OAUTH2
     authorization_url: https://www.facebook.com/v15.0/dialog/oauth
     token_url: https://graph.facebook.com/v15.0/oauth/access_token
+figjam:
+    alias: figma
+figma:
+    auth_mode: OAUTH2
+    authorization_url: https://www.figma.com/oauth
+    token_url: https://www.figma.com/api/oauth/token
+    refresh_url: https://www.figma.com/api/oauth/refresh
+    disable_pkce: true
 fitbit:
     auth_mode: OAUTH2
     authorization_url: https://www.fitbit.com/oauth2/authorize
@@ -149,6 +174,16 @@ greenhouse:
     auth_mode: OAUTH2
     authorization_url: https://api.greenhouse.io/oauth/authorize
     token_url: https://api.greenhouse.io/oauth/token
+gusto:
+    auth_mode: OAUTH2
+    authorization_url: https://api.gusto.com/oauth/authorize
+    token_url:  https://api.gusto.com/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 hubspot:
     auth_mode: OAUTH2
     authorization_url: https://app.hubspot.com/oauth/authorize
@@ -196,6 +231,12 @@ linkhut:
     auth_mode: OAUTH2
     authorization_url: https://ln.ht/_/oauth/authorize
     token_url: https://api.ln.ht/v1/oauth/token
+mailchimp:
+    auth_mode: OAUTH2
+    authorization_url: https://login.mailchimp.com/oauth2/authorize
+    token_url: https://login.mailchimp.com/oauth2/token
+    authorization_params:
+        response_type: code
 microsoft-teams:
     auth_mode: OAUTH2
     authorization_url: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
@@ -203,10 +244,30 @@ microsoft-teams:
     authorization_params:
         response_type: code
         response_mode: query
+miro:
+    auth_mode: OAUTH2
+    authorization_url: https://miro.com/oauth/authorize
+    token_url: https://api.miro.com/v1/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 monday:
     auth_mode: OAUTH2
     authorization_url: https://auth.monday.com/oauth2/authorize
     token_url: https://auth.monday.com/oauth2/token
+mural:
+    auth_mode: OAUTH2
+    authorization_url: https://app.mural.md/api/public/v1/authorization/oauth2
+    token_url: https://app.mural.md/api/public/v1/authorization/oauth2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 notion:
     auth_mode: OAUTH2
     authorization_url: https://api.notion.com/v1/oauth/authorize
@@ -228,6 +289,10 @@ pipedrive:
     auth_mode: OAUTH2
     authorization_url: https://oauth.pipedrive.com/oauth/authorize
     token_url: https://oauth.pipedrive.com/oauth/token
+qualtrics:
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.params.subdomain}.qualtrics.com/oauth2/auth
+    token_url: https://${connectionConfig.params.subdomain}.qualtrics.com/oauth2/token
 quickbooks:
     auth_mode: OAUTH2
     authorization_url: https://appcenter.intuit.com/connect/oauth2
@@ -251,6 +316,10 @@ reddit:
     authorization_method: header
     authorization_params:
         duration: permanent
+segment:
+    auth_mode: OAUTH2
+    authorization_url: https://id.segmentapis.com/oauth2/auth
+    token_url: https://id.segmentapis.com/oauth2/token
 sage:
     auth_mode: OAUTH2
     authorization_url: https://www.sageone.com/oauth2/auth/central
@@ -279,10 +348,32 @@ splitwise:
     auth_mode: OAUTH2
     authorization_url: https://secure.splitwise.com/oauth/authorize
     token_url: https://secure.splitwise.com/oauth/token
+spotify:
+    auth_mode: OAUTH2
+    authorization_url: https://accounts.spotify.com/authorize
+    token_url: https://accounts.spotify.com/api/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 stackexchange:
     auth_mode: OAUTH2
     authorization_url: https://stackoverflow.com/oauth
     token_url: https://stackoverflow.com/oauth/access_token/json
+strava:
+    auth_mode: OAUTH2
+    authorization_url: https://www.strava.com/oauth/mobile/authorize
+    token_url: https://www.strava.com/api/v3/oauth/token
+    scope_separator: ','
+    authorization_params:
+        response_type: code
+        approval_prompt: auto
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 stripe:
     auth_mode: OAUTH2
     authorization_url: https://connect.stripe.com/oauth/authorize
@@ -296,6 +387,17 @@ trello:
     scope_separator: ','
     authorization_params:
         expiration: never
+twitch:
+    auth_mode: OAUTH2
+    authorization_url: https://id.twitch.tv/oauth2/authorize
+    token_url: https://id.twitch.tv/oauth2/token
+    authorization_params:
+        force_verify: false
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 twitter:
     auth_mode: OAUTH1
     request_url: https://api.twitter.com/oauth/request_token
@@ -304,6 +406,18 @@ twitter:
     signature_method: 'HMAC-SHA1'
     request_params:
         x_auth_access_type: write
+twitter-v2:
+    auth_mode: OAUTH2
+    authorization_url: https://twitter.com/i/oauth2/authorize
+    token_url: https://api.twitter.com/2/oauth2/token
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+        response_mode: query
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 wave-accounting:
     auth_mode: OAUTH2
     authorization_url: https://api.waveapps.com/oauth2/authorize
@@ -318,6 +432,16 @@ yahoo:
     auth_mode: OAUTH2
     authorization_url: https://api.login.yahoo.com/oauth2/request_auth
     token_url: https://api.login.yahoo.com/oauth2/get_token
+yandex:
+    auth_mode: OAUTH2
+    authorization_url: https://oauth.yandex.com/authorize
+    token_url: https://oauth.yandex.com/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 youtube:
     alias: google
 zapier-nla:
@@ -342,6 +466,16 @@ zoho-invoice:
     authorization_params:
         prompt: consent
         access_type: offline
+zenefits:
+    auth_mode: OAUTH2
+    authorization_url: https://secure.zenefits.com/oauth2/platform-authorize
+    token_url: https://secure.zenefits.com/oauth2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 zoho-books:
     auth_mode: OAUTH2
     authorization_url: https://accounts.zoho.com/oauth/v2/auth

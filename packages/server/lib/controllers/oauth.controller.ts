@@ -214,13 +214,15 @@ class OAuthController {
         if (state == null) {
             let e = new Error('No state found in callback');
             errorManager.report(e, { metadata: errorManager.getExpressRequestContext(req) });
-            throw e;
+            return;
         }
 
         const session: OAuthSession = this.sessionStore[state as string] as OAuthSession;
 
         if (session == null) {
-            throw new Error('No session found for state: ' + state);
+            let e = new Error('No session found for state: ' + state);
+            errorManager.report(e, { metadata: errorManager.getExpressRequestContext(req) });
+            return;
         } else {
             delete this.sessionStore[state as string];
         }
@@ -260,7 +262,7 @@ class OAuthController {
         let callbackMetadata = getConnectionMetadataFromCallbackRequest(req.query, template);
 
         if (!code) {
-            return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.InvalidCallback());
+            return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.InvalidCallbackOAuth2());
         }
 
         const simpleOAuthClient = new simpleOauth2.AuthorizationCode(getSimpleOAuth2ClientConfig(config, template, session.connectionConfig));
@@ -278,16 +280,27 @@ class OAuthController {
             additionalTokenParams['code_verifier'] = session.codeVerifier;
         }
 
+        let headers: Record<string, string> = {};
+
+        if (template.token_request_auth_method === 'basic') {
+            headers['Authorization'] = 'Basic ' + Buffer.from(config.oauth_client_id + ':' + config.oauth_client_secret).toString('base64');
+        }
+
         try {
             var rawCredentials: object;
             if (providerClientManager.shouldUseProviderClient(session.provider)) {
-                rawCredentials = await providerClientManager.getToken(config, code as string);
+                rawCredentials = await providerClientManager.getToken(config, template.token_url, code as string, session.callbackUrl);
             } else {
-                let accessToken = await simpleOAuthClient.getToken({
-                    code: code as string,
-                    redirect_uri: session.callbackUrl,
-                    ...additionalTokenParams
-                });
+                let accessToken = await simpleOAuthClient.getToken(
+                    {
+                        code: code as string,
+                        redirect_uri: session.callbackUrl,
+                        ...additionalTokenParams
+                    },
+                    {
+                        headers
+                    }
+                );
                 rawCredentials = accessToken.token;
             }
 
@@ -321,7 +334,7 @@ class OAuthController {
         let metadata = getConnectionMetadataFromCallbackRequest(req.query, template);
 
         if (!oauth_token || !oauth_verifier) {
-            return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.InvalidCallback());
+            return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.InvalidCallbackOAuth1());
         }
 
         const oauth_token_secret = session.request_token_secret!;

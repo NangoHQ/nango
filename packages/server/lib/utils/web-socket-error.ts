@@ -11,10 +11,17 @@ export class WSErrBuilder {
         };
     }
 
-    public static InvalidCallback(): WSErr {
+    public static InvalidCallbackOAuth1(): WSErr {
         return {
             type: 'callback_err',
             message: `Did not get oauth_token and/or oauth_verifier in the callback.`
+        };
+    }
+
+    public static InvalidCallbackOAuth2(): WSErr {
+        return {
+            type: 'callback_err',
+            message: `Did not get authorization code in the callback.`
         };
     }
 
