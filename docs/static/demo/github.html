@@ -33,9 +33,9 @@ Then open http://localhost:8000/bin/sample.html in your browser
             link.addEventListener(
                 'click',
                 () => {
-                    var nango = new Nango({ host: 'http://localhost:3003' });
+                    var nango = new Nango({ host: 'http://localhost:3003', publicKey: 'ea2fe896-8062-4970-80d8-533a2d73d1e8' });
                     nango
-                        .auth('github-dev', '1')
+                        .auth('deel-dev', '1', {params: {extension: 'com'}})
                         .then((result) => {
                             var resultElement = document.getElementById('result');
                             resultElement.innerHTML = `SUCCESS: ${JSON.stringify(result)}`;
