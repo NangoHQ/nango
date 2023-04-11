@@ -223,6 +223,7 @@ const sidebars = {
                 'providers/trello',
                 'providers/twitch',
                 'providers/twitter',
+                'providers/typeform',
                 'providers/wave_accounting',
                 'providers/xero',
                 'providers/yahoo',

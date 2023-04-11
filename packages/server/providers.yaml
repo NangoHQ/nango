@@ -449,6 +449,17 @@ twitter-v2:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+typeform:
+    auth_mode: OAUTH2
+    authorization_url: https://api.typeform.com/oauth/authorize
+    token_url: https://api.typeform.com/oauth/token
+    disable_pkce: true
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 wave-accounting:
     auth_mode: OAUTH2
     authorization_url: https://api.waveapps.com/oauth2/authorize
