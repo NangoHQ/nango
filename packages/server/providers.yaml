@@ -182,6 +182,17 @@ google-mail:
     alias: google
 google-sheet:
     alias: google
+gorgias:
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.params.subdomain}.gorgias.com/oauth/authorize
+    token_url: https://${connectionConfig.params.subdomain}.gorgias.com/oauth/token
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 greenhouse:
     auth_mode: OAUTH2
     authorization_url: https://api.greenhouse.io/oauth/authorize
