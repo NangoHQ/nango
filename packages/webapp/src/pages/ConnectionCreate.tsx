@@ -222,7 +222,7 @@ nango.auth('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr})
                                             </div>
                                         </div>
                                     </div>
-                                    {integration?.connectionConfigParams.map((paramName: string) => (
+                                    {integration?.connectionConfigParams?.map((paramName: string) => (
                                         <div key={paramName}>
                                             <div className="flex mt-6">
                                                 <label htmlFor="client_id" className="text-text-light-gray block text-sm font-semibold">
