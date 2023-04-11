@@ -167,6 +167,7 @@ const sidebars = {
                 'providers/clickup',
                 'providers/confluence',
                 'providers/contentstack',
+                'providers/deel',
                 'providers/digitalocean',
                 'providers/discord',
                 'providers/dropbox',
