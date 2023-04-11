@@ -203,6 +203,7 @@ const sidebars = {
                 'providers/one-drive',
                 'providers/outreach',
                 'providers/pagerduty',
+                'providers/payfit',
                 'providers/pipedrive',
                 'providers/qualtrics',
                 'providers/quickbooks',
