@@ -47,6 +47,14 @@ atlassian:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+battlenet:
+    auth_mode: OAUTH2
+    authorization_url: https://oauth.battle.${connectionConfig.params.extension}/authorize
+    token_url: https://oauth.battle.${connectionConfig.params.extension}/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
 bitbucket:
     auth_mode: OAUTH2
     authorization_url: https://bitbucket.org/site/oauth2/authorize
