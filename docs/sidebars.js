@@ -156,6 +156,7 @@ const sidebars = {
             items: [
                 'providers/adobe',
                 'providers/airtable',
+                'providers/amazon',
                 'providers/asana',
                 'providers/atlassian',
                 'providers/bitbucket',

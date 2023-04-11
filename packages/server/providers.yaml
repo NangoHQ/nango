@@ -15,6 +15,16 @@ airtable:
     authorization_method: header
     auth:
         response_type: code
+amazon:
+    auth_mode: OAUTH2
+    authorization_url: https://www.amazon.com/ap/oa
+    token_url: https://api.amazon.${connectionConfig.params.extension}/auth/o2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 asana:
     auth_mode: OAUTH2
     authorization_url: https://app.asana.com/-/oauth_authorize
