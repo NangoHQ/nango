@@ -6,7 +6,7 @@ exports.up = function(knex, _) {
         table.string('connection_id').notNullable();
         table.string('callback_url').notNullable();
         table.string('auth_mode').notNullable();
-        table.string('account_id').notNullable();
+        table.bigint('account_id').notNullable();
         table.json('connection_config');
         table.string('web_socket_client_id');
         table.string('code_verifier');

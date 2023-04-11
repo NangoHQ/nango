@@ -3,13 +3,8 @@ import db from '../db/database.js';
 import { convertJsonKeysToCamelCase, convertJsonKeysToSnakeCase } from '../utils/utils.js';
 
 class OAuthSessionService {
-    async createOrUpdate(oAuthSession: OAuthSession) {
+    async create(oAuthSession: OAuthSession) {
         const authSession = convertJsonKeysToSnakeCase<OAuthSession>(oAuthSession);
-        const { id, ...session } = authSession!;
-        let existingSession = await this.findById(id);
-        if (existingSession) {
-            await this.queryBuilder().update(session);
-        }
         await this.queryBuilder().insert({ ...authSession });
     }
 

@@ -160,7 +160,7 @@ export interface OAuthSession {
     codeVerifier: string;
 
     // Needed for oAuth 1.0a
-    request_token_secret?: string;
+    requestTokenSecret?: string;
 }
 
 export interface CredentialsRefresh {

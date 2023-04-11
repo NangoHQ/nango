@@ -71,7 +71,6 @@ class OAuthController {
                 accountId: accountId,
                 webSocketClientId: wsClientId
             };
-            await oAuthSessionService.createOrUpdate(session);
 
             if (config?.oauth_client_id == null || config?.oauth_client_secret == null || config.oauth_scopes == null) {
                 return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.InvalidProviderConfig(providerConfigKey));
@@ -145,6 +144,8 @@ class OAuthController {
                 additionalAuthParams['code_challenge_method'] = 'S256';
             }
 
+            await oAuthSessionService.create(session);
+
             const simpleOAuthClient = new simpleOauth2.AuthorizationCode(getSimpleOAuth2ClientConfig(providerConfig, template, connectionConfig));
             const authorizationUri = simpleOAuthClient.authorizeURL({
                 redirect_uri: callbackUrl,
@@ -187,8 +188,8 @@ class OAuthController {
             return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.TokenError());
         }
 
-        session.request_token_secret = tokenResult.request_token_secret;
-        await oAuthSessionService.createOrUpdate(session);
+        session.requestTokenSecret = tokenResult.request_token_secret;
+        await oAuthSessionService.create(session);
         const redirectUrl = oAuth1Client.getAuthorizationURL(tokenResult);
 
         logger.debug(
@@ -331,7 +332,7 @@ class OAuthController {
             return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.InvalidCallbackOAuth1());
         }
 
-        const oauth_token_secret = session.request_token_secret!;
+        const oauth_token_secret = session.requestTokenSecret!;
 
         const oAuth1Client = new OAuth1Client(config, template, '');
         oAuth1Client
