@@ -199,6 +199,7 @@ const sidebars = {
                 'providers/monday',
                 'providers/mural',
                 'providers/notion',
+                'providers/one-drive',
                 'providers/outreach',
                 'providers/pagerduty',
                 'providers/pipedrive',
