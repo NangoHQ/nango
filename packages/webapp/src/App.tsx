@@ -31,11 +31,11 @@ const App = () => {
                 <Route path="/connections" element={<PrivateRoute />}>
                     <Route path="/connections" element={<ConnectionList />} />
                 </Route>
-                <Route path="/connection/create" element={<PrivateRoute />}>
-                    <Route path="/connection/create" element={<ConnectionCreate />} />
+                <Route path="/connections/create" element={<PrivateRoute />}>
+                    <Route path="/connections/create" element={<ConnectionCreate />} />
                 </Route>
-                <Route path="/connection/:providerConfigKey/:connectionId" element={<PrivateRoute />}>
-                    <Route path="/connection/:providerConfigKey/:connectionId" element={<ConnectionDetails />} />
+                <Route path="/connections/:providerConfigKey/:connectionId" element={<PrivateRoute />}>
+                    <Route path="/connections/:providerConfigKey/:connectionId" element={<ConnectionDetails />} />
                 </Route>
                 <Route path="/project-settings" element={<PrivateRoute />}>
                     <Route path="/project-settings" element={<ProjectSettings />} />
