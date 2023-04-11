@@ -71,7 +71,7 @@ export default function IntegrationList() {
                                                     <div className="pl-8 flex pt-4">
                                                         <p className="mt-1.5 mr-4 text-text-dark-gray">{new Date(creationDate).toLocaleDateString()}</p>
                                                         <Link
-                                                            to={`/connection/create`}
+                                                            to={`/connections/create`}
                                                             className="flex mr-2 h-8 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white bg-gray-800 hover:bg-gray-700"
                                                         >
                                                             <p>OAuth</p>

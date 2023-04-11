@@ -49,7 +49,15 @@ export function getSimpleOAuth2ClientConfig(providerConfig: ProviderConfig, temp
 
 export async function getFreshOAuth2Credentials(connection: Connection, config: ProviderConfig, template: ProviderTemplateOAuth2): Promise<OAuth2Credentials> {
     let credentials = connection.credentials as OAuth2Credentials;
-    const client = new AuthorizationCode(getSimpleOAuth2ClientConfig(config, template, connection.connection_config));
+    const simpleOAuth2ClientConfig = getSimpleOAuth2ClientConfig(config, template, connection.connection_config);
+    if (template.token_request_auth_method === 'basic') {
+        const headers = {
+            ...simpleOAuth2ClientConfig.http.headers,
+            Authorization: 'Basic ' + Buffer.from(config.oauth_client_id + ':' + config.oauth_client_secret).toString('base64')
+        };
+        simpleOAuth2ClientConfig.http.headers = headers;
+    }
+    const client = new AuthorizationCode(simpleOAuth2ClientConfig);
     const oldAccessToken = client.createToken({
         access_token: credentials.access_token,
         expires_at: credentials.expires_at,

@@ -16,12 +16,17 @@ Follow our [quickstart](../quickstart.md) to add an OAuth integration with Digit
 
 ## App registration & publishing
 
-_No information yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+**Rating: `Easy & fast`**
+Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://cloud.digitalocean.com/login?redirect_url=https%3A%2F%2Fcloud.digitalocean.com%2Faccount%2Fapi%2Fapplications%2Fnew)
+
 
 ## Useful links
 
-_No links yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+- [How to register an Application](https://cloud.digitalocean.com/login?redirect_url=https%3A%2F%2Fcloud.digitalocean.com%2Faccount%2Fapi%2Fapplications%2Fnew)
+- [OAuth-related docs](https://cloud.digitalocean.com/login?redirect_url=https%3A%2F%2Fcloud.digitalocean.com%2Faccount%2Fapi%2Fapplications%2Fnew)
+- [List of OAuth scopes](https://docs.digitalocean.com/reference/api/oauth-api/#scopes)
+- [Web API docs (their REST API)](https://docs.digitalocean.com/reference/api/intro/)
 
 ## API specific gotchas
 
-_No gotchas yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+- To refresh the token simple use `nango.getToken()` to generate new set of tokens

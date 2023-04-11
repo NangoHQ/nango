@@ -37,6 +37,13 @@ git clone https://github.com/NangoHQ/nango.git && cd nango
 docker compose up # Keep the tab open
 ```
 
+In the case you are already using port 5432 on your local machine, you can use
+
+```bash
+git clone https://github.com/NangoHQ/nango.git && cd nango
+NANGO_DB_PORT=2345 docker compose up # Keep the tab open
+```
+
 Once Nango is running locally, open the [dashboard](http://localhost:3003/) in your browser.
 
   </TabItem>
