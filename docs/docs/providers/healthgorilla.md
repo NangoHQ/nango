@@ -28,5 +28,3 @@ Registering an app takes only a few minutes, and you can start building immediat
 - [Web API docs (their REST API)](https://developer.healthgorilla.com/docs/provider-authorization-api#:~:text=User%20Provisioning-,API,-Identity%20Verification%20API)
 
 ## API specific gotchas
-
-- To refresh the token simple use `nango.getToken()` to generate new set of tokens
