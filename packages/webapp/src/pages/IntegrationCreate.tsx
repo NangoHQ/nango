@@ -41,6 +41,7 @@ export default function IntegrationCreate() {
     const editIntegrationAPI = useEditIntegrationAPI();
     const createIntegrationAPI = useCreateIntegrationAPI();
     const deleteIntegrationAPI = useDeleteIntegrationAPI();
+    const [selectedProvider, setSelectedProvider] = useState<string>('my-integration');
 
     useEffect(() => {
         const getProviders = async () => {
@@ -59,6 +60,7 @@ export default function IntegrationCreate() {
                 if (res?.status === 200) {
                     let data = await res.json();
                     setProviders(data['providers']);
+                    setSelectedProvider(data['providers'][0]);
                 }
             }
         };
@@ -78,6 +80,10 @@ export default function IntegrationCreate() {
             getAccount();
         }
     }, [providerConfigKey, getIntegrationDetailsAPI, getProvidersAPI, getProjectInfoAPI, loaded, setLoaded]);
+
+    const handleIntegrationProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setSelectedProvider(e.target.value);
+    };
 
     const handleSave = async (e: React.SyntheticEvent) => {
         e.preventDefault();
@@ -190,6 +196,7 @@ export default function IntegrationCreate() {
                                                         id="provider"
                                                         name="provider"
                                                         className="border-border-gray bg-bg-black text-text-light-gray block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base shadow-sm active:outline-none focus:outline-none active:border-white focus:border-white"
+                                                        onChange={handleIntegrationProviderChange}
                                                     >
                                                         {providers.map((provider) => (
                                                             <option>{provider}</option>
@@ -215,12 +222,13 @@ export default function IntegrationCreate() {
                                                     </Tooltip>
                                                 </div>
 
-                                                <div className="mt-1">
+                                                <div className="mt-1" key={selectedProvider}>
                                                     <input
                                                         id="unique_key"
                                                         name="unique_key"
                                                         type="text"
                                                         required
+                                                        defaultValue={selectedProvider}
                                                         minLength={1}
                                                         className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none"
                                                     />

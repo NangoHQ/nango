@@ -58,6 +58,19 @@ class ConfigService {
         return db.knex.withSchema(db.schema()).from<ProviderConfig>(`_nango_configs`).insert(encryptionManager.encryptProviderConfig(config), ['id']);
     }
 
+    async createDefaultProviderConfig(accountId: number) {
+        let config: ProviderConfig = {
+            account_id: accountId,
+            unique_key: 'demo-github-integration',
+            provider: 'github',
+            oauth_client_id: process.env['DEFAULT_GITHUB_CLIENT_ID'] || '',
+            oauth_client_secret: process.env['DEFAULT_GITHUB_CLIENT_SECRET'] || '',
+            oauth_scopes: 'public_repo'
+        };
+
+        await this.createProviderConfig(config);
+    }
+
     async deleteProviderConfig(providerConfigKey: string, accountId: number): Promise<number> {
         await db.knex
             .withSchema(db.schema())

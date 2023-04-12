@@ -11,6 +11,7 @@ import Mailgun from 'mailgun.js';
 import type { User } from '../models.js';
 import formData from 'form-data';
 import { NangoError } from '../utils/error.js';
+import configService from '../services/config.service.js';
 
 export interface WebUser {
     id: number;
@@ -95,6 +96,12 @@ class AuthController {
 
             await accountService.editAccount(account!.id, account!.name, user.id);
             analytics.track('server:account_created', account.id, {}, isCloud() ? { email: email } : {});
+
+            if (isCloud()) {
+                // On Cloud version, create default provider config to simplify onboarding.
+                // Harder to do on the self-hosted version because we don't know what OAuth callback to use.
+                await configService.createDefaultProviderConfig(account.id);
+            }
 
             req.login(user, function (err) {
                 if (err) {
