@@ -23,8 +23,8 @@ Registering an app takes only a few minutes, and you can start building immediat
 ## Useful links
 
 - [How to register an Application](https://keys.developer.keap.com/accounts/create?client_id=portal-nue1osvn10)
-- [OAuth-related docs](https://developer.keap.com/docs/rest/#section/Authentication)
+- [OAuth-related docs](https://developer.infusionsoft.com/getting-started-oauth-keys/)
 - [Web API docs (their REST API)](https://developer.keap.com/docs/rest/#tag/Account-Info)
 
 ## API specific gotchas
-
+- Keap only has scope full as  the possible scope to use.  
