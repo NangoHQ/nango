@@ -37,7 +37,3 @@ For e.g: if the subdomain for your account is `foo`, then you need to pass the f
 ## Useful links
 
 -   [Web API docs (their REST API)](https://documentation.bamboohr.com/docs/getting-started)
-
-## API specific gotchas
-
-_No gotchas yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
