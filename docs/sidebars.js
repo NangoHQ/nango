@@ -190,6 +190,7 @@ const sidebars = {
                 'providers/greenhouse',
                 'providers/gusto',
                 'providers/hubspot',
+                'providers/healthgorilla',
                 'providers/instagram',
                 'providers/intercom',
                 'providers/intuit',

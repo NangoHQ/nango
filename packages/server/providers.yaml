@@ -227,6 +227,16 @@ greenhouse:
     auth_mode: OAUTH2
     authorization_url: https://api.greenhouse.io/oauth/authorize
     token_url: https://api.greenhouse.io/oauth/token
+health-gorilla:
+    auth_mode: OAUTH2
+    authorization_url: https://api.healthgorilla.com/oauth/authorize
+    token_url: https://api.healthgorilla.com/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 gusto:
     auth_mode: OAUTH2
     authorization_url: https://api.gusto.com/oauth/authorize
