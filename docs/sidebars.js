@@ -159,6 +159,7 @@ const sidebars = {
                 'providers/amazon',
                 'providers/asana',
                 'providers/atlassian',
+                'providers/battlenet',
                 'providers/bitbucket',
                 'providers/box',
                 'providers/braintree',
