@@ -27,4 +27,4 @@ Registering an app takes only a few minutes, and you can start building immediat
 - [Web API docs (their REST API)](https://developer.keap.com/docs/rest/#tag/Account-Info)
 
 ## API specific gotchas
-- Keap only has scope full as  the possible scope to use.  
+- Keap only has scope _`full`_ as  the possible scope to use.  
