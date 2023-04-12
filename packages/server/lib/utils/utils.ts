@@ -242,6 +242,38 @@ export function parseConnectionConfigParamsFromTemplate(template: ProviderTempla
 }
 
 /**
+ * This can be used to convert the keys of a Json to snake case
+ * @param payload This the json we want to convert from a camelCase a snake_case
+ */
+export function convertJsonKeysToSnakeCase<R>(payload: Record<string, any>): R | null {
+    if (payload == null) {
+        return null;
+    }
+    return Object.entries(payload).reduce((accum: any, current) => {
+        const [key, value] = current;
+        let newKey = key.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase();
+        accum[newKey] = value;
+        return accum;
+    }, {});
+}
+
+/**
+ *
+ * @param payload The json we want to convert its keys to camelCase
+ */
+export function convertJsonKeysToCamelCase<R>(payload: Record<string, any>): R | null {
+    if (payload == null) {
+        return null;
+    }
+    return Object.entries(payload).reduce((accum: any, current) => {
+        const [key, value] = current;
+        let newKey = key.replace(/([-_][a-z])/g, (group) => group.toUpperCase().replace('-', '').replace('_', ''));
+        accum[newKey] = value;
+        return accum;
+    }, {});
+}
+
+/**
  *
  * @remarks
  * Yes including a full HTML template here in a string goes against many best practices.

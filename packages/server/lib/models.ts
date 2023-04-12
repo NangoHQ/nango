@@ -160,11 +160,7 @@ export interface OAuthSession {
     codeVerifier: string;
 
     // Needed for oAuth 1.0a
-    request_token_secret?: string;
-}
-
-export interface OAuthSessionStore {
-    [key: string]: OAuthSession;
+    requestTokenSecret?: string;
 }
 
 export interface CredentialsRefresh {

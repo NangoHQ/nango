@@ -14,15 +14,7 @@ import {
     getAccount,
     getConnectionMetadataFromTokenResponse
 } from '../utils/utils.js';
-import {
-    ProviderConfig,
-    ProviderTemplate,
-    ProviderTemplateOAuth2,
-    ProviderAuthModes,
-    OAuthSession,
-    OAuth1RequestTokenResult,
-    OAuthSessionStore
-} from '../models.js';
+import { ProviderConfig, ProviderTemplate, ProviderTemplateOAuth2, ProviderAuthModes, OAuthSession, OAuth1RequestTokenResult } from '../models.js';
 import logger from '../utils/logger.js';
 import type { NextFunction } from 'express';
 import errorManager from '../utils/error.manager.js';
@@ -30,10 +22,9 @@ import providerClientManager from '../clients/provider.client.js';
 import wsClient from '../clients/web-socket.client.js';
 import { WSErrBuilder } from '../utils/web-socket-error.js';
 import analytics from '../utils/analytics.js';
+import oAuthSessionService from '../services/oauth-session.service.js';
 
 class OAuthController {
-    sessionStore: OAuthSessionStore = {};
-
     public async oauthRequest(req: Request, res: Response, _: NextFunction) {
         let accountId = getAccount(res);
         const { providerConfigKey } = req.params;
@@ -80,7 +71,6 @@ class OAuthController {
                 accountId: accountId,
                 webSocketClientId: wsClientId
             };
-            this.sessionStore[session.id] = session;
 
             if (config?.oauth_client_id == null || config?.oauth_client_secret == null || config.oauth_scopes == null) {
                 return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.InvalidProviderConfig(providerConfigKey));
@@ -154,6 +144,8 @@ class OAuthController {
                 additionalAuthParams['code_challenge_method'] = 'S256';
             }
 
+            await oAuthSessionService.create(session);
+
             const simpleOAuthClient = new simpleOauth2.AuthorizationCode(getSimpleOAuth2ClientConfig(providerConfig, template, connectionConfig));
             const authorizationUri = simpleOAuthClient.authorizeURL({
                 redirect_uri: callbackUrl,
@@ -196,8 +188,8 @@ class OAuthController {
             return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.TokenError());
         }
 
-        const sessionData = this.sessionStore[session.id]!;
-        sessionData.request_token_secret = tokenResult.request_token_secret;
+        session.requestTokenSecret = tokenResult.request_token_secret;
+        await oAuthSessionService.create(session);
         const redirectUrl = oAuth1Client.getAuthorizationURL(tokenResult);
 
         logger.debug(
@@ -217,14 +209,14 @@ class OAuthController {
             return;
         }
 
-        const session: OAuthSession = this.sessionStore[state as string] as OAuthSession;
+        const session = await oAuthSessionService.findById(state as string);
 
         if (session == null) {
             let e = new Error('No session found for state: ' + state);
             errorManager.report(e, { metadata: errorManager.getExpressRequestContext(req) });
             return;
         } else {
-            delete this.sessionStore[state as string];
+            await oAuthSessionService.delete(state as string);
         }
 
         let wsClientId = session.webSocketClientId;
@@ -249,7 +241,10 @@ class OAuthController {
 
             return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownAuthMode(session.authMode));
         } catch (e) {
-            errorManager.report(e, { accountId: session?.accountId, metadata: errorManager.getExpressRequestContext(req) });
+            errorManager.report(e, {
+                accountId: session?.accountId,
+                metadata: errorManager.getExpressRequestContext(req)
+            });
             return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError());
         }
     }
@@ -337,7 +332,7 @@ class OAuthController {
             return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.InvalidCallbackOAuth1());
         }
 
-        const oauth_token_secret = session.request_token_secret!;
+        const oauth_token_secret = session.requestTokenSecret!;
 
         const oAuth1Client = new OAuth1Client(config, template, '');
         oAuth1Client
