@@ -221,6 +221,7 @@ const sidebars = {
                 'providers/slack',
                 'providers/splitwise',
                 'providers/spotify',
+                'providers/squareup',
                 'providers/stackexchange',
                 'providers/strava',
                 'providers/stripe',
