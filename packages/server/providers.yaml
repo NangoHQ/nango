@@ -2,6 +2,7 @@ adobe:
     auth_mode: OAUTH2
     authorization_url: https://ims-na1.adobelogin.com/ims/authorize/v2
     token_url: https://ims-na1.adobelogin.com/ims/token/v3
+    default_scope: offline_access
     authorization_params:
         response_type: code
     token_params:
@@ -39,6 +40,7 @@ atlassian:
     auth_mode: OAUTH2
     authorization_url: https://auth.atlassian.com/authorize
     token_url: https://auth.atlassian.com/oauth/token
+    default_scope: offline_access
     authorization_params:
         response_type: code
         audience: api.atlassian.com
@@ -89,6 +91,7 @@ brex:
     auth_mode: OAUTH2
     authorization_url: https://accounts-api.brex.com/oauth2/default/v1/authorize
     token_url: https://accounts-api.brex.com/oauth2/default/v1/token
+    default_scope: offline_access
 brex-staging:
     auth_mode: OAUTH2
     authorization_url: https://accounts-api.staging.brexapps.com/oauth2/default/v1/authorize
@@ -216,7 +219,8 @@ gorgias:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.params.subdomain}.gorgias.com/oauth/authorize
     token_url: https://${connectionConfig.params.subdomain}.gorgias.com/oauth/token
-    token_request_auth_method: basic
+    token_request_auth_method: basic§
+    default_scope: offline
     authorization_params:
         response_type: code
     token_params:
@@ -345,6 +349,7 @@ one-drive:
     authorization_url: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
     token_url: https://login.microsoftonline.com/common/oauth2/v2.0/token
     disable_pkce: true
+    default_scope: offline_access
     authorization_params:
         response_type: code
     token_params:
@@ -412,6 +417,7 @@ salesforce:
     auth_mode: OAUTH2
     authorization_url: https://login.salesforce.com/services/oauth2/authorize
     token_url: https://login.salesforce.com/services/oauth2/token
+    default_scope: offline_access
     token_response_metadata:
         - instance_url
 salesloft:
@@ -505,6 +511,7 @@ typeform:
     authorization_url: https://api.typeform.com/oauth/authorize
     token_url: https://api.typeform.com/oauth/token
     disable_pkce: true
+    default_scope: offline
     authorization_params:
         response_type: code
     token_params:

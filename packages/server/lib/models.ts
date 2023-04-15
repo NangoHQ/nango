@@ -17,6 +17,7 @@ export interface ProviderTemplate {
     authorization_url: string;
     authorization_params?: Record<string, string>;
     scope_separator?: string;
+    default_scope?: string;
     token_url: string;
     token_params?: {
         [key: string]: string;

@@ -25,10 +25,15 @@ interface Integration {
     scopes: string;
 }
 
+interface Providers {
+    name: string;
+    defaultScope: string;
+}
+
 export default function IntegrationCreate() {
     const [loaded, setLoaded] = useState(false);
     const [serverErrorMessage, setServerErrorMessage] = useState('');
-    const [providers, setProviders] = useState<string[] | null>(null);
+    const [providers, setProviders] = useState<Providers[] | null>(null);
     const [integration, setIntegration] = useState<Integration | null>(null);
     const [deleteAlertState, setDeleteAlertState] = useState<boolean>(false);
     const navigate = useNavigate();
@@ -42,13 +47,13 @@ export default function IntegrationCreate() {
     const createIntegrationAPI = useCreateIntegrationAPI();
     const deleteIntegrationAPI = useDeleteIntegrationAPI();
     const [selectedProvider, setSelectedProvider] = useState<string>('my-integration');
+    const [providerDefaultScope, setProviderDefaultScope] = useState<string | undefined>(undefined)
 
     useEffect(() => {
         const getProviders = async () => {
             if (providerConfigKey) {
                 // Edit integration.
                 let res = await getIntegrationDetailsAPI(providerConfigKey);
-
                 if (res?.status === 200) {
                     let data = await res.json();
                     setIntegration(data['integration']);
@@ -59,8 +64,9 @@ export default function IntegrationCreate() {
 
                 if (res?.status === 200) {
                     let data = await res.json();
-                    setProviders(data['providers']);
-                    setSelectedProvider(data['providers'][0]);
+                    setProviders(data);
+                    setSelectedProvider(data[0].name);
+                    setProviderDefaultScope(data[0].defaultScope);
                 }
             }
         };
@@ -83,6 +89,9 @@ export default function IntegrationCreate() {
 
     const handleIntegrationProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setSelectedProvider(e.target.value);
+        const providerScope=  providers?.find(provider => provider.name === e.target.value)?.defaultScope;
+        setProviderDefaultScope(providerScope)
+
     };
 
     const handleSave = async (e: React.SyntheticEvent) => {
@@ -199,7 +208,7 @@ export default function IntegrationCreate() {
                                                         onChange={handleIntegrationProviderChange}
                                                     >
                                                         {providers.map((provider) => (
-                                                            <option>{provider}</option>
+                                                            <option>{provider.name}</option>
                                                         ))}
                                                     </select>
                                                 </div>
@@ -332,12 +341,12 @@ export default function IntegrationCreate() {
                                                 <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
                                             </Tooltip>
                                         </div>
-                                        <div className="mt-1">
+                                        <div className="mt-1" key={integration ? integration.scopes : providerDefaultScope ? providerDefaultScope : ''}>
                                             <input
                                                 id="scopes"
                                                 name="scopes"
                                                 type="text"
-                                                defaultValue={integration ? integration.scopes : ''}
+                                                defaultValue={integration ? integration.scopes : providerDefaultScope ? providerDefaultScope : ''}
                                                 required
                                                 minLength={1}
                                                 className="border-border-gray bg-bg-black text-text-light-gray block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:border-white focus:outline-none focus:ring-white"
