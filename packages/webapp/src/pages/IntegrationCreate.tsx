@@ -88,9 +88,9 @@ export default function IntegrationCreate() {
     }, [providerConfigKey, getIntegrationDetailsAPI, getProvidersAPI, getProjectInfoAPI, loaded, setLoaded]);
 
     const handleIntegrationProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setSelectedProvider(e.target.value);
-        const providerScope=  providers?.find(provider => provider.name === e.target.value)?.defaultScope;
-        setProviderDefaultScope(providerScope)
+        let [provider, defaultScope] = e.target.value.split('|');
+        setSelectedProvider(provider);
+        setProviderDefaultScope(defaultScope)
 
     };
 
@@ -207,8 +207,8 @@ export default function IntegrationCreate() {
                                                         className="border-border-gray bg-bg-black text-text-light-gray block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base shadow-sm active:outline-none focus:outline-none active:border-white focus:border-white"
                                                         onChange={handleIntegrationProviderChange}
                                                     >
-                                                        {providers.map((provider) => (
-                                                            <option>{provider.name}</option>
+                                                        {providers.map((provider, key) => (
+                                                            <option key={key} value={`${provider.name}|${provider.defaultScope}`}>{provider.name}</option>
                                                         ))}
                                                     </select>
                                                 </div>
