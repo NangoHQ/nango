@@ -1,3 +1,14 @@
+accelo:
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.params.subdomain}.api.accelo.com/oauth2/v0/authorize
+    token_url:  https://${connectionConfig.params.subdomain}.api.accelo.com/oauth2/v0/token
+    scope_separator: ','
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 adobe:
     auth_mode: OAUTH2
     authorization_url: https://ims-na1.adobelogin.com/ims/authorize/v2
