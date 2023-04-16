@@ -8,7 +8,7 @@
         "packages/server"
     ],
     "scripts": {
-        "prettier-format": "prettier --config .prettierrc './**/*.ts' --write",
+        "prettier-format": "prettier --config .prettierrc \"./**/*.ts\" --write",
         "prettier-watch": "onchange './**/*.ts' -- prettier --write {{changed}}",
         "lint": "eslint . --ext .ts",
         "install:all": "npm i && cd packages/webapp && npm i && cd ../..",

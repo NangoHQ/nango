@@ -12,6 +12,10 @@
         "url": "https://github.com/NangoHQ/nango",
         "directory": "packages/frontend"
     },
+    "scripts": {
+        "build": "tsc --sourceMap",
+        "postinstall": "npm run build"
+    },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {},
     "files": [
