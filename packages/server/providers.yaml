@@ -398,6 +398,12 @@ outreach:
     auth_mode: OAUTH2
     authorization_url: https://api.outreach.io/oauth/authorize
     token_url: https://api.outreach.io/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 pagerduty:
     auth_mode: OAUTH2
     authorization_url: https://app.pagerduty.com/oauth/authorize
