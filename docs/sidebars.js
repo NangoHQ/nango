@@ -242,6 +242,7 @@ const sidebars = {
                 'providers/zendesk',
                 'providers/zenefits',
                 'providers/zoho-crm',
+                'providers/zoho-desk',
                 'providers/zoho-invoice',
                 'providers/zoho-books',
                 'providers/zoom'

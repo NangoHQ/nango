@@ -642,6 +642,13 @@ zoho-crm:
     authorization_params:
         response_type: code
         access_type: offline
+zoho-desk:
+    auth_mode: OAUTH2
+    authorization_url: https://accounts.zoho.${connectionConfig.params.extension}/oauth/v2/auth
+    token_url: https://accounts.zoho.${connectionConfig.params.extension}/oauth/v2/token
+    authorization_params:
+        response_type: code
+        access_type: offline
 zoho-invoice:
     auth_mode: OAUTH2
     authorization_url: https://accounts.zoho.com/oauth/v2/auth
