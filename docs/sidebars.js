@@ -209,6 +209,7 @@ const sidebars = {
                 'providers/one-drive',
                 'providers/outreach',
                 'providers/pagerduty',
+                'providers/pandadoc',
                 'providers/payfit',
                 'providers/pipedrive',
                 'providers/qualtrics',

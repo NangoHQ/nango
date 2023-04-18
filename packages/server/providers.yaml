@@ -408,6 +408,16 @@ pagerduty:
     auth_mode: OAUTH2
     authorization_url: https://app.pagerduty.com/oauth/authorize
     token_url: https://app.pagerduty.com/oauth/token
+pandadoc:
+    auth_mode: OAUTH2
+    authorization_url: https://app.pandadoc.com/oauth2/authorize
+    token_url: https://api.pandadoc.com/oauth2/access_token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 payfit:
     auth_mode: OAUTH2
     authorization_url: https://oauth.payfit.com/authorize
