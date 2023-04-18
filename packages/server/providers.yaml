@@ -471,6 +471,10 @@ stripe:
     auth_mode: OAUTH2
     authorization_url: https://connect.stripe.com/oauth/authorize
     token_url: https://connect.stripe.com/oauth/token
+teamwork:
+    auth_mode: OAUTH2
+    authorization_url: https://www.teamwork.com/launchpad/login
+    token_url: https://www.teamwork.com/launchpad/v1/token.json
 trello:
     auth_mode: OAUTH1
     request_url: https://trello.com/1/OAuthGetRequestToken

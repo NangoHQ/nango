@@ -225,6 +225,7 @@ const sidebars = {
                 'providers/stackexchange',
                 'providers/strava',
                 'providers/stripe',
+                'providers/teamwork',
                 'providers/trello',
                 'providers/twitch',
                 'providers/twitter',
