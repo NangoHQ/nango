@@ -154,6 +154,7 @@ const sidebars = {
                 slug: '/providers'
             },
             items: [
+                'providers/accelo',
                 'providers/adobe',
                 'providers/airtable',
                 'providers/amazon',
