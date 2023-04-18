@@ -92,7 +92,7 @@ import Nango from '@nangohq/frontend'; // After installing the npm package
 var nango = new Nango({ publicKey: '<PUBLIC-KEY>' });
 
 // Trigger an OAuth flow
-// Param 1: config key from Step 2 (bullet 4)
+// Param 1: config key from Step 2 (bullet 2)
 // Param 2: ID you will use to retrieve the connection (most often the user ID)
 nango
     .auth('<CONFIG-KEY>', '<CONNECTION-ID>')

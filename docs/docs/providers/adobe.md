@@ -30,7 +30,7 @@ Registering an app takes only a few minutes, and you can start building immediat
 - [List of OAuth scopes](https://developer.adobe.com/developer-console/docs/guides/authentication/OAuth/Scopes/)
 
 ## API specific gotchas
-- If the service you are trying to integrate allows `offline_access` then you will be able to refresh token
+- If the service you are trying to integrate allows `offline_access` then you will be able to get refresh token if you add this in the scopes
 - Depending on the selected API, some platforms may not be available to be used with that API. Select the platform that best suits your application use case if more than one platform is available.
 - When creating an API make, it is important to web app as the type of application you are integrating too.(Not all apps support OAuth 2.0 )
 - To refresh the token simple use `nango.getToken()` to generate new set of tokens

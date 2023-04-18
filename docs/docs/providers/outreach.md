@@ -16,12 +16,16 @@ Follow our [quickstart](../quickstart.md) to add an OAuth integration with Outre
 
 ## App registration & publishing
 
-_No information yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+**Rating: `Easy & fast`**
+Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://www.outreach.io/request-demo)
+
 
 ## Useful links
 
-_No links yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+- [How to register an Application](https://www.outreach.io/request-demo)
+- [OAuth-related docs](https://api.outreach.io/api/v2/docs#authentication)
+- [Web API docs (their REST API)](https://api.outreach.io/api/v2/docs#making-requests)
 
 ## API specific gotchas
 
-_No gotchas yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+- To refresh the token simple use `nango.getToken()` to generate new set of tokens
