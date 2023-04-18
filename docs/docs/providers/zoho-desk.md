@@ -1,18 +1,18 @@
 ---
-sidebar_label: Zoho-desk
+sidebar_label: Zoho Desk
 ---
 
-# Zoho-desk API wiki
+# Zoho desk API wiki
 
-:::note Working with the Asana API?
+:::note Working with the Zoho Desk API?
 Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/master/docs/docs/providers/zoho-desk.md).
 
 :::
 
-## Using Asana with Nango
+## Using Zoho Desk with Nango
 
 Provider template name in Nango: `zoho-desk`  
-Follow our [quickstart](../quickstart.md) to add an OAuth integration with Asana in 5 minutes.
+Follow our [quickstart](../quickstart.md) to add an OAuth integration with Zoho Desk in 5 minutes.
 
 ## App registration & publishing
 
