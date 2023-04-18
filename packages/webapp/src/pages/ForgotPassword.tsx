@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { toast } from 'react-toastify';
 
 import { useRequestPasswordResetAPI } from '../utils/api';
+import DefaultLayout from '../layout/DefaultLayout';
 
 export default function Signin() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');
@@ -28,11 +29,7 @@ export default function Signin() {
 
     return (
         <>
-            <div className="flex min-h-full flex-col justify-center py-12 sm:px-6 lg:px-8">
-                <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-md">
-                    <img className="mx-auto h-20 w-auto" src="/logo-dark-background-vertical.svg" alt="Your Company" />
-                </div>
-
+            <DefaultLayout>
                 <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-md">
                     <div className="bg-bg-dark-gray py-8 px-4 shadow sm:rounded-lg sm:px-10">
                         <h2 className="mt-2 text-center text-3xl font-semibold tracking-tight text-white">Request Password Reset</h2>
@@ -67,7 +64,7 @@ export default function Signin() {
                         </form>
                     </div>
                 </div>
-            </div>
+            </DefaultLayout>
         </>
     );
 }
