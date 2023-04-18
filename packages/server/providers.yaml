@@ -537,6 +537,16 @@ twitter-v2:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+uber:
+    auth_mode: OAUTH2
+    authorization_url: https://login.uber.com/oauth/v2/authorize
+    token_url: https://login.uber.com/oauth/v2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 typeform:
     auth_mode: OAUTH2
     authorization_url: https://api.typeform.com/oauth/authorize

@@ -231,6 +231,7 @@ const sidebars = {
                 'providers/twitch',
                 'providers/twitter',
                 'providers/typeform',
+                'providers/uber',
                 'providers/wave_accounting',
                 'providers/xero',
                 'providers/yahoo',
