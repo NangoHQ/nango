@@ -173,6 +173,7 @@ const sidebars = {
                 'providers/digitalocean',
                 'providers/discord',
                 'providers/dropbox',
+                'providers/dropbox',
                 'providers/epic-games',
                 'providers/facebook',
                 'providers/factorial',

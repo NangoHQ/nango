@@ -162,6 +162,28 @@ dropbox:
     auth_mode: OAUTH2
     authorization_url: https://www.dropbox.com/oauth2/authorize
     token_url: https://api.dropboxapi.com/oauth2/token
+docusign:
+    auth_mode: OAUTH2
+    authorization_url: https://account.docusign.com/oauth/auth
+    token_url: https://account.docusign.com/oauth/token
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+docusign-sandbox:
+    auth_mode: OAUTH2
+    authorization_url: https://account-d.docusign.com/oauth/auth
+    token_url: https://account-d.docusign.com/oauth/token
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 epic-games:
     auth_mode: OAUTH2
     authorization_url: https://www.epicgames.com/id/authorize
