@@ -197,6 +197,7 @@ const sidebars = {
                 'providers/intercom',
                 'providers/intuit',
                 'providers/jira',
+                'providers/keap',
                 'providers/lever',
                 'providers/linear',
                 'providers/linkedin',

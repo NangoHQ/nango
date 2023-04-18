@@ -313,6 +313,16 @@ jira:
     authorization_params:
         audience: api.atlassian.com
         prompt: consent
+keap:
+    auth_mode: OAUTH2
+    authorization_url: https://accounts.infusionsoft.com/app/oauth/authorize
+    token_url: https://api.infusionsoft.com/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 lever:
     auth_mode: OAUTH2
     authorization_url: https://auth.lever.co/authorize
