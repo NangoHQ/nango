@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useResetPasswordAPI } from '../utils/api';
 import { toast } from 'react-toastify';
+
+import { useResetPasswordAPI } from '../utils/api';
 
 export default function Signin() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');

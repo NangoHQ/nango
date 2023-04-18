@@ -1,8 +1,12 @@
-import TopNavBar from '../components/TopNavBar';
-import LeftNavBar, { LeftNavBarItems } from '../components/LeftNavBar';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useState, useEffect } from 'react';
+import AlertOverLay from '../components/AlertOverLay';
+import { HelpCircle } from '@geist-ui/icons';
+import { Tooltip } from '@geist-ui/core';
+import { Prism } from '@mantine/prism';
+
+import { defaultCallback } from '../utils/utils';
 import {
     useGetIntegrationDetailsAPI,
     useGetProvidersAPI,
@@ -11,11 +15,8 @@ import {
     useCreateIntegrationAPI,
     useDeleteIntegrationAPI
 } from '../utils/api';
-import AlertOverLay from '../components/AlertOverLay';
-import { HelpCircle } from '@geist-ui/icons';
-import { Tooltip } from '@geist-ui/core';
-import { defaultCallback } from '../utils/utils';
-import { Prism } from '@mantine/prism';
+import TopNavBar from '../components/TopNavBar';
+import LeftNavBar, { LeftNavBarItems } from '../components/LeftNavBar';
 
 interface Integration {
     uniqueKey: string;

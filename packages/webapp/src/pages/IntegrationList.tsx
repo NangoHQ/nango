@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 
 import { useGetIntegrationListAPI } from '../utils/api';
 import DashboardLayout from '../layout/DashboardLayout';
+import { LeftNavBarItems } from '../components/LeftNavBar';
 
 interface Integration {
     uniqueKey: string;
@@ -33,7 +34,7 @@ export default function IntegrationList() {
     }, [getIntegrationListAPI, setIntegrations, loaded]);
 
     return (
-        <DashboardLayout>
+        <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
             {integrations && !!integrations.length && (
                 <div className="px-16 w-fit mx-auto">
                     <div className="flex justify-between">
