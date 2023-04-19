@@ -11,18 +11,43 @@ import TabItem from '@theme/TabItem';
 Make sure you have gone through the [quickstart](/quickstart) before using the proxy!
 :::
 
+# What Is It?
+Same familiar simple interface with a lot of functionality baked in:
+1. Handles authentication
+2. Handles retries
+3. Takes care of logging
+4. Handles rate limits
+5. Scales as you scale
+
+```
+const repsonse = await nango.proxy({
+    endpoint: 'user',
+    providerConfigKey: 'XXX',
+    connectionId: 'XXX'
+});
+```
+
 ## SDK Usage
 
 1. Install and set up the SDK as described in [the sdk docs](/reference/node-sdk)
 2. Use the proxy to both authenticate and make an API call in one simple step
 ```js
+# note these params closely follows how axios structures their API
 const response = await nango.proxy({
+    method: '<HTTP-METHOD>',    // GET is the default if not provided
+    endpoint: '<API-ENDPOINT>', // exclude the base API URL
     providerConfigKey: '<PROVIDER-CONFIG-KEY>',
     connectionId: '<CONNECTION-ID>',
-    method: '<HTTP-METHOD>',
-    endpoint: '<API-ENDPOINT>', // exclude the base API URL
-    headers: '<HEADERS>', // optional
-    body: {               // optional
+
+    // optional parameters
+    headers: '<HEADERS>',
+    params: '<PARAMS>',   // URL parameters to be sent with the request. Must be a plain object or a URLSearchParams object
+    paramsSerializer: {
+        encode?: (param: string): string => { /* Do custom ops here and return transformed string */ }, // custom encoder function; sends Key/Values in an iterative fashion
+        serialize?: (params: Record<string, any>, options?: ParamsSerializerOptions ), // mimic pre 1.x behavior and send entire params object to a custom serializer func. Allows consumer to control how params are serialized.
+        indexes: false // array indexes format (null - no brackets, false (default) - empty brackets, true - brackets with indexes)
+      },
+    data: {
         param: 'VALUE'
     }
 });
@@ -31,11 +56,11 @@ const response = await nango.proxy({
 ### Example
 ```js
 const insertCalendarListResponse = await nango.proxy({
-    providerConfigKey: '<PROVIDER-CONFIG-KEY>',
-    connectionId: '<CONNECTION-ID>',
     method: 'POST',
     endpoint: 'users/me/calendarList',
-    body: {
+    providerConfigKey: '<PROVIDER-CONFIG-KEY>',
+    connectionId: '<CONNECTION-ID>',
+    data: {
         id: 1,
         colorId: 'blue',
         selected: true
@@ -69,13 +94,3 @@ curl '<NANGO-HOST-AND-PORT>/proxy/<CONNECTION-ID>?provider_config_key=<CONFIG-KE
 
   </TabItem>
 </Tabs>
-
-
-# Why Proxy?
-Allows you to just write a single line of code that then:
-1. Handles authentication
-2. Handles retries
-3. Takes care of logging
-4. Handles rate limits
-5. Scales as you scale
-
