@@ -127,11 +127,11 @@ const sidebars = {
                         }
                     ]
                 },
-                // {
-                //     id: 'reference/backend-sdk-rest-api',
-                //     type: 'doc',
-                //     label: 'Backend SDK & REST API'
-                // },
+                {
+                    id: 'reference/proxy',
+                    type: 'doc',
+                    label: 'Proxy'
+                },
                 {
                     id: 'reference/configuration',
                     type: 'doc',
