@@ -13,8 +13,5 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Lint providers file
-        uses: ibiqlik/action-yamllint@v3
-
-      - name: Lint Docker Compose Files
+      - name: Lint yaml files
         uses: ibiqlik/action-yamllint@v3
