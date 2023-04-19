@@ -37,3 +37,7 @@ For e.g: if the subdomain for your account is `foo`, then you need to pass the f
 ## Useful links
 
 -   [Web API docs (their REST API)](https://documentation.bamboohr.com/docs/getting-started)
+
+-   [How to register/integrate an Application](https://documentation.bamboohr.com/docs#what-will-you-need-to-get-started)
+
+-   [OAuth-related docs](https://documentation.bamboohr.com/page/single-sign-on-sso-with-openid-connect)
