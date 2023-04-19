@@ -1,6 +1,6 @@
 import TopNavBar from '../components/TopNavBar';
 import LeftNavBar, { LeftNavBarItems } from '../components/LeftNavBar';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useState, useEffect } from 'react';
 import { useGetIntegrationListAPI, useGetProjectInfoAPI } from '../utils/api';
@@ -31,6 +31,7 @@ export default function IntegrationCreate() {
     const getIntegrationListAPI = useGetIntegrationListAPI();
     const getProjectInfoAPI = useGetProjectInfoAPI();
     const analyticsTrack = useAnalyticsTrack();
+    const { providerConfigKey } = useParams();
 
     useEffect(() => {
         const getIntegrations = async () => {
@@ -41,8 +42,12 @@ export default function IntegrationCreate() {
                 setIntegrations(data['integrations']);
 
                 if (data['integrations'] && data['integrations'].length > 0) {
-                    setIntegration(data['integrations'][0]);
-                    setUpConnectionConfigParams(data['integrations'][0]);
+                    let defaultIntegration = providerConfigKey
+                        ? data['integrations'].find((i: Integration) => i.uniqueKey === providerConfigKey)
+                        : data['integrations'][0];
+
+                    setIntegration(defaultIntegration);
+                    setUpConnectionConfigParams(defaultIntegration);
                 }
             }
         };
@@ -61,7 +66,7 @@ export default function IntegrationCreate() {
             getIntegrations();
             getAccount();
         }
-    }, [loaded, setLoaded, setIntegrations, setIntegration, getIntegrationListAPI, getProjectInfoAPI, setPublicKey]);
+    }, [loaded, setLoaded, setIntegrations, setIntegration, getIntegrationListAPI, getProjectInfoAPI, setPublicKey, providerConfigKey]);
 
     const handleCreate = async (e: React.SyntheticEvent) => {
         e.preventDefault();
@@ -185,6 +190,7 @@ nango.auth('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr})
                                                     name="integration_unique_key"
                                                     className="border-border-gray bg-bg-black text-text-light-gray block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base shadow-sm active:outline-none focus:outline-none active:border-white focus:border-white"
                                                     onChange={handleIntegrationUniqueKeyChange}
+                                                    defaultValue={integration?.uniqueKey}
                                                 >
                                                     {integrations.map((integration) => (
                                                         <option key={integration.uniqueKey}>{integration.uniqueKey}</option>
