@@ -5,3 +5,5 @@ rules:
     max: 200
     level: warning
   document-start: disable
+  truthy:
+    check-keys: false
