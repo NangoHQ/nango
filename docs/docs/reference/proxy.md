@@ -74,7 +74,7 @@ const insertCalendarListResponse = await nango.proxy({
   <TabItem value="cloud" label="Nango Cloud">
 
 ```bash
-curl 'https://api.nango.dev/proxy/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>&method=<METHOD>&endpoint=<API-ENDPOINT>'\
+curl 'https://api.nango.dev/proxy/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>&endpoint=<API-ENDPOINT>'\
 -H 'Authorization: Bearer <SECRET-KEY>'
 ```
 
@@ -82,14 +82,14 @@ curl 'https://api.nango.dev/proxy/<CONNECTION-ID>?provider_config_key=<CONFIG-KE
   <TabItem value="localhost" label="Localhost">
 
 ```bash
-curl 'http://localhost:3003/proxy/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>&method=<METHOD>&endpoint=<API-ENDPOINT>'
+curl 'http://localhost:3003/proxy/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>&endpoint=<API-ENDPOINT>'
 ```
 
   </TabItem>
   <TabItem value="self-hosted" label="Self-hosted">
 
 ```bash
-curl '<NANGO-HOST-AND-PORT>/proxy/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>&method=<METHOD>&endpoint=<API-ENDPOINT>'
+curl '<NANGO-HOST-AND-PORT>/proxy/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>&endpoint=<API-ENDPOINT>'
 ```
 
   </TabItem>

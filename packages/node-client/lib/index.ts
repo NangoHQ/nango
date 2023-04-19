@@ -1,4 +1,7 @@
 import axios from 'axios';
+import { ProxyService } from './services/proxy.js';
+
+import type { ProxyConfiguration } from './types';
 
 const prodHost = 'https://api.nango.dev';
 const stagingHost = 'https://api-staging.nango.dev';
@@ -7,6 +10,7 @@ const forceBearerAuth = true; // For development.
 export class Nango {
     serverUrl: string;
     secretKey: string;
+    proxyService: ProxyService;
 
     constructor(config: { host?: string; secretKey?: string } = {}) {
         config.host = config.host || prodHost;
@@ -23,6 +27,7 @@ export class Nango {
         }
 
         this.secretKey = config.secretKey || '';
+        this.proxyService = new ProxyService();
     }
 
     /**
@@ -72,6 +77,64 @@ export class Nango {
     public async getConnection(providerConfigKey: string, connectionId: string, forceRefresh?: boolean) {
         let response = await this.getConnectionDetails(providerConfigKey, connectionId, forceRefresh);
         return response.data;
+    }
+
+    public async proxy(config: ProxyConfiguration) {
+        this.proxyService.validateConfiguration(config);
+        const { providerConfigKey, connectionId, method: providedMethod } = config;
+
+        switch (providedMethod) {
+            case 'POST':
+            case 'post':
+                config.method = 'POST';
+                break;
+
+            case 'DELETE':
+            case 'delete':
+                config.method = 'DELETE';
+                break;
+
+            case 'PATCH':
+            case 'patch':
+                config.method = 'PATCH';
+                break;
+
+            default:
+                config.method = 'GET';
+                break;
+        }
+
+        const tokenResponse = await this.getToken(providerConfigKey, connectionId);
+
+        return await this.proxyService.run(tokenResponse, config);
+    }
+
+    public async get(config: ProxyConfiguration) {
+        return this.proxy({
+            ...config,
+            method: 'GET'
+        });
+    }
+
+    public async post(config: ProxyConfiguration) {
+        return this.proxy({
+            ...config,
+            method: 'POST'
+        });
+    }
+
+    public async patch(config: ProxyConfiguration) {
+        return this.proxy({
+            ...config,
+            method: 'PATCH'
+        });
+    }
+
+    public async delete(config: ProxyConfiguration) {
+        return this.proxy({
+            ...config,
+            method: 'DELETE'
+        });
     }
 
     private async getConnectionDetails(providerConfigKey: string, connectionId: string, forceRefresh = false) {
