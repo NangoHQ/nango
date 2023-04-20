@@ -233,6 +233,7 @@ const sidebars = {
                 'providers/strava',
                 'providers/stripe',
                 'providers/teamwork',
+                'providers/todoist',
                 'providers/trello',
                 'providers/twitch',
                 'providers/twitter',
