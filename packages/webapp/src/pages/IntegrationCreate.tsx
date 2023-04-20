@@ -16,6 +16,7 @@ import { HelpCircle } from '@geist-ui/icons';
 import { Tooltip } from '@geist-ui/core';
 import { defaultCallback } from '../utils/utils';
 import { Prism } from '@mantine/prism';
+import SecretInput from '../components/ui/SecretInput';
 
 interface Integration {
     uniqueKey: string;
@@ -304,13 +305,11 @@ export default function IntegrationCreate() {
                                             </Tooltip>
                                         </div>
                                         <div className="mt-1">
-                                            <input
+                                            <SecretInput
                                                 id="client_secret"
                                                 name="client_secret"
-                                                type="text"
                                                 defaultValue={integration ? integration.clientSecret : ''}
                                                 required
-                                                className="border-border-gray bg-bg-black text-text-light-gray focus:ring-white block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:border-white focus:outline-none"
                                             />
                                         </div>
                                     </div>
