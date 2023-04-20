@@ -6,7 +6,7 @@ export interface ProxyConfiguration {
     providerConfigKey: string;
     connectionId: string;
 
-    method?: 'GET' | 'POST' | 'PATCH' | 'DELETE' | 'get' | 'post' | 'patch' | 'delete';
+    method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE' | 'get' | 'post' | 'patch' | 'put' | 'delete';
     headers?: Record<string, string>;
     params?: string | Record<string, string>;
     paramsSerializer?: {

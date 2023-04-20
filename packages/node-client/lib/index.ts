@@ -98,6 +98,11 @@ export class Nango {
                 config.method = 'PATCH';
                 break;
 
+            case 'PUT':
+            case 'put':
+                config.method = 'PUT';
+                break;
+
             default:
                 config.method = 'GET';
                 break;
