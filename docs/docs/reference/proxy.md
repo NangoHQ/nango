@@ -21,7 +21,7 @@ Same familiar simple interface with a lot of functionality baked in:
 
 ```
 const repsonse = await nango.proxy({
-    endpoint: 'user',
+    endpoint: '/user',
     providerConfigKey: 'XXX',
     connectionId: 'XXX'
 });
@@ -57,7 +57,7 @@ const response = await nango.proxy({
 ```js
 const insertCalendarListResponse = await nango.proxy({
     method: 'POST',
-    endpoint: 'users/me/calendarList',
+    endpoint: '/users/me/calendarList',
     providerConfigKey: '<PROVIDER-CONFIG-KEY>',
     connectionId: '<CONNECTION-ID>',
     data: {
