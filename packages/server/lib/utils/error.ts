@@ -91,6 +91,11 @@ export class NangoError extends Error {
                 this.message = 'No user matching this email.';
                 break;
 
+            case 'unknown_endpoint':
+                this.status = 404;
+                this.message = 'The API endpoint could not be found. Please ensure you have the endpoint specified and spelled correctly';
+                break;
+
             case 'missing_provider_config':
                 this.status = 400;
                 this.message = `Missing param 'provider_config_key'.`;

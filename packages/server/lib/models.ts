@@ -23,10 +23,12 @@ export interface ProviderTemplate {
     };
     redirect_uri_metadata?: Array<string>;
     token_response_metadata?: Array<string>;
+    base_api_url?: string;
 }
 
 export interface ProviderTemplateAlias {
     alias?: string;
+    base_api_url?: string;
 }
 
 export interface BaseConnection {
@@ -179,3 +181,34 @@ export interface AuthorizationTokenResponse extends Omit<OAuth2Credentials, 'typ
 }
 
 export interface RefreshTokenResponse extends AuthorizationTokenResponse {}
+
+export interface ProxyBodyConfiguration {
+    endpoint: string;
+    providerConfigKey: string;
+    connectionId: string;
+    token: string;
+    method: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
+    template: ProviderTemplate;
+
+    data?: unknown;
+    headers?: Record<string, string>;
+    params?: string | Record<string, string>;
+    paramsSerializer?: {
+        encode?: (param: string) => string;
+        serialize?: (params: Record<string, any>, options?: ParamsSerializerOptions) => void;
+        indexes?: boolean;
+    };
+}
+
+interface ParamsSerializerOptions {
+    encode?: ParamEncoder;
+    serialize?: CustomParamsSerializer;
+}
+
+interface ParamEncoder {
+    (value: any, defaultEncoder: (value: any) => any): any;
+}
+
+interface CustomParamsSerializer {
+    (params: Record<string, any>, options?: ParamsSerializerOptions): string;
+}
