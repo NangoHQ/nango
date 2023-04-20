@@ -58,6 +58,16 @@ atlassian:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+bamboohr:
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.params.subdomain}.bamboohr.com/authorize.php
+    token_url: https://${connectionConfig.params.subdomain}.bamboohr.com/token.php
+    authorization_params:
+        response_type: code
+        request: authorize
+    token_params:
+        grant_type: authorization_code
+        request: token
 battlenet:
     auth_mode: OAUTH2
     authorization_url: https://oauth.battle.${connectionConfig.params.extension}/authorize
