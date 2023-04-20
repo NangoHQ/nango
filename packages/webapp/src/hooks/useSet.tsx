@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
 
 export default function useSet<T>(initialValue?: T[], limit?: number) {
-    const [_, setInc] = useState(false);
+    const [, setInc] = useState(false);
 
     const set = useRef(new Set<T>(initialValue));
 
@@ -11,6 +11,7 @@ export default function useSet<T>(initialValue?: T[], limit?: number) {
             setInc((prev) => !prev);
             set.current.add(item);
         },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [setInc]
     );
 
@@ -20,6 +21,7 @@ export default function useSet<T>(initialValue?: T[], limit?: number) {
             setInc((prev) => !prev);
             set.current.delete(item);
         },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [setInc]
     );
 
