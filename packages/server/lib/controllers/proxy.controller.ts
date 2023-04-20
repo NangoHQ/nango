@@ -10,16 +10,15 @@ import { getAccount } from '../utils/utils.js';
 import type { ProxyBodyConfiguration } from '../models.js';
 import { NangoError } from '../utils/error.js';
 
-const RETRIES = 3;
+const RETRIES = 10;
 
 axiosRetry(axios, {
     retries: RETRIES,
-    retryDelay: (retryCount) => {
-        logger.info(`API received a 500 error, retrying attempt ${retryCount} of ${RETRIES}`);
-        return retryCount * 2000; // time interval between retries
-    },
+    retryDelay: axiosRetry.exponentialDelay,
     retryCondition: (error) => {
-        return error?.response?.status === 503;
+        const status = error?.response?.status;
+        logger.info(`API received a ${status} error, retrying with exponential backoffs for a total of ${RETRIES} times`);
+        return error?.response?.status.toString().startsWith('5') || error?.response?.status === 429;
     }
 });
 
@@ -56,20 +55,22 @@ class ProxyController {
 
         configBody.template = template;
 
+        const url = this.constructUrl(configBody);
+
         if (method === 'POST') {
-            return this.post(req, res, next, configBody);
+            return this.post(res, next, url, configBody);
         } else if (method === 'PATCH') {
-            return this.patch(req, res, next, configBody);
+            return this.patch(res, next, url, configBody);
         } else if (method === 'PUT') {
-            return this.put(req, res, next, configBody);
+            return this.put(res, next, url, configBody);
         } else if (method === 'DELETE') {
-            return this.delete(req, res, next, configBody);
+            return this.delete(res, next, url, configBody);
         } else {
-            return this.get(req, res, next, configBody);
+            return this.get(res, next, url, configBody);
         }
     }
 
-    private async get(_req: Request, res: Response, next: NextFunction, config: ProxyBodyConfiguration) {
+    private async get(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration) {
         try {
             const url = this.constructUrl(config);
             const response = await axios.get(url, {
@@ -79,15 +80,13 @@ class ProxyController {
             });
             res.status(200).send(response.data);
         } catch (error) {
-            this.catalogAndReportError(error as Error | AxiosError);
+            this.catalogAndReportError(error as Error | AxiosError, url);
             next(error);
         }
     }
 
-    private async post(_req: Request, res: Response, next: NextFunction, config: ProxyBodyConfiguration) {
+    private async post(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration) {
         try {
-            const url = this.constructUrl(config);
-
             if (!config.data) {
                 errorManager.errRes(res, 'missing_post_data');
                 return;
@@ -102,15 +101,13 @@ class ProxyController {
             logger.info(`Proxy: POST request to ${url} was successful`);
             res.status(200).send(response.data);
         } catch (error) {
-            const nangoError = this.catalogAndReportError(error as Error | AxiosError);
+            const nangoError = this.catalogAndReportError(error as Error | AxiosError, url);
             next(nangoError);
         }
     }
 
-    private async patch(_req: Request, res: Response, next: NextFunction, config: ProxyBodyConfiguration) {
+    private async patch(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration) {
         try {
-            const url = this.constructUrl(config);
-
             if (!config.data) {
                 errorManager.errRes(res, 'missing_post_data');
                 return;
@@ -131,10 +128,8 @@ class ProxyController {
         }
     }
 
-    private async put(_req: Request, res: Response, next: NextFunction, config: ProxyBodyConfiguration) {
+    private async put(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration) {
         try {
-            const url = this.constructUrl(config);
-
             if (!config.data) {
                 errorManager.errRes(res, 'missing_post_data');
                 return;
@@ -149,14 +144,13 @@ class ProxyController {
             logger.info(`Proxy: PUT request to ${url} was successful`);
             res.status(200).send(response.data);
         } catch (error) {
-            this.catalogAndReportError(error as Error | AxiosError);
+            this.catalogAndReportError(error as Error | AxiosError, url);
             next(error);
         }
     }
 
-    private async delete(_req: Request, res: Response, next: NextFunction, config: ProxyBodyConfiguration) {
+    private async delete(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration) {
         try {
-            const url = this.constructUrl(config);
             await axios.delete(url, {
                 headers: {
                     Authorization: `Bearer ${config.token}`
@@ -165,15 +159,15 @@ class ProxyController {
             logger.info(`Proxy: DELETE request to ${url} was successful`);
             res.status(200).send();
         } catch (error) {
-            const nangoError = this.catalogAndReportError(error as Error | AxiosError);
+            const nangoError = this.catalogAndReportError(error as Error | AxiosError, url);
             next(nangoError);
         }
     }
 
-    private catalogAndReportError(error: Error | AxiosError) {
+    private catalogAndReportError(error: Error | AxiosError, url: string) {
         if (axios.isAxiosError(error)) {
             if (error?.response?.status === 404) {
-                logger.error(`Response is a 404, make sure you have the endpoint specified and spelled correctly`);
+                logger.error(`Response is a 404 to ${url}, make sure you have the endpoint specified and spelled correctly`);
                 return new NangoError('unknown_endpoint');
             }
         } else {
