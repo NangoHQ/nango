@@ -1,12 +1,12 @@
 import type { Request, Response, NextFunction } from 'express';
 import accountService from '../services/account.service.js';
-import { getUserAndAccountFromSesstion, isCloud, getOauthCallbackUrl } from '../utils/utils.js';
+import { getUserAndAccountFromSession, isCloud, getOauthCallbackUrl } from '../utils/utils.js';
 import errorManager from '../utils/error.manager.js';
 
 class AccountController {
     async getAccount(req: Request, res: Response, next: NextFunction) {
         try {
-            let account = (await getUserAndAccountFromSesstion(req)).account;
+            let account = (await getUserAndAccountFromSession(req)).account;
 
             if (!isCloud()) {
                 account.callback_url = await getOauthCallbackUrl();
@@ -31,7 +31,7 @@ class AccountController {
                 return;
             }
 
-            let account = (await getUserAndAccountFromSesstion(req)).account;
+            let account = (await getUserAndAccountFromSession(req)).account;
 
             await accountService.editAccountCallbackUrl(req.body['callback_url'], account.id);
             res.status(200).send();

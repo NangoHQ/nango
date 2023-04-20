@@ -2,7 +2,7 @@ import type { NextFunction, Request, Response } from 'express';
 import configService from '../services/config.service.js';
 import type { ProviderConfig } from '../models.js';
 import analytics from '../utils/analytics.js';
-import { getAccount, getUserAndAccountFromSesstion, parseConnectionConfigParamsFromTemplate } from '../utils/utils.js';
+import { getAccount, getUserAndAccountFromSession, parseConnectionConfigParamsFromTemplate } from '../utils/utils.js';
 import errorManager from '../utils/error.manager.js';
 import connectionService from '../services/connection.service.js';
 import { NangoError } from '../utils/error.js';
@@ -14,7 +14,7 @@ class ConfigController {
 
     async listProviderConfigsWeb(req: Request, res: Response, next: NextFunction) {
         try {
-            let account = (await getUserAndAccountFromSesstion(req)).account;
+            let account = (await getUserAndAccountFromSession(req)).account;
 
             let configs = await configService.listProviderConfigs(account.id);
 
@@ -47,7 +47,7 @@ class ConfigController {
 
     async createProviderConfigWeb(req: Request, res: Response, next: NextFunction) {
         try {
-            let account = (await getUserAndAccountFromSesstion(req)).account;
+            let account = (await getUserAndAccountFromSession(req)).account;
 
             if (req.body == null) {
                 errorManager.errRes(res, 'missing_body');
@@ -121,7 +121,7 @@ class ConfigController {
 
     async editProviderConfigWeb(req: Request, res: Response, next: NextFunction) {
         try {
-            let account = (await getUserAndAccountFromSesstion(req)).account;
+            let account = (await getUserAndAccountFromSession(req)).account;
 
             if (req.body == null) {
                 errorManager.errRes(res, 'missing_body');
@@ -176,7 +176,7 @@ class ConfigController {
 
     async deleteProviderConfigWeb(req: Request, res: Response, next: NextFunction) {
         try {
-            let account = (await getUserAndAccountFromSesstion(req)).account;
+            let account = (await getUserAndAccountFromSession(req)).account;
             let providerConfigKey = req.params['providerConfigKey'] as string;
 
             if (providerConfigKey == null) {
@@ -194,7 +194,7 @@ class ConfigController {
 
     async getProviderConfigWeb(req: Request, res: Response, next: NextFunction) {
         try {
-            let account = (await getUserAndAccountFromSesstion(req)).account;
+            let account = (await getUserAndAccountFromSession(req)).account;
             let providerConfigKey = req.params['providerConfigKey'] as string;
 
             if (providerConfigKey == null) {
