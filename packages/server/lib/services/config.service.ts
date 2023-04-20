@@ -24,10 +24,24 @@ class ConfigService {
         }
 
         for (let key in fileEntries) {
-            let alias = (fileEntries[key] as ProviderTemplateAlias).alias;
+            const entry = fileEntries[key];
+            let alias = (entry as ProviderTemplateAlias).alias;
 
             if (alias && fileEntries[alias] != null) {
+                let overrides = {};
+                if (Object.keys(entry as ProviderTemplateAlias).length > 0) {
+                    const { alias, ...templateOverrides } = entry as ProviderTemplateAlias;
+                    overrides = templateOverrides;
+                }
                 fileEntries[key] = fileEntries[alias] as ProviderTemplate;
+
+                if (Object.keys(overrides).length > 0) {
+                    for (const prop in overrides) {
+                        // TODO clean up
+                        // @ts-ignore
+                        fileEntries[key][prop] = overrides[prop];
+                    }
+                }
             }
         }
 
