@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+
 import { useSignupAPI } from '../utils/api';
 import { useSignin, User } from '../utils/user';
+import DefaultLayout from '../layout/DefaultLayout';
 
 export default function Signup() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');
@@ -35,11 +36,7 @@ export default function Signup() {
 
     return (
         <>
-            <div className="flex min-h-full flex-col justify-center py-12 sm:px-6 lg:px-8">
-                <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-md">
-                    <img className="mx-auto h-20 w-auto" src="/logo-dark-background-vertical.svg" alt="Your Company" />
-                </div>
-
+            <DefaultLayout>
                 <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-md">
                     <div className="bg-bg-dark-gray py-8 px-4 shadow sm:rounded-lg sm:px-10">
                         <h2 className="mt-2 text-center text-3xl font-semibold tracking-tight text-white">Sign up</h2>
@@ -116,7 +113,7 @@ export default function Signup() {
                         </div>
                     </div>
                 </div>
-            </div>
+            </DefaultLayout>
         </>
     );
 }
