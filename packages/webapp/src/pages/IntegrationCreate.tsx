@@ -325,7 +325,7 @@ export default function IntegrationCreate() {
                                                 text={
                                                     <>
                                                         <div className="flex text-black text-sm">
-                                                            <p>{`Comma-separated ('scope1,scope2,scope3').\n Scopes are documented on the developer portal of the Integration Provider.`}</p>
+                                                            <p>{`The list of scope should be found in the documentation of the external provider.`}</p>
                                                         </div>
                                                     </>
                                                 }
