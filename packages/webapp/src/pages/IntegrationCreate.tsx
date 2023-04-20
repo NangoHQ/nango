@@ -334,15 +334,6 @@ export default function IntegrationCreate() {
                                             </Tooltip>
                                         </div>
                                         <div className="mt-1">
-                                            {/* <input
-                                                id="scopes"
-                                                name="scopes"
-                                                type="text"
-                                                defaultValue={integration ? integration.scopes : ''}
-                                                required
-                                                minLength={1}
-                                                className="border-border-gray bg-bg-black text-text-light-gray block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:border-white focus:outline-none focus:ring-white"
-                                            /> */}
                                             <TagsInput
                                                 id="scopes"
                                                 name="scopes"
