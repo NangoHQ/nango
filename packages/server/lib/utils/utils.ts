@@ -89,7 +89,7 @@ export function isUserAuthenticated(req: Request): boolean {
     return req.isAuthenticated() && req.user != null && req.user.id != null;
 }
 
-export async function getUserAndAccountFromSesstion(req: Request): Promise<{ user: User; account: Account }> {
+export async function getUserAndAccountFromSession(req: Request): Promise<{ user: User; account: Account }> {
     let sessionUser = req.user;
 
     if (sessionUser == null) {

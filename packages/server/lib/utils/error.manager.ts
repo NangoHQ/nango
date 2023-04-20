@@ -1,5 +1,6 @@
 import { isCloud } from './utils.js';
-import sentry from '@sentry/node';
+import sentry, { EventHint } from '@sentry/node';
+import type { ErrorEvent } from '@sentry/types';
 import logger from './logger.js';
 import { NangoError } from './error.js';
 import type { Request } from 'express';
@@ -8,7 +9,12 @@ import { getAccount, isApiAuthenticated, isUserAuthenticated } from './utils.js'
 class ErrorManager {
     constructor() {
         if (isCloud() && process.env['SENTRY_DNS']) {
-            sentry.init({ dsn: process.env['SENTRY_DNS'] });
+            sentry.init({
+                dsn: process.env['SENTRY_DNS'],
+                beforeSend(event: ErrorEvent, _: EventHint) {
+                    return event.user?.id === 'account-78' ? null : event;
+                }
+            });
         }
     }
 

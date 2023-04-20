@@ -5,7 +5,7 @@ import errorManager from '../utils/error.manager.js';
 import accountService from '../services/account.service.js';
 import util from 'util';
 import analytics from '../utils/analytics.js';
-import { isCloud, resetPasswordSecret, getBaseUrl, getUserAndAccountFromSesstion } from '../utils/utils.js';
+import { isCloud, resetPasswordSecret, getBaseUrl, getUserAndAccountFromSession } from '../utils/utils.js';
 import jwt from 'jsonwebtoken';
 import Mailgun from 'mailgun.js';
 import type { User } from '../models.js';
@@ -23,7 +23,7 @@ export interface WebUser {
 class AuthController {
     async signin(req: Request, res: Response, next: NextFunction) {
         try {
-            let user = (await getUserAndAccountFromSesstion(req)).user;
+            let user = (await getUserAndAccountFromSession(req)).user;
             let webUser: WebUser = {
                 id: user.id,
                 accountId: user.account_id,

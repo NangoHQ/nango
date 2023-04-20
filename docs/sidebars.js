@@ -160,6 +160,7 @@ const sidebars = {
                 'providers/amazon',
                 'providers/asana',
                 'providers/atlassian',
+                'providers/bamboohr',
                 'providers/battlenet',
                 'providers/bitbucket',
                 'providers/box',
