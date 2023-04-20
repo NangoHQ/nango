@@ -1,12 +1,7 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useState, useEffect } from 'react';
-import AlertOverLay from '../components/AlertOverLay';
-import { HelpCircle } from '@geist-ui/icons';
-import { Tooltip } from '@geist-ui/core';
-import { Prism } from '@mantine/prism';
 
-import { defaultCallback } from '../utils/utils';
 import {
     useGetIntegrationDetailsAPI,
     useGetProvidersAPI,
@@ -15,6 +10,12 @@ import {
     useCreateIntegrationAPI,
     useDeleteIntegrationAPI
 } from '../utils/api';
+import AlertOverLay from '../components/AlertOverLay';
+import { HelpCircle } from '@geist-ui/icons';
+import { Tooltip } from '@geist-ui/core';
+import { defaultCallback } from '../utils/utils';
+import { Prism } from '@mantine/prism';
+import TagsInput from '../components/ui/TagsInput';
 import { LeftNavBarItems } from '../components/LeftNavBar';
 import DashboardLayout from '../layout/DashboardLayout';
 
@@ -218,17 +219,8 @@ export default function IntegrationCreate() {
                                                 <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
                                             </Tooltip>
                                         </div>
-
-                                        <div className="mt-1" key={selectedProvider}>
-                                            <input
-                                                id="unique_key"
-                                                name="unique_key"
-                                                type="text"
-                                                required
-                                                defaultValue={selectedProvider}
-                                                minLength={1}
-                                                className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none"
-                                            />
+                                        <div className="mt-1">
+                                            <TagsInput id="scopes" name="scopes" type="text" required defaultValue={selectedProvider} minLength={1} />
                                         </div>
                                     </div>
                                 </div>
