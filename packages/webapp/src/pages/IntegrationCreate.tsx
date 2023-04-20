@@ -3,6 +3,7 @@ import LeftNavBar, { LeftNavBarItems } from '../components/LeftNavBar';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useState, useEffect } from 'react';
+
 import {
     useGetIntegrationDetailsAPI,
     useGetProvidersAPI,
@@ -306,6 +307,7 @@ export default function IntegrationCreate() {
                                         </div>
                                         <div className="mt-1">
                                             <SecretInput
+                                                copy={true}
                                                 id="client_secret"
                                                 name="client_secret"
                                                 defaultValue={integration ? integration.clientSecret : ''}
@@ -352,11 +354,9 @@ export default function IntegrationCreate() {
                                                 </label>
                                                 <Tooltip
                                                     text={
-                                                        <>
-                                                            <div className="flex text-black text-sm">
-                                                                <p>{`Register this callback URL on the developer portal of the Integration Provider.`}</p>
-                                                            </div>
-                                                        </>
+                                                        <div className="flex text-black text-sm">
+                                                            <p>{`Register this callback URL on the developer portal of the Integration Provider.`}</p>
+                                                        </div>
                                                     }
                                                 >
                                                     <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
