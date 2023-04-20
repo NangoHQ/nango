@@ -18,6 +18,7 @@ import { Prism } from '@mantine/prism';
 import TagsInput from '../components/ui/TagsInput';
 import { LeftNavBarItems } from '../components/LeftNavBar';
 import DashboardLayout from '../layout/DashboardLayout';
+import SecretInput from '../components/ui/SecretInput';
 
 interface Integration {
     uniqueKey: string;
@@ -219,8 +220,17 @@ export default function IntegrationCreate() {
                                                 <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
                                             </Tooltip>
                                         </div>
-                                        <div className="mt-1">
-                                            <TagsInput id="scopes" name="scopes" type="text" required defaultValue={selectedProvider} minLength={1} />
+
+                                        <div className="mt-1" key={selectedProvider}>
+                                            <input
+                                                id="unique_key"
+                                                name="unique_key"
+                                                type="text"
+                                                required
+                                                defaultValue={selectedProvider}
+                                                minLength={1}
+                                                className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none"
+                                            />
                                         </div>
                                     </div>
                                 </div>
@@ -293,13 +303,12 @@ export default function IntegrationCreate() {
                                     </Tooltip>
                                 </div>
                                 <div className="mt-1">
-                                    <input
+                                    <SecretInput
+                                        copy={true}
                                         id="client_secret"
                                         name="client_secret"
-                                        type="text"
                                         defaultValue={integration ? integration.clientSecret : ''}
                                         required
-                                        className="border-border-gray bg-bg-black text-text-light-gray focus:ring-white block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:border-white focus:outline-none"
                                     />
                                 </div>
                             </div>
@@ -313,7 +322,7 @@ export default function IntegrationCreate() {
                                         text={
                                             <>
                                                 <div className="flex text-black text-sm">
-                                                    <p>{`Comma-separated ('scope1,scope2,scope3').\n Scopes are documented on the developer portal of the Integration Provider.`}</p>
+                                                    <p>{`The list of scope should be found in the documentation of the external provider.`}</p>
                                                 </div>
                                             </>
                                         }
@@ -322,14 +331,13 @@ export default function IntegrationCreate() {
                                     </Tooltip>
                                 </div>
                                 <div className="mt-1">
-                                    <input
+                                    <TagsInput
                                         id="scopes"
                                         name="scopes"
                                         type="text"
-                                        defaultValue={integration ? integration.scopes : ''}
                                         required
+                                        defaultValue={integration ? integration.scopes : ''}
                                         minLength={1}
-                                        className="border-border-gray bg-bg-black text-text-light-gray block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:border-white focus:outline-none focus:ring-white"
                                     />
                                 </div>
                             </div>
