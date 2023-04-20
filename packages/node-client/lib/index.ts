@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { ProxyService } from './services/proxy.js';
+import { validateProxyConfiguration } from './utils.js';
 
 import type { ProxyConfiguration } from './types';
 
@@ -10,7 +10,6 @@ const forceBearerAuth = true; // For development.
 export class Nango {
     serverUrl: string;
     secretKey: string;
-    proxyService: ProxyService;
 
     constructor(config: { host?: string; secretKey?: string } = {}) {
         config.host = config.host || prodHost;
@@ -27,7 +26,6 @@ export class Nango {
         }
 
         this.secretKey = config.secretKey || '';
-        this.proxyService = new ProxyService();
     }
 
     /**
@@ -80,7 +78,8 @@ export class Nango {
     }
 
     public async proxy(config: ProxyConfiguration) {
-        this.proxyService.validateConfiguration(config);
+        validateProxyConfiguration(config);
+
         const { providerConfigKey, connectionId, method: providedMethod } = config;
 
         switch (providedMethod) {
@@ -106,7 +105,19 @@ export class Nango {
 
         const tokenResponse = await this.getToken(providerConfigKey, connectionId);
 
-        return await this.proxyService.run(tokenResponse, config);
+        const url = `${this.serverUrl}/proxy`;
+
+        const headers = {
+            'Content-Type': 'application/json',
+            'Accept-Encoding': 'application/json'
+        };
+        const options = {
+            headers: this.enrichHeaders(headers)
+        };
+
+        config.token = tokenResponse;
+
+        return axios.post(url, config, options);
     }
 
     public async get(config: ProxyConfiguration) {
