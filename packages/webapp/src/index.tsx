@@ -5,6 +5,7 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { BrowserRouter } from 'react-router-dom';
 import { PostHogProvider } from 'posthog-js/react';
+import ErrorBoundary from './components/ErrorBoundary';
 
 const options = {
     api_host: process.env.REACT_APP_PUBLIC_POSTHOG_HOST,
@@ -14,11 +15,13 @@ const options = {
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
     <React.StrictMode>
-        <PostHogProvider apiKey={process.env.REACT_APP_PUBLIC_POSTHOG_KEY} options={options}>
-            <BrowserRouter>
-                <App />
-            </BrowserRouter>
-        </PostHogProvider>
+        <ErrorBoundary>
+            <PostHogProvider apiKey={process.env.REACT_APP_PUBLIC_POSTHOG_KEY} options={options}>
+                <BrowserRouter>
+                    <App />
+                </BrowserRouter>
+            </PostHogProvider>
+        </ErrorBoundary>
     </React.StrictMode>
 );
 

@@ -1,7 +1,7 @@
 accelo:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.params.subdomain}.api.accelo.com/oauth2/v0/authorize
-    token_url:  https://${connectionConfig.params.subdomain}.api.accelo.com/oauth2/v0/token
+    token_url: https://${connectionConfig.params.subdomain}.api.accelo.com/oauth2/v0/token
     scope_separator: ','
     authorization_params:
         response_type: code
@@ -58,6 +58,16 @@ atlassian:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+bamboohr:
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.params.subdomain}.bamboohr.com/authorize.php
+    token_url: https://${connectionConfig.params.subdomain}.bamboohr.com/token.php
+    authorization_params:
+        response_type: code
+        request: authorize
+    token_params:
+        grant_type: authorization_code
+        request: token
 battlenet:
     auth_mode: OAUTH2
     authorization_url: https://oauth.battle.${connectionConfig.params.extension}/authorize
@@ -132,8 +142,8 @@ contentstack:
     token_url: https://${connectionConfig.params.subdomain}.contentstack.com/apps-api/apps/token
 deel:
     auth_mode: OAUTH2
-    authorization_url:  https://auth.letsdeel.com/oauth2/authorize
-    token_url:  https://auth.letsdeel.com/oauth2/tokens
+    authorization_url: https://auth.letsdeel.com/oauth2/authorize
+    token_url: https://auth.letsdeel.com/oauth2/tokens
     token_request_auth_method: basic
     authorization_params:
         response_type: code
@@ -143,8 +153,8 @@ deel:
         grant_type: refresh_token
 deel-sandbox:
     auth_mode: OAUTH2
-    authorization_url:  https://auth-demo.letsdeel.com/oauth2/authorize
-    token_url:  https://auth-demo.letsdeel.com/oauth2/tokens
+    authorization_url: https://auth-demo.letsdeel.com/oauth2/authorize
+    token_url: https://auth-demo.letsdeel.com/oauth2/tokens
     token_request_auth_method: basic
     authorization_params:
         response_type: code
@@ -284,7 +294,7 @@ health-gorilla:
 gusto:
     auth_mode: OAUTH2
     authorization_url: https://api.gusto.com/oauth/authorize
-    token_url:  https://api.gusto.com/oauth/token
+    token_url: https://api.gusto.com/oauth/token
     authorization_params:
         response_type: code
     token_params:
@@ -513,7 +523,7 @@ spotify:
 squareup:
     auth_mode: OAUTH2
     authorization_url: https://connect.squareup.com/oauth2/authorize
-    token_url:  https://connect.squareup.com/oauth2/token
+    token_url: https://connect.squareup.com/oauth2/token
     disable_pkce: true
     scope_separator: '+'
     decode_url: true
@@ -527,7 +537,7 @@ squareup:
 squareup-sandbox:
     auth_mode: OAUTH2
     authorization_url: https://connect.squareupsandbox.com/oauth2/authorize
-    token_url:  https://connect.squareupsandbox.com/oauth2/token
+    token_url: https://connect.squareupsandbox.com/oauth2/token
     scope_separator: '+'
     disable_pkce: true
     authorization_params:
@@ -570,6 +580,11 @@ trello:
     scope_separator: ','
     authorization_params:
         expiration: never
+todoist:
+    auth_mode: OAUTH2
+    authorization_url: https://todoist.com/oauth/authorize
+    token_url: https://todoist.com/oauth/access_token
+    scope_separator: ','
 twitch:
     auth_mode: OAUTH2
     authorization_url: https://id.twitch.tv/oauth2/authorize
