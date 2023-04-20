@@ -220,8 +220,17 @@ export default function IntegrationCreate() {
                                                 <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
                                             </Tooltip>
                                         </div>
-                                        <div className="mt-1">
-                                            <TagsInput id="scopes" name="scopes" type="text" required defaultValue={selectedProvider} minLength={1} />
+
+                                        <div className="mt-1" key={selectedProvider}>
+                                            <input
+                                                id="unique_key"
+                                                name="unique_key"
+                                                type="text"
+                                                required
+                                                defaultValue={selectedProvider}
+                                                minLength={1}
+                                                className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none"
+                                            />
                                         </div>
                                     </div>
                                 </div>
@@ -322,7 +331,14 @@ export default function IntegrationCreate() {
                                     </Tooltip>
                                 </div>
                                 <div className="mt-1">
-                                    <TagsInput id="scopes" name="scopes" type="text" required defaultValue={selectedProvider} minLength={1} />
+                                    <TagsInput
+                                        id="scopes"
+                                        name="scopes"
+                                        type="text"
+                                        required
+                                        defaultValue={integration ? integration.scopes : ''}
+                                        minLength={1}
+                                    />
                                 </div>
                             </div>
 

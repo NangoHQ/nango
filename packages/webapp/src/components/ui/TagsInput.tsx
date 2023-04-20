@@ -37,7 +37,7 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
     return (
         <>
             <div className="flex gap-3">
-                <input required value={Array.from(selectedScopes.values()).join(',')} {...props} hidden />
+                <input value={Array.from(selectedScopes.values()).join(',')} {...props} hidden />
                 <input
                     ref={ref}
                     value={enteredValue}
