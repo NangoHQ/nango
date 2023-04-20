@@ -16,6 +16,7 @@ import { HelpCircle } from '@geist-ui/icons';
 import { Tooltip } from '@geist-ui/core';
 import { defaultCallback } from '../utils/utils';
 import { Prism } from '@mantine/prism';
+import TagsInput from '../components/ui/TagsInput';
 
 interface Integration {
     uniqueKey: string;
@@ -199,7 +200,7 @@ export default function IntegrationCreate() {
                                                         onChange={handleIntegrationProviderChange}
                                                     >
                                                         {providers.map((provider) => (
-                                                            <option>{provider}</option>
+                                                            <option key={crypto.randomUUID()}>{provider}</option>
                                                         ))}
                                                     </select>
                                                 </div>
@@ -333,7 +334,7 @@ export default function IntegrationCreate() {
                                             </Tooltip>
                                         </div>
                                         <div className="mt-1">
-                                            <input
+                                            {/* <input
                                                 id="scopes"
                                                 name="scopes"
                                                 type="text"
@@ -341,6 +342,14 @@ export default function IntegrationCreate() {
                                                 required
                                                 minLength={1}
                                                 className="border-border-gray bg-bg-black text-text-light-gray block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:border-white focus:outline-none focus:ring-white"
+                                            /> */}
+                                            <TagsInput
+                                                id="scopes"
+                                                name="scopes"
+                                                type="text"
+                                                defaultValue={integration ? integration.scopes : ''}
+                                                required
+                                                minLength={1}
                                             />
                                         </div>
                                     </div>
