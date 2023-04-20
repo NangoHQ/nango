@@ -10,7 +10,8 @@
     "scripts": {
         "prettier-format": "prettier --config .prettierrc './**/*.ts' --write",
         "prettier-watch": "onchange './**/*.ts' -- prettier --write {{changed}}",
-        "lint": "eslint . --ext .ts",
+        "lint": "eslint . --ext .ts,.tsx",
+        "lint:fix": "eslint . --ext .ts,.tsx --fix",
         "install:all": "npm i && cd packages/webapp && npm i && cd ../..",
         "ts-build": "tsc -b --clean packages/server packages/cli && tsc -b tsconfig.build.json && tsc -b packages/webapp/tsconfig.json",
         "docker-build": "docker build -f packages/server/Dockerfile -t nango-server:latest .",
