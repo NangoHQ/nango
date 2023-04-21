@@ -14,7 +14,6 @@ export interface ProxyConfiguration {
         serialize?: (params: Record<string, any>, options?: ParamsSerializerOptions) => void;
         indexes?: boolean;
     };
-    token?: string;
     data?: unknown;
 }
 

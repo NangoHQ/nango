@@ -80,49 +80,30 @@ export class Nango {
     public async proxy(config: ProxyConfiguration) {
         validateProxyConfiguration(config);
 
-        const { providerConfigKey, connectionId, method: providedMethod } = config;
+        const { providerConfigKey, connectionId, method } = config;
 
-        switch (providedMethod) {
-            case 'POST':
-            case 'post':
-                config.method = 'POST';
-                break;
-
-            case 'DELETE':
-            case 'delete':
-                config.method = 'DELETE';
-                break;
-
-            case 'PATCH':
-            case 'patch':
-                config.method = 'PATCH';
-                break;
-
-            case 'PUT':
-            case 'put':
-                config.method = 'PUT';
-                break;
-
-            default:
-                config.method = 'GET';
-                break;
-        }
-
-        const tokenResponse = await this.getToken(providerConfigKey, connectionId);
-
-        const url = `${this.serverUrl}/proxy`;
+        const url = `${this.serverUrl}/proxy/${config.endpoint}`;
 
         const headers = {
-            'Content-Type': 'application/json',
-            'Accept-Encoding': 'application/json'
+            'Connection-Id': connectionId,
+            'Provider-Config-Key': providerConfigKey
         };
+
         const options = {
             headers: this.enrichHeaders(headers)
         };
 
-        config.token = tokenResponse;
-
-        return axios.post(url, config, options);
+        if (method?.toUpperCase() === 'POST') {
+            return axios.post(url, config.data, options);
+        } else if (method?.toUpperCase() === 'PATCH') {
+            return axios.patch(url, config.data, options);
+        } else if (method?.toUpperCase() === 'PUT') {
+            return axios.put(url, config.data, options);
+        } else if (method?.toUpperCase() === 'DELETE') {
+            return axios.delete(url, options);
+        } else {
+            return axios.get(url, options);
+        }
     }
 
     public async get(config: ProxyConfiguration) {

@@ -1,4 +1,4 @@
-import type { Request, Response } from 'express';
+import type { Response } from 'express';
 
 import errorManager from '../utils/error.manager.js';
 import { ProviderConfig, ProviderTemplate, Connection, ProviderAuthModes, ProviderTemplateOAuth2 } from '../models.js';
@@ -7,11 +7,8 @@ import configService from '../services/config.service.js';
 import analytics from './analytics.js';
 import { getAccount } from './utils.js';
 
-export const getConnectionCredentials = async (req: Request, res: Response) => {
+export const getConnectionCredentials = async (res: Response, connectionId: string, providerConfigKey: string, instantRefresh = false) => {
     const accountId = getAccount(res);
-    const connectionId = req.params['connectionId'] as string;
-    const providerConfigKey = req.query['provider_config_key'] as string;
-    const instantRefresh = req.query['force_refresh'] === 'true';
 
     if (connectionId === null) {
         errorManager.errRes(res, 'missing_connection');
@@ -27,14 +24,14 @@ export const getConnectionCredentials = async (req: Request, res: Response) => {
 
     if (connection === null) {
         errorManager.errRes(res, 'unkown_connection');
-        return;
+        throw new Error(`Connection not found`);
     }
 
     const config: ProviderConfig | null = await configService.getProviderConfig(connection.provider_config_key, accountId);
 
     if (config === null) {
         errorManager.errRes(res, 'unknown_provider_config');
-        return;
+        throw new Error(`Provider config not found`);
     }
 
     const template: ProviderTemplate | undefined = configService.getTemplate(config.provider);

@@ -15,32 +15,28 @@ class ConfigService {
     }
 
     private getTemplatesFromFile() {
-        let templatesPath = path.join(dirname(), '../../providers.yaml');
+        const templatesPath = path.join(dirname(), '../../providers.yaml');
 
-        let fileEntries = yaml.load(fs.readFileSync(templatesPath).toString()) as { [key: string]: ProviderTemplate | ProviderTemplateAlias };
+        const fileEntries = yaml.load(fs.readFileSync(templatesPath).toString()) as { [key: string]: ProviderTemplate | ProviderTemplateAlias };
 
         if (fileEntries == null) {
             throw new NangoError('provider_template_loading_failed');
         }
 
-        for (let key in fileEntries) {
-            const entry = fileEntries[key];
-            let alias = (entry as ProviderTemplateAlias).alias;
+        for (const key in fileEntries) {
+            const entry = fileEntries[key] as ProviderTemplateAlias;
 
-            if (alias && fileEntries[alias] != null) {
-                let overrides = {};
-                if (Object.keys(entry as ProviderTemplateAlias).length > 0) {
-                    const { alias, ...templateOverrides } = entry as ProviderTemplateAlias;
-                    overrides = templateOverrides;
+            if (entry?.alias) {
+                let hasOverrides = false;
+                let templateOverrides;
+                if (Object.keys(fileEntries[key] as ProviderTemplate).length > 0) {
+                    const { alias, ...overrides } = entry as ProviderTemplateAlias;
+                    hasOverrides = true;
+                    templateOverrides = overrides;
                 }
-                fileEntries[key] = fileEntries[alias] as ProviderTemplate;
-
-                if (Object.keys(overrides).length > 0) {
-                    for (const prop in overrides) {
-                        // TODO clean up
-                        // @ts-ignore
-                        fileEntries[key][prop] = overrides[prop];
-                    }
+                const aliasData = fileEntries[entry.alias] as ProviderTemplate;
+                if (hasOverrides) {
+                    fileEntries[key] = { ...aliasData, ...templateOverrides };
                 }
             }
         }

@@ -67,13 +67,8 @@ app.route('/connection/:connectionId').get(apiAuth, connectionController.getConn
 app.route('/connection').get(apiAuth, connectionController.listConnections.bind(connectionController));
 app.route('/connection/:connectionId').delete(apiAuth, connectionController.deleteConnection.bind(connectionController));
 
-// Proxy Routes
-app.route('/proxy').post(apiAuth, proxyController.routeSDKCall.bind(proxyController));
-app.route('/proxy/:connectionId').get(apiAuth, proxyController.routeHTTPCall.bind(proxyController));
-app.route('/proxy/:connectionId').post(apiAuth, proxyController.routeHTTPCall.bind(proxyController));
-app.route('/proxy/:connectionId').patch(apiAuth, proxyController.routeHTTPCall.bind(proxyController));
-app.route('/proxy/:connectionId').put(apiAuth, proxyController.routeHTTPCall.bind(proxyController));
-app.route('/proxy/:connectionId').delete(apiAuth, proxyController.routeHTTPCall.bind(proxyController));
+// Proxy Route
+app.route('/proxy/*').all(apiAuth, proxyController.routeCall.bind(proxyController));
 
 // Webapp routes (no auth).
 if (isCloud()) {

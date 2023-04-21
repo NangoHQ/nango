@@ -24,6 +24,7 @@ export interface ProviderTemplate {
     redirect_uri_metadata?: Array<string>;
     token_response_metadata?: Array<string>;
     base_api_url?: string;
+    docs?: string;
 }
 
 export interface ProviderTemplateAlias {

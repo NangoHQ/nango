@@ -7,7 +7,6 @@ import axiosRetry from 'axios-retry';
 import logger from '../utils/logger.js';
 import errorManager from '../utils/error.manager.js';
 import configService from '../services/config.service.js';
-import { getAccount } from '../utils/utils.js';
 import type { ProxyBodyConfiguration, Connection, HTTP_VERB } from '../models.js';
 import { NangoError } from '../utils/error.js';
 import { getConnectionCredentials } from '../utils/connection.js';
@@ -32,55 +31,38 @@ axiosRetry(axios, {
 });
 
 class ProxyController {
-    public async routeSDKCall(req: Request, res: Response, next: NextFunction) {
-        if (req.body === null) {
-            errorManager.errRes(res, 'missing_body');
-            logger.error(`Proxy: a POST body with the needed configuration is missing.`);
-            return;
-        }
-        const { valid, error } = this.validateBody(req);
-        if (!valid) {
-            errorManager.errRes(res, String(error));
-            return;
-        }
-
-        const configBody = { ...req.body };
-        const { method } = configBody;
-
-        logger.info(`Proxy: received ${method} call with a valid body`);
-
-        const { providerConfigKey } = configBody;
-        const accountId = getAccount(res);
-        const providerConfig = await configService.getProviderConfig(providerConfigKey, accountId);
-        if (!providerConfig) {
-            logger.error(`Proxy: provider configuration not found`);
-            res.status(404).send();
-        }
-        const template = configService.getTemplate(String(providerConfig?.provider));
-
-        if (!template.base_api_url) {
-            logger.error(
-                `The proxy is not supported for this provider. You can easily add support by following the instructions at https://docs.nango.dev/contribute-api`
-            );
-            errorManager.errRes(res, 'missing_base_api_url');
-            return;
-        }
-
-        configBody.template = template;
-
-        return this.sendToHttpMethod(res, next, method, configBody);
-    }
-
-    public async routeHTTPCall(req: Request, res: Response, next: NextFunction) {
-        // TODO add support for custom headers
+    public async routeCall(req: Request, res: Response, next: NextFunction) {
         try {
-            const connection = await getConnectionCredentials(req, res);
+            const connectionId = req.get('Connection-Id') as string;
+            const providerConfigKey = req.get('Provider-Config-Key') as string;
+
+            if (!connectionId) {
+                errorManager.errRes(res, 'missing_connection_id');
+                logger.error(
+                    `Proxy: the connection id value is missing. If you're making a HTTP request then it should be included in the header 'Connection-Id'. If you're using the SDK the connectionId property should be specified.`
+                );
+                return;
+            }
+
+            if (!providerConfigKey) {
+                errorManager.errRes(res, 'missing_provider_config_key');
+                logger.error(
+                    `Proxy: the provider config key value is missing. If you're making a HTTP request then it should be included in the header 'Provider-Config-Key'. If you're using the SDK the providerConfigKey property should be specified.`
+                );
+                return;
+            }
+
+            logger.info('Connection id and provider config key parsed and received successfully');
+
+            const connection = await getConnectionCredentials(res, connectionId, providerConfigKey);
+
+            logger.info('Connection credentials found successfully');
 
             const { method } = req;
 
-            const endpoint = req.query['endpoint'] as string;
+            const endpoint = req.params[0] as string;
 
-            if (endpoint === null) {
+            if (!endpoint) {
                 errorManager.errRes(res, 'missing_endpoint');
                 logger.error(`Proxy: a API URL endpoint is missing.`);
                 return;
@@ -102,7 +84,7 @@ class ProxyController {
 
             logger.info(`Proxy: token retrieved successfully`);
 
-            const { account_id: accountId, provider_config_key: providerConfigKey, connection_id: connectionId } = connection as Connection;
+            const { account_id: accountId } = connection as Connection;
             const providerConfig = await configService.getProviderConfig(providerConfigKey, accountId);
             const headers = this.parseHeaders(req);
 
@@ -153,7 +135,7 @@ class ProxyController {
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
             responseStream.data.pipe(res);
         } catch (error) {
-            const nangoError = this.catalogAndReportError(error as Error | AxiosError, url);
+            const nangoError = this.catalogAndReportError(error as Error | AxiosError, url, config);
             next(nangoError);
         }
     }
@@ -194,7 +176,7 @@ class ProxyController {
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
             responseStream.data.pipe(res);
         } catch (error) {
-            const nangoError = this.catalogAndReportError(error as Error | AxiosError, url);
+            const nangoError = this.catalogAndReportError(error as Error | AxiosError, url, config);
             next(nangoError);
         }
     }
@@ -219,7 +201,7 @@ class ProxyController {
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
             responseStream.data.pipe(res);
         } catch (error) {
-            const nangoError = this.catalogAndReportError(error as Error | AxiosError, url);
+            const nangoError = this.catalogAndReportError(error as Error | AxiosError, url, config);
             next(nangoError);
         }
     }
@@ -244,7 +226,7 @@ class ProxyController {
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
             responseStream.data.pipe(res);
         } catch (error) {
-            const nangoError = this.catalogAndReportError(error as Error | AxiosError, url);
+            const nangoError = this.catalogAndReportError(error as Error | AxiosError, url, config);
             next(nangoError);
         }
     }
@@ -262,23 +244,35 @@ class ProxyController {
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
             responseStream.data.pipe(res);
         } catch (error) {
-            const nangoError = this.catalogAndReportError(error as Error | AxiosError, url);
+            const nangoError = this.catalogAndReportError(error as Error | AxiosError, url, config);
             next(nangoError);
         }
     }
 
-    private catalogAndReportError(error: Error | AxiosError, url: string) {
+    private catalogAndReportError(error: Error | AxiosError, url: string, config: ProxyBodyConfiguration) {
         if (axios.isAxiosError(error)) {
             if (error?.response?.status === 404) {
-                logger.error(`Response is a 404 to ${url}, make sure you have the endpoint specified and spelled correctly.`);
+                logger.error(
+                    `Response is a 404 to ${url}, make sure you have the endpoint specified and spelled correctly.${
+                        config.template.docs ? ` Refer to the documentation at ${config.template.docs} for help` : ''
+                    }`
+                );
                 return new NangoError('unknown_endpoint');
             }
             if (error?.response?.status === 403) {
-                logger.error(`Response is a 403 to ${url}, make sure you have the proper scopes configured.`);
+                logger.error(
+                    `Response is a 403 to ${url}, make sure you have the proper scopes configured.${
+                        config.template.docs ? ` Refer to the documentation at ${config.template.docs} for help` : ''
+                    }`
+                );
                 return new NangoError('fobidden');
             }
             if (error?.response?.status === 400) {
-                logger.error(`Response is a 400 to ${url}, make sure you have the proper headers to go to the API set.`);
+                logger.error(
+                    `Response is a 400 to ${url}, make sure you have the proper headers to go to the API set.${
+                        config.template.docs ? ` Refer to the documentation at ${config.template.docs} for help` : ''
+                    }`
+                );
                 return new NangoError('fobidden');
             }
         } else {
@@ -310,24 +304,6 @@ class ProxyController {
         }
 
         return headers;
-    }
-
-    private validateBody(req: Request): { valid: boolean; error?: string } {
-        const { body } = req;
-
-        if (!body.token) {
-            return { valid: false, error: 'missing_token' };
-        }
-
-        if (!body.endpoint) {
-            return { valid: false, error: 'missing_endpoint' };
-        }
-
-        if (!body.method) {
-            return { valid: false, error: 'missing_method' };
-        }
-
-        return { valid: true };
     }
 
     private parseHeaders(req: Request) {

@@ -147,7 +147,12 @@ class ConnectionController {
 
     async getConnectionCreds(req: Request, res: Response, next: NextFunction) {
         try {
-            const connection = await getConnectionCredentials(req, res);
+            const connectionId = req.params['connectionId'] as string;
+            const providerConfigKey = req.query['provider_config_key'] as string;
+            const instantRefresh = req.query['force_refresh'] === 'true';
+
+            const connection = await getConnectionCredentials(res, connectionId, providerConfigKey, instantRefresh);
+
             res.status(200).send(connection);
         } catch (err) {
             next(err);

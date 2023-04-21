@@ -75,72 +75,130 @@ const insertCalendarListResponse = await nango.proxy({
 
 ```bash
 curl -H 'Authorization: Bearer <SECRET-KEY>' \
-'https://api.nango.dev/proxy/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>&endpoint=<API-ENDPOINT>'
+-H 'Connection-Id: <CONNECTION-ID>' \
+-H 'Provider-Config-Key: <CONFIG-KEY>' \
+'https://api.nango.dev/proxy/<API-ENDPOINT>'
 
 curl -X POST -H 'Content-Type: application/json' \
 -H 'Authorization: Bearer <SECRET-KEY>' \
--d '{"id": 1, "colorId: "blue"}' \
-'https://api.nango.dev/proxy/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>&endpoint=<API-ENDPOINT>
+-H 'Connection-Id: <CONNECTION-ID>' \
+-H 'Provider-Config-Key: <CONFIG-KEY>' \
+-d '{"colorId: "blue"}' \
+'https://api.nango.dev/proxy/<API-ENDPOINT>'
 
 curl -X PATCH -H 'Content-Type: application/json' \
 -H 'Authorization: Bearer <SECRET-KEY>' \
--d '{"id": 1, "colorId: "blue"}' \
-'https://api.nango.dev/proxy/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>&endpoint=<API-ENDPOINT>
+-H 'Connection-Id: <CONNECTION-ID>' \
+-H 'Provider-Config-Key: <CONFIG-KEY>' \
+-d '{"id": 1, "colorId: "black"}' \
+'https://api.nango.dev/proxy/<API-ENDPOINT>'
 
 curl -X PUT -H 'Content-Type: application/json' \
 -H 'Authorization: Bearer <SECRET-KEY>' \
--d '{"id": 1, "colorId: "blue"}' \
-'https://api.nango.dev/proxy/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>&endpoint=<API-ENDPOINT>
+-H 'Connection-Id: <CONNECTION-ID>' \
+-H 'Provider-Config-Key: <CONFIG-KEY>' \
+-d '{"id": 1, "colorId: "orange"}' \
+'https://api.nango.dev/proxy/<API-ENDPOINT>'
 
 curl -X DELETE -H 'Authorization: Bearer <SECRET-KEY>' \
-'https://api.nango.dev/proxy/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>&endpoint=<API-ENDPOINT>/<DELETE-RESOURCE-ID>'
+-H 'Connection-Id: <CONNECTION-ID>' \
+-H 'Provider-Config-Key: <CONFIG-KEY>' \
+'https://api.nango.dev/proxy/<API-ENDPOINT>'
+```
+
+If you need to add custom headers that get passed to the API you can prefix
+them with `Nango-Proxy-`. For exmaple the Notion API requires a `Notion-Version` header
+
+```bash
+curl -H 'Authorization: Bearer <SECRET-KEY>' \
+-H 'Connection-Id: <CONNECTION-ID>' \
+-H 'Provider-Config-Key: <CONFIG-KEY>' \
+-H 'Nango-Proxy-Notion-Version: 2022-06-28'
+'https://api.nango.dev/proxy/v1/users'
 ```
 
   </TabItem>
   <TabItem value="localhost" label="Localhost">
 
 ```bash
-curl 'http://localhost:3003/proxy/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>&endpoint=<API-ENDPOINT>'
+curl -H 'Connection-Id: <CONNECTION-ID>' \
+-H 'Provider-Config-Key: <CONFIG-KEY>' \
+'http://localhost:3003/proxy/<API-ENDPOINT>'
 
 curl -X POST -H 'Content-Type: application/json' \
--d '{"id": 1, "colorId: "blue"}' \
-'http://localhost:3003/proxy/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>&endpoint=<API-ENDPOINT>
+-H 'Connection-Id: <CONNECTION-ID>' \
+-H 'Provider-Config-Key: <CONFIG-KEY>' \
+-d '{"colorId: "blue"}' \
+'http://localhost:3003/proxy/<API-ENDPOINT>'
 
 curl -X PATCH -H 'Content-Type: application/json' \
--H 'Authorization: Bearer <SECRET-KEY>' \
--d '{"id": 1, "colorId: "blue"}' \
-'http://localhost:3003/proxy/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>&endpoint=<API-ENDPOINT>
+-H 'Connection-Id: <CONNECTION-ID>' \
+-H 'Provider-Config-Key: <CONFIG-KEY>' \
+-d '{"id": 1, "colorId: "black"}' \
+'http://localhost:3003/proxy/<API-ENDPOINT>'
 
 curl -X PUT -H 'Content-Type: application/json' \
--H 'Authorization: Bearer <SECRET-KEY>' \
--d '{"id": 1, "colorId: "blue"}' \
-'http://localhost:3003/proxy/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>&endpoint=<API-ENDPOINT>
+-H 'Connection-Id: <CONNECTION-ID>' \
+-H 'Provider-Config-Key: <CONFIG-KEY>' \
+-d '{"id": 1, "colorId: "orange"}' \
+'http://localhost:3003/proxy/<API-ENDPOINT>'
 
-curl -X DELETE -H 'Authorization: Bearer <SECRET-KEY>' \
-'http://localhost:3003/proxy/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>&endpoint=<API-ENDPOINT>
+curl -X DELETE \
+-H 'Connection-Id: <CONNECTION-ID>' \
+-H 'Provider-Config-Key: <CONFIG-KEY>' \
+'http://localhost:3003/proxy/<API-ENDPOINT>'
+```
+
+If you need to add custom headers that get passed to the API you can prefix
+them with `Nango-Proxy-`. For exmaple the Notion API requires a `Notion-Version` header
+
+```bash
+curl -H 'Connection-Id: <CONNECTION-ID>' \
+-H 'Provider-Config-Key: <CONFIG-KEY>' \
+-H 'Nango-Proxy-Notion-Version: 2022-06-28'
+'http://localhost:3003/proxy/v1/users'
 ```
 
   </TabItem>
   <TabItem value="self-hosted" label="Self-hosted">
 
 ```bash
-curl '<NANGO-HOST-AND-PORT>/proxy/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>&endpoint=<API-ENDPOINT>'
+curl -H 'Connection-Id: <CONNECTION-ID>' \
+-H 'Provider-Config-Key: <CONFIG-KEY>' \
+'<NANGO-HOST-AND-PORT>/proxy/<API-ENDPOINT>'
+
 curl -X POST -H 'Content-Type: application/json' \
--d '{"id": 1, "colorId: "blue"}' \
-'<NANGO-HOST-AND-PORT>/proxy/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>&endpoint=<API-ENDPOINT>
+-H 'Connection-Id: <CONNECTION-ID>' \
+-H 'Provider-Config-Key: <CONFIG-KEY>' \
+-d '{"colorId: "blue"}' \
+'<NANGO-HOST-AND-PORT>/proxy/<API-ENDPOINT>'
 
 curl -X PATCH -H 'Content-Type: application/json' \
--H 'Authorization: Bearer <SECRET-KEY>' \
--d '{"id": 1, "colorId: "blue"}' \
-'<NANGO-HOST-AND-PORT>/proxy/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>&endpoint=<API-ENDPOINT>
+-H 'Connection-Id: <CONNECTION-ID>' \
+-H 'Provider-Config-Key: <CONFIG-KEY>' \
+-d '{"id": 1, "colorId: "black"}' \
+'<NANGO-HOST-AND-PORT>/proxy/<API-ENDPOINT>'
 
 curl -X PUT -H 'Content-Type: application/json' \
--H 'Authorization: Bearer <SECRET-KEY>' \
--d '{"id": 1, "colorId: "blue"}' \
-'<NANGO-HOST-AND-PORT>/proxy/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>&endpoint=<API-ENDPOINT>
+-H 'Connection-Id: <CONNECTION-ID>' \
+-H 'Provider-Config-Key: <CONFIG-KEY>' \
+-d '{"id": 1, "colorId: "orange"}' \
+'<NANGO-HOST-AND-PORT>/proxy/<API-ENDPOINT>'
 
-curl -X DELETE -H 'Authorization: Bearer <SECRET-KEY>' \
-'<NANGO-HOST-AND-PORT>/proxy/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>&endpoint=<API-ENDPOINT>
+curl -X DELETE \
+-H 'Connection-Id: <CONNECTION-ID>' \
+-H 'Provider-Config-Key: <CONFIG-KEY>' \
+'<NANGO-HOST-AND-PORT>/proxy/<API-ENDPOINT>'
+```
+
+If you need to add custom headers that get passed to the API you can prefix
+them with `Nango-Proxy-`. For exmaple the Notion API requires a `Notion-Version` header
+
+```bash
+curl -H 'Connection-Id: <CONNECTION-ID>' \
+-H 'Provider-Config-Key: <CONFIG-KEY>' \
+-H 'Nango-Proxy-Notion-Version: 2022-06-28'
+'<NANGO-HOST-AND-PORT>/proxy/v1/users'
 ```
 
   </TabItem>
