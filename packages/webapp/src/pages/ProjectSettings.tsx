@@ -7,6 +7,7 @@ import { useGetProjectInfoAPI, useEditCallbackUrlAPI } from '../utils/api';
 import { isCloud, defaultCallback } from '../utils/utils';
 import DashboardLayout from '../layout/DashboardLayout';
 import { LeftNavBarItems } from '../components/LeftNavBar';
+import SecretInput from '../components/ui/SecretInput';
 
 export default function ProjectSettings() {
     const [loaded, setLoaded] = useState(false);
@@ -82,9 +83,10 @@ export default function ProjectSettings() {
                                         </label>
                                         <p className="ml-2 text-text-dark-gray text-sm">(do not share!)</p>
                                     </div>
-                                    <Prism language="bash" colorScheme="dark">
+                                    {/* <Prism language="bash" colorScheme="dark">
                                         {secretKey}
-                                    </Prism>
+                                    </Prism> */}
+                                    <SecretInput copy={true} defaultValue={secretKey} />
                                 </div>
                             </div>
                             <div>
