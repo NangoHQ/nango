@@ -66,7 +66,14 @@ app.route('/config/:providerConfigKey').delete(apiAuth, configController.deleteP
 app.route('/connection/:connectionId').get(apiAuth, connectionController.getConnectionCreds.bind(connectionController));
 app.route('/connection').get(apiAuth, connectionController.listConnections.bind(connectionController));
 app.route('/connection/:connectionId').delete(apiAuth, connectionController.deleteConnection.bind(connectionController));
-app.route('/proxy').post(apiAuth, proxyController.routeCall.bind(proxyController));
+
+// Proxy Routes
+app.route('/proxy').post(apiAuth, proxyController.routeSDKCall.bind(proxyController));
+app.route('/proxy/:connectionId').get(apiAuth, proxyController.routeHTTPCall.bind(proxyController));
+app.route('/proxy/:connectionId').post(apiAuth, proxyController.routeHTTPCall.bind(proxyController));
+app.route('/proxy/:connectionId').patch(apiAuth, proxyController.routeHTTPCall.bind(proxyController));
+app.route('/proxy/:connectionId').put(apiAuth, proxyController.routeHTTPCall.bind(proxyController));
+app.route('/proxy/:connectionId').delete(apiAuth, proxyController.routeHTTPCall.bind(proxyController));
 
 // Webapp routes (no auth).
 if (isCloud()) {

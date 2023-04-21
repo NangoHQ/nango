@@ -182,12 +182,14 @@ export interface AuthorizationTokenResponse extends Omit<OAuth2Credentials, 'typ
 
 export interface RefreshTokenResponse extends AuthorizationTokenResponse {}
 
+export type HTTP_VERB = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
+
 export interface ProxyBodyConfiguration {
     endpoint: string;
     providerConfigKey: string;
     connectionId: string;
     token: string;
-    method: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
+    method: HTTP_VERB;
     template: ProviderTemplate;
 
     data?: unknown;
