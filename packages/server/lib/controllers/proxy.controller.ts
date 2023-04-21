@@ -12,6 +12,10 @@ import type { ProxyBodyConfiguration, Connection, HTTP_VERB } from '../models.js
 import { NangoError } from '../utils/error.js';
 import { getConnectionCredentials } from '../utils/connection.js';
 
+interface ForwardedHeaders {
+    [key: string]: string;
+}
+
 const RETRIES = 2;
 
 axiosRetry(axios, {
@@ -55,7 +59,9 @@ class ProxyController {
         const template = configService.getTemplate(String(providerConfig?.provider));
 
         if (!template.base_api_url) {
-            logger.error(`Proxy: base api url configuration is missing. The providers.yaml might be missing a value`);
+            logger.error(
+                `The proxy is not supported for this provider. You can easily add support by following the instructions at https://docs.nango.dev/contribute-api`
+            );
             errorManager.errRes(res, 'missing_base_api_url');
             return;
         }
@@ -98,6 +104,7 @@ class ProxyController {
 
             const { account_id: accountId, provider_config_key: providerConfigKey, connection_id: connectionId } = connection as Connection;
             const providerConfig = await configService.getProviderConfig(providerConfigKey, accountId);
+            const headers = this.parseHeaders(req);
 
             if (!providerConfig) {
                 logger.error(`Proxy: provider configuration not found`);
@@ -106,7 +113,9 @@ class ProxyController {
             const template = configService.getTemplate(String(providerConfig?.provider));
 
             if (!template.base_api_url) {
-                logger.error(`Proxy: base api url configuration is missing. The providers.yaml might be missing a value`);
+                logger.error(
+                    `The proxy is not supported for this provider. You can easily add support by following the instructions at https://docs.nango.dev/contribute-api`
+                );
                 errorManager.errRes(res, 'missing_base_api_url');
                 return;
             }
@@ -121,6 +130,7 @@ class ProxyController {
                 token: String(token),
                 providerConfigKey,
                 connectionId,
+                headers,
                 data: req.body
             };
 
@@ -267,6 +277,10 @@ class ProxyController {
                 logger.error(`Response is a 403 to ${url}, make sure you have the proper scopes configured.`);
                 return new NangoError('fobidden');
             }
+            if (error?.response?.status === 400) {
+                logger.error(`Response is a 400 to ${url}, make sure you have the proper headers to go to the API set.`);
+                return new NangoError('fobidden');
+            }
         } else {
             return error;
         }
@@ -314,6 +328,22 @@ class ProxyController {
         }
 
         return { valid: true };
+    }
+
+    private parseHeaders(req: Request) {
+        const headers = req.rawHeaders;
+        const HEADER_PROXY = 'nango-proxy-';
+        const forwardedHeaders: ForwardedHeaders = {};
+
+        for (let i = 0, n = headers.length; i < n; i += 2) {
+            const headerKey = headers[i]?.toLowerCase();
+
+            if (headerKey?.startsWith(HEADER_PROXY)) {
+                forwardedHeaders[headerKey.slice(HEADER_PROXY.length)] = headers[i + 1] || '';
+            }
+        }
+
+        return forwardedHeaders;
     }
 }
 
