@@ -19,6 +19,7 @@ export default function PrismPlus({ children, ...props }: PrismProps) {
                 {isSecretVisible ? 'hide' : 'show'}
             </span>
         );
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isSecretVisible]);
 
     return (
