@@ -74,8 +74,26 @@ const insertCalendarListResponse = await nango.proxy({
   <TabItem value="cloud" label="Nango Cloud">
 
 ```bash
-curl 'https://api.nango.dev/proxy/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>&endpoint=<API-ENDPOINT>'\
--H 'Authorization: Bearer <SECRET-KEY>'
+curl -H 'Authorization: Bearer <SECRET-KEY>' \
+'https://api.nango.dev/proxy/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>&endpoint=<API-ENDPOINT>'
+
+curl -X POST -H 'Content-Type: application/json' \
+-H 'Authorization: Bearer <SECRET-KEY>' \
+-d '{"id": 1, "colorId: "blue"}' \
+'https://api.nango.dev/proxy/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>&endpoint=<API-ENDPOINT>
+
+curl -X PATCH -H 'Content-Type: application/json' \
+-H 'Authorization: Bearer <SECRET-KEY>' \
+-d '{"id": 1, "colorId: "blue"}' \
+'https://api.nango.dev/proxy/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>&endpoint=<API-ENDPOINT>
+
+curl -X PUT -H 'Content-Type: application/json' \
+-H 'Authorization: Bearer <SECRET-KEY>' \
+-d '{"id": 1, "colorId: "blue"}' \
+'https://api.nango.dev/proxy/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>&endpoint=<API-ENDPOINT>
+
+curl -X DELETE -H 'Authorization: Bearer <SECRET-KEY>' \
+'https://api.nango.dev/proxy/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>&endpoint=<API-ENDPOINT>/<DELETE-RESOURCE-ID>'
 ```
 
   </TabItem>
@@ -83,6 +101,23 @@ curl 'https://api.nango.dev/proxy/<CONNECTION-ID>?provider_config_key=<CONFIG-KE
 
 ```bash
 curl 'http://localhost:3003/proxy/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>&endpoint=<API-ENDPOINT>'
+
+curl -X POST -H 'Content-Type: application/json' \
+-d '{"id": 1, "colorId: "blue"}' \
+'http://localhost:3003/proxy/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>&endpoint=<API-ENDPOINT>
+
+curl -X PATCH -H 'Content-Type: application/json' \
+-H 'Authorization: Bearer <SECRET-KEY>' \
+-d '{"id": 1, "colorId: "blue"}' \
+'http://localhost:3003/proxy/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>&endpoint=<API-ENDPOINT>
+
+curl -X PUT -H 'Content-Type: application/json' \
+-H 'Authorization: Bearer <SECRET-KEY>' \
+-d '{"id": 1, "colorId: "blue"}' \
+'http://localhost:3003/proxy/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>&endpoint=<API-ENDPOINT>
+
+curl -X DELETE -H 'Authorization: Bearer <SECRET-KEY>' \
+'http://localhost:3003/proxy/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>&endpoint=<API-ENDPOINT>
 ```
 
   </TabItem>
@@ -90,6 +125,22 @@ curl 'http://localhost:3003/proxy/<CONNECTION-ID>?provider_config_key=<CONFIG-KE
 
 ```bash
 curl '<NANGO-HOST-AND-PORT>/proxy/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>&endpoint=<API-ENDPOINT>'
+curl -X POST -H 'Content-Type: application/json' \
+-d '{"id": 1, "colorId: "blue"}' \
+'<NANGO-HOST-AND-PORT>/proxy/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>&endpoint=<API-ENDPOINT>
+
+curl -X PATCH -H 'Content-Type: application/json' \
+-H 'Authorization: Bearer <SECRET-KEY>' \
+-d '{"id": 1, "colorId: "blue"}' \
+'<NANGO-HOST-AND-PORT>/proxy/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>&endpoint=<API-ENDPOINT>
+
+curl -X PUT -H 'Content-Type: application/json' \
+-H 'Authorization: Bearer <SECRET-KEY>' \
+-d '{"id": 1, "colorId: "blue"}' \
+'<NANGO-HOST-AND-PORT>/proxy/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>&endpoint=<API-ENDPOINT>
+
+curl -X DELETE -H 'Authorization: Bearer <SECRET-KEY>' \
+'<NANGO-HOST-AND-PORT>/proxy/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>&endpoint=<API-ENDPOINT>
 ```
 
   </TabItem>
