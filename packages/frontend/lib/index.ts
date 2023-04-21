@@ -40,11 +40,6 @@ export default class Nango {
         } catch (err) {
             throw new Error(`Invalid URL provided for the Nango host: ${this.hostBaseUrl}`);
         }
-
-        if (!window) {
-            const errorMessage = "Couldn't initialize Nango frontend. The window object is undefined. Are you using Nango frontend from a browser?";
-            throw new Error(errorMessage);
-        }
     }
 
     public auth(providerConfigKey: string, connectionId: string, connectionConfig?: ConnectionConfig): Promise<any> {
