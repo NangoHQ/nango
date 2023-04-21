@@ -8,6 +8,8 @@ import { HelpCircle } from '@geist-ui/icons';
 import { useGetConnectionDetailsAPI, useDeleteConnectionAPI } from '../utils/api';
 import DashboardLayout from '../layout/DashboardLayout';
 import { LeftNavBarItems } from '../components/LeftNavBar';
+import SecretInput from '../components/ui/SecretInput';
+import PrismPlus from '../components/ui/prism/PrismPlus';
 
 interface Connection {
     id: number;
@@ -161,9 +163,8 @@ We could not retrieve and/or refresh your access token due to the following erro
                                             <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
                                                 Access Token
                                             </label>
-                                            <Prism language="bash" colorScheme="dark">
-                                                {connection.accessToken}
-                                            </Prism>
+
+                                            <SecretInput disabled defaultValue={connection.accessToken} copy={true} />
                                         </div>
                                     </div>
                                 )}
@@ -183,9 +184,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                                             <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
                                                 Refresh Token
                                             </label>
-                                            <Prism language="bash" colorScheme="dark">
-                                                {connection.refreshToken}
-                                            </Prism>
+                                            <SecretInput disabled defaultValue={connection.refreshToken} copy={true} />
                                         </div>
                                     </div>
                                 )}
@@ -195,9 +194,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                                             <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
                                                 OAuth Token
                                             </label>
-                                            <Prism language="bash" colorScheme="dark">
-                                                {connection.oauthToken}
-                                            </Prism>
+                                            <SecretInput disabled defaultValue={connection.oauthToken} copy={true} />
                                         </div>
                                     </div>
                                 )}
@@ -207,9 +204,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                                             <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
                                                 OAuth Token Secret
                                             </label>
-                                            <Prism language="bash" colorScheme="dark">
-                                                {connection.oauthTokenSecret}
-                                            </Prism>
+                                            <SecretInput disabled defaultValue={connection.oauthTokenSecret} copy={true} />
                                         </div>
                                     </div>
                                 )}
@@ -238,14 +233,13 @@ We could not retrieve and/or refresh your access token due to the following erro
                                         <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
                                             Raw Token Response
                                         </label>
-                                        <Prism language="json" colorScheme="dark">
-                                            {JSON.stringify(connection.rawCredentials, null, 4) || '{}'}
-                                        </Prism>
+                                        <PrismPlus language="json" colorScheme="dark">
+                                            {JSON.stringify({ access_token: '123', refresh_token: '1234', expires: '12 jan' }, null, 4) || '{}'}
+                                        </PrismPlus>
                                     </div>
                                 </div>
                             </div>
                         )}
-
                         {serverErrorMessage && (
                             <div className="mx-8 mt-8">
                                 <p className="mt-6 text-sm text-red-600">{serverErrorMessage}</p>
