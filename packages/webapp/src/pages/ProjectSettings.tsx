@@ -83,9 +83,6 @@ export default function ProjectSettings() {
                                         </label>
                                         <p className="ml-2 text-text-dark-gray text-sm">(do not share!)</p>
                                     </div>
-                                    {/* <Prism language="bash" colorScheme="dark">
-                                        {secretKey}
-                                    </Prism> */}
                                     <SecretInput copy={true} defaultValue={secretKey} />
                                 </div>
                             </div>
