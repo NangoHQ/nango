@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
+import type { OutgoingHttpHeaders } from 'http';
 import type { NextFunction } from 'express';
-import axios, { AxiosError } from 'axios';
+import axios, { AxiosError, AxiosResponse } from 'axios';
 import axiosRetry from 'axios-retry';
 
 import logger from '../utils/logger.js';
@@ -17,8 +18,11 @@ axiosRetry(axios, {
     retryDelay: axiosRetry.exponentialDelay,
     retryCondition: (error) => {
         const status = error?.response?.status;
-        logger.info(`API received a ${status} error, retrying with exponential backoffs for a total of ${RETRIES} times`);
-        return error?.response?.status.toString().startsWith('5') || error?.response?.status === 429;
+        if (error?.response?.status.toString().startsWith('5') || error?.response?.status === 429) {
+            logger.info(`API received a ${status} error, retrying with exponential backoffs for a total of ${RETRIES} times`);
+            return true;
+        }
+        return false;
     }
 });
 
@@ -66,19 +70,24 @@ class ProxyController {
         } else if (method === 'DELETE') {
             return this.delete(res, next, url, configBody);
         } else {
-            return this.get(res, next, url, configBody);
+            return this.get(req, res, next, url, configBody);
         }
     }
 
-    private async get(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration) {
+    private async get(_req: Request, res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration) {
         try {
             const url = this.constructUrl(config);
-            const response = await axios.get(url, {
+            const responseStream: AxiosResponse = await axios({
+                method: 'get',
+                url,
+                responseType: 'stream',
                 headers: {
                     Authorization: `Bearer ${config.token}`
                 }
             });
-            res.status(200).send(response.data);
+            logger.info(`Proxy: GET request to ${url} was successful`);
+            res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
+            responseStream.data.pipe(res);
         } catch (error) {
             this.catalogAndReportError(error as Error | AxiosError, url);
             next(error);
@@ -93,13 +102,18 @@ class ProxyController {
             }
 
             const { data } = config;
-            const response = await axios.post(url, data, {
+            const responseStream = await axios({
+                method: 'post',
+                url,
+                data,
+                responseType: 'stream',
                 headers: {
                     Authorization: `Bearer ${config.token}`
                 }
             });
             logger.info(`Proxy: POST request to ${url} was successful`);
-            res.status(200).send(response.data);
+            res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
+            responseStream.data.pipe(res);
         } catch (error) {
             const nangoError = this.catalogAndReportError(error as Error | AxiosError, url);
             next(nangoError);
@@ -114,14 +128,18 @@ class ProxyController {
             }
 
             const { data } = config;
-            const response = await axios.patch(url, data, {
+            const responseStream = await axios({
+                method: 'patch',
+                url,
+                data,
+                responseType: 'stream',
                 headers: {
                     Authorization: `Bearer ${config.token}`
                 }
             });
             logger.info(`Proxy: PATCH request to ${url} was successful`);
-            res.status(200).send(response.data);
-
+            res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
+            responseStream.data.pipe(res);
             res.status(200).send();
         } catch (error) {
             next(error);
@@ -136,13 +154,18 @@ class ProxyController {
             }
 
             const { data } = config;
-            const response = await axios.put(url, data, {
+            const responseStream = await axios({
+                method: 'put',
+                url,
+                data,
+                responseType: 'stream',
                 headers: {
                     Authorization: `Bearer ${config.token}`
                 }
             });
             logger.info(`Proxy: PUT request to ${url} was successful`);
-            res.status(200).send(response.data);
+            res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
+            responseStream.data.pipe(res);
         } catch (error) {
             this.catalogAndReportError(error as Error | AxiosError, url);
             next(error);
@@ -151,13 +174,17 @@ class ProxyController {
 
     private async delete(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration) {
         try {
-            await axios.delete(url, {
+            const responseStream = await axios({
+                method: 'delete',
+                url,
+                responseType: 'stream',
                 headers: {
                     Authorization: `Bearer ${config.token}`
                 }
             });
             logger.info(`Proxy: DELETE request to ${url} was successful`);
-            res.status(200).send();
+            res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
+            responseStream.data.pipe(res);
         } catch (error) {
             const nangoError = this.catalogAndReportError(error as Error | AxiosError, url);
             next(nangoError);
