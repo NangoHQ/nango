@@ -149,8 +149,9 @@ const sidebars = {
             label: 'Supported APIs',
             link: {
                 type: 'generated-index',
-                title: 'Nango Supported APIs and API Wikis',
-                description: 'For every API that Nango supports we maintain a small API wiki with all our learnings. Feel free to contribute yours as well!',
+                title: 'Nango Supported OAuth APIs and REST API Wikis',
+                description:
+                    'For every OAuth API that Nango supports we maintain a small API wiki with all our learnings. Feel free to contribute yours as well!',
                 slug: '/providers'
             },
             items: [
@@ -232,6 +233,7 @@ const sidebars = {
                 'providers/strava',
                 'providers/stripe',
                 'providers/teamwork',
+                'providers/todoist',
                 'providers/trello',
                 'providers/twitch',
                 'providers/twitter',
