@@ -44,6 +44,10 @@ provider-slug: # Shorthand for the provider, ideally the provider's name. Must b
         - subdomain # Save the 'subdomain' query parameter value returned in the Redirect URI (Connection Metadata)
     token_response_metadata:
         - scopes # Save the 'scopes' query parameter value returned in the token response (Connection Metadata)
+
+    # Proxy API Call
+    base_api_url: https://api.example.com # base URL only, do not include any versions (v1/v2 in the base)
+    docs: https://api.docs.com # reference to the api's documentation
 ```
 
 :::info
