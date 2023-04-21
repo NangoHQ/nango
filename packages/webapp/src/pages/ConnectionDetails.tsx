@@ -234,7 +234,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                                             Raw Token Response
                                         </label>
                                         <PrismPlus language="json" colorScheme="dark">
-                                            {JSON.stringify({ access_token: '123', refresh_token: '1234', expires: '12 jan' }, null, 4) || '{}'}
+                                            {JSON.stringify(connection.rawCredentials, null, 4) || '{}'}
                                         </PrismPlus>
                                     </div>
                                 </div>
