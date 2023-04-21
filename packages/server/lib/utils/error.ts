@@ -93,7 +93,12 @@ export class NangoError extends Error {
 
             case 'unknown_endpoint':
                 this.status = 404;
-                this.message = 'The API endpoint could not be found. Please ensure you have the endpoint specified and spelled correctly';
+                this.message = 'The API endpoint could not be found and returned a 404. Please ensure you have the endpoint specified and spelled correctly.';
+                break;
+
+            case 'fobidden':
+                this.status = 403;
+                this.message = 'The API endpoint returned back a 403 error. Check the scopes requested to make sure proper access is requested to the API.';
                 break;
 
             case 'missing_provider_config':

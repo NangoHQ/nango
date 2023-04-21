@@ -260,8 +260,12 @@ class ProxyController {
     private catalogAndReportError(error: Error | AxiosError, url: string) {
         if (axios.isAxiosError(error)) {
             if (error?.response?.status === 404) {
-                logger.error(`Response is a 404 to ${url}, make sure you have the endpoint specified and spelled correctly`);
+                logger.error(`Response is a 404 to ${url}, make sure you have the endpoint specified and spelled correctly.`);
                 return new NangoError('unknown_endpoint');
+            }
+            if (error?.response?.status === 403) {
+                logger.error(`Response is a 403 to ${url}, make sure you have the proper scopes configured.`);
+                return new NangoError('fobidden');
             }
         } else {
             return error;

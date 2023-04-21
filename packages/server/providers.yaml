@@ -264,6 +264,7 @@ google-calendar:
     base_api_url: https://www.googleapis.com/calendar/v3
 google-mail:
     alias: google
+    base_api_url: https://gmail.googleapis.com/gmail/v1
 google-sheet:
     alias: google
 gorgias:
