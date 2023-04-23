@@ -244,7 +244,7 @@ class ConnectionController {
                     const [provider, properties] = providerProperties;
                     return {
                         name: provider,
-                        defaultScope: properties.default_scopes?.join(',')
+                        defaultScopes: properties.default_scopes
                     };
                 })
                 .sort((a, b) => a.name.localeCompare(b.name));

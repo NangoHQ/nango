@@ -30,7 +30,7 @@ interface Integration {
 
 interface Providers {
     name: string;
-    defaultScope: string;
+    defaultScopes: string[];
 }
 
 export default function IntegrationCreate() {
@@ -50,7 +50,7 @@ export default function IntegrationCreate() {
     const createIntegrationAPI = useCreateIntegrationAPI();
     const deleteIntegrationAPI = useDeleteIntegrationAPI();
     const [selectedProvider, setSelectedProvider] = useState<string>('my-integration');
-    const [providerDefaultScope, setProviderDefaultScope] = useState<string | undefined>(undefined)
+    const [providerDefaultScope, setProviderDefaultScope] = useState<string[]|undefined>(undefined)
 
     useEffect(() => {
         const getProviders = async () => {
@@ -69,7 +69,7 @@ export default function IntegrationCreate() {
                     let data = await res.json();
                     setProviders(data);
                     setSelectedProvider(data[0].name);
-                    setProviderDefaultScope(data[0].defaultScope);
+                    setProviderDefaultScope(data[0].defaultScopes);
                 }
             }
         };
@@ -93,7 +93,7 @@ export default function IntegrationCreate() {
     const handleIntegrationProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         let [provider, defaultScope] = e.target.value.split('|');
         setSelectedProvider(provider);
-        setProviderDefaultScope(defaultScope)
+        setProviderDefaultScope(defaultScope?.split(','))
 
     };
 
@@ -207,7 +207,7 @@ export default function IntegrationCreate() {
                                                 onChange={handleIntegrationProviderChange}
                                             >
                                                 {providers.map((provider, key) => (
-                                                    <option key={key} value={`${provider.name}|${provider.defaultScope}`}>{provider.name}</option>
+                                                    <option key={key} value={`${provider.name}|${provider.defaultScopes?.join(',')}`}>{provider.name}</option>
                                                 ))}
                                             </select>
                                         </div>
@@ -345,7 +345,7 @@ export default function IntegrationCreate() {
                                         name="scopes"
                                         type="text"
                                         required
-                                        defaultValue={integration ? integration.scopes : providerDefaultScope ? providerDefaultScope : ''}
+                                        defaultValue={integration ? integration.scopes : providerDefaultScope ? providerDefaultScope?.join(',') : ''}
                                         minLength={1}
                                     />
                                 </div>
