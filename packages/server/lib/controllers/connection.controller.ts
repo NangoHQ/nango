@@ -239,7 +239,16 @@ class ConnectionController {
 
     async listProviders(_: Request, res: Response, next: NextFunction) {
         try {
-            res.status(200).send({ providers: Object.keys(configService.getTemplates()).sort() });
+            const providers = Object.entries(configService.getTemplates())
+                .map((providerProperties) => {
+                    const [provider, properties] = providerProperties;
+                    return {
+                        name: provider,
+                        defaultScopes: properties.default_scopes
+                    };
+                })
+                .sort((a, b) => a.name.localeCompare(b.name));
+            res.status(200).send(providers);
         } catch (err) {
             next(err);
         }
