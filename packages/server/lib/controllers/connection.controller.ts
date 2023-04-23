@@ -4,7 +4,7 @@ import type { NextFunction } from 'express';
 import configService from '../services/config.service.js';
 import { ProviderConfig, ProviderTemplate, Connection, ProviderAuthModes, ProviderTemplateOAuth2 } from '../models.js';
 import analytics from '../utils/analytics.js';
-import { getAccount, getUserAndAccountFromSesstion } from '../utils/utils.js';
+import { getAccount, getUserAndAccountFromSession } from '../utils/utils.js';
 import errorManager from '../utils/error.manager.js';
 
 class ConnectionController {
@@ -14,7 +14,7 @@ class ConnectionController {
 
     async getConnectionWeb(req: Request, res: Response, next: NextFunction) {
         try {
-            let account = (await getUserAndAccountFromSesstion(req)).account;
+            let account = (await getUserAndAccountFromSession(req)).account;
 
             let connectionId = req.params['connectionId'] as string;
             let providerConfigKey = req.query['provider_config_key'] as string;
@@ -74,7 +74,7 @@ class ConnectionController {
 
     async getConnectionsWeb(req: Request, res: Response, next: NextFunction) {
         try {
-            let account = (await getUserAndAccountFromSesstion(req)).account;
+            let account = (await getUserAndAccountFromSession(req)).account;
 
             let connections = await connectionService.listConnections(account.id);
 
@@ -111,7 +111,7 @@ class ConnectionController {
 
     async deleteConnectionWeb(req: Request, res: Response, next: NextFunction) {
         try {
-            let account = (await getUserAndAccountFromSesstion(req)).account;
+            let account = (await getUserAndAccountFromSession(req)).account;
             let connectionId = req.params['connectionId'] as string;
             let providerConfigKey = req.query['provider_config_key'] as string;
 

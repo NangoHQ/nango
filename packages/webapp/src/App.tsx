@@ -34,6 +34,9 @@ const App = () => {
                 <Route path="/connections/create" element={<PrivateRoute />}>
                     <Route path="/connections/create" element={<ConnectionCreate />} />
                 </Route>
+                <Route path="/connections/create/:providerConfigKey" element={<PrivateRoute />}>
+                    <Route path="/connections/create/:providerConfigKey" element={<ConnectionCreate />} />
+                </Route>
                 <Route path="/connections/:providerConfigKey/:connectionId" element={<PrivateRoute />}>
                     <Route path="/connections/:providerConfigKey/:connectionId" element={<ConnectionDetails />} />
                 </Route>

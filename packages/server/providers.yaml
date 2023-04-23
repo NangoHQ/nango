@@ -1,3 +1,14 @@
+accelo:
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.params.subdomain}.api.accelo.com/oauth2/v0/authorize
+    token_url: https://${connectionConfig.params.subdomain}.api.accelo.com/oauth2/v0/token
+    scope_separator: ','
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 adobe:
     auth_mode: OAUTH2
     authorization_url: https://ims-na1.adobelogin.com/ims/authorize/v2
@@ -51,6 +62,16 @@ atlassian:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+bamboohr:
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.params.subdomain}.bamboohr.com/authorize.php
+    token_url: https://${connectionConfig.params.subdomain}.bamboohr.com/token.php
+    authorization_params:
+        response_type: code
+        request: authorize
+    token_params:
+        grant_type: authorization_code
+        request: token
 battlenet:
     auth_mode: OAUTH2
     authorization_url: https://oauth.battle.${connectionConfig.params.extension}/authorize
@@ -63,6 +84,16 @@ bitbucket:
     auth_mode: OAUTH2
     authorization_url: https://bitbucket.org/site/oauth2/authorize
     token_url: https://bitbucket.org/site/oauth2/access_token
+boldsign:
+    auth_mode: OAUTH2
+    authorization_url: https://account.boldsign.com/connect/authorize
+    token_url: https://account.boldsign.com/connect/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 box:
     auth_mode: OAUTH2
     authorization_url: https://account.box.com/api/oauth2/authorize
@@ -117,8 +148,8 @@ contentstack:
     token_url: https://${connectionConfig.params.subdomain}.contentstack.com/apps-api/apps/token
 deel:
     auth_mode: OAUTH2
-    authorization_url:  https://auth.letsdeel.com/oauth2/authorize
-    token_url:  https://auth.letsdeel.com/oauth2/tokens
+    authorization_url: https://auth.letsdeel.com/oauth2/authorize
+    token_url: https://auth.letsdeel.com/oauth2/tokens
     token_request_auth_method: basic
     authorization_params:
         response_type: code
@@ -128,8 +159,8 @@ deel:
         grant_type: refresh_token
 deel-sandbox:
     auth_mode: OAUTH2
-    authorization_url:  https://auth-demo.letsdeel.com/oauth2/authorize
-    token_url:  https://auth-demo.letsdeel.com/oauth2/tokens
+    authorization_url: https://auth-demo.letsdeel.com/oauth2/authorize
+    token_url: https://auth-demo.letsdeel.com/oauth2/tokens
     token_request_auth_method: basic
     authorization_params:
         response_type: code
@@ -157,6 +188,28 @@ dropbox:
     auth_mode: OAUTH2
     authorization_url: https://www.dropbox.com/oauth2/authorize
     token_url: https://api.dropboxapi.com/oauth2/token
+docusign:
+    auth_mode: OAUTH2
+    authorization_url: https://account.docusign.com/oauth/auth
+    token_url: https://account.docusign.com/oauth/token
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+docusign-sandbox:
+    auth_mode: OAUTH2
+    authorization_url: https://account-d.docusign.com/oauth/auth
+    token_url: https://account-d.docusign.com/oauth/token
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 epic-games:
     auth_mode: OAUTH2
     authorization_url: https://www.epicgames.com/id/authorize
@@ -248,7 +301,7 @@ health-gorilla:
 gusto:
     auth_mode: OAUTH2
     authorization_url: https://api.gusto.com/oauth/authorize
-    token_url:  https://api.gusto.com/oauth/token
+    token_url: https://api.gusto.com/oauth/token
     authorization_params:
         response_type: code
     token_params:
@@ -278,6 +331,16 @@ jira:
     authorization_params:
         audience: api.atlassian.com
         prompt: consent
+keap:
+    auth_mode: OAUTH2
+    authorization_url: https://accounts.infusionsoft.com/app/oauth/authorize
+    token_url: https://api.infusionsoft.com/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 lever:
     auth_mode: OAUTH2
     authorization_url: https://auth.lever.co/authorize
@@ -365,10 +428,26 @@ outreach:
     auth_mode: OAUTH2
     authorization_url: https://api.outreach.io/oauth/authorize
     token_url: https://api.outreach.io/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 pagerduty:
     auth_mode: OAUTH2
     authorization_url: https://app.pagerduty.com/oauth/authorize
     token_url: https://app.pagerduty.com/oauth/token
+pandadoc:
+    auth_mode: OAUTH2
+    authorization_url: https://app.pandadoc.com/oauth2/authorize
+    token_url: https://api.pandadoc.com/oauth2/access_token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 payfit:
     auth_mode: OAUTH2
     authorization_url: https://oauth.payfit.com/authorize
@@ -452,6 +531,33 @@ spotify:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+squareup:
+    auth_mode: OAUTH2
+    authorization_url: https://connect.squareup.com/oauth2/authorize
+    token_url: https://connect.squareup.com/oauth2/token
+    disable_pkce: true
+    scope_separator: '+'
+    decode_url: true
+    authorization_params:
+        response_type: code
+        session: false
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+squareup-sandbox:
+    auth_mode: OAUTH2
+    authorization_url: https://connect.squareupsandbox.com/oauth2/authorize
+    token_url: https://connect.squareupsandbox.com/oauth2/token
+    scope_separator: '+'
+    disable_pkce: true
+    authorization_params:
+        response_type: code
+        session: false
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 stackexchange:
     auth_mode: OAUTH2
     authorization_url: https://stackoverflow.com/oauth
@@ -472,6 +578,10 @@ stripe:
     auth_mode: OAUTH2
     authorization_url: https://connect.stripe.com/oauth/authorize
     token_url: https://connect.stripe.com/oauth/token
+teamwork:
+    auth_mode: OAUTH2
+    authorization_url: https://www.teamwork.com/launchpad/login
+    token_url: https://www.teamwork.com/launchpad/v1/token.json
 trello:
     auth_mode: OAUTH1
     request_url: https://trello.com/1/OAuthGetRequestToken
@@ -481,6 +591,11 @@ trello:
     scope_separator: ','
     authorization_params:
         expiration: never
+todoist:
+    auth_mode: OAUTH2
+    authorization_url: https://todoist.com/oauth/authorize
+    token_url: https://todoist.com/oauth/access_token
+    scope_separator: ','
 twitch:
     auth_mode: OAUTH2
     authorization_url: https://id.twitch.tv/oauth2/authorize
@@ -508,6 +623,16 @@ twitter-v2:
     authorization_params:
         response_type: code
         response_mode: query
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+uber:
+    auth_mode: OAUTH2
+    authorization_url: https://login.uber.com/oauth/v2/authorize
+    token_url: https://login.uber.com/oauth/v2/token
+    authorization_params:
+        response_type: code
     token_params:
         grant_type: authorization_code
     refresh_params:
@@ -563,6 +688,13 @@ zoho-crm:
     auth_mode: OAUTH2
     authorization_url: https://accounts.zoho.com/oauth/v2/auth
     token_url: https://accounts.zoho.com/oauth/v2/token
+    authorization_params:
+        response_type: code
+        access_type: offline
+zoho-desk:
+    auth_mode: OAUTH2
+    authorization_url: https://accounts.zoho.${connectionConfig.params.extension}/oauth/v2/auth
+    token_url: https://accounts.zoho.${connectionConfig.params.extension}/oauth/v2/token
     authorization_params:
         response_type: code
         access_type: offline

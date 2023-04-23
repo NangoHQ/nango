@@ -2,7 +2,7 @@ import type { Knex } from 'knex';
 
 let dbConfig: { development: Knex.Config<any>; production: Knex.Config<any> } = {
     development: {
-        client: 'pg',
+        client: process.env['NANGO_DB_CLIENT'] || 'pg',
         connection: process.env['NANGO_DATABASE_URL'] || {
             host: process.env['NANGO_DB_HOST'] || (process.env['SERVER_RUN_MODE'] === 'DOCKERIZED' ? 'nango-db' : 'localhost'),
             port: +(process.env['NANGO_DB_PORT'] || 5432),
