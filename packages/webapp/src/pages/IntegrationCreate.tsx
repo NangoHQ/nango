@@ -206,8 +206,8 @@ export default function IntegrationCreate() {
                                                 className="border-border-gray bg-bg-black text-text-light-gray block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base shadow-sm active:outline-none focus:outline-none active:border-white focus:border-white"
                                                 onChange={handleIntegrationProviderChange}
                                             >
-                                                {providers.map((provider) => (
-                                                    <option>{provider}</option>
+                                                {providers.map((provider, key) => (
+                                                    <option key={key} value={`${provider.name}|${provider.defaultScope}`}>{provider.name}</option>
                                                 ))}
                                             </select>
                                         </div>
@@ -345,7 +345,7 @@ export default function IntegrationCreate() {
                                         name="scopes"
                                         type="text"
                                         required
-                                        defaultValue={integration ? integration.scopes : ''}
+                                        defaultValue={integration ? integration.scopes : providerDefaultScope ? providerDefaultScope : ''}
                                         minLength={1}
                                     />
                                 </div>
