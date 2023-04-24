@@ -50,7 +50,7 @@ export default function IntegrationCreate() {
     const createIntegrationAPI = useCreateIntegrationAPI();
     const deleteIntegrationAPI = useDeleteIntegrationAPI();
     const [selectedProvider, setSelectedProvider] = useState<string>('my-integration');
-    const [providerDefaultScope, setProviderDefaultScope] = useState<string[]|undefined>(undefined)
+    const [providerDefaultScope, setProviderDefaultScope] = useState<string[] | undefined>(undefined);
 
     useEffect(() => {
         const getProviders = async () => {
@@ -93,8 +93,7 @@ export default function IntegrationCreate() {
     const handleIntegrationProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         let [provider, defaultScope] = e.target.value.split('|');
         setSelectedProvider(provider);
-        setProviderDefaultScope(defaultScope?.split(','))
-
+        setProviderDefaultScope(defaultScope?.split(','));
     };
 
     const handleSave = async (e: React.SyntheticEvent) => {
@@ -207,7 +206,9 @@ export default function IntegrationCreate() {
                                                 onChange={handleIntegrationProviderChange}
                                             >
                                                 {providers.map((provider, key) => (
-                                                    <option key={key} value={`${provider.name}|${provider.defaultScopes?.join(',')}`}>{provider.name}</option>
+                                                    <option key={key} value={`${provider.name}`}>
+                                                        {provider.name}
+                                                    </option>
                                                 ))}
                                             </select>
                                         </div>
