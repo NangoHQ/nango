@@ -52,11 +52,11 @@ class ProxyController {
                 return;
             }
 
-            logger.info('Connection id and provider config key parsed and received successfully');
+            logger.debug('Connection id and provider config key parsed and received successfully');
 
             const connection = await getConnectionCredentials(res, connectionId, providerConfigKey);
 
-            logger.info('Connection credentials found successfully');
+            logger.debug('Connection credentials found successfully');
 
             const { method } = req;
 
@@ -82,7 +82,7 @@ class ProxyController {
                     throw new Error(`Unrecognized OAuth type '${connection?.credentials?.type}' in stored credentials.`);
             }
 
-            logger.info(`Proxy: token retrieved successfully`);
+            logger.debug(`Proxy: token retrieved successfully`);
 
             const { account_id: accountId } = connection as Connection;
             const providerConfig = await configService.getProviderConfig(providerConfigKey, accountId);
@@ -102,7 +102,7 @@ class ProxyController {
                 return;
             }
 
-            logger.info(`Proxy: API call configuration constructed successfully`);
+            logger.debug(`Proxy: API call configuration constructed successfully`);
 
             const configBody: ProxyBodyConfiguration = {
                 endpoint,
