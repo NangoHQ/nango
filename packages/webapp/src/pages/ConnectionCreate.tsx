@@ -187,6 +187,7 @@ nango.auth('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr})
                                             name="integration_unique_key"
                                             className="border-border-gray bg-bg-black text-text-light-gray block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base shadow-sm active:outline-none focus:outline-none active:border-white focus:border-white"
                                             onChange={handleIntegrationUniqueKeyChange}
+                                            defaultValue={integration?.uniqueKey}
                                         >
                                             {integrations.map((integration) => (
                                                 <option key={integration.uniqueKey}>{integration.uniqueKey}</option>
