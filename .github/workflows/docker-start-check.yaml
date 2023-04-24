@@ -19,12 +19,13 @@ jobs:
       - name: Sleep
         uses: jakejarvis/wait-action@master
         with:
-          time: '60s'
+          time: '30s'
 
       - name: Verify containers
         run: |
           CONTAINER_NAME=nango-server
           SERVER=$(docker ps -q -f status=running -f name=^/${CONTAINER_NAME}$)
+          echo ${SERVER}
           if [ ! "${SERVER}" ]; then
             echo "Server container doesn't exist"
             exit 1
@@ -32,6 +33,7 @@ jobs:
 
           CONTAINER_NAME=nango-db
           DB=$(docker ps -q -f status=running -f name=^/${CONTAINER_NAME}$)
+          echo ${DB}
           if [ ! "${DB}" ]; then
             echo "DB doesn't exist"
             exit 1
