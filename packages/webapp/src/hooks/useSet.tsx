@@ -1,9 +1,11 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 
 export default function useSet<T>(initialValue?: T[], limit?: number) {
     const [, setInc] = useState(false);
 
-    const set = new Set<T>(initialValue);
+    const set = useMemo(() => {
+        return new Set<T>(initialValue);
+    }, [initialValue]);
 
     const add = useCallback(
         (item: T) => {
