@@ -158,17 +158,11 @@ class ProxyController {
 
     private async post(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration) {
         try {
-            if (!config.data) {
-                errorManager.errRes(res, 'missing_post_data');
-                return;
-            }
-
-            const { data } = config;
             const headers = this.constructHeaders(config);
             const responseStream = await axios({
                 method: 'post',
                 url,
-                data,
+                data: config.data ?? {},
                 responseType: 'stream',
                 headers
             });
@@ -183,17 +177,11 @@ class ProxyController {
 
     private async patch(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration) {
         try {
-            if (!config.data) {
-                errorManager.errRes(res, 'missing_patch_data');
-                return;
-            }
-
-            const { data } = config;
             const headers = this.constructHeaders(config);
             const responseStream = await axios({
                 method: 'patch',
                 url,
-                data,
+                data: config.data ?? {},
                 responseType: 'stream',
                 headers
             });
@@ -208,17 +196,11 @@ class ProxyController {
 
     private async put(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration) {
         try {
-            if (!config.data) {
-                errorManager.errRes(res, 'missing_put_data');
-                return;
-            }
-
-            const { data } = config;
             const headers = this.constructHeaders(config);
             const responseStream = await axios({
                 method: 'put',
                 url,
-                data,
+                data: config.data ?? {},
                 responseType: 'stream',
                 headers
             });
@@ -273,7 +255,7 @@ class ProxyController {
                         config.template.docs ? ` Refer to the documentation at ${config.template.docs} for help` : ''
                     }`
                 );
-                return new NangoError('fobidden');
+                return new NangoError('bad_request');
             }
         } else {
             return error;
