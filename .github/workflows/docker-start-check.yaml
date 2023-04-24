@@ -3,7 +3,7 @@ name: Docker services check
 on: [push]
 
 concurrency:
-  group: validation-${{ github.event.pull_request.number || github.ref }}
+  group: services-check-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
