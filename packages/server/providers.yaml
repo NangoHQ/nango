@@ -251,6 +251,8 @@ github:
     auth_mode: OAUTH2
     authorization_url: https://github.com/login/oauth/authorize
     token_url: https://github.com/login/oauth/access_token
+    base_api_url: https://api.github.com
+    docs: https://docs.github.com/en/rest
 gitlab:
     auth_mode: OAUTH2
     authorization_url: https://gitlab.com/oauth/authorize
@@ -267,10 +269,16 @@ google:
         prompt: consent
 google-calendar:
     alias: google
+    base_api_url: https://www.googleapis.com
+    docs: https://developers.google.com/calendar/api/v3/reference
 google-mail:
     alias: google
+    base_api_url: https://gmail.googleapis.com
+    docs: https://developers.google.com/gmail/api/reference/rest
 google-sheet:
     alias: google
+    base_api_url: https://sheets.googleapis.com
+    docs: https://developers.google.com/sheets/api/reference/rest
 gorgias:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.params.subdomain}.gorgias.com/oauth/authorize
@@ -411,6 +419,8 @@ notion:
         owner: user
     authorization_method: header
     body_format: json
+    base_api_url: https://api.notion.com
+    docs: https://developers.notion.com/reference
 one-drive:
     auth_mode: OAUTH2
     authorization_url: https://login.microsoftonline.com/common/oauth2/v2.0/authorize

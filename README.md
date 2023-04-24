@@ -42,6 +42,7 @@ It contains:
 -   a full OAuth dance for 90+ APIs
 -   a frontend SDK to trigger new OAuth flows
 -   a backend SDK & REST API to retrieve fresh access tokens for your API calls
+-   a proxy to both authenticate and perform authenticated requests to an API
 
 Nango is easy to try in 5 minutes:
 

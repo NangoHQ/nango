@@ -15,19 +15,29 @@ class ConfigService {
     }
 
     private getTemplatesFromFile() {
-        let templatesPath = path.join(dirname(), '../../providers.yaml');
+        const templatesPath = path.join(dirname(), '../../providers.yaml');
 
-        let fileEntries = yaml.load(fs.readFileSync(templatesPath).toString()) as { [key: string]: ProviderTemplate | ProviderTemplateAlias };
+        const fileEntries = yaml.load(fs.readFileSync(templatesPath).toString()) as { [key: string]: ProviderTemplate | ProviderTemplateAlias };
 
         if (fileEntries == null) {
             throw new NangoError('provider_template_loading_failed');
         }
 
-        for (let key in fileEntries) {
-            let alias = (fileEntries[key] as ProviderTemplateAlias).alias;
+        for (const key in fileEntries) {
+            const entry = fileEntries[key] as ProviderTemplateAlias;
 
-            if (alias && fileEntries[alias] != null) {
-                fileEntries[key] = fileEntries[alias] as ProviderTemplate;
+            if (entry?.alias) {
+                let hasOverrides = false;
+                let templateOverrides;
+                if (Object.keys(fileEntries[key] as ProviderTemplate).length > 0) {
+                    const { alias, ...overrides } = entry as ProviderTemplateAlias;
+                    hasOverrides = true;
+                    templateOverrides = overrides;
+                }
+                const aliasData = fileEntries[entry.alias] as ProviderTemplate;
+                if (hasOverrides) {
+                    fileEntries[key] = { ...aliasData, ...templateOverrides };
+                }
             }
         }
 
