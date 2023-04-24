@@ -83,7 +83,7 @@ export default function ProjectSettings() {
                                         </label>
                                         <p className="ml-2 text-text-dark-gray text-sm">(do not share!)</p>
                                     </div>
-                                    <SecretInput copy={true} defaultValue={secretKey} />
+                                    <SecretInput disabled copy={true} defaultValue={secretKey} />
                                 </div>
                             </div>
                             <div>
