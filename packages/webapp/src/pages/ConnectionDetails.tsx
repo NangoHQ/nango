@@ -3,13 +3,14 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Prism } from '@mantine/prism';
 import { toast } from 'react-toastify';
 import { Tooltip } from '@geist-ui/core';
-import { HelpCircle } from '@geist-ui/icons';
+import { HelpCircle, RefreshCw } from '@geist-ui/icons';
 
 import { useGetConnectionDetailsAPI, useDeleteConnectionAPI } from '../utils/api';
 import DashboardLayout from '../layout/DashboardLayout';
 import { LeftNavBarItems } from '../components/LeftNavBar';
 import SecretInput from '../components/ui/SecretInput';
 import PrismPlus from '../components/ui/prism/PrismPlus';
+import Button from '../components/ui/button/Button';
 
 interface Connection {
     id: number;
@@ -77,6 +78,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                 <div className="mx-16 pb-40">
                     <div className="flex mt-16 mb-12">
                         <h2 className="text-left text-3xl font-semibold tracking-tight text-white">Connection</h2>
+                        <Button iconProps={{ Icon: <RefreshCw className="h-5 w-5" />, position: 'start' }}>Manually Refresh Token</Button>
                         <Tooltip
                             text={
                                 <>
