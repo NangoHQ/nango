@@ -7,10 +7,10 @@ import { RefreshCw } from '@geist-ui/icons';
 import { useGetConnectionDetailsAPI, useDeleteConnectionAPI } from '../utils/api';
 import DashboardLayout from '../layout/DashboardLayout';
 import { LeftNavBarItems } from '../components/LeftNavBar';
-import SecretInput from '../components/ui/SecretInput';
 import PrismPlus from '../components/ui/prism/PrismPlus';
 import Button from '../components/ui/button/Button';
 import Typography from '../components/ui/typography/Typography';
+import SecretInput from '../components/ui/input/SecretInput';
 
 interface Connection {
     id: number;

@@ -1,6 +1,6 @@
 import { forwardRef, useCallback, useState } from 'react';
 import classNames from 'classnames';
-import CopyButton from './button/CopyButton';
+import CopyButton from '../button/CopyButton';
 
 type SecretInputProps = Omit<JSX.IntrinsicElements['input'], 'defaultValue'> & { copy?: boolean; defaultValue?: string };
 
