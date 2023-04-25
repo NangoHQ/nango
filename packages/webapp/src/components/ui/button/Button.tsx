@@ -33,7 +33,7 @@ interface ExtraProps {
 
 type ButtonProps = JSX.IntrinsicElements['button'] & VariantProps<typeof buttonStyles> & ExtraProps;
 
-const Button: React.FC<ButtonProps> = ({ size, variant, className, isLoading, children, ...props }) => {
+const Button: React.FC<ButtonProps> = ({ size, variant, className, isLoading, children, iconProps, ...props }) => {
     if (isLoading) {
         props.disabled = true;
     }
