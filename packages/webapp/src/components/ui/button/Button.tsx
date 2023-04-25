@@ -6,10 +6,10 @@ import React, { forwardRef } from 'react';
 const buttonStyles = cva('flex items-center gap-2 disabled:pointer-events-none disabled:opacity-50 rounded-md', {
     variants: {
         variant: {
-            primary: 'bg-white text-black',
-            secondary: 'bg-black text-white',
-            success: 'bg-green-700 text-white',
-            danger: 'bg-red-700 text-white',
+            primary: 'bg-white text-black hover:bg-gray-300',
+            secondary: 'bg-black text-white hover:bg-gray-800',
+            success: 'bg-green-700 text-white hover:bg-green-500',
+            danger: 'bg-red-700 text-white hover:bg-red-500',
             zombie: 'bg-transparent text-white hover:bg-gray-700'
         },
         size: {

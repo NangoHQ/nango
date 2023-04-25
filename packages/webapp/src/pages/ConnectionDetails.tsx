@@ -249,12 +249,11 @@ We could not retrieve and/or refresh your access token due to the following erro
                             </div>
                         )}
 
-                        <button
-                            className="mx-8 mt-8 flex h-8 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white hover:bg-red-400 bg-red-600"
-                            onClick={deleteButtonClicked}
-                        >
-                            <p>Delete</p>
-                        </button>
+                        <div className="mx-8 mt-8">
+                            <Button variant="danger" size="sm" onClick={deleteButtonClicked}>
+                                <p>Delete</p>
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </div>
