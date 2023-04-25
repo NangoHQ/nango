@@ -131,14 +131,8 @@ export default function IntegrationCreate() {
                 client_secret: { value: string };
                 scopes: { value: string };
             };
-
-            let res = await createIntegrationAPI(
-                target.provider.value,
-                target.unique_key.value,
-                target.client_id.value,
-                target.client_secret.value,
-                target.scopes.value
-            );
+            const [provider] = target.provider.value.split('|');
+            let res = await createIntegrationAPI(provider, target.unique_key.value, target.client_id.value, target.client_secret.value, target.scopes.value);
 
             if (res?.status === 200) {
                 toast.success('Integration created!', { position: toast.POSITION.BOTTOM_CENTER });
