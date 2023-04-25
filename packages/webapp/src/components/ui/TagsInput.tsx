@@ -1,4 +1,4 @@
-import { forwardRef, type KeyboardEvent, useState } from 'react';
+import { forwardRef, type KeyboardEvent, useState, useMemo } from 'react';
 import { X } from '@geist-ui/icons';
 
 import useSet from '../../hooks/useSet';
@@ -6,7 +6,10 @@ import useSet from '../../hooks/useSet';
 type TagsInputProps = Omit<JSX.IntrinsicElements['input'], 'defaultValue'> & { defaultValue: string };
 
 const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInput({ className, defaultValue, ...props }, ref) {
-    const defaultScopes = !!defaultValue ? defaultValue.split(',') : [];
+    const defaultScopes = useMemo(() => {
+        return !!defaultValue ? defaultValue.split(',') : [];
+    }, [defaultValue]);
+
     const [enteredValue, setEnteredValue] = useState('');
     const [selectedScopes, addToScopesSet, removeFromSelectedSet] = useSet<string>(defaultScopes);
 
@@ -14,20 +17,13 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
         //quick check for empty inputs
         if (e.key === 'Enter') {
             e.preventDefault();
-            if (!!e.currentTarget.value) {
-                e.currentTarget.value = '';
-                handleAdd(e.currentTarget.value);
-            }
+            handleAdd();
         }
     }
 
-    function handleAdd(value?: string) {
-        if (value) {
-            addToScopesSet(value.trim());
-        } else {
-            addToScopesSet(enteredValue);
-            setEnteredValue('');
-        }
+    function handleAdd() {
+        addToScopesSet(enteredValue);
+        setEnteredValue('');
     }
 
     function removeScope(scopeToBeRemoved: string) {

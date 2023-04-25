@@ -80,14 +80,18 @@ export class Nango {
     public async proxy(config: ProxyConfiguration) {
         validateProxyConfiguration(config);
 
-        const { providerConfigKey, connectionId, method } = config;
+        const { providerConfigKey, connectionId, method, retries } = config;
 
         const url = `${this.serverUrl}/proxy/${config.endpoint}`;
 
-        const headers = {
+        const headers: Record<string, string | number | boolean> = {
             'Connection-Id': connectionId,
             'Provider-Config-Key': providerConfigKey
         };
+
+        if (retries) {
+            headers['Retries'] = retries;
+        }
 
         const options = {
             headers: this.enrichHeaders(headers)

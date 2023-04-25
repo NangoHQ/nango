@@ -8,6 +8,7 @@ nango
         connectionId: args[1],
         method: args[2],
         endpoint: args[3],
+        retries: 3,
         data: {
             summary: 'TEST',
             description: 'TEST DATA'

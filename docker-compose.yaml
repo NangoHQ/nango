@@ -20,8 +20,6 @@ services:
         volumes:
             - ${PWD}/packages/server/providers.yaml:/usr/nango-server/src/packages/server/providers.yaml
         restart: always
-        env_file:
-            - .env
         ports:
             - '3003:3003'
         depends_on:

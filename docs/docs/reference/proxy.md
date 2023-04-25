@@ -57,7 +57,7 @@ const response = await nango.proxy({
 ```js
 const insertCalendarListResponse = await nango.proxy({
     method: 'POST',
-    endpoint: '/users/me/calendarList',
+    endpoint: '/calendar/v3/users/me/calendarList',
     providerConfigKey: '<PROVIDER-CONFIG-KEY>',
     connectionId: '<CONNECTION-ID>',
     data: {
@@ -65,6 +65,20 @@ const insertCalendarListResponse = await nango.proxy({
         colorId: 'blue',
         selected: true
     }
+});
+```
+
+### Retries
+If you would like retries with exponential backoffs you can pass a number to a retries
+property to the `nango.proxy` method:
+
+```js
+const insertCalendarListResponse = await nango.proxy({
+    method: 'GET',
+    endpoint: '/calendar/v3/users/me/calendarList',
+    providerConfigKey: '<PROVIDER-CONFIG-KEY>',
+    connectionId: '<CONNECTION-ID>',
+    retries: 5
 });
 ```
 
@@ -117,6 +131,15 @@ curl -H 'Authorization: Bearer <SECRET-KEY>' \
 'https://api.nango.dev/proxy/v1/users'
 ```
 
+If you want retries with exponential backoffs you can pass in `Retries` as a header:
+```bash
+curl -H 'Authorization: Bearer <SECRET-KEY>' \
+-H 'Connection-Id: <CONNECTION-ID>' \
+-H 'Provider-Config-Key: <CONFIG-KEY>' \
+-H 'Retries: 3' \
+'https://api.nango.dev/proxy/v1/users'
+```
+
   </TabItem>
   <TabItem value="localhost" label="Localhost">
 
@@ -159,6 +182,15 @@ curl -H 'Connection-Id: <CONNECTION-ID>' \
 'http://localhost:3003/proxy/v1/users'
 ```
 
+If you want retries with exponential backoffs you can pass in `Retries` as a header:
+```bash
+curl -H 'Authorization: Bearer <SECRET-KEY>' \
+-H 'Connection-Id: <CONNECTION-ID>' \
+-H 'Provider-Config-Key: <CONFIG-KEY>' \
+-H 'Retries: 3' \
+'http://localhost:3003/proxy/v1/users'
+```
+
   </TabItem>
   <TabItem value="self-hosted" label="Self-hosted">
 
@@ -198,6 +230,15 @@ them with `Nango-Proxy-`. For exmaple the Notion API requires a `Notion-Version`
 curl -H 'Connection-Id: <CONNECTION-ID>' \
 -H 'Provider-Config-Key: <CONFIG-KEY>' \
 -H 'Nango-Proxy-Notion-Version: 2022-06-28'
+'<NANGO-HOST-AND-PORT>/proxy/v1/users'
+```
+
+If you want retries with exponential backoffs you can pass in `Retries` as a header:
+```bash
+curl -H 'Authorization: Bearer <SECRET-KEY>' \
+-H 'Connection-Id: <CONNECTION-ID>' \
+-H 'Provider-Config-Key: <CONFIG-KEY>' \
+-H 'Retries: 3' \
 '<NANGO-HOST-AND-PORT>/proxy/v1/users'
 ```
 
