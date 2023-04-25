@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 import type { OutgoingHttpHeaders } from 'http';
 import type { NextFunction } from 'express';
 import axios, { AxiosError, AxiosResponse } from 'axios';
-import axiosRetry from 'axios-retry';
+import { backOff } from 'exponential-backoff';
 
 import logger from '../utils/logger.js';
 import errorManager from '../utils/error.manager.js';
@@ -15,26 +15,12 @@ interface ForwardedHeaders {
     [key: string]: string;
 }
 
-const RETRIES = 2;
-
-axiosRetry(axios, {
-    retries: RETRIES,
-    retryDelay: axiosRetry.exponentialDelay,
-    retryCondition: (error) => {
-        const status = error?.response?.status;
-        if (error?.response?.status.toString().startsWith('5') || error?.response?.status === 429) {
-            logger.info(`API received a ${status} error, retrying with exponential backoffs for a total of ${RETRIES} times`);
-            return true;
-        }
-        return false;
-    }
-});
-
 class ProxyController {
     public async routeCall(req: Request, res: Response, next: NextFunction) {
         try {
             const connectionId = req.get('Connection-Id') as string;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
+            const retries = req.get('Retries') as string;
 
             if (!connectionId) {
                 errorManager.errRes(res, 'missing_connection_id');
@@ -113,7 +99,8 @@ class ProxyController {
                 providerConfigKey,
                 connectionId,
                 headers,
-                data: req.body
+                data: req.body,
+                retries: retries ? Number(retries) : 0
             };
 
             return this.sendToHttpMethod(res, next, method as HTTP_VERB, configBody);
@@ -122,23 +109,14 @@ class ProxyController {
         }
     }
 
-    private async get(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration) {
-        try {
-            const headers = this.constructHeaders(config);
-            const responseStream: AxiosResponse = await axios({
-                method: 'get',
-                url,
-                responseType: 'stream',
-                headers
-            });
-            logger.info(`Proxy: GET request to ${url} was successful`);
-            res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
-            responseStream.data.pipe(res);
-        } catch (error) {
-            const nangoError = this.catalogAndReportError(error as Error | AxiosError, url, config);
-            next(nangoError);
+    private retry = (error: AxiosError, attemptNumber: number) => {
+        if (error?.response?.status.toString().startsWith('5') || error?.response?.status === 429) {
+            logger.info(`API received an ${error?.response?.status} error, retrying with exponential backoffs for a total of ${attemptNumber} times`);
+            return true;
         }
-    }
+
+        return false;
+    };
 
     private sendToHttpMethod(res: Response, next: NextFunction, method: HTTP_VERB, configBody: ProxyBodyConfiguration) {
         const url = this.constructUrl(configBody);
@@ -156,16 +134,44 @@ class ProxyController {
         }
     }
 
+    private async get(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration) {
+        try {
+            const headers = this.constructHeaders(config);
+            const responseStream: AxiosResponse = await backOff(
+                () => {
+                    return axios({
+                        method: 'get',
+                        url,
+                        responseType: 'stream',
+                        headers
+                    });
+                },
+                { numOfAttempts: Number(config.retries), retry: this.retry }
+            );
+            logger.info(`Proxy: GET request to ${url} was successful`);
+            res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
+            responseStream.data.pipe(res);
+        } catch (error) {
+            const nangoError = this.catalogAndReportError(error as Error | AxiosError, url, config);
+            next(nangoError);
+        }
+    }
+
     private async post(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration) {
         try {
             const headers = this.constructHeaders(config);
-            const responseStream = await axios({
-                method: 'post',
-                url,
-                data: config.data ?? {},
-                responseType: 'stream',
-                headers
-            });
+            const responseStream: AxiosResponse = await backOff(
+                () => {
+                    return axios({
+                        method: 'post',
+                        url,
+                        data: config.data ?? {},
+                        responseType: 'stream',
+                        headers
+                    });
+                },
+                { numOfAttempts: Number(config.retries), retry: this.retry }
+            );
             logger.info(`Proxy: POST request to ${url} was successful`);
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
             responseStream.data.pipe(res);
@@ -178,13 +184,18 @@ class ProxyController {
     private async patch(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration) {
         try {
             const headers = this.constructHeaders(config);
-            const responseStream = await axios({
-                method: 'patch',
-                url,
-                data: config.data ?? {},
-                responseType: 'stream',
-                headers
-            });
+            const responseStream: AxiosResponse = await backOff(
+                () => {
+                    return axios({
+                        method: 'patch',
+                        url,
+                        data: config.data ?? {},
+                        responseType: 'stream',
+                        headers
+                    });
+                },
+                { numOfAttempts: Number(config.retries), retry: this.retry }
+            );
             logger.info(`Proxy: PATCH request to ${url} was successful`);
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
             responseStream.data.pipe(res);
@@ -197,13 +208,18 @@ class ProxyController {
     private async put(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration) {
         try {
             const headers = this.constructHeaders(config);
-            const responseStream = await axios({
-                method: 'put',
-                url,
-                data: config.data ?? {},
-                responseType: 'stream',
-                headers
-            });
+            const responseStream: AxiosResponse = await backOff(
+                () => {
+                    return axios({
+                        method: 'put',
+                        url,
+                        data: config.data ?? {},
+                        responseType: 'stream',
+                        headers
+                    });
+                },
+                { numOfAttempts: Number(config.retries), retry: this.retry }
+            );
             logger.info(`Proxy: PUT request to ${url} was successful`);
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
             responseStream.data.pipe(res);
@@ -216,12 +232,17 @@ class ProxyController {
     private async delete(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration) {
         try {
             const headers = this.constructHeaders(config);
-            const responseStream = await axios({
-                method: 'delete',
-                url,
-                responseType: 'stream',
-                headers
-            });
+            const responseStream: AxiosResponse = await backOff(
+                () => {
+                    return axios({
+                        method: 'delete',
+                        url,
+                        responseType: 'stream',
+                        headers
+                    });
+                },
+                { numOfAttempts: Number(config.retries), retry: this.retry }
+            );
             logger.info(`Proxy: DELETE request to ${url} was successful`);
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
             responseStream.data.pipe(res);

@@ -194,6 +194,7 @@ export interface ProxyBodyConfiguration {
     method: HTTP_VERB;
     template: ProviderTemplate;
 
+    retries?: number;
     data?: unknown;
     headers?: Record<string, string>;
     params?: string | Record<string, string>;

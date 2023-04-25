@@ -15,6 +15,7 @@ export interface ProxyConfiguration {
         indexes?: boolean;
     };
     data?: unknown;
+    retries?: number;
 }
 
 interface ParamsSerializerOptions {
