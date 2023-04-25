@@ -1,5 +1,6 @@
 import { forwardRef, type KeyboardEvent, useState, useMemo } from 'react';
 import { X } from '@geist-ui/icons';
+
 import useSet from '../../../hooks/useSet';
 
 type TagsInputProps = Omit<JSX.IntrinsicElements['input'], 'defaultValue'> & { defaultValue: string };
