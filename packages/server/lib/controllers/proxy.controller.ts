@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 import type { OutgoingHttpHeaders } from 'http';
 import type { NextFunction } from 'express';
 import axios, { AxiosError, AxiosResponse } from 'axios';
-import axiosRetry from 'axios-retry';
+import { backOff } from 'exponential-backoff';
 
 import logger from '../utils/logger.js';
 import errorManager from '../utils/error.manager.js';
@@ -15,26 +15,20 @@ interface ForwardedHeaders {
     [key: string]: string;
 }
 
-const RETRIES = 2;
-
-axiosRetry(axios, {
-    retries: RETRIES,
-    retryDelay: axiosRetry.exponentialDelay,
-    retryCondition: (error) => {
-        const status = error?.response?.status;
-        if (error?.response?.status.toString().startsWith('5') || error?.response?.status === 429) {
-            logger.info(`API received a ${status} error, retrying with exponential backoffs for a total of ${RETRIES} times`);
-            return true;
-        }
-        return false;
-    }
-});
-
 class ProxyController {
+    /**
+     * Route Call
+     * @desc Parse incoming request from the SDK or HTTP request and route the
+     * call on the provided method after verifying the necessary parameters are set.
+     * @param {Request} req Express request object
+     * @param {Response} res Express response object
+     * @param {NextFuncion} next callback function to pass control to the next middleware function in the pipeline.
+     */
     public async routeCall(req: Request, res: Response, next: NextFunction) {
         try {
             const connectionId = req.get('Connection-Id') as string;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
+            const retries = req.get('Retries') as string;
 
             if (!connectionId) {
                 errorManager.errRes(res, 'missing_connection_id');
@@ -113,7 +107,8 @@ class ProxyController {
                 providerConfigKey,
                 connectionId,
                 headers,
-                data: req.body
+                data: req.body,
+                retries: retries ? Number(retries) : 0
             };
 
             return this.sendToHttpMethod(res, next, method as HTTP_VERB, configBody);
@@ -122,24 +117,31 @@ class ProxyController {
         }
     }
 
-    private async get(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration) {
-        try {
-            const headers = this.constructHeaders(config);
-            const responseStream: AxiosResponse = await axios({
-                method: 'get',
-                url,
-                responseType: 'stream',
-                headers
-            });
-            logger.info(`Proxy: GET request to ${url} was successful`);
-            res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
-            responseStream.data.pipe(res);
-        } catch (error) {
-            const nangoError = this.catalogAndReportError(error as Error | AxiosError, url, config);
-            next(nangoError);
+    /**
+     * Retry
+     * @desc if retries are set the retry function to determine if retries are
+     * actually kicked off or not
+     * @param {AxiosError} error
+     * @param {attemptNumber} number
+     */
+    private retry = (error: AxiosError, attemptNumber: number): boolean => {
+        if (error?.response?.status.toString().startsWith('5') || error?.response?.status === 429) {
+            logger.info(`API received an ${error?.response?.status} error, retrying with exponential backoffs for a total of ${attemptNumber} times`);
+            return true;
         }
-    }
 
+        return false;
+    };
+
+    /**
+     * Send to http method
+     * @desc route the call to a HTTP request based on HTTP method passed in
+     * @param {Request} req Express request object
+     * @param {Response} res Express response object
+     * @param {NextFuncion} next callback function to pass control to the next middleware function in the pipeline.
+     * @param {HTTP_VERB} method
+     * @param {ProxyBodyConfiguration} configBody
+     */
     private sendToHttpMethod(res: Response, next: NextFunction, method: HTTP_VERB, configBody: ProxyBodyConfiguration) {
         const url = this.constructUrl(configBody);
 
@@ -156,16 +158,58 @@ class ProxyController {
         }
     }
 
+    /**
+     * Get
+     * @param {Response} res Express response object
+     * @param {NextFuncion} next callback function to pass control to the next middleware function in the pipeline.
+     * @param {string} url
+     * @param {ProxyBodyConfiguration} config
+     */
+    private async get(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration) {
+        try {
+            const headers = this.constructHeaders(config);
+            const responseStream: AxiosResponse = await backOff(
+                () => {
+                    return axios({
+                        method: 'get',
+                        url,
+                        responseType: 'stream',
+                        headers
+                    });
+                },
+                { numOfAttempts: Number(config.retries), retry: this.retry }
+            );
+            logger.info(`Proxy: GET request to ${url} was successful`);
+            res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
+            responseStream.data.pipe(res);
+        } catch (error) {
+            const nangoError = this.catalogAndReportError(error as Error | AxiosError, url, config);
+            next(nangoError);
+        }
+    }
+
+    /**
+     * Post
+     * @param {Response} res Express response object
+     * @param {NextFuncion} next callback function to pass control to the next middleware function in the pipeline.
+     * @param {string} url
+     * @param {ProxyBodyConfiguration} config
+     */
     private async post(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration) {
         try {
             const headers = this.constructHeaders(config);
-            const responseStream = await axios({
-                method: 'post',
-                url,
-                data: config.data ?? {},
-                responseType: 'stream',
-                headers
-            });
+            const responseStream: AxiosResponse = await backOff(
+                () => {
+                    return axios({
+                        method: 'post',
+                        url,
+                        data: config.data ?? {},
+                        responseType: 'stream',
+                        headers
+                    });
+                },
+                { numOfAttempts: Number(config.retries), retry: this.retry }
+            );
             logger.info(`Proxy: POST request to ${url} was successful`);
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
             responseStream.data.pipe(res);
@@ -175,16 +219,28 @@ class ProxyController {
         }
     }
 
+    /**
+     * Patch
+     * @param {Response} res Express response object
+     * @param {NextFuncion} next callback function to pass control to the next middleware function in the pipeline.
+     * @param {string} url
+     * @param {ProxyBodyConfiguration} config
+     */
     private async patch(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration) {
         try {
             const headers = this.constructHeaders(config);
-            const responseStream = await axios({
-                method: 'patch',
-                url,
-                data: config.data ?? {},
-                responseType: 'stream',
-                headers
-            });
+            const responseStream: AxiosResponse = await backOff(
+                () => {
+                    return axios({
+                        method: 'patch',
+                        url,
+                        data: config.data ?? {},
+                        responseType: 'stream',
+                        headers
+                    });
+                },
+                { numOfAttempts: Number(config.retries), retry: this.retry }
+            );
             logger.info(`Proxy: PATCH request to ${url} was successful`);
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
             responseStream.data.pipe(res);
@@ -194,16 +250,28 @@ class ProxyController {
         }
     }
 
+    /**
+     * Put
+     * @param {Response} res Express response object
+     * @param {NextFuncion} next callback function to pass control to the next middleware function in the pipeline.
+     * @param {string} url
+     * @param {ProxyBodyConfiguration} config
+     */
     private async put(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration) {
         try {
             const headers = this.constructHeaders(config);
-            const responseStream = await axios({
-                method: 'put',
-                url,
-                data: config.data ?? {},
-                responseType: 'stream',
-                headers
-            });
+            const responseStream: AxiosResponse = await backOff(
+                () => {
+                    return axios({
+                        method: 'put',
+                        url,
+                        data: config.data ?? {},
+                        responseType: 'stream',
+                        headers
+                    });
+                },
+                { numOfAttempts: Number(config.retries), retry: this.retry }
+            );
             logger.info(`Proxy: PUT request to ${url} was successful`);
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
             responseStream.data.pipe(res);
@@ -213,15 +281,27 @@ class ProxyController {
         }
     }
 
+    /**
+     * Delete
+     * @param {Response} res Express response object
+     * @param {NextFuncion} next callback function to pass control to the next middleware function in the pipeline.
+     * @param {string} url
+     * @param {ProxyBodyConfiguration} config
+     */
     private async delete(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration) {
         try {
             const headers = this.constructHeaders(config);
-            const responseStream = await axios({
-                method: 'delete',
-                url,
-                responseType: 'stream',
-                headers
-            });
+            const responseStream: AxiosResponse = await backOff(
+                () => {
+                    return axios({
+                        method: 'delete',
+                        url,
+                        responseType: 'stream',
+                        headers
+                    });
+                },
+                { numOfAttempts: Number(config.retries), retry: this.retry }
+            );
             logger.info(`Proxy: DELETE request to ${url} was successful`);
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
             responseStream.data.pipe(res);
@@ -231,6 +311,12 @@ class ProxyController {
         }
     }
 
+    /**
+     * Catalog And Report Eroor
+     * @param {Error}AxiosError next callback function to pass control to the next middleware function in the pipeline.
+     * @param {string} url
+     * @param {ProxyBodyConfiguration} config
+     */
     private catalogAndReportError(error: Error | AxiosError, url: string, config: ProxyBodyConfiguration) {
         if (axios.isAxiosError(error)) {
             if (error?.response?.status === 404) {
@@ -264,6 +350,11 @@ class ProxyController {
         return error;
     }
 
+    /**
+     * Construct URL
+     * @param {ProxyBodyConfiguration} config
+     *
+     */
     private constructUrl(config: ProxyBodyConfiguration) {
         const {
             template: { base_api_url: apiBase },
@@ -276,6 +367,10 @@ class ProxyController {
         return `${base}/${endpoint}`;
     }
 
+    /**
+     * Construct Headers
+     * @param {ProxyBodyConfiguration} config
+     */
     private constructHeaders(config: ProxyBodyConfiguration) {
         let headers = {
             Authorization: `Bearer ${config.token}`
@@ -288,6 +383,11 @@ class ProxyController {
         return headers;
     }
 
+    /**
+     * Parse Headers
+     * @param {ProxyBodyConfiguration} config
+     * @param {Request} req Express request object
+     */
     private parseHeaders(req: Request) {
         const headers = req.rawHeaders;
         const HEADER_PROXY = 'nango-proxy-';
