@@ -1,6 +1,7 @@
 import { Loader } from '@geist-ui/icons';
 import { cva, VariantProps } from 'class-variance-authority';
 import classNames from 'classnames';
+import React, { forwardRef } from 'react';
 
 const buttonStyles = cva('flex items-center gap-2 disabled:pointer-events-none disabled:opacity-50 rounded-md', {
     variants: {
@@ -8,7 +9,8 @@ const buttonStyles = cva('flex items-center gap-2 disabled:pointer-events-none d
             primary: 'bg-white text-black',
             secondary: 'bg-black text-white',
             success: 'bg-green-700 text-white',
-            danger: 'bg-red-700 text-white'
+            danger: 'bg-red-700 text-white',
+            zombie: 'bg-transparent text-white hover:bg-gray-700'
         },
         size: {
             xs: 'h-8 py-1 px-2',
@@ -33,12 +35,14 @@ interface ExtraProps {
 
 type ButtonProps = JSX.IntrinsicElements['button'] & VariantProps<typeof buttonStyles> & ExtraProps;
 
-const Button: React.FC<ButtonProps> = ({ size, variant, className, isLoading, children, iconProps, ...props }) => {
+const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button({ size, variant, className, isLoading, children, iconProps, ...props }, ref) {
     if (isLoading) {
         props.disabled = true;
     }
+
     return (
         <button
+            ref={ref}
             className={classNames(buttonStyles({ className, variant, size }), {
                 'flex-row-reverse': iconProps && iconProps.position === 'end'
             })}
@@ -51,6 +55,6 @@ const Button: React.FC<ButtonProps> = ({ size, variant, className, isLoading, ch
             </div>
         </button>
     );
-};
+});
 
 export default Button;

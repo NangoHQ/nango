@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Prism } from '@mantine/prism';
 import { toast } from 'react-toastify';
-import { Tooltip } from '@geist-ui/core';
-import { HelpCircle, RefreshCw } from '@geist-ui/icons';
+import { RefreshCw } from '@geist-ui/icons';
 
 import { useGetConnectionDetailsAPI, useDeleteConnectionAPI } from '../utils/api';
 import DashboardLayout from '../layout/DashboardLayout';
@@ -11,6 +10,7 @@ import { LeftNavBarItems } from '../components/LeftNavBar';
 import SecretInput from '../components/ui/SecretInput';
 import PrismPlus from '../components/ui/prism/PrismPlus';
 import Button from '../components/ui/button/Button';
+import Typography from '../components/ui/typography/Typography';
 
 interface Connection {
     id: number;
@@ -76,38 +76,39 @@ We could not retrieve and/or refresh your access token due to the following erro
         <DashboardLayout selectedItem={LeftNavBarItems.Connections}>
             <div className="mx-auto w-largebox">
                 <div className="mx-16 pb-40">
-                    <div className="flex mt-16 mb-12">
-                        <h2 className="text-left text-3xl font-semibold tracking-tight text-white">Connection</h2>
-                        <Button iconProps={{ Icon: <RefreshCw className="h-5 w-5" />, position: 'start' }}>Manually Refresh Token</Button>
-                        <Tooltip
-                            text={
-                                <>
-                                    <div className="flex text-black text-sm">
-                                        <p>{`Stores the OAuth credentials & details. You can fetch it with the `}</p>
-                                        <a
-                                            href="https://docs.nango.dev/reference/connections-api"
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="text-text-blue hover:text-text-light-blue ml-1"
-                                        >
-                                            API
-                                        </a>
-                                        <p className="ml-1">{` and `}</p>
-                                        <a
-                                            href="https://docs.nango.dev/reference/node-sdk"
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="text-text-blue hover:text-text-light-blue ml-1"
-                                        >
-                                            Node SDK
-                                        </a>
-                                        <p>{`.`}</p>
-                                    </div>
-                                </>
-                            }
+                    <div className="flex mt-16 mb-12 justify-between">
+                        <Typography
+                            tooltipProps={{
+                                text: (
+                                    <>
+                                        <div className="flex text-black text-sm">
+                                            <p>{`Stores the OAuth credentials & details. You can fetch it with the `}</p>
+                                            <a
+                                                href="https://docs.nango.dev/reference/connections-api"
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="text-text-blue hover:text-text-light-blue ml-1"
+                                            >
+                                                API
+                                            </a>
+                                            <p className="ml-1">{` and `}</p>
+                                            <a
+                                                href="https://docs.nango.dev/reference/node-sdk"
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="text-text-blue hover:text-text-light-blue ml-1"
+                                            >
+                                                Node SDK
+                                            </a>
+                                            <p>{`.`}</p>
+                                        </div>
+                                    </>
+                                )
+                            }}
                         >
-                            <HelpCircle color="white" className="h-5 ml-1"></HelpCircle>
-                        </Tooltip>
+                            Connection
+                        </Typography>
+                        <Button iconProps={{ Icon: <RefreshCw className="h-5 w-5" />, position: 'start' }}>Manually Refresh Token</Button>
                     </div>
                     <div className="border border-border-gray rounded-md h-fit py-14 text-white text-sm">
                         <div>
