@@ -16,6 +16,14 @@ interface ForwardedHeaders {
 }
 
 class ProxyController {
+    /**
+     * Route Call
+     * @desc Parse incoming request from the SDK or HTTP request and route the
+     * call on the provided method after verifying the necessary parameters are set.
+     * @param {Request} req Express request object
+     * @param {Response} res Express response object
+     * @param {NextFuncion} next callback function to pass control to the next middleware function in the pipeline.
+     */
     public async routeCall(req: Request, res: Response, next: NextFunction) {
         try {
             const connectionId = req.get('Connection-Id') as string;
@@ -109,7 +117,14 @@ class ProxyController {
         }
     }
 
-    private retry = (error: AxiosError, attemptNumber: number) => {
+    /**
+     * Retry
+     * @desc if retries are set the retry function to determine if retries are
+     * actually kicked off or not
+     * @param {AxiosError} error
+     * @param {attemptNumber} number
+     */
+    private retry = (error: AxiosError, attemptNumber: number): boolean => {
         if (error?.response?.status.toString().startsWith('5') || error?.response?.status === 429) {
             logger.info(`API received an ${error?.response?.status} error, retrying with exponential backoffs for a total of ${attemptNumber} times`);
             return true;
@@ -118,6 +133,15 @@ class ProxyController {
         return false;
     };
 
+    /**
+     * Send to http method
+     * @desc route the call to a HTTP request based on HTTP method passed in
+     * @param {Request} req Express request object
+     * @param {Response} res Express response object
+     * @param {NextFuncion} next callback function to pass control to the next middleware function in the pipeline.
+     * @param {HTTP_VERB} method
+     * @param {ProxyBodyConfiguration} configBody
+     */
     private sendToHttpMethod(res: Response, next: NextFunction, method: HTTP_VERB, configBody: ProxyBodyConfiguration) {
         const url = this.constructUrl(configBody);
 
@@ -134,6 +158,13 @@ class ProxyController {
         }
     }
 
+    /**
+     * Get
+     * @param {Response} res Express response object
+     * @param {NextFuncion} next callback function to pass control to the next middleware function in the pipeline.
+     * @param {string} url
+     * @param {ProxyBodyConfiguration} config
+     */
     private async get(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration) {
         try {
             const headers = this.constructHeaders(config);
@@ -157,6 +188,13 @@ class ProxyController {
         }
     }
 
+    /**
+     * Post
+     * @param {Response} res Express response object
+     * @param {NextFuncion} next callback function to pass control to the next middleware function in the pipeline.
+     * @param {string} url
+     * @param {ProxyBodyConfiguration} config
+     */
     private async post(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration) {
         try {
             const headers = this.constructHeaders(config);
@@ -181,6 +219,13 @@ class ProxyController {
         }
     }
 
+    /**
+     * Patch
+     * @param {Response} res Express response object
+     * @param {NextFuncion} next callback function to pass control to the next middleware function in the pipeline.
+     * @param {string} url
+     * @param {ProxyBodyConfiguration} config
+     */
     private async patch(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration) {
         try {
             const headers = this.constructHeaders(config);
@@ -205,6 +250,13 @@ class ProxyController {
         }
     }
 
+    /**
+     * Put
+     * @param {Response} res Express response object
+     * @param {NextFuncion} next callback function to pass control to the next middleware function in the pipeline.
+     * @param {string} url
+     * @param {ProxyBodyConfiguration} config
+     */
     private async put(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration) {
         try {
             const headers = this.constructHeaders(config);
@@ -229,6 +281,13 @@ class ProxyController {
         }
     }
 
+    /**
+     * Delete
+     * @param {Response} res Express response object
+     * @param {NextFuncion} next callback function to pass control to the next middleware function in the pipeline.
+     * @param {string} url
+     * @param {ProxyBodyConfiguration} config
+     */
     private async delete(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration) {
         try {
             const headers = this.constructHeaders(config);
@@ -252,6 +311,12 @@ class ProxyController {
         }
     }
 
+    /**
+     * Catalog And Report Eroor
+     * @param {Error}AxiosError next callback function to pass control to the next middleware function in the pipeline.
+     * @param {string} url
+     * @param {ProxyBodyConfiguration} config
+     */
     private catalogAndReportError(error: Error | AxiosError, url: string, config: ProxyBodyConfiguration) {
         if (axios.isAxiosError(error)) {
             if (error?.response?.status === 404) {
@@ -285,6 +350,11 @@ class ProxyController {
         return error;
     }
 
+    /**
+     * Construct URL
+     * @param {ProxyBodyConfiguration} config
+     *
+     */
     private constructUrl(config: ProxyBodyConfiguration) {
         const {
             template: { base_api_url: apiBase },
@@ -297,6 +367,10 @@ class ProxyController {
         return `${base}/${endpoint}`;
     }
 
+    /**
+     * Construct Headers
+     * @param {ProxyBodyConfiguration} config
+     */
     private constructHeaders(config: ProxyBodyConfiguration) {
         let headers = {
             Authorization: `Bearer ${config.token}`
@@ -309,6 +383,11 @@ class ProxyController {
         return headers;
     }
 
+    /**
+     * Parse Headers
+     * @param {ProxyBodyConfiguration} config
+     * @param {Request} req Express request object
+     */
     private parseHeaders(req: Request) {
         const headers = req.rawHeaders;
         const HEADER_PROXY = 'nango-proxy-';
