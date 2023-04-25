@@ -112,6 +112,24 @@ export default function Signup() {
                             </Link>
                         </div>
                     </div>
+                    <div className="grid">
+                        <div className="mt-4 flex place-self-center text-sm">
+                            <p className="text-text-light-gray">By signing up, you agree to our</p>
+                            <a href="https://www.nango.dev/terms" target="_blank" rel="noreferrer" className="text-text-blue hover:text-text-light-blue ml-1">
+                                Terms of Service
+                            </a>
+                            <p className="text-text-light-gray ml-1">and</p>
+                            <a
+                                href="https://www.nango.dev/privacy-policy"
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-text-blue hover:text-text-light-blue ml-1"
+                            >
+                                Privacy Policy
+                            </a>
+                            <p className="text-text-light-gray">.</p>
+                        </div>
+                    </div>
                 </div>
             </DefaultLayout>
         </>
