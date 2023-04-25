@@ -1,0 +1,39 @@
+name: Docker services check
+
+on: [push]
+
+concurrency:
+  group: services-check-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Build the docker-compose stack
+        run: docker-compose up -d
+
+      - name: Sleep
+        uses: jakejarvis/wait-action@master
+        with:
+          time: '30s'
+
+      - name: Verify containers
+        run: |
+          CONTAINER_NAME=nango-server
+          SERVER=$(docker ps -q -f status=running -f name=^/${CONTAINER_NAME}$)
+          if [ ! "${SERVER}" ]; then
+            echo "Server container doesn't exist"
+            exit 1
+          fi
+
+          CONTAINER_NAME=nango-db
+          DB=$(docker ps -q -f status=running -f name=^/${CONTAINER_NAME}$)
+          if [ ! "${DB}" ]; then
+            echo "DB doesn't exist"
+            exit 1
+          fi
+        shell: bash
