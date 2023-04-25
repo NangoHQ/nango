@@ -432,5 +432,6 @@ export function resetPasswordSecret() {
 }
 
 export function packageJsonFile(): PackageJson {
-    return JSON.parse(readFileSync(resolve(process.cwd(), 'package.json')).toString('utf-8'));
+    let localPath = process.env['SERVER_RUN_MODE'] === 'DOCKERIZED' ? 'packages/server/package.json' : 'package.json';
+    return JSON.parse(readFileSync(resolve(process.cwd(), localPath)).toString('utf-8'));
 }
