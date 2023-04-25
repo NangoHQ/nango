@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import accountService from '../services/account.service.js';
-import { getUserAndAccountFromSession, isCloud, getOauthCallbackUrl } from '../utils/utils.js';
+import { getUserAndAccountFromSession, isCloud, getOauthCallbackUrl, getBaseUrl } from '../utils/utils.js';
 import errorManager from '../utils/error.manager.js';
 
 class AccountController {
@@ -12,6 +12,8 @@ class AccountController {
                 account.callback_url = await getOauthCallbackUrl();
                 account.secret_key = process.env['NANGO_SECRET_KEY'] || '(none)';
             }
+
+            account.host = getBaseUrl();
 
             res.status(200).send({ account: account });
         } catch (err) {

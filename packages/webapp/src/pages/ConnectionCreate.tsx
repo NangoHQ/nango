@@ -29,6 +29,7 @@ export default function IntegrationCreate() {
     const [connectionId, setConnectionId] = useState<string>('test-connection-id');
     const [connectionConfigParams, setConnectionConfigParams] = useState<Record<string, string> | null>(null);
     const [publicKey, setPublicKey] = useState('');
+    const [hostUrl, setHostUrl] = useState('');
     const getIntegrationListAPI = useGetIntegrationListAPI();
     const getProjectInfoAPI = useGetProjectInfoAPI();
     const analyticsTrack = useAnalyticsTrack();
@@ -59,6 +60,7 @@ export default function IntegrationCreate() {
             if (res?.status === 200) {
                 const account = (await res.json())['account'];
                 setPublicKey(account.public_key);
+                setHostUrl(account.host || baseUrl());
             }
         };
 
@@ -79,7 +81,7 @@ export default function IntegrationCreate() {
             connection_config_params: { value: string };
         };
 
-        let nango = new Nango({ host: baseUrl(), publicKey: isCloud() ? publicKey : undefined });
+        let nango = new Nango({ host: hostUrl, publicKey: isCloud() ? publicKey : undefined });
 
         nango
             .auth(target.integration_unique_key.value, target.connection_id.value, { params: connectionConfigParams || {} })
@@ -134,7 +136,7 @@ export default function IntegrationCreate() {
         let args = [];
 
         if (isStaging() || isHosted()) {
-            args.push(`host: '${baseUrl()}'`);
+            args.push(`host: '${hostUrl}'`);
         }
 
         if (isCloud() && publicKey) {
@@ -169,7 +171,7 @@ nango.auth('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr})
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
-            {integrations && !!integrations.length && (!isCloud() || publicKey) && (
+            {integrations && !!integrations.length && publicKey && hostUrl && (
                 <div className="mx-auto w-largebox pb-40">
                     <h2 className="mx-20 mt-16 text-left text-3xl font-semibold tracking-tight text-white mb-12">Add New Connection</h2>
                     <div className="mx-20 h-fit border border-border-gray rounded-md text-white text-sm py-14 px-8">

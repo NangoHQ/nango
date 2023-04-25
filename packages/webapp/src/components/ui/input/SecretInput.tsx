@@ -24,7 +24,7 @@ const SecretInput = forwardRef<HTMLInputElement, SecretInputProps>(function Pass
                 onChange={(e) => setChangedValue(e.currentTarget.value)}
                 {...props}
             />
-            <span className="absolute right-4 top-2 flex items-center">
+            <span className="absolute right-1 top-2 flex items-center bg-gray-900">
                 <span onClick={toggleSecretVisibility} className="bg-gray-300 hover:bg-gray-400 rounded px-2 py-1 text-sm text-gray-600 cursor-pointer">
                     {isSecretVisible ? 'hide' : 'show'}
                 </span>
