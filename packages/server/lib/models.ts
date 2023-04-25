@@ -63,6 +63,7 @@ export interface Account {
     owner_id: number | undefined;
     secret_key_iv?: string | null;
     secret_key_tag?: string | null;
+    host?: string | null;
 }
 
 export interface User {
