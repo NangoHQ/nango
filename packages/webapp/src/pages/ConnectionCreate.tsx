@@ -85,13 +85,13 @@ export default function IntegrationCreate() {
 
         nango
             .auth(target.integration_unique_key.value, target.connection_id.value, { params: connectionConfigParams || {} })
-            .catch((err: { message: string; type: string }) => {
-                setServerErrorMessage(`${err.type} error: ${err.message}`);
-            })
             .then(() => {
                 toast.success('Connection created!', { position: toast.POSITION.BOTTOM_CENTER });
                 analyticsTrack('web:connection_created', { provider: integration?.provider || 'unknown' });
                 navigate('/connections', { replace: true });
+            })
+            .catch((err: { message: string; type: string }) => {
+                setServerErrorMessage(`${err.type} error: ${err.message}`);
             });
     };
 
@@ -159,7 +159,7 @@ export default function IntegrationCreate() {
         }
 
         return `import Nango from '@nangohq/frontend';
-        
+
 let nango = new Nango(${argsStr});
 
 nango.auth('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr}).then((result: { providerConfigKey: string; connectionId: string }) => {
