@@ -3,7 +3,7 @@ import { cva, VariantProps } from 'class-variance-authority';
 import classNames from 'classnames';
 import React, { forwardRef } from 'react';
 
-const buttonStyles = cva('flex items-center gap-2 disabled:pointer-events-none disabled:opacity-50 rounded-md', {
+const buttonStyles = cva('disabled:pointer-events-none disabled:opacity-50 rounded-md', {
     variants: {
         variant: {
             primary: 'bg-white text-black hover:bg-gray-300',
@@ -26,7 +26,7 @@ const buttonStyles = cva('flex items-center gap-2 disabled:pointer-events-none d
 });
 
 interface ExtraProps {
-    isLoading?: true;
+    isLoading?: boolean;
     iconProps?: {
         Icon: React.ReactNode;
         position: 'start' | 'end';
@@ -41,17 +41,15 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button({ size
     }
 
     return (
-        <button
-            ref={ref}
-            className={classNames(buttonStyles({ className, variant, size }), {
-                'flex-row-reverse': iconProps && iconProps.position === 'end'
-            })}
-            {...props}
-        >
-            {iconProps && iconProps.Icon}
+        <button ref={ref} className={classNames(buttonStyles({ className, variant, size }), {})} {...props}>
             <div className="relative">
-                <div className={classNames({ 'opacity-0': isLoading })}>{children}</div>
-                {isLoading && <Loader className="absolute top-0 flex mx-auto inset-x-0 h-full" />}
+                <div
+                    className={classNames('flex gap-2 items-center', { 'opacity-0': isLoading, 'flex-row-reverse': iconProps && iconProps.position === 'end' })}
+                >
+                    {iconProps && iconProps.Icon}
+                    {children}
+                </div>
+                {isLoading && <Loader className="absolute animate-spin top-0 flex mx-auto inset-x-0 h-full" />}
             </div>
         </button>
     );

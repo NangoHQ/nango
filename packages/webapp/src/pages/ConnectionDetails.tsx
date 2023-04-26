@@ -12,6 +12,9 @@ import Button from '../components/ui/button/Button';
 import Typography from '../components/ui/typography/Typography';
 import SecretInput from '../components/ui/input/SecretInput';
 
+//TODO : https://github.com/NangoHQ/nango/pull/465
+//add api
+
 interface Connection {
     id: number;
     connectionId: string;
@@ -31,6 +34,7 @@ interface Connection {
 
 export default function ConnectionDetails() {
     const [loaded, setLoaded] = useState(false);
+    const [fetchingRefreshToken, setFetchingRefreshToken] = useState(false);
     const [serverErrorMessage, setServerErrorMessage] = useState('');
     const [connection, setConnection] = useState<Connection | null>(null);
     const navigate = useNavigate();
@@ -42,7 +46,7 @@ export default function ConnectionDetails() {
         if (!connectionId || !providerConfigKey) return;
 
         const getConnections = async () => {
-            let res = await getConnectionDetailsAPI(connectionId, providerConfigKey);
+            let res = await getConnectionDetailsAPI(connectionId, providerConfigKey, false);
 
             if (res?.status === 200) {
                 let data = await res.json();
@@ -70,6 +74,30 @@ We could not retrieve and/or refresh your access token due to the following erro
             toast.success('Connection deleted!', { position: toast.POSITION.BOTTOM_CENTER });
             navigate('/connections', { replace: true });
         }
+    };
+
+    const forceRefresh = async () => {
+        if (!connectionId || !providerConfigKey) return;
+
+        setFetchingRefreshToken(true);
+
+        let res = await getConnectionDetailsAPI(connectionId, providerConfigKey, true);
+
+        if (res?.status === 200) {
+            let data = await res.json();
+            setConnection(data['connection']);
+
+            toast.success('Token refresh success!', { position: toast.POSITION.BOTTOM_CENTER });
+        } else if (res != null) {
+            setServerErrorMessage(`
+             We could not retrieve and/or refresh your access token due to the following error: 
+             \n\n${(await res.json()).error}
+            `);
+            toast.error('Failed to refresh token!', { position: toast.POSITION.BOTTOM_CENTER });
+        }
+        setTimeout(() => {
+            setFetchingRefreshToken(false);
+        }, 400);
     };
 
     return (
@@ -108,7 +136,13 @@ We could not retrieve and/or refresh your access token due to the following erro
                         >
                             Connection
                         </Typography>
-                        <Button iconProps={{ Icon: <RefreshCw className="h-5 w-5" />, position: 'start' }}>Manually Refresh Token</Button>
+                        <Button
+                            isLoading={fetchingRefreshToken}
+                            onClick={forceRefresh}
+                            iconProps={{ Icon: <RefreshCw className="h-5 w-5" />, position: 'start' }}
+                        >
+                            Manually Refresh Token
+                        </Button>
                     </div>
                     <div className="border border-border-gray rounded-md h-fit py-14 text-white text-sm">
                         <div>
