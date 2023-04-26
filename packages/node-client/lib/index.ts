@@ -157,13 +157,16 @@ export class Nango {
     /**
      * Get the list of Connections, which does not contain access credentials.
      */
-    public async listConnections() {
-        let response = await this.listConnectionDetails();
+    public async listConnections(connectionId?: string) {
+        let response = await this.listConnectionDetails(connectionId);
         return response.data;
     }
 
-    private async listConnectionDetails() {
-        let url = `${this.serverUrl}/connection`;
+    private async listConnectionDetails(connectionId?: string) {
+        let url = `${this.serverUrl}/connection?`;
+        if (connectionId) {
+            url.concat(`connectionId=${connectionId}`);
+        }
 
         let headers = {
             'Content-Type': 'application/json',

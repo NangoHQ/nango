@@ -150,3 +150,26 @@ The return value looks like this:
     ];
 }
 ```
+
+## Getting a list of all Connections for a specific connectionId
+
+In the case where you want to get a list of all the connections for only a specific connectionId you can pass the connection ID
+```js
+let connectionsList = await nango.listConnections("userId");
+```
+
+```js
+{
+    connections: [
+        {
+            connection_id: 'userId',
+            provider: '<CONFIG-KEY-1>',
+            created: '2023-03-08T09:43:03.725Z'
+        },
+        {
+            //....
+        }
+        // Additional objects like the one above but only for the same connection Id
+    ];
+}
+```
