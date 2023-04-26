@@ -7,7 +7,7 @@ import { useGetProjectInfoAPI, useEditCallbackUrlAPI } from '../utils/api';
 import { isCloud, defaultCallback } from '../utils/utils';
 import DashboardLayout from '../layout/DashboardLayout';
 import { LeftNavBarItems } from '../components/LeftNavBar';
-import SecretInput from '../components/ui/SecretInput';
+import SecretInput from '../components/ui/input/SecretInput';
 
 export default function ProjectSettings() {
     const [loaded, setLoaded] = useState(false);

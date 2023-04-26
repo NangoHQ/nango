@@ -310,11 +310,16 @@ export function useGetConnectionListAPI() {
 export function useGetConnectionDetailsAPI() {
     const signout = useSignout();
 
-    return async (connectionId: string, providerConfigKey: string) => {
+    return async (connectionId: string, providerConfigKey: string, force_refresh: boolean) => {
         try {
-            let res = await fetch(`/api/v1/connection/${encodeURIComponent(connectionId)}?provider_config_key=${encodeURIComponent(providerConfigKey)}`, {
-                headers: getHeaders()
-            });
+            let res = await fetch(
+                `/api/v1/connection/${encodeURIComponent(connectionId)}?provider_config_key=${encodeURIComponent(
+                    providerConfigKey
+                )}&force_refresh=${force_refresh}`,
+                {
+                    headers: getHeaders()
+                }
+            );
 
             if (res.status === 401) {
                 return signout();

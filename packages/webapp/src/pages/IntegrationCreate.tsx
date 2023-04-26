@@ -15,10 +15,10 @@ import { HelpCircle } from '@geist-ui/icons';
 import { Tooltip } from '@geist-ui/core';
 import { defaultCallback } from '../utils/utils';
 import { Prism } from '@mantine/prism';
-import TagsInput from '../components/ui/TagsInput';
 import { LeftNavBarItems } from '../components/LeftNavBar';
 import DashboardLayout from '../layout/DashboardLayout';
-import SecretInput from '../components/ui/SecretInput';
+import SecretInput from '../components/ui/input/SecretInput';
+import TagsInput from '../components/ui/input/TagsInput';
 
 interface Integration {
     uniqueKey: string;

@@ -2,14 +2,18 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Prism } from '@mantine/prism';
 import { toast } from 'react-toastify';
-import { Tooltip } from '@geist-ui/core';
-import { HelpCircle } from '@geist-ui/icons';
+import { RefreshCw } from '@geist-ui/icons';
 
 import { useGetConnectionDetailsAPI, useDeleteConnectionAPI } from '../utils/api';
 import DashboardLayout from '../layout/DashboardLayout';
 import { LeftNavBarItems } from '../components/LeftNavBar';
-import SecretInput from '../components/ui/SecretInput';
 import PrismPlus from '../components/ui/prism/PrismPlus';
+import Button from '../components/ui/button/Button';
+import Typography from '../components/ui/typography/Typography';
+import SecretInput from '../components/ui/input/SecretInput';
+
+//TODO : https://github.com/NangoHQ/nango/pull/465
+//add api
 
 interface Connection {
     id: number;
@@ -30,6 +34,7 @@ interface Connection {
 
 export default function ConnectionDetails() {
     const [loaded, setLoaded] = useState(false);
+    const [fetchingRefreshToken, setFetchingRefreshToken] = useState(false);
     const [serverErrorMessage, setServerErrorMessage] = useState('');
     const [connection, setConnection] = useState<Connection | null>(null);
     const navigate = useNavigate();
@@ -41,7 +46,7 @@ export default function ConnectionDetails() {
         if (!connectionId || !providerConfigKey) return;
 
         const getConnections = async () => {
-            let res = await getConnectionDetailsAPI(connectionId, providerConfigKey);
+            let res = await getConnectionDetailsAPI(connectionId, providerConfigKey, false);
 
             if (res?.status === 200) {
                 let data = await res.json();
@@ -71,41 +76,73 @@ We could not retrieve and/or refresh your access token due to the following erro
         }
     };
 
+    const forceRefresh = async () => {
+        if (!connectionId || !providerConfigKey) return;
+
+        setFetchingRefreshToken(true);
+
+        let res = await getConnectionDetailsAPI(connectionId, providerConfigKey, true);
+
+        if (res?.status === 200) {
+            let data = await res.json();
+            setConnection(data['connection']);
+
+            toast.success('Token refresh success!', { position: toast.POSITION.BOTTOM_CENTER });
+        } else if (res != null) {
+            setServerErrorMessage(`
+             We could not retrieve and/or refresh your access token due to the following error: 
+             \n\n${(await res.json()).error}
+            `);
+            toast.error('Failed to refresh token!', { position: toast.POSITION.BOTTOM_CENTER });
+        }
+        setTimeout(() => {
+            setFetchingRefreshToken(false);
+        }, 400);
+    };
+
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Connections}>
             <div className="mx-auto w-largebox">
                 <div className="mx-16 pb-40">
-                    <div className="flex mt-16 mb-12">
-                        <h2 className="text-left text-3xl font-semibold tracking-tight text-white">Connection</h2>
-                        <Tooltip
-                            text={
-                                <>
-                                    <div className="flex text-black text-sm">
-                                        <p>{`Stores the OAuth credentials & details. You can fetch it with the `}</p>
-                                        <a
-                                            href="https://docs.nango.dev/reference/connections-api"
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="text-text-blue hover:text-text-light-blue ml-1"
-                                        >
-                                            API
-                                        </a>
-                                        <p className="ml-1">{` and `}</p>
-                                        <a
-                                            href="https://docs.nango.dev/reference/node-sdk"
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="text-text-blue hover:text-text-light-blue ml-1"
-                                        >
-                                            Node SDK
-                                        </a>
-                                        <p>{`.`}</p>
-                                    </div>
-                                </>
-                            }
+                    <div className="flex mt-16 mb-12 justify-between">
+                        <Typography
+                            tooltipProps={{
+                                text: (
+                                    <>
+                                        <div className="flex text-black text-sm">
+                                            <p>{`Stores the OAuth credentials & details. You can fetch it with the `}</p>
+                                            <a
+                                                href="https://docs.nango.dev/reference/connections-api"
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="text-text-blue hover:text-text-light-blue ml-1"
+                                            >
+                                                API
+                                            </a>
+                                            <p className="ml-1">{` and `}</p>
+                                            <a
+                                                href="https://docs.nango.dev/reference/node-sdk"
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="text-text-blue hover:text-text-light-blue ml-1"
+                                            >
+                                                Node SDK
+                                            </a>
+                                            <p>{`.`}</p>
+                                        </div>
+                                    </>
+                                )
+                            }}
                         >
-                            <HelpCircle color="white" className="h-5 ml-1"></HelpCircle>
-                        </Tooltip>
+                            Connection
+                        </Typography>
+                        <Button
+                            isLoading={fetchingRefreshToken}
+                            onClick={forceRefresh}
+                            iconProps={{ Icon: <RefreshCw className="h-5 w-5" />, position: 'start' }}
+                        >
+                            Manually Refresh Token
+                        </Button>
                     </div>
                     <div className="border border-border-gray rounded-md h-fit py-14 text-white text-sm">
                         <div>
@@ -246,12 +283,11 @@ We could not retrieve and/or refresh your access token due to the following erro
                             </div>
                         )}
 
-                        <button
-                            className="mx-8 mt-8 flex h-8 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white hover:bg-red-400 bg-red-600"
-                            onClick={deleteButtonClicked}
-                        >
-                            <p>Delete</p>
-                        </button>
+                        <div className="mx-8 mt-8">
+                            <Button variant="danger" size="sm" onClick={deleteButtonClicked}>
+                                <p>Delete</p>
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </div>

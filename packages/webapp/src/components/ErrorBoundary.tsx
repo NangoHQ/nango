@@ -2,7 +2,6 @@ import React, { Component, ErrorInfo } from 'react';
 
 interface Props {
     children: React.ReactNode;
-    //TODO: create a custom fallback component according to nango's UI
     fallback?: React.ReactNode;
 }
 
