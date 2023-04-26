@@ -16,7 +16,7 @@ export default class Nango {
     private hostBaseUrl: string;
     private status: AuthorizationStatus;
     private publicKey: string | undefined;
-    private debug: boolean = false;
+    private debug = false;
 
     constructor(config: { host?: string; publicKey?: string; debug?: boolean } = {}) {
         config.host = config.host || prodHost; // Default to Nango Cloud.
@@ -87,7 +87,7 @@ export default class Nango {
     }
 
     private toQueryString(connectionId: string, connectionConfig?: ConnectionConfig): string {
-        let query: string[] = [];
+        const query: string[] = [];
 
         if (connectionId) {
             query.push(`connection_id=${connectionId}`);
@@ -104,6 +104,10 @@ export default class Nango {
                     query.push(`params[${param}]=${val}`);
                 }
             }
+
+            if (connectionConfig.hmac) {
+                query.push(`hmac=${connectionConfig.hmac}`);
+            }
         }
 
         return query.length === 0 ? '' : '?' + query.join('&');
@@ -116,6 +120,7 @@ export default class Nango {
 
 interface ConnectionConfig {
     params: Record<string, string>;
+    hmac?: string;
 }
 
 enum AuthorizationStatus {
@@ -182,7 +187,7 @@ class AuthorizationModal {
         successHandler: (providerConfigKey: string, connectionId: string) => any,
         errorHandler: (errorType: string, errorDesc: string) => any
     ) {
-        let data = JSON.parse(message.data);
+        const data = JSON.parse(message.data);
 
         switch (data.message_type) {
             case WSMessageType.ConnectionAck:
@@ -190,7 +195,7 @@ class AuthorizationModal {
                     console.log(debugLogPrefix, 'Connection ack received. Opening modal...');
                 }
 
-                let wsClientId = data.ws_client_id;
+                const wsClientId = data.ws_client_id;
                 this.open(wsClientId);
                 break;
             case WSMessageType.Error:
@@ -249,7 +254,7 @@ class AuthorizationModal {
         const features = this.features;
         const featuresAsString: string[] = [];
 
-        for (let key in features) {
+        for (const key in features) {
             featuresAsString.push(key + '=' + features[key]);
         }
 

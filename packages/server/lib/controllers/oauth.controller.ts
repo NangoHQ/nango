@@ -23,21 +23,22 @@ import wsClient from '../clients/web-socket.client.js';
 import { WSErrBuilder } from '../utils/web-socket-error.js';
 import analytics from '../utils/analytics.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
+import hmacService from '../services/hmac.service.js';
 
 class OAuthController {
     public async oauthRequest(req: Request, res: Response, _: NextFunction) {
-        let accountId = getAccount(res);
+        const accountId = getAccount(res);
         const { providerConfigKey } = req.params;
         let connectionId = req.query['connection_id'] as string | undefined;
-        let wsClientId = req.query['ws_client_id'] as string | undefined;
+        const wsClientId = req.query['ws_client_id'] as string | undefined;
 
         try {
             if (!wsClientId) {
                 analytics.track('server:pre_ws_oauth', accountId);
             }
 
-            let callbackUrl = await getOauthCallbackUrl(accountId);
-            let connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
+            const callbackUrl = await getOauthCallbackUrl(accountId);
+            const connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
 
             if (connectionId == null) {
                 return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.MissingConnectionId());
@@ -46,7 +47,18 @@ class OAuthController {
             }
             connectionId = connectionId.toString();
 
-            let config = await configService.getProviderConfig(providerConfigKey, accountId);
+            if (hmacService.isEnabled()) {
+                const hmac = req.query['hmac'] as string | undefined;
+                if (!hmac) {
+                    return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.MissingHmac());
+                }
+                const verified = hmacService.verify(hmac, providerConfigKey, connectionId);
+                if (!verified) {
+                    return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.InvalidHmac());
+                }
+            }
+
+            const config = await configService.getProviderConfig(providerConfigKey, accountId);
 
             if (config == null) {
                 return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnknownProviderConfigKey(providerConfigKey));
@@ -102,9 +114,9 @@ class OAuthController {
         callbackUrl: string
     ) {
         const oauth2Template = template as ProviderTemplateOAuth2;
-        let wsClientId = session.webSocketClientId;
-        let providerConfigKey = session.providerConfigKey;
-        let connectionId = session.connectionId;
+        const wsClientId = session.webSocketClientId;
+        const providerConfigKey = session.providerConfigKey;
+        const connectionId = session.connectionId;
 
         if (missesInterpolationParam(template.authorization_url, connectionConfig)) {
             return wsClient.notifyErr(
@@ -158,7 +170,7 @@ class OAuthController {
 
             res.redirect(authorizationUri);
         } else {
-            let grandType = oauth2Template.token_params.grant_type;
+            const grandType = oauth2Template.token_params.grant_type;
 
             return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownGrantType(grandType));
         }
@@ -172,9 +184,9 @@ class OAuthController {
         const callbackParams = new URLSearchParams({
             state: session.id
         });
-        let wsClientId = session.webSocketClientId;
-        let providerConfigKey = session.providerConfigKey;
-        let connectionId = session.connectionId;
+        const wsClientId = session.webSocketClientId;
+        const providerConfigKey = session.providerConfigKey;
+        const connectionId = session.connectionId;
 
         const oAuth1CallbackURL = `${callbackUrl}?${callbackParams.toString()}`;
 
@@ -204,7 +216,7 @@ class OAuthController {
         const { state } = req.query;
 
         if (state == null) {
-            let e = new Error('No state found in callback');
+            const e = new Error('No state found in callback');
             errorManager.report(e, { metadata: errorManager.getExpressRequestContext(req) });
             return;
         }
@@ -212,16 +224,16 @@ class OAuthController {
         const session = await oAuthSessionService.findById(state as string);
 
         if (session == null) {
-            let e = new Error('No session found for state: ' + state);
+            const e = new Error('No session found for state: ' + state);
             errorManager.report(e, { metadata: errorManager.getExpressRequestContext(req) });
             return;
         } else {
             await oAuthSessionService.delete(state as string);
         }
 
-        let wsClientId = session.webSocketClientId;
-        let providerConfigKey = session.providerConfigKey;
-        let connectionId = session.connectionId;
+        const wsClientId = session.webSocketClientId;
+        const providerConfigKey = session.providerConfigKey;
+        const connectionId = session.connectionId;
 
         try {
             logger.debug(`Received callback for ${session.providerConfigKey} (connection: ${session.connectionId}) - full callback URI: ${req.originalUrl}"`);
@@ -251,10 +263,10 @@ class OAuthController {
 
     private async oauth2Callback(template: ProviderTemplateOAuth2, config: ProviderConfig, session: OAuthSession, req: Request, res: Response) {
         const { code } = req.query;
-        let providerConfigKey = session.providerConfigKey;
-        let connectionId = session.connectionId;
-        let wsClientId = session.webSocketClientId;
-        let callbackMetadata = getConnectionMetadataFromCallbackRequest(req.query, template);
+        const providerConfigKey = session.providerConfigKey;
+        const connectionId = session.connectionId;
+        const wsClientId = session.webSocketClientId;
+        const callbackMetadata = getConnectionMetadataFromCallbackRequest(req.query, template);
 
         if (!code) {
             return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.InvalidCallbackOAuth2());
@@ -275,18 +287,18 @@ class OAuthController {
             additionalTokenParams['code_verifier'] = session.codeVerifier;
         }
 
-        let headers: Record<string, string> = {};
+        const headers: Record<string, string> = {};
 
         if (template.token_request_auth_method === 'basic') {
             headers['Authorization'] = 'Basic ' + Buffer.from(config.oauth_client_id + ':' + config.oauth_client_secret).toString('base64');
         }
 
         try {
-            var rawCredentials: object;
+            let rawCredentials: object;
             if (providerClientManager.shouldUseProviderClient(session.provider)) {
                 rawCredentials = await providerClientManager.getToken(config, template.token_url, code as string, session.callbackUrl);
             } else {
-                let accessToken = await simpleOAuthClient.getToken(
+                const accessToken = await simpleOAuthClient.getToken(
                     {
                         code: code as string,
                         redirect_uri: session.callbackUrl,
@@ -301,7 +313,7 @@ class OAuthController {
 
             logger.debug(`OAuth 2 for ${providerConfigKey} (connection ${connectionId}) successful.`);
 
-            let tokenMetadata = getConnectionMetadataFromTokenResponse(rawCredentials, template);
+            const tokenMetadata = getConnectionMetadataFromTokenResponse(rawCredentials, template);
 
             connectionService.upsertConnection(
                 connectionId,
@@ -323,10 +335,10 @@ class OAuthController {
 
     private oauth1Callback(template: ProviderTemplate, config: ProviderConfig, session: OAuthSession, req: Request, res: Response) {
         const { oauth_token, oauth_verifier } = req.query;
-        let providerConfigKey = session.providerConfigKey;
-        let connectionId = session.connectionId;
-        let wsClientId = session.webSocketClientId;
-        let metadata = getConnectionMetadataFromCallbackRequest(req.query, template);
+        const providerConfigKey = session.providerConfigKey;
+        const connectionId = session.connectionId;
+        const wsClientId = session.webSocketClientId;
+        const metadata = getConnectionMetadataFromCallbackRequest(req.query, template);
 
         if (!oauth_token || !oauth_verifier) {
             return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.InvalidCallbackOAuth1());
