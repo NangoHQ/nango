@@ -52,12 +52,19 @@ NANGO_DB_HOST=<REPLACE>
 NANGO_DB_PORT=<REPLACE>
 NANGO_DB_NAME=<REPLACE>
 NANGO_DB_SSL=true
+NANGO_DB_POOL_MIN=<PICK-INT-OR-SKIP>
+NANGO_DB_POOL_MAX=<PICK-INT-OR-SKIP>
 ```
 
 :::tip
 Deploying with Render or Heroku automatically generates a persistent database connected to your Nango instance.
 
 For Render, the environment variables above are automatically set for you. For Heroku, check out our Heroku docs page for specific instructions.
+:::
+
+:::tip
+If you are using a serverless database, you might want to tune NANGO_DB_POOL_MIN and NANGO_DB_POOL_MAX params.
+Otherwise, knex(ORM used in Nango) will be keeping connection alive and exhausting your serverless CPU quota.
 :::
 
 ## Securing your instance
