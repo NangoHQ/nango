@@ -671,6 +671,11 @@ typeform:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+wakatime:
+    auth_mode: OAUTH2
+    authorization_url: https://wakatime.com/oauth/authorize
+    token_url: https://wakatime.com/oauth/token
+    docs: https://wakatime.com/developers
 wave-accounting:
     auth_mode: OAUTH2
     authorization_url: https://api.waveapps.com/oauth2/authorize
