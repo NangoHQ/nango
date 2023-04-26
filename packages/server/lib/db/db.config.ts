@@ -16,8 +16,8 @@ let dbConfig: { development: Knex.Config<any>; production: Knex.Config<any> } = 
             extension: 'ts'
         },
         pool: {
-            min: parseInt(process.env['NANGO_DB_POOL_MIN'], 10) || 2,
-            max: parseInt(process.env['NANGO_DB_POOL_MAX'], 10) || 7
+            min: parseInt(process.env['NANGO_DB_POOL_MIN'] || "2"),
+            max: parseInt(process.env['NANGO_DB_POOL_MAX']|| "7") ,
         }
     },
 
