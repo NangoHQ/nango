@@ -11,6 +11,7 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
     }, [defaultValue]);
 
     const [enteredValue, setEnteredValue] = useState('');
+    const [error, setError] = useState('');
     const [selectedScopes, addToScopesSet, removeFromSelectedSet] = useSet<string>(defaultScopes);
 
     function handleEnter(e: KeyboardEvent<HTMLInputElement>) {
@@ -22,24 +23,33 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
     }
 
     function handleAdd() {
-        addToScopesSet(enteredValue);
-        setEnteredValue('');
+        if (enteredValue.trim()) {
+            addToScopesSet(enteredValue.trim());
+            setEnteredValue('');
+            setError('');
+        }
     }
 
     function removeScope(scopeToBeRemoved: string) {
         removeFromSelectedSet(scopeToBeRemoved);
     }
 
+    function showInvalid() {
+        //show error message only when developer sets this field to be a required one.
+        if (props.required) {
+            setError('Please enter atleast one scope for this provider');
+        }
+    }
+
     return (
         <>
             <div className="flex gap-3">
-                <input required value={Array.from(selectedScopes.values()).join(',')} {...props} hidden />
+                <input onInvalid={showInvalid} value={selectedScopes.join(',')} {...props} hidden />
                 <input
                     ref={ref}
                     value={enteredValue}
                     onChange={(e) => setEnteredValue(e.currentTarget.value)}
                     onKeyDown={handleEnter}
-                    minLength={1}
                     className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none"
                 />
                 <button
@@ -50,9 +60,10 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
                     Add
                 </button>
             </div>
-            {!!Array.from(selectedScopes.values()).length && (
-                <div className="px-2 pt-2 mt-3   pb-11 mb-3 flex flex-wrap rounded-lg border border-border-gray">
-                    {Array.from(selectedScopes.values()).map((selectedScope, i) => {
+            {error && <p className="text-red-600 text-sm mt-3">{error}</p>}
+            {!!selectedScopes.length && (
+                <div className="px-2 pt-2 mt-3 pb-11 mb-3 flex flex-wrap rounded-lg border border-border-gray">
+                    {selectedScopes.map((selectedScope, i) => {
                         return (
                             <span
                                 key={selectedScope + i}
