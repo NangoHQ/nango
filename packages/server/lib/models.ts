@@ -17,16 +17,20 @@ export interface ProviderTemplate {
     authorization_url: string;
     authorization_params?: Record<string, string>;
     scope_separator?: string;
+    default_scopes?: string[];
     token_url: string;
     token_params?: {
         [key: string]: string;
     };
     redirect_uri_metadata?: Array<string>;
     token_response_metadata?: Array<string>;
+    base_api_url?: string;
+    docs?: string;
 }
 
 export interface ProviderTemplateAlias {
     alias?: string;
+    base_api_url?: string;
 }
 
 export interface BaseConnection {
@@ -59,6 +63,7 @@ export interface Account {
     owner_id: number | undefined;
     secret_key_iv?: string | null;
     secret_key_tag?: string | null;
+    host?: string | null;
 }
 
 export interface User {
@@ -179,3 +184,37 @@ export interface AuthorizationTokenResponse extends Omit<OAuth2Credentials, 'typ
 }
 
 export interface RefreshTokenResponse extends AuthorizationTokenResponse {}
+
+export type HTTP_VERB = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
+
+export interface ProxyBodyConfiguration {
+    endpoint: string;
+    providerConfigKey: string;
+    connectionId: string;
+    token: string;
+    method: HTTP_VERB;
+    template: ProviderTemplate;
+
+    retries?: number;
+    data?: unknown;
+    headers?: Record<string, string>;
+    params?: string | Record<string, string>;
+    paramsSerializer?: {
+        encode?: (param: string) => string;
+        serialize?: (params: Record<string, any>, options?: ParamsSerializerOptions) => void;
+        indexes?: boolean;
+    };
+}
+
+interface ParamsSerializerOptions {
+    encode?: ParamEncoder;
+    serialize?: CustomParamsSerializer;
+}
+
+interface ParamEncoder {
+    (value: any, defaultEncoder: (value: any) => any): any;
+}
+
+interface CustomParamsSerializer {
+    (params: Record<string, any>, options?: ParamsSerializerOptions): string;
+}

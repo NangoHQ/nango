@@ -40,11 +40,6 @@ export default class Nango {
         } catch (err) {
             throw new Error(`Invalid URL provided for the Nango host: ${this.hostBaseUrl}`);
         }
-
-        if (!window) {
-            const errorMessage = "Couldn't initialize Nango frontend. The window object is undefined. Are you using Nango frontend from a browser?";
-            throw new Error(errorMessage);
-        }
     }
 
     public auth(providerConfigKey: string, connectionId: string, connectionConfig?: ConnectionConfig): Promise<any> {
@@ -137,7 +132,7 @@ class AuthorizationModal {
     private features: { [key: string]: string | number };
     private width = 500;
     private height = 600;
-    private modal!: Window | null;
+    private modal: Window;
     private swClient: WebSocket;
     private debug: boolean;
 
@@ -162,7 +157,6 @@ class AuthorizationModal {
             left,
             scrollbars: 'yes',
             resizable: 'yes',
-            noopener: 'yes', // safer
             status: 'no',
             toolbar: 'no',
             location: 'no',
@@ -170,6 +164,8 @@ class AuthorizationModal {
             menubar: 'no',
             directories: 'no'
         };
+
+        this.modal = window.open('', '_blank', this.featuresToString())!;
 
         this.swClient = new WebSocket(host.replace('https://', 'wss://').replace('http://', 'ws://'));
 
@@ -240,10 +236,7 @@ class AuthorizationModal {
      * Open the modal
      */
     open(wsClientId: string) {
-        const url = this.url + '&ws_client_id=' + wsClientId;
-        const windowName = '';
-        const windowFeatures = this.featuresToString();
-        this.modal = window.open(url, windowName, windowFeatures);
+        this.modal.location = this.url + '&ws_client_id=' + wsClientId;
         return this.modal;
     }
 

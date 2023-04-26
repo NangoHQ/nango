@@ -127,11 +127,11 @@ const sidebars = {
                         }
                     ]
                 },
-                // {
-                //     id: 'reference/backend-sdk-rest-api',
-                //     type: 'doc',
-                //     label: 'Backend SDK & REST API'
-                // },
+                {
+                    id: 'reference/proxy',
+                    type: 'doc',
+                    label: 'Proxy'
+                },
                 {
                     id: 'reference/configuration',
                     type: 'doc',
@@ -149,18 +149,22 @@ const sidebars = {
             label: 'Supported APIs',
             link: {
                 type: 'generated-index',
-                title: 'Nango Supported APIs and API Wikis',
-                description: 'For every API that Nango supports we maintain a small API wiki with all our learnings. Feel free to contribute yours as well!',
+                title: 'Nango Supported OAuth APIs and REST API Wikis',
+                description:
+                    'For every OAuth API that Nango supports we maintain a small API wiki with all our learnings. Feel free to contribute yours as well!',
                 slug: '/providers'
             },
             items: [
+                'providers/accelo',
                 'providers/adobe',
                 'providers/airtable',
                 'providers/amazon',
                 'providers/asana',
                 'providers/atlassian',
+                'providers/bamboohr',
                 'providers/battlenet',
                 'providers/bitbucket',
+                'providers/boldsign',
                 'providers/box',
                 'providers/braintree',
                 'providers/brex',
@@ -172,6 +176,7 @@ const sidebars = {
                 'providers/digitalocean',
                 'providers/discord',
                 'providers/dropbox',
+                'providers/docusign',
                 'providers/epic-games',
                 'providers/facebook',
                 'providers/factorial',
@@ -195,6 +200,7 @@ const sidebars = {
                 'providers/intercom',
                 'providers/intuit',
                 'providers/jira',
+                'providers/keap',
                 'providers/lever',
                 'providers/linear',
                 'providers/linkedin',
@@ -207,6 +213,7 @@ const sidebars = {
                 'providers/one-drive',
                 'providers/outreach',
                 'providers/pagerduty',
+                'providers/pandadoc',
                 'providers/payfit',
                 'providers/pipedrive',
                 'providers/qualtrics',
@@ -221,13 +228,18 @@ const sidebars = {
                 'providers/slack',
                 'providers/splitwise',
                 'providers/spotify',
+                'providers/squareup',
                 'providers/stackexchange',
                 'providers/strava',
                 'providers/stripe',
+                'providers/teamwork',
+                'providers/todoist',
+                'providers/timely',
                 'providers/trello',
                 'providers/twitch',
                 'providers/twitter',
                 'providers/typeform',
+                'providers/uber',
                 'providers/wave_accounting',
                 'providers/xero',
                 'providers/yahoo',
@@ -237,6 +249,7 @@ const sidebars = {
                 'providers/zendesk',
                 'providers/zenefits',
                 'providers/zoho-crm',
+                'providers/zoho-desk',
                 'providers/zoho-invoice',
                 'providers/zoho-books',
                 'providers/zoom'

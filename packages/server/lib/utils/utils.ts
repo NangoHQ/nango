@@ -89,7 +89,7 @@ export function isUserAuthenticated(req: Request): boolean {
     return req.isAuthenticated() && req.user != null && req.user.id != null;
 }
 
-export async function getUserAndAccountFromSesstion(req: Request): Promise<{ user: User; account: Account }> {
+export async function getUserAndAccountFromSession(req: Request): Promise<{ user: User; account: Account }> {
     let sessionUser = req.user;
 
     if (sessionUser == null) {
@@ -432,5 +432,6 @@ export function resetPasswordSecret() {
 }
 
 export function packageJsonFile(): PackageJson {
-    return JSON.parse(readFileSync(resolve(process.cwd(), 'package.json')).toString('utf-8'));
+    let localPath = process.env['SERVER_RUN_MODE'] === 'DOCKERIZED' ? 'packages/server/package.json' : 'package.json';
+    return JSON.parse(readFileSync(resolve(process.cwd(), localPath)).toString('utf-8'));
 }

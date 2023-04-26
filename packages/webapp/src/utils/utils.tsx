@@ -2,26 +2,16 @@ export const localhostUrl: string = 'http://localhost:3003';
 export const stagingUrl: string = 'https://api-staging.nango.dev';
 export const prodUrl: string = 'https://api.nango.dev';
 
-export enum NodeEnv {
-    Hosted = 'hosted',
-    Staging = 'staging',
-    Prod = 'production'
-}
-
-export enum EnvKeys {
-    Env = 'REACT_APP_ENV'
-}
-
 export function isHosted() {
-    return process.env[EnvKeys.Env] === NodeEnv.Hosted;
+    return process.env.REACT_APP_ENV === 'hosted';
 }
 
 export function isStaging() {
-    return process.env[EnvKeys.Env] === NodeEnv.Staging;
+    return process.env.REACT_APP_ENV === 'staging';
 }
 
 export function isProd() {
-    return process.env[EnvKeys.Env] === NodeEnv.Prod;
+    return process.env.REACT_APP_ENV === 'production';
 }
 
 export function isCloud() {
@@ -29,12 +19,12 @@ export function isCloud() {
 }
 
 export function baseUrl() {
-    switch (process.env[EnvKeys.Env]) {
-        case NodeEnv.Hosted:
+    switch (process.env.REACT_APP_ENV) {
+        case 'hosted':
             return localhostUrl;
-        case NodeEnv.Staging:
+        case 'staging':
             return stagingUrl;
-        case NodeEnv.Prod:
+        case 'production':
             return prodUrl;
         default:
             return localhostUrl;

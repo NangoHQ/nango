@@ -14,7 +14,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
     return (
         <div>
             <div className="mt-14 border-r-2 border-t-2 border-border-gray flex justify-between h-full w-60 fixed bg-bg-black z-50">
-                <div className="ml-4 mt-16">
+                <div className="ml-4 mt-16 space-y-1">
                     <Link
                         to="/integrations"
                         className={`flex h-10 rounded-md ml-4 pl-2 pr-3 pt-2.5 text-sm text-white mt-3 w-44 ${

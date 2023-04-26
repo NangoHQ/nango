@@ -36,7 +36,7 @@ Still in your VM’s console, install Nango by running:
 
 ```bash
 mkdir nango && cd nango
-wget https://raw.githubusercontent.com/NangoHQ/nango/main/docker/aws/docker-compose.yaml && wget https://raw.githubusercontent.com/NangoHQ/nango/main/.env
+wget https://raw.githubusercontent.com/NangoHQ/nango/master/docker/aws/docker-compose.yaml && wget https://raw.githubusercontent.com/NangoHQ/nango/master/.env
 docker-compose up -d # Nango is now running!
 ```
 

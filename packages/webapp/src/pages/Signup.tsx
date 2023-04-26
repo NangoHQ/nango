@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+
 import { useSignupAPI } from '../utils/api';
 import { useSignin, User } from '../utils/user';
+import DefaultLayout from '../layout/DefaultLayout';
 
 export default function Signup() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');
@@ -35,11 +36,7 @@ export default function Signup() {
 
     return (
         <>
-            <div className="flex min-h-full flex-col justify-center py-12 sm:px-6 lg:px-8">
-                <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-md">
-                    <img className="mx-auto h-20 w-auto" src="/logo-dark-background-vertical.svg" alt="Your Company" />
-                </div>
-
+            <DefaultLayout>
                 <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-md">
                     <div className="bg-bg-dark-gray py-8 px-4 shadow sm:rounded-lg sm:px-10">
                         <h2 className="mt-2 text-center text-3xl font-semibold tracking-tight text-white">Sign up</h2>
@@ -115,8 +112,26 @@ export default function Signup() {
                             </Link>
                         </div>
                     </div>
+                    <div className="grid">
+                        <div className="mt-4 flex place-self-center text-sm">
+                            <p className="text-text-light-gray">By signing up, you agree to our</p>
+                            <a href="https://www.nango.dev/terms" target="_blank" rel="noreferrer" className="text-text-blue hover:text-text-light-blue ml-1">
+                                Terms of Service
+                            </a>
+                            <p className="text-text-light-gray ml-1">and</p>
+                            <a
+                                href="https://www.nango.dev/privacy-policy"
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-text-blue hover:text-text-light-blue ml-1"
+                            >
+                                Privacy Policy
+                            </a>
+                            <p className="text-text-light-gray">.</p>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            </DefaultLayout>
         </>
     );
 }

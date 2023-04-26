@@ -4,7 +4,8 @@ import type { NextFunction } from 'express';
 import configService from '../services/config.service.js';
 import { ProviderConfig, ProviderTemplate, Connection, ProviderAuthModes, ProviderTemplateOAuth2 } from '../models.js';
 import analytics from '../utils/analytics.js';
-import { getAccount, getUserAndAccountFromSesstion } from '../utils/utils.js';
+import { getAccount, getUserAndAccountFromSession } from '../utils/utils.js';
+import { getConnectionCredentials } from '../utils/connection.js';
 import errorManager from '../utils/error.manager.js';
 
 class ConnectionController {
@@ -14,7 +15,7 @@ class ConnectionController {
 
     async getConnectionWeb(req: Request, res: Response, next: NextFunction) {
         try {
-            let account = (await getUserAndAccountFromSesstion(req)).account;
+            let account = (await getUserAndAccountFromSession(req)).account;
 
             let connectionId = req.params['connectionId'] as string;
             let providerConfigKey = req.query['provider_config_key'] as string;
@@ -74,7 +75,7 @@ class ConnectionController {
 
     async getConnectionsWeb(req: Request, res: Response, next: NextFunction) {
         try {
-            let account = (await getUserAndAccountFromSesstion(req)).account;
+            let account = (await getUserAndAccountFromSession(req)).account;
 
             let connections = await connectionService.listConnections(account.id);
 
@@ -111,7 +112,7 @@ class ConnectionController {
 
     async deleteConnectionWeb(req: Request, res: Response, next: NextFunction) {
         try {
-            let account = (await getUserAndAccountFromSesstion(req)).account;
+            let account = (await getUserAndAccountFromSession(req)).account;
             let connectionId = req.params['connectionId'] as string;
             let providerConfigKey = req.query['provider_config_key'] as string;
 
@@ -146,46 +147,11 @@ class ConnectionController {
 
     async getConnectionCreds(req: Request, res: Response, next: NextFunction) {
         try {
-            let accountId = getAccount(res);
-            let connectionId = req.params['connectionId'] as string;
-            let providerConfigKey = req.query['provider_config_key'] as string;
-            const instantRefresh = req.query['force_refresh'] === 'true'; // This allows us to instantly refresh the token instead of waiting for the token to expire
-            if (connectionId == null) {
-                errorManager.errRes(res, 'missing_connection');
-                return;
-            }
+            const connectionId = req.params['connectionId'] as string;
+            const providerConfigKey = req.query['provider_config_key'] as string;
+            const instantRefresh = req.query['force_refresh'] === 'true';
 
-            if (providerConfigKey == null) {
-                errorManager.errRes(res, 'missing_provider_config');
-                return;
-            }
-
-            let connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, accountId);
-
-            if (connection == null) {
-                errorManager.errRes(res, 'unkown_connection');
-                return;
-            }
-
-            let config: ProviderConfig | null = await configService.getProviderConfig(connection.provider_config_key, accountId);
-
-            if (config == null) {
-                errorManager.errRes(res, 'unknown_provider_config');
-                return;
-            }
-
-            let template: ProviderTemplate | undefined = configService.getTemplate(config.provider);
-
-            if (connection.credentials.type === ProviderAuthModes.OAuth2) {
-                connection.credentials = await connectionService.refreshOauth2CredentialsIfNeeded(
-                    connection,
-                    config,
-                    template as ProviderTemplateOAuth2,
-                    instantRefresh
-                );
-            }
-
-            analytics.track('server:connection_fetched', accountId, { provider: config.provider });
+            const connection = await getConnectionCredentials(res, connectionId, providerConfigKey, instantRefresh);
 
             res.status(200).send(connection);
         } catch (err) {
@@ -239,7 +205,16 @@ class ConnectionController {
 
     async listProviders(_: Request, res: Response, next: NextFunction) {
         try {
-            res.status(200).send({ providers: Object.keys(configService.getTemplates()).sort() });
+            const providers = Object.entries(configService.getTemplates())
+                .map((providerProperties) => {
+                    const [provider, properties] = providerProperties;
+                    return {
+                        name: provider,
+                        defaultScopes: properties.default_scopes
+                    };
+                })
+                .sort((a, b) => a.name.localeCompare(b.name));
+            res.status(200).send(providers);
         } catch (err) {
             next(err);
         }
