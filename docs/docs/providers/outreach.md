@@ -16,16 +16,15 @@ Follow our [quickstart](../quickstart.md) to add an OAuth integration with Outre
 
 ## App registration & publishing
 
-**Rating: `Easy & fast`**
-Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://www.outreach.io/request-demo)
-
+**Rating: `Easy & fast`**  
+You need to have an Outreach account and currently there are no dev accounts. Once you have that, registering an app takes only a few minutes and you can start building immediately: [App registration docs](https://support.outreach.io/hc/en-us/articles/9986965571867-How-to-Access-Outreach-APIs)
 
 ## Useful links
 
-- [How to register an Application](https://www.outreach.io/request-demo)
-- [OAuth-related docs](https://api.outreach.io/api/v2/docs#authentication)
-- [Web API docs (their REST API)](https://api.outreach.io/api/v2/docs#making-requests)
+-   [How to register an Application](https://support.outreach.io/hc/en-us/articles/9986965571867-How-to-Access-Outreach-APIs)
+-   [OAuth-related docs](https://api.outreach.io/api/v2/docs#authentication)
+-   [Web API docs (their REST API)](https://api.outreach.io/api/v2/docs#making-requests)
 
 ## API specific gotchas
 
-- To refresh the token simple use `nango.getToken()` to generate new set of tokens
+-   To refresh the token simple use `nango.getToken()` to generate new set of tokens
