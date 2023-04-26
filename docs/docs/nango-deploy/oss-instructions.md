@@ -64,7 +64,7 @@ For Render, the environment variables above are automatically set for you. For H
 
 :::tip
 If you are using a serverless database, you might want to tune NANGO_DB_POOL_MIN and NANGO_DB_POOL_MAX params.
-Otherwise, knox(ORM used in Nango) will be keeping connection alive and exhausting your serverless CPU quota.
+Otherwise, knex(ORM used in Nango) will be keeping connection alive and exhausting your serverless CPU quota.
 :::
 
 ## Securing your instance
