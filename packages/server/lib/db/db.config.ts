@@ -14,6 +14,10 @@ let dbConfig: { development: Knex.Config<any>; production: Knex.Config<any> } = 
         migrations: {
             directory: './migrations',
             extension: 'ts'
+        },
+        pool: {
+            min: process.env['NANGO_DB_POOL_MIN'] || 2,
+            max: process.env['NANGO_DB_POOL_MAX'] || 7
         }
     },
 
