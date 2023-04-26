@@ -94,4 +94,18 @@ export class WSErrBuilder {
             message: `Unkown error during the Oauth flow.`
         };
     }
+
+    public static MissingHmac(): WSErr {
+        return {
+            type: 'missing_hmac',
+            message: `Missing HMAC digest.`
+        };
+    }
+
+    public static InvalidHmac(): WSErr {
+        return {
+            type: 'invalid_hmac',
+            message: `Invalid HMAC digest.`
+        };
+    }
 }
