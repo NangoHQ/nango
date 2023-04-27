@@ -241,6 +241,7 @@ const sidebars = {
                 'providers/twitter',
                 'providers/typeform',
                 'providers/uber',
+                'providers/wakatime',
                 'providers/wave_accounting',
                 'providers/xero',
                 'providers/yahoo',
