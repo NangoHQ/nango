@@ -527,6 +527,13 @@ slack:
     auth_mode: OAUTH2
     authorization_url: https://slack.com/oauth/v2/authorize
     token_url: https://slack.com/api/oauth.v2.access
+smugmug:
+    auth_mode: OAUTH1
+    request_url: https://api.smugmug.com/services/oauth/1.0a/getRequestToken
+    authorization_url: https://api.smugmug.com/services/oauth/1.0a/authorize
+    token_url: https://api.smugmug.com/services/oauth/1.0a/getAccessToken
+    scope_separator: ','
+    signature_method: 'PLAINTEXT'
 splitwise:
     auth_mode: OAUTH2
     authorization_url: https://secure.splitwise.com/oauth/authorize
@@ -671,6 +678,11 @@ typeform:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+wakatime:
+    auth_mode: OAUTH2
+    authorization_url: https://wakatime.com/oauth/authorize
+    token_url: https://wakatime.com/oauth/token
+    docs: https://wakatime.com/developers
 wave-accounting:
     auth_mode: OAUTH2
     authorization_url: https://api.waveapps.com/oauth2/authorize
