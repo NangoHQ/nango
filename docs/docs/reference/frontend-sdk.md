@@ -70,7 +70,7 @@ Sometimes, you may need to create scopes that are applicable only to a specific 
 In such cases, it is unnecessary to request authorization for all users (connections). Instead, you can request these scopes specifically for the intended user by passing the required scopes in the auth method.
 
 ```javascript
-nango.auth('github', '<CONNECTION-ID>', { scopes: ["delete_repo"], params: { subdomain: '<CONTENTSTACK-SUBDOMAIN>', appId: '<CONTENTSTACK-APPID>' } });
+nango.auth('github', '<CONNECTION-ID>', { scopes: ["delete_repo"] });
 ```
 
 NB: Nango will use the scopes provided to override the default scopes when creating an integration.
