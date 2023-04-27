@@ -1,9 +1,10 @@
 name: Nango Build
 
-on:
-    pull_request:
-    push:
-        branches: [main]
+on: [push]
+
+concurrency:
+    group: build-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
 
 jobs:
     nango_build_job:
