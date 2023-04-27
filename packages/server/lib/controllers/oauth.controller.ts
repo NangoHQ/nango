@@ -175,7 +175,6 @@ class OAuthController {
                 state: session.id,
                 ...additionalAuthParams
             });
-            console.log('authorizationUri', authorizationUri);
             logger.debug(`OAuth 2.0 for ${providerConfigKey} (connection ${connectionId}) - redirecting to: ${authorizationUri}`);
             res.redirect(authorizationUri);
         } else {
