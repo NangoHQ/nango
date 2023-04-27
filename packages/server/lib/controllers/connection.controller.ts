@@ -159,10 +159,11 @@ class ConnectionController {
         }
     }
 
-    async listConnections(_: Request, res: Response, next: NextFunction) {
+    async listConnections(req: Request, res: Response, next: NextFunction) {
         try {
             let accountId = getAccount(res);
-            let connections: Object[] = await connectionService.listConnections(accountId);
+            const { connectionId } = req.query;
+            let connections: Object[] = await connectionService.listConnections(accountId, connectionId as string);
 
             analytics.track('server:connection_list_fetched', accountId);
 

@@ -104,3 +104,30 @@ The return value looks like this:
     ];
 }
 ```
+
+
+
+## Getting  connections for a specific connection id
+
+Request type: `GET`  
+Endpoint: `/connection?connectionId=<connectonId>`
+
+Returns a list of minimalistic Connection objects for only a single connectionId. This can be useful if you want to get all the connections that have been created for only a specific connection id. Note that the list does not contain any access credentials and fetching it also does not refresh the access tokens of any Connections.
+
+The return value looks like this:
+
+```js
+{
+    connections: [
+        {
+            connection_id: 'connectonId',
+            provider: '<PROVIDER-CONFIG-KEY-1>',
+            created: '2023-03-08T09:43:03.725Z'
+        },
+        {
+            //....
+        }
+        // Additional objects like the one above
+    ];
+}
+```

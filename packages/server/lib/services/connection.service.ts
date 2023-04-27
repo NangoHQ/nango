@@ -69,12 +69,16 @@ class ConnectionService {
         return connection;
     }
 
-    async listConnections(accountId: number): Promise<{ id: number; connection_id: number; provider: string; created: string }[]> {
-        return db.knex
+    async listConnections(accountId: number, connectionId?: string): Promise<{ id: number; connection_id: number; provider: string; created: string }[]> {
+        let queryBuilder = db.knex
             .withSchema(db.schema())
             .from<Connection>(`_nango_connections`)
             .select({ id: 'id' }, { connection_id: 'connection_id' }, { provider: 'provider_config_key' }, { created: 'created_at' })
             .where({ account_id: accountId });
+        if (connectionId) {
+            queryBuilder.where({ connection_id: connectionId });
+        }
+        return queryBuilder;
     }
 
     async deleteConnection(connectionId: string, providerConfigKey: string, accountId: number): Promise<number> {
