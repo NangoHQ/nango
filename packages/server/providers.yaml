@@ -527,6 +527,13 @@ slack:
     auth_mode: OAUTH2
     authorization_url: https://slack.com/oauth/v2/authorize
     token_url: https://slack.com/api/oauth.v2.access
+smugmug:
+    auth_mode: OAUTH1
+    request_url: https://api.smugmug.com/services/oauth/1.0a/getRequestToken
+    authorization_url: https://api.smugmug.com/services/oauth/1.0a/authorize
+    token_url: https://api.smugmug.com/services/oauth/1.0a/getAccessToken
+    scope_separator: ','
+    signature_method: 'PLAINTEXT'
 splitwise:
     auth_mode: OAUTH2
     authorization_url: https://secure.splitwise.com/oauth/authorize
