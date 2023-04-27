@@ -28,6 +28,6 @@ Registering an app takes only a few minutes, and you can start building immediat
 
 ## API specific gotchas
 
-- Depending on the region you will want to connect to, you will have to provide the region as am extension in the config params.
-   You should use `nango.auth('amazon', '1', {params: {extension: 'com.cn'}})`. The provided extension here is the shows that the region is china.
-- Tokens cannot be refreshed, hence when token expires resource owners will have to go through to authorize flow again.
+- Depending on the region you want to connect to, you have to provide the region as an extension in the config params.
+   You should use `nango.auth('amazon', '1', {params: {extension: 'com.cn'}})`. The provided extension here shows that the region is china.
+- Tokens cannot be refreshed, hence when the token expires, resource owners will have to go through the authorize flow again.
