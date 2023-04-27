@@ -21,7 +21,8 @@ class ConnectionService {
         authMode: ProviderAuthModes,
         connectionConfig: Record<string, string>,
         accountId: number,
-        metadata: Record<string, string>
+        metadata: Record<string, string>,
+        oAuthScopes?: string
     ) {
         await db.knex
             .withSchema(db.schema())
@@ -33,7 +34,8 @@ class ConnectionService {
                     credentials: this.parseRawCredentials(rawCredentials, authMode),
                     connection_config: connectionConfig,
                     account_id: accountId,
-                    metadata: metadata
+                    metadata: metadata,
+                    oauth_scopes: oAuthScopes
                 })
             )
             .onConflict(['provider_config_key', 'connection_id', 'account_id'])

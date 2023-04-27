@@ -31,6 +31,7 @@ class OAuthController {
         const { providerConfigKey } = req.params;
         let connectionId = req.query['connection_id'] as string | undefined;
         const wsClientId = req.query['ws_client_id'] as string | undefined;
+        const scopes = req.query['scopes'] as string | undefined;
 
         try {
             if (!wsClientId) {
@@ -83,6 +84,14 @@ class OAuthController {
                 accountId: accountId,
                 webSocketClientId: wsClientId
             };
+
+            if (scopes) {
+                session.oauthScopes = scopes
+                    .replace(/ /g, ',')
+                    .split(',')
+                    .filter((w: string) => w)
+                    .join(',');
+            }
 
             if (config?.oauth_client_id == null || config?.oauth_client_secret == null || config.oauth_scopes == null) {
                 return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.InvalidProviderConfig(providerConfigKey));
@@ -159,15 +168,15 @@ class OAuthController {
             await oAuthSessionService.create(session);
 
             const simpleOAuthClient = new simpleOauth2.AuthorizationCode(getSimpleOAuth2ClientConfig(providerConfig, template, connectionConfig));
+            let scopes = session.oauthScopes || providerConfig.oauth_scopes;
             const authorizationUri = simpleOAuthClient.authorizeURL({
                 redirect_uri: callbackUrl,
-                scope: providerConfig.oauth_scopes.split(',').join(oauth2Template.scope_separator || ' '),
+                scope: scopes.split(',').join(oauth2Template.scope_separator || ' '),
                 state: session.id,
                 ...additionalAuthParams
             });
-
+            console.log('authorizationUri', authorizationUri);
             logger.debug(`OAuth 2.0 for ${providerConfigKey} (connection ${connectionId}) - redirecting to: ${authorizationUri}`);
-
             res.redirect(authorizationUri);
         } else {
             const grandType = oauth2Template.token_params.grant_type;
@@ -323,7 +332,8 @@ class OAuthController {
                 ProviderAuthModes.OAuth2,
                 session.connectionConfig,
                 session.accountId,
-                { ...callbackMetadata, ...tokenMetadata }
+                { ...callbackMetadata, ...tokenMetadata },
+                session.oauthScopes
             );
 
             return wsClient.notifySuccess(res, wsClientId, providerConfigKey, connectionId);

@@ -34,9 +34,9 @@ export interface ProviderTemplateAlias {
 }
 
 export interface BaseConnection {
-    id?: number;
-    created_at?: Date;
-    updated_at?: Date;
+    id?: number | undefined;
+    created_at?: Date | undefined;
+    updated_at?: Date | undefined;
     provider_config_key: string;
     connection_id: string;
     connection_config: Record<string, string>;
@@ -52,6 +52,7 @@ export interface StoredConnection extends BaseConnection {
 
 export interface Connection extends BaseConnection {
     credentials: AuthCredentials;
+    oauth_scopes?: string | undefined;
 }
 
 export interface Account {
@@ -160,6 +161,7 @@ export interface OAuthSession {
     connectionConfig: Record<string, string>;
     accountId: number;
     webSocketClientId: string | undefined;
+    oauthScopes?: string | undefined;
 
     // Needed for OAuth 2.0 PKCE
     codeVerifier: string;

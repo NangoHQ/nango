@@ -62,3 +62,15 @@ nango.auth('qualtrics', '<CONNECTION-ID>', { params: { subdomain: '<ACCOUNT-DATA
 // For Contentstack
 nango.auth('contentstack', '<CONNECTION-ID>', { params: { subdomain: '<CONTENTSTACK-SUBDOMAIN>', appId: '<CONTENTSTACK-APPID>' } });
 ```
+
+## Adding scopes to a connection
+
+Sometimes, you may need to create scopes that are applicable only to a specific connection. For example, you might want to grant a specific user the ability to delete their own repository when interacting with the GitHub API.
+
+In such cases, it is unnecessary to request authorization for all users (connections). Instead, you can request these scopes specifically for the intended user by passing the required scopes in the auth method.
+
+```javascript
+nango.auth('github', '<CONNECTION-ID>', { scopes: ["delete_repo"], params: { subdomain: '<CONTENTSTACK-SUBDOMAIN>', appId: '<CONTENTSTACK-APPID>' } });
+```
+
+NB: Nango will use the scopes provided to override the default scopes when creating an integration.
