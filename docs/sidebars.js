@@ -226,6 +226,7 @@ const sidebars = {
                 'providers/segment',
                 'providers/shopify',
                 'providers/slack',
+                'providers/smugmug',
                 'providers/splitwise',
                 'providers/spotify',
                 'providers/squareup',
