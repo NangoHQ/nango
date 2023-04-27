@@ -339,7 +339,6 @@ export default function IntegrationCreate() {
                                         id="scopes"
                                         name="scopes"
                                         type="text"
-                                        required
                                         defaultValue={integration ? integration.scopes : providerDefaultScope}
                                         minLength={1}
                                     />
