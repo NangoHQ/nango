@@ -27,5 +27,5 @@ export default function useSet<T>(initialValue?: T[], limit?: number) {
         [setInc]
     );
 
-    return [set, add, remove] as const;
+    return [Array.from(set.values()), add, remove] as const;
 }
