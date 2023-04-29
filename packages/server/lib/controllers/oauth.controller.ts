@@ -315,7 +315,7 @@ class OAuthController {
 
             const tokenMetadata = getConnectionMetadataFromTokenResponse(rawCredentials, template);
 
-            connectionService.upsertConnection(
+            await connectionService.upsertConnection(
                 connectionId,
                 providerConfigKey,
                 session.provider,
