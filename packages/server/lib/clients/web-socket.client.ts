@@ -26,7 +26,14 @@ class WSClient {
         return this.clients[clientId];
     }
 
-    public notifyErr(res: any, clientId: string | undefined, providerConfigKey: string | undefined, connectionId: string | undefined, wsErr: WSErr) {
+    public notifyErr(
+        res: any,
+        clientId: string | undefined,
+        providerConfigKey: string | undefined,
+        connectionId: string | undefined,
+        apiRedirectUrl: string | undefined,
+        wsErr: WSErr
+    ) {
         logger.debug(`OAuth flow error for provider config "${providerConfigKey}" and connectionId "${connectionId}": ${wsErr.type} - ${wsErr.message}`);
 
         if (clientId) {
@@ -47,10 +54,23 @@ class WSClient {
             }
         }
 
+        if (apiRedirectUrl) {
+            let url = new URL(apiRedirectUrl);
+            const searchParams = new URLSearchParams();
+            searchParams.append('message_type', WSMessageType.Error);
+            searchParams.append('connection_id', connectionId as string);
+            searchParams.append('provider_config_Key', providerConfigKey as string);
+            searchParams.append('error_type', wsErr.type);
+            searchParams.append('error_desc', wsErr.message);
+            url.search = searchParams.toString();
+            res.redirect(url.toString());
+            return;
+        }
+
         errorHtml(res, clientId, wsErr);
     }
 
-    public notifySuccess(res: any, clientId: string | undefined, providerConfigKey: string, connectionId: string) {
+    public notifySuccess(res: any, clientId: string | undefined, providerConfigKey: string, connectionId: string, apiRedirectUrl?: string) {
         if (clientId) {
             const client = this.getClient(clientId);
             if (client) {
@@ -65,6 +85,16 @@ class WSClient {
                 client.close();
                 this.removeClient(clientId);
             }
+        }
+
+        if (apiRedirectUrl) {
+            let url = new URL(apiRedirectUrl);
+            const searchParams = new URLSearchParams();
+            searchParams.append('connection_id', connectionId);
+            searchParams.append('provider_config_Key', providerConfigKey);
+            url.search = searchParams.toString();
+            res.redirect(url.toString());
+            return;
         }
 
         successHtml(res, clientId, providerConfigKey, connectionId);

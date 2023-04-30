@@ -160,6 +160,7 @@ export interface OAuthSession {
     connectionConfig: Record<string, string>;
     accountId: number;
     webSocketClientId: string | undefined;
+    apiRedirectUrl: string | undefined;
 
     // Needed for OAuth 2.0 PKCE
     codeVerifier: string;

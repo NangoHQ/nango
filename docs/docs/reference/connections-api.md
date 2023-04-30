@@ -80,6 +80,23 @@ Because of this it is important that you always use this method to get the lates
 We take great care to make sure that this call to get an access token is blazingly fast, so retrieving it fresh will not slow down your API requests.
 :::
 
+
+## Triggering Oauth Flows with API.
+Sometimes, you may choose not to use the frontend SDK and instead trigger the flow from an unidentified front-end client. For example, you might want to initiate the OAuth flow using the user's email. 
+In such cases, you will need to include the OAuth request link in the email template that is used to send emails to the user.
+
+
+Request type: `GET`
+Endpoint: `/oauth/connect/:<CONFIG-KEY>?connection_id=<CONNECTION-ID>&public_key=<PUBLIC-KEY>&params[subdomain]=<SUB-DOMAIN>&api_redirect_url=<REDIRECTURL>&scopes=<SCOPES>`;
+
+When the flow is completed, this endpoint will redirect to the `api_redirect_url` you provided as a query parameter. 
+If the OAuth flow is successful, Nango will append the `connection_id` and `provider_config_key` to the redirect URL.
+
+However, if there is an error in the OAuth flow, Nango will include the following query parameters: `message_type`, `error_type`, and `error_desc`. Therefore, to ensure that a flow is completed, it is crucial to validate that `message_type` is equal to `error`.
+
+Nango recommends verifying that the connection is successfully created by ensuring that the access tokens and connection data are retrievable. 
+This step is important not only for validating the completion of the flow but also to ensure that the redirect is not initiated by a malicious user.
+
 ## Getting a list of all Connections
 
 Request type: `GET`  
