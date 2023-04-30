@@ -17,8 +17,7 @@ class ConnectionService {
         connectionId: string,
         providerConfigKey: string,
         provider: string,
-        rawCredentials: object,
-        authMode: ProviderAuthModes,
+        parsedRawCredentials: AuthCredentials,
         connectionConfig: Record<string, string>,
         accountId: number,
         metadata: Record<string, string>
