@@ -16,6 +16,7 @@ import {
 } from '../utils/utils.js';
 import { ProviderConfig, ProviderTemplate, ProviderTemplateOAuth2, ProviderAuthModes, OAuthSession, OAuth1RequestTokenResult } from '../models.js';
 import logger from '../utils/logger.js';
+import { fileLogger } from '../utils/file-logger.js';
 import type { NextFunction } from 'express';
 import errorManager from '../utils/error.manager.js';
 import providerClientManager from '../clients/provider.client.js';
@@ -57,6 +58,14 @@ class OAuthController {
                     return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.InvalidHmac());
                 }
             }
+
+            fileLogger.log({
+                level: 'info',
+                action: 'OAuth Request',
+                timestamp: Date.now(),
+                message: 'yo',
+                method: req.method
+            });
 
             const config = await configService.getProviderConfig(providerConfigKey, accountId);
 

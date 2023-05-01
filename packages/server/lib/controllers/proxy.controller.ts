@@ -5,6 +5,7 @@ import axios, { AxiosError, AxiosResponse } from 'axios';
 import { backOff } from 'exponential-backoff';
 
 import logger from '../utils/logger.js';
+import { fileLogger } from '../utils/file-logger.js';
 import errorManager from '../utils/error.manager.js';
 import configService from '../services/config.service.js';
 import type { ProxyBodyConfiguration, Connection, HTTP_VERB } from '../models.js';
@@ -46,11 +47,26 @@ class ProxyController {
                 return;
             }
 
-            logger.debug('Connection id and provider config key parsed and received successfully');
+            const configMessage = `Connection id: ${connectionId} and provider config key: ${providerConfigKey} parsed and received successfully`;
+
+            logger.debug(configMessage);
 
             const connection = await getConnectionCredentials(res, connectionId, providerConfigKey);
 
-            logger.debug('Connection credentials found successfully');
+            const credentialMessage = 'Connection credentials found successfully.';
+
+            logger.debug(credentialMessage);
+
+            fileLogger.log({
+                level: 'debug',
+                success: true,
+                action: 'proxy',
+                timestamp: Date.now(),
+                method: req.method,
+                connectionId,
+                providerConfigKey,
+                message: `${configMessage}. ${credentialMessage}`
+            });
 
             const { method } = req;
 
@@ -89,14 +105,25 @@ class ProxyController {
             const template = configService.getTemplate(String(providerConfig?.provider));
 
             if (!template.base_api_url) {
-                logger.error(
-                    `The proxy is not supported for this provider. You can easily add support by following the instructions at https://docs.nango.dev/contribute-api`
-                );
+                const baseApiUrlErrorMessage = `The proxy is not supported for this provider. You can easily add support by following the instructions at https://docs.nango.dev/contribute-api`;
+                fileLogger.log({
+                    level: 'error',
+                    success: false,
+                    action: 'proxy',
+                    timestamp: Date.now(),
+                    method: req.method,
+                    connectionId,
+                    providerConfigKey,
+                    message: baseApiUrlErrorMessage
+                });
+                logger.error(baseApiUrlErrorMessage);
                 errorManager.errRes(res, 'missing_base_api_url');
                 return;
             }
 
-            logger.debug(`Proxy: API call configuration constructed successfully`);
+            const apiCallMessage = `Proxy: API call configuration constructed successfully with the base api url set to ${template.base_api_url}`;
+
+            logger.debug(apiCallMessage);
 
             const configBody: ProxyBodyConfiguration = {
                 endpoint,
@@ -110,6 +137,17 @@ class ProxyController {
                 data: req.body,
                 retries: retries ? Number(retries) : 0
             };
+
+            fileLogger.log({
+                level: 'debug',
+                success: true,
+                action: 'proxy',
+                timestamp: Date.now(),
+                method: req.method,
+                connectionId,
+                providerConfigKey,
+                message: `${configMessage}. ${credentialMessage} to endpoint ${configBody.endpoint} with retries set to ${configBody.retries}`
+            });
 
             return this.sendToHttpMethod(res, next, method as HTTP_VERB, configBody);
         } catch (error) {

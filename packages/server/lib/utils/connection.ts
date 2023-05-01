@@ -6,6 +6,7 @@ import connectionService from '../services/connection.service.js';
 import configService from '../services/config.service.js';
 import analytics from './analytics.js';
 import { getAccount } from './utils.js';
+import { fileLogger } from './file-logger.js';
 
 export const getConnectionCredentials = async (res: Response, connectionId: string, providerConfigKey: string, instantRefresh = false) => {
     const accountId = getAccount(res);
@@ -23,6 +24,17 @@ export const getConnectionCredentials = async (res: Response, connectionId: stri
     const connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, accountId);
 
     if (connection === null) {
+        fileLogger.log({
+            level: 'error',
+            success: false,
+            action: 'getConnectionCredentials: connectionService.getConnection',
+            timestamp: Date.now(),
+            method: null,
+            connectionId,
+            providerConfigKey,
+            message: `Connection not found using connectionId: ${connectionId} and providerConfigKey: ${providerConfigKey}`
+        });
+
         errorManager.errRes(res, 'unkown_connection');
         throw new Error(`Connection not found`);
     }
@@ -30,6 +42,16 @@ export const getConnectionCredentials = async (res: Response, connectionId: stri
     const config: ProviderConfig | null = await configService.getProviderConfig(connection.provider_config_key, accountId);
 
     if (config === null) {
+        fileLogger.log({
+            level: 'error',
+            success: false,
+            action: 'getConnectionCredentials: connectionService.getProviderConfig',
+            timestamp: Date.now(),
+            method: null,
+            connectionId,
+            providerConfigKey,
+            message: `Configuration not found using the providerConfigKey: ${providerConfigKey} and the account id: ${accountId}}`
+        });
         errorManager.errRes(res, 'unknown_provider_config');
         throw new Error(`Provider config not found`);
     }
