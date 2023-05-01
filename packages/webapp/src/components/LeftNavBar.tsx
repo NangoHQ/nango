@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import Activity from '@geist-ui/icons/activity'
 
 export enum LeftNavBarItems {
     Integrations = 0,
@@ -40,7 +41,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                             props.selectedItem === LeftNavBarItems.Activity ? 'bg-gray-800' : 'hover:bg-gray-700'
                         }`}
                     >
-                        <img className="h-5 mr-3" src="/images/activity-icon.svg" alt="" />
+                        <Activity className="h-5 mr-3" />
                         <p>Activity</p>
                     </Link>
                     <Link
