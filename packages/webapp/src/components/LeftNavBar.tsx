@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import Activity from '@geist-ui/icons/activity'
+import Activity from '@geist-ui/icons/activity';
 
 export enum LeftNavBarItems {
     Integrations = 0,
