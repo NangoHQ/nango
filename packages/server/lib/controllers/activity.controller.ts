@@ -2,10 +2,7 @@ import type { Request, Response } from 'express';
 import type { NextFunction } from 'express';
 import fs from 'fs';
 
-import { FILENAME } from '../utils/file-logger.js';
-
-//import type { ProxyBodyConfiguration, Connection, HTTP_VERB } from '../models.js';
-//import { NangoError } from '../utils/error.js';
+import { FILENAME, LogData } from '../utils/file-logger.js';
 
 class ActivityController {
     /**
@@ -24,12 +21,41 @@ class ActivityController {
                 if (fileContents.length === 0) {
                     res.send([]);
                 } else {
-                    res.send(fileContents);
+                    const mergedLogs = this.mergeSessions(JSON.parse(fileContents) as unknown as LogData[]);
+                    res.send(mergedLogs);
                 }
             }
         } catch (error) {
             next(error);
         }
+    }
+
+    private mergeSessions(logs: LogData[]) {
+        const sessions: Record<string, LogData> = {};
+        const updatedLogs: LogData[] = [];
+
+        logs.forEach((item) => {
+            if (item.sessionId) {
+                if (!sessions[item.sessionId]) {
+                    sessions[item.sessionId] = item;
+                    updatedLogs.push(item);
+                } else {
+                    sessions[item?.sessionId]!.messages = [...sessions[item?.sessionId]!.messages, ...item.messages];
+                    sessions[item?.sessionId]!.merge = true;
+                }
+            } else {
+                updatedLogs.push(item);
+            }
+        });
+
+        Object.values(sessions).forEach((item) => {
+            if (!item.merge) {
+                updatedLogs.push(item);
+            }
+            delete item.merge;
+        });
+
+        return updatedLogs;
     }
 }
 

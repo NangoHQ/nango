@@ -16,7 +16,7 @@ import {
 } from '../utils/utils.js';
 import { ProviderConfig, ProviderTemplate, ProviderTemplateOAuth2, ProviderAuthModes, OAuthSession, OAuth1RequestTokenResult } from '../models.js';
 import logger from '../utils/logger.js';
-import { fileLogger } from '../utils/file-logger.js';
+import { fileLogger, LogData, LogLevel, LogAction } from '../utils/file-logger.js';
 import type { NextFunction } from 'express';
 import errorManager from '../utils/error.manager.js';
 import providerClientManager from '../clients/provider.client.js';
@@ -59,15 +59,33 @@ class OAuthController {
                 }
             }
 
-            fileLogger.log({
-                level: 'info',
-                action: 'OAuth Request',
+            const log = {
+                level: 'info' as LogLevel,
+                success: true,
+                action: 'oauth' as LogAction,
+                start: Date.now(),
                 timestamp: Date.now(),
-                message: 'yo',
-                method: req.method
-            });
+                connectionId,
+                providerConfigKey,
+                messages: [
+                    {
+                        content: 'Authorization URL request',
+                        timestamp: Date.now(),
+                        authMode: '',
+                        url: callbackUrl,
+                        connectionId,
+                        wsClientId
+                    }
+                ],
+                message: '',
+                provider: '',
+                sessionId: ''
+            };
 
+            // TODO
             const config = await configService.getProviderConfig(providerConfigKey, accountId);
+
+            log.provider = String(config?.provider);
 
             if (config == null) {
                 return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnknownProviderConfigKey(providerConfigKey));
@@ -93,6 +111,8 @@ class OAuthController {
                 webSocketClientId: wsClientId
             };
 
+            log.sessionId = session.id;
+
             if (config?.oauth_client_id == null || config?.oauth_client_secret == null || config.oauth_scopes == null) {
                 return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.InvalidProviderConfig(providerConfigKey));
             }
@@ -101,8 +121,17 @@ class OAuthController {
                 `OAuth request - mode: ${template.auth_mode}, provider: ${config.provider}, key: ${config.unique_key}, connection ID: ${connectionId}, auth URL: ${template.authorization_url}, callback URL: ${callbackUrl}`
             );
 
+            log.messages.push({
+                content: `Authorization URL response: ${template.authorization_url} for thhe ${config.provider} provider`,
+                timestamp: Date.now(),
+                authMode: template.auth_mode,
+                url: callbackUrl,
+                connectionId,
+                wsClientId
+            });
+
             if (template.auth_mode === ProviderAuthModes.OAuth2) {
-                return this.oauth2Request(template as ProviderTemplateOAuth2, config, session, res, connectionConfig, callbackUrl);
+                return this.oauth2Request(template as ProviderTemplateOAuth2, config, session, res, connectionConfig, callbackUrl, log);
             } else if (template.auth_mode === ProviderAuthModes.OAuth1) {
                 return this.oauth1Request(template, config, session, res, callbackUrl);
             }
@@ -120,7 +149,8 @@ class OAuthController {
         session: OAuthSession,
         res: Response,
         connectionConfig: Record<string, string>,
-        callbackUrl: string
+        callbackUrl: string,
+        log: LogData
     ) {
         const oauth2Template = template as ProviderTemplateOAuth2;
         const wsClientId = session.webSocketClientId;
@@ -176,6 +206,17 @@ class OAuthController {
             });
 
             logger.debug(`OAuth 2.0 for ${providerConfigKey} (connection ${connectionId}) - redirecting to: ${authorizationUri}`);
+
+            log.messages.push({
+                content: `Redirecting to ${authorizationUri}`,
+                timestamp: Date.now(),
+                providerConfigKey,
+                url: callbackUrl,
+                connectionId,
+                wsClientId: Number(wsClientId)
+            });
+
+            fileLogger.info('', log);
 
             res.redirect(authorizationUri);
         } else {
@@ -247,6 +288,31 @@ class OAuthController {
         try {
             logger.debug(`Received callback for ${session.providerConfigKey} (connection: ${session.connectionId}) - full callback URI: ${req.originalUrl}"`);
 
+            const log = {
+                level: 'info' as LogLevel,
+                success: true,
+                action: 'oauth' as LogAction,
+                start: Date.now(),
+                timestamp: Date.now(),
+                connectionId,
+                providerConfigKey,
+                messages: [
+                    {
+                        content: `Received callback for ${session.providerConfigKey}`,
+                        state: state as string,
+                        timestamp: Date.now(),
+                        authMode: session.authMode,
+                        url: req.originalUrl,
+                        connectionId,
+                        wsClientId
+                    }
+                ],
+                message: '',
+                provider: '',
+                sessionId: session.id,
+                merge: true
+            };
+
             const template = configService.getTemplate(session.provider);
             const config = (await configService.getProviderConfig(session.providerConfigKey, session.accountId))!;
 
@@ -255,7 +321,7 @@ class OAuthController {
             );
 
             if (session.authMode === ProviderAuthModes.OAuth2) {
-                return this.oauth2Callback(template as ProviderTemplateOAuth2, config, session, req, res);
+                return this.oauth2Callback(template as ProviderTemplateOAuth2, config, session, req, res, log);
             } else if (session.authMode === ProviderAuthModes.OAuth1) {
                 return this.oauth1Callback(template, config, session, req, res);
             }
@@ -270,7 +336,7 @@ class OAuthController {
         }
     }
 
-    private async oauth2Callback(template: ProviderTemplateOAuth2, config: ProviderConfig, session: OAuthSession, req: Request, res: Response) {
+    private async oauth2Callback(template: ProviderTemplateOAuth2, config: ProviderConfig, session: OAuthSession, req: Request, res: Response, log: LogData) {
         const { code } = req.query;
         const providerConfigKey = session.providerConfigKey;
         const connectionId = session.connectionId;
@@ -278,6 +344,7 @@ class OAuthController {
         const callbackMetadata = getConnectionMetadataFromCallbackRequest(req.query, template);
 
         if (!code) {
+            // TODO add logging, missing code
             return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.InvalidCallbackOAuth2());
         }
 
@@ -322,6 +389,17 @@ class OAuthController {
 
             logger.debug(`OAuth 2 for ${providerConfigKey} (connection ${connectionId}) successful.`);
 
+            log.messages.push({
+                content: `OAuth connection for ${providerConfigKey} was successful`,
+                code: code as string,
+                params: additionalTokenParams,
+                timestamp: Date.now(),
+                authMode: template.auth_mode,
+                url: session.callbackUrl,
+                connectionId,
+                wsClientId
+            });
+
             const tokenMetadata = getConnectionMetadataFromTokenResponse(rawCredentials, template);
 
             connectionService.upsertConnection(
@@ -334,6 +412,8 @@ class OAuthController {
                 session.accountId,
                 { ...callbackMetadata, ...tokenMetadata }
             );
+
+            fileLogger.info('', log);
 
             return wsClient.notifySuccess(res, wsClientId, providerConfigKey, connectionId);
         } catch (e) {

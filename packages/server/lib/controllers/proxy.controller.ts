@@ -66,7 +66,15 @@ class ProxyController {
                 method: req.method as HTTP_VERB,
                 connectionId,
                 providerConfigKey,
-                messages: process.env['LOG_LEVEL'] === 'debug ' ? [`${Date.now()} ${configMessage}. ${credentialMessage}`] : [],
+                messages:
+                    process.env['LOG_LEVEL'] === 'debug '
+                        ? [
+                              {
+                                  timestamp: Date.now(),
+                                  content: `${Date.now()} ${configMessage}. ${credentialMessage}`
+                              }
+                          ]
+                        : [],
                 message: '',
                 endpoint: ''
             };
@@ -107,7 +115,10 @@ class ProxyController {
                 const provideConfigErrorMessage = `${Date.now()} Proxy: provider configuration not found`;
 
                 logger.error(provideConfigErrorMessage);
-                log.messages.push(provideConfigErrorMessage);
+                log.messages.push({
+                    content: provideConfigErrorMessage,
+                    timestamp: Date.now()
+                });
                 fileLogger.error(log);
                 res.status(404).send();
             }
@@ -118,7 +129,10 @@ class ProxyController {
                     providerConfig?.provider
                 )}. You can easily add support by following the instructions at https://docs.nango.dev/contribute-api`;
 
-                log.messages.push(baseApiUrlErrorMessage);
+                log.messages.push({
+                    content: baseApiUrlErrorMessage,
+                    timestamp: Date.now()
+                });
                 fileLogger.error(log);
                 logger.error(baseApiUrlErrorMessage);
                 errorManager.errRes(res, 'missing_base_api_url');
@@ -144,7 +158,10 @@ class ProxyController {
             };
 
             if (process.env['LOG_LEVEL'] === 'debug') {
-                log.messages.push(`${configMessage}. ${credentialMessage} to endpoint ${configBody.endpoint} with retries set to ${configBody.retries}`);
+                log.messages.push({
+                    content: `${configMessage}. ${credentialMessage} to endpoint ${configBody.endpoint} with retries set to ${configBody.retries}`,
+                    timestamp: Date.now()
+                });
             }
 
             const logData: LogData = {
@@ -220,7 +237,10 @@ class ProxyController {
                 { numOfAttempts: Number(config.retries), retry: this.retry }
             );
             const successMessage = `Proxy: GET request to ${url} was successful`;
-            log.messages.push(successMessage);
+            log.messages.push({
+                content: successMessage,
+                timestamp: Date.now()
+            });
             fileLogger.info('', log);
             logger.info(successMessage);
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
@@ -254,7 +274,10 @@ class ProxyController {
                 { numOfAttempts: Number(config.retries), retry: this.retry }
             );
             const successMessage = `Proxy: POST request to ${url} was successful`;
-            log.messages.push(successMessage);
+            log.messages.push({
+                content: successMessage,
+                timestamp: Date.now()
+            });
             fileLogger.info('', log);
             logger.info(successMessage);
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
@@ -288,7 +311,10 @@ class ProxyController {
                 { numOfAttempts: Number(config.retries), retry: this.retry }
             );
             const successMessage = `Proxy: PATCH request to ${url} was successful`;
-            log.messages.push(successMessage);
+            log.messages.push({
+                content: successMessage,
+                timestamp: Date.now()
+            });
             fileLogger.info('', log);
             logger.info(successMessage);
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
@@ -322,7 +348,10 @@ class ProxyController {
                 { numOfAttempts: Number(config.retries), retry: this.retry }
             );
             const successMessage = `Proxy: PUT request to ${url} was successful`;
-            log.messages.push(successMessage);
+            log.messages.push({
+                content: successMessage,
+                timestamp: Date.now()
+            });
             fileLogger.info('', log);
             logger.info(successMessage);
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
@@ -355,7 +384,10 @@ class ProxyController {
                 { numOfAttempts: Number(config.retries), retry: this.retry }
             );
             const successMessage = `Proxy: DELETE request to ${url} was successful`;
-            log.messages.push(successMessage);
+            log.messages.push({
+                content: successMessage,
+                timestamp: Date.now()
+            });
             fileLogger.info('', log);
             logger.info(successMessage);
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
@@ -379,7 +411,10 @@ class ProxyController {
                     config.template.docs ? ` Refer to the documentation at ${config.template.docs} for help` : ''
                 }`;
                 logger.error(fourOhFour);
-                log.messages.push(fourOhFour);
+                log.messages.push({
+                    content: fourOhFour,
+                    timestamp: Date.now()
+                });
                 fileLogger.error(log);
                 return new NangoError('unknown_endpoint');
             }
@@ -388,7 +423,10 @@ class ProxyController {
                     config.template.docs ? ` Refer to the documentation at ${config.template.docs} for help` : ''
                 }`;
                 logger.error(fourOhThree);
-                log.messages.push(fourOhThree);
+                log.messages.push({
+                    content: fourOhThree,
+                    timestamp: Date.now()
+                });
                 fileLogger.error(log);
                 return new NangoError('fobidden');
             }
@@ -397,7 +435,10 @@ class ProxyController {
                     config.template.docs ? ` Refer to the documentation at ${config.template.docs} for help` : ''
                 }`;
                 logger.error(fourHundred);
-                log.messages.push(fourHundred);
+                log.messages.push({
+                    timestamp: Date.now(),
+                    content: fourHundred
+                });
                 fileLogger.error(log);
                 return new NangoError('bad_request');
             }

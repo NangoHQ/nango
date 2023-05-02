@@ -6,7 +6,9 @@ export interface ActivityResponse {
     start: string;
     end: string;
     message: string;
-    messages: string[];
+    messages: {
+        [index: string]: undefined | string | number;
+    }[];
     connectionId: string;
     providerConfigKey: string;
     provider: string;

@@ -14,12 +14,16 @@ export interface LogData {
     start: number;
     end?: number;
     message: string;
-    messages: string[];
+    messages: {
+        [index: string]: undefined | string | number | Record<string, string>;
+    }[];
     connectionId: string;
     providerConfigKey: string;
-    provider: string;
-    method: HTTP_VERB;
+    provider?: string;
+    method?: HTTP_VERB;
     endpoint?: string;
+    merge?: boolean;
+    sessionId?: string;
 }
 
 class CustomTransport extends Transport {

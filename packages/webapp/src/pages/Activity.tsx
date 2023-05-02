@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Slash, CheckInCircle, AlertCircle, Link as LinkIcon } from '@geist-ui/icons'
 
 import { useActivityAPI } from '../utils/api';
-import { formatTimestamp } from '../utils/utils';
+import { formatTimestamp, formatTimestampWithTZ } from '../utils/utils';
 import DashboardLayout from '../layout/DashboardLayout';
 import { LeftNavBarItems } from '../components/LeftNavBar';
 import type { ActivityResponse } from '../types';
@@ -36,6 +36,15 @@ export default function Activity() {
 
     }, [getActivityAPI, loaded, setLoaded]);
 
+    const renderParams = (params: Record<string, string>) => {
+        return Object.entries(params).map(([key, value]) => (
+            <div key={key}>
+                <span>{key}: </span>
+                <span>{value}</span>
+            </div>
+        ));
+    };
+
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Activity}>
             <div className="px-16 w-fit mx-auto">
@@ -66,8 +75,8 @@ export default function Activity() {
                                                 }
                                                 <div className="ml-24 w-12">
                                                     {activity.action === 'oauth' && (
-                                                        <div className="inline-flex justify-center items-center rounded-full py-1 px-6 bg-pink-500 bg-opacity-20">
-                                                            <LinkIcon className="stroke-pink-500" />
+                                                        <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-pink-500 bg-opacity-20">
+                                                            <LinkIcon className="stroke-pink-500 mr-2" size="16" />
                                                             <p className="inline-block text-pink-500">auth</p>
                                                         </div>
                                                     )}
@@ -89,7 +98,7 @@ export default function Activity() {
                                                         </div>
                                                     )}
                                                 </div>
-                                                <div className="ml-40 w-24 text-[#5AC2B3] font-mono">`{activity.connectionId}`</div>
+                                                <div className="ml-40 w-32 mr-12 text-[#5AC2B3] font-mono">`{activity.connectionId}`</div>
                                                 <div className="w-36 mr-12">
                                                     {activity?.provider ? (
                                                         <div className="w-80 flex">
@@ -111,10 +120,35 @@ export default function Activity() {
                                                 )}
                                             </div>
                                             {index === expandedRow && (
-                                                <div className="mt-6 font-mono">
+                                                <div className="flex flex-col space-y-4 mt-6 font-mono">
                                                     {activity.messages.map((message, index: number) => (
-                                                        <div key={index} className="space-y-2">
-                                                            {message}
+                                                        <div key={index} className="flex flex-col">
+                                                            <div>{formatTimestampWithTZ(Number(message.timestamp))}{' '}{message.content}</div>
+                                                            {message.authMode && (
+                                                                <div className="ml-4">
+                                                                    authMode: {message.authMode}
+                                                                </div>
+                                                            )}
+                                                            {message.url && (
+                                                                <div className="ml-4">
+                                                                    url: {message.url}
+                                                                </div>
+                                                            )}
+                                                            {message.wsClientId && (
+                                                                <div className="ml-4">
+                                                                    ws_client_id: {message.wsClientId}
+                                                                </div>
+                                                            )}
+                                                            {message.state && (
+                                                                <div className="ml-4">
+                                                                    state: {message.state}
+                                                                </div>
+                                                            )}
+                                                            {message.params && (
+                                                                <div className="ml-4">
+                                                                    {renderParams(message.params as unknown as Record<string, string>)}
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     ))}
                                                 </div>
