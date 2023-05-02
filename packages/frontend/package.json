@@ -18,6 +18,9 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {},
+    "devDependencies": {
+        "typescript": "^4.7.4"
+    },
     "files": [
         "dist/**/*.js",
         "dist/**/*.d.ts",
