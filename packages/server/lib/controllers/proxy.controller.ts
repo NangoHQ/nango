@@ -414,6 +414,7 @@ class ProxyController {
      */
     private catalogAndReportError(error: Error | AxiosError, url: string, config: ProxyBodyConfiguration, log: LogData) {
         if (axios.isAxiosError(error)) {
+            log.success = false;
             if (error?.response?.status === 404) {
                 const fourOhFour = `${Date.now()} Response is a 404 to ${url}, make sure you have the endpoint specified and spelled correctly.${
                     config.template.docs ? ` Refer to the documentation at ${config.template.docs} for help` : ''
