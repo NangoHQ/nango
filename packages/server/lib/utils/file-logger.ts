@@ -55,8 +55,7 @@ class CustomTransport extends Transport {
                 this.initialize();
                 console.log(error);
             }
-        }
-        else {
+        } else {
             this.initialize();
         }
     }
