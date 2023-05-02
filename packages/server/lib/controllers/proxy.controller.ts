@@ -143,7 +143,7 @@ class ProxyController {
                 log.messages.push(`${configMessage}. ${credentialMessage} to endpoint ${configBody.endpoint} with retries set to ${configBody.retries}`);
             }
 
-            await this.sendToHttpMethod(res, next, method as HTTP_VERB, configBody, {...log, provider: configBody.provider});
+            await this.sendToHttpMethod(res, next, method as HTTP_VERB, configBody, { ...log, provider: configBody.provider });
         } catch (error) {
             next(error);
         }
