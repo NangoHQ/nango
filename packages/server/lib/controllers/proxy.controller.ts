@@ -424,7 +424,7 @@ class ProxyController {
                     timestamp: Date.now()
                 });
                 log.end = Date.now();
-                fileLogger.error(log);
+                fileLogger.error('', log);
                 return new NangoError('unknown_endpoint');
             }
             if (error?.response?.status === 403) {
@@ -437,7 +437,7 @@ class ProxyController {
                     timestamp: Date.now()
                 });
                 log.end = Date.now();
-                fileLogger.error(log);
+                fileLogger.error('', log);
                 return new NangoError('fobidden');
             }
             if (error?.response?.status === 400) {
@@ -450,7 +450,7 @@ class ProxyController {
                     content: fourHundred
                 });
                 log.end = Date.now();
-                fileLogger.error(log);
+                fileLogger.error('', log);
                 return new NangoError('bad_request');
             }
         } else {

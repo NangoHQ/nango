@@ -79,7 +79,7 @@ export default function Activity() {
                                                         <AlertCircle className="stroke-red-500" size="32" />
                                                     )
                                                 }
-                                                <div className="ml-24 w-12">
+                                                <div className="ml-24 w-36">
                                                     {activity.action === 'oauth' && (
                                                         <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-pink-500 bg-opacity-20">
                                                             <LinkIcon className="stroke-pink-500 mr-2" size="16" />
@@ -99,12 +99,18 @@ export default function Activity() {
                                                                 <p className="inline-block text-[#6BA4F8]">proxy</p>
                                                             </div>
                                                             {activity.endpoint && (
-                                                                <span className="text-gray-500 ml-3">/{activity.endpoint}</span>
+                                                                <Tooltip text={`/${activity.endpoint}`} type="dark">
+                                                                    <div className="w-52 text-gray-500 overflow-hidden truncate">
+                                                                        <span className="ml-3">/{activity.endpoint}</span>
+                                                                    </div>
+                                                                </Tooltip>
                                                             )}
                                                         </div>
                                                     )}
                                                 </div>
-                                                <div className="ml-40 w-32 mr-12 text-[#5AC2B3] font-mono">`{activity.connectionId}`</div>
+                                                <Tooltip text={activity.connectionId} type="dark">
+                                                    <div className="ml-40 w-32 mr-12 text-[#5AC2B3] font-mono overflow-hidden truncate">`{activity.connectionId}`</div>
+                                                </Tooltip>
                                                 <div className="w-36 mr-12">
                                                     {activity?.provider ? (
                                                         <div className="w-80 flex">
