@@ -5,18 +5,21 @@ import fs from 'fs';
 import type { HTTP_VERB } from '../models.js';
 
 export type LogLevel = 'info' | 'debug' | 'error';
-export type LogAction = 'oauth' | 'proxy';
+export type LogAction = 'oauth' | 'proxy' | 'token';
 export interface LogData {
     level: LogLevel;
     action: LogAction;
     success: boolean;
     timestamp: number;
+    start: number;
+    end?: number;
     message: string;
     messages: string[];
     connectionId: string;
     providerConfigKey: string;
     provider: string;
     method: HTTP_VERB;
+    endpoint?: string;
 }
 
 class CustomTransport extends Transport {

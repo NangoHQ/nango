@@ -24,10 +24,10 @@ export const getConnectionCredentials = async (res: Response, connectionId: stri
     const connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, accountId);
 
     if (connection === null) {
-        fileLogger.log({
+        fileLogger.error('', {
             level: 'error',
             success: false,
-            action: 'getConnectionCredentials: connectionService.getConnection',
+            action: 'token',
             timestamp: Date.now(),
             method: null,
             connectionId,
@@ -42,10 +42,10 @@ export const getConnectionCredentials = async (res: Response, connectionId: stri
     const config: ProviderConfig | null = await configService.getProviderConfig(connection.provider_config_key, accountId);
 
     if (config === null) {
-        fileLogger.log({
+        fileLogger.error('', {
             level: 'error',
             success: false,
-            action: 'getConnectionCredentials: connectionService.getProviderConfig',
+            action: 'token',
             timestamp: Date.now(),
             method: null,
             connectionId,

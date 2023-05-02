@@ -61,12 +61,14 @@ class ProxyController {
                 level: 'debug' as LogLevel,
                 success: true,
                 action: 'proxy' as LogAction,
+                start: Date.now(),
                 timestamp: Date.now(),
                 method: req.method as HTTP_VERB,
                 connectionId,
                 providerConfigKey,
                 messages: process.env['LOG_LEVEL'] === 'debug ' ? [`${Date.now()} ${configMessage}. ${credentialMessage}`] : [],
-                message: ''
+                message: '',
+                endpoint: ''
             };
 
             const { method } = req;
@@ -78,6 +80,8 @@ class ProxyController {
                 logger.error(`Proxy: a API URL endpoint is missing.`);
                 return;
             }
+
+            log.endpoint = endpoint;
 
             let token;
 
@@ -143,7 +147,11 @@ class ProxyController {
                 log.messages.push(`${configMessage}. ${credentialMessage} to endpoint ${configBody.endpoint} with retries set to ${configBody.retries}`);
             }
 
-            await this.sendToHttpMethod(res, next, method as HTTP_VERB, configBody, { ...log, provider: configBody.provider });
+            const logData: LogData = {
+                ...log,
+                provider: configBody.provider
+            };
+            await this.sendToHttpMethod(res, next, method as HTTP_VERB, configBody, logData);
         } catch (error) {
             next(error);
         }
@@ -211,9 +219,10 @@ class ProxyController {
                 },
                 { numOfAttempts: Number(config.retries), retry: this.retry }
             );
-            log.messages.push(`Proxy: GET request to ${url} was successful`);
-            fileLogger.info(log);
-            logger.info(`Proxy: GET request to ${url} was successful`);
+            const successMessage = `Proxy: GET request to ${url} was successful`;
+            log.messages.push(successMessage);
+            fileLogger.info('', log);
+            logger.info(successMessage);
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
             responseStream.data.pipe(res);
         } catch (error) {
@@ -244,7 +253,10 @@ class ProxyController {
                 },
                 { numOfAttempts: Number(config.retries), retry: this.retry }
             );
-            logger.info(`Proxy: POST request to ${url} was successful`);
+            const successMessage = `Proxy: POST request to ${url} was successful`;
+            log.messages.push(successMessage);
+            fileLogger.info('', log);
+            logger.info(successMessage);
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
             responseStream.data.pipe(res);
         } catch (error) {
@@ -275,7 +287,10 @@ class ProxyController {
                 },
                 { numOfAttempts: Number(config.retries), retry: this.retry }
             );
-            logger.info(`Proxy: PATCH request to ${url} was successful`);
+            const successMessage = `Proxy: PATCH request to ${url} was successful`;
+            log.messages.push(successMessage);
+            fileLogger.info('', log);
+            logger.info(successMessage);
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
             responseStream.data.pipe(res);
         } catch (error) {
@@ -306,7 +321,10 @@ class ProxyController {
                 },
                 { numOfAttempts: Number(config.retries), retry: this.retry }
             );
-            logger.info(`Proxy: PUT request to ${url} was successful`);
+            const successMessage = `Proxy: PUT request to ${url} was successful`;
+            log.messages.push(successMessage);
+            fileLogger.info('', log);
+            logger.info(successMessage);
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
             responseStream.data.pipe(res);
         } catch (error) {
@@ -336,7 +354,10 @@ class ProxyController {
                 },
                 { numOfAttempts: Number(config.retries), retry: this.retry }
             );
-            logger.info(`Proxy: DELETE request to ${url} was successful`);
+            const successMessage = `Proxy: DELETE request to ${url} was successful`;
+            log.messages.push(successMessage);
+            fileLogger.info('', log);
+            logger.info(successMessage);
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
             responseStream.data.pipe(res);
         } catch (error) {
