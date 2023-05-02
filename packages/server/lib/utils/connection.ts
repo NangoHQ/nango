@@ -32,7 +32,12 @@ export const getConnectionCredentials = async (res: Response, connectionId: stri
             method: null,
             connectionId,
             providerConfigKey,
-            message: `${Date.now()} Connection not found using connectionId: ${connectionId} and providerConfigKey: ${providerConfigKey}`
+            messages: [
+                {
+                    content: `Connection not found using connectionId: ${connectionId} and providerConfigKey: ${providerConfigKey}`,
+                    timestamp: Date.now()
+                }
+            ]
         });
 
         errorManager.errRes(res, 'unkown_connection');
@@ -50,7 +55,12 @@ export const getConnectionCredentials = async (res: Response, connectionId: stri
             method: null,
             connectionId,
             providerConfigKey,
-            message: `${Date.now()} Configuration not found using the providerConfigKey: ${providerConfigKey} and the account id: ${accountId}}`
+            messages: [
+                {
+                    content: `Configuration not found using the providerConfigKey: ${providerConfigKey} and the account id: ${accountId}}`,
+                    timestamp: Date.now()
+                }
+            ]
         });
 
         errorManager.errRes(res, 'unknown_provider_config');
