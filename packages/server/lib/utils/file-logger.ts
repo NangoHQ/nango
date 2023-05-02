@@ -4,14 +4,18 @@ import fs from 'fs';
 
 import type { HTTP_VERB } from '../models.js';
 
-interface LogData {
-    level: 'info' | 'debug' | 'error';
-    action: 'oauth' | 'proxy';
+export type LogLevel = 'info' | 'debug' | 'error';
+export type LogAction = 'oauth' | 'proxy';
+export interface LogData {
+    level: LogLevel;
+    action: LogAction;
     success: boolean;
-    timestamp: Date;
+    timestamp: number;
     message: string;
+    messages: string[];
     connectionId: string;
     providerConfigKey: string;
+    provider: string;
     method: HTTP_VERB;
 }
 
@@ -26,7 +30,6 @@ class CustomTransport extends Transport {
 
     initialize() {
         try {
-            // TODO improve
             fs.writeFileSync(this.filename, '', 'utf8');
         } catch (error) {
             console.log(error);
@@ -65,7 +68,7 @@ class CustomTransport extends Transport {
         return data;
     }
 
-    writeLog(info: any) {
+    public writeLog(info: any) {
         const data = this.readLog();
         let arr = [];
         if (data) {
@@ -84,6 +87,9 @@ class CustomTransport extends Transport {
         setImmediate(() => {
             this.emit('logged', info);
         });
+        if (info.messages) {
+            info.message = info.messages.join(',');
+        }
         this.writeLog(info);
 
         callback();

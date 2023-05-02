@@ -5,7 +5,7 @@ import axios, { AxiosError, AxiosResponse } from 'axios';
 import { backOff } from 'exponential-backoff';
 
 import logger from '../utils/logger.js';
-import { fileLogger } from '../utils/file-logger.js';
+import { fileLogger, LogData, LogLevel, LogAction } from '../utils/file-logger.js';
 import errorManager from '../utils/error.manager.js';
 import configService from '../services/config.service.js';
 import type { ProxyBodyConfiguration, Connection, HTTP_VERB } from '../models.js';
@@ -47,26 +47,27 @@ class ProxyController {
                 return;
             }
 
-            const configMessage = `Connection id: ${connectionId} and provider config key: ${providerConfigKey} parsed and received successfully`;
+            const configMessage = `Connection id: '${connectionId}' and provider config key: '${providerConfigKey}' parsed and received successfully`;
 
             logger.debug(configMessage);
 
             const connection = await getConnectionCredentials(res, connectionId, providerConfigKey);
 
-            const credentialMessage = 'Connection credentials found successfully.';
+            const credentialMessage = 'Connection credentials found successfully';
 
             logger.debug(credentialMessage);
 
-            fileLogger.log({
-                level: 'debug',
+            const log = {
+                level: 'debug' as LogLevel,
                 success: true,
-                action: 'proxy',
+                action: 'proxy' as LogAction,
                 timestamp: Date.now(),
-                method: req.method,
+                method: req.method as HTTP_VERB,
                 connectionId,
                 providerConfigKey,
-                message: `${configMessage}. ${credentialMessage}`
-            });
+                messages: process.env['LOG_LEVEL'] === 'debug ' ? [`${Date.now()} ${configMessage}. ${credentialMessage}`] : [],
+                message: ''
+            };
 
             const { method } = req;
 
@@ -99,23 +100,22 @@ class ProxyController {
             const headers = this.parseHeaders(req);
 
             if (!providerConfig) {
-                logger.error(`Proxy: provider configuration not found`);
+                const provideConfigErrorMessage = `${Date.now()} Proxy: provider configuration not found`;
+
+                logger.error(provideConfigErrorMessage);
+                log.messages.push(provideConfigErrorMessage);
+                fileLogger.error(log);
                 res.status(404).send();
             }
             const template = configService.getTemplate(String(providerConfig?.provider));
 
             if (!template.base_api_url) {
-                const baseApiUrlErrorMessage = `The proxy is not supported for this provider. You can easily add support by following the instructions at https://docs.nango.dev/contribute-api`;
-                fileLogger.log({
-                    level: 'error',
-                    success: false,
-                    action: 'proxy',
-                    timestamp: Date.now(),
-                    method: req.method,
-                    connectionId,
-                    providerConfigKey,
-                    message: baseApiUrlErrorMessage
-                });
+                const baseApiUrlErrorMessage = `${Date.now()} The proxy is not supported for this provider ${String(
+                    providerConfig?.provider
+                )}. You can easily add support by following the instructions at https://docs.nango.dev/contribute-api`;
+
+                log.messages.push(baseApiUrlErrorMessage);
+                fileLogger.error(log);
                 logger.error(baseApiUrlErrorMessage);
                 errorManager.errRes(res, 'missing_base_api_url');
                 return;
@@ -131,6 +131,7 @@ class ProxyController {
                 template,
                 // handle oauth1
                 token: String(token),
+                provider: String(providerConfig?.provider),
                 providerConfigKey,
                 connectionId,
                 headers,
@@ -138,18 +139,11 @@ class ProxyController {
                 retries: retries ? Number(retries) : 0
             };
 
-            fileLogger.log({
-                level: 'debug',
-                success: true,
-                action: 'proxy',
-                timestamp: Date.now(),
-                method: req.method,
-                connectionId,
-                providerConfigKey,
-                message: `${configMessage}. ${credentialMessage} to endpoint ${configBody.endpoint} with retries set to ${configBody.retries}`
-            });
+            if (process.env['LOG_LEVEL'] === 'debug') {
+                log.messages.push(`${configMessage}. ${credentialMessage} to endpoint ${configBody.endpoint} with retries set to ${configBody.retries}`);
+            }
 
-            return this.sendToHttpMethod(res, next, method as HTTP_VERB, configBody);
+            await this.sendToHttpMethod(res, next, method as HTTP_VERB, configBody, {...log, provider: configBody.provider});
         } catch (error) {
             next(error);
         }
@@ -180,19 +174,19 @@ class ProxyController {
      * @param {HTTP_VERB} method
      * @param {ProxyBodyConfiguration} configBody
      */
-    private sendToHttpMethod(res: Response, next: NextFunction, method: HTTP_VERB, configBody: ProxyBodyConfiguration) {
+    private sendToHttpMethod(res: Response, next: NextFunction, method: HTTP_VERB, configBody: ProxyBodyConfiguration, log: LogData) {
         const url = this.constructUrl(configBody);
 
         if (method === 'POST') {
-            return this.post(res, next, url, configBody);
+            return this.post(res, next, url, configBody, log);
         } else if (method === 'PATCH') {
-            return this.patch(res, next, url, configBody);
+            return this.patch(res, next, url, configBody, log);
         } else if (method === 'PUT') {
-            return this.put(res, next, url, configBody);
+            return this.put(res, next, url, configBody, log);
         } else if (method === 'DELETE') {
-            return this.delete(res, next, url, configBody);
+            return this.delete(res, next, url, configBody, log);
         } else {
-            return this.get(res, next, url, configBody);
+            return this.get(res, next, url, configBody, log);
         }
     }
 
@@ -203,7 +197,7 @@ class ProxyController {
      * @param {string} url
      * @param {ProxyBodyConfiguration} config
      */
-    private async get(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration) {
+    private async get(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration, log: LogData) {
         try {
             const headers = this.constructHeaders(config);
             const responseStream: AxiosResponse = await backOff(
@@ -217,11 +211,13 @@ class ProxyController {
                 },
                 { numOfAttempts: Number(config.retries), retry: this.retry }
             );
+            log.messages.push(`Proxy: GET request to ${url} was successful`);
+            fileLogger.info(log);
             logger.info(`Proxy: GET request to ${url} was successful`);
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
             responseStream.data.pipe(res);
         } catch (error) {
-            const nangoError = this.catalogAndReportError(error as Error | AxiosError, url, config);
+            const nangoError = this.catalogAndReportError(error as Error | AxiosError, url, config, log);
             next(nangoError);
         }
     }
@@ -233,7 +229,7 @@ class ProxyController {
      * @param {string} url
      * @param {ProxyBodyConfiguration} config
      */
-    private async post(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration) {
+    private async post(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration, log: LogData) {
         try {
             const headers = this.constructHeaders(config);
             const responseStream: AxiosResponse = await backOff(
@@ -252,7 +248,7 @@ class ProxyController {
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
             responseStream.data.pipe(res);
         } catch (error) {
-            const nangoError = this.catalogAndReportError(error as Error | AxiosError, url, config);
+            const nangoError = this.catalogAndReportError(error as Error | AxiosError, url, config, log);
             next(nangoError);
         }
     }
@@ -264,7 +260,7 @@ class ProxyController {
      * @param {string} url
      * @param {ProxyBodyConfiguration} config
      */
-    private async patch(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration) {
+    private async patch(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration, log: LogData) {
         try {
             const headers = this.constructHeaders(config);
             const responseStream: AxiosResponse = await backOff(
@@ -283,7 +279,7 @@ class ProxyController {
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
             responseStream.data.pipe(res);
         } catch (error) {
-            const nangoError = this.catalogAndReportError(error as Error | AxiosError, url, config);
+            const nangoError = this.catalogAndReportError(error as Error | AxiosError, url, config, log);
             next(nangoError);
         }
     }
@@ -295,7 +291,7 @@ class ProxyController {
      * @param {string} url
      * @param {ProxyBodyConfiguration} config
      */
-    private async put(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration) {
+    private async put(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration, log: LogData) {
         try {
             const headers = this.constructHeaders(config);
             const responseStream: AxiosResponse = await backOff(
@@ -314,7 +310,7 @@ class ProxyController {
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
             responseStream.data.pipe(res);
         } catch (error) {
-            const nangoError = this.catalogAndReportError(error as Error | AxiosError, url, config);
+            const nangoError = this.catalogAndReportError(error as Error | AxiosError, url, config, log);
             next(nangoError);
         }
     }
@@ -326,7 +322,7 @@ class ProxyController {
      * @param {string} url
      * @param {ProxyBodyConfiguration} config
      */
-    private async delete(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration) {
+    private async delete(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration, log: LogData) {
         try {
             const headers = this.constructHeaders(config);
             const responseStream: AxiosResponse = await backOff(
@@ -344,7 +340,7 @@ class ProxyController {
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
             responseStream.data.pipe(res);
         } catch (error) {
-            const nangoError = this.catalogAndReportError(error as Error | AxiosError, url, config);
+            const nangoError = this.catalogAndReportError(error as Error | AxiosError, url, config, log);
             next(nangoError);
         }
     }
@@ -355,30 +351,33 @@ class ProxyController {
      * @param {string} url
      * @param {ProxyBodyConfiguration} config
      */
-    private catalogAndReportError(error: Error | AxiosError, url: string, config: ProxyBodyConfiguration) {
+    private catalogAndReportError(error: Error | AxiosError, url: string, config: ProxyBodyConfiguration, log: LogData) {
         if (axios.isAxiosError(error)) {
             if (error?.response?.status === 404) {
-                logger.error(
-                    `Response is a 404 to ${url}, make sure you have the endpoint specified and spelled correctly.${
-                        config.template.docs ? ` Refer to the documentation at ${config.template.docs} for help` : ''
-                    }`
-                );
+                const fourOhFour = `${Date.now()} Response is a 404 to ${url}, make sure you have the endpoint specified and spelled correctly.${
+                    config.template.docs ? ` Refer to the documentation at ${config.template.docs} for help` : ''
+                }`;
+                logger.error(fourOhFour);
+                log.messages.push(fourOhFour);
+                fileLogger.error(log);
                 return new NangoError('unknown_endpoint');
             }
             if (error?.response?.status === 403) {
-                logger.error(
-                    `Response is a 403 to ${url}, make sure you have the proper scopes configured.${
-                        config.template.docs ? ` Refer to the documentation at ${config.template.docs} for help` : ''
-                    }`
-                );
+                const fourOhThree = `${Date.now()} Response is a 403 to ${url}, make sure you have the proper scopes configured.${
+                    config.template.docs ? ` Refer to the documentation at ${config.template.docs} for help` : ''
+                }`;
+                logger.error(fourOhThree);
+                log.messages.push(fourOhThree);
+                fileLogger.error(log);
                 return new NangoError('fobidden');
             }
             if (error?.response?.status === 400) {
-                logger.error(
-                    `Response is a 400 to ${url}, make sure you have the proper headers to go to the API set.${
-                        config.template.docs ? ` Refer to the documentation at ${config.template.docs} for help` : ''
-                    }`
-                );
+                const fourHundred = `${Date.now()} Response is a 400 to ${url}, make sure you have the proper headers to go to the API set.${
+                    config.template.docs ? ` Refer to the documentation at ${config.template.docs} for help` : ''
+                }`;
+                logger.error(fourHundred);
+                log.messages.push(fourHundred);
+                fileLogger.error(log);
                 return new NangoError('bad_request');
             }
         } else {
