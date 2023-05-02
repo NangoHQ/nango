@@ -21,7 +21,11 @@ class ActivityController {
             if (fs.existsSync(filePath)) {
                 const fileContents = fs.readFileSync(filePath, 'utf8');
 
-                res.send(fileContents);
+                if (fileContents.length === 0) {
+                    res.send([]);
+                } else {
+                    res.send(fileContents);
+                }
             }
         } catch (error) {
             next(error);
