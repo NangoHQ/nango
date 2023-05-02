@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/frontend",
-    "version": "0.15.0",
+    "version": "0.15.1",
     "description": "Nango's frontend library for OAuth handling.",
     "type": "module",
     "main": "dist/index.js",
@@ -11,10 +11,6 @@
         "type": "git",
         "url": "https://github.com/NangoHQ/nango",
         "directory": "packages/frontend"
-    },
-    "scripts": {
-        "build": "tsc --sourceMap",
-        "postinstall": "npm run build"
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {},
