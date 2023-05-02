@@ -413,6 +413,10 @@ class OAuthController {
                 { ...callbackMetadata, ...tokenMetadata }
             );
 
+            if (!log.provider) {
+                log.provider = session.provider;
+            }
+
             log.end = Date.now();
 
             fileLogger.info('', log);
