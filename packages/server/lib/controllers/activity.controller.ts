@@ -7,7 +7,7 @@ import { FILENAME, LogData } from '../utils/file-logger.js';
 class ActivityController {
     /**
      * Retrieve
-     * @desc
+     * @desc read a file path and send back the contents of the file
      * @param {Request} req Express request object
      * @param {Response} res Express response object
      * @param {NextFuncion} next callback function to pass control to the next middleware function in the pipeline.

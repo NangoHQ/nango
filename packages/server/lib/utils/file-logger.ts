@@ -44,12 +44,9 @@ class CustomTransport extends Transport {
     }
 
     setup() {
-        // This checks if the file exists
         if (fs.existsSync(this.filename)) {
-            // The content of the file is checked to know if it is necessary to adapt the array
             try {
                 const data = fs.readFileSync(this.filename, 'utf8');
-                // If the content of the file is not an array, it is set
                 const content = JSON.parse(data);
                 if (!Array.isArray(content)) {
                     this.initialize();
@@ -59,7 +56,6 @@ class CustomTransport extends Transport {
                 console.log(error);
             }
         }
-        // Otherwise create the file with the desired format
         else {
             this.initialize();
         }
