@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/nango-server",
-    "version": "0.15.1",
+    "version": "0.16.0",
     "description": "Nango OAuth's server.",
     "type": "module",
     "main": "dist/server.js",
