@@ -216,7 +216,7 @@ class OAuthController {
                 wsClientId: Number(wsClientId)
             });
 
-            fileLogger.info('', log);
+            log.end = Date.now();
 
             res.redirect(authorizationUri);
         } else {
@@ -412,6 +412,8 @@ class OAuthController {
                 session.accountId,
                 { ...callbackMetadata, ...tokenMetadata }
             );
+
+            log.end = Date.now();
 
             fileLogger.info('', log);
 
