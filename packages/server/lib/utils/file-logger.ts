@@ -110,7 +110,9 @@ export const fileLogger = winston.createLogger({
     transports: [
         new CustomTransport({
             filename: FILENAME,
-            handleExceptions: true
+            handleExceptions: true,
+            maxsize: 5242880, // 5mb
+            maxFiles: 3
         })
     ]
 });
