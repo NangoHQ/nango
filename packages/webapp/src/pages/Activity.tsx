@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Slash, CheckInCircle, AlertCircle, Link as LinkIcon } from '@geist-ui/icons'
+import { Slash, CheckInCircle, AlertCircle, Link as LinkIcon, RefreshCw } from '@geist-ui/icons'
+import { Tooltip } from '@geist-ui/core';
 
 import { useActivityAPI } from '../utils/api';
-import { formatTimestamp, formatTimestampWithTZ } from '../utils/utils';
+import { formatTimestamp, formatTimestampWithTZ, elapsedTime } from '../utils/utils';
 import DashboardLayout from '../layout/DashboardLayout';
 import { LeftNavBarItems } from '../components/LeftNavBar';
 import type { ActivityResponse } from '../types';
@@ -48,7 +49,12 @@ export default function Activity() {
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Activity}>
             <div className="px-16 w-fit mx-auto">
-                <h2 className="mt-16 text-left text-3xl font-semibold tracking-tight text-white mb-12">Activity</h2>
+                <div className="flex items-center mt-16 mb-12">
+                    <h2 className="flex text-left text-3xl font-semibold tracking-tight text-white mr-4">Activity</h2>
+                    <Tooltip text="Refresh logs" type="dark">
+                        <RefreshCw className="flex stroke-white cursor-pointer" size="24" onClick={() => setLoaded(false)} />
+                    </Tooltip>
+                </div>
                 {activities.length === 0 && (
                     <div className="flex items-center">
                         <Slash className="stroke-red-500" />
@@ -120,6 +126,7 @@ export default function Activity() {
                                                 )}
                                             </div>
                                             {index === expandedRow && (
+                                                <>
                                                 <div className="flex flex-col space-y-4 mt-6 font-mono">
                                                     {activity.messages.map((message, index: number) => (
                                                         <div key={index} className="flex flex-col">
@@ -152,6 +159,12 @@ export default function Activity() {
                                                         </div>
                                                     ))}
                                                 </div>
+                                                {activity.start && activity.end && (
+                                                    <div className="mt-4 text-gray-500 text-xs">
+                                                        Operation time: {elapsedTime(activity.start, activity.end)}
+                                                    </div>
+                                                )}
+                                                </>
                                             )}
                                         </td>
                                     </tr>

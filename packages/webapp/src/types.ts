@@ -2,9 +2,9 @@ export interface ActivityResponse {
     level: 'info' | 'debug' | 'error';
     action: 'oauth' | 'proxy' | 'token';
     success: boolean;
-    timestamp: string;
-    start: string;
-    end: string;
+    timestamp: number;
+    start: number;
+    end: number;
     message: string;
     messages: {
         [index: string]: undefined | string | number;

@@ -30,6 +30,11 @@ class ActivityController {
         }
     }
 
+    /**
+     * Merge Sessions
+     * @desc identify if a property has a session id and there is a matching
+     * session id merge the two while maintaining ordering of the logs
+     */
     private mergeSessions(logs: LogData[]) {
         const sessions: Record<string, LogData> = {};
         const updatedLogs: LogData[] = [];

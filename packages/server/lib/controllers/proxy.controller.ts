@@ -62,6 +62,7 @@ class ProxyController {
                 success: true,
                 action: 'proxy' as LogAction,
                 start: Date.now(),
+                end: Date.now(),
                 timestamp: Date.now(),
                 method: req.method as HTTP_VERB,
                 connectionId,
@@ -115,6 +116,7 @@ class ProxyController {
                 const provideConfigErrorMessage = `${Date.now()} Proxy: provider configuration not found`;
 
                 logger.error(provideConfigErrorMessage);
+                log.end = Date.now();
                 log.messages.push({
                     content: provideConfigErrorMessage,
                     timestamp: Date.now()
@@ -133,6 +135,7 @@ class ProxyController {
                     content: baseApiUrlErrorMessage,
                     timestamp: Date.now()
                 });
+                log.end = Date.now();
                 fileLogger.error(log);
                 logger.error(baseApiUrlErrorMessage);
                 errorManager.errRes(res, 'missing_base_api_url');
@@ -241,6 +244,7 @@ class ProxyController {
                 content: successMessage,
                 timestamp: Date.now()
             });
+            log.end = Date.now();
             fileLogger.info('', log);
             logger.info(successMessage);
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
@@ -278,6 +282,7 @@ class ProxyController {
                 content: successMessage,
                 timestamp: Date.now()
             });
+            log.end = Date.now();
             fileLogger.info('', log);
             logger.info(successMessage);
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
@@ -315,6 +320,7 @@ class ProxyController {
                 content: successMessage,
                 timestamp: Date.now()
             });
+            log.end = Date.now();
             fileLogger.info('', log);
             logger.info(successMessage);
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
@@ -352,6 +358,7 @@ class ProxyController {
                 content: successMessage,
                 timestamp: Date.now()
             });
+            log.end = Date.now();
             fileLogger.info('', log);
             logger.info(successMessage);
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
@@ -388,6 +395,7 @@ class ProxyController {
                 content: successMessage,
                 timestamp: Date.now()
             });
+            log.end = Date.now();
             fileLogger.info('', log);
             logger.info(successMessage);
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
@@ -415,6 +423,7 @@ class ProxyController {
                     content: fourOhFour,
                     timestamp: Date.now()
                 });
+                log.end = Date.now();
                 fileLogger.error(log);
                 return new NangoError('unknown_endpoint');
             }
@@ -427,6 +436,7 @@ class ProxyController {
                     content: fourOhThree,
                     timestamp: Date.now()
                 });
+                log.end = Date.now();
                 fileLogger.error(log);
                 return new NangoError('fobidden');
             }
@@ -439,6 +449,7 @@ class ProxyController {
                     timestamp: Date.now(),
                     content: fourHundred
                 });
+                log.end = Date.now();
                 fileLogger.error(log);
                 return new NangoError('bad_request');
             }

@@ -65,3 +65,14 @@ export function formatTimestampWithTZ(timestamp: number): string {
 
     return formattedDate;
 }
+
+export function elapsedTime(start: number, end: number): string {
+    const startTime = new Date(start).getTime();
+    const endTime = new Date(end).getTime();
+
+    const elapsedTime = endTime - startTime;
+    const elapsedSeconds = Math.floor(elapsedTime / 1000);
+    const elapsedMilliseconds = elapsedTime % 1000;
+
+    return `${elapsedSeconds}.${elapsedMilliseconds} seconds`;
+}
