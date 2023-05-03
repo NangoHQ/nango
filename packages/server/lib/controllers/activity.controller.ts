@@ -48,7 +48,9 @@ class ActivityController {
             }
 
             if (log?.merge && sessions[log.sessionId as string]) {
-                const mergeIndex: number = sessions[log.sessionId as string] as number;
+                const mergeIndex: number = updatedLogs.findIndex((updated) => {
+                    return updated.sessionId === log.sessionId && !updated.merge;
+                });
                 updatedLogs[mergeIndex]!.messages = [...updatedLogs[mergeIndex]!.messages, ...log.messages];
                 updatedLogs[mergeIndex]!.end = log.end as number;
             } else {

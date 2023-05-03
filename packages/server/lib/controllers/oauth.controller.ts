@@ -337,6 +337,7 @@ class OAuthController {
                 });
 
                 log.end = Date.now();
+                fileLogger.info('', log);
 
                 res.redirect(authorizationUri);
             } else {
