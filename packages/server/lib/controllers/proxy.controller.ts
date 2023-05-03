@@ -51,12 +51,6 @@ class ProxyController {
 
             logger.debug(configMessage);
 
-            const connection = await getConnectionCredentials(res, connectionId, providerConfigKey);
-
-            const credentialMessage = 'Connection credentials found successfully';
-
-            logger.debug(credentialMessage);
-
             const log = {
                 level: 'debug' as LogLevel,
                 success: true,
@@ -67,18 +61,23 @@ class ProxyController {
                 method: req.method as HTTP_VERB,
                 connectionId,
                 providerConfigKey,
-                messages:
-                    process.env['LOG_LEVEL'] === 'debug '
-                        ? [
-                              {
-                                  timestamp: Date.now(),
-                                  content: `${Date.now()} ${configMessage}. ${credentialMessage}`
-                              }
-                          ]
-                        : [],
+                messages: [] as LogData['messages'],
                 message: '',
                 endpoint: ''
             };
+
+            const connection = await getConnectionCredentials(res, connectionId, providerConfigKey, log);
+
+            const credentialMessage = 'Connection credentials found successfully';
+
+            logger.debug(credentialMessage);
+
+            if (process.env['LOG_LEVEL'] === 'debug') {
+                log.messages.push({
+                    timestamp: Date.now(),
+                    content: `${configMessage}. ${credentialMessage}`
+                });
+            }
 
             const { method } = req;
 

@@ -5,6 +5,7 @@ import db from '../db/database.js';
 import type { ProviderConfig, Connection } from '../models.js';
 import analytics from '../utils/analytics.js';
 import providerClientManager from '../clients/provider.client.js';
+import { fileLogger, LogData } from '../utils/file-logger.js';
 import { parseTokenExpirationDate, isTokenExpired } from '../utils/utils.js';
 import providerClient from '../clients/provider.client.js';
 import { NangoError } from '../utils/error.js';
@@ -143,6 +144,7 @@ class ConnectionService {
         connection: Connection,
         providerConfig: ProviderConfig,
         template: ProviderTemplateOAuth2,
+        log = {} as LogData,
         instantRefresh = false
     ): Promise<OAuth2Credentials> {
         let connectionId = connection.connection_id;
@@ -194,6 +196,19 @@ class ConnectionService {
                         return !(value.providerConfigKey === providerConfigKey && value.connectionId === connectionId);
                     });
 
+                    log.action = 'token';
+                    log.level = 'error';
+                    log.end = Date.now();
+                    log.success = false;
+                    log.timestamp = Date.now();
+                    log.messages = [
+                        {
+                            content: `Refresh oauth2 token call failed`,
+                            timestamp: Date.now()
+                        }
+                    ];
+                    fileLogger.error('', log);
+
                     reject(e);
                 }
             });
@@ -203,6 +218,13 @@ class ConnectionService {
                 providerConfigKey: providerConfigKey,
                 promise: promise
             } as CredentialsRefresh;
+
+            log.messages.push({
+                content: `Token refresh for ${providerConfigKey} and connection ${connectionId}`,
+                timestamp: Date.now(),
+                providerConfigKey,
+                connectionId
+            });
 
             this.runningCredentialsRefreshes.push(refresh);
 

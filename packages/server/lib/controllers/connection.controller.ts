@@ -2,10 +2,11 @@ import type { Request, Response } from 'express';
 import connectionService from '../services/connection.service.js';
 import type { NextFunction } from 'express';
 import configService from '../services/config.service.js';
-import { ProviderConfig, ProviderTemplate, Connection, ProviderAuthModes, ProviderTemplateOAuth2 } from '../models.js';
+import { ProviderConfig, ProviderTemplate, Connection, ProviderAuthModes, ProviderTemplateOAuth2, HTTP_VERB } from '../models.js';
 import analytics from '../utils/analytics.js';
 import { getAccount, getUserAndAccountFromSession } from '../utils/utils.js';
 import { getConnectionCredentials } from '../utils/connection.js';
+import type { LogData, LogLevel, LogAction } from '../utils/file-logger.js';
 import errorManager from '../utils/error.manager.js';
 
 class ConnectionController {
@@ -151,7 +152,22 @@ class ConnectionController {
             const providerConfigKey = req.query['provider_config_key'] as string;
             const instantRefresh = req.query['force_refresh'] === 'true';
 
-            const connection = await getConnectionCredentials(res, connectionId, providerConfigKey, instantRefresh);
+            const log = {
+                level: 'debug' as LogLevel,
+                success: true,
+                action: 'token' as LogAction,
+                start: Date.now(),
+                end: Date.now(),
+                timestamp: Date.now(),
+                method: req.method as HTTP_VERB,
+                connectionId,
+                providerConfigKey,
+                messages: [] as LogData['messages'],
+                message: '',
+                endpoint: ''
+            };
+
+            const connection = await getConnectionCredentials(res, connectionId, providerConfigKey, log, instantRefresh);
 
             res.status(200).send(connection);
         } catch (err) {

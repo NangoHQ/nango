@@ -32,34 +32,29 @@ class ActivityController {
 
     /**
      * Merge Sessions
-     * @desc identify if a property has a session id and there is a matching
-     * session id merge the two while maintaining ordering of the logs
+     * @desc append any messages of oauth continuation entries that have a merge property of true
+     * to an existing session id and update the end time while maintaing
+     * log ordering
      */
     private mergeSessions(logs: LogData[]) {
-        const sessions: Record<string, LogData> = {};
         const updatedLogs: LogData[] = [];
+        const sessions: Record<string, number> = {};
 
-        logs.forEach((item) => {
-            if (item.sessionId) {
-                if (!sessions[item.sessionId]) {
-                    sessions[item.sessionId] = item;
-                    updatedLogs.push(item);
-                } else {
-                    sessions[item?.sessionId]!.messages = [...sessions[item?.sessionId]!.messages, ...item.messages];
-                    sessions[item?.sessionId]!.merge = true;
-                }
+        for (let i = 0; i < logs.length; i++) {
+            const log = logs[i];
+
+            if (log?.sessionId && !log.merge) {
+                sessions[log.sessionId] = i;
+            }
+
+            if (log?.merge && sessions[log.sessionId as string]) {
+                const mergeIndex: number = sessions[log.sessionId as string] as number;
+                updatedLogs[mergeIndex]!.messages = [...updatedLogs[mergeIndex]!.messages, ...log.messages];
+                updatedLogs[mergeIndex]!.end = log.end as number;
             } else {
-                updatedLogs.push(item);
+                updatedLogs.push(log as LogData);
             }
-        });
-
-        Object.values(sessions).forEach((item) => {
-            if (!item.merge) {
-                updatedLogs.push(item);
-            }
-            delete item.merge;
-        });
-
+        }
         return updatedLogs;
     }
 }
