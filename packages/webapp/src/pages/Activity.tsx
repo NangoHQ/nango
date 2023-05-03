@@ -65,7 +65,7 @@ export default function Activity() {
                     <div className="h-fit border border-border-gray rounded-md text-white text-sm">
                         <table className="table-auto">
                             <tbody className="px-4">
-                                {activities.map((activity: ActivityResponse, index: number) => (
+                                {activities.filter((activity: ActivityResponse) => typeof activity.success === 'boolean').map((activity: ActivityResponse, index: number) => (
                                     <tr key={index}>
                                         <td
                                             className={`mx-8 flex-col px-10 py-4 whitespace-nowrap ${
