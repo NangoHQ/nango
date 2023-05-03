@@ -60,6 +60,12 @@ class CustomTransport extends Transport {
         }
     }
 
+    createIfMissing() {
+        if (!fs.existsSync(this.filename)) {
+            this.initialize();
+        }
+    }
+
     readLog() {
         let data = null;
         try {
@@ -86,6 +92,7 @@ class CustomTransport extends Transport {
     }
 
     override log(info: LogData, callback: () => void) {
+        this.createIfMissing();
         setImmediate(() => {
             this.emit('logged', info);
         });
