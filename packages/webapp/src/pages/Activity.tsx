@@ -79,7 +79,7 @@ export default function Activity() {
                                                         <AlertCircle className="stroke-red-500" size="32" />
                                                     )
                                                 }
-                                                <div className="ml-24 w-36">
+                                                <div className="ml-24 w-36 mr-48">
                                                     {activity.action === 'oauth' && (
                                                         <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-pink-500 bg-opacity-20">
                                                             <LinkIcon className="stroke-pink-500 mr-2" size="16" />
@@ -109,7 +109,7 @@ export default function Activity() {
                                                     )}
                                                 </div>
                                                 <Tooltip text={activity.connectionId} type="dark">
-                                                    <div className="ml-40 w-32 mr-12 text-[#5AC2B3] font-mono overflow-hidden truncate">`{activity.connectionId}`</div>
+                                                    <div className="ml-30 w-32 mr-12 text-[#5AC2B3] font-mono overflow-hidden truncate">`{activity.connectionId}`</div>
                                                 </Tooltip>
                                                 <div className="w-36 mr-12">
                                                     {activity?.provider ? (
@@ -166,7 +166,7 @@ export default function Activity() {
                                                     ))}
                                                 </div>
                                                 {activity.start && activity.end && (
-                                                    <div className="mt-4 text-gray-500 text-xs">
+                                                    <div className="mt-4 text-gray-500 text-sm">
                                                         Operation time: {elapsedTime(activity.start, activity.end)}
                                                     </div>
                                                 )}
