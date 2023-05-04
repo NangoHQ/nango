@@ -8,7 +8,7 @@ import type { HTTP_VERB } from '../models.js';
 export type LogLevel = 'info' | 'debug' | 'error';
 export type LogAction = 'oauth' | 'proxy' | 'token';
 interface Message {
-    [index: string]: undefined | string | number | Record<string, string | boolean>;
+    [index: string]: undefined | string | number | Record<string, string | boolean | number | unknown>;
 }
 
 export interface LogData {
@@ -128,6 +128,10 @@ export const updateAppLogs = (log: LogData, level: LogLevel, message: Message) =
 };
 
 export const updateAppLogsAndWrite = (log: LogData, level: LogLevel, message: Message) => {
+    if (level === 'error') {
+        log.success = false;
+    }
+
     updateAppLogs(log, level, message);
     log.end = Date.now();
     fileLogger.info('', log);

@@ -5,7 +5,7 @@ import axios, { AxiosError, AxiosResponse } from 'axios';
 import { backOff } from 'exponential-backoff';
 
 import logger from '../utils/logger.js';
-import { fileLogger, LogData, LogLevel, LogAction, updateAppLogs, updateAppLogsAndWrite } from '../utils/file-logger.js';
+import { LogData, LogLevel, LogAction, updateAppLogs, updateAppLogsAndWrite } from '../utils/file-logger.js';
 import errorManager from '../utils/error.manager.js';
 import configService from '../services/config.service.js';
 import type { ProxyBodyConfiguration, Connection, HTTP_VERB } from '../models.js';
@@ -180,14 +180,9 @@ class ProxyController {
      * @param {AxiosError} error
      * @param {attemptNumber} number
      */
-    private retry = (error: AxiosError, attemptNumber: number, log: LogData): boolean => {
+    private retry = (error: AxiosError, attemptNumber: number): boolean => {
         if (error?.response?.status.toString().startsWith('5') || error?.response?.status === 429) {
-            updateAppLogs(log, 'info', {
-                timestamp: Date.now(),
-                content: `API received an ${error?.response?.status} error, retrying with exponential backoffs for a total of ${attemptNumber} times`
-            });
-
-            //logger.info(`API received an ${error?.response?.status} error, retrying with exponential backoffs for a total of ${attemptNumber} times`);
+            logger.info(`API received an ${error?.response?.status} error, retrying with exponential backoffs for a total of ${attemptNumber} times`);
             return true;
         }
 
@@ -238,8 +233,7 @@ class ProxyController {
                         headers
                     });
                 },
-                //{ numOfAttempts: Number(config.retries), retry: this.retry(log) }
-                { numOfAttempts: Number(config.retries), retry: (error: AxiosError, attemptNumber: number) => this.retry(error, attemptNumber, log) }
+                { numOfAttempts: Number(config.retries), retry: this.retry }
             );
 
             updateAppLogsAndWrite(log, 'info', {
@@ -277,14 +271,12 @@ class ProxyController {
                 },
                 { numOfAttempts: Number(config.retries), retry: this.retry }
             );
-            const successMessage = `Proxy: POST request to ${url} was successful`;
-            log.messages.push({
-                content: successMessage,
-                timestamp: Date.now()
+
+            updateAppLogsAndWrite(log, 'info', {
+                timestamp: Date.now(),
+                content: `POST request to ${url} was successful`
             });
-            log.end = Date.now();
-            fileLogger.info('', log);
-            logger.info(successMessage);
+
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
             responseStream.data.pipe(res);
         } catch (error) {
@@ -315,14 +307,12 @@ class ProxyController {
                 },
                 { numOfAttempts: Number(config.retries), retry: this.retry }
             );
-            const successMessage = `Proxy: PATCH request to ${url} was successful`;
-            log.messages.push({
-                content: successMessage,
-                timestamp: Date.now()
+
+            updateAppLogsAndWrite(log, 'info', {
+                timestamp: Date.now(),
+                content: `PATCH request to ${url} was successful`
             });
-            log.end = Date.now();
-            fileLogger.info('', log);
-            logger.info(successMessage);
+
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
             responseStream.data.pipe(res);
         } catch (error) {
@@ -353,14 +343,12 @@ class ProxyController {
                 },
                 { numOfAttempts: Number(config.retries), retry: this.retry }
             );
-            const successMessage = `Proxy: PUT request to ${url} was successful`;
-            log.messages.push({
-                content: successMessage,
-                timestamp: Date.now()
+
+            updateAppLogsAndWrite(log, 'info', {
+                timestamp: Date.now(),
+                content: `PUT request to ${url} was successful`
             });
-            log.end = Date.now();
-            fileLogger.info('', log);
-            logger.info(successMessage);
+
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
             responseStream.data.pipe(res);
         } catch (error) {
@@ -390,14 +378,12 @@ class ProxyController {
                 },
                 { numOfAttempts: Number(config.retries), retry: this.retry }
             );
-            const successMessage = `Proxy: DELETE request to ${url} was successful`;
-            log.messages.push({
-                content: successMessage,
-                timestamp: Date.now()
+
+            updateAppLogsAndWrite(log, 'info', {
+                timestamp: Date.now(),
+                content: `DELETE request to ${url} was successful`
             });
-            log.end = Date.now();
-            fileLogger.info('', log);
-            logger.info(successMessage);
+
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
             responseStream.data.pipe(res);
         } catch (error) {
@@ -414,44 +400,34 @@ class ProxyController {
      */
     private catalogAndReportError(error: Error | AxiosError, url: string, config: ProxyBodyConfiguration, log: LogData) {
         if (axios.isAxiosError(error)) {
-            log.success = false;
             if (error?.response?.status === 404) {
-                const fourOhFour = `${Date.now()} Response is a 404 to ${url}, make sure you have the endpoint specified and spelled correctly.${
-                    config.template.docs ? ` Refer to the documentation at ${config.template.docs} for help` : ''
-                }`;
-                logger.error(fourOhFour);
-                log.messages.push({
-                    content: fourOhFour,
-                    timestamp: Date.now()
+                updateAppLogsAndWrite(log, 'error', {
+                    timestamp: Date.now(),
+                    content: `Response is a 404 to ${url}, make sure you have the endpoint specified and spelled correctly.${
+                        config.template.docs ? ` Refer to the documentation at ${config.template.docs} for help` : ''
+                    }`
                 });
-                log.end = Date.now();
-                fileLogger.error('', log);
+
                 return new NangoError('unknown_endpoint');
             }
             if (error?.response?.status === 403) {
-                const fourOhThree = `${Date.now()} Response is a 403 to ${url}, make sure you have the proper scopes configured.${
-                    config.template.docs ? ` Refer to the documentation at ${config.template.docs} for help` : ''
-                }`;
-                logger.error(fourOhThree);
-                log.messages.push({
-                    content: fourOhThree,
-                    timestamp: Date.now()
+                updateAppLogsAndWrite(log, 'error', {
+                    timestamp: Date.now(),
+                    content: `Response is a 403 to ${url}, make sure you have the proper scopes configured.${
+                        config.template.docs ? ` Refer to the documentation at ${config.template.docs} for help` : ''
+                    }`
                 });
-                log.end = Date.now();
-                fileLogger.error('', log);
+
                 return new NangoError('fobidden');
             }
             if (error?.response?.status === 400) {
-                const fourHundred = `${Date.now()} Response is a 400 to ${url}, make sure you have the proper headers to go to the API set.${
-                    config.template.docs ? ` Refer to the documentation at ${config.template.docs} for help` : ''
-                }`;
-                logger.error(fourHundred);
-                log.messages.push({
+                updateAppLogsAndWrite(log, 'error', {
                     timestamp: Date.now(),
-                    content: fourHundred
+                    content: `Response is a 400 to ${url}, make sure you have the proper headers to go to the API set.${
+                        config.template.docs ? ` Refer to the documentation at ${config.template.docs} for help` : ''
+                    }`
                 });
-                log.end = Date.now();
-                fileLogger.error('', log);
+
                 return new NangoError('bad_request');
             }
         } else {
