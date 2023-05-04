@@ -2,10 +2,15 @@ import Transport from 'winston-transport';
 import winston from 'winston';
 import fs from 'fs';
 
+import logger from './logger.js';
 import type { HTTP_VERB } from '../models.js';
 
 export type LogLevel = 'info' | 'debug' | 'error';
 export type LogAction = 'oauth' | 'proxy' | 'token';
+interface Message {
+    [index: string]: undefined | string | number | Record<string, string>;
+}
+
 export interface LogData {
     level: LogLevel;
     action: LogAction;
@@ -14,9 +19,7 @@ export interface LogData {
     start: number;
     end?: number;
     message: string;
-    messages: {
-        [index: string]: undefined | string | number | Record<string, string>;
-    }[];
+    messages: Message[];
     connectionId: string;
     providerConfigKey: string;
     provider?: string;
@@ -118,3 +121,14 @@ export const fileLogger = winston.createLogger({
         })
     ]
 });
+
+export const updateAppLogs = (log: LogData, level: LogLevel, message: Message) => {
+    log.messages.push(message);
+    logger.log(level, message['content']);
+};
+
+export const updateAppLogsAndWrite = (log: LogData, level: LogLevel, message: Message) => {
+    updateAppLogs(log, level, message);
+    log.end = Date.now();
+    fileLogger.info('', log);
+};

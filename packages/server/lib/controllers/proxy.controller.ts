@@ -5,7 +5,7 @@ import axios, { AxiosError, AxiosResponse } from 'axios';
 import { backOff } from 'exponential-backoff';
 
 import logger from '../utils/logger.js';
-import { fileLogger, LogData, LogLevel, LogAction } from '../utils/file-logger.js';
+import { fileLogger, LogData, LogLevel, LogAction, updateAppLogs, updateAppLogsAndWrite } from '../utils/file-logger.js';
 import errorManager from '../utils/error.manager.js';
 import configService from '../services/config.service.js';
 import type { ProxyBodyConfiguration, Connection, HTTP_VERB } from '../models.js';
@@ -31,26 +31,6 @@ class ProxyController {
             const providerConfigKey = req.get('Provider-Config-Key') as string;
             const retries = req.get('Retries') as string;
 
-            if (!connectionId) {
-                errorManager.errRes(res, 'missing_connection_id');
-                logger.error(
-                    `Proxy: the connection id value is missing. If you're making a HTTP request then it should be included in the header 'Connection-Id'. If you're using the SDK the connectionId property should be specified.`
-                );
-                return;
-            }
-
-            if (!providerConfigKey) {
-                errorManager.errRes(res, 'missing_provider_config_key');
-                logger.error(
-                    `Proxy: the provider config key value is missing. If you're making a HTTP request then it should be included in the header 'Provider-Config-Key'. If you're using the SDK the providerConfigKey property should be specified.`
-                );
-                return;
-            }
-
-            const configMessage = `Connection id: '${connectionId}' and provider config key: '${providerConfigKey}' parsed and received successfully`;
-
-            logger.debug(configMessage);
-
             const log = {
                 level: 'debug' as LogLevel,
                 success: true,
@@ -66,18 +46,37 @@ class ProxyController {
                 endpoint: ''
             };
 
+            if (!connectionId) {
+                errorManager.errRes(res, 'missing_connection_id');
+
+                updateAppLogsAndWrite(log, 'error', {
+                    timestamp: Date.now(),
+                    content: `The connection id value is missing. If you're making a HTTP request then it should be included in the header 'Connection-Id'. If you're using the SDK the connectionId property should be specified.`
+                });
+                return;
+            }
+
+            if (!providerConfigKey) {
+                errorManager.errRes(res, 'missing_provider_config_key');
+
+                updateAppLogsAndWrite(log, 'error', {
+                    timestamp: Date.now(),
+                    content: `The provider config key value is missing. If you're making a HTTP request then it should be included in the header 'Provider-Config-Key'. If you're using the SDK the providerConfigKey property should be specified.`
+                });
+                return;
+            }
+
+            updateAppLogs(log, 'debug', {
+                timestamp: Date.now(),
+                content: `Connection id: '${connectionId}' and provider config key: '${providerConfigKey}' parsed and received successfully`
+            });
+
             const connection = await getConnectionCredentials(res, connectionId, providerConfigKey, log);
 
-            const credentialMessage = 'Connection credentials found successfully';
-
-            logger.debug(credentialMessage);
-
-            if (process.env['LOG_LEVEL'] === 'debug') {
-                log.messages.push({
-                    timestamp: Date.now(),
-                    content: `${configMessage}. ${credentialMessage}`
-                });
-            }
+            updateAppLogs(log, 'debug', {
+                timestamp: Date.now(),
+                content: 'Connection credentials found successfully'
+            });
 
             const { method } = req;
 
@@ -85,7 +84,11 @@ class ProxyController {
 
             if (!endpoint) {
                 errorManager.errRes(res, 'missing_endpoint');
-                logger.error(`Proxy: a API URL endpoint is missing.`);
+
+                updateAppLogsAndWrite(log, 'error', {
+                    timestamp: Date.now(),
+                    content: 'Proxy: a API URL endpoint is missing.'
+                });
                 return;
             }
 
@@ -105,45 +108,41 @@ class ProxyController {
                     throw new Error(`Unrecognized OAuth type '${connection?.credentials?.type}' in stored credentials.`);
             }
 
-            logger.debug(`Proxy: token retrieved successfully`);
+            updateAppLogs(log, 'debug', {
+                timestamp: Date.now(),
+                content: 'Proxy: token retrieved successfully'
+            });
 
             const { account_id: accountId } = connection as Connection;
             const providerConfig = await configService.getProviderConfig(providerConfigKey, accountId);
             const headers = this.parseHeaders(req);
 
             if (!providerConfig) {
-                const provideConfigErrorMessage = `${Date.now()} Proxy: provider configuration not found`;
-
-                logger.error(provideConfigErrorMessage);
-                log.end = Date.now();
-                log.messages.push({
-                    content: provideConfigErrorMessage,
-                    timestamp: Date.now()
+                updateAppLogsAndWrite(log, 'error', {
+                    timestamp: Date.now(),
+                    content: 'Provider configuration not found'
                 });
-                fileLogger.error(log);
+
                 res.status(404).send();
             }
             const template = configService.getTemplate(String(providerConfig?.provider));
 
             if (!template.base_api_url) {
-                const baseApiUrlErrorMessage = `${Date.now()} The proxy is not supported for this provider ${String(
-                    providerConfig?.provider
-                )}. You can easily add support by following the instructions at https://docs.nango.dev/contribute-api`;
-
-                log.messages.push({
-                    content: baseApiUrlErrorMessage,
-                    timestamp: Date.now()
+                updateAppLogsAndWrite(log, 'error', {
+                    timestamp: Date.now(),
+                    content: `${Date.now()} The proxy is not supported for this provider ${String(
+                        providerConfig?.provider
+                    )}. You can easily add support by following the instructions at https://docs.nango.dev/contribute-api`
                 });
-                log.end = Date.now();
-                fileLogger.error(log);
-                logger.error(baseApiUrlErrorMessage);
+
                 errorManager.errRes(res, 'missing_base_api_url');
                 return;
             }
 
-            const apiCallMessage = `Proxy: API call configuration constructed successfully with the base api url set to ${template.base_api_url}`;
-
-            logger.debug(apiCallMessage);
+            updateAppLogs(log, 'debug', {
+                timestamp: Date.now(),
+                content: `Proxy: API call configuration constructed successfully with the base api url set to ${template.base_api_url}`
+            });
 
             const configBody: ProxyBodyConfiguration = {
                 endpoint,
@@ -159,12 +158,10 @@ class ProxyController {
                 retries: retries ? Number(retries) : 0
             };
 
-            if (process.env['LOG_LEVEL'] === 'debug') {
-                log.messages.push({
-                    content: `${configMessage}. ${credentialMessage} to endpoint ${configBody.endpoint} with retries set to ${configBody.retries}`,
-                    timestamp: Date.now()
-                });
-            }
+            updateAppLogs(log, 'debug', {
+                timestamp: Date.now(),
+                content: `Endpoint set to ${configBody.endpoint} with retries set to ${configBody.retries}`
+            });
 
             const logData: LogData = {
                 ...log,
@@ -183,9 +180,14 @@ class ProxyController {
      * @param {AxiosError} error
      * @param {attemptNumber} number
      */
-    private retry = (error: AxiosError, attemptNumber: number): boolean => {
+    private retry = (error: AxiosError, attemptNumber: number, log: LogData): boolean => {
         if (error?.response?.status.toString().startsWith('5') || error?.response?.status === 429) {
-            logger.info(`API received an ${error?.response?.status} error, retrying with exponential backoffs for a total of ${attemptNumber} times`);
+            updateAppLogs(log, 'info', {
+                timestamp: Date.now(),
+                content: `API received an ${error?.response?.status} error, retrying with exponential backoffs for a total of ${attemptNumber} times`
+            });
+
+            //logger.info(`API received an ${error?.response?.status} error, retrying with exponential backoffs for a total of ${attemptNumber} times`);
             return true;
         }
 
@@ -236,16 +238,15 @@ class ProxyController {
                         headers
                     });
                 },
-                { numOfAttempts: Number(config.retries), retry: this.retry }
+                //{ numOfAttempts: Number(config.retries), retry: this.retry(log) }
+                { numOfAttempts: Number(config.retries), retry: (error: AxiosError, attemptNumber: number) => this.retry(error, attemptNumber, log) }
             );
-            const successMessage = `Proxy: GET request to ${url} was successful`;
-            log.messages.push({
-                content: successMessage,
-                timestamp: Date.now()
+
+            updateAppLogsAndWrite(log, 'info', {
+                timestamp: Date.now(),
+                content: `GET request to ${url} was successful`
             });
-            log.end = Date.now();
-            fileLogger.info('', log);
-            logger.info(successMessage);
+
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
             responseStream.data.pipe(res);
         } catch (error) {
