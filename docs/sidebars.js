@@ -149,25 +149,25 @@ const sidebars = {
                         {
                             id: 'nango-unified-apis/hris/employees',
                             type: 'doc',
-                            label: '/employees'
+                            label: 'Employees'
                         }
                     ]
                 },
-                {
-                    type: 'category',
-                    label: 'Unified CRM API',
-                    link: {
-                        id: 'nango-unified-apis/crm/overview',
-                        type: 'doc'
-                    },
-                    items: [
-                        {
-                            id: 'nango-unified-apis/crm/contacts',
-                            type: 'doc',
-                            label: '/contacts'
-                        }
-                    ]
-                },
+                // {
+                //     type: 'category',
+                //     label: 'Unified CRM API',
+                //     link: {
+                //         id: 'nango-unified-apis/crm/overview',
+                //         type: 'doc'
+                //     },
+                //     items: [
+                //         {
+                //             id: 'nango-unified-apis/crm/contacts',
+                //             type: 'doc',
+                //             label: '/contacts'
+                //         }
+                //     ]
+                // },
                 {
                     type: 'category',
                     label: 'Unified Ticketing API',
