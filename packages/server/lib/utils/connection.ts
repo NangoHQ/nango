@@ -6,7 +6,7 @@ import connectionService from '../services/connection.service.js';
 import configService from '../services/config.service.js';
 import analytics from './analytics.js';
 import { getAccount } from './utils.js';
-import { fileLogger, LogData } from './file-logger.js';
+import { updateAppLogsAndWrite, LogData } from './file-logger.js';
 
 export const getConnectionCredentials = async (res: Response, connectionId: string, providerConfigKey: string, log: LogData, instantRefresh = false) => {
     const accountId = getAccount(res);
@@ -24,17 +24,12 @@ export const getConnectionCredentials = async (res: Response, connectionId: stri
     const connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, accountId);
 
     if (connection === null) {
-        log.level = 'error';
-        log.end = Date.now();
-        log.success = false;
-        log.timestamp = Date.now();
-        log.messages = [
-            {
-                content: `Connection not found using connectionId: ${connectionId} and providerConfigKey: ${providerConfigKey}`,
-                timestamp: Date.now()
-            }
-        ];
-        fileLogger.error('', log);
+        updateAppLogsAndWrite(log, 'error', {
+            content: `Connection not found using connectionId: ${connectionId} and providerConfigKey: ${providerConfigKey}`,
+            connectionId,
+            providerConfigKey,
+            timestamp: Date.now()
+        });
 
         errorManager.errRes(res, 'unkown_connection');
         throw new Error(`Connection not found`);
@@ -43,17 +38,12 @@ export const getConnectionCredentials = async (res: Response, connectionId: stri
     const config: ProviderConfig | null = await configService.getProviderConfig(connection.provider_config_key, accountId);
 
     if (config === null) {
-        log.level = 'error';
-        log.end = Date.now();
-        log.success = false;
-        log.timestamp = Date.now();
-        log.messages = [
-            {
-                content: `Configuration not found using the providerConfigKey: ${providerConfigKey} and the account id: ${accountId}}`,
-                timestamp: Date.now()
-            }
-        ];
-        fileLogger.error('', log);
+        updateAppLogsAndWrite(log, 'error', {
+            content: `Configuration not found using the providerConfigKey: ${providerConfigKey} and the account id: ${accountId}}`,
+            connectionId,
+            providerConfigKey,
+            timestamp: Date.now()
+        });
 
         errorManager.errRes(res, 'unknown_provider_config');
         throw new Error(`Provider config not found`);
@@ -67,7 +57,8 @@ export const getConnectionCredentials = async (res: Response, connectionId: stri
             config,
             template as ProviderTemplateOAuth2,
             log,
-            instantRefresh
+            instantRefresh,
+            log.action
         );
     }
 

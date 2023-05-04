@@ -5,7 +5,7 @@ import db from '../db/database.js';
 import type { ProviderConfig, Connection } from '../models.js';
 import analytics from '../utils/analytics.js';
 import providerClientManager from '../clients/provider.client.js';
-import { fileLogger, LogData } from '../utils/file-logger.js';
+import { updateAppLogsAndWrite, updateAppLogs, LogData, LogAction } from '../utils/file-logger.js';
 import { parseTokenExpirationDate, isTokenExpired } from '../utils/utils.js';
 import providerClient from '../clients/provider.client.js';
 import { NangoError } from '../utils/error.js';
@@ -145,7 +145,8 @@ class ConnectionService {
         providerConfig: ProviderConfig,
         template: ProviderTemplateOAuth2,
         log = {} as LogData,
-        instantRefresh = false
+        instantRefresh = false,
+        logAction: LogAction = 'token'
     ): Promise<OAuth2Credentials> {
         let connectionId = connection.connection_id;
         let credentials = connection.credentials as OAuth2Credentials;
@@ -196,19 +197,15 @@ class ConnectionService {
                         return !(value.providerConfigKey === providerConfigKey && value.connectionId === connectionId);
                     });
 
-                    if (log) {
+                    if (log && logAction === 'token') {
                         log.action = 'token';
-                        log.level = 'error';
-                        log.end = Date.now();
-                        log.success = false;
-                        log.timestamp = Date.now();
-                        log.messages = [
-                            {
-                                content: `Refresh oauth2 token call failed`,
-                                timestamp: Date.now()
-                            }
-                        ];
-                        fileLogger.error('', log);
+
+                        updateAppLogsAndWrite(log, 'error', {
+                            content: `Refresh oauth2 token call failed`,
+                            connectionId,
+                            providerConfigKey,
+                            timestamp: Date.now()
+                        });
                     }
                     reject(e);
                 }
@@ -220,13 +217,16 @@ class ConnectionService {
                 promise: promise
             } as CredentialsRefresh;
 
-            log.messages.push({
-                content: `Token refresh for ${providerConfigKey} and connection ${connectionId}`,
-                timestamp: Date.now(),
-                providerConfigKey,
-                connectionId
-            });
+            if (log && logAction === 'token') {
+                log.action = 'token';
 
+                updateAppLogs(log, 'info', {
+                    content: `Token was refreshed for ${providerConfigKey} and connection ${connectionId}`,
+                    timestamp: Date.now(),
+                    providerConfigKey,
+                    connectionId
+                });
+            }
             this.runningCredentialsRefreshes.push(refresh);
 
             return promise;

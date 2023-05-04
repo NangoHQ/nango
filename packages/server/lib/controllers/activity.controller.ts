@@ -47,12 +47,13 @@ class ActivityController {
                 sessions[log.sessionId] = i;
             }
 
-            if (log?.merge && sessions[log.sessionId as string]) {
+            if (log?.merge && typeof sessions[log.sessionId as string] !== 'undefined') {
                 const mergeIndex: number = updatedLogs.findIndex((updated) => {
                     return updated.sessionId === log.sessionId && !updated.merge;
                 });
                 updatedLogs[mergeIndex]!.messages = [...updatedLogs[mergeIndex]!.messages, ...log.messages];
                 updatedLogs[mergeIndex]!.end = log.end as number;
+                updatedLogs[mergeIndex]!.success = log.success;
             } else {
                 updatedLogs.push(log as LogData);
             }
