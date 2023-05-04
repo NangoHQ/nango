@@ -37,6 +37,10 @@ export const getConnectionCredentials = async (res: Response, connectionId: stri
 
     const config: ProviderConfig | null = await configService.getProviderConfig(connection.provider_config_key, accountId);
 
+    if (!log.provider) {
+        log.provider = config?.provider as string;
+    }
+
     if (config === null) {
         updateAppLogsAndWrite(log, 'error', {
             content: `Configuration not found using the providerConfigKey: ${providerConfigKey} and the account id: ${accountId}}`,
