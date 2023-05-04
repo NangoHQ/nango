@@ -58,7 +58,7 @@ class ActivityController {
                 updatedLogs.push(log as LogData);
             }
         }
-        return updatedLogs;
+        return updatedLogs.reverse();
     }
 }
 

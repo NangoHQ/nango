@@ -163,20 +163,6 @@ class OAuthController {
                 return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.InvalidProviderConfig(providerConfigKey));
             }
 
-            updateAppLogs(log, 'info', {
-                content: `Authorization URL ${template.authorization_url} for the ${config.provider} provider`,
-                timestamp: Date.now(),
-                authMode: template.auth_mode,
-                url: callbackUrl,
-                connectionId,
-                params: {
-                    ...template.authorization_params,
-                    key: config.unique_key,
-                    scopes: config.oauth_scopes,
-                    default_scopes: template.default_scopes?.join(',') as string
-                }
-            });
-
             if (template.auth_mode === ProviderAuthModes.OAuth2) {
                 return this.oauth2Request(template as ProviderTemplateOAuth2, config, session, res, connectionConfig, callbackUrl, log);
             } else if (template.auth_mode === ProviderAuthModes.OAuth1) {
@@ -311,8 +297,7 @@ class OAuthController {
                         ...connectionConfig,
                         grant_type: oauth2Template.token_params?.grant_type as string,
                         scopes: providerConfig.oauth_scopes.split(',').join(oauth2Template.scope_separator || ' '),
-                        external_api_url: authorizationUri,
-                        basic_auth_enabled: template.token_request_auth_method === 'basic'
+                        external_api_url: authorizationUri
                     }
                 });
 
@@ -484,7 +469,6 @@ class OAuthController {
                 content: `Received callback from ${session.providerConfigKey} for connection ${session.connectionId}`,
                 state: state as string,
                 timestamp: Date.now(),
-                authMode: session.authMode,
                 providerConfigKey,
                 url: req.originalUrl,
                 connectionId
@@ -614,16 +598,8 @@ class OAuthController {
             updateAppLogs(log, 'info', {
                 content: `Token response was received for ${session.provider} using ${providerConfigKey} for the connection ${connectionId}`,
                 timestamp: Date.now(),
-                authMode: template.auth_mode,
                 providerConfigKey,
-                connectionId,
-                params: {
-                    ...additionalTokenParams,
-                    code: code as string,
-                    scopes: config.oauth_scopes,
-                    basic_auth_enabled: template.token_request_auth_method === 'basic',
-                    token_params: template?.token_params as string
-                }
+                connectionId
             });
 
             const tokenMetadata = getConnectionMetadataFromTokenResponse(rawCredentials, template);
