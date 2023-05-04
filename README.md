@@ -41,20 +41,20 @@ Leverage dozens of pre-built use cases with our unified APIs. Or extend them and
 
 With Nango you get:
 
--   pre-built unified APIs for many use cases (CRM, Ticketing, ATS etc.)
--   an API agnostic OAuth service (can also be used standalone)
+-   pre-built unified APIs for many use cases (CRM, Ticketing, HRIS etc.)
+-   a pre-built OAuth service for all supported APIs (can also be used standalone)
 -   support for 90+ external APIs
 -   extensible platform to build your own, custom unified APIs
 
 Nango is easy to try in 5 minutes:
 
--   1-liner to start a new (O)Auth flow in your frontend:
+-   1-liner to start a new (O)Auth flow in your frontend (supports all 90+ external APIs):
 
 ```ts
 let result = await nango.auth('github', '<user-id>');
 ```
 
--   in your backend, fetch always up to date data with our fully typed SDK:
+-   in your backend, easily fetch always up to date data with our fully typed SDK:
 
 ```ts
 let contacts = await nango.crm.getContacts('<user-id>');

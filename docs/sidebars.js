@@ -142,21 +142,56 @@ const sidebars = {
                     type: 'category',
                     label: 'Unified HRIS API',
                     link: {
-                        id: 'unified-apis/hris/overview',
+                        id: 'nango-unified-apis/hris/overview',
                         type: 'doc'
                     },
                     items: [
                         {
-                            id: 'unified-apis/hris/employees',
+                            id: 'nango-unified-apis/hris/employees',
                             type: 'doc',
                             label: '/employees'
                         }
                     ]
                 },
                 {
-                    id: 'unified-apis/proxy',
+                    type: 'category',
+                    label: 'Unified CRM API',
+                    link: {
+                        id: 'nango-unified-apis/crm/overview',
+                        type: 'doc'
+                    },
+                    items: [
+                        {
+                            id: 'nango-unified-apis/crm/contacts',
+                            type: 'doc',
+                            label: '/contacts'
+                        }
+                    ]
+                },
+                {
+                    type: 'category',
+                    label: 'Unified Ticketing API',
+                    link: {
+                        id: 'nango-unified-apis/ticketing/overview',
+                        type: 'doc'
+                    },
+                    items: [
+                        {
+                            id: 'nango-unified-apis/ticketing/tickets',
+                            type: 'doc',
+                            label: '/tickets'
+                        }
+                    ]
+                },
+                {
+                    id: 'nango-unified-apis/proxy',
                     type: 'doc',
                     label: 'Proxy'
+                },
+                {
+                    id: 'nango-unified-apis/custom-unified-api',
+                    type: 'doc',
+                    label: 'Building Custom Unified APIs'
                 }
             ]
         },
