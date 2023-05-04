@@ -54,13 +54,13 @@ Nango is easy to try in 5 minutes:
 let result = await nango.auth('github', '<user-id>');
 ```
 
--   in your backend fetch always up to date data with our fully typed SDK:
+-   in your backend, fetch always up to date data with our fully typed SDK:
 
 ```ts
 let contacts = await nango.crm.getContacts('<user-id>');
 ```
 
--   or only use the (O)Auth service and make any API call with the access token:
+-   or only use the (O)Auth service and make any API call with the access token (or [proxy]()):
 
 ```ts
 let token = await nango.getToken('github', '<user-id>');
@@ -70,9 +70,9 @@ let token = await nango.getToken('github', '<user-id>');
 
 Nango supports 3 unified APIs:
 
--   [**CRM:**]() Salesforce, HubSpot, Zoho.
+-   [**CRM:**]() Salesforce, HubSpot, Zoho, Pipedrive.
 -   [**Ticketing:**]() Jira, GitHub, Asana, Clickup, Gitlab.
--   [**ATS:**]() Greenhouse, Lever.
+-   [**HRIS:**]() BambooHR, Rippling, Workday, Gusto, Personio, Zenefits.
 
 More are coming soon and you can always [build your own, custom unified API]().
 
