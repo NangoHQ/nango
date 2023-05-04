@@ -12,7 +12,9 @@ Make sure you have gone through the [quickstart](/quickstart) before using the p
 :::
 
 # What Is It?
+
 Same familiar simple interface with a lot of functionality baked in:
+
 1. Handles authentication
 2. Handles retries
 3. Takes care of logging
@@ -29,8 +31,9 @@ const repsonse = await nango.proxy({
 
 ## SDK Usage
 
-1. Install and set up the SDK as described in [the sdk docs](/reference/node-sdk)
+1. Install and set up the SDK as described in [the sdk docs](/nango-auth/node-sdk)
 2. Use the proxy to both authenticate and make an API call in one simple step
+
 ```js
 # note these params closely follows how axios structures their API
 const response = await nango.proxy({
@@ -54,6 +57,7 @@ const response = await nango.proxy({
 ```
 
 ### Example
+
 ```js
 const insertCalendarListResponse = await nango.proxy({
     method: 'POST',
@@ -69,6 +73,7 @@ const insertCalendarListResponse = await nango.proxy({
 ```
 
 ### Retries
+
 If you would like retries with exponential backoffs you can pass a number to a retries
 property to the `nango.proxy` method:
 
@@ -132,6 +137,7 @@ curl -H 'Authorization: Bearer <SECRET-KEY>' \
 ```
 
 If you want retries with exponential backoffs you can pass in `Retries` as a header:
+
 ```bash
 curl -H 'Authorization: Bearer <SECRET-KEY>' \
 -H 'Connection-Id: <CONNECTION-ID>' \
@@ -183,6 +189,7 @@ curl -H 'Connection-Id: <CONNECTION-ID>' \
 ```
 
 If you want retries with exponential backoffs you can pass in `Retries` as a header:
+
 ```bash
 curl -H 'Authorization: Bearer <SECRET-KEY>' \
 -H 'Connection-Id: <CONNECTION-ID>' \
@@ -234,6 +241,7 @@ curl -H 'Connection-Id: <CONNECTION-ID>' \
 ```
 
 If you want retries with exponential backoffs you can pass in `Retries` as a header:
+
 ```bash
 curl -H 'Authorization: Bearer <SECRET-KEY>' \
 -H 'Connection-Id: <CONNECTION-ID>' \

@@ -19,14 +19,13 @@ Follow our [quickstart](../quickstart.md) to add an OAuth integration with Asana
 **Rating: `Easy & fast`**
 Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://developers.asana.com/docs/oauth#register-an-application)
 
-
 ## Useful links
 
-- [How to register an Application](https://developers.asana.com/docs/oauth#register-an-application)
-- [OAuth-related docs](https://developers.asana.com/docs/oauth)
-- [List of OAuth scopes](https://developers.asana.com/docs/oauth#oauth-scopes)
-- [Web API docs (their REST API)](https://developers.asana.com/reference/rest-api-reference)
+-   [How to register an Application](https://developers.asana.com/docs/oauth#register-an-application)
+-   [OAuth-related docs](https://developers.asana.com/docs/oauth)
+-   [List of OAuth scopes](https://developers.asana.com/docs/oauth#oauth-scopes)
+-   [Web API docs (their REST API)](https://developers.asana.com/nango-auth/rest-api-reference)
 
 ## API specific gotchas
 
-- To refresh the token simple use `nango.getToken()` to generate new set of tokens
+-   To refresh the token simple use `nango.getToken()` to generate new set of tokens

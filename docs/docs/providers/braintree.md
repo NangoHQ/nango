@@ -16,7 +16,7 @@ If you want to connect to the Sandbox system use `braintree-sandbox`
 Follow our [quickstart](../quickstart.md) to add an OAuth integration with Braintree in 5 minutes.
 
 **Metadata captured by Nango**  
-The `merchandId` is automatically stored in the [Connection Metadata](reference/core-concepts.md#metadata) during the OAuth flow.
+The `merchandId` is automatically stored in the [Connection Metadata](nango-auth/core-concepts.md#metadata) during the OAuth flow.
 
 ## App registration & publishing
 

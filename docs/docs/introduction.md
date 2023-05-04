@@ -1,6 +1,6 @@
 ---
 slug: '/'
-sidebar_label: Introduction
+sidebar_label: Introduction & Overview
 ---
 
 # Nango: Get OAuth tokens for APIs. Fast & secure.

@@ -28,5 +28,5 @@ You cannot sign up for a free plan on the main Qualtrics page, but you can on th
 
 ## API specific gotchas
 
--   You are required to pass in the Data Center used to register your Qualtrics account as a subdomain for both the OAuth requests and subsequent API requests (cf. [Connection configuration](../reference/frontend-sdk.md#connection-config)).
+-   You are required to pass in the Data Center used to register your Qualtrics account as a subdomain for both the OAuth requests and subsequent API requests (cf. [Connection configuration](../nango-auth/frontend-sdk.md#connection-config)).
 -   If you trigger the OAuth flow for a user that has already been authorized, Qualtrics will return an error.
