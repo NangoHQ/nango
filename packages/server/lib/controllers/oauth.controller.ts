@@ -104,7 +104,10 @@ class OAuthController {
                 authMode: '',
                 url: callbackUrl,
                 connectionId,
-                wsClientId
+                params: {
+                    ...connectionConfig,
+                    hmacEnabled: hmacService.isEnabled() === true
+                }
             });
 
             const config = await configService.getProviderConfig(providerConfigKey, accountId);
@@ -117,8 +120,7 @@ class OAuthController {
                     timestamp: Date.now(),
                     authMode: '',
                     url: callbackUrl,
-                    connectionId,
-                    wsClientId
+                    connectionId
                 });
                 fileLogger.error('', log);
                 return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnknownProviderConfigKey(providerConfigKey));
@@ -133,8 +135,7 @@ class OAuthController {
                     timestamp: Date.now(),
                     authMode: '',
                     url: callbackUrl,
-                    connectionId,
-                    wsClientId
+                    connectionId
                 });
                 fileLogger.error('', log);
                 return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownProviderTemplate(config.provider));
@@ -161,8 +162,7 @@ class OAuthController {
                     timestamp: Date.now(),
                     authMode: template.auth_mode,
                     url: callbackUrl,
-                    connectionId,
-                    wsClientId
+                    connectionId
                 });
                 fileLogger.error('', log);
                 return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.InvalidProviderConfig(providerConfigKey));
@@ -178,7 +178,11 @@ class OAuthController {
                 authMode: template.auth_mode,
                 url: callbackUrl,
                 connectionId,
-                wsClientId
+                params: {
+                    ...template.authorization_params,
+                    scopes: config.oauth_scopes,
+                    default_scopes: template.default_scopes?.join(',') as string
+                }
             });
 
             if (template.auth_mode === ProviderAuthModes.OAuth2) {
@@ -192,8 +196,7 @@ class OAuthController {
                 timestamp: Date.now(),
                 authMode: '',
                 url: callbackUrl,
-                connectionId,
-                wsClientId
+                connectionId
             });
             fileLogger.error('', log);
 
@@ -204,8 +207,7 @@ class OAuthController {
                 timestamp: Date.now(),
                 authMode: '',
                 url: '',
-                connectionId,
-                wsClientId
+                connectionId
             });
             fileLogger.error('', log);
             errorManager.report(e, { accountId: accountId });
@@ -298,25 +300,7 @@ class OAuthController {
 
                 await oAuthSessionService.create(session);
 
-                log.messages.push({
-                    content: `Initiating token request for ${providerConfig.provider} using ${providerConfigKey} for the connection ${connectionId}`,
-                    timestamp: Date.now(),
-                    providerConfigKey,
-                    url: callbackUrl,
-                    connectionId,
-                    wsClientId: Number(wsClientId)
-                });
-
                 const simpleOAuthClient = new simpleOauth2.AuthorizationCode(getSimpleOAuth2ClientConfig(providerConfig, template, connectionConfig));
-
-                log.messages.push({
-                    content: `Token response was received for ${providerConfig.provider} using ${providerConfigKey} for the connection ${connectionId}`,
-                    timestamp: Date.now(),
-                    providerConfigKey,
-                    url: callbackUrl,
-                    connectionId,
-                    wsClientId: Number(wsClientId)
-                });
 
                 const authorizationUri = simpleOAuthClient.authorizeURL({
                     redirect_uri: callbackUrl,
@@ -333,7 +317,12 @@ class OAuthController {
                     providerConfigKey,
                     url: callbackUrl,
                     connectionId,
-                    wsClientId: Number(wsClientId)
+                    params: {
+                        ...additionalAuthParams,
+                        scope: providerConfig.oauth_scopes.split(',').join(oauth2Template.scope_separator || ' '),
+                        external_api_url: authorizationUri,
+                        basic_auth_enabled: template.token_request_auth_method === 'basic'
+                    }
                 });
 
                 log.end = Date.now();
@@ -394,8 +383,7 @@ class OAuthController {
             authMode: template.auth_mode,
             providerConfigKey,
             url: oAuth1CallbackURL,
-            connectionId,
-            wsClientId: Number(wsClientId)
+            connectionId
         });
 
         const oAuth1Client = new OAuth1Client(config, template, oAuth1CallbackURL);
@@ -433,8 +421,7 @@ class OAuthController {
             authMode: template.auth_mode,
             providerConfigKey,
             url: oAuth1CallbackURL,
-            connectionId,
-            wsClientId: Number(wsClientId)
+            connectionId
         });
 
         fileLogger.info('', log);
@@ -520,8 +507,7 @@ class OAuthController {
                 timestamp: Date.now(),
                 authMode: session.authMode,
                 url: req.originalUrl,
-                connectionId,
-                wsClientId
+                connectionId
             });
             log.sessionId = session.id;
 
@@ -606,6 +592,21 @@ class OAuthController {
 
         try {
             let rawCredentials: object;
+
+            log.messages.push({
+                content: `Initiating token request for ${session.provider} using ${providerConfigKey} for the connection ${connectionId}`,
+                timestamp: Date.now(),
+                providerConfigKey,
+                connectionId,
+                params: {
+                    ...additionalTokenParams,
+                    code: code as string,
+                    scope: config.oauth_scopes,
+                    basic_auth_enabled: template.token_request_auth_method === 'basic',
+                    token_params: template?.token_params as string
+                }
+            });
+
             if (providerClientManager.shouldUseProviderClient(session.provider)) {
                 rawCredentials = await providerClientManager.getToken(config, template.token_url, code as string, session.callbackUrl);
             } else {
@@ -621,6 +622,20 @@ class OAuthController {
                 );
                 rawCredentials = accessToken.token;
             }
+
+            log.messages.push({
+                content: `Token response was received for ${session.provider} using ${providerConfigKey} for the connection ${connectionId}`,
+                timestamp: Date.now(),
+                providerConfigKey,
+                connectionId,
+                params: {
+                    ...additionalTokenParams,
+                    code: code as string,
+                    scope: config.oauth_scopes,
+                    basic_auth_enabled: template.token_request_auth_method === 'basic',
+                    token_params: template?.token_params as string
+                }
+            });
 
             logger.debug(`OAuth 2 for ${providerConfigKey} (connection ${connectionId}) successful.`);
 
@@ -645,13 +660,14 @@ class OAuthController {
 
             log.messages.push({
                 content: `OAuth connection for ${providerConfigKey} was successful`,
-                code: code as string,
-                params: additionalTokenParams,
                 timestamp: Date.now(),
                 authMode: template.auth_mode,
                 url: session.callbackUrl,
                 connectionId,
-                wsClientId
+                params: {
+                    ...additionalTokenParams,
+                    code: code as string
+                }
             });
 
             fileLogger.info('', log);
@@ -710,8 +726,7 @@ class OAuthController {
                     timestamp: Date.now(),
                     authMode: template.auth_mode,
                     url: session.callbackUrl,
-                    connectionId,
-                    wsClientId
+                    connectionId
                 });
 
                 fileLogger.info('', log);
