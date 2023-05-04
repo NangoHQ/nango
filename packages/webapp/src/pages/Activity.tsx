@@ -41,7 +41,7 @@ export default function Activity() {
         return Object.entries(params).map(([key, value]) => (
             <div key={key}>
                 <span>{key}: </span>
-                <span>{value}</span>
+                <span>{value.toString()}</span>
             </div>
         ));
     };
@@ -79,7 +79,7 @@ export default function Activity() {
                                                         <AlertCircle className="stroke-red-500" size="32" />
                                                     )
                                                 }
-                                                <div className="ml-24 w-36 mr-48">
+                                                <div className="ml-10 w-36 mr-48">
                                                     {activity.action === 'oauth' && (
                                                         <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-pink-500 bg-opacity-20">
                                                             <LinkIcon className="stroke-pink-500 mr-2" size="16" />
@@ -109,22 +109,22 @@ export default function Activity() {
                                                     )}
                                                 </div>
                                                 <Tooltip text={activity.connectionId} type="dark">
-                                                    <div className="ml-30 w-32 mr-12 text-[#5AC2B3] font-mono overflow-hidden truncate">`{activity.connectionId}`</div>
+                                                    <div className="ml-30 w-48 mr-12 text-[#5AC2B3] font-mono overflow-hidden truncate">`{activity.connectionId}`</div>
                                                 </Tooltip>
                                                 <div className="w-36 mr-12">
                                                     {activity?.provider ? (
                                                         <div className="w-80 flex">
-                                                            <img src={`images/template-logos/${activity.provider}.svg`} alt="" className="h-7 mt-0.5 mr-0.5" />
-                                                            <p className="mt-1.5 ml-2">{activity.provider}</p>
+                                                            <img src={`images/template-logos/${activity.provider}.svg`} alt="" className="h-7 mt-0.5" />
+                                                            <p className="mt-1.5 ml-2">{activity.providerConfigKey}</p>
                                                         </div>
                                                     ) : (
                                                         <div className="mr-12">{activity.providerConfigKey}</div>
                                                     )}
                                                 </div>
-                                                <p className="text-gray-500 w-48 mr-4">{formatTimestamp(Number(activity.timestamp))}</p>
+                                                <p className="text-gray-500 w-40">{formatTimestamp(Number(activity.timestamp))}</p>
                                                 {activity.messages && (
                                                     <button
-                                                        className="flex h-8 ml-4 mr-2 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white bg-gray-800 hover:bg-gray-700"
+                                                        className="flex h-8 mr-2 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white bg-gray-800 hover:bg-gray-700"
                                                         onClick={() => setExpandedRow(index === expandedRow ? -1 : index)}
                                                     >
                                                         <p>{index === expandedRow ? 'Hide Logs' : 'Show Logs'}</p>
