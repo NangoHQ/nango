@@ -179,7 +179,12 @@ const sidebars = {
                         {
                             id: 'nango-unified-apis/ticketing/tickets',
                             type: 'doc',
-                            label: '/tickets'
+                            label: 'Ticket'
+                        },
+                        {
+                            id: 'nango-unified-apis/ticketing/comments',
+                            type: 'doc',
+                            label: 'Comment'
                         }
                     ]
                 },
