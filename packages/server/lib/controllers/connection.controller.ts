@@ -225,7 +225,10 @@ class ConnectionController {
 
             updateAppLogsAndWrite(log, 'info', {
                 timestamp: Date.now(),
-                content: 'Connection credentials found successfully'
+                content: 'Connection credentials found successfully',
+                params: {
+                    instant_refresh: instantRefresh
+                }
             });
 
             res.status(200).send(connection);
