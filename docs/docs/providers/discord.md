@@ -16,12 +16,17 @@ Follow our [quickstart](../quickstart.md) to add an OAuth integration with Disco
 
 ## App registration & publishing
 
-_No information yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+**Rating: `Easy & fast`**
+Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://discord.com/developers/applications)
+
+
 
 ## Useful links
 
-_No links yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+- [How to register an Application](https://discord.com/developers/applications)
+- [OAuth-related docs](https://discord.com/developers/docs/topics/oauth2)
+- [List of OAuth scopes](https://discord.com/developers/docs/topics/oauth2#shared-resources-oauth2-scopes)
+
 
 ## API specific gotchas
 
-_No gotchas yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_

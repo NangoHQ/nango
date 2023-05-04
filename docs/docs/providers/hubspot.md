@@ -1,27 +1,33 @@
 ---
-sidebar_label: HubSpot
+sidebar_label: Hubspot
 ---
 
-# HubSpot API wiki
+# Hubspot API wiki
 
-:::note Working with the HubSpot API?
+:::note Working with the Hubspot API?
 Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/master/docs/docs/providers/hubspot.md).
 
 :::
 
-## Using HubSpot with Nango
+## Using Hubspot with Nango
 
 Provider template name in Nango: `hubspot`  
-Follow our [quickstart](../quickstart.md) to add an OAuth integration with HubSpot in 5 minutes.
+Follow our [quickstart](../quickstart.md) to add an OAuth integration with Hubspot in 5 minutes.
 
 ## App registration & publishing
 
-_No information yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+**Rating: `Easy & fast`**
+Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://developers.hubspot.com/docs/api/working-with-oauth#initiating-an-integration-with-oauth-2-0)
+
+
 
 ## Useful links
 
-_No links yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+- [How to register an Application](https://developers.hubspot.com/docs/api/working-with-oauth#initiating-an-integration-with-oauth-2-0)
+- [OAuth-related docs](https://developers.hubspot.com/docs/api/oauth-quickstart-guide)
+- [List of OAuth scopes](https://developers.hubspot.com/docs/api/working-with-oauth#scopes)
+- [API](https://developers.hubspot.com/docs/api/overview)
+
 
 ## API specific gotchas
 
-_No gotchas yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_

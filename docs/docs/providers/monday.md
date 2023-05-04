@@ -16,12 +16,18 @@ Follow our [quickstart](../quickstart.md) to add an OAuth integration with Monda
 
 ## App registration & publishing
 
-_No information yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+**Rating: `Easy & fast`**
+Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://developer.monday.com/apps/docs/oauth#registering-a-monday-app)
+
+
 
 ## Useful links
 
-_No links yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+- [How to register an Application](https://developer.monday.com/apps/docs/oauth#registering-a-monday-app)
+- [OAuth-related docs](https://developer.monday.com/apps/docs/oauth)
+- [List of OAuth scopes](https://developer.monday.com/apps/docs/oauth#set-up-permission-scopes)
+- [API](https://developer.monday.com/apps/docs/quickstart-integration)
+
 
 ## API specific gotchas
-
-_No gotchas yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+- Access tokens do not expire and will be valid until the user uninstalls your app. Our OAuth flow does not support refresh tokens at the moment.

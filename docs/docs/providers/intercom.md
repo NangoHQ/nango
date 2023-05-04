@@ -16,12 +16,18 @@ Follow our [quickstart](../quickstart.md) to add an OAuth integration with Inter
 
 ## App registration & publishing
 
-_No information yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+**Rating: `Easy & fast`**
+Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://developers.intercom.com/building-apps/docs/setting-up-oauth)
+
+
 
 ## Useful links
 
-_No links yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+- [How to register an Application](https://developers.intercom.com/building-apps/docs/setting-up-oauth)
+- [OAuth-related docs](https://developers.intercom.com/building-apps/docs/setting-up-oauth)
+- [List of OAuth scopes](https://developers.intercom.com/building-apps/docs/oauth-scopes)
+- [API](https://developers.intercom.com/building-apps/docs/rest-apis)
+
 
 ## API specific gotchas
 
-_No gotchas yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_

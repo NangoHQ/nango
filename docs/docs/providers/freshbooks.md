@@ -16,12 +16,16 @@ Follow our [quickstart](../quickstart.md) to add an OAuth integration with Fresh
 
 ## App registration & publishing
 
-_No information yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+**Rating: `Easy & fast`**
+Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://cdn.cdata.com/help/DFF/xls/pg_oauthcustomappcreate.htm#register-your-application)
+
+
 
 ## Useful links
 
-_No links yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+- [How to register an Application](https://cdn.cdata.com/help/DFF/xls/pg_oauthcustomappcreate.htm#register-your-application)
+- [OAuth-related docs](https://cdn.cdata.com/help/DFF/xls/pg_oauthcustomappcreate.htm#using-oauth-to-connect-to-freshbooks)
+
 
 ## API specific gotchas
 
-_No gotchas yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_

@@ -13,9 +13,6 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 Provider template name in Nango: `google`  
 Follow our [quickstart](../quickstart.md) to add an OAuth integration with Google in 5 minutes.
 
-## App registration & publishing
-
-_No information yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
 
 ## Useful links
 

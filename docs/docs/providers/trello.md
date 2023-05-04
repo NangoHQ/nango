@@ -16,12 +16,18 @@ Follow our [quickstart](../quickstart.md) to add an OAuth integration with Trell
 
 ## App registration & publishing
 
-_No information yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+**Rating: `Easy & fast`**
+Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://developer.atlassian.com/cloud/trello/guides/rest-api/authorization/#introduction)
+
+
 
 ## Useful links
 
-_No links yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+- [How to register an Application](https://developer.atlassian.com/cloud/trello/guides/rest-api/authorization/#introduction)
+- [OAuth-related docs](https://developer.atlassian.com/cloud/trello/guides/rest-api/authorization/)
+- [API](https://developer.atlassian.com/cloud/trello/guides/rest-api/api-introduction/)
+
 
 ## API specific gotchas
+- Scopes is either read, write, account.
 
-_No gotchas yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_

@@ -11,17 +11,22 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 
 ## Using Clickup with Nango
 
-Provider template name in Nango: `clickup`  
+Provider template name in Nango: `Clickup`  
 Follow our [quickstart](../quickstart.md) to add an OAuth integration with Clickup in 5 minutes.
 
 ## App registration & publishing
 
-_No information yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+**Rating: `Easy & fast`**
+Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://clickup.com/api/developer-portal/authentication#step-1-create-an-oauth-app)
+
+
 
 ## Useful links
 
-_No links yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+- [How to register an Application](https://clickup.com/api/developer-portal/authentication#step-1-create-an-oauth-app)
+- [OAuth-related docs](https://clickup.com/api/developer-portal/authentication#oauth-flow)
+- [API](https://clickup.com/api/clickupreference/operation/CreateTaskAttachment/)
+
 
 ## API specific gotchas
-
-_No gotchas yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+- You can leave the scopes empty as scopes are not required during authorization.

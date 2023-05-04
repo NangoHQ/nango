@@ -5,7 +5,7 @@ sidebar_label: Calendly
 # Calendly API wiki
 
 :::note Working with the Calendly API?
-Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/master/docs/docs/providers/Calendly.md).
+Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/master/docs/docs/providers/calendly.md).
 
 :::
 
@@ -16,12 +16,17 @@ Follow our [quickstart](../quickstart.md) to add an OAuth integration with Calen
 
 ## App registration & publishing
 
-- [Create an app on Calendly](https://developer.calendly.com/console/apps/new)
+**Rating: `Easy & fast`**
+Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://developer.calendly.com/create-a-developer-account)
+
+
 
 ## Useful links
 
-- [Calendly API Reference](https://developer.calendly.com/api-docs/)
+- [How to register an Application](https://developer.calendly.com/create-a-developer-account)
+- [OAuth-related docs](https://developer.calendly.com/api-docs/3cefb59b832eb-calendly-o-auth-2-0m)
+- [API](https://developer.calendly.com/getting-started)
+
 
 ## API specific gotchas
-
-_No gotchas yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+- Only HTTPs redirect will work when your app is in production.

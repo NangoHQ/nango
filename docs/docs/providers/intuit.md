@@ -16,12 +16,17 @@ Follow our [quickstart](../quickstart.md) to add an OAuth integration with Intui
 
 ## App registration & publishing
 
-_No information yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+**Rating: `Easy & fast`**
+Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization/oauth-2.0#create-an-app)
+
+
 
 ## Useful links
 
-_No links yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+- [How to register an Application](https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization/oauth-2.0#create-an-app)
+- [OAuth-related docs](https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization/oauth-2.0)
+- [List of OAuth scopes](https://developer.intuit.com/app/developer/qbo/docs/learn/scopes)
+
 
 ## API specific gotchas
-
-_No gotchas yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+- Refresh tokens have a rolling expiry of 100 days, If 100 days pass, or your refresh token expires, users need to go through the authorization flow again and reauthorize your app.

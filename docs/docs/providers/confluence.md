@@ -9,19 +9,26 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 
 :::
 
-## Using Confluence with Nango
+## Using confluence with Nango
 
 Provider template name in Nango: `confluence`  
 Follow our [quickstart](../quickstart.md) to add an OAuth integration with Confluence in 5 minutes.
 
 ## App registration & publishing
 
-_No information yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+**Rating: `Easy & fast`**
+Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://developer.atlassian.com/cloud/confluence/oauth-2-3lo-apps/#enabling-oauth-2-0--3lo-)
+
 
 ## Useful links
 
-_No links yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+- [Registering an App](https://developer.atlassian.com/cloud/confluence/oauth-2-3lo-apps/#enabling-oauth-2-0--3lo-)
+- [OAuth-related docs](https://developer.atlassian.com/cloud/confluence/oauth-2-3lo-apps)
+- [List of OAuth scopes](https://developer.atlassian.com/cloud/jira/platform/scopes-for-oauth-2-3LO-and-forge-apps/#classic-scopes)
 
 ## API specific gotchas
 
-_No gotchas yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+- ****To allow the possibility of refreshing the token**. You must add `offline_access`to your scopes when creating the integration on the Nango UI.**
+- When you create an OAuth 2.0 (3LO) app, it's private by default. Before using the integration, you must make your app public. If you want to make your app public find the how-to [here](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/#distributing-your-oauth-2-0--3lo--apps)
+- Refresh tokens will expire after 365 days of non use and will expire by 90 days if the resource owner is inactive for 90 days, Make sure you call `nango.getToken()` at least every 365 days to trigger a refresh. See reference [here](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/#how-do-i-get-a-new-access-token--if-my-access-token-expires-or-is-revoked-).
+

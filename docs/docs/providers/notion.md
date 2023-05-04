@@ -16,14 +16,17 @@ Follow our [quickstart](../quickstart.md) to add an OAuth integration with Notio
 
 ## App registration & publishing
 
-Register your app [here](https://www.notion.com/my-integrations)  
-By default your app is internal only, once you created it you will be able to make it public. There is no review process, unless you want to get listed in the Notion App Gallery.
+**Rating: `Easy & fast`**
+Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://developers.notion.com/docs/authorization#step-1-navigate-the-user-to-the-integrations-authorization-url)
+
+
 
 ## Useful links
 
--   [Notion API docs](https://developers.notion.com/docs/getting-started)
--   [List of available Notion API OAuth scopes](https://developers.notion.com/reference/capabilities) (Notion calls these "capabilities")
+- [How to register an Application](https://developers.notion.com/docs/authorization#step-1-navigate-the-user-to-the-integrations-authorization-url)
+- [OAuth-related docs](https://developers.notion.com/docs/authorization#public-integration-auth-flow-set-up)
+- [API](https://developers.notion.com/docs/working-with-comments)
+
 
 ## API specific gotchas
 
--   Notion does not let you pass OAuth scopes (called "capabilities" in the Notion API) with the authorization. Instead you set them when you register your OAuth app (called "integrations" in Notion). When you add a Notion config in Nango, just pass a single whitespace as scopes: `" "`
