@@ -196,19 +196,20 @@ class ConnectionService {
                         return !(value.providerConfigKey === providerConfigKey && value.connectionId === connectionId);
                     });
 
-                    log.action = 'token';
-                    log.level = 'error';
-                    log.end = Date.now();
-                    log.success = false;
-                    log.timestamp = Date.now();
-                    log.messages = [
-                        {
-                            content: `Refresh oauth2 token call failed`,
-                            timestamp: Date.now()
-                        }
-                    ];
-                    fileLogger.error('', log);
-
+                    if (log) {
+                        log.action = 'token';
+                        log.level = 'error';
+                        log.end = Date.now();
+                        log.success = false;
+                        log.timestamp = Date.now();
+                        log.messages = [
+                            {
+                                content: `Refresh oauth2 token call failed`,
+                                timestamp: Date.now()
+                            }
+                        ];
+                        fileLogger.error('', log);
+                    }
                     reject(e);
                 }
             });

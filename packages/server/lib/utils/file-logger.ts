@@ -15,7 +15,7 @@ export interface LogData {
     end?: number;
     message: string;
     messages: {
-        [index: string]: undefined | string | number | Record<string, string>;
+        [index: string]: undefined | string | number | Record<string, string | boolean>;
     }[];
     connectionId: string;
     providerConfigKey: string;

@@ -41,7 +41,7 @@ export default function Activity() {
         return Object.entries(params).map(([key, value]) => (
             <div key={key}>
                 <span>{key}: </span>
-                <span>{value}</span>
+                <span>{value.toString()}</span>
             </div>
         ));
     };
