@@ -14,7 +14,7 @@ import {
     getAccount,
     getConnectionMetadataFromTokenResponse
 } from '../utils/utils.js';
-import { ProviderConfig, ProviderTemplate, ProviderTemplateOAuth2, ProviderAuthModes, OAuthSession, OAuth1RequestTokenResult } from '../models.js';
+import { ProviderConfig, ProviderTemplate, ProviderTemplateOAuth2, ProviderAuthModes, OAuthSession, OAuth1RequestTokenResult, AuthCredentials } from '../models.js';
 import logger from '../utils/logger.js';
 import type { NextFunction } from 'express';
 import errorManager from '../utils/error.manager.js';
@@ -314,13 +314,14 @@ class OAuthController {
             logger.debug(`OAuth 2 for ${providerConfigKey} (connection ${connectionId}) successful.`);
 
             const tokenMetadata = getConnectionMetadataFromTokenResponse(rawCredentials, template);
+            
+            var parsedRawCredentials : AuthCredentials = connectionService.parseRawCredentials(rawCredentials, ProviderAuthModes.OAuth2);
 
             connectionService.upsertConnection(
                 connectionId,
                 providerConfigKey,
                 session.provider,
-                rawCredentials,
-                ProviderAuthModes.OAuth2,
+                parsedRawCredentials,
                 session.connectionConfig,
                 session.accountId,
                 { ...callbackMetadata, ...tokenMetadata }
@@ -352,12 +353,13 @@ class OAuthController {
             .then((accessTokenResult) => {
                 logger.debug(`OAuth 1.0a for ${providerConfigKey} (connection: ${connectionId}) successful.`);
 
+                let parsedAccessTokenResult = connectionService.parseRawCredentials(accessTokenResult, ProviderAuthModes.OAuth1);
+
                 connectionService.upsertConnection(
                     connectionId,
                     providerConfigKey,
                     session.provider,
-                    accessTokenResult,
-                    ProviderAuthModes.OAuth1,
+                    parsedAccessTokenResult,
                     session.connectionConfig,
                     session.accountId,
                     metadata
