@@ -10,14 +10,6 @@ At this point you should expect frequent changes to Nango, some of them requirin
 If you need help or have questions about self-hosting please feel free to reach out on our [Slack community](https://www.nango.dev/slack).
 :::
 
-## CLI
-
-Let the CLI know where to query Nango by adding the `NANGO_HOSTPORT` env variable to your local environment (`.bashrc` or equivalent):
-
-```bash
-export NANGO_HOSTPORT=<YOUR-INSTANCE-URL>
-```
-
 ## Server URL, Callback URL & Custom Domains {#custom-urls}
 
 Add server environment variables for the instance URL and port (in the `.env` file or directly on Heroku/Render):
@@ -64,7 +56,7 @@ For Render, the environment variables above are automatically set for you. For H
 
 :::tip
 If you are using a serverless database, you might want to tune NANGO_DB_POOL_MIN and NANGO_DB_POOL_MAX params.
-Otherwise, knex(ORM used in Nango) will be keeping connection alive and exhausting your serverless CPU quota.
+Otherwise, knex (ORM used in Nango) will be keep connections alive and exhaust your serverless CPU quota.
 :::
 
 ## Securing your instance
@@ -79,7 +71,7 @@ This will require [Basic Auth](https://en.wikipedia.org/wiki/Basic_access_authen
 curl '<INSTANCE-URL>/connection/<CONNECTION-ID>?provider_config_key=<CONFIG-KEY>' -u '<SECRET-KEY>:'
 ```
 
-❗️Notice the `:` character appended after `<SECRET-KEY>`.
+❗️Note the `:` character appended after the `<SECRET-KEY>`.
 
 If you are using the Node SDK, when initializing the `Nango` object, pass in the Secret key in the `secretKey` parameter.
 
@@ -87,12 +79,6 @@ If you are using the Node SDK, when initializing the `Nango` object, pass in the
 import { Nango } from '@nangohq/node';
 
 let nango = new Nango({ host: 'http://localhost:3003', secretKey: '<SECRET-KEY>' });
-```
-
-You should also configure the CLI to authenticate with Nango. Add to your `.bashrc` (or equivalent):
-
-```bash
-export NANGO_SECRET_KEY=<SECRET-KEY>
 ```
 
 :::tip

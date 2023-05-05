@@ -9,6 +9,9 @@ import TabItem from '@theme/TabItem';
 
 :::tip
 Just want to see Nango in Action? Check out our [1min demo video](introduction.md#demo)
+
+**Looking to use the unified APIs?**  
+Reach out to us on the [Slack community](https://nango.dev/slack), currently these are in private beta. Public access coming soon!
 :::
 
 Follow these 4 steps to run OAuth flows with Nango in your app in 15 minutes.
