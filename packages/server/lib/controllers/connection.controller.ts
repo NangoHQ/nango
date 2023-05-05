@@ -21,6 +21,7 @@ class ConnectionController {
 
             const connectionId = req.params['connectionId'] as string;
             const providerConfigKey = req.query['provider_config_key'] as string;
+            const instantRefresh = req.query['force_refresh'] === 'true';
 
             const log = {
                 level: 'info' as LogLevel,
@@ -97,13 +98,15 @@ class ConnectionController {
 
             log.success = true;
 
-            updateAppLogsAndWrite(log, 'info', {
-                authMode: template.auth_mode,
-                content: `Token fetch was successful for ${providerConfigKey} and connection ${connectionId}`,
-                timestamp: Date.now(),
-                providerConfigKey,
-                connectionId
-            });
+            if (instantRefresh) {
+                updateAppLogsAndWrite(log, 'info', {
+                    authMode: template.auth_mode,
+                    content: `Token manual refresh fetch was successful for ${providerConfigKey} and connection ${connectionId} from the web UI`,
+                    timestamp: Date.now(),
+                    providerConfigKey,
+                    connectionId
+                });
+            }
 
             res.status(200).send({
                 connection: {
