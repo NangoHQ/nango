@@ -60,7 +60,7 @@ const result = await nango.auth('github', '<user-id>');
 const contacts = await nango.hris.getEmployees('<user-id>');
 ```
 
--   or only use the (O)Auth service and make any API call with the access token (or [proxy]()):
+-   or only use the (O)Auth service and make any API call with the access token (or [proxy](https://docs.nango.dev/nango-unified-apis/proxy)):
 
 ```ts
 const token = await nango.getToken('github', '<user-id>');
@@ -68,13 +68,12 @@ const token = await nango.getToken('github', '<user-id>');
 
 ## 👾 Out of the box support for 3 unified APIs and 90+ external APIs
 
-Nango supports 3 unified APIs:
+Nango supports 2 unified APIs:
 
--   [**CRM:**]() Salesforce, HubSpot, Zoho, Pipedrive.
--   [**Ticketing:**]() Jira, GitHub, Asana, Clickup, Gitlab.
--   [**HRIS:**]() BambooHR, Rippling, Workday, Gusto, Personio, Zenefits.
+-   [**Ticketing:**](https://docs.nango.dev/nango-unified-apis/ticketing/overview) Jira, GitHub, Asana, Clickup, Gitlab.
+-   [**HRIS:**](https://docs.nango.dev/nango-unified-apis/hris/overview) BambooHR, Rippling, Workday, Gusto, Personio, Zenefits.
 
-More are coming soon and you can always [build your own, custom unified API]().
+More are coming soon and you can always [build your own, custom unified API](https://docs.nango.dev/nango-unified-apis/custom-unified-api).
 
 Or build custom integrations with 90+ supported external APIs. Including:
 
@@ -115,7 +114,7 @@ Or sign up for free:
 
 -   Explore the [documentation](https://docs.nango.dev)
 -   Share feedback or ask questions on the [Slack community](https://nango.dev/slack)
--   Explore [our unified APIs]() or see [the full list of supported APIs](https://nango.dev/oauth-providers)
+-   Explore [our unified APIs](https://docs.nango.dev/nango-unified-apis/hris/overview) or see [the full list of supported APIs](https://nango.dev/oauth-providers)
 -   [Contribute a new API](https://docs.nango.dev/contribute-api)
 -   Check out our [blog on native integrations](https://www.nango.dev/blog)
 

@@ -46,11 +46,10 @@ const token = await nango.getToken('github', '<user-id>');
 
 ## 👾 Out of the box support for 3 unified APIs and 90+ external APIs
 
-Nango supports 3 unified APIs:
+Nango supports 2 unified APIs:
 
--   [**CRM:**](/nango-unified-apis/crm) Salesforce, HubSpot, Zoho, Pipedrive.
--   [**Ticketing:**](/nango-unified-apis/ticketing) Jira, GitHub, Asana, Clickup, Gitlab.
--   [**HRIS:**](/nango-unified-apis/hris) BambooHR, Rippling, Workday, Gusto, Personio, Zenefits.
+-   [**Ticketing:**](/nango-unified-apis/ticketing/overview) Jira, GitHub, Asana, Clickup, Gitlab.
+-   [**HRIS:**](/nango-unified-apis/hris/overview) BambooHR, Rippling, Workday, Gusto, Personio, Zenefits.
 
 More are coming soon and you can always [build your own, custom unified API](nango-unified-apis/custom-unified-api).
 
