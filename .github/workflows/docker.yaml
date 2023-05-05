@@ -1,6 +1,6 @@
 name: Docker Check
 
-on: [push]
+on: [push, pull_request]
 
 concurrency:
     group: docker-${{ github.event.pull_request.number || github.ref }}

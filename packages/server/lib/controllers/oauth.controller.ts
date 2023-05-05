@@ -14,8 +14,16 @@ import {
     getAccount,
     getConnectionMetadataFromTokenResponse
 } from '../utils/utils.js';
-import { ProviderConfig, ProviderTemplate, ProviderTemplateOAuth2, ProviderAuthModes, OAuthSession, OAuth1RequestTokenResult } from '../models.js';
 import { LogData, LogLevel, LogAction, updateAppLogs, updateAppLogsAndWrite } from '../utils/file-logger.js';
+import {
+    ProviderConfig,
+    ProviderTemplate,
+    ProviderTemplateOAuth2,
+    ProviderAuthModes,
+    OAuthSession,
+    OAuth1RequestTokenResult,
+    AuthCredentials
+} from '../models.js';
 import type { NextFunction } from 'express';
 import errorManager from '../utils/error.manager.js';
 import providerClientManager from '../clients/provider.client.js';
@@ -604,12 +612,13 @@ class OAuthController {
 
             const tokenMetadata = getConnectionMetadataFromTokenResponse(rawCredentials, template);
 
+            const parsedRawCredentials: AuthCredentials = connectionService.parseRawCredentials(rawCredentials, ProviderAuthModes.OAuth2);
+
             connectionService.upsertConnection(
                 connectionId,
                 providerConfigKey,
                 session.provider,
-                rawCredentials,
-                ProviderAuthModes.OAuth2,
+                parsedRawCredentials,
                 session.connectionConfig,
                 session.accountId,
                 { ...callbackMetadata, ...tokenMetadata }
@@ -673,12 +682,13 @@ class OAuthController {
         oAuth1Client
             .getOAuthAccessToken(oauth_token as string, oauth_token_secret, oauth_verifier as string)
             .then((accessTokenResult) => {
+                const parsedAccessTokenResult = connectionService.parseRawCredentials(accessTokenResult, ProviderAuthModes.OAuth1);
+
                 connectionService.upsertConnection(
                     connectionId,
                     providerConfigKey,
                     session.provider,
-                    accessTokenResult,
-                    ProviderAuthModes.OAuth1,
+                    parsedAccessTokenResult,
                     session.connectionConfig,
                     session.accountId,
                     metadata

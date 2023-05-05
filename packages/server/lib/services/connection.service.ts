@@ -18,8 +18,7 @@ class ConnectionService {
         connectionId: string,
         providerConfigKey: string,
         provider: string,
-        rawCredentials: object,
-        authMode: ProviderAuthModes,
+        parsedRawCredentials: AuthCredentials,
         connectionConfig: Record<string, string>,
         accountId: number,
         metadata: Record<string, string>
@@ -31,7 +30,7 @@ class ConnectionService {
                 encryptionManager.encryptConnection({
                     connection_id: connectionId,
                     provider_config_key: providerConfigKey,
-                    credentials: this.parseRawCredentials(rawCredentials, authMode),
+                    credentials: parsedRawCredentials,
                     connection_config: connectionConfig,
                     account_id: accountId,
                     metadata: metadata
