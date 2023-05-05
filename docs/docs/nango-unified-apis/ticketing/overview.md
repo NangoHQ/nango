@@ -22,7 +22,7 @@ The unified ticketing API currently gives you access to the following objects (c
 Currently the Nango unified ticketing API supports the following external APIs:
 
 -   [GitHub](/providers/github)
--   [JIRA](/providers/atlassian)
+-   [JIRA](/providers/jira)
 -   [Asana](/providers/asana)
 -   [ClickUp](/providers/clickup)
 -   [Gitlab](/providers/gitlab)

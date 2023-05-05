@@ -11,8 +11,16 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 
 ## Using Salesforce with Nango
 
-Provider template name in Nango: `salesforce`  
+API template name in Nango: `salesforce`  
 Follow our [quickstart](../quickstart.md) to add an OAuth integration with Salesforce in 5 minutes.
+
+Supported features in Nango:
+
+| Feature                            | Supported                 |
+| ---------------------------------- | ------------------------- |
+| [Auth](/nango-auth/core-concepts)  | ✅                        |
+| [Proxy](/nango-unified-apis/proxy) | ❎                        |
+| Unified APIs                       | _Not included in any yet_ |
 
 **Metadata captured by Nango**  
 The `instance_url` is automatically stored in the [Connection Metadata](nango-auth/core-concepts.md#metadata) when it gets the access token.

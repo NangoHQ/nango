@@ -11,12 +11,20 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 
 ## Using Airtable with Nango
 
-Provider template name in Nango: `airtable`  
+API template name in Nango: `airtable`  
 Follow our [quickstart](../quickstart.md) to add an OAuth integration with Airtable in 5 minutes.
+
+Supported features in Nango:
+
+| Feature                            | Supported                 |
+| ---------------------------------- | ------------------------- |
+| [Auth](/nango-auth/core-concepts)  | ✅                        |
+| [Proxy](/nango-unified-apis/proxy) | ❎                        |
+| Unified APIs                       | _Not included in any yet_ |
 
 ## App registration & publishing
 
-**Rating: `Easy & fast`**
+**Rating: `Easy & fast`**  
 Registering an app takes only a few minutes and you can start building immediately: [App registration docs](https://airtable.com/developers/web/guides/oauth-integrations)
 To publish it (so any airtable user can install it) a few more details are needed (support email, terms) but no manual review: [Publishing docs](https://airtable.com/developers/web/guides/oauth-integrations#distributing-your-integration)
 

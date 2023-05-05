@@ -11,9 +11,17 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 
 ## Using Braintree with Nango
 
-Provider template name in Nango: `braintree`  
+API template name in Nango: `braintree`  
 If you want to connect to the Sandbox system use `braintree-sandbox`
 Follow our [quickstart](../quickstart.md) to add an OAuth integration with Braintree in 5 minutes.
+
+Supported features in Nango:
+
+| Feature                            | Supported                 |
+| ---------------------------------- | ------------------------- |
+| [Auth](/nango-auth/core-concepts)  | ✅                        |
+| [Proxy](/nango-unified-apis/proxy) | ❎                        |
+| Unified APIs                       | _Not included in any yet_ |
 
 **Metadata captured by Nango**  
 The `merchandId` is automatically stored in the [Connection Metadata](nango-auth/core-concepts.md#metadata) during the OAuth flow.

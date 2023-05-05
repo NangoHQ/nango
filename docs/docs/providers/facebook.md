@@ -11,8 +11,16 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 
 ## Using Facebook with Nango
 
-Provider template name in Nango: `facebook`  
+API template name in Nango: `facebook`  
 Follow our [quickstart](../quickstart.md) to add an OAuth integration with Facebook in 5 minutes.
+
+Supported features in Nango:
+
+| Feature                            | Supported                 |
+| ---------------------------------- | ------------------------- |
+| [Auth](/nango-auth/core-concepts)  | ✅                        |
+| [Proxy](/nango-unified-apis/proxy) | ❎                        |
+| Unified APIs                       | _Not included in any yet_ |
 
 ## App registration & publishing
 

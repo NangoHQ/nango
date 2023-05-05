@@ -11,8 +11,16 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 
 ## Using Segment with Nango
 
-Provider template name in Nango: `segment`  
+API template name in Nango: `segment`  
 Follow our [quickstart](../quickstart.md) to add an OAuth integration with Segment in 5 minutes.
+
+Supported features in Nango:
+
+| Feature                            | Supported                 |
+| ---------------------------------- | ------------------------- |
+| [Auth](/nango-auth/core-concepts)  | ✅                        |
+| [Proxy](/nango-unified-apis/proxy) | ❎                        |
+| Unified APIs                       | _Not included in any yet_ |
 
 ## App registration & publishing
 

@@ -11,8 +11,16 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 
 ## Using BambooHR with Nango
 
-Provider template name in Nango: `bamboohr`  
+API template name in Nango: `bamboohr`  
 Follow our [quickstart](../quickstart.md) to add an OAuth integration with BambooHR in 5 minutes.
+
+Supported features in Nango:
+
+| Feature                            | Supported                                 |
+| ---------------------------------- | ----------------------------------------- |
+| [Auth](/nango-auth/core-concepts)  | ✅                                        |
+| [Proxy](/nango-unified-apis/proxy) | ❎                                        |
+| Unified APIs                       | [HRIS](/nango-unified-apis/hris/overview) |
 
 ## Creating integration and connection
 

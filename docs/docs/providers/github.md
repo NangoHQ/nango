@@ -11,8 +11,16 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 
 ## Using Github with Nango
 
-Provider template name in Nango: `github`  
+API template name in Nango: `github`  
 Follow our [quickstart](../quickstart.md) to add an OAuth integration with Github in 5 minutes.
+
+Supported features in Nango:
+
+| Feature                            | Supported                                           |
+| ---------------------------------- | --------------------------------------------------- |
+| [Auth](/nango-auth/core-concepts)  | ✅                                                  |
+| [Proxy](/nango-unified-apis/proxy) | ✅                                                  |
+| Unified APIs                       | [Ticketing](/nango-unified-apis/ticketing/overview) |
 
 ## App registration & publishing
 
@@ -24,4 +32,4 @@ _No links yet, feel free to contribute it (or check out [airtable](airtable.md) 
 
 ## API specific gotchas
 
-* The API seems to always require `user-agent` header
+-   The API seems to always require `user-agent` header
