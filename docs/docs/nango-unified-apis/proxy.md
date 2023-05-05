@@ -13,7 +13,9 @@ Make sure you have gone through the [quickstart](/quickstart) before using the p
 
 # What Is It?
 
-Same familiar simple interface with a lot of functionality baked in:
+Sometimes you need to make a specific request to the external API.
+
+With the Nango proxy, you can do this without having to worry about:
 
 1. Handles authentication
 2. Handles retries
