@@ -1,41 +1,60 @@
 ---
 slug: '/'
-sidebar_label: Introduction
+sidebar_label: Introduction & Overview
 ---
 
-# Nango: Get OAuth tokens for APIs. Fast & secure.
+# Nango: The open-source unified API.
+
+Dozens of pre-built API integrations for your app. Easily extend, customize and build your own.
 
 ## ⭐ Nango at a glance
 
-Nango is a service that contains everything you need to work with APIs that use OAuth.
+Nango is a service for easy integrations with external APIs:
 
-It contains:
+Leverage dozens of pre-built use cases with our unified APIs. Or extend them and build entirely custom integrations on top of our open, scalable platform.
 
--   a full OAuth dance for 90+ APIs
--   a frontend SDK to trigger new OAuth flows
--   a backend SDK & REST API to retrieve fresh access tokens for your API calls
+With Nango you get:
 
-Nango is easy to try in 5 minutes and can be deployed in 15:
+-   pre-built unified APIs for many use cases (CRM, Ticketing, HRIS etc.)
+-   a pre-built OAuth service for all supported APIs (can also be used standalone)
+-   support for 90+ external APIs
+-   extensible platform to build your own, custom unified APIs
 
--   1-liner to start a new OAuth flow in your frontend:
+Nango is easy to try in 5 minutes:
+
+-   1-liner to start a new (O)Auth flow in your frontend (supports all 90+ external APIs):
 
 ```ts
-let result = await nango.auth('github', '<user-id>');
+const result = await nango.auth('github', '<user-id>');
 ```
 
--   1-liner to retrieve a fresh access token (with our SDK or REST API):
+-   in your backend, easily fetch always up to date data with our fully typed SDK:
 
 ```ts
-let token = await nango.getToken('github', '<user-id>');
+const contacts = await nango.hris.getEmployees('<user-id>');
+```
+
+-   or only use the (O)Auth service and make any API call with the access token (or [proxy](nango-unified-apis/proxy)):
+
+```ts
+const token = await nango.getToken('github', '<user-id>');
 ```
 
 ## 📺 30-second demo {#demo}
 
 <iframe width="864" height="486" src="https://www.youtube.com/embed/BK15QI-jWi0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 
-## 👾 Out of the box support for 90+ APIs
+## 👾 Out of the box support for 3 unified APIs and 90+ external APIs
 
-90+ APIs are preconfigured to work out-of-the-box. Including:
+Nango supports 3 unified APIs:
+
+-   [**CRM:**](/nango-unified-apis/crm) Salesforce, HubSpot, Zoho, Pipedrive.
+-   [**Ticketing:**](/nango-unified-apis/ticketing) Jira, GitHub, Asana, Clickup, Gitlab.
+-   [**HRIS:**](/nango-unified-apis/hris) BambooHR, Rippling, Workday, Gusto, Personio, Zenefits.
+
+More are coming soon and you can always [build your own, custom unified API](nango-unified-apis/custom-unified-api).
+
+Or build custom integrations with 90+ supported external APIs. Including:
 
 -   **CRM**: Front, Hubspot, Salesforce, etc.
 -   **Accounting**: Xero, Sellsy, Zoho Books, etc.
@@ -46,7 +65,7 @@ let token = await nango.getToken('github', '<user-id>');
 -   **Social**: Twitter, LinkedIn, Reddit, Facebook etc.
 -   [and more...](https://nango.dev/oauth-providers)
 
-If your favorite API is missing [open a GitHub issue](https://github.com/NangoHQ/nango/issues/new) or [contribute it right away](https://docs.nango.dev/contribute-api): The API configurations are just simple [entries in a YAML file](https://www.nango.dev/oauth-providers).
+If your favorite API is missing [open a GitHub issue](https://github.com/NangoHQ/nango/issues/new) or [contribute it right away](https://docs.nango.dev/contribute-api).
 
 ## 🔍 Where to learn more
 

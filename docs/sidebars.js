@@ -99,15 +99,15 @@ const sidebars = {
         'quickstart',
         {
             type: 'category',
-            label: 'Reference',
+            label: 'Nango Auth (OAuth)',
             items: [
                 {
-                    id: 'reference/core-concepts',
+                    id: 'nango-auth/core-concepts',
                     type: 'doc',
-                    label: 'Core Concepts'
+                    label: 'Auth Core Concepts'
                 },
                 {
-                    id: 'reference/frontend-sdk',
+                    id: 'nango-auth/frontend-sdk',
                     type: 'doc',
                     label: 'Frontend SDK'
                 },
@@ -116,31 +116,87 @@ const sidebars = {
                     label: 'Backend SDKs & API',
                     items: [
                         {
-                            id: 'reference/node-sdk',
+                            id: 'nango-auth/node-sdk',
                             type: 'doc',
                             label: 'Node SDK'
                         },
                         {
-                            id: 'reference/connections-api',
+                            id: 'nango-auth/connections-api',
                             type: 'doc',
                             label: 'Connections API'
                         }
                     ]
                 },
                 {
-                    id: 'reference/proxy',
+                    id: 'nango-auth/configuration',
+                    type: 'doc',
+                    label: 'Advanced Configuration'
+                }
+            ]
+        },
+        {
+            type: 'category',
+            label: 'Nango Unified APIs',
+            items: [
+                {
+                    type: 'category',
+                    label: 'Unified HRIS API',
+                    link: {
+                        id: 'nango-unified-apis/hris/overview',
+                        type: 'doc'
+                    },
+                    items: [
+                        {
+                            id: 'nango-unified-apis/hris/employees',
+                            type: 'doc',
+                            label: 'Employees'
+                        }
+                    ]
+                },
+                // {
+                //     type: 'category',
+                //     label: 'Unified CRM API',
+                //     link: {
+                //         id: 'nango-unified-apis/crm/overview',
+                //         type: 'doc'
+                //     },
+                //     items: [
+                //         {
+                //             id: 'nango-unified-apis/crm/contacts',
+                //             type: 'doc',
+                //             label: '/contacts'
+                //         }
+                //     ]
+                // },
+                {
+                    type: 'category',
+                    label: 'Unified Ticketing API',
+                    link: {
+                        id: 'nango-unified-apis/ticketing/overview',
+                        type: 'doc'
+                    },
+                    items: [
+                        {
+                            id: 'nango-unified-apis/ticketing/tickets',
+                            type: 'doc',
+                            label: 'Ticket'
+                        },
+                        {
+                            id: 'nango-unified-apis/ticketing/comments',
+                            type: 'doc',
+                            label: 'Comment'
+                        }
+                    ]
+                },
+                {
+                    id: 'nango-unified-apis/proxy',
                     type: 'doc',
                     label: 'Proxy'
                 },
                 {
-                    id: 'reference/configuration',
+                    id: 'nango-unified-apis/custom-unified-api',
                     type: 'doc',
-                    label: 'Advanced Configuration'
-                },
-                {
-                    id: 'reference/cli',
-                    type: 'doc',
-                    label: 'Nango CLI'
+                    label: 'Building Custom Unified APIs'
                 }
             ]
         },

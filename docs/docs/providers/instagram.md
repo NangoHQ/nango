@@ -21,8 +21,16 @@ Note that Instagram has two different APIs: The [Instagram Graph API](https://de
 
 This template implements the **Instagram Basic Display API** OAuth. For access to the Instagram Graph API use the [Facebook](facebook.md) template and follow the instructions under "API specific gotchas" below.
 
-Provider template name in Nango: `instagram`  
+API template name in Nango: `instagram`  
 Follow our [quickstart](../quickstart.md) to add an OAuth integration with the Instagram API in 5 minutes.
+
+Supported features in Nango:
+
+| Feature                            | Supported                 |
+| ---------------------------------- | ------------------------- |
+| [Auth](/nango-auth/core-concepts)  | ✅                        |
+| [Proxy](/nango-unified-apis/proxy) | ❎                        |
+| Unified APIs                       | _Not included in any yet_ |
 
 ## App registration & publishing
 

@@ -11,22 +11,29 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 
 ## Using Zenefits with Nango
 
-Provider template name in Nango: `zenefits`  
+API template name in Nango: `zenefits`  
 Follow our [quickstart](../quickstart.md) to add an OAuth integration with Zenefits in 5 minutes.
+
+Supported features in Nango:
+
+| Feature                            | Supported                                 |
+| ---------------------------------- | ----------------------------------------- |
+| [Auth](/nango-auth/core-concepts)  | ✅                                        |
+| [Proxy](/nango-unified-apis/proxy) | ❎                                        |
+| Unified APIs                       | [HRIS](/nango-unified-apis/hris/overview) |
 
 ## App registration & publishing
 
 **Rating: `Easy & fast`**
 Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://developers.zenefits.com/reference/getting-started#:~:text=%F0%9F%91%8D-,How%20do%20you%20sign%20up%3F,-We%20hope%20this)
 
-
 ## Useful links
 
-- [How to register an Application](https://developers.zenefits.com/reference/getting-started#:~:text=%F0%9F%91%8D-,How%20do%20you%20sign%20up%3F,-We%20hope%20this)
-- [OAuth-related docs](https://developers.zenefits.com/reference/auth)
-- [List of OAuth scopes](https://developers.zenefits.com/reference/permissions)
-- [Web API docs (their REST API)](https://developers.zenefits.com/reference/overview-1)
+-   [How to register an Application](https://developers.zenefits.com/reference/getting-started#:~:text=%F0%9F%91%8D-,How%20do%20you%20sign%20up%3F,-We%20hope%20this)
+-   [OAuth-related docs](https://developers.zenefits.com/reference/auth)
+-   [List of OAuth scopes](https://developers.zenefits.com/reference/permissions)
+-   [Web API docs (their REST API)](https://developers.zenefits.com/reference/overview-1)
 
 ## API specific gotchas
 
-- To refresh the token simple use `nango.getToken()` to generate new set of tokens
+-   To refresh the token simple use `nango.getToken()` to generate new set of tokens

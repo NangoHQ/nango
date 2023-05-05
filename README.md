@@ -8,10 +8,10 @@
 
 </div>
 
-<h1 align="center">Get OAuth tokens for APIs. Fast & secure.</h1>
+<h1 align="center">The open-source unified API</h1>
 
 <div align="center">
-Pre-built OAuth flows & secure token management for 90+ APIs. 100% open source.
+Dozens of pre-built API integrations for your app. Easily extend, customize and build your own.
 </div>
 
 <p align="center">
@@ -35,32 +35,48 @@ Pre-built OAuth flows & secure token management for 90+ APIs. 100% open source.
 
 ## ⭐ Nango at a glance
 
-Nango is a service that contains everything you need to work with APIs that use OAuth.
+Nango is a service for easy integrations with external APIs:
 
-It contains:
+Leverage dozens of pre-built use cases with our unified APIs. Or extend them and build entirely custom integrations on top of our open, scalable platform.
 
--   a full OAuth dance for 90+ APIs
--   a frontend SDK to trigger new OAuth flows
--   a backend SDK & REST API to retrieve fresh access tokens for your API calls
--   a proxy to both authenticate and perform authenticated requests to an API
+With Nango you get:
+
+-   pre-built unified APIs for many use cases (CRM, Ticketing, HRIS etc.)
+-   a pre-built OAuth service for all supported APIs (can also be used standalone)
+-   support for 90+ external APIs
+-   extensible platform to build your own, custom unified APIs
 
 Nango is easy to try in 5 minutes:
 
--   1-liner to start a new OAuth flow in your frontend:
+-   1-liner to start a new (O)Auth flow in your frontend (supports all 90+ external APIs):
 
 ```ts
-let result = await nango.auth('github', '<user-id>');
+const result = await nango.auth('github', '<user-id>');
 ```
 
--   1-liner to retrieve a fresh token (with our SDK or REST API):
+-   in your backend, easily fetch always up to date data with our fully typed SDK:
 
 ```ts
-let token = await nango.getToken('github', '<user-id>');
+const contacts = await nango.hris.getEmployees('<user-id>');
 ```
 
-## 👾 Out of the box support for 90+ APIs
+-   or only use the (O)Auth service and make any API call with the access token (or [proxy]()):
 
-90+ APIs are preconfigured to work out-of-the-box. Including:
+```ts
+const token = await nango.getToken('github', '<user-id>');
+```
+
+## 👾 Out of the box support for 3 unified APIs and 90+ external APIs
+
+Nango supports 3 unified APIs:
+
+-   [**CRM:**]() Salesforce, HubSpot, Zoho, Pipedrive.
+-   [**Ticketing:**]() Jira, GitHub, Asana, Clickup, Gitlab.
+-   [**HRIS:**]() BambooHR, Rippling, Workday, Gusto, Personio, Zenefits.
+
+More are coming soon and you can always [build your own, custom unified API]().
+
+Or build custom integrations with 90+ supported external APIs. Including:
 
 -   **CRM**: Front, Hubspot, Salesforce, etc.
 -   **Accounting**: Xero, Sellsy, Zoho Books, etc.
@@ -71,7 +87,7 @@ let token = await nango.getToken('github', '<user-id>');
 -   **Social**: Twitter, LinkedIn, Reddit, Facebook etc.
 -   [and more...](https://nango.dev/oauth-providers)
 
-If your favorite API is missing [open a GitHub issue](https://github.com/NangoHQ/nango/issues/new) or [contribute it right away](https://docs.nango.dev/contribute-api): The API configurations are just simple [entries in a YAML file](https://github.com/NangoHQ/nango/blob/master/packages/server/providers.yaml).
+If your favorite API is missing [open a GitHub issue](https://github.com/NangoHQ/nango/issues/new) or [contribute it right away](https://docs.nango.dev/contribute-api).
 
 ## 📺 Demo
 
@@ -97,10 +113,10 @@ Or sign up for free:
 
 ## 🔍 Where to learn more
 
--   Explore [the full list of supported APIs](https://nango.dev/oauth-providers)
 -   Explore the [documentation](https://docs.nango.dev)
--   [Contribute a new API](https://docs.nango.dev/contribute-api)
 -   Share feedback or ask questions on the [Slack community](https://nango.dev/slack)
+-   Explore [our unified APIs]() or see [the full list of supported APIs](https://nango.dev/oauth-providers)
+-   [Contribute a new API](https://docs.nango.dev/contribute-api)
 -   Check out our [blog on native integrations](https://www.nango.dev/blog)
 
 ## 💪 Contributors
@@ -113,4 +129,4 @@ Thank you for continuously making Nango better ❤️
 
 ## 🐻 History
 
-Pizzly (the original name of this project) was initially developed by the team at [Bearer](https://www.bearer.com/?ref=pizzly) with contributions of more than 40 individuals. Over time the focus of Bearer shifted and they could no longer maintain Pizzly. In late 2022 the team at [Nango](https://www.nango.dev) adopted the project and has since maintained and evolved it together with the growing Nango community.
+Pizzly (a simple service for OAuth) was initially developed by the team at [Bearer](https://www.bearer.com/?ref=pizzly) with contributions of more than 40 individuals. Over time the focus of Bearer shifted and they could no longer maintain Pizzly. In late 2022 the team at [Nango](https://www.nango.dev) adopted the project and has since maintained and evolved it together with the growing Nango community.
