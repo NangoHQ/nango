@@ -5,7 +5,7 @@ sidebar_label: Bitbucket
 # Bitbucket API wiki
 
 :::note Working with the Bitbucket API?
-Please add your learnings, favorite links and gotchas here by [editing this page](https://git.getb.com/nangohq/nango/tree/master/docs/docs/providers/bitbucket.md).
+Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/master/docs/docs/providers/bitbucket.md).
 
 :::
 

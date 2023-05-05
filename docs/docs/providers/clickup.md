@@ -11,7 +11,7 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 
 ## Using Clickup with Nango
 
-Provider template name in Nango: `Clickup`  
+Provider template name in Nango: `clickup`  
 Follow our [quickstart](../quickstart.md) to add an OAuth integration with Clickup in 5 minutes.
 
 ## App registration & publishing
