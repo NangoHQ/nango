@@ -1,3 +1,5 @@
 tsconfig.tsbuildinfo
 dist/*
 NangoActivity.json
+NangoActivity.json.*
+*-audit.json

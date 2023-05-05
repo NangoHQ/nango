@@ -1,4 +1,4 @@
-import Transport from 'winston-transport';
+import DailyRotateFile from 'winston-daily-rotate-file';
 import winston from 'winston';
 import fs from 'fs';
 
@@ -29,12 +29,9 @@ export interface LogData {
     sessionId?: string;
 }
 
-class CustomTransport extends Transport {
-    private filename: string;
-
+class CustomTransport extends DailyRotateFile {
     constructor(opts: any) {
         super(opts);
-        this.filename = opts.filename;
         this.setup();
     }
 
@@ -116,8 +113,10 @@ export const fileLogger = winston.createLogger({
         new CustomTransport({
             filename: FILENAME,
             handleExceptions: true,
-            maxsize: 5242880, // 5mb
-            maxFiles: 3
+            createSymlink: true,
+            symlinkName: FILENAME,
+            maxFiles: 3,
+            maxSize: '0.75m'
         })
     ]
 });
