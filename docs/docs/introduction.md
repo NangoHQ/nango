@@ -25,19 +25,19 @@ Nango is easy to try in 5 minutes:
 -   1-liner to start a new (O)Auth flow in your frontend (supports all 90+ external APIs):
 
 ```ts
-let result = await nango.auth('github', '<user-id>');
+const result = await nango.auth('github', '<user-id>');
 ```
 
 -   in your backend, easily fetch always up to date data with our fully typed SDK:
 
 ```ts
-let contacts = await nango.crm.getContacts('<user-id>');
+const contacts = await nango.hris.getEmployees('<user-id>');
 ```
 
 -   or only use the (O)Auth service and make any API call with the access token (or [proxy](nango-unified-apis/proxy)):
 
 ```ts
-let token = await nango.getToken('github', '<user-id>');
+const token = await nango.getToken('github', '<user-id>');
 ```
 
 ## 📺 30-second demo {#demo}
