@@ -65,7 +65,7 @@ export default function Activity() {
                     <div className="h-fit border border-border-gray rounded-md text-white text-sm">
                         <table className="table-auto">
                             <tbody className="px-4">
-                                {activities.filter((activity: ActivityResponse) => typeof activity.success === 'boolean').map((activity: ActivityResponse, index: number) => (
+                                {activities.filter((activity: ActivityResponse) => typeof activity?.success === 'boolean').map((activity: ActivityResponse, index: number) => (
                                     <tr key={index}>
                                         <td
                                             className={`mx-8 flex-col px-10 py-4 whitespace-nowrap ${
@@ -73,26 +73,26 @@ export default function Activity() {
                                             } h-16`}
                                         >
                                             <div className="flex items-center px-2">
-                                                {activity.success ? (
+                                                {activity?.success ? (
                                                         <CheckInCircle className="stroke-green-500" size="32" />
                                                     ) : (
                                                         <AlertCircle className="stroke-red-500" size="32" />
                                                     )
                                                 }
                                                 <div className="ml-10 w-36 mr-48">
-                                                    {activity.action === 'oauth' && (
+                                                    {activity?.action === 'oauth' && (
                                                         <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-pink-500 bg-opacity-20">
                                                             <LinkIcon className="stroke-pink-500 mr-2" size="16" />
                                                             <p className="inline-block text-pink-500">auth</p>
                                                         </div>
                                                     )}
-                                                    {activity.action === 'token' && (
+                                                    {activity?.action === 'token' && (
                                                         <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-[#FBBC05] bg-opacity-20">
                                                             <img className="h-4 mr-2" src="/images/token-icon.svg" alt="" />
                                                             <p className="inline-block text-[#FBBC05]">token</p>
                                                         </div>
                                                     )}
-                                                    {activity.action === 'proxy' && (
+                                                    {activity?.action === 'proxy' && (
                                                         <div className="flex items-center">
                                                             <div className="inline-flex justify-center items-center rounded-full py-1 px-6 bg-[#6BA4F8] bg-opacity-20">
                                                                 <img className="h-4 mr-2" src="/images/network-icon.svg" alt="" />
@@ -108,7 +108,7 @@ export default function Activity() {
                                                         </div>
                                                     )}
                                                 </div>
-                                                <Tooltip text={activity.connectionId} type="dark">
+                                                <Tooltip text={activity?.connectionId} type="dark">
                                                     <div className="ml-30 w-48 mr-12 text-[#5AC2B3] font-mono overflow-hidden truncate">`{activity.connectionId}`</div>
                                                 </Tooltip>
                                                 <div className="w-36 mr-12">

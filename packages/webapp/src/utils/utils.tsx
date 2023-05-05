@@ -38,6 +38,10 @@ export function defaultCallback() {
 export function formatTimestamp(timestamp: number): string {
     const date = new Date(timestamp);
 
+    if (isNaN(date.getTime())) {
+        return '';
+    }
+
     const hours = date.getHours().toString().padStart(2, '0');
     const minutes = date.getMinutes().toString().padStart(2, '0');
     const seconds = date.getSeconds().toString().padStart(2, '0');
@@ -52,6 +56,9 @@ export function formatTimestamp(timestamp: number): string {
 
 export function formatTimestampWithTZ(timestamp: number): string {
     const date = new Date(timestamp);
+    if (isNaN(date.getTime())) {
+        return '';
+    }
 
     const year = date.getFullYear();
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -69,6 +76,10 @@ export function formatTimestampWithTZ(timestamp: number): string {
 export function elapsedTime(start: number, end: number): string {
     const startTime = new Date(start).getTime();
     const endTime = new Date(end).getTime();
+
+    if (isNaN(startTime) || isNaN(endTime)) {
+        return '';
+    }
 
     const elapsedTime = endTime - startTime;
     const elapsedSeconds = Math.floor(elapsedTime / 1000);
