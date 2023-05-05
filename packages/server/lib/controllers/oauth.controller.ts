@@ -14,7 +14,15 @@ import {
     getAccount,
     getConnectionMetadataFromTokenResponse
 } from '../utils/utils.js';
-import { ProviderConfig, ProviderTemplate, ProviderTemplateOAuth2, ProviderAuthModes, OAuthSession, OAuth1RequestTokenResult, AuthCredentials } from '../models.js';
+import {
+    ProviderConfig,
+    ProviderTemplate,
+    ProviderTemplateOAuth2,
+    ProviderAuthModes,
+    OAuthSession,
+    OAuth1RequestTokenResult,
+    AuthCredentials
+} from '../models.js';
 import logger from '../utils/logger.js';
 import type { NextFunction } from 'express';
 import errorManager from '../utils/error.manager.js';
@@ -314,8 +322,8 @@ class OAuthController {
             logger.debug(`OAuth 2 for ${providerConfigKey} (connection ${connectionId}) successful.`);
 
             const tokenMetadata = getConnectionMetadataFromTokenResponse(rawCredentials, template);
-            
-            var parsedRawCredentials : AuthCredentials = connectionService.parseRawCredentials(rawCredentials, ProviderAuthModes.OAuth2);
+
+            const parsedRawCredentials: AuthCredentials = connectionService.parseRawCredentials(rawCredentials, ProviderAuthModes.OAuth2);
 
             connectionService.upsertConnection(
                 connectionId,
@@ -353,7 +361,7 @@ class OAuthController {
             .then((accessTokenResult) => {
                 logger.debug(`OAuth 1.0a for ${providerConfigKey} (connection: ${connectionId}) successful.`);
 
-                let parsedAccessTokenResult = connectionService.parseRawCredentials(accessTokenResult, ProviderAuthModes.OAuth1);
+                const parsedAccessTokenResult = connectionService.parseRawCredentials(accessTokenResult, ProviderAuthModes.OAuth1);
 
                 connectionService.upsertConnection(
                     connectionId,
