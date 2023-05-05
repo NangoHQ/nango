@@ -189,6 +189,7 @@ export type HTTP_VERB = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
 
 export interface ProxyBodyConfiguration {
     endpoint: string;
+    provider: string;
     providerConfigKey: string;
     connectionId: string;
     token: string;

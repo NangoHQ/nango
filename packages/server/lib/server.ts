@@ -12,6 +12,7 @@ import authController from './controllers/auth.controller.js';
 import authMiddleware from './controllers/access.middleware.js';
 import userController from './controllers/user.controller.js';
 import proxyController from './controllers/proxy.controller.js';
+import activityController from './controllers/activity.controller.js';
 import path from 'path';
 import { dirname, getPort, getGlobalOAuthCallbackUrl, isCloud, isBasicAuthEnabled, packageJsonFile } from './utils/utils.js';
 import errorManager from './utils/error.manager.js';
@@ -92,6 +93,7 @@ app.route('/api/v1/connection').get(webAuth, connectionController.getConnections
 app.route('/api/v1/connection/:connectionId').get(webAuth, connectionController.getConnectionWeb.bind(connectionController));
 app.route('/api/v1/connection/:connectionId').delete(webAuth, connectionController.deleteConnectionWeb.bind(connectionController));
 app.route('/api/v1/user').get(webAuth, userController.getUser.bind(userController));
+app.route('/api/v1/activity').get(webAuth, activityController.retrieve.bind(activityController));
 
 // Hosted signin
 if (!isCloud()) {
