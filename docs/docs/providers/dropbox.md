@@ -24,12 +24,17 @@ Supported features in Nango:
 
 ## App registration & publishing
 
-_No information yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+**Rating: `Easy & fast`**
+Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://www.dropbox.com/developers/apps)
+
+
 
 ## Useful links
 
-_No links yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+- [How to register an Application](https://www.dropbox.com/developers/apps)
+- [OAuth-related docs](https://developers.dropbox.com/oauth-guide)
+
 
 ## API specific gotchas
+- When you create your application in the App Console, you’ll choose from different scopes in the ‘Permissions’ tab. 
 
-_No gotchas yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_

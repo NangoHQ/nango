@@ -24,12 +24,19 @@ Supported features in Nango:
 
 ## App registration & publishing
 
-_No information yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+**Rating: `Easy & fast`**
+Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://dev.frontapp.com/docs/create-and-manage-apps#obtain-oauth-credentials-for-your-app)
+
+
 
 ## Useful links
 
-_No links yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+- [How to register an Application](https://dev.frontapp.com/docs/create-and-manage-apps#obtain-oauth-credentials-for-your-app)
+- [OAuth-related docs](https://dev.frontapp.com/docs/oauth)
+- [API](https://dev.frontapp.com/reference/introduction)
+
 
 ## API specific gotchas
+- Scopes are not required
+- Access tokens will expire after One hour, you can use the `nango.getToken('<CONFIG-KEY>', '<CONNECTION-ID>')` to refresh the token, and the token will be refreshed if it is expired.
 
-_No gotchas yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_

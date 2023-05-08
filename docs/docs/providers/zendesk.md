@@ -22,16 +22,22 @@ Supported features in Nango:
 | [Proxy](/nango-unified-apis/proxy) | ❎                        |
 | Unified APIs                       | _Not included in any yet_ |
 
-Make sure you [read this](../nango-auth/frontend-sdk.md#connection-config) to set the correct subdomain before starting an OAuth flow for Zendesk.
+
 
 ## App registration & publishing
 
-_No information yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+**Rating: `Easy & fast`**
+Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://app.futuresimple.com/settings/oauth/apps)
+
+
 
 ## Useful links
 
-_No links yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+- [How to register an Application](https://developer.zendesk.com/api-reference/sales-crm/authentication/introduction/#application-registration)
+- [OAuth-related docs](https://developer.zendesk.com/api-reference/sales-crm/authentication/introduction/)
+- [List of OAuth scopes](https://developer.zendesk.com/api-reference/sales-crm/authentication/introduction/#scopes)
+- [API](https://developer.zendesk.com/api-reference/sales-crm/authentication/introduction/#scopes:~:text=Reference-,SYNC%20API,-Introduction)
+
 
 ## API specific gotchas
-
--   You are required to pass in the correct subdomain before starting an OAuth flow (cf. [Connection configuration](../nango-auth/frontend-sdk.md#connection-config)).
+- Make sure you [read this](../nango-auth/frontend-sdk.md#connection-config) to set the correct subdomain before starting an OAuth flow for Zendesk.

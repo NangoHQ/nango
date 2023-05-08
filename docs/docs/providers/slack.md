@@ -24,12 +24,18 @@ Supported features in Nango:
 
 ## App registration & publishing
 
-_No information yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+**Rating: `Easy & fast`**
+Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://api.slack.com/apps)
+
+
 
 ## Useful links
 
-_No links yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+- [How to register an Application](https://api.slack.com/apps)
+- [OAuth-related docs](https://api.slack.com/authentication/oauth-v2)
+- [List of OAuth scopes](https://api.slack.com/scopes)
+- [API](https://api.slack.com/web)
+
 
 ## API specific gotchas
 
-_No gotchas yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
