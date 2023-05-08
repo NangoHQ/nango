@@ -13,6 +13,7 @@ import authMiddleware from './controllers/access.middleware.js';
 import userController from './controllers/user.controller.js';
 import proxyController from './controllers/proxy.controller.js';
 import activityController from './controllers/activity.controller.js';
+import ticketingController from './controllers/unified/ticketing.controller.js';
 import path from 'path';
 import { dirname, getPort, getGlobalOAuthCallbackUrl, isCloud, isBasicAuthEnabled, packageJsonFile } from './utils/utils.js';
 import errorManager from './utils/error.manager.js';
@@ -70,6 +71,9 @@ app.route('/connection/:connectionId').delete(apiAuth, connectionController.dele
 
 // Proxy Route
 app.route('/proxy/*').all(apiAuth, proxyController.routeCall.bind(proxyController));
+
+// Unified API
+app.route('/unified-apis/ticketing/tickets').all(apiAuth, ticketingController.route.bind(ticketingController));
 
 // Webapp routes (no auth).
 if (isCloud()) {

@@ -138,6 +138,22 @@ export class Nango {
         });
     }
 
+    public async ticketing(config: { providerConfigKey: string; connectionId: string }) {
+        const { providerConfigKey, connectionId } = config;
+
+        const url = `${this.serverUrl}/unified-apis/ticketing/tickets`;
+        const headers: Record<string, string | number | boolean> = {
+            'Connection-Id': connectionId,
+            'Provider-Config-Key': providerConfigKey
+        };
+
+        const options = {
+            headers: this.enrichHeaders(headers)
+        };
+
+        return axios.get(url, options);
+    }
+
     private async getConnectionDetails(providerConfigKey: string, connectionId: string, forceRefresh = false) {
         let url = `${this.serverUrl}/connection/${connectionId}`;
 
