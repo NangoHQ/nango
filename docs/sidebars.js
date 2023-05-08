@@ -211,6 +211,7 @@ const sidebars = {
                 'providers/mural',
                 'providers/notion',
                 'providers/one-drive',
+                'providers/osu',
                 'providers/outreach',
                 'providers/pagerduty',
                 'providers/pandadoc',
