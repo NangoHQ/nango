@@ -6,6 +6,6 @@ exports.up = async function (knex, _) {
 
 exports.down = function (knex, _) {
     return knex.schema.withSchema('nango').alterTable('_nango_connections', function (table) {
-        table.text('oauth_scopes');
+        table.dropColumn('oauth_scopes');
     });
 };
