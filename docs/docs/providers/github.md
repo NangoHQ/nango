@@ -10,9 +10,16 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 :::
 
 ## Using GitHub with Nango
+API template name in Nango: `github`  
+Follow our [quickstart](../quickstart.md) to add an OAuth integration with Github in 5 minutes.
 
-Provider template name in Nango: `github`  
-Follow our [quickstart](../quickstart.md) to add an OAuth integration with GitHub in 5 minutes.
+Supported features in Nango:
+
+| Feature                            | Supported                                           |
+| ---------------------------------- | --------------------------------------------------- |
+| [Auth](/nango-auth/core-concepts)  | ✅                                                  |
+| [Proxy](/nango-unified-apis/proxy) | ✅                                                  |
+| Unified APIs                       | [Ticketing](/nango-unified-apis/ticketing/overview) |
 
 ## App registration & publishing
 
@@ -29,3 +36,4 @@ Registering an app takes only a few minutes, and you can start building immediat
 
 
 ## API specific gotchas
+_None known_

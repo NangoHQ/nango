@@ -40,7 +40,7 @@ Authorization header: Only required if you [secured your instance](nango-deploy/
 Request type: `GET`  
 Endpoint: `/connection/<CONNECTION-ID>?provider_config_key=<PROVIDER-CONFIG-KEY>`
 
-If you are not familiar with the Provider Config Key and Connection Id parameters please take a look at the [Core Concepts](reference/core-concepts.md) page.
+If you are not familiar with the Provider Config Key and Connection Id parameters please take a look at the [Core Concepts](nango-auth/core-concepts.md) page.
 
 This is the recommended way to retrieve an access token to make an API call: Retrieve the current access token from `credentials.access_token` in the response.
 
@@ -70,7 +70,7 @@ metadata: {}                                // Structured metadata retrieved by 
 }
 ```
 
-The metadata field contains [structured metadata](reference/core-concepts.md#metadata), which Nango obtained from the OAuth flow. This varies by provider and is documented on the provider's Nango documentation page.
+The metadata field contains [structured metadata](nango-auth/core-concepts.md#metadata), which Nango obtained from the OAuth flow. This varies by provider and is documented on the provider's Nango documentation page.
 
 :::tip Keep your access tokens fresh and don't cache them!
 When you call this method the Nango server will check whether the access token needs to be refreshed, and, if needed, refresh it before returning it to you. This typically changes the access token.
@@ -105,9 +105,7 @@ The return value looks like this:
 }
 ```
 
-
-
-## Getting  connections for a specific connection id
+## Getting connections for a specific connection id
 
 Request type: `GET`  
 Endpoint: `/connection?connectionId=<connectonId>`

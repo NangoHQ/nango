@@ -11,12 +11,20 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 
 ## Using Contentstack with Nango
 
-Provider template name in Nango: `contentstack`  
+API template name in Nango: `contentstack`  
 Follow our [quickstart](../quickstart.md) to add an OAuth integration with Contentstack in 5 minutes.
 
-## App registration & publishing
+Supported features in Nango:
 
-**Rating: `Easy & fast`**
+| Feature                            | Supported                 |
+| ---------------------------------- | ------------------------- |
+| [Auth](/nango-auth/core-concepts)  | ✅                        |
+| [Proxy](/nango-unified-apis/proxy) | ❎                        |
+| Unified APIs                       | _Not included in any yet_ |
+
+
+## App registration & publishing
+**Rating: `Easy & fast`**  
 Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://www.contentstack.com/docs/developers/developer-hub/contentstack-oauth/#configuring-contentstack-oauth)
 
 

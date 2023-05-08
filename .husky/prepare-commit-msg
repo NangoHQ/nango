@@ -1,0 +1,20 @@
+#!/bin/bash
+
+if [ -z "$BRANCHES_TO_SKIP" ]; then
+  BRANCHES_TO_SKIP=(master main develop dev development staging stage test)
+fi
+
+BRANCH_NAME=$(git symbolic-ref --short HEAD)
+BRANCH_NAME=$(echo $BRANCH_NAME | sed 's/.*feat\/ //g')
+BRANCH_NAME=$(echo $BRANCH_NAME | sed 's/.*feature\/ //g')
+BRANCH_NAME=$(echo $BRANCH_NAME | sed -r 's/([aA-zZ]+-[0-9]+)[-].*/\1/')
+# allow a Github reference number: gh-#123-abc
+BRANCH_NAME=$(echo $BRANCH_NAME | sed -r 's/([aA-zZ]+-#[0-9]+)[-].*/\1/')
+BRANCH_NAME="${BRANCH_NAME##*/}"
+
+BRANCH_EXCLUDED=$(printf "%s\n" "${BRANCHES_TO_SKIP[@]}" | grep -c "^$BRANCH_NAME$")
+BRANCH_IN_COMMIT=$(grep -c "\[$BRANCH_NAME\]" $1)
+
+if [ "$(echo $BRANCH_NAME | cut -c1-2)" = "gh" ] && [ -n "$BRANCH_NAME" ] && ! [[ $BRANCH_EXCLUDED -eq 1 ]] && ! [[ $BRANCH_IN_COMMIT -ge 1 ]]; then
+  sed -i.bak -e "1s/^/[$BRANCH_NAME] /" $1
+fi

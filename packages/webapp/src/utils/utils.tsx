@@ -34,3 +34,56 @@ export function baseUrl() {
 export function defaultCallback() {
     return baseUrl() + '/oauth/callback';
 }
+
+export function formatTimestamp(timestamp: number): string {
+    const date = new Date(timestamp);
+
+    if (isNaN(date.getTime())) {
+        return '';
+    }
+
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const seconds = date.getSeconds().toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+
+    const formattedDate = `${hours}:${minutes}:${seconds} - ${month}/${day}/${year}`;
+
+    return formattedDate;
+}
+
+export function formatTimestampWithTZ(timestamp: number): string {
+    const date = new Date(timestamp);
+    if (isNaN(date.getTime())) {
+        return '';
+    }
+
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const seconds = date.getSeconds().toString().padStart(2, '0');
+    const milliseconds = date.getMilliseconds().toString().padStart(3, '0');
+
+    const formattedDate = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}Z`;
+
+    return formattedDate;
+}
+
+export function elapsedTime(start: number, end: number): string {
+    const startTime = new Date(start).getTime();
+    const endTime = new Date(end).getTime();
+
+    if (isNaN(startTime) || isNaN(endTime)) {
+        return '';
+    }
+
+    const elapsedTime = endTime - startTime;
+    const elapsedSeconds = Math.floor(elapsedTime / 1000);
+    const elapsedMilliseconds = elapsedTime % 1000;
+
+    return `${elapsedSeconds}.${elapsedMilliseconds} seconds`;
+}

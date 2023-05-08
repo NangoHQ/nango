@@ -10,13 +10,20 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 :::
 
 ## Using Linkedin with Nango
+API template name in Nango: `linkedin`  
+Follow our [quickstart](../quickstart.md) to add an OAuth integration with LinkedIn in 5 minutes.
 
-Provider template name in Nango: `linkedin`  
-Follow our [quickstart](../quickstart.md) to add an OAuth integration with Linkedin in 5 minutes.
+Supported features in Nango:
+
+| Feature                            | Supported                 |
+| ---------------------------------- | ------------------------- |
+| [Auth](/nango-auth/core-concepts)  | ✅                        |
+| [Proxy](/nango-unified-apis/proxy) | ❎                        |
+| Unified APIs                       | _Not included in any yet_ |
 
 ## App registration & publishing
 
-**Rating: `Easy & fast`**
+**Rating: `Easy & fast`**  
 Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://learn.microsoft.com/en-us/linkedin/shared/authentication/authorization-code-flow?tabs=HTTPS1#step-1-configure-your-application)
 
 

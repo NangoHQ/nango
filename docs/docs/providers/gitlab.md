@@ -10,9 +10,16 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 :::
 
 ## Using Gitlab with Nango
+API template name in Nango: `gitlab`  
+Follow our [quickstart](../quickstart.md) to add an OAuth integration with Gitlab in 5 minutes.
 
-Provider template name in Nango: `gitlab`  
-Follow our [quickstart](../quickstart.md) to add an OAuth integration with gitlab in 5 minutes.
+Supported features in Nango:
+
+| Feature                            | Supported                                           |
+| ---------------------------------- | --------------------------------------------------- |
+| [Auth](/nango-auth/core-concepts)  | ✅                                                  |
+| [Proxy](/nango-unified-apis/proxy) | ❎                                                  |
+| Unified APIs                       | [Ticketing](/nango-unified-apis/ticketing/overview) |
 
 ## App registration & publishing
 

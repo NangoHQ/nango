@@ -10,13 +10,20 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 :::
 
 ## Using Hubspot with Nango
+API template name in Nango: `hubspot`  
+Follow our [quickstart](../quickstart.md) to add an OAuth integration with HubSpot in 5 minutes.
 
-Provider template name in Nango: `hubspot`  
-Follow our [quickstart](../quickstart.md) to add an OAuth integration with Hubspot in 5 minutes.
+Supported features in Nango:
+
+| Feature                            | Supported                 |
+| ---------------------------------- | ------------------------- |
+| [Auth](/nango-auth/core-concepts)  | ✅                        |
+| [Proxy](/nango-unified-apis/proxy) | ❎                        |
+| Unified APIs                       | _Not included in any yet_ |
 
 ## App registration & publishing
 
-**Rating: `Easy & fast`**
+**Rating: `Easy & fast`**  
 Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://developers.hubspot.com/docs/api/working-with-oauth#initiating-an-integration-with-oauth-2-0)
 
 

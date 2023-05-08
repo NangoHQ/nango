@@ -11,18 +11,24 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 
 ## Using Calendly with Nango
 
-Provider template name in Nango: `calendly`  
+API template name in Nango: `calendly`  
 Follow our [quickstart](../quickstart.md) to add an OAuth integration with Calendly in 5 minutes.
 
-## App registration & publishing
+Supported features in Nango:
 
-**Rating: `Easy & fast`**
+| Feature                            | Supported                 |
+| ---------------------------------- | ------------------------- |
+| [Auth](/nango-auth/core-concepts)  | ✅                        |
+| [Proxy](/nango-unified-apis/proxy) | ❎                        |
+| Unified APIs                       | _Not included in any yet_ |
+
+## App registration & publishing
+**Rating: `Easy & fast`**  
 Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://developer.calendly.com/create-a-developer-account)
 
 
 
 ## Useful links
-
 - [How to register an Application](https://developer.calendly.com/create-a-developer-account)
 - [OAuth-related docs](https://developer.calendly.com/api-docs/3cefb59b832eb-calendly-o-auth-2-0m)
 - [API](https://developer.calendly.com/getting-started)

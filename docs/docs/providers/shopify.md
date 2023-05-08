@@ -11,8 +11,16 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 
 ## Using Calendly with Nango
 
-Provider template name in Nango: `shopify`  
+API template name in Nango: `shopify`  
 Follow our [quickstart](../quickstart.md) to add an OAuth integration with Shopify in 5 minutes.
+
+Supported features in Nango:
+
+| Feature                            | Supported                 |
+| ---------------------------------- | ------------------------- |
+| [Auth](/nango-auth/core-concepts)  | ✅                        |
+| [Proxy](/nango-unified-apis/proxy) | ❎                        |
+| Unified APIs                       | _Not included in any yet_ |
 
 ## App registration & publishing
 
@@ -30,4 +38,4 @@ Registering an app takes only a few minutes, and you can start building immediat
 
 
 ## API specific gotchas
-
+- Make sure you [read this](../nango-auth/frontend-sdk.md#connection-config) to set the correct shop subdomain before starting an OAuth flow for Shopify.

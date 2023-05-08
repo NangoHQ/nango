@@ -10,13 +10,20 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 :::
 
 ## Using Jira with Nango
-
-Provider template name in Nango: `iira`  
+API template name in Nango: `jira`  
 Follow our [quickstart](../quickstart.md) to add an OAuth integration with Jira in 5 minutes.
+
+Supported features in Nango:
+
+| Feature                            | Supported                                           |
+| ---------------------------------- | --------------------------------------------------- |
+| [Auth](/nango-auth/core-concepts)  | ✅                                                  |
+| [Proxy](/nango-unified-apis/proxy) | ❎                                                  |
+| Unified APIs                       | [Ticketing](/nango-unified-apis/ticketing/overview) |
 
 ## App registration & publishing
 
-**Rating: `Easy & fast`**
+**Rating: `Easy & fast`**  
 Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://developer.atlassian.com/cloud/confluence/oauth-2-3lo-apps/#enabling-oauth-2-0--3lo-)
 
 
