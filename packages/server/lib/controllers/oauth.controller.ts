@@ -6,6 +6,7 @@ import { getSimpleOAuth2ClientConfig } from '../clients/oauth2.client.js';
 import { OAuth1Client } from '../clients/oauth1.client.js';
 import configService from '../services/config.service.js';
 import connectionService from '../services/connection.service.js';
+import * as syncService from '../services/sync.service.js';
 import {
     getOauthCallbackUrl,
     getConnectionConfig,
@@ -642,6 +643,9 @@ class OAuthController {
                     token_params: template?.token_params as string
                 }
             });
+
+            // start background of sync right away to a common model
+            syncService.initiate(connectionId, providerConfigKey, session.accountId);
 
             return wsClient.notifySuccess(res, wsClientId, providerConfigKey, connectionId);
         } catch (e) {

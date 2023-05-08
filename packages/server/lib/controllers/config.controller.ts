@@ -106,7 +106,7 @@ class ConfigController {
                 account_id: account.id
             };
 
-            let result = await configService.createProviderConfig(config);
+            const result = await configService.createProviderConfig(config);
 
             if (Array.isArray(result) && result.length === 1 && result[0] != null && 'id' in result[0]) {
                 analytics.track('server:config_created', account.id, { provider: config.provider });

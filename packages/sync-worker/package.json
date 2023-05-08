@@ -1,0 +1,43 @@
+{
+    "name": "@nangohq/nango-sync-worker",
+    "version": "0.1.0",
+    "type": "module",
+    "main": "dist/worker.js",
+    "scripts": {
+        "start": "tsc && node dist/worker.js",
+        "dev": "nodemon"
+    },
+    "keywords": [],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/NangoHQ/nango",
+        "directory": "packages/sync-worker"
+    },
+    "dependencies": {
+        "@nangohq/nango-server": "0.16.0",
+        "@nangohq/node": "0.16.0",
+        "@temporalio/activity": "^1.5.2",
+        "@temporalio/client": "^1.5.2",
+        "@temporalio/worker": "^1.5.2",
+        "@temporalio/workflow": "^1.5.2",
+        "dotenv": "^16.0.3",
+        "knex": "^2.4.2",
+        "nanoid": "3.x",
+        "uuid": "^9.0.0"
+    },
+    "devDependencies": {
+        "@octokit/rest": "^19.0.7",
+        "@octokit/types": "^9.2.1",
+        "@tsconfig/node16": "^1.0.0",
+        "@types/github": "^7.1.0",
+        "@types/node": "^18.7.6",
+        "@typescript-eslint/eslint-plugin": "^5.0.0",
+        "@typescript-eslint/parser": "^5.0.0",
+        "eslint": "^7.32.0",
+        "eslint-config-prettier": "^8.3.0",
+        "eslint-plugin-deprecation": "^1.2.1",
+        "nodemon": "^2.0.12",
+        "ts-node": "^10.9.1",
+        "typescript": "^4.4.2"
+    }
+}

@@ -11,7 +11,7 @@ class KnexDatabase {
     }
 
     async migrate(directory: string): Promise<any> {
-        return this.knex.migrate.latest({ directory: directory, tableName: '_nango_auth_migrations', schemaName: this.schema() });
+        return this.knex.migrate.latest({ directory: directory, tableName: '_nango_unified_migrations', schemaName: this.schema() });
     }
 
     schema() {

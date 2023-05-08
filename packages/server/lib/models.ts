@@ -219,3 +219,19 @@ interface ParamEncoder {
 interface CustomParamsSerializer {
     (params: Record<string, any>, options?: ParamsSerializerOptions): string;
 }
+
+export enum SyncStatus {
+    RUNNING = 'RUNNING',
+    PAUSED = 'PAUSED',
+    STOPPED = 'STOPPED'
+}
+
+export interface Sync {
+    id: number;
+    status: SyncStatus;
+    connection_id: string;
+    provider_config_key: string;
+    account_id: number;
+    created_at?: Date;
+    updated_at?: Date;
+}
