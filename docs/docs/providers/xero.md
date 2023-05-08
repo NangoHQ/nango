@@ -24,12 +24,18 @@ Supported features in Nango:
 
 ## App registration & publishing
 
-_No information yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+**Rating: `Easy & fast`**
+Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://developer.xero.com/app/manage)
+
+
 
 ## Useful links
 
-_No links yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+- [How to register an Application](https://developer.xero.com/app/manage)
+- [OAuth-related docs](https://developer.xero.com/documentation/guides/oauth2/auth-flow)
+- [List of OAuth scopes](https://developer.xero.com/app/manage)
+- [API](https://developer.xero.com/documentation/sdks-and-tools/tools/postman/#steps-to-get-up-and-running)
+
 
 ## API specific gotchas
 
-_No gotchas yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_

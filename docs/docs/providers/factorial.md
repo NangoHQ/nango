@@ -22,6 +22,18 @@ Supported features in Nango:
 | [Proxy](/nango-unified-apis/proxy) | ❎                        |
 | Unified APIs                       | _Not included in any yet_ |
 
+
+## App registration & publishing
+**Rating: `Easy & fast`**  
+Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://help.factorialhr.com/getting-started-with-factorial-api#CINQ)
+
+
 ## Useful links
 
--   [API docs](https://apidoc.factorialhr.com/docs/request-an-authorization-code)
+- [How to register an Application](https://help.factorialhr.com/getting-started-with-factorial-api#CINQ)
+- [OAuth-related docs](https://help.factorialhr.com/getting-started-with-factorial-api#SIX)
+- [API](https://help.factorialhr.com/apps-integrations#factorial-api)
+
+
+## API specific gotchas
+- There are essentially two scopes read, write
