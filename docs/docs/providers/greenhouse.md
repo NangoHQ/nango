@@ -11,17 +11,31 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 
 ## Using Greenhouse with Nango
 
-Provider template name in Nango: `greenhouse`  
+API template name in Nango: `greenhouse`  
 Follow our [quickstart](../quickstart.md) to add an OAuth integration with Greenhouse in 5 minutes.
+
+Supported features in Nango:
+
+| Feature                            | Supported                 |
+| ---------------------------------- | ------------------------- |
+| [Auth](/nango-auth/core-concepts)  | ✅                        |
+| [Proxy](/nango-unified-apis/proxy) | ❎                        |
+| Unified APIs                       | _Not included in any yet_ |
 
 ## App registration & publishing
 
-_No information yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+**Rating: `Easy & fast`**
+Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://developers.greenhouse.io/candidate-ingestion.html#authentication)
+
+
 
 ## Useful links
 
-_No links yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+- [How to register an Application](https://developers.greenhouse.io/candidate-ingestion.html#authentication)
+- [OAuth-related docs](https://developers.greenhouse.io/candidate-ingestion.html#introduction)
+- [List of OAuth scopes](https://developers.greenhouse.io/candidate-ingestion.html#oauth-scopes)
+- [API](https://developers.greenhouse.io/candidate-ingestion.html#candidates)
+
 
 ## API specific gotchas
 
-_No gotchas yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_

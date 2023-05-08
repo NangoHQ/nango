@@ -10,6 +10,7 @@ import ProjectSettings from './pages/ProjectSettings';
 import PrivateRoute from './components/PrivateRoute';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import Activity from './pages/Activity';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { isCloud } from './utils/utils';
@@ -39,6 +40,9 @@ const App = () => {
                 </Route>
                 <Route path="/connections/:providerConfigKey/:connectionId" element={<PrivateRoute />}>
                     <Route path="/connections/:providerConfigKey/:connectionId" element={<ConnectionDetails />} />
+                </Route>
+                <Route path="/activity" element={<PrivateRoute />}>
+                    <Route path="/activity" element={<Activity />} />
                 </Route>
                 <Route path="/project-settings" element={<PrivateRoute />}>
                     <Route path="/project-settings" element={<ProjectSettings />} />

@@ -2,10 +2,12 @@ import type { Request, Response } from 'express';
 import connectionService from '../services/connection.service.js';
 import type { NextFunction } from 'express';
 import configService from '../services/config.service.js';
-import { ProviderConfig, ProviderTemplate, Connection, ProviderAuthModes, ProviderTemplateOAuth2 } from '../models.js';
+import { ProviderConfig, ProviderTemplate, Connection, ProviderAuthModes, ProviderTemplateOAuth2, HTTP_VERB } from '../models.js';
 import analytics from '../utils/analytics.js';
 import { getAccount, getUserAndAccountFromSession } from '../utils/utils.js';
 import { getConnectionCredentials } from '../utils/connection.js';
+import { updateAppLogsAndWrite, LogData, LogLevel, LogAction } from '../utils/file-logger.js';
+import { WSErrBuilder } from '../utils/web-socket-error.js';
 import errorManager from '../utils/error.manager.js';
 
 class ConnectionController {
@@ -15,39 +17,95 @@ class ConnectionController {
 
     async getConnectionWeb(req: Request, res: Response, next: NextFunction) {
         try {
-            let account = (await getUserAndAccountFromSession(req)).account;
+            const account = (await getUserAndAccountFromSession(req)).account;
 
-            let connectionId = req.params['connectionId'] as string;
-            let providerConfigKey = req.query['provider_config_key'] as string;
+            const connectionId = req.params['connectionId'] as string;
+            const providerConfigKey = req.query['provider_config_key'] as string;
+            const instantRefresh = req.query['force_refresh'] === 'true';
+
+            const log = {
+                level: 'info' as LogLevel,
+                success: false,
+                action: 'token' as LogAction,
+                start: Date.now(),
+                end: Date.now(),
+                timestamp: Date.now(),
+                connectionId: connectionId as string,
+                providerConfigKey: providerConfigKey as string,
+                messages: [] as LogData['messages'],
+                message: '',
+                provider: ''
+            };
 
             if (connectionId == null) {
+                updateAppLogsAndWrite(log, 'error', {
+                    timestamp: Date.now(),
+                    content: WSErrBuilder.MissingConnectionId().message
+                });
+
                 errorManager.errRes(res, 'missing_connection');
                 return;
             }
 
             if (providerConfigKey == null) {
+                updateAppLogsAndWrite(log, 'error', {
+                    timestamp: Date.now(),
+                    content: WSErrBuilder.MissingProviderConfigKey().message
+                });
+
                 errorManager.errRes(res, 'missing_provider_config');
                 return;
             }
 
-            let connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, account.id);
+            const connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, account.id);
 
             if (connection == null) {
+                updateAppLogsAndWrite(log, 'error', {
+                    timestamp: Date.now(),
+                    content: 'Unknown connection'
+                });
+
                 errorManager.errRes(res, 'unkown_connection');
                 return;
             }
 
-            let config: ProviderConfig | null = await configService.getProviderConfig(connection.provider_config_key, account.id);
+            const config: ProviderConfig | null = await configService.getProviderConfig(connection.provider_config_key, account.id);
 
             if (config == null) {
+                updateAppLogsAndWrite(log, 'error', {
+                    timestamp: Date.now(),
+                    content: 'Unknown provider config'
+                });
+
                 errorManager.errRes(res, 'unknown_provider_config');
                 return;
             }
 
-            let template: ProviderTemplate | undefined = configService.getTemplate(config.provider);
+            log.provider = config.provider;
+
+            const template: ProviderTemplate | undefined = configService.getTemplate(config.provider);
 
             if (connection.credentials.type === ProviderAuthModes.OAuth2) {
-                connection.credentials = await connectionService.refreshOauth2CredentialsIfNeeded(connection, config, template as ProviderTemplateOAuth2);
+                connection.credentials = await connectionService.refreshOauth2CredentialsIfNeeded(
+                    connection,
+                    config,
+                    template as ProviderTemplateOAuth2,
+                    log,
+                    false,
+                    'token'
+                );
+            }
+
+            log.success = true;
+
+            if (instantRefresh) {
+                updateAppLogsAndWrite(log, 'info', {
+                    authMode: template.auth_mode,
+                    content: `Token manual refresh fetch was successful for ${providerConfigKey} and connection ${connectionId} from the web UI`,
+                    timestamp: Date.now(),
+                    providerConfigKey,
+                    connectionId
+                });
             }
 
             res.status(200).send({
@@ -151,7 +209,30 @@ class ConnectionController {
             const providerConfigKey = req.query['provider_config_key'] as string;
             const instantRefresh = req.query['force_refresh'] === 'true';
 
-            const connection = await getConnectionCredentials(res, connectionId, providerConfigKey, instantRefresh);
+            const log = {
+                level: 'debug' as LogLevel,
+                success: true,
+                action: 'token' as LogAction,
+                start: Date.now(),
+                end: Date.now(),
+                timestamp: Date.now(),
+                method: req.method as HTTP_VERB,
+                connectionId,
+                providerConfigKey,
+                messages: [] as LogData['messages'],
+                message: '',
+                endpoint: ''
+            };
+
+            const connection = await getConnectionCredentials(res, connectionId, providerConfigKey, log, instantRefresh);
+
+            updateAppLogsAndWrite(log, 'info', {
+                timestamp: Date.now(),
+                content: 'Connection credentials found successfully',
+                params: {
+                    instant_refresh: instantRefresh
+                }
+            });
 
             res.status(200).send(connection);
         } catch (err) {

@@ -7,7 +7,7 @@ import TabItem from '@theme/TabItem';
 
 # Nango Node SDK
 
-The Nango node SDK helps you retrieve access tokens and work with [Connections](reference/core-concepts.md#connections) from your backend.
+The Nango node SDK helps you retrieve access tokens and work with [Connections](nango-auth/core-concepts.md#connections) from your backend.
 
 ## Installing & instantiating the node SDK
 
@@ -59,7 +59,7 @@ let access_token = await nango.getToken('<PROVIDER-CONFIG-KEY>', '<CONNECTION-ID
 console.log(access_token); // For OAuth 2 APIs this will print "axb_dijifoweif32qwij923jfo3" or similar
 ```
 
-If you are not familiar with the Provider Config Key and Connection Id parameters please take a look at the [Core Concepts](reference/core-concepts.md) page.
+If you are not familiar with the Provider Config Key and Connection Id parameters please take a look at the [Core Concepts](nango-auth/core-concepts.md) page.
 
 This is the recommended way to retrieve an access token to make an API call.
 
@@ -115,7 +115,7 @@ metadata: {}                                // Structured metadata retrieved by 
 }
 ```
 
-The metadata field contains [structured metadata](reference/core-concepts.md#metadata), which Nango obtained from the OAuth flow. This varies by provider and is documented on the provider's Nango documentation page.
+The metadata field contains [structured metadata](nango-auth/core-concepts.md#metadata), which Nango obtained from the OAuth flow. This varies by provider and is documented on the provider's Nango documentation page.
 
 ## Accessing the raw token response
 
@@ -154,8 +154,9 @@ The return value looks like this:
 ## Getting a list of all Connections for a specific connectionId
 
 In the case where you want to get a list of all the connections for only a specific connectionId you can pass the connection ID
+
 ```js
-let connectionsList = await nango.listConnections("userId");
+let connectionsList = await nango.listConnections('userId');
 ```
 
 ```js

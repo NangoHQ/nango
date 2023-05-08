@@ -1,12 +1,18 @@
 ---
-sidebar_label: Contribute a New Provider
+sidebar_label: Contribute a New API
 ---
 
-# Contribute a New API Provider
+# Contribute a New API to Nango
 
-Adding support for a new API provider to Nango is fast & easy. Please follow the steps below and we will be happy to accept your PR! You should also join the `#contribution` channel on our [Slack community](https://nango.dev/slack).
+Adding support for a new API to Nango is fast & easy. Please follow the steps below and we will be happy to accept your PR!
+
+You should also join the `#contribution` channel on our [Slack community](https://nango.dev/slack).
 
 Don't know which API provider to contribute? Here's a [list](https://github.com/orgs/NangoHQ/projects/2) you can pick from!
+
+:::info
+This page details how to contribute a new API for OAuth to Nango. Documentation to contribute a new unified API will follow.
+:::
 
 ### Step 0: Provider Template overview
 
@@ -51,11 +57,11 @@ provider-slug: # Shorthand for the provider, ideally the provider's name. Must b
 ```
 
 :::info
-Templates support parameters using string interpolation (cf. [flow Configuration](./reference/frontend-sdk.md#connection-config)) for dynamic URLs, etc.
+Templates support parameters using string interpolation (cf. [flow Configuration](./nango-auth/frontend-sdk.md#connection-config)) for dynamic URLs, etc.
 :::
 
 :::info
-You can configure some [Connection Metadata](./reference/core-concepts.md#metadata), which is additional metadata that you want to capture during the OAuth flow and store in the Connection.
+You can configure some [Connection Metadata](./nango-auth/core-concepts.md#metadata), which is additional metadata that you want to capture during the OAuth flow and store in the Connection.
 :::
 
 ### Step 1: Fork the Nango repo

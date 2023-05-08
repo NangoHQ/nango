@@ -13,8 +13,16 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 
 Stack Exchange uses the same API for [all its sites](https://stackexchange.com/sites) such as Stack Overflow, Server Fault, Super User, Mathematics, Ask Ubuntu etc.
 
-Provider template name in Nango: `stackexchange`  
+API template name in Nango: `stackexchange`  
 Follow our [quickstart](../quickstart.md) to add an OAuth integration with Stack Exchange in 5 minutes.
+
+Supported features in Nango:
+
+| Feature                            | Supported                 |
+| ---------------------------------- | ------------------------- |
+| [Auth](/nango-auth/core-concepts)  | ✅                        |
+| [Proxy](/nango-unified-apis/proxy) | ❎                        |
+| Unified APIs                       | _Not included in any yet_ |
 
 ## App registration & publishing
 

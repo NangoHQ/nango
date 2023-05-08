@@ -2,112 +2,20 @@
 
 /** @type {import('@docusaurus/plugin-content-docs').SidebarsConfig} */
 const sidebars = {
-    docsSidebar: [
-        'nango-sync/introduction',
-        'nango-sync/quickstart',
-        {
-            type: 'category',
-            label: 'Use Nango Sync',
-            items: [
-                {
-                    id: 'nango-sync/use-nango/core-concepts',
-                    type: 'doc',
-                    label: 'Core concepts'
-                },
-                {
-                    type: 'category',
-                    label: 'Create Syncs',
-                    items: [
-                        {
-                            id: 'nango-sync/use-nango/sync-all-options',
-                            type: 'doc',
-                            label: 'All Options'
-                        },
-                        {
-                            id: 'nango-sync/use-nango/sync-modes',
-                            type: 'doc',
-                            label: 'Modes'
-                        },
-                        {
-                            id: 'nango-sync/use-nango/sync-schedule',
-                            type: 'doc',
-                            label: 'Scheduling'
-                        },
-                        {
-                            id: 'nango-sync/use-nango/sync-metadata',
-                            type: 'doc',
-                            label: 'Metadata'
-                        },
-                        {
-                            id: 'nango-sync/use-nango/sync-pagination',
-                            type: 'doc',
-                            label: 'Pagination'
-                        },
-                        {
-                            id: 'nango-sync/use-nango/sync-auth',
-                            type: 'doc',
-                            label: 'Authentication'
-                        }
-                    ]
-                },
-                {
-                    id: 'nango-sync/use-nango/manage-syncs',
-                    type: 'doc',
-                    label: 'Manage Syncs'
-                },
-                {
-                    id: 'nango-sync/use-nango/sync-notifications',
-                    type: 'doc',
-                    label: 'Sync Notifications'
-                },
-                {
-                    id: 'nango-sync/use-nango/schema-mappings',
-                    type: 'doc',
-                    label: 'Schema mappings'
-                },
-                {
-                    id: 'nango-sync/use-nango/db-config',
-                    type: 'doc',
-                    label: 'DB Configuration'
-                },
-                {
-                    id: 'nango-sync/use-nango/observability',
-                    type: 'doc',
-                    label: 'Observability'
-                }
-            ]
-        },
-        {
-            id: 'nango-sync/real-world-examples',
-            type: 'doc',
-            label: 'Examples'
-        },
-        {
-            id: 'nango-sync/architecture',
-            type: 'doc',
-            label: 'Architecture & Vision'
-        },
-        {
-            id: 'nango-sync/license-faq',
-            type: 'doc',
-            label: 'License FAQ & Pricing'
-        },
-        'nango-sync/contributing'
-    ],
     nango: [
         'introduction',
         'quickstart',
         {
             type: 'category',
-            label: 'Reference',
+            label: 'Nango Auth (OAuth)',
             items: [
                 {
-                    id: 'reference/core-concepts',
+                    id: 'nango-auth/core-concepts',
                     type: 'doc',
-                    label: 'Core Concepts'
+                    label: 'Auth Core Concepts'
                 },
                 {
-                    id: 'reference/frontend-sdk',
+                    id: 'nango-auth/frontend-sdk',
                     type: 'doc',
                     label: 'Frontend SDK'
                 },
@@ -116,31 +24,87 @@ const sidebars = {
                     label: 'Backend SDKs & API',
                     items: [
                         {
-                            id: 'reference/node-sdk',
+                            id: 'nango-auth/node-sdk',
                             type: 'doc',
                             label: 'Node SDK'
                         },
                         {
-                            id: 'reference/connections-api',
+                            id: 'nango-auth/connections-api',
                             type: 'doc',
                             label: 'Connections API'
                         }
                     ]
                 },
                 {
-                    id: 'reference/proxy',
+                    id: 'nango-auth/configuration',
+                    type: 'doc',
+                    label: 'Advanced Configuration'
+                }
+            ]
+        },
+        {
+            type: 'category',
+            label: 'Nango Unified APIs',
+            items: [
+                {
+                    type: 'category',
+                    label: 'Unified HRIS API',
+                    link: {
+                        id: 'nango-unified-apis/hris/overview',
+                        type: 'doc'
+                    },
+                    items: [
+                        {
+                            id: 'nango-unified-apis/hris/employees',
+                            type: 'doc',
+                            label: 'Employees'
+                        }
+                    ]
+                },
+                // {
+                //     type: 'category',
+                //     label: 'Unified CRM API',
+                //     link: {
+                //         id: 'nango-unified-apis/crm/overview',
+                //         type: 'doc'
+                //     },
+                //     items: [
+                //         {
+                //             id: 'nango-unified-apis/crm/contacts',
+                //             type: 'doc',
+                //             label: '/contacts'
+                //         }
+                //     ]
+                // },
+                {
+                    type: 'category',
+                    label: 'Unified Ticketing API',
+                    link: {
+                        id: 'nango-unified-apis/ticketing/overview',
+                        type: 'doc'
+                    },
+                    items: [
+                        {
+                            id: 'nango-unified-apis/ticketing/tickets',
+                            type: 'doc',
+                            label: 'Ticket'
+                        },
+                        {
+                            id: 'nango-unified-apis/ticketing/comments',
+                            type: 'doc',
+                            label: 'Comment'
+                        }
+                    ]
+                },
+                {
+                    id: 'nango-unified-apis/proxy',
                     type: 'doc',
                     label: 'Proxy'
                 },
                 {
-                    id: 'reference/configuration',
+                    id: 'nango-unified-apis/custom-unified-api',
                     type: 'doc',
-                    label: 'Advanced Configuration'
-                },
-                {
-                    id: 'reference/cli',
-                    type: 'doc',
-                    label: 'Nango CLI'
+                    label: 'Building Custom Unified APIs'
                 }
             ]
         },

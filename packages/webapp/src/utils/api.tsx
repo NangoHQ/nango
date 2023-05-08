@@ -388,3 +388,18 @@ export function useResetPasswordAPI() {
         }
     };
 }
+
+export function useActivityAPI() {
+    return async () => {
+        try {
+            let res = await fetch(`/api/v1/activity`, {
+                method: 'GET',
+                headers: getHeaders(),
+            });
+
+            return res;
+        } catch (e) {
+            requestErrorToast();
+        }
+    };
+}
