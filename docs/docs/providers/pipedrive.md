@@ -4,7 +4,7 @@ sidebar_label: Pipedrive
 
 # Pipedrive API wiki
 
-:::note Working with the Pipedrive API?
+:::note Working with the pipedrive API?
 Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/master/docs/docs/providers/pipedrive.md).
 
 :::
@@ -24,12 +24,18 @@ Supported features in Nango:
 
 ## App registration & publishing
 
-_No information yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+**Rating: `Easy & fast`**
+Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://pipedrive.readme.io/docs/marketplace-oauth-api#steps-to-take-to-get-the-access_token)
+
+
 
 ## Useful links
 
-_No links yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+- [How to register an Application](https://pipedrive.readme.io/docs/marketplace-oauth-api#steps-to-take-to-get-the-access_token)
+- [OAuth-related docs](https://pipedrive.readme.io/docs/marketplace-oauth-api)
+- [List of OAuth scopes](https://pipedrive.readme.io/docs/marketplace-scopes-and-permissions-explanations#list-of-scopes)
+- [API](https://pipedrive.readme.io/docs/core-api-concepts-about-pipedrive-api)
+
 
 ## API specific gotchas
 
-_No gotchas yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_

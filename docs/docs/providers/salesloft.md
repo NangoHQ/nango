@@ -24,12 +24,17 @@ Supported features in Nango:
 
 ## App registration & publishing
 
-_No information yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+**Rating: `Easy & fast`**
+Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://developers.salesloft.com/api.html#!/Topic/Introduction)
+
+
 
 ## Useful links
 
-_No links yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+- [How to register an Application](https://developers.salesloft.com/api.html#!/Topic/Introduction)
+- [OAuth-related docs](https://developers.salesloft.com/api.html#!/Topic/oauth)
+- [API](https://developers.salesloft.com/api.html#!/Me/get_v2_me_json)
+
 
 ## API specific gotchas
-
-_No gotchas yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+- Scopes are not required
