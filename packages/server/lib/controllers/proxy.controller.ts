@@ -5,7 +5,7 @@ import axios, { AxiosError, AxiosResponse } from 'axios';
 import { backOff } from 'exponential-backoff';
 
 import logger from '../utils/logger.js';
-import { LogData, LogLevel, LogAction, updateAppLogs, updateAppLogsAndWrite } from '../utils/file-logger.js';
+import { updateAppLogs, updateAppLogsAndWrite, LogData, LogLevel, LogAction } from '@nangohq/shared';
 import errorManager from '../utils/error.manager.js';
 import configService from '../services/config.service.js';
 import type { ProxyBodyConfiguration, Connection, HTTP_VERB } from '../models.js';

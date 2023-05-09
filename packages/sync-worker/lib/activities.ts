@@ -7,7 +7,7 @@ import type { NangoConnection, ContinuousSyncArgs } from './models/Worker';
 import { getById as getSyncById, updateStatus as updateSyncStatus, create as createSync } from '@nangohq/nango-server/dist/services/sync.service.js';
 import connectionService from '@nangohq/nango-server/dist/services/connection.service.js';
 import configService from '@nangohq/nango-server/dist/services/config.service.js';
-import { LogData, LogLevel, LogAction, updateAppLogsAndWrite } from '@nangohq/nango-server/dist/utils/file-logger.js';
+import { updateAppLogsAndWrite, LogData, LogLevel, LogAction } from '@nangohq/shared';
 import { createOrUpdate as createOrUpdateTicket } from './services/ticket.service.js';
 
 export function getServerPort() {

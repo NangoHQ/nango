@@ -1,0 +1,41 @@
+{
+    "name": "@nangohq/shared",
+    "version": "0.1.0",
+    "description": "Nango's shared components.",
+    "type": "module",
+    "main": "dist/lib/index.js",
+    "typings": "dist/lib/index.d.ts",
+    "scripts": {},
+    "keywords": [],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/NangoHQ/nango",
+        "directory": "packages/shared"
+    },
+    "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
+    "dependencies": {
+        "amqplib": "^0.10.3",
+        "cors": "^2.8.5",
+        "ejs": "^3.1.5",
+        "knex": "^2.3.0",
+        "lodash": "^4.17.21",
+        "pg": "^8.8.0",
+        "posthog-node": "^2.2.3",
+        "ts-node": "^10.9.1",
+        "uuid": "^9.0.0",
+        "winston": "^3.8.2",
+        "winston-daily-rotate-file": "^4.7.1"
+    },
+    "engines": {
+        "node": ">=16.7",
+        "npm": ">=6.14.11"
+    },
+    "devDependencies": {
+        "@types/amqplib": "^0.8.2",
+        "@types/cors": "^2.8.12",
+        "@types/debug": "^4.1.7",
+        "@types/node": "^18.7.6",
+        "@types/uuid": "^9.0.0",
+        "typescript": "^4.7.4"
+    }
+}
