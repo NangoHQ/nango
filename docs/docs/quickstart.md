@@ -10,7 +10,7 @@ import TabItem from '@theme/TabItem';
 :::tip
 Just want to see Nango in Action? Check out our [1min demo video](introduction.md#demo)
 
-**Looking to use the unified APIs?**  
+**Looking to use the unified APIs?**
 Reach out to us on the [Slack community](https://nango.dev/slack), currently these are in private beta. Public access coming soon!
 :::
 
@@ -95,8 +95,8 @@ import Nango from '@nangohq/frontend'; // After installing the npm package
 var nango = new Nango({ publicKey: '<PUBLIC-KEY>' });
 
 // Trigger an OAuth flow
-// Param 1: config key from Step 2 (bullet 2)
-// Param 2: ID you will use to retrieve the connection (most often the user ID)
+// <CONFIG-KEY>: The config key from Step 2 (generally same as the integration name. e.g. "github")
+// <CONNECTION-ID>: ID you will use to retrieve the connection (most often the user ID)
 nango
     .auth('<CONFIG-KEY>', '<CONNECTION-ID>')
     .then((result) => {
@@ -118,8 +118,8 @@ import Nango from '@nangohq/frontend'; // After installing the npm package
 var nango = new Nango({ host: 'http://localhost:3003' });
 
 // Trigger an OAuth flow
-// Param 1: config key from Step 2 (bullet 4)
-// Param 2: ID you will use to retrieve the connection (most often the user ID)
+// <CONFIG-KEY>: The config key from Step 2 (generally same as the integration name. e.g. "github")
+// <CONNECTION-ID>: ID you will use to retrieve the connection (most often the user ID)
 nango
     .auth('<CONFIG-KEY>', '<CONNECTION-ID>')
     .then((result) => {
@@ -141,8 +141,8 @@ import Nango from '@nangohq/frontend'; // After installing the npm package
 var nango = new Nango({ host: '<NANGO-HOST-AND-PORT>' });
 
 // Trigger an OAuth flow
-// Param 1: config key from Step 2 (bullet 4)
-// Param 2: ID you will use to retrieve the connection (most often the user ID)
+// <CONFIG-KEY>: The config key from Step 2 (generally same as the integration name. e.g. "github")
+// <CONNECTION-ID>: ID you will use to retrieve the connection (most often the user ID)
 nango
     .auth('<CONFIG-KEY>', '<CONNECTION-ID>')
     .then((result) => {
@@ -165,7 +165,7 @@ Go ahead & try it! 🙌
 There are a few different way in which you can obtain access tokens from Nango. The dashboard is great for testing, but in your app we recommend using the [node SDK](nango-auth/node-sdk.md) or the [Connections REST API](nango-auth/connections-api.md).
 
 :::info
-**Make sure you always have a fresh access token**  
+**Make sure you always have a fresh access token**
 Many OAuth providers provide short-lived access tokens (30-60 minutes). Nango refreshes them automatically for you, but it is important that you always request the access token right before each API call. Otherwise you may work with a stale token that has been revoked and your API call will fail.
 :::
 
