@@ -1,8 +1,5 @@
-import type { Knex } from 'knex';
-import db from '../db/database.js';
+import db, { schema } from '../db/database.js';
 import type { TicketModel } from '../models/Ticket.js';
-
-const schema = (): Knex.QueryBuilder => db.knex.withSchema(db.schema());
 
 const TABLE = '_nango_unified_tickets';
 

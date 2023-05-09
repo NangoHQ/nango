@@ -6,7 +6,8 @@ exports.up = function (knex, _) {
         table.string('provider_config_key').notNullable();
         table.string('connection_id').notNullable();
         table.integer('account_id').references('id').inTable('nango._nango_accounts').defaultTo(0).notNullable();
-        table.string('status').notNullable();
+        table.enu('status', ['RUNNING', 'PAUSED', 'STOPPED', 'SUCCESS']).defaultTo('INITIAL').notNullable();
+        table.enu('type', ['INITIAL', 'INCREMENTAL']).defaultTo('initial').notNullable();
         table.timestamps(true, true);
     });
 };

@@ -1,9 +1,9 @@
 import * as uuid from 'uuid';
 import { Nango } from '@nangohq/node';
 import db from './db/database.js';
-import type { Sync } from '@nangohq/nango-server/dist/models.js';
+import { Sync, SyncStatus } from '@nangohq/nango-server/dist/models.js';
 import type { GithubIssues } from './models/Ticket.js';
-import { getById } from '@nangohq/nango-server/dist/services/sync.service.js';
+import { getById as getSyncById, updateStatus as updateSyncStatus } from '@nangohq/nango-server/dist/services/sync.service.js';
 import configService from '@nangohq/nango-server/dist/services/config.service.js';
 import { createOrUpdate as createOrUpdateTicket } from './services/ticket.service.js';
 
@@ -24,7 +24,7 @@ export async function syncActivity(name: string): Promise<string> {
 }
 
 export async function routeSync(syncId: number): Promise<boolean> {
-    const sync: Sync = (await getById(syncId, db)) as Sync;
+    const sync: Sync = (await getSyncById(syncId, db)) as Sync;
     const syncConfig = await configService.getProviderConfig(sync?.provider_config_key, sync?.account_id, db);
 
     let response = false;
@@ -59,11 +59,17 @@ export async function syncGithub(sync: Sync): Promise<boolean> {
         endpoint: 'repos/NangoHq/nango/issues'
     });
 
-    if (response) {
-        insertModel(response.data as unknown as GithubIssues);
+    if (!response) {
+        return false;
     }
 
-    return true;
+    const result = await insertModel(response.data as unknown as GithubIssues);
+
+    if (result) {
+        await updateSyncStatus(sync.id, SyncStatus.SUCCESS, db);
+    }
+
+    return result;
 }
 
 async function insertModel(issues: GithubIssues): Promise<boolean> {

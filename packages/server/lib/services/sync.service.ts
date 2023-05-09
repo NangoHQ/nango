@@ -1,7 +1,7 @@
 import { Client, Connection } from '@temporalio/client';
 //import type { WorkflowStartOptions } from '@temporalio/client';
 import db from '../db/database.js';
-import { Sync, SyncStatus } from '../models.js';
+import { Sync, SyncStatus, SyncType } from '../models.js';
 
 const table = '_nango_unified_syncs';
 const SYNC_NAME = 'continuousSync';
@@ -62,13 +62,14 @@ export const initiate = async (connectionId: string, providerConfigKey: string, 
     }
 };
 
-export const create = async (connectionId: string, providerConfigKey: string, accountId: number): Promise<Sync | null> => {
+export const create = async (connectionId: string, providerConfigKey: string, accountId: number, type = SyncType.INITIAL): Promise<Sync | null> => {
     const result: void | Pick<Sync, 'id'> = await db.knex.withSchema(db.schema()).from<Sync>(table).insert(
         {
             connection_id: connectionId,
             provider_config_key: providerConfigKey,
             account_id: accountId,
-            status: SyncStatus.RUNNING
+            status: SyncStatus.RUNNING,
+            type
         },
         ['id']
     );
@@ -81,70 +82,16 @@ export const create = async (connectionId: string, providerConfigKey: string, ac
     return null;
 };
 
-/*
-class SyncService {
-    private SYNC_NAME = 'continuousSync';
+export const updateStatus = async (id: number, status: SyncStatus, argDb?: typeof db): Promise<void> => {
+    const database = argDb || db;
+    return database.knex.withSchema(database.schema()).from<Sync>(table).where({ id }).update({
+        status
+    });
+};
 
-    async getById(id: number): Promise<Sync | null> {
-        const result = await db.knex.withSchema(db.schema()).select('*').from<Sync>(table).where({ id: id });
-
-        if (result == null || result.length == 0 || result[0] == null) {
-            return null;
-        }
-
-        return result[0];
-    }
-
-    async initiate(connectionId: string, providerConfigKey: string, accountId: number): Promise<void> {
-        const sync = await this.create(connectionId, providerConfigKey, accountId);
-        if (sync) {
-            this.startContinuous(sync);
-        }
-    }
-
-    async create(connectionId: string, providerConfigKey: string, accountId: number): Promise<Sync | null> {
-        const result: void | Pick<Sync, 'id'> = await db.knex.withSchema(db.schema()).from<Sync>(table).insert(
-            {
-                connection_id: connectionId,
-                provider_config_key: providerConfigKey,
-                account_id: accountId,
-                status: SyncStatus.RUNNING
-            },
-            ['id']
-        );
-
-        if (Array.isArray(result) && result.length === 1 && result[0] !== null && 'id' in result[0]) {
-            const statusId = result[0]['id'];
-            return this.getById(statusId) as unknown as Sync;
-        }
-
-        return null;
-    }
-
-    async edit(sync: Sync) {
-        return db.knex.withSchema(db.schema()).from<Sync>(table).where({ id: sync.id }).update({
-            status: sync.status
-        });
-    }
-
-    private async startContinuous(sync: Sync) {
-        const client = await getClient();
-
-        const handle = await client.workflow.start(this.SYNC_NAME, {
-            taskQueue: 'unified_syncs',
-            workflowId: `unified-sync-${sync.id}`,
-            args: [
-                {
-                    syncId: sync.id,
-                    frequencyInMs: 3600000 // 1 hour
-                }
-            ]
-        });
-
-        // log this to the UI somewhere
-        console.log(`Started workflow ${handle?.workflowId}`);
-    }
-}
-
-export default new SyncService();
-*/
+export const updateType = async (id: number, type: SyncType, argDb?: typeof db): Promise<void> => {
+    const database = argDb || db;
+    return database.knex.withSchema(database.schema()).from<Sync>(table).where({ id }).update({
+        type
+    });
+};

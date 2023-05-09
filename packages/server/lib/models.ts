@@ -223,7 +223,13 @@ interface CustomParamsSerializer {
 export enum SyncStatus {
     RUNNING = 'RUNNING',
     PAUSED = 'PAUSED',
-    STOPPED = 'STOPPED'
+    STOPPED = 'STOPPED',
+    SUCCESS = 'SUCCESS'
+}
+
+export enum SyncType {
+    INITIAL = 'INITIAL',
+    INCREMENTAL = 'INCREMENTAL'
 }
 
 export interface Sync {
@@ -232,6 +238,7 @@ export interface Sync {
     connection_id: string;
     provider_config_key: string;
     account_id: number;
+    type: SyncType;
     created_at?: Date;
     updated_at?: Date;
 }

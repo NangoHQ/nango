@@ -19,4 +19,8 @@ class KnexDatabase {
     }
 }
 
-export default new KnexDatabase();
+const db = new KnexDatabase();
+
+export const schema = (): Knex.QueryBuilder => db.knex.withSchema(db.schema());
+
+export default db;
