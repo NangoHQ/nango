@@ -1,10 +1,11 @@
 import * as uuid from 'uuid';
 import { Nango } from '@nangohq/node';
-import { getById } from '@nangohq/nango-server/dist/services/sync.service.js';
 import db from './db/database.js';
-import type { Endpoints } from '@octokit/types';
-
-type IssuesListForRepoResponseData = Endpoints['GET /repos/{owner}/{repo}/issues']['response']['data'];
+import type { Sync } from '@nangohq/nango-server/dist/models.js';
+import type { GithubIssues } from './models/Ticket.js';
+import { getById } from '@nangohq/nango-server/dist/services/sync.service.js';
+import configService from '@nangohq/nango-server/dist/services/config.service.js';
+import { createOrUpdate as createOrUpdateTicket } from './services/ticket.service.js';
 
 export function getServerPort() {
     return process.env['SERVER_PORT'] != null ? +process.env['SERVER_PORT'] : 3003;
@@ -22,8 +23,24 @@ export async function syncActivity(name: string): Promise<string> {
     return `Synced, ${name}!`;
 }
 
-export async function syncGithub(syncId: number): Promise<boolean> {
-    const sync = await getById(syncId);
+export async function routeSync(syncId: number): Promise<boolean> {
+    const sync: Sync = (await getById(syncId, db)) as Sync;
+    const syncConfig = await configService.getProviderConfig(sync?.provider_config_key, sync?.account_id, db);
+
+    let response = false;
+
+    switch (syncConfig?.provider) {
+        case 'github':
+            response = await syncGithub(sync);
+            break;
+        case 'asana':
+            break;
+    }
+
+    return response;
+}
+
+export async function syncGithub(sync: Sync): Promise<boolean> {
     const nango = new Nango({ host: getServerBaseUrl() });
 
     if (!nango) {
@@ -43,31 +60,16 @@ export async function syncGithub(syncId: number): Promise<boolean> {
     });
 
     if (response) {
-        insertModel(response.data as unknown as IssuesListForRepoResponseData);
+        insertModel(response.data as unknown as GithubIssues);
     }
 
     return true;
 }
 
-interface TicketModel {
-    id: string;
-    external_id: number;
-    title: string;
-    description: string;
-    status: string; // TODO enum
-    external_raw_status: string;
-    number_of_comments: number;
-    comments: number;
-    creator: string;
-    external_created_at: string;
-    external_updated_at: string;
-    deleted_at: string | null;
-}
-
-async function insertModel(response: IssuesListForRepoResponseData): Promise<boolean> {
+async function insertModel(issues: GithubIssues): Promise<boolean> {
+    let result = true;
     const models = [];
-    console.log(response);
-    for (const issue of response) {
+    for (const issue of issues) {
         const model = {
             id: uuid.v4(),
             external_id: issue.id,
@@ -80,12 +82,17 @@ async function insertModel(response: IssuesListForRepoResponseData): Promise<boo
             creator: issue?.user?.login as string, // do a more thorough lookup?
             external_created_at: issue.created_at,
             external_updated_at: issue.updated_at,
-            deleted_at: null
+            deleted_at: null,
+            raw_json: issue
         };
         models.push(model);
-        const result: void | Pick<TicketModel, 'id'> = await db.knex.withSchema(db.schema()).from<TicketModel>('_nango_unified_tickets').insert(model);
-        console.log(result);
+
+        const insert = await createOrUpdateTicket(model);
+
+        if (!insert) {
+            result = false;
+        }
     }
 
-    return true;
+    return result;
 }

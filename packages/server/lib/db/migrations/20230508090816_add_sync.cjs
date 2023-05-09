@@ -1,7 +1,7 @@
-const table = '_nango_unified_syncs';
+const tableName = '_nango_unified_syncs';
 
 exports.up = function (knex, _) {
-    return knex.schema.withSchema('nango').createTable(table, function (table) {
+    return knex.schema.withSchema('nango').createTable(tableName, function (table) {
         table.increments('id').primary();
         table.string('provider_config_key').notNullable();
         table.string('connection_id').notNullable();
@@ -12,5 +12,5 @@ exports.up = function (knex, _) {
 };
 
 exports.down = function (knex, _) {
-    return knex.schema.withSchema('nango').dropTable(table);
+    return knex.schema.withSchema('nango').dropTable(tableName);
 };

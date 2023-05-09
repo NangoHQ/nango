@@ -14,6 +14,7 @@ exports.up = function (knex, _) {
         table.dateTime('external_created_at').notNullable();
         table.dateTime('external_updated_at').notNullable();
         table.dateTime('deleted_at');
+        table.jsonb('raw_json');
         table.timestamps(true, true);
     });
 };

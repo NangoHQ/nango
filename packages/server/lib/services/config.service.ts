@@ -44,8 +44,10 @@ class ConfigService {
         return fileEntries as { [key: string]: ProviderTemplate };
     }
 
-    async getProviderConfig(providerConfigKey: string, accountId: number): Promise<ProviderConfig | null> {
-        let result = await db.knex
+    async getProviderConfig(providerConfigKey: string, accountId: number, argDb?: typeof db): Promise<ProviderConfig | null> {
+        const database = argDb || db;
+
+        const result = await database.knex
             .withSchema(db.schema())
             .select('*')
             .from<ProviderConfig>(`_nango_configs`)
