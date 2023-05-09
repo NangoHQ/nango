@@ -1,6 +1,6 @@
 export interface ActivityResponse {
     level: 'info' | 'debug' | 'error';
-    action: 'oauth' | 'proxy' | 'token';
+    action: 'oauth' | 'proxy' | 'token' | 'sync';
     success: boolean;
     timestamp: number;
     start: number;

@@ -234,10 +234,8 @@ export enum SyncType {
 
 export interface Sync {
     id: number;
+    nango_connection_id: number;
     status: SyncStatus;
-    connection_id: string;
-    provider_config_key: string;
-    account_id: number;
     type: SyncType;
     created_at?: Date;
     updated_at?: Date;

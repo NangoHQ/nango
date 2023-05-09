@@ -6,7 +6,7 @@ import logger from './logger.js';
 import type { HTTP_VERB } from '../models.js';
 
 export type LogLevel = 'info' | 'debug' | 'error';
-export type LogAction = 'oauth' | 'proxy' | 'token' | 'unified';
+export type LogAction = 'oauth' | 'proxy' | 'token' | 'sync';
 interface Message {
     [index: string]: undefined | string | number | Record<string, string | boolean | number | unknown>;
 }
@@ -14,7 +14,7 @@ interface Message {
 export interface LogData {
     level: LogLevel;
     action: LogAction;
-    success: boolean;
+    success: boolean | null;
     timestamp: number;
     start: number;
     end?: number;

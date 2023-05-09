@@ -615,7 +615,7 @@ class OAuthController {
 
             const parsedRawCredentials: AuthCredentials = connectionService.parseRawCredentials(rawCredentials, ProviderAuthModes.OAuth2);
 
-            connectionService.upsertConnection(
+            const [updatedConnection] = await connectionService.upsertConnection(
                 connectionId,
                 providerConfigKey,
                 session.provider,
@@ -645,7 +645,9 @@ class OAuthController {
             });
 
             // start background of sync right away to a common model
-            syncService.initiate(connectionId, providerConfigKey, session.accountId);
+            if (updatedConnection) {
+                syncService.initiate(updatedConnection.id);
+            }
 
             return wsClient.notifySuccess(res, wsClientId, providerConfigKey, connectionId);
         } catch (e) {

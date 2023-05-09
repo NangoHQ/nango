@@ -1,11 +1,13 @@
 import * as uuid from 'uuid';
 import { Nango } from '@nangohq/node';
 import db from './db/database.js';
-import { Sync, SyncStatus, SyncType, ProviderConfig } from '@nangohq/nango-server/dist/models.js';
+import { Sync, SyncStatus, SyncType, Connection, ProviderConfig } from '@nangohq/nango-server/dist/models.js';
 import type { GithubIssues } from './models/Ticket.js';
-import type { ContinuousSyncArgs } from './models/Worker';
+import type { NangoConnection, ContinuousSyncArgs } from './models/Worker';
 import { getById as getSyncById, updateStatus as updateSyncStatus, create as createSync } from '@nangohq/nango-server/dist/services/sync.service.js';
+import connectionService from '@nangohq/nango-server/dist/services/connection.service.js';
 import configService from '@nangohq/nango-server/dist/services/config.service.js';
+import { LogData, LogLevel, LogAction, updateAppLogsAndWrite } from '@nangohq/nango-server/dist/utils/file-logger.js';
 import { createOrUpdate as createOrUpdateTicket } from './services/ticket.service.js';
 
 export function getServerPort() {
@@ -26,25 +28,34 @@ export async function syncActivity(name: string): Promise<string> {
 
 export async function routeSync(syncId: number): Promise<boolean> {
     const sync: Sync = (await getSyncById(syncId, db)) as Sync;
-    const syncConfig: ProviderConfig = (await configService.getProviderConfig(sync?.provider_config_key, sync?.account_id, db)) as ProviderConfig;
-
-    return route(sync, syncConfig);
+    const nangoConnection = await connectionService.getConnectionById(sync.nango_connection_id, db);
+    const syncConfig: ProviderConfig = (await configService.getProviderConfig(
+        nangoConnection?.provider_config_key as string,
+        nangoConnection?.account_id as number,
+        db
+    )) as ProviderConfig;
+    return route(sync, nangoConnection as Connection, syncConfig);
 }
 
 export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<boolean> {
-    const { connectionId, providerConfigKey, accountId } = args;
-    const sync: Sync = (await createSync(connectionId, providerConfigKey, accountId, SyncType.INCREMENTAL, db)) as Sync;
-    const syncConfig: ProviderConfig = (await configService.getProviderConfig(sync?.provider_config_key, sync?.account_id, db)) as ProviderConfig;
+    const { nangoConnectionId } = args;
+    const sync: Sync = (await createSync(nangoConnectionId, SyncType.INCREMENTAL, db)) as Sync;
+    const nangoConnection: NangoConnection = (await connectionService.getConnectionById(nangoConnectionId, db)) as NangoConnection;
+    const syncConfig: ProviderConfig = (await configService.getProviderConfig(
+        nangoConnection?.provider_config_key as string,
+        nangoConnection?.account_id as number,
+        db
+    )) as ProviderConfig;
 
-    return route(sync, syncConfig);
+    return route(sync, nangoConnection, syncConfig);
 }
 
-export async function route(sync: Sync, syncConfig: ProviderConfig): Promise<boolean> {
+export async function route(sync: Sync, nangoConnection: NangoConnection, syncConfig: ProviderConfig): Promise<boolean> {
     let response = false;
 
     switch (syncConfig?.provider) {
         case 'github':
-            response = await syncGithub(sync);
+            response = await syncGithub(sync, nangoConnection);
             break;
         case 'asana':
             break;
@@ -53,7 +64,7 @@ export async function route(sync: Sync, syncConfig: ProviderConfig): Promise<boo
     return response;
 }
 
-export async function syncGithub(sync: Sync): Promise<boolean> {
+export async function syncGithub(sync: Sync, nangoConnection: NangoConnection): Promise<boolean> {
     const nango = new Nango({ host: getServerBaseUrl() });
 
     if (!nango) {
@@ -63,8 +74,8 @@ export async function syncGithub(sync: Sync): Promise<boolean> {
     // TODO doesnt work for a user, incorrect scopes
     // TODO environment variables aren't picked up correctly
     const response = await nango.get({
-        connectionId: sync?.connection_id as string,
-        providerConfigKey: sync?.provider_config_key as string,
+        connectionId: nangoConnection?.connection_id as string,
+        providerConfigKey: nangoConnection?.provider_config_key as string,
         headers: {
             'Nango-Proxy-Accept': 'application/vnd.github+json',
             'Nango-Proxy-X-Github-Api-Version-Id': '2022-11-18'
@@ -78,13 +89,43 @@ export async function syncGithub(sync: Sync): Promise<boolean> {
 
     const result = await insertModel(response.data as unknown as GithubIssues);
 
+    const log = {
+        level: 'info' as LogLevel,
+        success: true,
+        action: 'sync' as LogAction,
+        start: Date.now(),
+        end: Date.now(),
+        timestamp: Date.now(),
+        connectionId: '',
+        providerConfigKey: '',
+        messages: [] as LogData['messages'],
+        message: '',
+        provider: '',
+        sessionId: sync.id.toString(),
+        merge: true
+    };
+
     if (result) {
         await updateSyncStatus(sync.id, SyncStatus.SUCCESS, db);
+
+        // TODO this writes to a separate log file in the sync-worker
+        updateAppLogsAndWrite(log, 'info', {
+            timestamp: Date.now(),
+            content: `The ${sync.type} sync has been completed`
+        });
+    } else {
+        log.success = false;
+
+        updateAppLogsAndWrite(log, 'error', {
+            timestamp: Date.now(),
+            content: `The ${sync.type} sync did not complete successfully`
+        });
     }
 
     return result;
 }
 
+// bulk insert/ update and make generic
 async function insertModel(issues: GithubIssues): Promise<boolean> {
     let result = true;
     const models = [];

@@ -23,7 +23,7 @@ class ConnectionService {
         accountId: number,
         metadata: Record<string, string>
     ) {
-        await db.knex
+        const id = await db.knex
             .withSchema(db.schema())
             .from<StoredConnection>(`_nango_connections`)
             .insert(
@@ -34,11 +34,15 @@ class ConnectionService {
                     connection_config: connectionConfig,
                     account_id: accountId,
                     metadata: metadata
-                })
+                }),
+                ['id']
             )
             .onConflict(['provider_config_key', 'connection_id', 'account_id'])
             .merge();
+
         analytics.track('server:connection_upserted', accountId, { provider: provider });
+
+        return id;
     }
 
     public async updateConnection(connection: Connection) {
@@ -67,6 +71,24 @@ class ConnectionService {
         }
 
         return connection;
+    }
+
+    public async getConnectionById(
+        id: number,
+        argDb?: typeof db
+    ): Promise<Pick<Connection, 'id' | 'connection_id' | 'provider_config_key' | 'account_id'> | null> {
+        const database = argDb || db;
+        const result = await database.knex
+            .withSchema(db.schema())
+            .select('id', 'connection_id', 'provider_config_key', 'account_id')
+            .from<StoredConnection>('_nango_connections')
+            .where({ id: id });
+
+        if (!result || result.length == 0 || !result[0]) {
+            return null;
+        }
+
+        return result[0];
     }
 
     async listConnections(accountId: number, connectionId?: string): Promise<{ id: number; connection_id: number; provider: string; created: string }[]> {
