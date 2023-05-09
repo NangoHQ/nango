@@ -1,9 +1,10 @@
 import * as uuid from 'uuid';
 import { Nango } from '@nangohq/node';
 import db from './db/database.js';
-import { Sync, SyncStatus } from '@nangohq/nango-server/dist/models.js';
+import { Sync, SyncStatus, SyncType, ProviderConfig } from '@nangohq/nango-server/dist/models.js';
 import type { GithubIssues } from './models/Ticket.js';
-import { getById as getSyncById, updateStatus as updateSyncStatus } from '@nangohq/nango-server/dist/services/sync.service.js';
+import type { ContinuousSyncArgs } from './models/Worker';
+import { getById as getSyncById, updateStatus as updateSyncStatus, create as createSync } from '@nangohq/nango-server/dist/services/sync.service.js';
 import configService from '@nangohq/nango-server/dist/services/config.service.js';
 import { createOrUpdate as createOrUpdateTicket } from './services/ticket.service.js';
 
@@ -25,8 +26,20 @@ export async function syncActivity(name: string): Promise<string> {
 
 export async function routeSync(syncId: number): Promise<boolean> {
     const sync: Sync = (await getSyncById(syncId, db)) as Sync;
-    const syncConfig = await configService.getProviderConfig(sync?.provider_config_key, sync?.account_id, db);
+    const syncConfig: ProviderConfig = (await configService.getProviderConfig(sync?.provider_config_key, sync?.account_id, db)) as ProviderConfig;
 
+    return route(sync, syncConfig);
+}
+
+export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<boolean> {
+    const { connectionId, providerConfigKey, accountId } = args;
+    const sync: Sync = (await createSync(connectionId, providerConfigKey, accountId, SyncType.INCREMENTAL, db)) as Sync;
+    const syncConfig: ProviderConfig = (await configService.getProviderConfig(sync?.provider_config_key, sync?.account_id, db)) as ProviderConfig;
+
+    return route(sync, syncConfig);
+}
+
+export async function route(sync: Sync, syncConfig: ProviderConfig): Promise<boolean> {
     let response = false;
 
     switch (syncConfig?.provider) {

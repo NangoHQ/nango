@@ -1,10 +1,10 @@
 import { Client, Connection } from '@temporalio/client';
-//import type { WorkflowStartOptions } from '@temporalio/client';
 import db from '../db/database.js';
 import { Sync, SyncStatus, SyncType } from '../models.js';
+import { LogData, LogLevel, LogAction, updateAppLogsAndWrite } from '../utils/file-logger.js';
 
 const table = '_nango_unified_syncs';
-const SYNC_NAME = 'continuousSync';
+const TASK_QUEUE = 'unified_syncs';
 
 export async function getClient(): Promise<Client | null> {
     try {
@@ -30,19 +30,57 @@ export const startContinuous = async (sync: Sync) => {
         return;
     }
 
-    const handle = await client?.workflow.start(SYNC_NAME, {
-        taskQueue: 'unified_syncs',
+    const handle = await client?.workflow.start('initialSync', {
+        taskQueue: TASK_QUEUE,
         workflowId: `unified-sync-${sync.id}`,
         args: [
             {
-                syncId: sync.id,
-                frequencyInMs: 3600000 // 1 hour
+                syncId: sync.id
             }
         ]
     });
 
-    // log this to the UI somewhere
-    console.log(`Started workflow ${handle?.workflowId}`);
+    const log = {
+        level: 'info' as LogLevel,
+        success: false,
+        action: 'unified' as LogAction,
+        start: Date.now(),
+        end: Date.now(),
+        timestamp: Date.now(),
+        connectionId: sync.connection_id as string,
+        providerConfigKey: sync.provider_config_key as string,
+        messages: [] as LogData['messages'],
+        message: '',
+        provider: '',
+        sessionId: ''
+    };
+
+    // kick off schedule
+    await client?.schedule.create({
+        scheduleId: `unified-sync-schedule-${sync.id}`,
+        spec: {
+            //intervals: [{ every: '1h' }]
+            intervals: [{ every: '10m' }]
+        },
+        action: {
+            type: 'startWorkflow',
+            workflowType: 'continuousSync',
+            taskQueue: TASK_QUEUE,
+            args: [
+                {
+                    providerConfigKey: sync.provider_config_key,
+                    connectionId: sync.connection_id,
+                    accountId: sync.account_id
+                }
+            ]
+        }
+    });
+
+    updateAppLogsAndWrite(log, 'info', {
+        content: `Started initial background sync ${handle?.workflowId} and data updated on a schedule in the task queue: ${TASK_QUEUE}`,
+        timestamp: Date.now(),
+        connectionId: sync.connection_id as string
+    });
 };
 export const getById = async (id: number, argDb?: typeof db): Promise<Sync | null> => {
     const database = argDb || db;
@@ -56,14 +94,15 @@ export const getById = async (id: number, argDb?: typeof db): Promise<Sync | nul
 };
 
 export const initiate = async (connectionId: string, providerConfigKey: string, accountId: number): Promise<void> => {
-    const sync = await create(connectionId, providerConfigKey, accountId);
+    const sync = await create(connectionId, providerConfigKey, accountId, SyncType.INITIAL);
     if (sync) {
         startContinuous(sync);
     }
 };
 
-export const create = async (connectionId: string, providerConfigKey: string, accountId: number, type = SyncType.INITIAL): Promise<Sync | null> => {
-    const result: void | Pick<Sync, 'id'> = await db.knex.withSchema(db.schema()).from<Sync>(table).insert(
+export const create = async (connectionId: string, providerConfigKey: string, accountId: number, type: SyncType, argDb?: typeof db): Promise<Sync | null> => {
+    const database = argDb || db;
+    const result: void | Pick<Sync, 'id'> = await database.knex.withSchema(database.schema()).from<Sync>(table).insert(
         {
             connection_id: connectionId,
             provider_config_key: providerConfigKey,
@@ -76,7 +115,7 @@ export const create = async (connectionId: string, providerConfigKey: string, ac
 
     if (Array.isArray(result) && result.length === 1 && result[0] !== null && 'id' in result[0]) {
         const statusId = result[0]['id'];
-        return getById(statusId) as unknown as Sync;
+        return getById(statusId, database) as unknown as Sync;
     }
 
     return null;
