@@ -69,11 +69,11 @@ const config = {
                 {
                     name: 'keywords',
                     content:
-                        'nango, sync api, sync endpoint, data sync, sync to database, sync to db, continuous sync, native integrations, integrations, customer-facing integrations, open-source framework, open-source, nango docs, nango documentation'
+                        'nango, unified api, api integrations, product integrations, sync api, data sync, continuous sync, native integrations, integrations, customer-facing integrations, open-source framework, open-source, nango docs, nango documentation'
                 },
                 {
                     name: 'description',
-                    content: 'The documentation for the api endpoint sync project Nango'
+                    content: 'The documentation for the Nango open-source unified API'
                 }
             ],
             docs: {
@@ -94,12 +94,12 @@ const config = {
                         label: 'Nango',
                         position: 'left'
                     },
-                    {
-                        type: 'doc',
-                        docId: 'nango-sync/introduction',
-                        position: 'left',
-                        label: 'Nango Sync'
-                    },
+                    // {
+                    //     type: 'doc',
+                    //     docId: 'nango-sync/introduction',
+                    //     position: 'left',
+                    //     label: 'Nango Sync'
+                    // },
                     {
                         label: 'Community Slack',
                         href: 'https://nango.dev/slack',

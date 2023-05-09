@@ -11,9 +11,17 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 
 ## Using Brex with Nango
 
-Provider template name in Nango: `brex`  
+API template name in Nango: `brex`  
 For testing with Brex's staging system use `brex-staging` instead.  
 Follow our [quickstart](../quickstart.md) to add an OAuth integration with Brex in 5 minutes.
+
+Supported features in Nango:
+
+| Feature                            | Supported                 |
+| ---------------------------------- | ------------------------- |
+| [Auth](/nango-auth/core-concepts)  | ✅                        |
+| [Proxy](/nango-unified-apis/proxy) | ❎                        |
+| Unified APIs                       | _Not included in any yet_ |
 
 ## App registration & publishing
 

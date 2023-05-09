@@ -1,27 +1,40 @@
 ---
-sidebar_label: Microsoft Teams
+sidebar_label: Microsoft-teams
 ---
 
-# Microsoft Teams API wiki
+#  Microsoft-teams API wiki
 
-:::note Working with the Microsoft Teams API?
+:::note Working with the Microsoft-teams API?
 Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/master/docs/docs/providers/microsoft-teams.md).
 
 :::
 
-## Using Microsoft Teams with Nango
+## Using  Microsoft-teams with Nango
 
-Provider template name in Nango: `microsoft-teams`  
+API template name in Nango: `microsoft-teams`  
 Follow our [quickstart](../quickstart.md) to add an OAuth integration with Microsoft Teams in 5 minutes.
+
+Supported features in Nango:
+
+| Feature                            | Supported                 |
+| ---------------------------------- | ------------------------- |
+| [Auth](/nango-auth/core-concepts)  | ✅                        |
+| [Proxy](/nango-unified-apis/proxy) | ❎                        |
+| Unified APIs                       | _Not included in any yet_ |
 
 ## App registration & publishing
 
-_No information yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+**Rating: `Easy & fast`**
+Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://go.microsoft.com/fwlink/?linkid=2083908)
+
+
 
 ## Useful links
 
-_No links yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+- [How to register an Application](https://go.microsoft.com/fwlink/?linkid=2083908)
+- [OAuth-related docs](https://learn.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow)
+- [List of OAuth scopes](https://learn.microsoft.com/en-us/azure/active-directory/develop/permissions-consent-overview)
+
 
 ## API specific gotchas
 
-_No gotchas yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_

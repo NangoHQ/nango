@@ -11,17 +11,30 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 
 ## Using Dropbox with Nango
 
-Provider template name in Nango: `dropbox`  
+API template name in Nango: `dropbox`  
 Follow our [quickstart](../quickstart.md) to add an OAuth integration with Dropbox in 5 minutes.
+
+Supported features in Nango:
+
+| Feature                            | Supported                 |
+| ---------------------------------- | ------------------------- |
+| [Auth](/nango-auth/core-concepts)  | ✅                        |
+| [Proxy](/nango-unified-apis/proxy) | ❎                        |
+| Unified APIs                       | _Not included in any yet_ |
 
 ## App registration & publishing
 
-_No information yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+**Rating: `Easy & fast`**
+Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://www.dropbox.com/developers/apps)
+
+
 
 ## Useful links
 
-_No links yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+- [How to register an Application](https://www.dropbox.com/developers/apps)
+- [OAuth-related docs](https://developers.dropbox.com/oauth-guide)
+
 
 ## API specific gotchas
+- When you create your application in the App Console, you’ll choose from different scopes in the ‘Permissions’ tab. 
 
-_No gotchas yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_

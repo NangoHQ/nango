@@ -11,20 +11,28 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 
 ## Using Keap with Nango
 
-Provider template name in Nango: `keap`  
+API template name in Nango: `keap`  
 Follow our [quickstart](../quickstart.md) to add an OAuth integration with Keap in 5 minutes.
+
+Supported features in Nango:
+
+| Feature                            | Supported                 |
+| ---------------------------------- | ------------------------- |
+| [Auth](/nango-auth/core-concepts)  | ✅                        |
+| [Proxy](/nango-unified-apis/proxy) | ❎                        |
+| Unified APIs                       | _Not included in any yet_ |
 
 ## App registration & publishing
 
 **Rating: `Easy & fast`**
 Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://keys.developer.keap.com/accounts/create?client_id=portal-nue1osvn10)
 
-
 ## Useful links
 
-- [How to register an Application](https://keys.developer.keap.com/accounts/create?client_id=portal-nue1osvn10)
-- [OAuth-related docs](https://developer.infusionsoft.com/getting-started-oauth-keys/)
-- [Web API docs (their REST API)](https://developer.keap.com/docs/rest/#tag/Account-Info)
+-   [How to register an Application](https://keys.developer.keap.com/accounts/create?client_id=portal-nue1osvn10)
+-   [OAuth-related docs](https://developer.infusionsoft.com/getting-started-oauth-keys/)
+-   [Web API docs (their REST API)](https://developer.keap.com/docs/rest/#tag/Account-Info)
 
 ## API specific gotchas
-- Keap only has scope _`full`_ as  the possible scope to use.  
+
+-   Keap only has scope _`full`_ as the possible scope to use.

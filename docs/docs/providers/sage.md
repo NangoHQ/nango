@@ -11,17 +11,30 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 
 ## Using Sage with Nango
 
-Provider template name in Nango: `sage`  
+API template name in Nango: `sage`  
 Follow our [quickstart](../quickstart.md) to add an OAuth integration with Sage in 5 minutes.
+
+Supported features in Nango:
+
+| Feature                            | Supported                 |
+| ---------------------------------- | ------------------------- |
+| [Auth](/nango-auth/core-concepts)  | ✅                        |
+| [Proxy](/nango-unified-apis/proxy) | ❎                        |
+| Unified APIs                       | _Not included in any yet_ |
 
 ## App registration & publishing
 
-_No information yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+**Rating: `Easy & fast`**
+Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://developer.sage.com/accounting/guides/getting-started/client_app_registration/)
+
+
 
 ## Useful links
 
-_No links yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+- [How to register an Application](https://developer.sage.com/accounting/guides/getting-started/client_app_registration/)
+- [OAuth-related docs](https://developer.sage.com/accounting/guides/authenticating/authentication/)
+- [API](https://developer.sage.com/accounting/reference/)
+
 
 ## API specific gotchas
-
-_No gotchas yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+- Scopes can only be readonly or full_access.

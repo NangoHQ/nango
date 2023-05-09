@@ -14,6 +14,14 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 YouTube uses the same OAuth mechanism as other Google services. Please use the Google template for it in Nango: `google`  
 Follow our [quickstart](../quickstart.md) to add an OAuth integration with YouTube in 5 minutes.
 
+Supported features in Nango:
+
+| Feature                            | Supported                 |
+| ---------------------------------- | ------------------------- |
+| [Auth](/nango-auth/core-concepts)  | ✅                        |
+| [Proxy](/nango-unified-apis/proxy) | ❎                        |
+| Unified APIs                       | _Not included in any yet_ |
+
 ## App registration & publishing
 
 Google's APIs all use the same OAuth service. To which APIs you get access is determined by the scopes that you request.

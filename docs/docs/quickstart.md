@@ -9,6 +9,9 @@ import TabItem from '@theme/TabItem';
 
 :::tip
 Just want to see Nango in Action? Check out our [1min demo video](introduction.md#demo)
+
+**Looking to use the unified APIs?**
+Reach out to us on the [Slack community](https://nango.dev/slack), currently these are in private beta. Public access coming soon!
 :::
 
 Follow these 4 steps to run OAuth flows with Nango in your app in 15 minutes.
@@ -92,8 +95,8 @@ import Nango from '@nangohq/frontend'; // After installing the npm package
 var nango = new Nango({ publicKey: '<PUBLIC-KEY>' });
 
 // Trigger an OAuth flow
-// Param 1: config key from Step 2 (bullet 2)
-// Param 2: ID you will use to retrieve the connection (most often the user ID)
+// <CONFIG-KEY>: The config key from Step 2 (generally same as the integration name. e.g. "github")
+// <CONNECTION-ID>: ID you will use to retrieve the connection (most often the user ID)
 nango
     .auth('<CONFIG-KEY>', '<CONNECTION-ID>')
     .then((result) => {
@@ -115,8 +118,8 @@ import Nango from '@nangohq/frontend'; // After installing the npm package
 var nango = new Nango({ host: 'http://localhost:3003' });
 
 // Trigger an OAuth flow
-// Param 1: config key from Step 2 (bullet 4)
-// Param 2: ID you will use to retrieve the connection (most often the user ID)
+// <CONFIG-KEY>: The config key from Step 2 (generally same as the integration name. e.g. "github")
+// <CONNECTION-ID>: ID you will use to retrieve the connection (most often the user ID)
 nango
     .auth('<CONFIG-KEY>', '<CONNECTION-ID>')
     .then((result) => {
@@ -138,8 +141,8 @@ import Nango from '@nangohq/frontend'; // After installing the npm package
 var nango = new Nango({ host: '<NANGO-HOST-AND-PORT>' });
 
 // Trigger an OAuth flow
-// Param 1: config key from Step 2 (bullet 4)
-// Param 2: ID you will use to retrieve the connection (most often the user ID)
+// <CONFIG-KEY>: The config key from Step 2 (generally same as the integration name. e.g. "github")
+// <CONNECTION-ID>: ID you will use to retrieve the connection (most often the user ID)
 nango
     .auth('<CONFIG-KEY>', '<CONNECTION-ID>')
     .then((result) => {
@@ -153,18 +156,16 @@ nango
   </TabItem>
 </Tabs>
 
-If you are using server side rendering (SSR) with NextJS, [use this workaround](https://github.com/NangoHQ/nango/issues/335#issuecomment-1431757714).
-
 With the frontend part ready, you should now be able to run a full OAuth flow from your app while Nango will retrieve, store and refresh tokens automatically.
 
 Go ahead & try it! 🙌
 
 ## Step 4: Obtain the access token from the backend
 
-There are a few different way in which you can obtain access tokens from Nango. The dashboard is great for testing, but in your app we recommend using the [node SDK](reference/node-sdk.md) or the [Connections REST API](reference/connections-api.md).
+There are a few different way in which you can obtain access tokens from Nango. The dashboard is great for testing, but in your app we recommend using the [node SDK](nango-auth/node-sdk.md) or the [Connections REST API](nango-auth/connections-api.md).
 
 :::info
-**Make sure you always have a fresh access token**  
+**Make sure you always have a fresh access token**
 Many OAuth providers provide short-lived access tokens (30-60 minutes). Nango refreshes them automatically for you, but it is important that you always request the access token right before each API call. Otherwise you may work with a stale token that has been revoked and your API call will fail.
 :::
 
@@ -174,7 +175,7 @@ Find the Connection in your dashboard's `Connections` page. Click "View" to see 
 
 ### Backend SDK
 
-If you work with Node, Nango offers a [Node SDK](reference/node-sdk.md) to retrieve tokens (more languages coming).
+If you work with Node, Nango offers a [Node SDK](nango-auth/node-sdk.md) to retrieve tokens (more languages coming).
 
 <Tabs groupId="deployment" queryString>
   <TabItem value="cloud" label="Nango Cloud">
@@ -216,7 +217,7 @@ let accessToken = await nango.getToken('<CONFIG-KEY>', '<CONNECTION-ID>');
 
 ### REST API
 
-You can also use the Nango [Connections REST API](reference/connections-api.md) to retrieve connection details & the current access token:
+You can also use the Nango [Connections REST API](nango-auth/connections-api.md) to retrieve connection details & the current access token:
 
 <Tabs groupId="deployment" queryString>
   <TabItem value="cloud" label="Nango Cloud">

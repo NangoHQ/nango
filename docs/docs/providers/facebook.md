@@ -11,17 +11,31 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 
 ## Using Facebook with Nango
 
-Provider template name in Nango: `facebook`  
+API template name in Nango: `facebook`  
 Follow our [quickstart](../quickstart.md) to add an OAuth integration with Facebook in 5 minutes.
+
+Supported features in Nango:
+
+| Feature                            | Supported                 |
+| ---------------------------------- | ------------------------- |
+| [Auth](/nango-auth/core-concepts)  | ✅                        |
+| [Proxy](/nango-unified-apis/proxy) | ❎                        |
+| Unified APIs                       | _Not included in any yet_ |
 
 ## App registration & publishing
 
-_No information yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+**Rating: `Easy & fast`**
+Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://developers.facebook.com/docs/development/create-an-app/)
+
+
 
 ## Useful links
 
-_No links yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+- [How to register an Application](https://developers.facebook.com/docs/development/create-an-app/)
+- [OAuth-related docs](https://developers.facebook.com/docs/facebook-login/guides/advanced/manual-flow#confirm)
+- [List of OAuth scopes](https://developers.facebook.com/docs/permissions/reference)
+- [API](https://developers.facebook.com/docs/)
+
 
 ## API specific gotchas
 
-_No gotchas yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_

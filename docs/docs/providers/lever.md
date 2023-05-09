@@ -11,17 +11,30 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 
 ## Using Lever with Nango
 
-Provider template name in Nango: `lever`  
+API template name in Nango: `lever`  
 Follow our [quickstart](../quickstart.md) to add an OAuth integration with Lever in 5 minutes.
+
+Supported features in Nango:
+
+| Feature                            | Supported                 |
+| ---------------------------------- | ------------------------- |
+| [Auth](/nango-auth/core-concepts)  | ✅                        |
+| [Proxy](/nango-unified-apis/proxy) | ❎                        |
+| Unified APIs                       | _Not included in any yet_ |
 
 ## App registration & publishing
 
-_No information yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+**Rating: `Easy & fast`**
+Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://hire.lever.co/developer/oauth#getting-set-up-with-oauth)
+
+
 
 ## Useful links
 
-_No links yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+- [How to register an Application](https://hire.lever.co/developer/oauth#getting-set-up-with-oauth)
+- [OAuth-related docs](https://hire.lever.co/developer/oauth#oauth-at-a-high-level)
+- [API](https://hire.lever.co/developer/documentation#lever-api-reference)
+
 
 ## API specific gotchas
 
-_No gotchas yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
