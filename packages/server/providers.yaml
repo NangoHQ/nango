@@ -501,6 +501,7 @@ segment:
     auth_mode: OAUTH2
     authorization_url: https://id.segmentapis.com/oauth2/auth
     token_url: https://id.segmentapis.com/oauth2/token
+    token_request_auth_method: basic
 sage:
     auth_mode: OAUTH2
     authorization_url: https://www.sageone.com/oauth2/auth/central
