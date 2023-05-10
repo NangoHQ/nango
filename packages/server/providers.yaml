@@ -434,6 +434,18 @@ one-drive:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+osu:
+    auth_mode: OAUTH2
+    authorization_url: https://osu.ppy.sh/oauth/authorize
+    token_url: https://osu.ppy.sh/oauth/token
+    default_scopes:
+        - identify
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 outreach:
     auth_mode: OAUTH2
     authorization_url: https://api.outreach.io/oauth/authorize
@@ -660,6 +672,23 @@ twitter-v2:
         grant_type: refresh_token
     default_scopes:
         - offline.access
+twinfield:
+    auth_mode: OAUTH2
+    authorization_url: https://login.twinfield.com/auth/authentication/connect/authorize
+    token_url: https://login.twinfield.com/auth/authentication/connect/token
+    authorization_params:
+        response_type: code
+        nonce: AnotherRandomStringTwinfield
+    refresh_params:
+        greant_type: refresh_token
+    scope_seprator: ' '
+    default_scopes:
+        - openid
+        - twf.user
+        - twf.organisation
+        - twf.organisationUser
+        - offline_access
+    disable_pkce: true
 uber:
     auth_mode: OAUTH2
     authorization_url: https://login.uber.com/oauth/v2/authorize
