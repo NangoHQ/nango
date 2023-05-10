@@ -1,5 +1,5 @@
 import db from '../db/database.js';
-import type { ActivityLog, ActivityLogMessage } from '../models';
+import type { ActivityLog, ActivityLogMessage, LogAction } from '../models';
 import logger from '../utils/logger.js';
 
 const activityLogTableName = '_nango_activity_logs';
@@ -47,6 +47,18 @@ export async function updateSessionId(id: number, session_id: string): Promise<v
 export async function updateSuccess(id: number, success: boolean): Promise<void> {
     await db.knex.withSchema(db.schema()).from<ActivityLog>(activityLogTableName).where({ id }).update({
         success
+    });
+}
+
+export async function updateEndpoint(id: number, endpoint: string): Promise<void> {
+    await db.knex.withSchema(db.schema()).from<ActivityLog>(activityLogTableName).where({ id }).update({
+        endpoint
+    });
+}
+
+export async function updateAction(id: number, action: LogAction): Promise<void> {
+    await db.knex.withSchema(db.schema()).from<ActivityLog>(activityLogTableName).where({ id }).update({
+        action
     });
 }
 

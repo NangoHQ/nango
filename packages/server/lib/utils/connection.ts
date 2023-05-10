@@ -1,14 +1,21 @@
 import type { Response } from 'express';
 
 import errorManager from '../utils/error.manager.js';
-import { ProviderConfig, ProviderTemplate, Connection, ProviderAuthModes, ProviderTemplateOAuth2 } from '../models.js';
+import { ProviderConfig, ProviderTemplate, Connection, ProviderAuthModes, ProviderTemplateOAuth2, LogAction } from '../models.js';
 import connectionService from '../services/connection.service.js';
 import configService from '../services/config.service.js';
+import { createActivityLogMessageAndEnd, updateProvider as updateProviderActivityLog } from '../services/activity.service.js';
 import analytics from './analytics.js';
 import { getAccount } from './utils.js';
-import { updateAppLogsAndWrite, LogData } from './file-logger.js';
 
-export const getConnectionCredentials = async (res: Response, connectionId: string, providerConfigKey: string, log: LogData, instantRefresh = false) => {
+export const getConnectionCredentials = async (
+    res: Response,
+    connectionId: string,
+    providerConfigKey: string,
+    activityLogId: number,
+    action: LogAction,
+    instantRefresh = false
+) => {
     const accountId = getAccount(res);
 
     if (connectionId === null) {
@@ -24,10 +31,10 @@ export const getConnectionCredentials = async (res: Response, connectionId: stri
     const connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, accountId);
 
     if (connection === null) {
-        updateAppLogsAndWrite(log, 'error', {
+        await createActivityLogMessageAndEnd({
+            level: 'error',
+            activity_log_id: activityLogId,
             content: `Connection not found using connectionId: ${connectionId} and providerConfigKey: ${providerConfigKey}`,
-            connectionId,
-            providerConfigKey,
             timestamp: Date.now()
         });
 
@@ -37,15 +44,13 @@ export const getConnectionCredentials = async (res: Response, connectionId: stri
 
     const config: ProviderConfig | null = await configService.getProviderConfig(connection.provider_config_key, accountId);
 
-    if (!log.provider) {
-        log.provider = config?.provider as string;
-    }
+    await updateProviderActivityLog(activityLogId, config?.provider as string);
 
     if (config === null) {
-        updateAppLogsAndWrite(log, 'error', {
+        await createActivityLogMessageAndEnd({
+            level: 'error',
+            activity_log_id: activityLogId,
             content: `Configuration not found using the providerConfigKey: ${providerConfigKey} and the account id: ${accountId}}`,
-            connectionId,
-            providerConfigKey,
             timestamp: Date.now()
         });
 
@@ -60,9 +65,9 @@ export const getConnectionCredentials = async (res: Response, connectionId: stri
             connection,
             config,
             template as ProviderTemplateOAuth2,
-            log,
+            activityLogId,
             instantRefresh,
-            log.action
+            action
         );
     }
 
