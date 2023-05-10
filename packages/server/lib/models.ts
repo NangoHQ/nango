@@ -221,7 +221,7 @@ interface CustomParamsSerializer {
 }
 
 export type LogLevel = 'info' | 'debug' | 'error';
-export type LogAction = 'oauth' | 'proxy' | 'token';
+export type LogAction = 'oauth' | 'proxy' | 'token' | 'sync';
 interface Message {
     [index: string]: unknown | undefined | string | number | boolean | Record<string, string | boolean | number | unknown>;
 }
@@ -235,7 +235,6 @@ export interface ActivityLog {
     timestamp: number;
     start: number;
     end?: number;
-    //messages: Message[];
     connection_id: string;
     provider_config_key: string;
     provider?: string;

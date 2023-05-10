@@ -137,9 +137,9 @@ export default function Activity() {
                                                     {activity.messages.map((message, index: number) => (
                                                         <div key={index} className="flex flex-col">
                                                             <div>{formatTimestampWithTZ(Number(message.timestamp))}{' '}{message.content}</div>
-                                                            {message.authMode && (
+                                                            {message.auth_mode && (
                                                                 <div className="ml-4">
-                                                                    authMode: {message.authMode}
+                                                                    auth_mode: {message.auth_mode}
                                                                 </div>
                                                             )}
                                                             {message.url && (
