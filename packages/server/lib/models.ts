@@ -219,3 +219,33 @@ interface ParamEncoder {
 interface CustomParamsSerializer {
     (params: Record<string, any>, options?: ParamsSerializerOptions): string;
 }
+
+export type LogLevel = 'info' | 'debug' | 'error';
+export type LogAction = 'oauth' | 'proxy' | 'token';
+interface Message {
+    [index: string]: undefined | string | number | Record<string, string | boolean | number | unknown>;
+}
+
+export interface ActivityLog {
+    id?: number;
+    level: LogLevel;
+    action: LogAction;
+    success: boolean;
+    timestamp: number;
+    start: number;
+    end?: number;
+    //messages: Message[];
+    connection_id: string;
+    provider_config_key: string;
+    provider?: string;
+    method?: HTTP_VERB;
+    endpoint?: string;
+    session_id?: string;
+}
+
+export interface ActivityLogMessage {
+    id?: number;
+    content: string;
+    timestamp: number;
+    params: Message[];
+}
