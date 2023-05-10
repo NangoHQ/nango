@@ -18,12 +18,14 @@ import {
 import type { LogLevel, LogAction } from '../utils/file-logger.js';
 import {
     createActivityLog,
+    createActivityLogMessageAndEnd,
     createActivityLogMessage,
-    updateProvider,
-    updateSuccess,
+    updateProvider as updateProviderActivityLog,
+    updateSuccess as updateSuccessActivityLog,
     findActivityLogBySession,
-    updateProviderConfigAndConnectionId,
-    updateSessionId
+    updateProviderConfigAndConnectionId as updateProviderConfigAndConnectionIdActivityLog,
+    updateSessionId as updateSessionIdActivityLog,
+    addEndTime as addEndTimeActivityLog
 } from '../services/activity.service.js';
 import {
     ProviderConfig,
@@ -73,7 +75,7 @@ class OAuthController {
             const connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
 
             if (connectionId == null) {
-                await createActivityLogMessage({
+                await createActivityLogMessageAndEnd({
                     level: 'error',
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
@@ -82,7 +84,7 @@ class OAuthController {
 
                 return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.MissingConnectionId());
             } else if (providerConfigKey == null) {
-                await createActivityLogMessage({
+                await createActivityLogMessageAndEnd({
                     level: 'error',
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
@@ -96,7 +98,7 @@ class OAuthController {
             if (hmacService.isEnabled()) {
                 const hmac = req.query['hmac'] as string | undefined;
                 if (!hmac) {
-                    await createActivityLogMessage({
+                    await createActivityLogMessageAndEnd({
                         level: 'error',
                         activity_log_id: activityLogId as number,
                         timestamp: Date.now(),
@@ -107,7 +109,7 @@ class OAuthController {
                 }
                 const verified = hmacService.verify(hmac, providerConfigKey, connectionId);
                 if (!verified) {
-                    await createActivityLogMessage({
+                    await createActivityLogMessageAndEnd({
                         level: 'error',
                         activity_log_id: activityLogId as number,
                         timestamp: Date.now(),
@@ -132,10 +134,10 @@ class OAuthController {
 
             const config = await configService.getProviderConfig(providerConfigKey, accountId);
 
-            await updateProvider(activityLogId as number, String(config?.provider));
+            await updateProviderActivityLog(activityLogId as number, String(config?.provider));
 
             if (config == null) {
-                await createActivityLogMessage({
+                await createActivityLogMessageAndEnd({
                     level: 'error',
                     activity_log_id: activityLogId as number,
                     content: WSErrBuilder.UnknownProviderConfigKey(providerConfigKey).message,
@@ -150,7 +152,7 @@ class OAuthController {
             try {
                 template = configService.getTemplate(config.provider);
             } catch {
-                await createActivityLogMessage({
+                await createActivityLogMessageAndEnd({
                     level: 'error',
                     activity_log_id: activityLogId as number,
                     content: WSErrBuilder.UnkownProviderTemplate(config.provider).message,
@@ -174,10 +176,10 @@ class OAuthController {
                 webSocketClientId: wsClientId
             };
 
-            await updateSessionId(activityLogId as number, session.id);
+            await updateSessionIdActivityLog(activityLogId as number, session.id);
 
             if (config?.oauth_client_id == null || config?.oauth_client_secret == null || config.oauth_scopes == null) {
-                await createActivityLogMessage({
+                await createActivityLogMessageAndEnd({
                     level: 'error',
                     activity_log_id: activityLogId as number,
                     content: WSErrBuilder.InvalidProviderConfig(providerConfigKey).message,
@@ -195,7 +197,7 @@ class OAuthController {
                 return this.oauth1Request(template, config, session, res, callbackUrl, activityLogId as number);
             }
 
-            await createActivityLogMessage({
+            await createActivityLogMessageAndEnd({
                 level: 'error',
                 activity_log_id: activityLogId as number,
                 content: WSErrBuilder.UnkownAuthMode(template.auth_mode).message,
@@ -328,6 +330,9 @@ class OAuthController {
                     }
                 });
 
+                // if they exit the flow add an end time to have it on record
+                await addEndTimeActivityLog(activityLogId as number);
+
                 res.redirect(authorizationUri);
             } else {
                 const grantType = oauth2Template.token_params.grant_type;
@@ -423,8 +428,6 @@ class OAuthController {
         await oAuthSessionService.create(session);
         const redirectUrl = oAuth1Client.getAuthorizationURL(tokenResult);
 
-        await updateSuccess(activityLogId as number, true);
-
         await createActivityLogMessage({
             level: 'info',
             activity_log_id: activityLogId as number,
@@ -433,6 +436,9 @@ class OAuthController {
             auth_mode: template.auth_mode,
             url: oAuth1CallbackURL
         });
+
+        // if they end the flow early, be sure to have an end time
+        await addEndTimeActivityLog(activityLogId as number);
 
         // All worked, let's redirect the user to the authorization page
         return res.redirect(redirectUrl);
@@ -504,7 +510,7 @@ class OAuthController {
         const providerConfigKey = session.providerConfigKey;
         const connectionId = session.connectionId;
 
-        await updateProviderConfigAndConnectionId(activityLogId as number, providerConfigKey, connectionId);
+        await updateProviderConfigAndConnectionIdActivityLog(activityLogId as number, providerConfigKey, connectionId);
 
         try {
             await createActivityLogMessage({
@@ -640,9 +646,6 @@ class OAuthController {
                 rawCredentials = accessToken.token;
             }
 
-            // TODO update end here and where there is an error
-            await updateSuccess(activityLogId, true);
-
             await createActivityLogMessage({
                 level: 'info',
                 activity_log_id: activityLogId as number,
@@ -664,9 +667,9 @@ class OAuthController {
                 { ...callbackMetadata, ...tokenMetadata }
             );
 
-            await updateProvider(activityLogId, session.provider);
+            await updateProviderActivityLog(activityLogId, session.provider);
 
-            await createActivityLogMessage({
+            await createActivityLogMessageAndEnd({
                 level: 'debug',
                 activity_log_id: activityLogId as number,
                 content: `OAuth connection for ${providerConfigKey} was successful`,
@@ -681,11 +684,13 @@ class OAuthController {
                 }
             });
 
+            await updateSuccessActivityLog(activityLogId, true);
+
             return wsClient.notifySuccess(res, wsClientId, providerConfigKey, connectionId);
         } catch (e) {
             errorManager.report(e, { accountId: session.accountId });
 
-            await createActivityLogMessage({
+            await createActivityLogMessageAndEnd({
                 level: 'error',
                 activity_log_id: activityLogId as number,
                 content: WSErrBuilder.UnkownError().message,
@@ -711,7 +716,7 @@ class OAuthController {
         const metadata = getConnectionMetadataFromCallbackRequest(req.query, template);
 
         if (!oauth_token || !oauth_verifier) {
-            await createActivityLogMessage({
+            await createActivityLogMessageAndEnd({
                 level: 'error',
                 activity_log_id: activityLogId as number,
                 content: WSErrBuilder.InvalidCallbackOAuth1().message,
@@ -739,9 +744,9 @@ class OAuthController {
                     metadata
                 );
 
-                await updateSuccess(activityLogId, true);
+                await updateSuccessActivityLog(activityLogId, true);
 
-                await createActivityLogMessage({
+                await createActivityLogMessageAndEnd({
                     level: 'info',
                     activity_log_id: activityLogId as number,
                     content: `OAuth connection for ${providerConfigKey} was successful`,
@@ -755,7 +760,7 @@ class OAuthController {
             .catch(async (e) => {
                 errorManager.report(e, { accountId: session.accountId });
 
-                await createActivityLogMessage({
+                await createActivityLogMessageAndEnd({
                     level: 'error',
                     activity_log_id: activityLogId as number,
                     content: WSErrBuilder.UnkownError().message,

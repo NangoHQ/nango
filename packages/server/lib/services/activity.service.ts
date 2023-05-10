@@ -69,6 +69,17 @@ export async function createActivityLogMessage(logMessage: ActivityLogMessage): 
     return false;
 }
 
+export async function addEndTime(activity_log_id: number): Promise<void> {
+    await db.knex.withSchema(db.schema()).from<ActivityLog>(activityLogTableName).where({ id: activity_log_id }).update({
+        end: Date.now()
+    });
+}
+
+export async function createActivityLogMessageAndEnd(logMessage: ActivityLogMessage): Promise<void> {
+    await createActivityLogMessage(logMessage);
+    await addEndTime(logMessage.activity_log_id);
+}
+
 export async function findActivityLogBySession(session_id: string): Promise<number | null> {
     const result = await db.knex.withSchema(db.schema()).from<ActivityLog>(activityLogTableName).select('id').where({ session_id });
 
