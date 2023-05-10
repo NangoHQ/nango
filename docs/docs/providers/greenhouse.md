@@ -24,12 +24,18 @@ Supported features in Nango:
 
 ## App registration & publishing
 
-_No information yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+**Rating: `Easy & fast`**
+Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://developers.greenhouse.io/candidate-ingestion.html#authentication)
+
+
 
 ## Useful links
 
-_No links yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+- [How to register an Application](https://developers.greenhouse.io/candidate-ingestion.html#authentication)
+- [OAuth-related docs](https://developers.greenhouse.io/candidate-ingestion.html#introduction)
+- [List of OAuth scopes](https://developers.greenhouse.io/candidate-ingestion.html#oauth-scopes)
+- [API](https://developers.greenhouse.io/candidate-ingestion.html#candidates)
+
 
 ## API specific gotchas
 
-_No gotchas yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_

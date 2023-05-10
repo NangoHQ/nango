@@ -24,12 +24,17 @@ Supported features in Nango:
 
 ## App registration & publishing
 
-_No information yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+**Rating: `Easy & fast`**
+Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://dashboard.stripe.com/account/applications/settings)
+
+
 
 ## Useful links
 
-_No links yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+- [How to register an Application](https://dashboard.stripe.com/account/applications/settings)
+- [OAuth-related docs](https://stripe.com/docs/connect/oauth-reference)
+- [List of OAuth scopes](https://stripe.com/docs/connect/oauth-reference#:~:text=if%20not%20provided.-,scope,-Optional)
+
 
 ## API specific gotchas
 
-_No gotchas yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_

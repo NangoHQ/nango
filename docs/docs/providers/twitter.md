@@ -69,5 +69,4 @@ Supported features in Nango:
 -   https://developer.twitter.com/en/docs/authentication/oauth-2-0/user-access-token
 
 ### API specific gotchas
-
--   Twitter OAuth 2.0 uses basic auth to request a token.
+- Twitter OAuth 2.0 uses basic auth to request a token. 

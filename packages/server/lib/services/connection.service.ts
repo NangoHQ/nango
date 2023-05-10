@@ -2,10 +2,10 @@ import type { AuthCredentials, OAuth2Credentials, OAuth1Credentials, Credentials
 import { ProviderAuthModes, ProviderTemplateOAuth2 } from '../models.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import db from '../db/database.js';
-import type { ProviderConfig, Connection } from '../models.js';
+import type { ProviderConfig, Connection, LogAction } from '../models.js';
 import analytics from '../utils/analytics.js';
 import providerClientManager from '../clients/provider.client.js';
-import { updateAppLogsAndWrite, updateAppLogs, LogData, LogAction } from '../utils/file-logger.js';
+import { updateAction as updateActivityLogAction, createActivityLogMessage } from '../services/activity.service.js';
 import { parseTokenExpirationDate, isTokenExpired } from '../utils/utils.js';
 import providerClient from '../clients/provider.client.js';
 import { NangoError } from '../utils/error.js';
@@ -165,7 +165,7 @@ class ConnectionService {
         connection: Connection,
         providerConfig: ProviderConfig,
         template: ProviderTemplateOAuth2,
-        log = {} as LogData,
+        activityLogId = null as number | null,
         instantRefresh = false,
         logAction: LogAction = 'token'
     ): Promise<OAuth2Credentials> {
@@ -218,13 +218,13 @@ class ConnectionService {
                         return !(value.providerConfigKey === providerConfigKey && value.connectionId === connectionId);
                     });
 
-                    if (log && logAction === 'token') {
-                        log.action = 'token';
+                    if (activityLogId && logAction === 'token') {
+                        await updateActivityLogAction(activityLogId as unknown as number, 'token');
 
-                        updateAppLogsAndWrite(log, 'error', {
+                        await createActivityLogMessage({
+                            level: 'error',
+                            activity_log_id: activityLogId as number,
                             content: `Refresh oauth2 token call failed`,
-                            connectionId,
-                            providerConfigKey,
                             timestamp: Date.now()
                         });
                     }
@@ -238,14 +238,14 @@ class ConnectionService {
                 promise: promise
             } as CredentialsRefresh;
 
-            if (log && logAction === 'token') {
-                log.action = 'token';
+            if (activityLogId && logAction === 'token') {
+                await updateActivityLogAction(activityLogId as unknown as number, 'token');
 
-                updateAppLogs(log, 'info', {
+                await createActivityLogMessage({
+                    level: 'info',
+                    activity_log_id: activityLogId as number,
                     content: `Token was refreshed for ${providerConfigKey} and connection ${connectionId}`,
-                    timestamp: Date.now(),
-                    providerConfigKey,
-                    connectionId
+                    timestamp: Date.now()
                 });
             }
             this.runningCredentialsRefreshes.push(refresh);

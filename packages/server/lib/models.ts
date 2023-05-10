@@ -220,23 +220,38 @@ interface CustomParamsSerializer {
     (params: Record<string, any>, options?: ParamsSerializerOptions): string;
 }
 
-export enum SyncStatus {
-    RUNNING = 'RUNNING',
-    PAUSED = 'PAUSED',
-    STOPPED = 'STOPPED',
-    SUCCESS = 'SUCCESS'
+export type LogLevel = 'info' | 'debug' | 'error';
+export type LogAction = 'oauth' | 'proxy' | 'token' | 'sync';
+interface Message {
+    [index: string]: unknown | undefined | string | number | boolean | Record<string, string | boolean | number | unknown>;
 }
 
-export enum SyncType {
-    INITIAL = 'INITIAL',
-    INCREMENTAL = 'INCREMENTAL'
+export interface ActivityLog {
+    id?: number;
+    account_id: number;
+    level: LogLevel;
+    action: LogAction;
+    success: boolean;
+    timestamp: number;
+    start: number;
+    end?: number;
+    connection_id: string;
+    provider_config_key: string;
+    provider?: string;
+    method?: HTTP_VERB;
+    endpoint?: string;
+    session_id?: string;
+    messages?: ActivityLogMessage[];
 }
 
-export interface Sync {
-    id: number;
-    nango_connection_id: number;
-    status: SyncStatus;
-    type: SyncType;
-    created_at?: Date;
-    updated_at?: Date;
+export interface ActivityLogMessage {
+    id?: number;
+    level: LogLevel;
+    activity_log_id: number;
+    content: string;
+    timestamp: number;
+    auth_mode?: string;
+    url?: string;
+    state?: string;
+    params?: Message;
 }

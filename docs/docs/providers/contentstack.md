@@ -14,8 +14,6 @@ Please add your learnings, favorite links and gotchas here by [editing this page
 API template name in Nango: `contentstack`  
 Follow our [quickstart](../quickstart.md) to add an OAuth integration with Contentstack in 5 minutes.
 
-Make sure you [read this](../nango-auth/frontend-sdk.md#connection-config) to set the correct subdomain and app ID before starting an OAuth flow for Contentstack.
-
 Supported features in Nango:
 
 | Feature                            | Supported                 |
@@ -24,15 +22,21 @@ Supported features in Nango:
 | [Proxy](/nango-unified-apis/proxy) | ❎                        |
 | Unified APIs                       | _Not included in any yet_ |
 
-## App registration & publishing
 
-You need to [register as a User](https://www.contentstack.com/login/) with Contentstack to get access to the OAuth API.
+## App registration & publishing
+**Rating: `Easy & fast`**  
+Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://www.contentstack.com/docs/developers/developer-hub/contentstack-oauth/#configuring-contentstack-oauth)
+
+
 
 ## Useful links
 
--   [List of OAuth scopes](https://www.contentstack.com/docs/developers/developer-hub/oauth-scopes/)
--   [Contentstack Oauth2 Documentation](https://www.contentstack.com/docs/developers/developer-hub/contentstack-oauth)
+- [How to register an Application](https://www.contentstack.com/docs/developers/developer-hub/contentstack-oauth/#configuring-contentstack-oauth)
+- [OAuth-related docs](https://www.contentstack.com/docs/developers/developer-hub/contentstack-oauth)
+- [List of OAuth scopes](https://www.contentstack.com/docs/developers/developer-hub/oauth-scopes/)
+
 
 ## API specific gotchas
-
--   You are required to pass in the correct subdomain and App ID before starting an OAuth flow (cf. [Connection configuration](../nango-auth/frontend-sdk.md#connection-config)).
+- Depending on the [region](https://www.contentstack.com/docs/developers/developer-hub/contentstack-oauth/#construct-your-authorization-url) you will want to connect to, you will have to provide the region as a extension in the config params. You should use `nango.auth('amazon', '1', {params: {subdomain: 'co.uk'}})`
+- Access tokens and app tokens are valid for 60 minutes only, 
+- To refresh the token simple use `nango.getToken()` to generate new set of tokens

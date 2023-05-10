@@ -25,14 +25,19 @@ Supported features in Nango:
 **Metadata captured by Nango**  
 The `realmId` is automatically stored in the [Connection Metadata](nango-auth/core-concepts.md#metadata) during the OAuth flow.
 
-## App registration & publishing
 
-_No information yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
+## App registration & publishing
+**Rating: `Easy & fast`**
+Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization/oauth-2.0#create-an-app)
+
+
 
 ## Useful links
 
--   Available [scopes](https://developer.intuit.com/app/developer/qbo/docs/learn/scopes)
+- [How to register an Application](https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization/oauth-2.0#create-an-app)
+- [OAuth-related docs](https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization)
+- [List of OAuth scopes](https://developer.intuit.com/app/developer/qbo/docs/learn/scopes#current-scopes)
+
 
 ## API specific gotchas
 
-_No gotchas yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_

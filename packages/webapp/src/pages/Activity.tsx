@@ -117,17 +117,17 @@ export default function Activity() {
                                                         </div>
                                                     )}
                                                 </div>
-                                                <Tooltip text={activity?.connectionId} type="dark">
-                                                    <div className="ml-30 w-48 mr-12 text-[#5AC2B3] font-mono overflow-hidden truncate">`{activity.connectionId}`</div>
+                                                <Tooltip text={activity?.connection_id} type="dark">
+                                                    <div className="ml-30 w-48 mr-12 text-[#5AC2B3] font-mono overflow-hidden truncate">`{activity.connection_id}`</div>
                                                 </Tooltip>
                                                 <div className="w-36 mr-12">
                                                     {activity?.provider ? (
                                                         <div className="w-80 flex">
                                                             <img src={`images/template-logos/${activity.provider}.svg`} alt="" className="h-7 mt-0.5" />
-                                                            <p className="mt-1.5 ml-2">{activity.providerConfigKey}</p>
+                                                            <p className="mt-1.5 ml-2">{activity.provider_config_key}</p>
                                                         </div>
                                                     ) : (
-                                                        <div className="mr-12">{activity.providerConfigKey}</div>
+                                                        <div className="mr-12">{activity.provider_config_key}</div>
                                                     )}
                                                 </div>
                                                 <p className="text-gray-500 w-40">{formatTimestamp(Number(activity.timestamp))}</p>
@@ -146,19 +146,14 @@ export default function Activity() {
                                                     {activity.messages.map((message, index: number) => (
                                                         <div key={index} className="flex flex-col">
                                                             <div>{formatTimestampWithTZ(Number(message.timestamp))}{' '}{message.content}</div>
-                                                            {message.authMode && (
+                                                            {message.auth_mode && (
                                                                 <div className="ml-4">
-                                                                    authMode: {message.authMode}
+                                                                    auth_mode: {message.auth_mode}
                                                                 </div>
                                                             )}
                                                             {message.url && (
                                                                 <div className="ml-4">
                                                                     url: {message.url}
-                                                                </div>
-                                                            )}
-                                                            {message.wsClientId && (
-                                                                <div className="ml-4">
-                                                                    ws_client_id: {message.wsClientId}
                                                                 </div>
                                                             )}
                                                             {message.state && (
@@ -176,7 +171,7 @@ export default function Activity() {
                                                 </div>
                                                 {activity.start && activity.end && (
                                                     <div className="mt-4 text-gray-500 text-sm">
-                                                        Operation time: {elapsedTime(activity.start, activity.end)}
+                                                        Operation time: {elapsedTime(Number(activity.start), Number(activity.end))}
                                                     </div>
                                                 )}
                                                 </>

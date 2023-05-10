@@ -21,9 +21,6 @@ Supported features in Nango:
 | [Proxy](/nango-unified-apis/proxy) | ❎                        |
 | Unified APIs                       | _Not included in any yet_ |
 
-## App registration & publishing
-
-_No information yet, feel free to contribute it (or check out [airtable](airtable.md) for an example)_
 
 ## Useful links
 
