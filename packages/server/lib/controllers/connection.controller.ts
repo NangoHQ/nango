@@ -2,15 +2,17 @@ import type { Request, Response } from 'express';
 import connectionService from '../services/connection.service.js';
 import type { NextFunction } from 'express';
 import configService from '../services/config.service.js';
-import { ProviderConfig, ProviderTemplate, Connection, ProviderAuthModes, ProviderTemplateOAuth2, HTTP_VERB, LogLevel, LogAction } from '../models.js';
+import { ProviderConfig, ProviderTemplate, Connection, ProviderAuthModes, ProviderTemplateOAuth2, HTTP_VERB } from '../models.js';
 import analytics from '../utils/analytics.js';
 import {
     createActivityLog,
     createActivityLogMessage,
     createActivityLogMessageAndEnd,
     updateProvider as updateProviderActivityLog,
-    updateSuccess as updateSuccessActivityLog
-} from '../services/activity.service.js';
+    updateSuccess as updateSuccessActivityLog,
+    LogLevel,
+    LogAction
+} from '@nangohq/shared';
 import { getAccount, getUserAndAccountFromSession } from '../utils/utils.js';
 import { getConnectionCredentials } from '../utils/connection.js';
 import { WSErrBuilder } from '../utils/web-socket-error.js';

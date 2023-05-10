@@ -16,7 +16,7 @@ class ConfigService {
     }
 
     private getTemplatesFromFile() {
-        const templatesPath = path.join(dirname(), '../../providers.yaml');
+        const templatesPath = path.join(dirname(), '../../../providers.yaml');
 
         const fileEntries = yaml.load(fs.readFileSync(templatesPath).toString()) as { [key: string]: ProviderTemplate | ProviderTemplateAlias };
 

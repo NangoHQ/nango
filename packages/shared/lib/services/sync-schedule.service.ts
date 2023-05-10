@@ -1,4 +1,4 @@
-import db from '../db/database.js';
+import db from '../database.js';
 import { SyncSchedule, ScheduleStatus } from '../models/SyncSchedule.js';
 
 const table = '_nango_unified_sync_schedules';

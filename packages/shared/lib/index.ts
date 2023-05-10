@@ -1,9 +1,11 @@
 import knexDatabase from './database.js';
 import db from './database.js';
-import analytics from './analytics.js';
-import { getServerPort, getServerBaseUrl, isValidHttpUrl } from './utils.js';
+import configService from './services/config.service.js';
 
-export * from './logger/application.js';
+export * from './services/sync.service.js';
 export * from './services/connection.service.js';
+export * from './services/activity.service.js';
+export * from './models/index.js';
+export * from './utils/utils.js';
 
-export { knexDatabase, db, analytics, getServerPort, getServerBaseUrl, isValidHttpUrl };
+export { knexDatabase, db, configService };

@@ -11,12 +11,15 @@ import {
     createActivityLogMessage,
     updateProvider as updateProviderActivityLog,
     updateSuccess as updateSuccessActivityLog,
-    updateEndpoint as updateEndpointActivityLog
-} from '../services/activity.service.js';
+    updateEndpoint as updateEndpointActivityLog,
+    HTTP_VERB,
+    LogLevel,
+    LogAction
+} from '@nangohq/shared';
 import errorManager from '../utils/error.manager.js';
 import { getAccount } from '../utils/utils.js';
 import configService from '../services/config.service.js';
-import type { ProxyBodyConfiguration, HTTP_VERB, LogLevel, LogAction } from '../models.js';
+import type { ProxyBodyConfiguration } from '../models.js';
 import { NangoError } from '../utils/error.js';
 import { getConnectionCredentials } from '../utils/connection.js';
 

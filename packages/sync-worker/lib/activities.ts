@@ -1,13 +1,22 @@
 import * as uuid from 'uuid';
 import { Nango } from '@nangohq/node';
 import db from './db/database.js';
-import { Sync, SyncStatus, SyncType, Connection, ProviderConfig } from '@nangohq/nango-server/dist/models.js';
+import {
+    getById as getSyncById,
+    updateStatus as updateSyncStatus,
+    create as createSync,
+    Sync,
+    SyncStatus,
+    SyncType,
+    Connection,
+    Config as ProviderConfig,
+    getConnectionById,
+    configService,
+    updateSuccess,
+    createActivityLogMessageAndEnd
+} from '@nangohq/shared';
 import type { GithubIssues } from './models/Ticket.js';
-import type { NangoConnection, ContinuousSyncArgs } from './models/Worker';
-import { getById as getSyncById, updateStatus as updateSyncStatus, create as createSync } from '@nangohq/nango-server/dist/services/sync.service.js';
-import connectionService from '@nangohq/nango-server/dist/services/connection.service.js';
-import configService from '@nangohq/nango-server/dist/services/config.service.js';
-import { updateAppLogsAndWrite, LogData, LogLevel, LogAction } from '@nangohq/shared';
+import type { NangoConnection, ContinuousSyncArgs, InitialSyncArgs } from './models/Worker';
 import { createOrUpdate as createOrUpdateTicket } from './services/ticket.service.js';
 
 export function getServerPort() {
@@ -26,36 +35,38 @@ export async function syncActivity(name: string): Promise<string> {
     return `Synced, ${name}!`;
 }
 
-export async function routeSync(syncId: number): Promise<boolean> {
+export async function routeSync(args: InitialSyncArgs): Promise<boolean> {
+    const { syncId, activityLogId } = args;
     const sync: Sync = (await getSyncById(syncId, db)) as Sync;
-    const nangoConnection = await connectionService.getConnectionById(sync.nango_connection_id, db);
+    // TODO this doesn't use the correct configuration for the env
+    const nangoConnection = await getConnectionById(sync.nango_connection_id);
     const syncConfig: ProviderConfig = (await configService.getProviderConfig(
         nangoConnection?.provider_config_key as string,
         nangoConnection?.account_id as number,
         db
     )) as ProviderConfig;
-    return route(sync, nangoConnection as Connection, syncConfig);
+    return route(sync, nangoConnection as Connection, syncConfig, activityLogId);
 }
 
 export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<boolean> {
-    const { nangoConnectionId } = args;
+    const { nangoConnectionId, activityLogId } = args;
     const sync: Sync = (await createSync(nangoConnectionId, SyncType.INCREMENTAL, db)) as Sync;
-    const nangoConnection: NangoConnection = (await connectionService.getConnectionById(nangoConnectionId, db)) as NangoConnection;
+    const nangoConnection: NangoConnection = (await getConnectionById(nangoConnectionId)) as NangoConnection;
     const syncConfig: ProviderConfig = (await configService.getProviderConfig(
         nangoConnection?.provider_config_key as string,
         nangoConnection?.account_id as number,
         db
     )) as ProviderConfig;
 
-    return route(sync, nangoConnection, syncConfig);
+    return route(sync, nangoConnection, syncConfig, activityLogId);
 }
 
-export async function route(sync: Sync, nangoConnection: NangoConnection, syncConfig: ProviderConfig): Promise<boolean> {
+export async function route(sync: Sync, nangoConnection: NangoConnection, syncConfig: ProviderConfig, activityLogId: number): Promise<boolean> {
     let response = false;
 
     switch (syncConfig?.provider) {
         case 'github':
-            response = await syncGithub(sync, nangoConnection);
+            response = await syncGithub(sync, nangoConnection, activityLogId);
             break;
         case 'asana':
             break;
@@ -64,7 +75,7 @@ export async function route(sync: Sync, nangoConnection: NangoConnection, syncCo
     return response;
 }
 
-export async function syncGithub(sync: Sync, nangoConnection: NangoConnection): Promise<boolean> {
+export async function syncGithub(sync: Sync, nangoConnection: NangoConnection, activityLogId: number): Promise<boolean> {
     const nango = new Nango({ host: getServerBaseUrl() });
 
     if (!nango) {
@@ -89,34 +100,20 @@ export async function syncGithub(sync: Sync, nangoConnection: NangoConnection): 
 
     const result = await insertModel(response.data as unknown as GithubIssues);
 
-    const log = {
-        level: 'info' as LogLevel,
-        success: true,
-        action: 'sync' as LogAction,
-        start: Date.now(),
-        end: Date.now(),
-        timestamp: Date.now(),
-        connectionId: '',
-        providerConfigKey: '',
-        messages: [] as LogData['messages'],
-        message: '',
-        provider: '',
-        sessionId: sync.id.toString(),
-        merge: true
-    };
-
     if (result) {
         await updateSyncStatus(sync.id, SyncStatus.SUCCESS, db);
+        await updateSuccess(activityLogId, true);
 
-        // TODO this writes to a separate log file in the sync-worker
-        updateAppLogsAndWrite(log, 'info', {
+        await createActivityLogMessageAndEnd({
+            level: 'info',
+            activity_log_id: activityLogId,
             timestamp: Date.now(),
             content: `The ${sync.type} sync has been completed`
         });
     } else {
-        log.success = false;
-
-        updateAppLogsAndWrite(log, 'error', {
+        await createActivityLogMessageAndEnd({
+            level: 'error',
+            activity_log_id: activityLogId,
             timestamp: Date.now(),
             content: `The ${sync.type} sync did not complete successfully`
         });

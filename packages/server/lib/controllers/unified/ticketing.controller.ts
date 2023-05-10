@@ -2,10 +2,9 @@ import type { Request, Response } from 'express';
 import type { NextFunction } from 'express';
 
 import configService from '../../services/config.service.js';
-import { LogData, LogLevel, LogAction, updateAppLogs, updateAppLogsAndWrite } from '../../utils/file-logger.js';
+import { createActivityLog, createActivityLogMessageAndEnd, createActivityLogMessage, LogLevel, LogAction, HTTP_VERB } from '@nangohq/shared';
+import { getAccount } from '../../utils/utils.js';
 import errorManager from '../../utils/error.manager.js';
-import type { Connection, HTTP_VERB } from '../../models.js';
-import { getConnectionCredentials } from '../../utils/connection.js';
 
 class TicketingController {
     /**
@@ -20,26 +19,29 @@ class TicketingController {
         try {
             const connectionId = req.get('Connection-Id') as string;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
+            const accountId = getAccount(res);
 
             const log = {
                 level: 'debug' as LogLevel,
                 success: true,
-                action: 'unified' as LogAction,
+                action: 'sync' as LogAction,
                 start: Date.now(),
                 end: Date.now(),
                 timestamp: Date.now(),
                 method: req.method as HTTP_VERB,
-                connectionId,
-                providerConfigKey,
-                messages: [] as LogData['messages'],
-                message: '',
-                endpoint: ''
+                connection_id: connectionId as string,
+                provider_config_key: providerConfigKey as string,
+                account_id: accountId
             };
+
+            const activityLogId = await createActivityLog(log);
 
             if (!connectionId) {
                 errorManager.errRes(res, 'missing_connection_id');
 
-                updateAppLogsAndWrite(log, 'error', {
+                await createActivityLogMessageAndEnd({
+                    level: 'error',
+                    activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: `The connection id value is missing. If you're making a HTTP request then it should be included in the header 'Connection-Id'. If you're using the SDK the connectionId property should be specified.`
                 });
@@ -49,26 +51,29 @@ class TicketingController {
             if (!providerConfigKey) {
                 errorManager.errRes(res, 'missing_provider_config_key');
 
-                updateAppLogsAndWrite(log, 'error', {
+                await createActivityLogMessageAndEnd({
+                    level: 'error',
+                    activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: `The provider config key value is missing. If you're making a HTTP request then it should be included in the header 'Provider-Config-Key'. If you're using the SDK the providerConfigKey property should be specified.`
                 });
                 return;
             }
 
-            updateAppLogs(log, 'debug', {
+            await createActivityLogMessage({
+                level: 'debug',
+                activity_log_id: activityLogId as number,
                 timestamp: Date.now(),
                 content: `Connection id: '${connectionId}' and provider config key: '${providerConfigKey}' parsed and received successfully`
             });
 
-            const connection = await getConnectionCredentials(res, connectionId, providerConfigKey, log);
-
-            updateAppLogs(log, 'debug', {
+            await createActivityLogMessage({
+                level: 'debug',
+                activity_log_id: activityLogId as number,
                 timestamp: Date.now(),
                 content: 'Connection credentials found successfully'
             });
 
-            const { account_id: accountId } = connection as Connection;
             const providerConfig = await configService.getProviderConfig(providerConfigKey, accountId);
             const providerName = String(providerConfig?.provider);
 
@@ -81,7 +86,9 @@ class TicketingController {
                 case 'asana':
                     break;
                 default:
-                    updateAppLogsAndWrite(log, 'error', {
+                    await createActivityLogMessageAndEnd({
+                        level: 'error',
+                        activity_log_id: activityLogId as number,
                         timestamp: Date.now(),
                         content: `The provider ${providerName} is not yet integrated for the unified API. Please reach out in the community to request it!`
                     });

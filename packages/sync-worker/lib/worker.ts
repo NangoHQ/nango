@@ -1,22 +1,12 @@
-import path from 'path';
-import { fileURLToPath } from 'url';
 import { Worker } from '@temporalio/worker';
 import * as dotenv from 'dotenv';
 import { createRequire } from 'module';
 import * as activities from './activities.js';
-import db from './db/database.js';
-//import { syncService } from '@nangohq/nango-server';
-
-export function dirname() {
-    return path.dirname(fileURLToPath(import.meta.url));
-}
 
 async function run() {
     if (process.env['SERVER_RUN_MODE'] !== 'DOCKERIZED') {
         dotenv.config({ path: '../../.env' });
     }
-
-    await db.migrate(path.join(dirname(), '../lib/db/migrations'));
 
     const worker = await Worker.create({
         workflowsPath: createRequire(import.meta.url).resolve('./workflows'),

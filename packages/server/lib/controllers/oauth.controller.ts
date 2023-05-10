@@ -6,7 +6,7 @@ import { getSimpleOAuth2ClientConfig } from '../clients/oauth2.client.js';
 import { OAuth1Client } from '../clients/oauth1.client.js';
 import configService from '../services/config.service.js';
 import connectionService from '../services/connection.service.js';
-import * as syncService from '../services/sync.service.js';
+import { initiate as initiateSync } from '@nangohq/shared';
 import {
     getOauthCallbackUrl,
     getConnectionConfig,
@@ -25,8 +25,10 @@ import {
     findActivityLogBySession,
     updateProviderConfigAndConnectionId as updateProviderConfigAndConnectionIdActivityLog,
     updateSessionId as updateSessionIdActivityLog,
-    addEndTime as addEndTimeActivityLog
-} from '../services/activity.service.js';
+    addEndTime as addEndTimeActivityLog,
+    LogLevel,
+    LogAction
+} from '@nangohq/shared';
 import {
     ProviderConfig,
     ProviderTemplate,
@@ -34,9 +36,7 @@ import {
     ProviderAuthModes,
     OAuthSession,
     OAuth1RequestTokenResult,
-    AuthCredentials,
-    LogLevel,
-    LogAction
+    AuthCredentials
 } from '../models.js';
 import type { NextFunction } from 'express';
 import errorManager from '../utils/error.manager.js';
@@ -685,6 +685,10 @@ class OAuthController {
                     token_params: template?.token_params as string
                 }
             });
+
+            if (updatedConnection) {
+                initiateSync(updatedConnection.id);
+            }
 
             await updateSuccessActivityLog(activityLogId, true);
 

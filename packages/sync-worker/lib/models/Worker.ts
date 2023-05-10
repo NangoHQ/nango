@@ -1,7 +1,13 @@
-import type { Connection } from '@nangohq/nango-server/dist/models.js';
+import type { Connection } from '@nangohq/shared';
+
+export interface InitialSyncArgs {
+    syncId: number;
+    activityLogId: number;
+}
 
 export interface ContinuousSyncArgs {
     nangoConnectionId: number;
+    activityLogId: number;
 }
 
 export type NangoConnection = Pick<Connection, 'id' | 'connection_id' | 'provider_config_key' | 'account_id'>;
