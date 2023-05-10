@@ -7,13 +7,13 @@ exports.up = function (knex, _) {
         .createTable(tableName, function (table) {
             table.increments('id').primary();
             table.integer('account_id').unsigned().notNullable();
-            table.integer('connection_id').unsigned();
-            table.enu('log_level', ['error', 'warn', 'info', 'http', 'verbose', 'debug', 'silly']).defaultTo('info').notNullable();
+            table.enu('level', ['error', 'warn', 'info', 'http', 'verbose', 'debug', 'silly']).defaultTo('info').notNullable();
             table.enu('action', ['oauth', 'proxy', 'token', 'sync']).defaultTo('oauth').notNullable();
             table.boolean('success');
-            table.dateTime('timestamp').defaultTo(knex.fn.now()).notNullable();
-            table.dateTime('start').defaultTo(knex.fn.now()).notNullable();
-            table.dateTime('end');
+            table.bigInteger('timestamp');
+            table.bigInteger('start');
+            table.bigInteger('end');
+            table.text('endpoint');
             table.string('provider_config_key');
             table.string('connection_id');
             table.string('provider');
@@ -26,11 +26,16 @@ exports.up = function (knex, _) {
             return knex.schema.withSchema('nango').createTable(messagesTableName, function (table) {
                 table.increments('id').primary();
                 table.integer('activity_log_id').unsigned().notNullable();
-                table.string('content');
-                table.dateTime('timestamp').defaultTo(knex.fn.now()).notNullable();
-                table.foreign('activity_log_id').references('id').inTable(tableName).onDelete('CASCADE');
+                table.enu('level', ['error', 'warn', 'info', 'http', 'verbose', 'debug', 'silly']).defaultTo('info').notNullable();
+                table.text('content');
+                table.bigInteger('timestamp');
                 table.jsonb('params');
                 table.timestamps(true, true);
+                table.string('auth_mode');
+                table.text('url');
+                table.string('state');
+
+                table.foreign('activity_log_id').references('id').inTable(`nango.${tableName}`).onDelete('CASCADE');
             });
         });
 };

@@ -3,6 +3,8 @@ import type { NextFunction } from 'express';
 import fs from 'fs';
 
 import { FILENAME, LogData } from '../utils/file-logger.js';
+import { getUserAndAccountFromSession } from '../utils/utils.js';
+import { getLogsByAccount } from '../services/activity.service.js';
 
 class ActivityController {
     /**
@@ -12,7 +14,7 @@ class ActivityController {
      * @param {Response} res Express response object
      * @param {NextFuncion} next callback function to pass control to the next middleware function in the pipeline.
      */
-    public async retrieve(_req: Request, res: Response, next: NextFunction) {
+    public async _retrieve(_req: Request, res: Response, next: NextFunction) {
         try {
             const filePath = `./${FILENAME}`;
             if (fs.existsSync(filePath)) {
@@ -25,6 +27,16 @@ class ActivityController {
                     res.send(mergedLogs);
                 }
             }
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    public async retrieve(req: Request, res: Response, next: NextFunction) {
+        try {
+            const account = (await getUserAndAccountFromSession(req)).account;
+            const logs = await getLogsByAccount(account.id);
+            res.send(logs);
         } catch (error) {
             next(error);
         }

@@ -223,11 +223,12 @@ interface CustomParamsSerializer {
 export type LogLevel = 'info' | 'debug' | 'error';
 export type LogAction = 'oauth' | 'proxy' | 'token';
 interface Message {
-    [index: string]: undefined | string | number | Record<string, string | boolean | number | unknown>;
+    [index: string]: unknown | undefined | string | number | boolean | Record<string, string | boolean | number | unknown>;
 }
 
 export interface ActivityLog {
     id?: number;
+    account_id: number;
     level: LogLevel;
     action: LogAction;
     success: boolean;
@@ -241,11 +242,17 @@ export interface ActivityLog {
     method?: HTTP_VERB;
     endpoint?: string;
     session_id?: string;
+    messages?: ActivityLogMessage[];
 }
 
 export interface ActivityLogMessage {
     id?: number;
+    level: LogLevel;
+    activity_log_id: number;
     content: string;
     timestamp: number;
-    params: Message[];
+    auth_mode?: string;
+    url?: string;
+    state?: string;
+    params?: Message;
 }
