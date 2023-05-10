@@ -203,6 +203,7 @@ const sidebars = {
                 'providers/trello',
                 'providers/twitch',
                 'providers/twitter',
+                'providers/twinfield',
                 'providers/typeform',
                 'providers/uber',
                 'providers/wakatime',
