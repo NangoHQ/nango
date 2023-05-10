@@ -19,7 +19,6 @@ services:
         container_name: nango-server
         volumes:
             - './packages/server/providers.yaml:/usr/nango-server/src/packages/server/providers.yaml'
-            - './packages/server/NangoActivity.json:/usr/nango-server/src/packages/server/NangoActivity.json'
         restart: always
         ports:
             - '3003:3003'
