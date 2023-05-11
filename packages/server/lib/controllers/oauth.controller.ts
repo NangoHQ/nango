@@ -12,9 +12,9 @@ import {
     getConnectionMetadataFromCallbackRequest,
     missesInterpolationParam,
     getAccount,
-    getUserAndAccountFromSession,
     getConnectionMetadataFromTokenResponse
 } from '../utils/utils.js';
+import logger from '../utils/logger.js';
 import {
     createActivityLog,
     createActivityLogMessageAndEnd,
@@ -446,36 +446,13 @@ class OAuthController {
     }
 
     public async oauthCallback(req: Request, res: Response, _: NextFunction) {
-        const account = (await getUserAndAccountFromSession(req)).account;
         const { state } = req.query;
-
-        const log = {
-            level: 'info' as LogLevel,
-            success: false,
-            action: 'oauth' as LogAction,
-            start: Date.now(),
-            end: Date.now(),
-            timestamp: Date.now(),
-            connection_id: '',
-            provider_config_key: '',
-            account_id: account.id
-        };
 
         if (state == null) {
             const errorMessage = 'No state found in callback';
             const e = new Error(errorMessage);
 
-            const errorActivityLog = await createActivityLog(log);
-
-            await createActivityLogMessage({
-                level: 'error',
-                activity_log_id: errorActivityLog as number,
-                content: WSErrBuilder.MissingConnectionId().message,
-                timestamp: Date.now(),
-                params: {
-                    ...errorManager.getExpressRequestContext(req)
-                }
-            });
+            logger.log('error', errorMessage);
 
             errorManager.report(e, { metadata: errorManager.getExpressRequestContext(req) });
             return;
@@ -487,17 +464,7 @@ class OAuthController {
             const errorMessage = `No session found for state: ${state}`;
             const e = new Error(errorMessage);
 
-            const errorActivityLog = await createActivityLog(log);
-
-            await createActivityLogMessage({
-                level: 'error',
-                activity_log_id: errorActivityLog as number,
-                content: errorMessage,
-                timestamp: Date.now(),
-                params: {
-                    ...errorManager.getExpressRequestContext(req)
-                }
-            });
+            logger.log('error', errorMessage);
 
             errorManager.report(e, { metadata: errorManager.getExpressRequestContext(req) });
             return;
