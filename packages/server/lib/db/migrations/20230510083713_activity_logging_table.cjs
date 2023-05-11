@@ -19,6 +19,7 @@ exports.up = function (knex, _) {
             table.string('provider');
             table.enum('method', ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']);
             table.string('session_id');
+            table.timestamps(true, true);
 
             table.foreign('account_id').references('id').inTable('nango._nango_accounts').onDelete('CASCADE');
         })
