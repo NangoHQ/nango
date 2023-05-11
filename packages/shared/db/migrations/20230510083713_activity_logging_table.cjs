@@ -6,7 +6,7 @@ exports.up = function (knex, _) {
         .withSchema('nango')
         .createTable(tableName, function (table) {
             table.increments('id').primary();
-            table.integer('account_id').unsigned().notNullable();
+            table.integer('account_id').unsigned().notNullable().index();
             table.enu('level', ['error', 'warn', 'info', 'http', 'verbose', 'debug', 'silly']).defaultTo('info').notNullable();
             table.enu('action', ['oauth', 'proxy', 'token', 'sync']).defaultTo('oauth').notNullable();
             table.boolean('success');
@@ -19,6 +19,7 @@ exports.up = function (knex, _) {
             table.string('provider');
             table.enum('method', ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']);
             table.string('session_id');
+            table.timestamps(true, true);
 
             table.foreign('account_id').references('id').inTable('nango._nango_accounts').onDelete('CASCADE');
         })
