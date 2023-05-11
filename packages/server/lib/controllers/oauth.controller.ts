@@ -14,7 +14,6 @@ import {
     getAccount,
     getConnectionMetadataFromTokenResponse
 } from '../utils/utils.js';
-import logger from '../utils/logger.js';
 import {
     createActivityLog,
     createActivityLogMessageAndEnd,
@@ -452,8 +451,6 @@ class OAuthController {
             const errorMessage = 'No state found in callback';
             const e = new Error(errorMessage);
 
-            logger.log('error', errorMessage);
-
             errorManager.report(e, { metadata: errorManager.getExpressRequestContext(req) });
             return;
         }
@@ -463,8 +460,6 @@ class OAuthController {
         if (session == null) {
             const errorMessage = `No session found for state: ${state}`;
             const e = new Error(errorMessage);
-
-            logger.log('error', errorMessage);
 
             errorManager.report(e, { metadata: errorManager.getExpressRequestContext(req) });
             return;
