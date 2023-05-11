@@ -9,8 +9,6 @@ async function create(model: TicketModel): Promise<boolean> {
         await schema().table(TABLE).transacting(trx).insert(model);
         await trx.commit();
 
-        // TODO logging
-        console.log('Created Model');
         return true;
     } catch (error) {
         await trx.rollback();
