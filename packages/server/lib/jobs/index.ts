@@ -1,5 +1,5 @@
 import * as cron from 'node-cron';
-import type { ActivityLog } from '../models';
+import type { ActivityLog } from '@nangohq/shared';
 import db from '../db/database.js';
 
 export async function deleteOldActivityLogs(): Promise<void> {

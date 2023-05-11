@@ -1,8 +1,7 @@
 import type { Request, Response } from 'express';
 import type { NextFunction } from 'express';
 
-import configService from '../../services/config.service.js';
-import { createActivityLog, createActivityLogMessageAndEnd, createActivityLogMessage, LogLevel, LogAction, HTTP_VERB } from '@nangohq/shared';
+import { configService, createActivityLog, createActivityLogMessageAndEnd, createActivityLogMessage, LogLevel, LogAction, HTTP_VERB } from '@nangohq/shared';
 import { getAccount } from '../../utils/utils.js';
 import errorManager from '../../utils/error.manager.js';
 

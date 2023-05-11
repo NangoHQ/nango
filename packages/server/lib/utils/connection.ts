@@ -1,11 +1,18 @@
 import type { Response } from 'express';
 
 import errorManager from '../utils/error.manager.js';
-import { ProviderConfig, ProviderTemplate, Connection, ProviderAuthModes, ProviderTemplateOAuth2 } from '../models.js';
 import type { LogAction } from '@nangohq/shared';
 import connectionService from '../services/connection.service.js';
-import configService from '../services/config.service.js';
-import { createActivityLogMessageAndEnd, updateProvider as updateProviderActivityLog } from '@nangohq/shared';
+import {
+    configService,
+    createActivityLogMessageAndEnd,
+    updateProvider as updateProviderActivityLog,
+    Config as ProviderConfig,
+    Template as ProviderTemplate,
+    Connection,
+    AuthModes as ProviderAuthModes,
+    TemplateOAuth2 as ProviderTemplateOAuth2
+} from '@nangohq/shared';
 import analytics from './analytics.js';
 import { getAccount } from './utils.js';
 

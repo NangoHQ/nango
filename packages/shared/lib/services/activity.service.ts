@@ -1,5 +1,5 @@
 import db from '../database.js';
-import type { ActivityLog, ActivityLogMessage, LogAction } from '../models/Activity.js';
+import type { ActivityLog, ActivityLogMessage, LogAction } from '../models';
 import logger from '../logger/console.js';
 
 const activityLogTableName = '_nango_activity_logs';
@@ -102,23 +102,20 @@ export async function findActivityLogBySession(session_id: string): Promise<numb
     return result[0].id;
 }
 
-export async function getLogsByAccount(account_id: number): Promise<ActivityLog[]> {
-    const logs = await db.knex.withSchema(db.schema()).from<ActivityLog>(activityLogTableName).select('*').where({ account_id }).orderBy('id', 'desc');
+export async function getLogsByAccount(account_id: number, limit = 30): Promise<ActivityLog[]> {
+    const unsortedLogs = await db.knex
+        .withSchema(db.schema())
+        .from<ActivityLog>('_nango_activity_logs')
+        .select('_nango_activity_logs.*', db.knex.raw('json_agg(_nango_activity_log_messages.*) as messages'))
+        .leftJoin('_nango_activity_log_messages', '_nango_activity_logs.id', '=', '_nango_activity_log_messages.activity_log_id')
+        .where({ account_id })
+        .groupBy('_nango_activity_logs.id')
+        .orderBy('_nango_activity_logs.timestamp', 'desc')
+        .limit(limit);
 
-    if (!logs || logs.length == 0 || !logs[0]) {
+    if (!unsortedLogs || unsortedLogs.length == 0 || !unsortedLogs[0]) {
         return [];
     }
-    const logsWithMessages = await Promise.all(
-        logs.map(async (log) => {
-            const messages = await db.knex
-                .withSchema(db.schema())
-                .from<ActivityLogMessage>(activityLogMessageTableName)
-                .select('*')
-                .where({ activity_log_id: log.id as number });
-            log.messages = messages;
-            return log;
-        })
-    );
 
-    return logsWithMessages;
+    return unsortedLogs;
 }

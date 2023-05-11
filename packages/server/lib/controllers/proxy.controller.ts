@@ -14,11 +14,11 @@ import {
     updateEndpoint as updateEndpointActivityLog,
     HTTP_VERB,
     LogLevel,
-    LogAction
+    LogAction,
+    configService
 } from '@nangohq/shared';
 import errorManager from '../utils/error.manager.js';
 import { getAccount } from '../utils/utils.js';
-import configService from '../services/config.service.js';
 import type { ProxyBodyConfiguration } from '../models.js';
 import { NangoError } from '../utils/error.js';
 import { getConnectionCredentials } from '../utils/connection.js';

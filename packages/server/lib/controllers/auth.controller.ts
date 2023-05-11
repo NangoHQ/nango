@@ -11,7 +11,7 @@ import Mailgun from 'mailgun.js';
 import type { User } from '../models.js';
 import formData from 'form-data';
 import { NangoError } from '../utils/error.js';
-import configService from '../services/config.service.js';
+import { configService } from '@nangohq/shared';
 
 export interface WebUser {
     id: number;

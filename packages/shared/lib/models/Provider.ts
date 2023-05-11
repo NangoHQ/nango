@@ -1,3 +1,5 @@
+import type { AuthModes } from './Auth.js';
+
 export interface Config {
     id?: number;
     created_at?: Date;
@@ -26,11 +28,6 @@ export interface Template {
     token_response_metadata?: Array<string>;
     base_api_url?: string;
     docs?: string;
-}
-
-export enum AuthModes {
-    OAuth1 = 'OAUTH1',
-    OAuth2 = 'OAUTH2'
 }
 
 export interface TemplateAlias {

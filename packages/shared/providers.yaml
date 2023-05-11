@@ -672,8 +672,6 @@ twitter-v2:
         grant_type: refresh_token
     default_scopes:
         - offline.access
-<<<<<<< HEAD
-=======
 twinfield:
     auth_mode: OAUTH2
     authorization_url: https://login.twinfield.com/auth/authentication/connect/authorize
@@ -691,7 +689,6 @@ twinfield:
         - twf.organisationUser
         - offline_access
     disable_pkce: true
->>>>>>> 9ad2a2b161718fea5b81f4e6303edeea96820aa2
 uber:
     auth_mode: OAUTH2
     authorization_url: https://login.uber.com/oauth/v2/authorize

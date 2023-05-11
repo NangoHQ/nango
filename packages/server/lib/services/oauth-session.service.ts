@@ -1,4 +1,4 @@
-import type { OAuthSession } from '../models.js';
+import type { OAuthSession } from '@nangohq/shared';
 import db from '../db/database.js';
 import { convertJsonKeysToCamelCase, convertJsonKeysToSnakeCase } from '../utils/utils.js';
 
