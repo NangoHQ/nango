@@ -1,6 +1,6 @@
 export interface ActivityResponse {
     level: 'info' | 'debug' | 'error';
-    action: 'oauth' | 'proxy' | 'token';
+    action: 'oauth' | 'proxy' | 'token' | 'sync';
     success: boolean;
     timestamp: number;
     start: number;
@@ -9,8 +9,8 @@ export interface ActivityResponse {
     messages: {
         [index: string]: undefined | string | number;
     }[];
-    connectionId: string;
-    providerConfigKey: string;
+    connection_id: string;
+    provider_config_key: string;
     provider: string;
     method: string;
     endpoint?: string;

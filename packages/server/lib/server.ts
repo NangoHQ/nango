@@ -29,6 +29,7 @@ import Logger from './utils/logger.js';
 import encryptionManager from './utils/encryption.manager.js';
 import accountService from './services/account.service.js';
 import oAuthSessionService from './services/oauth-session.service.js';
+import { deleteOldActivityLogs } from './jobs/index.js';
 
 let app = express();
 
@@ -121,6 +122,9 @@ const wsServer = new WebSocketServer({ server });
 wsServer.on('connection', (ws: WebSocket) => {
     webSocketClient.addClient(ws);
 });
+
+// kick off any job
+deleteOldActivityLogs();
 
 let port = getPort();
 server.listen(port, () => {

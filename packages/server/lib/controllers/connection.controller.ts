@@ -2,11 +2,17 @@ import type { Request, Response } from 'express';
 import connectionService from '../services/connection.service.js';
 import type { NextFunction } from 'express';
 import configService from '../services/config.service.js';
-import { ProviderConfig, ProviderTemplate, Connection, ProviderAuthModes, ProviderTemplateOAuth2, HTTP_VERB } from '../models.js';
+import { ProviderConfig, ProviderTemplate, Connection, ProviderAuthModes, ProviderTemplateOAuth2, HTTP_VERB, LogLevel, LogAction } from '../models.js';
 import analytics from '../utils/analytics.js';
+import {
+    createActivityLog,
+    createActivityLogMessage,
+    createActivityLogMessageAndEnd,
+    updateProvider as updateProviderActivityLog,
+    updateSuccess as updateSuccessActivityLog
+} from '../services/activity.service.js';
 import { getAccount, getUserAndAccountFromSession } from '../utils/utils.js';
 import { getConnectionCredentials } from '../utils/connection.js';
-import { updateAppLogsAndWrite, LogData, LogLevel, LogAction } from '../utils/file-logger.js';
 import { WSErrBuilder } from '../utils/web-socket-error.js';
 import errorManager from '../utils/error.manager.js';
 
@@ -30,15 +36,24 @@ class ConnectionController {
                 start: Date.now(),
                 end: Date.now(),
                 timestamp: Date.now(),
-                connectionId: connectionId as string,
-                providerConfigKey: providerConfigKey as string,
-                messages: [] as LogData['messages'],
-                message: '',
-                provider: ''
+                connection_id: connectionId as string,
+                provider_config_key: providerConfigKey as string,
+                account_id: account.id
             };
 
+            const activityLogId = await createActivityLog(log);
+
+            await createActivityLogMessage({
+                level: 'error',
+                activity_log_id: activityLogId as number,
+                timestamp: Date.now(),
+                content: `Token fetch was successful for ${providerConfigKey} and connection ${connectionId} from the web UI`
+            });
+
             if (connectionId == null) {
-                updateAppLogsAndWrite(log, 'error', {
+                await createActivityLogMessageAndEnd({
+                    level: 'error',
+                    activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: WSErrBuilder.MissingConnectionId().message
                 });
@@ -48,7 +63,9 @@ class ConnectionController {
             }
 
             if (providerConfigKey == null) {
-                updateAppLogsAndWrite(log, 'error', {
+                await createActivityLogMessageAndEnd({
+                    level: 'error',
+                    activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: WSErrBuilder.MissingProviderConfigKey().message
                 });
@@ -60,7 +77,9 @@ class ConnectionController {
             const connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, account.id);
 
             if (connection == null) {
-                updateAppLogsAndWrite(log, 'error', {
+                await createActivityLogMessageAndEnd({
+                    level: 'error',
+                    activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: 'Unknown connection'
                 });
@@ -72,7 +91,9 @@ class ConnectionController {
             const config: ProviderConfig | null = await configService.getProviderConfig(connection.provider_config_key, account.id);
 
             if (config == null) {
-                updateAppLogsAndWrite(log, 'error', {
+                await createActivityLogMessageAndEnd({
+                    level: 'error',
+                    activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: 'Unknown provider config'
                 });
@@ -81,7 +102,7 @@ class ConnectionController {
                 return;
             }
 
-            log.provider = config.provider;
+            await updateProviderActivityLog(activityLogId as number, config.provider);
 
             const template: ProviderTemplate | undefined = configService.getTemplate(config.provider);
 
@@ -90,21 +111,21 @@ class ConnectionController {
                     connection,
                     config,
                     template as ProviderTemplateOAuth2,
-                    log,
+                    activityLogId,
                     false,
-                    'token'
+                    'token' as LogAction
                 );
             }
 
-            log.success = true;
+            await updateSuccessActivityLog(activityLogId as number, true);
 
             if (instantRefresh) {
-                updateAppLogsAndWrite(log, 'info', {
-                    authMode: template.auth_mode,
+                await createActivityLogMessageAndEnd({
+                    level: 'info',
+                    activity_log_id: activityLogId as number,
+                    auth_mode: template.auth_mode,
                     content: `Token manual refresh fetch was successful for ${providerConfigKey} and connection ${connectionId} from the web UI`,
-                    timestamp: Date.now(),
-                    providerConfigKey,
-                    connectionId
+                    timestamp: Date.now()
                 });
             }
 
@@ -205,28 +226,31 @@ class ConnectionController {
 
     async getConnectionCreds(req: Request, res: Response, next: NextFunction) {
         try {
+            const accountId = getAccount(res);
             const connectionId = req.params['connectionId'] as string;
             const providerConfigKey = req.query['provider_config_key'] as string;
             const instantRefresh = req.query['force_refresh'] === 'true';
 
+            const action: LogAction = 'token';
             const log = {
                 level: 'debug' as LogLevel,
                 success: true,
-                action: 'token' as LogAction,
+                action,
                 start: Date.now(),
                 end: Date.now(),
                 timestamp: Date.now(),
                 method: req.method as HTTP_VERB,
-                connectionId,
-                providerConfigKey,
-                messages: [] as LogData['messages'],
-                message: '',
-                endpoint: ''
+                connection_id: connectionId as string,
+                provider_config_key: providerConfigKey as string,
+                account_id: accountId
             };
 
-            const connection = await getConnectionCredentials(res, connectionId, providerConfigKey, log, instantRefresh);
+            const activityLogId = await createActivityLog(log);
+            const connection = await getConnectionCredentials(res, connectionId, providerConfigKey, activityLogId as number, action, instantRefresh);
 
-            updateAppLogsAndWrite(log, 'info', {
+            await createActivityLogMessageAndEnd({
+                level: 'info',
+                activity_log_id: activityLogId as number,
                 timestamp: Date.now(),
                 content: 'Connection credentials found successfully',
                 params: {
