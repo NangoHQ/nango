@@ -6,7 +6,7 @@ exports.up = function (knex, _) {
         .withSchema('nango')
         .createTable(tableName, function (table) {
             table.increments('id').primary();
-            table.integer('account_id').unsigned().notNullable();
+            table.integer('account_id').unsigned().notNullable().index();
             table.enu('level', ['error', 'warn', 'info', 'http', 'verbose', 'debug', 'silly']).defaultTo('info').notNullable();
             table.enu('action', ['oauth', 'proxy', 'token', 'sync']).defaultTo('oauth').notNullable();
             table.boolean('success');
