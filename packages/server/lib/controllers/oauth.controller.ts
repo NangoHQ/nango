@@ -36,7 +36,9 @@ import {
     ProviderAuthModes,
     OAuthSession,
     OAuth1RequestTokenResult,
-    AuthCredentials
+    AuthCredentials,
+    LogLevel,
+    LogAction
 } from '../models.js';
 import type { NextFunction } from 'express';
 import errorManager from '../utils/error.manager.js';

@@ -2,7 +2,7 @@ import type { AuthCredentials, OAuth2Credentials, OAuth1Credentials, Credentials
 import { ProviderAuthModes, ProviderTemplateOAuth2 } from '../models.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import db from '../db/database.js';
-import type { ProviderConfig, Connection } from '../models.js';
+import type { ProviderConfig, Connection, LogAction } from '../models.js';
 import analytics from '../utils/analytics.js';
 import providerClientManager from '../clients/provider.client.js';
 import { updateAction as updateActivityLogAction, createActivityLogMessage, LogAction } from '@nangohq/shared';
