@@ -6,8 +6,8 @@
         "packages/frontend",
         "packages/node-client",
         "packages/server",
-        "packages/sync-worker",
-        "packages/shared"
+        "packages/shared",
+        "packages/sync-worker"
     ],
     "scripts": {
         "prettier-format": "prettier --config .prettierrc \"./**/*.ts\" --write",
