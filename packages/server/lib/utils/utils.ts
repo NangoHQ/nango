@@ -3,7 +3,7 @@ import path, { resolve } from 'path';
 import type { Request, Response } from 'express';
 import accountService from '../services/account.service.js';
 import type { User } from '../models.js';
-import type { Account, Template as ProviderTemplate } from '@nangoHq/shared';
+import type { Account, Template as ProviderTemplate } from '@nangohq/shared';
 import logger from './logger.js';
 import type { WSErr } from './web-socket-error.js';
 import userService from '../services/user.service.js';

@@ -1,4 +1,4 @@
-import type { Template as ProviderTemplate, HTTP_VERB } from '@nangoHq/shared';
+import type { Template as ProviderTemplate, HTTP_VERB } from '@nangohq/shared';
 
 export interface User {
     id: number;

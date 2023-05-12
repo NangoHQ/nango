@@ -27,7 +27,7 @@ import passport from 'passport';
 import accountController from './controllers/account.controller.js';
 import type { Response, Request } from 'express';
 import Logger from './utils/logger.js';
-import { encryptionManager } from '@nangoHq/shared';
+import { encryptionManager } from '@nangohq/shared';
 import accountService from './services/account.service.js';
 import oAuthSessionService from './services/oauth-session.service.js';
 import { deleteOldActivityLogs } from './jobs/index.js';

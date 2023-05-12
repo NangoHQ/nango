@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
-import { configService, Config as ProviderConfig } from '@nangoHq/shared';
+import { configService, Config as ProviderConfig } from '@nangohq/shared';
 import analytics from '../utils/analytics.js';
 import { getAccount, getUserAndAccountFromSession, parseConnectionConfigParamsFromTemplate } from '../utils/utils.js';
 import errorManager from '../utils/error.manager.js';
