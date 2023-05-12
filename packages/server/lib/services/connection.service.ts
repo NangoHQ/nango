@@ -83,24 +83,6 @@ class ConnectionService {
         return connection;
     }
 
-    public async getConnectionById(
-        id: number,
-        argDb?: typeof db
-    ): Promise<Pick<Connection, 'id' | 'connection_id' | 'provider_config_key' | 'account_id'> | null> {
-        const database = argDb || db;
-        const result = await database.knex
-            .withSchema(db.schema())
-            .select('id', 'connection_id', 'provider_config_key', 'account_id')
-            .from<StoredConnection>('_nango_connections')
-            .where({ id: id });
-
-        if (!result || result.length == 0 || !result[0]) {
-            return null;
-        }
-
-        return result[0];
-    }
-
     async listConnections(accountId: number, connectionId?: string): Promise<{ id: number; connection_id: number; provider: string; created: string }[]> {
         let queryBuilder = db.knex
             .withSchema(db.schema())
