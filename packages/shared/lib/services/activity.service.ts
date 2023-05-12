@@ -103,7 +103,7 @@ export async function findActivityLogBySession(session_id: string): Promise<numb
 }
 
 export async function getLogsByAccount(account_id: number, limit = 30): Promise<ActivityLog[]> {
-    const unsortedLogs = await db.knex
+    const logs = await db.knex
         .withSchema(db.schema())
         .from<ActivityLog>('_nango_activity_logs')
         .select('_nango_activity_logs.*', db.knex.raw('json_agg(_nango_activity_log_messages.*) as messages'))
@@ -113,9 +113,9 @@ export async function getLogsByAccount(account_id: number, limit = 30): Promise<
         .orderBy('_nango_activity_logs.timestamp', 'desc')
         .limit(limit);
 
-    if (!unsortedLogs || unsortedLogs.length == 0 || !unsortedLogs[0]) {
+    if (!logs || logs.length == 0 || !logs[0]) {
         return [];
     }
 
-    return unsortedLogs;
+    return logs;
 }
