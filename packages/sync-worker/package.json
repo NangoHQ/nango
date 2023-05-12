@@ -14,8 +14,7 @@
         "directory": "packages/sync-worker"
     },
     "dependencies": {
-        "@nangohq/nango-server": "0.16.0",
-        "@nangohq/node": "0.16.0",
+        "@nangohq/node": "0.17.0",
         "@nangohq/shared": "^0.1.0",
         "@temporalio/activity": "^1.5.2",
         "@temporalio/client": "^1.5.2",
