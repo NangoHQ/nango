@@ -2,9 +2,8 @@
  * Copyright (c) 2022 Nango, all rights reserved.
  */
 
-import type { ProviderTemplateOAuth1, ProviderTemplate } from '../models.js';
 import oAuth1 from 'oauth';
-import type { ProviderConfig } from '../models.js';
+import type { Config as ProviderConfig, TemplateOAuth1 as ProviderTemplateOAuth1, Template as ProviderTemplate } from '@nangohq/shared';
 
 type OAuth1RequestTokenResult = {
     request_token: string;

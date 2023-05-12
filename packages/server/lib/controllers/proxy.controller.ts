@@ -11,12 +11,15 @@ import {
     createActivityLogMessage,
     updateProvider as updateProviderActivityLog,
     updateSuccess as updateSuccessActivityLog,
-    updateEndpoint as updateEndpointActivityLog
-} from '../services/activity.service.js';
+    updateEndpoint as updateEndpointActivityLog,
+    HTTP_VERB,
+    LogLevel,
+    LogAction,
+    configService
+} from '@nangohq/shared';
 import errorManager from '../utils/error.manager.js';
 import { getAccount } from '../utils/utils.js';
-import configService from '../services/config.service.js';
-import type { ProxyBodyConfiguration, HTTP_VERB, LogLevel, LogAction } from '../models.js';
+import type { ProxyBodyConfiguration } from '../models.js';
 import { NangoError } from '../utils/error.js';
 import { getConnectionCredentials } from '../utils/connection.js';
 
@@ -270,7 +273,10 @@ class ProxyController {
                 level: 'info',
                 activity_log_id: activityLogId,
                 timestamp: Date.now(),
-                content: `GET request to ${url} was successful`
+                content: `GET request to ${url} was successful`,
+                params: {
+                    headers: JSON.stringify(config.headers)
+                }
             });
 
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
@@ -310,7 +316,10 @@ class ProxyController {
                 level: 'info',
                 activity_log_id: activityLogId,
                 timestamp: Date.now(),
-                content: `POST request to ${url} was successful`
+                content: `POST request to ${url} was successful`,
+                params: {
+                    headers: JSON.stringify(config.headers)
+                }
             });
 
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
@@ -350,7 +359,10 @@ class ProxyController {
                 level: 'info',
                 activity_log_id: activityLogId,
                 timestamp: Date.now(),
-                content: `PATCH request to ${url} was successful`
+                content: `PATCH request to ${url} was successful`,
+                params: {
+                    headers: JSON.stringify(config.headers)
+                }
             });
 
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
@@ -390,7 +402,10 @@ class ProxyController {
                 level: 'info',
                 activity_log_id: activityLogId,
                 timestamp: Date.now(),
-                content: `PUT request to ${url} was successful`
+                content: `PUT request to ${url} was successful`,
+                params: {
+                    headers: JSON.stringify(config.headers)
+                }
             });
 
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
@@ -429,7 +444,10 @@ class ProxyController {
                 level: 'info',
                 activity_log_id: activityLogId,
                 timestamp: Date.now(),
-                content: `DELETE request to ${url} was successful`
+                content: `DELETE request to ${url} was successful`,
+                params: {
+                    headers: JSON.stringify(config.headers)
+                }
             });
 
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
@@ -455,7 +473,10 @@ class ProxyController {
                     timestamp: Date.now(),
                     content: `Response is a 404 to ${url}, make sure you have the endpoint specified and spelled correctly.${
                         config.template.docs ? ` Refer to the documentation at ${config.template.docs} for help` : ''
-                    }`
+                    }`,
+                    params: {
+                        headers: JSON.stringify(config.headers)
+                    }
                 });
 
                 return new NangoError('unknown_endpoint');
@@ -467,7 +488,10 @@ class ProxyController {
                     timestamp: Date.now(),
                     content: `Response is a 403 to ${url}, make sure you have the proper scopes configured.${
                         config.template.docs ? ` Refer to the documentation at ${config.template.docs} for help` : ''
-                    }`
+                    }`,
+                    params: {
+                        headers: JSON.stringify(config.headers)
+                    }
                 });
 
                 return new NangoError('fobidden');
@@ -479,7 +503,10 @@ class ProxyController {
                     timestamp: Date.now(),
                     content: `Response is a 400 to ${url}, make sure you have the proper headers to go to the API set.${
                         config.template.docs ? ` Refer to the documentation at ${config.template.docs} for help` : ''
-                    }`
+                    }`,
+                    params: {
+                        headers: JSON.stringify(config.headers)
+                    }
                 });
 
                 return new NangoError('bad_request');

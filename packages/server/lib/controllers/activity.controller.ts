@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 import type { NextFunction } from 'express';
 
 import { getUserAndAccountFromSession } from '../utils/utils.js';
-import { getLogsByAccount } from '../services/activity.service.js';
+import { getLogsByAccount } from '@nangohq/shared';
 
 class ActivityController {
     public async retrieve(req: Request, res: Response, next: NextFunction) {

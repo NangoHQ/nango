@@ -6,7 +6,7 @@ class KnexDatabase {
     knex: Knex;
 
     constructor() {
-        let config = dbConfig.development;
+        const config = dbConfig.development;
         this.knex = knex(config);
     }
 

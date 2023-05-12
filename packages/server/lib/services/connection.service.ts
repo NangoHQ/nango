@@ -1,15 +1,25 @@
-import type { AuthCredentials, OAuth2Credentials, OAuth1Credentials, CredentialsRefresh, StoredConnection } from '../models.js';
-import { ProviderAuthModes, ProviderTemplateOAuth2 } from '../models.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import db from '../db/database.js';
-import type { ProviderConfig, Connection, LogAction } from '../models.js';
 import analytics from '../utils/analytics.js';
 import providerClientManager from '../clients/provider.client.js';
-import { updateAction as updateActivityLogAction, createActivityLogMessage } from '../services/activity.service.js';
+import {
+    AuthModes as ProviderAuthModes,
+    TemplateOAuth2 as ProviderTemplateOAuth2,
+    Config as ProviderConfig,
+    AuthCredentials,
+    OAuth2Credentials,
+    OAuth1Credentials,
+    CredentialsRefresh,
+    StoredConnection,
+    Connection,
+    updateAction as updateActivityLogAction,
+    createActivityLogMessage,
+    LogAction,
+    encryptionManager
+} from '@nangohq/shared';
 import { parseTokenExpirationDate, isTokenExpired } from '../utils/utils.js';
 import providerClient from '../clients/provider.client.js';
 import { NangoError } from '../utils/error.js';
-import encryptionManager from '../utils/encryption.manager.js';
 
 class ConnectionService {
     private runningCredentialsRefreshes: CredentialsRefresh[] = [];

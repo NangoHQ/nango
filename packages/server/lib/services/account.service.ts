@@ -1,6 +1,5 @@
-import type { Account } from '../models.js';
 import db from '../db/database.js';
-import encryptionManager from '../utils/encryption.manager.js';
+import { Account, encryptionManager } from '@nangohq/shared';
 
 class AccountService {
     private accountSecrets: { [key: string]: number } = {};

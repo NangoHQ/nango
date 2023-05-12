@@ -18,7 +18,7 @@ This page details how to contribute a new API for OAuth to Nango. Documentation 
 
 Support for the OAuth flow of different providers is implemented with templates: A small config that tells Nango how to perform the OAuth flow for the specific provider.
 
-All templates of Nango live in a single file called [providers.yaml](https://nango.dev/oauth-providers) in the `server` package.
+All templates of Nango live in a single file called [providers.yaml](https://nango.dev/oauth-providers) in the `shared` package.
 
 Most templates only need to make use of 3 configuration keys, but in some cases you might need more.
 
@@ -91,7 +91,7 @@ Some OAuth providers require `https` callbacks or don't allow `localhost` callba
 
 ### Step 4: Add your new provider to `providers.yaml`
 
-Edit the `packages/server/providers.yaml` file as explained in the Step 0 to add support for the new provider. The provider's API documentation should contain all the details you need on the OAuth flow to complete this step.
+Edit the `packages/shared/providers.yaml` file as explained in the Step 0 to add support for the new provider. The provider's API documentation should contain all the details you need on the OAuth flow to complete this step.
 
 Propagate your changes by running:
 
@@ -100,7 +100,7 @@ docker compose restart nango-server # Force a restart, which will load in the ya
 ```
 
 ```bash
-docker compose run nango-server cat packages/server/providers.yaml # Print the contents of the providers file from inside the container
+docker compose run nango-server cat packages/shared/providers.yaml # Print the contents of the providers file from inside the container
 ```
 
 ### Step 5: Create a new integration & connection in Nango

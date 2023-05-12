@@ -4,7 +4,6 @@ import * as uuid from 'uuid';
 import simpleOauth2 from 'simple-oauth2';
 import { getSimpleOAuth2ClientConfig } from '../clients/oauth2.client.js';
 import { OAuth1Client } from '../clients/oauth1.client.js';
-import configService from '../services/config.service.js';
 import connectionService from '../services/connection.service.js';
 import {
     getOauthCallbackUrl,
@@ -24,19 +23,18 @@ import {
     findActivityLogBySession,
     updateProviderConfigAndConnectionId as updateProviderConfigAndConnectionIdActivityLog,
     updateSessionId as updateSessionIdActivityLog,
-    addEndTime as addEndTimeActivityLog
-} from '../services/activity.service.js';
-import {
-    ProviderConfig,
-    ProviderTemplate,
-    ProviderTemplateOAuth2,
-    ProviderAuthModes,
+    addEndTime as addEndTimeActivityLog,
+    LogLevel,
+    LogAction,
+    configService,
+    Config as ProviderConfig,
+    Template as ProviderTemplate,
+    TemplateOAuth2 as ProviderTemplateOAuth2,
+    AuthModes as ProviderAuthModes,
     OAuthSession,
     OAuth1RequestTokenResult,
-    AuthCredentials,
-    LogLevel,
-    LogAction
-} from '../models.js';
+    AuthCredentials
+} from '@nangohq/shared';
 import type { NextFunction } from 'express';
 import errorManager from '../utils/error.manager.js';
 import providerClientManager from '../clients/provider.client.js';
