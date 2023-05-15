@@ -71,8 +71,7 @@ export const startContinuous = async (sync: Sync) => {
     });
 
     // this will be dynamic
-    //const interval = '1h';
-    const interval = '5m';
+    const interval = '1h';
     const scheduleId = generateScheduleId(sync);
 
     // kick off schedule
