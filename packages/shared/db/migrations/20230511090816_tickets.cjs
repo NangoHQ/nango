@@ -3,7 +3,7 @@ const tableName = '_nango_unified_tickets';
 exports.up = function (knex, _) {
     return knex.schema.withSchema('nango').createTable(tableName, function (table) {
         table.uuid('id').notNullable();
-        table.integer('external_id').notNullable();
+        table.string('external_id').notNullable();
         table.string('title');
         table.text('description');
         table.enu('status', ['open', 'closed', 'in_progress', 'custom']).defaultTo('open').notNullable();
@@ -15,7 +15,13 @@ exports.up = function (knex, _) {
         table.dateTime('external_updated_at').notNullable();
         table.dateTime('deleted_at');
         table.jsonb('raw_json');
+        table.string('data_hash').notNullable();
+        table.integer('nango_connection_id').unsigned().notNullable();
         table.timestamps(true, true);
+
+        table.foreign('nango_connection_id').references('id').inTable('nango._nango_connections').onDelete('CASCADE');
+
+        table.unique(['nango_connection_id', 'external_id']);
     });
 };
 

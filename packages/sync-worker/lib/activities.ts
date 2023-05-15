@@ -1,6 +1,7 @@
 import * as uuid from 'uuid';
 import { Nango } from '@nangohq/node';
 import db from './db/database.js';
+import md5 from 'md5';
 import {
     getById as getSyncById,
     updateStatus as updateSyncStatus,
@@ -13,11 +14,12 @@ import {
     getConnectionById,
     configService,
     updateSuccess,
-    createActivityLogMessageAndEnd
+    createActivityLogMessageAndEnd,
+    DataResponse
 } from '@nangohq/shared';
-import type { GithubIssues } from './models/Ticket.js';
+import type { GithubIssues, TicketModel } from './models/Ticket.js';
 import type { NangoConnection, ContinuousSyncArgs, InitialSyncArgs } from './models/Worker';
-import { createOrUpdate as createOrUpdateTicket } from './services/ticket.service.js';
+import { upsert } from './services/data.service.js';
 
 export function getServerPort() {
     return process.env['SERVER_PORT'] != null ? +process.env['SERVER_PORT'] : 3003;
@@ -38,7 +40,6 @@ export async function syncActivity(name: string): Promise<string> {
 export async function routeSync(args: InitialSyncArgs): Promise<boolean> {
     const { syncId, activityLogId } = args;
     const sync: Sync = (await getSyncById(syncId, db)) as Sync;
-    // TODO this doesn't use the correct configuration for the env
     const nangoConnection = await getConnectionById(sync.nango_connection_id);
     const syncConfig: ProviderConfig = (await configService.getProviderConfig(
         nangoConnection?.provider_config_key as string,
@@ -82,8 +83,6 @@ export async function syncGithub(sync: Sync, nangoConnection: NangoConnection, a
         return false;
     }
 
-    // TODO doesnt work for a user, incorrect scopes
-    // TODO environment variables aren't picked up correctly
     const response = await nango.get({
         connectionId: nangoConnection?.connection_id as string,
         providerConfigKey: nangoConnection?.provider_config_key as string,
@@ -98,7 +97,9 @@ export async function syncGithub(sync: Sync, nangoConnection: NangoConnection, a
         return false;
     }
 
-    const result = await insertModel(response.data as unknown as GithubIssues);
+    const issues = formatGithubIssue(response.data as unknown as GithubIssues, nangoConnection?.id as number);
+    const result = await upsert(issues as unknown as DataResponse[], '_nango_unified_tickets', 'external_id', nangoConnection?.id as number);
+    console.log(result);
 
     if (result) {
         await updateSyncStatus(sync.id, SyncStatus.SUCCESS, db);
@@ -119,17 +120,15 @@ export async function syncGithub(sync: Sync, nangoConnection: NangoConnection, a
         });
     }
 
-    return result;
+    return Boolean(result);
 }
 
-// bulk insert/ update and make generic
-async function insertModel(issues: GithubIssues): Promise<boolean> {
-    let result = true;
+function formatGithubIssue(issues: GithubIssues, nangoConnectionId: number): TicketModel[] {
     const models = [];
     for (const issue of issues) {
         const model = {
             id: uuid.v4(),
-            external_id: issue.id,
+            external_id: issue.id, // this is stored as a string, b/c this could be a uuid or even an email address
             title: issue.title,
             description: issue.body as string,
             status: issue.state, // TODO modify this to fit the enum
@@ -140,16 +139,11 @@ async function insertModel(issues: GithubIssues): Promise<boolean> {
             external_created_at: issue.created_at,
             external_updated_at: issue.updated_at,
             deleted_at: null,
-            raw_json: issue
+            raw_json: issue,
+            data_hash: md5(JSON.stringify(issue)),
+            nango_connection_id: nangoConnectionId
         };
         models.push(model);
-
-        const insert = await createOrUpdateTicket(model);
-
-        if (!insert) {
-            result = false;
-        }
     }
-
-    return result;
+    return models;
 }

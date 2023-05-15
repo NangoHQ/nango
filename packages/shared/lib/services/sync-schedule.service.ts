@@ -1,10 +1,10 @@
-import db from '../database.js';
+import db, { dbNamespace } from '../database.js';
 import { SyncSchedule, ScheduleStatus } from '../models/SyncSchedule.js';
 
-const table = '_nango_unified_sync_schedules';
+const TABLE = dbNamespace + 'sync_schedules';
 
 export const create = async (nangoConnectionId: number, schedule_id: string, interval: string): Promise<SyncSchedule | null> => {
-    const result: void | Pick<SyncSchedule, 'id'> = await db.knex.withSchema(db.schema()).from<SyncSchedule>(table).insert(
+    const result: void | Pick<SyncSchedule, 'id'> = await db.knex.withSchema(db.schema()).from<SyncSchedule>(TABLE).insert(
         {
             nango_connection_id: nangoConnectionId,
             schedule_id,

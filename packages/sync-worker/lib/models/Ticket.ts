@@ -2,7 +2,12 @@ import type { Endpoints } from '@octokit/types';
 
 export type GithubIssues = Endpoints['GET /repos/{owner}/{repo}/issues']['response']['data'];
 
-export interface TicketModel {
+export interface BaseModel {
+    raw_json: object;
+    data_hash: string;
+    nango_connection_id: number;
+}
+export interface TicketModel extends BaseModel {
     id?: string;
     external_id: number;
     title: string;

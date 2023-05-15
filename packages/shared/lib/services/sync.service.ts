@@ -1,5 +1,5 @@
 import { Client, Connection } from '@temporalio/client';
-import db from '../database.js';
+import db, { dbNamespace } from '../database.js';
 import type { Config as ProviderConfig } from '../models/Provider.js';
 import { Sync, SyncStatus, SyncType } from '../models/Sync.js';
 import type { LogLevel, LogAction } from '../models/Activity.js';
@@ -8,7 +8,7 @@ import configService from './config.service.js';
 import { create as createSyncScedule } from './sync-schedule.service.js';
 import { createActivityLog, createActivityLogMessage } from './activity.service.js';
 
-const table = '_nango_unified_syncs';
+const TABLE = dbNamespace + 'sync_jobs';
 const TASK_QUEUE = 'unified_syncs';
 
 export async function getClient(): Promise<Client | null> {
@@ -71,7 +71,8 @@ export const startContinuous = async (sync: Sync) => {
     });
 
     // this will be dynamic
-    const interval = '1h';
+    //const interval = '1h';
+    const interval = '5m';
     const scheduleId = generateScheduleId(sync);
 
     // kick off schedule
@@ -105,7 +106,7 @@ export const startContinuous = async (sync: Sync) => {
 
 export const getById = async (id: number, argDb?: typeof db): Promise<Sync | null> => {
     const database = argDb || db;
-    const result = await database.knex.withSchema(database.schema()).select('*').from<Sync>(table).where({ id: id });
+    const result = await database.knex.withSchema(database.schema()).select('*').from<Sync>(TABLE).where({ id: id });
 
     if (!result || result.length == 0 || !result[0]) {
         return null;
@@ -115,6 +116,8 @@ export const getById = async (id: number, argDb?: typeof db): Promise<Sync | nul
 };
 
 export const initiate = async (nangoConnectionId: number): Promise<void> => {
+    // based on the service we'll initiate different types of syncs
+    // For github we'll do a sync of issues, comments
     const sync = await create(nangoConnectionId, SyncType.INITIAL);
     if (sync) {
         startContinuous(sync);
@@ -123,7 +126,7 @@ export const initiate = async (nangoConnectionId: number): Promise<void> => {
 
 export const create = async (nangoConnectionId: number, type: SyncType, argDb?: typeof db): Promise<Sync | null> => {
     const database = argDb || db;
-    const result: void | Pick<Sync, 'id'> = await database.knex.withSchema(database.schema()).from<Sync>(table).insert(
+    const result: void | Pick<Sync, 'id'> = await database.knex.withSchema(database.schema()).from<Sync>(TABLE).insert(
         {
             nango_connection_id: nangoConnectionId,
             status: SyncStatus.RUNNING,
@@ -142,14 +145,14 @@ export const create = async (nangoConnectionId: number, type: SyncType, argDb?: 
 
 export const updateStatus = async (id: number, status: SyncStatus, argDb?: typeof db): Promise<void> => {
     const database = argDb || db;
-    return database.knex.withSchema(database.schema()).from<Sync>(table).where({ id }).update({
+    return database.knex.withSchema(database.schema()).from<Sync>(TABLE).where({ id }).update({
         status
     });
 };
 
 export const updateType = async (id: number, type: SyncType, argDb?: typeof db): Promise<void> => {
     const database = argDb || db;
-    return database.knex.withSchema(database.schema()).from<Sync>(table).where({ id }).update({
+    return database.knex.withSchema(database.schema()).from<Sync>(TABLE).where({ id }).update({
         type
     });
 };

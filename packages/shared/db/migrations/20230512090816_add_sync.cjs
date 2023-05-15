@@ -1,4 +1,4 @@
-const tableName = '_nango_unified_syncs';
+const tableName = '_nango_sync_jobs';
 
 exports.up = function (knex, _) {
     return knex.schema.withSchema('nango').createTable(tableName, function (table) {

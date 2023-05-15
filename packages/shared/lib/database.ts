@@ -20,6 +20,10 @@ class KnexDatabase {
 
 const db = new KnexDatabase();
 
+export const dbNamespace = '_nango_';
+
+export const schemaName = 'nango';
+
 export default db;
 
 export const schema = (): Knex.QueryBuilder => db.knex.withSchema(db.schema());
