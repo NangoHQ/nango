@@ -5,5 +5,6 @@ export interface DataResponse {
 export interface UpsertResponse {
     addedKeys: Array<string>;
     updatedKeys: Array<string>;
-    addedInternalIds: Array<string>;
+    affectedInternalIds: Array<string>;
+    affectedExternalIds: Array<string>;
 }

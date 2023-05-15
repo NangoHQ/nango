@@ -15,11 +15,11 @@ export async function upsert(response: DataResponse[], dbTable: string, uniqueKe
         .onConflict(['nango_connection_id', 'external_id'])
         .merge()
         .returning(['id', 'external_id']);
-    console.log('results', results);
 
-    const addedInternalIds = results.map((tuple) => tuple.id) as string[];
+    const affectedInternalIds = results.map((tuple) => tuple.id) as string[];
+    const affectedExternalIds = results.map((tuple) => tuple.external_id) as string[];
 
-    return { addedKeys, updatedKeys, addedInternalIds };
+    return { addedKeys, updatedKeys, affectedInternalIds, affectedExternalIds };
 }
 
 /**
