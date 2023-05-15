@@ -9,6 +9,7 @@ export async function upsert(response: DataResponse[], dbTable: string, uniqueKe
     const addedKeys = await getAddedKeys(response, dbTable, uniqueKey, nangoConnectionId);
     const updatedKeys = await getUpdatedKeys(response, dbTable, uniqueKey, nangoConnectionId);
 
+    // TODO change updated_at column, trigger to do that
     const results = await schema()
         .from(dbTable)
         .insert(response, ['id', 'external_id'])
