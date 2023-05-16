@@ -1,0 +1,49 @@
+---
+title: 'Nango Auth: Configuration'
+sidebarTitle: 'Configuration'
+description: 'Configuration options for Nango Auth.'
+---
+
+## Custom Callback URL
+
+<Warning>
+Before saving the custom callback URL in Nango, ensure that:
+
+-   the callback URL redirects to `https://api.nango.dev/oauth/callback` and passes along all parameters (e.g. 308 redirect)
+-   your OAuth app, as registered with the external API provider, has the new callback URL whitelisted
+
+</Warning>
+
+Customize the callback URL in your [Dashboard's project settings](https://app.nango.dev/project-settings). If self-hosting Nango, follow the instructions [here](self-host/instructions).
+
+## Connection configuration
+
+Some API Providers require connection-specific configuration variables (e.g. Zendesk, Shopify, Qualtrics, Contentstack).
+
+For example, Zendesk has the following authorization URL, where the subdomain is specific to a user's Zendesk account:
+
+```
+https://<USER-SUBDOMAIN>.zendesk.com/oauth/authorizations/new
+```
+
+To specify the subdomain, pass in an additional configuration object to `nango.auth()`:
+
+```javascript
+nango.auth('zendesk', '<CONNECTION-ID>', { params: { subdomain: '<ZENDESK-SUBDOMAIN>' } });
+```
+
+You can find which configuration parameters are necessary for your integration in the [providers.yaml](https://nango.dev/providers.yaml) file.
+
+## Connection metadata
+
+During the OAuth flow, certain APIs return important metadata in addition to credentials (e.g. a company ID, tenant ID, instance URL, etc).
+
+Nango stores this metadata in the Connection objects. You can retrieve it with the [SDKs](/sdks) or [API](/api).
+
+## Configure integrations programmatically
+
+Read the [API reference](/api) to programmatically manage integrations.
+
+## Need help?
+
+Ask any question on the [Slack community](https://nango.dev/slack).
