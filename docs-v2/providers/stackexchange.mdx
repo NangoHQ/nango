@@ -1,0 +1,44 @@
+---
+title: "Stack Exchange API wiki"
+---
+
+<Info>
+**Working with the Stack Exchange API?**
+
+Please add your learnings, favorite links and gotchas here by
+[editing this page](https://github.com/nangohq/nango/tree/master/docs/docs/providers/stackexchange.md).
+
+</Info>
+
+## Using Stack Exchange with Nango[](#using-stack-exchange-with-nango "Direct link to Using Stack Exchange with Nango")
+
+Stack Exchange uses the same API for
+[all its sites](https://stackexchange.com/sites) such as Stack Overflow, Server
+Fault, Super User, Mathematics, Ask Ubuntu etc.
+
+Provider template name in Nango: `stackexchange`  
+Follow our [quickstart](/quickstart) to add an OAuth integration with Stack
+Exchange in 5 minutes.
+
+## App registration & publishing[](#app-registration--publishing "Direct link to App registration & publishing")
+
+You can [register your OAuth app here](http://stackapps.com/apps/oauth/register)
+(make sure you are logged into your Stack Exchange account).
+
+There does not seem to be any approval process but once you are ready they can
+[help you promote your OAuth app on StackApps!](https://stackapps.com/questions/7/how-to-list-your-application-on-stack-apps)
+
+## Useful links[](#useful-links "Direct link to Useful links")
+
+- [Stack Exchange API docs](https://api.stackexchange.com/docs)
+- [Stack Exchange OAuth scopes](https://api.stackexchange.com/docs/authentication#scope)
+
+## API specific gotchas[](#api-specific-gotchas "Direct link to API specific gotchas")
+
+- By default access tokens expire (and cannot be refreshed). To get an access
+  token that does not expire pass the `no_expiry` scope (along with your other
+  scopes)
+- Read the
+  [usage notes here](https://api.stackexchange.com/docs/authentication#usage):
+  You need to pass an additional `key` parameter together with your access token
+  to benefit from higher API quotas.

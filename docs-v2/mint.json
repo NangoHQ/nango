@@ -1,0 +1,202 @@
+{
+  "name": "Nango",
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "favicon": "/favicon.png",
+  "colors": {
+    "primary": "#1A43DB",
+    "light": "#C7D3FE",
+    "dark": "#000000",
+    "anchors": { "from": "#3F68FF", "to": "#012AC3" }
+  },
+  "topbarCtaButton": {
+    "type": "github",
+    "url": "https://github.com/nangoHQ/nango"
+  },
+  "topbarLinks": [
+    {
+      "name": "Sign Up",
+      "url": "https://app.nango.dev/signup"
+    }
+  ],
+  "anchors": [
+    {
+      "name": "Nango Sync",
+      "icon": "rotate",
+      "url": "nango-sync"
+    },
+    {
+      "name": "Community",
+      "icon": "slack",
+      "url": "https://nango-community.slack.com/join/shared_invite/zt-1cvpdflmb-TMrjJJ_AZJeMivOgt906HA#/shared-invite/email"
+    },
+    {
+      "name": "Blog",
+      "icon": "newspaper",
+      "url": "https://www.nango.dev/blog"
+    }
+  ],
+  "navigation": [
+    {
+      "group": "Getting Started",
+      "pages": ["introduction", "quickstart"]
+    },
+    {
+      "group": "Reference",
+      "pages": [
+        "reference/core-concepts",
+        "reference/frontend-sdk",
+        {
+          "group": "Backend SDKs & API",
+          "pages": [
+            "reference/backend-sdk/nango-node-sdk",
+            "reference/backend-sdk/connections-api"
+          ]
+        },
+        "reference/configuration",
+        "reference/cli"
+      ]
+    },
+    {
+      "group": "Supported APIs",
+      "pages": [
+        "providers/overview",
+        {
+          "group": "API Wikis",
+          "pages": [
+            "providers/airtable",
+            "providers/asana",
+            "providers/bitbucket",
+            "providers/box",
+            "providers/braintree",
+            "providers/brex",
+            "providers/calendly",
+            "providers/clickup",
+            "providers/confluence",
+            "providers/contentstack",
+            "providers/digitalocean",
+            "providers/discord",
+            "providers/dropbox",
+            "providers/epic-games",
+            "providers/facebook",
+            "providers/factorial",
+            "providers/fitbit",
+            "providers/freshbooks",
+            "providers/front",
+            "providers/github",
+            "providers/gitlab",
+            "providers/google",
+            "providers/google-calendar",
+            "providers/google-mail",
+            "providers/google-sheet",
+            "providers/greenhouse",
+            "providers/hubspot",
+            "providers/instagram",
+            "providers/intercom",
+            "providers/intuit",
+            "providers/jira",
+            "providers/lever",
+            "providers/linear",
+            "providers/linkedin",
+            "providers/microsoft-teams",
+            "providers/monday",
+            "providers/notion",
+            "providers/outreach",
+            "providers/pagerduty",
+            "providers/pipedrive",
+            "providers/quickbooks",
+            "providers/ramp",
+            "providers/reddit",
+            "providers/sage",
+            "providers/salesforce",
+            "providers/salesloft",
+            "providers/shopify",
+            "providers/slack",
+            "providers/splitwise",
+            "providers/stackexchange",
+            "providers/stripe",
+            "providers/trello",
+            "providers/twitter",
+            "providers/wave_accounting",
+            "providers/xero",
+            "providers/yahoo",
+            "providers/youtube",
+            "providers/zapier-nla",
+            "providers/zendesk",
+            "providers/zoho-crm",
+            "providers/zoho-invoice",
+            "providers/zoho-books",
+            "providers/zoom"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Nango Cloud",
+      "pages": ["cloud"]
+    },
+    {
+      "group": "Nango Self Hosted",
+      "pages": [
+        "nango-deploy/oss-instructions",
+        "nango-deploy/local",
+        "nango-deploy/aws",
+        "nango-deploy/gcp",
+        "nango-deploy/digital-ocean",
+        "nango-deploy/render",
+        "nango-deploy/heroku"
+      ]
+    },
+    {
+      "group": "New Providers",
+      "pages": ["contribute-api"]
+    },
+    {
+      "group": "Getting Started",
+      "pages": ["nango-sync/sync", "nango-sync/quickstart"]
+    },
+    {
+      "group": "Use Nango Sync",
+      "pages": [
+        "nango-sync/use-nango/core-concepts",
+        {
+          "group": "Create Syncs",
+          "pages": [
+            "nango-sync/use-nango/use-nango-sync/create-syncs",
+            "nango-sync/use-nango/use-nango-sync/modes",
+            "nango-sync/use-nango/use-nango-sync/sync-scheduling",
+            "nango-sync/use-nango/use-nango-sync/attach-metadata-to-syncs",
+            "nango-sync/use-nango/use-nango-sync/pagination",
+            "nango-sync/use-nango/use-nango-sync/request-authentication"
+          ]
+        },
+        "nango-sync/use-nango/manage-syncs",
+        "nango-sync/use-nango/sync-notifications",
+        "nango-sync/use-nango/schema-mappings",
+        "nango-sync/use-nango/db-config",
+        "nango-sync/use-nango/observability"
+      ]
+    },
+    {
+      "group": "Examples",
+      "pages": ["nango-sync/real-world-examples"]
+    },
+    {
+      "group": "Architecture",
+      "pages": ["nango-sync/architecture"]
+    },
+    {
+      "group": "Other Docs",
+      "pages": ["nango-sync/license-faq", "nango-sync/contributing"]
+    }
+  ],
+  "footerSocials": {
+    "twitter": "https://twitter.com/NangoHQ",
+    "linkedin": "https://www.linkedin.com/company/nangohq/",
+    "github": "https://github.com/NangoHQ/nango",
+    "slack": "https://nango-community.slack.com/join/shared_invite/zt-1cvpdflmb-TMrjJJ_AZJeMivOgt906HA#/shared-invite/email",
+    "website": "https://www.nango.dev/"
+  }
+}

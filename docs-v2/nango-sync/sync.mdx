@@ -1,0 +1,97 @@
+---
+title: "Nango Sync: Sync 3rd-party APIs to your app. Fast."
+sidebarTitle: "Introduction"
+description:
+  "The service that lets you easily synchronize data between your app and any
+  3rd-party API."
+---
+
+## ⭐ Why Nango Sync?[](#-why-nango-sync "Direct link to ⭐ Why Nango Sync?")
+
+Adding integrations to an app is complicated.
+
+At first, it looks as simple as making requests to a 3rd-party API. But you
+quickly need to build OAuth, background synchronisation, retries, pagination,
+caching, webhooks, data transformation, monitoring, etc.
+
+We pre-built these components so you don’t have to and can focus on shipping low
+maintenance integrations fast.
+
+## ✨ How it works[](#how-it-works "Direct link to ✨ How it works")
+
+With Nango Sync, building integrations becomes as simple as:
+
+1. Authenticate users with OAuth in your frontend:
+
+```js
+nango.auth("hubspot", "<user-id>"); // Starts OAuth flow
+```
+
+1. Easily sync data from any API endpoint to your DB in the backend:
+
+```js
+nango.sync("https://api.hubspot.com/crm/v3/contacts", config); // Syncs contacts forever!
+```
+
+1. Read the always-fresh data from the DB and use it in your app
+
+```js
+SELECT * FROM hubspot_contacts WHERE ...
+```
+
+Additionally, Nango Sync has out-of-the-box support for:
+
+- 🔐 OAuth token retrieval & refresh
+- 📶 Incremental syncs
+- 🪝 Webhooks
+- ⚡️ JSON-to-SQL schema mapping
+- 🔄 Retries & rate-limit handling
+- 🚀 Scalable & flexible open-source infrastructure
+- ✅ Language-agnostic
+- ☁️ Self-hosted and Cloud options
+
+## 🧑‍💻 Example use cases[](#-example-use-cases "Direct link to 🧑‍💻 Example use cases")
+
+Nango is API agnostic: It works with any API endpoint that returns JSON (you
+just need to
+[give it a few details](/nango-sync/use-nango/use-nango-sync/create-syncs) about
+the endpoint).
+
+While Nango Sync supports millions of APIs, here are some of the most popular
+ones:
+
+- **CRMs** such as
+  [HubSpot](/nango-sync/real-world-examples#hubspot-sync-all-hubspot-crm-contacts),
+  Salesforce, Pipedrive, Zoho CRM, Zendesk Sell etc.
+- **Accounting systems** such as Quickbooks, Xero, Netsuite, Zoho Books,
+  Freshbooks etc.
+- **Cloud providers** such as AWS, GCP, Azure, DigitalOcean, Fly.io, Heroku etc.
+- **Productivity tools** such as Gmail, Google Calendar,
+  [Slack](/nango-sync/real-world-examples#slack-sync-all-posts-from-a-slack-channel),
+  Outlook 365, Zoom, Google Drive etc.
+- **Project Management tools** such as Airtable, Asana, Monday.com, ClickUp etc.
+- **Dev tools** such as
+  [Github](/nango-sync/real-world-examples#github-sync-all-stargazers-from-a-repo),
+  Gitlab, JIRA, Trello, Figma etc.
+- ...any API endpoint that returns JSON
+
+The docs have [more examples](/nango-sync/real-world-examples) of Nango Sync
+configurations for different APIs and endpoints.
+
+## 🔍 Try it & learn more[](#-try-it--learn-more "Direct link to 🔍 Try it & learn more")
+
+**See Nango Sync in Action**  
+The fastest way to see Nango Sync in action is with our
+[Quickstart 🚀](/nango-sync/quickstart), head over there and sync data to your
+local machine in less than 3 minutes.
+
+**Understand how Nango Sync works**  
+If you are ready to take a closer look we recommend you start with the
+[Core concepts](/nango-sync/use-nango/core-concepts).
+
+**See what you can build with Nango Sync**  
+You can also check out some
+[real-world examples](/nango-sync/real-world-examples) of things you can sync
+with Nango Sync (keep in mind, it works with any API endpoint so these are just
+examples). Or join our [Slack community](https://nango.dev/slack) to see what
+others are building with Nango Sync.
