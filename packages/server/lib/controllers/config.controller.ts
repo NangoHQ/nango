@@ -21,15 +21,15 @@ class ConfigController {
 
     async listProviderConfigsWeb(req: Request, res: Response, next: NextFunction) {
         try {
-            let account = (await getUserAndAccountFromSession(req)).account;
+            const account = (await getUserAndAccountFromSession(req)).account;
 
-            let configs = await configService.listProviderConfigs(account.id);
+            const configs = await configService.listProviderConfigs(account.id);
 
-            let connections = await connectionService.listConnections(account.id);
+            const connections = await connectionService.listConnections(account.id);
 
-            let integrations = configs.map((config: ProviderConfig) => {
-                let template = configService.getTemplates()[config.provider];
-                let integration: Integration = {
+            const integrations = configs.map((config: ProviderConfig) => {
+                const template = configService.getTemplates()[config.provider];
+                const integration: Integration = {
                     uniqueKey: config.unique_key,
                     provider: config.provider,
                     connectionCount: connections.filter((connection) => connection.provider === config.unique_key).length,
@@ -42,7 +42,7 @@ class ConfigController {
             });
 
             res.status(200).send({
-                integrations: integrations.sort(function (a, b) {
+                integrations: integrations.sort(function (a: Integration, b: Integration) {
                     return b.creationDate!.getTime() - a.creationDate!.getTime();
                 })
             });

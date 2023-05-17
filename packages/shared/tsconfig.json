@@ -1,32 +1,8 @@
 {
+    "extends": "../../tsconfig.json",
     "compilerOptions": {
-        "lib": ["es2022"],
-        "module": "es2022",
-        "target": "es2022",
-        "strict": true,
-        "esModuleInterop": true,
-        "skipLibCheck": true,
-        "forceConsistentCasingInFileNames": true,
-        "moduleResolution": "node",
-        "allowUnusedLabels": false,
-        "allowUnreachableCode": false,
-        "exactOptionalPropertyTypes": true,
-        "noFallthroughCasesInSwitch": true,
-        "noImplicitOverride": true,
-        "noImplicitReturns": true,
-        "noImplicitAny": false,
-        "noPropertyAccessFromIndexSignature": true,
-        "noUncheckedIndexedAccess": true,
-        "noUnusedLocals": true,
-        "noUnusedParameters": true,
-        "importsNotUsedAsValues": "error",
-        "declaration": true,
-        "sourceMap": true,
-        "composite": true,
-        "checkJs": false,
         "rootDir": ".",
         "outDir": "dist"
     },
-    "references": [],
-    "include": ["lib/**/*", "db/**/*"]
+    "include": ["lib/**/*"]
 }

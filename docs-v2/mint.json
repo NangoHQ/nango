@@ -1,0 +1,104 @@
+{
+    "name": "Nango",
+    "logo": {
+        "light": "/logo/light.svg",
+        "dark": "/logo/dark.svg"
+    },
+    "favicon": "/favicon.png",
+    "colors": {
+        "primary": "#1A43DB",
+        "light": "#C7D3FE",
+        "dark": "#000000",
+        "anchors": { "from": "#3F68FF", "to": "#012AC3" }
+    },
+    "topbarCtaButton": {
+        "type": "github",
+        "url": "https://github.com/nangoHQ/nango"
+    },
+    "topbarLinks": [
+        {
+            "name": "Sign Up",
+            "url": "https://app.nango.dev/signup"
+        }
+    ],
+    "topAnchor": {
+        "name": "Overview & Guides"
+    },
+    "anchors": [
+        {
+            "name": "Pre-Configured APIs",
+            "icon": "bars",
+            "url": "integrations"
+        },
+        {
+            "name": "SDKs",
+            "icon": "cubes",
+            "url": "sdks"
+        },
+        {
+            "name": "API Reference",
+            "icon": "book",
+            "url": "api"
+        },
+        {
+            "name": "Community",
+            "icon": "slack",
+            "url": "https://nango.dev/slack"
+        }
+    ],
+    "navigation": [
+        {
+            "group": "Getting Started",
+            "pages": ["introduction", "quickstart"]
+        },
+        {
+            "group": "Nango Auth",
+            "pages": [
+                "nango-auth/overview",
+                {
+                    "group": "Guides",
+                    "pages": ["nango-auth/guides/oauth", "nango-auth/guides/api-key-auth"]
+                },
+                "nango-auth/configuration"
+            ]
+        },
+        {
+            "group": "Nango Sync",
+            "pages": [
+                "nango-sync/overview",
+                {
+                    "group": "Guides",
+                    "pages": ["nango-sync/guides/sync", "nango-sync/guides/direct-requests", "nango-sync/guides/webhooks"]
+                },
+                "nango-sync/configuration"
+            ]
+        },
+        {
+            "group": "Nango Cloud",
+            "pages": ["cloud"]
+        },
+        {
+            "group": "Self-Host Nango",
+            "pages": [
+                "self-host/instructions",
+                "self-host/local",
+                "self-host/aws",
+                "self-host/gcp",
+                "self-host/digital-ocean",
+                "self-host/render",
+                "self-host/heroku"
+            ]
+        },
+        {
+            "group": "Contribute",
+            "pages": ["contribute/nango-auth", "contribute/nango-sync"]
+        }
+    ],
+    "footerSocials": {
+        "twitter": "https://twitter.com/NangoHQ",
+        "linkedin": "https://www.linkedin.com/company/nangohq/",
+        "github": "https://github.com/NangoHQ/nango",
+        "slack": "https://nango-community.slack.com/join/shared_invite/zt-1cvpdflmb-TMrjJJ_AZJeMivOgt906HA#/shared-invite/email",
+        "website": "https://www.nango.dev/"
+    }
+}

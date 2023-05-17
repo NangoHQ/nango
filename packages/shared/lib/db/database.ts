@@ -1,6 +1,6 @@
 import knex from 'knex';
 import type { Knex } from 'knex';
-import { config } from './db/config.js';
+import { config } from './config.js';
 
 class KnexDatabase {
     knex: Knex;
@@ -19,10 +19,6 @@ class KnexDatabase {
 }
 
 const db = new KnexDatabase();
-
-export const dbNamespace = '_nango_';
-
-export const schemaName = 'nango';
 
 export default db;
 

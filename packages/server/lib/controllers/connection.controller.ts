@@ -174,7 +174,7 @@ class ConnectionController {
             let uniqueKeyToProvider: { [key: string]: string } = {};
             let providerConfigKeys = configs.map((config: ProviderConfig) => config.unique_key);
 
-            providerConfigKeys.forEach((key, i) => (uniqueKeyToProvider[key] = configs[i]!.provider));
+            providerConfigKeys.forEach((key: string, i: number) => (uniqueKeyToProvider[key] = configs[i]!.provider));
 
             let result = connections.map((connection) => {
                 return {
@@ -319,7 +319,7 @@ class ConnectionController {
     async listProviders(_: Request, res: Response, next: NextFunction) {
         try {
             const providers = Object.entries(configService.getTemplates())
-                .map((providerProperties) => {
+                .map((providerProperties: [string, ProviderTemplate]) => {
                     const [provider, properties] = providerProperties;
                     return {
                         name: provider,
