@@ -1,4 +1,4 @@
-import db from '../database.js';
+import db from '../db/database.js';
 import type { ActivityLog, ActivityLogMessage, LogAction } from '../models';
 import logger from '../logger/console.js';
 

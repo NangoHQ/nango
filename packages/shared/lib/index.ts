@@ -7,6 +7,7 @@ export * from './services/activity.service.js';
 export * from './services/sync.service.js';
 export * from './models/index.js';
 export * from './utils/utils.js';
-export * from './database.js';
+export * from './db/database.js';
+export * from './constants.js';
 
 export { db, configService, encryptionManager };

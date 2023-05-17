@@ -2,6 +2,7 @@ import { Worker } from '@temporalio/worker';
 import * as dotenv from 'dotenv';
 import { createRequire } from 'module';
 import * as activities from './activities.js';
+import { TASK_QUEUE } from '@nangohq/shared';
 
 async function run() {
     if (process.env['SERVER_RUN_MODE'] !== 'DOCKERIZED') {
@@ -11,7 +12,7 @@ async function run() {
     const worker = await Worker.create({
         workflowsPath: createRequire(import.meta.url).resolve('./workflows'),
         activities,
-        taskQueue: 'unified_syncs'
+        taskQueue: TASK_QUEUE
     });
     // Worker connects to localhost by default and uses console.error for logging.
     // Customize the Worker by passing more options to create():

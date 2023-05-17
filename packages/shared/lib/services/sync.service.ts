@@ -1,5 +1,5 @@
 import { Client, Connection } from '@temporalio/client';
-import db, { dbNamespace } from '../database.js';
+import db, { dbNamespace } from '../db/database.js';
 import type { Config as ProviderConfig } from '../models/Provider.js';
 import { Sync, SyncStatus, SyncType, SyncConfig } from '../models/Sync.js';
 import type { LogLevel, LogAction } from '../models/Activity.js';
@@ -7,11 +7,11 @@ import { getConnectionById } from './connection.service.js';
 import configService from './config.service.js';
 import { create as createSyncScedule } from './sync-schedule.service.js';
 import { createActivityLog, createActivityLogMessage } from './activity.service.js';
+import { TASK_QUEUE } from '../constants.js';
 import { Nango } from '@nangohq/node';
 
 const TABLE = dbNamespace + 'sync_jobs';
 const SYNC_CONFIG_TABLE = dbNamespace + 'sync_configs';
-const TASK_QUEUE = 'unified_syncs';
 
 export async function getClient(): Promise<Client | null> {
     try {
@@ -30,8 +30,8 @@ export async function getClient(): Promise<Client | null> {
     }
 }
 
-const generateWorkflowId = (sync: Sync) => `unified-sync-${sync.id}`;
-const generateScheduleId = (sync: Sync) => `unified-sync-schedule-${sync.id}`;
+const generateWorkflowId = (sync: Sync) => `${TASK_QUEUE}-${sync.id}`;
+const generateScheduleId = (sync: Sync) => `${TASK_QUEUE}-schedule-${sync.id}`;
 
 /**
  * Start Continuous

@@ -1,4 +1,4 @@
-import db, { dbNamespace } from '../database.js';
+import db, { dbNamespace } from '../db/database.js';
 import { SyncSchedule, ScheduleStatus } from '../models/SyncSchedule.js';
 
 const TABLE = dbNamespace + 'sync_schedules';
