@@ -4,3 +4,4 @@ logs/*
 nango-data/*
 .idea/*
 .env
+nango-integrations/*

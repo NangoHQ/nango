@@ -1,6 +1,5 @@
 import * as uuid from 'uuid';
 import { Nango } from '@nangohq/node';
-import db from './db/database.js';
 import md5 from 'md5';
 import {
     getById as getSyncById,
@@ -15,7 +14,9 @@ import {
     configService,
     updateSuccess,
     createActivityLogMessageAndEnd,
-    DataResponse
+    DataResponse,
+    getSyncConfigByProvider,
+    SyncConfig
 } from '@nangohq/shared';
 import type { GithubIssues, TicketModel } from './models/Ticket.js';
 import type { NangoConnection, ContinuousSyncArgs, InitialSyncArgs } from './models/Worker';
@@ -39,24 +40,22 @@ export async function syncActivity(name: string): Promise<string> {
 
 export async function routeSync(args: InitialSyncArgs): Promise<boolean> {
     const { syncId, activityLogId } = args;
-    const sync: Sync = (await getSyncById(syncId, db)) as Sync;
+    const sync: Sync = (await getSyncById(syncId)) as Sync;
     const nangoConnection = await getConnectionById(sync.nango_connection_id);
     const syncConfig: ProviderConfig = (await configService.getProviderConfig(
         nangoConnection?.provider_config_key as string,
-        nangoConnection?.account_id as number,
-        db
+        nangoConnection?.account_id as number
     )) as ProviderConfig;
     return route(sync, nangoConnection as Connection, syncConfig, activityLogId);
 }
 
 export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<boolean> {
     const { nangoConnectionId, activityLogId } = args;
-    const sync: Sync = (await createSync(nangoConnectionId, SyncType.INCREMENTAL, db)) as Sync;
+    const sync: Sync = (await createSync(nangoConnectionId, SyncType.INCREMENTAL)) as Sync;
     const nangoConnection: NangoConnection = (await getConnectionById(nangoConnectionId)) as NangoConnection;
     const syncConfig: ProviderConfig = (await configService.getProviderConfig(
         nangoConnection?.provider_config_key as string,
-        nangoConnection?.account_id as number,
-        db
+        nangoConnection?.account_id as number
     )) as ProviderConfig;
 
     return route(sync, nangoConnection, syncConfig, activityLogId);
@@ -83,6 +82,28 @@ export async function syncGithub(sync: Sync, nangoConnection: NangoConnection, a
         return false;
     }
 
+    const [firstConfig] = (await getSyncConfigByProvider('github')) as SyncConfig[];
+    const { integration_name: integrationName } = firstConfig as SyncConfig;
+    const integrationPath = `../nango-integrations/${integrationName}.js` + `?v=${Math.random().toString(36).substring(3)}`;
+    console.log(integrationPath);
+
+    /*
+     *
+    const [firstConfig] = (await getSyncConfigByProvider(provider)) as SyncConfig[];
+    const { integration_name: integrationName } = firstConfig as SyncConfig;
+    const integrationPath = `../nango-integrations/${integrationName}.js` + `?v=${Math.random().toString(36).substring(3)}`;
+    const { default: integrationCode } = await import(integrationPath);
+    const integrationClass = new integrationCode();
+    const nango = new Nango({
+        host: 'http://localhost:3003',
+        connectionId: String(nangoConnection?.connection_id),
+        providerConfigKey: String(nangoConnection?.provider_config_key)
+    });
+
+    const userDefinedResults = await integrationClass.fetchData(nango);
+
+     */
+
     const response = await nango.get({
         connectionId: nangoConnection?.connection_id as string,
         providerConfigKey: nangoConnection?.provider_config_key as string,
@@ -102,7 +123,7 @@ export async function syncGithub(sync: Sync, nangoConnection: NangoConnection, a
     console.log(result);
 
     if (result) {
-        await updateSyncStatus(sync.id, SyncStatus.SUCCESS, db);
+        await updateSyncStatus(sync.id, SyncStatus.SUCCESS);
         await updateSuccess(activityLogId, true);
 
         await createActivityLogMessageAndEnd({

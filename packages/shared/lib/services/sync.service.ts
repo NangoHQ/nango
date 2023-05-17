@@ -1,14 +1,16 @@
 import { Client, Connection } from '@temporalio/client';
 import db, { dbNamespace } from '../database.js';
 import type { Config as ProviderConfig } from '../models/Provider.js';
-import { Sync, SyncStatus, SyncType } from '../models/Sync.js';
+import { Sync, SyncStatus, SyncType, SyncConfig } from '../models/Sync.js';
 import type { LogLevel, LogAction } from '../models/Activity.js';
 import { getConnectionById } from './connection.service.js';
 import configService from './config.service.js';
 import { create as createSyncScedule } from './sync-schedule.service.js';
 import { createActivityLog, createActivityLogMessage } from './activity.service.js';
+import { Nango } from '@nangohq/node';
 
 const TABLE = dbNamespace + 'sync_jobs';
+const SYNC_CONFIG_TABLE = dbNamespace + 'sync_configs';
 const TASK_QUEUE = 'unified_syncs';
 
 export async function getClient(): Promise<Client | null> {
@@ -31,6 +33,12 @@ export async function getClient(): Promise<Client | null> {
 const generateWorkflowId = (sync: Sync) => `unified-sync-${sync.id}`;
 const generateScheduleId = (sync: Sync) => `unified-sync-schedule-${sync.id}`;
 
+/**
+ * Start Continuous
+ * @desc get the connection information and the provider information
+ * and kick off an initial sync and also a incremental sync. Also look
+ * up any sync configs to call any integration snippet that was setup
+ */
 export const startContinuous = async (sync: Sync) => {
     const client = await getClient();
     const nangoConnection = await getConnectionById(sync.nango_connection_id);
@@ -44,6 +52,21 @@ export const startContinuous = async (sync: Sync) => {
         nangoConnection?.account_id as number
     )) as ProviderConfig;
 
+    const provider = syncConfig.provider as string;
+
+    const [firstConfig] = (await getSyncConfigByProvider(provider)) as SyncConfig[];
+    const { integration_name: integrationName } = firstConfig as SyncConfig;
+    const integrationPath = `../nango-integrations/${integrationName}.js` + `?v=${Math.random().toString(36).substring(3)}`;
+    const { default: integrationCode } = await import(integrationPath);
+    const integrationClass = new integrationCode();
+    const nango = new Nango({
+        host: 'http://localhost:3003',
+        connectionId: String(nangoConnection?.connection_id),
+        providerConfigKey: String(nangoConnection?.provider_config_key)
+    });
+    const userDefinedResults = await integrationClass.fetchData(nango);
+    console.log(userDefinedResults);
+
     const log = {
         level: 'info' as LogLevel,
         success: false,
@@ -53,7 +76,7 @@ export const startContinuous = async (sync: Sync) => {
         timestamp: Date.now(),
         connection_id: nangoConnection?.connection_id as string,
         provider_config_key: nangoConnection?.provider_config_key as string,
-        provider: syncConfig.provider as string,
+        provider,
         session_id: sync.id.toString(),
         account_id: nangoConnection?.account_id as number
     };
@@ -103,9 +126,8 @@ export const startContinuous = async (sync: Sync) => {
     });
 };
 
-export const getById = async (id: number, argDb?: typeof db): Promise<Sync | null> => {
-    const database = argDb || db;
-    const result = await database.knex.withSchema(database.schema()).select('*').from<Sync>(TABLE).where({ id: id });
+export const getById = async (id: number): Promise<Sync | null> => {
+    const result = await db.knex.withSchema(db.schema()).select('*').from<Sync>(TABLE).where({ id: id });
 
     if (!result || result.length == 0 || !result[0]) {
         return null;
@@ -123,9 +145,8 @@ export const initiate = async (nangoConnectionId: number): Promise<void> => {
     }
 };
 
-export const create = async (nangoConnectionId: number, type: SyncType, argDb?: typeof db): Promise<Sync | null> => {
-    const database = argDb || db;
-    const result: void | Pick<Sync, 'id'> = await database.knex.withSchema(database.schema()).from<Sync>(TABLE).insert(
+export const create = async (nangoConnectionId: number, type: SyncType): Promise<Sync | null> => {
+    const result: void | Pick<Sync, 'id'> = await db.knex.withSchema(db.schema()).from<Sync>(TABLE).insert(
         {
             nango_connection_id: nangoConnectionId,
             status: SyncStatus.RUNNING,
@@ -136,22 +157,47 @@ export const create = async (nangoConnectionId: number, type: SyncType, argDb?: 
 
     if (Array.isArray(result) && result.length === 1 && result[0] !== null && 'id' in result[0]) {
         const statusId = result[0]['id'];
-        return getById(statusId, database) as unknown as Sync;
+        return getById(statusId) as unknown as Sync;
     }
 
     return null;
 };
 
-export const updateStatus = async (id: number, status: SyncStatus, argDb?: typeof db): Promise<void> => {
-    const database = argDb || db;
-    return database.knex.withSchema(database.schema()).from<Sync>(TABLE).where({ id }).update({
+export const updateStatus = async (id: number, status: SyncStatus): Promise<void> => {
+    return db.knex.withSchema(db.schema()).from<Sync>(TABLE).where({ id }).update({
         status
     });
 };
 
-export const updateType = async (id: number, type: SyncType, argDb?: typeof db): Promise<void> => {
-    const database = argDb || db;
-    return database.knex.withSchema(database.schema()).from<Sync>(TABLE).where({ id }).update({
+export const updateType = async (id: number, type: SyncType): Promise<void> => {
+    return db.knex.withSchema(db.schema()).from<Sync>(TABLE).where({ id }).update({
         type
     });
+};
+
+export const createSyncConfig = async (account_id: number, provider: string, integrationName: string, snippet: string): Promise<boolean> => {
+    const result: void | Pick<SyncConfig, 'id'> = await db.knex.withSchema(db.schema()).from<SyncConfig>(SYNC_CONFIG_TABLE).insert(
+        {
+            account_id,
+            provider,
+            integration_name: integrationName,
+            snippet
+        },
+        ['id']
+    );
+
+    if (Array.isArray(result) && result.length === 1 && result[0] !== null && 'id' in result[0]) {
+        return true;
+    }
+    return false;
+};
+
+export const getSyncConfigByProvider = async (provider: string): Promise<SyncConfig[]> => {
+    const result = await db.knex.withSchema(db.schema()).select('*').from<SyncConfig>(SYNC_CONFIG_TABLE).where({ provider: provider });
+
+    if (Array.isArray(result) && result.length > 0) {
+        return result;
+    }
+
+    return [];
 };

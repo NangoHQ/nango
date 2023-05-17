@@ -7,11 +7,17 @@ const prodHost = 'https://api.nango.dev';
 const stagingHost = 'https://api-staging.nango.dev';
 const forceBearerAuth = true; // For development.
 
+import * as NangoSync from './sync.js';
+
+export { NangoSync };
+
 export class Nango {
     serverUrl: string;
     secretKey: string;
+    connectionId?: string;
+    providerConfigKey?: string;
 
-    constructor(config: { host?: string; secretKey?: string } = {}) {
+    constructor(config: { host?: string; secretKey?: string; connectionId?: string; providerConfigKey?: string } = {}) {
         config.host = config.host || prodHost;
         this.serverUrl = config.host;
 
@@ -26,6 +32,8 @@ export class Nango {
         }
 
         this.secretKey = config.secretKey || '';
+        this.connectionId = config.connectionId || '';
+        this.providerConfigKey = config.providerConfigKey || '';
     }
 
     /**
@@ -39,7 +47,7 @@ export class Nango {
      * you can set the forceRefresh argument to true.
      * */
     public async getToken(providerConfigKey: string, connectionId: string, forceRefresh?: boolean) {
-        let response = await this.getConnectionDetails(providerConfigKey, connectionId, forceRefresh);
+        const response = await this.getConnectionDetails(providerConfigKey, connectionId, forceRefresh);
 
         switch (response.data.credentials.type) {
             case 'OAUTH2':
@@ -60,7 +68,7 @@ export class Nango {
      * you can set the forceRefresh argument to true.
      * */
     public async getRawTokenResponse(providerConfigKey: string, connectionId: string, forceRefresh?: boolean) {
-        let response = await this.getConnectionDetails(providerConfigKey, connectionId, forceRefresh);
+        const response = await this.getConnectionDetails(providerConfigKey, connectionId, forceRefresh);
         return response.data.credentials.raw;
     }
 
@@ -73,11 +81,19 @@ export class Nango {
      * you can set the forceRefresh argument to true.
      */
     public async getConnection(providerConfigKey: string, connectionId: string, forceRefresh?: boolean) {
-        let response = await this.getConnectionDetails(providerConfigKey, connectionId, forceRefresh);
+        const response = await this.getConnectionDetails(providerConfigKey, connectionId, forceRefresh);
         return response.data;
     }
 
     public async proxy(config: ProxyConfiguration) {
+        if (!config.connectionId && this.connectionId) {
+            config.connectionId = this.connectionId;
+        }
+
+        if (!config.providerConfigKey && this.providerConfigKey) {
+            config.providerConfigKey = this.providerConfigKey;
+        }
+
         validateProxyConfiguration(config);
 
         const { providerConfigKey, connectionId, method, retries, headers: customHeaders } = config;

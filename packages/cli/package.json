@@ -13,12 +13,35 @@
         "directory": "packages/cli"
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
+    "scripts": {
+        "build": "tsc",
+        "copyfiles": "copyfiles -u 1 lib/*.ejs dist",
+        "postbuild": "npm run copyfiles",
+        "dev": "npm run copyfiles && tsc -w"
+    },
     "dependencies": {
+        "@babel/core": "^7.21.8",
+        "@babel/preset-env": "^7.21.5",
         "axios": "^1.2.0",
-        "commander": "^9.4.0"
+        "babel-loader": "^9.1.2",
+        "byots": "^5.0.0-dev.20221103.1.34",
+        "commander": "^10.0.1",
+        "ejs": "^3.1.9",
+        "esbuild": "^0.17.19",
+        "figlet": "^1.6.0",
+        "js-yaml": "^4.1.0",
+        "memfs": "^3.5.1",
+        "ora": "^6.3.1",
+        "typescript": "^5.0.4",
+        "webpack": "^5.82.1"
     },
     "devDependencies": {
-        "@types/commander": "^2.12.2"
+        "@types/commander": "^2.12.2",
+        "@types/ejs": "^3.1.2",
+        "@types/figlet": "^1.5.6",
+        "@types/glob": "^8.1.0",
+        "@types/node": "^20.1.4",
+        "copyfiles": "^2.4.1"
     },
     "engines": {
         "node": ">=16.7"

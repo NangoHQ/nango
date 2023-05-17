@@ -18,3 +18,11 @@ export interface Sync {
     created_at?: Date;
     updated_at?: Date;
 }
+
+export interface SyncConfig {
+    id: number;
+    account_id: number;
+    provider: string;
+    integration_name: string;
+    snippet: string;
+}

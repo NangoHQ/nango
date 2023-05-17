@@ -14,6 +14,7 @@ import userController from './controllers/user.controller.js';
 import proxyController from './controllers/proxy.controller.js';
 import activityController from './controllers/activity.controller.js';
 import ticketingController from './controllers/unified/ticketing.controller.js';
+import syncController from './controllers/sync.controller.js';
 import path from 'path';
 import { dirname, getPort, getGlobalOAuthCallbackUrl, isCloud, isBasicAuthEnabled, packageJsonFile } from './utils/utils.js';
 import errorManager from './utils/error.manager.js';
@@ -69,6 +70,7 @@ app.route('/config/:providerConfigKey').delete(apiAuth, configController.deleteP
 app.route('/connection/:connectionId').get(apiAuth, connectionController.getConnectionCreds.bind(connectionController));
 app.route('/connection').get(apiAuth, connectionController.listConnections.bind(connectionController));
 app.route('/connection/:connectionId').delete(apiAuth, connectionController.deleteConnection.bind(connectionController));
+app.route('/sync-config').post(apiAuth, syncController.createSyncConfig.bind(syncController));
 
 // Proxy Route
 app.route('/proxy/*').all(apiAuth, proxyController.routeCall.bind(proxyController));
