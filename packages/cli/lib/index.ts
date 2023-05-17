@@ -343,8 +343,6 @@ program
             const compilerOptions = {
                 target: byots.ScriptTarget.ES2022,
                 module: byots.ModuleKind.ES2022
-                //target: byots.ScriptTarget.ES5,
-                //module: byots.ModuleKind.CommonJS
             };
 
             const result = byots.transpileModule(tsFileContent, {
@@ -353,86 +351,8 @@ program
             });
 
             const jsFileContent = result.outputText;
-            fs.writeFileSync('./github.js', jsFileContent);
 
-            const entryFilePath = '/entry.js';
-            //const outputFilePath = '/bundle.js';
-
-            memfs.writeFileSync(entryFilePath, jsFileContent);
-
-            /*
-            const config = {
-                entry: entryFilePath,
-                output: {
-                    //path: '/',
-                    path: path.resolve(cwd, outputFilePath),
-                    filename: 'entry.js'
-                },
-                //resolve: {
-                    //alias: {
-                        //fs: 'memfs'
-                    //}
-                //}
-                //mode: 'production'
-            };
-            */
-
-            const config = {
-                entry: path.resolve(cwd, './entry.js'),
-                output: {
-                    path: cwd,
-                    filename: 'bundle.js'
-                },
-                resolve: {
-                    extensions: ['.js'],
-                    modules: [path.resolve(path.join('../', __dirname), 'node_modules'), 'node_modules']
-                },
-                module: {
-                    rules: [
-                        {
-                            test: /\.js$/,
-                            exclude: /node_modules/,
-                            use: {
-                                loader: 'babel-loader',
-                                options: {
-                                    presets: ['@babel/preset-env']
-                                }
-                            }
-                        }
-                    ]
-                }
-            };
-
-            const compiler = webpack(config);
-            //compiler.outputFileSystem = memfs;
-
-            compiler.run((err, stats) => {
-                if (err || stats?.hasErrors()) {
-                    console.error(err);
-                    console.log(stats?.toJson().errors);
-                } else {
-                    const bundleContent = fs.readFileSync(path.resolve(cwd, './bundle.js'), 'utf-8');
-                    console.log(bundleContent);
-                }
-            });
-
-            /**
-            entryFilePath = path.join(__dirname, 'entry.js');
-            outputFilePath = path.join(__dirname, 'bundle.js');
-
-            fs.writeFileSync(entryFilePath, jsFileContent);
-
-            webpack(config, (err, stats) => {
-                if (err || stats?.hasErrors()) {
-                    console.error(err || stats?.toJson().errors);
-                    process.exit(1);
-                }
-
-                const bundleContent = fs.readFileSync(outputFilePath, 'utf-8');
-                console.log(bundleContent);
-            });
-            */
-
+            // not needed
             const minifiedResult = await build({
                 stdin: {
                     contents: jsFileContent,
@@ -449,10 +369,13 @@ program
             const fileNameWithExt = path.basename(file);
             const integrationName = path.parse(fileNameWithExt).name;
 
+            // write the file to the integration folder
+            fs.writeFileSync(path.resolve(cwd, `./nango-integrations/${integrationName}.js`), jsFileContent);
+
             const body = {
                 integrationName,
                 snippet,
-                provider: 'github' // TODO
+                provider: 'github' // TODO, grab this from the yaml config
             };
 
             const url = hostport + `/sync-config`;
