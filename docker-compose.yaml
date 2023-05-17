@@ -27,5 +27,16 @@ services:
         networks:
             - nango
 
+    nango-sync-server:
+        image: nangohq/nango-sync-server:0.17.0-rc
+        container_name: nango-sync-server
+        restart: always
+        ports:
+            - '7233:7233'
+        depends_on:
+            - nango-db
+        networks:
+            - nango
+
 networks:
     nango:

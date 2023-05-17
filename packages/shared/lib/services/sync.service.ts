@@ -9,6 +9,7 @@ import { create as createSyncScedule } from './sync-schedule.service.js';
 import { createActivityLog, createActivityLogMessage } from './activity.service.js';
 import { TASK_QUEUE } from '../constants.js';
 import { Nango } from '@nangohq/node';
+import { getServerBaseUrl } from '../utils/utils.js';
 
 const TABLE = dbNamespace + 'sync_jobs';
 const SYNC_CONFIG_TABLE = dbNamespace + 'sync_configs';
@@ -60,7 +61,7 @@ export const startContinuous = async (sync: Sync) => {
     const { default: integrationCode } = await import(integrationPath);
     const integrationClass = new integrationCode();
     const nango = new Nango({
-        host: 'http://localhost:3003',
+        host: getServerBaseUrl(),
         connectionId: String(nangoConnection?.connection_id),
         providerConfigKey: String(nangoConnection?.provider_config_key)
     });

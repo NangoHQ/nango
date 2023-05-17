@@ -16,23 +16,12 @@ import {
     createActivityLogMessageAndEnd,
     DataResponse,
     getSyncConfigByProvider,
-    SyncConfig
+    SyncConfig,
+    getServerBaseUrl
 } from '@nangohq/shared';
 import type { GithubIssues, TicketModel } from './models/Ticket.js';
 import type { NangoConnection, ContinuousSyncArgs, InitialSyncArgs } from './models/Worker';
 import { upsert } from './services/data.service.js';
-
-export function getServerPort() {
-    return process.env['SERVER_PORT'] != null ? +process.env['SERVER_PORT'] : 3003;
-}
-
-function getServerHost() {
-    return process.env['SERVER_HOST'] || process.env['SERVER_RUN_MODE'] === 'DOCKERIZED' ? 'http://nango-server' : 'http://localhost';
-}
-
-export function getServerBaseUrl() {
-    return getServerHost() + `:${getServerPort()}`;
-}
 
 export async function syncActivity(name: string): Promise<string> {
     return `Synced, ${name}!`;

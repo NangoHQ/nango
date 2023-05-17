@@ -17,8 +17,6 @@ import ejs from 'ejs';
 import glob from 'glob';
 import byots from 'byots';
 import { build } from 'esbuild';
-import webpack from 'webpack';
-import { fs as memfs } from 'memfs';
 import { exec } from 'child_process';
 
 const program = new Command();

@@ -1,3 +1,4 @@
 dist/*
 tsconfig.tsbuildinfo
 nango-integrations
+node_modules

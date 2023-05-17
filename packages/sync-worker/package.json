@@ -1,11 +1,13 @@
 {
     "name": "@nangohq/nango-sync-worker",
-    "version": "0.1.0",
+    "version": "0.17.0",
     "type": "module",
     "main": "dist/worker.js",
     "scripts": {
         "start": "tsc && node dist/worker.js",
-        "dev": "nodemon"
+        "dev": "nodemon",
+        "build": "tsc",
+        "release": "docker buildx build --platform linux/amd64 -f Dockerfile -t nangohq/sync-worker:$1 -t nangohq/sync-worker:latest . --no-cache --output type=registry"
     },
     "keywords": [],
     "repository": {
@@ -15,7 +17,7 @@
     },
     "dependencies": {
         "@nangohq/node": "0.17.0",
-        "@nangohq/shared": "^0.1.0",
+        "@nangohq/shared": "^0.17.0",
         "@temporalio/activity": "^1.5.2",
         "@temporalio/client": "^1.5.2",
         "@temporalio/worker": "^1.5.2",
