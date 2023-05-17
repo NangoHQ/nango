@@ -3,10 +3,10 @@
     "type": "module",
     "workspaces": [
         "packages/cli",
+        "packages/shared",
         "packages/frontend",
         "packages/node-client",
-        "packages/server",
-        "packages/shared"
+        "packages/server"
     ],
     "scripts": {
         "prettier-format": "prettier --config .prettierrc \"./**/*.ts\" --write",
