@@ -1,0 +1,44 @@
+---
+title: 'Direct Requests'
+sidebarTitle: 'Direct Requests'
+description: 'Call APIs directly, with the full power of the Nango infrastructure.'
+---
+
+Sometimes you need to make one-off synchronous requests to the external API. With the **Nango Proxy**, you can do this without having to worry about authentication, logging & monitoring, etc.
+
+Before using Nango Proxy, you need to run Nango (cf. [Quickstart](/quickstart)), then configure an integration with [OAuth](/guides/api-access-with-oauth) or [API Key](<(/guides/api-access-with-key)>).
+
+## With the SDKs
+
+Use our SDKs (cf. [reference](/sdks)) to execute proxy requests, e.g. in Typescript:
+
+```typescript
+const res = await nango.proxy({
+    method: 'POST',
+    endpoint: '/calendar/v3/users/me/calendarList',
+    providerConfigKey: '<INTEGRATION-ID>',
+    connectionId: '<CONNECTION-ID>',
+    data: {
+        id: 1,
+        colorId: 'blue',
+        selected: true
+    }
+});
+```
+
+## With the REST API
+
+Use our REST API (cf. [reference](/api)) to execute proxy requests, e.g.:
+
+```bash
+curl -X POST -H 'Content-Type: application/json' \
+-H 'Authorization: Bearer <NANGO-SECRET-KEY>' \
+-H 'Provider-Config-Key: <INTEGRATION-ID>' \
+-H 'Connection-Id: <CONNECTION-ID>' \
+-d '{"colorId: "blue"}' \
+'https://api.nango.dev/proxy/<API-ENDPOINT>'
+```
+
+## Need help?
+
+Ask any question on the [Slack community](https://nango.dev/slack).
