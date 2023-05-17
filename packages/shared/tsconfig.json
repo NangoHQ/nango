@@ -4,5 +4,5 @@
         "rootDir": "lib",
         "outDir": "dist"
     },
-    "include": ["lib/**/*", "db/**/*"]
+    "include": ["lib/**/*"]
 }
