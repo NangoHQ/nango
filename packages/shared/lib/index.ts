@@ -1,5 +1,5 @@
-import knexDatabase from './database.js';
-import db from './database.js';
+import knexDatabase from './db/database.js';
+import db from './db/database.js';
 import configService from './services/config.service.js';
 import encryptionManager from './utils/encryption.manager.js';
 

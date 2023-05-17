@@ -1,5 +1,5 @@
 import type { Connection, StoredConnection } from '../models/Connection.js';
-import { schema } from '../database.js';
+import { schema } from '../db/database.js';
 
 export async function getConnectionById(id: number): Promise<Pick<Connection, 'id' | 'connection_id' | 'provider_config_key' | 'account_id'> | null> {
     const result = await schema()

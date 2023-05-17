@@ -1,6 +1,6 @@
 import type { Config as ProviderConfig, Template as ProviderTemplate, TemplateAlias as ProviderTemplateAlias } from '../models/Provider.js';
 import type { Connection } from '../models/Connection.js';
-import db from '../database.js';
+import db from '../db/database.js';
 import yaml from 'js-yaml';
 import fs from 'fs';
 import path from 'path';
