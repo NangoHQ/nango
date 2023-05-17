@@ -26,7 +26,7 @@ import passport from 'passport';
 import accountController from './controllers/account.controller.js';
 import type { Response, Request } from 'express';
 import Logger from './utils/logger.js';
-import encryptionManager from './utils/encryption.manager.js';
+import { encryptionManager } from '@nangohq/shared';
 import accountService from './services/account.service.js';
 import oAuthSessionService from './services/oauth-session.service.js';
 import { deleteOldActivityLogs } from './jobs/index.js';
@@ -47,7 +47,7 @@ app.use(express.json());
 app.use(cors());
 
 await db.knex.raw(`CREATE SCHEMA IF NOT EXISTS ${db.schema()}`);
-await db.migrate(path.join(dirname(), '../../lib/db/migrations'));
+await db.migrate(process.env['NANGO_DB_MIGRATION_FOLDER'] || '../shared/lib/db/migrations');
 await encryptionManager.encryptDatabaseIfNeeded();
 await accountService.cacheAccountSecrets();
 await oAuthSessionService.clearStaleSessions();

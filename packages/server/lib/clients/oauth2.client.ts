@@ -3,17 +3,17 @@
  */
 
 import {
-    ProviderTemplateOAuth2,
-    ProviderAuthModes,
-    ProviderTemplate as ProviderTemplate,
+    Config as ProviderConfig,
+    TemplateOAuth2 as ProviderTemplateOAuth2,
+    AuthModes as ProviderAuthModes,
+    Template as ProviderTemplate,
     OAuth2Credentials,
     OAuthAuthorizationMethod,
     OAuthBodyFormat,
     Connection
-} from '../models.js';
+} from '@nangohq/shared';
 import { AuthorizationCode, AccessToken } from 'simple-oauth2';
 import connectionsManager from '../services/connection.service.js';
-import type { ProviderConfig } from '../models.js';
 import { interpolateString } from '../utils/utils.js';
 import Boom from '@hapi/boom';
 import { NangoError } from '../utils/error.js';

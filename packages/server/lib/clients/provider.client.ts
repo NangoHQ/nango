@@ -1,13 +1,13 @@
 import braintree from 'braintree';
 import {
-    ProviderConfig,
+    Config as ProviderConfig,
     Connection,
     OAuth2Credentials,
-    ProviderAuthModes,
+    AuthModes as ProviderAuthModes,
     AuthorizationTokenResponse,
     RefreshTokenResponse,
-    ProviderTemplateOAuth2
-} from '../models.js';
+    TemplateOAuth2 as ProviderTemplateOAuth2
+} from '@nangohq/shared';
 import axios from 'axios';
 import { isTokenExpired, parseTokenExpirationDate } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';

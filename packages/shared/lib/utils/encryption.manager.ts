@@ -1,6 +1,9 @@
 import crypto, { CipherGCMTypes } from 'crypto';
-import logger from './logger.js';
-import type { Account, Connection, StoredConnection, ProviderConfig, DBConfig } from '../models';
+import logger from '../logger/console.js';
+import type { Config as ProviderConfig } from '../models/Provider';
+import type { DBConfig } from '../models/Generic.js';
+import type { Account } from '../models/Admin.js';
+import type { Connection, StoredConnection } from '../models/Connection.js';
 import db from '../db/database.js';
 import util from 'util';
 

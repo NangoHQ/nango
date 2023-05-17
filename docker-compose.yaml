@@ -18,7 +18,7 @@ services:
         image: nangohq/nango-server
         container_name: nango-server
         volumes:
-            - './packages/server/providers.yaml:/usr/nango-server/src/packages/server/providers.yaml'
+            - './packages/shared/providers.yaml:/usr/nango-server/src/packages/shared/providers.yaml'
         restart: always
         ports:
             - '3003:3003'

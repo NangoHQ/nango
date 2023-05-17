@@ -6,7 +6,8 @@ import { readFileSync } from 'fs';
 import path from 'path';
 import accountService from '../services/account.service.js';
 import userService from '../services/user.service.js';
-import type { Account, User } from '../models.js';
+import type { Account } from '@nangohq/shared';
+import type { User } from '../models.js';
 
 class Analytics {
     client: PostHog | undefined;

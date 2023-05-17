@@ -1,4 +1,10 @@
 {
     "files": [],
-    "references": [{ "path": "packages/cli" }, { "path": "packages/server" }, { "path": "packages/frontend" }, { "path": "packages/node-client" }]
+    "references": [
+        { "path": "packages/cli" },
+        { "path": "packages/shared" },
+        { "path": "packages/server" },
+        { "path": "packages/frontend" },
+        { "path": "packages/node-client" }
+    ]
 }

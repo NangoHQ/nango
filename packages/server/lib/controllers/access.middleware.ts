@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import accountService from '../services/account.service.js';
-import type { Account } from '../models.js';
+import type { Account } from '@nangohq/shared';
 import { isCloud, setAccount, isBasicAuthEnabled } from '../utils/utils.js';
 import errorManager from '../utils/error.manager.js';
 import userService from '../services/user.service.js';

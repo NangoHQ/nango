@@ -1,11 +1,18 @@
 import type { NextFunction, Request, Response } from 'express';
-import configService from '../services/config.service.js';
-import type { ProviderConfig } from '../models.js';
+import { configService, Config as ProviderConfig } from '@nangohq/shared';
 import analytics from '../utils/analytics.js';
 import { getAccount, getUserAndAccountFromSession, parseConnectionConfigParamsFromTemplate } from '../utils/utils.js';
 import errorManager from '../utils/error.manager.js';
 import connectionService from '../services/connection.service.js';
 import { NangoError } from '../utils/error.js';
+
+interface Integration {
+    uniqueKey: string;
+    provider: string;
+    connectionCount: number;
+    creationDate: Date | undefined;
+    connectionConfigParams?: string[];
+}
 
 class ConfigController {
     /**
@@ -14,15 +21,15 @@ class ConfigController {
 
     async listProviderConfigsWeb(req: Request, res: Response, next: NextFunction) {
         try {
-            let account = (await getUserAndAccountFromSession(req)).account;
+            const account = (await getUserAndAccountFromSession(req)).account;
 
-            let configs = await configService.listProviderConfigs(account.id);
+            const configs = await configService.listProviderConfigs(account.id);
 
-            let connections = await connectionService.listConnections(account.id);
+            const connections = await connectionService.listConnections(account.id);
 
-            let integrations = configs.map((config) => {
-                let template = configService.getTemplates()[config.provider];
-                let integration: any = {
+            const integrations = configs.map((config: ProviderConfig) => {
+                const template = configService.getTemplates()[config.provider];
+                const integration: Integration = {
                     uniqueKey: config.unique_key,
                     provider: config.provider,
                     connectionCount: connections.filter((connection) => connection.provider === config.unique_key).length,
@@ -35,7 +42,7 @@ class ConfigController {
             });
 
             res.status(200).send({
-                integrations: integrations.sort(function (a, b) {
+                integrations: integrations.sort(function (a: Integration, b: Integration) {
                     return b.creationDate!.getTime() - a.creationDate!.getTime();
                 })
             });
@@ -106,7 +113,7 @@ class ConfigController {
                 account_id: account.id
             };
 
-            let result = await configService.createProviderConfig(config);
+            const result = await configService.createProviderConfig(config);
 
             if (Array.isArray(result) && result.length === 1 && result[0] != null && 'id' in result[0]) {
                 analytics.track('server:config_created', account.id, { provider: config.provider });

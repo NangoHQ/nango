@@ -1,6 +1,6 @@
 import db from '../db/database.js';
 import type { ActivityLog, ActivityLogMessage, LogAction } from '../models';
-import logger from '../utils/logger.js';
+import logger from '../logger/console.js';
 
 const activityLogTableName = '_nango_activity_logs';
 const activityLogMessageTableName = '_nango_activity_log_messages';

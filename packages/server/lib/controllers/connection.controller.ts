@@ -1,16 +1,23 @@
 import type { Request, Response } from 'express';
 import connectionService from '../services/connection.service.js';
 import type { NextFunction } from 'express';
-import configService from '../services/config.service.js';
-import { ProviderConfig, ProviderTemplate, Connection, ProviderAuthModes, ProviderTemplateOAuth2, HTTP_VERB, LogLevel, LogAction } from '../models.js';
 import analytics from '../utils/analytics.js';
 import {
     createActivityLog,
     createActivityLogMessage,
     createActivityLogMessageAndEnd,
     updateProvider as updateProviderActivityLog,
-    updateSuccess as updateSuccessActivityLog
-} from '../services/activity.service.js';
+    updateSuccess as updateSuccessActivityLog,
+    Config as ProviderConfig,
+    Template as ProviderTemplate,
+    AuthModes as ProviderAuthModes,
+    TemplateOAuth2 as ProviderTemplateOAuth2,
+    Connection,
+    LogLevel,
+    LogAction,
+    HTTP_VERB,
+    configService
+} from '@nangohq/shared';
 import { getAccount, getUserAndAccountFromSession } from '../utils/utils.js';
 import { getConnectionCredentials } from '../utils/connection.js';
 import { WSErrBuilder } from '../utils/web-socket-error.js';
@@ -123,7 +130,7 @@ class ConnectionController {
                 await createActivityLogMessageAndEnd({
                     level: 'info',
                     activity_log_id: activityLogId as number,
-                    auth_mode: template.auth_mode,
+                    auth_mode: template?.auth_mode,
                     content: `Token manual refresh fetch was successful for ${providerConfigKey} and connection ${connectionId} from the web UI`,
                     timestamp: Date.now()
                 });
@@ -165,9 +172,9 @@ class ConnectionController {
             }
 
             let uniqueKeyToProvider: { [key: string]: string } = {};
-            let providerConfigKeys = configs.map((config) => config.unique_key);
+            let providerConfigKeys = configs.map((config: ProviderConfig) => config.unique_key);
 
-            providerConfigKeys.forEach((key, i) => (uniqueKeyToProvider[key] = configs[i]!.provider));
+            providerConfigKeys.forEach((key: string, i: number) => (uniqueKeyToProvider[key] = configs[i]!.provider));
 
             let result = connections.map((connection) => {
                 return {
@@ -312,7 +319,7 @@ class ConnectionController {
     async listProviders(_: Request, res: Response, next: NextFunction) {
         try {
             const providers = Object.entries(configService.getTemplates())
-                .map((providerProperties) => {
+                .map((providerProperties: [string, ProviderTemplate]) => {
                     const [provider, properties] = providerProperties;
                     return {
                         name: provider,

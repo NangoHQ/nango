@@ -1,4 +1,5 @@
-import type { ProviderConfig, ProviderTemplate, ProviderTemplateAlias, Connection } from '../models.js';
+import type { Config as ProviderConfig, Template as ProviderTemplate, TemplateAlias as ProviderTemplateAlias } from '../models/Provider.js';
+import type { Connection } from '../models/Connection.js';
 import db from '../db/database.js';
 import yaml from 'js-yaml';
 import fs from 'fs';
@@ -15,7 +16,7 @@ class ConfigService {
     }
 
     private getTemplatesFromFile() {
-        const templatesPath = path.join(dirname(), '../../providers.yaml');
+        const templatesPath = path.join(dirname(), '../../../providers.yaml');
 
         const fileEntries = yaml.load(fs.readFileSync(templatesPath).toString()) as { [key: string]: ProviderTemplate | ProviderTemplateAlias };
 
@@ -44,8 +45,10 @@ class ConfigService {
         return fileEntries as { [key: string]: ProviderTemplate };
     }
 
-    async getProviderConfig(providerConfigKey: string, accountId: number): Promise<ProviderConfig | null> {
-        let result = await db.knex
+    async getProviderConfig(providerConfigKey: string, accountId: number, argDb?: typeof db): Promise<ProviderConfig | null> {
+        const database = argDb || db;
+
+        const result = await database.knex
             .withSchema(db.schema())
             .select('*')
             .from<ProviderConfig>(`_nango_configs`)
@@ -69,7 +72,7 @@ class ConfigService {
     }
 
     async createDefaultProviderConfig(accountId: number) {
-        let config: ProviderConfig = {
+        const config: ProviderConfig = {
             account_id: accountId,
             unique_key: 'demo-github-integration',
             provider: 'github',
@@ -103,7 +106,7 @@ class ConfigService {
     }
 
     getTemplate(provider: string): ProviderTemplate {
-        let template = this.templates[provider];
+        const template = this.templates[provider];
 
         if (template == null) {
             throw new NangoError('unknown_provider_template_in_config');
