@@ -6,8 +6,7 @@
     "scripts": {
         "start": "tsc && node dist/worker.js",
         "dev": "nodemon",
-        "build": "tsc",
-        "release": "docker buildx build --platform linux/amd64 -f Dockerfile -t nangohq/sync-worker:$1 -t nangohq/sync-worker:latest . --no-cache --output type=registry"
+        "build": "tsc"
     },
     "keywords": [],
     "repository": {
