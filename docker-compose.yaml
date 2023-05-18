@@ -17,6 +17,8 @@ services:
     nango-server:
         image: nangohq/nango-server
         container_name: nango-server
+        environment:
+            - TEMPORAL_ADDRESS=temporal:7233
         volumes:
             - './packages/shared/providers.yaml:/usr/nango-server/src/packages/shared/providers.yaml'
         restart: always
@@ -28,11 +30,13 @@ services:
             - nango
 
     nango-sync-server:
-        image: nangohq/sync-worker:0.17.1-rc
+        image: nangohq/sync-worker:0.17.2-rc
         container_name: nango-sync-server
         restart: always
         ports:
             - '3004:3004'
+        environment:
+            - TEMPORAL_ADDRESS=temporal:7233
         depends_on:
             - nango-db
             - temporal
@@ -53,8 +57,6 @@ services:
             - LOG_LEVEL=${TEMPORAL_LOG_LEVEL}
         ports:
             - 7233:7233
-        labels:
-            kompose.volume.type: configMap
         networks:
             - nango
 

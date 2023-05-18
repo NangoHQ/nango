@@ -1,4 +1,4 @@
-import { Worker } from '@temporalio/worker';
+import { Worker, NativeConnection } from '@temporalio/worker';
 import * as dotenv from 'dotenv';
 import { createRequire } from 'module';
 import * as activities from './activities.js';
@@ -9,10 +9,15 @@ async function run() {
         dotenv.config({ path: '../../.env' });
     }
 
+    const connection = await NativeConnection.connect({
+        address: process.env['TEMPORAL_ADDRESS'] || 'localhost:7233'
+    });
+
     const worker = await Worker.create({
         workflowsPath: createRequire(import.meta.url).resolve('./workflows'),
         activities,
-        taskQueue: TASK_QUEUE
+        taskQueue: TASK_QUEUE,
+        connection
     });
     // Worker connects to localhost by default and uses console.error for logging.
     // Customize the Worker by passing more options to create():
