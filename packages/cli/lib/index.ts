@@ -16,8 +16,10 @@ import yaml from 'js-yaml';
 import ejs from 'ejs';
 import glob from 'glob';
 import byots from 'byots';
+import * as tsNode from 'ts-node';
 import { build } from 'esbuild';
-import { exec } from 'child_process';
+import { spawn } from 'child_process';
+import chokidar from 'chokidar';
 
 const program = new Command();
 
@@ -308,24 +310,117 @@ program
     });
 
 program
-    .command('dev')
-    .alias('develop')
+    .command('tsc')
     .description('Work locally to add integration code')
     .action(() => {
-        // run docker compose and set the volume correctly
-        //const command = 'docker-compose up -f ./node_modules/@nangohq/nango/packages/cli/docker-compose.yml';
-        //const command = 'ls ./node_modules/@nangohq/nango/packages/cli/docker-compose.yml';
-        const command = 'docker-compose -f node_modules/nango/docker/docker-compose.yaml up --build';
+        const cwd = process.cwd();
+        const integrationFiles = glob.sync(path.resolve(cwd, './nango-integrations/*.ts'));
+        for (const file of integrationFiles) {
+            const tsFileContent = fs.readFileSync(file, 'utf-8');
 
-        // Execute the command as a child process
-        exec(command, (error, stdout, stderr) => {
-            console.log(stderr);
-            if (error) {
-                console.error(`Error executing command: ${error}`);
+            const compilerOptions = {
+                target: byots.ScriptTarget.ES2022,
+                module: byots.ModuleKind.ES2022
+            };
+
+            const result = byots.transpileModule(tsFileContent, {
+                compilerOptions,
+                fileName: file
+            });
+
+            const fileNameWithExt = path.basename(file);
+            const integrationName = path.parse(fileNameWithExt).name;
+            const jsFileContent = result.outputText;
+
+            fs.writeFileSync(path.resolve(cwd, `./nango-integrations/${integrationName}.js`), jsFileContent);
+        }
+    });
+
+program
+    .command('dev')
+    .alias('develop')
+    .alias('watch')
+    .description('Work locally to add integration code')
+    .action(() => {
+        //const child = spawn('docker', ['compose', '-f', 'node_modules/nango/docker/docker-compose.yaml', '--project-directory', '.', 'up', '--build'], {
+        spawn('docker', ['compose', '-f', 'node_modules/nango/docker/docker-compose.yaml', '--project-directory', '.', 'up', '--build'], {
+            cwd: process.cwd(),
+            detached: false,
+            stdio: 'inherit'
+        });
+
+        // look into
+        // https://www.npmjs.com/package/docker-compose
+
+        // TODO handle more gracefully
+        //process.on('SIGINT', () => {
+        //child.kill('SIGINT');
+        //});
+
+        const tsconfig = `
+            {
+                  "display": "Node 18 + ESM + Strictest",
+                  "compilerOptions": {
+                    "lib": [
+                      "es2022"
+                    ],
+                    "module": "es2022",
+                    "target": "es2022",
+                    "strict": true,
+                    "esModuleInterop": true,
+                    "skipLibCheck": true,
+                    "forceConsistentCasingInFileNames": true,
+                    "moduleResolution": "node",
+                    "allowUnusedLabels": false,
+                    "allowUnreachableCode": false,
+                    "exactOptionalPropertyTypes": true,
+                    "noFallthroughCasesInSwitch": true,
+                    "noImplicitOverride": true,
+                    "noImplicitReturns": true,
+                    "noPropertyAccessFromIndexSignature": true,
+                    "noUncheckedIndexedAccess": true,
+                    "noUnusedLocals": true,
+                    "noUnusedParameters": true,
+                    "importsNotUsedAsValues": "error",
+                    "declaration": false,
+                    "sourceMap": false,
+                    "composite": false,
+                    "checkJs": false,
+                    "rootDir": "nango-integrations",
+                    "outDir": "nango-integrations"
+                },
+                "include": ["nango-integrations"],
+                "exclude": ["node_modules"]
+            }
+        `;
+
+        const watchPath = './nango-integrations/*.ts';
+        const watcher = chokidar.watch(watchPath, { ignoreInitial: true });
+
+        const compiler = tsNode.create({
+            compilerOptions: JSON.parse(tsconfig).compilerOptions
+        });
+
+        watcher.on('add', (filePath) => {
+            compileFiile(filePath);
+        });
+
+        watcher.on('change', (filePath) => {
+            compileFiile(filePath);
+        });
+
+        function compileFiile(filePath: string) {
+            try {
+                const result = compiler.compile(fs.readFileSync(filePath, 'utf8'), filePath);
+                const jsFilePath = path.join(path.dirname(filePath), path.basename(filePath, '.ts') + '.js');
+                fs.writeFileSync(jsFilePath, result);
+                console.log(chalk.green(`Compiled ${filePath} successfully`));
+            } catch (error) {
+                console.error(`Error compiling ${filePath}:`);
+                console.error(error);
                 return;
             }
-            console.log(stdout);
-        });
+        }
     });
 
 program

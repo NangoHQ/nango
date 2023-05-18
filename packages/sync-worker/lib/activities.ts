@@ -1,6 +1,9 @@
-import * as uuid from 'uuid';
+//import * as uuid from 'uuid';
 import { Nango } from '@nangohq/node';
-import md5 from 'md5';
+import fs from 'fs';
+import path, { dirname } from 'path';
+import { fileURLToPath } from 'url';
+//import md5 from 'md5';
 import {
     getById as getSyncById,
     updateStatus as updateSyncStatus,
@@ -15,16 +18,20 @@ import {
     updateSuccess,
     createActivityLog,
     createActivityLogMessageAndEnd,
-    DataResponse,
+    //DataResponse,
     LogLevel,
     LogAction,
     //getSyncConfigByProvider,
     //SyncConfig,
-    getServerBaseUrl
+    getServerBaseUrl,
+    updateSuccess as updateSuccessActivityLog
 } from '@nangohq/shared';
-import type { GithubIssues, TicketModel } from './models/Ticket.js';
+//import type { GithubIssues, TicketModel } from './models/Ticket.js';
 import type { NangoConnection, ContinuousSyncArgs, InitialSyncArgs } from './models/Worker';
-import { upsert } from './services/data.service.js';
+//import { upsert } from './services/data.service.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 export async function syncActivity(name: string): Promise<string> {
     return `Synced, ${name}!`;
@@ -64,16 +71,23 @@ export async function route(
 
     switch (syncConfig?.provider) {
         case 'github':
-            response = await syncGithub(sync, nangoConnection, activityLogId, isIncremental);
+            response = await syncService('github', sync, nangoConnection, activityLogId, isIncremental);
             break;
         case 'asana':
+            response = await syncService('asana', sync, nangoConnection, activityLogId, isIncremental);
             break;
     }
 
     return response;
 }
 
-export async function syncGithub(sync: Sync, nangoConnection: NangoConnection, existingActivityLogId: number, isIncremental: boolean): Promise<boolean> {
+export async function syncService(
+    service: string,
+    sync: Sync,
+    nangoConnection: NangoConnection,
+    existingActivityLogId: number,
+    isIncremental: boolean
+): Promise<boolean> {
     let activityLogId = existingActivityLogId;
 
     if (isIncremental) {
@@ -86,64 +100,42 @@ export async function syncGithub(sync: Sync, nangoConnection: NangoConnection, e
             timestamp: Date.now(),
             connection_id: nangoConnection?.connection_id as string,
             provider_config_key: nangoConnection?.provider_config_key as string,
-            provider: 'github',
+            provider: service,
             session_id: sync.id.toString(),
             account_id: nangoConnection?.account_id as number
         };
         activityLogId = (await createActivityLog(log)) as number;
     }
 
+    // look in the nango-integrations directory for any files start withing github
+    const files = fs.readdirSync(path.resolve(__dirname, './nango-integrations'), 'utf8');
+
+    const matchingFiles = files.filter((file) => {
+        return file.startsWith(service) && file.endsWith('.js');
+    });
+
+    const [first] = matchingFiles;
+
+    const integrationPath = `./nango-integrations/${first}` + `?v=${Math.random().toString(36).substring(3)}`;
+
+    const { default: integrationCode } = await import(integrationPath);
+    const integrationClass = new integrationCode();
+
     const nango = new Nango({
         host: getServerBaseUrl(),
         connectionId: String(nangoConnection?.connection_id),
         providerConfigKey: String(nangoConnection?.provider_config_key),
-        activityLogId: activityLogId as number,
-        isSync: true
+        // pass in the sync id and store the raw json in the database before the user does what they want with it
+        // or use the connection ID to match it up
+        // either way need a new table
+        activityLogId: activityLogId as number
     });
 
-    if (!nango) {
-        return false;
-    }
-
-    //const [firstConfig] = (await getSyncConfigByProvider('github')) as SyncConfig[];
-    //const { integration_name: integrationName } = firstConfig as SyncConfig;
-    //const integrationPath = `../nango-integrations/${integrationName}.js` + `?v=${Math.random().toString(36).substring(3)}`;
-    //console.log(integrationPath);
-
-    /*
-     *
-    const [firstConfig] = (await getSyncConfigByProvider(provider)) as SyncConfig[];
-    const { integration_name: integrationName } = firstConfig as SyncConfig;
-    const integrationPath = `../nango-integrations/${integrationName}.js` + `?v=${Math.random().toString(36).substring(3)}`;
-    const { default: integrationCode } = await import(integrationPath);
-    const integrationClass = new integrationCode();
-    const nango = new Nango({
-        host: 'http://localhost:3003',
-        connectionId: String(nangoConnection?.connection_id),
-        providerConfigKey: String(nangoConnection?.provider_config_key)
-    });
-
+    // store raw json for now
     const userDefinedResults = await integrationClass.fetchData(nango);
+    console.log(userDefinedResults);
 
-     */
-
-    const response = await nango.get({
-        connectionId: nangoConnection?.connection_id as string,
-        providerConfigKey: nangoConnection?.provider_config_key as string,
-        headers: {
-            'Nango-Proxy-Accept': 'application/vnd.github+json',
-            'Nango-Proxy-X-Github-Api-Version-Id': '2022-11-18'
-        },
-        endpoint: 'repos/NangoHq/nango/issues'
-    });
-
-    if (!response) {
-        return false;
-    }
-
-    const issues = formatGithubIssue(response.data as unknown as GithubIssues, nangoConnection?.id as number);
-    const result = await upsert(issues as unknown as DataResponse[], '_nango_unified_tickets', 'external_id', nangoConnection?.id as number);
-    console.log(result);
+    const result = false;
 
     if (result) {
         await updateSyncStatus(sync.id, SyncStatus.SUCCESS);
@@ -156,6 +148,8 @@ export async function syncGithub(sync: Sync, nangoConnection: NangoConnection, e
             content: `The ${sync.type} sync has been completed`
         });
     } else {
+        await updateSuccessActivityLog(activityLogId, false);
+
         await createActivityLogMessageAndEnd({
             level: 'error',
             activity_log_id: activityLogId,
@@ -167,6 +161,7 @@ export async function syncGithub(sync: Sync, nangoConnection: NangoConnection, e
     return Boolean(result);
 }
 
+/*
 function formatGithubIssue(issues: GithubIssues, nangoConnectionId: number): TicketModel[] {
     const models = [];
     for (const issue of issues) {
@@ -191,3 +186,4 @@ function formatGithubIssue(issues: GithubIssues, nangoConnectionId: number): Tic
     }
     return models;
 }
+*/

@@ -48,6 +48,8 @@ asana:
         response_type: code
     refresh_params:
         grant_type: refresh_token
+    base_api_url: https://app.asana.com
+    docs: https://developers.asana.com/reference
 atlassian:
     auth_mode: OAUTH2
     authorization_url: https://auth.atlassian.com/authorize
