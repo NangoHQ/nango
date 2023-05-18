@@ -32,9 +32,29 @@ services:
         container_name: nango-sync-server
         restart: always
         ports:
-            - '7233:7233'
+            - '3004:3004'
         depends_on:
             - nango-db
+            - temporal
+        networks:
+            - nango
+
+    temporal:
+        image: temporalio/auto-setup:1.20.3
+        container_name: temporal
+        depends_on:
+            - nango-db
+        environment:
+            - DB=postgresql
+            - DB_PORT=5432
+            - POSTGRES_USER=nango
+            - POSTGRES_PWD=nango
+            - POSTGRES_SEEDS=nango-db
+            - LOG_LEVEL=${TEMPORAL_LOG_LEVEL}
+        ports:
+            - 7233:7233
+        labels:
+            kompose.volume.type: configMap
         networks:
             - nango
 
