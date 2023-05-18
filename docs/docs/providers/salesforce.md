@@ -30,8 +30,10 @@ The `instance_url` is automatically stored in the [Connection Metadata](nango-au
 Quick & easy for testing:
 
 -   Sign up for a Salesforce developer account.
--   Login and in Setup create a new "Connected App" under `Apps -> App Manager`. Make sure you enable the OAuth section.
--
+-   Login and in Setup create a new "Connected App" under `Apps -> App Manager`. 
+-   Make sure you enable the OAuth section. It is labeled `Enable OAuth Settings`.
+-   Add your callback URL from Nango to `Callback URL`
+-   Press `Manage Consumer Details` button under `API` section for `Consumer Key` and `Consumer Secret`
 
 ## Useful links
 
