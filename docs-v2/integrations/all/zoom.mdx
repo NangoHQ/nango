@@ -1,0 +1,71 @@
+---
+sidebar_label: Zoom
+---
+
+# Zoom API wiki
+
+:::note Working with the Zoom API?
+Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/master/docs/docs/providers/zoom.md).
+
+:::
+
+## Using Zoom with Nango
+
+API template name in Nango: `zoom`  
+Follow our [quickstart](../quickstart.md) to add an OAuth integration with Zoom in 5 minutes.
+
+Supported features in Nango:
+
+| Feature                            | Supported                 |
+| ---------------------------------- | ------------------------- |
+| [Auth](/nango-auth/core-concepts)  | ✅                        |
+| [Proxy](/nango-unified-apis/proxy) | ❎                        |
+| Unified APIs                       | _Not included in any yet_ |
+
+## App registration & publishing
+
+**Rating: `Easy & fast`**
+Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://developers.zoom.us/docs/integrations/create)
+
+## Useful links
+
+-   [How to register an Application](https://developers.zoom.us/docs/integrations/create)
+-   [OAuth-related docs](https://developers.zoom.us/docs/integrations/oauth)
+-   [List of OAuth scopes](https://developers.zoom.us/docs/integrations/oauth-scopes/)
+-   [API](https://developers.zoom.us/docs/api/)
+
+## API specific gotchas
+
+---
+
+title: Zoom
+sidebarTitle: Zoom
+
+---
+
+Integration template: [`zoom`](https://nango.dev/providers.yaml)
+
+## Features
+
+| Feature                                                 | Status                          |
+| ------------------------------------------------------- | ------------------------------- |
+| [Auth (OAuth)](/nango-auth)                             | ✅                              |
+| [Sync](/nango-sync)                                     | ✅                              |
+| [Assisted requests](/nango-sync/guides/direct-requests) | 🚫 (time to contribute: &lt;1h) |
+| [Auto-pagination](/nango-sync/configuration)            | 🚫 (time to contribute: &lt;1h) |
+| [API-specific rate limits](/nango-sync/configuration)   | 🚫 (time to contribute: &lt;1h) |
+
+<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+## Getting started
+
+-   [How to register an Application](https://api.accelo.com/docs/#registering-your-application)
+-   [OAuth-related docs](https://api.accelo.com/docs/#authentication)
+-   [List of OAuth scopes](https://api.accelo.com/docs/#scope)
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+## API gotchas
+
+-   You will have to provide your deployment name as a subdomain `nango.auth('accelo', '1', {params: {subdomain: 'accelo-subdomain'}})`
+
+<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/zoom.mdx)</Note>

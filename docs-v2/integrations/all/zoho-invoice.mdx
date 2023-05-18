@@ -1,0 +1,74 @@
+---
+sidebar_label: Zoho Invoice
+---
+
+# Zoho-invoice API wiki
+
+:::note Working with the Zoho-invoice API?
+Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/master/docs/docs/providers/Zoho-invoice.md).
+
+:::
+
+## Using Zoho-invoice with Nango
+
+API template name in Nango: `zoho-invoice`  
+Follow our [quickstart](../quickstart.md) to add an OAuth integration with Zoho Invoice in 5 minutes.
+
+Supported features in Nango:
+
+| Feature                            | Supported                 |
+| ---------------------------------- | ------------------------- |
+| [Auth](/nango-auth/core-concepts)  | ✅                        |
+| [Proxy](/nango-unified-apis/proxy) | ❎                        |
+| Unified APIs                       | _Not included in any yet_ |
+
+## App registration & publishing
+
+**Rating: `Easy & fast`**
+Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://accounts.zoho.com/developerconsole)
+
+## Useful links
+
+-   [How to register an Application](https://www.zoho.com/invoice/api/v3/oauth/#overview:~:text=Step%201%3A%20Registering%20New%20Client)
+-   [OAuth-related docs](https://www.zoho.com/invoice/api/v3/oauth/#overview)
+-   [List of OAuth scopes](https://www.zoho.com/invoice/api/v3/oauth/#overview:~:text=List%20of%20scopes%20available%20in%20Zoho%20Invoice%20%3A)
+-   [API](https://www.zoho.com/invoice/api/v3/apicollection/#overview)
+
+## API specific gotchas
+
+---
+
+title: Zoho Invoice
+sidebarTitle: Zoho Invoice
+
+---
+
+Integration template: [`zoho-invoice`](https://nango.dev/providers.yaml)
+
+## Features
+
+| Feature                                                 | Status                          |
+| ------------------------------------------------------- | ------------------------------- |
+| [Auth (OAuth)](/nango-auth)                             | ✅                              |
+| [Sync](/nango-sync)                                     | ✅                              |
+| [Assisted requests](/nango-sync/guides/direct-requests) | 🚫 (time to contribute: &lt;1h) |
+| [Auto-pagination](/nango-sync/configuration)            | 🚫 (time to contribute: &lt;1h) |
+| [API-specific rate limits](/nango-sync/configuration)   | 🚫 (time to contribute: &lt;1h) |
+
+<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+
+## Getting started
+
+-   [How to register an Application](https://api.accelo.com/docs/#registering-your-application)
+-   [OAuth-related docs](https://api.accelo.com/docs/#authentication)
+-   [List of OAuth scopes](https://api.accelo.com/docs/#scope)
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+## API gotchas
+
+-   You will have to provide your deployment name as a subdomain `nango.auth('accelo', '1', {params: {subdomain: 'accelo-subdomain'}})`
+
+<Note>
+    Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/zoho-invoice.mdx)
+</Note>
