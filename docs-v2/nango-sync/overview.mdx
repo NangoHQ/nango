@@ -3,3 +3,44 @@ title: 'Nango Sync: Overview'
 sidebarTitle: 'Overview'
 description: 'The easiest way to sync data with external APIs.'
 ---
+
+## ⭐ Nango Sync at a glance
+
+Nango Sync lets you make requests and sync data with external APIs, on behalf of users. It works in isolation and seamlessly integrates with [Nango Auth](/nango-auth).
+
+It supports:
+
+-   bi-directional continuous syncing
+-   synchronous/asynchronous reads & writes
+-   real-time updates with webhooks
+-   rate-limit & retry handling
+-   auto-pagination & incremental syncing
+-   monitoring & an admin console
+
+## 👩‍💻 How it looks in my code
+
+1-liner to fetch structured objects from any external API:
+
+```js
+nango.github().issues('<user-id>');
+```
+
+## 👾 100+ pre-configured integrations - Easily add your own
+
+Nango works with **any** API and use-case.
+
+100+ APIs are pre-configured to work out-of-the-box, including:
+
+-   **CRM**: Front, Hubspot, Salesforce, etc.
+-   **Accounting**: Xero, Sellsy, Zoho Books, etc.
+-   **Fintech:** Brex, Stripe, Braintree, Ramp etc.
+-   **Developer tools**: GitHub, GitLab, Linear, Jira etc.
+-   **Communication**: Gmail, Microsoft Teams, Slack, Discord, Zoom etc.
+-   **Productivity**: Asana, Airtable, Google Drive, Google Calendar, Trello,
+    GSheet, ClickUp etc.
+-   **Social**: Twitter, LinkedIn, Reddit, Facebook etc.
+-   [and more...](https://nango.dev/integrations)
+
+If your favorite API is missing
+[open a GitHub issue](https://github.com/NangoHQ/nango/issues/new) or
+[contribute it](/contribute).

@@ -1,0 +1,34 @@
+---
+title: Contentstack
+sidebarTitle: Contentstack
+---
+
+Integration template: [`contentstack`](https://nango.dev/providers.yaml)
+
+## Features
+
+| Feature                                                 | Status                          |
+| ------------------------------------------------------- | ------------------------------- |
+| [Auth (OAuth)](/nango-auth)                             | ✅                              |
+| [Sync](/nango-sync)                                     | ✅                              |
+| [Assisted requests](/nango-sync/guides/direct-requests) | 🚫 (time to contribute: &lt;1h) |
+| [Auto-pagination](/nango-sync/configuration)            | 🚫 (time to contribute: &lt;1h) |
+| [API-specific rate limits](/nango-sync/configuration)   | 🚫 (time to contribute: &lt;1h) |
+
+<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+## Getting started
+
+-   [How to register an Application](https://www.contentstack.com/docs/developers/developer-hub/contentstack-oauth/#configuring-contentstack-oauth)
+-   [OAuth-related docs](https://www.contentstack.com/docs/developers/developer-hub/contentstack-oauth)
+-   [List of OAuth scopes](https://www.contentstack.com/docs/developers/developer-hub/oauth-scopes/)
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+## API gotchas
+
+-   Depending on the [region](https://www.contentstack.com/docs/developers/developer-hub/contentstack-oauth/#construct-your-authorization-url) you will want to connect to, you will have to provide the region as a extension in the config params. You should use `nango.auth('amazon', '1', {params: {subdomain: 'co.uk'}})`
+-   Access tokens and app tokens are valid for 60 minutes only,
+
+<Note>
+    Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/contentstack.mdx)
+</Note>
