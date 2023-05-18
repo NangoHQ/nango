@@ -31,8 +31,6 @@
         "@octokit/rest": "^19.0.7",
         "@octokit/types": "^9.2.1",
         "@tsconfig/node16": "^1.0.0",
-        "@types/github": "^7.1.0",
-        "@types/knex": "^0.16.1",
         "@types/md5": "^2.3.2",
         "@types/node": "^18.7.6",
         "@typescript-eslint/eslint-plugin": "^5.0.0",
