@@ -10,14 +10,16 @@ async function run() {
     }
 
     const connection = await NativeConnection.connect({
-        address: process.env['TEMPORAL_ADDRESS'] || 'localhost:7233'
+        address: process.env['TEMPORAL_ADDRESS'] || 'localhost:7233',
+        tls: false
     });
 
     const worker = await Worker.create({
+        connection,
+        namespace: process.env['TEMPORAL_NAMESPACE'] || 'default',
         workflowsPath: createRequire(import.meta.url).resolve('./workflows'),
         activities,
-        taskQueue: TASK_QUEUE,
-        connection
+        taskQueue: TASK_QUEUE
     });
     // Worker connects to localhost by default and uses console.error for logging.
     // Customize the Worker by passing more options to create():

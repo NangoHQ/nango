@@ -30,7 +30,7 @@ services:
             - nango
 
     nango-sync-server:
-        image: nangohq/sync-worker:0.17.2-rc
+        image: nangohq/sync-worker:0.17.71-rc
         container_name: nango-sync-server
         restart: always
         ports:
@@ -44,7 +44,7 @@ services:
             - nango
 
     temporal:
-        image: temporalio/auto-setup:1.20.3
+        image: temporalio/auto-setup
         container_name: temporal
         depends_on:
             - nango-db
@@ -54,7 +54,6 @@ services:
             - POSTGRES_USER=nango
             - POSTGRES_PWD=nango
             - POSTGRES_SEEDS=nango-db
-            - LOG_LEVEL=${TEMPORAL_LOG_LEVEL}
         ports:
             - 7233:7233
         networks:
