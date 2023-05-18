@@ -11,13 +11,24 @@ import * as NangoSync from './sync.js';
 
 export { NangoSync };
 
+interface NangoProps {
+    host?: string;
+    secretKey?: string;
+    connectionId?: string;
+    providerConfigKey?: string;
+    isSync?: boolean;
+    activityLogId?: number;
+}
+
 export class Nango {
     serverUrl: string;
     secretKey: string;
     connectionId?: string;
     providerConfigKey?: string;
+    isSync = false;
+    activityLogId?: number;
 
-    constructor(config: { host?: string; secretKey?: string; connectionId?: string; providerConfigKey?: string } = {}) {
+    constructor(config: NangoProps = {}) {
         config.host = config.host || prodHost;
         this.serverUrl = config.host;
 
@@ -34,6 +45,14 @@ export class Nango {
         this.secretKey = config.secretKey || '';
         this.connectionId = config.connectionId || '';
         this.providerConfigKey = config.providerConfigKey || '';
+
+        if (config.isSync) {
+            this.isSync = config.isSync;
+        }
+
+        if (config.activityLogId) {
+            this.activityLogId = config.activityLogId;
+        }
     }
 
     /**
@@ -103,6 +122,8 @@ export class Nango {
         const headers: Record<string, string | number | boolean> = {
             'Connection-Id': connectionId,
             'Provider-Config-Key': providerConfigKey,
+            'Nango-Is-Sync': this.isSync,
+            'Nango-Activity-Log-Id': this.activityLogId || '',
             ...customHeaders
         };
 

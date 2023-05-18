@@ -8,8 +8,6 @@ import configService from './config.service.js';
 import { create as createSyncScedule } from './sync-schedule.service.js';
 import { createActivityLog, createActivityLogMessage } from './activity.service.js';
 import { TASK_QUEUE } from '../constants.js';
-import { Nango } from '@nangohq/node';
-import { getServerBaseUrl } from '../utils/utils.js';
 
 const TABLE = dbNamespace + 'sync_jobs';
 const SYNC_CONFIG_TABLE = dbNamespace + 'sync_configs';
@@ -55,18 +53,14 @@ export const startContinuous = async (sync: Sync) => {
 
     const provider = syncConfig.provider as string;
 
-    const [firstConfig] = (await getSyncConfigByProvider(provider)) as SyncConfig[];
-    const { integration_name: integrationName } = firstConfig as SyncConfig;
-    const integrationPath = `../nango-integrations/${integrationName}.js` + `?v=${Math.random().toString(36).substring(3)}`;
-    const { default: integrationCode } = await import(integrationPath);
-    const integrationClass = new integrationCode();
-    const nango = new Nango({
-        host: getServerBaseUrl(),
-        connectionId: String(nangoConnection?.connection_id),
-        providerConfigKey: String(nangoConnection?.provider_config_key)
-    });
-    const userDefinedResults = await integrationClass.fetchData(nango);
-    console.log(userDefinedResults);
+    //const [firstConfig] = (await getSyncConfigByProvider(provider)) as SyncConfig[];
+    //const { integration_name: integrationName } = firstConfig as SyncConfig;
+    //const integrationPath = `../nango-integrations/${integrationName}.js` + `?v=${Math.random().toString(36).substring(3)}`;
+    //const { default: integrationCode } = await import(integrationPath);
+    //const integrationClass = new integrationCode();
+
+    //const userDefinedResults = await integrationClass.fetchData(nango);
+    //console.log(userDefinedResults);
 
     const log = {
         level: 'info' as LogLevel,

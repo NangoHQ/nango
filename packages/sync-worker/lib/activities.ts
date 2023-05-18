@@ -13,10 +13,13 @@ import {
     getConnectionById,
     configService,
     updateSuccess,
+    createActivityLog,
     createActivityLogMessageAndEnd,
     DataResponse,
-    getSyncConfigByProvider,
-    SyncConfig,
+    LogLevel,
+    LogAction,
+    //getSyncConfigByProvider,
+    //SyncConfig,
     getServerBaseUrl
 } from '@nangohq/shared';
 import type { GithubIssues, TicketModel } from './models/Ticket.js';
@@ -47,15 +50,21 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
         nangoConnection?.account_id as number
     )) as ProviderConfig;
 
-    return route(sync, nangoConnection, syncConfig, activityLogId);
+    return route(sync, nangoConnection, syncConfig, activityLogId, true);
 }
 
-export async function route(sync: Sync, nangoConnection: NangoConnection, syncConfig: ProviderConfig, activityLogId: number): Promise<boolean> {
+export async function route(
+    sync: Sync,
+    nangoConnection: NangoConnection,
+    syncConfig: ProviderConfig,
+    activityLogId: number,
+    isIncremental = false
+): Promise<boolean> {
     let response = false;
 
     switch (syncConfig?.provider) {
         case 'github':
-            response = await syncGithub(sync, nangoConnection, activityLogId);
+            response = await syncGithub(sync, nangoConnection, activityLogId, isIncremental);
             break;
         case 'asana':
             break;
@@ -64,17 +73,42 @@ export async function route(sync: Sync, nangoConnection: NangoConnection, syncCo
     return response;
 }
 
-export async function syncGithub(sync: Sync, nangoConnection: NangoConnection, activityLogId: number): Promise<boolean> {
-    const nango = new Nango({ host: getServerBaseUrl() });
+export async function syncGithub(sync: Sync, nangoConnection: NangoConnection, existingActivityLogId: number, isIncremental: boolean): Promise<boolean> {
+    let activityLogId = existingActivityLogId;
+
+    if (isIncremental) {
+        const log = {
+            level: 'info' as LogLevel,
+            success: false,
+            action: 'sync' as LogAction,
+            start: Date.now(),
+            end: Date.now(),
+            timestamp: Date.now(),
+            connection_id: nangoConnection?.connection_id as string,
+            provider_config_key: nangoConnection?.provider_config_key as string,
+            provider: 'github',
+            session_id: sync.id.toString(),
+            account_id: nangoConnection?.account_id as number
+        };
+        activityLogId = (await createActivityLog(log)) as number;
+    }
+
+    const nango = new Nango({
+        host: getServerBaseUrl(),
+        connectionId: String(nangoConnection?.connection_id),
+        providerConfigKey: String(nangoConnection?.provider_config_key),
+        activityLogId: activityLogId as number,
+        isSync: true
+    });
 
     if (!nango) {
         return false;
     }
 
-    const [firstConfig] = (await getSyncConfigByProvider('github')) as SyncConfig[];
-    const { integration_name: integrationName } = firstConfig as SyncConfig;
-    const integrationPath = `../nango-integrations/${integrationName}.js` + `?v=${Math.random().toString(36).substring(3)}`;
-    console.log(integrationPath);
+    //const [firstConfig] = (await getSyncConfigByProvider('github')) as SyncConfig[];
+    //const { integration_name: integrationName } = firstConfig as SyncConfig;
+    //const integrationPath = `../nango-integrations/${integrationName}.js` + `?v=${Math.random().toString(36).substring(3)}`;
+    //console.log(integrationPath);
 
     /*
      *

@@ -41,12 +41,16 @@ class ProxyController {
             const connectionId = req.get('Connection-Id') as string;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
             const retries = req.get('Retries') as string;
+            const isSync = req.get('Nango-Is-Sync') as string;
+            const existingActivityLogId = req.get('Nango-Activity-Log-Id') as number | string;
             const accountId = getAccount(res);
+
+            const logAction: LogAction = isSync ? 'sync' : ('proxy' as LogAction);
 
             const log = {
                 level: 'debug' as LogLevel,
                 success: false,
-                action: 'proxy' as LogAction,
+                action: logAction,
                 start: Date.now(),
                 end: Date.now(),
                 timestamp: Date.now(),
@@ -56,7 +60,7 @@ class ProxyController {
                 account_id: accountId
             };
 
-            const activityLogId = await createActivityLog(log);
+            const activityLogId = existingActivityLogId ? Number(existingActivityLogId) : await createActivityLog(log);
 
             if (!connectionId) {
                 errorManager.errRes(res, 'missing_connection_id');
@@ -82,21 +86,25 @@ class ProxyController {
                 return;
             }
 
-            await createActivityLogMessage({
-                level: 'debug',
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: `Connection id: '${connectionId}' and provider config key: '${providerConfigKey}' parsed and received successfully`
-            });
+            if (!isSync) {
+                await createActivityLogMessage({
+                    level: 'debug',
+                    activity_log_id: activityLogId as number,
+                    timestamp: Date.now(),
+                    content: `Connection id: '${connectionId}' and provider config key: '${providerConfigKey}' parsed and received successfully`
+                });
+            }
 
-            const connection = await getConnectionCredentials(res, connectionId, providerConfigKey, activityLogId as number, 'proxy' as LogAction, false);
+            const connection = await getConnectionCredentials(res, connectionId, providerConfigKey, activityLogId as number, logAction, false);
 
-            await createActivityLogMessage({
-                level: 'debug',
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: 'Connection credentials found successfully'
-            });
+            if (!isSync) {
+                await createActivityLogMessage({
+                    level: 'debug',
+                    activity_log_id: activityLogId as number,
+                    timestamp: Date.now(),
+                    content: 'Connection credentials found successfully'
+                });
+            }
 
             const { method } = req;
 
@@ -130,12 +138,14 @@ class ProxyController {
                     throw new Error(`Unrecognized OAuth type '${connection?.credentials?.type}' in stored credentials.`);
             }
 
-            await createActivityLogMessage({
-                level: 'debug',
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: 'Proxy: token retrieved successfully'
-            });
+            if (!isSync) {
+                await createActivityLogMessage({
+                    level: 'debug',
+                    activity_log_id: activityLogId as number,
+                    timestamp: Date.now(),
+                    content: 'Proxy: token retrieved successfully'
+                });
+            }
 
             const providerConfig = await configService.getProviderConfig(providerConfigKey, accountId);
             const headers = this.parseHeaders(req);
@@ -169,12 +179,14 @@ class ProxyController {
                 return;
             }
 
-            await createActivityLogMessage({
-                level: 'debug',
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: `Proxy: API call configuration constructed successfully with the base api url set to ${template.base_api_url}`
-            });
+            if (!isSync) {
+                await createActivityLogMessage({
+                    level: 'debug',
+                    activity_log_id: activityLogId as number,
+                    timestamp: Date.now(),
+                    content: `Proxy: API call configuration constructed successfully with the base api url set to ${template.base_api_url}`
+                });
+            }
 
             const configBody: ProxyBodyConfiguration = {
                 endpoint,
@@ -190,12 +202,14 @@ class ProxyController {
                 retries: retries ? Number(retries) : 0
             };
 
-            await createActivityLogMessage({
-                level: 'debug',
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: `Endpoint set to ${configBody.endpoint} with retries set to ${configBody.retries}`
-            });
+            if (!isSync) {
+                await createActivityLogMessage({
+                    level: 'debug',
+                    activity_log_id: activityLogId as number,
+                    timestamp: Date.now(),
+                    content: `Endpoint set to ${configBody.endpoint} with retries set to ${configBody.retries}`
+                });
+            }
 
             await this.sendToHttpMethod(res, next, method as HTTP_VERB, configBody, activityLogId as number);
         } catch (error) {
