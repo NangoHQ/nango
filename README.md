@@ -8,10 +8,10 @@
 
 </div>
 
-<h1 align="center">The open-source unified API</h1>
+<h1 align="center">Open-Source Product Integrations</h1>
 
 <div align="center">
-Dozens of pre-built API integrations for your app. Easily extend, customize and build your own.
+Build the integrations your customers need. Simplify your codebase. Sleep at night.
 </div>
 
 <p align="center">
@@ -20,13 +20,13 @@ Dozens of pre-built API integrations for your app. Easily extend, customize and 
     <br />
 
   <br/>
-    <a href="https://nango.dev/oauth-providers">All supported APIs</a>
+    <a href="https://nango.dev/integrations">Pre-Configured APIs</a>
     ·
     <a href="https://docs.nango.dev/">Docs</a>
     ·
     <a href="https://nango.dev">Website</a>
     ·
-    <a href="https://docs.nango.dev/contribute-api">Contribute an API</a>
+    <a href="https://docs.nango.dev/contribute">Contribute an API</a>
     ·
     <a href="https://github.com/nangohq/nango/issues">Report Bug</a>
     ·
@@ -35,58 +35,57 @@ Dozens of pre-built API integrations for your app. Easily extend, customize and 
 
 ## ⭐ Nango at a glance
 
-Nango is a service for easy integrations with external APIs:
+Nango is a new way of building product integrations:
 
-Leverage dozens of pre-built use cases with our unified APIs. Or extend them and build entirely custom integrations on top of our open, scalable platform.
+-   as **powerful** as building yourself
+-   as **fast** as buying a pre-built solution
 
-With Nango you get:
+It supports:
 
--   pre-built unified APIs for many use cases (CRM, Ticketing, HRIS etc.)
--   a pre-built OAuth service for all supported APIs (can also be used standalone)
--   support for 90+ external APIs
--   extensible platform to build your own, custom unified APIs
+-   🔐 Managed auth
+-   🔁 Bi-directional syncing
+-   🚫 Rate-limits & retries
+-   📄 Pagination
+-   🧠 Strong typing
+-   🪝 Webhooks
+-   👀 Monitoring
+-   📺 Admin console
 
-Nango is easy to try in 5 minutes:
+We built the [hard infrastructure](https://docs.nango.dev/core-concepts#infra), so you don't have to.
 
--   1-liner to start a new (O)Auth flow in your frontend (supports all 90+ external APIs):
+## 👩‍💻 How it looks in my code
 
-```ts
-const result = await nango.auth('github', '<user-id>');
+-   1-liner to start a new OAuth flow:
+
+```js
+nango.auth('github', '<user-id>');
 ```
 
--   in your backend, easily fetch always up to date data with our fully typed SDK:
+-   1-liner to fetch structured objects from any external API:
 
-```ts
-const contacts = await nango.hris.getEmployees('<user-id>');
+```js
+nango.github().issues('<user-id>');
 ```
 
--   or only use the (O)Auth service and make any API call with the access token (or [proxy](https://docs.nango.dev/nango-unified-apis/proxy)):
+## 100+ pre-configured APIs, easily add your own
 
-```ts
-const token = await nango.getToken('github', '<user-id>');
-```
+Nango works with **any** API and use-case. Adding [Integration Templates](https://docs.nango.dev/core-concepts#templates) is easy and we already have the main APIs covered.
 
-## 👾 Out of the box support for 3 unified APIs and 90+ external APIs
-
-Nango supports 2 unified APIs:
-
--   [**Ticketing:**](https://docs.nango.dev/nango-unified-apis/ticketing/overview) Jira, GitHub, Asana, Clickup, Gitlab.
--   [**HRIS:**](https://docs.nango.dev/nango-unified-apis/hris/overview) BambooHR, Rippling, Workday, Gusto, Personio, Zenefits.
-
-More are coming soon and you can always [build your own, custom unified API](https://docs.nango.dev/nango-unified-apis/custom-unified-api).
-
-Or build custom integrations with 90+ supported external APIs. Including:
+100+ APIs are pre-configured to work out-of-the-box, including:
 
 -   **CRM**: Front, Hubspot, Salesforce, etc.
 -   **Accounting**: Xero, Sellsy, Zoho Books, etc.
 -   **Fintech:** Brex, Stripe, Braintree, Ramp etc.
 -   **Developer tools**: GitHub, GitLab, Linear, Jira etc.
 -   **Communication**: Gmail, Microsoft Teams, Slack, Discord, Zoom etc.
--   **Productivity**: Asana, Airtable, Google Drive, Google Calendar, Trello, Google sheets, ClickUp etc.
+-   **Productivity**: Asana, Airtable, Google Drive, Google Calendar, Trello,
+    GSheet, ClickUp etc.
 -   **Social**: Twitter, LinkedIn, Reddit, Facebook etc.
--   [and more...](https://nango.dev/oauth-providers)
+-   [and more...](https://nango.dev/integrations)
 
-If your favorite API is missing [open a GitHub issue](https://github.com/NangoHQ/nango/issues/new) or [contribute it right away](https://docs.nango.dev/contribute-api).
+If your favorite API is missing
+[open a GitHub issue](https://github.com/NangoHQ/nango/issues/new) or
+[contribute it](https://docs.nango.dev/contribute).
 
 ## 📺 Demo
 
@@ -96,12 +95,10 @@ If your favorite API is missing [open a GitHub issue](https://github.com/NangoHQ
 
 ## 🚀 Quickstart
 
-### Test Nango in 5 minutes
-
 Run locally:
 
 ```shell
-git clone https://github.com/NangoHQ/nango.git && cd nango && docker compose up # Keep the tab open
+git clone https://github.com/NangoHQ/nango.git && cd nango && docker compose up
 ```
 
 Or sign up for free:
@@ -114,8 +111,7 @@ Or sign up for free:
 
 -   Explore the [documentation](https://docs.nango.dev)
 -   Share feedback or ask questions on the [Slack community](https://nango.dev/slack)
--   Explore [our unified APIs](https://docs.nango.dev/nango-unified-apis/hris/overview) or see [the full list of supported APIs](https://nango.dev/oauth-providers)
--   [Contribute a new API](https://docs.nango.dev/contribute-api)
+-   [Contribute a new API](https://docs.nango.dev/contribute)
 -   Check out our [blog on native integrations](https://www.nango.dev/blog)
 
 ## 💪 Contributors
