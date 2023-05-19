@@ -117,7 +117,7 @@ export class NangoError extends Error {
                 break;
 
             case 'unknown_provider_config':
-                this.status = 400;
+                this.status = 404;
                 this.message = `There is no Provider Configuration matching this key.`;
                 break;
 

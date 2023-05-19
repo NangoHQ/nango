@@ -307,7 +307,7 @@ class OAuthController {
 
                 const authorizationUri = simpleOAuthClient.authorizeURL({
                     redirect_uri: callbackUrl,
-                    scope: providerConfig.oauth_scopes.split(',').join(oauth2Template.scope_separator || ' '),
+                    scope: providerConfig.oauth_scopes ? providerConfig.oauth_scopes.split(',').join(oauth2Template.scope_separator || ' ') : '',
                     state: session.id,
                     ...additionalAuthParams
                 });
@@ -323,7 +323,7 @@ class OAuthController {
                         ...additionalAuthParams,
                         ...connectionConfig,
                         grant_type: oauth2Template.token_params?.grant_type as string,
-                        scopes: providerConfig.oauth_scopes.split(',').join(oauth2Template.scope_separator || ' '),
+                        scopes: providerConfig.oauth_scopes ? providerConfig.oauth_scopes.split(',').join(oauth2Template.scope_separator || ' ') : '',
                         external_api_url: authorizationUri
                     }
                 });

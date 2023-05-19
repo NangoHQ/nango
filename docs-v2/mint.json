@@ -11,6 +11,12 @@
         "dark": "#000000",
         "anchors": { "from": "#3F68FF", "to": "#012AC3" }
     },
+    "api": {
+        "baseUrl": ["https://app.nango.com", "http://localhost:3003"],
+        "auth": {
+            "method": "bearer"
+        }
+    },
     "topbarCtaButton": {
         "type": "github",
         "url": "https://github.com/nangoHQ/nango"
@@ -246,6 +252,22 @@
         {
             "group": "Backend SDKs",
             "pages": ["sdks/node", "sdks/python", "sdks/java", "sdks/ruby", "sdks/go", "sdks/rust", "sdks/php"]
+        },
+        {
+            "group": "Overview",
+            "pages": ["api/overview", "api/authentication"]
+        },
+        {
+            "group": "Integrations",
+            "pages": ["api/integration/list", "api/integration/get", "api/integration/create", "api/integration/update", "api/integration/delete"]
+        },
+        {
+            "group": "Connections",
+            "pages": ["api/connection/list", "api/connection/get", "api/connection/delete"]
+        },
+        {
+            "group": "Proxy",
+            "pages": ["api/proxy/get", "api/proxy/post", "api/proxy/put", "api/proxy/patch", "api/proxy/delete"]
         }
     ],
     "footerSocials": {
