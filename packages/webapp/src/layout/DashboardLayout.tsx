@@ -1,3 +1,4 @@
+import Banner from '../components/Banner';
 import LeftNavBar, { LeftNavBarItems } from '../components/LeftNavBar';
 import TopNavBar from '../components/TopNavBar';
 
@@ -9,6 +10,7 @@ interface DashboardLayoutI {
 export default function DashboardLayout({ children, selectedItem }: DashboardLayoutI) {
     return (
         <div className="h-full">
+            <Banner />
             <TopNavBar />
             <div className="flex h-full max-w-6xl">
                 <LeftNavBar selectedItem={selectedItem} />
