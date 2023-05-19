@@ -14,7 +14,7 @@ Before saving the custom callback URL in Nango, ensure that:
 
 </Warning>
 
-Customize the callback URL in your [Dashboard's project settings](https://app.nango.dev/project-settings). If self-hosting Nango, follow the instructions [here](self-host/instructions).
+Customize the callback URL in your [Dashboard's project settings](https://app.nango.dev/project-settings). If self-hosting Nango, follow the instructions [here](/self-host/instructions).
 
 ## Connection configuration
 
@@ -32,17 +32,17 @@ To specify the subdomain, pass in an additional configuration object to `nango.a
 nango.auth('zendesk', '<CONNECTION-ID>', { params: { subdomain: '<ZENDESK-SUBDOMAIN>' } });
 ```
 
-You can find which configuration parameters are necessary for your integration in the [providers.yaml](https://nango.dev/providers.yaml) file.
+You can find which configuration parameters are necessary for your [Connection](/core-concepts#connections) in the [providers.yaml](https://nango.dev/providers.yaml) file.
 
 ## Connection metadata
 
 During the OAuth flow, certain APIs return important metadata in addition to credentials (e.g. a company ID, tenant ID, instance URL, etc).
 
-Nango stores this metadata in the Connection objects. You can retrieve it with the [SDKs](/sdks) or [API](/api).
+Nango stores this metadata in the [Connection](/core-concepts#connections) objects. You can retrieve it with the [SDKs](/sdks) or [API](/api).
 
 ## Configure integrations programmatically
 
-Read the [API reference](/api) to programmatically manage integrations.
+Read the [API reference](/api) to programmatically manage [Integrations](/core-concepts#integrations).
 
 ## Need help?
 

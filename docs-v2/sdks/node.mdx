@@ -4,7 +4,7 @@ sidebarTitle: 'Node'
 icon: 'node'
 ---
 
-The Node SDK lets you retrieve API credentials & data, as well as work with Connections from your backend.
+The Node SDK lets you retrieve API credentials & data, as well as work with [Connections](/core-concepts#connections) from your backend.
 
 # Installing & instantiating the node SDK
 
@@ -58,7 +58,7 @@ let creds = await nango.getToken('<INTEGRATION-ID>', '<CONNECTION-ID>');
 
 <Tip>Retrieve the token from Nango before each API request, to ensure freshness.</Tip>
 
-## Retrieve connection details
+## Retrieve Connection details
 
 ```js
 let connection = await nango.getConnection('<INTEGRATION-ID>', '<CONNECTION-ID>');
@@ -96,7 +96,7 @@ metadata: {}                                // Structured metadata retrieved by 
 let list = await nango.listConnections('<CONNECTION-ID>');
 ```
 
-In the case where you want to get a list of all the connections for only a specific user (i.e. Connection ID):
+In the case where you want to get a list of all the [Connections](/core-concepts#connections) for only a specific user (i.e. Connection ID):
 
 ```js
 {
@@ -119,10 +119,7 @@ In the case where you want to get a list of all the connections for only a speci
 let list = await nango.listConnections();
 ```
 
-Returns a list of minimalistic Connection objects. This can be helpful if you
-need to check whether a user has setup a specific integration. Note that the
-list does not contain any access credentials and fetching it also does not
-refresh the access tokens of any Connections.
+Returns a list of minimalistic [Connection](/core-concepts#connections) objects. This can be helpful if you need to check whether a user has setup a specific [Integration](/core-concepts#integrations). Note that the list does not contain any access credentials and fetching it also does not refresh the access tokens of any Connections.
 
 The return value looks like this:
 

@@ -55,7 +55,7 @@
     "navigation": [
         {
             "group": "Getting Started",
-            "pages": ["introduction", "quickstart"]
+            "pages": ["introduction", "quickstart", "core-concepts"]
         },
         {
             "group": "Nango Auth",

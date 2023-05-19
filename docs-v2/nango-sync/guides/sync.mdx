@@ -8,11 +8,11 @@ description: 'Sync with APIs, bi-directionally and continuously.'
 
 In this guide, we will sync issues from Github as `tickets`. It entails:
 
-1. Adding a folder in your repo where your integration code will live
+1. Adding a folder in your repo where your [Integration](/core-concepts#integrations) code will live
 2. Defining a `ticket` data model & configuring the sync
 3. Writing minimal code to fetch issues and transform them into `tickets`
 
-## 1. Create your integration folder
+## 1. Create your integrations folder
 
 Regardless of your programming language, in your repo, run:
 
@@ -20,7 +20,7 @@ Regardless of your programming language, in your repo, run:
 npx nango init && cd nango-integrations // Your new integrations folder
 ```
 
-## 2. Configure your integration
+## 2. Configure your Integration
 
 Open the `nango.yaml` config file and define a new `github-tickets` sync and `ticket` model:
 
@@ -45,7 +45,7 @@ Then run:
 npx nango g // Generates the model & scaffolding
 ```
 
-## 3. Write your integration code
+## 3. Write your Integration code
 
 Open the `github-tickets.ts` which contains the following template:
 
