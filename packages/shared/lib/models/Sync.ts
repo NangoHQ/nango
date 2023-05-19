@@ -13,6 +13,7 @@ export enum SyncType {
 export interface Sync {
     id: number;
     nango_connection_id: number;
+    sync_name: string;
     status: SyncStatus;
     type: SyncType;
     created_at?: Date;

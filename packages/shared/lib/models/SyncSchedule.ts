@@ -7,7 +7,7 @@ export enum ScheduleStatus {
 export interface SyncSchedule {
     id: string;
     nango_connection_id: number;
-    interval: string;
+    frequency: string;
     schedule_id: string;
     status: ScheduleStatus;
     creator: string;

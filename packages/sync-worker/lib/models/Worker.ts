@@ -8,6 +8,7 @@ export interface InitialSyncArgs {
 export interface ContinuousSyncArgs {
     nangoConnectionId: number;
     activityLogId: number;
+    syncName: string;
 }
 
 export type NangoConnection = Pick<Connection, 'id' | 'connection_id' | 'provider_config_key' | 'account_id'>;

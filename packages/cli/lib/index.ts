@@ -21,12 +21,15 @@ import { build } from 'esbuild';
 import { spawn } from 'child_process';
 import chokidar from 'chokidar';
 
+import type { NangoConfig, NangoIntegration, NangoIntegrationData } from '@nangohq/shared';
+
 const program = new Command();
 
 let hostport = process.env['NANGO_HOSTPORT'] || 'http://localhost:3003';
 const cloudHost = 'https://api.nango.dev';
 const stagingHost = 'https://nango-cloud-staging.onrender.com';
 const dir = 'nango-integrations';
+const configFile = 'nango.yaml';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -240,38 +243,53 @@ program
     .alias('i')
     .description('Initialize a new Nango project')
     .action(() => {
-        const data = {
-            integrations: [
-                {
-                    'github-tickets': {
-                        provider: 'github',
+        const data: NangoConfig = {
+            integrations: {
+                'github-prod': {
+                    'github-users': {
                         runs: 'every hour',
-                        returns: ['ticket']
+                        returns: ['users']
+                    },
+                    'github-issues': {
+                        runs: 'every half hour',
+                        returns: ['issues']
+                    }
+                },
+                'asana-dev': {
+                    'asana-projects': {
+                        runs: 'every hour',
+                        returns: ['projects']
                     }
                 }
-            ],
-            models: [
-                {
-                    ticket: {
-                        id: 'integer',
-                        title: 'char',
-                        description: 'char',
-                        status: 'char',
-                        author: {
-                            avatar_url: 'char'
-                        }
+            },
+            models: {
+                tickets: {
+                    id: 'integer',
+                    title: 'char',
+                    description: 'char',
+                    status: 'char',
+                    author: {
+                        avatar_url: 'char'
                     }
+                },
+                projects: {
+                    id: 'integer',
+                    type: 'char'
+                },
+                users: {
+                    id: 'integer',
+                    name: 'char'
                 }
-            ]
+            }
         };
         const yamlData = yaml.dump(data);
 
         if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir);
         }
-        fs.writeFileSync(`${dir}/config.yaml`, yamlData);
+        fs.writeFileSync(`${dir}/${configFile}`, yamlData);
 
-        console.log('config.yaml file has been created');
+        console.log(`${configFile} file has been created`);
     });
 
 program
@@ -281,24 +299,30 @@ program
     .action(() => {
         const templateContents = fs.readFileSync(path.resolve(__dirname, './integration.ejs'), 'utf8');
 
-        const configContents = fs.readFileSync(path.resolve(__dirname, '../nango-integrations/config.yaml'), 'utf8');
-        const configData = yaml.load(configContents) as any;
-        const integrations = configData.integrations;
-        const models = configData.models;
-
-        for (const integrationWrapped of integrations) {
-            const integrationName = Object.keys(integrationWrapped)[0] as string;
-            const integration = integrationWrapped[integrationName];
-            const { provider, returns } = integration;
-            const providerUpper = provider.charAt(0).toUpperCase() + provider.slice(1);
-
-            const [modelType] = integration.returns;
-            const rendered = ejs.render(templateContents, { provider: providerUpper, modelType });
-
-            fs.writeFileSync(`${dir}/${integrationName}.ts`, rendered);
-
+        const cwd = process.cwd();
+        const configContents = fs.readFileSync(path.resolve(cwd, `./nango-integrations/${configFile}`), 'utf8');
+        const configData: NangoConfig = yaml.load(configContents) as unknown as NangoConfig;
+        const { integrations } = configData;
+        for (let i = 0; i < Object.keys(integrations).length; i++) {
+            const providerConfigKey = Object.keys(integrations)[i] as string;
+            const syncObject = integrations[providerConfigKey] as unknown as { [key: string]: NangoIntegration };
+            const syncNames = Object.keys(syncObject);
+            for (let k = 0; k < syncNames.length; k++) {
+                const syncName = syncNames[k] as string;
+                const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
+                const { returns: models } = syncData; // TODO adjust for multiple models
+                const syncNameCamel = syncName
+                    .split('-')
+                    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join('');
+                const rendered = ejs.render(templateContents, { syncName: syncNameCamel, modelType: models[0], providerConfigKey });
+                fs.writeFileSync(`${dir}/${syncName}.ts`, rendered);
+            }
+        }
+        /*
             // create a migration file based on the model
             const migrationContents = fs.readFileSync(path.resolve(__dirname, './migration.ejs'), 'utf8');
+            // TODO don't use date but rather some hash that can be recreated later
             const tableName = `${integrationName}.v1.${Date.now()}`;
             const modelTypes = returns.map((modelName: string) => {
                 return models.find((model: any) => Object.keys(model)[0] === modelName);
@@ -307,6 +331,7 @@ program
             //const renderedMigration = ejs.render(migrationContents, { tableName, data: modelTypes });
             console.log(migrationContents, tableName, modelTypes);
         }
+        */
     });
 
 program
@@ -357,6 +382,7 @@ program
         //child.kill('SIGINT');
         //});
 
+        // TODO move this to a file
         const tsconfig = `
             {
                   "display": "Node 18 + ESM + Strictest",
@@ -381,7 +407,6 @@ program
                     "noUncheckedIndexedAccess": true,
                     "noUnusedLocals": true,
                     "noUnusedParameters": true,
-                    "importsNotUsedAsValues": "error",
                     "declaration": false,
                     "sourceMap": false,
                     "composite": false,

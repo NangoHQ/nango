@@ -1,37 +1,31 @@
-//import * as uuid from 'uuid';
-import { Nango } from '@nangohq/node';
-import fs from 'fs';
-import path, { dirname } from 'path';
-import { fileURLToPath } from 'url';
-//import md5 from 'md5';
 import {
+    Nango,
     getById as getSyncById,
     updateStatus as updateSyncStatus,
-    create as createSync,
+    createSyncJob,
     Sync,
     SyncStatus,
     SyncType,
-    Connection,
     Config as ProviderConfig,
     getConnectionById,
     configService,
     updateSuccess,
     createActivityLog,
     createActivityLogMessageAndEnd,
-    //DataResponse,
+    UpsertResponse,
     LogLevel,
     LogAction,
-    //getSyncConfigByProvider,
-    //SyncConfig,
     getServerBaseUrl,
-    updateSuccess as updateSuccessActivityLog
+    updateSuccess as updateSuccessActivityLog,
+    formatDataRecords,
+    NangoIntegration,
+    NangoIntegrationData,
+    checkForIntegrationFile,
+    getIntegrationClass,
+    loadNangoConfig
 } from '@nangohq/shared';
-//import type { GithubIssues, TicketModel } from './models/Ticket.js';
 import type { NangoConnection, ContinuousSyncArgs, InitialSyncArgs } from './models/Worker';
-//import { upsert } from './services/data.service.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+import { upsert } from './services/data.service.js';
 
 export async function syncActivity(name: string): Promise<string> {
     return `Synced, ${name}!`;
@@ -40,49 +34,35 @@ export async function syncActivity(name: string): Promise<string> {
 export async function routeSync(args: InitialSyncArgs): Promise<boolean> {
     const { syncId, activityLogId } = args;
     const sync: Sync = (await getSyncById(syncId)) as Sync;
-    const nangoConnection = await getConnectionById(sync.nango_connection_id);
+    const nangoConnection = (await getConnectionById(sync.nango_connection_id)) as NangoConnection;
     const syncConfig: ProviderConfig = (await configService.getProviderConfig(
         nangoConnection?.provider_config_key as string,
         nangoConnection?.account_id as number
     )) as ProviderConfig;
-    return route(sync, nangoConnection as Connection, syncConfig, activityLogId);
+
+    return syncProvider(syncConfig, sync, nangoConnection, activityLogId, false);
 }
 
 export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<boolean> {
-    const { nangoConnectionId, activityLogId } = args;
-    const sync: Sync = (await createSync(nangoConnectionId, SyncType.INCREMENTAL)) as Sync;
+    const { nangoConnectionId, activityLogId, syncName } = args;
+    const sync: Sync = (await createSyncJob(nangoConnectionId, SyncType.INCREMENTAL, syncName)) as Sync;
     const nangoConnection: NangoConnection = (await getConnectionById(nangoConnectionId)) as NangoConnection;
     const syncConfig: ProviderConfig = (await configService.getProviderConfig(
         nangoConnection?.provider_config_key as string,
         nangoConnection?.account_id as number
     )) as ProviderConfig;
 
-    return route(sync, nangoConnection, syncConfig, activityLogId, true);
+    return syncProvider(syncConfig, sync, nangoConnection, activityLogId, true);
 }
 
-export async function route(
-    sync: Sync,
-    nangoConnection: NangoConnection,
+/**
+ * Sync Provider
+ * @desc take in a provider, use the nango.yaml config to find
+ * the integrations where that provider is used and call the sync
+ * accordingly with the user defined integration code
+ */
+export async function syncProvider(
     syncConfig: ProviderConfig,
-    activityLogId: number,
-    isIncremental = false
-): Promise<boolean> {
-    let response = false;
-
-    switch (syncConfig?.provider) {
-        case 'github':
-            response = await syncService('github', sync, nangoConnection, activityLogId, isIncremental);
-            break;
-        case 'asana':
-            response = await syncService('asana', sync, nangoConnection, activityLogId, isIncremental);
-            break;
-    }
-
-    return response;
-}
-
-export async function syncService(
-    service: string,
     sync: Sync,
     nangoConnection: NangoConnection,
     existingActivityLogId: number,
@@ -100,43 +80,75 @@ export async function syncService(
             timestamp: Date.now(),
             connection_id: nangoConnection?.connection_id as string,
             provider_config_key: nangoConnection?.provider_config_key as string,
-            provider: service,
+            provider: syncConfig.provider,
             session_id: sync.id.toString(),
             account_id: nangoConnection?.account_id as number
         };
         activityLogId = (await createActivityLog(log)) as number;
     }
 
-    // look in the nango-integrations directory for any files start withing github
-    const files = fs.readdirSync(path.resolve(__dirname, './nango-integrations'), 'utf8');
+    const nangoConfig = loadNangoConfig();
 
-    const matchingFiles = files.filter((file) => {
-        return file.startsWith(service) && file.endsWith('.js');
-    });
+    if (!nangoConfig) {
+        return Promise.resolve(false);
+    }
+    const { integrations } = nangoConfig;
+    let result = true;
 
-    const [first] = matchingFiles;
+    // if there is a matching customer integration code for the provider config key then run it
+    if (integrations[nangoConnection.provider_config_key]) {
+        const nango = new Nango({
+            host: getServerBaseUrl(),
+            connectionId: String(nangoConnection?.connection_id),
+            providerConfigKey: String(nangoConnection?.provider_config_key),
+            // pass in the sync id and store the raw json in the database before the user does what they want with it
+            // or use the connection ID to match it up
+            // either way need a new table
+            activityLogId: activityLogId as number
+        });
+        const providerConfigKey = nangoConnection.provider_config_key;
+        const syncObject = integrations[providerConfigKey] as unknown as { [key: string]: NangoIntegration };
+        const syncNames = Object.keys(syncObject);
+        for (let k = 0; k < syncNames.length; k++) {
+            const syncName = syncNames[k] as string;
 
-    const integrationPath = `./nango-integrations/${first}` + `?v=${Math.random().toString(36).substring(3)}`;
+            if (!checkForIntegrationFile(syncName)) {
+                continue;
+            }
+            const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
+            const { returns: models } = syncData;
+            for (const model of models) {
+                const integrationClass = await getIntegrationClass(syncName);
 
-    const { default: integrationCode } = await import(integrationPath);
-    const integrationClass = new integrationCode();
+                if (!integrationClass) {
+                    continue;
+                }
 
-    const nango = new Nango({
-        host: getServerBaseUrl(),
-        connectionId: String(nangoConnection?.connection_id),
-        providerConfigKey: String(nangoConnection?.provider_config_key),
-        // pass in the sync id and store the raw json in the database before the user does what they want with it
-        // or use the connection ID to match it up
-        // either way need a new table
-        activityLogId: activityLogId as number
-    });
+                try {
+                    const userDefinedResults = await integrationClass.fetchData(nango);
 
-    // store raw json for now
-    const userDefinedResults = await integrationClass.fetchData(nango);
-    console.log(userDefinedResults);
+                    if (userDefinedResults[model]) {
+                        const formattedResults = formatDataRecords(userDefinedResults[model], sync.nango_connection_id, model);
+                        const responseResults = await upsert(formattedResults, '_nango_sync_data_records', 'external_id', sync.nango_connection_id);
+                        reportResults(true, sync, activityLogId, responseResults);
+                    }
+                } catch (e) {
+                    result = false;
+                    reportResults(result, sync, activityLogId);
+                    // let the user know
+                    console.log(e);
+                }
+            }
+        }
+    }
 
-    const result = false;
+    // worker resolves database tables and inserts if exists or creates
 
+    return result;
+}
+
+async function reportResults(result: boolean, sync: Sync, activityLogId: number, responseResults?: UpsertResponse) {
+    console.log(responseResults);
     if (result) {
         await updateSyncStatus(sync.id, SyncStatus.SUCCESS);
         await updateSuccess(activityLogId, true);
@@ -157,8 +169,6 @@ export async function syncService(
             content: `The ${sync.type} sync did not complete successfully`
         });
     }
-
-    return Boolean(result);
 }
 
 /*

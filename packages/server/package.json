@@ -6,8 +6,7 @@
     "main": "dist/server.js",
     "scripts": {
         "start": "tsc && node dist/server.js",
-        "dev": "nodemon",
-        "create:migration": "knex migrate:make $1 --esm --knexfile lib/db/knexfile.cjs"
+        "dev": "nodemon"
     },
     "keywords": [],
     "repository": {

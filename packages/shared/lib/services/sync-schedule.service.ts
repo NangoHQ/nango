@@ -3,12 +3,12 @@ import { SyncSchedule, ScheduleStatus } from '../models/SyncSchedule.js';
 
 const TABLE = dbNamespace + 'sync_schedules';
 
-export const create = async (nangoConnectionId: number, schedule_id: string, interval: string): Promise<SyncSchedule | null> => {
+export const createSchedule = async (nangoConnectionId: number, schedule_id: string, frequency: string): Promise<SyncSchedule | null> => {
     const result: void | Pick<SyncSchedule, 'id'> = await db.knex.withSchema(db.schema()).from<SyncSchedule>(TABLE).insert(
         {
             nango_connection_id: nangoConnectionId,
             schedule_id,
-            interval,
+            frequency,
             status: ScheduleStatus.RUNNING
         },
         ['id']

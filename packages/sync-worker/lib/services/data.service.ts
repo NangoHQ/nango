@@ -1,6 +1,5 @@
 import { schema } from '../db/database.js';
 import type { DataResponse, UpsertResponse } from '@nangohq/shared';
-//import { schemaName } from '@nangohq/shared';
 
 /**
  * Upsert

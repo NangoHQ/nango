@@ -1,5 +1,6 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
+import type { ProxyConfiguration } from '../models/Proxy.js';
 
 export function getServerPort() {
     return process.env['SERVER_PORT'] != null ? +process.env['SERVER_PORT'] : 3003;
@@ -29,3 +30,13 @@ export function isValidHttpUrl(str: string) {
 export function dirname() {
     return path.dirname(fileURLToPath(import.meta.url));
 }
+
+export const validateProxyConfiguration = (config: ProxyConfiguration) => {
+    const requiredParams = ['endpoint', 'providerConfigKey', 'connectionId'];
+
+    requiredParams.forEach((param) => {
+        if (typeof config[param] === 'undefined') {
+            throw new Error(`${param} is missing and is required to make a proxy call!`);
+        }
+    });
+};

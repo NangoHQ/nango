@@ -4,6 +4,7 @@ exports.up = function (knex, _) {
     return knex.schema.withSchema('nango').createTable(tableName, function (table) {
         table.increments('id').primary();
         table.integer('nango_connection_id').unsigned().notNullable();
+        table.string('sync_name').notNullable();
         table.enu('status', ['RUNNING', 'PAUSED', 'STOPPED', 'SUCCESS']).defaultTo('RUNNING').notNullable();
         table.enu('type', ['INITIAL', 'INCREMENTAL']).defaultTo('initial').notNullable();
         table.timestamps(true, true);

@@ -11,6 +11,7 @@
         "packages/sync-worker"
     ],
     "scripts": {
+        "create:migration": "cd packages/shared/lib/db && knex migrate:make $1 --esm --knexfile ./knexfile.cjs",
         "prettier-format": "prettier --config .prettierrc \"./**/*.ts\" --write",
         "prettier-watch": "onchange './**/*.ts' -- prettier --write {{changed}}",
         "lint": "eslint . --ext .ts,.tsx",
@@ -22,6 +23,7 @@
         "webapp-build:staging": "cd ./packages/webapp && npm run build:staging && cd ../..",
         "webapp-build:prod": "cd ./packages/webapp && npm run build:prod && cd ../..",
         "webapp-build:watch": "tsc -b -w packages/webapp/tsconfig.json",
+        "shared:build": "cd ./packages/shared && tsc && cd ../..",
         "shared:watch": "cd ./packages/shared && tsc -w",
         "build:hosted": "npm run install:all && npm run ts-build && npm run webapp-build:hosted ",
         "build:staging": "npm run install:all && npm run ts-build && npm run webapp-build:staging",

@@ -1,16 +1,21 @@
 import { Client, Connection } from '@temporalio/client';
+import type { Connection as NangoConnection } from '../models/Connection.js';
 import db, { dbNamespace } from '../db/database.js';
 import type { Config as ProviderConfig } from '../models/Provider.js';
 import { Sync, SyncStatus, SyncType, SyncConfig } from '../models/Sync.js';
 import type { LogLevel, LogAction } from '../models/Activity.js';
 import { getConnectionById } from './connection.service.js';
 import configService from './config.service.js';
-import { create as createSyncScedule } from './sync-schedule.service.js';
+import { createSchedule as createSyncScedule } from './sync-schedule.service.js';
 import { createActivityLog, createActivityLogMessage } from './activity.service.js';
 import { TASK_QUEUE } from '../constants.js';
+import type { NangoConfig, NangoIntegration, NangoIntegrationData } from '../integrations/index.js';
+import { loadNangoConfig, getCronExpression } from './nango-config.service.js';
 
 const TABLE = dbNamespace + 'sync_jobs';
 const SYNC_CONFIG_TABLE = dbNamespace + 'sync_configs';
+
+// TODO break this up
 
 export async function getClient(): Promise<Client | null> {
     try {
@@ -38,30 +43,14 @@ const generateScheduleId = (sync: Sync) => `${TASK_QUEUE}-schedule-${sync.id}`;
  * and kick off an initial sync and also a incremental sync. Also look
  * up any sync configs to call any integration snippet that was setup
  */
-export const startContinuous = async (sync: Sync) => {
-    const client = await getClient();
-    const nangoConnection = await getConnectionById(sync.nango_connection_id);
-
-    if (!client) {
-        return;
-    }
-
-    const syncConfig: ProviderConfig = (await configService.getProviderConfig(
-        nangoConnection?.provider_config_key as string,
-        nangoConnection?.account_id as number
-    )) as ProviderConfig;
-
-    const provider = syncConfig.provider as string;
-
-    //const [firstConfig] = (await getSyncConfigByProvider(provider)) as SyncConfig[];
-    //const { integration_name: integrationName } = firstConfig as SyncConfig;
-    //const integrationPath = `../nango-integrations/${integrationName}.js` + `?v=${Math.random().toString(36).substring(3)}`;
-    //const { default: integrationCode } = await import(integrationPath);
-    //const integrationClass = new integrationCode();
-
-    //const userDefinedResults = await integrationClass.fetchData(nango);
-    //console.log(userDefinedResults);
-
+export const startContinuous = async (
+    client: Client,
+    nangoConnection: NangoConnection,
+    sync: Sync,
+    syncConfig: ProviderConfig,
+    syncName: string,
+    syncData: NangoIntegrationData
+) => {
     const log = {
         level: 'info' as LogLevel,
         success: false,
@@ -71,7 +60,7 @@ export const startContinuous = async (sync: Sync) => {
         timestamp: Date.now(),
         connection_id: nangoConnection?.connection_id as string,
         provider_config_key: nangoConnection?.provider_config_key as string,
-        provider,
+        provider: syncConfig.provider,
         session_id: sync.id.toString(),
         account_id: nangoConnection?.account_id as number
     };
@@ -87,16 +76,19 @@ export const startContinuous = async (sync: Sync) => {
             }
         ]
     });
+    console.log(syncData);
 
-    // this will be dynamic
-    const interval = '1h';
+    // TODO grab from the config
+    // copy the volume here too
+    const frequency = getCronExpression(syncData.runs);
+    console.log(frequency);
     const scheduleId = generateScheduleId(sync);
 
     // kick off schedule
     await client?.schedule.create({
         scheduleId,
         spec: {
-            intervals: [{ every: interval }]
+            cronExpressions: [frequency]
         },
         action: {
             type: 'startWorkflow',
@@ -105,13 +97,14 @@ export const startContinuous = async (sync: Sync) => {
             args: [
                 {
                     nangoConnectionId: nangoConnection?.id,
-                    activityLogId
+                    activityLogId,
+                    syncName
                 }
             ]
         }
     });
 
-    await createSyncScedule(nangoConnection?.id as number, scheduleId, interval);
+    await createSyncScedule(nangoConnection?.id as number, scheduleId, frequency);
 
     await createActivityLogMessage({
         level: 'info',
@@ -132,18 +125,48 @@ export const getById = async (id: number): Promise<Sync | null> => {
 };
 
 export const initiate = async (nangoConnectionId: number): Promise<void> => {
-    // based on the service we'll initiate different types of syncs
-    // For github we'll do a sync of issues, comments
-    const sync = await create(nangoConnectionId, SyncType.INITIAL);
-    if (sync) {
-        startContinuous(sync);
+    const nangoConnection = (await getConnectionById(nangoConnectionId)) as NangoConnection;
+    const nangoConfig = loadNangoConfig();
+    if (!nangoConfig) {
+        return;
+    }
+    const { integrations }: NangoConfig = nangoConfig;
+    const providerConfigKey = nangoConnection?.provider_config_key as string;
+
+    if (!integrations[providerConfigKey]) {
+        return;
+    }
+
+    const client = await getClient();
+
+    if (!client) {
+        return;
+    }
+
+    const syncConfig: ProviderConfig = (await configService.getProviderConfig(
+        nangoConnection?.provider_config_key as string,
+        nangoConnection?.account_id as number
+    )) as ProviderConfig;
+
+    const syncObject = integrations[providerConfigKey] as unknown as { [key: string]: NangoIntegration };
+    const syncNames = Object.keys(syncObject);
+    for (let k = 0; k < syncNames.length; k++) {
+        const syncName = syncNames[k] as string;
+        const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
+
+        const sync = await createSyncJob(nangoConnectionId, SyncType.INITIAL, syncName);
+
+        if (sync) {
+            startContinuous(client as Client, nangoConnection, sync, syncConfig, syncName, syncData);
+        }
     }
 };
 
-export const create = async (nangoConnectionId: number, type: SyncType): Promise<Sync | null> => {
+export const createSyncJob = async (nangoConnectionId: number, type: SyncType, syncName: string): Promise<Sync | null> => {
     const result: void | Pick<Sync, 'id'> = await db.knex.withSchema(db.schema()).from<Sync>(TABLE).insert(
         {
             nango_connection_id: nangoConnectionId,
+            sync_name: syncName,
             status: SyncStatus.RUNNING,
             type
         },

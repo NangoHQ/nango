@@ -1,10 +1,11 @@
 import { NangoSync, NangoHelper } from '@nangohq/node';
 import { <%= modelType %> } from '@nangohq/models';
 
-class <%= provider %>TicketSync extends NangoSync {
+class <%= syncName %>Sync extends NangoSync {
   async fetchData(nango: NangoHelper): { [<%= modelType %>.name]: [<%= modelType %>.type] } {
+    const providerConfigKey = '<%= providerConfigKey %>';
     // Rest of the integration code goes here.
   }
 }
 
-export default <%= provider %>Sync;
+export default <%= syncName %>Sync;

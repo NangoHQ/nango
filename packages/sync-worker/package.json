@@ -22,6 +22,7 @@
         "@temporalio/worker": "^1.5.2",
         "@temporalio/workflow": "^1.5.2",
         "dotenv": "^16.0.3",
+        "js-yaml": "^4.1.0",
         "knex": "^2.4.2",
         "md5": "^2.3.0",
         "nanoid": "3.x",

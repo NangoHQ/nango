@@ -7,3 +7,5 @@ export * from './Auth.js';
 export * from './Sync.js';
 export * from './SyncSchedule.js';
 export * from './Data.js';
+export * from './SyncDataRecord.js';
+export * from './Proxy.js';

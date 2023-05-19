@@ -39,7 +39,7 @@ services:
             - nango-db
             - temporal
         volumes:
-            - "./nango-integrations:/usr/nango-sync-server/src/packages/sync-worker/dist/nango-integrations"
+            - "./nango-integrations:/usr/nango-sync-server/src/packages/shared/dist/lib/nango-integrations"
         networks:
             - nango
 
