@@ -8,7 +8,7 @@ export default function Banner() {
     return (
         <>
             {flashBanner && (
-                <div className="w-scree h-10 bg-white flex items-center justify-center text-sm gap-1 relative">
+                <div className="h-10 bg-white flex items-center justify-center text-sm gap-1 relative">
                     <span>Interested in the Nango Unified API? </span>
                     {/* TODO: add redirect uri */}
                     <Link to={'/'} className="cursor-pointer font-bold underline underline-offset-2 flex items-center">
