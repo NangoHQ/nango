@@ -34,7 +34,7 @@ export default function Banner() {
                     </div>
                     <p className="text-sm leading-6 text-gray-900">
                         Interested in Nango Sync?{' '}
-                        <a href="https://nango.dev/slack" target="_blank" className="whitespace-nowrap font-semibold">
+                        <a href="https://nango.dev/slack" target="_blank" rel="noreferrer" className="whitespace-nowrap font-semibold">
                             Request access on the community&nbsp;<span aria-hidden="true">&rarr;</span>
                         </a>
                     </p>
