@@ -35,7 +35,8 @@ export enum LocalStorageKeys {
     UserEmail = 'nango_user_email',
     UserName = 'nango_user_name',
     UserId = 'nango_user_id',
-    AccountId = 'nango_account_id'
+    AccountId = 'nango_account_id',
+    UnifedApiBannedShown = 'nango_unified_api_banned_shown'
 }
 
 const storage = new LocalStorage();
