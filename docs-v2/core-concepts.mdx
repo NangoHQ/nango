@@ -8,24 +8,24 @@ description: 'A high-level view of how Nango works.'
 
 Nango is based on two assumptions:
 
-1.  product integrations require [common infrastructure](/core-concepts#infra) such as auth, ETL, webhooks, observability, etc.
+1.  product integrations require [common infrastructure](/core-concepts#nango-infrastructure) such as auth, ETL, webhooks, observability, etc.
 2.  one-size-fits-all models & API aggregation fall apart as developers build multiple & complex integrations
 
-Nango aims provides [common infrastructure](/core-concepts#infra) to accelerate integration development, without limiting the ability to build many complex integrations. To achieve this, we let developers define their own API requests & models, with the assistance of our tooling.
+Nango aims provides [common infrastructure](/core-concepts#nango-infrastructure) to accelerate integration development, without limiting the ability to build many complex integrations. To achieve this, we let developers define their own API requests & models, with the assistance of our tooling.
 
 ## Why Open Source?
 
 Nango is open-source and leverages the community to:
 
-1. improve Nango's [infrastructure](/core-concepts#infra)
-2. contribute new [Integration Templates](/core-concepts#templates)
+1. improve Nango's [infrastructure](/core-concepts#nango-infrastructure)
+2. contribute new [Integration Templates](/core-concepts#integration-templates)
 3. share knowledge about external API quirks
 
 ## Glossary
 
 Nango is defined around a couple important abstractions:
 
-### Integration Templates[](#templates)
+### Integration Templates[](#integration-templates)
 
 An Integration Template (e.g. the `hubspot` template) designates the configuration, within Nango, that is specific to an external API. In particular:
 
@@ -36,7 +36,7 @@ These templates are contributed and enhanced by Nango and its community. Templat
 
 ### Integrations[](#integrations)
 
-Developers create Integrations, based on [Integration Templates](/core-concepts#templates), to start sharing data with external APIs from their app.
+Developers create Integrations, based on [Integration Templates](/core-concepts#integration-templates), to start sharing data with external APIs from their app.
 
 Integrations are created on the Nango Dashboard and later embedded in your product.
 
@@ -50,7 +50,7 @@ When an end user authorizes an [Integration](/core-concepts#integrations) in you
 
 Connections represent the relation between an end user and an external API. In particular, it contains the necessary credentials to access the external API on behalf of the user.
 
-### Nango Infrastructure[](#infra)
+### Nango Infrastructure[](#nango-infrastructure)
 
 Nango's infrastructure designate the following components that we see companies rebuilding over and over:
 
