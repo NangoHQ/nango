@@ -1,48 +1,6 @@
 ---
-sidebar_label: Zendesk
----
-
-# Zendesk API wiki
-
-:::note Working with the Zendesk API?
-Please add your learnings, favorite links and gotchas here by [editing this page](https://github.com/nangohq/nango/tree/master/docs/docs/providers/zendesk.md).
-
-:::
-
-## Using Zendesk with Nango
-
-API template name in Nango: `zendesk`  
-Follow our [quickstart](../quickstart.md) to add an OAuth integration with Zendesk in 5 minutes.
-
-Supported features in Nango:
-
-| Feature                            | Supported                 |
-| ---------------------------------- | ------------------------- |
-| [Auth](/nango-auth/core-concepts)  | ✅                        |
-| [Proxy](/nango-unified-apis/proxy) | ❎                        |
-| Unified APIs                       | _Not included in any yet_ |
-
-## App registration & publishing
-
-**Rating: `Easy & fast`**
-Registering an app takes only a few minutes, and you can start building immediately: [App registration docs](https://app.futuresimple.com/settings/oauth/apps)
-
-## Useful links
-
--   [How to register an Application](https://developer.zendesk.com/api-reference/sales-crm/authentication/introduction/#application-registration)
--   [OAuth-related docs](https://developer.zendesk.com/api-reference/sales-crm/authentication/introduction/)
--   [List of OAuth scopes](https://developer.zendesk.com/api-reference/sales-crm/authentication/introduction/#scopes)
--   [API](https://developer.zendesk.com/api-reference/sales-crm/authentication/introduction/#scopes:~:text=Reference-,SYNC%20API,-Introduction)
-
-## API specific gotchas
-
--   Make sure you [read this](../nango-auth/frontend-sdk.md#connection-config) to set the correct subdomain before starting an OAuth flow for Zendesk.
-
----
-
 title: Zendesk
 sidebarTitle: Zendesk
-
 ---
 
 Integration template: [`zendesk`](https://nango.dev/providers.yaml)
@@ -60,14 +18,15 @@ Integration template: [`zendesk`](https://nango.dev/providers.yaml)
 <Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
 ## Getting started
 
--   [How to register an Application](https://api.accelo.com/docs/#registering-your-application)
--   [OAuth-related docs](https://api.accelo.com/docs/#authentication)
--   [List of OAuth scopes](https://api.accelo.com/docs/#scope)
+-   [How to register an Application](https://developer.zendesk.com/api-reference/sales-crm/authentication/introduction/#application-registration)
+-   [OAuth-related docs](https://developer.zendesk.com/api-reference/sales-crm/authentication/introduction/)
+-   [List of OAuth scopes](https://developer.zendesk.com/api-reference/sales-crm/authentication/introduction/#scopes)
+-   [API](https://developer.zendesk.com/api-reference/sales-crm/authentication/introduction/#scopes:~:text=Reference-,SYNC%20API,-Introduction)
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
 ## API gotchas
 
--   You will have to provide your deployment name as a subdomain `nango.auth('accelo', '1', {params: {subdomain: 'accelo-subdomain'}})`
+-   Make sure you specify the subdomain in the [Connection Configuration](/nango-auth/configuration) before starting an OAuth flow for Zendesk.
 
 <Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/zendesk.mdx)</Note>
