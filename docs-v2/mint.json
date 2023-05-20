@@ -255,19 +255,31 @@
         },
         {
             "group": "Overview",
-            "pages": ["api/overview", "api/authentication"]
+            "pages": ["api-reference/overview", "api-reference/authentication"]
         },
         {
             "group": "Integrations",
-            "pages": ["api/integration/list", "api/integration/get", "api/integration/create", "api/integration/update", "api/integration/delete"]
+            "pages": [
+                "api-reference/integration/list",
+                "api-reference/integration/get",
+                "api-reference/integration/create",
+                "api-reference/integration/update",
+                "api-reference/integration/delete"
+            ]
         },
         {
             "group": "Connections",
-            "pages": ["api/connection/list", "api/connection/get", "api/connection/delete"]
+            "pages": ["api-reference/connection/list", "api-reference/connection/get", "api-reference/connection/delete"]
         },
         {
             "group": "Proxy",
-            "pages": ["api/proxy/get", "api/proxy/post", "api/proxy/put", "api/proxy/patch", "api/proxy/delete"]
+            "pages": [
+                "api-reference/proxy/get",
+                "api-reference/proxy/post",
+                "api-reference/proxy/put",
+                "api-reference/proxy/patch",
+                "api-reference/proxy/delete"
+            ]
         }
     ],
     "footerSocials": {
