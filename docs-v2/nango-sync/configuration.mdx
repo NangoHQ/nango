@@ -4,16 +4,16 @@ sidebarTitle: 'Configuration'
 description: 'Configuration options for Nango Sync.'
 ---
 
-## External requests & Auth
+## External requests & auth
 
 Nango lets you configure which external endpoints you consume, in code, without constraint, using the [Nango Proxy](/nango-sync/guides/direct-requests).
 
 It will automatically handle:
 
--   authorization (with Nango Auth)
--   logging & monitoring
--   rate-limits & retries
--   pagination and more
+-   authorization (with [Nango Auth](/nango-auth))
+-   [logging & monitoring](#monitoring)
+-   [rate-limits & retries](#rate-limits-retry-policies)
+-   [pagination](#auto-pagination) and more
 
 ## Schemas & transformation
 
@@ -28,11 +28,11 @@ With this, Nango will ensure end-to-end type safety as well as monitor changes i
 
 Define on which schedule Nango should sync external data (e.g. `every hour`) in the `nango.yaml` config file.
 
-## Rate-limits & Retry
+## Rate-limits - retry policies
 
 Nango handles integration-wide rate-limits, pacing requests across all syncs.
 
-Nango lets you define custom retry strategies, in the `nango.yaml` config file, and uses a sensible default.
+Nango lets you define custom retry policies, in the `nango.yaml` config file, and uses a sensible default.
 
 ## Auto-pagination
 
