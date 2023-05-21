@@ -1,7 +1,6 @@
 import type { Request, Response } from 'express';
 import type { NextFunction } from 'express';
-import { getAccount } from '../utils/utils.js';
-import { createSyncConfig } from '@nangohq/shared';
+import { getAccount, createSyncConfig, syncDataService } from '@nangohq/shared';
 
 class SyncController {
     public async createSyncConfig(req: Request, res: Response, next: NextFunction) {
@@ -24,6 +23,26 @@ class SyncController {
             } else {
                 res.sendStatus(500);
             }
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    public async getRecords(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { model, delta } = req.query;
+            const accountId = getAccount(res);
+
+            if (!model) {
+                res.status(400).send({ message: 'Missing sync model' });
+            }
+
+            const connectionId = req.get('Connection-Id') as string;
+            const providerConfigKey = req.get('Provider-Config-Key') as string;
+
+            const records = await syncDataService.getDataRecords(connectionId, providerConfigKey, accountId, model as string, delta as string);
+
+            res.send(records);
         } catch (e) {
             next(e);
         }
