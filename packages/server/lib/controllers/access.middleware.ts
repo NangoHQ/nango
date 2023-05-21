@@ -1,9 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
-import accountService from '../services/account.service.js';
 import type { Account } from '@nangohq/shared';
-import { isCloud, setAccount, isBasicAuthEnabled } from '../utils/utils.js';
-import errorManager from '../utils/error.manager.js';
-import userService from '../services/user.service.js';
+import { accountService, isCloud, setAccount, isBasicAuthEnabled, errorManager, userService } from '@nangohq/shared';
 
 export class AccessMiddleware {
     async secretKeyAuth(req: Request, res: Response, next: NextFunction) {

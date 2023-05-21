@@ -1,4 +1,4 @@
-import { NangoError } from '../utils/error.js';
+import { NangoError } from '@nangohq/shared';
 import * as crypto from 'node:crypto';
 
 class HmacService {

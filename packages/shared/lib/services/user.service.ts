@@ -1,5 +1,5 @@
 import db from '../db/database.js';
-import type { User } from '../models.js';
+import type { User } from '../models/Admin.js';
 
 class UserService {
     async getUserById(id: number): Promise<User | null> {

@@ -1,71 +1,14 @@
-import { fileURLToPath } from 'url';
-import path, { resolve } from 'path';
-import type { Request, Response } from 'express';
-import accountService from '../services/account.service.js';
-import type { User } from '../models.js';
-import type { Account, Template as ProviderTemplate } from '@nangohq/shared';
+import { resolve } from 'path';
+import type { Request } from 'express';
+import type { User, Account, Template as ProviderTemplate } from '@nangohq/shared';
 import logger from './logger.js';
 import type { WSErr } from './web-socket-error.js';
-import userService from '../services/user.service.js';
-import { NangoError } from './error.js';
 import { readFileSync } from 'fs';
-
-export const localhostUrl: string = 'http://localhost:3003';
-const accountIdLocalsKey = 'nangoAccountId';
-
-export enum NodeEnv {
-    Dev = 'development',
-    Staging = 'staging',
-    Prod = 'production'
-}
+import { NangoError, userService, accountService, interpolateString, isCloud, getBaseUrl } from '@nangohq/shared';
 
 type PackageJson = {
     version: string;
 };
-
-export function isDev() {
-    return process.env['NODE_ENV'] === NodeEnv.Dev;
-}
-
-export function isStaging() {
-    return process.env['NODE_ENV'] === NodeEnv.Staging;
-}
-
-export function isProd() {
-    return process.env['NODE_ENV'] === NodeEnv.Prod;
-}
-
-export enum UserType {
-    Local = 'localhost',
-    SelfHosted = 'self-hosted',
-    Cloud = 'cloud'
-}
-
-export function isCloud() {
-    return process.env['NANGO_CLOUD']?.toLowerCase() === 'true';
-}
-
-export function isBasicAuthEnabled() {
-    return !isCloud() && process.env['NANGO_DASHBOARD_USERNAME'] && process.env['NANGO_DASHBOARD_PASSWORD'];
-}
-
-export function dirname() {
-    return path.dirname(fileURLToPath(import.meta.url));
-}
-
-export function getPort() {
-    if (process.env['SERVER_PORT'] != null) {
-        return +process.env['SERVER_PORT'];
-    } else if (process.env['PORT'] != null) {
-        return +process.env['PORT']; // For Heroku (dynamic port)
-    } else {
-        return 3003;
-    }
-}
-
-export function getBaseUrl() {
-    return process.env['NANGO_SERVER_URL'] || localhostUrl;
-}
 
 export async function getOauthCallbackUrl(accountId?: number) {
     let globalCallbackUrl = getGlobalOAuthCallbackUrl();
@@ -80,14 +23,6 @@ export async function getOauthCallbackUrl(accountId?: number) {
 
 export function getGlobalOAuthCallbackUrl() {
     return process.env['NANGO_CALLBACK_URL'] || getBaseUrl() + '/oauth/callback';
-}
-
-export function isApiAuthenticated(res: Response): boolean {
-    return res.locals != null && accountIdLocalsKey in res.locals && Number.isInteger(res.locals[accountIdLocalsKey]);
-}
-
-export function isUserAuthenticated(req: Request): boolean {
-    return req.isAuthenticated() && req.user != null && req.user.id != null;
 }
 
 export async function getUserAndAccountFromSession(req: Request): Promise<{ user: User; account: Account }> {
@@ -110,58 +45,6 @@ export async function getUserAndAccountFromSession(req: Request): Promise<{ user
     }
 
     return { user: user, account: account };
-}
-
-export function getAccount(res: Response): number {
-    if (res.locals == null || !(accountIdLocalsKey in res.locals)) {
-        throw new NangoError('account_not_set_in_locals');
-    }
-
-    let accountId = res.locals[accountIdLocalsKey];
-
-    if (Number.isInteger(accountId)) {
-        return accountId;
-    } else {
-        throw new NangoError('account_malformed_in_locals');
-    }
-}
-
-export function parseTokenExpirationDate(expirationDate: any): Date {
-    if (expirationDate instanceof Date) {
-        return expirationDate;
-    }
-
-    // UNIX timestamp
-    if (typeof expirationDate === 'number') {
-        return new Date(expirationDate * 1000);
-    }
-
-    // ISO 8601 string
-    return new Date(expirationDate);
-}
-
-export function isTokenExpired(expireDate: Date): boolean {
-    let currDate = new Date();
-    let dateDiffMs = expireDate.getTime() - currDate.getTime();
-    return dateDiffMs < 15 * 60 * 1000;
-}
-
-export function setAccount(accountId: number, res: Response) {
-    res.locals[accountIdLocalsKey] = accountId;
-}
-
-/**
- * A helper function to interpolate a string.
- * interpolateString('Hello ${name} of ${age} years", {name: 'Tester', age: 234}) -> returns 'Hello Tester of age 234 years'
- *
- * @remarks
- * Copied from https://stackoverflow.com/a/1408373/250880
- */
-export function interpolateString(str: string, replacers: Record<string, any>) {
-    return str.replace(/\${([^{}]*)}/g, (a, b) => {
-        var r = replacers[b];
-        return typeof r === 'string' || typeof r === 'number' ? (r as string) : a; // Typecast needed to make TypeScript happy
-    });
 }
 
 /**

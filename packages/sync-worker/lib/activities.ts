@@ -7,7 +7,7 @@ import {
     SyncStatus,
     SyncType,
     Config as ProviderConfig,
-    getConnectionById,
+    connectionService,
     configService,
     updateSuccess,
     createActivityLog,
@@ -17,7 +17,7 @@ import {
     LogAction,
     getServerBaseUrl,
     updateSuccess as updateSuccessActivityLog,
-    formatDataRecords,
+    syncDataService,
     NangoIntegration,
     NangoIntegrationData,
     checkForIntegrationFile,
@@ -34,7 +34,7 @@ export async function syncActivity(name: string): Promise<string> {
 export async function routeSync(args: InitialSyncArgs): Promise<boolean> {
     const { syncId, activityLogId } = args;
     const sync: Sync = (await getSyncById(syncId)) as Sync;
-    const nangoConnection = (await getConnectionById(sync.nango_connection_id)) as NangoConnection;
+    const nangoConnection = (await connectionService.getConnectionById(sync.nango_connection_id)) as NangoConnection;
     const syncConfig: ProviderConfig = (await configService.getProviderConfig(
         nangoConnection?.provider_config_key as string,
         nangoConnection?.account_id as number
@@ -46,7 +46,7 @@ export async function routeSync(args: InitialSyncArgs): Promise<boolean> {
 export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<boolean> {
     const { nangoConnectionId, activityLogId, syncName } = args;
     const sync: Sync = (await createSyncJob(nangoConnectionId, SyncType.INCREMENTAL, syncName)) as Sync;
-    const nangoConnection: NangoConnection = (await getConnectionById(nangoConnectionId)) as NangoConnection;
+    const nangoConnection: NangoConnection = (await connectionService.getConnectionById(nangoConnectionId)) as NangoConnection;
     const syncConfig: ProviderConfig = (await configService.getProviderConfig(
         nangoConnection?.provider_config_key as string,
         nangoConnection?.account_id as number
@@ -128,7 +128,7 @@ export async function syncProvider(
                     const userDefinedResults = await integrationClass.fetchData(nango);
 
                     if (userDefinedResults[model]) {
-                        const formattedResults = formatDataRecords(userDefinedResults[model], sync.nango_connection_id, model);
+                        const formattedResults = syncDataService.formatDataRecords(userDefinedResults[model], sync.nango_connection_id, model);
                         const responseResults = await upsert(formattedResults, '_nango_sync_data_records', 'external_id', sync.nango_connection_id);
                         reportResults(true, sync, activityLogId, responseResults);
                     }

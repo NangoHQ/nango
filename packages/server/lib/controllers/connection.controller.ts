@@ -1,7 +1,5 @@
 import type { Request, Response } from 'express';
-import connectionService from '../services/connection.service.js';
 import type { NextFunction } from 'express';
-import analytics from '../utils/analytics.js';
 import {
     createActivityLog,
     createActivityLogMessage,
@@ -16,12 +14,14 @@ import {
     LogLevel,
     LogAction,
     HTTP_VERB,
-    configService
+    configService,
+    connectionService,
+    getAccount,
+    errorManager,
+    analytics
 } from '@nangohq/shared';
-import { getAccount, getUserAndAccountFromSession } from '../utils/utils.js';
-import { getConnectionCredentials } from '../utils/connection.js';
+import { getUserAndAccountFromSession } from '../utils/utils.js';
 import { WSErrBuilder } from '../utils/web-socket-error.js';
-import errorManager from '../utils/error.manager.js';
 
 class ConnectionController {
     /**
@@ -253,7 +253,14 @@ class ConnectionController {
             };
 
             const activityLogId = await createActivityLog(log);
-            const connection = await getConnectionCredentials(res, connectionId, providerConfigKey, activityLogId as number, action, instantRefresh);
+            const connection = await connectionService.getConnectionCredentials(
+                res,
+                connectionId,
+                providerConfigKey,
+                activityLogId as number,
+                action,
+                instantRefresh
+            );
 
             await createActivityLogMessageAndEnd({
                 level: 'info',

@@ -1,17 +1,11 @@
 import type { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
-import userService from '../services/user.service.js';
-import errorManager from '../utils/error.manager.js';
-import accountService from '../services/account.service.js';
 import util from 'util';
-import analytics from '../utils/analytics.js';
-import { isCloud, resetPasswordSecret, getBaseUrl, getUserAndAccountFromSession } from '../utils/utils.js';
+import { resetPasswordSecret, getUserAndAccountFromSession } from '../utils/utils.js';
 import jwt from 'jsonwebtoken';
 import Mailgun from 'mailgun.js';
-import type { User } from '../models.js';
 import formData from 'form-data';
-import { NangoError } from '../utils/error.js';
-import { configService } from '@nangohq/shared';
+import { User, userService, configService, errorManager, accountService, analytics, isCloud, getBaseUrl, NangoError } from '@nangohq/shared';
 
 export interface WebUser {
     id: number;

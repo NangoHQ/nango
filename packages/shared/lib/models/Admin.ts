@@ -9,3 +9,13 @@ export interface Account {
     secret_key_tag?: string | null;
     host?: string | null;
 }
+
+export interface User {
+    id: number;
+    email: string;
+    name: string;
+    hashed_password: string;
+    salt: string;
+    account_id: number;
+    reset_password_token: string | undefined;
+}

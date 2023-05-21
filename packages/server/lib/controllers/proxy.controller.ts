@@ -15,13 +15,13 @@ import {
     HTTP_VERB,
     LogLevel,
     LogAction,
-    configService
+    configService,
+    errorManager,
+    connectionService,
+    NangoError,
+    getAccount
 } from '@nangohq/shared';
-import errorManager from '../utils/error.manager.js';
-import { getAccount } from '../utils/utils.js';
 import type { ProxyBodyConfiguration } from '../models.js';
-import { NangoError } from '../utils/error.js';
-import { getConnectionCredentials } from '../utils/connection.js';
 
 interface ForwardedHeaders {
     [key: string]: string;
@@ -95,7 +95,14 @@ class ProxyController {
                 });
             }
 
-            const connection = await getConnectionCredentials(res, connectionId, providerConfigKey, activityLogId as number, logAction, false);
+            const connection = await connectionService.getConnectionCredentials(
+                res,
+                connectionId,
+                providerConfigKey,
+                activityLogId as number,
+                logAction,
+                false
+            );
 
             if (!isSync) {
                 await createActivityLogMessage({

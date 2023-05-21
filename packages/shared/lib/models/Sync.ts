@@ -27,3 +27,11 @@ export interface SyncConfig {
     integration_name: string;
     snippet: string;
 }
+
+export interface SyncRecordConfiguration {
+    [key: string]: string;
+
+    connectionId: string;
+    providerConfigKey: string;
+    model: string;
+}

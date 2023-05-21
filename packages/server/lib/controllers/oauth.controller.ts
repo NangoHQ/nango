@@ -2,16 +2,13 @@ import type { Request, Response } from 'express';
 import * as crypto from 'node:crypto';
 import * as uuid from 'uuid';
 import simpleOauth2 from 'simple-oauth2';
-import { getSimpleOAuth2ClientConfig } from '../clients/oauth2.client.js';
 import { OAuth1Client } from '../clients/oauth1.client.js';
-import connectionService from '../services/connection.service.js';
 import { initiate as initiateSync } from '@nangohq/shared';
 import {
     getOauthCallbackUrl,
     getConnectionConfig,
     getConnectionMetadataFromCallbackRequest,
     missesInterpolationParam,
-    getAccount,
     getConnectionMetadataFromTokenResponse
 } from '../utils/utils.js';
 import {
@@ -27,20 +24,23 @@ import {
     LogLevel,
     LogAction,
     configService,
+    connectionService,
     Config as ProviderConfig,
     Template as ProviderTemplate,
     TemplateOAuth2 as ProviderTemplateOAuth2,
     AuthModes as ProviderAuthModes,
     OAuthSession,
     OAuth1RequestTokenResult,
-    AuthCredentials
+    AuthCredentials,
+    oauth2Client,
+    getAccount,
+    providerClientManager,
+    errorManager,
+    analytics
 } from '@nangohq/shared';
 import type { NextFunction } from 'express';
-import errorManager from '../utils/error.manager.js';
-import providerClientManager from '../clients/provider.client.js';
 import wsClient from '../clients/web-socket.client.js';
 import { WSErrBuilder } from '../utils/web-socket-error.js';
-import analytics from '../utils/analytics.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
 import hmacService from '../services/hmac.service.js';
 
@@ -304,7 +304,9 @@ class OAuthController {
 
                 await oAuthSessionService.create(session);
 
-                const simpleOAuthClient = new simpleOauth2.AuthorizationCode(getSimpleOAuth2ClientConfig(providerConfig, template, connectionConfig));
+                const simpleOAuthClient = new simpleOauth2.AuthorizationCode(
+                    oauth2Client.getSimpleOAuth2ClientConfig(providerConfig, template, connectionConfig)
+                );
 
                 const authorizationUri = simpleOAuthClient.authorizeURL({
                     redirect_uri: callbackUrl,
@@ -554,7 +556,7 @@ class OAuthController {
             return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.InvalidCallbackOAuth2());
         }
 
-        const simpleOAuthClient = new simpleOauth2.AuthorizationCode(getSimpleOAuth2ClientConfig(config, template, session.connectionConfig));
+        const simpleOAuthClient = new simpleOauth2.AuthorizationCode(oauth2Client.getSimpleOAuth2ClientConfig(config, template, session.connectionConfig));
 
         let additionalTokenParams: Record<string, string> = {};
         if (template.token_params !== undefined) {

@@ -1,15 +1,5 @@
 import type { Template as ProviderTemplate, HTTP_VERB } from '@nangohq/shared';
 
-export interface User {
-    id: number;
-    email: string;
-    name: string;
-    hashed_password: string;
-    salt: string;
-    account_id: number;
-    reset_password_token: string | undefined;
-}
-
 export interface DBConfig {
     encryption_key_hash?: string | null;
     encryption_complete: boolean;

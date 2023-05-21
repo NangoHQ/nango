@@ -13,11 +13,9 @@ import authMiddleware from './controllers/access.middleware.js';
 import userController from './controllers/user.controller.js';
 import proxyController from './controllers/proxy.controller.js';
 import activityController from './controllers/activity.controller.js';
-import ticketingController from './controllers/unified/ticketing.controller.js';
 import syncController from './controllers/sync.controller.js';
 import path from 'path';
-import { dirname, getPort, getGlobalOAuthCallbackUrl, isCloud, isBasicAuthEnabled, packageJsonFile } from './utils/utils.js';
-import errorManager from './utils/error.manager.js';
+import { getGlobalOAuthCallbackUrl, packageJsonFile } from './utils/utils.js';
 import { WebSocketServer, WebSocket } from 'ws';
 import http from 'http';
 import express from 'express';
@@ -28,8 +26,7 @@ import passport from 'passport';
 import accountController from './controllers/account.controller.js';
 import type { Response, Request } from 'express';
 import Logger from './utils/logger.js';
-import { encryptionManager } from '@nangohq/shared';
-import accountService from './services/account.service.js';
+import { encryptionManager, accountService, dirname, getPort, isCloud, isBasicAuthEnabled, errorManager } from '@nangohq/shared';
 import oAuthSessionService from './services/oauth-session.service.js';
 import { deleteOldActivityLogs } from './jobs/index.js';
 
@@ -71,12 +68,10 @@ app.route('/connection/:connectionId').get(apiAuth, connectionController.getConn
 app.route('/connection').get(apiAuth, connectionController.listConnections.bind(connectionController));
 app.route('/connection/:connectionId').delete(apiAuth, connectionController.deleteConnection.bind(connectionController));
 app.route('/sync-config').post(apiAuth, syncController.createSyncConfig.bind(syncController));
+app.route('/sync/records').get(apiAuth, syncController.getRecords.bind(syncController));
 
 // Proxy Route
 app.route('/proxy/*').all(apiAuth, proxyController.routeCall.bind(proxyController));
-
-// Unified API
-app.route('/unified-apis/ticketing/tickets').all(apiAuth, ticketingController.route.bind(ticketingController));
 
 // Webapp routes (no auth).
 if (isCloud()) {

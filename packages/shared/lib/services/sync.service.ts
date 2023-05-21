@@ -4,7 +4,7 @@ import db, { dbNamespace } from '../db/database.js';
 import type { Config as ProviderConfig } from '../models/Provider.js';
 import { Sync, SyncStatus, SyncType, SyncConfig } from '../models/Sync.js';
 import type { LogLevel, LogAction } from '../models/Activity.js';
-import { getConnectionById } from './connection.service.js';
+import connectionService from './connection.service.js';
 import configService from './config.service.js';
 import { createSchedule as createSyncScedule } from './sync-schedule.service.js';
 import { createActivityLog, createActivityLogMessage } from './activity.service.js';
@@ -125,7 +125,7 @@ export const getById = async (id: number): Promise<Sync | null> => {
 };
 
 export const initiate = async (nangoConnectionId: number): Promise<void> => {
-    const nangoConnection = (await getConnectionById(nangoConnectionId)) as NangoConnection;
+    const nangoConnection = (await connectionService.getConnectionById(nangoConnectionId)) as NangoConnection;
     const nangoConfig = loadNangoConfig();
     if (!nangoConfig) {
         return;

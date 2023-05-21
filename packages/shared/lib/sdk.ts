@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { validateProxyConfiguration } from './utils/utils.js';
+import { validateProxyConfiguration, validateSyncRecordConfiguration } from './utils/utils.js';
 
 import type { ProxyConfiguration } from './models/Proxy.js';
 
@@ -174,10 +174,21 @@ export class Nango {
         });
     }
 
-    // TODO
-    public async getRecords(config: { providerConfigKey: string; connectionId: string; model: string }) {
-        console.log(config);
-        return '';
+    public async getRecords(config: { providerConfigKey: string; connectionId: string; model: string; delta?: string }) {
+        const { connectionId, providerConfigKey, model, delta } = config;
+        validateSyncRecordConfiguration(config);
+
+        const url = `${this.serverUrl}/sync/records/?model=${model}&delta=${delta || ''}`;
+        const headers: Record<string, string | number | boolean> = {
+            'Connection-Id': connectionId,
+            'Provider-Config-Key': providerConfigKey
+        };
+
+        const options = {
+            headers: this.enrichHeaders(headers)
+        };
+
+        return axios.get(url, options);
     }
 
     public async ticketing(config: { providerConfigKey: string; connectionId: string }) {

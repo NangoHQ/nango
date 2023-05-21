@@ -7,9 +7,9 @@ import {
     AuthorizationTokenResponse,
     RefreshTokenResponse,
     TemplateOAuth2 as ProviderTemplateOAuth2
-} from '@nangohq/shared';
+} from '../models/index.js';
 import axios from 'axios';
-import { isTokenExpired, parseTokenExpirationDate } from '../utils/utils.js';
+import { parseTokenExpirationDate, isTokenExpired } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
 
 class ProviderClient {

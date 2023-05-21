@@ -1,8 +1,11 @@
 import md5 from 'md5';
 import * as uuid from 'uuid';
+import dayjs from 'dayjs';
 
 import type { SyncDataRecord } from '../models/SyncDataRecord.js';
 import type { DataResponse } from '../models/Data.js';
+import { schema } from '../db/database.js';
+import connectionService from './connection.service.js';
 
 export const formatDataRecords = (records: SyncDataRecord[], nango_connection_id: number, model: string): DataResponse[] => {
     return records.map((record: SyncDataRecord) => {
@@ -19,3 +22,31 @@ export const formatDataRecords = (records: SyncDataRecord[], nango_connection_id
         };
     });
 };
+
+export async function getDataRecords(
+    connectionId: string,
+    providerConfigKey: string,
+    accountId: number,
+    model: string,
+    delta: string
+): Promise<Pick<SyncDataRecord, 'json'>[] | null> {
+    const nangoConnection = await connectionService.getConnection(connectionId, providerConfigKey, accountId);
+
+    if (!nangoConnection) {
+        return null;
+    }
+
+    let query = schema()
+        .from<SyncDataRecord>(`_nango_sync_data_records`)
+        .where({ nango_connection_id: Number(nangoConnection.id), model });
+
+    if (delta) {
+        const time = dayjs(delta).toDate();
+        const utcString = time.toUTCString();
+        query = query.andWhere('updated_at', '>=', utcString);
+    }
+
+    const result = (await query.pluck('json')) as Pick<SyncDataRecord, 'json'>[];
+
+    return result;
+}

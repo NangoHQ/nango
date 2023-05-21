@@ -1,7 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
-import accountService from '../services/account.service.js';
-import { getUserAndAccountFromSession, isCloud, getOauthCallbackUrl, getBaseUrl } from '../utils/utils.js';
-import errorManager from '../utils/error.manager.js';
+import { accountService, errorManager, isCloud, getBaseUrl } from '@nangohq/shared';
+import { getOauthCallbackUrl, getUserAndAccountFromSession } from '../utils/utils.js';
 
 class AccountController {
     async getAccount(req: Request, res: Response, next: NextFunction) {

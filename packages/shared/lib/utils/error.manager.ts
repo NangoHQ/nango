@@ -1,10 +1,11 @@
 import { isCloud } from './utils.js';
 import sentry, { EventHint } from '@sentry/node';
 import type { ErrorEvent } from '@sentry/types';
-import logger from './logger.js';
+import logger from '../logger/console.js';
 import { NangoError } from './error.js';
 import type { Request } from 'express';
 import { getAccount, isApiAuthenticated, isUserAuthenticated } from './utils.js';
+import type { User } from '../models/Admin.js';
 
 class ErrorManager {
     constructor() {
@@ -57,7 +58,8 @@ class ErrorManager {
         if (isApiAuthenticated(res)) {
             this.report(nangoErr, { accountId: getAccount(res), metadata: err.payload });
         } else if (isUserAuthenticated(req)) {
-            this.report(nangoErr, { userId: req.user!.id, metadata: err.payload });
+            const user = req.user as User;
+            this.report(nangoErr, { userId: user.id, metadata: err.payload });
         } else {
             this.report(nangoErr, { metadata: err.payload });
         }

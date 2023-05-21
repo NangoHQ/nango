@@ -11,7 +11,7 @@ import {
     OAuthAuthorizationMethod,
     OAuthBodyFormat,
     Connection
-} from '@nangohq/shared';
+} from '../models/index.js';
 import { AuthorizationCode, AccessToken } from 'simple-oauth2';
 import connectionsManager from '../services/connection.service.js';
 import { interpolateString } from '../utils/utils.js';
