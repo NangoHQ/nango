@@ -2,14 +2,14 @@ FROM node:18-slim
 
 ENV SERVER_RUN_MODE=DOCKERIZED
 
-WORKDIR /usr/nango-sync-server/src
+WORKDIR /usr/nango-worker/src
 
 COPY packages/shared/ packages/shared/
 COPY packages/node-client/ packages/node-client/
-COPY packages/sync-worker/ packages/sync-worker/
+COPY packages/worker/ packages/worker/
 COPY package*.json ./
 
 RUN npm pkg delete scripts.prepare
 RUN npm install --omit=dev
 
-CMD [ "node", "packages/sync-worker/dist/worker.js" ]
+CMD [ "node", "packages/worker/dist/worker.js" ]

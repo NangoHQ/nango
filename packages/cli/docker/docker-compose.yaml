@@ -28,7 +28,7 @@ services:
             - nango
 
     nango-worker:
-        image: nangohq/sync-worker:0.17.71-rc
+        image: nangohq/nango-worker:0.1.0-rc
         container_name: nango-worker
         restart: always
         ports:

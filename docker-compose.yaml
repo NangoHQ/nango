@@ -29,9 +29,9 @@ services:
         networks:
             - nango
 
-    nango-sync-server:
-        image: nangohq/sync-worker:0.17.71-rc
-        container_name: nango-sync-server
+    nango-worker:
+        image: nangohq/worker
+        container_name: nango-worker
         restart: always
         ports:
             - '3004:3004'
