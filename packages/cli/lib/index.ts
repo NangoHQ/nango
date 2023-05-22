@@ -18,11 +18,12 @@ import glob from 'glob';
 import byots from 'byots';
 import * as tsNode from 'ts-node';
 import { build } from 'esbuild';
-import { spawn } from 'child_process';
+//import { spawn } from 'child_process';
 import chokidar from 'chokidar';
 
 import type { NangoConfig, NangoIntegration, NangoIntegrationData } from '@nangohq/shared';
-import { checkConfiguration } from './sync.js';
+import { loadSimplifiedConfig } from '@nangohq/shared';
+import { init, run } from './sync.js';
 
 const program = new Command();
 
@@ -244,53 +245,7 @@ program
     .alias('i')
     .description('Initialize a new Nango project')
     .action(() => {
-        const data: NangoConfig = {
-            integrations: {
-                'github-prod': {
-                    'github-users': {
-                        runs: 'every hour',
-                        returns: ['users']
-                    },
-                    'github-issues': {
-                        runs: 'every half hour',
-                        returns: ['issues']
-                    }
-                },
-                'asana-dev': {
-                    'asana-projects': {
-                        runs: 'every hour',
-                        returns: ['projects']
-                    }
-                }
-            },
-            models: {
-                issues: {
-                    id: 'integer',
-                    title: 'char',
-                    description: 'char',
-                    status: 'char',
-                    author: {
-                        avatar_url: 'char'
-                    }
-                },
-                projects: {
-                    id: 'integer',
-                    type: 'char'
-                },
-                users: {
-                    id: 'integer',
-                    name: 'char'
-                }
-            }
-        };
-        const yamlData = yaml.dump(data);
-
-        if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir);
-        }
-        fs.writeFileSync(`${dir}/${configFile}`, yamlData);
-
-        console.log(chalk.green(`${configFile} file has been created`));
+        init();
     });
 
 program
@@ -320,6 +275,8 @@ program
                 fs.writeFileSync(`${dir}/${syncName}.ts`, rendered);
             }
         }
+
+        console.log(chalk.green(`Integration files have been created`));
         /*
             // create a migration file based on the model
             const migrationContents = fs.readFileSync(path.resolve(__dirname, './migration.ejs'), 'utf8');
@@ -377,11 +334,11 @@ program
         const cwd = process.cwd();
 
         //const child = spawn('docker', ['compose', '-f', 'node_modules/nango/docker/docker-compose.yaml', '--project-directory', '.', 'up', '--build'], {
-        spawn('docker', ['compose', '-f', 'node_modules/nango/docker/docker-compose.yaml', '--project-directory', '.', 'up', '--build'], {
-            cwd,
-            detached: false,
-            stdio: 'inherit'
-        });
+        //spawn('docker', ['compose', '-f', 'node_modules/nango/docker/docker-compose.yaml', '--project-directory', '.', 'up', '--build'], {
+        //cwd,
+        //detached: false,
+        //stdio: 'inherit'
+        //});
 
         // look into
         // https://www.npmjs.com/package/docker-compose
@@ -451,9 +408,11 @@ program
 
         function compileFiile(filePath: string) {
             try {
+                console.log(filePath);
                 const result = compiler.compile(fs.readFileSync(filePath, 'utf8'), filePath);
                 const jsFilePath = path.join(path.dirname(filePath), path.basename(filePath, '.ts') + '.js');
-                fs.writeFileSync(jsFilePath, result);
+                const distJSFilePath = jsFilePath.replace('nango-integrations', 'nango-integrations/dist');
+                fs.writeFileSync(distJSFilePath, result);
                 console.log(chalk.green(`Compiled ${filePath} successfully`));
             } catch (error) {
                 console.error(`Error compiling ${filePath}:`);
@@ -529,8 +488,19 @@ program
     .alias('scc')
     .description('Verify the parsed sync config and output the object for verification')
     .action(async () => {
-        const config = checkConfiguration();
+        const cwd = process.cwd();
+        const config = loadSimplifiedConfig(path.resolve(cwd, `./nango-integrations/${configFile}`));
+
         console.log(chalk.green(JSON.stringify(config, null, 2)));
+    });
+
+program
+    .command('sync:run')
+    .alias('sr')
+    .description('Run the sync process to help with debugging')
+    .action(async function (this: Command) {
+        checkEnvVars();
+        run(this.args);
     });
 
 program.parse();

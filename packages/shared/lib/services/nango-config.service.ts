@@ -9,9 +9,10 @@ import type { NangoConfig, SimplifiedNangoIntegration, NangoSyncConfig, NangoSyn
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-export function loadNangoConfig(): NangoConfig | null {
+export function loadNangoConfig(loadLocation?: string): NangoConfig | null {
     try {
-        const yamlConfig = fs.readFileSync(path.resolve(__dirname, '../nango-integrations/nango.yaml'), 'utf8');
+        const location = loadLocation || path.resolve(__dirname, '../nango-integrations/nango.yaml');
+        const yamlConfig = fs.readFileSync(location, 'utf8');
         const configData: NangoConfig = yaml.load(yamlConfig) as unknown as NangoConfig;
 
         return configData;
@@ -22,13 +23,31 @@ export function loadNangoConfig(): NangoConfig | null {
     return null;
 }
 
-export function checkForIntegrationFile(syncName: string) {
-    return fs.existsSync(path.resolve(__dirname, `../nango-integrations/${syncName}.js`));
+export function loadSimplifiedConfig(loadLocation?: string): SimplifiedNangoIntegration[] | null {
+    try {
+        const configData: NangoConfig = loadNangoConfig(loadLocation) as NangoConfig;
+
+        if (!configData) {
+            return null;
+        }
+        const config = convertConfigObject(configData);
+
+        return config;
+    } catch (error) {
+        console.log('no nango.yaml config found');
+    }
+
+    return null;
 }
 
-export async function getIntegrationClass(syncName: string) {
+export function checkForIntegrationFile(syncName: string) {
+    return fs.existsSync(path.resolve(__dirname, `../nango-integrations/dist/${syncName}.js`));
+}
+
+export async function getIntegrationClass(syncName: string, setIntegrationPath?: string) {
     try {
-        const integrationPath = path.resolve(__dirname, `../nango-integrations/${syncName}.js`) + `?v=${Math.random().toString(36).substring(3)}`;
+        const integrationPath =
+            setIntegrationPath || path.resolve(__dirname, `../nango-integrations/dist/${syncName}.js`) + `?v=${Math.random().toString(36).substring(3)}`;
         const { default: integrationCode } = await import(integrationPath);
         const integrationClass = new integrationCode();
 

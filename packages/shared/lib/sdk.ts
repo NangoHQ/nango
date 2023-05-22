@@ -118,7 +118,7 @@ export class Nango {
         const url = `${this.serverUrl}/proxy/${config.endpoint}`;
 
         const headers: Record<string, string | number | boolean> = {
-            'Connection-Id': connectionId,
+            'Connection-Id': connectionId as string,
             'Provider-Config-Key': providerConfigKey,
             'Nango-Is-Sync': this.isSync,
             'Nango-Activity-Log-Id': this.activityLogId || '',
@@ -255,3 +255,5 @@ export class Nango {
         return headers;
     }
 }
+
+export { Nango as NangoHelper };

@@ -34,8 +34,8 @@ export async function getClient(): Promise<Client | null> {
     }
 }
 
-const generateWorkflowId = (sync: Sync) => `${TASK_QUEUE}-${sync.id}`;
-const generateScheduleId = (sync: Sync) => `${TASK_QUEUE}-schedule-${sync.id}`;
+const generateWorkflowId = (sync: Sync, syncName: string) => `${TASK_QUEUE}.${syncName}-${sync.id}`;
+const generateScheduleId = (sync: Sync, syncName: string) => `${TASK_QUEUE}.${syncName}-schedule-${sync.id}`;
 
 /**
  * Start Continuous
@@ -68,7 +68,7 @@ export const startContinuous = async (
 
     const handle = await client?.workflow.start('initialSync', {
         taskQueue: TASK_QUEUE,
-        workflowId: generateWorkflowId(sync),
+        workflowId: generateWorkflowId(sync, syncName),
         args: [
             {
                 syncId: sync.id,
@@ -76,13 +76,9 @@ export const startContinuous = async (
             }
         ]
     });
-    console.log(syncData);
 
-    // TODO grab from the config
-    // copy the volume here too
     const frequency = getCronExpression(syncData.runs);
-    console.log(frequency);
-    const scheduleId = generateScheduleId(sync);
+    const scheduleId = generateScheduleId(sync, syncName);
 
     // kick off schedule
     await client?.schedule.create({

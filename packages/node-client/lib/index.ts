@@ -1,3 +1,3 @@
-import { Nango, NangoSync } from '@nangohq/shared';
+import { Nango, NangoSync, NangoHelper, HubspotModels } from '@nangohq/shared';
 
-export { Nango, NangoSync };
+export { Nango, NangoSync, NangoHelper, HubspotModels };

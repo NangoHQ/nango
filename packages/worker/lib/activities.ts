@@ -113,28 +113,37 @@ export async function syncProvider(
             const syncName = syncNames[k] as string;
 
             if (!checkForIntegrationFile(syncName)) {
+                console.log(`No integration file found for ${syncName}`);
                 continue;
             }
             const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
             const { returns: models } = syncData;
+            // TODO this might need to change
             for (const model of models) {
                 const integrationClass = await getIntegrationClass(syncName);
 
                 if (!integrationClass) {
+                    // log this
                     continue;
                 }
 
                 try {
                     const userDefinedResults = await integrationClass.fetchData(nango);
 
+                    let responseResults: UpsertResponse = { addedKeys: [], updatedKeys: [], affectedInternalIds: [], affectedExternalIds: [] };
+
                     if (userDefinedResults[model]) {
                         const formattedResults = syncDataService.formatDataRecords(userDefinedResults[model], sync.nango_connection_id, model);
-                        const responseResults = await upsert(formattedResults, '_nango_sync_data_records', 'external_id', sync.nango_connection_id);
-                        reportResults(true, sync, activityLogId, model, responseResults);
+                        if (formattedResults.length > 0) {
+                            responseResults = await upsert(formattedResults, '_nango_sync_data_records', 'external_id', sync.nango_connection_id);
+                        }
+                        reportResults(true, sync, activityLogId, model, syncName, responseResults);
+                    } else {
+                        // not found -- log this
                     }
                 } catch (e) {
                     result = false;
-                    reportResults(result, sync, activityLogId, model);
+                    reportResults(result, sync, activityLogId, model, syncName);
                     // let the user know
                     console.log(e);
                 }
@@ -147,7 +156,7 @@ export async function syncProvider(
     return result;
 }
 
-async function reportResults(result: boolean, sync: Sync, activityLogId: number, model: string, responseResults?: UpsertResponse) {
+async function reportResults(result: boolean, sync: Sync, activityLogId: number, model: string, syncName: string, responseResults?: UpsertResponse) {
     if (result) {
         await updateSyncStatus(sync.id, SyncStatus.SUCCESS);
         await updateSuccess(activityLogId, true);
@@ -158,7 +167,7 @@ async function reportResults(result: boolean, sync: Sync, activityLogId: number,
             level: 'info',
             activity_log_id: activityLogId,
             timestamp: Date.now(),
-            content: `The ${sync.type} sync has been completed to the ${model} model, with ${addedKeys.length} added record${
+            content: `The ${sync.type} "${syncName}" sync has been completed to the ${model} model, with ${addedKeys.length} added record${
                 addedKeys.length === 1 ? '' : 's'
             } and ${updatedKeys.length} updated record${updatedKeys.length === 1 ? '' : 's'}`
         });
@@ -169,7 +178,7 @@ async function reportResults(result: boolean, sync: Sync, activityLogId: number,
             level: 'error',
             activity_log_id: activityLogId,
             timestamp: Date.now(),
-            content: `The ${sync.type} sync did not complete successfully to the ${model} model`
+            content: `The ${sync.type} "${syncName}" sync did not complete successfully to the ${model} model`
         });
     }
 }

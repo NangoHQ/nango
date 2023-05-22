@@ -4,7 +4,7 @@ export interface ProxyConfiguration {
 
     endpoint: string;
     providerConfigKey: string;
-    connectionId: string;
+    connectionId?: string;
 
     method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE' | 'get' | 'post' | 'patch' | 'put' | 'delete';
     headers?: Record<string, string>;

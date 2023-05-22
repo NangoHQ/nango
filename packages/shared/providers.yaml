@@ -322,6 +322,8 @@ hubspot:
     auth_mode: OAUTH2
     authorization_url: https://app.hubspot.com/oauth/authorize
     token_url: https://api.hubapi.com/oauth/v1/token
+    base_api_url: https://api.hubapi.com
+    docs: https://developers.hubspot.com/docs/api/overview
 instagram:
     auth_mode: OAUTH2
     authorization_url: https://api.instagram.com/oauth/authorize
