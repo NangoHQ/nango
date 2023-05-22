@@ -109,7 +109,7 @@ export const startContinuous = async (
     await createActivityLogMessage({
         level: 'info',
         activity_log_id: activityLogId as number,
-        content: `Started initial background sync ${handle?.workflowId} and data updated on a schedule ${scheduleId} in the task queue: ${TASK_QUEUE}`,
+        content: `Started initial background sync ${handle?.workflowId} and data updated on a schedule ${scheduleId} at ${syncData.runs} in the task queue: ${TASK_QUEUE}`,
         timestamp: Date.now()
     });
 };

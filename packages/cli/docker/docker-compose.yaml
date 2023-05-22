@@ -27,9 +27,9 @@ services:
         networks:
             - nango
 
-    nango-sync-server:
+    nango-worker:
         image: nangohq/sync-worker:0.17.71-rc
-        container_name: nango-sync-server
+        container_name: nango-worker
         restart: always
         ports:
             - '3004:3004'
@@ -39,7 +39,7 @@ services:
             - nango-db
             - temporal
         volumes:
-            - "./nango-integrations:/usr/nango-sync-server/src/packages/shared/dist/lib/nango-integrations"
+            - "./nango-integrations/dist:/usr/nango-sync-server/src/packages/shared/dist/lib/nango-integrations"
         networks:
             - nango
 

@@ -30,3 +30,26 @@ export interface NangoConfig {
     integrations: NangoIntegration;
     models: NangoModel;
 }
+
+interface NangoSyncModelField {
+    name: string;
+    type: string;
+}
+
+export interface NangoSyncModel {
+    name: string;
+    fields: NangoSyncModelField[][];
+}
+
+export interface NangoSyncConfig {
+    name: string;
+    runs: string;
+    cronExpression?: string;
+    returns: string[];
+    models: NangoSyncModel[];
+}
+
+export interface SimplifiedNangoIntegration {
+    providerConfigKey: string;
+    syncs: NangoSyncConfig[];
+}

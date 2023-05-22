@@ -130,11 +130,11 @@ export async function syncProvider(
                     if (userDefinedResults[model]) {
                         const formattedResults = syncDataService.formatDataRecords(userDefinedResults[model], sync.nango_connection_id, model);
                         const responseResults = await upsert(formattedResults, '_nango_sync_data_records', 'external_id', sync.nango_connection_id);
-                        reportResults(true, sync, activityLogId, responseResults);
+                        reportResults(true, sync, activityLogId, model, responseResults);
                     }
                 } catch (e) {
                     result = false;
-                    reportResults(result, sync, activityLogId);
+                    reportResults(result, sync, activityLogId, model);
                     // let the user know
                     console.log(e);
                 }
@@ -147,17 +147,20 @@ export async function syncProvider(
     return result;
 }
 
-async function reportResults(result: boolean, sync: Sync, activityLogId: number, responseResults?: UpsertResponse) {
-    console.log(responseResults);
+async function reportResults(result: boolean, sync: Sync, activityLogId: number, model: string, responseResults?: UpsertResponse) {
     if (result) {
         await updateSyncStatus(sync.id, SyncStatus.SUCCESS);
         await updateSuccess(activityLogId, true);
+
+        const { addedKeys, updatedKeys } = responseResults as UpsertResponse;
 
         await createActivityLogMessageAndEnd({
             level: 'info',
             activity_log_id: activityLogId,
             timestamp: Date.now(),
-            content: `The ${sync.type} sync has been completed`
+            content: `The ${sync.type} sync has been completed to the ${model} model, with ${addedKeys.length} added record${
+                addedKeys.length === 1 ? '' : 's'
+            } and ${updatedKeys.length} updated record${updatedKeys.length === 1 ? '' : 's'}`
         });
     } else {
         await updateSuccessActivityLog(activityLogId, false);
@@ -166,7 +169,7 @@ async function reportResults(result: boolean, sync: Sync, activityLogId: number,
             level: 'error',
             activity_log_id: activityLogId,
             timestamp: Date.now(),
-            content: `The ${sync.type} sync did not complete successfully`
+            content: `The ${sync.type} sync did not complete successfully to the ${model} model`
         });
     }
 }

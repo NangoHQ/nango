@@ -1,5 +1,5 @@
 {
-    "name": "@nangohq/nango-sync-worker",
+    "name": "@nangohq/nango-worker",
     "version": "0.17.0",
     "type": "module",
     "main": "dist/worker.js",

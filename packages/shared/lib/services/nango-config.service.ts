@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url';
 import yaml from 'js-yaml';
 // @ts-ignore
 import translateCron from 'friendly-node-cron';
-import type { NangoConfig } from '../integrations/index.js';
+import type { NangoConfig, SimplifiedNangoIntegration, NangoSyncConfig, NangoSyncModel } from '../integrations/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -40,22 +40,53 @@ export async function getIntegrationClass(syncName: string) {
     return null;
 }
 
+export function convertConfigObject(config: NangoConfig): SimplifiedNangoIntegration[] {
+    const output = [];
+
+    for (const providerConfigKey in config.integrations) {
+        const syncs = [];
+        const integration = config.integrations[providerConfigKey];
+        for (const syncName in integration) {
+            const sync: NangoSyncConfig = integration[syncName] as NangoSyncConfig;
+            const models: NangoSyncModel[] = [];
+            sync.returns.forEach((model) => {
+                const modelFields = [];
+                const modelData = config.models[model] || config.models[`${model.slice(0, -1)}`];
+                for (const fieldName in modelData) {
+                    const fieldType = modelData[fieldName];
+                    if (typeof fieldType === 'object') {
+                        for (const subFieldName in fieldType) {
+                            const subFieldType = fieldType[subFieldName];
+                            modelFields.push({ name: `${fieldName}.${subFieldName}`, type: subFieldType as string });
+                        }
+                    } else {
+                        modelFields.push({ name: fieldName, type: fieldType as string });
+                    }
+                }
+                models.push({ name: model, fields: [modelFields] });
+            });
+            syncs.push({ name: syncName, runs: sync.runs, cronExpression: getCronExpression(sync.runs), returns: sync.returns, models });
+        }
+        output.push({ providerConfigKey, syncs });
+    }
+
+    return output;
+}
+
 export function getCronExpression(runs: string): string {
-    // human to cron doesn't get this for some reason
     if (runs === 'every half hour') {
-        return '0 */30 * * * *';
+        return '*/30 * * * *';
     }
 
     if (runs === 'every quarter hour') {
-        return '0 */15 * * * *';
+        return '*/15 * * * *';
     }
 
     if (runs === 'every hour') {
-        return '0 * * * * *';
+        return '0 * * * *';
     }
 
     const cron = translateCron(runs);
-    console.log(cron);
 
-    return cron;
+    return cron.slice(2);
 }

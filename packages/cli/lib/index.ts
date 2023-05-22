@@ -22,6 +22,7 @@ import { spawn } from 'child_process';
 import chokidar from 'chokidar';
 
 import type { NangoConfig, NangoIntegration, NangoIntegrationData } from '@nangohq/shared';
+import { checkConfiguration } from './sync.js';
 
 const program = new Command();
 
@@ -263,7 +264,7 @@ program
                 }
             },
             models: {
-                tickets: {
+                issues: {
                     id: 'integer',
                     title: 'char',
                     description: 'char',
@@ -289,7 +290,7 @@ program
         }
         fs.writeFileSync(`${dir}/${configFile}`, yamlData);
 
-        console.log(`${configFile} file has been created`);
+        console.log(chalk.green(`${configFile} file has been created`));
     });
 
 program
@@ -357,7 +358,13 @@ program
             const integrationName = path.parse(fileNameWithExt).name;
             const jsFileContent = result.outputText;
 
-            fs.writeFileSync(path.resolve(cwd, `./nango-integrations/${integrationName}.js`), jsFileContent);
+            const distDir = path.resolve(cwd, './nango-integrations/dist');
+
+            if (!fs.existsSync(distDir)) {
+                fs.mkdirSync(distDir);
+            }
+
+            fs.writeFileSync(path.resolve(cwd, `./nango-integrations/dist/${integrationName}.js`), jsFileContent);
         }
     });
 
@@ -367,9 +374,11 @@ program
     .alias('watch')
     .description('Work locally to add integration code')
     .action(() => {
+        const cwd = process.cwd();
+
         //const child = spawn('docker', ['compose', '-f', 'node_modules/nango/docker/docker-compose.yaml', '--project-directory', '.', 'up', '--build'], {
         spawn('docker', ['compose', '-f', 'node_modules/nango/docker/docker-compose.yaml', '--project-directory', '.', 'up', '--build'], {
-            cwd: process.cwd(),
+            cwd,
             detached: false,
             stdio: 'inherit'
         });
@@ -412,7 +421,7 @@ program
                     "composite": false,
                     "checkJs": false,
                     "rootDir": "nango-integrations",
-                    "outDir": "nango-integrations"
+                    "outDir": "nango-integrations/dist"
                 },
                 "include": ["nango-integrations"],
                 "exclude": ["node_modules"]
@@ -421,6 +430,12 @@ program
 
         const watchPath = './nango-integrations/*.ts';
         const watcher = chokidar.watch(watchPath, { ignoreInitial: true });
+
+        const distDir = path.resolve(cwd, './nango-integrations/dist');
+
+        if (!fs.existsSync(distDir)) {
+            fs.mkdirSync(distDir);
+        }
 
         const compiler = tsNode.create({
             compilerOptions: JSON.parse(tsconfig).compilerOptions
@@ -507,6 +522,15 @@ program
                     console.log(`❌ ${err.response?.data.error || JSON.stringify(err)}`);
                 });
         }
+    });
+
+program
+    .command('sync:config.check')
+    .alias('scc')
+    .description('Verify the parsed sync config and output the object for verification')
+    .action(async () => {
+        const config = checkConfiguration();
+        console.log(chalk.green(JSON.stringify(config, null, 2)));
     });
 
 program.parse();
