@@ -1,4 +1,4 @@
-import { schema } from '../db/database.js';
+import { schema } from '@nangohq/shared';
 import type { DataResponse, UpsertResponse } from '@nangohq/shared';
 
 /**
