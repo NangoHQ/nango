@@ -52,6 +52,9 @@ let nango = new Nango({ host: '<NANGO-HOST-AND-PORT>' });
 
 ## Retrieve API credentials
 
+For OAuth 2 integrations this will return you the current access token (already refreshed if needed). For API key based integrations it will return the API key.
+For OAuth 1.0a integrations it will return you a small object with the neccessary details to sign the request.
+
 ```js
 let creds = await nango.getToken('<INTEGRATION-ID>', '<CONNECTION-ID>');
 ```
@@ -96,7 +99,7 @@ metadata: {}                                // Structured metadata retrieved by 
 let list = await nango.listConnections('<CONNECTION-ID>');
 ```
 
-In the case where you want to get a list of all the [Connections](/core-concepts#connections) for only a specific user (i.e. Connection ID):
+This returns you all [Connections](/core-concepts#connections) of a specific user (i.e. Connection ID):
 
 ```js
 {
