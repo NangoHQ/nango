@@ -17,7 +17,7 @@ In this guide, we will sync issues from Github as `tickets`. It entails:
 Regardless of your programming language, in your repo, run:
 
 ```bash
-npx nango init && cd nango-integrations // Your new integrations folder
+npx nango init && cd nango-integrations # Your new integrations folder
 ```
 
 ## 2. Configure your Integration
@@ -41,8 +41,8 @@ models:
 
 Then run:
 
-```
-npx nango g // Generates the model & scaffolding
+```bash
+npx nango g # Generates the model & scaffolding
 ```
 
 ## 3. Write your Integration code
@@ -82,7 +82,7 @@ return { [ticket.name]: tickets }
 
 Finally, deploy your code to Nango:
 
-```
+```bash
 npx nango deploy
 ```
 
@@ -91,5 +91,6 @@ That's it! When a user authorizes Github with Nango Auth, their issues will sync
 -   An SDK & API to access objects (strongly-typed)
 -   A webhook to get real-time updates (strongly-typed)
 -   A cache with fresh & highly-available data
--   Monitoring & a management console
--   Scaling & reliability
+-   Built-in tooling for easy API requests (pagination, retries, rate-limit handling, transient errors etc.)
+-   Monitoring & Management console
+-   Automatic scaling & reliability
