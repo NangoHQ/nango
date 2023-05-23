@@ -6,7 +6,6 @@
 
 import { Command } from 'commander';
 import axios from 'axios';
-import https from 'https';
 import chalk from 'chalk';
 import figlet from 'figlet';
 import fs from 'fs';
@@ -16,20 +15,18 @@ import yaml from 'js-yaml';
 import ejs from 'ejs';
 import glob from 'glob';
 import byots from 'byots';
-import * as tsNode from 'ts-node';
 import { build } from 'esbuild';
-//import { spawn } from 'child_process';
-import chokidar from 'chokidar';
+import { spawn } from 'child_process';
+import * as dotenv from 'dotenv';
 
 import type { NangoConfig, NangoIntegration, NangoIntegrationData } from '@nangohq/shared';
 import { loadSimplifiedConfig } from '@nangohq/shared';
-import { init, run } from './sync.js';
+import { init, run, tscWatch } from './sync.js';
+import { checkEnvVars, enrichHeaders, httpsAgent, getConnection } from './utils.js';
 
 const program = new Command();
 
 let hostport = process.env['NANGO_HOSTPORT'] || 'http://localhost:3003';
-const cloudHost = 'https://api.nango.dev';
-const stagingHost = 'https://nango-cloud-staging.onrender.com';
 const dir = 'nango-integrations';
 const configFile = 'nango.yaml';
 
@@ -39,6 +36,8 @@ const __dirname = dirname(__filename);
 if (hostport.slice(-1) === '/') {
     hostport = hostport.slice(0, -1);
 }
+
+dotenv.config();
 
 // Test from the package root (/packages/cli) with 'node dist/index.js'
 program
@@ -168,15 +167,19 @@ program
     .argument('<connection_id>', 'The ID of the Connection.')
     .action(async function (this: Command) {
         checkEnvVars();
-        const url = hostport + `/connection/${this.args[1]}`;
-        await axios
-            .get(url, { params: { provider_config_key: this.args[0] }, headers: enrichHeaders(), httpsAgent: httpsAgent() })
-            .then((res) => {
-                console.log(res.data);
-            })
-            .catch((err) => {
-                console.log(`❌ ${err.response?.data.error || JSON.stringify(err)}`);
-            });
+        const [providerConfigKey, connectionId] = this.args;
+
+        if (!providerConfigKey) {
+            console.log(chalk.red('Please provide a provider config key.'));
+        }
+
+        if (!connectionId) {
+            console.log(chalk.red('Please provide a connection ID.'));
+        }
+
+        const connection = await getConnection(providerConfigKey as string, connectionId as string);
+
+        console.log(connection);
     });
 
 program
@@ -326,100 +329,28 @@ program
     });
 
 program
+    .command('tsc:watch')
+    .description('Watch tsc files while developing')
+    .action(() => {
+        tscWatch();
+    });
+
+program
     .command('dev')
     .alias('develop')
     .alias('watch')
     .description('Work locally to add integration code')
     .action(() => {
         const cwd = process.cwd();
-
-        //const child = spawn('docker', ['compose', '-f', 'node_modules/nango/docker/docker-compose.yaml', '--project-directory', '.', 'up', '--build'], {
-        //spawn('docker', ['compose', '-f', 'node_modules/nango/docker/docker-compose.yaml', '--project-directory', '.', 'up', '--build'], {
-        //cwd,
-        //detached: false,
-        //stdio: 'inherit'
-        //});
+        tscWatch();
 
         // look into
         // https://www.npmjs.com/package/docker-compose
-
-        // TODO handle more gracefully
-        //process.on('SIGINT', () => {
-        //child.kill('SIGINT');
-        //});
-
-        // TODO move this to a file
-        const tsconfig = `
-            {
-                  "display": "Node 18 + ESM + Strictest",
-                  "compilerOptions": {
-                    "lib": [
-                      "es2022"
-                    ],
-                    "module": "es2022",
-                    "target": "es2022",
-                    "strict": true,
-                    "esModuleInterop": true,
-                    "skipLibCheck": true,
-                    "forceConsistentCasingInFileNames": true,
-                    "moduleResolution": "node",
-                    "allowUnusedLabels": false,
-                    "allowUnreachableCode": false,
-                    "exactOptionalPropertyTypes": true,
-                    "noFallthroughCasesInSwitch": true,
-                    "noImplicitOverride": true,
-                    "noImplicitReturns": true,
-                    "noPropertyAccessFromIndexSignature": true,
-                    "noUncheckedIndexedAccess": true,
-                    "noUnusedLocals": true,
-                    "noUnusedParameters": true,
-                    "declaration": false,
-                    "sourceMap": false,
-                    "composite": false,
-                    "checkJs": false,
-                    "rootDir": "nango-integrations",
-                    "outDir": "nango-integrations/dist"
-                },
-                "include": ["nango-integrations"],
-                "exclude": ["node_modules"]
-            }
-        `;
-
-        const watchPath = './nango-integrations/*.ts';
-        const watcher = chokidar.watch(watchPath, { ignoreInitial: true });
-
-        const distDir = path.resolve(cwd, './nango-integrations/dist');
-
-        if (!fs.existsSync(distDir)) {
-            fs.mkdirSync(distDir);
-        }
-
-        const compiler = tsNode.create({
-            compilerOptions: JSON.parse(tsconfig).compilerOptions
+        spawn('docker', ['compose', '-f', 'node_modules/nango/docker/docker-compose.yaml', '--project-directory', '.', 'up', '--build'], {
+            cwd,
+            detached: false,
+            stdio: 'inherit'
         });
-
-        watcher.on('add', (filePath) => {
-            compileFiile(filePath);
-        });
-
-        watcher.on('change', (filePath) => {
-            compileFiile(filePath);
-        });
-
-        function compileFiile(filePath: string) {
-            try {
-                console.log(filePath);
-                const result = compiler.compile(fs.readFileSync(filePath, 'utf8'), filePath);
-                const jsFilePath = path.join(path.dirname(filePath), path.basename(filePath, '.ts') + '.js');
-                const distJSFilePath = jsFilePath.replace('nango-integrations', 'nango-integrations/dist');
-                fs.writeFileSync(distJSFilePath, result);
-                console.log(chalk.green(`Compiled ${filePath} successfully`));
-            } catch (error) {
-                console.error(`Error compiling ${filePath}:`);
-                console.error(error);
-                return;
-            }
-        }
     });
 
 program
@@ -504,39 +435,3 @@ program
     });
 
 program.parse();
-
-function enrichHeaders(headers: Record<string, string | number | boolean> = {}) {
-    if ((process.env['NANGO_HOSTPORT'] === cloudHost || process.env['NANGO_HOSTPORT'] === stagingHost) && process.env['NANGO_SECRET_KEY']) {
-        // For Nango Cloud (unified)
-        headers['Authorization'] = 'Bearer ' + process.env['NANGO_SECRET_KEY'];
-    } else if (process.env['NANGO_SECRET_KEY']) {
-        // For Nango OSS
-        headers['Authorization'] = 'Basic ' + Buffer.from(process.env['NANGO_SECRET_KEY'] + ':').toString('base64');
-    }
-
-    headers['Accept-Encoding'] = 'application/json';
-
-    return headers;
-}
-
-function httpsAgent() {
-    return new https.Agent({
-        rejectUnauthorized: false
-    });
-}
-
-function checkEnvVars() {
-    if (hostport === 'http://localhost:3003') {
-        console.log(`Assuming you are running Nango on localhost:3003 because you did not set the NANGO_HOSTPORT env var.\n\n`);
-    } else if (hostport === cloudHost || hostport === stagingHost) {
-        if (!process.env['NANGO_SECRET_KEY']) {
-            console.log(`Assuming you are using Nango Cloud but your are lacking the NANGO_SECRET_KEY env var.`);
-        } else if (hostport === cloudHost) {
-            console.log(`Assuming you are using Nango Cloud (because you set the NANGO_HOSTPORT env var to https://api.nango.dev).`);
-        } else if (hostport === stagingHost) {
-            console.log(`Assuming you are using Nango Cloud (because you set the NANGO_HOSTPORT env var to https://api.staging.nango.dev).`);
-        }
-    } else {
-        console.log(`Assuming you are self-hosting Nango (becauses you set the NANGO_HOSTPORT env var to ${hostport}).`);
-    }
-}

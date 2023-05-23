@@ -22,7 +22,8 @@ import {
     NangoIntegrationData,
     checkForIntegrationFile,
     getIntegrationClass,
-    loadNangoConfig
+    loadNangoConfig,
+    getLastSyncDate
 } from '@nangohq/shared';
 import type { NangoConnection, ContinuousSyncArgs, InitialSyncArgs } from './models/Worker';
 import { upsert } from './services/data.service.js';
@@ -116,6 +117,8 @@ export async function syncProvider(
                 console.log(`No integration file found for ${syncName}`);
                 continue;
             }
+            const lastSyncDate = await getLastSyncDate(nangoConnection?.id as number, syncName);
+            nango.setLastSyncDate(lastSyncDate as Date);
             const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
             const { returns: models } = syncData;
             // TODO this might need to change

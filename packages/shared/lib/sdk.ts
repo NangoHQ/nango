@@ -16,6 +16,7 @@ interface NangoProps {
     providerConfigKey?: string;
     isSync?: boolean;
     activityLogId?: number;
+    lastSyncDate?: Date;
 }
 
 export class Nango {
@@ -25,6 +26,7 @@ export class Nango {
     providerConfigKey?: string;
     isSync = false;
     activityLogId?: number;
+    lastSyncDate?: Date;
 
     constructor(config: NangoProps = {}) {
         config.host = config.host || prodHost;
@@ -50,6 +52,10 @@ export class Nango {
 
         if (config.activityLogId) {
             this.activityLogId = config.activityLogId;
+        }
+
+        if (this.lastSyncDate) {
+            this.lastSyncDate = config.lastSyncDate as Date;
         }
     }
 
@@ -191,22 +197,6 @@ export class Nango {
         return axios.get(url, options);
     }
 
-    public async ticketing(config: { providerConfigKey: string; connectionId: string }) {
-        const { providerConfigKey, connectionId } = config;
-
-        const url = `${this.serverUrl}/unified-apis/ticketing/tickets`;
-        const headers: Record<string, string | number | boolean> = {
-            'Connection-Id': connectionId,
-            'Provider-Config-Key': providerConfigKey
-        };
-
-        const options = {
-            headers: this.enrichHeaders(headers)
-        };
-
-        return axios.get(url, options);
-    }
-
     private async getConnectionDetails(providerConfigKey: string, connectionId: string, forceRefresh = false) {
         let url = `${this.serverUrl}/connection/${connectionId}`;
 
@@ -229,6 +219,10 @@ export class Nango {
     public async listConnections(connectionId?: string) {
         let response = await this.listConnectionDetails(connectionId);
         return response.data;
+    }
+
+    public setLastSyncDate(date: Date) {
+        this.lastSyncDate = date;
     }
 
     private async listConnectionDetails(connectionId?: string) {

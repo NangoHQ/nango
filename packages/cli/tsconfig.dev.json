@@ -1,0 +1,30 @@
+{
+    "compilerOptions": {
+        "lib": ["es2022"],
+        "module": "es2022",
+        "target": "es2022",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "moduleResolution": "node",
+        "allowUnusedLabels": false,
+        "allowUnreachableCode": false,
+        "exactOptionalPropertyTypes": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitOverride": true,
+        "noImplicitReturns": true,
+        "noPropertyAccessFromIndexSignature": true,
+        "noUncheckedIndexedAccess": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "declaration": false,
+        "sourceMap": false,
+        "composite": false,
+        "checkJs": false,
+        "rootDir": "nango-integrations",
+        "outDir": "nango-integrations/dist"
+    },
+    "include": ["nango-integrations"],
+    "exclude": ["node_modules"]
+}

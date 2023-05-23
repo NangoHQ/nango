@@ -2,9 +2,12 @@ import fs from 'fs';
 import path from 'path';
 import yaml from 'js-yaml';
 import chalk from 'chalk';
+import chokidar from 'chokidar';
+import * as tsNode from 'ts-node';
 
-import type { NangoConfig } from '@nangohq/shared';
-import { Nango, loadNangoConfig, getIntegrationClass, getServerBaseUrl } from '@nangohq/shared';
+import type { NangoConfig, Connection as NangoConnection } from '@nangohq/shared';
+import { Nango, loadNangoConfig, getIntegrationClass, getServerBaseUrl, getLastSyncDate } from '@nangohq/shared';
+import { getConnection } from './utils.js';
 export const configFile = 'nango.yaml';
 
 const dir = 'nango-integrations';
@@ -60,9 +63,30 @@ export const init = () => {
 };
 
 export const run = async (args: string[]) => {
-    const [syncName, providerConfigKey, connectionId, lastSyncDate] = args;
+    const [syncName, providerConfigKey, connectionId, suppliedLastSyncDate] = args;
+
+    if (!syncName) {
+        console.log(chalk.red('Sync name is required'));
+        return;
+    }
+
+    if (!providerConfigKey) {
+        console.log(chalk.red('Provider config key is required'));
+        return;
+    }
+
+    if (!connectionId) {
+        console.log(chalk.red('Connection id is required'));
+        return;
+    }
+
     const cwd = process.cwd();
     const config = loadNangoConfig(path.resolve(cwd, `./nango-integrations/${configFile}`));
+    let lastSyncDate;
+
+    if (suppliedLastSyncDate) {
+        lastSyncDate = new Date(suppliedLastSyncDate as string);
+    }
 
     if (
         config?.integrations?.[providerConfigKey as string]?.[syncName as string] &&
@@ -79,19 +103,69 @@ export const run = async (args: string[]) => {
         // look at the cli index on how to get the nangoConnection
         const nango = new Nango({
             host: getServerBaseUrl(),
-            connectionId: String(nangoConnection?.connection_id),
-            providerConfigKey: String(nangoConnection?.provider_config_key),
-            // pass in the sync id and store the raw json in the database before the user does what they want with it
-            // or use the connection ID to match it up
-            // either way need a new table
-            activityLogId: activityLogId as number //this is optional?
+            connectionId: String(connectionId),
+            providerConfigKey: String(providerConfigKey)
         });
-        const userDefinedResults = await integrationClass.fetchData(nango);
 
-        console.log(integrationClass);
-        console.log(connectionId, lastSyncDate);
-        //fs.renameSync(path.resolve(cwd, `./nango-integrations/dist/${syncName}.mjs`), path.resolve(cwd, `./nango-integrations/dist/${syncName}.js`));
+        try {
+            const nangoConnection = (await getConnection(providerConfigKey as string, connectionId as string)) as unknown as NangoConnection;
+            if (!lastSyncDate) {
+                lastSyncDate = (await getLastSyncDate(nangoConnection?.id as number, syncName)) as Date;
+            }
+            if (lastSyncDate instanceof Date && !isNaN(lastSyncDate.getTime())) {
+                nango.setLastSyncDate(lastSyncDate);
+            }
+            const userDefinedResults = await integrationClass.fetchData(nango);
+            console.log(userDefinedResults);
+            fs.renameSync(path.resolve(cwd, `./nango-integrations/dist/${syncName}.mjs`), path.resolve(cwd, `./nango-integrations/dist/${syncName}.js`));
+            process.exit(0);
+        } catch (error) {
+            console.error(error);
+            fs.renameSync(path.resolve(cwd, `./nango-integrations/dist/${syncName}.mjs`), path.resolve(cwd, `./nango-integrations/dist/${syncName}.js`));
+            process.exit(1);
+        }
     } else {
         console.log(chalk.red('Sync not found'));
+    }
+};
+
+export const tscWatch = () => {
+    const cwd = process.cwd();
+    const tsconfig = fs.readFileSync('./node_modules/nango/tsconfig.dev.json', 'utf8');
+
+    const watchPath = './nango-integrations/*.ts';
+    const watcher = chokidar.watch(watchPath, { ignoreInitial: true });
+
+    const distDir = path.resolve(cwd, './nango-integrations/dist');
+
+    if (!fs.existsSync(distDir)) {
+        fs.mkdirSync(distDir);
+    }
+
+    const compiler = tsNode.create({
+        compilerOptions: JSON.parse(tsconfig).compilerOptions
+    });
+
+    watcher.on('add', (filePath) => {
+        compileFiile(filePath);
+    });
+
+    watcher.on('change', (filePath) => {
+        compileFiile(filePath);
+    });
+
+    function compileFiile(filePath: string) {
+        try {
+            console.log(filePath);
+            const result = compiler.compile(fs.readFileSync(filePath, 'utf8'), filePath);
+            const jsFilePath = path.join(path.dirname(filePath), path.basename(filePath, '.ts') + '.js');
+            const distJSFilePath = jsFilePath.replace('nango-integrations', 'nango-integrations/dist');
+            fs.writeFileSync(distJSFilePath, result);
+            console.log(chalk.green(`Compiled ${filePath} successfully`));
+        } catch (error) {
+            console.error(`Error compiling ${filePath}:`);
+            console.error(error);
+            return;
+        }
     }
 };

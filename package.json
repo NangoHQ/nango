@@ -35,7 +35,9 @@
         "prepare": "husky install",
         "build:watch": "tsc -b -w tsconfig.build.json",
         "dev:watch": "concurrently --kill-others \"npm run build:watch\" \"npm run webapp-build:watch\" \"npm run prettier-watch\" \"npm run shared:watch\" \"npm run cli:watch\"",
-        "dev:watch:apps": "concurrently --kill-others \"npm run server:dev:watch\" \"npm run webapp:dev:watch\" \"npm run worker:dev:watch\" "
+        "watch:dev": "npm run dev:watch",
+        "dev:watch:apps": "concurrently --kill-others \"npm run server:dev:watch\" \"npm run webapp:dev:watch\" \"npm run worker:dev:watch\" ",
+        "watch:dev:apps": "npm run dev:watch:apps"
     },
     "devDependencies": {
         "@tsconfig/node18-strictest-esm": "^1.0.1",

@@ -1,6 +1,6 @@
 import { Client, Connection } from '@temporalio/client';
 import type { Connection as NangoConnection } from '../models/Connection.js';
-import db, { dbNamespace } from '../db/database.js';
+import db, { schema, dbNamespace } from '../db/database.js';
 import type { Config as ProviderConfig } from '../models/Provider.js';
 import { Sync, SyncStatus, SyncType, SyncConfig } from '../models/Sync.js';
 import type { LogLevel, LogAction } from '../models/Activity.js';
@@ -187,6 +187,27 @@ export const updateType = async (id: number, type: SyncType): Promise<void> => {
     return db.knex.withSchema(db.schema()).from<Sync>(TABLE).where({ id }).update({
         type
     });
+};
+
+export const getLastSyncDate = async (nangoConnectionId: number, syncName: string): Promise<Date | null> => {
+    const result = await schema()
+        .select('updated_at')
+        .from<Sync>(TABLE)
+        .where({
+            nango_connection_id: nangoConnectionId,
+            sync_name: syncName,
+            status: SyncStatus.SUCCESS
+        })
+        .orderBy('updated_at', 'desc')
+        .first();
+
+    if (result.length === 0) {
+        return null;
+    }
+
+    const { updated_at } = result;
+
+    return updated_at;
 };
 
 export const createSyncConfig = async (account_id: number, provider: string, integrationName: string, snippet: string): Promise<boolean> => {
