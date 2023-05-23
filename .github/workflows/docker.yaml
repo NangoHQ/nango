@@ -33,14 +33,14 @@ jobs:
                   CONTAINER_NAME=nango-db
                   DB=$(docker ps -q -f status=running -f name=^/${CONTAINER_NAME}$)
                   if [ ! "${DB}" ]; then
-                    echo "DB doesn't exist"
+                    echo "DB container doesn't exist"
                     exit 1
                   fi
 
-                  CONTAINER_NAME=nango-sync-server
-                  SYNC_SERVER=$(docker ps -q -f status=running -f name=^/${CONTAINER_NAME}$)
-                  if [ ! "${SYNC_SERVER}" ]; then
-                    echo "Sync server doesn't exist"
+                  CONTAINER_NAME=nango-worker
+                  WORKER=$(docker ps -q -f status=running -f name=^/${CONTAINER_NAME}$)
+                  if [ ! "${WORKER}" ]; then
+                    echo "Worker container doesn't exist"
                     exit 1
                   fi
               shell: bash
