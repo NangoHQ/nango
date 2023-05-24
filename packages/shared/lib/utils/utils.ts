@@ -133,9 +133,24 @@ export function getBaseUrl() {
  */
 export function interpolateString(str: string, replacers: Record<string, any>) {
     return str.replace(/\${([^{}]*)}/g, (a, b) => {
-        var r = replacers[b];
+        const r = replacers[b];
         return typeof r === 'string' || typeof r === 'number' ? (r as string) : a; // Typecast needed to make TypeScript happy
     });
+}
+
+export function interpolateStringFromObject(str: string, replacers: Record<string, any>) {
+    return str.replace(/\${([^{}]*)}/g, (a, b) => {
+        const r = b.split('.').reduce((o: Record<string, any>, i: string) => o[i], replacers);
+        return typeof r === 'string' || typeof r === 'number' ? (r as string) : a;
+    });
+}
+
+export function interpolateIfNeeded(str: string, replacers: Record<string, any>) {
+    if (str.includes('${')) {
+        return interpolateStringFromObject(str, replacers);
+    } else {
+        return str;
+    }
 }
 
 export function setAccount(accountId: number, res: Response) {

@@ -1,11 +1,15 @@
 import type { Request, Response } from 'express';
 import type { OutgoingHttpHeaders } from 'http';
 import type { NextFunction } from 'express';
+import stream, { Transform, TransformCallback } from 'stream';
+import url, { UrlWithParsedQuery } from 'url';
+import querystring from 'querystring';
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import { backOff } from 'exponential-backoff';
 
 import logger from '../utils/logger.js';
 import {
+    Connection,
     createActivityLog,
     createActivityLogMessageAndEnd,
     createActivityLogMessage,
@@ -19,7 +23,8 @@ import {
     errorManager,
     connectionService,
     NangoError,
-    getAccount
+    getAccount,
+    interpolateIfNeeded
 } from '@nangohq/shared';
 import type { ProxyBodyConfiguration } from '../models.js';
 
@@ -115,7 +120,10 @@ class ProxyController {
 
             const { method } = req;
 
-            const endpoint = req.params[0] as string;
+            const path = req.params[0] as string;
+            const { query }: UrlWithParsedQuery = url.parse(req.url, true) as unknown as UrlWithParsedQuery;
+            const queryString = querystring.stringify(query);
+            const endpoint = `${path}${queryString ? `?${queryString}` : ''}`;
 
             if (!endpoint) {
                 errorManager.errRes(res, 'missing_endpoint');
@@ -179,7 +187,7 @@ class ProxyController {
                     timestamp: Date.now(),
                     content: `${Date.now()} The proxy is not supported for this provider ${String(
                         providerConfig?.provider
-                    )}. You can easily add support by following the instructions at https://docs.nango.dev/contribute-api`
+                    )}. You can easily add support by following the instructions at https://docs.nango.dev/contribute/nango-auth`
                 });
 
                 errorManager.errRes(res, 'missing_base_api_url');
@@ -218,7 +226,7 @@ class ProxyController {
                 });
             }
 
-            await this.sendToHttpMethod(res, next, method as HTTP_VERB, configBody, activityLogId as number);
+            await this.sendToHttpMethod(res, next, method as HTTP_VERB, configBody, activityLogId as number, connection);
         } catch (error) {
             console.log(error);
             next(error);
@@ -250,8 +258,15 @@ class ProxyController {
      * @param {HTTP_VERB} method
      * @param {ProxyBodyConfiguration} configBody
      */
-    private sendToHttpMethod(res: Response, next: NextFunction, method: HTTP_VERB, configBody: ProxyBodyConfiguration, activityLogId: number) {
-        const url = this.constructUrl(configBody);
+    private sendToHttpMethod(
+        res: Response,
+        next: NextFunction,
+        method: HTTP_VERB,
+        configBody: ProxyBodyConfiguration,
+        activityLogId: number,
+        connection: Connection
+    ) {
+        const url = this.constructUrl(configBody, connection);
 
         if (method === 'POST') {
             return this.post(res, next, url, configBody, activityLogId);
@@ -273,7 +288,7 @@ class ProxyController {
      * @param {string} url
      * @param {ProxyBodyConfiguration} config
      */
-    private async get(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration, activityLogId: number) {
+    private async get(res: Response, _next: NextFunction, url: string, config: ProxyBodyConfiguration, activityLogId: number) {
         try {
             const headers = this.constructHeaders(config);
             const responseStream: AxiosResponse = await backOff(
@@ -302,9 +317,21 @@ class ProxyController {
 
             res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
             responseStream.data.pipe(res);
-        } catch (error) {
-            const nangoError = await this.catalogAndReportError(error as Error | AxiosError, url, config, activityLogId);
-            next(nangoError);
+        } catch (e: unknown) {
+            const error = e as AxiosError;
+            const errorData = error?.response?.data as stream.Readable;
+            const stringify = new Transform({
+                transform(chunk: Buffer, _encoding: BufferEncoding, callback: TransformCallback) {
+                    callback(null, chunk);
+                }
+            });
+            res.writeHead(error?.response?.status as number, error?.response?.headers as OutgoingHttpHeaders);
+            errorData.pipe(stringify).pipe(res);
+            stringify.on('data', (data) => {
+                const parsedData = JSON.parse(data);
+                // TODO log this err
+                console.error(parsedData);
+            });
         }
     }
 
@@ -544,7 +571,7 @@ class ProxyController {
      * @param {ProxyBodyConfiguration} config
      *
      */
-    private constructUrl(config: ProxyBodyConfiguration) {
+    private constructUrl(config: ProxyBodyConfiguration, connection: Connection) {
         const {
             template: { base_api_url: apiBase },
             endpoint: apiEndpoint
@@ -553,7 +580,9 @@ class ProxyController {
         const base = apiBase?.substr(-1) === '/' ? apiBase.slice(0, -1) : apiBase;
         const endpoint = apiEndpoint?.charAt(0) === '/' ? apiEndpoint.slice(1) : apiEndpoint;
 
-        return `${base}/${endpoint}`;
+        const fullEndpoint = interpolateIfNeeded(`${base}/${endpoint}`, connection as unknown as Record<string, string>);
+
+        return fullEndpoint;
     }
 
     /**

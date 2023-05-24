@@ -201,7 +201,7 @@ export const getLastSyncDate = async (nangoConnectionId: number, syncName: strin
         .orderBy('updated_at', 'desc')
         .first();
 
-    if (result.length === 0) {
+    if (!result) {
         return null;
     }
 

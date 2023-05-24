@@ -64,9 +64,11 @@ class ConnectionService {
         return id;
     }
 
-    public async getConnectionById(id: number): Promise<Pick<Connection, 'id' | 'connection_id' | 'provider_config_key' | 'account_id'> | null> {
+    public async getConnectionById(
+        id: number
+    ): Promise<Pick<Connection, 'id' | 'connection_id' | 'provider_config_key' | 'account_id' | 'connection_config' | 'metadata'> | null> {
         const result = await schema()
-            .select('id', 'connection_id', 'provider_config_key', 'account_id')
+            .select('id', 'connection_id', 'provider_config_key', 'account_id', 'connection_config', 'metadata')
             .from<StoredConnection>('_nango_connections')
             .where({ id: id });
 

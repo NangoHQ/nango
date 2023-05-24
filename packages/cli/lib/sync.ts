@@ -10,7 +10,7 @@ import { Nango, loadNangoConfig, getIntegrationClass, getServerBaseUrl, getLastS
 import { getConnection } from './utils.js';
 export const configFile = 'nango.yaml';
 
-const dir = 'nango-integrations';
+const NANGO_INTEGRATIONS_LOCATION = process.env['NANGO_INTEGRATIONS_LOCATION'] || './nango-integrations';
 
 export const init = () => {
     const data: NangoConfig = {
@@ -54,16 +54,30 @@ export const init = () => {
     };
     const yamlData = yaml.dump(data);
 
-    if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir);
+    if (!fs.existsSync(NANGO_INTEGRATIONS_LOCATION)) {
+        fs.mkdirSync(NANGO_INTEGRATIONS_LOCATION);
     }
-    fs.writeFileSync(`${dir}/${configFile}`, yamlData);
+    fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/${configFile}`, yamlData);
 
     console.log(chalk.green(`${configFile} file has been created`));
 };
 
-export const run = async (args: string[]) => {
-    const [syncName, providerConfigKey, connectionId, suppliedLastSyncDate] = args;
+interface RunArgs {
+    sync: string;
+    provider: string;
+    connection: string;
+    lastSyncDate?: string;
+}
+
+export const run = async (args: string[], options: RunArgs) => {
+    let syncName, providerConfigKey, connectionId, suppliedLastSyncDate;
+    if (args.length > 0) {
+        [syncName, providerConfigKey, connectionId, suppliedLastSyncDate] = args;
+    }
+
+    if (Object.keys(options).length > 0) {
+        ({ sync: syncName, provider: providerConfigKey, connection: connectionId, lastSyncDate: suppliedLastSyncDate } = options);
+    }
 
     if (!syncName) {
         console.log(chalk.red('Sync name is required'));
@@ -81,7 +95,7 @@ export const run = async (args: string[]) => {
     }
 
     const cwd = process.cwd();
-    const config = loadNangoConfig(path.resolve(cwd, `./nango-integrations/${configFile}`));
+    const config = loadNangoConfig(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/${configFile}`));
     let lastSyncDate;
 
     if (suppliedLastSyncDate) {
@@ -90,14 +104,17 @@ export const run = async (args: string[]) => {
 
     if (
         config?.integrations?.[providerConfigKey as string]?.[syncName as string] &&
-        fs.existsSync(path.resolve(cwd, `./nango-integrations/dist/${syncName}.js`))
+        fs.existsSync(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/dist/${syncName}.js`))
     ) {
         // to load a module without having to edit the type in the package.json
         // edit the file to be a mjs then rename it back
-        fs.renameSync(path.resolve(cwd, `./nango-integrations/dist/${syncName}.js`), path.resolve(cwd, `./nango-integrations/dist/${syncName}.mjs`));
+        fs.renameSync(
+            path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/dist/${syncName}.js`),
+            path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/dist/${syncName}.mjs`)
+        );
         const integrationClass = await getIntegrationClass(
             syncName as string,
-            path.resolve(cwd, `./nango-integrations/dist/${syncName}.mjs`) + `?v=${Math.random().toString(36).substring(3)}`
+            path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/dist/${syncName}.mjs`) + `?v=${Math.random().toString(36).substring(3)}`
         );
 
         // look at the cli index on how to get the nangoConnection
@@ -117,11 +134,17 @@ export const run = async (args: string[]) => {
             }
             const userDefinedResults = await integrationClass.fetchData(nango);
             console.log(userDefinedResults);
-            fs.renameSync(path.resolve(cwd, `./nango-integrations/dist/${syncName}.mjs`), path.resolve(cwd, `./nango-integrations/dist/${syncName}.js`));
+            fs.renameSync(
+                path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/dist/${syncName}.mjs`),
+                path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/dist/${syncName}.js`)
+            );
             process.exit(0);
         } catch (error) {
             console.error(error);
-            fs.renameSync(path.resolve(cwd, `./nango-integrations/dist/${syncName}.mjs`), path.resolve(cwd, `./nango-integrations/dist/${syncName}.js`));
+            fs.renameSync(
+                path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/dist/${syncName}.mjs`),
+                path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/dist/${syncName}.js`)
+            );
             process.exit(1);
         }
     } else {
@@ -133,10 +156,10 @@ export const tscWatch = () => {
     const cwd = process.cwd();
     const tsconfig = fs.readFileSync('./node_modules/nango/tsconfig.dev.json', 'utf8');
 
-    const watchPath = './nango-integrations/*.ts';
+    const watchPath = `${NANGO_INTEGRATIONS_LOCATION}/*.ts`;
     const watcher = chokidar.watch(watchPath, { ignoreInitial: true });
 
-    const distDir = path.resolve(cwd, './nango-integrations/dist');
+    const distDir = path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/dist`);
 
     if (!fs.existsSync(distDir)) {
         fs.mkdirSync(distDir);
@@ -156,10 +179,9 @@ export const tscWatch = () => {
 
     function compileFiile(filePath: string) {
         try {
-            console.log(filePath);
             const result = compiler.compile(fs.readFileSync(filePath, 'utf8'), filePath);
             const jsFilePath = path.join(path.dirname(filePath), path.basename(filePath, '.ts') + '.js');
-            const distJSFilePath = jsFilePath.replace('nango-integrations', 'nango-integrations/dist');
+            const distJSFilePath = jsFilePath.replace(NANGO_INTEGRATIONS_LOCATION, `${NANGO_INTEGRATIONS_LOCATION}/dist`);
             fs.writeFileSync(distJSFilePath, result);
             console.log(chalk.green(`Compiled ${filePath} successfully`));
         } catch (error) {

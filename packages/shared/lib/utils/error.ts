@@ -151,6 +151,11 @@ export class NangoError extends Error {
                 this.message = `No connection matching params 'connection_id' and 'provider_config_key'.`;
                 break;
 
+            case 'missing_base_api_url':
+                this.status = 400;
+                this.message = `No base API URL is configured for this provider.`;
+                break;
+
             case 'unknown_provider_template':
                 this.status = 400;
                 this.message = `No Provider Template matching the 'provider' parameter.`;
@@ -174,7 +179,7 @@ export class NangoError extends Error {
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;
-                this.message = `An unhandled error has occured: ${type}`;
+                this.message = `An unhandled error has occurred: ${type}`;
         }
     }
 }

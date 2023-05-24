@@ -27,7 +27,7 @@ import { checkEnvVars, enrichHeaders, httpsAgent, getConnection } from './utils.
 const program = new Command();
 
 let hostport = process.env['NANGO_HOSTPORT'] || 'http://localhost:3003';
-const dir = 'nango-integrations';
+const NANGO_INTEGRATIONS_LOCATION = process.env['NANGO_INTEGRATIONS_LOCATION'] || './nango-integrations';
 const configFile = 'nango.yaml';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -259,7 +259,7 @@ program
         const templateContents = fs.readFileSync(path.resolve(__dirname, './integration.ejs'), 'utf8');
 
         const cwd = process.cwd();
-        const configContents = fs.readFileSync(path.resolve(cwd, `./nango-integrations/${configFile}`), 'utf8');
+        const configContents = fs.readFileSync(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/${configFile}`), 'utf8');
         const configData: NangoConfig = yaml.load(configContents) as unknown as NangoConfig;
         const { integrations } = configData;
         for (let i = 0; i < Object.keys(integrations).length; i++) {
@@ -275,7 +275,7 @@ program
                     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
                     .join('');
                 const rendered = ejs.render(templateContents, { syncName: syncNameCamel, modelType: models[0], providerConfigKey });
-                fs.writeFileSync(`${dir}/${syncName}.ts`, rendered);
+                fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/${syncName}.ts`, rendered);
             }
         }
 
@@ -300,7 +300,7 @@ program
     .description('Work locally to add integration code')
     .action(() => {
         const cwd = process.cwd();
-        const integrationFiles = glob.sync(path.resolve(cwd, './nango-integrations/*.ts'));
+        const integrationFiles = glob.sync(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/*.ts`));
         for (const file of integrationFiles) {
             const tsFileContent = fs.readFileSync(file, 'utf-8');
 
@@ -318,13 +318,13 @@ program
             const integrationName = path.parse(fileNameWithExt).name;
             const jsFileContent = result.outputText;
 
-            const distDir = path.resolve(cwd, './nango-integrations/dist');
+            const distDir = path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/dist`);
 
             if (!fs.existsSync(distDir)) {
                 fs.mkdirSync(distDir);
             }
 
-            fs.writeFileSync(path.resolve(cwd, `./nango-integrations/dist/${integrationName}.js`), jsFileContent);
+            fs.writeFileSync(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/dist/${integrationName}.js`), jsFileContent);
         }
     });
 
@@ -359,7 +359,7 @@ program
     .description('Deploy a Nango integration')
     .action(async () => {
         const cwd = process.cwd();
-        const integrationFiles = glob.sync(path.resolve(cwd, './nango-integrations/*.ts'));
+        const integrationFiles = glob.sync(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/*.ts`));
         for (const file of integrationFiles) {
             const tsFileContent = fs.readFileSync(file, 'utf-8');
 
@@ -393,7 +393,7 @@ program
             const integrationName = path.parse(fileNameWithExt).name;
 
             // write the file to the integration folder
-            fs.writeFileSync(path.resolve(cwd, `./nango-integrations/${integrationName}.js`), jsFileContent);
+            fs.writeFileSync(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/${integrationName}.js`), jsFileContent);
 
             const body = {
                 integrationName,
@@ -420,7 +420,7 @@ program
     .description('Verify the parsed sync config and output the object for verification')
     .action(async () => {
         const cwd = process.cwd();
-        const config = loadSimplifiedConfig(path.resolve(cwd, `./nango-integrations/${configFile}`));
+        const config = loadSimplifiedConfig(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/${configFile}`));
 
         console.log(chalk.green(JSON.stringify(config, null, 2)));
     });
@@ -429,9 +429,13 @@ program
     .command('sync:run')
     .alias('sr')
     .description('Run the sync process to help with debugging')
+    .option('-s, --sync <syncName>', 'The name of the sync (e.g. account-sync).')
+    .option('-p, --provider <provider_config_key>', 'The unique key of the provider configuration (chosen by you upon creating this provider configuration).')
+    .option('-c, --connection <connection_id>', 'The ID of the Connection.')
+    .option('-l, --lastSyncDate [lastSyncDate]', 'Optional: last sync date to retrieve records greater than this date')
     .action(async function (this: Command) {
         checkEnvVars();
-        run(this.args);
+        run(this.args, this.opts());
     });
 
 program.parse();
