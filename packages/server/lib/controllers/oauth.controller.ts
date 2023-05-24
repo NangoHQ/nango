@@ -619,7 +619,22 @@ class OAuthController {
 
             const tokenMetadata = getConnectionMetadataFromTokenResponse(rawCredentials, template);
 
-            const parsedRawCredentials: AuthCredentials = connectionService.parseRawCredentials(rawCredentials, ProviderAuthModes.OAuth2);
+            var parsedRawCredentials: AuthCredentials;
+
+            try {
+                parsedRawCredentials = connectionService.parseRawCredentials(rawCredentials, ProviderAuthModes.OAuth2);
+            } catch (e) {
+                await createActivityLogMessageAndEnd({
+                    level: 'error',
+                    activity_log_id: activityLogId as number,
+                    content: `The OAuth token response from the server could not be parsed - OAuth flow failed. The server returned:\n${JSON.stringify(
+                        rawCredentials
+                    )}`,
+                    timestamp: Date.now()
+                });
+
+                return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError());
+            }
 
             const [updatedConnection] = await connectionService.upsertConnection(
                 connectionId,
