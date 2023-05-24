@@ -22,7 +22,6 @@ import {
     configService,
     errorManager,
     connectionService,
-    NangoError,
     getAccount,
     interpolateIfNeeded
 } from '@nangohq/shared';
@@ -281,6 +280,41 @@ class ProxyController {
         }
     }
 
+    private async handleResponse(res: Response, responseStream: AxiosResponse, config: ProxyBodyConfiguration, activityLogId: number, url: string) {
+        await updateSuccessActivityLog(activityLogId, true);
+
+        await createActivityLogMessageAndEnd({
+            level: 'info',
+            activity_log_id: activityLogId,
+            timestamp: Date.now(),
+            content: `${config.method.toUpperCase()} request to ${url} was successful`,
+            params: {
+                headers: JSON.stringify(config.headers)
+            }
+        });
+
+        const passThroughStream = new PassThrough();
+        responseStream.data.pipe(passThroughStream);
+        passThroughStream.pipe(res);
+
+        res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
+    }
+
+    private async handleErrorResponse(res: Response, e: unknown, url: string, config: ProxyBodyConfiguration, activityLogId: number) {
+        const error = e as AxiosError;
+        const errorData = error?.response?.data as stream.Readable;
+        const stringify = new Transform({
+            transform(chunk: Buffer, _encoding: BufferEncoding, callback: TransformCallback) {
+                callback(null, chunk);
+            }
+        });
+        res.writeHead(error?.response?.status as number, error?.response?.headers as OutgoingHttpHeaders);
+        errorData.pipe(stringify).pipe(res);
+        stringify.on('data', (data) => {
+            this.reportError(error, url, config, activityLogId, data);
+        });
+    }
+
     /**
      * Get
      * @param {Response} res Express response object
@@ -303,36 +337,9 @@ class ProxyController {
                 { numOfAttempts: Number(config.retries), retry: this.retry }
             );
 
-            await updateSuccessActivityLog(activityLogId, true);
-
-            await createActivityLogMessageAndEnd({
-                level: 'info',
-                activity_log_id: activityLogId,
-                timestamp: Date.now(),
-                content: `GET request to ${url} was successful`,
-                params: {
-                    headers: JSON.stringify(config.headers)
-                }
-            });
-
-            const passThroughStream = new PassThrough();
-            responseStream.data.pipe(passThroughStream);
-            passThroughStream.pipe(res);
+            this.handleResponse(res, responseStream, config, activityLogId, url);
         } catch (e: unknown) {
-            const error = e as AxiosError;
-            const errorData = error?.response?.data as stream.Readable;
-            const stringify = new Transform({
-                transform(chunk: Buffer, _encoding: BufferEncoding, callback: TransformCallback) {
-                    callback(null, chunk);
-                }
-            });
-            res.writeHead(error?.response?.status as number, error?.response?.headers as OutgoingHttpHeaders);
-            errorData.pipe(stringify).pipe(res);
-            stringify.on('data', (data) => {
-                const parsedData = JSON.parse(data);
-                // TODO log this err
-                console.error(parsedData);
-            });
+            this.handleErrorResponse(res, e, url, config, activityLogId);
         }
     }
 
@@ -343,7 +350,7 @@ class ProxyController {
      * @param {string} url
      * @param {ProxyBodyConfiguration} config
      */
-    private async post(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration, activityLogId: number) {
+    private async post(res: Response, _next: NextFunction, url: string, config: ProxyBodyConfiguration, activityLogId: number) {
         try {
             const headers = this.constructHeaders(config);
             const responseStream: AxiosResponse = await backOff(
@@ -359,23 +366,9 @@ class ProxyController {
                 { numOfAttempts: Number(config.retries), retry: this.retry }
             );
 
-            await updateSuccessActivityLog(activityLogId, true);
-
-            await createActivityLogMessageAndEnd({
-                level: 'info',
-                activity_log_id: activityLogId,
-                timestamp: Date.now(),
-                content: `POST request to ${url} was successful`,
-                params: {
-                    headers: JSON.stringify(config.headers)
-                }
-            });
-
-            res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
-            responseStream.data.pipe(res);
+            this.handleResponse(res, responseStream, config, activityLogId, url);
         } catch (error) {
-            const nangoError = await this.catalogAndReportError(error as Error | AxiosError, url, config, activityLogId);
-            next(nangoError);
+            this.handleErrorResponse(res, error, url, config, activityLogId);
         }
     }
 
@@ -386,7 +379,7 @@ class ProxyController {
      * @param {string} url
      * @param {ProxyBodyConfiguration} config
      */
-    private async patch(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration, activityLogId: number) {
+    private async patch(res: Response, _next: NextFunction, url: string, config: ProxyBodyConfiguration, activityLogId: number) {
         try {
             const headers = this.constructHeaders(config);
             const responseStream: AxiosResponse = await backOff(
@@ -402,23 +395,9 @@ class ProxyController {
                 { numOfAttempts: Number(config.retries), retry: this.retry }
             );
 
-            await updateSuccessActivityLog(activityLogId, true);
-
-            await createActivityLogMessageAndEnd({
-                level: 'info',
-                activity_log_id: activityLogId,
-                timestamp: Date.now(),
-                content: `PATCH request to ${url} was successful`,
-                params: {
-                    headers: JSON.stringify(config.headers)
-                }
-            });
-
-            res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
-            responseStream.data.pipe(res);
+            this.handleResponse(res, responseStream, config, activityLogId, url);
         } catch (error) {
-            const nangoError = await this.catalogAndReportError(error as Error | AxiosError, url, config, activityLogId);
-            next(nangoError);
+            this.handleErrorResponse(res, error, url, config, activityLogId);
         }
     }
 
@@ -429,7 +408,7 @@ class ProxyController {
      * @param {string} url
      * @param {ProxyBodyConfiguration} config
      */
-    private async put(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration, activityLogId: number) {
+    private async put(res: Response, _next: NextFunction, url: string, config: ProxyBodyConfiguration, activityLogId: number) {
         try {
             const headers = this.constructHeaders(config);
             const responseStream: AxiosResponse = await backOff(
@@ -445,23 +424,9 @@ class ProxyController {
                 { numOfAttempts: Number(config.retries), retry: this.retry }
             );
 
-            await updateSuccessActivityLog(activityLogId, true);
-
-            await createActivityLogMessageAndEnd({
-                level: 'info',
-                activity_log_id: activityLogId,
-                timestamp: Date.now(),
-                content: `PUT request to ${url} was successful`,
-                params: {
-                    headers: JSON.stringify(config.headers)
-                }
-            });
-
-            res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
-            responseStream.data.pipe(res);
+            this.handleResponse(res, responseStream, config, activityLogId, url);
         } catch (error) {
-            const nangoError = await this.catalogAndReportError(error as Error | AxiosError, url, config, activityLogId);
-            next(nangoError);
+            this.handleErrorResponse(res, error, url, config, activityLogId);
         }
     }
 
@@ -472,7 +437,7 @@ class ProxyController {
      * @param {string} url
      * @param {ProxyBodyConfiguration} config
      */
-    private async delete(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration, activityLogId: number) {
+    private async delete(res: Response, _next: NextFunction, url: string, config: ProxyBodyConfiguration, activityLogId: number) {
         try {
             const headers = this.constructHeaders(config);
             const responseStream: AxiosResponse = await backOff(
@@ -486,85 +451,24 @@ class ProxyController {
                 },
                 { numOfAttempts: Number(config.retries), retry: this.retry }
             );
-
-            await updateSuccessActivityLog(activityLogId, true);
-
-            await createActivityLogMessageAndEnd({
-                level: 'info',
-                activity_log_id: activityLogId,
-                timestamp: Date.now(),
-                content: `DELETE request to ${url} was successful`,
-                params: {
-                    headers: JSON.stringify(config.headers)
-                }
-            });
-
-            res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
-            responseStream.data.pipe(res);
+            this.handleResponse(res, responseStream, config, activityLogId, url);
         } catch (error) {
-            const nangoError = await this.catalogAndReportError(error as Error | AxiosError, url, config, activityLogId);
-            next(nangoError);
+            this.handleErrorResponse(res, error, url, config, activityLogId);
         }
     }
 
-    /**
-     * Catalog And Report Eroor
-     * @param {Error}AxiosError next callback function to pass control to the next middleware function in the pipeline.
-     * @param {string} url
-     * @param {ProxyBodyConfiguration} config
-     */
-    private async catalogAndReportError(error: Error | AxiosError, url: string, config: ProxyBodyConfiguration, activityLogId: number) {
-        if (axios.isAxiosError(error)) {
-            if (error?.response?.status === 404) {
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    activity_log_id: activityLogId,
-                    timestamp: Date.now(),
-                    content: `Response is a 404 to ${url}, make sure you have the endpoint specified and spelled correctly.${
-                        config.template.docs ? ` Refer to the documentation at ${config.template.docs} for help` : ''
-                    }`,
-                    params: {
-                        headers: JSON.stringify(config.headers)
-                    }
-                });
-
-                return new NangoError('unknown_endpoint');
+    private async reportError(error: AxiosError, url: string, config: ProxyBodyConfiguration, activityLogId: number, errorMessage: string) {
+        await createActivityLogMessageAndEnd({
+            level: 'error',
+            activity_log_id: activityLogId,
+            timestamp: Date.now(),
+            content: `The provider responded back with a ${error?.response?.status} and the message ${errorMessage} to the url: ${url}.${
+                config.template.docs ? ` Refer to the documentation at ${config.template.docs} for help` : ''
+            }`,
+            params: {
+                headers: JSON.stringify(config.headers)
             }
-            if (error?.response?.status === 403) {
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    activity_log_id: activityLogId,
-                    timestamp: Date.now(),
-                    content: `Response is a 403 to ${url}, make sure you have the proper scopes configured.${
-                        config.template.docs ? ` Refer to the documentation at ${config.template.docs} for help` : ''
-                    }`,
-                    params: {
-                        headers: JSON.stringify(config.headers)
-                    }
-                });
-
-                return new NangoError('fobidden');
-            }
-            if (error?.response?.status === 400) {
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    activity_log_id: activityLogId,
-                    timestamp: Date.now(),
-                    content: `Response is a 400 to ${url}, make sure you have the proper headers to go to the API set.${
-                        config.template.docs ? ` Refer to the documentation at ${config.template.docs} for help` : ''
-                    }`,
-                    params: {
-                        headers: JSON.stringify(config.headers)
-                    }
-                });
-
-                return new NangoError('bad_request');
-            }
-        } else {
-            return error;
-        }
-
-        return error;
+        });
     }
 
     /**
