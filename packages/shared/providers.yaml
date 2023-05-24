@@ -547,6 +547,7 @@ slack:
     authorization_url: https://slack.com/oauth/v2/authorize
     token_url: https://slack.com/api/oauth.v2.access
     base_api_url: https://slack.com/api
+    docs: https://api.slack.com/apis
 smugmug:
     auth_mode: OAUTH1
     request_url: https://api.smugmug.com/services/oauth/1.0a/getRequestToken
