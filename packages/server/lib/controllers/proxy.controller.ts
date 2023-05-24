@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import type { OutgoingHttpHeaders } from 'http';
 import type { NextFunction } from 'express';
-import stream, { Transform, TransformCallback } from 'stream';
+import stream, { Transform, TransformCallback, PassThrough } from 'stream';
 import url, { UrlWithParsedQuery } from 'url';
 import querystring from 'querystring';
 import axios, { AxiosError, AxiosResponse } from 'axios';
@@ -315,8 +315,9 @@ class ProxyController {
                 }
             });
 
-            res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
-            responseStream.data.pipe(res);
+            const passThroughStream = new PassThrough();
+            responseStream.data.pipe(passThroughStream);
+            passThroughStream.pipe(res);
         } catch (e: unknown) {
             const error = e as AxiosError;
             const errorData = error?.response?.data as stream.Readable;

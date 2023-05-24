@@ -181,7 +181,9 @@ export const tscWatch = () => {
         try {
             const result = compiler.compile(fs.readFileSync(filePath, 'utf8'), filePath);
             const jsFilePath = path.join(path.dirname(filePath), path.basename(filePath, '.ts') + '.js');
-            const distJSFilePath = jsFilePath.replace(NANGO_INTEGRATIONS_LOCATION, `${NANGO_INTEGRATIONS_LOCATION}/dist`);
+
+            const rawNangoIntegrationLocation = NANGO_INTEGRATIONS_LOCATION.replace('./', '');
+            const distJSFilePath = jsFilePath.replace(rawNangoIntegrationLocation, `${rawNangoIntegrationLocation}/dist`);
             fs.writeFileSync(distJSFilePath, result);
             console.log(chalk.green(`Compiled ${filePath} successfully`));
         } catch (error) {
