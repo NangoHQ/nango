@@ -1,8 +1,8 @@
 import { NangoSync, NangoHelper } from '@nangohq/node';
-import { <%= modelType %> } from '@nangohq/models';
+import { <%= interfaceNames.join(', ') %> } from './models';
 
 class <%= syncName %> extends NangoSync {
-  override async fetchData(nango: NangoHelper): { [<%= modelType %>.name]: [<%= modelType %>.type] } {
+override async fetchData(nango: NangoHelper): Promise<{<% for (let i = 0; i < mappings.length; i++) { %><%= mappings[i].name %>: <%= mappings[i].type %>[]<% if (i !== mappings.length - 1) { %>, <% } %><% } %>}> {
     const providerConfigKey = '<%= providerConfigKey %>';
     // Rest of the integration code goes here.
   }

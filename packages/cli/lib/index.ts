@@ -19,10 +19,10 @@ import { build } from 'esbuild';
 import { spawn } from 'child_process';
 import * as dotenv from 'dotenv';
 
-import type { NangoConfig, NangoIntegration, NangoIntegrationData } from '@nangohq/shared';
+import type { NangoConfig, NangoModel, NangoIntegration, NangoIntegrationData } from '@nangohq/shared';
 import { loadSimplifiedConfig } from '@nangohq/shared';
 import { init, run, tscWatch } from './sync.js';
-import { checkEnvVars, enrichHeaders, httpsAgent, getConnection } from './utils.js';
+import { checkEnvVars, enrichHeaders, httpsAgent, getConnection, getFieldType } from './utils.js';
 
 const program = new Command();
 
@@ -262,6 +262,28 @@ program
         const configContents = fs.readFileSync(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/${configFile}`), 'utf8');
         const configData: NangoConfig = yaml.load(configContents) as unknown as NangoConfig;
         const { integrations } = configData;
+        const { models } = configData;
+
+        const interfaceDefinitions = Object.keys(models).map((modelName: string) => {
+            if (modelName.charAt(0) === '_') {
+                return;
+            }
+            const fields = models[modelName] as NangoModel;
+            const singularModelName = modelName.charAt(modelName.length - 1) === 's' ? modelName.slice(0, -1) : modelName;
+            const interfaceName = `${singularModelName.charAt(0).toUpperCase()}${singularModelName.slice(1)}`;
+            const fieldDefinitions = Object.keys(fields)
+                .map((fieldName: string) => {
+                    const fieldModel = fields[fieldName] as string | NangoModel;
+                    const fieldType = getFieldType(fieldModel);
+                    return `  ${fieldName}: ${fieldType};`;
+                })
+                .join('\n');
+            const interfaceDefinition = `export interface ${interfaceName} {\n${fieldDefinitions}\n}\n`;
+            return interfaceDefinition;
+        });
+
+        fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/models.ts`, interfaceDefinitions.join('\n'));
+
         for (let i = 0; i < Object.keys(integrations).length; i++) {
             const providerConfigKey = Object.keys(integrations)[i] as string;
             const syncObject = integrations[providerConfigKey] as unknown as { [key: string]: NangoIntegration };
@@ -274,25 +296,26 @@ program
                     .split('-')
                     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
                     .join('');
-                const rendered = ejs.render(templateContents, { syncName: syncNameCamel, modelType: models[0], providerConfigKey });
-                fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/${syncName}.ts`, rendered);
+                const rendered = ejs.render(templateContents, {
+                    syncName: syncNameCamel,
+                    interfaceNames: models.map((model) => {
+                        const singularModel = model?.charAt(model.length - 1) === 's' ? model.slice(0, -1) : model;
+                        return `${singularModel.charAt(0).toUpperCase()}${singularModel.slice(1)}`;
+                    }),
+                    mappings: models.map((model) => {
+                        const singularModel = model.charAt(model.length - 1) === 's' ? model.slice(0, -1) : model;
+                        return {
+                            name: model,
+                            type: `${singularModel.charAt(0).toUpperCase()}${singularModel.slice(1)}`
+                        };
+                    }),
+                    providerConfigKey
+                });
+                fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/_${syncName}.ts`, rendered);
             }
         }
 
         console.log(chalk.green(`Integration files have been created`));
-        /*
-            // create a migration file based on the model
-            const migrationContents = fs.readFileSync(path.resolve(__dirname, './migration.ejs'), 'utf8');
-            // TODO don't use date but rather some hash that can be recreated later
-            const tableName = `${integrationName}.v1.${Date.now()}`;
-            const modelTypes = returns.map((modelName: string) => {
-                return models.find((model: any) => Object.keys(model)[0] === modelName);
-            });
-            // TODO fix migration template
-            //const renderedMigration = ejs.render(migrationContents, { tableName, data: modelTypes });
-            console.log(migrationContents, tableName, modelTypes);
-        }
-        */
     });
 
 program

@@ -1,5 +1,6 @@
 import https from 'https';
 import axios from 'axios';
+import type { NangoModel } from '@nangohq/shared';
 
 let hostport = process.env['NANGO_HOSTPORT'] || 'http://localhost:3003';
 const cloudHost = 'https://api.nango.dev';
@@ -56,4 +57,24 @@ export function httpsAgent() {
     return new https.Agent({
         rejectUnauthorized: false
     });
+}
+
+export function getFieldType(field: string | NangoModel): string {
+    if (typeof field === 'string') {
+        let tsType = '';
+        switch (field) {
+            case 'char':
+                tsType = 'string';
+                break;
+            case 'integer':
+                tsType = 'number';
+                break;
+        }
+        return tsType;
+    } else {
+        const nestedFields = Object.keys(field)
+            .map((fieldName: string) => `  ${fieldName}: ${getFieldType(field[fieldName] as string | NangoModel)};`)
+            .join('\n');
+        return `{\n${nestedFields}\n}`;
+    }
 }
