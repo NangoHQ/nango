@@ -12,7 +12,7 @@ export async function upsert(response: DataResponse[], dbTable: string, uniqueKe
     const results = await schema()
         .from(dbTable)
         .insert(response, ['id', 'external_id'])
-        .onConflict(['nango_connection_id', 'external_id'])
+        .onConflict(['nango_connection_id', 'external_id', 'model'])
         .merge()
         .returning(['id', 'external_id']);
 
