@@ -1,0 +1,32 @@
+---
+title: Gorgias
+sidebarTitle: Gorgias
+---
+
+Integration template: [`gorgias`](https://nango.dev/providers.yaml)
+
+## Features
+
+| Feature                                                                          | Status                          |
+| -------------------------------------------------------------------------------- | ------------------------------- |
+| [Auth (OAuth)](/nango-auth)                                                      | ✅                              |
+| [Sync](/nango-sync)                                                              | ✅                              |
+| [Assisted requests](/nango-sync/guides/direct-requests)                          | 🚫 (time to contribute: &lt;1h) |
+| [Auto-pagination](/nango-sync/configuration#auto-pagination)                     | 🚫 (time to contribute: &lt;1h) |
+| [API-specific rate limits](/nango-sync/configuration#rate-limits-retry-policies) | 🚫 (time to contribute: &lt;1h) |
+
+<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+## Getting started
+
+-   [How to register an Application](https://developers.gorgias.com/docs/1-register-on-developer-portal)
+-   [OAuth-related docs](https://developers.gorgias.com/docs/oauth2-authentication-for-creating-apps-with-gorgias)
+-   [List of OAuth scopes](https://developers.gorgias.com/docs/oauth2-scopes)
+-   [Web API docs (their REST API)](https://developers.gorgias.com/reference/introduction)
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+## API gotchas
+
+-   To refresh tokens, you will need to set the `offline` as part of the scopes when creating an integration.
+
+<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/gorgias.mdx)</Note>

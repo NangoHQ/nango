@@ -1,0 +1,519 @@
+openapi: '3.1.0'
+info:
+    title: 'Nango API'
+    description: 'Nango API specs used to authorize & sync data with external APIs.'
+    version: '1.0.0'
+servers:
+    - url: https://api.nango.dev
+      description: Production server
+    - url: http://localhost:3003
+      description: Local server
+paths:
+    /config:
+        get:
+            description: Returns a list of Integrations
+            responses:
+                '200':
+                    description: Successfully returned a list of Integrations
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - configs
+                                properties:
+                                    configs:
+                                        type: array
+                                        items:
+                                            type: object
+                                            required:
+                                                - unique_key
+                                                - provider
+                                            properties:
+                                                unique_key:
+                                                    type: string
+                                                    description: The Integration ID that you created in Nango.
+                                                provider:
+                                                    type: string
+                                                    description: The Nango Integration Template.
+        post:
+            description: Create a new Integration
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - provider_config_key
+                                - provider
+                                - oauth_client_id
+                                - oauth_client_secret
+                            properties:
+                                provider_config_key:
+                                    type: string
+                                    description: The Integration ID that you created on Nango.
+                                provider:
+                                    type: string
+                                    description: The Nango Integration Template.
+                                oauth_client_id:
+                                    type: string
+                                    description: The ID of your OAuth app (registed with the external API).
+                                oauth_client_secret:
+                                    type: string
+                                    description: The secret of your OAuth app (registed with the external API).
+                                oauth_scopes:
+                                    type: string
+                                    description: Comma separated list of scopes.
+            responses:
+                '200':
+                    description: Successfully created an Integrations
+                '400':
+                    description: Invalid request
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    message:
+                                        type: string
+        put:
+            description: Edit an Integration
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - provider_config_key
+                                - provider
+                                - oauth_client_id
+                                - oauth_client_secret
+                            properties:
+                                provider_config_key:
+                                    type: string
+                                    description: The Integration ID that you created on Nango.
+                                provider:
+                                    type: string
+                                    description: The Nango Integration Template.
+                                oauth_client_id:
+                                    type: string
+                                    description: The ID of your OAuth app (registed with the external API).
+                                oauth_client_secret:
+                                    type: string
+                                    description: The secret of your OAuth app (registed with the external API).
+                                oauth_scopes:
+                                    type: string
+                                    description: Comma separated list of scopes.
+            responses:
+                '200':
+                    description: Successfully edit an Integration
+                '400':
+                    description: Invalid request
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    message:
+                                        type: string
+                '404':
+                    description: Unknown Integration
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    message:
+                                        type: string
+    /config/{providerConfigKey}:
+        get:
+            description: Returns a specific Integration
+            parameters:
+                - name: providerConfigKey
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The Integration ID that you created in Nango.
+            responses:
+                '200':
+                    description: Successfully returned an Integration
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - config
+                                properties:
+                                    config:
+                                        type: object
+                                        required:
+                                            - unique_key
+                                            - provider
+                                        properties:
+                                            unique_key:
+                                                type: string
+                                                description: The Integration ID that you created in Nango.
+                                            provider:
+                                                type: string
+                                                description: The Nango Integration Template.
+                '400':
+                    description: Invalid request
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    message:
+                                        type: string
+                '404':
+                    description: Unknown Integration
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    message:
+                                        type: string
+        delete:
+            description: Deletes a specific Integration
+            parameters:
+                - name: providerConfigKey
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The Integration ID that you created in Nango.
+            responses:
+                '200':
+                    description: Successfully deleled an Integration
+                '400':
+                    description: Invalid request
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    message:
+                                        type: string
+                '404':
+                    description: Unknown Integration
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    message:
+                                        type: string
+    /connection:
+        get:
+            description: Returns a list of Connections
+            responses:
+                '200':
+                    description: Successfully returned a list of Connections
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - configs
+                                properties:
+                                    configs:
+                                        type: array
+                                        items:
+                                            type: object
+                                            required:
+                                                - id
+                                                - connection_id
+                                                - provider
+                                                - created
+                                            properties:
+                                                id:
+                                                    type: integer
+                                                    description: The internal Nango ID used for the Connection.
+                                                connection_id:
+                                                    type: string
+                                                    description: The connection ID used to create the Connection.
+                                                provider:
+                                                    type: string
+                                                    description: The Integration ID used to create the Connection (aka Unique Key, Provider Config Key).
+                                                created:
+                                                    type: string
+                                                    description: Connection creation date.
+    /connection/{connectionId}:
+        get:
+            description: Returns a specific Connection
+            parameters:
+                - name: connectionId
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The Connection ID used to create the Connection.
+                - name: provider_config_key
+                  in: query
+                  required: true
+                  description: The Integration ID used to create the Connection (aka Unique Key).
+                  schema:
+                      type: string
+                - name: force_refresh
+                  in: query
+                  description: If true, Nango will attempt to refresh the access access token regardless of its expiration status (false by default).
+                  schema:
+                      type: boolean
+            responses:
+                '200':
+                    description: Successfully returned a Connection
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - id
+                                    - created_at
+                                    - updated_at
+                                    - provider_config_key
+                                    - connection_id
+                                    - credentials
+                                properties:
+                                    id:
+                                        type: integer
+                                        description: The internal Nango ID used for the Connection.
+                                    created_at:
+                                        type: string
+                                        description: Connection creation date.
+                                    updated_at:
+                                        type: string
+                                        description: Connection update date.
+                                    provider_config_key:
+                                        type: string
+                                        description: The Integration ID used to create the Connection (aka Unique Key).
+                                    connection_id:
+                                        type: string
+                                        description: The connection ID used to create the Connection.
+                                    connection_config:
+                                        type: object
+                                        description: Important configuration passed in by you during the OAuth flow.
+                                    metadata:
+                                        type: object
+                                        description: Important metadata passed in by the external API during the OAuth flow.
+                                    credentials:
+                                        type: object
+                                        description: The credentials to access the external API.
+
+                '400':
+                    description: Invalid request
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    message:
+                                        type: string
+                '404':
+                    description: Unknown Connection
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    message:
+                                        type: string
+        delete:
+            description: Deletes a specific Connection
+            parameters:
+                - name: connectionId
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The Connection ID used to create the Connection.
+                - name: provider_config_key
+                  in: query
+                  required: true
+                  description: The Integration ID used to create the Connection (aka Unique Key).
+                  schema:
+                      type: string
+            responses:
+                '200':
+                    description: Successfully deleled an Connection
+                '400':
+                    description: Invalid request
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    message:
+                                        type: string
+                '404':
+                    description: Unknown Connection
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    message:
+                                        type: string
+    /proxy/{anyPath}:
+        get:
+            description: Make a GET request with the Proxy.
+            parameters:
+                - name: anyPath
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                - name: any_query_params
+                  in: query
+                  required: true
+                  schema:
+                      type: string
+                - in: header
+                  name: Connection-Id
+                  required: true
+                  schema:
+                      type: string
+                  description: The Connection ID used to create the Connection.
+                - in: header
+                  name: Provider-Config-Key
+                  required: true
+                  schema:
+                      type: string
+                  description: The Integration ID used to create the Connection (aka Unique Key).
+                - in: header
+                  name: Retries
+                  schema:
+                      type: string
+                  description: The number of retries in case of failure (with exponential back-off).
+        post:
+            description: Make a POST request with the Proxy.
+            parameters:
+                - name: anyPath
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                - in: header
+                  name: Connection-Id
+                  required: true
+                  schema:
+                      type: string
+                  description: The Connection ID used to create the Connection.
+                - in: header
+                  name: Provider-Config-Key
+                  required: true
+                  schema:
+                      type: string
+                  description: The Integration ID used to create the Connection (aka Unique Key).
+                - in: header
+                  name: Retries
+                  schema:
+                      type: string
+                  description: The number of retries in case of failure (with exponential back-off).
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                any_body_param:
+                                    type: string
+        put:
+            description: Make a PUT request with the Proxy.
+            parameters:
+                - name: anyPath
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                - in: header
+                  name: Connection-Id
+                  required: true
+                  schema:
+                      type: string
+                  description: The Connection ID used to create the Connection.
+                - in: header
+                  name: Provider-Config-Key
+                  required: true
+                  schema:
+                      type: string
+                  description: The Integration ID used to create the Connection (aka Unique Key).
+                - in: header
+                  name: Retries
+                  schema:
+                      type: string
+                  description: The number of retries in case of failure (with exponential back-off).
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                any_body_param:
+                                    type: string
+        patch:
+            description: Make a PATCH request with the Proxy.
+            parameters:
+                - name: anyPath
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                - in: header
+                  name: Connection-Id
+                  required: true
+                  schema:
+                      type: string
+                  description: The Connection ID used to create the Connection.
+                - in: header
+                  name: Provider-Config-Key
+                  required: true
+                  schema:
+                      type: string
+                  description: The Integration ID used to create the Connection (aka Unique Key).
+                - in: header
+                  name: Retries
+                  schema:
+                      type: string
+                  description: The number of retries in case of failure (with exponential back-off).
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                any_body_param:
+                                    type: string
+        delete:
+            description: Make a DELETE request with the Proxy.
+            parameters:
+                - name: Endpoint path
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                - name: any_query_params
+                  in: query
+                  required: true
+                  schema:
+                      type: string
+                - in: header
+                  name: Connection-Id
+                  required: true
+                  schema:
+                      type: string
+                  description: The Connection ID used to create the Connection.
+                - in: header
+                  name: Provider-Config-Key
+                  required: true
+                  schema:
+                      type: string
+                  description: The Integration ID used to create the Connection (aka Unique Key).
+                - in: header
+                  name: Retries
+                  schema:
+                      type: string
+                  description: The number of retries in case of failure (with exponential back-off).

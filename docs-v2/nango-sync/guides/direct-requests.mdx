@@ -4,13 +4,13 @@ sidebarTitle: 'Direct Requests'
 description: 'Call APIs directly, with the full power of the Nango infrastructure.'
 ---
 
-Sometimes you need to make one-off synchronous requests to the external API. With the **Nango Proxy**, you can do this without having to worry about authentication, logging & monitoring, etc.
+The **Nango Proxy** assists you in making external API requests without having to worry about authentication, logging & monitoring, rate-limits, retries, etc.
 
-Before using Nango Proxy, you need to run Nango (cf. [Quickstart](/quickstart)), then configure an integration with [OAuth](/guides/api-access-with-oauth) or [API Key](<(/guides/api-access-with-key)>).
+Before using the Nango Proxy, you need to run Nango (cf. [Quickstart](/quickstart)), then configure an [Integration](/core-concepts#integrations) with [OAuth](/nango-auth/guides/oauth) or [API Key](/nango-auth/guides/api-key-auth).
 
-## With the SDKs
+## SDK usage
 
-Use our SDKs (cf. [reference](/sdks)) to execute proxy requests, e.g. in Typescript:
+Use the SDKs (cf. [reference](/sdks)) to execute proxy requests, e.g. in Typescript:
 
 ```typescript
 const res = await nango.proxy({
@@ -26,9 +26,9 @@ const res = await nango.proxy({
 });
 ```
 
-## With the REST API
+## REST API usage
 
-Use our REST API (cf. [reference](/api)) to execute proxy requests, e.g.:
+Use the REST API (cf. [reference](/api-reference)) to execute proxy requests, e.g.:
 
 ```bash
 curl -X POST -H 'Content-Type: application/json' \

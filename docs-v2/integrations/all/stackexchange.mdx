@@ -1,0 +1,34 @@
+---
+title: Stack Exchange
+sidebarTitle: Stack Exchange
+---
+
+Integration template: [`stackexchange`](https://nango.dev/providers.yaml)
+
+## Features
+
+| Feature                                                                          | Status                          |
+| -------------------------------------------------------------------------------- | ------------------------------- |
+| [Auth (OAuth)](/nango-auth)                                                      | ✅                              |
+| [Sync](/nango-sync)                                                              | ✅                              |
+| [Assisted requests](/nango-sync/guides/direct-requests)                          | 🚫 (time to contribute: &lt;1h) |
+| [Auto-pagination](/nango-sync/configuration#auto-pagination)                     | 🚫 (time to contribute: &lt;1h) |
+| [API-specific rate limits](/nango-sync/configuration#rate-limits-retry-policies) | 🚫 (time to contribute: &lt;1h) |
+
+<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+## Getting started
+
+-   [Register your OAuth app here](http://stackapps.com/apps/oauth/register)
+-   [Stack Exchange API docs](https://api.stackexchange.com/docs)
+-   [Stack Exchange OAuth scopes](https://api.stackexchange.com/docs/authentication#scope)
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+## API gotchas
+
+-   By default access tokens expire (and cannot be refreshed). To get an access token that does not expire pass the `no_expiry` scope (along with your other scopes)
+-   Read the [usage notes here](https://api.stackexchange.com/docs/authentication#usage): You need to pass an additional `key` parameter together with your access token to benefit from higher API quotas.
+
+<Note>
+    Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/stackexchange.mdx)
+</Note>

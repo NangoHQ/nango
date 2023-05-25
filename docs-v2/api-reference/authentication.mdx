@@ -1,0 +1,17 @@
+---
+title: 'Authentication'
+---
+
+Authentication depends on the environment in which you run Nango.
+
+## Nango Cloud
+
+Simply use the Nango Secret Key available in your [Project Settings](https://app.nango.dev/project-settings) as Bearer token in the `Authorization` header.
+
+## Nango Self-Hosted
+
+By default, Nango Self-Hosted does not require to authenticate API requests, which is well-suited for local testing.
+
+If you plan to release Nango Self-Hosted in production, please visit the [self-hosting instructions](/self-host/instructions).
+
+Once you have enabled API authentication, use Basic auth instead of Bearer auth.

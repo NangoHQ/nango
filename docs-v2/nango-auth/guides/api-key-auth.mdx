@@ -4,27 +4,27 @@ sidebarTitle: 'API Key Auth'
 description: 'Learn how to let your users authorize any API with an API key in minutes.'
 ---
 
-<Warning>This feature is in private beta. Request access on the [community](https://nango.dev/slack).</Warning>
+<Note>This feature is in private beta. Request access on the [community](https://nango.dev/slack).</Note>
 
 Step 0: Run Nango with the [Quickstart](/quickstart).
 
-## Step 1: Configure a new integration
+## Step 1: Configure a new Integration
 
 On the dashboard's `Integrations` tab, click the `Add New` button.
 
-Select an pre-configured integration in the dropdown or [contribute a new one](/contribute).
+Select an pre-configured [Integration Template](/core-concepts#integration-templates) in the dropdown or [contribute a new one](/contribute).
 
 Fill out your app details and click `Save`.
 
 ## Step 2: Get user authorization
 
-On the dashboard's `Integrations` tab, click the `Auth` button for the integration you just configured.
+On the dashboard's `Integrations` tab, click the `Auth` button for the [Integration](/core-concepts#integrations) you just configured.
 
 Embed the generated code snippet in your frontend or provide authorization yourself by clicking the `Authorize` button.
 
 ## Step 3: Retrieve the API Key
 
-Use our [SDKs](/sdks) and [API](/api) to retrieve the API Key by fetching the relevant Connection, using the same `Connection ID` that you specified in Step 2.
+Use our [SDKs](/sdks) and [API](/api-reference) to retrieve the API Key by fetching the relevant [Connection](/core-concepts#connections), using the same `Connection ID` that you specified in Step 2.
 
 Et voilà ! This is all it takes to access APIs using API keys, on behalf of users.
 

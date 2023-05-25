@@ -1,0 +1,64 @@
+---
+title: 'Core Concepts'
+sidebarTitle: 'Core Concepts'
+description: 'A high-level view of how Nango works.'
+---
+
+## Why Nango?
+
+Nango is based on two assumptions:
+
+1.  product integrations require [common infrastructure](/core-concepts#nango-infrastructure) such as auth, ETL, webhooks, observability, etc.
+2.  one-size-fits-all API aggregation is limiting and falls apart beyond basic integration use-cases
+
+Nango provides [common infrastructure](/core-concepts#nango-infrastructure) that maintains full control on how external APIs are consumed. To achieve this, we let developers define their own API requests & models, with the assistance of our tooling.
+
+## Why Open Source?
+
+Nango is open-source and leverages the community to:
+
+1. improve Nango's [infrastructure](/core-concepts#nango-infrastructure)
+2. contribute new [Integration Templates](/core-concepts#integration-templates)
+3. share knowledge about external API quirks
+
+## Glossary
+
+Nango is defined around a couple important abstractions:
+
+### Integration Templates[](#integration-templates)
+
+An Integration Template (e.g. the `hubspot` template) designates the configuration, within Nango, that is specific to an external API. In particular:
+
+-   Auth-related configuration (auth type, OAuth URLs, auth quirks, etc.)
+-   Sync-related configuration (rate-limits, pagination strategy, etc.)
+
+These templates are contributed and enhanced by Nango and its community. Templates allow to rapidly adapt Nango to work with any API, by editing a `.yaml` configuration file.
+
+### Integrations[](#integrations)
+
+Developers create Integrations, based on [Integration Templates](/core-concepts#integration-templates), to start sharing data with external APIs from their app.
+
+Integrations are created on the Nango Dashboard and later embedded in your product.
+
+[Nango Auth](/nango-auth) is used to let users authorize your integrations (API access).
+
+[Nango Sync](/nango-auth) is used to let you exchange data with external APIs, on behalf of users (API syncing). Nango Sync requires you to write a minimal amount of code (API requests & transformation) to define your integration logic.
+
+### Connections[](#connections)
+
+When an end user authorizes an [Integration](/core-concepts#integrations) in your app, Nango initiates a new Connection. E.g. `user1` authorizes a `Github` integration to sync issues in your app.
+
+Connections represent the relation between an end user and an external API. In particular, it contains the necessary credentials to access the external API on behalf of the user.
+
+### Nango Infrastructure[](#nango-infrastructure)
+
+Nango's infrastructure designate the following components that we see companies rebuilding over and over:
+
+-   Auth server
+-   Orchestrator to schedule sync jobs (Temporal)
+-   Background workers & ETL pipelines to sync data with external APIs
+-   Postgres database to store auth/sync-related configuration + cached data
+-   Tooling to write & deploy developer-supplied integration code
+-   SDKs, REST API & webhooks to access the data sync from external APIs
+-   Admin console to manage & observe integrations
+-   REST API to manage integrations programmatically

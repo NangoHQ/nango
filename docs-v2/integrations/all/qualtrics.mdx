@@ -1,0 +1,32 @@
+---
+title: Qualtrics
+sidebarTitle: Qualtrics
+---
+
+Integration template: [`qualtrics`](https://nango.dev/providers.yaml)
+
+## Features
+
+| Feature                                                                          | Status                          |
+| -------------------------------------------------------------------------------- | ------------------------------- |
+| [Auth (OAuth)](/nango-auth)                                                      | ✅                              |
+| [Sync](/nango-sync)                                                              | ✅                              |
+| [Assisted requests](/nango-sync/guides/direct-requests)                          | 🚫 (time to contribute: &lt;1h) |
+| [Auto-pagination](/nango-sync/configuration#auto-pagination)                     | 🚫 (time to contribute: &lt;1h) |
+| [API-specific rate limits](/nango-sync/configuration#rate-limits-retry-policies) | 🚫 (time to contribute: &lt;1h) |
+
+<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+## Getting started
+
+-   [Registering an App](https://developer.qualtrics.com/developer/portal/)
+-   [OAuth-related docs](https://api.qualtrics.com/6c02f17c3109f-o-auth-authentication-auth-code)
+-   [List of OAuth scopes](https://api.qualtrics.com/1450e85735dbf-o-auth-2-0-scopes)
+-   [API reference](https://developer.qualtrics.com/developer/portal/documentation/1bd4e078a35c1-hello-world-setup)
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+## API gotchas
+
+-   You are required to pass in the Data Center used to register your Qualtrics account as a subdomain for both the OAuth requests and subsequent API requests (cf. [Connection configuration](../nango-auth/frontend-sdk.md#connection-config)).
+
+<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/qualtrics.mdx)</Note>

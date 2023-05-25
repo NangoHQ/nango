@@ -1,0 +1,32 @@
+---
+title: Zendesk
+sidebarTitle: Zendesk
+---
+
+Integration template: [`zendesk`](https://nango.dev/providers.yaml)
+
+## Features
+
+| Feature                                                                          | Status                          |
+| -------------------------------------------------------------------------------- | ------------------------------- |
+| [Auth (OAuth)](/nango-auth)                                                      | ✅                              |
+| [Sync](/nango-sync)                                                              | ✅                              |
+| [Assisted requests](/nango-sync/guides/direct-requests)                          | 🚫 (time to contribute: &lt;1h) |
+| [Auto-pagination](/nango-sync/configuration#auto-pagination)                     | 🚫 (time to contribute: &lt;1h) |
+| [API-specific rate limits](/nango-sync/configuration#rate-limits-retry-policies) | 🚫 (time to contribute: &lt;1h) |
+
+<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+## Getting started
+
+-   [How to register an Application](https://developer.zendesk.com/api-reference/sales-crm/authentication/introduction/#application-registration)
+-   [OAuth-related docs](https://developer.zendesk.com/api-reference/sales-crm/authentication/introduction/)
+-   [List of OAuth scopes](https://developer.zendesk.com/api-reference/sales-crm/authentication/introduction/#scopes)
+-   [API](https://developer.zendesk.com/api-reference/sales-crm/authentication/introduction/#scopes:~:text=Reference-,SYNC%20API,-Introduction)
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+## API gotchas
+
+-   Make sure you specify the subdomain in the [Connection Configuration](/nango-auth/configuration) before starting an OAuth flow for Zendesk.
+
+<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/zendesk.mdx)</Note>

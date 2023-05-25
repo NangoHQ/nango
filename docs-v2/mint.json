@@ -1,5 +1,5 @@
 {
-    "name": "Nango",
+    "name": "Nango Docs",
     "logo": {
         "light": "/logo/light.svg",
         "dark": "/logo/dark.svg"
@@ -10,6 +10,12 @@
         "light": "#C7D3FE",
         "dark": "#000000",
         "anchors": { "from": "#3F68FF", "to": "#012AC3" }
+    },
+    "api": {
+        "baseUrl": ["https://app.nango.com", "http://localhost:3003"],
+        "auth": {
+            "method": "bearer"
+        }
     },
     "topbarCtaButton": {
         "type": "github",
@@ -26,7 +32,7 @@
     },
     "anchors": [
         {
-            "name": "Pre-Configured APIs",
+            "name": "Integrations",
             "icon": "bars",
             "url": "integrations"
         },
@@ -38,7 +44,7 @@
         {
             "name": "API Reference",
             "icon": "book",
-            "url": "api"
+            "url": "api-reference"
         },
         {
             "name": "Community",
@@ -49,7 +55,7 @@
     "navigation": [
         {
             "group": "Getting Started",
-            "pages": ["introduction", "quickstart"]
+            "pages": ["introduction", "quickstart", "core-concepts"]
         },
         {
             "group": "Nango Auth",
@@ -92,6 +98,188 @@
         {
             "group": "Contribute",
             "pages": ["contribute/nango-auth", "contribute/nango-sync"]
+        },
+        {
+            "group": "Overview",
+            "pages": ["integrations/overview", "integrations/add-your-own-integration"]
+        },
+        {
+            "group": "Categories",
+            "pages": [
+                "integrations/accounting",
+                "integrations/analytics",
+                "integrations/ats",
+                "integrations/banking",
+                "integrations/cms",
+                "integrations/communication",
+                "integrations/crm",
+                "integrations/design",
+                "integrations/dev-tools",
+                "integrations/ecommerce",
+                "integrations/gaming",
+                "integrations/invoicing",
+                "integrations/hr",
+                "integrations/knowledge-base",
+                "integrations/legal",
+                "integrations/marketing",
+                "integrations/payment",
+                "integrations/productivity",
+                "integrations/social",
+                "integrations/sport",
+                "integrations/storage",
+                "integrations/support",
+                "integrations/surveys",
+                "integrations/ticketing",
+                "integrations/video",
+                "integrations/other"
+            ]
+        },
+        {
+            "group": "Integrations",
+            "pages": [
+                "integrations/all/accelo",
+                "integrations/all/adobe",
+                "integrations/all/airtable",
+                "integrations/all/amazon",
+                "integrations/all/asana",
+                "integrations/all/atlassian",
+                "integrations/all/bamboohr",
+                "integrations/all/battlenet",
+                "integrations/all/bitbucket",
+                "integrations/all/boldsign",
+                "integrations/all/box",
+                "integrations/all/braintree",
+                "integrations/all/brex",
+                "integrations/all/calendly",
+                "integrations/all/clickup",
+                "integrations/all/confluence",
+                "integrations/all/contentstack",
+                "integrations/all/deel",
+                "integrations/all/digitalocean",
+                "integrations/all/discord",
+                "integrations/all/dropbox",
+                "integrations/all/docusign",
+                "integrations/all/epic-games",
+                "integrations/all/facebook",
+                "integrations/all/factorial",
+                "integrations/all/figjam",
+                "integrations/all/figma",
+                "integrations/all/fitbit",
+                "integrations/all/freshbooks",
+                "integrations/all/front",
+                "integrations/all/github",
+                "integrations/all/gitlab",
+                "integrations/all/google",
+                "integrations/all/google-calendar",
+                "integrations/all/google-mail",
+                "integrations/all/google-sheet",
+                "integrations/all/gorgias",
+                "integrations/all/greenhouse",
+                "integrations/all/gusto",
+                "integrations/all/hubspot",
+                "integrations/all/healthgorilla",
+                "integrations/all/instagram",
+                "integrations/all/intercom",
+                "integrations/all/intuit",
+                "integrations/all/jira",
+                "integrations/all/keap",
+                "integrations/all/lever",
+                "integrations/all/linear",
+                "integrations/all/linkedin",
+                "integrations/all/mailchimp",
+                "integrations/all/microsoft-teams",
+                "integrations/all/miro",
+                "integrations/all/monday",
+                "integrations/all/mural",
+                "integrations/all/notion",
+                "integrations/all/one-drive",
+                "integrations/all/osu",
+                "integrations/all/outreach",
+                "integrations/all/pagerduty",
+                "integrations/all/pandadoc",
+                "integrations/all/payfit",
+                "integrations/all/pipedrive",
+                "integrations/all/qualtrics",
+                "integrations/all/quickbooks",
+                "integrations/all/ramp",
+                "integrations/all/reddit",
+                "integrations/all/sage",
+                "integrations/all/salesforce",
+                "integrations/all/salesloft",
+                "integrations/all/segment",
+                "integrations/all/shopify",
+                "integrations/all/slack",
+                "integrations/all/smugmug",
+                "integrations/all/splitwise",
+                "integrations/all/spotify",
+                "integrations/all/squareup",
+                "integrations/all/stackexchange",
+                "integrations/all/strava",
+                "integrations/all/stripe",
+                "integrations/all/teamwork",
+                "integrations/all/todoist",
+                "integrations/all/timely",
+                "integrations/all/trello",
+                "integrations/all/twitch",
+                "integrations/all/twitter",
+                "integrations/all/twinfield",
+                "integrations/all/typeform",
+                "integrations/all/uber",
+                "integrations/all/wakatime",
+                "integrations/all/wave-accounting",
+                "integrations/all/xero",
+                "integrations/all/yahoo",
+                "integrations/all/yandex",
+                "integrations/all/youtube",
+                "integrations/all/zapier-nla",
+                "integrations/all/zendesk",
+                "integrations/all/zenefits",
+                "integrations/all/zoho-crm",
+                "integrations/all/zoho-desk",
+                "integrations/all/zoho-invoice",
+                "integrations/all/zoho-books",
+                "integrations/all/zoom"
+            ]
+        },
+        {
+            "group": "Overview",
+            "pages": ["sdks/overview"]
+        },
+        {
+            "group": "Frontend SDK",
+            "pages": ["sdks/frontend"]
+        },
+        {
+            "group": "Backend SDKs",
+            "pages": ["sdks/node", "sdks/python", "sdks/java", "sdks/ruby", "sdks/go", "sdks/rust", "sdks/php"]
+        },
+        {
+            "group": "Overview",
+            "pages": ["api-reference/overview", "api-reference/authentication"]
+        },
+        {
+            "group": "Integrations",
+            "pages": [
+                "api-reference/integration/list",
+                "api-reference/integration/get",
+                "api-reference/integration/create",
+                "api-reference/integration/update",
+                "api-reference/integration/delete"
+            ]
+        },
+        {
+            "group": "Connections",
+            "pages": ["api-reference/connection/list", "api-reference/connection/get", "api-reference/connection/delete"]
+        },
+        {
+            "group": "Proxy",
+            "pages": [
+                "api-reference/proxy/get",
+                "api-reference/proxy/post",
+                "api-reference/proxy/put",
+                "api-reference/proxy/patch",
+                "api-reference/proxy/delete"
+            ]
         }
     ],
     "footerSocials": {

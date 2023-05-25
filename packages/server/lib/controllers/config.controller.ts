@@ -84,11 +84,6 @@ class ConfigController {
                 return;
             }
 
-            if (req.body['scopes'] == null) {
-                errorManager.errRes(res, 'missing_scopes');
-                return;
-            }
-
             let uniqueConfigKey = req.body['provider_config_key'];
 
             if ((await configService.getProviderConfig(uniqueConfigKey, account.id)) != null) {
@@ -146,11 +141,6 @@ class ConfigController {
             }
             if (req.body['client_secret'] == null) {
                 errorManager.errRes(res, 'missing_client_secret');
-                return;
-            }
-
-            if (req.body['scopes'] == null) {
-                errorManager.errRes(res, 'missing_scopes');
                 return;
             }
 
@@ -234,7 +224,8 @@ class ConfigController {
         try {
             let accountId = getAccount(res);
             let configs = await configService.listProviderConfigs(accountId);
-            res.status(200).send({ configs: configs });
+            let results = configs.map((c: ProviderConfig) => ({ unique_key: c.unique_key, provider: c.provider }));
+            res.status(200).send({ configs: results });
         } catch (err) {
             next(err);
         }
@@ -257,7 +248,7 @@ class ConfigController {
                 return;
             }
 
-            res.status(200).send({ config: config });
+            res.status(200).send({ config: { unique_key: config.unique_key, provider: config.provider } });
         } catch (err) {
             next(err);
         }
@@ -298,11 +289,6 @@ class ConfigController {
                 return;
             }
 
-            if (req.body['oauth_scopes'] == null) {
-                errorManager.errRes(res, 'missing_scopes');
-                return;
-            }
-
             let uniqueConfigKey = req.body['provider_config_key'];
 
             if ((await configService.getProviderConfig(uniqueConfigKey, accountId)) != null) {
@@ -326,10 +312,8 @@ class ConfigController {
             let result = await configService.createProviderConfig(config);
 
             if (Array.isArray(result) && result.length === 1 && result[0] != null && 'id' in result[0]) {
-                let configId = result[0]['id'];
-
                 analytics.track('server:config_created', accountId, { provider: config.provider });
-                res.status(200).send({ config_id: configId });
+                res.status(200).send();
             } else {
                 throw new NangoError('provider_config_creation_failure');
             }
@@ -361,11 +345,6 @@ class ConfigController {
             }
             if (req.body['oauth_client_secret'] == null) {
                 errorManager.errRes(res, 'missing_client_secret');
-                return;
-            }
-
-            if (req.body['oauth_scopes'] == null) {
-                errorManager.errRes(res, 'missing_scopes');
                 return;
             }
 

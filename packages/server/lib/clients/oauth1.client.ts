@@ -121,7 +121,7 @@ export class OAuth1Client {
     }
 
     getAuthorizationURL(requestToken: OAuth1RequestTokenResult) {
-        const scopes = this.config.oauth_scopes.split(',').join(this.authConfig.scope_separator || ' ');
+        const scopes = this.config.oauth_scopes ? this.config.oauth_scopes.split(',').join(this.authConfig.scope_separator || ' ') : '';
 
         let additionalAuthParams = {};
         if (this.authConfig.authorization_params) {

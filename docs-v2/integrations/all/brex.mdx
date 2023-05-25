@@ -1,0 +1,34 @@
+---
+title: Brex
+sidebarTitle: Brex
+---
+
+Integration templates: [`brex`](https://nango.dev/providers.yaml), [`brex-staging`](https://nango.dev/providers.yaml)
+
+## Features
+
+| Feature                                                                          | Status                          |
+| -------------------------------------------------------------------------------- | ------------------------------- |
+| [Auth (OAuth)](/nango-auth)                                                      | ✅                              |
+| [Sync](/nango-sync)                                                              | ✅                              |
+| [Assisted requests](/nango-sync/guides/direct-requests)                          | 🚫 (time to contribute: &lt;1h) |
+| [Auto-pagination](/nango-sync/configuration#auto-pagination)                     | 🚫 (time to contribute: &lt;1h) |
+| [API-specific rate limits](/nango-sync/configuration#rate-limits-retry-policies) | 🚫 (time to contribute: &lt;1h) |
+
+<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+## Getting started
+
+-   [Register as Partner](https://www.brex.com/partners)
+-   [Brex API docs](https://developer.brex.com/)
+-   [Brex Developers Slack Community (official)](https://join.slack.com/t/brexdev/shared_invite/zt-vgwh6rja-CjydrUA4uJSB90ZO~gnI8Q)
+-   [List of OAuth scopes](https://developer.brex.com/docs/roles_permissions_scopes/#scopes)
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+## API gotchas
+
+-   Include the scope `offline_access` to get a refresh token (access tokens expire after 1h)
+-   Refresh tokens expire after 90 days of non use. Make sure you regularly make an API request as long as you need the connection.
+-   Brex offers a staging system to test your apps, you will get access when you register as a partner. Staging details are [here](https://developer.brex.com/docs/partner_authentication/#api-servers)
+
+<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/brex.mdx)</Note>
