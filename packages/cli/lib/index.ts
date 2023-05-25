@@ -291,7 +291,7 @@ program
             for (let k = 0; k < syncNames.length; k++) {
                 const syncName = syncNames[k] as string;
                 const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
-                const { returns: models } = syncData; // TODO adjust for multiple models
+                const { returns: models } = syncData;
                 const syncNameCamel = syncName
                     .split('-')
                     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
