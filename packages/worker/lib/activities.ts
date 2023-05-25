@@ -11,6 +11,7 @@ import {
     configService,
     updateSuccess,
     createActivityLog,
+    createActivityLogMessage,
     createActivityLogMessageAndEnd,
     UpsertResponse,
     LogLevel,
@@ -114,101 +115,85 @@ export async function syncProvider(
             const syncName = syncNames[k] as string;
 
             if (!checkForIntegrationFile(syncName)) {
-                console.log(`No integration file found for ${syncName}`);
+                await createActivityLogMessage({
+                    level: 'info',
+                    activity_log_id: activityLogId,
+                    content: `Integration was attempted to run for ${syncName} but no integration file was found.`,
+                    timestamp: Date.now()
+                });
                 continue;
             }
             const lastSyncDate = await getLastSyncDate(nangoConnection?.id as number, syncName);
             nango.setLastSyncDate(lastSyncDate as Date);
             const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
             const { returns: models } = syncData;
-            // TODO this might need to change
-            for (const model of models) {
-                const integrationClass = await getIntegrationClass(syncName);
 
-                if (!integrationClass) {
-                    // log this
-                    continue;
-                }
+            const integrationClass = await getIntegrationClass(syncName);
+            if (!integrationClass) {
+                await createActivityLogMessage({
+                    level: 'info',
+                    activity_log_id: activityLogId,
+                    content: `There was a problem loading the integration class for ${syncName}.`,
+                    timestamp: Date.now()
+                });
+                continue;
+            }
 
-                try {
-                    const userDefinedResults = await integrationClass.fetchData(nango);
+            try {
+                const userDefinedResults = await integrationClass.fetchData(nango);
 
-                    let responseResults: UpsertResponse = { addedKeys: [], updatedKeys: [], affectedInternalIds: [], affectedExternalIds: [] };
+                let responseResults: UpsertResponse = { addedKeys: [], updatedKeys: [], affectedInternalIds: [], affectedExternalIds: [] };
 
+                for (const model of models) {
                     if (userDefinedResults[model]) {
                         const formattedResults = syncDataService.formatDataRecords(userDefinedResults[model], sync.nango_connection_id, model);
                         if (formattedResults.length > 0) {
                             responseResults = await upsert(formattedResults, '_nango_sync_data_records', 'external_id', sync.nango_connection_id);
                         }
-                        reportResults(true, sync, activityLogId, model, syncName, responseResults);
-                    } else {
-                        // not found -- log this
+                        reportResults(sync, activityLogId, model, syncName, responseResults, formattedResults.length > 0);
                     }
-                } catch (e) {
-                    result = false;
-                    reportResults(result, sync, activityLogId, model, syncName);
-                    // let the user know
-                    console.log(e);
                 }
+            } catch (e) {
+                const errorMessage = JSON.stringify(e, ['message', 'name', 'stack']);
+                reportFailureForResults(sync, activityLogId, syncName, errorMessage);
             }
         }
     }
 
-    // worker resolves database tables and inserts if exists or creates
-
     return result;
 }
 
-async function reportResults(result: boolean, sync: Sync, activityLogId: number, model: string, syncName: string, responseResults?: UpsertResponse) {
-    if (result) {
-        await updateSyncStatus(sync.id, SyncStatus.SUCCESS);
-        await updateSuccess(activityLogId, true);
+async function reportResults(sync: Sync, activityLogId: number, model: string, syncName: string, responseResults: UpsertResponse, anyResultsInserted: boolean) {
+    await updateSyncStatus(sync.id, SyncStatus.SUCCESS);
+    await updateSuccess(activityLogId, true);
 
-        const { addedKeys, updatedKeys } = responseResults as UpsertResponse;
+    const { addedKeys, updatedKeys } = responseResults as UpsertResponse;
 
-        await createActivityLogMessageAndEnd({
-            level: 'info',
-            activity_log_id: activityLogId,
-            timestamp: Date.now(),
-            content: `The ${sync.type} "${syncName}" sync has been completed to the ${model} model, with ${addedKeys.length} added record${
-                addedKeys.length === 1 ? '' : 's'
-            } and ${updatedKeys.length} updated record${updatedKeys.length === 1 ? '' : 's'}`
-        });
-    } else {
-        await updateSuccessActivityLog(activityLogId, false);
+    const successMessage = `The ${sync.type} "${syncName}" sync has been completed to the ${model} model.`;
 
-        await createActivityLogMessageAndEnd({
-            level: 'error',
-            activity_log_id: activityLogId,
-            timestamp: Date.now(),
-            content: `The ${sync.type} "${syncName}" sync did not complete successfully to the ${model} model`
-        });
-    }
+    const resultMessage = anyResultsInserted
+        ? `The result was ${addedKeys.length} added record${addedKeys.length === 1 ? '' : 's'} and ${updatedKeys.length} updated record${
+              updatedKeys.length === 1 ? '.' : 's.'
+          }`
+        : 'The external API returned no results so nothing was inserted or updated.';
+
+    const content = `${successMessage} ${resultMessage}`;
+
+    await createActivityLogMessageAndEnd({
+        level: 'info',
+        activity_log_id: activityLogId,
+        timestamp: Date.now(),
+        content
+    });
 }
 
-/*
-function formatGithubIssue(issues: GithubIssues, nangoConnectionId: number): TicketModel[] {
-    const models = [];
-    for (const issue of issues) {
-        const model = {
-            id: uuid.v4(),
-            external_id: issue.id, // this is stored as a string, b/c this could be a uuid or even an email address
-            title: issue.title,
-            description: issue.body as string,
-            status: issue.state, // TODO modify this to fit the enum
-            external_raw_status: issue.state,
-            number_of_comments: issue.comments,
-            comments: issue.comments, // TODO fetch comments
-            creator: issue?.user?.login as string, // do a more thorough lookup?
-            external_created_at: issue.created_at,
-            external_updated_at: issue.updated_at,
-            deleted_at: null,
-            raw_json: issue,
-            data_hash: md5(JSON.stringify(issue)),
-            nango_connection_id: nangoConnectionId
-        };
-        models.push(model);
-    }
-    return models;
+async function reportFailureForResults(sync: Sync, activityLogId: number, syncName: string, erromessage: string) {
+    await updateSuccessActivityLog(activityLogId, false);
+
+    await createActivityLogMessageAndEnd({
+        level: 'error',
+        activity_log_id: activityLogId,
+        timestamp: Date.now(),
+        content: `The ${sync.type} "${syncName}" sync did not complete successfully and has the following error: ${erromessage}`
+    });
 }
-*/
