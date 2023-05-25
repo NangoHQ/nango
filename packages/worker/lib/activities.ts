@@ -121,6 +121,7 @@ export async function syncProvider(
                     content: `Integration was attempted to run for ${syncName} but no integration file was found.`,
                     timestamp: Date.now()
                 });
+                // not success, log that
                 continue;
             }
             const lastSyncDate = await getLastSyncDate(nangoConnection?.id as number, syncName);
@@ -140,6 +141,7 @@ export async function syncProvider(
             }
 
             try {
+                result = true;
                 const userDefinedResults = await integrationClass.fetchData(nango);
 
                 let responseResults: UpsertResponse = { addedKeys: [], updatedKeys: [], affectedInternalIds: [], affectedExternalIds: [] };
@@ -148,14 +150,16 @@ export async function syncProvider(
                     if (userDefinedResults[model]) {
                         const formattedResults = syncDataService.formatDataRecords(userDefinedResults[model], sync.nango_connection_id, model);
                         if (formattedResults.length > 0) {
-                            responseResults = await upsert(formattedResults, '_nango_sync_data_records', 'external_id', sync.nango_connection_id);
+                            responseResults = await upsert(formattedResults, '_nango_sync_data_records', 'external_id', sync.nango_connection_id, model);
                         }
                         reportResults(sync, activityLogId, model, syncName, responseResults, formattedResults.length > 0);
                     }
                 }
             } catch (e) {
+                result = false;
                 const errorMessage = JSON.stringify(e, ['message', 'name', 'stack']);
                 reportFailureForResults(sync, activityLogId, syncName, errorMessage);
+                // TODO update sync to be failed
             }
         }
     }

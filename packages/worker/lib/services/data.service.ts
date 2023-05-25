@@ -4,14 +4,14 @@ import type { DataResponse, UpsertResponse } from '@nangohq/shared';
 /**
  * Upsert
  */
-export async function upsert(response: DataResponse[], dbTable: string, uniqueKey: string, nangoConnectionId: number): Promise<UpsertResponse> {
-    const addedKeys = await getAddedKeys(response, dbTable, uniqueKey, nangoConnectionId);
-    const updatedKeys = await getUpdatedKeys(response, dbTable, uniqueKey, nangoConnectionId);
+export async function upsert(response: DataResponse[], dbTable: string, uniqueKey: string, nangoConnectionId: number, model: string): Promise<UpsertResponse> {
+    const addedKeys = await getAddedKeys(response, dbTable, uniqueKey, nangoConnectionId, model);
+    const updatedKeys = await getUpdatedKeys(response, dbTable, uniqueKey, nangoConnectionId, model);
 
-    // TODO change updated_at column, trigger to do that
     const results = await schema()
         .from(dbTable)
         .insert(response, ['id', 'external_id'])
+        // TODO onConflict is updating the nango_connection_id?
         .onConflict(['nango_connection_id', 'external_id', 'model'])
         .merge()
         .returning(['id', 'external_id']);
@@ -28,12 +28,19 @@ export async function upsert(response: DataResponse[], dbTable: string, uniqueKe
  * in the database and return the keys that are not in the database
  *
  */
-export async function getAddedKeys(response: DataResponse[], dbTable: string, uniqueKey: string, nangoConnectionId: number): Promise<Array<string>> {
+export async function getAddedKeys(
+    response: DataResponse[],
+    dbTable: string,
+    uniqueKey: string,
+    nangoConnectionId: number,
+    model: string
+): Promise<Array<string>> {
     const keys: Array<string> = response.map((data: DataResponse) => String(data[uniqueKey]));
 
     const knownKeys: Array<string> = (await schema()
         .from(dbTable)
         .where('nango_connection_id', nangoConnectionId)
+        .where('model', model)
         .whereIn('external_id', keys)
         .pluck('external_id')) as unknown as Array<string>;
 
@@ -49,7 +56,13 @@ export async function getAddedKeys(response: DataResponse[], dbTable: string, un
  * Compare using the data_hash key
  *
  */
-export async function getUpdatedKeys(response: DataResponse[], dbTable: string, uniqueKey: string, nangoConnectionId: number): Promise<Array<string>> {
+export async function getUpdatedKeys(
+    response: DataResponse[],
+    dbTable: string,
+    uniqueKey: string,
+    nangoConnectionId: number,
+    model: string
+): Promise<Array<string>> {
     const keys: Array<string> = response.map((data: DataResponse) => String(data[uniqueKey]));
     const keysWithHash: [string, string][] = response.map((data: DataResponse) => [String(data[uniqueKey]), data['data_hash'] as string]);
 
@@ -57,6 +70,7 @@ export async function getUpdatedKeys(response: DataResponse[], dbTable: string, 
         .from(dbTable)
         .pluck('external_id')
         .where('nango_connection_id', nangoConnectionId)
+        .where('model', model)
         .whereIn('external_id', keys)
         .whereNotIn(['external_id', 'data_hash'], keysWithHash);
 
