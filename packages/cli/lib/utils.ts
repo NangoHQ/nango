@@ -66,11 +66,23 @@ export function getFieldType(field: string | NangoModel): string {
     if (typeof field === 'string') {
         let tsType = '';
         switch (field) {
+            case 'boolean':
+            case 'bool':
+                tsType = 'boolean';
+                break;
+            case 'string':
+                tsType = 'string';
+                break;
             case 'char':
                 tsType = 'string';
                 break;
             case 'integer':
+            case 'int':
+            case 'number':
                 tsType = 'number';
+                break;
+            case 'date':
+                tsType = 'Date';
                 break;
         }
         return tsType;
