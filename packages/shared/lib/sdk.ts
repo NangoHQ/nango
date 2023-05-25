@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
 import { validateProxyConfiguration, validateSyncRecordConfiguration } from './utils/utils.js';
 
 import type { ProxyConfiguration } from './models/Proxy.js';
@@ -135,9 +135,17 @@ export class Nango {
             headers['Retries'] = retries;
         }
 
-        const options = {
+        const options: AxiosRequestConfig = {
             headers: this.enrichHeaders(headers)
         };
+
+        if (config.params) {
+            options.params = config.params;
+        }
+
+        if (config.paramsSerializer) {
+            options.paramsSerializer = config.paramsSerializer;
+        }
 
         if (method?.toUpperCase() === 'POST') {
             return axios.post(url, config.data, options);
