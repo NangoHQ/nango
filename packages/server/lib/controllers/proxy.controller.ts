@@ -331,7 +331,8 @@ class ProxyController {
                         method: 'get',
                         url,
                         responseType: 'stream',
-                        headers
+                        headers,
+                        decompress: false
                     });
                 },
                 { numOfAttempts: Number(config.retries), retry: this.retry }
@@ -360,7 +361,8 @@ class ProxyController {
                         url,
                         data: config.data ?? {},
                         responseType: 'stream',
-                        headers
+                        headers,
+                        decompress: false
                     });
                 },
                 { numOfAttempts: Number(config.retries), retry: this.retry }
@@ -389,7 +391,8 @@ class ProxyController {
                         url,
                         data: config.data ?? {},
                         responseType: 'stream',
-                        headers
+                        headers,
+                        decompress: false
                     });
                 },
                 { numOfAttempts: Number(config.retries), retry: this.retry }
@@ -418,7 +421,8 @@ class ProxyController {
                         url,
                         data: config.data ?? {},
                         responseType: 'stream',
-                        headers
+                        headers,
+                        decompress: false
                     });
                 },
                 { numOfAttempts: Number(config.retries), retry: this.retry }
@@ -446,7 +450,8 @@ class ProxyController {
                         method: 'delete',
                         url,
                         responseType: 'stream',
-                        headers
+                        headers,
+                        decompress: false
                     });
                 },
                 { numOfAttempts: Number(config.retries), retry: this.retry }

@@ -155,7 +155,7 @@ export const tscWatch = () => {
 
     const watchPath = `${NANGO_INTEGRATIONS_LOCATION}/*.ts`;
     const watcher = chokidar.watch(watchPath, {
-        ignoreInitial: true,
+        ignoreInitial: false,
         ignored: (filePath) => {
             const rawNangoIntegrationLocation = NANGO_INTEGRATIONS_LOCATION.replace('./', '');
             return filePath === `${rawNangoIntegrationLocation}/models.ts`;
