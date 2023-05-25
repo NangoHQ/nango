@@ -130,7 +130,7 @@ export const run = async (args: string[], options: RunArgs) => {
                 nango.setLastSyncDate(lastSyncDate);
             }
             const userDefinedResults = await integrationClass.fetchData(nango);
-            console.log(userDefinedResults);
+            console.log(JSON.stringify(userDefinedResults, null, 2));
             fs.renameSync(
                 path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/dist/${syncName}.mjs`),
                 path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/dist/${syncName}.js`)
