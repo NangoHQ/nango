@@ -21,14 +21,12 @@ import * as dotenv from 'dotenv';
 
 import type { NangoConfig, NangoModel, NangoIntegration, NangoIntegrationData } from '@nangohq/shared';
 import { loadSimplifiedConfig } from '@nangohq/shared';
-import { init, run, tscWatch } from './sync.js';
-import { checkEnvVars, enrichHeaders, httpsAgent, getConnection, getFieldType } from './utils.js';
+import { init, run, tscWatch, configWatch } from './sync.js';
+import { checkEnvVars, enrichHeaders, httpsAgent, getConnection, getFieldType, configFile, NANGO_INTEGRATIONS_LOCATION, buildInterfaces } from './utils.js';
 
 const program = new Command();
 
 let hostport = process.env['NANGO_HOSTPORT'] || 'http://localhost:3003';
-const NANGO_INTEGRATIONS_LOCATION = process.env['NANGO_INTEGRATIONS_LOCATION'] || './nango-integrations';
-const configFile = 'nango.yaml';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -264,23 +262,7 @@ program
         const { integrations } = configData;
         const { models } = configData;
 
-        const interfaceDefinitions = Object.keys(models).map((modelName: string) => {
-            if (modelName.charAt(0) === '_') {
-                return;
-            }
-            const fields = models[modelName] as NangoModel;
-            const singularModelName = modelName.charAt(modelName.length - 1) === 's' ? modelName.slice(0, -1) : modelName;
-            const interfaceName = `${singularModelName.charAt(0).toUpperCase()}${singularModelName.slice(1)}`;
-            const fieldDefinitions = Object.keys(fields)
-                .map((fieldName: string) => {
-                    const fieldModel = fields[fieldName] as string | NangoModel;
-                    const fieldType = getFieldType(fieldModel);
-                    return `  ${fieldName}: ${fieldType};`;
-                })
-                .join('\n');
-            const interfaceDefinition = `export interface ${interfaceName} {\n${fieldDefinitions}\n}\n`;
-            return interfaceDefinition;
-        });
+        const interfaceDefinitions = buildInterfaces(models);
 
         fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/models.ts`, interfaceDefinitions.join('\n'));
 
@@ -353,9 +335,15 @@ program
 
 program
     .command('tsc:watch')
-    .description('Watch tsc files while developing')
-    .action(() => {
+    .description('Watch tsc files while developing. Set --no-compile-interfaces to disable watching the config file')
+    .option('--no-compile-interfaces', `Watch the ${configFile} and recompile the interfaces on change`, true)
+    .action(async function (this: Command) {
+        const { compileInterfaces } = this.opts();
+
         tscWatch();
+        if (compileInterfaces) {
+            configWatch();
+        }
     });
 
 program
@@ -366,6 +354,7 @@ program
     .action(() => {
         const cwd = process.cwd();
         tscWatch();
+        configWatch();
 
         // look into
         // https://www.npmjs.com/package/docker-compose

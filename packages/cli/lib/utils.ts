@@ -2,6 +2,9 @@ import https from 'https';
 import axios from 'axios';
 import type { NangoModel } from '@nangohq/shared';
 
+export const configFile = 'nango.yaml';
+export const NANGO_INTEGRATIONS_LOCATION = process.env['NANGO_INTEGRATIONS_LOCATION'] || './nango-integrations';
+
 let hostport = process.env['NANGO_HOSTPORT'] || 'http://localhost:3003';
 const cloudHost = 'https://api.nango.dev';
 const stagingHost = 'https://nango-cloud-staging.onrender.com';
@@ -77,4 +80,26 @@ export function getFieldType(field: string | NangoModel): string {
             .join('\n');
         return `{\n${nestedFields}\n}`;
     }
+}
+
+export function buildInterfaces(models: NangoModel): (string | undefined)[] {
+    const interfaceDefinitions = Object.keys(models).map((modelName: string) => {
+        if (modelName.charAt(0) === '_') {
+            return;
+        }
+        const fields = models[modelName] as NangoModel;
+        const singularModelName = modelName.charAt(modelName.length - 1) === 's' ? modelName.slice(0, -1) : modelName;
+        const interfaceName = `${singularModelName.charAt(0).toUpperCase()}${singularModelName.slice(1)}`;
+        const fieldDefinitions = Object.keys(fields)
+            .map((fieldName: string) => {
+                const fieldModel = fields[fieldName] as string | NangoModel;
+                const fieldType = getFieldType(fieldModel);
+                return `  ${fieldName}: ${fieldType};`;
+            })
+            .join('\n');
+        const interfaceDefinition = `export interface ${interfaceName} {\n${fieldDefinitions}\n}\n`;
+        return interfaceDefinition;
+    });
+
+    return interfaceDefinitions;
 }
