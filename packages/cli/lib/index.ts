@@ -293,7 +293,10 @@ program
                     }),
                     providerConfigKey
                 });
-                fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/_${syncName}.ts`, rendered);
+
+                if (!fs.existsSync(`${NANGO_INTEGRATIONS_LOCATION}/${syncName}.ts`)) {
+                    fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/${syncName}.ts`, rendered);
+                }
             }
         }
 
