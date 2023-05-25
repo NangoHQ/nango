@@ -19,10 +19,10 @@ import { build } from 'esbuild';
 import { spawn } from 'child_process';
 import * as dotenv from 'dotenv';
 
-import type { NangoConfig, NangoModel, NangoIntegration, NangoIntegrationData } from '@nangohq/shared';
+import type { NangoConfig, NangoIntegration, NangoIntegrationData } from '@nangohq/shared';
 import { loadSimplifiedConfig } from '@nangohq/shared';
 import { init, run, tscWatch, configWatch } from './sync.js';
-import { checkEnvVars, enrichHeaders, httpsAgent, getConnection, getFieldType, configFile, NANGO_INTEGRATIONS_LOCATION, buildInterfaces } from './utils.js';
+import { checkEnvVars, enrichHeaders, httpsAgent, getConnection, configFile, NANGO_INTEGRATIONS_LOCATION, buildInterfaces } from './utils.js';
 
 const program = new Command();
 
