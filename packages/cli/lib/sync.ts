@@ -66,7 +66,21 @@ interface RunArgs {
     lastSyncDate?: string;
 }
 
+export const verifyAndChangeDistFilesToJs = () => {
+    const cwd = process.cwd();
+    const distFiles = fs.readdirSync(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/dist`));
+    distFiles.forEach((file) => {
+        if (file.endsWith('.mjs')) {
+            fs.renameSync(
+                path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/dist/${file}`),
+                path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/dist/${file.replace('.mjs', '.js')}`)
+            );
+        }
+    });
+};
+
 export const run = async (args: string[], options: RunArgs) => {
+    verifyAndChangeDistFilesToJs();
     let syncName, providerConfigKey, connectionId, suppliedLastSyncDate;
     if (args.length > 0) {
         [syncName, providerConfigKey, connectionId, suppliedLastSyncDate] = args;
