@@ -619,7 +619,7 @@ class OAuthController {
 
             const tokenMetadata = getConnectionMetadataFromTokenResponse(rawCredentials, template);
 
-            var parsedRawCredentials: AuthCredentials;
+            let parsedRawCredentials: AuthCredentials;
 
             try {
                 parsedRawCredentials = connectionService.parseRawCredentials(rawCredentials, ProviderAuthModes.OAuth2);
