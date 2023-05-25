@@ -62,9 +62,21 @@ export function httpsAgent() {
     });
 }
 
-export function getFieldType(field: string | NangoModel): string {
-    if (typeof field === 'string') {
+export function getFieldType(rawField: string | NangoModel): string {
+    if (typeof rawField === 'string') {
+        let field = rawField;
+        let hasNull = false;
+        let hasUndefined = false;
         let tsType = '';
+        if (field.indexOf('null') !== -1) {
+            field = field.replace(/\s*\|\s*null\s*/g, '');
+            hasNull = true;
+        }
+
+        if (field.indexOf('undefined') !== -1) {
+            field = field.replace(/\s*\|\s*undefined\s*/g, '');
+            hasUndefined = true;
+        }
         switch (field) {
             case 'boolean':
             case 'bool':
@@ -85,10 +97,18 @@ export function getFieldType(field: string | NangoModel): string {
                 tsType = 'Date';
                 break;
         }
+
+        if (hasNull) {
+            tsType = `${tsType} | null`;
+        }
+
+        if (hasUndefined) {
+            tsType = `${tsType} | undefined`;
+        }
         return tsType;
     } else {
-        const nestedFields = Object.keys(field)
-            .map((fieldName: string) => `  ${fieldName}: ${getFieldType(field[fieldName] as string | NangoModel)};`)
+        const nestedFields = Object.keys(rawField)
+            .map((fieldName: string) => `  ${fieldName}: ${getFieldType(rawField[fieldName] as string | NangoModel)};`)
             .join('\n');
         return `{\n${nestedFields}\n}`;
     }
