@@ -30,7 +30,7 @@ class SyncController {
 
     public async getRecords(req: Request, res: Response, next: NextFunction) {
         try {
-            const { model, delta } = req.query;
+            const { model, delta, offset, limit } = req.query;
             const accountId = getAccount(res);
 
             if (!model) {
@@ -40,7 +40,15 @@ class SyncController {
             const connectionId = req.get('Connection-Id') as string;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
 
-            const records = await syncDataService.getDataRecords(connectionId, providerConfigKey, accountId, model as string, delta as string);
+            const records = await syncDataService.getDataRecords(
+                connectionId,
+                providerConfigKey,
+                accountId,
+                model as string,
+                delta as string,
+                offset as string,
+                limit as string
+            );
 
             res.send(records);
         } catch (e) {

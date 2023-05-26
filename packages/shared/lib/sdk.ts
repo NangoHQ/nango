@@ -1,7 +1,7 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import { validateProxyConfiguration, validateSyncRecordConfiguration } from './utils/utils.js';
 
-import type { ProxyConfiguration } from './models/Proxy.js';
+import type { ProxyConfiguration, GetRecordsRequestConfig } from './models/Proxy.js';
 
 const prodHost = 'https://api.nango.dev';
 const stagingHost = 'https://api-staging.nango.dev';
@@ -187,11 +187,11 @@ export class Nango {
         });
     }
 
-    public async getRecords(config: { providerConfigKey: string; connectionId: string; model: string; delta?: string }) {
-        const { connectionId, providerConfigKey, model, delta } = config;
+    public async getRecords(config: GetRecordsRequestConfig) {
+        const { connectionId, providerConfigKey, model, delta, offset, limit } = config;
         validateSyncRecordConfiguration(config);
 
-        const url = `${this.serverUrl}/sync/records/?model=${model}&delta=${delta || ''}`;
+        const url = `${this.serverUrl}/sync/records/?model=${model}&delta=${delta || ''}&offset=${offset || ''}&limit=${limit || ''}`;
         const headers: Record<string, string | number | boolean> = {
             'Connection-Id': connectionId,
             'Provider-Config-Key': providerConfigKey

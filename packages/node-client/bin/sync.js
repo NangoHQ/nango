@@ -7,7 +7,9 @@ nango
         providerConfigKey: args[0],
         connectionId: args[1],
         model: args[2],
-        delta: args[3]
+        delta: args[3],
+        offset: args[4],
+        limit: args[5]
     })
     .then((response) => {
         console.log(response?.data);

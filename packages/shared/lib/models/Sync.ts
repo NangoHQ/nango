@@ -35,3 +35,12 @@ export interface SyncRecordConfiguration {
     providerConfigKey: string;
     model: string;
 }
+
+export interface GetRecordsRequestConfig {
+    providerConfigKey: string;
+    connectionId: string;
+    model: string;
+    delta?: string;
+    offset?: number;
+    limit?: number;
+}

@@ -28,7 +28,9 @@ export async function getDataRecords(
     providerConfigKey: string,
     accountId: number,
     model: string,
-    delta: string
+    delta: string,
+    offset: number | string,
+    limit: number | string
 ): Promise<Pick<SyncDataRecord, 'json'>[] | null> {
     const nangoConnection = await connectionService.getConnection(connectionId, providerConfigKey, accountId);
 
@@ -39,6 +41,14 @@ export async function getDataRecords(
     let query = schema()
         .from<SyncDataRecord>(`_nango_sync_data_records`)
         .where({ nango_connection_id: Number(nangoConnection.id), model });
+
+    if (offset) {
+        query = query.offset(Number(offset));
+    }
+
+    if (limit) {
+        query = query.limit(Number(limit));
+    }
 
     if (delta) {
         const time = dayjs(delta).toDate();
