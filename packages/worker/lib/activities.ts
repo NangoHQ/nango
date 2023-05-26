@@ -120,7 +120,8 @@ export async function syncProvider(
                 content: `Integration was attempted to run for ${syncName} but no integration file was found.`,
                 timestamp: Date.now()
             });
-            // not success, log that
+
+            await updateSyncStatus(sync.id, SyncStatus.STOPPED);
             return false;
         }
         const lastSyncDate = await getLastSyncDate(nangoConnection?.id as number, syncName);
@@ -136,6 +137,8 @@ export async function syncProvider(
                 content: `There was a problem loading the integration class for ${syncName}.`,
                 timestamp: Date.now()
             });
+
+            await updateSyncStatus(sync.id, SyncStatus.STOPPED);
             return false;
         }
 
@@ -148,31 +151,50 @@ export async function syncProvider(
             for (const model of models) {
                 if (userDefinedResults[model]) {
                     const formattedResults = syncDataService.formatDataRecords(userDefinedResults[model], sync.nango_connection_id, model);
+                    let upsertSuccess = true;
                     if (formattedResults.length > 0) {
-                        responseResults = await upsert(
-                            formattedResults,
-                            '_nango_sync_data_records',
-                            'external_id',
-                            sync.nango_connection_id,
-                            model,
-                            activityLogId
-                        );
+                        try {
+                            responseResults = await upsert(
+                                formattedResults,
+                                '_nango_sync_data_records',
+                                'external_id',
+                                sync.nango_connection_id,
+                                model,
+                                activityLogId
+                            );
+                        } catch (e) {
+                            await createActivityLogMessage({
+                                level: 'error',
+                                activity_log_id: activityLogId,
+                                content: `There was a problem upserting the data for ${syncName} and the model ${model}.`,
+                                timestamp: Date.now()
+                            });
+                            upsertSuccess = false;
+                        }
                     }
-                    reportResults(sync, activityLogId, model, syncName, responseResults, formattedResults.length > 0);
+                    reportResults(sync, activityLogId, model, syncName, responseResults, formattedResults.length > 0, upsertSuccess);
                 }
             }
         } catch (e) {
             result = false;
             const errorMessage = JSON.stringify(e, ['message', 'name', 'stack']);
             reportFailureForResults(sync, activityLogId, syncName, errorMessage);
-            // TODO update sync to be failed
+            await updateSyncStatus(sync.id, SyncStatus.STOPPED);
         }
     }
 
     return result;
 }
 
-async function reportResults(sync: Sync, activityLogId: number, model: string, syncName: string, responseResults: UpsertResponse, anyResultsInserted: boolean) {
+async function reportResults(
+    sync: Sync,
+    activityLogId: number,
+    model: string,
+    syncName: string,
+    responseResults: UpsertResponse,
+    anyResultsInserted: boolean,
+    upsertSuccess: boolean
+) {
     await updateSyncStatus(sync.id, SyncStatus.SUCCESS);
     await updateSuccess(activityLogId, true);
 
@@ -180,11 +202,17 @@ async function reportResults(sync: Sync, activityLogId: number, model: string, s
 
     const successMessage = `The ${sync.type} "${syncName}" sync has been completed to the ${model} model.`;
 
-    const resultMessage = anyResultsInserted
-        ? `The result was ${addedKeys.length} added record${addedKeys.length === 1 ? '' : 's'} and ${updatedKeys.length} updated record${
-              updatedKeys.length === 1 ? '.' : 's.'
-          }`
-        : 'The external API returned no results so nothing was inserted or updated.';
+    let resultMessage = '';
+
+    if (upsertSuccess) {
+        resultMessage = `There was an error in upserting the results`;
+    } else {
+        resultMessage = anyResultsInserted
+            ? `The result was ${addedKeys.length} added record${addedKeys.length === 1 ? '' : 's'} and ${updatedKeys.length} updated record${
+                  updatedKeys.length === 1 ? '.' : 's.'
+              }`
+            : 'The external API returned no results so nothing was inserted or updated.';
+    }
 
     const content = `${successMessage} ${resultMessage}`;
 
