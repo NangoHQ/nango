@@ -28,14 +28,6 @@ export interface SyncConfig {
     snippet: string;
 }
 
-export interface SyncRecordConfiguration {
-    [key: string]: string;
-
-    connectionId: string;
-    providerConfigKey: string;
-    model: string;
-}
-
 export interface GetRecordsRequestConfig {
     providerConfigKey: string;
     connectionId: string;

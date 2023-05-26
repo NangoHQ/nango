@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import type { ProxyConfiguration } from '../models/Proxy.js';
-import type { SyncRecordConfiguration } from '../models/Sync.js';
+import type { GetRecordsRequestConfig } from '../models/Sync.js';
 import { NangoError } from './error.js';
 import type { User } from '../models/Admin.js';
 
@@ -81,7 +81,7 @@ export function dirname() {
 }
 
 export const validateProxyConfiguration = (config: ProxyConfiguration) => {
-    const requiredParams = ['endpoint', 'providerConfigKey', 'connectionId'];
+    const requiredParams: Array<keyof ProxyConfiguration> = ['endpoint', 'providerConfigKey', 'connectionId'];
 
     requiredParams.forEach((param) => {
         if (typeof config[param] === 'undefined') {
@@ -90,8 +90,8 @@ export const validateProxyConfiguration = (config: ProxyConfiguration) => {
     });
 };
 
-export const validateSyncRecordConfiguration = (config: SyncRecordConfiguration) => {
-    const requiredParams = ['model', 'providerConfigKey', 'connectionId'];
+export const validateSyncRecordConfiguration = (config: GetRecordsRequestConfig) => {
+    const requiredParams: Array<keyof GetRecordsRequestConfig> = ['model', 'providerConfigKey', 'connectionId'];
 
     requiredParams.forEach((param) => {
         if (typeof config[param] === 'undefined') {

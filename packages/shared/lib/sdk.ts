@@ -1,7 +1,8 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import { validateProxyConfiguration, validateSyncRecordConfiguration } from './utils/utils.js';
 
-import type { ProxyConfiguration, GetRecordsRequestConfig } from './models/Proxy.js';
+import type { ProxyConfiguration } from './models/Proxy.js';
+import type { GetRecordsRequestConfig } from './models/Sync.js';
 
 const prodHost = 'https://api.nango.dev';
 const stagingHost = 'https://api-staging.nango.dev';
