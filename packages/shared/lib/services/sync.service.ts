@@ -236,3 +236,22 @@ export const getSyncConfigByProvider = async (provider: string): Promise<SyncCon
 
     return [];
 };
+
+export const deleteSyncSchedule = async (id: string): Promise<boolean> => {
+    const client = await getClient();
+
+    if (!client) {
+        return false;
+    }
+
+    const workflowService = client?.workflowService;
+    try {
+        await workflowService?.deleteSchedule({
+            scheduleId: id,
+            namespace: process.env['TEMPORAL_NAMESPACE'] || 'default'
+        });
+        return true;
+    } catch (e) {
+        return false;
+    }
+};

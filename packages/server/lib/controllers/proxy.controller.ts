@@ -308,7 +308,9 @@ class ProxyController {
                 callback(null, chunk);
             }
         });
-        res.writeHead(error?.response?.status as number, error?.response?.headers as OutgoingHttpHeaders);
+        if (error?.response?.status) {
+            res.writeHead(error?.response?.status as number, error?.response?.headers as OutgoingHttpHeaders);
+        }
         errorData.pipe(stringify).pipe(res);
         stringify.on('data', (data) => {
             this.reportError(error, url, config, activityLogId, data);
