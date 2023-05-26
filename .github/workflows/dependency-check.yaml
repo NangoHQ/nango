@@ -1,0 +1,30 @@
+name: Dependency Check
+
+on: [push, pull_request]
+
+concurrency:
+    group: dep-check-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    yaml_validation_job:
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                directory: [
+                    '/packages/cli',
+                    '/packages/frontend',
+                    '/packages/node-client',
+                    '/packages/server',
+                    '/packages/shared',
+                    '/packages/webapp',
+                    '/packages/worker'
+                ]
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v3
+
+            - name: Dependency Checker
+              uses: Marcisbee/dependency-check-action@1.0.1
+              with:
+                  PATH: ${{ matrix.directory }}
