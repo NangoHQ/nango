@@ -1,17 +1,24 @@
-import { schema } from '@nangohq/shared';
+import { schema, syncDataService, createActivityLogMessage } from '@nangohq/shared';
 import type { DataResponse, UpsertResponse } from '@nangohq/shared';
 
 /**
  * Upsert
  */
-export async function upsert(response: DataResponse[], dbTable: string, uniqueKey: string, nangoConnectionId: number, model: string): Promise<UpsertResponse> {
-    const addedKeys = await getAddedKeys(response, dbTable, uniqueKey, nangoConnectionId, model);
-    const updatedKeys = await getUpdatedKeys(response, dbTable, uniqueKey, nangoConnectionId, model);
+export async function upsert(
+    response: DataResponse[],
+    dbTable: string,
+    uniqueKey: string,
+    nangoConnectionId: number,
+    model: string,
+    activityLogId: number
+): Promise<UpsertResponse> {
+    const responseWithoutDuplicates = await removeDuplicateKey(response, uniqueKey, activityLogId);
+    const addedKeys = await getAddedKeys(responseWithoutDuplicates, dbTable, uniqueKey, nangoConnectionId, model);
+    const updatedKeys = await getUpdatedKeys(responseWithoutDuplicates, dbTable, uniqueKey, nangoConnectionId, model);
 
     const results = await schema()
         .from(dbTable)
-        .insert(response, ['id', 'external_id'])
-        // TODO onConflict is updating the nango_connection_id?
+        .insert(responseWithoutDuplicates, ['id', 'external_id'])
         .onConflict(['nango_connection_id', 'external_id', 'model'])
         .merge()
         .returning(['id', 'external_id']);
@@ -20,6 +27,24 @@ export async function upsert(response: DataResponse[], dbTable: string, uniqueKe
     const affectedExternalIds = results.map((tuple) => tuple.external_id) as string[];
 
     return { addedKeys, updatedKeys, affectedInternalIds, affectedExternalIds };
+}
+
+export async function removeDuplicateKey(response: DataResponse[], uniqueKey: string, activityLogId: number): Promise<DataResponse[]> {
+    const { isUnique, nonUniqueKey } = syncDataService.verifyUniqueKeysAreUnique(response, uniqueKey);
+
+    if (!isUnique) {
+        await createActivityLogMessage({
+            level: 'error',
+            activity_log_id: activityLogId,
+            content: `There was a duplicate key found: ${nonUniqueKey}. This record will not be inserted.`,
+            timestamp: Date.now()
+        });
+
+        const uniqueResponse = response.filter((item) => item[uniqueKey] !== nonUniqueKey);
+        return uniqueResponse;
+    }
+
+    return response;
 }
 
 /**

@@ -106,61 +106,66 @@ export async function syncProvider(
             // pass in the sync id and store the raw json in the database before the user does what they want with it
             // or use the connection ID to match it up
             // either way need a new table
-            activityLogId: activityLogId as number
+            activityLogId: activityLogId as number,
+            isSync: true
         });
         const providerConfigKey = nangoConnection.provider_config_key;
         const syncObject = integrations[providerConfigKey] as unknown as { [key: string]: NangoIntegration };
-        const syncNames = Object.keys(syncObject);
-        for (let k = 0; k < syncNames.length; k++) {
-            const syncName = syncNames[k] as string;
+        const { sync_name: syncName } = sync;
 
-            if (!checkForIntegrationFile(syncName)) {
-                await createActivityLogMessage({
-                    level: 'info',
-                    activity_log_id: activityLogId,
-                    content: `Integration was attempted to run for ${syncName} but no integration file was found.`,
-                    timestamp: Date.now()
-                });
-                // not success, log that
-                continue;
-            }
-            const lastSyncDate = await getLastSyncDate(nangoConnection?.id as number, syncName);
-            nango.setLastSyncDate(lastSyncDate as Date);
-            const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
-            const { returns: models } = syncData;
+        if (!checkForIntegrationFile(syncName)) {
+            await createActivityLogMessage({
+                level: 'info',
+                activity_log_id: activityLogId,
+                content: `Integration was attempted to run for ${syncName} but no integration file was found.`,
+                timestamp: Date.now()
+            });
+            // not success, log that
+            return false;
+        }
+        const lastSyncDate = await getLastSyncDate(nangoConnection?.id as number, syncName);
+        nango.setLastSyncDate(lastSyncDate as Date);
+        const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
+        const { returns: models } = syncData;
 
-            const integrationClass = await getIntegrationClass(syncName);
-            if (!integrationClass) {
-                await createActivityLogMessage({
-                    level: 'info',
-                    activity_log_id: activityLogId,
-                    content: `There was a problem loading the integration class for ${syncName}.`,
-                    timestamp: Date.now()
-                });
-                continue;
-            }
+        const integrationClass = await getIntegrationClass(syncName);
+        if (!integrationClass) {
+            await createActivityLogMessage({
+                level: 'info',
+                activity_log_id: activityLogId,
+                content: `There was a problem loading the integration class for ${syncName}.`,
+                timestamp: Date.now()
+            });
+            return false;
+        }
 
-            try {
-                result = true;
-                const userDefinedResults = await integrationClass.fetchData(nango);
+        try {
+            result = true;
+            const userDefinedResults = await integrationClass.fetchData(nango);
 
-                let responseResults: UpsertResponse = { addedKeys: [], updatedKeys: [], affectedInternalIds: [], affectedExternalIds: [] };
+            let responseResults: UpsertResponse = { addedKeys: [], updatedKeys: [], affectedInternalIds: [], affectedExternalIds: [] };
 
-                for (const model of models) {
-                    if (userDefinedResults[model]) {
-                        const formattedResults = syncDataService.formatDataRecords(userDefinedResults[model], sync.nango_connection_id, model);
-                        if (formattedResults.length > 0) {
-                            responseResults = await upsert(formattedResults, '_nango_sync_data_records', 'external_id', sync.nango_connection_id, model);
-                        }
-                        reportResults(sync, activityLogId, model, syncName, responseResults, formattedResults.length > 0);
+            for (const model of models) {
+                if (userDefinedResults[model]) {
+                    const formattedResults = syncDataService.formatDataRecords(userDefinedResults[model], sync.nango_connection_id, model);
+                    if (formattedResults.length > 0) {
+                        responseResults = await upsert(
+                            formattedResults,
+                            '_nango_sync_data_records',
+                            'external_id',
+                            sync.nango_connection_id,
+                            model,
+                            activityLogId
+                        );
                     }
+                    reportResults(sync, activityLogId, model, syncName, responseResults, formattedResults.length > 0);
                 }
-            } catch (e) {
-                result = false;
-                const errorMessage = JSON.stringify(e, ['message', 'name', 'stack']);
-                reportFailureForResults(sync, activityLogId, syncName, errorMessage);
-                // TODO update sync to be failed
             }
+        } catch (e) {
+            result = false;
+            const errorMessage = JSON.stringify(e, ['message', 'name', 'stack']);
+            reportFailureForResults(sync, activityLogId, syncName, errorMessage);
+            // TODO update sync to be failed
         }
     }
 

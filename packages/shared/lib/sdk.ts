@@ -125,7 +125,7 @@ export class Nango {
 
         const headers: Record<string, string | number | boolean> = {
             'Connection-Id': connectionId as string,
-            'Provider-Config-Key': providerConfigKey,
+            'Provider-Config-Key': providerConfigKey as string,
             'Nango-Is-Sync': this.isSync,
             'Nango-Activity-Log-Id': this.activityLogId || '',
             ...customHeaders

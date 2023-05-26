@@ -50,3 +50,25 @@ export async function getDataRecords(
 
     return result;
 }
+
+export function verifyUniqueKeysAreUnique(data: DataResponse[], optionalUniqueKey?: string | number): { isUnique: boolean; nonUniqueKey?: string | number } {
+    const uniqueKey = optionalUniqueKey ?? 'id';
+    const idMap: { [key: string]: boolean } = {};
+    let isUnique = true;
+    let nonUniqueKey: string | number = '';
+
+    for (let i = 0; i < data.length; i++) {
+        const item = data[i] as DataResponse;
+        const id = item[uniqueKey] as string | number;
+
+        if (idMap[id]) {
+            isUnique = false;
+            nonUniqueKey = id;
+            break;
+        }
+
+        idMap[id] = true;
+    }
+
+    return { isUnique, nonUniqueKey };
+}

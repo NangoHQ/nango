@@ -5,7 +5,7 @@ export interface ProxyConfiguration {
     [key: string]: any;
 
     endpoint: string;
-    providerConfigKey: string;
+    providerConfigKey?: string;
     connectionId?: string;
 
     method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE' | 'get' | 'post' | 'patch' | 'put' | 'delete';

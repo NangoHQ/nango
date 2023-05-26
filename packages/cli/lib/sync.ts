@@ -4,10 +4,20 @@ import yaml from 'js-yaml';
 import chalk from 'chalk';
 import chokidar from 'chokidar';
 import * as tsNode from 'ts-node';
+import * as dotenv from 'dotenv';
 
-import type { NangoConfig, Connection as NangoConnection } from '@nangohq/shared';
-import { Nango, loadNangoConfig, getIntegrationClass, getServerBaseUrl, getLastSyncDate } from '@nangohq/shared';
+import type { NangoConfig, Connection as NangoConnection, NangoIntegrationData } from '@nangohq/shared';
+import { Nango, loadNangoConfig, getIntegrationClass, getServerBaseUrl, getLastSyncDate, syncDataService } from '@nangohq/shared';
 import { getConnection, configFile, NANGO_INTEGRATIONS_LOCATION, buildInterfaces } from './utils.js';
+
+dotenv.config();
+
+interface RunArgs {
+    sync: string;
+    provider: string;
+    connection: string;
+    lastSyncDate?: string;
+}
 
 export const init = () => {
     const data: NangoConfig = {
@@ -58,13 +68,6 @@ export const init = () => {
 
     console.log(chalk.green(`${configFile} file has been created`));
 };
-
-interface RunArgs {
-    sync: string;
-    provider: string;
-    connection: string;
-    lastSyncDate?: string;
-}
 
 export const verifyAndChangeDistFilesToJs = () => {
     const cwd = process.cwd();
@@ -117,6 +120,7 @@ export const run = async (args: string[], options: RunArgs) => {
         config?.integrations?.[providerConfigKey as string]?.[syncName as string] &&
         fs.existsSync(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/dist/${syncName}.js`))
     ) {
+        const syncData = config?.integrations[providerConfigKey as string]?.[syncName as string];
         // to load a module without having to edit the type in the package.json
         // edit the file to be a mjs then rename it back
         fs.renameSync(
@@ -128,11 +132,11 @@ export const run = async (args: string[], options: RunArgs) => {
             path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/dist/${syncName}.mjs`) + `?v=${Math.random().toString(36).substring(3)}`
         );
 
-        // look at the cli index on how to get the nangoConnection
         const nango = new Nango({
             host: getServerBaseUrl(),
             connectionId: String(connectionId),
-            providerConfigKey: String(providerConfigKey)
+            providerConfigKey: String(providerConfigKey),
+            isSync: true
         });
 
         try {
@@ -149,6 +153,21 @@ export const run = async (args: string[], options: RunArgs) => {
                 path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/dist/${syncName}.mjs`),
                 path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/dist/${syncName}.js`)
             );
+            const { returns: models } = syncData as NangoIntegrationData;
+
+            for (const model of models) {
+                if (userDefinedResults[model]) {
+                    const { isUnique, nonUniqueKey } = syncDataService.verifyUniqueKeysAreUnique(userDefinedResults[model]);
+                    if (!isUnique) {
+                        console.log(
+                            chalk.red(
+                                `The ${model} model does not have unique id keys! The repeated key is ${nonUniqueKey}. Please resolve this before running the sync on the server.`
+                            )
+                        );
+                    }
+                }
+            }
+
             process.exit(0);
         } catch (error) {
             console.error(error);
