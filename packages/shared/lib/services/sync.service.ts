@@ -124,18 +124,21 @@ export const initiate = async (nangoConnectionId: number): Promise<void> => {
     const nangoConnection = (await connectionService.getConnectionById(nangoConnectionId)) as NangoConnection;
     const nangoConfig = loadNangoConfig();
     if (!nangoConfig) {
+        console.log('Failed to load Nango config - will not start any syncs!');
         return;
     }
     const { integrations }: NangoConfig = nangoConfig;
     const providerConfigKey = nangoConnection?.provider_config_key as string;
 
     if (!integrations[providerConfigKey]) {
+        console.log(`No syncs registered for provider ${providerConfigKey} - will not start any syncs!`);
         return;
     }
 
     const client = await getClient();
 
     if (!client) {
+        console.log('Failed to get a Temporal client - will not start any syncs!');
         return;
     }
 
