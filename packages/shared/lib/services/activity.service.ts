@@ -106,7 +106,10 @@ export async function getLogsByAccount(account_id: number, limit = 30): Promise<
     const logs = await db.knex
         .withSchema(db.schema())
         .from<ActivityLog>('_nango_activity_logs')
-        .select('_nango_activity_logs.*', db.knex.raw('json_agg(_nango_activity_log_messages.*) as messages'))
+        .select(
+            '_nango_activity_logs.*',
+            db.knex.raw('json_agg(_nango_activity_log_messages ORDER BY _nango_activity_log_messages.created_at ASC) as messages')
+        )
         .leftJoin('_nango_activity_log_messages', '_nango_activity_logs.id', '=', '_nango_activity_log_messages.activity_log_id')
         .where({ account_id })
         .groupBy('_nango_activity_logs.id')

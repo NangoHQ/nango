@@ -12,7 +12,7 @@ export async function upsert(
     model: string,
     activityLogId: number
 ): Promise<UpsertResponse> {
-    const responseWithoutDuplicates = await removeDuplicateKey(response, uniqueKey, activityLogId);
+    const responseWithoutDuplicates = await removeDuplicateKey(response, uniqueKey, activityLogId, model);
     const addedKeys = await getAddedKeys(responseWithoutDuplicates, dbTable, uniqueKey, nangoConnectionId, model);
     const updatedKeys = await getUpdatedKeys(responseWithoutDuplicates, dbTable, uniqueKey, nangoConnectionId, model);
 
@@ -29,14 +29,14 @@ export async function upsert(
     return { addedKeys, updatedKeys, affectedInternalIds, affectedExternalIds };
 }
 
-export async function removeDuplicateKey(response: DataResponse[], uniqueKey: string, activityLogId: number): Promise<DataResponse[]> {
+export async function removeDuplicateKey(response: DataResponse[], uniqueKey: string, activityLogId: number, model: string): Promise<DataResponse[]> {
     const { isUnique, nonUniqueKey } = syncDataService.verifyUniqueKeysAreUnique(response, uniqueKey);
 
     if (!isUnique) {
         await createActivityLogMessage({
             level: 'error',
             activity_log_id: activityLogId,
-            content: `There was a duplicate key found: ${nonUniqueKey}. This record will not be inserted.`,
+            content: `There was a duplicate key found: ${nonUniqueKey}. This record will not be inserted to the model ${model}.`,
             timestamp: Date.now()
         });
 
