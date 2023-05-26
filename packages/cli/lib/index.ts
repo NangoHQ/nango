@@ -290,8 +290,7 @@ program
                             name: model,
                             type: `${singularModel.charAt(0).toUpperCase()}${singularModel.slice(1)}`
                         };
-                    }),
-                    providerConfigKey
+                    })
                 });
 
                 if (!fs.existsSync(`${NANGO_INTEGRATIONS_LOCATION}/${syncName}.ts`)) {

@@ -20,6 +20,7 @@ import {
 import connectionService from '../services/connection.service.js';
 import providerClient from '../clients/provider.client.js';
 import configService from '../services/config.service.js';
+import { deleteScheduleForConnection as deleteSyncScheduleForConnection } from '../services/sync-schedule.service.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import { NangoError } from '../utils/error.js';
 
@@ -118,11 +119,15 @@ class ConnectionService {
         return queryBuilder;
     }
 
-    async deleteConnection(connectionId: string, providerConfigKey: string, accountId: number): Promise<number> {
-        return db.knex
+    async deleteConnection(connection: Connection, providerConfigKey: string, accountId: number): Promise<number> {
+        if (connection) {
+            await deleteSyncScheduleForConnection(connection);
+        }
+
+        return await db.knex
             .withSchema(db.schema())
             .from<Connection>(`_nango_connections`)
-            .where({ connection_id: connectionId, provider_config_key: providerConfigKey, account_id: accountId })
+            .where({ connection_id: connection.connection_id, provider_config_key: providerConfigKey, account_id: accountId })
             .del();
     }
 

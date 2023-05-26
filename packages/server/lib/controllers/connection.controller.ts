@@ -219,7 +219,7 @@ class ConnectionController {
                 return;
             }
 
-            await connectionService.deleteConnection(connection.connection_id, providerConfigKey, account.id);
+            await connectionService.deleteConnection(connection, providerConfigKey, account.id);
 
             res.status(200).send();
         } catch (err) {
@@ -315,7 +315,7 @@ class ConnectionController {
                 return;
             }
 
-            await connectionService.deleteConnection(connection.connection_id, providerConfigKey, accountId);
+            await connectionService.deleteConnection(connection, providerConfigKey, accountId);
 
             res.status(200).send();
         } catch (err) {

@@ -163,10 +163,12 @@ export async function syncProvider(
                                 activityLogId
                             );
                         } catch (e) {
+                            const errorMessage = JSON.stringify(e, ['message', 'name', 'stack']);
+
                             await createActivityLogMessage({
                                 level: 'error',
                                 activity_log_id: activityLogId,
-                                content: `There was a problem upserting the data for ${syncName} and the model ${model}.`,
+                                content: `There was a problem upserting the data for ${syncName} and the model ${model}. The error message was ${errorMessage}`,
                                 timestamp: Date.now()
                             });
                             upsertSuccess = false;
@@ -204,7 +206,7 @@ async function reportResults(
 
     let resultMessage = '';
 
-    if (upsertSuccess) {
+    if (!upsertSuccess) {
         resultMessage = `There was an error in upserting the results`;
     } else {
         resultMessage = anyResultsInserted
