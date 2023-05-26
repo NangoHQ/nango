@@ -5,7 +5,6 @@ import type { ProxyConfiguration } from './types';
 
 const prodHost = 'https://api.nango.dev';
 const stagingHost = 'https://api-staging.nango.dev';
-const forceBearerAuth = true; // For development.
 
 export class Nango {
     serverUrl: string;
@@ -178,7 +177,7 @@ export class Nango {
     }
 
     private enrichHeaders(headers: Record<string, string | number | boolean> = {}) {
-        if (this.serverUrl === prodHost || this.serverUrl === stagingHost || forceBearerAuth) {
+        if (this.serverUrl === prodHost || this.serverUrl === stagingHost) {
             headers['Authorization'] = 'Bearer ' + this.secretKey;
         } else if (this.secretKey) {
             headers['Authorization'] = 'Basic ' + Buffer.from(this.secretKey + ':').toString('base64');
