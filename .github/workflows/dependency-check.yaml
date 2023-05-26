@@ -12,13 +12,13 @@ jobs:
         strategy:
             matrix:
                 directory: [
-                    '/packages/cli',
-                    '/packages/frontend',
-                    '/packages/node-client',
-                    '/packages/server',
-                    '/packages/shared',
-                    '/packages/webapp',
-                    '/packages/worker'
+                    'packages/cli',
+                    'packages/frontend',
+                    'packages/node-client',
+                    'packages/server',
+                    'packages/shared',
+                    'packages/webapp',
+                    'packages/worker'
                 ]
         steps:
             - name: Checkout
