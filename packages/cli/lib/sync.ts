@@ -5,6 +5,7 @@ import chalk from 'chalk';
 import chokidar from 'chokidar';
 import * as tsNode from 'ts-node';
 import * as dotenv from 'dotenv';
+import { spawn } from 'child_process';
 
 import type { NangoConfig, Connection as NangoConnection, NangoIntegrationData } from '@nangohq/shared';
 import { Nango, loadNangoConfig, getIntegrationClass, getServerBaseUrl, getLastSyncDate, syncDataService } from '@nangohq/shared';
@@ -253,4 +254,19 @@ export const configWatch = () => {
             chalk.green(`${filePath} was updated. The interface file (${NANGO_INTEGRATIONS_LOCATION}/models.ts) was updated to reflect the updated config`)
         );
     }
+};
+
+/**
+ * Docker Run
+ * @desc spawn a child process to run the docker compose located in the cli
+ * Look into https://www.npmjs.com/package/docker-compose to avoid dependency maybe?
+ */
+export const dockerRun = () => {
+    const cwd = process.cwd();
+
+    spawn('docker', ['compose', '-f', 'node_modules/nango/docker/docker-compose.yaml', '--project-directory', '.', 'up', '--build'], {
+        cwd,
+        detached: false,
+        stdio: 'inherit'
+    });
 };

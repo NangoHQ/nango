@@ -16,12 +16,11 @@ import ejs from 'ejs';
 import glob from 'glob';
 import byots from 'byots';
 import { build } from 'esbuild';
-import { spawn } from 'child_process';
 import * as dotenv from 'dotenv';
 
 import type { NangoConfig, NangoIntegration, NangoIntegrationData } from '@nangohq/shared';
 import { loadSimplifiedConfig } from '@nangohq/shared';
-import { init, run, tscWatch, configWatch } from './sync.js';
+import { init, run, tscWatch, configWatch, dockerRun } from './sync.js';
 import { checkEnvVars, enrichHeaders, httpsAgent, getConnection, configFile, NANGO_INTEGRATIONS_LOCATION, buildInterfaces } from './utils.js';
 
 const program = new Command();
@@ -304,7 +303,7 @@ program
 
 program
     .command('tsc')
-    .description('Work locally to add integration code')
+    .description('Compile the integration files to JavaScript')
     .action(() => {
         const cwd = process.cwd();
         const integrationFiles = glob.sync(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/*.ts`));
@@ -349,22 +348,21 @@ program
     });
 
 program
+    .command('docker:run')
+    .description('Run the docker container locally')
+    .action(() => {
+        dockerRun();
+    });
+
+program
     .command('dev')
     .alias('develop')
     .alias('watch')
     .description('Work locally to add integration code')
     .action(() => {
-        const cwd = process.cwd();
         tscWatch();
         configWatch();
-
-        // look into
-        // https://www.npmjs.com/package/docker-compose
-        spawn('docker', ['compose', '-f', 'node_modules/nango/docker/docker-compose.yaml', '--project-directory', '.', 'up', '--build'], {
-            cwd,
-            detached: false,
-            stdio: 'inherit'
-        });
+        dockerRun();
     });
 
 program
