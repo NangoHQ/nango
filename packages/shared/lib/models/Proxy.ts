@@ -1,9 +1,6 @@
 import type { ParamsSerializerOptions } from 'axios';
 
 export interface ProxyConfiguration {
-    // allows for dynamic checking of required params
-    [key: string]: any;
-
     endpoint: string;
     providerConfigKey?: string;
     connectionId?: string;

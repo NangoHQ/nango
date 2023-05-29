@@ -15,20 +15,23 @@ services:
             - nango
 
     nango-server:
-        image: nangohq/nango-server
+        image: nangohq/nango-server:0.1.11-beta
         container_name: nango-server
         environment:
             - TEMPORAL_ADDRESS=temporal:7233
+            - NANGO_DB_MIGRATION_FOLDER=/usr/nango-server/src/packages/shared/lib/db/migrations
         restart: always
         ports:
             - '3003:3003'
         depends_on:
             - nango-db
+        volumes:
+            - "${NANGO_INTEGRATIONS_LOCATION:-./nango-integrations}:/usr/nango-server/src/packages/shared/dist/lib/nango-integrations"
         networks:
             - nango
 
     nango-worker:
-        image: nangohq/nango-worker:0.1.4-rc
+        image: nangohq/nango-worker:0.1.11-beta
         container_name: nango-worker
         restart: always
         ports:
@@ -39,7 +42,7 @@ services:
             - nango-db
             - temporal
         volumes:
-            - "${NANGO_INTEGRATIONS_LOCATION:./nango-integrations}/dist:/usr/nango-sync-server/src/packages/shared/dist/lib/nango-integrations"
+            - "${NANGO_INTEGRATIONS_LOCATION:-./nango-integrations}:/usr/nango-worker/src/packages/shared/dist/lib/nango-integrations"
         networks:
             - nango
 

@@ -15,7 +15,7 @@ import proxyController from './controllers/proxy.controller.js';
 import activityController from './controllers/activity.controller.js';
 import syncController from './controllers/sync.controller.js';
 import path from 'path';
-import { getGlobalOAuthCallbackUrl, packageJsonFile } from './utils/utils.js';
+import { getGlobalOAuthCallbackUrl, packageJsonFile, dirname } from './utils/utils.js';
 import { WebSocketServer, WebSocket } from 'ws';
 import http from 'http';
 import express from 'express';
@@ -26,7 +26,7 @@ import passport from 'passport';
 import accountController from './controllers/account.controller.js';
 import type { Response, Request } from 'express';
 import Logger from './utils/logger.js';
-import { encryptionManager, accountService, dirname, getPort, isCloud, isBasicAuthEnabled, errorManager } from '@nangohq/shared';
+import { encryptionManager, accountService, getPort, isCloud, isBasicAuthEnabled, errorManager } from '@nangohq/shared';
 import oAuthSessionService from './services/oauth-session.service.js';
 import { deleteOldActivityLogs } from './jobs/index.js';
 

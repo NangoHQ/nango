@@ -2,6 +2,7 @@
     "files": [],
     "references": [
         { "path": "packages/shared" },
+        { "path": "packages/worker" },
         { "path": "packages/cli" },
         { "path": "packages/server" },
         { "path": "packages/frontend" },

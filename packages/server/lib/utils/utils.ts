@@ -1,4 +1,5 @@
-import { resolve } from 'path';
+import { fileURLToPath } from 'url';
+import path, { resolve } from 'path';
 import type { Request } from 'express';
 import type { User, Account, Template as ProviderTemplate } from '@nangohq/shared';
 import logger from './logger.js';
@@ -45,6 +46,10 @@ export async function getUserAndAccountFromSession(req: Request): Promise<{ user
     }
 
     return { user: user, account: account };
+}
+
+export function dirname() {
+    return path.dirname(fileURLToPath(import.meta.url));
 }
 
 /**

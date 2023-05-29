@@ -10,14 +10,15 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export function loadNangoConfig(loadLocation?: string): NangoConfig | null {
+    const location = loadLocation || path.resolve(__dirname, '../nango-integrations/nango.yaml');
+
     try {
-        const location = loadLocation || path.resolve(__dirname, '../nango-integrations/nango.yaml');
         const yamlConfig = fs.readFileSync(location, 'utf8');
         const configData: NangoConfig = yaml.load(yamlConfig) as unknown as NangoConfig;
 
         return configData;
     } catch (error) {
-        console.log('no nango.yaml config found');
+        console.log(`no nango.yaml config found at ${location}`);
     }
 
     return null;
