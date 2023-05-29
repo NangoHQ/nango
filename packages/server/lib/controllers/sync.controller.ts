@@ -1,6 +1,8 @@
 import type { Request, Response } from 'express';
 import type { NextFunction } from 'express';
-import { getAccount, createSyncConfig, syncDataService } from '@nangohq/shared';
+import type { Connection } from '@nangohq/shared';
+import { getUserAndAccountFromSession } from '../utils/utils.js';
+import { getAccount, createSyncConfig, syncDataService, connectionService, getSyncs } from '@nangohq/shared';
 
 class SyncController {
     public async createSyncConfig(req: Request, res: Response, next: NextFunction) {
@@ -51,6 +53,33 @@ class SyncController {
             );
 
             res.send(records);
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    public async getSyncs(req: Request, res: Response, next: NextFunction) {
+        try {
+            const account = (await getUserAndAccountFromSession(req)).account;
+            const { connection_id, provider_config_key } = req.query;
+
+            if (!connection_id) {
+                res.status(400).send({ message: 'Missing connection id' });
+            }
+
+            if (!provider_config_key) {
+                res.status(400).send({ message: 'Missing provider config key' });
+            }
+
+            const connection: Connection | null = await connectionService.getConnection(connection_id as string, provider_config_key as string, account.id);
+
+            if (!connection) {
+                res.status(404).send({ message: 'Connection not found!' });
+            }
+
+            const syncs = await getSyncs(connection?.id as number);
+
+            res.send(syncs);
         } catch (e) {
             next(e);
         }

@@ -403,3 +403,18 @@ export function useActivityAPI() {
         }
     };
 }
+
+export function useGetSyncAPI() {
+    return async (connectionId: string, providerConfigKey: string) => {
+        try {
+            let res = await fetch(`/api/v1/sync?connection_id=${connectionId}&provider_config_key=${providerConfigKey}`, {
+                method: 'GET',
+                headers: getHeaders(),
+            });
+
+            return res;
+        } catch (e) {
+            requestErrorToast();
+        }
+    };
+}

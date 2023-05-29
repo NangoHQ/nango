@@ -94,13 +94,14 @@ export const startContinuous = async (
                 {
                     nangoConnectionId: nangoConnection?.id,
                     activityLogId,
-                    syncName
+                    syncName,
+                    syncData
                 }
             ]
         }
     });
 
-    await createSyncScedule(nangoConnection?.id as number, scheduleId, frequency);
+    await createSyncScedule(nangoConnection?.id as number, scheduleId, sync.id);
 
     await createActivityLogMessage({
         level: 'info',
@@ -152,8 +153,10 @@ export const initiate = async (nangoConnectionId: number): Promise<void> => {
     for (let k = 0; k < syncNames.length; k++) {
         const syncName = syncNames[k] as string;
         const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
+        const { returns: models } = syncData;
+        const frequency = getCronExpression(syncData.runs);
 
-        const sync = await createSyncJob(nangoConnectionId, SyncType.INITIAL, syncName);
+        const sync = await createSyncJob(nangoConnectionId, SyncType.INITIAL, syncName, models, frequency);
 
         if (sync) {
             startContinuous(client as Client, nangoConnection, sync, syncConfig, syncName, syncData);
@@ -161,13 +164,15 @@ export const initiate = async (nangoConnectionId: number): Promise<void> => {
     }
 };
 
-export const createSyncJob = async (nangoConnectionId: number, type: SyncType, syncName: string): Promise<Sync | null> => {
+export const createSyncJob = async (nangoConnectionId: number, type: SyncType, syncName: string, models: string[], frequency: string): Promise<Sync | null> => {
     const result: void | Pick<Sync, 'id'> = await db.knex.withSchema(db.schema()).from<Sync>(TABLE).insert(
         {
             nango_connection_id: nangoConnectionId,
             sync_name: syncName,
             status: SyncStatus.RUNNING,
-            type
+            type,
+            models,
+            frequency
         },
         ['id']
     );
@@ -257,4 +262,18 @@ export const deleteSyncSchedule = async (id: string): Promise<boolean> => {
     } catch (e) {
         return false;
     }
+};
+
+export const getSyncs = async (nangoConnectionId: number): Promise<Sync[]> => {
+    const result = await db.knex
+        .withSchema(db.schema())
+        .select('*')
+        .from<Sync>(TABLE)
+        .where({ nango_connection_id: nangoConnectionId, type: SyncType.INITIAL });
+
+    if (Array.isArray(result) && result.length > 0) {
+        return result;
+    }
+
+    return [];
 };

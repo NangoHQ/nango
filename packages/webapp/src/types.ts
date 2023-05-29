@@ -15,3 +15,14 @@ export interface ActivityResponse {
     method: string;
     endpoint?: string;
 }
+
+export interface SyncResponse {
+    id: number;
+    created_at: Date;
+    nango_connection_id: number;
+    status: 'SUCCESS' | 'STOPPED' | 'RUNNING' | 'PAUSED';
+    sync_name: string;
+    type: 'INITIAL' | 'INCREMENTAL';
+    updated_at: Date;
+    models: string[];
+}

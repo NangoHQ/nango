@@ -24,6 +24,7 @@ import {
     checkForIntegrationFile,
     getIntegrationClass,
     loadNangoConfig,
+    getCronExpression,
     getLastSyncDate
 } from '@nangohq/shared';
 import type { NangoConnection, ContinuousSyncArgs, InitialSyncArgs } from './models/Worker';
@@ -46,8 +47,9 @@ export async function routeSync(args: InitialSyncArgs): Promise<boolean> {
 }
 
 export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<boolean> {
-    const { nangoConnectionId, activityLogId, syncName } = args;
-    const sync: Sync = (await createSyncJob(nangoConnectionId, SyncType.INCREMENTAL, syncName)) as Sync;
+    const { nangoConnectionId, activityLogId, syncName, syncData } = args;
+    const frequency = getCronExpression(syncData.runs);
+    const sync: Sync = (await createSyncJob(nangoConnectionId, SyncType.INCREMENTAL, syncName, syncData.returns, frequency)) as Sync;
     const nangoConnection: NangoConnection = (await connectionService.getConnectionById(nangoConnectionId)) as NangoConnection;
     const syncConfig: ProviderConfig = (await configService.getProviderConfig(
         nangoConnection?.provider_config_key as string,

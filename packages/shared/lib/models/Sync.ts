@@ -18,6 +18,8 @@ export interface Sync {
     type: SyncType;
     created_at?: Date;
     updated_at?: Date;
+    models: string[];
+    frequency: string;
 }
 
 export interface SyncConfig {

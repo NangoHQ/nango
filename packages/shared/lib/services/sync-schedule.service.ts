@@ -5,13 +5,13 @@ import { deleteSyncSchedule } from './sync.service.js';
 
 const TABLE = dbNamespace + 'sync_schedules';
 
-export const createSchedule = async (nangoConnectionId: number, schedule_id: string, frequency: string): Promise<SyncSchedule | null> => {
+export const createSchedule = async (nangoConnectionId: number, schedule_id: string, syncJobId: number): Promise<SyncSchedule | null> => {
     const result: void | Pick<SyncSchedule, 'id'> = await db.knex.withSchema(db.schema()).from<SyncSchedule>(TABLE).insert(
         {
             nango_connection_id: nangoConnectionId,
             schedule_id,
-            frequency,
-            status: ScheduleStatus.RUNNING
+            status: ScheduleStatus.RUNNING,
+            sync_job_id: syncJobId
         },
         ['id']
     );

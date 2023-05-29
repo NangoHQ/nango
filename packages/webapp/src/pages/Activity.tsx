@@ -65,7 +65,7 @@ export default function Activity() {
                 {activities.length === 0 && (
                     <div className="flex items-center">
                         <Slash className="stroke-red-500" />
-                        <div className="text-white ml-3 ">No recent activity yet!</div>
+                        <div className="text-white ml-3">No recent activity yet!</div>
                     </div>
                 )}
                 {activities.length > 0 && (

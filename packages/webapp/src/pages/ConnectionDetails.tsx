@@ -2,18 +2,16 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Prism } from '@mantine/prism';
 import { toast } from 'react-toastify';
-import { RefreshCw } from '@geist-ui/icons';
+import { RefreshCw, Lock, Slash } from '@geist-ui/icons';
 
-import { useGetConnectionDetailsAPI, useDeleteConnectionAPI } from '../utils/api';
+import { useGetConnectionDetailsAPI, useDeleteConnectionAPI, useGetSyncAPI } from '../utils/api';
 import DashboardLayout from '../layout/DashboardLayout';
 import { LeftNavBarItems } from '../components/LeftNavBar';
 import PrismPlus from '../components/ui/prism/PrismPlus';
 import Button from '../components/ui/button/Button';
 import Typography from '../components/ui/typography/Typography';
 import SecretInput from '../components/ui/input/SecretInput';
-
-//TODO : https://github.com/NangoHQ/nango/pull/465
-//add api
+import type { SyncResponse } from '../types';
 
 interface Connection {
     id: number;
@@ -35,11 +33,14 @@ interface Connection {
 export default function ConnectionDetails() {
     const [loaded, setLoaded] = useState(false);
     const [fetchingRefreshToken, setFetchingRefreshToken] = useState(false);
+    const [syncs, setSyncs] = useState([]);
     const [serverErrorMessage, setServerErrorMessage] = useState('');
+    const [currentTab, setCurrentTab] = useState<'auth' | 'sync'>('auth');
     const [connection, setConnection] = useState<Connection | null>(null);
     const navigate = useNavigate();
     const getConnectionDetailsAPI = useGetConnectionDetailsAPI();
     const deleteConnectionAPI = useDeleteConnectionAPI();
+    const getSyncAPI = useGetSyncAPI();
     const { connectionId, providerConfigKey } = useParams();
 
     useEffect(() => {
@@ -53,7 +54,7 @@ export default function ConnectionDetails() {
                 setConnection(data['connection']);
             } else if (res != null) {
                 setServerErrorMessage(`
-We could not retrieve and/or refresh your access token due to the following error: 
+We could not retrieve and/or refresh your access token due to the following error:
 \n\n${(await res.json()).error}
 `);
             }
@@ -90,7 +91,7 @@ We could not retrieve and/or refresh your access token due to the following erro
             toast.success('Token refresh success!', { position: toast.POSITION.BOTTOM_CENTER });
         } else if (res != null) {
             setServerErrorMessage(`
-             We could not retrieve and/or refresh your access token due to the following error: 
+             We could not retrieve and/or refresh your access token due to the following error:
              \n\n${(await res.json()).error}
             `);
             toast.error('Failed to refresh token!', { position: toast.POSITION.BOTTOM_CENTER });
@@ -100,11 +101,36 @@ We could not retrieve and/or refresh your access token due to the following erro
         }, 400);
     };
 
+    useEffect(() => {
+        if (!connectionId || !providerConfigKey) return;
+
+        const getSyncs = async () => {
+            const res = await getSyncAPI(connectionId, providerConfigKey);
+
+            if (res?.status === 200) {
+                try {
+                    const data = await res.json();
+                    setSyncs(data);
+                } catch (e) {
+                    console.log(e)
+                }
+                setLoaded(true);
+            }
+        };
+
+        if (!loaded) {
+            setLoaded(true);
+            getSyncs();
+        }
+
+    }, [getSyncAPI, loaded, setLoaded, connectionId, providerConfigKey]);
+
+
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Connections}>
             <div className="mx-auto w-largebox">
                 <div className="mx-16 pb-40">
-                    <div className="flex mt-16 mb-12 justify-between">
+                    <div className="flex mt-16 mb-6 justify-between">
                         <Typography
                             tooltipProps={{
                                 text: (
@@ -134,160 +160,228 @@ We could not retrieve and/or refresh your access token due to the following erro
                                 )
                             }}
                         >
-                            Connection
+                            Connection: {connection?.connectionId} - {connection?.provider}
                         </Typography>
-                        <Button
-                            isLoading={fetchingRefreshToken}
-                            onClick={forceRefresh}
-                            iconProps={{ Icon: <RefreshCw className="h-5 w-5" />, position: 'start' }}
-                        >
-                            Manually Refresh Token
-                        </Button>
-                    </div>
-                    <div className="border border-border-gray rounded-md h-fit py-14 text-white text-sm">
-                        <div>
-                            <div className="mx-8">
-                                <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                    Connection ID
-                                </label>
-                                <Prism language="bash" colorScheme="dark">
-                                    {connectionId || ''}
-                                </Prism>
-                            </div>
-                        </div>
-                        <div>
-                            <div className="mx-8 mt-8">
-                                <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                    Integration Unique Key
-                                </label>
-                                <Prism language="bash" colorScheme="dark">
-                                    {providerConfigKey || ''}
-                                </Prism>
-                            </div>
-                        </div>
-                        {connection && (
-                            <div>
-                                <div>
-                                    <div className="mx-8 mt-8">
-                                        <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                            Creation Date
-                                        </label>
-                                        <p className="mt-3 mb-5">{new Date(connection.creationDate).toLocaleString()}</p>
-                                    </div>
-                                </div>
-                                <div>
-                                    <div className="mx-8 mt-8">
-                                        <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                            Integration Template
-                                        </label>
-                                        <div className="mt-3 mb-5 flex">
-                                            <img src={`images/template-logos/${connection.provider}.svg`} alt="" className="h-7 mt-0.5 mr-0.5" />
-                                            <p className="">{`${connection.provider}`}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <div className="mx-8 mt-8">
-                                        <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                            OAuth Type
-                                        </label>
-                                        <p className="mt-3 mb-5">{connection.oauthType}</p>
-                                    </div>
-                                </div>
-                                {connection.accessToken && (
-                                    <div>
-                                        <div className="mx-8 mt-8">
-                                            <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                                Access Token
-                                            </label>
-
-                                            <SecretInput disabled defaultValue={connection.accessToken} copy={true} />
-                                        </div>
-                                    </div>
-                                )}
-                                {connection.expiresAt && (
-                                    <div>
-                                        <div className="mx-8 mt-8">
-                                            <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                                Access Token Expiration
-                                            </label>
-                                            <p className="mt-3 mb-5">{new Date(connection.expiresAt).toLocaleString()}</p>
-                                        </div>
-                                    </div>
-                                )}
-                                {connection.refreshToken && (
-                                    <div>
-                                        <div className="mx-8 mt-8">
-                                            <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                                Refresh Token
-                                            </label>
-                                            <SecretInput disabled defaultValue={connection.refreshToken} copy={true} />
-                                        </div>
-                                    </div>
-                                )}
-                                {connection.oauthToken && (
-                                    <div>
-                                        <div className="mx-8 mt-8">
-                                            <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                                OAuth Token
-                                            </label>
-                                            <SecretInput disabled defaultValue={connection.oauthToken} copy={true} />
-                                        </div>
-                                    </div>
-                                )}
-                                {connection.oauthTokenSecret && (
-                                    <div>
-                                        <div className="mx-8 mt-8">
-                                            <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                                OAuth Token Secret
-                                            </label>
-                                            <SecretInput disabled defaultValue={connection.oauthTokenSecret} copy={true} />
-                                        </div>
-                                    </div>
-                                )}
-                                <div>
-                                    <div className="mx-8 mt-8">
-                                        <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                            Connection Configuration
-                                        </label>
-                                        <Prism language="json" colorScheme="dark">
-                                            {JSON.stringify(connection.connectionConfig, null, 4) || '{}'}
-                                        </Prism>
-                                    </div>
-                                </div>
-                                <div>
-                                    <div className="mx-8 mt-8">
-                                        <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                            Connection Metadata
-                                        </label>
-                                        <Prism language="json" colorScheme="dark">
-                                            {JSON.stringify(connection.connectionMetadata, null, 4) || '{}'}
-                                        </Prism>
-                                    </div>
-                                </div>
-                                <div>
-                                    <div className="mx-8 mt-8">
-                                        <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                            Raw Token Response
-                                        </label>
-                                        <PrismPlus language="json" colorScheme="dark">
-                                            {JSON.stringify(connection.rawCredentials, null, 4) || '{}'}
-                                        </PrismPlus>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                        {serverErrorMessage && (
-                            <div className="mx-8 mt-8">
-                                <p className="mt-6 text-sm text-red-600">{serverErrorMessage}</p>
-                            </div>
-                        )}
-
-                        <div className="mx-8 mt-8">
-                            <Button variant="danger" size="sm" onClick={deleteButtonClicked}>
-                                <p>Delete</p>
+                        {currentTab === 'auth' && (
+                            <Button
+                                isLoading={fetchingRefreshToken}
+                                onClick={forceRefresh}
+                                iconProps={{ Icon: <RefreshCw className="h-5 w-5" />, position: 'start' }}
+                            >
+                                Manually Refresh Token
                             </Button>
-                        </div>
+                        )}
+                    </div>
+                    <div className="flex inline-flex text-white mb-12 border border-border-gray rounded-md">
+                        <span className={`flex items-center justify-center cursor-pointer py-1 px-3 ${currentTab === 'auth' ? 'bg-gray-800' : ''}`} onClick={() => setCurrentTab('auth')}>
+                            <Lock className="flex stroke-white mr-2 mb-0.5" size="14" />
+                            Auth
+                        </span>
+                        <span className={`flex items-center justify-center cursor-pointer py-1 px-3 ${currentTab === 'sync' ? 'bg-gray-800' : ''}`} onClick={() => setCurrentTab('sync')}>
+                            <RefreshCw className="flex stroke-white mr-2 mb-0.5" size="14" />
+                            Sync
+                        </span>
+                    </div>
+                    <div className={`border border-border-gray rounded-md h-fit ${currentTab === 'auth' ? 'py-14' : 'py-6'} text-white text-sm`}>
+                        {currentTab === 'auth' && (
+                            <>
+                                <div>
+                                    <div className="mx-8">
+                                        <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
+                                            Connection ID
+                                        </label>
+                                        <Prism language="bash" colorScheme="dark">
+                                            {connectionId || ''}
+                                        </Prism>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div className="mx-8 mt-8">
+                                        <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
+                                            Integration Unique Key
+                                        </label>
+                                        <Prism language="bash" colorScheme="dark">
+                                            {providerConfigKey || ''}
+                                        </Prism>
+                                    </div>
+                                </div>
+                                {connection && (
+                                    <div>
+                                        <div>
+                                            <div className="mx-8 mt-8">
+                                                <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
+                                                    Creation Date
+                                                </label>
+                                                <p className="mt-3 mb-5">{new Date(connection.creationDate).toLocaleString()}</p>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div className="mx-8 mt-8">
+                                                <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
+                                                    Integration Template
+                                                </label>
+                                                <div className="mt-3 mb-5 flex">
+                                                    <img src={`images/template-logos/${connection.provider}.svg`} alt="" className="h-7 mt-0.5 mr-0.5" />
+                                                    <p className="">{`${connection.provider}`}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div className="mx-8 mt-8">
+                                                <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
+                                                    OAuth Type
+                                                </label>
+                                                <p className="mt-3 mb-5">{connection.oauthType}</p>
+                                            </div>
+                                        </div>
+                                        {connection.accessToken && (
+                                            <div>
+                                                <div className="mx-8 mt-8">
+                                                    <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
+                                                        Access Token
+                                                    </label>
+
+                                                    <SecretInput disabled defaultValue={connection.accessToken} copy={true} />
+                                                </div>
+                                            </div>
+                                        )}
+                                        {connection.expiresAt && (
+                                            <div>
+                                                <div className="mx-8 mt-8">
+                                                    <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
+                                                        Access Token Expiration
+                                                    </label>
+                                                    <p className="mt-3 mb-5">{new Date(connection.expiresAt).toLocaleString()}</p>
+                                                </div>
+                                            </div>
+                                        )}
+                                        {connection.refreshToken && (
+                                            <div>
+                                                <div className="mx-8 mt-8">
+                                                    <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
+                                                        Refresh Token
+                                                    </label>
+                                                    <SecretInput disabled defaultValue={connection.refreshToken} copy={true} />
+                                                </div>
+                                            </div>
+                                        )}
+                                        {connection.oauthToken && (
+                                            <div>
+                                                <div className="mx-8 mt-8">
+                                                    <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
+                                                        OAuth Token
+                                                    </label>
+                                                    <SecretInput disabled defaultValue={connection.oauthToken} copy={true} />
+                                                </div>
+                                            </div>
+                                        )}
+                                        {connection.oauthTokenSecret && (
+                                            <div>
+                                                <div className="mx-8 mt-8">
+                                                    <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
+                                                        OAuth Token Secret
+                                                    </label>
+                                                    <SecretInput disabled defaultValue={connection.oauthTokenSecret} copy={true} />
+                                                </div>
+                                            </div>
+                                        )}
+                                        <div>
+                                            <div className="mx-8 mt-8">
+                                                <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
+                                                    Connection Configuration
+                                                </label>
+                                                <Prism language="json" colorScheme="dark">
+                                                    {JSON.stringify(connection.connectionConfig, null, 4) || '{}'}
+                                                </Prism>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div className="mx-8 mt-8">
+                                                <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
+                                                    Connection Metadata
+                                                </label>
+                                                <Prism language="json" colorScheme="dark">
+                                                    {JSON.stringify(connection.connectionMetadata, null, 4) || '{}'}
+                                                </Prism>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div className="mx-8 mt-8">
+                                                <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
+                                                    Raw Token Response
+                                                </label>
+                                                <PrismPlus language="json" colorScheme="dark">
+                                                    {JSON.stringify(connection.rawCredentials, null, 4) || '{}'}
+                                                </PrismPlus>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                                {serverErrorMessage && (
+                                    <div className="mx-8 mt-8">
+                                        <p className="mt-6 text-sm text-red-600">{serverErrorMessage}</p>
+                                    </div>
+                                )}
+
+                                <div className="mx-8 mt-8">
+                                    <Button variant="danger" size="sm" onClick={deleteButtonClicked}>
+                                        <p>Delete</p>
+                                    </Button>
+                                </div>
+                            </>
+                        )}
+                        {currentTab === 'sync' && (
+                            <>
+                                <div className="text-white px-5">
+                                    <ul className="flex space-x-24 pb-4 items-center text-lg border-b border-border-gray">
+                                        <li>Integration Script</li>
+                                        <li>Models</li>
+                                        <li>Status</li>
+                                        <li>Last Sync</li>
+                                        <li>Next Sync</li>
+                                    </ul>
+                                </div>
+                                {syncs.length === 0 && (
+                                    <div className="flex items-center px-5 pt-8 pb-3">
+                                        <Slash className="stroke-red-500" />
+                                        <div className="text-white ml-3">No syncs yet!</div>
+                                    </div>
+                                )}
+                                {syncs.length > 0 && (
+                                    <>
+                                        {syncs.map((sync: SyncResponse) => (
+                                            <ul key={sync.id} className="flex space-x-24 py-4 px-5 text-base items-center border-b border-border-gray">
+                                                <li className="">{sync.sync_name}</li>
+                                                <li>{sync.models.map((model) => model.charAt(0).toUpperCase() + model.slice(1)).join(', ')}</li>
+                                                <li className="">{sync.status}</li>
+                                                <li className="">{new Date(sync.updated_at).toLocaleString()}</li>
+                                                <li className="">{new Date(sync.created_at).toLocaleString()}</li>
+                                                <li className="flex">
+                                                    <button
+                                                        className="flex h-8 mr-2 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white bg-gray-800 hover:bg-gray-700"
+                                                        onClick={() => console.log('stop sync')}
+                                                    >
+                                                        <p>Stop</p>
+                                                    </button>
+                                                    <button
+                                                        className="flex h-8 mr-2 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white bg-gray-800 hover:bg-gray-700"
+                                                        onClick={() => console.log('stop sync')}
+                                                    >
+                                                        <p>Sync</p>
+                                                    </button>
+                                                    <button
+                                                        className="inline-flex items-center justify-center h-8 mr-2 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white bg-gray-800 hover:bg-gray-700 leading-none"
+                                                        onClick={() => console.log('stop sync')}
+                                                    >
+                                                        Full Resync
+                                                    </button>
+                                                </li>
+                                            </ul>
+                                        ))}
+                                    </>
+                                )}
+                            </>
+                        )}
                     </div>
                 </div>
             </div>
