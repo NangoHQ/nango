@@ -341,10 +341,11 @@ program
     .action(async function (this: Command) {
         const { compileInterfaces } = this.opts();
 
-        tscWatch();
         if (compileInterfaces) {
             configWatch();
         }
+
+        tscWatch();
     });
 
 program
@@ -360,8 +361,8 @@ program
     .alias('watch')
     .description('Work locally to add integration code')
     .action(() => {
-        tscWatch();
         configWatch();
+        tscWatch();
         dockerRun();
     });
 

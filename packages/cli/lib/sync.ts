@@ -4,6 +4,7 @@ import yaml from 'js-yaml';
 import chalk from 'chalk';
 import chokidar from 'chokidar';
 import * as tsNode from 'ts-node';
+import glob from 'glob';
 import * as dotenv from 'dotenv';
 import { spawn } from 'child_process';
 
@@ -187,7 +188,7 @@ export const tscWatch = () => {
     const cwd = process.cwd();
     const tsconfig = fs.readFileSync('./node_modules/nango/tsconfig.dev.json', 'utf8');
 
-    const watchPath = `${NANGO_INTEGRATIONS_LOCATION}/*.ts`;
+    const watchPath = [`${NANGO_INTEGRATIONS_LOCATION}/*.ts`, `${NANGO_INTEGRATIONS_LOCATION}/${configFile}`];
     const watcher = chokidar.watch(watchPath, {
         ignoreInitial: false,
         ignored: (filePath) => {
@@ -202,19 +203,33 @@ export const tscWatch = () => {
         fs.mkdirSync(distDir);
     }
 
-    const compiler = tsNode.create({
-        compilerOptions: JSON.parse(tsconfig).compilerOptions
-    });
+    const rawNangoIntegrationLocation = NANGO_INTEGRATIONS_LOCATION.replace('./', '');
 
     watcher.on('add', (filePath) => {
-        compileFiile(filePath);
+        if (filePath === `${rawNangoIntegrationLocation}/${configFile}`) {
+            return;
+        }
+        compileFile(filePath);
     });
 
     watcher.on('change', (filePath) => {
-        compileFiile(filePath);
+        if (filePath === `${rawNangoIntegrationLocation}/${configFile}`) {
+            // config file changed, re-compile each ts file
+
+            const integrationFiles = glob.sync(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/*.ts`));
+            for (const file of integrationFiles) {
+                compileFile(file);
+            }
+            return;
+        }
+        compileFile(filePath);
     });
 
-    function compileFiile(filePath: string) {
+    function compileFile(filePath: string) {
+        const compiler = tsNode.create({
+            compilerOptions: JSON.parse(tsconfig).compilerOptions
+        });
+
         try {
             const result = compiler.compile(fs.readFileSync(filePath, 'utf8'), filePath);
             const jsFilePath = path.join(path.dirname(filePath), path.basename(filePath, '.ts') + '.js');
