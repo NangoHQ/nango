@@ -11,6 +11,7 @@ export interface BaseConnection {
     metadata: Record<string, string>;
     credentials_iv?: string | null;
     credentials_tag?: string | null;
+    field_mappings?: Record<string, string>;
 }
 
 export interface StoredConnection extends BaseConnection {

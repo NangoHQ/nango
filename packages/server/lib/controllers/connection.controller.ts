@@ -339,6 +339,35 @@ class ConnectionController {
             next(err);
         }
     }
+
+    async setFieldMapping(req: Request, res: Response, next: NextFunction) {
+        try {
+            const accountId = getAccount(res);
+            const connectionId = (req.params['connectionId'] as string) || (req.get('Connection-Id') as string);
+            const providerConfigKey = (req.params['provider_config_key'] as string) || (req.get('Provider-Config-Key') as string);
+
+            if (!connectionId) {
+                errorManager.errRes(res, 'missing_connection');
+                return;
+            }
+
+            if (!providerConfigKey) {
+                errorManager.errRes(res, 'missing_provider_config');
+                return;
+            }
+
+            const connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, accountId);
+
+            if (!connection) {
+                errorManager.errRes(res, 'unknown_connection');
+                return;
+            }
+
+            await connectionService.updateFieldMappings(connection, req.body);
+        } catch (err) {
+            next(err);
+        }
+    }
 }
 
 export default new ConnectionController();

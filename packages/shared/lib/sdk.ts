@@ -206,14 +206,14 @@ export class Nango {
     }
 
     private async getConnectionDetails(providerConfigKey: string, connectionId: string, forceRefresh = false) {
-        let url = `${this.serverUrl}/connection/${connectionId}`;
+        const url = `${this.serverUrl}/connection/${connectionId}`;
 
-        let headers = {
+        const headers = {
             'Content-Type': 'application/json',
             'Accept-Encoding': 'application/json'
         };
 
-        let params = {
+        const params = {
             provider_config_key: providerConfigKey,
             force_refresh: forceRefresh
         };
@@ -225,7 +225,7 @@ export class Nango {
      * Get the list of Connections, which does not contain access credentials.
      */
     public async listConnections(connectionId?: string) {
-        let response = await this.listConnectionDetails(connectionId);
+        const response = await this.listConnectionDetails(connectionId);
         return response.data;
     }
 
@@ -233,13 +233,40 @@ export class Nango {
         this.lastSyncDate = date;
     }
 
+    public async setFieldMapping(providerConfigKey: string, connectionId: string, fieldMapping: Record<string, string>) {
+        const url = `${this.serverUrl}/connection/${connectionId}/field-mapping?provider_config_key=${providerConfigKey}`;
+
+        const headers: Record<string, string | number | boolean> = {
+            'Provider-Config-Key': providerConfigKey
+        };
+
+        return axios.post(url, fieldMapping, { headers: this.enrichHeaders(headers) });
+    }
+
+    public async getFieldMapping(optionalProviderConfigKey?: string, optionalConnectionId?: string) {
+        const providerConfigKey = optionalProviderConfigKey || this.providerConfigKey;
+        const connectionId = optionalConnectionId || this.connectionId;
+
+        if (!providerConfigKey) {
+            throw new Error('Provider Config Key is required');
+        }
+
+        if (!connectionId) {
+            throw new Error('Connection Id is required');
+        }
+
+        const response = await this.getConnectionDetails(providerConfigKey, connectionId);
+
+        return response.data.field_mappings;
+    }
+
     private async listConnectionDetails(connectionId?: string) {
-        let url = `${this.serverUrl}/connection?`;
+        const url = `${this.serverUrl}/connection?`;
         if (connectionId) {
             url.concat(`connectionId=${connectionId}`);
         }
 
-        let headers = {
+        const headers = {
             'Content-Type': 'application/json',
             'Accept-Encoding': 'application/json'
         };

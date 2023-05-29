@@ -237,6 +237,7 @@ export const tscWatch = () => {
             const rawNangoIntegrationLocation = NANGO_INTEGRATIONS_LOCATION.replace('./', '');
             const distJSFilePath = jsFilePath.replace(rawNangoIntegrationLocation, `${rawNangoIntegrationLocation}/dist`);
             fs.writeFileSync(distJSFilePath, result);
+
             console.log(chalk.green(`Compiled ${filePath} successfully`));
         } catch (error) {
             console.error(`Error compiling ${filePath}:`);

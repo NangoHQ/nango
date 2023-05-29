@@ -67,9 +67,9 @@ class ConnectionService {
 
     public async getConnectionById(
         id: number
-    ): Promise<Pick<Connection, 'id' | 'connection_id' | 'provider_config_key' | 'account_id' | 'connection_config' | 'metadata'> | null> {
+    ): Promise<Pick<Connection, 'id' | 'connection_id' | 'provider_config_key' | 'account_id' | 'connection_config' | 'metadata' | 'field_mappings'> | null> {
         const result = await schema()
-            .select('id', 'connection_id', 'provider_config_key', 'account_id', 'connection_config', 'metadata')
+            .select('id', 'connection_id', 'provider_config_key', 'account_id', 'connection_config', 'metadata', 'field_mappings')
             .from<StoredConnection>('_nango_connections')
             .where({ id: id });
 
@@ -81,6 +81,8 @@ class ConnectionService {
     }
 
     public async getConnection(connectionId: string, providerConfigKey: string, accountId: number): Promise<Connection | null> {
+        console.log('ummm');
+        console.log(connectionId, providerConfigKey, accountId);
         const result: StoredConnection[] | null = (await schema()
             .select('*')
             .from<StoredConnection>(`_nango_connections`)
@@ -107,8 +109,30 @@ class ConnectionService {
             .update(encryptionManager.encryptConnection(connection));
     }
 
+    public async getFieldMappings(connection: Connection): Promise<Record<string, string>> {
+        const result = await db.knex
+            .withSchema(db.schema())
+            .from<StoredConnection>(`_nango_connections`)
+            .select('field_mappings')
+            .where({ connection_id: connection.connection_id, provider_config_key: connection.provider_config_key, account_id: connection.account_id });
+
+        if (!result || result.length == 0 || !result[0]) {
+            return {};
+        }
+
+        return result[0].field_mappings;
+    }
+
+    public async updateFieldMappings(connection: Connection, fieldMappings: Record<string, string>) {
+        await db.knex
+            .withSchema(db.schema())
+            .from<StoredConnection>(`_nango_connections`)
+            .where({ id: connection.id as number })
+            .update({ field_mappings: fieldMappings });
+    }
+
     async listConnections(accountId: number, connectionId?: string): Promise<{ id: number; connection_id: number; provider: string; created: string }[]> {
-        let queryBuilder = db.knex
+        const queryBuilder = db.knex
             .withSchema(db.schema())
             .from<Connection>(`_nango_connections`)
             .select({ id: 'id' }, { connection_id: 'connection_id' }, { provider: 'provider_config_key' }, { created: 'created_at' })
@@ -210,7 +234,7 @@ class ConnectionService {
                     throw new NangoError(`incomplete_raw_credentials`);
                 }
 
-                var expiresAt: Date | undefined;
+                let expiresAt: Date | undefined;
 
                 if (rawCreds['expires_at']) {
                     expiresAt = parseTokenExpirationDate(rawCreds['expires_at']);
@@ -218,7 +242,7 @@ class ConnectionService {
                     expiresAt = new Date(Date.now() + Number.parseInt(rawCreds['expires_in'], 10) * 1000);
                 }
 
-                let oauth2Creds: OAuth2Credentials = {
+                const oauth2Creds: OAuth2Credentials = {
                     type: ProviderAuthModes.OAuth2,
                     access_token: rawCreds['access_token'],
                     refresh_token: rawCreds['refresh_token'],
@@ -232,7 +256,7 @@ class ConnectionService {
                     throw new NangoError(`incomplete_raw_credentials`);
                 }
 
-                let oauth1Creds: OAuth1Credentials = {
+                const oauth1Creds: OAuth1Credentials = {
                     type: ProviderAuthModes.OAuth1,
                     oauth_token: rawCreds['oauth_token'],
                     oauth_token_secret: rawCreds['oauth_token_secret'],
