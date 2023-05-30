@@ -20,7 +20,7 @@ import {
 import connectionService from '../services/connection.service.js';
 import providerClient from '../clients/provider.client.js';
 import configService from '../services/config.service.js';
-import { deleteScheduleForConnection as deleteSyncScheduleForConnection } from '../services/sync-schedule.service.js';
+import { deleteScheduleForConnection as deleteSyncScheduleForConnection } from '../services/sync/schedule.service.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import { NangoError } from '../utils/error.js';
 
@@ -81,8 +81,6 @@ class ConnectionService {
     }
 
     public async getConnection(connectionId: string, providerConfigKey: string, accountId: number): Promise<Connection | null> {
-        console.log('ummm');
-        console.log(connectionId, providerConfigKey, accountId);
         const result: StoredConnection[] | null = (await schema()
             .select('*')
             .from<StoredConnection>(`_nango_connections`)

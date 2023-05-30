@@ -12,6 +12,7 @@
     ],
     "scripts": {
         "create:migration": "cd packages/shared/lib/db && knex migrate:make $1 --esm --knexfile ./knexfile.cjs",
+        "undo:migration": "cd packages/shared/lib/db && knex migrate:rollback --esm --knexfile ./knexfile.cjs",
         "prettier-format": "prettier --config .prettierrc \"./**/*.ts\" --write",
         "prettier-watch": "onchange './**/*.ts' -- prettier --write {{changed}}",
         "lint": "eslint . --ext .ts,.tsx",

@@ -1,13 +1,10 @@
 import {
     Nango,
-    getById as getSyncById,
-    updateStatus as updateSyncStatus,
+    updateSyncJobStatus,
     createSyncJob,
-    Sync,
     SyncStatus,
     SyncType,
     Config as ProviderConfig,
-    connectionService,
     configService,
     updateSuccess,
     createActivityLog,
@@ -24,39 +21,32 @@ import {
     checkForIntegrationFile,
     getIntegrationClass,
     loadNangoConfig,
-    getCronExpression,
+    updateSyncJobResult,
     getLastSyncDate
 } from '@nangohq/shared';
 import type { NangoConnection, ContinuousSyncArgs, InitialSyncArgs } from './models/Worker';
 import { upsert } from './services/data.service.js';
 
-export async function syncActivity(name: string): Promise<string> {
-    return `Synced, ${name}!`;
-}
-
 export async function routeSync(args: InitialSyncArgs): Promise<boolean> {
-    const { syncId, activityLogId } = args;
-    const sync: Sync = (await getSyncById(syncId)) as Sync;
-    const nangoConnection = (await connectionService.getConnectionById(sync.nango_connection_id)) as NangoConnection;
+    const { syncId, syncJobId, syncName, activityLogId, nangoConnection } = args;
     const syncConfig: ProviderConfig = (await configService.getProviderConfig(
         nangoConnection?.provider_config_key as string,
         nangoConnection?.account_id as number
     )) as ProviderConfig;
 
-    return syncProvider(syncConfig, sync, nangoConnection, activityLogId, false);
+    return syncProvider(syncConfig, syncId, syncJobId, syncName, SyncType.INITIAL, nangoConnection, activityLogId, false);
 }
 
 export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<boolean> {
-    const { nangoConnectionId, activityLogId, syncName, syncData } = args;
-    const frequency = getCronExpression(syncData.runs);
-    const sync: Sync = (await createSyncJob(nangoConnectionId, SyncType.INCREMENTAL, syncName, syncData.returns, frequency)) as Sync;
-    const nangoConnection: NangoConnection = (await connectionService.getConnectionById(nangoConnectionId)) as NangoConnection;
+    const { syncId, activityLogId, syncName, nangoConnection } = args;
+    // TODO recreate the job id to be in the format created by temporal: nango-syncs.accounts-syncs-schedule-29768402-c6a8-462b-8334-37adf2b76be4-workflow-2023-05-30T08:45:00Z
+    const syncJobId = await createSyncJob(syncId as string, SyncType.INCREMENTAL, SyncStatus.RUNNING, '');
     const syncConfig: ProviderConfig = (await configService.getProviderConfig(
         nangoConnection?.provider_config_key as string,
         nangoConnection?.account_id as number
     )) as ProviderConfig;
 
-    return syncProvider(syncConfig, sync, nangoConnection, activityLogId, true);
+    return syncProvider(syncConfig, syncId, syncJobId?.id as number, syncName, SyncType.INCREMENTAL, nangoConnection, activityLogId, true);
 }
 
 /**
@@ -67,7 +57,10 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
  */
 export async function syncProvider(
     syncConfig: ProviderConfig,
-    sync: Sync,
+    syncId: string,
+    syncJobId: number,
+    syncName: string,
+    syncType: SyncType,
     nangoConnection: NangoConnection,
     existingActivityLogId: number,
     isIncremental: boolean
@@ -85,7 +78,7 @@ export async function syncProvider(
             connection_id: nangoConnection?.connection_id as string,
             provider_config_key: nangoConnection?.provider_config_key as string,
             provider: syncConfig.provider,
-            session_id: sync.id.toString(),
+            session_id: syncJobId.toString(),
             account_id: nangoConnection?.account_id as number
         };
         activityLogId = (await createActivityLog(log)) as number;
@@ -113,7 +106,6 @@ export async function syncProvider(
         });
         const providerConfigKey = nangoConnection.provider_config_key;
         const syncObject = integrations[providerConfigKey] as unknown as { [key: string]: NangoIntegration };
-        const { sync_name: syncName } = sync;
 
         if (!checkForIntegrationFile(syncName)) {
             await createActivityLogMessage({
@@ -123,7 +115,7 @@ export async function syncProvider(
                 timestamp: Date.now()
             });
 
-            await updateSyncStatus(sync.id, SyncStatus.STOPPED);
+            await updateSyncJobStatus(syncJobId, SyncStatus.STOPPED);
             return false;
         }
         const lastSyncDate = await getLastSyncDate(nangoConnection?.id as number, syncName);
@@ -140,7 +132,7 @@ export async function syncProvider(
                 timestamp: Date.now()
             });
 
-            await updateSyncStatus(sync.id, SyncStatus.STOPPED);
+            await updateSyncJobStatus(syncJobId, SyncStatus.STOPPED);
             return false;
         }
 
@@ -152,7 +144,7 @@ export async function syncProvider(
 
             for (const model of models) {
                 if (userDefinedResults[model]) {
-                    const formattedResults = syncDataService.formatDataRecords(userDefinedResults[model], sync.nango_connection_id, model);
+                    const formattedResults = syncDataService.formatDataRecords(userDefinedResults[model], nangoConnection.id as number, model, syncId);
                     let upsertSuccess = true;
                     if (formattedResults.length > 0) {
                         try {
@@ -160,7 +152,7 @@ export async function syncProvider(
                                 formattedResults,
                                 '_nango_sync_data_records',
                                 'external_id',
-                                sync.nango_connection_id,
+                                nangoConnection.id as number,
                                 model,
                                 activityLogId
                             );
@@ -176,14 +168,14 @@ export async function syncProvider(
                             upsertSuccess = false;
                         }
                     }
-                    reportResults(sync, activityLogId, model, syncName, responseResults, formattedResults.length > 0, upsertSuccess);
+                    reportResults(syncJobId, activityLogId, model, syncName, syncType, responseResults, formattedResults.length > 0, upsertSuccess);
                 }
             }
         } catch (e) {
             result = false;
             const errorMessage = JSON.stringify(e, ['message', 'name', 'stack']);
-            reportFailureForResults(sync, activityLogId, syncName, errorMessage);
-            await updateSyncStatus(sync.id, SyncStatus.STOPPED);
+            reportFailureForResults(syncType, activityLogId, syncName, errorMessage);
+            await updateSyncJobStatus(syncJobId, SyncStatus.STOPPED);
         }
     }
 
@@ -191,20 +183,22 @@ export async function syncProvider(
 }
 
 async function reportResults(
-    sync: Sync,
+    syncJobId: number,
     activityLogId: number,
     model: string,
     syncName: string,
+    syncType: SyncType,
     responseResults: UpsertResponse,
     anyResultsInserted: boolean,
     upsertSuccess: boolean
 ) {
-    await updateSyncStatus(sync.id, SyncStatus.SUCCESS);
+    await updateSyncJobStatus(syncJobId, SyncStatus.SUCCESS);
     await updateSuccess(activityLogId, true);
+    await updateSyncJobResult(syncJobId, { added: responseResults.addedKeys.length, updated: responseResults.updatedKeys.length });
 
     const { addedKeys, updatedKeys } = responseResults as UpsertResponse;
 
-    const successMessage = `The ${sync.type} "${syncName}" sync has been completed to the ${model} model.`;
+    const successMessage = `The ${syncType} "${syncName}" sync has been completed to the ${model} model.`;
 
     let resultMessage = '';
 
@@ -228,13 +222,13 @@ async function reportResults(
     });
 }
 
-async function reportFailureForResults(sync: Sync, activityLogId: number, syncName: string, erromessage: string) {
+async function reportFailureForResults(syncType: SyncType, activityLogId: number, syncName: string, erromessage: string) {
     await updateSuccessActivityLog(activityLogId, false);
 
     await createActivityLogMessageAndEnd({
         level: 'error',
         activity_log_id: activityLogId,
         timestamp: Date.now(),
-        content: `The ${sync.type} "${syncName}" sync did not complete successfully and has the following error: ${erromessage}`
+        content: `The ${syncType} "${syncName}" sync did not complete successfully and has the following error: ${erromessage}`
     });
 }

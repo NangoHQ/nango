@@ -51,7 +51,7 @@ class ConnectionController {
             const activityLogId = await createActivityLog(log);
 
             await createActivityLogMessage({
-                level: 'error',
+                level: 'info',
                 activity_log_id: activityLogId as number,
                 timestamp: Date.now(),
                 content: `Token fetch was successful for ${providerConfigKey} and connection ${connectionId} from the web UI`
@@ -364,6 +364,8 @@ class ConnectionController {
             }
 
             await connectionService.updateFieldMappings(connection, req.body);
+
+            res.status(200).send();
         } catch (err) {
             next(err);
         }

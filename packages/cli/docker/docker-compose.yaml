@@ -20,6 +20,7 @@ services:
         environment:
             - TEMPORAL_ADDRESS=temporal:7233
             - NANGO_DB_MIGRATION_FOLDER=/usr/nango-server/src/packages/shared/lib/db/migrations
+            - NANGO_CALLBACK_URL=${NANGO_CALLBACK_URL:-http://localhost:3003/oauth/callback}
         restart: always
         ports:
             - '3003:3003'

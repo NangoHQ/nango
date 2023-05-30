@@ -3,7 +3,7 @@ import * as crypto from 'node:crypto';
 import * as uuid from 'uuid';
 import simpleOauth2 from 'simple-oauth2';
 import { OAuth1Client } from '../clients/oauth1.client.js';
-import { initiate as initiateSync } from '@nangohq/shared';
+import { SyncClient } from '@nangohq/shared';
 import {
     getOauthCallbackUrl,
     getConnectionConfig,
@@ -664,7 +664,8 @@ class OAuthController {
             });
 
             if (updatedConnection) {
-                initiateSync(updatedConnection.id);
+                const syncClient = await SyncClient.getInstance();
+                syncClient.initiate(updatedConnection.id);
             }
 
             await updateSuccessActivityLog(activityLogId, true);

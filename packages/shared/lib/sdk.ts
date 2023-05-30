@@ -233,12 +233,16 @@ export class Nango {
         this.lastSyncDate = date;
     }
 
-    public async setFieldMapping(providerConfigKey: string, connectionId: string, fieldMapping: Record<string, string>) {
+    public async setFieldMapping(fieldMapping: Record<string, string>, optionalProviderConfigKey?: string, optionalConnectionId?: string) {
+        const providerConfigKey = optionalProviderConfigKey || this.providerConfigKey;
+        const connectionId = optionalConnectionId || this.connectionId;
         const url = `${this.serverUrl}/connection/${connectionId}/field-mapping?provider_config_key=${providerConfigKey}`;
 
         const headers: Record<string, string | number | boolean> = {
-            'Provider-Config-Key': providerConfigKey
+            'Provider-Config-Key': providerConfigKey as string
         };
+        console.log(url);
+        console.log(fieldMapping);
 
         return axios.post(url, fieldMapping, { headers: this.enrichHeaders(headers) });
     }

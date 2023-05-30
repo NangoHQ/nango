@@ -2,12 +2,12 @@ import md5 from 'md5';
 import * as uuid from 'uuid';
 import dayjs from 'dayjs';
 
-import type { SyncDataRecord } from '../models/SyncDataRecord.js';
-import type { DataResponse } from '../models/Data.js';
-import { schema } from '../db/database.js';
-import connectionService from './connection.service.js';
+import type { DataRecord as SyncDataRecord } from '../../models/Sync.js';
+import type { DataResponse } from '../../models/Data.js';
+import { schema } from '../../db/database.js';
+import connectionService from '../connection.service.js';
 
-export const formatDataRecords = (records: SyncDataRecord[], nango_connection_id: number, model: string): DataResponse[] => {
+export const formatDataRecords = (records: SyncDataRecord[], nango_connection_id: number, model: string, syncId: string): DataResponse[] => {
     return records.map((record: SyncDataRecord) => {
         const data_hash = md5(JSON.stringify(record));
         const external_id = record['id'] as string;
@@ -18,7 +18,8 @@ export const formatDataRecords = (records: SyncDataRecord[], nango_connection_id
             external_id,
             data_hash,
             model,
-            nango_connection_id
+            nango_connection_id,
+            sync_id: syncId
         };
     });
 };

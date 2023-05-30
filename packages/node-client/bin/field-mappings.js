@@ -8,7 +8,7 @@ const fieldMapping = {
     secondary_support_rep: 'Secondary_Support_Rep__c'
 };
 
-nango.setFieldMapping(args[0], args[1], fieldMapping).then((response) => {
+nango.setFieldMapping(fieldMapping, args[0], args[1]).then((response) => {
     console.log(response?.data);
 });
 
