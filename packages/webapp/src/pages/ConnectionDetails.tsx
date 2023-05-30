@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Prism } from '@mantine/prism';
 import { toast } from 'react-toastify';
-import { RefreshCw, Lock, Slash } from '@geist-ui/icons';
+import { RefreshCw, Lock, Slash, Check, X } from '@geist-ui/icons';
+import { Tooltip } from '@geist-ui/core';
 
 import { useGetConnectionDetailsAPI, useDeleteConnectionAPI, useGetSyncAPI } from '../utils/api';
 import DashboardLayout from '../layout/DashboardLayout';
@@ -12,6 +13,7 @@ import Button from '../components/ui/button/Button';
 import Typography from '../components/ui/typography/Typography';
 import SecretInput from '../components/ui/input/SecretInput';
 import type { SyncResponse } from '../types';
+import { formatDateToUSFormat, parseCron } from '../utils/utils';
 
 interface Connection {
     id: number;
@@ -182,7 +184,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                             Sync
                         </span>
                     </div>
-                    <div className={`border border-border-gray rounded-md h-fit ${currentTab === 'auth' ? 'py-14' : 'py-6'} text-white text-sm`}>
+                    <div className={`border border-border-gray rounded-md h-fit ${currentTab === 'auth' ? 'py-14' : 'pt-6'} text-white text-sm`}>
                         {currentTab === 'auth' && (
                             <>
                                 <div>
@@ -333,7 +335,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                         {currentTab === 'sync' && (
                             <>
                                 <div className="text-white px-5">
-                                    <ul className="flex space-x-24 pb-4 items-center text-lg border-b border-border-gray">
+                                    <ul className="flex space-x-20 pb-4 items-center text-lg border-b border-border-gray">
                                         <li>Integration Script</li>
                                         <li>Models</li>
                                         <li>Status</li>
@@ -349,14 +351,31 @@ We could not retrieve and/or refresh your access token due to the following erro
                                 )}
                                 {syncs.length > 0 && (
                                     <>
-                                        {syncs.map((sync: SyncResponse) => (
-                                            <ul key={sync.id} className="flex space-x-24 py-4 px-5 text-base items-center border-b border-border-gray">
-                                                <li className="">{sync.sync_name}</li>
-                                                <li>{sync.models.map((model) => model.charAt(0).toUpperCase() + model.slice(1)).join(', ')}</li>
-                                                <li className="">{sync.status}</li>
-                                                <li className="">{new Date(sync.updated_at).toLocaleString()}</li>
-                                                <li className="">{new Date(sync.created_at).toLocaleString()}</li>
-                                                <li className="flex">
+                                        {syncs.map((sync: SyncResponse, index: number) => (
+                                            <ul key={sync.id}
+                                                className={`flex py-4 px-5 text-base items-center ${index !== syncs.length - 1 ? 'border-b border-border-gray' : ''}`}
+                                            >
+                                                <Tooltip text={sync.id} type="dark">
+                                                    <li className="w-48">{sync.name}</li>
+                                                </Tooltip>
+                                                <li className="w-32 ml-6 text-sm">{sync.models.map((model) => model.charAt(0).toUpperCase() + model.slice(1)).join(', ')}</li>
+                                                <li className="w-32 ml-2">
+                                                    {sync.latest_sync.status === 'STOPPED' && (
+                                                        <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-red-500 bg-opacity-20">
+                                                            <X className="stroke-red-500 mr-2" size="12" />
+                                                            <p className="inline-block text-red-500 text-sm">stopped</p>
+                                                        </div>
+                                                    )}
+                                                    {sync.latest_sync.status === 'SUCCESS' && (
+                                                        <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-green-500 bg-opacity-20">
+                                                            <Check className="stroke-green-500 mr-2" size="12" />
+                                                            <p className="inline-block text-green-500 text-sm">done</p>
+                                                        </div>
+                                                    )}
+                                                </li>
+                                                <li className="w-36 ml-1 text-gray-500 text-sm">{formatDateToUSFormat(sync.latest_sync.updated_at)}</li>
+                                                <li className="ml-4 text-sm text-gray-500">{parseCron(sync.frequency)}</li>
+                                                <li className="flex ml-8">
                                                     <button
                                                         className="flex h-8 mr-2 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white bg-gray-800 hover:bg-gray-700"
                                                         onClick={() => console.log('stop sync')}
@@ -370,7 +389,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                         <p>Sync</p>
                                                     </button>
                                                     <button
-                                                        className="inline-flex items-center justify-center h-8 mr-2 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white bg-gray-800 hover:bg-gray-700 leading-none"
+                                                        className="inline-flex items-center justify-center h-8 mr-2 rounded-md pl-2 pr-3 text-sm text-white bg-gray-800 hover:bg-gray-700 leading-none"
                                                         onClick={() => console.log('stop sync')}
                                                     >
                                                         Full Resync

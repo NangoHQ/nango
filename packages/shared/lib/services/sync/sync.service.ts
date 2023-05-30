@@ -4,7 +4,18 @@ import { Sync, Job as SyncJob, SyncStatus, SyncConfig } from '../../models/Sync.
 
 const TABLE = dbNamespace + 'syncs';
 const SYNC_JOB_TABLE = dbNamespace + 'sync_jobs';
+const SYNC_SCHEDULE_TABLE = dbNamespace + 'sync_schedules';
 const SYNC_CONFIG_TABLE = dbNamespace + 'sync_configs';
+
+/**
+ * Sync Service
+ * @description
+ *  A Sync a Nango Sync that has
+ *  - collection of sync jobs (initial or incremental)
+ *  - sync schedule
+ *  - bunch of sync data records
+ *
+ */
 
 export const getById = async (id: string): Promise<Sync | null> => {
     const result = await db.knex.withSchema(db.schema()).select('*').from<Sync>(TABLE).where({ id });
@@ -96,8 +107,39 @@ export const getSync = async (nangoConnectionId: number, name: string): Promise<
     return null;
 };
 
+/**
+ * Get Syncs
+ * @description get the sync related to the connection
+ * the latest sync and its result and the next sync based on the schedule
+ */
 export const getSyncs = async (nangoConnectionId: number): Promise<Sync[]> => {
-    const result = await db.knex.withSchema(db.schema()).select('*').from<Sync>(TABLE).where({ nango_connection_id: nangoConnectionId });
+    const result = await schema()
+        .from<Sync>(TABLE)
+        .select(
+            `${TABLE}.*`,
+            `${SYNC_SCHEDULE_TABLE}.frequency`,
+            db.knex.raw(
+                `(
+                    SELECT json_build_object(
+                        'updated_at', nango.${SYNC_JOB_TABLE}.updated_at,
+                        'type', nango.${SYNC_JOB_TABLE}.type,
+                        'result', nango.${SYNC_JOB_TABLE}.result,
+                        'status', nango.${SYNC_JOB_TABLE}.status
+                    )
+                    FROM nango.${SYNC_JOB_TABLE}
+                    WHERE nango.${SYNC_JOB_TABLE}.sync_id = nango.${TABLE}.id
+                    ORDER BY nango.${SYNC_JOB_TABLE}.updated_at DESC
+                    LIMIT 1
+                ) as latest_sync
+                `
+            )
+        )
+        .leftJoin(SYNC_JOB_TABLE, `${SYNC_JOB_TABLE}.sync_id`, '=', `${TABLE}.id`)
+        .join(SYNC_SCHEDULE_TABLE, `${SYNC_SCHEDULE_TABLE}.sync_id`, `${TABLE}.id`)
+        .where({
+            nango_connection_id: nangoConnectionId
+        })
+        .groupBy(`${TABLE}.id`, `${SYNC_SCHEDULE_TABLE}.frequency`);
 
     if (Array.isArray(result) && result.length > 0) {
         return result;

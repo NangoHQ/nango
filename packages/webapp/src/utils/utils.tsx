@@ -1,3 +1,5 @@
+import parser from 'cron-parser';
+
 export const localhostUrl: string = 'http://localhost:3003';
 export const stagingUrl: string = 'https://api-staging.nango.dev';
 export const prodUrl: string = 'https://api.nango.dev';
@@ -87,3 +89,23 @@ export function elapsedTime(start: number, end: number): string {
 
     return `${elapsedSeconds}.${elapsedMilliseconds} seconds`;
 }
+
+export function formatDateToUSFormat(dateString: string): string {
+    const date = new Date(dateString);
+    const options: Intl.DateTimeFormatOptions = {
+      month: 'long',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: true,
+    };
+
+    const formattedDate = date.toLocaleString('en-US', options);
+
+    return formattedDate;
+}
+
+export function parseCron(frequency: string): string {
+    const interval = parser.parseExpression(frequency);
+    return formatDateToUSFormat(interval.next().toISOString());
+};

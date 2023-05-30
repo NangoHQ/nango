@@ -18,11 +18,19 @@ export interface ActivityResponse {
 
 export interface SyncResponse {
     id: number;
-    created_at: Date;
+    created_at: string;
     nango_connection_id: number;
-    status: 'SUCCESS' | 'STOPPED' | 'RUNNING' | 'PAUSED';
-    sync_name: string;
-    type: 'INITIAL' | 'INCREMENTAL';
-    updated_at: Date;
+    name: string;
     models: string[];
+    frequency: string;
+    latest_sync: {
+        updated_at: string;
+        type: 'INITIAL' | 'INCREMENTAL';
+        status: 'SUCCESS' | 'STOPPED' | 'RUNNING' | 'PAUSED';
+        results: {
+            added: number;
+            updated: number;
+            deleted?: number;
+        };
+    };
 }

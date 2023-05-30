@@ -30,6 +30,16 @@ export const createSyncJob = async (
     return null;
 };
 
+export const getLatestSyncJob = async (sync_id: string): Promise<SyncJob | null> => {
+    const result = await schema().from<SyncJob>(SYNC_JOB_TABLE).where({ sync_id }).orderBy('created_at', 'desc').first();
+
+    if (result) {
+        return result;
+    }
+
+    return null;
+};
+
 export const updateSyncJobStatus = async (id: number, status: SyncStatus): Promise<void> => {
     return schema().from<SyncJob>(SYNC_JOB_TABLE).where({ id }).update({
         status
