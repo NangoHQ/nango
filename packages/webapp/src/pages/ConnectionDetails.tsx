@@ -34,6 +34,7 @@ interface Connection {
 
 export default function ConnectionDetails() {
     const [loaded, setLoaded] = useState(false);
+    const [syncLoaded, setSyncLoaded] = useState(false);
     const [fetchingRefreshToken, setFetchingRefreshToken] = useState(false);
     const [syncs, setSyncs] = useState([]);
     const [serverErrorMessage, setServerErrorMessage] = useState('');
@@ -116,16 +117,16 @@ We could not retrieve and/or refresh your access token due to the following erro
                 } catch (e) {
                     console.log(e)
                 }
-                setLoaded(true);
+                setSyncLoaded(true);
             }
         };
 
-        if (!loaded) {
-            setLoaded(true);
+        if (!syncLoaded) {
+            setSyncLoaded(true);
             getSyncs();
         }
 
-    }, [getSyncAPI, loaded, setLoaded, connectionId, providerConfigKey]);
+    }, [getSyncAPI, syncLoaded, setLoaded, connectionId, providerConfigKey]);
 
 
     return (
@@ -172,6 +173,11 @@ We could not retrieve and/or refresh your access token due to the following erro
                             >
                                 Manually Refresh Token
                             </Button>
+                        )}
+                        {currentTab === 'sync' && (
+                            <Tooltip text="Refresh" type="dark">
+                                <RefreshCw className="flex flex-end stroke-white cursor-pointer" size="24" onClick={() => setSyncLoaded(false)} />
+                            </Tooltip>
                         )}
                     </div>
                     <div className="flex inline-flex text-white mb-12 border border-border-gray rounded-md">
@@ -373,7 +379,9 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                         </div>
                                                     )}
                                                 </li>
-                                                <li className="w-36 ml-1 text-gray-500 text-sm">{formatDateToUSFormat(sync.latest_sync.updated_at)}</li>
+                                                <Tooltip text={JSON.stringify(sync.latest_sync.result)} type="dark">
+                                                    <li className="w-36 ml-1 text-gray-500 text-sm">{formatDateToUSFormat(sync.latest_sync.updated_at)}</li>
+                                                </Tooltip>
                                                 <li className="ml-4 text-sm text-gray-500">{parseCron(sync.frequency)}</li>
                                                 <li className="flex ml-8">
                                                     <button
@@ -384,13 +392,13 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                     </button>
                                                     <button
                                                         className="flex h-8 mr-2 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white bg-gray-800 hover:bg-gray-700"
-                                                        onClick={() => console.log('stop sync')}
+                                                        onClick={() => console.log('run sync')}
                                                     >
                                                         <p>Sync</p>
                                                     </button>
                                                     <button
                                                         className="inline-flex items-center justify-center h-8 mr-2 rounded-md pl-2 pr-3 text-sm text-white bg-gray-800 hover:bg-gray-700 leading-none"
-                                                        onClick={() => console.log('stop sync')}
+                                                        onClick={() => console.log('run full sync')}
                                                     >
                                                         Full Resync
                                                     </button>

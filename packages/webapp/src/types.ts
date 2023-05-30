@@ -27,7 +27,7 @@ export interface SyncResponse {
         updated_at: string;
         type: 'INITIAL' | 'INCREMENTAL';
         status: 'SUCCESS' | 'STOPPED' | 'RUNNING' | 'PAUSED';
-        results: {
+        result: {
             added: number;
             updated: number;
             deleted?: number;
