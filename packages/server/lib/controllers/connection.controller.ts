@@ -16,7 +16,8 @@ import {
     LogLevel,
     LogAction,
     HTTP_VERB,
-    configService
+    configService,
+    AuthModes
 } from '@nangohq/shared';
 import { getAccount, getUserAndAccountFromSession } from '../utils/utils.js';
 import { getConnectionCredentials } from '../utils/connection.js';
@@ -236,6 +237,7 @@ class ConnectionController {
             const accountId = getAccount(res);
             const connectionId = req.params['connectionId'] as string;
             const providerConfigKey = req.query['provider_config_key'] as string;
+            const returnRefreshToken = ((req.query['refresh_token'] === 'true') as boolean) || false;
             const instantRefresh = req.query['force_refresh'] === 'true';
 
             const action: LogAction = 'token';
@@ -254,6 +256,11 @@ class ConnectionController {
 
             const activityLogId = await createActivityLog(log);
             const connection = await getConnectionCredentials(res, connectionId, providerConfigKey, activityLogId as number, action, instantRefresh);
+
+            if (!returnRefreshToken && connection.credentials.type === AuthModes.OAuth2) {
+                delete connection.credentials.refresh_token;
+                delete connection.credentials.raw.refresh_token;
+            }
 
             await createActivityLogMessageAndEnd({
                 level: 'info',
