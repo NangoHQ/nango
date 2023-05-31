@@ -84,6 +84,12 @@ NANGO_CALLBACK_URL=https://redirectmeto.com/http://localhost:3003/oauth/callback
 
 To test your new provider:
 
+Start the docker containers:
+
+```bash
+docker compose up
+```
+
 The docker compose configuration in the root of the repo `docker-compose.yaml`
 will run 2 containers.
 
@@ -94,7 +100,7 @@ To propagate your changes after editing the `providers.yaml` file, run:
 
 ```bash
 docker compose restart nango-server # Force a restart, which will load in the yaml again
-docker compose run nango-server cat packages/server/providers.yaml # print the contents of the providers file from inside the container
+docker compose run nango-server cat packages/shared/providers.yaml # print the contents of the providers file from inside the container
 ```
 
 When you are ready to test your new provider template:
