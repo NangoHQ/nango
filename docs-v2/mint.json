@@ -171,6 +171,7 @@
                 "integrations/all/gitlab",
                 "integrations/all/google",
                 "integrations/all/google-calendar",
+                "integrations/all/google-doc",
                 "integrations/all/google-mail",
                 "integrations/all/google-sheet",
                 "integrations/all/gorgias",

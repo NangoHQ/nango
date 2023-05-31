@@ -271,6 +271,10 @@ google-calendar:
     alias: google
     base_api_url: https://www.googleapis.com
     docs: https://developers.google.com/calendar/api/v3/reference
+google-docs:
+    alias: google
+    base_api_url: https://docs.googleapis.com
+    docs: https://developers.google.com/docs/api/reference/rest
 google-mail:
     alias: google
     base_api_url: https://gmail.googleapis.com
