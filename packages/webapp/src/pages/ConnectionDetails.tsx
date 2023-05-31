@@ -2,17 +2,17 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Prism } from '@mantine/prism';
 import { toast } from 'react-toastify';
-import { RefreshCw, Lock, Slash, Check, X } from '@geist-ui/icons';
+import { Clock, RefreshCw, Lock, Slash, Check, X } from '@geist-ui/icons';
 import { Tooltip } from '@geist-ui/core';
 
-import { useGetConnectionDetailsAPI, useDeleteConnectionAPI, useGetSyncAPI } from '../utils/api';
+import { useGetConnectionDetailsAPI, useDeleteConnectionAPI, useGetSyncAPI, useRunSyncAPI } from '../utils/api';
 import DashboardLayout from '../layout/DashboardLayout';
 import { LeftNavBarItems } from '../components/LeftNavBar';
 import PrismPlus from '../components/ui/prism/PrismPlus';
 import Button from '../components/ui/button/Button';
 import Typography from '../components/ui/typography/Typography';
 import SecretInput from '../components/ui/input/SecretInput';
-import type { SyncResponse } from '../types';
+import type { SyncResponse, RunSyncCommand } from '../types';
 import { formatDateToUSFormat, parseCron } from '../utils/utils';
 
 interface Connection {
@@ -44,6 +44,7 @@ export default function ConnectionDetails() {
     const getConnectionDetailsAPI = useGetConnectionDetailsAPI();
     const deleteConnectionAPI = useDeleteConnectionAPI();
     const getSyncAPI = useGetSyncAPI();
+    const runCommandSyncAPI = useRunSyncAPI();
     const { connectionId, providerConfigKey } = useParams();
 
     useEffect(() => {
@@ -128,6 +129,17 @@ We could not retrieve and/or refresh your access token due to the following erro
 
     }, [getSyncAPI, syncLoaded, setLoaded, connectionId, providerConfigKey]);
 
+    const syncCommand = async (command: RunSyncCommand, nango_connection_id: number, scheduleId: string, syncId: number) => {
+        const res = await runCommandSyncAPI(command, scheduleId, nango_connection_id, syncId);
+
+        if (res?.status === 200) {
+            try {
+                setSyncLoaded(false);
+            } catch (e) {
+                console.log(e);
+            }
+        }
+    };
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Connections}>
@@ -366,13 +378,19 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                 </Tooltip>
                                                 <li className="w-32 ml-6 text-sm">{sync.models.map((model) => model.charAt(0).toUpperCase() + model.slice(1)).join(', ')}</li>
                                                 <li className="w-32 ml-2">
-                                                    {sync.latest_sync.status === 'STOPPED' && (
+                                                    {(sync.schedule_status === 'PAUSED' || sync.latest_sync.status === 'STOPPED') && (
                                                         <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-red-500 bg-opacity-20">
                                                             <X className="stroke-red-500 mr-2" size="12" />
                                                             <p className="inline-block text-red-500 text-sm">stopped</p>
                                                         </div>
                                                     )}
-                                                    {sync.latest_sync.status === 'SUCCESS' && (
+                                                    {sync.latest_sync.status === 'RUNNING' && (
+                                                        <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-orange-500 bg-opacity-20">
+                                                            <Clock className="stroke-orange-500 mr-2" size="12" />
+                                                            <p className="inline-block text-orange-500 text-sm">running</p>
+                                                        </div>
+                                                    )}
+                                                    {sync.latest_sync.status === 'SUCCESS' && sync.schedule_status !== 'PAUSED' && (
                                                         <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-green-500 bg-opacity-20">
                                                             <Check className="stroke-green-500 mr-2" size="12" />
                                                             <p className="inline-block text-green-500 text-sm">done</p>
@@ -382,26 +400,33 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                 <Tooltip text={JSON.stringify(sync.latest_sync.result)} type="dark">
                                                     <li className="w-36 ml-1 text-gray-500 text-sm">{formatDateToUSFormat(sync.latest_sync.updated_at)}</li>
                                                 </Tooltip>
-                                                <li className="ml-4 text-sm text-gray-500">{parseCron(sync.frequency)}</li>
+                                                {sync.schedule_status === 'RUNNING' && (
+                                                    <li className="ml-4 w-32 text-sm text-gray-500">{parseCron(sync.frequency)}</li>
+                                                )}
+                                                {sync.schedule_status !== 'RUNNING' && (
+                                                    <li className="ml-4 w-28 text-sm text-gray-500">-</li>
+                                                )}
                                                 <li className="flex ml-8">
                                                     <button
                                                         className="flex h-8 mr-2 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white bg-gray-800 hover:bg-gray-700"
-                                                        onClick={() => console.log('stop sync')}
+                                                        onClick={() => syncCommand(sync.schedule_status === 'RUNNING' ? 'PAUSE' : 'UNPAUSE', sync.nango_connection_id, sync.schedule_id, sync.id)}
                                                     >
-                                                        <p>Stop</p>
+                                                        <p>{sync.schedule_status === 'RUNNING' ? 'Pause' : 'Start'}</p>
                                                     </button>
                                                     <button
                                                         className="flex h-8 mr-2 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white bg-gray-800 hover:bg-gray-700"
-                                                        onClick={() => console.log('run sync')}
+                                                        onClick={() => syncCommand('RUN', sync.nango_connection_id, sync.schedule_id, sync.id)}
                                                     >
                                                         <p>Sync</p>
                                                     </button>
+                                                    {/*
                                                     <button
                                                         className="inline-flex items-center justify-center h-8 mr-2 rounded-md pl-2 pr-3 text-sm text-white bg-gray-800 hover:bg-gray-700 leading-none"
-                                                        onClick={() => console.log('run full sync')}
+                                                        onClick={() => syncCommand('RUN_FULL', sync.nango_connection_id, sync.id)}
                                                     >
                                                         Full Resync
                                                     </button>
+                                                    */}
                                                 </li>
                                             </ul>
                                         ))}

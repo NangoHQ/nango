@@ -1,5 +1,7 @@
 import { toast } from 'react-toastify';
 import { useSignout } from './user';
+import type { RunSyncCommand } from '../types';
+
 
 function requestErrorToast() {
     toast.error('Request error...', { position: toast.POSITION.BOTTOM_CENTER });
@@ -337,7 +339,7 @@ export function useDeleteConnectionAPI() {
 
     return async (connectionId: string, providerConfigKey: string) => {
         try {
-            let res = await fetch(`/api/v1/connection/${encodeURIComponent(connectionId)}?provider_config_key=${encodeURIComponent(providerConfigKey)}`, {
+            const res = await fetch(`/api/v1/connection/${encodeURIComponent(connectionId)}?provider_config_key=${encodeURIComponent(providerConfigKey)}`, {
                 headers: getHeaders(),
                 method: 'DELETE'
             });
@@ -360,7 +362,7 @@ export function useDeleteConnectionAPI() {
 export function useRequestPasswordResetAPI() {
     return async (email: string) => {
         try {
-            let res = await fetch(`/api/v1/forgot-password`, {
+            const res = await fetch(`/api/v1/forgot-password`, {
                 method: 'PUT',
                 headers: getHeaders(),
                 body: JSON.stringify({ email: email })
@@ -407,7 +409,7 @@ export function useActivityAPI() {
 export function useGetSyncAPI() {
     return async (connectionId: string, providerConfigKey: string) => {
         try {
-            let res = await fetch(`/api/v1/sync?connection_id=${connectionId}&provider_config_key=${providerConfigKey}`, {
+            const res = await fetch(`/api/v1/sync?connection_id=${connectionId}&provider_config_key=${providerConfigKey}`, {
                 method: 'GET',
                 headers: getHeaders(),
             });
@@ -416,5 +418,22 @@ export function useGetSyncAPI() {
         } catch (e) {
             requestErrorToast();
         }
+    };
+}
+
+export function useRunSyncAPI() {
+    return async (command: RunSyncCommand, schedule_id: string, nango_connection_id: number, sync_id: number) => {
+        try {
+            const res = await fetch(`/api/v1/sync/command`, {
+                method: 'POST',
+                headers: getHeaders(),
+                body: JSON.stringify({ command, schedule_id, nango_connection_id, sync_id })
+            });
+
+            return res;
+        } catch (e) {
+            requestErrorToast();
+        }
+
     };
 }

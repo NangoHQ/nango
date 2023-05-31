@@ -1,6 +1,6 @@
 import db, { schema, dbNamespace } from '../../db/database.js';
 import type { Connection as NangoConnection } from '../../models/Connection.js';
-import type { Schedule as SyncSchedule, ScheduleStatus } from '../../models/Sync.js';
+import { Schedule as SyncSchedule, ScheduleStatus, SyncCommandToScheduleStatus, SyncCommand } from '../../models/Sync.js';
 import { getSyncsByConnectionId } from '../sync/sync.service.js';
 import SyncClient from '../../clients/sync.client.js';
 
@@ -51,4 +51,12 @@ export const deleteScheduleForConnection = async (connection: NangoConnection): 
             await syncClient.deleteSyncSchedule(schedule?.schedule_id as string);
         }
     }
+};
+
+export const markAllAsStopped = async (): Promise<void> => {
+    await schema().update({ status: ScheduleStatus.STOPPED }).from<SyncSchedule>(TABLE);
+};
+
+export const updateScheduleStatus = async (schedule_id: string, status: SyncCommand): Promise<void> => {
+    await schema().update({ status: SyncCommandToScheduleStatus[status] }).from<SyncSchedule>(TABLE).where({ schedule_id });
 };

@@ -78,3 +78,17 @@ export interface DataRecord extends Timestamps {
     model: string;
     sync_id: string;
 }
+
+export enum SyncCommand {
+    PAUSE = 'PAUSE',
+    UNPAUSE = 'UNPAUSE',
+    RUN = 'RUN',
+    RUN_FULL = 'RUN_FULL'
+}
+
+export const SyncCommandToScheduleStatus = {
+    PAUSE: ScheduleStatus.PAUSED,
+    UNPAUSE: ScheduleStatus.RUNNING,
+    RUN: ScheduleStatus.RUNNING,
+    RUN_FULL: ScheduleStatus.RUNNING
+};

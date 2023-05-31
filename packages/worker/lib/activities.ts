@@ -22,10 +22,10 @@ import {
     getIntegrationClass,
     loadNangoConfig,
     updateSyncJobResult,
-    getLastSyncDate
+    getLastSyncDate,
+    dataService
 } from '@nangohq/shared';
 import type { NangoConnection, ContinuousSyncArgs, InitialSyncArgs } from './models/Worker';
-import { upsert } from './services/data.service.js';
 
 export async function routeSync(args: InitialSyncArgs): Promise<boolean> {
     const { syncId, syncJobId, syncName, activityLogId, nangoConnection } = args;
@@ -104,6 +104,12 @@ export async function syncProvider(
             activityLogId: activityLogId as number,
             isSync: true
         });
+
+        // updates to allow the batchSend to work
+        nango.setSyncId(syncId);
+        nango.setNangoConnectionId(nangoConnection.id as number);
+        nango.setSyncJobId(syncJobId);
+
         const providerConfigKey = nangoConnection.provider_config_key;
         const syncObject = integrations[providerConfigKey] as unknown as { [key: string]: NangoIntegration };
 
@@ -140,7 +146,7 @@ export async function syncProvider(
             result = true;
             const userDefinedResults = await integrationClass.fetchData(nango);
 
-            let responseResults: UpsertResponse = { addedKeys: [], updatedKeys: [], affectedInternalIds: [], affectedExternalIds: [] };
+            let responseResults: UpsertResponse | null = { addedKeys: [], updatedKeys: [], affectedInternalIds: [], affectedExternalIds: [] };
 
             for (const model of models) {
                 if (userDefinedResults[model]) {
@@ -148,7 +154,7 @@ export async function syncProvider(
                     let upsertSuccess = true;
                     if (formattedResults.length > 0) {
                         try {
-                            responseResults = await upsert(
+                            responseResults = await dataService.upsert(
                                 formattedResults,
                                 '_nango_sync_data_records',
                                 'external_id',
@@ -168,7 +174,11 @@ export async function syncProvider(
                             upsertSuccess = false;
                         }
                     }
-                    reportResults(syncJobId, activityLogId, model, syncName, syncType, responseResults, formattedResults.length > 0, upsertSuccess);
+                    if (responseResults) {
+                        reportResults(syncJobId, activityLogId, model, syncName, syncType, responseResults, formattedResults.length > 0, upsertSuccess);
+                    } else {
+                        reportFailureForResults(syncType, activityLogId, syncName, 'There was an issue inserting the incoming data');
+                    }
                 }
             }
         } catch (e) {
@@ -206,10 +216,10 @@ async function reportResults(
         resultMessage = `There was an error in upserting the results`;
     } else {
         resultMessage = anyResultsInserted
-            ? `The result was ${addedKeys.length} added record${addedKeys.length === 1 ? '' : 's'} and ${updatedKeys.length} updated record${
-                  updatedKeys.length === 1 ? '.' : 's.'
-              }`
-            : 'The external API returned no results so nothing was inserted or updated.';
+            ? `The result (excluding batch sends) was ${addedKeys.length} added record${addedKeys.length === 1 ? '' : 's'} and ${
+                  updatedKeys.length
+              } updated record${updatedKeys.length === 1 ? '.' : 's.'}`
+            : 'The external API returned no results (excluding earlier batch sends) so nothing was inserted or updated.';
     }
 
     const content = `${successMessage} ${resultMessage}`;

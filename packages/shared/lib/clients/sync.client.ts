@@ -2,7 +2,7 @@ import { Client, Connection } from '@temporalio/client';
 import type { Connection as NangoConnection } from '../models/Connection.js';
 import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { NangoIntegrationData, NangoConfig, NangoIntegration } from '../integrations/index.js';
-import { Sync, SyncStatus, SyncType, ScheduleStatus } from '../models/Sync.js';
+import { Sync, SyncStatus, SyncType, ScheduleStatus, SyncCommand } from '../models/Sync.js';
 import type { LogLevel, LogAction } from '../models/Activity.js';
 import { TASK_QUEUE } from '../constants.js';
 import { createActivityLog, createActivityLogMessage } from '../services/activity.service.js';
@@ -13,12 +13,13 @@ import connectionService from '../services/connection.service.js';
 import configService from '../services/config.service.js';
 import { createSync } from '../services/sync/sync.service.js';
 
-const generateWorkflowId = (sync: Sync, syncName: string) => `${TASK_QUEUE}.${syncName}-${sync.id}`;
-const generateScheduleId = (sync: Sync, syncName: string) => `${TASK_QUEUE}.${syncName}-schedule-${sync.id}`;
+const generateWorkflowId = (sync: Sync, syncName: string, connectionId: string) => `${TASK_QUEUE}.${syncName}.${connectionId}-${sync.id}`;
+const generateScheduleId = (sync: Sync, syncName: string, connectionId: string) => `${TASK_QUEUE}.${syncName}.${connectionId}-schedule-${sync.id}`;
 
 class SyncClient {
     private static instance: Promise<SyncClient> | null = null;
     private client: Client | null = null;
+    private namespace = process.env['TEMPORAL_NAMESPACE'] || 'default';
 
     private constructor(client: Client) {
         this.client = client;
@@ -111,11 +112,12 @@ class SyncClient {
             provider_config_key: nangoConnection?.provider_config_key as string,
             provider: syncConfig.provider,
             session_id: sync?.id?.toString() as string,
-            account_id: nangoConnection?.account_id as number
+            account_id: nangoConnection?.account_id as number,
+            operation_name: syncName
         };
         const activityLogId = await createActivityLog(log);
 
-        const jobId = generateWorkflowId(sync, syncName);
+        const jobId = generateWorkflowId(sync, syncName, nangoConnection?.connection_id as string);
 
         const syncJobId = await createSyncJob(sync.id as string, SyncType.INITIAL, SyncStatus.RUNNING, jobId);
 
@@ -134,7 +136,7 @@ class SyncClient {
         });
 
         const frequency = getCronExpression(syncData.runs);
-        const scheduleId = generateScheduleId(sync, syncName);
+        const scheduleId = generateScheduleId(sync, syncName, nangoConnection?.connection_id as string);
 
         // kick off schedule
         await this.client?.schedule.create({
@@ -176,11 +178,44 @@ class SyncClient {
         try {
             await workflowService?.deleteSchedule({
                 scheduleId: id,
-                namespace: process.env['TEMPORAL_NAMESPACE'] || 'default'
+                namespace: this.namespace
             });
             return true;
         } catch (e) {
             return false;
+        }
+    }
+
+    async listSchedules() {
+        if (!this.client) {
+            return;
+        }
+
+        const workflowService = this.client?.workflowService;
+
+        const schedules = await workflowService?.listSchedules({
+            namespace: this.namespace
+        });
+
+        return schedules;
+    }
+
+    async runSyncCommand(syncId: string, command: SyncCommand) {
+        const scheduleHandle = this.client?.schedule.getHandle(syncId);
+
+        switch (command) {
+            case SyncCommand.PAUSE:
+                await scheduleHandle?.pause();
+                break;
+            case SyncCommand.UNPAUSE:
+                await scheduleHandle?.unpause();
+                break;
+            case SyncCommand.RUN:
+                await scheduleHandle?.trigger();
+                break;
+            case SyncCommand.RUN_FULL:
+                console.warn('Not implemented');
+                break;
         }
     }
 }

@@ -3,6 +3,11 @@ import { validateProxyConfiguration, validateSyncRecordConfiguration } from './u
 
 import type { ProxyConfiguration } from './models/Proxy.js';
 import type { GetRecordsRequestConfig } from './models/Sync.js';
+//import type { DataRecord as SyncDataRecord } from './models/Sync.js';
+import { formatDataRecords } from './services/sync/data-records.service.js';
+import { upsert } from './services/sync/data.service.js';
+import { updateSyncJobResult } from './services/sync/job.service.js';
+import { createActivityLogMessage } from './services/activity.service.js';
 
 const prodHost = 'https://api.nango.dev';
 const stagingHost = 'https://api-staging.nango.dev';
@@ -17,6 +22,9 @@ interface NangoProps {
     isSync?: boolean;
     activityLogId?: number;
     lastSyncDate?: Date;
+    syncId?: string;
+    nangoConnectionId?: number;
+    syncJobId?: number;
 }
 
 export class Nango {
@@ -27,6 +35,9 @@ export class Nango {
     isSync = false;
     activityLogId?: number;
     lastSyncDate?: Date;
+    syncId?: string;
+    nangoConnectionId?: number;
+    syncJobId?: number;
 
     constructor(config: NangoProps = {}) {
         config.host = config.host || prodHost;
@@ -233,6 +244,18 @@ export class Nango {
         this.lastSyncDate = date;
     }
 
+    public setSyncId(syncId: string) {
+        this.syncId = syncId;
+    }
+
+    public setNangoConnectionId(nangoConnectionId: number) {
+        this.nangoConnectionId = nangoConnectionId;
+    }
+
+    public setSyncJobId(syncJobId: number) {
+        this.syncJobId = syncJobId;
+    }
+
     public async setFieldMapping(fieldMapping: Record<string, string>, optionalProviderConfigKey?: string, optionalConnectionId?: string) {
         const providerConfigKey = optionalProviderConfigKey || this.providerConfigKey;
         const connectionId = optionalConnectionId || this.connectionId;
@@ -262,6 +285,46 @@ export class Nango {
         const response = await this.getConnectionDetails(providerConfigKey, connectionId);
 
         return response.data.field_mappings;
+    }
+
+    public async batchSend(results: any[], model: string): Promise<boolean> {
+        if (!this.nangoConnectionId || !this.syncId || !this.activityLogId || !this.syncJobId) {
+            throw new Error('Nango Connection Id, Sync Id, Activity Log Id and Sync Job Id are all required');
+        }
+
+        const formattedResults = formatDataRecords(results, this.nangoConnectionId as number, model, this.syncId as string);
+
+        const responseResults = await upsert(
+            formattedResults,
+            '_nango_sync_data_records',
+            'external_id',
+            this.nangoConnectionId as number,
+            model,
+            this.activityLogId as number
+        );
+
+        if (responseResults) {
+            const updatedResults = { added: responseResults.addedKeys.length, updated: responseResults.updatedKeys.length };
+
+            await createActivityLogMessage({
+                level: 'info',
+                activity_log_id: this.activityLogId as number,
+                content: `Batch send was a success and resulted in ${JSON.stringify(updatedResults)}`,
+                timestamp: Date.now()
+            });
+
+            await updateSyncJobResult(this.syncJobId as number, updatedResults);
+            return true;
+        } else {
+            await createActivityLogMessage({
+                level: 'error',
+                activity_log_id: this.activityLogId as number,
+                content: `There was an issue with the batch send`,
+                timestamp: Date.now()
+            });
+
+            return false;
+        }
     }
 
     private async listConnectionDetails(connectionId?: string) {

@@ -1,6 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
 import db, { schema, dbNamespace } from '../../db/database.js';
 import { Sync, Job as SyncJob, SyncStatus, SyncConfig } from '../../models/Sync.js';
+import SyncClient from '../../clients/sync.client.js';
+import { markAllAsStopped } from './schedule.service.js';
 
 const TABLE = dbNamespace + 'syncs';
 const SYNC_JOB_TABLE = dbNamespace + 'sync_jobs';
@@ -113,11 +115,18 @@ export const getSync = async (nangoConnectionId: number, name: string): Promise<
  * the latest sync and its result and the next sync based on the schedule
  */
 export const getSyncs = async (nangoConnectionId: number): Promise<Sync[]> => {
+    const syncClient = await SyncClient.getInstance();
+    const scheduleResponse = await syncClient.listSchedules();
+    if (scheduleResponse?.schedules.length === 0) {
+        await markAllAsStopped();
+    }
     const result = await schema()
         .from<Sync>(TABLE)
         .select(
             `${TABLE}.*`,
+            `${SYNC_SCHEDULE_TABLE}.schedule_id`,
             `${SYNC_SCHEDULE_TABLE}.frequency`,
+            `${SYNC_SCHEDULE_TABLE}.status as schedule_status`,
             db.knex.raw(
                 `(
                     SELECT json_build_object(
@@ -139,7 +148,7 @@ export const getSyncs = async (nangoConnectionId: number): Promise<Sync[]> => {
         .where({
             nango_connection_id: nangoConnectionId
         })
-        .groupBy(`${TABLE}.id`, `${SYNC_SCHEDULE_TABLE}.frequency`);
+        .groupBy(`${TABLE}.id`, `${SYNC_SCHEDULE_TABLE}.frequency`, `${SYNC_SCHEDULE_TABLE}.status`, `${SYNC_SCHEDULE_TABLE}.schedule_id`);
 
     if (Array.isArray(result) && result.length > 0) {
         return result;
@@ -156,4 +165,26 @@ export const getSyncsByConnectionId = async (nangoConnectionId: number): Promise
     }
 
     return null;
+};
+
+/**
+ * Verify Ownership
+ * @desc verify that the incoming account id matches with the provided nango connection id
+ */
+export const verifyOwnership = async (nangoConnectionId: number, accountId: number, syncId: string): Promise<boolean> => {
+    const result = await schema()
+        .select('*')
+        .from<Sync>(TABLE)
+        .join('_nango_connections', '_nango_connections.id', `${TABLE}.nango_connection_id`)
+        .where({
+            account_id: accountId,
+            [`${TABLE}.id`]: syncId,
+            nango_connection_id: nangoConnectionId
+        });
+
+    if (result.length === 0) {
+        return false;
+    }
+
+    return true;
 };

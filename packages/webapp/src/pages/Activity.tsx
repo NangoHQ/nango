@@ -103,10 +103,17 @@ export default function Activity() {
                                                         </div>
                                                     )}
                                                     {activity?.action === 'sync' && (
-                                                        <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-green-500 bg-opacity-20">
-                                                            <img className="h-4 mr-2" src="/images/network-icon.svg" alt="" />
-                                                            <p className="inline-block text-green-500">sync</p>
-                                                        </div>
+                                                        <span className="flex items-center">
+                                                            <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-green-500 bg-opacity-20">
+                                                                <img className="h-4 mr-2" src="/images/network-icon.svg" alt="" />
+                                                                <p className="inline-block text-green-500">sync</p>
+                                                            </div>
+                                                            <div>
+                                                                {activity.operation_name && (
+                                                                    <p className="text-gray-500 ml-2 text-sm">({activity?.operation_name})</p>
+                                                                )}
+                                                            </div>
+                                                        </span>
                                                     )}
                                                     {activity?.action === 'proxy' && (
                                                         <div className="flex items-center">

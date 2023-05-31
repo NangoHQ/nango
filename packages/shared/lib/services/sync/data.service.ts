@@ -1,5 +1,7 @@
-import { schema, syncDataService, createActivityLogMessage } from '@nangohq/shared';
-import type { DataResponse, UpsertResponse } from '@nangohq/shared';
+import { schema } from '../../db/database.js';
+import { verifyUniqueKeysAreUnique } from './data-records.service.js';
+import { createActivityLogMessage } from '../activity.service.js';
+import type { DataResponse, UpsertResponse } from '../../models/Data.js';
 
 /**
  * Upsert
@@ -11,26 +13,32 @@ export async function upsert(
     nangoConnectionId: number,
     model: string,
     activityLogId: number
-): Promise<UpsertResponse> {
+): Promise<UpsertResponse | null> {
     const responseWithoutDuplicates = await removeDuplicateKey(response, uniqueKey, activityLogId, model);
     const addedKeys = await getAddedKeys(responseWithoutDuplicates, dbTable, uniqueKey, nangoConnectionId, model);
     const updatedKeys = await getUpdatedKeys(responseWithoutDuplicates, dbTable, uniqueKey, nangoConnectionId, model);
 
-    const results = await schema()
-        .from(dbTable)
-        .insert(responseWithoutDuplicates, ['id', 'external_id'])
-        .onConflict(['nango_connection_id', 'external_id', 'model'])
-        .merge()
-        .returning(['id', 'external_id']);
+    try {
+        const results = await schema()
+            .from(dbTable)
+            .insert(responseWithoutDuplicates, ['id', 'external_id'])
+            .onConflict(['nango_connection_id', 'external_id', 'model'])
+            .merge()
+            .returning(['id', 'external_id']);
 
-    const affectedInternalIds = results.map((tuple) => tuple.id) as string[];
-    const affectedExternalIds = results.map((tuple) => tuple.external_id) as string[];
+        const affectedInternalIds = results.map((tuple) => tuple.id) as string[];
+        const affectedExternalIds = results.map((tuple) => tuple.external_id) as string[];
 
-    return { addedKeys, updatedKeys, affectedInternalIds, affectedExternalIds };
+        return { addedKeys, updatedKeys, affectedInternalIds, affectedExternalIds };
+    } catch (e) {
+        console.log(e);
+
+        return null;
+    }
 }
 
 export async function removeDuplicateKey(response: DataResponse[], uniqueKey: string, activityLogId: number, model: string): Promise<DataResponse[]> {
-    const { isUnique, nonUniqueKey } = syncDataService.verifyUniqueKeysAreUnique(response, uniqueKey);
+    const { isUnique, nonUniqueKey } = verifyUniqueKeysAreUnique(response, uniqueKey);
 
     if (!isUnique) {
         await createActivityLogMessage({

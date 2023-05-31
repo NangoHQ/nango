@@ -22,6 +22,7 @@ export interface ActivityLog {
     endpoint?: string;
     session_id?: string;
     messages?: ActivityLogMessage[];
+    operation_name?: string;
 }
 
 export interface ActivityLogMessage {

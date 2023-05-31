@@ -12,6 +12,8 @@ import analytics from './utils/analytics.js';
 export * from './services/activity.service.js';
 export * from './services/sync/sync.service.js';
 export * from './services/sync/job.service.js';
+export * from './services/sync/schedule.service.js';
+export * as dataService from './services/sync/data.service.js';
 export * as syncDataService from './services/sync/data-records.service.js';
 export * as oauth2Client from './clients/oauth2.client.js';
 

@@ -46,8 +46,29 @@ export const updateSyncJobStatus = async (id: number, status: SyncStatus): Promi
     });
 };
 
+/**
+ * Update Sync Job Result
+ * @desc grab any existing results and add them to the current
+ */
 export const updateSyncJobResult = async (id: number, result: SyncResult): Promise<void> => {
-    return schema().from<SyncJob>(SYNC_JOB_TABLE).where({ id }).update({
-        result
-    });
+    const { result: existingResult } = await schema().from<SyncJob>(SYNC_JOB_TABLE).select('result').where({ id }).first();
+
+    if (!existingResult || Object.keys(existingResult).length === 0) {
+        await schema().from<SyncJob>(SYNC_JOB_TABLE).where({ id }).update({
+            result
+        });
+    } else {
+        const { added, updated, deleted } = existingResult || { added: 0, updated: 0, deleted: 0 };
+
+        await schema()
+            .from<SyncJob>(SYNC_JOB_TABLE)
+            .where({ id })
+            .update({
+                result: {
+                    added: Number(added) + Number(result.added),
+                    updated: Number(updated) + Number(result.updated),
+                    deleted: deleted ? deleted + result.deleted : result.deleted
+                }
+            });
+    }
 };

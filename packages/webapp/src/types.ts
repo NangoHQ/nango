@@ -14,6 +14,7 @@ export interface ActivityResponse {
     provider: string;
     method: string;
     endpoint?: string;
+    operation_name?: string;
 }
 
 export interface SyncResponse {
@@ -23,6 +24,8 @@ export interface SyncResponse {
     name: string;
     models: string[];
     frequency: string;
+    schedule_status: 'RUNNING' | 'PAUSED' | 'STOPPED';
+    schedule_id: string;
     latest_sync: {
         updated_at: string;
         type: 'INITIAL' | 'INCREMENTAL';
@@ -34,3 +37,5 @@ export interface SyncResponse {
         };
     };
 }
+
+export type RunSyncCommand = 'PAUSE' | 'UNPAUSE' | 'RUN' | 'RUN_FULL';

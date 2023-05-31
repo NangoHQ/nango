@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 import type { NextFunction } from 'express';
 import type { Connection } from '@nangohq/shared';
 import { getUserAndAccountFromSession } from '../utils/utils.js';
-import { getAccount, createSyncConfig, syncDataService, connectionService, getSyncs } from '@nangohq/shared';
+import { getAccount, createSyncConfig, syncDataService, connectionService, getSyncs, verifyOwnership, SyncClient, updateScheduleStatus } from '@nangohq/shared';
 
 class SyncController {
     public async createSyncConfig(req: Request, res: Response, next: NextFunction) {
@@ -80,6 +80,24 @@ class SyncController {
             const syncs = await getSyncs(connection?.id as number);
 
             res.send(syncs);
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    public async syncCommand(req: Request, res: Response, next: NextFunction) {
+        try {
+            const account = (await getUserAndAccountFromSession(req)).account;
+            const { schedule_id, command, nango_connection_id, sync_id } = req.body;
+            if (!verifyOwnership(nango_connection_id, account.id, sync_id)) {
+                res.sendStatus(401);
+            }
+
+            const syncClient = await SyncClient.getInstance();
+            syncClient.runSyncCommand(schedule_id, command);
+            await updateScheduleStatus(schedule_id, command);
+
+            res.sendStatus(200);
         } catch (e) {
             next(e);
         }
