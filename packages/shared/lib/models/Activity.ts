@@ -28,7 +28,7 @@ export interface ActivityLog {
 export interface ActivityLogMessage {
     id?: number;
     level: LogLevel;
-    activity_log_id: number;
+    activity_log_id?: number;
     content: string;
     timestamp: number;
     auth_mode?: string;

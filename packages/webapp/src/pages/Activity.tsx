@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Clock, ArrowRight, Slash, CheckInCircle, AlertCircle, Link as LinkIcon, RefreshCw } from '@geist-ui/icons'
 import { Tooltip } from '@geist-ui/core';
 
@@ -134,7 +135,10 @@ export default function Activity() {
                                                 <Tooltip text={activity?.connection_id} type="dark">
                                                     <div className="ml-30 w-48 mr-12 text-[#5AC2B3] font-mono overflow-hidden truncate">`{activity.connection_id}`</div>
                                                 </Tooltip>
-                                                <div className="w-36 mr-12">
+                                                <Link
+                                                to={`/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '#sync' : ''}`}
+                                                    className="w-36 mr-12"
+                                                >
                                                     {activity?.provider ? (
                                                         <div className="w-80 flex">
                                                             <img src={`images/template-logos/${activity.provider}.svg`} alt="" className="h-7 mt-0.5" />
@@ -143,9 +147,9 @@ export default function Activity() {
                                                     ) : (
                                                         <div className="mr-12">{activity.provider_config_key}</div>
                                                     )}
-                                                </div>
+                                                </Link>
                                                 <p className="text-gray-500 w-40">{formatTimestamp(Number(activity.timestamp))}</p>
-                                                {activity.messages && (
+                                                {activity.messages && activity.messages.length > 0 && activity.messages[0] !== null && (
                                                     <button
                                                         className="flex h-8 mr-2 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white bg-gray-800 hover:bg-gray-700"
                                                         onClick={() => setExpandedRow(index === expandedRow ? -1 : index)}
@@ -159,7 +163,7 @@ export default function Activity() {
                                                 <div className="flex flex-col space-y-4 mt-6 font-mono">
                                                     {activity.messages.map((message, index: number) => (
                                                         <div key={index} className="flex flex-col">
-                                                            <div>{formatTimestampWithTZ(Number(message.timestamp))}{' '}{message.content}</div>
+                                                            <div>{formatTimestampWithTZ(Number(message?.timestamp))}{' '}{message.content}</div>
                                                             {message.auth_mode && (
                                                                 <div className="ml-4">
                                                                     auth_mode: {message.auth_mode}

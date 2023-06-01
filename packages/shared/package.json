@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/shared",
-    "version": "0.17.18-beta",
+    "version": "0.17.32-beta",
     "description": "Nango's shared components.",
     "type": "module",
     "main": "dist/lib/index.js",
@@ -15,7 +15,7 @@
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
         "@hapi/boom": "^10.0.1",
-        "@nangohq/node": "^0.17.3-beta",
+        "@nangohq/node": "0.17.14-beta",
         "@sentry/node": "^7.37.2",
         "@temporalio/client": "^1.5.2",
         "amqplib": "^0.10.3",

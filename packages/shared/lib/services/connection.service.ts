@@ -157,8 +157,8 @@ class ConnectionService {
         res: Response,
         connectionId: string,
         providerConfigKey: string,
-        activityLogId: number,
-        action: LogAction,
+        activityLogId?: number | null,
+        action?: LogAction,
         instantRefresh = false
     ) {
         const accountId = getAccount(res);
@@ -175,7 +175,7 @@ class ConnectionService {
 
         const connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, accountId);
 
-        if (connection === null) {
+        if (connection === null && activityLogId) {
             await createActivityLogMessageAndEnd({
                 level: 'error',
                 activity_log_id: activityLogId,
@@ -187,11 +187,13 @@ class ConnectionService {
             throw new Error(`Connection not found`);
         }
 
-        const config: ProviderConfig | null = await configService.getProviderConfig(connection.provider_config_key, accountId);
+        const config: ProviderConfig | null = await configService.getProviderConfig(connection?.provider_config_key as string, accountId);
 
-        await updateProviderActivityLog(activityLogId, config?.provider as string);
+        if (activityLogId) {
+            await updateProviderActivityLog(activityLogId, config?.provider as string);
+        }
 
-        if (config === null) {
+        if (config === null && activityLogId) {
             await createActivityLogMessageAndEnd({
                 level: 'error',
                 activity_log_id: activityLogId,
@@ -203,12 +205,12 @@ class ConnectionService {
             throw new Error(`Provider config not found`);
         }
 
-        const template: ProviderTemplate | undefined = configService.getTemplate(config.provider);
+        const template: ProviderTemplate | undefined = configService.getTemplate(config?.provider as string);
 
-        if (connection.credentials.type === ProviderAuthModes.OAuth2) {
+        if (connection?.credentials.type === ProviderAuthModes.OAuth2) {
             connection.credentials = await connectionService.refreshOauth2CredentialsIfNeeded(
                 connection,
-                config,
+                config as ProviderConfig,
                 template as ProviderTemplateOAuth2,
                 activityLogId,
                 instantRefresh,
@@ -216,7 +218,7 @@ class ConnectionService {
             );
         }
 
-        analytics.track('server:connection_fetched', accountId, { provider: config.provider });
+        analytics.track('server:connection_fetched', accountId, { provider: config?.provider });
 
         return connection;
     }

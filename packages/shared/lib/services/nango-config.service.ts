@@ -9,6 +9,8 @@ import type { NangoConfig, SimplifiedNangoIntegration, NangoSyncConfig, NangoSyn
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+export const SYNC_FILE_EXTENSION = 'js';
+
 export function loadNangoConfig(loadLocation?: string): NangoConfig | null {
     const location = loadLocation || path.resolve(__dirname, '../nango-integrations/nango.yaml');
 
@@ -42,14 +44,42 @@ export function loadSimplifiedConfig(loadLocation?: string): SimplifiedNangoInte
 }
 
 export function checkForIntegrationFile(syncName: string) {
-    return fs.existsSync(path.resolve(__dirname, `../nango-integrations/dist/${syncName}.js`));
+    const nangoIntegrationsDirPath = path.resolve(__dirname, '../nango-integrations');
+    const distDirPath = path.resolve(nangoIntegrationsDirPath, 'dist');
+
+    if (!fs.existsSync(nangoIntegrationsDirPath)) {
+        return {
+            result: false,
+            path: nangoIntegrationsDirPath
+        };
+    }
+
+    if (!fs.existsSync(distDirPath)) {
+        return {
+            result: false,
+            path: distDirPath
+        };
+    }
+
+    const filePath = path.resolve(distDirPath, `${syncName}.${SYNC_FILE_EXTENSION}`);
+    let realPath;
+    try {
+        realPath = fs.realpathSync(filePath);
+    } catch (err) {
+        realPath = filePath;
+    }
+
+    return {
+        result: fs.existsSync(realPath),
+        path: realPath
+    };
 }
 
 export async function getIntegrationClass(syncName: string, setIntegrationPath?: string) {
     try {
-        const integrationPath =
-            setIntegrationPath || path.resolve(__dirname, `../nango-integrations/dist/${syncName}.js`) + `?v=${Math.random().toString(36).substring(3)}`;
-        const { default: integrationCode } = await import(integrationPath);
+        const filePath = setIntegrationPath || path.resolve(__dirname, `../nango-integrations/dist/${syncName}.${SYNC_FILE_EXTENSION}`);
+        const realPath = fs.realpathSync(filePath) + `?v=${Math.random().toString(36).substring(3)}`;
+        const { default: integrationCode } = await import(realPath);
         const integrationClass = new integrationCode();
 
         return integrationClass;

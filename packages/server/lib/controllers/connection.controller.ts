@@ -2,10 +2,7 @@ import type { Request, Response } from 'express';
 import type { NextFunction } from 'express';
 import {
     createActivityLog,
-    createActivityLogMessage,
     createActivityLogMessageAndEnd,
-    updateProvider as updateProviderActivityLog,
-    updateSuccess as updateSuccessActivityLog,
     Config as ProviderConfig,
     Template as ProviderTemplate,
     AuthModes as ProviderAuthModes,
@@ -18,7 +15,8 @@ import {
     connectionService,
     getAccount,
     errorManager,
-    analytics
+    analytics,
+    createActivityLogAndLogMessage
 } from '@nangohq/shared';
 import { getUserAndAccountFromSession } from '../utils/utils.js';
 import { WSErrBuilder } from '../utils/web-socket-error.js';
@@ -44,23 +42,14 @@ class ConnectionController {
                 end: Date.now(),
                 timestamp: Date.now(),
                 connection_id: connectionId as string,
+                provider: '',
                 provider_config_key: providerConfigKey as string,
                 account_id: account.id
             };
 
-            const activityLogId = await createActivityLog(log);
-
-            await createActivityLogMessage({
-                level: 'info',
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: `Token fetch was successful for ${providerConfigKey} and connection ${connectionId} from the web UI`
-            });
-
             if (connectionId == null) {
-                await createActivityLogMessageAndEnd({
+                await createActivityLogAndLogMessage(log, {
                     level: 'error',
-                    activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: WSErrBuilder.MissingConnectionId().message
                 });
@@ -70,9 +59,8 @@ class ConnectionController {
             }
 
             if (providerConfigKey == null) {
-                await createActivityLogMessageAndEnd({
+                await createActivityLogAndLogMessage(log, {
                     level: 'error',
-                    activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: WSErrBuilder.MissingProviderConfigKey().message
                 });
@@ -84,9 +72,8 @@ class ConnectionController {
             const connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, account.id);
 
             if (connection == null) {
-                await createActivityLogMessageAndEnd({
+                await createActivityLogAndLogMessage(log, {
                     level: 'error',
-                    activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: 'Unknown connection'
                 });
@@ -98,9 +85,8 @@ class ConnectionController {
             const config: ProviderConfig | null = await configService.getProviderConfig(connection.provider_config_key, account.id);
 
             if (config == null) {
-                await createActivityLogMessageAndEnd({
+                await createActivityLogAndLogMessage(log, {
                     level: 'error',
-                    activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: 'Unknown provider config'
                 });
@@ -109,8 +95,6 @@ class ConnectionController {
                 return;
             }
 
-            await updateProviderActivityLog(activityLogId as number, config.provider);
-
             const template: ProviderTemplate | undefined = configService.getTemplate(config.provider);
 
             if (connection.credentials.type === ProviderAuthModes.OAuth2) {
@@ -118,18 +102,18 @@ class ConnectionController {
                     connection,
                     config,
                     template as ProviderTemplateOAuth2,
-                    activityLogId,
+                    null,
                     false,
                     'token' as LogAction
                 );
             }
 
-            await updateSuccessActivityLog(activityLogId as number, true);
-
             if (instantRefresh) {
-                await createActivityLogMessageAndEnd({
+                log.provider = config.provider;
+                log.success = true;
+
+                await createActivityLogAndLogMessage(log, {
                     level: 'info',
-                    activity_log_id: activityLogId as number,
                     auth_mode: template?.auth_mode,
                     content: `Token manual refresh fetch was successful for ${providerConfigKey} and connection ${connectionId} from the web UI`,
                     timestamp: Date.now()
@@ -237,6 +221,9 @@ class ConnectionController {
             const connectionId = req.params['connectionId'] as string;
             const providerConfigKey = req.query['provider_config_key'] as string;
             const instantRefresh = req.query['force_refresh'] === 'true';
+            const isSync = req.get('Nango-Is-Sync') as string;
+
+            let activityLogId: number | null = null;
 
             const action: LogAction = 'token';
             const log = {
@@ -252,25 +239,23 @@ class ConnectionController {
                 account_id: accountId
             };
 
-            const activityLogId = await createActivityLog(log);
-            const connection = await connectionService.getConnectionCredentials(
-                res,
-                connectionId,
-                providerConfigKey,
-                activityLogId as number,
-                action,
-                instantRefresh
-            );
+            if (!isSync) {
+                activityLogId = await createActivityLog(log);
+            }
 
-            await createActivityLogMessageAndEnd({
-                level: 'info',
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: 'Connection credentials found successfully',
-                params: {
-                    instant_refresh: instantRefresh
-                }
-            });
+            const connection = await connectionService.getConnectionCredentials(res, connectionId, providerConfigKey, activityLogId, action, instantRefresh);
+
+            if (!isSync) {
+                await createActivityLogMessageAndEnd({
+                    level: 'info',
+                    activity_log_id: activityLogId as number,
+                    timestamp: Date.now(),
+                    content: 'Connection credentials found successfully',
+                    params: {
+                        instant_refresh: instantRefresh
+                    }
+                });
+            }
 
             res.status(200).send(connection);
         } catch (err) {

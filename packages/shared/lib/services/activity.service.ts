@@ -62,6 +62,20 @@ export async function updateAction(id: number, action: LogAction): Promise<void>
     });
 }
 
+export async function createActivityLogAndLogMessage(log: ActivityLog, logMessage: ActivityLogMessage): Promise<number | null> {
+    const logId = await createActivityLog(log);
+
+    if (logId === null) {
+        return null;
+    }
+
+    logMessage.activity_log_id = logId;
+
+    await createActivityLogMessage(logMessage);
+
+    return logId;
+}
+
 export async function createActivityLogMessage(logMessage: ActivityLogMessage): Promise<boolean> {
     logger.log(logMessage.level as string, logMessage.content);
 
@@ -89,7 +103,9 @@ export async function addEndTime(activity_log_id: number): Promise<void> {
 
 export async function createActivityLogMessageAndEnd(logMessage: ActivityLogMessage): Promise<void> {
     await createActivityLogMessage(logMessage);
-    await addEndTime(logMessage.activity_log_id);
+    if (logMessage.activity_log_id !== undefined) {
+        await addEndTime(logMessage.activity_log_id);
+    }
 }
 
 export async function findActivityLogBySession(session_id: string): Promise<number | null> {

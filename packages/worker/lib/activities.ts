@@ -113,11 +113,12 @@ export async function syncProvider(
         const providerConfigKey = nangoConnection.provider_config_key;
         const syncObject = integrations[providerConfigKey] as unknown as { [key: string]: NangoIntegration };
 
-        if (!checkForIntegrationFile(syncName)) {
-            await createActivityLogMessage({
+        const { path: integrationFilePath, result: integrationFileResult } = checkForIntegrationFile(syncName);
+        if (!integrationFileResult) {
+            await createActivityLogMessageAndEnd({
                 level: 'info',
                 activity_log_id: activityLogId,
-                content: `Integration was attempted to run for ${syncName} but no integration file was found.`,
+                content: `Integration was attempted to run for ${syncName} but no integration file was found at ${integrationFilePath}.`,
                 timestamp: Date.now()
             });
 

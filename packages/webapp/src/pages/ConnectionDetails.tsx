@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { Prism } from '@mantine/prism';
 import { toast } from 'react-toastify';
 import { Clock, RefreshCw, Lock, Slash, Check, X } from '@geist-ui/icons';
@@ -46,6 +46,14 @@ export default function ConnectionDetails() {
     const getSyncAPI = useGetSyncAPI();
     const runCommandSyncAPI = useRunSyncAPI();
     const { connectionId, providerConfigKey } = useParams();
+
+    const location = useLocation();
+
+    useEffect(() => {
+        if (location.hash === '#sync') {
+            setCurrentTab('sync');
+        }
+    }, [location]);
 
     useEffect(() => {
         if (!connectionId || !providerConfigKey) return;
@@ -362,7 +370,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                                     </ul>
                                 </div>
                                 {syncs.length === 0 && (
-                                    <div className="flex items-center px-5 pt-8 pb-3">
+                                    <div className="flex items-center px-5 pt-8 pb-7">
                                         <Slash className="stroke-red-500" />
                                         <div className="text-white ml-3">No syncs yet!</div>
                                     </div>
@@ -378,10 +386,16 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                 </Tooltip>
                                                 <li className="w-32 ml-6 text-sm">{sync.models.map((model) => model.charAt(0).toUpperCase() + model.slice(1)).join(', ')}</li>
                                                 <li className="w-32 ml-2">
-                                                    {(sync.schedule_status === 'PAUSED' || sync.latest_sync.status === 'STOPPED') && (
+                                                    {sync.schedule_status === 'PAUSED' && (
                                                         <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-red-500 bg-opacity-20">
                                                             <X className="stroke-red-500 mr-2" size="12" />
                                                             <p className="inline-block text-red-500 text-sm">stopped</p>
+                                                        </div>
+                                                    )}
+                                                    {sync.latest_sync.status === 'STOPPED' && (
+                                                        <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-red-500 bg-opacity-20">
+                                                            <X className="stroke-red-500 mr-2" size="12" />
+                                                            <p className="inline-block text-red-500 text-sm">errored</p>
                                                         </div>
                                                     )}
                                                     {sync.latest_sync.status === 'RUNNING' && (
@@ -409,7 +423,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                 <li className="flex ml-8">
                                                     <button
                                                         className="flex h-8 mr-2 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white bg-gray-800 hover:bg-gray-700"
-                                                        onClick={() => syncCommand(sync.schedule_status === 'RUNNING' ? 'PAUSE' : 'UNPAUSE', sync.nango_connection_id, sync.schedule_id, sync.id)}
+                                                        onClick={() => syncCommand((sync.schedule_status === 'RUNNING' && sync.latest_sync.status !== 'STOPPED') ? 'PAUSE' : 'UNPAUSE', sync.nango_connection_id, sync.schedule_id, sync.id)}
                                                     >
                                                         <p>{sync.schedule_status === 'RUNNING' ? 'Pause' : 'Start'}</p>
                                                     </button>

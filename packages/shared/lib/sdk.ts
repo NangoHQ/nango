@@ -216,13 +216,17 @@ export class Nango {
         return axios.get(url, options);
     }
 
-    private async getConnectionDetails(providerConfigKey: string, connectionId: string, forceRefresh = false) {
+    private async getConnectionDetails(providerConfigKey: string, connectionId: string, forceRefresh = false, additionalHeader = {}) {
         const url = `${this.serverUrl}/connection/${connectionId}`;
 
         const headers = {
             'Content-Type': 'application/json',
             'Accept-Encoding': 'application/json'
         };
+
+        if (additionalHeader) {
+            Object.assign(headers, additionalHeader);
+        }
 
         const params = {
             provider_config_key: providerConfigKey,
@@ -264,8 +268,6 @@ export class Nango {
         const headers: Record<string, string | number | boolean> = {
             'Provider-Config-Key': providerConfigKey as string
         };
-        console.log(url);
-        console.log(fieldMapping);
 
         return axios.post(url, fieldMapping, { headers: this.enrichHeaders(headers) });
     }
@@ -282,7 +284,7 @@ export class Nango {
             throw new Error('Connection Id is required');
         }
 
-        const response = await this.getConnectionDetails(providerConfigKey, connectionId);
+        const response = await this.getConnectionDetails(providerConfigKey, connectionId, false, { 'Nango-Is-Sync': true });
 
         return response.data.field_mappings;
     }
