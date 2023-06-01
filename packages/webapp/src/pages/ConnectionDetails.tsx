@@ -387,7 +387,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                                 <div className="text-white px-5">
                                     <ul className="flex space-x-20 pb-4 items-center text-lg border-b border-border-gray">
                                         <li>Integration Script</li>
-                                        <li>Models</li>
+                                        <li className="w-[7.5rem]">Models</li>
                                         <li>Status</li>
                                         <li>Last Sync</li>
                                         <li>Next Sync</li>
@@ -408,7 +408,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                 <Tooltip text={sync.id} type="dark">
                                                     <li className="w-48">{sync.name}</li>
                                                 </Tooltip>
-                                                <li className="w-32 ml-6 text-sm">{sync.models.map((model) => model.charAt(0).toUpperCase() + model.slice(1)).join(', ')}</li>
+                                                <li className="w-48 ml-6 text-sm">{sync.models.map((model) => model.charAt(0).toUpperCase() + model.slice(1)).join(', ')}</li>
                                                 <li className="w-32 ml-2">
                                                     {sync.schedule_status === 'PAUSED' && (
                                                         <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-red-500 bg-opacity-20">
@@ -475,7 +475,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                     <li className="ml-4 w-32 text-sm text-gray-500">{parseCron(sync.frequency)}</li>
                                                 )}
                                                 {sync.schedule_status !== 'RUNNING' && (
-                                                    <li className="ml-4 w-28 text-sm text-gray-500">-</li>
+                                                    <li className="ml-4 w-32 text-sm text-gray-500">-</li>
                                                 )}
                                                 <li className="flex ml-8">
                                                     <button
