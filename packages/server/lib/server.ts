@@ -4,7 +4,6 @@
 
 // Import environment variables (if running server locally).
 import _ from './utils/config.js';
-import db from './db/database.js';
 import oauthController from './controllers/oauth.controller.js';
 import configController from './controllers/config.controller.js';
 import connectionController from './controllers/connection.controller.js';
@@ -26,17 +25,17 @@ import passport from 'passport';
 import accountController from './controllers/account.controller.js';
 import type { Response, Request } from 'express';
 import Logger from './utils/logger.js';
-import { encryptionManager, accountService, getPort, isCloud, isBasicAuthEnabled, errorManager } from '@nangohq/shared';
+import { db, encryptionManager, accountService, getPort, isCloud, isBasicAuthEnabled, errorManager } from '@nangohq/shared';
 import oAuthSessionService from './services/oauth-session.service.js';
 import { deleteOldActivityLogs } from './jobs/index.js';
 
-let app = express();
+const app = express();
 
 // Auth
 AuthClient.setup(app);
-let apiAuth = authMiddleware.secretKeyAuth.bind(authMiddleware);
-let apiPublicAuth = authMiddleware.publicKeyAuth.bind(authMiddleware);
-let webAuth = isCloud()
+const apiAuth = authMiddleware.secretKeyAuth.bind(authMiddleware);
+const apiPublicAuth = authMiddleware.publicKeyAuth.bind(authMiddleware);
+const webAuth = isCloud()
     ? [passport.authenticate('session'), authMiddleware.sessionAuth.bind(authMiddleware)]
     : isBasicAuthEnabled()
     ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth.bind(authMiddleware)]
@@ -130,7 +129,7 @@ wsServer.on('connection', (ws: WebSocket) => {
 // kick off any job
 deleteOldActivityLogs();
 
-let port = getPort();
+const port = getPort();
 server.listen(port, () => {
     Logger.info(`✅ Nango Server with version ${packageJsonFile().version} is listening on port ${port}. OAuth callback URL: ${getGlobalOAuthCallbackUrl()}`);
     Logger.info(

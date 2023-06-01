@@ -9,7 +9,7 @@ import crypto from 'crypto';
 import util from 'util';
 import cookieParser from 'cookie-parser';
 import connectSessionKnex from 'connect-session-knex';
-import database from '../db/database.js';
+import { database } from '@nangohq/shared';
 declare global {
     namespace Express {
         interface User {

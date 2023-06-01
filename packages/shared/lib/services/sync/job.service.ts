@@ -32,6 +32,12 @@ export const createSyncJob = async (
     return null;
 };
 
+export const updateJobActivityLogId = async (id: number, activity_log_id: number): Promise<void> => {
+    return schema().from<SyncJob>(SYNC_JOB_TABLE).where({ id }).update({
+        activity_log_id
+    });
+};
+
 export const getLatestSyncJob = async (sync_id: string): Promise<SyncJob | null> => {
     const result = await schema().from<SyncJob>(SYNC_JOB_TABLE).where({ sync_id }).orderBy('created_at', 'desc').first();
 

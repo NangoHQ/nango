@@ -1,11 +1,11 @@
 import type { Knex } from 'knex';
 
-let config: { development: Knex.Config<any>; production: Knex.Config<any> } = {
+const config: { development: Knex.Config<any>; production: Knex.Config<any> } = {
     development: {
-        client: 'pg',
-        connection: {
+        client: process.env['NANGO_DB_CLIENT'] || 'pg',
+        connection: process.env['NANGO_DATABASE_URL'] || {
             host: process.env['NANGO_DB_HOST'] || (process.env['SERVER_RUN_MODE'] === 'DOCKERIZED' ? 'nango-db' : 'localhost'),
-            port: process.env['NANGO_DB_PORT'] != null ? +process.env['NANGO_DB_PORT'] : 5432,
+            port: +(process.env['NANGO_DB_PORT'] || 5432),
             user: process.env['NANGO_DB_USER'] || 'nango',
             database: process.env['NANGO_DB_NAME'] || 'nango',
             password: process.env['NANGO_DB_PASSWORD'] || 'nango',
@@ -14,6 +14,10 @@ let config: { development: Knex.Config<any>; production: Knex.Config<any> } = {
         migrations: {
             directory: './migrations',
             extension: 'ts'
+        },
+        pool: {
+            min: parseInt(process.env['NANGO_DB_POOL_MIN'] || '2'),
+            max: parseInt(process.env['NANGO_DB_POOL_MAX'] || '7')
         }
     },
 

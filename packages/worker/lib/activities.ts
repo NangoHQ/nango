@@ -23,7 +23,8 @@ import {
     loadNangoConfig,
     updateSyncJobResult,
     getLastSyncDate,
-    dataService
+    dataService,
+    updateJobActivityLogId
 } from '@nangohq/shared';
 import type { NangoConnection, ContinuousSyncArgs, InitialSyncArgs } from './models/Worker';
 
@@ -79,9 +80,12 @@ export async function syncProvider(
             provider_config_key: nangoConnection?.provider_config_key as string,
             provider: syncConfig.provider,
             session_id: syncJobId.toString(),
-            account_id: nangoConnection?.account_id as number
+            account_id: nangoConnection?.account_id as number,
+            operation_name: syncName
         };
         activityLogId = (await createActivityLog(log)) as number;
+
+        updateJobActivityLogId(syncJobId, activityLogId);
     }
 
     const nangoConfig = loadNangoConfig();

@@ -119,7 +119,7 @@ class SyncClient {
 
         const jobId = generateWorkflowId(sync, syncName, nangoConnection?.connection_id as string);
 
-        const syncJobId = await createSyncJob(sync.id as string, SyncType.INITIAL, SyncStatus.RUNNING, jobId, activityLogId);
+        const syncJobId = await createSyncJob(sync.id as string, SyncType.INITIAL, SyncStatus.RUNNING, jobId, activityLogId as number);
 
         const handle = await this.client?.workflow.start('initialSync', {
             taskQueue: TASK_QUEUE,
