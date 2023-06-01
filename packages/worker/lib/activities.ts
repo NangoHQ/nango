@@ -40,7 +40,7 @@ export async function routeSync(args: InitialSyncArgs): Promise<boolean> {
 export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<boolean> {
     const { syncId, activityLogId, syncName, nangoConnection } = args;
     // TODO recreate the job id to be in the format created by temporal: nango-syncs.accounts-syncs-schedule-29768402-c6a8-462b-8334-37adf2b76be4-workflow-2023-05-30T08:45:00Z
-    const syncJobId = await createSyncJob(syncId as string, SyncType.INCREMENTAL, SyncStatus.RUNNING, '');
+    const syncJobId = await createSyncJob(syncId as string, SyncType.INCREMENTAL, SyncStatus.RUNNING, '', activityLogId);
     const syncConfig: ProviderConfig = (await configService.getProviderConfig(
         nangoConnection?.provider_config_key as string,
         nangoConnection?.account_id as number

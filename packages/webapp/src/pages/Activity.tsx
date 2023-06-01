@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Clock, ArrowRight, Slash, CheckInCircle, AlertCircle, Link as LinkIcon, RefreshCw } from '@geist-ui/icons'
 import { Tooltip } from '@geist-ui/core';
+import queryString from 'query-string';
 
 import { useActivityAPI } from '../utils/api';
 import { formatTimestamp, formatTimestampWithTZ, elapsedTime } from '../utils/utils';
@@ -13,6 +14,10 @@ export default function Activity() {
     const [loaded, setLoaded] = useState(false);
     const [activities, setActivities] = useState([]);
     const [expandedRow, setExpandedRow] = useState(-1);
+
+      const location = useLocation();
+      const queryParams = queryString.parse(location.search);
+      const activityLogId: string | (string | null)[] | null = queryParams.activity_log_id;
 
     const getActivityAPI = useActivityAPI();
 
@@ -37,6 +42,13 @@ export default function Activity() {
         }
 
     }, [getActivityAPI, loaded, setLoaded]);
+
+
+    useEffect(() => {
+      if (activityLogId && typeof activityLogId === 'string') {
+        setExpandedRow(parseInt(activityLogId));
+      }
+    }, [activityLogId]);
 
     const renderParams = (params: Record<string, string>) => {
         return Object.entries(params).map(([key, value]) => (
@@ -74,7 +86,7 @@ export default function Activity() {
                         <table className="table-auto">
                             <tbody className="px-4">
                                 {activities.filter((activity: ActivityResponse) => typeof activity?.action === 'string').map((activity: ActivityResponse, index: number) => (
-                                    <tr key={index}>
+                                    <tr key={activity.id}>
                                         <td
                                             className={`mx-8 flex-col px-10 py-4 whitespace-nowrap ${
                                                 index !== -1 ? 'border-b border-border-gray' : ''
@@ -82,13 +94,25 @@ export default function Activity() {
                                         >
                                             <div className="flex items-center px-2">
                                                 {activity?.success === null && (
-                                                    <Clock className="stroke-yellow-500" size="32" />
+                                                    <Link
+                                                        to={`/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '#sync' : ''}`}
+                                                    >
+                                                        <Clock className="stroke-yellow-500" size="32" />
+                                                    </Link>
                                                 )}
                                                 {activity?.success === true && (
-                                                    <CheckInCircle className="stroke-green-500" size="32" />
+                                                    <Link
+                                                        to={`/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '#sync' : ''}`}
+                                                    >
+                                                        <CheckInCircle className="stroke-green-500" size="32" />
+                                                    </Link>
                                                 )}
                                                 {activity?.success === false && (
-                                                    <AlertCircle className="stroke-red-500" size="32" />
+                                                    <Link
+                                                        to={`/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '#sync' : ''}`}
+                                                    >
+                                                        <AlertCircle className="stroke-red-500" size="32" />
+                                                    </Link>
                                                 )}
                                                 <div className="ml-10 w-36 mr-48">
                                                     {activity?.action === 'oauth' && (
@@ -109,11 +133,13 @@ export default function Activity() {
                                                                 <img className="h-4 mr-2" src="/images/network-icon.svg" alt="" />
                                                                 <p className="inline-block text-green-500">sync</p>
                                                             </div>
-                                                            <div>
+                                                            <Link
+                                                                to={`/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '#sync' : ''}`}
+                                                            >
                                                                 {activity.operation_name && (
                                                                     <p className="text-gray-500 ml-2 text-sm">({activity?.operation_name})</p>
                                                                 )}
-                                                            </div>
+                                                            </Link>
                                                         </span>
                                                     )}
                                                     {activity?.action === 'proxy' && (
@@ -133,11 +159,16 @@ export default function Activity() {
                                                     )}
                                                 </div>
                                                 <Tooltip text={activity?.connection_id} type="dark">
-                                                    <div className="ml-30 w-48 mr-12 text-[#5AC2B3] font-mono overflow-hidden truncate">`{activity.connection_id}`</div>
+                                                    <Link
+                                                        to={`/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '#sync' : ''}`}
+                                                        className="block ml-30 w-48 mr-12 text-[#5AC2B3] font-mono overflow-hidden truncate"
+                                                    >
+                                                        `{activity.connection_id}`
+                                                    </Link>
                                                 </Tooltip>
                                                 <Link
-                                                to={`/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '#sync' : ''}`}
-                                                    className="w-36 mr-12"
+                                                    to={`/integration/${activity.provider_config_key}`}
+                                                    className="block w-36 mr-12"
                                                 >
                                                     {activity?.provider ? (
                                                         <div className="w-80 flex">
@@ -152,13 +183,13 @@ export default function Activity() {
                                                 {activity.messages && activity.messages.length > 0 && activity.messages[0] !== null && (
                                                     <button
                                                         className="flex h-8 mr-2 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white bg-gray-800 hover:bg-gray-700"
-                                                        onClick={() => setExpandedRow(index === expandedRow ? -1 : index)}
+                                                        onClick={() => setExpandedRow(activity.id === expandedRow ? -1 : activity.id)}
                                                     >
-                                                        <p>{index === expandedRow ? 'Hide Logs' : 'Show Logs'}</p>
+                                                        <p>{activity.id === expandedRow ? 'Hide Logs' : 'Show Logs'}</p>
                                                     </button>
                                                 )}
                                             </div>
-                                            {index === expandedRow && (
+                                            {activity.id === expandedRow && (
                                                 <>
                                                 <div className="flex flex-col space-y-4 mt-6 font-mono">
                                                     {activity.messages.map((message, index: number) => (

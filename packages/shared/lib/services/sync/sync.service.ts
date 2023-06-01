@@ -133,7 +133,8 @@ export const getSyncs = async (nangoConnectionId: number): Promise<Sync[]> => {
                         'updated_at', nango.${SYNC_JOB_TABLE}.updated_at,
                         'type', nango.${SYNC_JOB_TABLE}.type,
                         'result', nango.${SYNC_JOB_TABLE}.result,
-                        'status', nango.${SYNC_JOB_TABLE}.status
+                        'status', nango.${SYNC_JOB_TABLE}.status,
+                        'activity_log_id', nango.${SYNC_JOB_TABLE}.activity_log_id
                     )
                     FROM nango.${SYNC_JOB_TABLE}
                     WHERE nango.${SYNC_JOB_TABLE}.sync_id = nango.${TABLE}.id

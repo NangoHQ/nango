@@ -34,6 +34,7 @@ export interface Job extends Timestamps {
     type: SyncType;
     sync_id: string;
     job_id: string;
+    activity_log_id: number | null;
     result?: SyncResult;
 }
 

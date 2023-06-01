@@ -8,13 +8,15 @@ export const createSyncJob = async (
     type: SyncType,
     status: SyncStatus,
     job_id: string,
+    activity_log_id: number,
     result?: SyncResult
 ): Promise<Pick<SyncJob, 'id'> | null> => {
     const job: SyncJob = {
         sync_id,
         type,
         status,
-        job_id
+        job_id,
+        activity_log_id
     };
 
     if (result) {

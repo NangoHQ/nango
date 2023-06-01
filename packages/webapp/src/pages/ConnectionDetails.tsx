@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { Prism } from '@mantine/prism';
 import { toast } from 'react-toastify';
 import { Clock, RefreshCw, Lock, Slash, Check, X } from '@geist-ui/icons';
@@ -148,6 +148,30 @@ We could not retrieve and/or refresh your access token due to the following erro
             }
         }
     };
+
+    const ErrorBubble = () => (
+      <>
+        <X className="stroke-red-500 mr-2" size="12" />
+        <p className="inline-block text-red-500 text-sm">errored</p>
+      </>
+    );
+    const errorBubbleStyles = 'inline-flex justify-center items-center rounded-full py-1 px-4 bg-red-500 bg-opacity-20';
+
+    const SuccessBubble = () => (
+      <>
+        <Check className="stroke-green-500 mr-2" size="12" />
+        <p className="inline-block text-green-500 text-sm">done</p>
+      </>
+    );
+    const successBubbleStyles = 'inline-flex justify-center items-center rounded-full py-1 px-4 bg-green-500 bg-opacity-20';
+
+    const RunningBubble = () => (
+      <>
+          <Clock className="stroke-orange-500 mr-2" size="12" />
+          <p className="inline-block text-orange-500 text-sm">running</p>
+      </>
+    );
+    const runningBubbleStyles = 'inline-flex justify-center items-center rounded-full py-1 px-4 bg-orange-500 bg-opacity-20';
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Connections}>
@@ -393,26 +417,59 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                         </div>
                                                     )}
                                                     {sync.latest_sync.status === 'STOPPED' && (
-                                                        <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-red-500 bg-opacity-20">
-                                                            <X className="stroke-red-500 mr-2" size="12" />
-                                                            <p className="inline-block text-red-500 text-sm">errored</p>
+                                                        sync.latest_sync.activity_log_id !== null ? (
+                                                            <Link
+                                                            to={`/activity?activity_log_id=${sync.latest_sync.activity_log_id}`}
+                                                            className={errorBubbleStyles}
+                                                        >
+                                                            <ErrorBubble />
+                                                            </Link>
+                                                        ) : (
+                                                        <div className={errorBubbleStyles}>
+                                                            <ErrorBubble />
                                                         </div>
+                                                        )
                                                     )}
                                                     {sync.latest_sync.status === 'RUNNING' && (
-                                                        <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-orange-500 bg-opacity-20">
-                                                            <Clock className="stroke-orange-500 mr-2" size="12" />
-                                                            <p className="inline-block text-orange-500 text-sm">running</p>
+                                                        sync.latest_sync.activity_log_id !== null ? (
+                                                        <Link
+                                                            to={`/activity?activity_log_id=${sync.latest_sync.activity_log_id}`}
+                                                            className={runningBubbleStyles}
+                                                        >
+                                                            <RunningBubble />
+                                                            </Link>
+                                                        ) : (
+                                                        <div className={runningBubbleStyles}>
+                                                            <RunningBubble />
                                                         </div>
+                                                        )
                                                     )}
                                                     {sync.latest_sync.status === 'SUCCESS' && sync.schedule_status !== 'PAUSED' && (
-                                                        <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-green-500 bg-opacity-20">
-                                                            <Check className="stroke-green-500 mr-2" size="12" />
-                                                            <p className="inline-block text-green-500 text-sm">done</p>
+                                                        sync.latest_sync.activity_log_id !== null ? (
+                                                        <Link
+                                                            to={`/activity?activity_log_id=${sync.latest_sync.activity_log_id}`}
+                                                            className={successBubbleStyles}
+                                                        >
+                                                            <SuccessBubble />
+                                                            </Link>
+                                                        ) : (
+                                                        <div className={successBubbleStyles}>
+                                                            <SuccessBubble />
                                                         </div>
+                                                        )
                                                     )}
                                                 </li>
                                                 <Tooltip text={JSON.stringify(sync.latest_sync.result)} type="dark">
-                                                    <li className="w-36 ml-1 text-gray-500 text-sm">{formatDateToUSFormat(sync.latest_sync.updated_at)}</li>
+                                                    {sync.latest_sync.activity_log_id !== null ? (
+                                                        <Link
+                                                            to={`/activity?activity_log_id=${sync.latest_sync.activity_log_id}`}
+                                                            className="w-36 ml-1 text-gray-500 text-sm"
+                                                        >
+                                                            {formatDateToUSFormat(sync.latest_sync.updated_at)}
+                                                        </Link>
+                                                    ) : (
+                                                        <li className="w-36 ml-1 text-gray-500 text-sm">{formatDateToUSFormat(sync.latest_sync.updated_at)}</li>
+                                                    )}
                                                 </Tooltip>
                                                 {sync.schedule_status === 'RUNNING' && (
                                                     <li className="ml-4 w-32 text-sm text-gray-500">{parseCron(sync.frequency)}</li>

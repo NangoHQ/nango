@@ -1,4 +1,5 @@
 export interface ActivityResponse {
+    id: number;
     level: 'info' | 'debug' | 'error';
     action: 'oauth' | 'proxy' | 'token' | 'sync';
     success: boolean;
@@ -30,6 +31,7 @@ export interface SyncResponse {
         updated_at: string;
         type: 'INITIAL' | 'INCREMENTAL';
         status: 'SUCCESS' | 'STOPPED' | 'RUNNING' | 'PAUSED';
+        activity_log_id: number | null;
         result: {
             added: number;
             updated: number;

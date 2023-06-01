@@ -22,6 +22,7 @@
         "cron-parser": "^4.8.1",
         "env-cmd": "^10.1.0",
         "posthog-js": "^1.51.4",
+        "query-string": "^8.1.0",
         "react": "^18.2.0",
         "react-code-blocks": "^0.0.9-0",
         "react-dom": "^18.2.0",
