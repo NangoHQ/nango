@@ -463,7 +463,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                     {sync.latest_sync.activity_log_id !== null ? (
                                                         <Link
                                                             to={`/activity?activity_log_id=${sync.latest_sync.activity_log_id}`}
-                                                            className="w-36 ml-1 text-gray-500 text-sm"
+                                                            className="block w-36 ml-1 text-gray-500 text-sm"
                                                         >
                                                             {formatDateToUSFormat(sync.latest_sync.updated_at)}
                                                         </Link>
