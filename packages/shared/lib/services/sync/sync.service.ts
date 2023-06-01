@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import db, { schema, dbNamespace } from '../../db/database.js';
-import { Sync, Job as SyncJob, SyncStatus, SyncConfig } from '../../models/Sync.js';
+import { Sync, Job as SyncJob, SyncStatus, SyncConfig, SyncWithSchedule } from '../../models/Sync.js';
 import SyncClient from '../../clients/sync.client.js';
 import { markAllAsStopped } from './schedule.service.js';
 
@@ -107,6 +107,20 @@ export const getSync = async (nangoConnectionId: number, name: string): Promise<
     }
 
     return null;
+};
+
+export const getSyncsFlat = async (nangoConnectionId: number): Promise<SyncWithSchedule[]> => {
+    const result = await schema()
+        .select('*')
+        .from<Sync>(TABLE)
+        .join(SYNC_SCHEDULE_TABLE, `${SYNC_SCHEDULE_TABLE}.sync_id`, `${TABLE}.id`)
+        .where({ nango_connection_id: nangoConnectionId });
+
+    if (Array.isArray(result) && result.length > 0) {
+        return result;
+    }
+
+    return [];
 };
 
 /**

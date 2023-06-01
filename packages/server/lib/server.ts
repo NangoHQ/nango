@@ -69,6 +69,7 @@ app.route('/connection/:connectionId').delete(apiAuth, connectionController.dele
 app.route('/connection/:connectionId/field-mapping').post(apiAuth, connectionController.setFieldMapping.bind(connectionController));
 app.route('/sync-config').post(apiAuth, syncController.createSyncConfig.bind(syncController));
 app.route('/sync/records').get(apiAuth, syncController.getRecords.bind(syncController));
+app.route('/sync/trigger').post(apiAuth, syncController.trigger.bind(syncController));
 
 // Proxy Route
 app.route('/proxy/*').all(apiAuth, proxyController.routeCall.bind(proxyController));

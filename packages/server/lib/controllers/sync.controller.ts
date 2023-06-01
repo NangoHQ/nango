@@ -2,7 +2,17 @@ import type { Request, Response } from 'express';
 import type { NextFunction } from 'express';
 import type { Connection } from '@nangohq/shared';
 import { getUserAndAccountFromSession } from '../utils/utils.js';
-import { getAccount, createSyncConfig, syncDataService, connectionService, getSyncs, verifyOwnership, SyncClient, updateScheduleStatus } from '@nangohq/shared';
+import {
+    getAccount,
+    createSyncConfig,
+    syncDataService,
+    connectionService,
+    getSyncs,
+    verifyOwnership,
+    SyncClient,
+    updateScheduleStatus,
+    getSyncsFlat
+} from '@nangohq/shared';
 
 class SyncController {
     public async createSyncConfig(req: Request, res: Response, next: NextFunction) {
@@ -80,6 +90,34 @@ class SyncController {
             const syncs = await getSyncs(connection?.id as number);
 
             res.send(syncs);
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    public async trigger(req: Request, res: Response, next: NextFunction) {
+        try {
+            const accountId = getAccount(res);
+            const connectionId = req.get('Connection-Id') as string;
+            const providerConfigKey = req.get('Provider-Config-Key') as string;
+
+            if (!connectionId) {
+                res.status(400).send({ message: 'Missing connection id' });
+            }
+
+            if (!providerConfigKey) {
+                res.status(400).send({ message: 'Missing provider config key' });
+            }
+
+            const connection: Connection | null = await connectionService.getConnection(connectionId as string, providerConfigKey as string, accountId);
+
+            const syncs = await getSyncsFlat(connection?.id as number);
+
+            const syncClient = await SyncClient.getInstance();
+
+            await syncClient.triggerSyncs(syncs);
+
+            res.sendStatus(200);
         } catch (e) {
             next(e);
         }

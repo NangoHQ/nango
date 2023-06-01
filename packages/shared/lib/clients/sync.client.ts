@@ -1,8 +1,8 @@
-import { Client, Connection } from '@temporalio/client';
+import { Client, Connection, ScheduleOverlapPolicy } from '@temporalio/client';
 import type { Connection as NangoConnection } from '../models/Connection.js';
 import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { NangoIntegrationData, NangoConfig, NangoIntegration } from '../integrations/index.js';
-import { Sync, SyncStatus, SyncType, ScheduleStatus, SyncCommand } from '../models/Sync.js';
+import { Sync, SyncStatus, SyncType, ScheduleStatus, SyncCommand, SyncWithSchedule } from '../models/Sync.js';
 import type { LogLevel, LogAction } from '../models/Activity.js';
 import { TASK_QUEUE } from '../constants.js';
 import { createActivityLog, createActivityLogMessage } from '../services/activity.service.js';
@@ -15,6 +15,8 @@ import { createSync } from '../services/sync/sync.service.js';
 
 const generateWorkflowId = (sync: Sync, syncName: string, connectionId: string) => `${TASK_QUEUE}.${syncName}.${connectionId}-${sync.id}`;
 const generateScheduleId = (sync: Sync, syncName: string, connectionId: string) => `${TASK_QUEUE}.${syncName}.${connectionId}-schedule-${sync.id}`;
+
+const OVERLAP_POLICY: ScheduleOverlapPolicy = ScheduleOverlapPolicy.BUFFER_ONE;
 
 class SyncClient {
     private static instance: Promise<SyncClient> | null = null;
@@ -211,11 +213,22 @@ class SyncClient {
                 await scheduleHandle?.unpause();
                 break;
             case SyncCommand.RUN:
-                await scheduleHandle?.trigger();
+                await scheduleHandle?.trigger(OVERLAP_POLICY);
                 break;
             case SyncCommand.RUN_FULL:
                 console.warn('Not implemented');
                 break;
+        }
+    }
+
+    async triggerSyncs(syncs: SyncWithSchedule[]) {
+        for (const sync of syncs) {
+            try {
+                const scheduleHandle = this.client?.schedule.getHandle(sync.schedule_id);
+                await scheduleHandle?.trigger(OVERLAP_POLICY);
+            } catch (e) {
+                console.error(e);
+            }
         }
     }
 }

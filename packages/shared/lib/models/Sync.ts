@@ -80,6 +80,8 @@ export interface DataRecord extends Timestamps {
     sync_id: string;
 }
 
+export type SyncWithSchedule = Sync & Schedule;
+
 export enum SyncCommand {
     PAUSE = 'PAUSE',
     UNPAUSE = 'UNPAUSE',

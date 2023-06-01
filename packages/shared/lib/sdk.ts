@@ -1,9 +1,10 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import { validateProxyConfiguration, validateSyncRecordConfiguration } from './utils/utils.js';
+import _ from 'lodash';
 
 import type { ProxyConfiguration } from './models/Proxy.js';
 import type { GetRecordsRequestConfig } from './models/Sync.js';
-//import type { DataRecord as SyncDataRecord } from './models/Sync.js';
+import type { LogLevel, ActivityLogMessage } from './models/Activity.js';
 import { formatDataRecords } from './services/sync/data-records.service.js';
 import { upsert } from './services/sync/data.service.js';
 import { updateSyncJobResult } from './services/sync/job.service.js';
@@ -25,6 +26,12 @@ interface NangoProps {
     syncId?: string;
     nangoConnectionId?: number;
     syncJobId?: number;
+    throttledCreateActivityLogMessage?: (params: ActivityLogMessage) => Promise<void>;
+}
+
+interface UserLogParameters {
+    success?: boolean;
+    level?: LogLevel;
 }
 
 export class Nango {
@@ -39,9 +46,13 @@ export class Nango {
     nangoConnectionId?: number;
     syncJobId?: number;
 
+    private throttledCreateActivityLogMessage;
+
     constructor(config: NangoProps = {}) {
         config.host = config.host || prodHost;
         this.serverUrl = config.host;
+
+        this.throttledCreateActivityLogMessage = _.throttle(createActivityLogMessage, 1000);
 
         if (this.serverUrl.slice(-1) === '/') {
             this.serverUrl = this.serverUrl.slice(0, -1);
@@ -289,6 +300,7 @@ export class Nango {
         return response.data.field_mappings;
     }
 
+    // TODO type this
     public async batchSend(results: any[], model: string): Promise<boolean> {
         if (!this.nangoConnectionId || !this.syncId || !this.activityLogId || !this.syncJobId) {
             throw new Error('Nango Connection Id, Sync Id, Activity Log Id and Sync Job Id are all required');
@@ -327,6 +339,30 @@ export class Nango {
 
             return false;
         }
+    }
+
+    public async log(content: string, userDefinedLevel?: UserLogParameters): Promise<void> {
+        if (!this.activityLogId) {
+            throw new Error('There is no current activity log stream to log to');
+        }
+
+        await this.throttledCreateActivityLogMessage({
+            level: userDefinedLevel?.level ?? 'info',
+            activity_log_id: this.activityLogId as number,
+            content,
+            timestamp: Date.now()
+        });
+    }
+
+    public async triggerSync({ connectionId, providerConfigKey }: { connectionId: string; providerConfigKey: string }) {
+        const url = `${this.serverUrl}/sync/trigger`;
+
+        const headers = {
+            'Connection-Id': connectionId,
+            'Provider-Config-Key': providerConfigKey
+        };
+
+        return axios.post(url, {}, { headers: this.enrichHeaders(headers) });
     }
 
     private async listConnectionDetails(connectionId?: string) {
