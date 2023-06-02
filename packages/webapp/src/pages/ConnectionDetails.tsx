@@ -13,7 +13,7 @@ import Button from '../components/ui/button/Button';
 import Typography from '../components/ui/typography/Typography';
 import SecretInput from '../components/ui/input/SecretInput';
 import type { SyncResponse, RunSyncCommand } from '../types';
-import { formatDateToUSFormat, parseCron } from '../utils/utils';
+import { formatDateToUSFormat, computeNextRun } from '../utils/utils';
 
 interface Connection {
     id: number;
@@ -471,8 +471,11 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                         <li className="w-36 ml-1 text-gray-500 text-sm">{formatDateToUSFormat(sync.latest_sync.updated_at)}</li>
                                                     )}
                                                 </Tooltip>
-                                                {sync.schedule_status === 'RUNNING' && (
-                                                    <li className="ml-4 w-32 text-sm text-gray-500">{parseCron(sync.frequency)}</li>
+                                                {sync.schedule_status === 'RUNNING' && sync.offset && (
+                                                    <li className="ml-4 w-32 text-sm text-gray-500">{computeNextRun(new Date(sync.created_at), sync.frequency, sync.offset)}</li>
+                                                )}
+                                                {sync.schedule_status === 'RUNNING' && !sync.offset && (
+                                                    <li className="ml-4 w-32 text-sm text-gray-500">-</li>
                                                 )}
                                                 {sync.schedule_status !== 'RUNNING' && (
                                                     <li className="ml-4 w-32 text-sm text-gray-500">-</li>

@@ -68,6 +68,7 @@ export interface Schedule extends Timestamps {
     sync_id: string;
     sync_job_id: number;
     frequency: string;
+    offset: number;
 }
 
 export interface DataRecord extends Timestamps {

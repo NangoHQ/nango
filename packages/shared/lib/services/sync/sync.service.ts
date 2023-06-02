@@ -140,6 +140,7 @@ export const getSyncs = async (nangoConnectionId: number): Promise<Sync[]> => {
             `${TABLE}.*`,
             `${SYNC_SCHEDULE_TABLE}.schedule_id`,
             `${SYNC_SCHEDULE_TABLE}.frequency`,
+            `${SYNC_SCHEDULE_TABLE}.offset`,
             `${SYNC_SCHEDULE_TABLE}.status as schedule_status`,
             db.knex.raw(
                 `(
@@ -163,7 +164,13 @@ export const getSyncs = async (nangoConnectionId: number): Promise<Sync[]> => {
         .where({
             nango_connection_id: nangoConnectionId
         })
-        .groupBy(`${TABLE}.id`, `${SYNC_SCHEDULE_TABLE}.frequency`, `${SYNC_SCHEDULE_TABLE}.status`, `${SYNC_SCHEDULE_TABLE}.schedule_id`);
+        .groupBy(
+            `${TABLE}.id`,
+            `${SYNC_SCHEDULE_TABLE}.frequency`,
+            `${SYNC_SCHEDULE_TABLE}.offset`,
+            `${SYNC_SCHEDULE_TABLE}.status`,
+            `${SYNC_SCHEDULE_TABLE}.schedule_id`
+        );
 
     if (Array.isArray(result) && result.length > 0) {
         return result;

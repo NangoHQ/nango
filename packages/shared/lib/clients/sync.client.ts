@@ -139,16 +139,8 @@ class SyncClient {
             ]
         });
 
-        const { interval, offset, humanReadable } = getInterval(syncData.runs);
+        const { interval, offset } = getInterval(syncData.runs);
         const scheduleId = generateScheduleId(sync, syncName, nangoConnection?.connection_id as string);
-
-        console.log('PHASE INTERVAL');
-        /**
-         * [0] 30 minutes
-            [0] 3346470
-         */
-        console.log(interval);
-        console.log(offset);
 
         await this.client?.schedule.create({
             scheduleId,
@@ -178,7 +170,7 @@ class SyncClient {
             }
         });
 
-        await createSyncSchedule(sync.id as string, humanReadable, ScheduleStatus.RUNNING, scheduleId);
+        await createSyncSchedule(sync.id as string, interval, offset, ScheduleStatus.RUNNING, scheduleId);
 
         await createActivityLogMessage({
             level: 'info',
@@ -222,19 +214,23 @@ class SyncClient {
     async runSyncCommand(syncId: string, command: SyncCommand) {
         const scheduleHandle = this.client?.schedule.getHandle(syncId);
 
-        switch (command) {
-            case SyncCommand.PAUSE:
-                await scheduleHandle?.pause();
-                break;
-            case SyncCommand.UNPAUSE:
-                await scheduleHandle?.unpause();
-                break;
-            case SyncCommand.RUN:
-                await scheduleHandle?.trigger(OVERLAP_POLICY);
-                break;
-            case SyncCommand.RUN_FULL:
-                console.warn('Not implemented');
-                break;
+        try {
+            switch (command) {
+                case SyncCommand.PAUSE:
+                    await scheduleHandle?.pause();
+                    break;
+                case SyncCommand.UNPAUSE:
+                    await scheduleHandle?.unpause();
+                    break;
+                case SyncCommand.RUN:
+                    await scheduleHandle?.trigger(OVERLAP_POLICY);
+                    break;
+                case SyncCommand.RUN_FULL:
+                    console.warn('Not implemented');
+                    break;
+            }
+        } catch (e) {
+            console.log(e);
         }
     }
 

@@ -25,6 +25,7 @@ export interface SyncResponse {
     name: string;
     models: string[];
     frequency: string;
+    offset: number;
     schedule_status: 'RUNNING' | 'PAUSED' | 'STOPPED';
     schedule_id: string;
     latest_sync: {

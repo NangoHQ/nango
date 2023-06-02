@@ -6,12 +6,13 @@ import SyncClient from '../../clients/sync.client.js';
 
 const TABLE = dbNamespace + 'sync_schedules';
 
-export const createSchedule = async (sync_id: string, frequency: string, status: ScheduleStatus, schedule_id: string): Promise<void> => {
+export const createSchedule = async (sync_id: string, frequency: string, offset: number, status: ScheduleStatus, schedule_id: string): Promise<void> => {
     await db.knex.withSchema(db.schema()).from<SyncSchedule>(TABLE).insert({
         sync_id,
         status,
         schedule_id,
-        frequency
+        frequency,
+        offset
     });
 };
 

@@ -1,4 +1,5 @@
 import parser from 'cron-parser';
+import ms from 'ms';
 
 export const localhostUrl: string = 'http://localhost:3003';
 export const stagingUrl: string = 'https://api-staging.nango.dev';
@@ -109,3 +110,18 @@ export function parseCron(frequency: string): string {
     const interval = parser.parseExpression(frequency);
     return formatDateToUSFormat(interval.next().toISOString());
 };
+
+export function computeNextRun(startTime: Date, interval: string, offset: number): string {
+    const intervalMilliseconds = ms(interval);
+
+    const now = new Date();
+
+    let nextRunTime = new Date(startTime.getTime());
+
+    while (nextRunTime.getTime() <= now.getTime() + offset) {
+        nextRunTime = new Date(nextRunTime.getTime() + intervalMilliseconds);
+    }
+
+    return formatDateToUSFormat(nextRunTime.toISOString());
+}
+

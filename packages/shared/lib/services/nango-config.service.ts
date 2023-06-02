@@ -5,6 +5,7 @@ import yaml from 'js-yaml';
 // @ts-ignore
 import translateCron from 'friendly-node-cron';
 import type { NangoConfig, SimplifiedNangoIntegration, NangoSyncConfig, NangoSyncModel } from '../integrations/index.js';
+import ms from 'ms';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -142,6 +143,25 @@ export function getCronExpression(runs: string): string {
     return cron.slice(2);
 }
 
+export function getOffset(interval: string): number {
+    const intervalMilliseconds = ms(interval);
+
+    const now = new Date();
+    const nowMilliseconds = now.getMinutes() * 60 * 1000 + now.getSeconds() * 1000 + now.getMilliseconds();
+
+    const offset = nowMilliseconds % intervalMilliseconds;
+
+    return offset;
+}
+
+/**
+ * Get Interval
+ * @desc get the interval based on the runs property in the yaml. The offset
+ * should be the amount of time that the interval should be offset by.
+ * If the time is 1536 and the interval is 30m then the next time the sync should run is 1606
+ * and then 1636 etc. The offset should be based on the interval and should never be
+ * greater than the interval
+ */
 export function getInterval(runs: string): { interval: string; offset: number; humanReadable: string } {
     const now = new Date();
     const milliseconds = now.getMinutes() * 60000 + now.getSeconds() * 1000 + now.getMilliseconds();
@@ -159,6 +179,7 @@ export function getInterval(runs: string): { interval: string; offset: number; h
     }
 
     const interval = runs.replace('every ', '');
+    const offset = getOffset(interval);
 
-    return { interval, offset: milliseconds, humanReadable: `${interval} ${milliseconds} offset` };
+    return { interval, offset, humanReadable: `${interval} ${milliseconds} offset` };
 }
