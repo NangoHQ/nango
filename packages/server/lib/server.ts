@@ -67,6 +67,7 @@ app.route('/connection/:connectionId').get(apiAuth, connectionController.getConn
 app.route('/connection').get(apiAuth, connectionController.listConnections.bind(connectionController));
 app.route('/connection/:connectionId').delete(apiAuth, connectionController.deleteConnection.bind(connectionController));
 app.route('/connection/:connectionId/field-mapping').post(apiAuth, connectionController.setFieldMapping.bind(connectionController));
+app.route('/connection').post(apiAuth, connectionController.createConnection.bind(connectionController));
 app.route('/sync-config').post(apiAuth, syncController.createSyncConfig.bind(syncController));
 app.route('/sync/records').get(apiAuth, syncController.getRecords.bind(syncController));
 app.route('/sync/trigger').post(apiAuth, syncController.trigger.bind(syncController));

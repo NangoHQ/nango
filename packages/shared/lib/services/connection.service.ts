@@ -65,6 +65,24 @@ class ConnectionService {
         return id;
     }
 
+    public async importConnection(connection_id: string, provider_config_key: string, accountId: number, parsedRawCredentials: AuthCredentials) {
+        const provider = await configService.getProviderName(provider_config_key);
+
+        if (!provider) {
+            throw new NangoError('unknown_provider_config');
+        }
+
+        const connection = await this.getConnection(connection_id, provider_config_key, accountId);
+
+        if (connection) {
+            throw new NangoError('connection_already_exists');
+        }
+
+        const importedConnection = this.upsertConnection(connection_id, provider_config_key, provider, parsedRawCredentials, {}, accountId, {});
+
+        return importedConnection;
+    }
+
     public async getConnectionById(
         id: number
     ): Promise<Pick<Connection, 'id' | 'connection_id' | 'provider_config_key' | 'account_id' | 'connection_config' | 'metadata' | 'field_mappings'> | null> {

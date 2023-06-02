@@ -9,6 +9,7 @@ import { formatDataRecords } from './services/sync/data-records.service.js';
 import { upsert } from './services/sync/data.service.js';
 import { updateSyncJobResult } from './services/sync/job.service.js';
 import { createActivityLogMessage } from './services/activity.service.js';
+import type { AuthModes, OAuth1Credentials, OAuth2Credentials } from './models/Auth.js';
 
 const prodHost = 'https://api.nango.dev';
 const stagingHost = 'https://api-staging.nango.dev';
@@ -32,6 +33,18 @@ interface NangoProps {
 interface UserLogParameters {
     success?: boolean;
     level?: LogLevel;
+}
+
+interface CreateConnectionOAuth1 extends OAuth1Credentials {
+    connection_id: string;
+    provider_config_key: string;
+    type: AuthModes.OAuth1;
+}
+
+interface CreateConnectionOAuth2 extends OAuth2Credentials {
+    connection_id: string;
+    provider_config_key: string;
+    type: AuthModes.OAuth2;
 }
 
 export class Nango {
@@ -323,7 +336,7 @@ export class Nango {
             await createActivityLogMessage({
                 level: 'info',
                 activity_log_id: this.activityLogId as number,
-                content: `Batch send was a success and resulted in ${JSON.stringify(updatedResults)}`,
+                content: `Batch send was a success and resulted in ${JSON.stringify(updatedResults, null, 2)}`,
                 timestamp: Date.now()
             });
 
@@ -363,6 +376,14 @@ export class Nango {
         };
 
         return axios.post(url, {}, { headers: this.enrichHeaders(headers) });
+    }
+
+    public async createConnection(connectionArgs: CreateConnectionOAuth1 | CreateConnectionOAuth2) {
+        const url = `${this.serverUrl}/connection`;
+
+        const body = connectionArgs;
+
+        return axios.post(url, body, { headers: this.enrichHeaders() });
     }
 
     private async listConnectionDetails(connectionId?: string) {

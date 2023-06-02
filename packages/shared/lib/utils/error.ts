@@ -151,6 +151,11 @@ export class NangoError extends Error {
                 this.message = `No connection matching params 'connection_id' and 'provider_config_key'.`;
                 break;
 
+            case 'connection_already_exists':
+                this.status = 409;
+                this.message = 'A connection already exists for this provider configuration.';
+                break;
+
             case 'missing_base_api_url':
                 this.status = 400;
                 this.message = `No base API URL is configured for this provider.`;
