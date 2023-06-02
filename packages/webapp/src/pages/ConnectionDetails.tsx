@@ -396,7 +396,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                                 {syncs.length === 0 && (
                                     <div className="flex items-center px-5 pt-8 pb-7">
                                         <Slash className="stroke-red-500" />
-                                        <div className="text-white ml-3">No syncs yet - use Nango Sync to exchange data with the external API. See the <a href="https://docs.nango.dev/nango-sync" className="text-blue-500" target="_blank">docs</a></div>
+                                        <div className="text-white ml-3">No syncs yet - use Nango Sync to exchange data with the external API. See the <a href="https://docs.nango.dev/nango-sync" className="text-blue-500" target="_blank" rel="noreferrer">docs</a></div>
                                     </div>
                                 )}
                                 {syncs.length > 0 && (
