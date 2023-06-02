@@ -6,10 +6,8 @@ import {
     Config as ProviderConfig,
     Template as ProviderTemplate,
     AuthModes as ProviderAuthModes,
-    OAuth2Credentials,
-    OAuth1Credentials,
+    ImportedCredentials,
     TemplateOAuth2 as ProviderTemplateOAuth2,
-    AuthorizationTokenResponse,
     Connection,
     LogLevel,
     LogAction,
@@ -381,10 +379,10 @@ class ConnectionController {
             }
 
             const oauthType = type.toUpperCase();
-            let credentials: OAuth2Credentials | OAuth1Credentials;
+            let credentials: ImportedCredentials;
 
             if (oauthType === ProviderAuthModes.OAuth2) {
-                const { access_token, refresh_token, expires_at, expires_in, metadata } = req.body;
+                const { access_token, refresh_token, expires_at, expires_in, metadata, connection_config } = req.body;
                 credentials = {
                     type: oauthType as ProviderAuthModes.OAuth2,
                     access_token,
@@ -392,8 +390,9 @@ class ConnectionController {
                     expires_at,
                     expires_in,
                     metadata,
+                    connection_config,
                     raw: req.body.raw || req.body
-                } as AuthorizationTokenResponse & OAuth2Credentials;
+                };
             } else if (oauthType === ProviderAuthModes.OAuth1) {
                 const { oauth_token, oauth_token_secret } = req.body;
 

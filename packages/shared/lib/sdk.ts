@@ -10,6 +10,7 @@ import { upsert } from './services/sync/data.service.js';
 import { updateSyncJobResult } from './services/sync/job.service.js';
 import { createActivityLogMessage } from './services/activity.service.js';
 import type { AuthModes, OAuth1Credentials, OAuth2Credentials } from './models/Auth.js';
+import type { BaseConnection } from './models/Connection.js';
 
 const prodHost = 'https://api.nango.dev';
 const stagingHost = 'https://api-staging.nango.dev';
@@ -378,7 +379,7 @@ export class Nango {
         return axios.post(url, {}, { headers: this.enrichHeaders(headers) });
     }
 
-    public async createConnection(connectionArgs: CreateConnectionOAuth1 | CreateConnectionOAuth2) {
+    public async createConnection(connectionArgs: CreateConnectionOAuth1 | (CreateConnectionOAuth2 & Pick<BaseConnection, 'metadata' | 'connection_config'>)) {
         const url = `${this.serverUrl}/connection`;
 
         const body = connectionArgs;

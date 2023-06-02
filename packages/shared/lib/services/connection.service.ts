@@ -24,9 +24,9 @@ import { deleteScheduleForConnection as deleteSyncScheduleForConnection } from '
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import { NangoError } from '../utils/error.js';
 
-import type { Connection, StoredConnection } from '../models/Connection.js';
+import type { Connection, StoredConnection, BaseConnection } from '../models/Connection.js';
 import encryptionManager from '../utils/encryption.manager.js';
-import { AuthModes as ProviderAuthModes, OAuth2Credentials } from '../models/Auth.js';
+import { AuthModes as ProviderAuthModes, OAuth2Credentials, ImportedCredentials } from '../models/Auth.js';
 import { schema } from '../db/database.js';
 import { getAccount, parseTokenExpirationDate, isTokenExpired } from '../utils/utils.js';
 import errorManager from '../utils/error.manager.js';
@@ -65,7 +65,7 @@ class ConnectionService {
         return id;
     }
 
-    public async importConnection(connection_id: string, provider_config_key: string, accountId: number, parsedRawCredentials: AuthCredentials) {
+    public async importConnection(connection_id: string, provider_config_key: string, accountId: number, parsedRawCredentials: ImportedCredentials) {
         const provider = await configService.getProviderName(provider_config_key);
 
         if (!provider) {
@@ -78,7 +78,17 @@ class ConnectionService {
             throw new NangoError('connection_already_exists');
         }
 
-        const importedConnection = this.upsertConnection(connection_id, provider_config_key, provider, parsedRawCredentials, {}, accountId, {});
+        const { connection_config, metadata } = parsedRawCredentials as Partial<Pick<BaseConnection, 'metadata' | 'connection_config'>>;
+
+        const importedConnection = this.upsertConnection(
+            connection_id,
+            provider_config_key,
+            provider,
+            parsedRawCredentials,
+            connection_config as Record<string, string>,
+            accountId,
+            metadata as Record<string, string>
+        );
 
         return importedConnection;
     }

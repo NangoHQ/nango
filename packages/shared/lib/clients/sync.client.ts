@@ -1,4 +1,6 @@
 import { Client, Connection, ScheduleOverlapPolicy } from '@temporalio/client';
+//import ms from 'ms';
+
 import type { Connection as NangoConnection } from '../models/Connection.js';
 import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { NangoIntegrationData, NangoConfig, NangoIntegration } from '../integrations/index.js';
@@ -7,7 +9,7 @@ import type { LogLevel, LogAction } from '../models/Activity.js';
 import { TASK_QUEUE } from '../constants.js';
 import { createActivityLog, createActivityLogMessage } from '../services/activity.service.js';
 import { createSyncJob } from '../services/sync/job.service.js';
-import { loadNangoConfig, getCronExpression } from '../services/nango-config.service.js';
+import { loadNangoConfig, getInterval } from '../services/nango-config.service.js';
 import { createSchedule as createSyncSchedule } from '../services/sync/schedule.service.js';
 import connectionService from '../services/connection.service.js';
 import configService from '../services/config.service.js';
@@ -137,14 +139,29 @@ class SyncClient {
             ]
         });
 
-        const frequency = getCronExpression(syncData.runs);
+        const { interval, offset, humanReadable } = getInterval(syncData.runs);
         const scheduleId = generateScheduleId(sync, syncName, nangoConnection?.connection_id as string);
 
-        // kick off schedule
+        console.log('PHASE INTERVAL');
+        /**
+         * [0] 30 minutes
+            [0] 3346470
+         */
+        console.log(interval);
+        console.log(offset);
+
         await this.client?.schedule.create({
             scheduleId,
             spec: {
-                cronExpressions: [frequency]
+                /**
+                 * @see https://nodejs.temporal.io/api/interfaces/client.IntervalSpec
+                 */
+                intervals: [
+                    {
+                        every: interval,
+                        offset
+                    }
+                ]
             },
             action: {
                 type: 'startWorkflow',
@@ -161,7 +178,7 @@ class SyncClient {
             }
         });
 
-        await createSyncSchedule(sync.id as string, frequency, ScheduleStatus.RUNNING, scheduleId);
+        await createSyncSchedule(sync.id as string, humanReadable, ScheduleStatus.RUNNING, scheduleId);
 
         await createActivityLogMessage({
             level: 'info',
