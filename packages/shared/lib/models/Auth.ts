@@ -1,4 +1,6 @@
 import type { Template } from './Provider.js';
+import type { BaseConnection } from './Connection.js';
+
 export enum AuthModes {
     OAuth1 = 'OAUTH1',
     OAuth2 = 'OAUTH2'
@@ -102,3 +104,7 @@ export interface RefreshTokenResponse extends AuthorizationTokenResponse {}
 export interface AuthorizationTokenResponse extends Omit<OAuth2Credentials, 'type' | 'raw'> {
     expires_in?: number;
 }
+
+export type ImportedCredentials =
+    | (OAuth2Credentials & Partial<Pick<AuthorizationTokenResponse, 'expires_in'>> & Partial<Pick<BaseConnection, 'metadata' | 'connection_config'>>)
+    | OAuth1Credentials;

@@ -115,7 +115,8 @@ export function convertConfigObject(config: NangoConfig): SimplifiedNangoIntegra
                 }
                 models.push({ name: model, fields: [modelFields] });
             });
-            syncs.push({ name: syncName, runs: sync.runs, cronExpression: getCronExpression(sync.runs), returns: sync.returns, models });
+            const { humanReadable } = getInterval(sync.runs);
+            syncs.push({ name: syncName, runs: sync.runs, intervalExpression: humanReadable, returns: sync.returns, models });
         }
         output.push({ providerConfigKey, syncs });
     }
@@ -139,4 +140,25 @@ export function getCronExpression(runs: string): string {
     const cron = translateCron(runs);
 
     return cron.slice(2);
+}
+
+export function getInterval(runs: string): { interval: string; offset: number; humanReadable: string } {
+    const now = new Date();
+    const milliseconds = now.getMinutes() * 60000 + now.getSeconds() * 1000 + now.getMilliseconds();
+
+    if (runs === 'every half hour') {
+        return { interval: '30m', offset: milliseconds, humanReadable: `30m ${milliseconds} offset` };
+    }
+
+    if (runs === 'every quarter hour') {
+        return { interval: '15m', offset: milliseconds, humanReadable: `15m ${milliseconds} offset` };
+    }
+
+    if (runs === 'every hour') {
+        return { interval: '1h', offset: milliseconds, humanReadable: `1h ${milliseconds} offset` };
+    }
+
+    const interval = runs.replace('every ', '');
+
+    return { interval, offset: milliseconds, humanReadable: `${interval} ${milliseconds} offset` };
 }

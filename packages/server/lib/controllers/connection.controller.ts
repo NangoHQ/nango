@@ -6,6 +6,7 @@ import {
     Config as ProviderConfig,
     Template as ProviderTemplate,
     AuthModes as ProviderAuthModes,
+    ImportedCredentials,
     TemplateOAuth2 as ProviderTemplateOAuth2,
     Connection,
     LogLevel,
@@ -350,7 +351,75 @@ class ConnectionController {
 
             await connectionService.updateFieldMappings(connection, req.body);
 
-            res.status(200).send();
+            res.status(201).send();
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async createConnection(req: Request, res: Response, next: NextFunction) {
+        try {
+            const accountId = getAccount(res);
+
+            const { connection_id, provider_config_key, type } = req.body;
+
+            if (!connection_id) {
+                errorManager.errRes(res, 'missing_connection');
+                return;
+            }
+
+            if (!provider_config_key) {
+                errorManager.errRes(res, 'missing_provider_config');
+                return;
+            }
+
+            if (!type) {
+                errorManager.errRes(res, 'missing_oauth_type');
+                return;
+            }
+
+            const oauthType = type.toUpperCase();
+            let credentials: ImportedCredentials;
+
+            if (oauthType === ProviderAuthModes.OAuth2) {
+                const { access_token, refresh_token, expires_at, expires_in, metadata, connection_config } = req.body;
+                credentials = {
+                    type: oauthType as ProviderAuthModes.OAuth2,
+                    access_token,
+                    refresh_token,
+                    expires_at,
+                    expires_in,
+                    metadata,
+                    connection_config,
+                    raw: req.body.raw || req.body
+                };
+            } else if (oauthType === ProviderAuthModes.OAuth1) {
+                const { oauth_token, oauth_token_secret } = req.body;
+
+                if (!oauth_token) {
+                    errorManager.errRes(res, 'missing_oauth_token');
+                    return;
+                }
+
+                if (!oauth_token_secret) {
+                    errorManager.errRes(res, 'missing_oauth_token_secret');
+                    return;
+                }
+
+                credentials = {
+                    type: oauthType as ProviderAuthModes.OAuth1,
+                    oauth_token,
+                    oauth_token_secret,
+                    raw: req.body.raw || req.body
+                };
+            } else {
+                errorManager.errRes(res, 'unknown_oauth_type');
+                return;
+            }
+
+            await connectionService.importConnection(connection_id, provider_config_key, accountId, credentials);
+
+            res.status(201).send(req.body);
         } catch (err) {
             next(err);
         }

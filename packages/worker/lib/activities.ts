@@ -168,7 +168,7 @@ export async function syncProvider(
                                 activityLogId
                             );
                         } catch (e) {
-                            const errorMessage = JSON.stringify(e, ['message', 'name', 'stack']);
+                            const errorMessage = JSON.stringify(e, ['message', 'name', 'stack'], 2);
 
                             await createActivityLogMessage({
                                 level: 'error',
@@ -188,7 +188,7 @@ export async function syncProvider(
             }
         } catch (e) {
             result = false;
-            const errorMessage = JSON.stringify(e, ['message', 'name', 'stack']);
+            const errorMessage = JSON.stringify(e, ['message', 'name', 'stack'], 2);
             reportFailureForResults(syncType, activityLogId, syncName, errorMessage);
             await updateSyncJobStatus(syncJobId, SyncStatus.STOPPED);
         }
@@ -237,13 +237,13 @@ async function reportResults(
     });
 }
 
-async function reportFailureForResults(syncType: SyncType, activityLogId: number, syncName: string, erromessage: string) {
+async function reportFailureForResults(syncType: SyncType, activityLogId: number, syncName: string, erroMessage: string) {
     await updateSuccessActivityLog(activityLogId, false);
 
     await createActivityLogMessageAndEnd({
         level: 'error',
         activity_log_id: activityLogId,
         timestamp: Date.now(),
-        content: `The ${syncType} "${syncName}" sync did not complete successfully and has the following error: ${erromessage}`
+        content: `The ${syncType} "${syncName}" sync did not complete successfully and has the following error: ${erroMessage}`
     });
 }
