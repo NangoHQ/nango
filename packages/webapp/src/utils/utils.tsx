@@ -98,6 +98,7 @@ export function formatDateToUSFormat(dateString: string): string {
       day: 'numeric',
       hour: 'numeric',
       minute: 'numeric',
+      second: 'numeric',
       hour12: true,
     };
 
@@ -111,6 +112,7 @@ export function parseCron(frequency: string): string {
     return formatDateToUSFormat(interval.next().toISOString());
 };
 
+// this doesn't work exactly if it is every 2 minutes for example
 export function computeNextRun(startTime: Date, interval: string, offset: number): string {
     const intervalMilliseconds = ms(interval);
 
@@ -124,4 +126,3 @@ export function computeNextRun(startTime: Date, interval: string, offset: number
 
     return formatDateToUSFormat(nextRunTime.toISOString());
 }
-

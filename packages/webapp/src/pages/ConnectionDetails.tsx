@@ -472,13 +472,13 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                     )}
                                                 </Tooltip>
                                                 {sync.schedule_status === 'RUNNING' && sync.offset && (
-                                                    <li className="ml-4 w-32 text-sm text-gray-500">{computeNextRun(new Date(sync.created_at), sync.frequency, sync.offset)}</li>
+                                                    <li className="ml-4 w-36 text-sm text-gray-500">{computeNextRun(new Date(sync.created_at), sync.frequency, sync.offset)}</li>
                                                 )}
                                                 {sync.schedule_status === 'RUNNING' && !sync.offset && (
-                                                    <li className="ml-4 w-32 text-sm text-gray-500">-</li>
+                                                    <li className="ml-4 w-36 text-sm text-gray-500">-</li>
                                                 )}
                                                 {sync.schedule_status !== 'RUNNING' && (
-                                                    <li className="ml-4 w-32 text-sm text-gray-500">-</li>
+                                                    <li className="ml-4 w-36 text-sm text-gray-500">-</li>
                                                 )}
                                                 <li className="flex ml-8">
                                                     <button
