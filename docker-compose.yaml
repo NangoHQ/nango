@@ -19,6 +19,8 @@ services:
         container_name: nango-server
         volumes:
             - './packages/shared/providers.yaml:/usr/nango-server/src/packages/shared/providers.yaml'
+        environment:
+            - NANGO_DB_MIGRATION_FOLDER=/usr/nango-server/src/packages/server/lib/db/migrations
         restart: always
         ports:
             - '3003:3003'

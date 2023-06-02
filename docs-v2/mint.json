@@ -12,7 +12,7 @@
         "anchors": { "from": "#3F68FF", "to": "#012AC3" }
     },
     "api": {
-        "baseUrl": ["https://app.nango.com", "http://localhost:3003"],
+        "baseUrl": ["https://api.nango.dev", "http://localhost:3003"],
         "auth": {
             "method": "bearer"
         }
