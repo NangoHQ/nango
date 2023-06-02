@@ -1,6 +1,6 @@
 import type { HTTP_VERB } from './Generic.js';
 
-export type LogLevel = 'info' | 'debug' | 'error';
+export type LogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
 export type LogAction = 'oauth' | 'proxy' | 'token' | 'sync';
 interface Message {
     [index: string]: unknown | undefined | string | number | boolean | Record<string, string | boolean | number | unknown>;

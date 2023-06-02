@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { ReactElement, useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Clock, ArrowRight, Slash, CheckInCircle, AlertCircle, Link as LinkIcon, RefreshCw } from '@geist-ui/icons'
 import { Tooltip } from '@geist-ui/core';
@@ -9,6 +9,33 @@ import { formatTimestamp, formatTimestampWithTZ, elapsedTime } from '../utils/ut
 import DashboardLayout from '../layout/DashboardLayout';
 import { LeftNavBarItems } from '../components/LeftNavBar';
 import type { ActivityResponse } from '../types';
+
+interface Props {
+  data: string | number | undefined;
+}
+
+const JsonPrettyPrint: React.FC<Props> = ({ data }): ReactElement<any, any> => {
+  let prettyJson = '';
+
+  try {
+      if (typeof data === 'string') {
+        const jsonRegex = /({.*})/g;
+        const match = data.match(jsonRegex);
+        if (match) {
+          const json = JSON.parse(match[0]);
+          prettyJson = JSON.stringify(json, null, 2);
+        } else {
+          prettyJson = data;
+        }
+      }
+
+      return (
+          <pre className="max-w-5xl overflow-auto whitespace-pre-wrap break-all">{prettyJson}</pre>
+      );
+  } catch(e) {
+      return <span className="whitespace-normal break-all overflow-wrap">data</span>;
+  }
+};
 
 export default function Activity() {
     const [loaded, setLoaded] = useState(false);
@@ -52,16 +79,16 @@ export default function Activity() {
 
     const renderParams = (params: Record<string, string>) => {
         return Object.entries(params).map(([key, value]) => (
-            <div key={key}>
+            <div className="max-w-5xl whitespace-normal break-all overflow-wrap" key={key}>
                 <span>{key}: </span>
-                <span>{value.toString()}</span>
+                <span className="max-w-5xl whitespace-normal break-all overflow-wrap">{value.toString()}</span>
             </div>
         ));
     };
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Activity}>
-            <div className="px-16 w-fit mx-auto">
+            <div className="max-w-screen-xl px-16 w-fit mx-auto">
                 <div className="flex items-center mt-16 mb-12">
                     <div className="flex flex-col text-left">
                         <span className="flex items-center mb-3">
@@ -114,7 +141,7 @@ export default function Activity() {
                                                         <AlertCircle className="stroke-red-500" size="32" />
                                                     </Link>
                                                 )}
-                                                <div className="ml-10 w-36 mr-48">
+                                                <div className="ml-10 w-36 mr-36">
                                                     {activity?.action === 'oauth' && (
                                                         <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-pink-500 bg-opacity-20">
                                                             <LinkIcon className="stroke-pink-500 mr-2" size="16" />
@@ -193,20 +220,29 @@ export default function Activity() {
                                                 <>
                                                 <div className="flex flex-col space-y-4 mt-6 font-mono">
                                                     {activity.messages.map((message, index: number) => (
-                                                        <div key={index} className="flex flex-col">
-                                                            <div>{formatTimestampWithTZ(Number(message?.timestamp))}{' '}{message.content}</div>
+                                                        <div key={index} className="flex flex-col max-w-7xl">
+                                                            <div className="whitespace-normal break-all overflow-wrap">
+                                                                <span className="text-gray-500">
+                                                                    {formatTimestampWithTZ(Number(message?.timestamp))}
+                                                                </span>{' '}
+                                                                <span
+                                                                    className={`whitespace-normal break-all overflow-wrap ${message.level === 'error' ? 'text-red-500' : message.level === 'warn' ? 'text-orange-500' : ''}`}
+                                                                >
+                                                                    <JsonPrettyPrint data={message.content} />
+                                                                </span>
+                                                            </div>
                                                             {message.auth_mode && (
                                                                 <div className="ml-4">
                                                                     auth_mode: {message.auth_mode}
                                                                 </div>
                                                             )}
                                                             {message.url && (
-                                                                <div className="ml-4">
+                                                                <div className="whitespace-normal ml-4">
                                                                     url: {message.url}
                                                                 </div>
                                                             )}
                                                             {message.state && (
-                                                                <div className="ml-4">
+                                                                <div className="whitespace-normal ml-4">
                                                                     state: {message.state}
                                                                 </div>
                                                             )}
