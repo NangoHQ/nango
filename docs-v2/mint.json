@@ -60,7 +60,7 @@
     "navigation": [
         {
             "group": "Getting Started",
-            "pages": ["introduction", "quickstart", "core-concepts"]
+            "pages": ["introduction", "why-nango", "quickstart", "core-concepts"]
         },
         {
             "group": "Nango Auth",
