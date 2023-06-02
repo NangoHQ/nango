@@ -11,6 +11,11 @@
         "dark": "#000000",
         "anchors": { "from": "#3F68FF", "to": "#012AC3" }
     },
+    "analytics": {
+        "gtm": {
+            "tagId": "GTM-N4KVPWR"
+        }
+    },
     "api": {
         "baseUrl": ["https://api.nango.dev", "http://localhost:3003"],
         "auth": {
