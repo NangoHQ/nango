@@ -6,6 +6,7 @@ import providerClientManager from './clients/provider.client.js';
 import SyncClient from './clients/sync.client.js';
 import errorManager from './utils/error.manager.js';
 import accountService from './services/account.service.js';
+import webhookService from './services/webhook.service.js';
 import userService from './services/user.service.js';
 import analytics from './utils/analytics.js';
 
@@ -28,4 +29,16 @@ export * from './constants.js';
 
 export * from './sdk.js';
 
-export { db, configService, connectionService, encryptionManager, providerClientManager, SyncClient, errorManager, accountService, userService, analytics };
+export {
+    db,
+    configService,
+    connectionService,
+    encryptionManager,
+    providerClientManager,
+    SyncClient,
+    errorManager,
+    accountService,
+    userService,
+    webhookService,
+    analytics
+};

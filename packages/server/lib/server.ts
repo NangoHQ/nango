@@ -87,6 +87,7 @@ if (isCloud()) {
 // Webapp routes (session auth).
 app.route('/api/v1/account').get(webAuth, accountController.getAccount.bind(accountController));
 app.route('/api/v1/account/callback').post(webAuth, accountController.updateCallback.bind(accountController));
+app.route('/api/v1/account/webhook').post(webAuth, accountController.updateWebhookURL.bind(accountController));
 app.route('/api/v1/integration').get(webAuth, configController.listProviderConfigsWeb.bind(configController));
 app.route('/api/v1/integration/:providerConfigKey').get(webAuth, configController.getProviderConfigWeb.bind(configController));
 app.route('/api/v1/integration').put(webAuth, configController.editProviderConfigWeb.bind(connectionController));

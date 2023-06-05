@@ -3,7 +3,7 @@ import { Prism } from '@mantine/prism';
 import { useState, useEffect } from 'react';
 import { HelpCircle } from '@geist-ui/icons';
 
-import { useGetProjectInfoAPI, useEditCallbackUrlAPI } from '../utils/api';
+import { useGetProjectInfoAPI, useEditCallbackUrlAPI, useEditWebhookUrlAPI } from '../utils/api';
 import { isCloud, defaultCallback } from '../utils/utils';
 import DashboardLayout from '../layout/DashboardLayout';
 import { LeftNavBarItems } from '../components/LeftNavBar';
@@ -14,9 +14,12 @@ export default function ProjectSettings() {
     const [secretKey, setSecretKey] = useState('');
     const [publicKey, setPublicKey] = useState('');
     const [callbackUrl, setCallbackUrl] = useState('');
+    const [webhookUrl, setWebhookUrl] = useState('');
     const [callbackEditMode, setCallbackEditMode] = useState(false);
+    const [webhookEditMode, setWebhookEditMode] = useState(false);
     const getProjectInfoAPI = useGetProjectInfoAPI();
     const editCallbackUrlAPI = useEditCallbackUrlAPI();
+    const editWebhookUrlAPI = useEditWebhookUrlAPI();
 
     useEffect(() => {
         const getAccount = async () => {
@@ -27,6 +30,7 @@ export default function ProjectSettings() {
                 setSecretKey(account.secret_key);
                 setPublicKey(account.public_key);
                 setCallbackUrl(account.callback_url || defaultCallback());
+                setWebhookUrl(account.webhook_url || '');
             }
         };
 
@@ -49,6 +53,22 @@ export default function ProjectSettings() {
             toast.success('Callback URL updated!', { position: toast.POSITION.BOTTOM_CENTER });
             setCallbackEditMode(false);
             setCallbackUrl(target.callback_url.value || defaultCallback());
+        }
+    };
+
+    const handleWebhookbackSave = async (e: React.SyntheticEvent) => {
+        e.preventDefault();
+
+        const target = e.target as typeof e.target & {
+            webhook_url: { value: string };
+        };
+
+        const res = await editWebhookUrlAPI(target.webhook_url.value);
+
+        if (res?.status === 200) {
+            toast.success('Wehook URL updated!', { position: toast.POSITION.BOTTOM_CENTER });
+            setWebhookEditMode(false);
+            setWebhookUrl(target.webhook_url.value);
         }
     };
 
@@ -133,6 +153,48 @@ export default function ProjectSettings() {
                                                     Edit
                                                 </button>
                                             )}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                            <div>
+                                <div className="mx-8 mt-8">
+                                    <div className="flex text-white mb-2">
+                                        <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
+                                            Webhook URL
+                                        </label>
+                                    </div>
+                                    {webhookEditMode && (
+                                        <form className="mt-2" onSubmit={handleWebhookbackSave}>
+                                            <div className="flex">
+                                                <input
+                                                    id="webhook_url"
+                                                    name="webhook_url"
+                                                    type="url"
+                                                    defaultValue={webhookUrl}
+                                                    className="border-border-gray bg-bg-black text-text-light-gray focus:ring-blue block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-600 shadow-sm focus:border-blue-500 focus:outline-none"
+                                                />
+
+                                                <button
+                                                    type="submit"
+                                                    className="border-border-blue bg-bg-dark-blue active:ring-border-blue flex h-11 rounded-md border ml-4 px-4 pt-3 text-sm font-semibold text-blue-500 shadow-sm hover:border-2 active:ring-2 active:ring-offset-2"
+                                                >
+                                                    Save
+                                                </button>
+                                            </div>
+                                        </form>
+                                    )}
+                                    {!webhookEditMode && (
+                                        <div className="flex">
+                                            <Prism language="bash" colorScheme="dark" className="w-full">
+                                                {webhookUrl}
+                                            </Prism>
+                                            <button
+                                                onClick={() => setWebhookEditMode(!webhookEditMode)}
+                                                className="hover:bg-gray-700 bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
+                                            >
+                                                Edit
+                                            </button>
                                         </div>
                                     )}
                                 </div>

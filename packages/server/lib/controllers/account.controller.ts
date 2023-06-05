@@ -40,6 +40,27 @@ class AccountController {
             next(err);
         }
     }
+
+    async updateWebhookURL(req: Request, res: Response, next: NextFunction) {
+        try {
+            if (!req.body) {
+                errorManager.errRes(res, 'missing_body');
+                return;
+            }
+
+            if (!req.body['webhook_url']) {
+                errorManager.errRes(res, 'missing_webhook_url');
+                return;
+            }
+
+            const account = (await getUserAndAccountFromSession(req)).account;
+
+            await accountService.editAccountWebhookUrl(req.body['webhook_url'], account.id);
+            res.status(200).send();
+        } catch (err) {
+            next(err);
+        }
+    }
 }
 
 export default new AccountController();

@@ -22,11 +22,14 @@ import {
     getIntegrationClass,
     loadNangoConfig,
     updateSyncJobResult,
+    SyncResult,
     getLastSyncDate,
     dataService,
-    updateJobActivityLogId
+    updateJobActivityLogId,
+    webhookService,
+    NangoConnection
 } from '@nangohq/shared';
-import type { NangoConnection, ContinuousSyncArgs, InitialSyncArgs } from './models/Worker';
+import type { ContinuousSyncArgs, InitialSyncArgs } from './models/Worker';
 
 export async function routeSync(args: InitialSyncArgs): Promise<boolean> {
     const { syncId, syncJobId, syncName, activityLogId, nangoConnection } = args;
@@ -157,6 +160,7 @@ export async function syncProvider(
                 if (userDefinedResults[model]) {
                     const formattedResults = syncDataService.formatDataRecords(userDefinedResults[model], nangoConnection.id as number, model, syncId);
                     let upsertSuccess = true;
+                    const now = new Date();
                     if (formattedResults.length > 0) {
                         try {
                             responseResults = await dataService.upsert(
@@ -180,7 +184,18 @@ export async function syncProvider(
                         }
                     }
                     if (responseResults) {
-                        reportResults(syncJobId, activityLogId, model, syncName, syncType, responseResults, formattedResults.length > 0, upsertSuccess);
+                        reportResults(
+                            nangoConnection,
+                            now,
+                            syncJobId,
+                            activityLogId,
+                            model,
+                            syncName,
+                            syncType,
+                            responseResults,
+                            formattedResults.length > 0,
+                            upsertSuccess
+                        );
                     } else {
                         reportFailureForResults(syncType, activityLogId, syncName, 'There was an issue inserting the incoming data');
                     }
@@ -198,6 +213,8 @@ export async function syncProvider(
 }
 
 async function reportResults(
+    nangoConnection: NangoConnection,
+    now: Date,
     syncJobId: number,
     activityLogId: number,
     model: string,
@@ -209,9 +226,12 @@ async function reportResults(
 ) {
     await updateSyncJobStatus(syncJobId, SyncStatus.SUCCESS);
     await updateSuccess(activityLogId, true);
-    await updateSyncJobResult(syncJobId, { added: responseResults.addedKeys.length, updated: responseResults.updatedKeys.length });
+    const syncResult: SyncResult = await updateSyncJobResult(syncJobId, {
+        added: responseResults.addedKeys.length,
+        updated: responseResults.updatedKeys.length
+    });
 
-    const { addedKeys, updatedKeys } = responseResults as UpsertResponse;
+    const { added, updated } = syncResult;
 
     const successMessage = `The ${syncType} "${syncName}" sync has been completed to the ${model} model.`;
 
@@ -220,11 +240,12 @@ async function reportResults(
     if (!upsertSuccess) {
         resultMessage = `There was an error in upserting the results`;
     } else {
+        if (anyResultsInserted) {
+            await webhookService.sendUpdate(nangoConnection, syncName, model, syncResult, syncType, now.toISOString(), activityLogId);
+        }
         resultMessage = anyResultsInserted
-            ? `The result (excluding batch sends) was ${addedKeys.length} added record${addedKeys.length === 1 ? '' : 's'} and ${
-                  updatedKeys.length
-              } updated record${updatedKeys.length === 1 ? '.' : 's.'}`
-            : 'The external API returned no results (excluding earlier batch sends) so nothing was inserted or updated.';
+            ? `The result was ${added} added record${added === 1 ? '' : 's'} and ${updated} updated record${updated === 1 ? '.' : 's.'}`
+            : 'The external API returned no results so nothing was inserted or updated.';
     }
 
     const content = `${successMessage} ${resultMessage}`;

@@ -1,4 +1,4 @@
-import type { Connection, NangoIntegrationData } from '@nangohq/shared';
+import type { NangoConnection, NangoIntegrationData } from '@nangohq/shared';
 
 export interface InitialSyncArgs {
     syncId: string;
@@ -15,5 +15,3 @@ export interface ContinuousSyncArgs {
     syncData: NangoIntegrationData;
     nangoConnection: NangoConnection;
 }
-
-export type NangoConnection = Pick<Connection, 'id' | 'connection_id' | 'provider_config_key' | 'account_id'>;

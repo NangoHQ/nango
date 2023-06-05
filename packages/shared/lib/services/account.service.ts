@@ -75,6 +75,20 @@ class AccountService {
     async editAccountCallbackUrl(callbackUrl: string, accountId: number): Promise<Account | null> {
         return db.knex.withSchema(db.schema()).from<Account>(`_nango_accounts`).where({ id: accountId }).update({ callback_url: callbackUrl }, ['id']);
     }
+
+    async editAccountWebhookUrl(webhookUrl: string, accountId: number): Promise<Account | null> {
+        return db.knex.withSchema(db.schema()).from<Account>(`_nango_accounts`).where({ id: accountId }).update({ webhook_url: webhookUrl }, ['id']);
+    }
+
+    async getWebhookUrl(accountId: number): Promise<string | null> {
+        const result = await db.knex.withSchema(db.schema()).select('webhook_url').from<Account>(`_nango_accounts`).where({ id: accountId });
+
+        if (result == null || result.length == 0 || result[0] == null) {
+            return null;
+        }
+
+        return result[0].webhook_url;
+    }
 }
 
 export default new AccountService();
