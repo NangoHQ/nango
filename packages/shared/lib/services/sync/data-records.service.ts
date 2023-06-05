@@ -36,7 +36,7 @@ export async function getDataRecords(
     const nangoConnection = await connectionService.getConnection(connectionId, providerConfigKey, accountId);
 
     if (!nangoConnection) {
-        return null;
+        throw new Error(`No connection found for connectionId ${connectionId} and providerConfigKey ${providerConfigKey}`);
     }
 
     let query = schema()

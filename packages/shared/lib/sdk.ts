@@ -238,7 +238,9 @@ export class Nango {
             headers: this.enrichHeaders(headers)
         };
 
-        return axios.get(url, options);
+        const response = await axios.get(url, options);
+
+        return response.data;
     }
 
     private async getConnectionDetails(providerConfigKey: string, connectionId: string, forceRefresh = false, additionalHeader = {}) {
