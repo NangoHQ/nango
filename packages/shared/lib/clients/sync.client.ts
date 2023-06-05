@@ -105,79 +105,83 @@ class SyncClient {
         syncName: string,
         syncData: NangoIntegrationData
     ): Promise<void> {
-        const log = {
-            level: 'info' as LogLevel,
-            success: false,
-            action: 'sync' as LogAction,
-            start: Date.now(),
-            end: Date.now(),
-            timestamp: Date.now(),
-            connection_id: nangoConnection?.connection_id as string,
-            provider_config_key: nangoConnection?.provider_config_key as string,
-            provider: syncConfig.provider,
-            session_id: sync?.id?.toString() as string,
-            account_id: nangoConnection?.account_id as number,
-            operation_name: syncName
-        };
-        const activityLogId = await createActivityLog(log);
+        try {
+            const log = {
+                level: 'info' as LogLevel,
+                success: false,
+                action: 'sync' as LogAction,
+                start: Date.now(),
+                end: Date.now(),
+                timestamp: Date.now(),
+                connection_id: nangoConnection?.connection_id as string,
+                provider_config_key: nangoConnection?.provider_config_key as string,
+                provider: syncConfig.provider,
+                session_id: sync?.id?.toString() as string,
+                account_id: nangoConnection?.account_id as number,
+                operation_name: syncName
+            };
+            const activityLogId = await createActivityLog(log);
 
-        const jobId = generateWorkflowId(sync, syncName, nangoConnection?.connection_id as string);
+            const jobId = generateWorkflowId(sync, syncName, nangoConnection?.connection_id as string);
 
-        const syncJobId = await createSyncJob(sync.id as string, SyncType.INITIAL, SyncStatus.RUNNING, jobId, activityLogId as number);
+            const syncJobId = await createSyncJob(sync.id as string, SyncType.INITIAL, SyncStatus.RUNNING, jobId, activityLogId as number);
 
-        const handle = await this.client?.workflow.start('initialSync', {
-            taskQueue: TASK_QUEUE,
-            workflowId: jobId,
-            args: [
-                {
-                    syncId: sync.id,
-                    syncJobId: syncJobId?.id as number,
-                    nangoConnection,
-                    syncName,
-                    activityLogId
-                }
-            ]
-        });
-
-        const { interval, offset } = getInterval(syncData.runs);
-        const scheduleId = generateScheduleId(sync, syncName, nangoConnection?.connection_id as string);
-
-        await this.client?.schedule.create({
-            scheduleId,
-            spec: {
-                /**
-                 * @see https://nodejs.temporal.io/api/interfaces/client.IntervalSpec
-                 */
-                intervals: [
-                    {
-                        every: interval,
-                        offset
-                    }
-                ]
-            },
-            action: {
-                type: 'startWorkflow',
-                workflowType: 'continuousSync',
+            const handle = await this.client?.workflow.start('initialSync', {
                 taskQueue: TASK_QUEUE,
+                workflowId: jobId,
                 args: [
                     {
                         syncId: sync.id,
-                        activityLogId,
+                        syncJobId: syncJobId?.id as number,
                         nangoConnection,
-                        syncName
+                        syncName,
+                        activityLogId
                     }
                 ]
-            }
-        });
+            });
 
-        await createSyncSchedule(sync.id as string, interval, offset, ScheduleStatus.RUNNING, scheduleId);
+            const { interval, offset } = getInterval(syncData.runs, new Date());
+            const scheduleId = generateScheduleId(sync, syncName, nangoConnection?.connection_id as string);
 
-        await createActivityLogMessage({
-            level: 'info',
-            activity_log_id: activityLogId as number,
-            content: `Started initial background sync ${handle?.workflowId} and data updated on a schedule ${scheduleId} at ${syncData.runs} in the task queue: ${TASK_QUEUE}`,
-            timestamp: Date.now()
-        });
+            await this.client?.schedule.create({
+                scheduleId,
+                spec: {
+                    /**
+                     * @see https://nodejs.temporal.io/api/interfaces/client.IntervalSpec
+                     */
+                    intervals: [
+                        {
+                            every: interval,
+                            offset
+                        }
+                    ]
+                },
+                action: {
+                    type: 'startWorkflow',
+                    workflowType: 'continuousSync',
+                    taskQueue: TASK_QUEUE,
+                    args: [
+                        {
+                            syncId: sync.id,
+                            activityLogId,
+                            nangoConnection,
+                            syncName
+                        }
+                    ]
+                }
+            });
+
+            await createSyncSchedule(sync.id as string, interval, offset, ScheduleStatus.RUNNING, scheduleId);
+
+            await createActivityLogMessage({
+                level: 'info',
+                activity_log_id: activityLogId as number,
+                content: `Started initial background sync ${handle?.workflowId} and data updated on a schedule ${scheduleId} at ${syncData.runs} in the task queue: ${TASK_QUEUE}`,
+                timestamp: Date.now()
+            });
+        } catch (e) {
+            console.error(e);
+        }
     }
 
     async deleteSyncSchedule(id: string): Promise<boolean> {

@@ -112,17 +112,36 @@ export function parseCron(frequency: string): string {
     return formatDateToUSFormat(interval.next().toISOString());
 };
 
-// this doesn't work exactly if it is every 2 minutes for example
+/**
+ * Compute Next Run
+ * @desc given the start time, the interval and the offset, generate an array of
+ * all intervals and figure out where the next run is
+ */
 export function computeNextRun(startTime: Date, interval: string, offset: number): string {
-    const intervalMilliseconds = ms(interval);
+    const intervals = getIntervals(startTime, interval, offset);
 
     const now = new Date();
-
-    let nextRunTime = new Date(startTime.getTime());
-
-    while (nextRunTime.getTime() <= now.getTime() + offset) {
-        nextRunTime = new Date(nextRunTime.getTime() + intervalMilliseconds);
-    }
+    const index = intervals.findIndex(number => now.getTime() <= number);
+    const nextRunTimeInMs = intervals[index];
+    const nextRunTime = new Date(nextRunTimeInMs);
 
     return formatDateToUSFormat(nextRunTime.toISOString());
 }
+
+export function getIntervals(startOfDay: Date, interval: string, offset: number): number[] {
+    const msInterval = ms(interval);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const intervals = [];
+    let start = offset;
+
+    while (start < 86400000) {
+        const currentTimestamp = startOfDay.getTime() + start;
+
+        intervals.push(currentTimestamp);
+        start += msInterval;
+    }
+
+    return intervals;
+}
+

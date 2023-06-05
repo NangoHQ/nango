@@ -2,8 +2,6 @@ import fs from 'fs';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import yaml from 'js-yaml';
-// @ts-ignore
-import translateCron from 'friendly-node-cron';
 import type { NangoConfig, SimplifiedNangoIntegration, NangoSyncConfig, NangoSyncModel } from '../integrations/index.js';
 import ms from 'ms';
 
@@ -38,7 +36,7 @@ export function loadSimplifiedConfig(loadLocation?: string): SimplifiedNangoInte
 
         return config;
     } catch (error) {
-        console.log('no nango.yaml config found');
+        console.log(error);
     }
 
     return null;
@@ -116,8 +114,8 @@ export function convertConfigObject(config: NangoConfig): SimplifiedNangoIntegra
                 }
                 models.push({ name: model, fields: [modelFields] });
             });
-            const { humanReadable } = getInterval(sync.runs);
-            syncs.push({ name: syncName, runs: sync.runs, intervalExpression: humanReadable, returns: sync.returns, models });
+
+            syncs.push({ name: syncName, runs: sync.runs, intervals: getIntervals(sync.runs, new Date()), returns: sync.returns, models });
         }
         output.push({ providerConfigKey, syncs });
     }
@@ -125,29 +123,10 @@ export function convertConfigObject(config: NangoConfig): SimplifiedNangoIntegra
     return output;
 }
 
-export function getCronExpression(runs: string): string {
-    if (runs === 'every half hour') {
-        return '*/30 * * * *';
-    }
-
-    if (runs === 'every quarter hour') {
-        return '*/15 * * * *';
-    }
-
-    if (runs === 'every hour') {
-        return '0 * * * *';
-    }
-
-    const cron = translateCron(runs);
-
-    return cron.slice(2);
-}
-
-export function getOffset(interval: string): number {
+export function getOffset(interval: string, date: Date): number {
     const intervalMilliseconds = ms(interval);
 
-    const now = new Date();
-    const nowMilliseconds = now.getMinutes() * 60 * 1000 + now.getSeconds() * 1000 + now.getMilliseconds();
+    const nowMilliseconds = date.getMinutes() * 60 * 1000 + date.getSeconds() * 1000 + date.getMilliseconds();
 
     const offset = nowMilliseconds % intervalMilliseconds;
 
@@ -162,24 +141,67 @@ export function getOffset(interval: string): number {
  * and then 1636 etc. The offset should be based on the interval and should never be
  * greater than the interval
  */
-export function getInterval(runs: string): { interval: string; offset: number; humanReadable: string } {
-    const now = new Date();
-    const milliseconds = now.getMinutes() * 60000 + now.getSeconds() * 1000 + now.getMilliseconds();
-
+export function getInterval(runs: string, date: Date): { interval: string; offset: number } {
     if (runs === 'every half hour') {
-        return { interval: '30m', offset: milliseconds, humanReadable: `30m ${milliseconds} offset` };
+        return { interval: '30m', offset: getOffset('30m', date) };
     }
 
     if (runs === 'every quarter hour') {
-        return { interval: '15m', offset: milliseconds, humanReadable: `15m ${milliseconds} offset` };
+        return { interval: '15m', offset: getOffset('15m', date) };
     }
 
     if (runs === 'every hour') {
-        return { interval: '1h', offset: milliseconds, humanReadable: `1h ${milliseconds} offset` };
+        return { interval: '1h', offset: getOffset('1h', date) };
     }
 
     const interval = runs.replace('every ', '');
-    const offset = getOffset(interval);
 
-    return { interval, offset, humanReadable: `${interval} ${milliseconds} offset` };
+    if (ms(interval) < ms('5m')) {
+        throw new Error('interval must be greater than 5 minutes');
+    }
+
+    const offset = getOffset(interval, date);
+
+    return { interval, offset };
+}
+
+export function getIntervals(runs: string, date: Date) {
+    const { interval, offset } = getInterval(runs, date);
+
+    const msInterval = ms(interval);
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const intervals = [];
+    let start = offset;
+
+    while (start < 86400000) {
+        const currentTimestamp = startOfDay.getTime() + start;
+        const currentDateTime = new Date(currentTimestamp);
+
+        intervals.push({
+            ms: currentTimestamp,
+            readable: formatDateToUSFormat(currentDateTime.toISOString())
+        });
+
+        start += msInterval;
+    }
+
+    return intervals;
+}
+
+function formatDateToUSFormat(dateString: string): string {
+    const date = new Date(dateString);
+    const options: Intl.DateTimeFormatOptions = {
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric',
+        hour12: true
+    };
+
+    const formattedDate = date.toLocaleString('en-US', options);
+
+    return formattedDate;
 }
