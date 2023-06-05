@@ -99,7 +99,7 @@ export interface CredentialsRefresh {
     promise: Promise<OAuth2Credentials>;
 }
 
-export interface RefreshTokenResponse extends AuthorizationTokenResponse {}
+export type RefreshTokenResponse = AuthorizationTokenResponse;
 
 export interface AuthorizationTokenResponse extends Omit<OAuth2Credentials, 'type' | 'raw'> {
     expires_in?: number;

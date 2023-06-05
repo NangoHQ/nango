@@ -5,13 +5,13 @@ import { accountService, isCloud, setAccount, isBasicAuthEnabled, errorManager, 
 export class AccessMiddleware {
     async secretKeyAuth(req: Request, res: Response, next: NextFunction) {
         if (isCloud()) {
-            let authorizationHeader = req.get('authorization');
+            const authorizationHeader = req.get('authorization');
 
             if (!authorizationHeader) {
                 return errorManager.errRes(res, 'missing_auth_header');
             }
 
-            let secret = authorizationHeader.split('Bearer ').pop();
+            const secret = authorizationHeader.split('Bearer ').pop();
 
             if (!secret) {
                 return errorManager.errRes(res, 'malformed_auth_header');
@@ -21,7 +21,7 @@ export class AccessMiddleware {
                 return errorManager.errRes(res, 'invalid_secret_key_format');
             }
 
-            var account: Account | null;
+            let account: Account | null;
             try {
                 account = await accountService.getAccountBySecretKey(secret);
             } catch (_) {
@@ -62,7 +62,7 @@ export class AccessMiddleware {
 
     async publicKeyAuth(req: Request, res: Response, next: NextFunction) {
         if (isCloud()) {
-            let publicKey = req.query['public_key'] as string;
+            const publicKey = req.query['public_key'] as string;
 
             if (!publicKey) {
                 return errorManager.errRes(res, 'missing_public_key');
@@ -72,7 +72,7 @@ export class AccessMiddleware {
                 return errorManager.errRes(res, 'invalid_public_key');
             }
 
-            var account: Account | null | undefined;
+            let account: Account | null | undefined;
             try {
                 account = await accountService.getAccountByPublicKey(publicKey);
             } catch (e) {
@@ -103,7 +103,7 @@ export class AccessMiddleware {
 
     async noAuth(req: Request, _: Response, next: NextFunction) {
         if (!req.isAuthenticated()) {
-            let user = await userService.getUserById(0);
+            const user = await userService.getUserById(0);
 
             req.login(user!, function (err) {
                 if (err) {
@@ -142,13 +142,13 @@ export class AccessMiddleware {
             return errorManager.errRes(res, 'admin_key_configuration');
         }
 
-        let authorizationHeader = req.get('authorization');
+        const authorizationHeader = req.get('authorization');
 
         if (!authorizationHeader) {
             return errorManager.errRes(res, 'missing_auth_header');
         }
 
-        let candidateKey = authorizationHeader.split('Bearer ').pop();
+        const candidateKey = authorizationHeader.split('Bearer ').pop();
         if (candidateKey !== adminKey) {
             return errorManager.errRes(res, 'invalid_admin_key');
         }

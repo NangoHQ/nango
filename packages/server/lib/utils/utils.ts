@@ -12,10 +12,10 @@ type PackageJson = {
 };
 
 export async function getOauthCallbackUrl(accountId?: number) {
-    let globalCallbackUrl = getGlobalOAuthCallbackUrl();
+    const globalCallbackUrl = getGlobalOAuthCallbackUrl();
 
     if (isCloud() && accountId != null) {
-        let account: Account | null = await accountService.getAccountById(accountId);
+        const account: Account | null = await accountService.getAccountById(accountId);
         return account?.callback_url || globalCallbackUrl;
     }
 
@@ -27,19 +27,19 @@ export function getGlobalOAuthCallbackUrl() {
 }
 
 export async function getUserAndAccountFromSession(req: Request): Promise<{ user: User; account: Account }> {
-    let sessionUser = req.user;
+    const sessionUser = req.user;
 
     if (sessionUser == null) {
         throw new NangoError('user_not_found');
     }
 
-    let user = await userService.getUserById(sessionUser.id);
+    const user = await userService.getUserById(sessionUser.id);
 
     if (user == null) {
         throw new NangoError('user_not_found');
     }
 
-    let account = await accountService.getAccountById(user.account_id);
+    const account = await accountService.getAccountById(user.account_id);
 
     if (account == null) {
         throw new NangoError('account_not_found');
@@ -57,7 +57,7 @@ export function dirname() {
  * interpolateString('Hello ${name} of ${age} years", {name: 'Tester'}) -> returns false
  */
 export function missesInterpolationParam(str: string, replacers: Record<string, any>) {
-    let interpolatedStr = interpolateString(str, replacers);
+    const interpolatedStr = interpolateString(str, replacers);
     return /\${([^{}]*)}/g.test(interpolatedStr);
 }
 
@@ -65,7 +65,7 @@ export function missesInterpolationParam(str: string, replacers: Record<string, 
  * A helper function to extract the additional connection configuration options from the frontend Auth request.
  */
 export function getConnectionConfig(queryParams: any): Record<string, string> {
-    var arr = Object.entries(queryParams);
+    let arr = Object.entries(queryParams);
     arr = arr.filter(([_, v]) => typeof v === 'string'); // Filter strings
     arr = arr.map(([k, v]) => [`connectionConfig.params.${k}`, v]); // Format keys to 'connectionConfig.params.[key]'
     return Object.fromEntries(arr) as Record<string, string>;
@@ -79,10 +79,10 @@ export function getConnectionMetadataFromCallbackRequest(queryParams: any, templ
         return {};
     }
 
-    let whitelistedKeys = template.redirect_uri_metadata;
+    const whitelistedKeys = template.redirect_uri_metadata;
 
     // Filter out non-strings & non-whitelisted keys.
-    let arr = Object.entries(queryParams).filter(([k, v]) => typeof v === 'string' && whitelistedKeys.includes(k));
+    const arr = Object.entries(queryParams).filter(([k, v]) => typeof v === 'string' && whitelistedKeys.includes(k));
 
     return arr != null && arr.length > 0 ? (Object.fromEntries(arr) as Record<string, string>) : {};
 }
@@ -95,10 +95,10 @@ export function getConnectionMetadataFromTokenResponse(params: any, template: Pr
         return {};
     }
 
-    let whitelistedKeys = template.token_response_metadata;
+    const whitelistedKeys = template.token_response_metadata;
 
     // Filter out non-strings & non-whitelisted keys.
-    let arr = Object.entries(params).filter(([k, v]) => typeof v === 'string' && whitelistedKeys.includes(k));
+    const arr = Object.entries(params).filter(([k, v]) => typeof v === 'string' && whitelistedKeys.includes(k));
 
     return arr != null && arr.length > 0 ? (Object.fromEntries(arr) as Record<string, string>) : {};
 }
@@ -124,9 +124,9 @@ export function parseJsonDateAware(input: string) {
 }
 
 export function parseConnectionConfigParamsFromTemplate(template: ProviderTemplate): string[] {
-    let tokenUrlMatches = template.token_url.match(/\${connectionConfig\.params\.([^{}]*)}/g);
-    let authorizationUrlMatches = template.authorization_url.match(/\${connectionConfig\.params\.([^{}]*)}/g);
-    let params = [...(tokenUrlMatches || []), ...(authorizationUrlMatches || [])].filter((value, index, array) => array.indexOf(value) === index);
+    const tokenUrlMatches = template.token_url.match(/\${connectionConfig\.params\.([^{}]*)}/g);
+    const authorizationUrlMatches = template.authorization_url.match(/\${connectionConfig\.params\.([^{}]*)}/g);
+    const params = [...(tokenUrlMatches || []), ...(authorizationUrlMatches || [])].filter((value, index, array) => array.indexOf(value) === index);
     return params.map((param) => param.replace('${connectionConfig.params.', '').replace('}', '')); // Remove the ${connectionConfig.params.'} and return only the param name.
 }
 
@@ -140,7 +140,7 @@ export function convertJsonKeysToSnakeCase<R>(payload: Record<string, any>): R |
     }
     return Object.entries(payload).reduce((accum: any, current) => {
         const [key, value] = current;
-        let newKey = key.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase();
+        const newKey = key.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase();
         accum[newKey] = value;
         return accum;
     }, {});
@@ -156,7 +156,7 @@ export function convertJsonKeysToCamelCase<R>(payload: Record<string, any>): R |
     }
     return Object.entries(payload).reduce((accum: any, current) => {
         const [key, value] = current;
-        let newKey = key.replace(/([-_][a-z])/g, (group) => group.toUpperCase().replace('-', '').replace('_', ''));
+        const newKey = key.replace(/([-_][a-z])/g, (group) => group.toUpperCase().replace('-', '').replace('_', ''));
         accum[newKey] = value;
         return accum;
     }, {});
@@ -321,6 +321,6 @@ export function resetPasswordSecret() {
 }
 
 export function packageJsonFile(): PackageJson {
-    let localPath = process.env['SERVER_RUN_MODE'] === 'DOCKERIZED' ? 'packages/server/package.json' : 'package.json';
+    const localPath = process.env['SERVER_RUN_MODE'] === 'DOCKERIZED' ? 'packages/server/package.json' : 'package.json';
     return JSON.parse(readFileSync(resolve(process.cwd(), localPath)).toString('utf-8'));
 }

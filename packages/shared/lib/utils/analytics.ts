@@ -33,9 +33,9 @@ class Analytics {
             eventProperties = eventProperties || {};
             userProperties = userProperties || {};
 
-            let baseUrl = getBaseUrl();
-            let userType = this.getUserType(accountId, baseUrl);
-            let userId = this.getUserIdWithType(userType, accountId, baseUrl);
+            const baseUrl = getBaseUrl();
+            const userType = this.getUserType(accountId, baseUrl);
+            const userId = this.getUserIdWithType(userType, accountId, baseUrl);
 
             eventProperties['host'] = baseUrl;
             eventProperties['user-type'] = userType;
@@ -43,9 +43,9 @@ class Analytics {
             eventProperties['nango-server-version'] = this.packageVersion || 'unkown';
 
             if (isCloud() && accountId != null) {
-                let account: Account | null = await accountService.getAccountById(accountId);
+                const account: Account | null = await accountService.getAccountById(accountId);
                 if (account != null && account.owner_id != null) {
-                    let user: User | null = await userService.getUserById(account.owner_id);
+                    const user: User | null = await userService.getUserById(account.owner_id);
 
                     if (user != null) {
                         userProperties['email'] = user.email;

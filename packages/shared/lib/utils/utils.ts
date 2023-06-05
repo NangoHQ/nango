@@ -64,7 +64,7 @@ export function getServerBaseUrl() {
 }
 
 export function isValidHttpUrl(str: string) {
-    var pattern = new RegExp(
+    const pattern = new RegExp(
         '^(https?:\\/\\/)?' + // protocol
             '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|localhost|' + // domain name
             '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
@@ -115,8 +115,8 @@ export function parseTokenExpirationDate(expirationDate: any): Date {
 }
 
 export function isTokenExpired(expireDate: Date): boolean {
-    let currDate = new Date();
-    let dateDiffMs = expireDate.getTime() - currDate.getTime();
+    const currDate = new Date();
+    const dateDiffMs = expireDate.getTime() - currDate.getTime();
     return dateDiffMs < 15 * 60 * 1000;
 }
 

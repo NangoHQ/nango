@@ -57,7 +57,7 @@ class ProviderClient {
             throw new NangoError('wrong_credentials_type');
         }
 
-        let credentials = connection.credentials as OAuth2Credentials;
+        const credentials = connection.credentials as OAuth2Credentials;
 
         if (!credentials.refresh_token) {
             throw new NangoError('missing_refresh_token');
@@ -81,7 +81,7 @@ class ProviderClient {
             throw new NangoError('wrong_credentials_type');
         }
 
-        let credentials = connection.credentials as OAuth2Credentials;
+        const credentials = connection.credentials as OAuth2Credentials;
 
         switch (config.provider) {
             case 'salesforce':
@@ -103,7 +103,7 @@ class ProviderClient {
         clientSecret: string,
         callBackUrl: string
     ): Promise<AuthorizationTokenResponse> {
-        let params = new URLSearchParams();
+        const params = new URLSearchParams();
         params.set('redirect_uri', callBackUrl);
         const body = {
             client_id: clientId,
@@ -112,7 +112,7 @@ class ProviderClient {
             grant_type: 'authorization_code'
         };
         const url = `${tokenUrl}?${params.toString()}`;
-        let response = await axios.post(url, body);
+        const response = await axios.post(url, body);
         if (response.status === 200 && response.data !== null) {
             return {
                 access_token: response.data['access_token'],
@@ -129,7 +129,7 @@ class ProviderClient {
             client_secret: clientSecret,
             refresh_token: refreshToken
         };
-        let response = await axios.post(refreshTokenUrl, body);
+        const response = await axios.post(refreshTokenUrl, body);
         if (response.status === 200 && response.data !== null) {
             return {
                 refresh_token: refreshToken,
@@ -142,13 +142,13 @@ class ProviderClient {
 
     private async createBraintreeToken(code: string, clientId: string, clientSecret: string): Promise<object> {
         const gateway = new braintree.BraintreeGateway({ clientId: clientId, clientSecret: clientSecret });
-        let res = await gateway.oauth.createTokenFromCode({ code: code });
+        const res = await gateway.oauth.createTokenFromCode({ code: code });
 
         if (!('credentials' in res && 'accessToken' in res.credentials && 'refreshToken' in res.credentials && 'expiresAt' in res.credentials)) {
             throw new NangoError('braintree_token_request_error');
         }
 
-        let creds = res['credentials'];
+        const creds = res['credentials'];
 
         return {
             access_token: creds['accessToken'],
@@ -159,13 +159,13 @@ class ProviderClient {
 
     private async refreshBraintreeToken(refreshToken: string, clientId: string, clientSecret: string): Promise<object> {
         const gateway = new braintree.BraintreeGateway({ clientId: clientId, clientSecret: clientSecret });
-        let res = await gateway.oauth.createTokenFromRefreshToken({ refreshToken: refreshToken });
+        const res = await gateway.oauth.createTokenFromRefreshToken({ refreshToken: refreshToken });
 
         if (!('credentials' in res && 'accessToken' in res.credentials && 'refreshToken' in res.credentials && 'expiresAt' in res.credentials)) {
             throw new NangoError('braintree_token_refresh_error');
         }
 
-        let creds = res['credentials'];
+        const creds = res['credentials'];
 
         return {
             access_token: creds['accessToken'],
@@ -184,27 +184,27 @@ class ProviderClient {
             throw new NangoError('salesforce_instance_url_missing');
         }
 
-        let url = `${metadata['instance_url']}/services/oauth2/introspect`;
+        const url = `${metadata['instance_url']}/services/oauth2/introspect`;
 
-        let headers = {
+        const headers = {
             'Content-Type': 'application/x-www-form-urlencoded',
             'Accept-Encoding': 'application/json'
         };
 
-        let body = {
+        const body = {
             token: accessToken,
             client_id: clientId,
             client_secret: clientSecret,
             token_type_hint: 'access_token'
         };
 
-        let res = await axios.post(url, body, { headers: headers });
+        const res = await axios.post(url, body, { headers: headers });
 
         if (res.status != 200 || res.data == null || !res.data['active'] || res.data['exp'] == null) {
             return true;
         }
 
-        let expireDate = parseTokenExpirationDate(res.data['exp']);
+        const expireDate = parseTokenExpirationDate(res.data['exp']);
 
         return isTokenExpired(expireDate);
     }

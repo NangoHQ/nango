@@ -42,7 +42,7 @@ class ErrorManager {
     }
 
     public errRes(res: any, type: string) {
-        let err = new NangoError(type);
+        const err = new NangoError(type);
         this.errResFromNangoErr(res, err);
     }
 
@@ -53,7 +53,7 @@ class ErrorManager {
             err = new NangoError(err.message);
         }
 
-        let nangoErr = err as NangoError;
+        const nangoErr = err as NangoError;
 
         if (isApiAuthenticated(res)) {
             this.report(nangoErr, { accountId: getAccount(res), metadata: err.payload });
@@ -68,7 +68,7 @@ class ErrorManager {
     }
 
     public getExpressRequestContext(req: Request): { [key: string]: unknown } {
-        let metadata: { [key: string]: unknown } = {};
+        const metadata: { [key: string]: unknown } = {};
         metadata['baseUrl'] = req.baseUrl;
         metadata['originalUrl'] = req.originalUrl;
         metadata['subdomains'] = req.subdomains;

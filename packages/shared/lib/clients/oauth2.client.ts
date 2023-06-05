@@ -48,7 +48,7 @@ export function getSimpleOAuth2ClientConfig(providerConfig: ProviderConfig, temp
 }
 
 export async function getFreshOAuth2Credentials(connection: Connection, config: ProviderConfig, template: ProviderTemplateOAuth2): Promise<OAuth2Credentials> {
-    let credentials = connection.credentials as OAuth2Credentials;
+    const credentials = connection.credentials as OAuth2Credentials;
     const simpleOAuth2ClientConfig = getSimpleOAuth2ClientConfig(config, template, connection.connection_config);
     if (template.token_request_auth_method === 'basic') {
         const headers = {
@@ -71,12 +71,12 @@ export async function getFreshOAuth2Credentials(connection: Connection, config: 
         additionalParams = template.token_params;
     }
 
-    var rawNewAccessToken: AccessToken;
+    let rawNewAccessToken: AccessToken;
 
     try {
         rawNewAccessToken = await oldAccessToken.refresh(additionalParams);
     } catch (e) {
-        let nangoErr = new NangoError(`refresh_token_external_error`);
+        const nangoErr = new NangoError(`refresh_token_external_error`);
 
         if (Boom.isBoom(e)) {
             nangoErr.payload = { external_message: e.message, external_request_details: JSON.stringify(e.output) };
@@ -85,7 +85,7 @@ export async function getFreshOAuth2Credentials(connection: Connection, config: 
         throw nangoErr;
     }
 
-    var newCredentials: OAuth2Credentials;
+    let newCredentials: OAuth2Credentials;
     try {
         newCredentials = connectionsManager.parseRawCredentials(rawNewAccessToken.token, ProviderAuthModes.OAuth2) as OAuth2Credentials;
 

@@ -309,9 +309,9 @@ class ConnectionService {
         instantRefresh = false,
         logAction: LogAction = 'token'
     ): Promise<OAuth2Credentials> {
-        let connectionId = connection.connection_id;
-        let credentials = connection.credentials as OAuth2Credentials;
-        let providerConfigKey = connection.provider_config_key;
+        const connectionId = connection.connection_id;
+        const credentials = connection.credentials as OAuth2Credentials;
+        const providerConfigKey = connection.provider_config_key;
 
         // Check if a refresh is already running for this user & provider configuration
         // If it is wait for that to complete
@@ -326,17 +326,17 @@ class ConnectionService {
             return runningRefresh.promise;
         }
 
-        let refresh =
+        const refresh =
             instantRefresh ||
             (providerClient.shouldIntrospectToken(providerConfig.provider) && (await providerClient.introspectedTokenExpired(providerConfig, connection)));
         // If not expiration date is set, e.g. Github, we assume the token doesn't expire (unless introspection enable like Salesforce).
         if (credentials.refresh_token && (refresh || (credentials.expires_at && isTokenExpired(credentials.expires_at)))) {
             const promise = new Promise<OAuth2Credentials>(async (resolve, reject) => {
                 try {
-                    var newCredentials: OAuth2Credentials;
+                    let newCredentials: OAuth2Credentials;
 
                     if (providerClientManager.shouldUseProviderClient(providerConfig.provider)) {
-                        let rawCreds = await providerClientManager.refreshToken(template, providerConfig, connection);
+                        const rawCreds = await providerClientManager.refreshToken(template, providerConfig, connection);
                         newCredentials = this.parseRawCredentials(rawCreds, ProviderAuthModes.OAuth2) as OAuth2Credentials;
                     } else {
                         newCredentials = await getFreshOAuth2Credentials(connection, providerConfig, template as ProviderTemplateOAuth2);

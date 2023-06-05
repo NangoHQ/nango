@@ -6,12 +6,12 @@ class AccountService {
     private accountSecrets: { [key: string]: number } = {};
 
     async cacheAccountSecrets(): Promise<void> {
-        let accounts = await db.knex.withSchema(db.schema()).select('*').from<Account>(`_nango_accounts`);
+        const accounts = await db.knex.withSchema(db.schema()).select('*').from<Account>(`_nango_accounts`);
 
-        let accountSecrets: { [key: string]: number } = {};
+        const accountSecrets: { [key: string]: number } = {};
 
-        for (let account of accounts) {
-            let decryptedAccount = encryptionManager.decryptAccount(account);
+        for (const account of accounts) {
+            const decryptedAccount = encryptionManager.decryptAccount(account);
 
             if (decryptedAccount != null) {
                 accountSecrets[decryptedAccount.secret_key] = decryptedAccount.id;
@@ -26,12 +26,12 @@ class AccountService {
     }
 
     async getAccountBySecretKey(secretKey: string): Promise<Account | null> {
-        let accountId = this.accountSecrets[secretKey];
+        const accountId = this.accountSecrets[secretKey];
         return accountId != null ? await this.getAccountById(accountId) : null;
     }
 
     async getAccountByPublicKey(publicKey: string): Promise<Account | null> {
-        let result = await db.knex.withSchema(db.schema()).select('*').from<Account>(`_nango_accounts`).where({ public_key: publicKey });
+        const result = await db.knex.withSchema(db.schema()).select('*').from<Account>(`_nango_accounts`).where({ public_key: publicKey });
 
         if (result == null || result.length == 0 || result[0] == null) {
             return null;
@@ -41,7 +41,7 @@ class AccountService {
     }
 
     async getAccountById(id: number): Promise<Account | null> {
-        let result = await db.knex.withSchema(db.schema()).select('*').from<Account>(`_nango_accounts`).where({ id: id });
+        const result = await db.knex.withSchema(db.schema()).select('*').from<Account>(`_nango_accounts`).where({ id: id });
 
         if (result == null || result.length == 0 || result[0] == null) {
             return null;
@@ -51,14 +51,14 @@ class AccountService {
     }
 
     async createAccount(name: string): Promise<Account | null> {
-        let result: void | Pick<Account, 'id'> = await db.knex.withSchema(db.schema()).from<Account>(`_nango_accounts`).insert({ name: name }, ['id']);
+        const result: void | Pick<Account, 'id'> = await db.knex.withSchema(db.schema()).from<Account>(`_nango_accounts`).insert({ name: name }, ['id']);
 
         if (Array.isArray(result) && result.length === 1 && result[0] != null && 'id' in result[0]) {
-            let accountId = result[0]['id'];
-            let account = await this.getAccountById(accountId);
+            const accountId = result[0]['id'];
+            const account = await this.getAccountById(accountId);
 
             if (account != null) {
-                let encryptedAccount = encryptionManager.encryptAccount(account);
+                const encryptedAccount = encryptionManager.encryptAccount(account);
                 await db.knex.withSchema(db.schema()).from<Account>(`_nango_accounts`).where({ id: accountId }).update(encryptedAccount, ['id']);
                 this.addToAccountSecretCache(account);
                 return account;

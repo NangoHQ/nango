@@ -3,7 +3,7 @@ import type { User } from '../models/Admin.js';
 
 class UserService {
     async getUserById(id: number): Promise<User | null> {
-        let result = await db.knex.withSchema(db.schema()).select('*').from<User>(`_nango_users`).where({ id: id });
+        const result = await db.knex.withSchema(db.schema()).select('*').from<User>(`_nango_users`).where({ id: id });
 
         if (result == null || result.length == 0 || result[0] == null) {
             return null;
@@ -13,7 +13,7 @@ class UserService {
     }
 
     async getUserByEmail(email: string): Promise<User | null> {
-        let result = await db.knex.withSchema(db.schema()).select('*').from<User>(`_nango_users`).where({ email: email });
+        const result = await db.knex.withSchema(db.schema()).select('*').from<User>(`_nango_users`).where({ email: email });
 
         if (result == null || result.length == 0 || result[0] == null) {
             return null;
@@ -23,7 +23,7 @@ class UserService {
     }
 
     async getUserByResetPasswordToken(link: string): Promise<User | null> {
-        let result = await db.knex.withSchema(db.schema()).select('*').from<User>(`_nango_users`).where({ reset_password_token: link });
+        const result = await db.knex.withSchema(db.schema()).select('*').from<User>(`_nango_users`).where({ reset_password_token: link });
 
         if (result == null || result.length == 0 || result[0] == null) {
             return null;
@@ -33,13 +33,13 @@ class UserService {
     }
 
     async createUser(email: string, name: string, hashedPassword: string, salt: string, accountId: number): Promise<User | null> {
-        let result: void | Pick<User, 'id'> = await db.knex
+        const result: void | Pick<User, 'id'> = await db.knex
             .withSchema(db.schema())
             .from<User>(`_nango_users`)
             .insert({ email: email, name: name, hashed_password: hashedPassword, salt: salt, account_id: accountId }, ['id']);
 
         if (Array.isArray(result) && result.length === 1 && result[0] != null && 'id' in result[0]) {
-            let userId = result[0]['id'];
+            const userId = result[0]['id'];
             return this.getUserById(userId);
         }
 

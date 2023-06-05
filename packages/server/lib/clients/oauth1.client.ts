@@ -103,10 +103,10 @@ export class OAuth1Client {
                     if (error) reject(error);
                     else {
                         // @ts-ignore
-                        var queryParams = new URLSearchParams(data);
+                        const queryParams = new URLSearchParams(data);
 
-                        var parsedFull = {};
-                        for (var pair of queryParams) {
+                        const parsedFull = {};
+                        for (const pair of queryParams) {
                             // @ts-ignore
                             parsedFull[pair[0]] = pair[1];
                         }

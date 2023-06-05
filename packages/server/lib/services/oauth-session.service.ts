@@ -9,12 +9,12 @@ class OAuthSessionService {
     }
 
     async findById(id: string): Promise<OAuthSession | null> {
-        let session = await this.queryBuilder().where({ id }).first();
+        const session = await this.queryBuilder().where({ id }).first();
         return convertJsonKeysToCamelCase<OAuthSession>(session as Record<string, any>);
     }
 
     async delete(id: string) {
-        let session = await this.findById(id);
+        const session = await this.findById(id);
         if (!session) {
             return;
         }
