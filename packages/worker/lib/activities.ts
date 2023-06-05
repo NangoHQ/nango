@@ -120,6 +120,8 @@ export async function syncProvider(
         const providerConfigKey = nangoConnection.provider_config_key;
         const syncObject = integrations[providerConfigKey] as unknown as { [key: string]: NangoIntegration };
 
+        const now = new Date();
+
         const { path: integrationFilePath, result: integrationFileResult } = checkForIntegrationFile(syncName);
         if (!integrationFileResult) {
             await createActivityLogMessageAndEnd({
@@ -160,7 +162,6 @@ export async function syncProvider(
                 if (userDefinedResults[model]) {
                     const formattedResults = syncDataService.formatDataRecords(userDefinedResults[model], nangoConnection.id as number, model, syncId);
                     let upsertSuccess = true;
-                    const now = new Date();
                     if (formattedResults.length > 0) {
                         try {
                             responseResults = await dataService.upsert(

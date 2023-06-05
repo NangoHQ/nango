@@ -12,7 +12,7 @@ interface WebhookBody {
     model: string;
     responseResults: SyncResult;
     syncType: SyncType;
-    timestamp: string;
+    queryTimeStamp: string;
 }
 
 class WebhookService {
@@ -45,7 +45,7 @@ class WebhookService {
                 updated: responseResults.updated
             },
             syncType,
-            timestamp: now
+            queryTimeStamp: now
         };
 
         try {
