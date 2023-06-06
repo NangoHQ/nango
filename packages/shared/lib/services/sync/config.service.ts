@@ -1,6 +1,5 @@
 import { schema, dbNamespace } from '../../db/database.js';
 import configService from '../config.service.js';
-import connectionService from '../connection.service.js';
 import fileService from '../file.service.js';
 import type { IncomingSyncConfig, SyncConfig } from '../../models/Sync.js';
 import type { NangoConnection } from '../../models/Connection.js';

@@ -158,7 +158,8 @@ export class NangoError extends Error {
 
             case 'missing_base_api_url':
                 this.status = 400;
-                this.message = `No base API URL is configured for this provider.`;
+                this.message =
+                    'The proxy is not supported for the provider. You can easily add support by following the instructions at https://docs.nango.dev/contribute-api';
                 break;
 
             case 'unknown_provider_template':
@@ -179,12 +180,6 @@ export class NangoError extends Error {
             case 'unkown_password_reset_token':
                 this.status = 404;
                 this.message = 'Reset password token expired on unknown.';
-                break;
-
-            case 'missing_base_api_url':
-                this.status = 501;
-                this.message =
-                    'The proxy is not supported for the provider. You can easily add support by following the instructions at https://docs.nango.dev/contribute-api';
                 break;
 
             default:
