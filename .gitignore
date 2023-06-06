@@ -3,4 +3,5 @@ node_modules/*
 logs/*
 nango-data/*
 .idea/*
-.env
+.env.local
+
