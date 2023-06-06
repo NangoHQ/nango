@@ -1,6 +1,6 @@
 {
     "name": "nango",
-    "version": "0.16.47-beta",
+    "version": "0.16.49-beta",
     "description": "Nango's CLI tool.",
     "type": "module",
     "main": "dist/index.js",
@@ -20,7 +20,7 @@
         "dev": "npm run copyfiles && tsc -w"
     },
     "dependencies": {
-        "@nangohq/shared": "0.17.39-beta",
+        "@nangohq/shared": "0.17.41-beta",
         "axios": "^1.2.0",
         "byots": "^5.0.0-dev.20221103.1.34",
         "chokidar": "^3.5.3",
