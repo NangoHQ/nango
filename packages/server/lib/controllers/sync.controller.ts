@@ -15,26 +15,14 @@ import {
 } from '@nangohq/shared';
 
 class SyncController {
-    public async createSyncConfig(req: Request, res: Response, next: NextFunction) {
+    public async deploySync(req: Request, res: Response, next: NextFunction) {
         try {
-            const { integrationName, provider, snippet } = req.body;
+            const syncs = req.body;
             const accountId = getAccount(res);
 
-            if (!integrationName) {
-                res.status(400).send({ message: 'Missing integration name' });
-            }
+            const result = await createSyncConfig(accountId, syncs);
 
-            if (!snippet) {
-                res.status(400).send({ message: 'Missing integration code' });
-            }
-
-            const result = await createSyncConfig(accountId, provider, integrationName, snippet);
-
-            if (result) {
-                res.sendStatus(200);
-            } else {
-                res.sendStatus(500);
-            }
+            res.send(result);
         } catch (e) {
             next(e);
         }

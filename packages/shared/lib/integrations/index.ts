@@ -12,6 +12,7 @@ export abstract class NangoSync {
 export interface NangoIntegrationData {
     runs: string;
     returns: string[];
+    fileLocation?: string;
 }
 export interface NangoIntegration {
     [key: string]: {

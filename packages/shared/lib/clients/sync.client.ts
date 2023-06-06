@@ -1,6 +1,4 @@
 import { Client, Connection, ScheduleOverlapPolicy } from '@temporalio/client';
-//import ms from 'ms';
-
 import type { Connection as NangoConnection } from '../models/Connection.js';
 import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { NangoIntegrationData, NangoConfig, NangoIntegration } from '../integrations/index.js';
@@ -53,7 +51,7 @@ class SyncClient {
 
     async initiate(nangoConnectionId: number): Promise<void> {
         const nangoConnection = (await connectionService.getConnectionById(nangoConnectionId)) as NangoConnection;
-        const nangoConfig = loadNangoConfig();
+        const nangoConfig = await loadNangoConfig(nangoConnection);
         if (!nangoConfig) {
             console.log('Failed to load Nango config - will not start any syncs!');
             return;

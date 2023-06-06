@@ -1,13 +1,12 @@
 import { v4 as uuidv4 } from 'uuid';
 import db, { schema, dbNamespace } from '../../db/database.js';
-import { Sync, Job as SyncJob, SyncStatus, SyncConfig, SyncWithSchedule } from '../../models/Sync.js';
+import { Sync, Job as SyncJob, SyncStatus, SyncWithSchedule } from '../../models/Sync.js';
 import SyncClient from '../../clients/sync.client.js';
 import { markAllAsStopped } from './schedule.service.js';
 
 const TABLE = dbNamespace + 'syncs';
 const SYNC_JOB_TABLE = dbNamespace + 'sync_jobs';
 const SYNC_SCHEDULE_TABLE = dbNamespace + 'sync_schedules';
-const SYNC_CONFIG_TABLE = dbNamespace + 'sync_configs';
 
 /**
  * Sync Service
@@ -70,33 +69,6 @@ export const getLastSyncDate = async (nangoConnectionId: number, syncName: strin
     const { updated_at } = result;
 
     return updated_at;
-};
-
-export const createSyncConfig = async (account_id: number, provider: string, integrationName: string, snippet: string): Promise<boolean> => {
-    const result: void | Pick<SyncConfig, 'id'> = await db.knex.withSchema(db.schema()).from<SyncConfig>(SYNC_CONFIG_TABLE).insert(
-        {
-            account_id,
-            provider,
-            integration_name: integrationName,
-            snippet
-        },
-        ['id']
-    );
-
-    if (Array.isArray(result) && result.length === 1 && result[0] !== null && 'id' in result[0]) {
-        return true;
-    }
-    return false;
-};
-
-export const getSyncConfigByProvider = async (provider: string): Promise<SyncConfig[]> => {
-    const result = await db.knex.withSchema(db.schema()).select('*').from<SyncConfig>(SYNC_CONFIG_TABLE).where({ provider: provider });
-
-    if (Array.isArray(result) && result.length > 0) {
-        return result;
-    }
-
-    return [];
 };
 
 export const getSync = async (nangoConnectionId: number, name: string): Promise<Sync | null> => {

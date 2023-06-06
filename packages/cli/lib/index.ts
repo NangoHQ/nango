@@ -13,15 +13,22 @@ import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import yaml from 'js-yaml';
 import ejs from 'ejs';
-import glob from 'glob';
-import byots from 'byots';
-import { build } from 'esbuild';
 import * as dotenv from 'dotenv';
 
 import type { NangoConfig, NangoIntegration, NangoIntegrationData } from '@nangohq/shared';
-import { loadSimplifiedConfig } from '@nangohq/shared';
-import { init, run, tscWatch, configWatch, dockerRun } from './sync.js';
-import { checkEnvVars, enrichHeaders, httpsAgent, getConnection, configFile, NANGO_INTEGRATIONS_LOCATION, buildInterfaces } from './utils.js';
+import { loadSimplifiedConfig, checkForIntegrationFile } from '@nangohq/shared';
+import { init, run, tsc, tscWatch, configWatch, dockerRun } from './sync.js';
+import {
+    checkEnvVars,
+    enrichHeaders,
+    httpsAgent,
+    getConnection,
+    configFile,
+    NANGO_INTEGRATIONS_LOCATION,
+    buildInterfaces,
+    setCloudHost,
+    setStagingHost
+} from './utils.js';
 
 const program = new Command();
 
@@ -305,33 +312,7 @@ program
     .command('tsc')
     .description('Compile the integration files to JavaScript')
     .action(() => {
-        const cwd = process.cwd();
-        const integrationFiles = glob.sync(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/*.ts`));
-        for (const file of integrationFiles) {
-            const tsFileContent = fs.readFileSync(file, 'utf-8');
-
-            const compilerOptions = {
-                target: byots.ScriptTarget.ES2022,
-                module: byots.ModuleKind.ES2022
-            };
-
-            const result = byots.transpileModule(tsFileContent, {
-                compilerOptions,
-                fileName: file
-            });
-
-            const fileNameWithExt = path.basename(file);
-            const integrationName = path.parse(fileNameWithExt).name;
-            const jsFileContent = result.outputText;
-
-            const distDir = path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/dist`);
-
-            if (!fs.existsSync(distDir)) {
-                fs.mkdirSync(distDir);
-            }
-
-            fs.writeFileSync(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/dist/${integrationName}.js`), jsFileContent);
-        }
+        tsc();
     });
 
 program
@@ -370,61 +351,78 @@ program
     .command('deploy')
     .alias('d')
     .description('Deploy a Nango integration')
-    .action(async () => {
-        const cwd = process.cwd();
-        const integrationFiles = glob.sync(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/*.ts`));
-        for (const file of integrationFiles) {
-            const tsFileContent = fs.readFileSync(file, 'utf-8');
+    .option('--staging', 'Deploy to the staging instance')
+    .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integraion with. Can be used for rollbacks.')
+    .option('-s, --sync [syncName]', 'Optional deploy only this sync name.')
+    .action(async function (this: Command) {
+        const { staging, version } = this.opts();
 
-            const compilerOptions = {
-                target: byots.ScriptTarget.ES2022,
-                module: byots.ModuleKind.ES2022
-            };
-
-            const result = byots.transpileModule(tsFileContent, {
-                compilerOptions,
-                fileName: file
-            });
-
-            const jsFileContent = result.outputText;
-
-            // not needed
-            const minifiedResult = await build({
-                stdin: {
-                    contents: jsFileContent,
-                    resolveDir: __dirname,
-                    sourcefile: file.replace(/\.ts$/, '.js'),
-                    loader: 'js'
-                },
-                write: false,
-                allowOverwrite: true,
-                minify: true
-            });
-
-            const snippet = minifiedResult?.outputFiles[0]?.text as string;
-            const fileNameWithExt = path.basename(file);
-            const integrationName = path.parse(fileNameWithExt).name;
-
-            // write the file to the integration folder
-            fs.writeFileSync(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/${integrationName}.js`), jsFileContent);
-
-            const body = {
-                integrationName,
-                snippet,
-                provider: 'github' // TODO, grab this from the yaml config
-            };
-
-            const url = hostport + `/sync-config`;
-
-            await axios
-                .post(url, body, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
-                .then((_) => {
-                    console.log('\n\n✅ Successfully created a new sync configuration!\n\n');
-                })
-                .catch((err) => {
-                    console.log(`❌ ${err.response?.data.error || JSON.stringify(err)}`);
-                });
+        if (!process.env['NANGO_HOSTPORT']) {
+            console.log(chalk.red(`NANGO_HOSTPORT environment variable is not set`));
+            return;
         }
+
+        if (!process.env['NANGO_SECRET_KEY']) {
+            console.log(chalk.red(`NANGO_SECRET_KEY environment variable is not set`));
+            return;
+        }
+
+        if (staging) {
+            setStagingHost();
+        } else {
+            setCloudHost();
+        }
+
+        checkEnvVars();
+        tsc();
+
+        const cwd = process.cwd();
+        const config = await loadSimplifiedConfig(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/${configFile}`));
+
+        if (!config) {
+            throw new Error(`Error loading the ${configFile} file`);
+        }
+
+        const postData = [];
+
+        for (const integration of config) {
+            const { providerConfigKey, syncs } = integration;
+
+            for (const sync of syncs) {
+                const { name: syncName, runs, returns: models } = sync;
+                const { path: integrationFilePath, result: integrationFileResult } = checkForIntegrationFile(
+                    syncName,
+                    path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}`)
+                );
+
+                if (!integrationFileResult) {
+                    console.log(chalk.red(`No integration file found for ${syncName} at ${integrationFilePath}. Skipping...`));
+                    continue;
+                }
+
+                const body = {
+                    syncName,
+                    providerConfigKey,
+                    models,
+                    version,
+                    runs,
+                    fileBody: fs.readFileSync(integrationFilePath, 'utf8')
+                };
+
+                postData.push(body);
+            }
+        }
+
+        const url = hostport + `/sync/deploy`;
+
+        await axios
+            .post(url, postData, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
+            .then((_) => {
+                console.log(chalk.green(`Successfully deployed the syncs!`));
+            })
+            .catch((_err) => {
+                console.log(chalk.red(`Error deploying the syncs`));
+            });
     });
 
 program
@@ -433,7 +431,7 @@ program
     .description('Verify the parsed sync config and output the object for verification')
     .action(async () => {
         const cwd = process.cwd();
-        const config = loadSimplifiedConfig(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/${configFile}`));
+        const config = await loadSimplifiedConfig(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/${configFile}`));
 
         console.log(chalk.green(JSON.stringify(config, null, 2)));
     });

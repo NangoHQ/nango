@@ -91,11 +91,21 @@ export async function syncProvider(
         updateJobActivityLogId(syncJobId, activityLogId);
     }
 
-    const nangoConfig = loadNangoConfig();
+    const nangoConfig = await loadNangoConfig(nangoConnection, syncName);
 
     if (!nangoConfig) {
-        return Promise.resolve(false);
+        await createActivityLogMessageAndEnd({
+            level: 'error',
+            activity_log_id: activityLogId,
+            content: `No nango config was found for ${syncName}.`,
+            timestamp: Date.now()
+        });
+
+        await updateSyncJobStatus(syncJobId, SyncStatus.STOPPED);
+
+        return false;
     }
+
     const { integrations } = nangoConfig;
     let result = true;
 
@@ -125,7 +135,7 @@ export async function syncProvider(
         const { path: integrationFilePath, result: integrationFileResult } = checkForIntegrationFile(syncName);
         if (!integrationFileResult) {
             await createActivityLogMessageAndEnd({
-                level: 'info',
+                level: 'error',
                 activity_log_id: activityLogId,
                 content: `Integration was attempted to run for ${syncName} but no integration file was found at ${integrationFilePath}.`,
                 timestamp: Date.now()
@@ -142,7 +152,7 @@ export async function syncProvider(
         const integrationClass = await getIntegrationClass(syncName);
         if (!integrationClass) {
             await createActivityLogMessage({
-                level: 'info',
+                level: 'error',
                 activity_log_id: activityLogId,
                 content: `There was a problem loading the integration class for ${syncName}.`,
                 timestamp: Date.now()
@@ -154,6 +164,21 @@ export async function syncProvider(
 
         try {
             result = true;
+
+            // add support for other methods
+            if (!integrationClass.fetchData) {
+                await createActivityLogMessage({
+                    level: 'error',
+                    activity_log_id: activityLogId,
+                    content: `The integration file does not implement the fetchData method for ${syncName}.`,
+                    timestamp: Date.now()
+                });
+
+                await updateSyncJobStatus(syncJobId, SyncStatus.STOPPED);
+                return false;
+            }
+
+            // TODO move this to a integration service
             const userDefinedResults = await integrationClass.fetchData(nango);
 
             let responseResults: UpsertResponse | null = { addedKeys: [], updatedKeys: [], affectedInternalIds: [], affectedExternalIds: [] };
@@ -164,7 +189,7 @@ export async function syncProvider(
                     let upsertSuccess = true;
                     if (formattedResults.length > 0) {
                         try {
-                            responseResults = await dataService.upsert(
+                            const upsertResult = await dataService.upsert(
                                 formattedResults,
                                 '_nango_sync_data_records',
                                 'external_id',
@@ -172,6 +197,11 @@ export async function syncProvider(
                                 model,
                                 activityLogId
                             );
+
+                            // if it is null that means there were duplicates and nothing was actually inserted
+                            if (upsertResult) {
+                                responseResults = upsertResult;
+                            }
                         } catch (e) {
                             const errorMessage = JSON.stringify(e, ['message', 'name', 'stack'], 2);
 

@@ -2,32 +2,44 @@ import fs from 'fs';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import yaml from 'js-yaml';
-import type { NangoConfig, SimplifiedNangoIntegration, NangoSyncConfig, NangoSyncModel } from '../integrations/index.js';
 import ms from 'ms';
+
+import type { NangoConfig, SimplifiedNangoIntegration, NangoSyncConfig, NangoSyncModel } from '../integrations/index.js';
+import type { NangoConnection } from '../models/Connection.js';
+import { getSyncConfig } from './sync/config.service.js';
+import { isCloud } from '../utils/utils.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export const SYNC_FILE_EXTENSION = 'js';
 
-export function loadNangoConfig(loadLocation?: string): NangoConfig | null {
+export function loadNangoConfig(nangoConnection: NangoConnection | null, syncName?: string, loadLocation?: string): Promise<NangoConfig | null> {
+    if (isCloud()) {
+        return getSyncConfig(nangoConnection as NangoConnection, syncName);
+    } else {
+        return loadLocalNangoConfig(loadLocation);
+    }
+}
+
+export function loadLocalNangoConfig(loadLocation?: string): Promise<NangoConfig | null> {
     const location = loadLocation || path.resolve(__dirname, '../nango-integrations/nango.yaml');
 
     try {
         const yamlConfig = fs.readFileSync(location, 'utf8');
         const configData: NangoConfig = yaml.load(yamlConfig) as unknown as NangoConfig;
 
-        return configData;
+        return Promise.resolve(configData);
     } catch (error) {
         console.log(`no nango.yaml config found at ${location}`);
     }
 
-    return null;
+    return Promise.resolve(null);
 }
 
-export function loadSimplifiedConfig(loadLocation?: string): SimplifiedNangoIntegration[] | null {
+export async function loadSimplifiedConfig(loadLocation?: string): Promise<SimplifiedNangoIntegration[] | null> {
     try {
-        const configData: NangoConfig = loadNangoConfig(loadLocation) as NangoConfig;
+        const configData: NangoConfig = (await loadLocalNangoConfig(loadLocation)) as NangoConfig;
 
         if (!configData) {
             return null;
@@ -42,8 +54,8 @@ export function loadSimplifiedConfig(loadLocation?: string): SimplifiedNangoInte
     return null;
 }
 
-export function checkForIntegrationFile(syncName: string) {
-    const nangoIntegrationsDirPath = path.resolve(__dirname, '../nango-integrations');
+export function checkForIntegrationFile(syncName: string, optionalNangoIntegrationsDirPath?: string) {
+    const nangoIntegrationsDirPath = optionalNangoIntegrationsDirPath || path.resolve(__dirname, '../nango-integrations');
     const distDirPath = path.resolve(nangoIntegrationsDirPath, 'dist');
 
     if (!fs.existsSync(nangoIntegrationsDirPath)) {

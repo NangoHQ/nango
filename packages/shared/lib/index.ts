@@ -8,12 +8,14 @@ import errorManager from './utils/error.manager.js';
 import accountService from './services/account.service.js';
 import webhookService from './services/webhook.service.js';
 import userService from './services/user.service.js';
+import fileService from './services/file.service.js';
 import analytics from './utils/analytics.js';
 
 export * from './services/activity.service.js';
 export * from './services/sync/sync.service.js';
 export * from './services/sync/job.service.js';
 export * from './services/sync/schedule.service.js';
+export * from './services/sync/config.service.js';
 export * as dataService from './services/sync/data.service.js';
 export * as syncDataService from './services/sync/data-records.service.js';
 export * as oauth2Client from './clients/oauth2.client.js';
@@ -40,5 +42,6 @@ export {
     accountService,
     userService,
     webhookService,
+    fileService,
     analytics
 };

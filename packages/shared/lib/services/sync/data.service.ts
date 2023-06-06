@@ -18,6 +18,10 @@ export async function upsert(
     const addedKeys = await getAddedKeys(responseWithoutDuplicates, dbTable, uniqueKey, nangoConnectionId, model);
     const updatedKeys = await getUpdatedKeys(responseWithoutDuplicates, dbTable, uniqueKey, nangoConnectionId, model);
 
+    if (responseWithoutDuplicates.length === 0) {
+        return null;
+    }
+
     try {
         const results = await schema()
             .from(dbTable)

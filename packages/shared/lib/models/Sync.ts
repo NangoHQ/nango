@@ -38,12 +38,16 @@ export interface Job extends Timestamps {
     result?: SyncResult;
 }
 
-export interface SyncConfig {
+export interface SyncConfig extends Timestamps {
     id?: number;
     account_id: number;
-    provider: string;
-    integration_name: string;
-    snippet: string;
+    sync_name: string;
+    file_location: string;
+    nanog_config_id: number;
+    models: string[];
+    active: boolean;
+    runs: string;
+    version?: string;
 }
 
 export interface GetRecordsRequestConfig {
@@ -96,3 +100,12 @@ export const SyncCommandToScheduleStatus = {
     RUN: ScheduleStatus.RUNNING,
     RUN_FULL: ScheduleStatus.RUNNING
 };
+
+export interface IncomingSyncConfig {
+    syncName: string;
+    providerConfigKey: string;
+    fileBody: string;
+    models: string[];
+    runs: string;
+    version?: string;
+}

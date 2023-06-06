@@ -111,7 +111,12 @@ export const run = async (args: string[], options: RunArgs) => {
     }
 
     const cwd = process.cwd();
-    const config = loadNangoConfig(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/${configFile}`));
+    const config = await loadNangoConfig(null, syncName, path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/${configFile}`));
+
+    if (!config) {
+        throw new Error(`Error loading the ${configFile} file`);
+    }
+
     let lastSyncDate;
 
     if (suppliedLastSyncDate) {
@@ -184,15 +189,49 @@ export const run = async (args: string[], options: RunArgs) => {
     }
 };
 
+export const tsc = () => {
+    const cwd = process.cwd();
+    const tsconfig = fs.readFileSync('./node_modules/nango/tsconfig.dev.json', 'utf8');
+
+    const distDir = path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/dist`);
+
+    if (!fs.existsSync(distDir)) {
+        fs.mkdirSync(distDir);
+    }
+
+    const rawNangoIntegrationLocation = NANGO_INTEGRATIONS_LOCATION.replace('./', '');
+
+    const compiler = tsNode.create({
+        compilerOptions: JSON.parse(tsconfig).compilerOptions
+    });
+
+    const integrationFiles = glob.sync(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/*.ts`));
+    for (const filePath of integrationFiles) {
+        try {
+            const result = compiler.compile(fs.readFileSync(filePath, 'utf8'), filePath);
+            const jsFilePath = path.join(path.dirname(filePath), path.basename(filePath, '.ts') + '.js');
+
+            const distJSFilePath = jsFilePath.replace(rawNangoIntegrationLocation, `${rawNangoIntegrationLocation}/dist`);
+            fs.writeFileSync(distJSFilePath, result);
+
+            console.log(chalk.green(`Compiled ${filePath} successfully`));
+        } catch (error) {
+            console.error(`Error compiling ${filePath}:`);
+            console.error(error);
+        }
+    }
+};
+
 export const tscWatch = () => {
     const cwd = process.cwd();
     const tsconfig = fs.readFileSync('./node_modules/nango/tsconfig.dev.json', 'utf8');
 
     const watchPath = [`${NANGO_INTEGRATIONS_LOCATION}/*.ts`, `${NANGO_INTEGRATIONS_LOCATION}/${configFile}`];
+    const rawNangoIntegrationLocation = NANGO_INTEGRATIONS_LOCATION.replace('./', '');
+
     const watcher = chokidar.watch(watchPath, {
         ignoreInitial: false,
         ignored: (filePath) => {
-            const rawNangoIntegrationLocation = NANGO_INTEGRATIONS_LOCATION.replace('./', '');
             return filePath === `${rawNangoIntegrationLocation}/models.ts`;
         }
     });
@@ -202,8 +241,6 @@ export const tscWatch = () => {
     if (!fs.existsSync(distDir)) {
         fs.mkdirSync(distDir);
     }
-
-    const rawNangoIntegrationLocation = NANGO_INTEGRATIONS_LOCATION.replace('./', '');
 
     watcher.on('add', (filePath) => {
         if (filePath === `${rawNangoIntegrationLocation}/${configFile}`) {
@@ -234,7 +271,6 @@ export const tscWatch = () => {
             const result = compiler.compile(fs.readFileSync(filePath, 'utf8'), filePath);
             const jsFilePath = path.join(path.dirname(filePath), path.basename(filePath, '.ts') + '.js');
 
-            const rawNangoIntegrationLocation = NANGO_INTEGRATIONS_LOCATION.replace('./', '');
             const distJSFilePath = jsFilePath.replace(rawNangoIntegrationLocation, `${rawNangoIntegrationLocation}/dist`);
             fs.writeFileSync(distJSFilePath, result);
 

@@ -16,6 +16,14 @@ if (hostport.slice(-1) === '/') {
     hostport = hostport.slice(0, -1);
 }
 
+export function setCloudHost() {
+    process.env['NANGO_HOSTPORT'] = cloudHost;
+}
+
+export function setStagingHost() {
+    process.env['NANGO_HOSTPORT'] = stagingHost;
+}
+
 export function checkEnvVars() {
     if (hostport === 'http://localhost:3003') {
         console.log(`Assuming you are running Nango on localhost:3003 because you did not set the NANGO_HOSTPORT env var.\n\n`);
