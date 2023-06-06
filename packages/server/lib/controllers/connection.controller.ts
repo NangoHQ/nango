@@ -16,7 +16,8 @@ import {
     LogLevel,
     LogAction,
     HTTP_VERB,
-    configService
+    configService,
+    AuthModes
 } from '@nangohq/shared';
 import { getAccount, getUserAndAccountFromSession } from '../utils/utils.js';
 import { getConnectionCredentials } from '../utils/connection.js';
@@ -161,22 +162,22 @@ class ConnectionController {
 
     async getConnectionsWeb(req: Request, res: Response, next: NextFunction) {
         try {
-            let account = (await getUserAndAccountFromSession(req)).account;
+            const account = (await getUserAndAccountFromSession(req)).account;
 
-            let connections = await connectionService.listConnections(account.id);
+            const connections = await connectionService.listConnections(account.id);
 
-            let configs = await configService.listProviderConfigs(account.id);
+            const configs = await configService.listProviderConfigs(account.id);
 
             if (configs == null) {
                 res.status(200).send({ connections: [] });
             }
 
-            let uniqueKeyToProvider: { [key: string]: string } = {};
-            let providerConfigKeys = configs.map((config: ProviderConfig) => config.unique_key);
+            const uniqueKeyToProvider: { [key: string]: string } = {};
+            const providerConfigKeys = configs.map((config: ProviderConfig) => config.unique_key);
 
             providerConfigKeys.forEach((key: string, i: number) => (uniqueKeyToProvider[key] = configs[i]!.provider));
 
-            let result = connections.map((connection) => {
+            const result = connections.map((connection) => {
                 return {
                     id: connection.id,
                     connectionId: connection.connection_id,
@@ -198,9 +199,9 @@ class ConnectionController {
 
     async deleteConnectionWeb(req: Request, res: Response, next: NextFunction) {
         try {
-            let account = (await getUserAndAccountFromSession(req)).account;
-            let connectionId = req.params['connectionId'] as string;
-            let providerConfigKey = req.query['provider_config_key'] as string;
+            const account = (await getUserAndAccountFromSession(req)).account;
+            const connectionId = req.params['connectionId'] as string;
+            const providerConfigKey = req.query['provider_config_key'] as string;
 
             if (connectionId == null) {
                 errorManager.errRes(res, 'missing_connection');
@@ -212,7 +213,7 @@ class ConnectionController {
                 return;
             }
 
-            let connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, account.id);
+            const connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, account.id);
 
             if (connection == null) {
                 errorManager.errRes(res, 'unkown_connection');
@@ -236,6 +237,7 @@ class ConnectionController {
             const accountId = getAccount(res);
             const connectionId = req.params['connectionId'] as string;
             const providerConfigKey = req.query['provider_config_key'] as string;
+            const returnRefreshToken = ((req.query['refresh_token'] === 'true') as boolean) || false;
             const instantRefresh = req.query['force_refresh'] === 'true';
 
             const action: LogAction = 'token';
@@ -255,6 +257,11 @@ class ConnectionController {
             const activityLogId = await createActivityLog(log);
             const connection = await getConnectionCredentials(res, connectionId, providerConfigKey, activityLogId as number, action, instantRefresh);
 
+            if (connection && !returnRefreshToken && connection.credentials.type === AuthModes.OAuth2) {
+                delete connection.credentials.refresh_token;
+                delete connection.credentials.raw['refresh_token'];
+            }
+
             await createActivityLogMessageAndEnd({
                 level: 'info',
                 activity_log_id: activityLogId as number,
@@ -273,9 +280,9 @@ class ConnectionController {
 
     async listConnections(req: Request, res: Response, next: NextFunction) {
         try {
-            let accountId = getAccount(res);
+            const accountId = getAccount(res);
             const { connectionId } = req.query;
-            let connections: Object[] = await connectionService.listConnections(accountId, connectionId as string);
+            const connections: Object[] = await connectionService.listConnections(accountId, connectionId as string);
 
             analytics.track('server:connection_list_fetched', accountId);
 
@@ -287,9 +294,9 @@ class ConnectionController {
 
     async deleteConnection(req: Request, res: Response, next: NextFunction) {
         try {
-            let accountId = getAccount(res);
-            let connectionId = req.params['connectionId'] as string;
-            let providerConfigKey = req.query['provider_config_key'] as string;
+            const accountId = getAccount(res);
+            const connectionId = req.params['connectionId'] as string;
+            const providerConfigKey = req.query['provider_config_key'] as string;
 
             if (connectionId == null) {
                 errorManager.errRes(res, 'missing_connection');
@@ -301,7 +308,7 @@ class ConnectionController {
                 return;
             }
 
-            let connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, accountId);
+            const connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, accountId);
 
             if (connection == null) {
                 errorManager.errRes(res, 'unkown_connection');
