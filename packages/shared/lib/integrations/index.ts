@@ -13,6 +13,7 @@ export interface NangoIntegrationData {
     runs: string;
     returns: string[];
     fileLocation?: string;
+    version?: string;
 }
 export interface NangoIntegration {
     [key: string]: {

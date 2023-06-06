@@ -88,7 +88,8 @@ export async function getSyncConfig(nangoConnection: NangoConnection, syncName?:
             providerConfig[syncConfig.sync_name] = {
                 runs: syncConfig.runs,
                 returns: syncConfig.models,
-                fileLocation: syncConfig.file_location
+                fileLocation: syncConfig.file_location,
+                version: syncConfig.version as string
             };
 
             nangoConfig.integrations[key] = providerConfig;

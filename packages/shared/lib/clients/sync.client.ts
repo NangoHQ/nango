@@ -12,6 +12,7 @@ import { createSchedule as createSyncSchedule } from '../services/sync/schedule.
 import connectionService from '../services/connection.service.js';
 import configService from '../services/config.service.js';
 import { createSync } from '../services/sync/sync.service.js';
+import { isCloud } from '../utils/utils.js';
 
 const generateWorkflowId = (sync: Sync, syncName: string, connectionId: string) => `${TASK_QUEUE}.${syncName}.${connectionId}-${sync.id}`;
 const generateScheduleId = (sync: Sync, syncName: string, connectionId: string) => `${TASK_QUEUE}.${syncName}.${connectionId}-schedule-${sync.id}`;
@@ -53,7 +54,8 @@ class SyncClient {
         const nangoConnection = (await connectionService.getConnectionById(nangoConnectionId)) as NangoConnection;
         const nangoConfig = await loadNangoConfig(nangoConnection);
         if (!nangoConfig) {
-            console.log('Failed to load Nango config - will not start any syncs!');
+            const message = isCloud() ? ' If you expect to see a sync make sure you used the nango cli deploy command' : '';
+            console.log('Failed to load Nango config - will not start any syncs!' + message);
             return;
         }
         const { integrations }: NangoConfig = nangoConfig;

@@ -225,7 +225,8 @@ export async function syncProvider(
                             syncType,
                             responseResults,
                             formattedResults.length > 0,
-                            upsertSuccess
+                            upsertSuccess,
+                            syncData.version
                         );
                     } else {
                         reportFailureForResults(syncType, activityLogId, syncName, 'There was an issue inserting the incoming data');
@@ -253,7 +254,8 @@ async function reportResults(
     syncType: SyncType,
     responseResults: UpsertResponse,
     anyResultsInserted: boolean,
-    upsertSuccess: boolean
+    upsertSuccess: boolean,
+    version?: string
 ) {
     await updateSyncJobStatus(syncJobId, SyncStatus.SUCCESS);
     await updateSuccess(activityLogId, true);
@@ -264,7 +266,9 @@ async function reportResults(
 
     const { added, updated } = syncResult;
 
-    const successMessage = `The ${syncType} "${syncName}" sync has been completed to the ${model} model.`;
+    const successMessage =
+        `The ${syncType} "${syncName}" sync has been completed to the ${model} model.` +
+        (version ? `The version integration script version ran was ${version}.` : '');
 
     let resultMessage = '';
 
