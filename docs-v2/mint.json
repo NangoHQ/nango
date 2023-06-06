@@ -64,14 +64,7 @@
         },
         {
             "group": "Nango Auth",
-            "pages": [
-                "nango-auth/overview",
-                {
-                    "group": "Guides",
-                    "pages": ["nango-auth/guides/oauth", "nango-auth/guides/api-key-auth"]
-                },
-                "nango-auth/configuration"
-            ]
+            "pages": ["nango-auth/overview", "nango-auth/configuration"]
         },
         {
             "group": "Nango Sync",
