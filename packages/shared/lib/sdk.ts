@@ -390,9 +390,9 @@ export class Nango {
     }
 
     private async listConnectionDetails(connectionId?: string) {
-        const url = `${this.serverUrl}/connection?`;
+        let url = `${this.serverUrl}/connection?`;
         if (connectionId) {
-            url.concat(`connectionId=${connectionId}`);
+            url = url.concat(`connectionId=${connectionId}`);
         }
 
         const headers = {

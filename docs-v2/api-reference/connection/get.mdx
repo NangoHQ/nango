@@ -2,3 +2,37 @@
 title: 'Get a Connection'
 openapi: 'GET /connection/{connectionId}'
 ---
+
+<ResponseExample>
+  ```json Example Response
+{
+    "id": 2879,
+    "created_at": "2023-02-10T15:13:27.749Z",
+    "updated_at": "2023-02-10T15:13:27.749Z",
+    "provider_config_key": "github-cloud",
+    "connection_id": "1",
+    "credentials": {
+        "type": "OAUTH2",
+        "access_token": "duwehdwiiwefiwuelhfhwlueqhfiue",
+        "raw": {
+        "access_token": "f;wefhwefwefhiqwhliufhqwluwfhiluh",
+        "token_type": "bearer",
+        "scope": "public_repo"
+        }
+    },
+    "connection_config": {},
+    "account_id": 272,
+    "metadata": {
+        realmId: "XXXXX",
+        instance_id: "YYYYYYY"
+    }
+}
+  ```
+</ResponseExample>
+
+<Tip>
+Every time you fetch the connection with this API endpoint Nango will check if the access token has expired. If it has, it will refresh it.
+
+**We recommend you always fetch the token just before you use it to make sure it is fresh!**
+
+</Tip>

@@ -29,6 +29,7 @@ airtable:
     auth:
         response_type: code
     base_api_url: https://api.airtable.com
+    docs: https://airtable.com/developers/web/api/introduction
 amazon:
     auth_mode: OAUTH2
     authorization_url: https://www.amazon.com/ap/oa
