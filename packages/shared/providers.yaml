@@ -28,6 +28,8 @@ airtable:
     authorization_method: header
     auth:
         response_type: code
+    base_api_url: https://api.airtable.com
+    docs: https://airtable.com/developers/web/api/introduction
 amazon:
     auth_mode: OAUTH2
     authorization_url: https://www.amazon.com/ap/oa
@@ -48,6 +50,8 @@ asana:
         response_type: code
     refresh_params:
         grant_type: refresh_token
+    base_api_url: https://app.asana.com
+    docs: https://developers.asana.com/reference
 atlassian:
     auth_mode: OAUTH2
     authorization_url: https://auth.atlassian.com/authorize
@@ -320,6 +324,8 @@ hubspot:
     auth_mode: OAUTH2
     authorization_url: https://app.hubspot.com/oauth/authorize
     token_url: https://api.hubapi.com/oauth/v1/token
+    base_api_url: https://api.hubapi.com
+    docs: https://developers.hubspot.com/docs/api/overview
 instagram:
     auth_mode: OAUTH2
     authorization_url: https://api.instagram.com/oauth/authorize
@@ -540,6 +546,8 @@ slack:
     auth_mode: OAUTH2
     authorization_url: https://slack.com/oauth/v2/authorize
     token_url: https://slack.com/api/oauth.v2.access
+    base_api_url: https://slack.com/api
+    docs: https://api.slack.com/apis
 smugmug:
     auth_mode: OAUTH1
     request_url: https://api.smugmug.com/services/oauth/1.0a/getRequestToken
