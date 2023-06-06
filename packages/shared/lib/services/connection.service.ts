@@ -29,6 +29,7 @@ import encryptionManager from '../utils/encryption.manager.js';
 import { AuthModes as ProviderAuthModes, OAuth2Credentials, ImportedCredentials } from '../models/Auth.js';
 import { schema } from '../db/database.js';
 import { getAccount, parseTokenExpirationDate, isTokenExpired } from '../utils/utils.js';
+import SyncClient from '../clients/sync.client.js';
 import errorManager from '../utils/error.manager.js';
 
 class ConnectionService {
@@ -80,7 +81,7 @@ class ConnectionService {
 
         const { connection_config, metadata } = parsedRawCredentials as Partial<Pick<BaseConnection, 'metadata' | 'connection_config'>>;
 
-        const importedConnection = this.upsertConnection(
+        const importedConnection = await this.upsertConnection(
             connection_id,
             provider_config_key,
             provider,
@@ -89,6 +90,11 @@ class ConnectionService {
             accountId,
             metadata as Record<string, string>
         );
+
+        if (importedConnection) {
+            const syncClient = await SyncClient.getInstance();
+            syncClient.initiate(importedConnection[0].id);
+        }
 
         return importedConnection;
     }
