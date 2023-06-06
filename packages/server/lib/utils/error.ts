@@ -171,6 +171,12 @@ export class NangoError extends Error {
                 this.message = 'Reset password token expired on unknown.';
                 break;
 
+            case 'missing_base_api_url':
+                this.status = 501;
+                this.message =
+                    'The proxy is not supported for the provider. You can easily add support by following the instructions at https://docs.nango.dev/contribute-api';
+                break;
+
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;
