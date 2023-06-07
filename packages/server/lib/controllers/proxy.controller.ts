@@ -1,6 +1,7 @@
-import type { Request, Response } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import type { OutgoingHttpHeaders } from 'http';
-import type { NextFunction } from 'express';
+import url, { UrlWithParsedQuery } from 'url';
+import querystring from 'querystring';
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import { backOff } from 'exponential-backoff';
 
@@ -100,7 +101,10 @@ class ProxyController {
 
             const { method } = req;
 
-            const endpoint = req.params[0] as string;
+            const path = req.params[0] as string;
+            const { query }: UrlWithParsedQuery = url.parse(req.url, true) as unknown as UrlWithParsedQuery;
+            const queryString = querystring.stringify(query);
+            const endpoint = `${path}${queryString ? `?${queryString}` : ''}`;
 
             if (!endpoint) {
                 errorManager.errRes(res, 'missing_endpoint');
