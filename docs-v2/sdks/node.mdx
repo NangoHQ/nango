@@ -145,6 +145,11 @@ The return value looks like this:
 
 ## Direct requests
 
+<Note>
+    Direct Requests are not available for all APIs yet.  
+    Check the API's [Integrations page](/integrations) (`Cmd + K` for search) to see if it is available for you API.
+</Note>
+
 To execute proxy requests, use:
 
 ```typescript
@@ -153,6 +158,13 @@ const res = await nango.proxy({
     endpoint: '/calendar/v3/users/me/calendarList',
     providerConfigKey: '<INTEGRATION-ID>',
     connectionId: '<CONNECTION-ID>',
+    headers: {
+        Go: 'Here'
+    },
+    params: {
+        query: 'params!'
+    },
+    retries: 5, // If response code != 200. Exponential backoff, default is 0
     data: {
         id: 1,
         colorId: 'blue',
@@ -160,6 +172,8 @@ const res = await nango.proxy({
     }
 });
 ```
+
+There are also convenience methods available: `nango.get({})`, `nango.post({})`, `nango.patch{{}}` and `nango.delete({})`.
 
 ## Read data
 
