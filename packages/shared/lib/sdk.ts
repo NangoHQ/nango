@@ -3,7 +3,7 @@ import { validateProxyConfiguration, validateSyncRecordConfiguration } from './u
 import _ from 'lodash';
 
 import type { ProxyConfiguration } from './models/Proxy.js';
-import type { GetRecordsRequestConfig } from './models/Sync.js';
+import type { GetRecordsRequestConfig, SyncWebhookBody } from './models/Sync.js';
 import type { LogLevel, ActivityLogMessage } from './models/Activity.js';
 import { formatDataRecords } from './services/sync/data-records.service.js';
 import { upsert } from './services/sync/data.service.js';
@@ -414,4 +414,4 @@ export class Nango {
     }
 }
 
-export { Nango as NangoHelper };
+export { Nango as NangoHelper, SyncWebhookBody as NangoSyncWebhookBody };

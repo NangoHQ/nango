@@ -1,19 +1,9 @@
 import axios from 'axios';
 import type { SyncType } from '../models/Sync';
 import type { NangoConnection } from '../models/Connection';
-import type { SyncResult } from '../models/Sync';
+import type { SyncResult, SyncWebhookBody } from '../models/Sync';
 import accountService from './account.service.js';
 import { createActivityLogMessage } from './activity.service.js';
-
-interface WebhookBody {
-    connectionId: string;
-    providerConfigKey: string;
-    syncName: string;
-    model: string;
-    responseResults: SyncResult;
-    syncType: SyncType;
-    queryTimeStamp: string;
-}
 
 class WebhookService {
     async sendUpdate(
@@ -35,7 +25,7 @@ class WebhookService {
             return;
         }
 
-        const body: WebhookBody = {
+        const body: SyncWebhookBody = {
             connectionId: nangoConnection.connection_id,
             providerConfigKey: nangoConnection.provider_config_key,
             syncName,

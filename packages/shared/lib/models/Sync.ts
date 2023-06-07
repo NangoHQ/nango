@@ -109,3 +109,13 @@ export interface IncomingSyncConfig {
     runs: string;
     version?: string;
 }
+
+export interface SyncWebhookBody {
+    connectionId: string;
+    providerConfigKey: string;
+    syncName: string;
+    model: string;
+    responseResults: SyncResult;
+    syncType: SyncType;
+    queryTimeStamp: string;
+}
