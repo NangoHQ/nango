@@ -60,18 +60,11 @@
     "navigation": [
         {
             "group": "Getting Started",
-            "pages": ["introduction", "why-nango", "quickstart", "core-concepts"]
+            "pages": ["introduction", "quickstart", "core-concepts"]
         },
         {
             "group": "Nango Auth",
-            "pages": [
-                "nango-auth/overview",
-                {
-                    "group": "Guides",
-                    "pages": ["nango-auth/guides/oauth", "nango-auth/guides/api-key-auth"]
-                },
-                "nango-auth/configuration"
-            ]
+            "pages": ["nango-auth/overview", "nango-auth/configuration"]
         },
         {
             "group": "Nango Sync",
@@ -221,6 +214,7 @@
                 "integrations/all/stackexchange",
                 "integrations/all/strava",
                 "integrations/all/stripe",
+		"integrations/all/survey-monkey",
                 "integrations/all/teamwork",
                 "integrations/all/todoist",
                 "integrations/all/timely",

@@ -8,6 +8,44 @@ The Nango frontend SDK is
 [available on NPM](https://www.npmjs.com/package/@nangohq/frontend) with the
 package `@nangohq/frontend`.
 
+## Initiating Nango
+
+<Tabs>
+
+<Tab title="Nango Cloud">
+
+Get your `Public Key` from the [Project Settings](https://app.nango.dev/project-settings) page.
+
+```ts
+import Nango from '@nangohq/frontend';
+
+let nango = new Nango({ publicKey: '<PUBLIC-KEY>' });
+```
+
+</Tab>
+
+<Tab title="Localhost">
+
+```ts
+import Nango from '@nangohq/frontend';
+
+let nango = new Nango();
+```
+
+</Tab>
+
+<Tab title="Self-hosted">
+
+```ts
+import Nango from '@nangohq/frontend';
+
+let nango = new Nango({ host: 'https://<YOUR-NANGO-INSTANCE>' });
+```
+
+</Tab>
+
+</Tabs>
+
 ## Triggering OAuth flows
 
 You trigger OAuth flows with `nango.auth`. This function returns a promise,

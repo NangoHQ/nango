@@ -221,6 +221,7 @@ class ConnectionController {
             const accountId = getAccount(res);
             const connectionId = req.params['connectionId'] as string;
             const providerConfigKey = req.query['provider_config_key'] as string;
+            const returnRefreshToken = ((req.query['refresh_token'] === 'true') as boolean) || false;
             const instantRefresh = req.query['force_refresh'] === 'true';
             const isSync = req.get('Nango-Is-Sync') as string;
 
@@ -256,6 +257,11 @@ class ConnectionController {
                         instant_refresh: instantRefresh
                     }
                 });
+            }
+
+            if (connection && !returnRefreshToken && connection.credentials.type === ProviderAuthModes.OAuth2) {
+                delete connection.credentials.refresh_token;
+                delete connection.credentials.raw['refresh_token'];
             }
 
             res.status(200).send(connection);

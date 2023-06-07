@@ -1,6 +1,5 @@
-import type { Request, Response } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import type { OutgoingHttpHeaders } from 'http';
-import type { NextFunction } from 'express';
 import stream, { Transform, TransformCallback, PassThrough } from 'stream';
 import url, { UrlWithParsedQuery } from 'url';
 import querystring from 'querystring';
