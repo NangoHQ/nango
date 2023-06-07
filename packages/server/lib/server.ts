@@ -4,7 +4,6 @@
 
 // Import environment variables (if running server locally).
 import _ from './utils/config.js';
-import db from './db/database.js';
 import oauthController from './controllers/oauth.controller.js';
 import configController from './controllers/config.controller.js';
 import connectionController from './controllers/connection.controller.js';
@@ -26,10 +25,12 @@ import passport from 'passport';
 import accountController from './controllers/account.controller.js';
 import type { Response, Request } from 'express';
 import Logger from './utils/logger.js';
-import { encryptionManager } from '@nangohq/shared';
 import accountService from './services/account.service.js';
 import oAuthSessionService from './services/oauth-session.service.js';
 import { deleteOldActivityLogs } from './jobs/index.js';
+import migrate from './utils/migrate.js';
+
+const { NANGO_MIGRATE_AT_START = 'true' } = process.env;
 
 let app = express();
 
@@ -46,9 +47,16 @@ let webAuth = isCloud()
 app.use(express.json());
 app.use(cors());
 
-await db.knex.raw(`CREATE SCHEMA IF NOT EXISTS ${db.schema()}`);
-await db.migrate(path.join(dirname(), '../../lib/db/migrations'));
-await encryptionManager.encryptDatabaseIfNeeded();
+// Set to 'false' to disable migration at startup. Appropriate when you
+// have multiple replicas of the service running and you do not want them
+// all trying to migrate the database at the same time. In this case, the
+// operator should run migrate.ts once before starting the service.
+if (NANGO_MIGRATE_AT_START === 'true') {
+    await migrate();
+} else {
+    Logger.info('Not migrating database');
+}
+
 await accountService.cacheAccountSecrets();
 await oAuthSessionService.clearStaleSessions();
 
