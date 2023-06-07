@@ -618,6 +618,15 @@ stripe:
     auth_mode: OAUTH2
     authorization_url: https://connect.stripe.com/oauth/authorize
     token_url: https://connect.stripe.com/oauth/token
+survey-monkey:
+    auth_mode: OAUTH2
+    authorization_url: https://api.surveymonkey.com/oauth/authorize
+    token_url: https://api.surveymonkey.com/oauth/token
+    disable_pkce: true
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
 teamwork:
     auth_mode: OAUTH2
     authorization_url: https://www.teamwork.com/launchpad/login

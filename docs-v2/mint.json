@@ -214,6 +214,7 @@
                 "integrations/all/stackexchange",
                 "integrations/all/strava",
                 "integrations/all/stripe",
+		"integrations/all/survey-monkey",
                 "integrations/all/teamwork",
                 "integrations/all/todoist",
                 "integrations/all/timely",
