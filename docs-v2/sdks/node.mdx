@@ -48,9 +48,9 @@ let nango = new Nango({ host: '<NANGO-HOST-AND-PORT>' });
 </Tab>
 </Tabs>
 
-# Auth
+## Auth
 
-## Retrieve API credentials
+### Retrieve API credentials
 
 For OAuth 2 integrations this will return you the current access token (already refreshed if needed). For API key based integrations it will return the API key.
 For OAuth 1.0a integrations it will return you a small object with the neccessary details to sign the request.
@@ -99,7 +99,7 @@ metadata: {}                                // Structured metadata retrieved by 
 }
 ```
 
-## List connections for a user
+### List connections for a user
 
 ```js
 let list = await nango.listConnections('<CONNECTION-ID>');
@@ -122,7 +122,7 @@ This returns you all [Connections](/core-concepts#connections) of a specific use
 }
 ```
 
-## List all connections
+### List all connections
 
 ```js
 let list = await nango.listConnections();
@@ -147,13 +147,15 @@ The return value looks like this:
 }
 ```
 
-# Sync
+## Sync
 
-## Direct requests
+### Nango Proxy
 
 <Note>
-    Direct Requests are not available for all APIs yet.  
+    The Nango Proxy is not available for all APIs yet.  
     Check the API's [Integrations page](/integrations) (`Cmd + K` for search) to see if it is available for you API.
+
+    If you need additional APIs supported please reach out on the [Slack community](https://www.nango.dev/slack): We can enable support within a few hours.
 </Note>
 
 To execute proxy requests, use:
@@ -181,10 +183,20 @@ const res = await nango.proxy({
 
 There are also convenience methods available: `nango.get({})`, `nango.post({})`, `nango.patch{{}}` and `nango.delete({})`.
 
-## Read data
+**Return value**  
+When you call the proxy Nango creates the API request to the external API and runs it for you (possibly with retries).
+
+The response from the external API is passed back to you exactly as Nango gets it:
+* Response code
+* Response headers
+* Response body
+
+For the node SDK Nango returns an [Axios response object](https://axios-http.com/docs/res_schema).
+
+### Read data
 
 <Note>This feature is in private beta. Request access on the [community](https://nango.dev/slack).</Note>
 
-## Write data
+### Write data
 
 <Note>This feature is in private beta. Request access on the [community](https://nango.dev/slack).</Note>

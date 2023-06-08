@@ -392,7 +392,12 @@ paths:
                   name: Retries
                   schema:
                       type: string
-                  description: The number of retries in case of failure (with exponential back-off).
+                  description: The number of retries in case of failure (with exponential back-off). Optional, default 0.
+                - in: header
+                  name: Any-Header
+                  schema:
+                      type: string
+                  description: Any other headers you send are passed on to the external API
         post:
             description: Make a POST request with the Proxy.
             parameters:
@@ -417,7 +422,12 @@ paths:
                   name: Retries
                   schema:
                       type: string
-                  description: The number of retries in case of failure (with exponential back-off).
+                  description: The number of retries in case of failure (with exponential back-off). Optional, default 0.
+                - in: header
+                  name: Any-Header
+                  schema:
+                      type: string
+                  description: Any other headers you send are passed on to the external API
             requestBody:
                 content:
                     application/json:
@@ -450,7 +460,12 @@ paths:
                   name: Retries
                   schema:
                       type: string
-                  description: The number of retries in case of failure (with exponential back-off).
+                  description: The number of retries in case of failure (with exponential back-off). Optional, default 0.
+                - in: header
+                  name: Any-Header
+                  schema:
+                      type: string
+                  description: Any other headers you send are passed on to the external API
             requestBody:
                 content:
                     application/json:
@@ -483,7 +498,12 @@ paths:
                   name: Retries
                   schema:
                       type: string
-                  description: The number of retries in case of failure (with exponential back-off).
+                  description: The number of retries in case of failure (with exponential back-off). Optional, default 0.
+                - in: header
+                  name: Any-Header
+                  schema:
+                      type: string
+                  description: Any other headers you send are passed on to the external API
             requestBody:
                 content:
                     application/json:
@@ -521,4 +541,9 @@ paths:
                   name: Retries
                   schema:
                       type: string
-                  description: The number of retries in case of failure (with exponential back-off).
+                  description: The number of retries in case of failure (with exponential back-off). Optional, default 0.
+                - in: header
+                  name: Any-Header
+                  schema:
+                      type: string
+                  description: Any other headers you send are passed on to the external API
