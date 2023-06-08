@@ -86,6 +86,18 @@ export function checkForIntegrationFile(syncName: string, optionalNangoIntegrati
     };
 }
 
+export function getIntegrationFile(syncName: string, setIntegrationPath?: string | null) {
+    try {
+        const filePath = setIntegrationPath || path.resolve(__dirname, `../nango-integrations/dist/${syncName}.${SYNC_FILE_EXTENSION}`);
+        const realPath = fs.realpathSync(filePath);
+        const integrationFileContents = fs.readFileSync(realPath, 'utf8');
+
+        return integrationFileContents;
+    } catch (error) {
+        return null;
+    }
+}
+
 export async function getIntegrationClass(syncName: string, setIntegrationPath?: string) {
     try {
         const filePath = setIntegrationPath || path.resolve(__dirname, `../nango-integrations/dist/${syncName}.${SYNC_FILE_EXTENSION}`);

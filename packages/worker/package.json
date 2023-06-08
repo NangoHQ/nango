@@ -22,11 +22,13 @@
         "@temporalio/worker": "^1.5.2",
         "@temporalio/workflow": "^1.5.2",
         "dotenv": "^16.0.3",
+        "isolated-vm": "^4.5.0",
         "js-yaml": "^4.1.0",
         "knex": "^2.4.2",
         "md5": "^2.3.0",
         "nanoid": "3.x",
-        "uuid": "^9.0.0"
+        "uuid": "^9.0.0",
+        "vm2": "^3.9.19"
     },
     "devDependencies": {
         "@octokit/rest": "^19.0.7",

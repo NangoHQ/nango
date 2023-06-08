@@ -19,7 +19,6 @@ import {
     NangoIntegration,
     NangoIntegrationData,
     checkForIntegrationFile,
-    getIntegrationClass,
     loadNangoConfig,
     updateSyncJobResult,
     SyncResult,
@@ -30,6 +29,7 @@ import {
     NangoConnection
 } from '@nangohq/shared';
 import type { ContinuousSyncArgs, InitialSyncArgs } from './models/Worker';
+import integationService from './services/integration.service.js';
 
 export async function routeSync(args: InitialSyncArgs): Promise<boolean> {
     const { syncId, syncJobId, syncName, activityLogId, nangoConnection } = args;
@@ -97,7 +97,7 @@ export async function syncProvider(
         await createActivityLogMessageAndEnd({
             level: 'error',
             activity_log_id: activityLogId,
-            content: `No nango config was found for ${syncName}.`,
+            content: `No sync configuration was found for ${syncName}.`,
             timestamp: Date.now()
         });
 
@@ -149,37 +149,16 @@ export async function syncProvider(
         const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
         const { returns: models } = syncData;
 
-        const integrationClass = await getIntegrationClass(syncName);
-        if (!integrationClass) {
-            await createActivityLogMessage({
-                level: 'error',
-                activity_log_id: activityLogId,
-                content: `There was a problem loading the integration class for ${syncName}.`,
-                timestamp: Date.now()
-            });
-
-            await updateSyncJobStatus(syncJobId, SyncStatus.STOPPED);
-            return false;
-        }
-
         try {
             result = true;
 
-            // add support for other methods
-            if (!integrationClass.fetchData) {
-                await createActivityLogMessage({
-                    level: 'error',
-                    activity_log_id: activityLogId,
-                    content: `The integration file does not implement the fetchData method for ${syncName}.`,
-                    timestamp: Date.now()
-                });
+            const userDefinedResults = await integationService.runScript(syncName, activityLogId, nango);
 
+            if (userDefinedResults === null) {
                 await updateSyncJobStatus(syncJobId, SyncStatus.STOPPED);
+
                 return false;
             }
-
-            // TODO move this to a integration service
-            const userDefinedResults = await integrationClass.fetchData(nango);
 
             let responseResults: UpsertResponse | null = { addedKeys: [], updatedKeys: [], affectedInternalIds: [], affectedExternalIds: [] };
 

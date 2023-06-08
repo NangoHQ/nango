@@ -138,9 +138,10 @@ export class Nango {
      * @param connectionId - This is the unique connection identifier used to identify this connection
      * @param [forceRefresh] - When set, this is used to  obtain a new refresh token from the provider before the current token has expired,
      * you can set the forceRefresh argument to true.
+     * @param [refreshToken] - When set this returns the refresh token as part of the response
      */
-    public async getConnection(providerConfigKey: string, connectionId: string, forceRefresh?: boolean) {
-        const response = await this.getConnectionDetails(providerConfigKey, connectionId, forceRefresh);
+    public async getConnection(providerConfigKey: string, connectionId: string, forceRefresh?: boolean, refreshToken?: boolean) {
+        const response = await this.getConnectionDetails(providerConfigKey, connectionId, forceRefresh, refreshToken);
         return response.data;
     }
 
@@ -243,7 +244,7 @@ export class Nango {
         return response.data;
     }
 
-    private async getConnectionDetails(providerConfigKey: string, connectionId: string, forceRefresh = false, additionalHeader = {}) {
+    private async getConnectionDetails(providerConfigKey: string, connectionId: string, forceRefresh = false, refreshToken = false, additionalHeader = {}) {
         const url = `${this.serverUrl}/connection/${connectionId}`;
 
         const headers = {
@@ -257,7 +258,8 @@ export class Nango {
 
         const params = {
             provider_config_key: providerConfigKey,
-            force_refresh: forceRefresh
+            force_refresh: forceRefresh,
+            refresh_token: refreshToken
         };
 
         return axios.get(url, { params: params, headers: this.enrichHeaders(headers) });
@@ -311,7 +313,7 @@ export class Nango {
             throw new Error('Connection Id is required');
         }
 
-        const response = await this.getConnectionDetails(providerConfigKey, connectionId, false, { 'Nango-Is-Sync': true });
+        const response = await this.getConnectionDetails(providerConfigKey, connectionId, false, false, { 'Nango-Is-Sync': true });
 
         return response.data.field_mappings;
     }

@@ -154,7 +154,8 @@ export const run = async (args: string[], options: RunArgs) => {
             if (lastSyncDate instanceof Date && !isNaN(lastSyncDate.getTime())) {
                 nango.setLastSyncDate(lastSyncDate);
             }
-            const userDefinedResults = await integrationClass.fetchData(nango);
+            // @ts-ingore
+            const userDefinedResults = await integrationClass?.fetchData(nango);
             console.log(JSON.stringify(userDefinedResults, null, 2));
             fs.renameSync(
                 path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/dist/${syncName}.mjs`),
@@ -210,10 +211,9 @@ export const tsc = () => {
         try {
             const result = compiler.compile(fs.readFileSync(filePath, 'utf8'), filePath);
             const jsFilePath = path.join(path.dirname(filePath), path.basename(filePath, '.ts') + '.js');
-
             const distJSFilePath = jsFilePath.replace(rawNangoIntegrationLocation, `${rawNangoIntegrationLocation}/dist`);
-            fs.writeFileSync(distJSFilePath, result);
 
+            fs.writeFileSync(distJSFilePath, result);
             console.log(chalk.green(`Compiled ${filePath} successfully`));
         } catch (error) {
             console.error(`Error compiling ${filePath}:`);
@@ -252,7 +252,6 @@ export const tscWatch = () => {
     watcher.on('change', (filePath) => {
         if (filePath === `${rawNangoIntegrationLocation}/${configFile}`) {
             // config file changed, re-compile each ts file
-
             const integrationFiles = glob.sync(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/*.ts`));
             for (const file of integrationFiles) {
                 compileFile(file);

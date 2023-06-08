@@ -416,7 +416,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                             <p className="inline-block text-red-500 text-sm">stopped</p>
                                                         </div>
                                                     )}
-                                                    {sync.latest_sync.status === 'STOPPED' && (
+                                                    {sync.latest_sync.status === 'STOPPED' && sync.schedule_status !== 'PAUSED' && (
                                                         sync.latest_sync.activity_log_id !== null ? (
                                                             <Link
                                                             to={`/activity?activity_log_id=${sync.latest_sync.activity_log_id}`}
@@ -483,7 +483,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                 <li className="flex ml-8">
                                                     <button
                                                         className="flex h-8 mr-2 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white bg-gray-800 hover:bg-gray-700"
-                                                        onClick={() => syncCommand((sync.schedule_status === 'RUNNING' && sync.latest_sync.status !== 'STOPPED') ? 'PAUSE' : 'UNPAUSE', sync.nango_connection_id, sync.schedule_id, sync.id)}
+                                                        onClick={() => syncCommand((sync.schedule_status === 'RUNNING') ? 'PAUSE' : 'UNPAUSE', sync.nango_connection_id, sync.schedule_id, sync.id)}
                                                     >
                                                         <p>{sync.schedule_status === 'RUNNING' ? 'Pause' : 'Start'}</p>
                                                     </button>
