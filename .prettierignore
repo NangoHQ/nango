@@ -5,3 +5,4 @@ node_modules
 templates
 **/node_modules/**
 config/events/*.json
+docs-v2/**
