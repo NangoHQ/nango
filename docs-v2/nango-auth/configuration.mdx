@@ -29,7 +29,11 @@ https://<USER-SUBDOMAIN>.zendesk.com/oauth/authorizations/new
 To specify the subdomain, pass in an additional configuration object to `nango.auth()`:
 
 ```javascript
-nango.auth('zendesk', '<CONNECTION-ID>', { params: { subdomain: '<ZENDESK-SUBDOMAIN>' } });
+nango.auth('zendesk', '<CONNECTION-ID>', {
+    params: { 
+        subdomain: '<ZENDESK-SUBDOMAIN>' 
+    }
+});
 ```
 
 You can find which configuration parameters are necessary for your [Connection](/core-concepts#connections) in the [providers.yaml](https://nango.dev/providers.yaml) file.
