@@ -8,9 +8,9 @@
 # 4. Bump the docker image version of both the worker and the server
 # 5. Bump the cli version in the package.json and publish it
 #
-if [ $# -lt 2 ]
+if [ $# -lt 3 ]
 then
-    echo "Usage: ./beta-release.bash [server_version] [worker_version]"
+    echo "Usage: ./release.bash [server_version] [worker_version] [prod|staging]"
     exit 1
 fi
 
@@ -27,11 +27,8 @@ function update_package_json_version() {
 
     VERSION=$(jq -r '.version' $PACKAGE_JSON)
 
-    # Remove '-beta' from the version
-    BASE_VERSION=${VERSION%-beta}
-
     # Split the version into its parts
-    IFS='.' read -ra VERSION_PARTS <<< "$BASE_VERSION"
+    IFS='.' read -ra VERSION_PARTS <<< "$VERSION"
 
     # Get the last part of the version
     LAST_PART=${VERSION_PARTS[${#VERSION_PARTS[@]}-1]}
@@ -41,9 +38,6 @@ function update_package_json_version() {
 
     # Replace the last part in the version
     NEW_VERSION="${VERSION_PARTS[0]}.${VERSION_PARTS[1]}.$NEW_LAST_PART"
-
-    # Add '-beta' back to the version
-    NEW_VERSION="${NEW_VERSION}-beta"
 
     # Update the version in the JSON file
     jq --arg NEW_VERSION "$NEW_VERSION" '.version = $NEW_VERSION' --indent 4 $PACKAGE_JSON | sponge $PACKAGE_JSON
@@ -66,16 +60,17 @@ if git diff --quiet -- ./packages/shared || git diff --cached --quiet -- ./packa
 
     rm -rf packages/shared/dist
     npm run ts-build
-    cd ./packages/shared && npm publish --tag beta --access public && cd ../../
+    cd ./packages/shared && npm publish --access public && cd ../../
     NODE_CLIENT_PACKAGE_JSON="packages/node-client/package.json"
     update_package_json_version $NODE_CLIENT_PACKAGE_JSON
     npm i
     npm run ts-build
-    cd ./packages/node-client && npm publish --tag beta --access public && cd ../../
+    cd ./packages/node-client && npm publish --access public && cd ../../
 fi
 
 SERVER_VERSION=$1
 WORKER_VERSION=$2
+ENV=$3
 DOCKER_COMPOSE_FILE="packages/cli/docker/docker-compose.yaml"
 
 # STEP 2
@@ -84,18 +79,18 @@ npm run ts-build
 cd ./packages/webapp && npm run build && cd ../../
 
 # STEP 3 -- run as background because it takes a while and it is non blocking
-./scripts/docker-publish.bash nango-server $SERVER_VERSION-beta false hosted &
-./scripts/docker-publish.bash nango-worker $WORKER_VERSION-beta true hosted &
+./scripts/docker-publish.bash nango-server $SERVER_VERSION true $3 &
+./scripts/docker-publish.bash nango-worker $WORKER_VERSION true $3 &
 
 SERVER_IMAGE="nangohq/nango-server"
 WORKER_IMAGE="nangohq/nango-worker"
 
 # STEP 4
 # Replace the version for nango-server
-sed -i "" "s|${SERVER_IMAGE}:[^ ]*|${SERVER_IMAGE}:${SERVER_VERSION}-beta|g" $DOCKER_COMPOSE_FILE
+sed -i "" "s|${SERVER_IMAGE}:[^ ]*|${SERVER_IMAGE}:${SERVER_VERSION}|g" $DOCKER_COMPOSE_FILE
 
 # Replace the version for nango-worker
-sed -i "" "s|${WORKER_IMAGE}:[^ ]*|${WORKER_IMAGE}:${WORKER_VERSION}-beta|g" $DOCKER_COMPOSE_FILE
+sed -i "" "s|${WORKER_IMAGE}:[^ ]*|${WORKER_IMAGE}:${WORKER_VERSION}|g" $DOCKER_COMPOSE_FILE
 
 wait
 
@@ -105,4 +100,4 @@ echo "nango-server and nango-worker published successfully and docker-compose in
 CLI_PACKAGE_JSON="packages/cli/package.json"
 update_package_json_version $CLI_PACKAGE_JSON
 
-cd ./packages/cli && npm publish --tag beta --access public && cd ../../
+cd ./packages/cli && npm publish --access public && cd ../../
