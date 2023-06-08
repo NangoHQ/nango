@@ -64,7 +64,12 @@ let creds = await nango.getToken('<INTEGRATION-ID>', '<CONNECTION-ID>');
 ## Retrieve Connection details
 
 ```js
-let connection = await nango.getConnection('<INTEGRATION-ID>', '<CONNECTION-ID>');
+let connection = await nango.getConnection(
+    '<INTEGRATION-ID>',
+    '<CONNECTION-ID>',
+    '<FORCE_REFRESH?: boolean>', // Optional: attempt to refresh the access access token regardless of its expiration status, defaults to false
+    '<REFRESH_TOKEN?: boolean>', // Optional: return the refresh token as part of the response, defaults to false
+);
 ```
 
 This retrieves the full Connection object from Nango, which looks like this:
@@ -79,10 +84,11 @@ connection_id: '1',                         // <CONNECTION-ID>
 credentials: {
     type: 'OAUTH2',                         // OAUTH2 or OAUTH1
     access_token: 'gho_tsXLG73f....',       // The current access token (refreshed if needed)
-    refresh_token: 'gho_fjofu84u9....',     // Refresh token (if available, otherwise missing)
+    refresh_token: 'gho_fjofu84u9....',     // Refresh token (Only returned if the REFRESH_TOKEN boolean parameter is set to true and the refresh token is available)
     expires_at: '2024-03-08T09:43:03.725Z', // Expiration date of access token (only if refresh token is present, otherwise missing)
     raw: {                                  // Raw token response from the OAuth provider: Contents vary!
         access_token: 'gho_tsXLG73f....',
+        refresh_token: 'gho_fjofu84u9....', // Refresh token (Only returned if the REFRESH_TOKEN boolean parameter is set to true and the refresh token is available)
         token_type: 'bearer',
         scope: 'public_repo,user'
     }
