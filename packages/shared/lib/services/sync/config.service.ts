@@ -32,13 +32,19 @@ export async function createSyncConfig(account_id: number, syncs: IncomingSyncCo
 
         await schema().from(TABLE).where({ account_id, nango_config_id: config.id, sync_name: syncName }).update({ active: false });
 
+        const file_location = await fileService.upload(fileBody, `account/${account_id}/config/${config.id}/${syncName}-v${version}.js`);
+
+        if (!file_location) {
+            continue;
+        }
+
         insertData.push({
             account_id,
             nango_config_id: config?.id,
             sync_name: syncName,
-            file_location: await fileService.upload(fileBody, `${syncName}-v${version}.js`),
             models,
             version,
+            file_location,
             runs,
             active: true
         });

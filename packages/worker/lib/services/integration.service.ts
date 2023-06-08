@@ -1,53 +1,66 @@
 import { NodeVM } from 'vm2';
-import { getIntegrationFile, createActivityLogMessage, NangoHelper } from '@nangohq/shared';
+import { NangoIntegrationData, getIntegrationFile, createActivityLogMessage, NangoHelper, fileService, isCloud } from '@nangohq/shared';
 
 class IntegrationService {
-    async runScript(syncName: string, activityLogId: number, nango: NangoHelper): Promise<any> {
-        const script: string | null = getIntegrationFile(syncName);
-
-        if (!script) {
-            await createActivityLogMessage({
-                level: 'error',
-                activity_log_id: activityLogId,
-                content: `Unable to find integration file for ${syncName}`,
-                timestamp: Date.now()
-            });
-
-            return null;
-        }
-
+    async runScript(syncName: string, activityLogId: number, nango: NangoHelper, integrationData: NangoIntegrationData): Promise<any> {
         try {
-            const vm = new NodeVM({
-                console: 'inherit',
-                sandbox: { nango },
-                require: {
-                    external: true,
-                    builtin: ['fs', 'path'],
-                    root: './'
-                }
-            });
+            const script: string | null = isCloud() ? await fileService.getFile(integrationData.fileLocation as string) : getIntegrationFile(syncName);
 
-            const scriptExports = vm.run(script);
-
-            if (typeof scriptExports.default === 'function') {
-                const results = await scriptExports.default(nango);
-
-                return results;
-            } else {
+            if (!script) {
                 await createActivityLogMessage({
                     level: 'error',
                     activity_log_id: activityLogId,
-                    content: `There is no default export that is a function for ${syncName}`,
+                    content: `Unable to find integration file for ${syncName}`,
+                    timestamp: Date.now()
+                });
+
+                return null;
+            }
+
+            try {
+                const vm = new NodeVM({
+                    console: 'inherit',
+                    sandbox: { nango },
+                    require: {
+                        external: true,
+                        builtin: ['fs', 'path'],
+                        root: './'
+                    }
+                });
+
+                const scriptExports = vm.run(script as string);
+
+                if (typeof scriptExports.default === 'function') {
+                    const results = await scriptExports.default(nango);
+
+                    return results;
+                } else {
+                    await createActivityLogMessage({
+                        level: 'error',
+                        activity_log_id: activityLogId,
+                        content: `There is no default export that is a function for ${syncName}`,
+                        timestamp: Date.now()
+                    });
+
+                    return null;
+                }
+            } catch (err) {
+                await createActivityLogMessage({
+                    level: 'error',
+                    activity_log_id: activityLogId,
+                    content: `The script failed to execute for ${syncName}`,
                     timestamp: Date.now()
                 });
 
                 return null;
             }
         } catch (err) {
+            const errorMesssage = JSON.stringify(err, null, 2);
+
             await createActivityLogMessage({
                 level: 'error',
                 activity_log_id: activityLogId,
-                content: `The script failed to execute for ${syncName}`,
+                content: `The script failed to load for ${syncName} with the following error: ${errorMesssage}`,
                 timestamp: Date.now()
             });
 

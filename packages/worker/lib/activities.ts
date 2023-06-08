@@ -26,7 +26,8 @@ import {
     dataService,
     updateJobActivityLogId,
     webhookService,
-    NangoConnection
+    NangoConnection,
+    isCloud
 } from '@nangohq/shared';
 import type { ContinuousSyncArgs, InitialSyncArgs } from './models/Worker';
 import integationService from './services/integration.service.js';
@@ -132,18 +133,21 @@ export async function syncProvider(
 
         const now = new Date();
 
-        const { path: integrationFilePath, result: integrationFileResult } = checkForIntegrationFile(syncName);
-        if (!integrationFileResult) {
-            await createActivityLogMessageAndEnd({
-                level: 'error',
-                activity_log_id: activityLogId,
-                content: `Integration was attempted to run for ${syncName} but no integration file was found at ${integrationFilePath}.`,
-                timestamp: Date.now()
-            });
+        if (!isCloud) {
+            const { path: integrationFilePath, result: integrationFileResult } = checkForIntegrationFile(syncName);
+            if (!integrationFileResult) {
+                await createActivityLogMessageAndEnd({
+                    level: 'error',
+                    activity_log_id: activityLogId,
+                    content: `Integration was attempted to run for ${syncName} but no integration file was found at ${integrationFilePath}.`,
+                    timestamp: Date.now()
+                });
 
-            await updateSyncJobStatus(syncJobId, SyncStatus.STOPPED);
-            return false;
+                await updateSyncJobStatus(syncJobId, SyncStatus.STOPPED);
+                return false;
+            }
         }
+
         const lastSyncDate = await getLastSyncDate(nangoConnection?.id as number, syncName);
         nango.setLastSyncDate(lastSyncDate as Date);
         const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
@@ -152,7 +156,7 @@ export async function syncProvider(
         try {
             result = true;
 
-            const userDefinedResults = await integationService.runScript(syncName, activityLogId, nango);
+            const userDefinedResults = await integationService.runScript(syncName, activityLogId, nango, syncData);
 
             if (userDefinedResults === null) {
                 await updateSyncJobStatus(syncJobId, SyncStatus.STOPPED);
