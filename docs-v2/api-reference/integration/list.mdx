@@ -2,3 +2,20 @@
 title: 'List all Integrations'
 openapi: 'GET /config'
 ---
+
+<ResponseExample>
+  ```json Example Response
+{
+  "configs": [
+    {
+      "unique_key": "slack-nango-community",
+      "provider": "slack"
+    },
+    {
+      "unique_key": "github-prod",
+      "provider": "github"
+    },
+  ]
+}
+  ```
+</ResponseExample>
