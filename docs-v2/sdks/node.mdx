@@ -67,7 +67,7 @@ let creds = await nango.getToken('<INTEGRATION-ID>', '<CONNECTION-ID>');
 let connection = await nango.getConnection(
     '<INTEGRATION-ID>',
     '<CONNECTION-ID>',
-    '<FORCE_REFRESH?: boolean>', // Optional: force a fresh token to be issued, defaults to false
+    '<FORCE_REFRESH?: boolean>', // Optional: attempt to refresh the access access token regardless of its expiration status, defaults to false
     '<REFRESH_TOKEN?: boolean>', // Optional: return the refresh token as part of the response, defaults to false
 );
 ```
@@ -152,7 +152,7 @@ The return value looks like this:
 ## Direct requests
 
 <Note>
-    Direct Requests are not available for all APIs yet.  
+    Direct Requests are not available for all APIs yet.
     Check the API's [Integrations page](/integrations) (`Cmd + K` for search) to see if it is available for you API.
 </Note>
 

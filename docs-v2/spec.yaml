@@ -263,6 +263,11 @@ paths:
                   description: If true, Nango will attempt to refresh the access access token regardless of its expiration status (false by default).
                   schema:
                       type: boolean
+                - name: refresh_token
+                  in: query
+                  description: If true, return the refresh token as part of the response (false by default).
+                  schema:
+                      type: boolean
             responses:
                 '200':
                     description: Successfully returned a Connection
