@@ -430,7 +430,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                         </div>
                                                         )
                                                     )}
-                                                    {sync.latest_sync.status === 'RUNNING' && (
+                                                    {sync.latest_sync.status === 'RUNNING' && sync.schedule_status !== 'PAUSED' && (
                                                         sync.latest_sync.activity_log_id !== null ? (
                                                         <Link
                                                             to={`/activity?activity_log_id=${sync.latest_sync.activity_log_id}`}

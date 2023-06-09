@@ -4,6 +4,7 @@ import fileService from '../file.service.js';
 import type { IncomingSyncConfig, SyncConfig } from '../../models/Sync.js';
 import type { NangoConnection } from '../../models/Connection.js';
 import type { NangoConfig } from '../../integrations/index.js';
+import { getEnv } from '../../utils/utils.js';
 
 const TABLE = dbNamespace + 'sync_configs';
 
@@ -32,7 +33,8 @@ export async function createSyncConfig(account_id: number, syncs: IncomingSyncCo
 
         await schema().from(TABLE).where({ account_id, nango_config_id: config.id, sync_name: syncName }).update({ active: false });
 
-        const file_location = await fileService.upload(fileBody, `account/${account_id}/config/${config.id}/${syncName}-v${version}.js`);
+        const env = getEnv();
+        const file_location = await fileService.upload(fileBody, `${env}/account/${account_id}/config/${config.id}/${syncName}-v${version}.js`);
 
         if (!file_location) {
             continue;

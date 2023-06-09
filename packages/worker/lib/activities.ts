@@ -75,7 +75,7 @@ export async function syncProvider(
     if (isIncremental) {
         const log = {
             level: 'info' as LogLevel,
-            success: false,
+            success: null,
             action: 'sync' as LogAction,
             start: Date.now(),
             end: Date.now(),

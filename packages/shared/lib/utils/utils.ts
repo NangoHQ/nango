@@ -21,6 +21,16 @@ export enum NodeEnv {
     Prod = 'production'
 }
 
+export function getEnv() {
+    if (isStaging()) {
+        return NodeEnv.Staging;
+    } else if (isProd()) {
+        return NodeEnv.Prod;
+    } else {
+        return NodeEnv.Dev;
+    }
+}
+
 export function isCloud() {
     return process.env['NANGO_CLOUD']?.toLowerCase() === 'true';
 }

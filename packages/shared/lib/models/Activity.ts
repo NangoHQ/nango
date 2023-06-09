@@ -11,7 +11,7 @@ export interface ActivityLog {
     account_id: number;
     level: LogLevel;
     action: LogAction;
-    success: boolean;
+    success: boolean | null;
     timestamp: number;
     start: number;
     end?: number;

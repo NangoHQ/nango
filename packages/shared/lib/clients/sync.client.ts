@@ -108,7 +108,7 @@ class SyncClient {
         try {
             const log = {
                 level: 'info' as LogLevel,
-                success: false,
+                success: null,
                 action: 'sync' as LogAction,
                 start: Date.now(),
                 end: Date.now(),

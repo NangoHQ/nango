@@ -3,7 +3,7 @@
 package=$1
 version=$2
 tagLatest=$3
-ENV=$3
+ENV=$4
 
 PACKAGE_NAME=${package:6}
 

@@ -23,7 +23,7 @@ class IntegrationService {
                     sandbox: { nango },
                     require: {
                         external: true,
-                        builtin: ['fs', 'path'],
+                        builtin: ['url', 'crypto'],
                         root: './'
                     }
                 });
@@ -48,7 +48,7 @@ class IntegrationService {
                 await createActivityLogMessage({
                     level: 'error',
                     activity_log_id: activityLogId,
-                    content: `The script failed to execute for ${syncName}`,
+                    content: `The script failed to execute for ${syncName} with the following error: ${String(err)}`,
                     timestamp: Date.now()
                 });
 
