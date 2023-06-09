@@ -20,7 +20,7 @@ const generateScheduleId = (sync: Sync, syncName: string, connectionId: string) 
 const OVERLAP_POLICY: ScheduleOverlapPolicy = ScheduleOverlapPolicy.BUFFER_ONE;
 
 class SyncClient {
-    private static instance: Promise<SyncClient> | null = null;
+    private static instance: Promise<SyncClient | null>;
     private client: Client | null = null;
     private namespace = process.env['TEMPORAL_NAMESPACE'] || 'default';
 
@@ -28,14 +28,14 @@ class SyncClient {
         this.client = client;
     }
 
-    static getInstance(): Promise<SyncClient> {
-        if (this.instance === null) {
+    static getInstance(): Promise<SyncClient | null> {
+        if (!this.instance) {
             this.instance = this.create();
         }
         return this.instance;
     }
 
-    private static async create(): Promise<SyncClient> {
+    private static async create(): Promise<SyncClient | null> {
         try {
             const connection = await Connection.connect({
                 address: process.env['TEMPORAL_ADDRESS'] || 'localhost:7233'
@@ -46,7 +46,7 @@ class SyncClient {
             return new SyncClient(client);
         } catch (e) {
             console.error(e);
-            throw e;
+            return null;
         }
     }
 
@@ -87,7 +87,7 @@ class SyncClient {
 
             if (sync) {
                 const syncClient = await SyncClient.getInstance();
-                syncClient.startContinuous(nangoConnection, sync, syncConfig, syncName, syncData);
+                syncClient?.startContinuous(nangoConnection, sync, syncConfig, syncName, syncData);
             }
         }
     }

@@ -15,7 +15,7 @@ const __dirname = dirname(__filename);
 export const SYNC_FILE_EXTENSION = 'js';
 
 export function loadNangoConfig(nangoConnection: NangoConnection | null, syncName?: string, loadLocation?: string): Promise<NangoConfig | null> {
-    if (!isCloud()) {
+    if (isCloud()) {
         return getSyncConfig(nangoConnection as NangoConnection, syncName);
     } else {
         return loadLocalNangoConfig(loadLocation);

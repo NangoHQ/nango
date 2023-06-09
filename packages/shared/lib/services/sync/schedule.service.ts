@@ -48,7 +48,7 @@ export const deleteScheduleForConnection = async (connection: NangoConnection): 
     for (const sync of syncs) {
         const schedule = await getSchedule(sync.id as string);
 
-        if (schedule) {
+        if (schedule && syncClient) {
             await syncClient.deleteSyncSchedule(schedule?.schedule_id as string);
         }
     }

@@ -93,7 +93,7 @@ class ConnectionService {
 
         if (importedConnection) {
             const syncClient = await SyncClient.getInstance();
-            syncClient.initiate(importedConnection[0].id);
+            syncClient?.initiate(importedConnection[0].id);
         }
 
         return importedConnection;

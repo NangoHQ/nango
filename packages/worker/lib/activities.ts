@@ -251,7 +251,7 @@ async function reportResults(
 
     const successMessage =
         `The ${syncType} "${syncName}" sync has been completed to the ${model} model.` +
-        (version ? `The version integration script version ran was ${version}.` : '');
+        (version ? ` The version integration script version ran was ${version}.` : '');
 
     let resultMessage = '';
 

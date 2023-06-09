@@ -102,7 +102,12 @@ export const getSyncsFlat = async (nangoConnectionId: number): Promise<SyncWithS
  */
 export const getSyncs = async (nangoConnectionId: number): Promise<Sync[]> => {
     const syncClient = await SyncClient.getInstance();
-    const scheduleResponse = await syncClient.listSchedules();
+
+    if (!syncClient) {
+        return [];
+    }
+
+    const scheduleResponse = await syncClient?.listSchedules();
     if (scheduleResponse?.schedules.length === 0) {
         await markAllAsStopped();
     }

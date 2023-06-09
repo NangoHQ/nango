@@ -103,7 +103,7 @@ class SyncController {
 
             const syncClient = await SyncClient.getInstance();
 
-            await syncClient.triggerSyncs(syncs);
+            await syncClient?.triggerSyncs(syncs);
 
             res.sendStatus(200);
         } catch (e) {
@@ -120,7 +120,7 @@ class SyncController {
             }
 
             const syncClient = await SyncClient.getInstance();
-            syncClient.runSyncCommand(schedule_id, command);
+            syncClient?.runSyncCommand(schedule_id, command);
             await updateScheduleStatus(schedule_id, command);
 
             res.sendStatus(200);
