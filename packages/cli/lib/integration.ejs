@@ -1,8 +1,7 @@
-import { NangoSync, NangoHelper } from '@nangohq/node';
+import { NangoHelper } from '@nangohq/node';
 import { <%= interfaceNames.join(', ') %> } from './models';
 
-class <%= syncName %> extends NangoSync {
-  override async fetchData(nango: NangoHelper): Promise<{<% for (let i = 0; i < mappings.length; i++) { %><%= mappings[i].name %>: <%= mappings[i].type %>[]<% if (i !== mappings.length - 1) { %>, <% } %><% } %>}> {
+export default async function fetchData(nango: NangoHelper): Promise<{<% for (let i = 0; i < mappings.length; i++) { %><%= mappings[i].name %>: <%= mappings[i].type %>[]<% if (i !== mappings.length - 1) { %>, <% } %><% } %>}> {
     /**
      * Rest of the integration code goes below.
      *
@@ -15,8 +14,11 @@ class <%= syncName %> extends NangoSync {
      *         const issue: Issue = {
      *             id: ghIssue.id,
      *             title: ghIssue.title,
-     *             body: ghIssue.body,
-     *             status: ghIssue.status
+     *             description: ghIssue.body,
+     *             status: ghIssue.status,
+     *             author: {
+     *                 avatar_url: ghIssue.user.avatar_url,
+     *             }
      *         };
      *
      *         return issue;
@@ -24,7 +26,4 @@ class <%= syncName %> extends NangoSync {
      *
      *     return { issues };
      */
-  }
 }
-
-export default <%= syncName %>;
