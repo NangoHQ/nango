@@ -1,6 +1,7 @@
 import https from 'https';
 import axios from 'axios';
 import type { NangoModel } from '@nangohq/shared';
+import { cloudHost, stagingHost } from '@nangohq/shared';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
@@ -9,8 +10,6 @@ export const configFile = 'nango.yaml';
 export const NANGO_INTEGRATIONS_LOCATION = process.env['NANGO_INTEGRATIONS_LOCATION'] || './nango-integrations';
 
 let hostport = process.env['NANGO_HOSTPORT'] || 'http://localhost:3003';
-const cloudHost = 'https://api.nango.dev';
-const stagingHost = 'https://nango-cloud-staging.onrender.com';
 
 if (hostport.slice(-1) === '/') {
     hostport = hostport.slice(0, -1);

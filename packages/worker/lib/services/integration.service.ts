@@ -45,22 +45,26 @@ class IntegrationService {
                     return null;
                 }
             } catch (err) {
+                const prettyError = JSON.stringify(err, ['message', 'name', 'stack'], 2);
+
+                const errorMessage = typeof err === 'object' && Object.keys(err as object).length > 0 ? prettyError : String(err);
+
                 await createActivityLogMessage({
                     level: 'error',
                     activity_log_id: activityLogId,
-                    content: `The script failed to execute for ${syncName} with the following error: ${String(err)}`,
+                    content: `The script failed to execute for ${syncName} with the following error: ${errorMessage}`,
                     timestamp: Date.now()
                 });
 
                 return null;
             }
         } catch (err) {
-            const errorMesssage = JSON.stringify(err, null, 2);
+            const errorMessage = JSON.stringify(err, ['message', 'name', 'stack'], 2);
 
             await createActivityLogMessage({
                 level: 'error',
                 activity_log_id: activityLogId,
-                content: `The script failed to load for ${syncName} with the following error: ${errorMesssage}`,
+                content: `The script failed to load for ${syncName} with the following error: ${errorMessage}`,
                 timestamp: Date.now()
             });
 

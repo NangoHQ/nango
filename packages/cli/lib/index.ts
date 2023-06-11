@@ -358,19 +358,16 @@ program
         const { staging, version } = this.opts();
 
         if (!process.env['NANGO_HOSTPORT']) {
-            console.log(chalk.red(`NANGO_HOSTPORT environment variable is not set`));
-            return;
+            if (staging) {
+                setStagingHost();
+            } else {
+                setCloudHost();
+            }
         }
 
         if (!process.env['NANGO_SECRET_KEY']) {
             console.log(chalk.red(`NANGO_SECRET_KEY environment variable is not set`));
             return;
-        }
-
-        if (staging) {
-            setStagingHost();
-        } else {
-            setCloudHost();
         }
 
         checkEnvVars();

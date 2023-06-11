@@ -9,7 +9,7 @@ import * as dotenv from 'dotenv';
 import { spawn } from 'child_process';
 
 import type { NangoConfig, Connection as NangoConnection, NangoIntegrationData } from '@nangohq/shared';
-import { Nango, loadNangoConfig, getIntegrationClass, getServerBaseUrl, getLastSyncDate, syncDataService } from '@nangohq/shared';
+import { Nango, loadNangoConfig, getIntegrationClass, getApiUrl, getLastSyncDate, syncDataService } from '@nangohq/shared';
 import { getConnection, configFile, NANGO_INTEGRATIONS_LOCATION, buildInterfaces } from './utils.js';
 
 dotenv.config();
@@ -85,7 +85,6 @@ export const verifyAndChangeDistFilesToJs = () => {
 };
 
 export const run = async (args: string[], options: RunArgs) => {
-    verifyAndChangeDistFilesToJs();
     let syncName, providerConfigKey, connectionId, suppliedLastSyncDate;
     if (args.length > 0) {
         [syncName, providerConfigKey, connectionId, suppliedLastSyncDate] = args;
@@ -140,7 +139,7 @@ export const run = async (args: string[], options: RunArgs) => {
         );
 
         const nango = new Nango({
-            host: getServerBaseUrl(),
+            host: getApiUrl(),
             connectionId: String(connectionId),
             providerConfigKey: String(providerConfigKey),
             isSync: true
@@ -214,9 +213,9 @@ export const tsc = () => {
             const distJSFilePath = jsFilePath.replace(rawNangoIntegrationLocation, `${rawNangoIntegrationLocation}/dist`);
 
             fs.writeFileSync(distJSFilePath, result);
-            console.log(chalk.green(`Compiled ${filePath} successfully`));
+            console.log(chalk.green(`Compiled "${filePath}" successfully`));
         } catch (error) {
-            console.error(`Error compiling ${filePath}:`);
+            console.error(`Error compiling "${filePath}":`);
             console.error(error);
         }
     }

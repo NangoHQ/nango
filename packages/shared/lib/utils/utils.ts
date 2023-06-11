@@ -7,6 +7,9 @@ import { NangoError } from './error.js';
 import type { User } from '../models/Admin.js';
 
 export const localhostUrl = 'http://localhost:3003';
+export const cloudHost = 'https://api.nango.dev';
+export const stagingHost = 'https://api-staging.nango.dev';
+
 const accountIdLocalsKey = 'nangoAccountId';
 
 export enum UserType {
@@ -132,6 +135,15 @@ export function isTokenExpired(expireDate: Date): boolean {
 
 export function getBaseUrl() {
     return process.env['NANGO_SERVER_URL'] || localhostUrl;
+}
+
+export function getApiUrl() {
+    if (isStaging()) {
+        return stagingHost;
+    } else if (isProd()) {
+        return cloudHost;
+    }
+    return localhostUrl;
 }
 
 /**

@@ -13,7 +13,7 @@ import {
     UpsertResponse,
     LogLevel,
     LogAction,
-    getServerBaseUrl,
+    getApiUrl,
     updateSuccess as updateSuccessActivityLog,
     syncDataService,
     NangoIntegration,
@@ -27,7 +27,8 @@ import {
     updateJobActivityLogId,
     webhookService,
     NangoConnection,
-    isCloud
+    isCloud,
+    accountService
 } from '@nangohq/shared';
 import type { ContinuousSyncArgs, InitialSyncArgs } from './models/Worker';
 import integationService from './services/integration.service.js';
@@ -95,15 +96,8 @@ export async function syncProvider(
     const nangoConfig = await loadNangoConfig(nangoConnection, syncName);
 
     if (!nangoConfig) {
-        await createActivityLogMessageAndEnd({
-            level: 'error',
-            activity_log_id: activityLogId,
-            content: `No sync configuration was found for ${syncName}.`,
-            timestamp: Date.now()
-        });
-
-        await updateSyncJobStatus(syncJobId, SyncStatus.STOPPED);
-
+        const content = `No sync configuration was found for ${syncName}.`;
+        reportFailureForResults(activityLogId, syncJobId, content);
         return false;
     }
 
@@ -112,15 +106,20 @@ export async function syncProvider(
 
     // if there is a matching customer integration code for the provider config key then run it
     if (integrations[nangoConnection.provider_config_key]) {
+        const account = await accountService.getAccountById(nangoConnection.account_id as number);
+
+        if (!account) {
+            const content = `No account was found for ${nangoConnection.account_id}. The sync cannot continue without a valid account`;
+            reportFailureForResults(activityLogId, syncJobId, content);
+        }
+
         const nango = new Nango({
-            host: getServerBaseUrl(),
+            host: getApiUrl(),
             connectionId: String(nangoConnection?.connection_id),
             providerConfigKey: String(nangoConnection?.provider_config_key),
-            // pass in the sync id and store the raw json in the database before the user does what they want with it
-            // or use the connection ID to match it up
-            // either way need a new table
             activityLogId: activityLogId as number,
-            isSync: true
+            isSync: true,
+            secretKey: account?.secret_key as string
         });
 
         // updates to allow the batchSend to work
@@ -136,14 +135,9 @@ export async function syncProvider(
         if (!isCloud) {
             const { path: integrationFilePath, result: integrationFileResult } = checkForIntegrationFile(syncName);
             if (!integrationFileResult) {
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    activity_log_id: activityLogId,
-                    content: `Integration was attempted to run for ${syncName} but no integration file was found at ${integrationFilePath}.`,
-                    timestamp: Date.now()
-                });
+                const content = `Integration was attempted to run for ${syncName} but no integration file was found at ${integrationFilePath}.`;
+                reportFailureForResults(activityLogId, syncJobId, content);
 
-                await updateSyncJobStatus(syncJobId, SyncStatus.STOPPED);
                 return false;
             }
         }
@@ -159,7 +153,8 @@ export async function syncProvider(
             const userDefinedResults = await integationService.runScript(syncName, activityLogId, nango, syncData);
 
             if (userDefinedResults === null) {
-                await updateSyncJobStatus(syncJobId, SyncStatus.STOPPED);
+                const content = `The integration was run but there was a problem in retrieving the results from the script.`;
+                reportFailureForResults(activityLogId, syncJobId, content);
 
                 return false;
             }
@@ -212,15 +207,23 @@ export async function syncProvider(
                             syncData.version
                         );
                     } else {
-                        reportFailureForResults(syncType, activityLogId, syncName, 'There was an issue inserting the incoming data');
+                        const content = `There was a problem upserting the data and retrieving the changed results ${syncName} and the model ${model}.`;
+
+                        await createActivityLogMessage({
+                            level: 'error',
+                            activity_log_id: activityLogId,
+                            content,
+                            timestamp: Date.now()
+                        });
+                        upsertSuccess = false;
                     }
                 }
             }
         } catch (e) {
             result = false;
             const errorMessage = JSON.stringify(e, ['message', 'name', 'stack'], 2);
-            reportFailureForResults(syncType, activityLogId, syncName, errorMessage);
-            await updateSyncJobStatus(syncJobId, SyncStatus.STOPPED);
+            const content = `The ${syncType} "${syncName}" sync did not complete successfully and has the following error: ${errorMessage}`;
+            reportFailureForResults(activityLogId, syncJobId, content);
         }
     }
 
@@ -276,13 +279,14 @@ async function reportResults(
     });
 }
 
-async function reportFailureForResults(syncType: SyncType, activityLogId: number, syncName: string, erroMessage: string) {
+async function reportFailureForResults(activityLogId: number, syncJobId: number, content: string) {
     await updateSuccessActivityLog(activityLogId, false);
+    await updateSyncJobStatus(syncJobId, SyncStatus.STOPPED);
 
     await createActivityLogMessageAndEnd({
         level: 'error',
         activity_log_id: activityLogId,
         timestamp: Date.now(),
-        content: `The ${syncType} "${syncName}" sync did not complete successfully and has the following error: ${erroMessage}`
+        content
     });
 }
