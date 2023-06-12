@@ -1,6 +1,6 @@
 {
     "name": "webapp",
-    "version": "0.17.0",
+    "version": "0.17.6",
     "private": true,
     "dependencies": {
         "@geist-ui/core": "^2.3.8",

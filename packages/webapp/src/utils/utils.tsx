@@ -128,6 +128,7 @@ export function computeNextRun(startTime: Date, interval: string, offset: number
     return formatDateToUSFormat(nextRunTime.toISOString());
 }
 
+// TODO fix this, for a sync every 24 hours
 export function getIntervals(startOfDay: Date, interval: string, offset: number): number[] {
     const msInterval = ms(interval);
     startOfDay.setHours(0, 0, 0, 0);
@@ -135,7 +136,7 @@ export function getIntervals(startOfDay: Date, interval: string, offset: number)
     const intervals = [];
     let start = offset;
 
-    while (start < 86400000) {
+    while (start < 86400000 * 365) {
         const currentTimestamp = startOfDay.getTime() + start;
 
         intervals.push(currentTimestamp);

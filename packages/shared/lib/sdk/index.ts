@@ -1,21 +1,11 @@
 import axios, { AxiosRequestConfig } from 'axios';
-import { validateProxyConfiguration, validateSyncRecordConfiguration } from './utils/utils.js';
-import _ from 'lodash';
 
-import type { ProxyConfiguration } from './models/Proxy.js';
-import type { GetRecordsRequestConfig, SyncWebhookBody } from './models/Sync.js';
-import type { LogLevel, ActivityLogMessage } from './models/Activity.js';
-import { formatDataRecords } from './services/sync/data-records.service.js';
-import { upsert } from './services/sync/data.service.js';
-import { updateSyncJobResult } from './services/sync/job.service.js';
-import { createActivityLogMessage } from './services/activity.service.js';
-import type { AuthModes, OAuth1Credentials, OAuth2Credentials } from './models/Auth.js';
-import type { BaseConnection } from './models/Connection.js';
+import type { AuthModes, OAuth1Credentials, OAuth2Credentials } from '../models/Auth.js';
+import { validateProxyConfiguration, validateSyncRecordConfiguration, cloudHost as prodHost, stagingHost } from '../utils/utils.js';
 
-const prodHost = 'https://api.nango.dev';
-const stagingHost = 'https://api-staging.nango.dev';
-
-export * from './integrations/index.js';
+import type { ProxyConfiguration } from '../models/Proxy.js';
+import type { GetRecordsRequestConfig } from '../models/Sync.js';
+import type { BaseConnection } from '../models/Connection.js';
 
 interface NangoProps {
     host?: string;
@@ -24,16 +14,6 @@ interface NangoProps {
     providerConfigKey?: string;
     isSync?: boolean;
     activityLogId?: number;
-    lastSyncDate?: Date;
-    syncId?: string;
-    nangoConnectionId?: number;
-    syncJobId?: number;
-    throttledCreateActivityLogMessage?: (params: ActivityLogMessage) => Promise<void>;
-}
-
-interface UserLogParameters {
-    success?: boolean;
-    level?: LogLevel;
 }
 
 interface CreateConnectionOAuth1 extends OAuth1Credentials {
@@ -55,18 +35,10 @@ export class Nango {
     providerConfigKey?: string;
     isSync = false;
     activityLogId?: number;
-    lastSyncDate?: Date;
-    syncId?: string;
-    nangoConnectionId?: number;
-    syncJobId?: number;
-
-    private throttledCreateActivityLogMessage;
 
     constructor(config: NangoProps = {}) {
         config.host = config.host || prodHost;
         this.serverUrl = config.host;
-
-        this.throttledCreateActivityLogMessage = _.throttle(createActivityLogMessage, 1000);
 
         if (this.serverUrl.slice(-1) === '/') {
             this.serverUrl = this.serverUrl.slice(0, -1);
@@ -88,10 +60,6 @@ export class Nango {
 
         if (config.activityLogId) {
             this.activityLogId = config.activityLogId;
-        }
-
-        if (this.lastSyncDate) {
-            this.lastSyncDate = config.lastSyncDate as Date;
         }
     }
 
@@ -273,22 +241,6 @@ export class Nango {
         return response.data;
     }
 
-    public setLastSyncDate(date: Date) {
-        this.lastSyncDate = date;
-    }
-
-    public setSyncId(syncId: string) {
-        this.syncId = syncId;
-    }
-
-    public setNangoConnectionId(nangoConnectionId: number) {
-        this.nangoConnectionId = nangoConnectionId;
-    }
-
-    public setSyncJobId(syncJobId: number) {
-        this.syncJobId = syncJobId;
-    }
-
     public async setFieldMapping(fieldMapping: Record<string, string>, optionalProviderConfigKey?: string, optionalConnectionId?: string) {
         const providerConfigKey = optionalProviderConfigKey || this.providerConfigKey;
         const connectionId = optionalConnectionId || this.connectionId;
@@ -316,60 +268,6 @@ export class Nango {
         const response = await this.getConnectionDetails(providerConfigKey, connectionId, false, false, { 'Nango-Is-Sync': true });
 
         return response.data.field_mappings;
-    }
-
-    // TODO type this
-    public async batchSend(results: any[], model: string): Promise<boolean> {
-        if (!this.nangoConnectionId || !this.syncId || !this.activityLogId || !this.syncJobId) {
-            throw new Error('Nango Connection Id, Sync Id, Activity Log Id and Sync Job Id are all required');
-        }
-
-        const formattedResults = formatDataRecords(results, this.nangoConnectionId as number, model, this.syncId as string);
-
-        const responseResults = await upsert(
-            formattedResults,
-            '_nango_sync_data_records',
-            'external_id',
-            this.nangoConnectionId as number,
-            model,
-            this.activityLogId as number
-        );
-
-        if (responseResults) {
-            const updatedResults = { added: responseResults.addedKeys.length, updated: responseResults.updatedKeys.length };
-
-            await createActivityLogMessage({
-                level: 'info',
-                activity_log_id: this.activityLogId as number,
-                content: `Batch send was a success and resulted in ${JSON.stringify(updatedResults, null, 2)}`,
-                timestamp: Date.now()
-            });
-
-            await updateSyncJobResult(this.syncJobId as number, updatedResults);
-            return true;
-        } else {
-            await createActivityLogMessage({
-                level: 'error',
-                activity_log_id: this.activityLogId as number,
-                content: `There was an issue with the batch send`,
-                timestamp: Date.now()
-            });
-
-            return false;
-        }
-    }
-
-    public async log(content: string, userDefinedLevel?: UserLogParameters): Promise<void> {
-        if (!this.activityLogId) {
-            throw new Error('There is no current activity log stream to log to');
-        }
-
-        await this.throttledCreateActivityLogMessage({
-            level: userDefinedLevel?.level ?? 'info',
-            activity_log_id: this.activityLogId as number,
-            content,
-            timestamp: Date.now()
-        });
     }
 
     public async triggerSync({ connectionId, providerConfigKey }: { connectionId: string; providerConfigKey: string }) {
@@ -415,5 +313,3 @@ export class Nango {
         return headers;
     }
 }
-
-export { Nango as NangoHelper, SyncWebhookBody as NangoSyncWebhookBody };

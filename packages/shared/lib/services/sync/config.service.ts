@@ -12,7 +12,7 @@ export async function createSyncConfig(account_id: number, syncs: IncomingSyncCo
     const insertData = [];
 
     for (const sync of syncs) {
-        const { syncName, providerConfigKey, fileBody, models, runs, version: optionalVersion } = sync;
+        const { syncName, providerConfigKey, fileBody, models, runs, version: optionalVersion, model_schema } = sync;
         if (!syncName || !providerConfigKey || !fileBody || !models || !runs) {
             continue;
         }
@@ -42,18 +42,19 @@ export async function createSyncConfig(account_id: number, syncs: IncomingSyncCo
 
         insertData.push({
             account_id,
-            nango_config_id: config?.id,
+            nango_config_id: config?.id as number,
             sync_name: syncName,
             models,
             version,
             file_location,
             runs,
-            active: true
+            active: true,
+            model_schema
         });
     }
 
     try {
-        const result = await schema().from(TABLE).insert(insertData).returning(['id', 'version']);
+        const result = await schema().from<SyncConfig>(TABLE).insert(insertData).returning(['id', 'version']);
 
         return result;
     } catch (e) {
@@ -114,7 +115,9 @@ export async function getSyncConfigsByParams(account_id: number, providerConfigK
         throw new Error('Provider config not found');
     }
 
-    const result = await schema().from(TABLE).where({ account_id, nango_config_id: config.id, active: true });
+    const result = await schema()
+        .from<SyncConfig>(TABLE)
+        .where({ account_id, nango_config_id: config.id as number, active: true });
 
     if (result) {
         return result;
@@ -130,7 +133,11 @@ export async function getSyncConfigByParams(account_id: number, sync_name: strin
         throw new Error('Provider config not found');
     }
 
-    const result = await schema().from(TABLE).where({ account_id, sync_name, nango_config_id: config.id, active: true }).orderBy('created_at', 'desc').first();
+    const result = await schema()
+        .from<SyncConfig>(TABLE)
+        .where({ account_id, sync_name, nango_config_id: config.id as number, active: true })
+        .orderBy('created_at', 'desc')
+        .first();
 
     if (result) {
         return result;

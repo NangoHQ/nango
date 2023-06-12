@@ -9,11 +9,13 @@ dotenv.config();
 export const configFile = 'nango.yaml';
 export const NANGO_INTEGRATIONS_LOCATION = process.env['NANGO_INTEGRATIONS_LOCATION'] || './nango-integrations';
 
-let hostport = process.env['NANGO_HOSTPORT'] || 'http://localhost:3003';
+let parsedHostport = process.env['NANGO_HOSTPORT'] || 'http://localhost:3003';
 
-if (hostport.slice(-1) === '/') {
-    hostport = hostport.slice(0, -1);
+if (parsedHostport.slice(-1) === '/') {
+    parsedHostport = parsedHostport.slice(0, -1);
 }
+
+export const hostport = parsedHostport;
 
 export function setCloudHost() {
     process.env['NANGO_HOSTPORT'] = cloudHost;
@@ -28,14 +30,14 @@ export function checkEnvVars() {
         console.log(`Assuming you are running Nango on localhost:3003 because you did not set the NANGO_HOSTPORT env var.\n\n`);
     } else if (hostport === cloudHost || hostport === stagingHost) {
         if (!process.env['NANGO_SECRET_KEY']) {
-            console.log(`Assuming you are using Nango Cloud but your are lacking the NANGO_SECRET_KEY env var.`);
+            console.log(`Assuming you are using Nango Cloud but you are missing the NANGO_SECRET_KEY env var.`);
         } else if (hostport === cloudHost) {
             console.log(`Assuming you are using Nango Cloud (because you set the NANGO_HOSTPORT env var to https://api.nango.dev).`);
         } else if (hostport === stagingHost) {
             console.log(`Assuming you are using Nango Cloud (because you set the NANGO_HOSTPORT env var to https://api.staging.nango.dev).`);
         }
     } else {
-        console.log(`Assuming you are self-hosting Nango (becauses you set the NANGO_HOSTPORT env var to ${hostport}).`);
+        console.log(`Assuming you are self-hosting Nango (because you set the NANGO_HOSTPORT env var to ${hostport}).`);
     }
 }
 

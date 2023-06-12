@@ -10,7 +10,7 @@
 #
 if [ $# -lt 3 ]
 then
-    echo "Usage: ./release.bash [server_version] [worker_version] [prod|staging]"
+    echo "Usage: ./release.bash [server_version] [worker_version] [prod|staging|hosted]"
     exit 1
 fi
 

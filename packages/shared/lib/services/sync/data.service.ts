@@ -1,13 +1,14 @@
 import { schema } from '../../db/database.js';
 import { verifyUniqueKeysAreUnique } from './data-records.service.js';
 import { createActivityLogMessage } from '../activity.service.js';
-import type { DataResponse, UpsertResponse } from '../../models/Data.js';
+import type { UpsertResponse } from '../../models/Data.js';
+import type { DataRecord } from '../../models/Sync.js';
 
 /**
  * Upsert
  */
 export async function upsert(
-    response: DataResponse[],
+    response: DataRecord[],
     dbTable: string,
     uniqueKey: string,
     nangoConnectionId: number,
@@ -41,7 +42,7 @@ export async function upsert(
     }
 }
 
-export async function removeDuplicateKey(response: DataResponse[], uniqueKey: string, activityLogId: number, model: string): Promise<DataResponse[]> {
+export async function removeDuplicateKey(response: DataRecord[], uniqueKey: string, activityLogId: number, model: string): Promise<DataRecord[]> {
     const { isUnique, nonUniqueKey } = verifyUniqueKeysAreUnique(response, uniqueKey);
 
     if (!isUnique) {
@@ -66,13 +67,13 @@ export async function removeDuplicateKey(response: DataResponse[], uniqueKey: st
  *
  */
 export async function getAddedKeys(
-    response: DataResponse[],
+    response: DataRecord[],
     dbTable: string,
     uniqueKey: string,
     nangoConnectionId: number,
     model: string
 ): Promise<Array<string>> {
-    const keys: Array<string> = response.map((data: DataResponse) => String(data[uniqueKey]));
+    const keys: Array<string> = response.map((data: DataRecord) => String(data[uniqueKey]));
 
     const knownKeys: Array<string> = (await schema()
         .from(dbTable)
@@ -94,14 +95,14 @@ export async function getAddedKeys(
  *
  */
 export async function getUpdatedKeys(
-    response: DataResponse[],
+    response: DataRecord[],
     dbTable: string,
     uniqueKey: string,
     nangoConnectionId: number,
     model: string
 ): Promise<Array<string>> {
-    const keys: Array<string> = response.map((data: DataResponse) => String(data[uniqueKey]));
-    const keysWithHash: [string, string][] = response.map((data: DataResponse) => [String(data[uniqueKey]), data['data_hash'] as string]);
+    const keys: Array<string> = response.map((data: DataRecord) => String(data[uniqueKey]));
+    const keysWithHash: [string, string][] = response.map((data: DataRecord) => [String(data[uniqueKey]), data['data_hash'] as string]);
 
     const rowsToUpdate = await schema()
         .from(dbTable)
@@ -113,19 +114,3 @@ export async function getUpdatedKeys(
 
     return rowsToUpdate;
 }
-
-/**
-async function bulkInsert(dataToInsert: DataResponse[], dbTable: string): Promise<boolean> {
-    const trx = await db.knex.transaction();
-    try {
-        await db.knex.batchInsert(`${schemaName}.${dbTable}`, dataToInsert).transacting(trx);
-        await trx.commit();
-
-        return true;
-    } catch (error) {
-        await trx.rollback();
-        console.error('Error creating model:', error);
-        throw error;
-    }
-}
-*/

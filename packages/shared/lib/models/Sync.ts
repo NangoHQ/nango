@@ -38,16 +38,35 @@ export interface Job extends Timestamps {
     result?: SyncResult;
 }
 
+interface SyncModelSchema {
+    name: string;
+    fields: {
+        name: string;
+        type: string;
+    }[];
+}
+
 export interface SyncConfig extends Timestamps {
     id?: number;
     account_id: number;
     sync_name: string;
     file_location: string;
-    nanog_config_id: number;
+    nango_config_id: number;
     models: string[];
+    model_schema: SyncModelSchema[];
     active: boolean;
     runs: string;
     version?: string;
+}
+
+export interface IncomingSyncConfig {
+    syncName: string;
+    providerConfigKey: string;
+    fileBody: string;
+    models: string[];
+    runs: string;
+    version?: string;
+    model_schema: SyncModelSchema[];
 }
 
 export interface GetRecordsRequestConfig {
@@ -76,6 +95,7 @@ export interface Schedule extends Timestamps {
 }
 
 export interface DataRecord extends Timestamps {
+    [index: string]: number | string | Date | object;
     id?: string;
     external_id: string;
     json: object;
@@ -100,15 +120,6 @@ export const SyncCommandToScheduleStatus = {
     RUN: ScheduleStatus.RUNNING,
     RUN_FULL: ScheduleStatus.RUNNING
 };
-
-export interface IncomingSyncConfig {
-    syncName: string;
-    providerConfigKey: string;
-    fileBody: string;
-    models: string[];
-    runs: string;
-    version?: string;
-}
 
 export interface SyncWebhookBody {
     connectionId: string;

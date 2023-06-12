@@ -1,13 +1,4 @@
-import type { Nango } from '../sdk.js';
 export * as HubspotModels from './hubspot.js';
-
-export abstract class NangoSync {
-    fetchData?(nango: Nango): Promise<any>;
-    postData?(nango: Nango): Promise<any>;
-    patchData?(nango: Nango): Promise<any>;
-    putData?(nango: Nango): Promise<any>;
-    deleteData?(nango: Nango): Promise<any>;
-}
 
 export interface NangoIntegrationData {
     runs: string;

@@ -8,9 +8,10 @@ import glob from 'glob';
 import * as dotenv from 'dotenv';
 import { spawn } from 'child_process';
 
-import type { NangoConfig, Connection as NangoConnection, NangoIntegrationData } from '@nangohq/shared';
-import { Nango, loadNangoConfig, getIntegrationClass, getApiUrl, getLastSyncDate, syncDataService } from '@nangohq/shared';
-import { getConnection, configFile, NANGO_INTEGRATIONS_LOCATION, buildInterfaces } from './utils.js';
+import type { NangoConfig, Connection as NangoConnection } from '@nangohq/shared';
+import { cloudHost, stagingHost } from '@nangohq/shared';
+import { SyncType, syncRunService } from '@nangohq/shared';
+import { hostport, getConnection, configFile, NANGO_INTEGRATIONS_LOCATION, buildInterfaces } from './utils.js';
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ interface RunArgs {
     provider: string;
     connection: string;
     lastSyncDate?: string;
+    useServerLastSyncDate?: boolean;
 }
 
 export const init = () => {
@@ -44,20 +46,20 @@ export const init = () => {
         models: {
             issues: {
                 id: 'integer',
-                title: 'char',
-                description: 'char',
-                status: 'char',
+                title: 'string',
+                description: 'string',
+                status: 'string',
                 author: {
-                    avatar_url: 'char'
+                    avatar_url: 'string'
                 }
             },
             projects: {
-                id: 'integer',
-                type: 'char'
+                id: 'number',
+                type: 'string'
             },
             users: {
-                id: 'integer',
-                name: 'char'
+                id: 'number',
+                name: 'string'
             }
         }
     };
@@ -71,27 +73,14 @@ export const init = () => {
     console.log(chalk.green(`${configFile} file has been created`));
 };
 
-export const verifyAndChangeDistFilesToJs = () => {
-    const cwd = process.cwd();
-    const distFiles = fs.readdirSync(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/dist`));
-    distFiles.forEach((file) => {
-        if (file.endsWith('.mjs')) {
-            fs.renameSync(
-                path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/dist/${file}`),
-                path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/dist/${file.replace('.mjs', '.js')}`)
-            );
-        }
-    });
-};
-
 export const run = async (args: string[], options: RunArgs) => {
-    let syncName, providerConfigKey, connectionId, suppliedLastSyncDate;
+    let syncName, providerConfigKey, connectionId, suppliedLastSyncDate, useServerLastSyncDate;
     if (args.length > 0) {
-        [syncName, providerConfigKey, connectionId, suppliedLastSyncDate] = args;
+        [syncName, providerConfigKey, connectionId, suppliedLastSyncDate, useServerLastSyncDate] = args;
     }
 
     if (Object.keys(options).length > 0) {
-        ({ sync: syncName, provider: providerConfigKey, connection: connectionId, lastSyncDate: suppliedLastSyncDate } = options);
+        ({ sync: syncName, provider: providerConfigKey, connection: connectionId, lastSyncDate: suppliedLastSyncDate, useServerLastSyncDate } = options);
     }
 
     if (!syncName) {
@@ -109,83 +98,42 @@ export const run = async (args: string[], options: RunArgs) => {
         return;
     }
 
-    const cwd = process.cwd();
-    const config = await loadNangoConfig(null, syncName, path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/${configFile}`));
+    const nangoConnection = (await getConnection(providerConfigKey as string, connectionId as string)) as unknown as NangoConnection;
 
-    if (!config) {
-        throw new Error(`Error loading the ${configFile} file`);
+    if (!nangoConnection) {
+        console.log(chalk.red('Connection not found'));
+        return;
     }
 
-    let lastSyncDate;
+    if (hostport === cloudHost || hostport === stagingHost) {
+        process.env['NANGO_CLOUD'] = 'true';
+    }
+
+    let lastSyncDate = null;
 
     if (suppliedLastSyncDate) {
         lastSyncDate = new Date(suppliedLastSyncDate as string);
     }
 
-    if (
-        config?.integrations?.[providerConfigKey as string]?.[syncName as string] &&
-        fs.existsSync(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/dist/${syncName}.js`))
-    ) {
-        const syncData = config?.integrations[providerConfigKey as string]?.[syncName as string];
-        // to load a module without having to edit the type in the package.json
-        // edit the file to be a mjs then rename it back
-        fs.renameSync(
-            path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/dist/${syncName}.js`),
-            path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/dist/${syncName}.mjs`)
-        );
-        const integrationClass = await getIntegrationClass(
-            syncName as string,
-            path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/dist/${syncName}.mjs`) + `?v=${Math.random().toString(36).substring(3)}`
-        );
+    if (!useServerLastSyncDate) {
+        lastSyncDate = null;
+    }
 
-        const nango = new Nango({
-            host: getApiUrl(),
-            connectionId: String(connectionId),
-            providerConfigKey: String(providerConfigKey),
-            isSync: true
-        });
+    const cwd = process.cwd();
 
-        try {
-            const nangoConnection = (await getConnection(providerConfigKey as string, connectionId as string)) as unknown as NangoConnection;
-            if (!lastSyncDate) {
-                lastSyncDate = (await getLastSyncDate(nangoConnection?.id as number, syncName)) as Date;
-            }
-            if (lastSyncDate instanceof Date && !isNaN(lastSyncDate.getTime())) {
-                nango.setLastSyncDate(lastSyncDate);
-            }
-            // @ts-ingore
-            const userDefinedResults = await integrationClass?.fetchData(nango);
-            console.log(JSON.stringify(userDefinedResults, null, 2));
-            fs.renameSync(
-                path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/dist/${syncName}.mjs`),
-                path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/dist/${syncName}.js`)
-            );
-            const { returns: models } = syncData as NangoIntegrationData;
+    const syncRun = new syncRunService({
+        writeToDb: false,
+        nangoConnection,
+        syncName,
+        syncType: SyncType.INITIAL,
+        loadLocation: path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/${configFile}`)
+    });
 
-            for (const model of models) {
-                if (userDefinedResults[model]) {
-                    const { isUnique, nonUniqueKey } = syncDataService.verifyUniqueKeysAreUnique(userDefinedResults[model]);
-                    if (!isUnique) {
-                        console.log(
-                            chalk.red(
-                                `The ${model} model does not have unique id keys! The repeated key is ${nonUniqueKey}. Please resolve this before running the sync on the server.`
-                            )
-                        );
-                    }
-                }
-            }
-
-            process.exit(0);
-        } catch (error) {
-            console.error(error);
-            fs.renameSync(
-                path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/dist/${syncName}.mjs`),
-                path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/dist/${syncName}.js`)
-            );
-            process.exit(1);
-        }
-    } else {
-        console.log(chalk.red('Sync not found'));
+    try {
+        await syncRun.run(lastSyncDate);
+        process.exit(0);
+    } catch (e) {
+        process.exit(1);
     }
 };
 

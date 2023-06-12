@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/shared",
-    "version": "0.17.41-beta",
+    "version": "0.17.43-beta",
     "description": "Nango's shared components.",
     "type": "module",
     "main": "dist/lib/index.js",
@@ -16,7 +16,6 @@
     "dependencies": {
         "@aws-sdk/client-s3": "^3.348.0",
         "@hapi/boom": "^10.0.1",
-        "@nangohq/node": "0.17.14-beta",
         "@sentry/node": "^7.37.2",
         "@temporalio/client": "^1.5.2",
         "amqplib": "^0.10.3",
@@ -37,6 +36,7 @@
         "simple-oauth2": "^5.0.0",
         "ts-node": "^10.9.1",
         "uuid": "^9.0.0",
+        "vm2": "^3.9.19",
         "winston": "^3.8.2",
         "winston-daily-rotate-file": "^4.7.1"
     },

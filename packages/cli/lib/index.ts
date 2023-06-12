@@ -19,6 +19,7 @@ import type { NangoConfig, NangoIntegration, NangoIntegrationData } from '@nango
 import { loadSimplifiedConfig, checkForIntegrationFile } from '@nangohq/shared';
 import { init, run, tsc, tscWatch, configWatch, dockerRun } from './sync.js';
 import {
+    hostport,
     checkEnvVars,
     enrichHeaders,
     httpsAgent,
@@ -32,14 +33,8 @@ import {
 
 const program = new Command();
 
-let hostport = process.env['NANGO_HOSTPORT'] || 'http://localhost:3003';
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-
-if (hostport.slice(-1) === '/') {
-    hostport = hostport.slice(0, -1);
-}
 
 dotenv.config();
 
@@ -365,7 +360,7 @@ program
             }
         }
 
-        if (!process.env['NANGO_SECRET_KEY']) {
+        if (hostport !== 'http://localhost:3003' && !process.env['NANGO_SECRET_KEY']) {
             console.log(chalk.red(`NANGO_SECRET_KEY environment variable is not set`));
             return;
         }
@@ -386,7 +381,7 @@ program
             const { providerConfigKey, syncs } = integration;
 
             for (const sync of syncs) {
-                const { name: syncName, runs, returns: models } = sync;
+                const { name: syncName, runs, returns: models, models: model_schema } = sync;
                 const { path: integrationFilePath, result: integrationFileResult } = checkForIntegrationFile(
                     syncName,
                     path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}`)
@@ -403,7 +398,8 @@ program
                     models,
                     version,
                     runs,
-                    fileBody: fs.readFileSync(integrationFilePath, 'utf8')
+                    fileBody: fs.readFileSync(integrationFilePath, 'utf8'),
+                    model_schema: JSON.stringify(model_schema)
                 };
 
                 postData.push(body);
@@ -441,6 +437,7 @@ program
     .option('-p, --provider <provider_config_key>', 'The unique key of the provider configuration (chosen by you upon creating this provider configuration).')
     .option('-c, --connection <connection_id>', 'The ID of the Connection.')
     .option('-l, --lastSyncDate [lastSyncDate]', 'Optional: last sync date to retrieve records greater than this date')
+    .option('-u, --useServerLastSyncDate', 'Optional boolean: use the server stored last sync date to retrieve records greater than this date')
     .action(async function (this: Command) {
         checkEnvVars();
         run(this.args, this.opts());

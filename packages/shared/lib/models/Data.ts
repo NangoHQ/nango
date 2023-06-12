@@ -1,4 +1,5 @@
 export interface DataResponse {
+    id?: string;
     [index: string]: unknown | undefined | string | number | boolean | Record<string, string | boolean | number | unknown>;
 }
 

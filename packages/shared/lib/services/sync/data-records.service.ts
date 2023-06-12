@@ -7,8 +7,8 @@ import type { DataResponse } from '../../models/Data.js';
 import { schema } from '../../db/database.js';
 import connectionService from '../connection.service.js';
 
-export const formatDataRecords = (records: SyncDataRecord[], nango_connection_id: number, model: string, syncId: string): DataResponse[] => {
-    return records.map((record: SyncDataRecord) => {
+export const formatDataRecords = (records: DataResponse[], nango_connection_id: number, model: string, syncId: string): SyncDataRecord[] => {
+    return records.map((record: DataResponse) => {
         const data_hash = md5(JSON.stringify(record));
         const external_id = record['id'] as string;
 
