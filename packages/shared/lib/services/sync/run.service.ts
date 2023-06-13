@@ -63,7 +63,7 @@ export default class SyncRun {
         }
     }
 
-    async run(optionalLastSyncDate?: Date | null, bypassAccount?: boolean): Promise<boolean | object | string> {
+    async run(optionalLastSyncDate?: Date | null, bypassAccount?: boolean): Promise<boolean | object> {
         const nangoConfig = await loadNangoConfig(this.nangoConnection, this.syncName, this.loadLocation);
 
         if (!nangoConfig) {

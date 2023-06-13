@@ -40,11 +40,11 @@ export function checkEnvVars() {
     }
 }
 
-export async function getConnection(providerConfigKey: string, connectionId: string) {
+export async function getConnection(providerConfigKey: string, connectionId: string, headers?: Record<string, string | boolean>) {
     checkEnvVars();
     const url = hostport + `/connection/${connectionId}`;
     return await axios
-        .get(url, { params: { provider_config_key: providerConfigKey }, headers: enrichHeaders(), httpsAgent: httpsAgent() })
+        .get(url, { params: { provider_config_key: providerConfigKey }, headers: enrichHeaders(headers), httpsAgent: httpsAgent() })
         .then((res) => {
             return res.data;
         })

@@ -248,7 +248,6 @@ class ConnectionController {
 
             const connection = await connectionService.getConnectionCredentials(res, connectionId, providerConfigKey, activityLogId, action, instantRefresh);
 
-            // This is firing twice in a dry run for some reason
             if (!isSync && !isDryRun) {
                 await createActivityLogMessageAndEnd({
                     level: 'info',

@@ -97,7 +97,10 @@ export const run = async (args: string[], options: RunArgs) => {
         return;
     }
 
-    const nangoConnection = (await getConnection(providerConfigKey as string, connectionId as string)) as unknown as NangoConnection;
+    const nangoConnection = (await getConnection(providerConfigKey as string, connectionId as string, {
+        'Nango-Is-Sync': true,
+        'Nango-Is-Dry-Run': true
+    })) as unknown as NangoConnection;
 
     if (!nangoConnection) {
         console.log(chalk.red('Connection not found'));
