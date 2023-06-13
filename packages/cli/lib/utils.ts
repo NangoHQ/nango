@@ -6,7 +6,6 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-export const configFile = 'nango.yaml';
 export const NANGO_INTEGRATIONS_LOCATION = process.env['NANGO_INTEGRATIONS_LOCATION'] || './nango-integrations';
 
 let parsedHostport = process.env['NANGO_HOSTPORT'] || 'http://localhost:3003';

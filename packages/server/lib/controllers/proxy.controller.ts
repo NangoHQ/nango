@@ -331,10 +331,12 @@ class ProxyController {
         if (error?.response?.status) {
             res.writeHead(error?.response?.status as number, error?.response?.headers as OutgoingHttpHeaders);
         }
-        errorData.pipe(stringify).pipe(res);
-        stringify.on('data', (data) => {
-            this.reportError(error, url, config, activityLogId, data);
-        });
+        if (errorData) {
+            errorData.pipe(stringify).pipe(res);
+            stringify.on('data', (data) => {
+                this.reportError(error, url, config, activityLogId, data);
+            });
+        }
     }
 
     /**
@@ -346,7 +348,7 @@ class ProxyController {
      */
     private async get(
         res: Response,
-        _next: NextFunction,
+        next: NextFunction,
         url: string,
         config: ProxyBodyConfiguration,
         activityLogId: number,
@@ -371,6 +373,7 @@ class ProxyController {
             this.handleResponse(res, responseStream, config, activityLogId, url, isSync, isDryRun);
         } catch (e: unknown) {
             this.handleErrorResponse(res, e, url, config, activityLogId);
+            next(e);
         }
     }
 
@@ -383,7 +386,7 @@ class ProxyController {
      */
     private async post(
         res: Response,
-        _next: NextFunction,
+        next: NextFunction,
         url: string,
         config: ProxyBodyConfiguration,
         activityLogId: number,
@@ -409,6 +412,7 @@ class ProxyController {
             this.handleResponse(res, responseStream, config, activityLogId, url, isSync, isDryRun);
         } catch (error) {
             this.handleErrorResponse(res, error, url, config, activityLogId);
+            next(error);
         }
     }
 
@@ -421,7 +425,7 @@ class ProxyController {
      */
     private async patch(
         res: Response,
-        _next: NextFunction,
+        next: NextFunction,
         url: string,
         config: ProxyBodyConfiguration,
         activityLogId: number,
@@ -447,6 +451,7 @@ class ProxyController {
             this.handleResponse(res, responseStream, config, activityLogId, url, isSync, isDryRun);
         } catch (error) {
             this.handleErrorResponse(res, error, url, config, activityLogId);
+            next(error);
         }
     }
 
@@ -459,7 +464,7 @@ class ProxyController {
      */
     private async put(
         res: Response,
-        _next: NextFunction,
+        next: NextFunction,
         url: string,
         config: ProxyBodyConfiguration,
         activityLogId: number,
@@ -485,6 +490,7 @@ class ProxyController {
             this.handleResponse(res, responseStream, config, activityLogId, url, isSync, isDryRun);
         } catch (error) {
             this.handleErrorResponse(res, error, url, config, activityLogId);
+            next(error);
         }
     }
 
@@ -497,7 +503,7 @@ class ProxyController {
      */
     private async delete(
         res: Response,
-        _next: NextFunction,
+        next: NextFunction,
         url: string,
         config: ProxyBodyConfiguration,
         activityLogId: number,
@@ -521,21 +527,24 @@ class ProxyController {
             this.handleResponse(res, responseStream, config, activityLogId, url, isSync, isDryRun);
         } catch (error) {
             this.handleErrorResponse(res, error, url, config, activityLogId);
+            next(error);
         }
     }
 
     private async reportError(error: AxiosError, url: string, config: ProxyBodyConfiguration, activityLogId: number, errorMessage: string) {
-        await createActivityLogMessageAndEnd({
-            level: 'error',
-            activity_log_id: activityLogId,
-            timestamp: Date.now(),
-            content: `The provider responded back with a ${error?.response?.status} and the message ${errorMessage} to the url: ${url}.${
-                config.template.docs ? ` Refer to the documentation at ${config.template.docs} for help` : ''
-            }`,
-            params: {
-                headers: JSON.stringify(config.headers)
-            }
-        });
+        if (activityLogId) {
+            await createActivityLogMessageAndEnd({
+                level: 'error',
+                activity_log_id: activityLogId,
+                timestamp: Date.now(),
+                content: `The provider responded back with a ${error?.response?.status} and the message ${errorMessage} to the url: ${url}.${
+                    config.template.docs ? ` Refer to the documentation at ${config.template.docs} for help` : ''
+                }`,
+                params: {
+                    headers: JSON.stringify(config.headers)
+                }
+            });
+        }
     }
 
     /**

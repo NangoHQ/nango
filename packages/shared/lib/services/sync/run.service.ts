@@ -14,6 +14,7 @@ import { NangoSync } from '../../sdk/sync.js';
 import { isCloud, getApiUrl } from '../../utils/utils.js';
 import type { NangoIntegrationData, NangoConfig, NangoIntegration } from '../../integrations/index.js';
 import type { UpsertResponse } from '../../models/Data.js';
+import type { Account } from '../../models/Admin';
 
 interface SyncRunConfig {
     writeToDb: boolean;
@@ -62,7 +63,7 @@ export default class SyncRun {
         }
     }
 
-    async run(optionalLastSyncDate?: Date | null): Promise<boolean | object> {
+    async run(optionalLastSyncDate?: Date | null, bypassAccount?: boolean): Promise<boolean | object | string> {
         const nangoConfig = await loadNangoConfig(this.nangoConnection, this.syncName, this.loadLocation);
 
         if (!nangoConfig) {
@@ -80,9 +81,13 @@ export default class SyncRun {
 
         // if there is a matching customer integration code for the provider config key then run it
         if (integrations[this.nangoConnection.provider_config_key]) {
-            const account = await accountService.getAccountById(this.nangoConnection.account_id as number);
+            let account: Account | null = null;
 
-            if (!account) {
+            if (!bypassAccount) {
+                account = await accountService.getAccountById(this.nangoConnection.account_id as number);
+            }
+
+            if (!account && !bypassAccount) {
                 this.reportFailureForResults(`No account was found for ${this.nangoConnection.account_id}. The sync cannot continue without a valid account`);
                 return false;
             }
@@ -93,7 +98,7 @@ export default class SyncRun {
                 providerConfigKey: String(this.nangoConnection?.provider_config_key),
                 activityLogId: this.activityLogId as number,
                 isSync: true,
-                secretKey: account?.secret_key as string,
+                secretKey: account ? (account?.secret_key as string) : '',
                 nangoConnectionId: this.nangoConnection?.id as number,
                 syncId: this.syncId,
                 syncJobId: this.syncJobId,
@@ -105,8 +110,8 @@ export default class SyncRun {
 
             const now = new Date();
 
-            if (!isCloud) {
-                const { path: integrationFilePath, result: integrationFileResult } = checkForIntegrationFile(this.syncName);
+            if (!isCloud()) {
+                const { path: integrationFilePath, result: integrationFileResult } = checkForIntegrationFile(this.syncName, this.loadLocation);
                 if (!integrationFileResult) {
                     this.reportFailureForResults(
                         `Integration was attempted to run for ${this.syncName} but no integration file was found at ${integrationFilePath}.`
@@ -117,6 +122,7 @@ export default class SyncRun {
             }
 
             const lastSyncDate =
+                // test if get last sync date works from the dry run sync script from the cli
                 optionalLastSyncDate === null ? optionalLastSyncDate : await getLastSyncDate(this.nangoConnection?.id as number, this.syncName);
             nango.setLastSyncDate(lastSyncDate as Date);
             const syncData = syncObject[this.syncName] as unknown as NangoIntegrationData;
@@ -129,7 +135,7 @@ export default class SyncRun {
             try {
                 result = true;
 
-                const userDefinedResults = await integationService.runScript(this.syncName, this.activityLogId as number, nango, syncData);
+                const userDefinedResults = await integationService.runScript(this.syncName, this.activityLogId as number, nango, syncData, this.loadLocation);
 
                 if (userDefinedResults === null) {
                     this.reportFailureForResults(`The integration was run but there was a problem in retrieving the results from the script.`);

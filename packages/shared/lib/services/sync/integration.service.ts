@@ -7,9 +7,32 @@ import fileService from '../file.service.js';
 import { isCloud } from '../../utils/utils.js';
 
 class IntegrationService {
-    async runScript(syncName: string, activityLogId: number | undefined, nango: NangoSync, integrationData: NangoIntegrationData): Promise<any> {
+    async runScript(
+        syncName: string,
+        activityLogId: number | undefined,
+        nango: NangoSync,
+        integrationData: NangoIntegrationData,
+        optionalLoadLocation?: string
+    ): Promise<any> {
         try {
-            const script: string | null = isCloud() ? await fileService.getFile(integrationData.fileLocation as string) : getIntegrationFile(syncName);
+            const script: string | null = isCloud()
+                ? await fileService.getFile(integrationData.fileLocation as string)
+                : getIntegrationFile(syncName, optionalLoadLocation);
+
+            if (!script) {
+                const content = `Unable to find integration file for ${syncName}`;
+
+                if (activityLogId) {
+                    await createActivityLogMessage({
+                        level: 'error',
+                        activity_log_id: activityLogId,
+                        content,
+                        timestamp: Date.now()
+                    });
+                } else {
+                    console.error(content);
+                }
+            }
 
             if (!script && activityLogId) {
                 await createActivityLogMessage({

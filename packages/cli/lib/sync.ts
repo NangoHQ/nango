@@ -9,9 +9,8 @@ import * as dotenv from 'dotenv';
 import { spawn } from 'child_process';
 
 import type { NangoConfig, Connection as NangoConnection } from '@nangohq/shared';
-import { cloudHost, stagingHost } from '@nangohq/shared';
-import { SyncType, syncRunService } from '@nangohq/shared';
-import { hostport, getConnection, configFile, NANGO_INTEGRATIONS_LOCATION, buildInterfaces } from './utils.js';
+import { cloudHost, stagingHost, SyncType, syncRunService, nangoConfigFile } from '@nangohq/shared';
+import { hostport, getConnection, NANGO_INTEGRATIONS_LOCATION, buildInterfaces } from './utils.js';
 
 dotenv.config();
 
@@ -68,9 +67,9 @@ export const init = () => {
     if (!fs.existsSync(NANGO_INTEGRATIONS_LOCATION)) {
         fs.mkdirSync(NANGO_INTEGRATIONS_LOCATION);
     }
-    fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/${configFile}`, yamlData);
+    fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/${nangoConfigFile}`, yamlData);
 
-    console.log(chalk.green(`${configFile} file has been created`));
+    console.log(chalk.green(`${nangoConfigFile} file has been created`));
 };
 
 export const run = async (args: string[], options: RunArgs) => {
@@ -126,11 +125,11 @@ export const run = async (args: string[], options: RunArgs) => {
         nangoConnection,
         syncName,
         syncType: SyncType.INITIAL,
-        loadLocation: path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/${configFile}`)
+        loadLocation: path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}`)
     });
 
     try {
-        const results = await syncRun.run(lastSyncDate);
+        const results = await syncRun.run(lastSyncDate, true);
         console.log(results);
         process.exit(0);
     } catch (e) {
@@ -174,7 +173,7 @@ export const tscWatch = () => {
     const cwd = process.cwd();
     const tsconfig = fs.readFileSync('./node_modules/nango/tsconfig.dev.json', 'utf8');
 
-    const watchPath = [`${NANGO_INTEGRATIONS_LOCATION}/*.ts`, `${NANGO_INTEGRATIONS_LOCATION}/${configFile}`];
+    const watchPath = [`${NANGO_INTEGRATIONS_LOCATION}/*.ts`, `${NANGO_INTEGRATIONS_LOCATION}/${nangoConfigFile}`];
     const rawNangoIntegrationLocation = NANGO_INTEGRATIONS_LOCATION.replace('./', '');
 
     const watcher = chokidar.watch(watchPath, {
@@ -191,14 +190,14 @@ export const tscWatch = () => {
     }
 
     watcher.on('add', (filePath) => {
-        if (filePath === `${rawNangoIntegrationLocation}/${configFile}`) {
+        if (filePath === `${rawNangoIntegrationLocation}/${nangoConfigFile}`) {
             return;
         }
         compileFile(filePath);
     });
 
     watcher.on('change', (filePath) => {
-        if (filePath === `${rawNangoIntegrationLocation}/${configFile}`) {
+        if (filePath === `${rawNangoIntegrationLocation}/${nangoConfigFile}`) {
             // config file changed, re-compile each ts file
             const integrationFiles = glob.sync(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/*.ts`));
             for (const file of integrationFiles) {
@@ -231,7 +230,7 @@ export const tscWatch = () => {
 };
 
 export const configWatch = () => {
-    const watchPath = `${NANGO_INTEGRATIONS_LOCATION}/${configFile}`;
+    const watchPath = `${NANGO_INTEGRATIONS_LOCATION}/${nangoConfigFile}`;
     const watcher = chokidar.watch(watchPath, { ignoreInitial: true });
 
     watcher.on('add', (filePath) => {
@@ -244,7 +243,7 @@ export const configWatch = () => {
 
     function buildInterface(filePath: string) {
         const cwd = process.cwd();
-        const configContents = fs.readFileSync(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/${configFile}`), 'utf8');
+        const configContents = fs.readFileSync(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/${nangoConfigFile}`), 'utf8');
         const configData: NangoConfig = yaml.load(configContents) as unknown as NangoConfig;
         const { models } = configData;
         const interfaces = buildInterfaces(models);

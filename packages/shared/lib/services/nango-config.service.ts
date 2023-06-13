@@ -12,6 +12,7 @@ import { isCloud } from '../utils/utils.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+export const nangoConfigFile = 'nango.yaml';
 export const SYNC_FILE_EXTENSION = 'js';
 
 export function loadNangoConfig(nangoConnection: NangoConnection | null, syncName?: string, loadLocation?: string): Promise<NangoConfig | null> {
@@ -23,7 +24,7 @@ export function loadNangoConfig(nangoConnection: NangoConnection | null, syncNam
 }
 
 export function loadLocalNangoConfig(loadLocation?: string): Promise<NangoConfig | null> {
-    const location = loadLocation || path.resolve(__dirname, '../nango-integrations/nango.yaml');
+    const location = loadLocation ? `${loadLocation}/${nangoConfigFile}` : path.resolve(__dirname, `../nango-integrations/${nangoConfigFile}`);
 
     try {
         const yamlConfig = fs.readFileSync(location, 'utf8');
@@ -88,12 +89,15 @@ export function checkForIntegrationFile(syncName: string, optionalNangoIntegrati
 
 export function getIntegrationFile(syncName: string, setIntegrationPath?: string | null) {
     try {
-        const filePath = setIntegrationPath || path.resolve(__dirname, `../nango-integrations/dist/${syncName}.${SYNC_FILE_EXTENSION}`);
+        const filePath = setIntegrationPath
+            ? `${setIntegrationPath}/dist/${syncName}.${SYNC_FILE_EXTENSION}`
+            : path.resolve(__dirname, `../nango-integrations/dist/${syncName}.${SYNC_FILE_EXTENSION}`);
         const realPath = fs.realpathSync(filePath);
         const integrationFileContents = fs.readFileSync(realPath, 'utf8');
 
         return integrationFileContents;
     } catch (error) {
+        console.log(error);
         return null;
     }
 }

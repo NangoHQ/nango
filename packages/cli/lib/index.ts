@@ -16,20 +16,9 @@ import ejs from 'ejs';
 import * as dotenv from 'dotenv';
 
 import type { NangoConfig, NangoIntegration, NangoIntegrationData } from '@nangohq/shared';
-import { loadSimplifiedConfig, checkForIntegrationFile } from '@nangohq/shared';
+import { nangoConfigFile, loadSimplifiedConfig, checkForIntegrationFile } from '@nangohq/shared';
 import { init, run, tsc, tscWatch, configWatch, dockerRun } from './sync.js';
-import {
-    hostport,
-    checkEnvVars,
-    enrichHeaders,
-    httpsAgent,
-    getConnection,
-    configFile,
-    NANGO_INTEGRATIONS_LOCATION,
-    buildInterfaces,
-    setCloudHost,
-    setStagingHost
-} from './utils.js';
+import { hostport, checkEnvVars, enrichHeaders, httpsAgent, NANGO_INTEGRATIONS_LOCATION, buildInterfaces, setCloudHost, setStagingHost } from './utils.js';
 
 const program = new Command();
 
@@ -48,201 +37,6 @@ program
 program.addHelpText('before', chalk.green(figlet.textSync('Nango CLI')));
 
 program
-    .command('config:list')
-    .description('List all provider configurations.')
-    .action(async function (this: Command) {
-        checkEnvVars();
-        const url = hostport + '/config';
-        await axios
-            .get(url, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
-            .then((res) => {
-                console.table(
-                    res.data['configs'].map((o: any) => {
-                        return { unique_key: o.unique_key, provider: o.provider, created: o.created_at };
-                    })
-                );
-            })
-            .catch((err) => {
-                console.log(`❌ ${err.response?.data.error || JSON.stringify(err)}`);
-            });
-    });
-
-program
-    .command('config:get')
-    .description('Get an provider configuration.')
-    .argument('<provider_config_key>', 'The unique key of the provider configuration (chosen by you upon creating this provider configuration).')
-    .action(async function (this: Command) {
-        checkEnvVars();
-        const url = hostport + `/config/${this.args[0]}`;
-        await axios
-            .get(url, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
-            .then((res) => {
-                console.table(res.data['config']);
-            })
-            .catch((err) => {
-                console.log(`❌ ${err.response?.data.error || JSON.stringify(err)}`);
-            });
-    });
-
-program
-    .command('config:create')
-    .description('Create an provider configuration.')
-    .argument('<provider_config_key>', 'The unique key of the provider configuration (choose a friendly name, e.g. hubspot_staging).')
-    .argument('<provider>', 'The provider of the 3rd-party API, must match the template keys in https://nango.dev/oauth-providers (e.g. hubspot).')
-    .argument('<oauth_client_id>', 'The OAuth Client ID obtained from the API provider.')
-    .argument('<oauth_client_secret>', 'The OAuth Client Secret obtained from the API provider.')
-    .argument('<oauth_scopes>', 'The OAuth Scopes obtained from the API provider (comma-separated).')
-    .action(async function (this: Command) {
-        checkEnvVars();
-        const body = {
-            provider_config_key: this.args[0],
-            provider: this.args[1],
-            oauth_client_id: this.args[2],
-            oauth_client_secret: this.args[3],
-            oauth_scopes: this.args[4]
-        };
-
-        const url = hostport + `/config`;
-        await axios
-            .post(url, body, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
-            .then((_) => {
-                console.log('\n\n✅ Successfully created a new provider configuration!\n\n');
-            })
-            .catch((err) => {
-                console.log(`❌ ${err.response?.data.error || JSON.stringify(err)}`);
-            });
-    });
-
-program
-    .command('config:edit')
-    .description('Edit an provider configuration.')
-    .argument('<provider_config_key>', 'The unique key of the provider configuration (choose a friendly name, e.g. hubspot_staging).')
-    .argument('<provider>', 'The provider of the 3rd-party API, must match the template keys in https://nango.dev/oauth-providers (e.g. hubspot).')
-    .argument('<oauth_client_id>', 'The OAuth Client ID obtained from the API provider.')
-    .argument('<oauth_client_secret>', 'The OAuth Client Secret obtained from the API provider.')
-    .argument('<oauth_scopes>', 'The OAuth Scopes obtained from the API provider (comma-separated).')
-    .action(async function (this: Command) {
-        checkEnvVars();
-        const body = {
-            provider_config_key: this.args[0],
-            provider: this.args[1],
-            oauth_client_id: this.args[2],
-            oauth_client_secret: this.args[3],
-            oauth_scopes: this.args[4]
-        };
-
-        const url = hostport + `/config`;
-        await axios
-            .put(url, body, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
-            .then((_) => {
-                console.log('\n\n✅ Successfully edited an existing provider configuration!\n\n');
-            })
-            .catch((err) => {
-                console.log(`❌ ${err.response?.data.error || JSON.stringify(err)}`);
-            });
-    });
-
-program
-    .command('config:delete')
-    .description('Delete an provider configuration.')
-    .argument('<provider_config_key>', 'The unique key of the provider configuration (chosen by you upon creating this provider configuration).')
-    .action(async function (this: Command) {
-        checkEnvVars();
-        const url = hostport + `/config/${this.args[0]}`;
-        await axios
-            .delete(url, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
-            .then((_) => {
-                console.log('\n\n✅ Successfully deleted the provider configuration!\n\n');
-            })
-            .catch((err) => {
-                console.log(`❌ ${err.response?.data.error || JSON.stringify(err)}`);
-            });
-    });
-
-program
-    .command('connection:get')
-    .description('Get a connection with credentials.')
-    .argument('<provider_config_key>', 'The unique key of the provider configuration (chosen by you upon creating this provider configuration).')
-    .argument('<connection_id>', 'The ID of the Connection.')
-    .action(async function (this: Command) {
-        checkEnvVars();
-        const [providerConfigKey, connectionId] = this.args;
-
-        if (!providerConfigKey) {
-            console.log(chalk.red('Please provide a provider config key.'));
-        }
-
-        if (!connectionId) {
-            console.log(chalk.red('Please provide a connection ID.'));
-        }
-
-        const connection = await getConnection(providerConfigKey as string, connectionId as string);
-
-        console.log(connection);
-    });
-
-program
-    .command('token:get')
-    .description('Get an access token.')
-    .argument('<provider_config_key>', 'The unique key of the provider configuration (chosen by you upon creating this provider configuration).')
-    .argument('<connection_id>', 'The ID of the Connection.')
-    .action(async function (this: Command) {
-        checkEnvVars();
-        const url = hostport + `/connection/${this.args[1]}`;
-        await axios
-            .get(url, { params: { provider_config_key: this.args[0] }, headers: enrichHeaders(), httpsAgent: httpsAgent() })
-            .then((response) => {
-                switch (response.data.credentials.type) {
-                    case 'OAUTH2':
-                        console.table({ token: response.data.credentials.access_token });
-                        break;
-                    case 'OAUTH1':
-                        console.table(`token:${response.data.credentials.oauth_token}\nsecret:${response.data.credentials.oauth_token_secret}`);
-                        break;
-                    default:
-                        throw new Error(`Unrecognized OAuth type '${response.data.credentials.type}' in stored credentials.`);
-                }
-            })
-            .catch((err) => {
-                console.log(`❌ ${err.response?.data.error || JSON.stringify(err)}`);
-            });
-    });
-
-program
-    .command('connection:list')
-    .description('List connections without credentials.')
-    .action(async function (this: Command) {
-        checkEnvVars();
-        const url = hostport + `/connection`;
-        await axios
-            .get(url, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
-            .then((res) => {
-                console.table(res.data['connections']);
-            })
-            .catch((err) => {
-                console.log(`❌ ${err.response?.data.error || JSON.stringify(err)}`);
-            });
-    });
-
-program
-    .command('connection:delete')
-    .description('Delete a connection.')
-    .argument('<provider_config_key>', 'The unique key of the provider configuration (chosen by you upon creating this provider configuration).')
-    .argument('<connection_id>', 'The ID of the Connection.')
-    .action(async function (this: Command) {
-        checkEnvVars();
-        const url = hostport + `/connection/${this.args[1]}`;
-        await axios
-            .delete(url, { params: { provider_config_key: this.args[0] }, headers: enrichHeaders(), httpsAgent: httpsAgent() })
-            .then((_) => {
-                console.log('\n\n✅ Successfully deleted the connection!\n\n');
-            })
-            .catch((err) => {
-                console.log(`❌ ${err.response?.data.error || JSON.stringify(err)}`);
-            });
-    });
-
-program
     .command('init')
     .alias('i')
     .description('Initialize a new Nango project')
@@ -258,7 +52,7 @@ program
         const templateContents = fs.readFileSync(path.resolve(__dirname, './integration.ejs'), 'utf8');
 
         const cwd = process.cwd();
-        const configContents = fs.readFileSync(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/${configFile}`), 'utf8');
+        const configContents = fs.readFileSync(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/${nangoConfigFile}`), 'utf8');
         const configData: NangoConfig = yaml.load(configContents) as unknown as NangoConfig;
         const { integrations } = configData;
         const { models } = configData;
@@ -313,7 +107,7 @@ program
 program
     .command('tsc:watch')
     .description('Watch tsc files while developing. Set --no-compile-interfaces to disable watching the config file')
-    .option('--no-compile-interfaces', `Watch the ${configFile} and recompile the interfaces on change`, true)
+    .option('--no-compile-interfaces', `Watch the ${nangoConfigFile} and recompile the interfaces on change`, true)
     .action(async function (this: Command) {
         const { compileInterfaces } = this.opts();
 
@@ -369,10 +163,10 @@ program
         tsc();
 
         const cwd = process.cwd();
-        const config = await loadSimplifiedConfig(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/${configFile}`));
+        const config = await loadSimplifiedConfig(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/${nangoConfigFile}`));
 
         if (!config) {
-            throw new Error(`Error loading the ${configFile} file`);
+            throw new Error(`Error loading the ${nangoConfigFile} file`);
         }
 
         const postData = [];
@@ -424,7 +218,7 @@ program
     .description('Verify the parsed sync config and output the object for verification')
     .action(async () => {
         const cwd = process.cwd();
-        const config = await loadSimplifiedConfig(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/${configFile}`));
+        const config = await loadSimplifiedConfig(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/${nangoConfigFile}`));
 
         console.log(chalk.green(JSON.stringify(config, null, 2)));
     });
