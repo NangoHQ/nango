@@ -11,10 +11,10 @@ const { routeSync, scheduleAndRouteSync } = proxyActivities<typeof activities>({
     }
 });
 
-export async function initialSync(args: InitialSyncArgs): Promise<boolean> {
+export async function initialSync(args: InitialSyncArgs): Promise<boolean | object> {
     return routeSync(args);
 }
 
-export async function continuousSync(args: ContinuousSyncArgs): Promise<boolean> {
+export async function continuousSync(args: ContinuousSyncArgs): Promise<boolean | object> {
     return scheduleAndRouteSync(args);
 }

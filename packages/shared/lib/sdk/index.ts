@@ -13,6 +13,7 @@ interface NangoProps {
     connectionId?: string;
     providerConfigKey?: string;
     isSync?: boolean;
+    dryRun?: boolean;
     activityLogId?: number;
 }
 
@@ -34,6 +35,7 @@ export class Nango {
     connectionId?: string;
     providerConfigKey?: string;
     isSync = false;
+    dryRun = false;
     activityLogId?: number;
 
     constructor(config: NangoProps = {}) {
@@ -56,6 +58,10 @@ export class Nango {
 
         if (config.isSync) {
             this.isSync = config.isSync;
+        }
+
+        if (config.dryRun) {
+            this.dryRun = config.dryRun;
         }
 
         if (config.activityLogId) {
@@ -132,6 +138,7 @@ export class Nango {
             'Connection-Id': connectionId as string,
             'Provider-Config-Key': providerConfigKey as string,
             'Nango-Is-Sync': this.isSync,
+            'Nango-Is-Dry-Run': this.dryRun,
             'Nango-Activity-Log-Id': this.activityLogId || '',
             ...customHeaders
         };
@@ -265,7 +272,10 @@ export class Nango {
             throw new Error('Connection Id is required');
         }
 
-        const response = await this.getConnectionDetails(providerConfigKey, connectionId, false, false, { 'Nango-Is-Sync': true });
+        const response = await this.getConnectionDetails(providerConfigKey, connectionId, false, false, {
+            'Nango-Is-Sync': true,
+            'Nango-Is-Dry-Run': this.dryRun
+        });
 
         return response.data.field_mappings;
     }

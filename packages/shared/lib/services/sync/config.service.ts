@@ -78,6 +78,8 @@ export async function getSyncConfig(nangoConnection: NangoConnection, syncName?:
             return null;
         }
 
+        // this is an array because sometimes we don't know the sync name, but regardless
+        // we want to iterate over the sync configs
         syncConfigs = [syncConfigs];
     }
 
@@ -95,6 +97,7 @@ export async function getSyncConfig(nangoConnection: NangoConnection, syncName?:
             const providerConfig = nangoConfig.integrations[key] ?? {};
 
             providerConfig[syncConfig.sync_name] = {
+                sync_config_id: syncConfig.id as number,
                 runs: syncConfig.runs,
                 returns: syncConfig.models,
                 fileLocation: syncConfig.file_location,

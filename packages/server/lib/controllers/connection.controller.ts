@@ -224,6 +224,7 @@ class ConnectionController {
             const returnRefreshToken = ((req.query['refresh_token'] === 'true') as boolean) || false;
             const instantRefresh = req.query['force_refresh'] === 'true';
             const isSync = req.get('Nango-Is-Sync') as string;
+            const isDryRun = req.get('Nango-Is-Dry-Run') as string;
 
             let activityLogId: number | null = null;
 
@@ -241,13 +242,14 @@ class ConnectionController {
                 account_id: accountId
             };
 
-            if (!isSync) {
+            if (!isSync && !isDryRun) {
                 activityLogId = await createActivityLog(log);
             }
 
             const connection = await connectionService.getConnectionCredentials(res, connectionId, providerConfigKey, activityLogId, action, instantRefresh);
 
-            if (!isSync) {
+            // This is firing twice in a dry run for some reason
+            if (!isSync && !isDryRun) {
                 await createActivityLogMessageAndEnd({
                     level: 'info',
                     activity_log_id: activityLogId as number,

@@ -36,6 +36,7 @@ export interface Job extends Timestamps {
     job_id: string;
     activity_log_id: number | null;
     result?: SyncResult;
+    sync_config_id?: number;
 }
 
 interface SyncModelSchema {
@@ -95,7 +96,7 @@ export interface Schedule extends Timestamps {
 }
 
 export interface DataRecord extends Timestamps {
-    [index: string]: number | string | Date | object;
+    [index: string]: number | string | Date | object | undefined;
     id?: string;
     external_id: string;
     json: object;
@@ -103,6 +104,7 @@ export interface DataRecord extends Timestamps {
     nango_connection_id: number;
     model: string;
     sync_id: string;
+    sync_config_id?: number | undefined;
 }
 
 export type SyncWithSchedule = Sync & Schedule;

@@ -5,6 +5,7 @@ export interface NangoIntegrationData {
     returns: string[];
     fileLocation?: string;
     version?: string;
+    sync_config_id?: number;
 }
 export interface NangoIntegration {
     [key: string]: {

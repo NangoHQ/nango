@@ -130,7 +130,8 @@ export const run = async (args: string[], options: RunArgs) => {
     });
 
     try {
-        await syncRun.run(lastSyncDate);
+        const results = await syncRun.run(lastSyncDate);
+        console.log(results);
         process.exit(0);
     } catch (e) {
         process.exit(1);

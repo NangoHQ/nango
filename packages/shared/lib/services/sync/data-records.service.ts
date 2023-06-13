@@ -7,7 +7,13 @@ import type { DataResponse } from '../../models/Data.js';
 import { schema } from '../../db/database.js';
 import connectionService from '../connection.service.js';
 
-export const formatDataRecords = (records: DataResponse[], nango_connection_id: number, model: string, syncId: string): SyncDataRecord[] => {
+export const formatDataRecords = (
+    records: DataResponse[],
+    nango_connection_id: number,
+    model: string,
+    syncId: string,
+    sync_job_id: number
+): SyncDataRecord[] => {
     return records.map((record: DataResponse) => {
         const data_hash = md5(JSON.stringify(record));
         const external_id = record['id'] as string;
@@ -19,7 +25,8 @@ export const formatDataRecords = (records: DataResponse[], nango_connection_id: 
             data_hash,
             model,
             nango_connection_id,
-            sync_id: syncId
+            sync_id: syncId,
+            sync_job_id
         };
     });
 };

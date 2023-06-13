@@ -83,3 +83,9 @@ export const updateSyncJobResult = async (id: number, result: SyncResult): Promi
         return finalResult;
     }
 };
+
+export const addSyncConfigToJob = async (id: number, sync_config_id: number): Promise<void> => {
+    await schema().from<SyncJob>(SYNC_JOB_TABLE).where({ id }).update({
+        sync_config_id
+    });
+};

@@ -1,7 +1,7 @@
-import { NangoHelper } from '@nangohq/node';
+import { NangoSync } from '@nangohq/node';
 import { <%= interfaceNames.join(', ') %> } from './models';
 
-export default async function fetchData(nango: NangoHelper): Promise<{<% for (let i = 0; i < mappings.length; i++) { %><%= mappings[i].name %>: <%= mappings[i].type %>[]<% if (i !== mappings.length - 1) { %>, <% } %><% } %>}> {
+export default async function fetchData(nango: NangoSync): Promise<{<% for (let i = 0; i < mappings.length; i++) { %><%= mappings[i].name %>: <%= mappings[i].type %>[]<% if (i !== mappings.length - 1) { %>, <% } %><% } %>}> {
     /**
      * Rest of the integration code goes below.
      *

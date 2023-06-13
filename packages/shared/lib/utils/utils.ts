@@ -143,7 +143,7 @@ export function getApiUrl() {
     } else if (isProd()) {
         return cloudHost;
     }
-    return localhostUrl;
+    return getServerBaseUrl();
 }
 
 /**

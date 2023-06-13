@@ -2,7 +2,7 @@ import { loadNangoConfig } from '../nango-config.service.js';
 import type { NangoConnection } from '../../models/Connection.js';
 import { SyncType, SyncStatus, SyncResult } from '../../models/Sync.js';
 import { createActivityLogMessageAndEnd, createActivityLogMessage, updateSuccess as updateSuccessActivityLog } from '../activity.service.js';
-import { updateSyncJobResult, updateSyncJobStatus } from '../sync/job.service.js';
+import { addSyncConfigToJob, updateSyncJobResult, updateSyncJobStatus } from '../sync/job.service.js';
 import { checkForIntegrationFile } from '../nango-config.service.js';
 import { getLastSyncDate } from './sync.service.js';
 import { formatDataRecords } from './data-records.service.js';
@@ -62,7 +62,7 @@ export default class SyncRun {
         }
     }
 
-    async run(optionalLastSyncDate?: Date | null): Promise<boolean> {
+    async run(optionalLastSyncDate?: Date | null): Promise<boolean | object> {
         const nangoConfig = await loadNangoConfig(this.nangoConnection, this.syncName, this.loadLocation);
 
         if (!nangoConfig) {
@@ -84,6 +84,7 @@ export default class SyncRun {
 
             if (!account) {
                 this.reportFailureForResults(`No account was found for ${this.nangoConnection.account_id}. The sync cannot continue without a valid account`);
+                return false;
             }
 
             const nango = new NangoSync({
@@ -95,7 +96,8 @@ export default class SyncRun {
                 secretKey: account?.secret_key as string,
                 nangoConnectionId: this.nangoConnection?.id as number,
                 syncId: this.syncId,
-                syncJobId: this.syncJobId
+                syncJobId: this.syncJobId,
+                dryRun: !this.writeToDb
             });
 
             const providerConfigKey = this.nangoConnection.provider_config_key;
@@ -114,10 +116,15 @@ export default class SyncRun {
                 }
             }
 
-            const lastSyncDate = optionalLastSyncDate || (await getLastSyncDate(this.nangoConnection?.id as number, this.syncName));
+            const lastSyncDate =
+                optionalLastSyncDate === null ? optionalLastSyncDate : await getLastSyncDate(this.nangoConnection?.id as number, this.syncName);
             nango.setLastSyncDate(lastSyncDate as Date);
             const syncData = syncObject[this.syncName] as unknown as NangoIntegrationData;
             const { returns: models } = syncData;
+
+            if (syncData.sync_config_id) {
+                await addSyncConfigToJob(this.syncJobId as number, syncData.sync_config_id);
+            }
 
             try {
                 result = true;
@@ -132,19 +139,23 @@ export default class SyncRun {
 
                 let responseResults: UpsertResponse | null = { addedKeys: [], updatedKeys: [], affectedInternalIds: [], affectedExternalIds: [] };
 
+                if (!this.writeToDb) {
+                    return userDefinedResults;
+                }
+
                 for (const model of models) {
                     if (userDefinedResults[model]) {
-                        if (!this.writeToDb) {
-                            console.log(JSON.stringify(userDefinedResults, null, 2));
-
-                            continue;
-                        }
-
                         if (!this.syncId) {
                             continue;
                         }
 
-                        const formattedResults = formatDataRecords(userDefinedResults[model], this.nangoConnection.id as number, model, this.syncId);
+                        const formattedResults = formatDataRecords(
+                            userDefinedResults[model],
+                            this.nangoConnection.id as number,
+                            model,
+                            this.syncId,
+                            this.syncJobId as number
+                        );
                         let upsertSuccess = true;
                         if (formattedResults.length > 0) {
                             try {

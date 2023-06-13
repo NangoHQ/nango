@@ -45,6 +45,7 @@ class ProxyController {
             const providerConfigKey = req.get('Provider-Config-Key') as string;
             const retries = req.get('Retries') as string;
             const isSync = req.get('Nango-Is-Sync') as string;
+            const isDryRun = req.get('Nango-Is-Dry-Run') as string;
             const existingActivityLogId = req.get('Nango-Activity-Log-Id') as number | string;
             const accountId = getAccount(res);
 
@@ -63,7 +64,11 @@ class ProxyController {
                 account_id: accountId
             };
 
-            const activityLogId = existingActivityLogId ? Number(existingActivityLogId) : await createActivityLog(log);
+            let activityLogId = null;
+
+            if (!isDryRun) {
+                activityLogId = existingActivityLogId ? Number(existingActivityLogId) : await createActivityLog(log);
+            }
 
             if (!connectionId) {
                 errorManager.errRes(res, 'missing_connection_id');
@@ -224,7 +229,7 @@ class ProxyController {
                 });
             }
 
-            await this.sendToHttpMethod(res, next, method as HTTP_VERB, configBody, activityLogId as number, connection, isSync);
+            await this.sendToHttpMethod(res, next, method as HTTP_VERB, configBody, activityLogId as number, connection, isSync, isDryRun);
         } catch (error) {
             console.log(error);
             next(error);
@@ -263,20 +268,21 @@ class ProxyController {
         configBody: ProxyBodyConfiguration,
         activityLogId: number,
         connection: Connection,
-        isSync?: string
+        isSync?: string,
+        isDryRun?: string
     ) {
         const url = this.constructUrl(configBody, connection);
 
         if (method === 'POST') {
-            return this.post(res, next, url, configBody, activityLogId, isSync);
+            return this.post(res, next, url, configBody, activityLogId, isSync, isDryRun);
         } else if (method === 'PATCH') {
-            return this.patch(res, next, url, configBody, activityLogId, isSync);
+            return this.patch(res, next, url, configBody, activityLogId, isSync, isDryRun);
         } else if (method === 'PUT') {
-            return this.put(res, next, url, configBody, activityLogId, isSync);
+            return this.put(res, next, url, configBody, activityLogId, isSync, isDryRun);
         } else if (method === 'DELETE') {
-            return this.delete(res, next, url, configBody, activityLogId, isSync);
+            return this.delete(res, next, url, configBody, activityLogId, isSync, isDryRun);
         } else {
-            return this.get(res, next, url, configBody, activityLogId, isSync);
+            return this.get(res, next, url, configBody, activityLogId, isSync, isDryRun);
         }
     }
 
@@ -286,21 +292,24 @@ class ProxyController {
         config: ProxyBodyConfiguration,
         activityLogId: number,
         url: string,
-        isSync?: string
+        isSync?: string,
+        isDryRun?: string
     ) {
         if (!isSync) {
             await updateSuccessActivityLog(activityLogId, true);
         }
 
-        await createActivityLogMessageAndEnd({
-            level: 'info',
-            activity_log_id: activityLogId,
-            timestamp: Date.now(),
-            content: `${config.method.toUpperCase()} request to ${url} was successful`,
-            params: {
-                headers: JSON.stringify(config.headers)
-            }
-        });
+        if (!isDryRun) {
+            await createActivityLogMessageAndEnd({
+                level: 'info',
+                activity_log_id: activityLogId,
+                timestamp: Date.now(),
+                content: `${config.method.toUpperCase()} request to ${url} was successful`,
+                params: {
+                    headers: JSON.stringify(config.headers)
+                }
+            });
+        }
 
         const passThroughStream = new PassThrough();
         responseStream.data.pipe(passThroughStream);
@@ -333,7 +342,15 @@ class ProxyController {
      * @param {string} url
      * @param {ProxyBodyConfiguration} config
      */
-    private async get(res: Response, _next: NextFunction, url: string, config: ProxyBodyConfiguration, activityLogId: number, isSync?: string) {
+    private async get(
+        res: Response,
+        _next: NextFunction,
+        url: string,
+        config: ProxyBodyConfiguration,
+        activityLogId: number,
+        isSync?: string,
+        isDryRun?: string
+    ) {
         try {
             const headers = this.constructHeaders(config);
             const responseStream: AxiosResponse = await backOff(
@@ -349,7 +366,7 @@ class ProxyController {
                 { numOfAttempts: Number(config.retries), retry: this.retry }
             );
 
-            this.handleResponse(res, responseStream, config, activityLogId, url, isSync);
+            this.handleResponse(res, responseStream, config, activityLogId, url, isSync, isDryRun);
         } catch (e: unknown) {
             this.handleErrorResponse(res, e, url, config, activityLogId);
         }
@@ -362,7 +379,15 @@ class ProxyController {
      * @param {string} url
      * @param {ProxyBodyConfiguration} config
      */
-    private async post(res: Response, _next: NextFunction, url: string, config: ProxyBodyConfiguration, activityLogId: number, isSync?: string) {
+    private async post(
+        res: Response,
+        _next: NextFunction,
+        url: string,
+        config: ProxyBodyConfiguration,
+        activityLogId: number,
+        isSync?: string,
+        isDryRun?: string
+    ) {
         try {
             const headers = this.constructHeaders(config);
             const responseStream: AxiosResponse = await backOff(
@@ -379,7 +404,7 @@ class ProxyController {
                 { numOfAttempts: Number(config.retries), retry: this.retry }
             );
 
-            this.handleResponse(res, responseStream, config, activityLogId, url, isSync);
+            this.handleResponse(res, responseStream, config, activityLogId, url, isSync, isDryRun);
         } catch (error) {
             this.handleErrorResponse(res, error, url, config, activityLogId);
         }
@@ -392,7 +417,15 @@ class ProxyController {
      * @param {string} url
      * @param {ProxyBodyConfiguration} config
      */
-    private async patch(res: Response, _next: NextFunction, url: string, config: ProxyBodyConfiguration, activityLogId: number, isSync?: string) {
+    private async patch(
+        res: Response,
+        _next: NextFunction,
+        url: string,
+        config: ProxyBodyConfiguration,
+        activityLogId: number,
+        isSync?: string,
+        isDryRun?: string
+    ) {
         try {
             const headers = this.constructHeaders(config);
             const responseStream: AxiosResponse = await backOff(
@@ -409,7 +442,7 @@ class ProxyController {
                 { numOfAttempts: Number(config.retries), retry: this.retry }
             );
 
-            this.handleResponse(res, responseStream, config, activityLogId, url, isSync);
+            this.handleResponse(res, responseStream, config, activityLogId, url, isSync, isDryRun);
         } catch (error) {
             this.handleErrorResponse(res, error, url, config, activityLogId);
         }
@@ -422,7 +455,15 @@ class ProxyController {
      * @param {string} url
      * @param {ProxyBodyConfiguration} config
      */
-    private async put(res: Response, _next: NextFunction, url: string, config: ProxyBodyConfiguration, activityLogId: number, isSync?: string) {
+    private async put(
+        res: Response,
+        _next: NextFunction,
+        url: string,
+        config: ProxyBodyConfiguration,
+        activityLogId: number,
+        isSync?: string,
+        isDryRun?: string
+    ) {
         try {
             const headers = this.constructHeaders(config);
             const responseStream: AxiosResponse = await backOff(
@@ -439,7 +480,7 @@ class ProxyController {
                 { numOfAttempts: Number(config.retries), retry: this.retry }
             );
 
-            this.handleResponse(res, responseStream, config, activityLogId, url, isSync);
+            this.handleResponse(res, responseStream, config, activityLogId, url, isSync, isDryRun);
         } catch (error) {
             this.handleErrorResponse(res, error, url, config, activityLogId);
         }
@@ -452,7 +493,15 @@ class ProxyController {
      * @param {string} url
      * @param {ProxyBodyConfiguration} config
      */
-    private async delete(res: Response, _next: NextFunction, url: string, config: ProxyBodyConfiguration, activityLogId: number, isSync?: string) {
+    private async delete(
+        res: Response,
+        _next: NextFunction,
+        url: string,
+        config: ProxyBodyConfiguration,
+        activityLogId: number,
+        isSync?: string,
+        isDryRun?: string
+    ) {
         try {
             const headers = this.constructHeaders(config);
             const responseStream: AxiosResponse = await backOff(
@@ -467,7 +516,7 @@ class ProxyController {
                 },
                 { numOfAttempts: Number(config.retries), retry: this.retry }
             );
-            this.handleResponse(res, responseStream, config, activityLogId, url, isSync);
+            this.handleResponse(res, responseStream, config, activityLogId, url, isSync, isDryRun);
         } catch (error) {
             this.handleErrorResponse(res, error, url, config, activityLogId);
         }

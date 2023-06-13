@@ -41,13 +41,18 @@ class AccountService {
     }
 
     async getAccountById(id: number): Promise<Account | null> {
-        const result = await db.knex.withSchema(db.schema()).select('*').from<Account>(`_nango_accounts`).where({ id: id });
+        try {
+            const result = await db.knex.withSchema(db.schema()).select('*').from<Account>(`_nango_accounts`).where({ id: id });
 
-        if (result == null || result.length == 0 || result[0] == null) {
+            if (result == null || result.length == 0 || result[0] == null) {
+                return null;
+            }
+
+            return encryptionManager.decryptAccount(result[0]);
+        } catch (e) {
+            console.log(e);
             return null;
         }
-
-        return encryptionManager.decryptAccount(result[0]);
     }
 
     async createAccount(name: string): Promise<Account | null> {

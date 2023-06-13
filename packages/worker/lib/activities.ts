@@ -13,7 +13,7 @@ import {
 } from '@nangohq/shared';
 import type { ContinuousSyncArgs, InitialSyncArgs } from './models/Worker';
 
-export async function routeSync(args: InitialSyncArgs): Promise<boolean> {
+export async function routeSync(args: InitialSyncArgs): Promise<boolean | object> {
     const { syncId, syncJobId, syncName, activityLogId, nangoConnection } = args;
     const syncConfig: ProviderConfig = (await configService.getProviderConfig(
         nangoConnection?.provider_config_key as string,
@@ -23,7 +23,7 @@ export async function routeSync(args: InitialSyncArgs): Promise<boolean> {
     return syncProvider(syncConfig, syncId, syncJobId, syncName, SyncType.INITIAL, nangoConnection, activityLogId);
 }
 
-export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<boolean> {
+export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<boolean | object> {
     const { syncId, activityLogId, syncName, nangoConnection } = args;
     // TODO recreate the job id to be in the format created by temporal: nango-syncs.accounts-syncs-schedule-29768402-c6a8-462b-8334-37adf2b76be4-workflow-2023-05-30T08:45:00Z
     const syncJobId = await createSyncJob(syncId as string, SyncType.INCREMENTAL, SyncStatus.RUNNING, '', activityLogId);
@@ -49,7 +49,7 @@ export async function syncProvider(
     syncType: SyncType,
     nangoConnection: NangoConnection,
     existingActivityLogId: number
-): Promise<boolean> {
+): Promise<boolean | object> {
     let activityLogId = existingActivityLogId;
 
     if (syncType === SyncType.INCREMENTAL) {
