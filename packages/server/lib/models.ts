@@ -1,3 +1,4 @@
+import type { ParamsSerializerOptions } from 'axios';
 import type { Template as ProviderTemplate, HTTP_VERB } from '@nangohq/shared';
 
 export interface DBConfig {
@@ -18,22 +19,6 @@ export interface ProxyBodyConfiguration {
     data?: unknown;
     headers?: Record<string, string>;
     params?: string | Record<string, string>;
-    paramsSerializer?: {
-        encode?: (param: string) => string;
-        serialize?: (params: Record<string, any>, options?: ParamsSerializerOptions) => void;
-        indexes?: boolean;
-    };
-}
-
-interface ParamsSerializerOptions {
-    encode?: ParamEncoder;
-    serialize?: CustomParamsSerializer;
-}
-
-interface ParamEncoder {
-    (value: any, defaultEncoder: (value: any) => any): any;
-}
-
-interface CustomParamsSerializer {
-    (params: Record<string, any>, options?: ParamsSerializerOptions): string;
+    paramsSerializer?: ParamsSerializerOptions;
+    baseUrlOverride?: string;
 }

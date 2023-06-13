@@ -11,4 +11,5 @@ export interface ProxyConfiguration {
     paramsSerializer?: ParamsSerializerOptions;
     data?: unknown;
     retries?: number;
+    baseUrlOverride?: string;
 }

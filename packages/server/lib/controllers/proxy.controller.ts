@@ -47,6 +47,7 @@ class ProxyController {
             const isSync = req.get('Nango-Is-Sync') as string;
             const isDryRun = req.get('Nango-Is-Dry-Run') as string;
             const existingActivityLogId = req.get('Nango-Activity-Log-Id') as number | string;
+            const baseUrlOverride = req.get('Nango-Base-Url-Override') as string;
             const accountId = getAccount(res);
 
             const logAction: LogAction = isSync ? 'sync' : ('proxy' as LogAction);
@@ -183,7 +184,7 @@ class ProxyController {
 
             const template = configService.getTemplate(String(providerConfig?.provider));
 
-            if (!template.base_api_url) {
+            if (!template.base_api_url && !baseUrlOverride) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     activity_log_id: activityLogId as number,
@@ -217,7 +218,8 @@ class ProxyController {
                 connectionId,
                 headers,
                 data: req.body,
-                retries: retries ? Number(retries) : 0
+                retries: retries ? Number(retries) : 0,
+                baseUrlOverride
             };
 
             if (!isSync) {
@@ -543,9 +545,11 @@ class ProxyController {
      */
     private constructUrl(config: ProxyBodyConfiguration, connection: Connection) {
         const {
-            template: { base_api_url: apiBase },
+            template: { base_api_url: templateApiBase },
             endpoint: apiEndpoint
         } = config;
+
+        const apiBase = config.baseUrlOverride || templateApiBase;
 
         const base = apiBase?.substr(-1) === '/' ? apiBase.slice(0, -1) : apiBase;
         const endpoint = apiEndpoint?.charAt(0) === '/' ? apiEndpoint.slice(1) : apiEndpoint;
