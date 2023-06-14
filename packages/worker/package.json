@@ -29,8 +29,6 @@
         "uuid": "^9.0.0"
     },
     "devDependencies": {
-        "@octokit/rest": "^19.0.7",
-        "@octokit/types": "^9.2.1",
         "@tsconfig/node16": "^1.0.0",
         "@types/md5": "^2.3.2",
         "@types/node": "^18.7.6",

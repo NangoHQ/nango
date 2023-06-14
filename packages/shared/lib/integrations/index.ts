@@ -1,4 +1,5 @@
-export * as HubspotModels from './hubspot.js';
+export * as HubspotModels from './Hubspot.js';
+export * as GithubModels from './Github.js';
 
 export interface NangoIntegrationData {
     runs: string;
