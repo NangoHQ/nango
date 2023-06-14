@@ -1,7 +1,40 @@
 ---
 title: 'Real-Time Webhooks'
-sidebarTitle: 'Real-Time Webhooks'
+sidebarTitle: 'Webhooks'
 description: 'Get real-time updates when new data is available.'
 ---
 
 <Note>This feature is in private beta. Request access on the [community](https://nango.dev/slack).</Note>
+
+## Webhooks from external APIs to Nango
+
+Nango can handle incoming webhooks from external APIs for you.
+
+When a webhook is received you can define how it shoudl be handled:
+- Map the data from the webhook to one of your defined data models
+- Trigger a sync script, so you can make additional API requests to retrieve the new data
+
+## Webhooks from Nango to your app
+
+You can configure Nango to send a webhook to your app every time a sync finishes and new data is available.
+
+To set this up go to [project settings](https://app.nango.dev/project-settings) and set your webhook receive URL there.
+
+The webhook from Nango is a POST request with the following body:
+
+```json
+{
+    "connectionId": "<user-id>";              // The Connection's id, as set by you in nango.auth
+    "providerConfigKey": "<integration-id>";  // The name of the integration in Nango, e.g. github
+    "syncName": "<sync-name>";                // The name of the sync as defined in nango.yaml, e.g. github-tickets
+    "model": "<data-model>";                  // The name of the data model, e.g. ticket
+    "responseResults": {
+		    "addedKeys": 123;                 // The number of new records
+		    "updatedKeys": 123;               // The number of updated records
+    };
+    "syncType": "INITIAL" | "INCREMENTAL";  
+    "queryTimestamp": "2023-05-31T11:46:13.390Z"; // Use this with "delta" in getRecords to fetch the data of this sync
+}
+```
+
+If your sync returns multiple models you may receive multiple webhooks for the same sync run (one for each model).

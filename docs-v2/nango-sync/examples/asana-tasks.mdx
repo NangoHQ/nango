@@ -1,0 +1,115 @@
+---
+title: 'Syncing tasks from the Asana API'
+sidebarTitle: 'Asana - Tasks'
+description: 'An example of how you can sync Asana Tasks with Nango Sync'
+---
+
+## Integration configuration
+
+This example syncs tasks from the [Asana](/integrations/all/asana) API.
+
+To run it, add an Asana [integration](/core-concepts#integrations) to your Nango with the integration name `asana`.
+
+Required scopes:
+- default
+
+## `nango.yaml` config
+
+You can customize the data model as needed.
+
+```yaml nango.yaml
+integrations:
+    asana:
+        asana-tasks:
+            runs: every 30min
+            returns:
+                - AsanaTask
+
+models:
+    AsanaTask:
+        id: string
+        project_id: string
+        name: string
+        completed: boolean
+        created_at: date
+        modified_at: date
+```
+
+## `asana-tasks.ts` sync script
+
+```ts
+import { NangoSync } from '@nangohq/node';
+import { AsanaTask } from './models';
+
+export default async function fetchData(nango: NangoSync): Promise<{AsanaTask: AsanaTask[]}> {
+    
+    // Get the user's workspaces & projects
+    // For testing we just get the first project of the first workspace
+    const workspaces = await paginate(nango, '/api/1.0/workspaces');
+    const workspace = workspaces[0];
+
+    const projects = await paginate(nango, '/api/1.0/projects', { workspace: workspace.gid });
+    const project = projects[0];
+
+    // Get all tasks for the project
+    const filters = {
+        project: project.gid,
+        opt_fields: 'name,completed,created_at,modified_at'
+    }
+    const tasks = await paginate(nango, '/api/1.0/tasks', filters);
+    let mappedTasks: AsanaTask[] = [];
+    for (let task of tasks) {
+
+        mappedTasks.push({
+            id: task.gid,
+            project_id: project.gid,
+            name: task.name,
+            completed: task.completed,
+            created_at: task.created_at,
+            modified_at: task.modified_at
+        });
+
+        if (mappedTasks.length > 49) {
+            nango.batchSend(mappedTasks, 'AsanaTask');
+            mappedTasks = [];
+        }
+    }
+
+    return { AsanaTask: mappedTasks };
+}
+
+async function paginate(nango: NangoSync, endpoint: string, queryParams?: Record<string, string|string[]>) {
+    const MAX_PAGE = 100;
+    let results: any[] = [];
+    let page = null;
+    let callParams = queryParams || {};
+    while (true) {
+
+        if (page) {
+            callParams['offset'] = `${page}`;
+        }
+
+        const resp = await nango.get({
+            endpoint: endpoint,
+            params: {
+                limit: `${MAX_PAGE}`,
+                ...callParams
+            }
+        });
+
+        results = results.concat(resp.data.data);
+
+        if (resp.data.next_page) {
+            page = resp.data.next_page.offset;
+        } else {
+            break;
+        }
+    }
+    
+    return results;
+}
+```
+
+## Need help with your sync?
+
+Please reach out on the [Slack community](https://nango.dev/slack), we are very active there and happy to help!
