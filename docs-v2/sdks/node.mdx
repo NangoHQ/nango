@@ -48,9 +48,11 @@ let nango = new Nango({ host: '<NANGO-HOST-AND-PORT>' });
 </Tab>
 </Tabs>
 
-# Auth
+## Auth
 
-## Retrieve API credentials
+### Retrieve API credentials
+
+The easiest and fastest way to get the current API credentials.
 
 For OAuth 2 integrations this will return you the current access token (already refreshed if needed). For API key based integrations it will return the API key.
 For OAuth 1.0a integrations it will return you a small object with the neccessary details to sign the request.
@@ -59,41 +61,28 @@ For OAuth 1.0a integrations it will return you a small object with the neccessar
 let creds = await nango.getToken('<INTEGRATION-ID>', '<CONNECTION-ID>');
 ```
 
-<Tip>Retrieve the token from Nango before each API request, to ensure freshness.</Tip>
+<Tip>
+**Always fetch the current access_token from Nango before you run an API request.**  
+We refresh the token if needed. Caching it on your side could lead to failed requests.
+</Tip>
 
-## Retrieve Connection details
+### Retrieve Connection details
+
+Use this method to retrieve all the details Nango stores on a specific Connection:
 
 ```js
-let connection = await nango.getConnection('<INTEGRATION-ID>', '<CONNECTION-ID>');
+let connection = await nango.getConnection(
+    '<INTEGRATION-ID>',
+    '<CONNECTION-ID>',
+    '<FORCE_REFRESH?: boolean>', // Optional: attempt to refresh the access access token regardless of its expiration status, defaults to false
+    '<REFRESH_TOKEN?: boolean>', // Optional: return the refresh token as part of the response, defaults to false
+);
 ```
 
-This retrieves the full Connection object from Nango, which looks like this:
+Please check the [REST API reference](/api-reference/connection/get) for an example response and the full list of returned fields.
 
-```js
-{
-id: 18393,                                  // Nango internal connection id
-created_at: '2023-03-08T09:43:03.725Z',     // Creation timestamp
-updated_at: '2023-03-08T09:43:03.725Z',     // Last updated timestamp (e.g. last token refresh)
-provider_config_key: 'github',              // <INTEGRATION-ID>
-connection_id: '1',                         // <CONNECTION-ID>
-credentials: {
-    type: 'OAUTH2',                         // OAUTH2 or OAUTH1
-    access_token: 'gho_tsXLG73f....',       // The current access token (refreshed if needed)
-    refresh_token: 'gho_fjofu84u9....',     // Refresh token (if available, otherwise missing)
-    expires_at: '2024-03-08T09:43:03.725Z', // Expiration date of access token (only if refresh token is present, otherwise missing)
-    raw: {                                  // Raw token response from the OAuth provider: Contents vary!
-        access_token: 'gho_tsXLG73f....',
-        token_type: 'bearer',
-        scope: 'public_repo,user'
-    }
-},
-connection_config: {},                      // Additional configuration, see Frontend SDK reference
-account_id: 0,                              // ID of your Nango account (Nango Cloud only)
-metadata: {}                                // Structured metadata retrieved by Nango
-}
-```
 
-## List connections for a user
+### List all connections for a user
 
 ```js
 let list = await nango.listConnections('<CONNECTION-ID>');
@@ -109,14 +98,12 @@ This returns you all [Connections](/core-concepts#connections) of a specific use
             provider: '<INTEGRATION-ID>',
             created: '2023-03-08T09:43:03.725Z'
         },
-        {
-            // ...
-        }
+        // ...
     ];
 }
 ```
 
-## List all connections
+### List all connections
 
 ```js
 let list = await nango.listConnections();
@@ -124,30 +111,17 @@ let list = await nango.listConnections();
 
 Returns a list of minimalistic [Connection](/core-concepts#connections) objects. This can be helpful if you need to check whether a user has setup a specific [Integration](/core-concepts#integrations). Note that the list does not contain any access credentials and fetching it also does not refresh the access tokens of any Connections.
 
-The return value looks like this:
+Please check the [REST API reference](/api-reference/connection/list) for an example response and the full list of returned fields.
 
-```js
-{
-    connections: [
-        {
-            connection_id: '<CONNECTION-ID>',
-            provider: '<INTEGRATION-ID>',
-            created: '2023-03-08T09:43:03.725Z'
-        },
-        {
-            // ...
-        }
-    ];
-}
-```
+## Sync
 
-# Sync
-
-## Direct requests
+### Nango Proxy
 
 <Note>
-    Direct Requests are not available for all APIs yet.  
+    The Nango Proxy is not available for all APIs yet.  
     Check the API's [Integrations page](/integrations) (`Cmd + K` for search) to see if it is available for you API.
+
+    If you need additional APIs supported please reach out on the [Slack community](https://www.nango.dev/slack): We can enable support within a few hours.
 </Note>
 
 To execute proxy requests, use:
@@ -175,10 +149,20 @@ const res = await nango.proxy({
 
 There are also convenience methods available: `nango.get({})`, `nango.post({})`, `nango.patch{{}}` and `nango.delete({})`.
 
-## Read data
+**Return value**  
+When you call the proxy Nango creates the API request to the external API and runs it for you (possibly with retries).
+
+The response from the external API is passed back to you exactly as Nango gets it:
+* Response code
+* Response headers
+* Response body
+
+For the node SDK Nango returns an [Axios response object](https://axios-http.com/docs/res_schema).
+
+### Read data
 
 <Note>This feature is in private beta. Request access on the [community](https://nango.dev/slack).</Note>
 
-## Write data
+### Write data
 
 <Note>This feature is in private beta. Request access on the [community](https://nango.dev/slack).</Note>

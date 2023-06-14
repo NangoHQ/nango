@@ -61,7 +61,11 @@ git clone https://github.com/NangoHQ/nango.git && cd nango && docker compose up
 
     Your code snippet should will look similar to this:
 
-    ```js
+    <Tabs>
+
+    <Tab title="Nango Cloud">
+
+     ```js
     import Nango from '@nangohq/frontend';
 
     let nango = new Nango({ publicKey: '<PUBLIC-KEY-FROM-PROJECT-SETTINGS>' });
@@ -75,6 +79,29 @@ git clone https://github.com/NangoHQ/nango.git && cd nango && docker compose up
             // handle error
         });
     ```
+
+    </Tab>
+
+    <Tab title="Localhost">
+
+     ```js
+    import Nango from '@nangohq/frontend';
+
+    let nango = new Nango();
+
+    nango
+        .auth('<INTEGRATION-ID>', '<CONNECTION-ID>')
+        .then((result: { providerConfigKey: string, connectionId: string }) => {
+            // OAuth flow succeeded!
+        })
+        .catch((err: { message: string, type: string }) => {
+            // handle error
+        });
+    ```
+
+    </Tab>
+
+    </Tabs>
 
 5.  **Fetch access tokens from the backend with the SDK or REST API**  
      In your backend you can use our [Node SDK](/sdks/node) or [Connections REST API](/api-reference/connection/get) to fetch always-fresh access tokens and run API requests.

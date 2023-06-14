@@ -263,45 +263,50 @@ paths:
                   description: If true, Nango will attempt to refresh the access access token regardless of its expiration status (false by default).
                   schema:
                       type: boolean
+                - name: refresh_token
+                  in: query
+                  description: If true, return the refresh token as part of the response (false by default).
+                  schema:
+                      type: boolean
             responses:
                 '200':
                     description: Successfully returned a Connection
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                required:
-                                    - id
-                                    - created_at
-                                    - updated_at
-                                    - provider_config_key
-                                    - connection_id
-                                    - credentials
-                                properties:
-                                    id:
-                                        type: integer
-                                        description: The internal Nango ID used for the Connection.
-                                    created_at:
-                                        type: string
-                                        description: Connection creation date.
-                                    updated_at:
-                                        type: string
-                                        description: Connection update date.
-                                    provider_config_key:
-                                        type: string
-                                        description: The Integration ID used to create the Connection (aka Unique Key).
-                                    connection_id:
-                                        type: string
-                                        description: The connection ID used to create the Connection.
-                                    connection_config:
-                                        type: object
-                                        description: Important configuration passed in by you during the OAuth flow.
-                                    metadata:
-                                        type: object
-                                        description: Important metadata passed in by the external API during the OAuth flow.
-                                    credentials:
-                                        type: object
-                                        description: The credentials to access the external API.
+                    # content:
+                    #     application/json:
+                    #         schema:
+                    #             type: object
+                    #             required:
+                    #                 - id
+                    #                 - created_at
+                    #                 - updated_at
+                    #                 - provider_config_key
+                    #                 - connection_id
+                    #                 - credentials
+                    #             properties:
+                    #                 id:
+                    #                     type: integer
+                    #                     description: The internal Nango ID used for the Connection.
+                    #                 created_at:
+                    #                     type: string
+                    #                     description: Connection creation date.
+                    #                 updated_at:
+                    #                     type: string
+                    #                     description: Connection update date.
+                    #                 provider_config_key:
+                    #                     type: string
+                    #                     description: The Integration ID used to create the Connection (aka Unique Key).
+                    #                 connection_id:
+                    #                     type: string
+                    #                     description: The connection ID used to create the Connection.
+                    #                 connection_config:
+                    #                     type: object
+                    #                     description: Important configuration passed in by you during the OAuth flow.
+                    #                 metadata:
+                    #                     type: object
+                    #                     description: Important metadata passed in by the external API during the OAuth flow.
+                    #                 credentials:
+                    #                     type: object
+                    #                     description: The credentials to access the external API.
 
                 '400':
                     description: Invalid request
@@ -387,7 +392,12 @@ paths:
                   name: Retries
                   schema:
                       type: string
-                  description: The number of retries in case of failure (with exponential back-off).
+                  description: The number of retries in case of failure (with exponential back-off). Optional, default 0.
+                - in: header
+                  name: Any-Header
+                  schema:
+                      type: string
+                  description: Any other headers you send are passed on to the external API
         post:
             description: Make a POST request with the Proxy.
             parameters:
@@ -412,7 +422,12 @@ paths:
                   name: Retries
                   schema:
                       type: string
-                  description: The number of retries in case of failure (with exponential back-off).
+                  description: The number of retries in case of failure (with exponential back-off). Optional, default 0.
+                - in: header
+                  name: Any-Header
+                  schema:
+                      type: string
+                  description: Any other headers you send are passed on to the external API
             requestBody:
                 content:
                     application/json:
@@ -445,7 +460,12 @@ paths:
                   name: Retries
                   schema:
                       type: string
-                  description: The number of retries in case of failure (with exponential back-off).
+                  description: The number of retries in case of failure (with exponential back-off). Optional, default 0.
+                - in: header
+                  name: Any-Header
+                  schema:
+                      type: string
+                  description: Any other headers you send are passed on to the external API
             requestBody:
                 content:
                     application/json:
@@ -478,7 +498,12 @@ paths:
                   name: Retries
                   schema:
                       type: string
-                  description: The number of retries in case of failure (with exponential back-off).
+                  description: The number of retries in case of failure (with exponential back-off). Optional, default 0.
+                - in: header
+                  name: Any-Header
+                  schema:
+                      type: string
+                  description: Any other headers you send are passed on to the external API
             requestBody:
                 content:
                     application/json:
@@ -516,4 +541,9 @@ paths:
                   name: Retries
                   schema:
                       type: string
-                  description: The number of retries in case of failure (with exponential back-off).
+                  description: The number of retries in case of failure (with exponential back-off). Optional, default 0.
+                - in: header
+                  name: Any-Header
+                  schema:
+                      type: string
+                  description: Any other headers you send are passed on to the external API

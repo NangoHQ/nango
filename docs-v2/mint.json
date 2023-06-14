@@ -37,7 +37,7 @@
     },
     "anchors": [
         {
-            "name": "Integrations",
+            "name": "API Integrations",
             "icon": "bars",
             "url": "integrations"
         },
@@ -72,7 +72,7 @@
                 "nango-sync/overview",
                 {
                     "group": "Guides",
-                    "pages": ["nango-sync/guides/sync", "nango-sync/guides/direct-requests", "nango-sync/guides/webhooks"]
+                    "pages": ["nango-sync/guides/sync", "nango-sync/guides/nango-proxy", "nango-sync/guides/webhooks"]
                 },
                 "nango-sync/configuration"
             ]
@@ -214,7 +214,7 @@
                 "integrations/all/stackexchange",
                 "integrations/all/strava",
                 "integrations/all/stripe",
-		"integrations/all/survey-monkey",
+		        "integrations/all/survey-monkey",
                 "integrations/all/teamwork",
                 "integrations/all/todoist",
                 "integrations/all/timely",
@@ -271,7 +271,7 @@
             "pages": ["api-reference/connection/list", "api-reference/connection/get", "api-reference/connection/delete"]
         },
         {
-            "group": "Proxy",
+            "group": "Nango Proxy",
             "pages": [
                 "api-reference/proxy/get",
                 "api-reference/proxy/post",

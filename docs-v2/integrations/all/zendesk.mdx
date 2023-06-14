@@ -1,9 +1,17 @@
 ---
-title: Zendesk
+title: Zendesk (Helpdesk)
 sidebarTitle: Zendesk
 ---
 
 Integration template: [`zendesk`](https://nango.dev/providers.yaml)
+
+<Note>
+Zendesk has two kinds of OAuth apps:
+- Helpdesk/support apps
+- CRM apps
+
+Nango currently only supports OAuth for the Helpdesk apps. If you need the CRM one supported reach out or contribute it :)
+</Note>
 
 ## Features
 
@@ -11,22 +19,24 @@ Integration template: [`zendesk`](https://nango.dev/providers.yaml)
 | -------------------------------------------------------------------------------- | ------------------------------- |
 | [Auth (OAuth)](/nango-auth)                                                      | ✅                              |
 | [Sync](/nango-sync)                                                              | ✅                              |
-| [Assisted requests](/nango-sync/guides/direct-requests)                          | 🚫 (time to contribute: &lt;1h) |
+| [Nango Proxy](/nango-sync/guides/nango-proxy)                          | 🚫 (time to contribute: &lt;1h) |
 | [Auto-pagination](/nango-sync/configuration#auto-pagination)                     | 🚫 (time to contribute: &lt;1h) |
 | [API-specific rate limits](/nango-sync/configuration#rate-limits-retry-policies) | 🚫 (time to contribute: &lt;1h) |
 
 <Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
 ## Getting started
 
--   [How to register an Application](https://developer.zendesk.com/api-reference/sales-crm/authentication/introduction/#application-registration)
--   [OAuth-related docs](https://developer.zendesk.com/api-reference/sales-crm/authentication/introduction/)
--   [List of OAuth scopes](https://developer.zendesk.com/api-reference/sales-crm/authentication/introduction/#scopes)
--   [API](https://developer.zendesk.com/api-reference/sales-crm/authentication/introduction/#scopes:~:text=Reference-,SYNC%20API,-Introduction)
+-   [How to register an Application](https://support.zendesk.com/hc/en-us/articles/4408845965210-Using-OAuth-authentication-with-your-application#topic_s21_lfs_qk)
+-   [List of OAuth scopes](https://support.zendesk.com/hc/en-us/articles/4408845965210#topic_gql_kbd_gt)
+-   [Setting up a global oAuth client](https://developer.zendesk.com/documentation/marketplace/building-a-marketplace-app/set-up-a-global-oauth-client/)
+-   [API](https://developer.zendesk.com/api-reference/)
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
 ## API gotchas
 
 -   Make sure you specify the subdomain in the [Connection Configuration](/nango-auth/configuration) before starting an OAuth flow for Zendesk.
+-   Make sure to create a Zendesk OAuth app (`https://<USER-SUBDOMAIN>.zendesk.com/admin/apps-integrations/apis/zendesk-api/settings`), _not_ a Zendesk Sales CRM OAuth app. 
+-   Zendesk oAuth apps [must be made "global"](https://developer.zendesk.com/documentation/marketplace/building-a-marketplace-app/set-up-a-global-oauth-client/) to connect to multiple `<USER-SUBDOMAIN>`s.
 
 <Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/zendesk.mdx)</Note>
