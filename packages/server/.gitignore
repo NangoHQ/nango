@@ -3,3 +3,4 @@ dist/*
 NangoActivity.json
 NangoActivity.json.*
 *-audit.json
+node_modules

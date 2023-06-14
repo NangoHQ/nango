@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/node",
-    "version": "0.17.6",
+    "version": "0.20.2",
     "description": "Nango's Node client.",
     "type": "module",
     "main": "dist/index.js",
@@ -13,6 +13,7 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
+        "@nangohq/shared": "0.20.2",
         "axios": "^1.2.0"
     },
     "engines": {

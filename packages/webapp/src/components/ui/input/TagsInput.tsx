@@ -24,6 +24,15 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
 
     function handleAdd() {
         if (enteredValue.trim()) {
+            if (enteredValue.includes(',')) {
+                const enteredScopes = enteredValue.split(',');
+                enteredScopes.forEach((scope) => {
+                    addToScopesSet(scope.trim());
+                });
+                setEnteredValue('');
+                setError('');
+                return;
+            }
             addToScopesSet(enteredValue.trim());
             setEnteredValue('');
             setError('');
@@ -37,7 +46,7 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
     function showInvalid() {
         //show error message only when developer sets this field to be a required one.
         if (props.required) {
-            setError('Please enter atleast one scope for this provider');
+            setError('Please enter at least one scope for this provider');
         }
     }
 

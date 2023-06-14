@@ -49,7 +49,7 @@ class EncryptionManager {
             return account;
         }
 
-        let encryptedAccount: Account = Object.assign({}, account);
+        const encryptedAccount: Account = Object.assign({}, account);
 
         const [encryptedClientSecret, iv, authTag] = this.encrypt(encryptedAccount.secret_key);
         encryptedAccount.secret_key = encryptedClientSecret;
@@ -65,7 +65,7 @@ class EncryptionManager {
             return account;
         }
 
-        let decryptedAccount: Account = Object.assign({}, account);
+        const decryptedAccount: Account = Object.assign({}, account);
 
         decryptedAccount.secret_key = this.decrypt(account.secret_key, account.secret_key_iv, account.secret_key_tag);
         return decryptedAccount;
@@ -76,10 +76,10 @@ class EncryptionManager {
             return connection as StoredConnection;
         }
 
-        let storedConnection: StoredConnection = Object.assign({}, connection);
+        const storedConnection: StoredConnection = Object.assign({}, connection);
 
         const [encryptedClientSecret, iv, authTag] = this.encrypt(JSON.stringify(connection.credentials));
-        let encryptedCreds = { encrypted_credentials: encryptedClientSecret };
+        const encryptedCreds = { encrypted_credentials: encryptedClientSecret };
 
         storedConnection.credentials = encryptedCreds;
         storedConnection.credentials_iv = iv;
@@ -94,7 +94,7 @@ class EncryptionManager {
             return connection as Connection;
         }
 
-        let decryptedConnection: StoredConnection = Object.assign({}, connection);
+        const decryptedConnection: StoredConnection = Object.assign({}, connection);
 
         decryptedConnection.credentials = JSON.parse(
             this.decrypt(connection.credentials['encrypted_credentials'], connection.credentials_iv, connection.credentials_tag)
@@ -108,7 +108,7 @@ class EncryptionManager {
             return config;
         }
 
-        let encryptedConfig: ProviderConfig = Object.assign({}, config);
+        const encryptedConfig: ProviderConfig = Object.assign({}, config);
 
         const [encryptedClientSecret, iv, authTag] = this.encrypt(config.oauth_client_secret);
         encryptedConfig.oauth_client_secret = encryptedClientSecret;
@@ -124,7 +124,7 @@ class EncryptionManager {
             return config;
         }
 
-        let decryptedConfig: ProviderConfig = Object.assign({}, config);
+        const decryptedConfig: ProviderConfig = Object.assign({}, config);
 
         decryptedConfig.oauth_client_secret = this.decrypt(config.oauth_client_secret, config.oauth_client_secret_iv, config.oauth_client_secret_tag);
         return decryptedConfig;
@@ -136,17 +136,17 @@ class EncryptionManager {
     }
 
     private async hashEncryptionKey(key: string, salt: string): Promise<string> {
-        let keyBuffer = await util.promisify(crypto.pbkdf2)(key, salt, 310000, 32, 'sha256');
+        const keyBuffer = await util.promisify(crypto.pbkdf2)(key, salt, 310000, 32, 'sha256');
         return keyBuffer.toString(this.encoding);
     }
 
     public async encryptDatabaseIfNeeded() {
-        var dbConfig: DBConfig | null = await db.knex.withSchema(db.schema()).first().from<DBConfig>('_nango_db_config');
-        let previousEncryptionKeyHash = dbConfig?.encryption_key_hash;
-        let encryptionKeyHash = this.key != null ? await this.hashEncryptionKey(this.key, this.keySalt) : null;
+        const dbConfig: DBConfig | null = await db.knex.withSchema(db.schema()).first().from<DBConfig>('_nango_db_config');
+        const previousEncryptionKeyHash = dbConfig?.encryption_key_hash;
+        const encryptionKeyHash = this.key != null ? await this.hashEncryptionKey(this.key, this.keySalt) : null;
 
-        let isEncryptionKeyNew = dbConfig == null && this.key != null;
-        let isEncryptionIncomplete = dbConfig != null && previousEncryptionKeyHash === encryptionKeyHash && dbConfig.encryption_complete == false;
+        const isEncryptionKeyNew = dbConfig == null && this.key != null;
+        const isEncryptionIncomplete = dbConfig != null && previousEncryptionKeyHash === encryptionKeyHash && dbConfig.encryption_complete == false;
 
         if (isEncryptionKeyNew || isEncryptionIncomplete) {
             if (isEncryptionKeyNew) {
@@ -161,7 +161,7 @@ class EncryptionManager {
             return;
         }
 
-        let isEncryptionKeyChanged = dbConfig?.encryption_key_hash != null && previousEncryptionKeyHash !== encryptionKeyHash;
+        const isEncryptionKeyChanged = dbConfig?.encryption_key_hash != null && previousEncryptionKeyHash !== encryptionKeyHash;
         if (isEncryptionKeyChanged) {
             throw new Error('You cannot edit or remove the encryption key once it has been set.');
         }
@@ -170,7 +170,7 @@ class EncryptionManager {
     private async encryptDatabase() {
         logger.info('🔐⚙️ Starting encryption of database...');
 
-        let accounts: Account[] = await db.knex.withSchema(db.schema()).select('*').from<Account>(`_nango_accounts`);
+        const accounts: Account[] = await db.knex.withSchema(db.schema()).select('*').from<Account>(`_nango_accounts`);
 
         for (let account of accounts) {
             if (account.secret_key_iv && account.secret_key_tag) {
@@ -181,18 +181,18 @@ class EncryptionManager {
             await db.knex.withSchema(db.schema()).from<Account>(`_nango_accounts`).where({ id: account.id }).update(account);
         }
 
-        let connections: Connection[] = await db.knex.withSchema(db.schema()).select('*').from<Connection>(`_nango_connections`);
+        const connections: Connection[] = await db.knex.withSchema(db.schema()).select('*').from<Connection>(`_nango_connections`);
 
-        for (let connection of connections) {
+        for (const connection of connections) {
             if (connection.credentials_iv && connection.credentials_tag) {
                 continue;
             }
 
-            let storedConnection = this.encryptConnection(connection);
+            const storedConnection = this.encryptConnection(connection);
             await db.knex.withSchema(db.schema()).from<StoredConnection>(`_nango_connections`).where({ id: storedConnection.id! }).update(storedConnection);
         }
 
-        let providerConfigs: ProviderConfig[] = await db.knex.withSchema(db.schema()).select('*').from<ProviderConfig>(`_nango_configs`);
+        const providerConfigs: ProviderConfig[] = await db.knex.withSchema(db.schema()).select('*').from<ProviderConfig>(`_nango_configs`);
 
         for (let providerConfig of providerConfigs) {
             if (providerConfig.oauth_client_secret_iv && providerConfig.oauth_client_secret_tag) {

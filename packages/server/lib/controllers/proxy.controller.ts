@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import type { OutgoingHttpHeaders } from 'http';
+import stream, { Transform, TransformCallback, PassThrough } from 'stream';
 import url, { UrlWithParsedQuery } from 'url';
 import querystring from 'querystring';
 import axios, { AxiosError, AxiosResponse } from 'axios';
@@ -7,6 +8,7 @@ import { backOff } from 'exponential-backoff';
 
 import logger from '../utils/logger.js';
 import {
+    Connection,
     createActivityLog,
     createActivityLogMessageAndEnd,
     createActivityLogMessage,
@@ -16,13 +18,13 @@ import {
     HTTP_VERB,
     LogLevel,
     LogAction,
-    configService
+    configService,
+    errorManager,
+    connectionService,
+    getAccount,
+    interpolateIfNeeded
 } from '@nangohq/shared';
-import errorManager from '../utils/error.manager.js';
-import { getAccount } from '../utils/utils.js';
 import type { ProxyBodyConfiguration } from '../models.js';
-import { NangoError } from '../utils/error.js';
-import { getConnectionCredentials } from '../utils/connection.js';
 
 interface ForwardedHeaders {
     [key: string]: string;
@@ -42,12 +44,18 @@ class ProxyController {
             const connectionId = req.get('Connection-Id') as string;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
             const retries = req.get('Retries') as string;
+            const isSync = req.get('Nango-Is-Sync') as string;
+            const isDryRun = req.get('Nango-Is-Dry-Run') as string;
+            const existingActivityLogId = req.get('Nango-Activity-Log-Id') as number | string;
+            const baseUrlOverride = req.get('Nango-Base-Url-Override') as string;
             const accountId = getAccount(res);
+
+            const logAction: LogAction = isSync ? 'sync' : ('proxy' as LogAction);
 
             const log = {
                 level: 'debug' as LogLevel,
                 success: false,
-                action: 'proxy' as LogAction,
+                action: logAction,
                 start: Date.now(),
                 end: Date.now(),
                 timestamp: Date.now(),
@@ -57,7 +65,11 @@ class ProxyController {
                 account_id: accountId
             };
 
-            const activityLogId = await createActivityLog(log);
+            let activityLogId = null;
+
+            if (!isDryRun) {
+                activityLogId = existingActivityLogId ? Number(existingActivityLogId) : await createActivityLog(log);
+            }
 
             if (!connectionId) {
                 errorManager.errRes(res, 'missing_connection_id');
@@ -83,21 +95,32 @@ class ProxyController {
                 return;
             }
 
-            await createActivityLogMessage({
-                level: 'debug',
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: `Connection id: '${connectionId}' and provider config key: '${providerConfigKey}' parsed and received successfully`
-            });
+            if (!isSync) {
+                await createActivityLogMessage({
+                    level: 'debug',
+                    activity_log_id: activityLogId as number,
+                    timestamp: Date.now(),
+                    content: `Connection id: '${connectionId}' and provider config key: '${providerConfigKey}' parsed and received successfully`
+                });
+            }
 
-            const connection = await getConnectionCredentials(res, connectionId, providerConfigKey, activityLogId as number, 'proxy' as LogAction, false);
+            const connection = await connectionService.getConnectionCredentials(
+                res,
+                connectionId,
+                providerConfigKey,
+                activityLogId as number,
+                logAction,
+                false
+            );
 
-            await createActivityLogMessage({
-                level: 'debug',
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: 'Connection credentials found successfully'
-            });
+            if (!isSync) {
+                await createActivityLogMessage({
+                    level: 'debug',
+                    activity_log_id: activityLogId as number,
+                    timestamp: Date.now(),
+                    content: 'Connection credentials found successfully'
+                });
+            }
 
             const { method } = req;
 
@@ -134,12 +157,14 @@ class ProxyController {
                     throw new Error(`Unrecognized OAuth type '${connection?.credentials?.type}' in stored credentials.`);
             }
 
-            await createActivityLogMessage({
-                level: 'debug',
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: 'Proxy: token retrieved successfully'
-            });
+            if (!isSync) {
+                await createActivityLogMessage({
+                    level: 'debug',
+                    activity_log_id: activityLogId as number,
+                    timestamp: Date.now(),
+                    content: 'Proxy: token retrieved successfully'
+                });
+            }
 
             const providerConfig = await configService.getProviderConfig(providerConfigKey, accountId);
             const headers = this.parseHeaders(req);
@@ -159,26 +184,28 @@ class ProxyController {
 
             const template = configService.getTemplate(String(providerConfig?.provider));
 
-            if (!template.base_api_url) {
+            if (!template.base_api_url && !baseUrlOverride) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: `${Date.now()} The proxy is not supported for this provider ${String(
                         providerConfig?.provider
-                    )}. You can easily add support by following the instructions at https://docs.nango.dev/contribute-api`
+                    )}. You can easily add support by following the instructions at https://docs.nango.dev/contribute/nango-auth`
                 });
 
                 errorManager.errRes(res, 'missing_base_api_url');
                 return;
             }
 
-            await createActivityLogMessage({
-                level: 'debug',
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: `Proxy: API call configuration constructed successfully with the base api url set to ${template.base_api_url}`
-            });
+            if (!isSync) {
+                await createActivityLogMessage({
+                    level: 'debug',
+                    activity_log_id: activityLogId as number,
+                    timestamp: Date.now(),
+                    content: `Proxy: API call configuration constructed successfully with the base api url set to ${template.base_api_url}`
+                });
+            }
 
             const configBody: ProxyBodyConfiguration = {
                 endpoint,
@@ -191,17 +218,20 @@ class ProxyController {
                 connectionId,
                 headers,
                 data: req.body,
-                retries: retries ? Number(retries) : 0
+                retries: retries ? Number(retries) : 0,
+                baseUrlOverride
             };
 
-            await createActivityLogMessage({
-                level: 'debug',
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: `Endpoint set to ${configBody.endpoint} with retries set to ${configBody.retries}`
-            });
+            if (!isSync) {
+                await createActivityLogMessage({
+                    level: 'debug',
+                    activity_log_id: activityLogId as number,
+                    timestamp: Date.now(),
+                    content: `Endpoint set to ${configBody.endpoint} with retries set to ${configBody.retries}`
+                });
+            }
 
-            await this.sendToHttpMethod(res, next, method as HTTP_VERB, configBody, activityLogId as number);
+            await this.sendToHttpMethod(res, next, method as HTTP_VERB, configBody, activityLogId as number, connection, isSync, isDryRun);
         } catch (error) {
             console.log(error);
             next(error);
@@ -233,19 +263,79 @@ class ProxyController {
      * @param {HTTP_VERB} method
      * @param {ProxyBodyConfiguration} configBody
      */
-    private sendToHttpMethod(res: Response, next: NextFunction, method: HTTP_VERB, configBody: ProxyBodyConfiguration, activityLogId: number) {
-        const url = this.constructUrl(configBody);
+    private sendToHttpMethod(
+        res: Response,
+        next: NextFunction,
+        method: HTTP_VERB,
+        configBody: ProxyBodyConfiguration,
+        activityLogId: number,
+        connection: Connection,
+        isSync?: string,
+        isDryRun?: string
+    ) {
+        const url = this.constructUrl(configBody, connection);
 
         if (method === 'POST') {
-            return this.post(res, next, url, configBody, activityLogId);
+            return this.post(res, next, url, configBody, activityLogId, isSync, isDryRun);
         } else if (method === 'PATCH') {
-            return this.patch(res, next, url, configBody, activityLogId);
+            return this.patch(res, next, url, configBody, activityLogId, isSync, isDryRun);
         } else if (method === 'PUT') {
-            return this.put(res, next, url, configBody, activityLogId);
+            return this.put(res, next, url, configBody, activityLogId, isSync, isDryRun);
         } else if (method === 'DELETE') {
-            return this.delete(res, next, url, configBody, activityLogId);
+            return this.delete(res, next, url, configBody, activityLogId, isSync, isDryRun);
         } else {
-            return this.get(res, next, url, configBody, activityLogId);
+            return this.get(res, next, url, configBody, activityLogId, isSync, isDryRun);
+        }
+    }
+
+    private async handleResponse(
+        res: Response,
+        responseStream: AxiosResponse,
+        config: ProxyBodyConfiguration,
+        activityLogId: number,
+        url: string,
+        isSync?: string,
+        isDryRun?: string
+    ) {
+        if (!isSync) {
+            await updateSuccessActivityLog(activityLogId, true);
+        }
+
+        if (!isDryRun) {
+            await createActivityLogMessageAndEnd({
+                level: 'info',
+                activity_log_id: activityLogId,
+                timestamp: Date.now(),
+                content: `${config.method.toUpperCase()} request to ${url} was successful`,
+                params: {
+                    headers: JSON.stringify(config.headers)
+                }
+            });
+        }
+
+        const passThroughStream = new PassThrough();
+        responseStream.data.pipe(passThroughStream);
+        passThroughStream.pipe(res);
+
+        res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
+    }
+
+    private async handleErrorResponse(res: Response, e: unknown, url: string, config: ProxyBodyConfiguration, activityLogId: number) {
+        const error = e as AxiosError;
+        const errorData = error?.response?.data as stream.Readable;
+        const stringify = new Transform({
+            transform(chunk: Buffer, _encoding: BufferEncoding, callback: TransformCallback) {
+                callback(null, chunk);
+            }
+        });
+        if (error?.response?.status) {
+            res.writeHead(error?.response?.status as number, error?.response?.headers as OutgoingHttpHeaders);
+        }
+        if (errorData) {
+            errorData.pipe(stringify).pipe(res);
+            stringify.on('data', (data) => {
+                this.reportError(error, url, config, activityLogId, data);
+            });
         }
     }
 
@@ -256,7 +346,15 @@ class ProxyController {
      * @param {string} url
      * @param {ProxyBodyConfiguration} config
      */
-    private async get(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration, activityLogId: number) {
+    private async get(
+        res: Response,
+        next: NextFunction,
+        url: string,
+        config: ProxyBodyConfiguration,
+        activityLogId: number,
+        isSync?: string,
+        isDryRun?: string
+    ) {
         try {
             const headers = this.constructHeaders(config);
             const responseStream: AxiosResponse = await backOff(
@@ -265,29 +363,17 @@ class ProxyController {
                         method: 'get',
                         url,
                         responseType: 'stream',
-                        headers
+                        headers,
+                        decompress: false
                     });
                 },
                 { numOfAttempts: Number(config.retries), retry: this.retry }
             );
 
-            await updateSuccessActivityLog(activityLogId, true);
-
-            await createActivityLogMessageAndEnd({
-                level: 'info',
-                activity_log_id: activityLogId,
-                timestamp: Date.now(),
-                content: `GET request to ${url} was successful`,
-                params: {
-                    headers: JSON.stringify(config.headers)
-                }
-            });
-
-            res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
-            responseStream.data.pipe(res);
-        } catch (error) {
-            const nangoError = await this.catalogAndReportError(error as Error | AxiosError, url, config, activityLogId);
-            next(nangoError);
+            this.handleResponse(res, responseStream, config, activityLogId, url, isSync, isDryRun);
+        } catch (e: unknown) {
+            this.handleErrorResponse(res, e, url, config, activityLogId);
+            next(e);
         }
     }
 
@@ -298,7 +384,15 @@ class ProxyController {
      * @param {string} url
      * @param {ProxyBodyConfiguration} config
      */
-    private async post(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration, activityLogId: number) {
+    private async post(
+        res: Response,
+        next: NextFunction,
+        url: string,
+        config: ProxyBodyConfiguration,
+        activityLogId: number,
+        isSync?: string,
+        isDryRun?: string
+    ) {
         try {
             const headers = this.constructHeaders(config);
             const responseStream: AxiosResponse = await backOff(
@@ -308,29 +402,17 @@ class ProxyController {
                         url,
                         data: config.data ?? {},
                         responseType: 'stream',
-                        headers
+                        headers,
+                        decompress: false
                     });
                 },
                 { numOfAttempts: Number(config.retries), retry: this.retry }
             );
 
-            await updateSuccessActivityLog(activityLogId, true);
-
-            await createActivityLogMessageAndEnd({
-                level: 'info',
-                activity_log_id: activityLogId,
-                timestamp: Date.now(),
-                content: `POST request to ${url} was successful`,
-                params: {
-                    headers: JSON.stringify(config.headers)
-                }
-            });
-
-            res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
-            responseStream.data.pipe(res);
+            this.handleResponse(res, responseStream, config, activityLogId, url, isSync, isDryRun);
         } catch (error) {
-            const nangoError = await this.catalogAndReportError(error as Error | AxiosError, url, config, activityLogId);
-            next(nangoError);
+            this.handleErrorResponse(res, error, url, config, activityLogId);
+            next(error);
         }
     }
 
@@ -341,7 +423,15 @@ class ProxyController {
      * @param {string} url
      * @param {ProxyBodyConfiguration} config
      */
-    private async patch(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration, activityLogId: number) {
+    private async patch(
+        res: Response,
+        next: NextFunction,
+        url: string,
+        config: ProxyBodyConfiguration,
+        activityLogId: number,
+        isSync?: string,
+        isDryRun?: string
+    ) {
         try {
             const headers = this.constructHeaders(config);
             const responseStream: AxiosResponse = await backOff(
@@ -351,29 +441,17 @@ class ProxyController {
                         url,
                         data: config.data ?? {},
                         responseType: 'stream',
-                        headers
+                        headers,
+                        decompress: false
                     });
                 },
                 { numOfAttempts: Number(config.retries), retry: this.retry }
             );
 
-            await updateSuccessActivityLog(activityLogId, true);
-
-            await createActivityLogMessageAndEnd({
-                level: 'info',
-                activity_log_id: activityLogId,
-                timestamp: Date.now(),
-                content: `PATCH request to ${url} was successful`,
-                params: {
-                    headers: JSON.stringify(config.headers)
-                }
-            });
-
-            res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
-            responseStream.data.pipe(res);
+            this.handleResponse(res, responseStream, config, activityLogId, url, isSync, isDryRun);
         } catch (error) {
-            const nangoError = await this.catalogAndReportError(error as Error | AxiosError, url, config, activityLogId);
-            next(nangoError);
+            this.handleErrorResponse(res, error, url, config, activityLogId);
+            next(error);
         }
     }
 
@@ -384,7 +462,15 @@ class ProxyController {
      * @param {string} url
      * @param {ProxyBodyConfiguration} config
      */
-    private async put(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration, activityLogId: number) {
+    private async put(
+        res: Response,
+        next: NextFunction,
+        url: string,
+        config: ProxyBodyConfiguration,
+        activityLogId: number,
+        isSync?: string,
+        isDryRun?: string
+    ) {
         try {
             const headers = this.constructHeaders(config);
             const responseStream: AxiosResponse = await backOff(
@@ -394,29 +480,17 @@ class ProxyController {
                         url,
                         data: config.data ?? {},
                         responseType: 'stream',
-                        headers
+                        headers,
+                        decompress: false
                     });
                 },
                 { numOfAttempts: Number(config.retries), retry: this.retry }
             );
 
-            await updateSuccessActivityLog(activityLogId, true);
-
-            await createActivityLogMessageAndEnd({
-                level: 'info',
-                activity_log_id: activityLogId,
-                timestamp: Date.now(),
-                content: `PUT request to ${url} was successful`,
-                params: {
-                    headers: JSON.stringify(config.headers)
-                }
-            });
-
-            res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
-            responseStream.data.pipe(res);
+            this.handleResponse(res, responseStream, config, activityLogId, url, isSync, isDryRun);
         } catch (error) {
-            const nangoError = await this.catalogAndReportError(error as Error | AxiosError, url, config, activityLogId);
-            next(nangoError);
+            this.handleErrorResponse(res, error, url, config, activityLogId);
+            next(error);
         }
     }
 
@@ -427,7 +501,15 @@ class ProxyController {
      * @param {string} url
      * @param {ProxyBodyConfiguration} config
      */
-    private async delete(res: Response, next: NextFunction, url: string, config: ProxyBodyConfiguration, activityLogId: number) {
+    private async delete(
+        res: Response,
+        next: NextFunction,
+        url: string,
+        config: ProxyBodyConfiguration,
+        activityLogId: number,
+        isSync?: string,
+        isDryRun?: string
+    ) {
         try {
             const headers = this.constructHeaders(config);
             const responseStream: AxiosResponse = await backOff(
@@ -436,90 +518,33 @@ class ProxyController {
                         method: 'delete',
                         url,
                         responseType: 'stream',
-                        headers
+                        headers,
+                        decompress: false
                     });
                 },
                 { numOfAttempts: Number(config.retries), retry: this.retry }
             );
+            this.handleResponse(res, responseStream, config, activityLogId, url, isSync, isDryRun);
+        } catch (error) {
+            this.handleErrorResponse(res, error, url, config, activityLogId);
+            next(error);
+        }
+    }
 
-            await updateSuccessActivityLog(activityLogId, true);
-
+    private async reportError(error: AxiosError, url: string, config: ProxyBodyConfiguration, activityLogId: number, errorMessage: string) {
+        if (activityLogId) {
             await createActivityLogMessageAndEnd({
-                level: 'info',
+                level: 'error',
                 activity_log_id: activityLogId,
                 timestamp: Date.now(),
-                content: `DELETE request to ${url} was successful`,
+                content: `The provider responded back with a ${error?.response?.status} and the message ${errorMessage} to the url: ${url}.${
+                    config.template.docs ? ` Refer to the documentation at ${config.template.docs} for help` : ''
+                }`,
                 params: {
                     headers: JSON.stringify(config.headers)
                 }
             });
-
-            res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
-            responseStream.data.pipe(res);
-        } catch (error) {
-            const nangoError = await this.catalogAndReportError(error as Error | AxiosError, url, config, activityLogId);
-            next(nangoError);
         }
-    }
-
-    /**
-     * Catalog And Report Eroor
-     * @param {Error}AxiosError next callback function to pass control to the next middleware function in the pipeline.
-     * @param {string} url
-     * @param {ProxyBodyConfiguration} config
-     */
-    private async catalogAndReportError(error: Error | AxiosError, url: string, config: ProxyBodyConfiguration, activityLogId: number) {
-        if (axios.isAxiosError(error)) {
-            if (error?.response?.status === 404) {
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    activity_log_id: activityLogId,
-                    timestamp: Date.now(),
-                    content: `Response is a 404 to ${url}, make sure you have the endpoint specified and spelled correctly.${
-                        config.template.docs ? ` Refer to the documentation at ${config.template.docs} for help` : ''
-                    }`,
-                    params: {
-                        headers: JSON.stringify(config.headers)
-                    }
-                });
-
-                return new NangoError('unknown_endpoint');
-            }
-            if (error?.response?.status === 403) {
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    activity_log_id: activityLogId,
-                    timestamp: Date.now(),
-                    content: `Response is a 403 to ${url}, make sure you have the proper scopes configured.${
-                        config.template.docs ? ` Refer to the documentation at ${config.template.docs} for help` : ''
-                    }`,
-                    params: {
-                        headers: JSON.stringify(config.headers)
-                    }
-                });
-
-                return new NangoError('fobidden');
-            }
-            if (error?.response?.status === 400) {
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    activity_log_id: activityLogId,
-                    timestamp: Date.now(),
-                    content: `Response is a 400 to ${url}, make sure you have the proper headers to go to the API set.${
-                        config.template.docs ? ` Refer to the documentation at ${config.template.docs} for help` : ''
-                    }`,
-                    params: {
-                        headers: JSON.stringify(config.headers)
-                    }
-                });
-
-                return new NangoError('bad_request');
-            }
-        } else {
-            return error;
-        }
-
-        return error;
     }
 
     /**
@@ -527,16 +552,20 @@ class ProxyController {
      * @param {ProxyBodyConfiguration} config
      *
      */
-    private constructUrl(config: ProxyBodyConfiguration) {
+    private constructUrl(config: ProxyBodyConfiguration, connection: Connection) {
         const {
-            template: { base_api_url: apiBase },
+            template: { base_api_url: templateApiBase },
             endpoint: apiEndpoint
         } = config;
+
+        const apiBase = config.baseUrlOverride || templateApiBase;
 
         const base = apiBase?.substr(-1) === '/' ? apiBase.slice(0, -1) : apiBase;
         const endpoint = apiEndpoint?.charAt(0) === '/' ? apiEndpoint.slice(1) : apiEndpoint;
 
-        return `${base}/${endpoint}`;
+        const fullEndpoint = interpolateIfNeeded(`${base}/${endpoint}`, connection as unknown as Record<string, string>);
+
+        return fullEndpoint;
     }
 
     /**

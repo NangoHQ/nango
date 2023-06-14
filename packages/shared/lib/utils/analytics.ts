@@ -1,42 +1,93 @@
 import { PostHog } from 'posthog-node';
-import { v4 as uuidv4 } from 'uuid';
+import { getBaseUrl, localhostUrl, dirname, UserType, isCloud, isStaging } from '../utils/utils.js';
+import ip from 'ip';
+import errorManager from './error.manager.js';
+import { readFileSync } from 'fs';
+import path from 'path';
+import accountService from '../services/account.service.js';
+import userService from '../services/user.service.js';
+import type { Account, User } from '../models/Admin.js';
 
 class Analytics {
     client: PostHog | undefined;
-    distinctId: string;
+    packageVersion: string | undefined;
 
     constructor() {
-        this.distinctId = uuidv4();
-
-        if (process.env['TELEMETRY']?.toLowerCase() === 'true' && process.env['SERVER_RUN_MODE'] === 'DOCKERIZED') {
-            this.client = new PostHog('phc_4S2pWFTyPYT1i7zwC8YYQqABvGgSAzNHubUkdEFvcTl', { host: 'https://app.posthog.com', flushAt: 1, flushInterval: 0 });
-            this.client.enable();
-        }
-    }
-
-    public track(name: string, properties?: Record<string | number, any>) {
-        if (this.client == null) {
-            return;
-        }
-
-        this.client.capture({
-            event: name,
-            distinctId: `${this.distinctId}`,
-            properties: properties || {}
-        });
-    }
-
-    public urlToRootHost(url: string | undefined): string {
-        if (url == null) {
-            return '';
-        }
-
         try {
-            const reg = new RegExp('[^.]+(.[^.]{2,4})?.[^.]{2,4}$');
-            const matchArr = new URL(url).hostname.match(reg);
-            return matchArr != null && matchArr.length > 0 && matchArr[0] != null ? matchArr[0] : '';
-        } catch {
-            return '';
+            if (process.env['TELEMETRY']?.toLowerCase() !== 'false' && !isStaging()) {
+                this.client = new PostHog('phc_4S2pWFTyPYT1i7zwC8YYQqABvGgSAzNHubUkdEFvcTl');
+                this.client.enable();
+                this.packageVersion = JSON.parse(readFileSync(path.resolve(dirname(), '../../../package.json'), 'utf8')).version;
+            }
+        } catch (e) {
+            errorManager.report(e);
+        }
+    }
+
+    public async track(name: string, accountId: number, eventProperties?: Record<string | number, any>, userProperties?: Record<string | number, any>) {
+        try {
+            if (this.client == null) {
+                return;
+            }
+
+            eventProperties = eventProperties || {};
+            userProperties = userProperties || {};
+
+            const baseUrl = getBaseUrl();
+            const userType = this.getUserType(accountId, baseUrl);
+            const userId = this.getUserIdWithType(userType, accountId, baseUrl);
+
+            eventProperties['host'] = baseUrl;
+            eventProperties['user-type'] = userType;
+            eventProperties['user-account'] = userId;
+            eventProperties['nango-server-version'] = this.packageVersion || 'unkown';
+
+            if (isCloud() && accountId != null) {
+                const account: Account | null = await accountService.getAccountById(accountId);
+                if (account != null && account.owner_id != null) {
+                    const user: User | null = await userService.getUserById(account.owner_id);
+
+                    if (user != null) {
+                        userProperties['email'] = user.email;
+                        userProperties['name'] = user.name;
+                    }
+                }
+            }
+
+            userProperties['user-type'] = userType;
+            userProperties['account'] = userId;
+            eventProperties['$set'] = userProperties;
+
+            this.client.capture({
+                event: name,
+                distinctId: userId,
+                properties: eventProperties
+            });
+        } catch (e) {
+            errorManager.report(e, { accountId: accountId });
+        }
+    }
+
+    public getUserType(accountId: number, baseUrl: string): UserType {
+        if (baseUrl === localhostUrl) {
+            return UserType.Local;
+        } else if (accountId === 0) {
+            return UserType.SelfHosted;
+        } else {
+            return UserType.Cloud;
+        }
+    }
+
+    public getUserIdWithType(userType: string, accountId: number, baseUrl: string): string {
+        switch (userType) {
+            case UserType.Local:
+                return `${userType}-${ip.address()}`;
+            case UserType.SelfHosted:
+                return `${userType}-${baseUrl}`;
+            case UserType.Cloud:
+                return `${userType}-${(accountId || 0).toString()}`;
+            default:
+                return 'unknown';
         }
     }
 }

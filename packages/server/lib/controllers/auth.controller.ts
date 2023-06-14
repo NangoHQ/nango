@@ -1,17 +1,11 @@
 import type { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
-import userService from '../services/user.service.js';
-import errorManager from '../utils/error.manager.js';
-import accountService from '../services/account.service.js';
 import util from 'util';
-import analytics from '../utils/analytics.js';
-import { isCloud, resetPasswordSecret, getBaseUrl, getUserAndAccountFromSession } from '../utils/utils.js';
+import { resetPasswordSecret, getUserAndAccountFromSession } from '../utils/utils.js';
 import jwt from 'jsonwebtoken';
 import Mailgun from 'mailgun.js';
-import type { User } from '../models.js';
 import formData from 'form-data';
-import { NangoError } from '../utils/error.js';
-import { configService } from '@nangohq/shared';
+import { User, userService, configService, errorManager, accountService, analytics, isCloud, getBaseUrl, NangoError } from '@nangohq/shared';
 
 export interface WebUser {
     id: number;
@@ -23,8 +17,8 @@ export interface WebUser {
 class AuthController {
     async signin(req: Request, res: Response, next: NextFunction) {
         try {
-            let user = (await getUserAndAccountFromSession(req)).user;
-            let webUser: WebUser = {
+            const user = (await getUserAndAccountFromSession(req)).user;
+            const webUser: WebUser = {
                 id: user.id,
                 accountId: user.account_id,
                 email: user.email,
@@ -57,19 +51,19 @@ class AuthController {
                 return;
             }
 
-            let email = req.body['email'];
+            const email = req.body['email'];
             if (email == null) {
                 errorManager.errRes(res, 'missing_email_param');
                 return;
             }
 
-            let name = req.body['name'];
+            const name = req.body['name'];
             if (name == null) {
                 errorManager.errRes(res, 'missing_name_param');
                 return;
             }
 
-            let password = req.body['password'];
+            const password = req.body['password'];
             if (password == null) {
                 errorManager.errRes(res, 'missing_password_param');
                 return;
@@ -80,15 +74,15 @@ class AuthController {
                 return;
             }
 
-            let account = await accountService.createAccount(`${name}'s Organization`);
+            const account = await accountService.createAccount(`${name}'s Organization`);
 
             if (account == null) {
                 throw new NangoError('account_creation_failure');
             }
 
-            let salt = crypto.randomBytes(16).toString('base64');
-            let hashedPassword = (await util.promisify(crypto.pbkdf2)(password, salt, 310000, 32, 'sha256')).toString('base64');
-            let user = await userService.createUser(email, name, hashedPassword, salt, account!.id);
+            const salt = crypto.randomBytes(16).toString('base64');
+            const hashedPassword = (await util.promisify(crypto.pbkdf2)(password, salt, 310000, 32, 'sha256')).toString('base64');
+            const user = await userService.createUser(email, name, hashedPassword, salt, account!.id);
 
             if (user == null) {
                 throw new NangoError('user_creation_failure');
@@ -108,7 +102,7 @@ class AuthController {
                     return next(err);
                 }
 
-                let webUser: WebUser = {
+                const webUser: WebUser = {
                     id: user!.id,
                     accountId: user!.account_id,
                     email: user!.email,
@@ -130,7 +124,7 @@ class AuthController {
                 return;
             }
 
-            let user = await userService.getUserByEmail(email);
+            const user = await userService.getUserByEmail(email);
 
             if (user == null) {
                 errorManager.errRes(res, 'unkown_user');
@@ -166,14 +160,14 @@ class AuthController {
                         return;
                     }
 
-                    let user = await userService.getUserByResetPasswordToken(token);
+                    const user = await userService.getUserByResetPasswordToken(token);
 
                     if (!user) {
                         errorManager.errRes(res, 'unkown_password_reset_token');
                         return;
                     }
 
-                    let hashedPassword = (await util.promisify(crypto.pbkdf2)(password, user.salt, 310000, 32, 'sha256')).toString('base64');
+                    const hashedPassword = (await util.promisify(crypto.pbkdf2)(password, user.salt, 310000, 32, 'sha256')).toString('base64');
 
                     user.hashed_password = hashedPassword;
                     user.reset_password_token = undefined;

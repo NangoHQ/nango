@@ -1,28 +1,26 @@
 import type { Request, Response } from 'express';
-import connectionService from '../services/connection.service.js';
 import type { NextFunction } from 'express';
-import analytics from '../utils/analytics.js';
 import {
     createActivityLog,
-    createActivityLogMessage,
     createActivityLogMessageAndEnd,
-    updateProvider as updateProviderActivityLog,
-    updateSuccess as updateSuccessActivityLog,
     Config as ProviderConfig,
     Template as ProviderTemplate,
     AuthModes as ProviderAuthModes,
+    ImportedCredentials,
     TemplateOAuth2 as ProviderTemplateOAuth2,
     Connection,
     LogLevel,
     LogAction,
     HTTP_VERB,
     configService,
-    AuthModes
+    connectionService,
+    getAccount,
+    errorManager,
+    analytics,
+    createActivityLogAndLogMessage
 } from '@nangohq/shared';
-import { getAccount, getUserAndAccountFromSession } from '../utils/utils.js';
-import { getConnectionCredentials } from '../utils/connection.js';
+import { getUserAndAccountFromSession } from '../utils/utils.js';
 import { WSErrBuilder } from '../utils/web-socket-error.js';
-import errorManager from '../utils/error.manager.js';
 
 class ConnectionController {
     /**
@@ -45,23 +43,14 @@ class ConnectionController {
                 end: Date.now(),
                 timestamp: Date.now(),
                 connection_id: connectionId as string,
+                provider: '',
                 provider_config_key: providerConfigKey as string,
                 account_id: account.id
             };
 
-            const activityLogId = await createActivityLog(log);
-
-            await createActivityLogMessage({
-                level: 'error',
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: `Token fetch was successful for ${providerConfigKey} and connection ${connectionId} from the web UI`
-            });
-
             if (connectionId == null) {
-                await createActivityLogMessageAndEnd({
+                await createActivityLogAndLogMessage(log, {
                     level: 'error',
-                    activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: WSErrBuilder.MissingConnectionId().message
                 });
@@ -71,9 +60,8 @@ class ConnectionController {
             }
 
             if (providerConfigKey == null) {
-                await createActivityLogMessageAndEnd({
+                await createActivityLogAndLogMessage(log, {
                     level: 'error',
-                    activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: WSErrBuilder.MissingProviderConfigKey().message
                 });
@@ -85,9 +73,8 @@ class ConnectionController {
             const connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, account.id);
 
             if (connection == null) {
-                await createActivityLogMessageAndEnd({
+                await createActivityLogAndLogMessage(log, {
                     level: 'error',
-                    activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: 'Unknown connection'
                 });
@@ -99,9 +86,8 @@ class ConnectionController {
             const config: ProviderConfig | null = await configService.getProviderConfig(connection.provider_config_key, account.id);
 
             if (config == null) {
-                await createActivityLogMessageAndEnd({
+                await createActivityLogAndLogMessage(log, {
                     level: 'error',
-                    activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: 'Unknown provider config'
                 });
@@ -110,8 +96,6 @@ class ConnectionController {
                 return;
             }
 
-            await updateProviderActivityLog(activityLogId as number, config.provider);
-
             const template: ProviderTemplate | undefined = configService.getTemplate(config.provider);
 
             if (connection.credentials.type === ProviderAuthModes.OAuth2) {
@@ -119,18 +103,18 @@ class ConnectionController {
                     connection,
                     config,
                     template as ProviderTemplateOAuth2,
-                    activityLogId,
+                    null,
                     false,
                     'token' as LogAction
                 );
             }
 
-            await updateSuccessActivityLog(activityLogId as number, true);
-
             if (instantRefresh) {
-                await createActivityLogMessageAndEnd({
+                log.provider = config.provider;
+                log.success = true;
+
+                await createActivityLogAndLogMessage(log, {
                     level: 'info',
-                    activity_log_id: activityLogId as number,
                     auth_mode: template?.auth_mode,
                     content: `Token manual refresh fetch was successful for ${providerConfigKey} and connection ${connectionId} from the web UI`,
                     timestamp: Date.now()
@@ -220,7 +204,7 @@ class ConnectionController {
                 return;
             }
 
-            await connectionService.deleteConnection(connection.connection_id, providerConfigKey, account.id);
+            await connectionService.deleteConnection(connection, providerConfigKey, account.id);
 
             res.status(200).send();
         } catch (err) {
@@ -239,6 +223,10 @@ class ConnectionController {
             const providerConfigKey = req.query['provider_config_key'] as string;
             const returnRefreshToken = ((req.query['refresh_token'] === 'true') as boolean) || false;
             const instantRefresh = req.query['force_refresh'] === 'true';
+            const isSync = req.get('Nango-Is-Sync') as string;
+            const isDryRun = req.get('Nango-Is-Dry-Run') as string;
+
+            let activityLogId: number | null = null;
 
             const action: LogAction = 'token';
             const log = {
@@ -254,23 +242,32 @@ class ConnectionController {
                 account_id: accountId
             };
 
-            const activityLogId = await createActivityLog(log);
-            const connection = await getConnectionCredentials(res, connectionId, providerConfigKey, activityLogId as number, action, instantRefresh);
-
-            if (connection && !returnRefreshToken && connection.credentials.type === AuthModes.OAuth2) {
-                delete connection.credentials.refresh_token;
-                delete connection.credentials.raw['refresh_token'];
+            if (!isSync && !isDryRun) {
+                activityLogId = await createActivityLog(log);
             }
 
-            await createActivityLogMessageAndEnd({
-                level: 'info',
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: 'Connection credentials found successfully',
-                params: {
-                    instant_refresh: instantRefresh
+            const connection = await connectionService.getConnectionCredentials(res, connectionId, providerConfigKey, activityLogId, action, instantRefresh);
+
+            if (!isSync && !isDryRun) {
+                await createActivityLogMessageAndEnd({
+                    level: 'info',
+                    activity_log_id: activityLogId as number,
+                    timestamp: Date.now(),
+                    content: 'Connection credentials found successfully',
+                    params: {
+                        instant_refresh: instantRefresh
+                    }
+                });
+            }
+
+            if (connection && connection.credentials && connection.credentials.type === ProviderAuthModes.OAuth2 && !returnRefreshToken) {
+                if (connection.credentials.refresh_token) {
+                    delete connection.credentials.refresh_token;
                 }
-            });
+                if (connection.credentials.raw && connection.credentials.raw['refresh_token']) {
+                    delete connection.credentials.raw['refresh_token'];
+                }
+            }
 
             res.status(200).send(connection);
         } catch (err) {
@@ -315,7 +312,7 @@ class ConnectionController {
                 return;
             }
 
-            await connectionService.deleteConnection(connection.connection_id, providerConfigKey, accountId);
+            await connectionService.deleteConnection(connection, providerConfigKey, accountId);
 
             res.status(200).send();
         } catch (err) {
@@ -335,6 +332,105 @@ class ConnectionController {
                 })
                 .sort((a, b) => a.name.localeCompare(b.name));
             res.status(200).send(providers);
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async setFieldMapping(req: Request, res: Response, next: NextFunction) {
+        try {
+            const accountId = getAccount(res);
+            const connectionId = (req.params['connectionId'] as string) || (req.get('Connection-Id') as string);
+            const providerConfigKey = (req.params['provider_config_key'] as string) || (req.get('Provider-Config-Key') as string);
+
+            if (!connectionId) {
+                errorManager.errRes(res, 'missing_connection');
+                return;
+            }
+
+            if (!providerConfigKey) {
+                errorManager.errRes(res, 'missing_provider_config');
+                return;
+            }
+
+            const connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, accountId);
+
+            if (!connection) {
+                errorManager.errRes(res, 'unknown_connection');
+                return;
+            }
+
+            await connectionService.updateFieldMappings(connection, req.body);
+
+            res.status(201).send();
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async createConnection(req: Request, res: Response, next: NextFunction) {
+        try {
+            const accountId = getAccount(res);
+
+            const { connection_id, provider_config_key, type } = req.body;
+
+            if (!connection_id) {
+                errorManager.errRes(res, 'missing_connection');
+                return;
+            }
+
+            if (!provider_config_key) {
+                errorManager.errRes(res, 'missing_provider_config');
+                return;
+            }
+
+            if (!type) {
+                errorManager.errRes(res, 'missing_oauth_type');
+                return;
+            }
+
+            const oauthType = type.toUpperCase();
+            let credentials: ImportedCredentials;
+
+            if (oauthType === ProviderAuthModes.OAuth2) {
+                const { access_token, refresh_token, expires_at, expires_in, metadata, connection_config } = req.body;
+                credentials = {
+                    type: oauthType as ProviderAuthModes.OAuth2,
+                    access_token,
+                    refresh_token,
+                    expires_at,
+                    expires_in,
+                    metadata,
+                    connection_config,
+                    raw: req.body.raw || req.body
+                };
+            } else if (oauthType === ProviderAuthModes.OAuth1) {
+                const { oauth_token, oauth_token_secret } = req.body;
+
+                if (!oauth_token) {
+                    errorManager.errRes(res, 'missing_oauth_token');
+                    return;
+                }
+
+                if (!oauth_token_secret) {
+                    errorManager.errRes(res, 'missing_oauth_token_secret');
+                    return;
+                }
+
+                credentials = {
+                    type: oauthType as ProviderAuthModes.OAuth1,
+                    oauth_token,
+                    oauth_token_secret,
+                    raw: req.body.raw || req.body
+                };
+            } else {
+                errorManager.errRes(res, 'unknown_oauth_type');
+                return;
+            }
+
+            await connectionService.importConnection(connection_id, provider_config_key, accountId, credentials);
+
+            res.status(201).send(req.body);
         } catch (err) {
             next(err);
         }
