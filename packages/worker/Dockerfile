@@ -1,5 +1,9 @@
 FROM node:18-slim
 
+RUN apt-get update \
+    && apt-get install -y ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
 ENV SERVER_RUN_MODE=DOCKERIZED
 
 WORKDIR /usr/nango-worker/src

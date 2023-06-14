@@ -1,5 +1,5 @@
 import { Worker, NativeConnection } from '@temporalio/worker';
-import { readFileSync } from 'fs';
+import fs from 'fs-extra';
 import * as dotenv from 'dotenv';
 import { createRequire } from 'module';
 import * as activities from './activities.js';
@@ -16,8 +16,8 @@ async function run() {
     const namespace = process.env['TEMPORAL_NAMESPACE'] || 'default';
 
     if (isProd()) {
-        crt = readFileSync(`/etc/secrets/${namespace}.crt`);
-        key = readFileSync(`/etc/secrets/${namespace}.key`);
+        crt = await fs.readFile(`/etc/secrets/${namespace}.crt`);
+        key = await fs.readFile(`/etc/secrets/${namespace}.key`);
     }
 
     const connection = await NativeConnection.connect({
