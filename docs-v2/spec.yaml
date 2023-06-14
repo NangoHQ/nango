@@ -405,6 +405,22 @@ paths:
                   description: The Integration ID used to create the Connection (aka Unique Key).
                   schema:
                       type: string
+    /sync/trigger:
+        post:
+            description: Triggers an additional, one-off sync run for all syncs of a Connection
+            parameters:
+                - name: Connection-Id
+                  in: header
+                  required: true
+                  description: The Connection ID used to create the Connection.
+                  schema:
+                      type: string
+                - name: Provider-Config-Key
+                  in: header
+                  required: true
+                  description: The Integration ID used to create the Connection (aka Unique Key).
+                  schema:
+                      type: string
     /proxy/{anyPath}:
         get:
             description: Make a GET request with the Proxy.

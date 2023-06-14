@@ -276,7 +276,7 @@
         },
         {
             "group": "Sync",
-            "pages": ["api-reference/sync/records-get"]
+            "pages": ["api-reference/sync/records-get", "api-reference/sync/trigger"]
         },
         {
             "group": "Nango Proxy",
