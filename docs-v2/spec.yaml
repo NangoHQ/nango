@@ -35,7 +35,7 @@ paths:
                                                     description: The Integration ID that you created in Nango.
                                                 provider:
                                                     type: string
-                                                    description: The Nango Integration Template.
+                                                    description: The Nango API Configuration.
         post:
             description: Create a new Integration
             requestBody:
@@ -55,7 +55,7 @@ paths:
                                     description: The Integration ID that you created on Nango.
                                 provider:
                                     type: string
-                                    description: The Nango Integration Template.
+                                    description: The Nango API Configuration.
                                 oauth_client_id:
                                     type: string
                                     description: The ID of your OAuth app (registed with the external API).
@@ -96,7 +96,7 @@ paths:
                                     description: The Integration ID that you created on Nango.
                                 provider:
                                     type: string
-                                    description: The Nango Integration Template.
+                                    description: The Nango API Configuration.
                                 oauth_client_id:
                                     type: string
                                     description: The ID of your OAuth app (registed with the external API).
@@ -158,7 +158,7 @@ paths:
                                                 description: The Integration ID that you created in Nango.
                                             provider:
                                                 type: string
-                                                description: The Nango Integration Template.
+                                                description: The Nango API Configuration.
                 '400':
                     description: Invalid request
                     content:

@@ -178,7 +178,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                                 <div>
                                     <div className="mx-8 mt-8">
                                         <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                            Integration Template
+                                            API Configuration
                                         </label>
                                         <div className="mt-3 mb-5 flex">
                                             <img src={`images/template-logos/${connection.provider}.svg`} alt="" className="h-7 mt-0.5 mr-0.5" />

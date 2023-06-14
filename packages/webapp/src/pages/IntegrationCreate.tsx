@@ -243,7 +243,7 @@ export default function IntegrationCreate() {
                                 <div>
                                     <div className="">
                                         <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                            Integration Template
+                                            API Configuration
                                         </label>
                                         <div className="mt-3 mb-5 flex">
                                             {/* <img src={templateLogo} /> */}

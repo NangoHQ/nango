@@ -69,7 +69,7 @@ nango.github().issues('<user-id>');
 
 ## 100+ pre-configured APIs, easily add your own
 
-Nango works with **any** API and use-case. Adding [Integration Templates](https://docs.nango.dev/core-concepts#templates) is easy and we already have the main APIs covered.
+Nango works with **any** API and use-case. Adding [API Configurations](https://docs.nango.dev/core-concepts#api-configuration) is easy and we already have the main APIs covered.
 
 100+ APIs are pre-configured to work out-of-the-box, including:
 

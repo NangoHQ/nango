@@ -1,7 +1,7 @@
 ---
 title: 'Core Concepts'
 sidebarTitle: 'Core Concepts'
-description: 'A high-level view of how Nango works.'
+description: 'A high-level overview of how Nango works.'
 ---
 
 ## Why Nango?
@@ -47,25 +47,25 @@ Nango has not been built for:
 Nango is open-source and leverages the community to:
 
 1. improve Nango's [infrastructure](/core-concepts#nango-infrastructure)
-2. contribute new [Integration Templates](/core-concepts#integration-templates) for OAuth flows & data syncs
+2. contribute new [API Configurations](/core-concepts#api-configuration) for OAuth flows & data syncs
 3. share knowledge about external API quirks
 
 ## Glossary
 
 Terms we frequently use at Nango:
 
-### Integration Templates[](#integration-templates)
+### API Configuration[](#api-configuration)
 
-An Integration Template (e.g. the `hubspot` template) contains the configuration in Nango that is specific to an external API. In particular:
+An API Configuration (e.g. the `hubspot` configuration) contains the configuration in Nango that is specific to an external API. In particular:
 
 -   Auth-related configuration (auth type, OAuth URLs, auth quirks, etc.)
 -   Sync-related configuration (rate-limits, pagination strategy, etc.)
 
-These templates are contributed and regularly improved by Nango and its community. Templates allow to rapidly adapt Nango to work with any API, by editing a `.yaml` configuration file.
+These configuration are contributed and regularly improved by Nango and its community. Configurations allow to rapidly adapt Nango to work with any API, by editing a `.yaml` configuration file.
 
 ### Integrations[](#integrations)
 
-Developers create Integrations, based on [Integration Templates](/core-concepts#integration-templates), to work with external APIs from their app.
+Developers create Integrations, based on [API Configurations](/core-concepts#api-configuration), to work with external APIs from their app.
 
 Integrations are created by you in the Nango Dashboard. You can then control them with SDKs and REST APIs.
 
