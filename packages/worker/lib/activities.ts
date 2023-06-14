@@ -82,7 +82,7 @@ export async function syncProvider(
         activityLogId
     });
 
-    const result = syncRun.run();
+    const result = await syncRun.run();
 
-    return result;
+    return result as boolean;
 }
