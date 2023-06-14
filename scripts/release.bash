@@ -97,7 +97,7 @@ update_package_json_version $WORKER_PACKAGE_JSON $4
 update_node_dep "packages/worker/package.json" $(jq -r '.version' $NODE_CLIENT_PACKAGE_JSON)
 
 ./scripts/docker-publish.bash nango-server $SERVER_VERSION true $3 &
-./scripts/docker-publish.bash nango-server $SERVER_VERSION true $3 hosted &
+./scripts/docker-publish.bash nango-server $SERVER_VERSION true hosted &
 ./scripts/docker-publish.bash nango-worker $WORKER_VERSION true hosted &
 
 
