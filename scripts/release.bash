@@ -1,30 +1,17 @@
 #!/bin/bash
 
-if [ $# -lt 3 ]
+if [ $# -lt 2 ]
 then
-    echo "Usage: ./release.bash [server_version] [worker_version] [prod|staging|hosted] [optional_specific_version]"
+    echo "Usage: ./release.bash [server_and_worker_version] [prod|staging|hosted] [optional_specific_version]"
     exit 1
 fi
 
-function update_shared_dep() {
+function update_dep() {
     PACKAGE_JSON=$1
     NEW_VERSION=$2
+    DEP_NAME=$3
 
-    jq --arg NEW_VERSION "$NEW_VERSION" '.dependencies["@nangohq/shared"] = $NEW_VERSION' --indent 4 $PACKAGE_JSON | sponge $PACKAGE_JSON
-}
-
-function update_node_dep() {
-    PACKAGE_JSON=$1
-    NEW_VERSION=$2
-
-    jq --arg NEW_VERSION "$NEW_VERSION" '.dependencies["@nangohq/node"] = $NEW_VERSION' --indent 4 $PACKAGE_JSON | sponge $PACKAGE_JSON
-}
-
-function update_frontend_dep() {
-    PACKAGE_JSON=$1
-    NEW_VERSION=$2
-
-    jq --arg NEW_VERSION "$NEW_VERSION" '.dependencies["@nangohq/frontend"] = $NEW_VERSION' --indent 4 $PACKAGE_JSON | sponge $PACKAGE_JSON
+    jq --arg NEW_VERSION "$NEW_VERSION" ".dependencies[\"$DEP_NAME\"] = $NEW_VERSION" --indent 4 $PACKAGE_JSON | sponge $PACKAGE_JSON
 }
 
 function update_package_json_version() {
@@ -50,39 +37,36 @@ function update_package_json_version() {
     echo "$PACKAGE_JSON version bumped successfully!"
 }
 
-git update-index -q --refresh
+SHARED_PACKAGE_JSON="packages/shared/package.json"
+update_package_json_version $SHARED_PACKAGE_JSON $3
+update_dep "packages/server/package.json" $(jq -r '.version' $SHARED_PACKAGE_JSON) "@nangohq/shared"
+update_dep "packages/worker/package.json" $(jq -r '.version' $SHARED_PACKAGE_JSON) "@nangohq/shared"
+update_dep "packages/cli/package.json" $(jq -r '.version' $SHARED_PACKAGE_JSON) "@nangohq/shared"
+update_dep "packages/node-client/package.json" $(jq -r '.version' $SHARED_PACKAGE_JSON) "@nangohq/shared"
 
-#if git diff --quiet -- ./packages/shared || git diff --cached --quiet -- ./packages/shared; then
-    SHARED_PACKAGE_JSON="packages/shared/package.json"
-    update_package_json_version $SHARED_PACKAGE_JSON $4
-    update_shared_dep "packages/server/package.json" $(jq -r '.version' $SHARED_PACKAGE_JSON)
-    update_shared_dep "packages/worker/package.json" $(jq -r '.version' $SHARED_PACKAGE_JSON)
-    update_shared_dep "packages/cli/package.json" $(jq -r '.version' $SHARED_PACKAGE_JSON)
-    update_shared_dep "packages/node-client/package.json" $(jq -r '.version' $SHARED_PACKAGE_JSON)
-
-    rm -rf packages/shared/dist
-    npm run ts-build
-    cd ./packages/shared && npm publish --access public && cd ../../
-    NODE_CLIENT_PACKAGE_JSON="packages/node-client/package.json"
-    update_package_json_version $NODE_CLIENT_PACKAGE_JSON $4
-    npm i
-    npm run ts-build
-    cd ./packages/node-client && npm publish --access public && cd ../../
-#fi
+rm -rf packages/shared/dist
+npm run ts-build
+cd ./packages/shared && npm publish --access public && cd ../../
+NODE_CLIENT_PACKAGE_JSON="packages/node-client/package.json"
+update_package_json_version $NODE_CLIENT_PACKAGE_JSON $3
+npm i
+npm run ts-build
+cd ./packages/node-client && npm publish --access public && cd ../../
 
 # update the webapp and frontend
 FRONTEND_PACKAGE_JSON="packages/frontend/package.json"
-update_package_json_version $FRONTEND_PACKAGE_JSON $4
+update_package_json_version $FRONTEND_PACKAGE_JSON $3
 cd ./packages/frontend && npm publish --access public && cd ../../
 
-update_frontend_dep "packages/webapp/package.json" $(jq -r '.version' $FRONTEND_PACKAGE_JSON)
+update_dep "packages/webapp/package.json" $(jq -r '.version' $FRONTEND_PACKAGE_JSON) "@nangohq/frontend"
 WEBAPP_PACKAGE_JSON="packages/webapp/package.json"
 npm i
-update_package_json_version $WEBAPP_PACKAGE_JSON $4
+update_package_json_version $WEBAPP_PACKAGE_JSON $3
 
 SERVER_VERSION=$1
 WORKER_VERSION=$2
-ENV=$3
+SERVER_WORKER_VERSION=$1
+ENV=$2
 DOCKER_COMPOSE_FILE="packages/cli/docker/docker-compose.yaml"
 
 npm i
@@ -91,12 +75,12 @@ cd ./packages/webapp && npm run build && cd ../../
 
 WORKER_PACKAGE_JSON="packages/worker/package.json"
 SERVER_PACKAGE_JSON="packages/server/package.json"
-update_package_json_version $SERVER_PACKAGE_JSON $4
-update_package_json_version $WORKER_PACKAGE_JSON $4
+update_package_json_version $SERVER_PACKAGE_JSON $3
+update_package_json_version $WORKER_PACKAGE_JSON $3
 
-update_node_dep "packages/worker/package.json" $(jq -r '.version' $NODE_CLIENT_PACKAGE_JSON)
+update_dep "packages/worker/package.json" $(jq -r '.version' $NODE_CLIENT_PACKAGE_JSON) "@nangohq/node"
 
-./scripts/docker-publish.bash nango-server $SERVER_VERSION true $3 &
+./scripts/docker-publish.bash nango-server $SERVER_VERSION true $2 &
 ./scripts/docker-publish.bash nango-server $SERVER_VERSION true hosted &
 ./scripts/docker-publish.bash nango-worker $WORKER_VERSION true hosted &
 
@@ -112,6 +96,6 @@ wait
 echo "nango-server and nango-worker published successfully and docker-compose in the cli was updated"
 
 CLI_PACKAGE_JSON="packages/cli/package.json"
-update_package_json_version $CLI_PACKAGE_JSON $4
+update_package_json_version $CLI_PACKAGE_JSON $3
 
 cd ./packages/cli && npm publish --access public && cd ../../
