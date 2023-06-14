@@ -13,6 +13,13 @@ function update_shared_dep() {
     jq --arg NEW_VERSION "$NEW_VERSION" '.dependencies["@nangohq/shared"] = $NEW_VERSION' --indent 4 $PACKAGE_JSON | sponge $PACKAGE_JSON
 }
 
+function update_node_dep() {
+    PACKAGE_JSON=$1
+    NEW_VERSION=$2
+
+    jq --arg NEW_VERSION "$NEW_VERSION" '.dependencies["@nangohq/node"] = $NEW_VERSION' --indent 4 $PACKAGE_JSON | sponge $PACKAGE_JSON
+}
+
 function update_frontend_dep() {
     PACKAGE_JSON=$1
     NEW_VERSION=$2
@@ -45,7 +52,7 @@ function update_package_json_version() {
 
 git update-index -q --refresh
 
-if git diff --quiet -- ./packages/shared || git diff --cached --quiet -- ./packages/shared; then
+#if git diff --quiet -- ./packages/shared || git diff --cached --quiet -- ./packages/shared; then
     SHARED_PACKAGE_JSON="packages/shared/package.json"
     update_package_json_version $SHARED_PACKAGE_JSON $4
     update_shared_dep "packages/server/package.json" $(jq -r '.version' $SHARED_PACKAGE_JSON)
@@ -61,7 +68,7 @@ if git diff --quiet -- ./packages/shared || git diff --cached --quiet -- ./packa
     npm i
     npm run ts-build
     cd ./packages/node-client && npm publish --access public && cd ../../
-fi
+#fi
 
 # update the webapp and frontend
 FRONTEND_PACKAGE_JSON="packages/frontend/package.json"
@@ -82,9 +89,17 @@ npm i
 npm run ts-build
 cd ./packages/webapp && npm run build && cd ../../
 
+WORKER_PACKAGE_JSON="packages/worker/package.json"
+SERVER_PACKAGE_JSON="packages/server/package.json"
+update_package_json_version $SERVER_PACKAGE_JSON $4
+update_package_json_version $WORKER_PACKAGE_JSON $4
+
+update_node_dep "packages/worker/package.json" $(jq -r '.version' $NODE_CLIENT_PACKAGE_JSON)
+
 ./scripts/docker-publish.bash nango-server $SERVER_VERSION true $3 &
 ./scripts/docker-publish.bash nango-server $SERVER_VERSION true $3 hosted &
 ./scripts/docker-publish.bash nango-worker $WORKER_VERSION true hosted &
+
 
 SERVER_IMAGE="nangohq/nango-server"
 WORKER_IMAGE="nangohq/nango-worker"
