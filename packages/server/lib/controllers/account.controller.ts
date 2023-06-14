@@ -48,11 +48,6 @@ class AccountController {
                 return;
             }
 
-            if (!req.body['webhook_url']) {
-                errorManager.errRes(res, 'missing_webhook_url');
-                return;
-            }
-
             const account = (await getUserAndAccountFromSession(req)).account;
 
             await accountService.editAccountWebhookUrl(req.body['webhook_url'], account.id);
