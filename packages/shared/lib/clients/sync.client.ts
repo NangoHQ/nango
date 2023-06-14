@@ -53,7 +53,8 @@ class SyncClient {
                     : false
             });
             const client = new Client({
-                connection
+                connection,
+                namespace
             });
             return new SyncClient(client);
         } catch (e) {

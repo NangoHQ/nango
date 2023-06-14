@@ -6,12 +6,25 @@ then
     exit 1
 fi
 
-function update_dep() {
+function update_shared_dep() {
     PACKAGE_JSON=$1
     NEW_VERSION=$2
-    DEP_NAME=$3
 
-    jq --arg NEW_VERSION "$NEW_VERSION" ".dependencies[\"$DEP_NAME\"] = $NEW_VERSION" --indent 4 $PACKAGE_JSON | sponge $PACKAGE_JSON
+    jq --arg NEW_VERSION "$NEW_VERSION" '.dependencies["@nangohq/shared"] = $NEW_VERSION' --indent 4 $PACKAGE_JSON | sponge $PACKAGE_JSON
+}
+
+function update_node_dep() {
+    PACKAGE_JSON=$1
+    NEW_VERSION=$2
+
+    jq --arg NEW_VERSION "$NEW_VERSION" '.dependencies["@nangohq/node"] = $NEW_VERSION' --indent 4 $PACKAGE_JSON | sponge $PACKAGE_JSON
+}
+
+function update_frontend_dep() {
+    PACKAGE_JSON=$1
+    NEW_VERSION=$2
+
+    jq --arg NEW_VERSION "$NEW_VERSION" '.dependencies["@nangohq/frontend"] = $NEW_VERSION' --indent 4 $PACKAGE_JSON | sponge $PACKAGE_JSON
 }
 
 function update_package_json_version() {
@@ -39,10 +52,10 @@ function update_package_json_version() {
 
 SHARED_PACKAGE_JSON="packages/shared/package.json"
 update_package_json_version $SHARED_PACKAGE_JSON $3
-update_dep "packages/server/package.json" $(jq -r '.version' $SHARED_PACKAGE_JSON) "@nangohq/shared"
-update_dep "packages/worker/package.json" $(jq -r '.version' $SHARED_PACKAGE_JSON) "@nangohq/shared"
-update_dep "packages/cli/package.json" $(jq -r '.version' $SHARED_PACKAGE_JSON) "@nangohq/shared"
-update_dep "packages/node-client/package.json" $(jq -r '.version' $SHARED_PACKAGE_JSON) "@nangohq/shared"
+update_shared_dep "packages/server/package.json" $(jq -r '.version' $SHARED_PACKAGE_JSON)
+update_shared_dep "packages/worker/package.json" $(jq -r '.version' $SHARED_PACKAGE_JSON)
+update_shared_dep "packages/cli/package.json" $(jq -r '.version' $SHARED_PACKAGE_JSON)
+update_shared_dep "packages/node-client/package.json" $(jq -r '.version' $SHARED_PACKAGE_JSON)
 
 rm -rf packages/shared/dist
 npm run ts-build
@@ -58,13 +71,11 @@ FRONTEND_PACKAGE_JSON="packages/frontend/package.json"
 update_package_json_version $FRONTEND_PACKAGE_JSON $3
 cd ./packages/frontend && npm publish --access public && cd ../../
 
-update_dep "packages/webapp/package.json" $(jq -r '.version' $FRONTEND_PACKAGE_JSON) "@nangohq/frontend"
+update_frontend_dep "packages/webapp/package.json" $(jq -r '.version' $FRONTEND_PACKAGE_JSON)
 WEBAPP_PACKAGE_JSON="packages/webapp/package.json"
 npm i
 update_package_json_version $WEBAPP_PACKAGE_JSON $3
 
-SERVER_VERSION=$1
-WORKER_VERSION=$2
 SERVER_WORKER_VERSION=$1
 ENV=$2
 DOCKER_COMPOSE_FILE="packages/cli/docker/docker-compose.yaml"
@@ -78,18 +89,21 @@ SERVER_PACKAGE_JSON="packages/server/package.json"
 update_package_json_version $SERVER_PACKAGE_JSON $3
 update_package_json_version $WORKER_PACKAGE_JSON $3
 
-update_dep "packages/worker/package.json" $(jq -r '.version' $NODE_CLIENT_PACKAGE_JSON) "@nangohq/node"
+update_node_dep "packages/worker/package.json" $(jq -r '.version' $NODE_CLIENT_PACKAGE_JSON)
 
-./scripts/docker-publish.bash nango-server $SERVER_VERSION true $2 &
-./scripts/docker-publish.bash nango-server $SERVER_VERSION true hosted &
-./scripts/docker-publish.bash nango-worker $WORKER_VERSION true hosted &
+rm -rf ./packages/webapp/build/fonts
+./scripts/docker-publish.bash nango-server $SERVER_WORKER_VERSION true $2
+rm -rf ./packages/webapp/build/fonts
+./scripts/docker-publish.bash nango-server $SERVER_WORKER_VERSION true hosted &
+rm -rf ./packages/webapp/build/fonts
+./scripts/docker-publish.bash nango-worker $SERVER_WORKER_VERSION true hosted &
 
 
 SERVER_IMAGE="nangohq/nango-server"
 WORKER_IMAGE="nangohq/nango-worker"
 
-sed -i "" "s|${SERVER_IMAGE}:[^ ]*|${SERVER_IMAGE}:${SERVER_VERSION}|g" $DOCKER_COMPOSE_FILE
-sed -i "" "s|${WORKER_IMAGE}:[^ ]*|${WORKER_IMAGE}:${WORKER_VERSION}|g" $DOCKER_COMPOSE_FILE
+sed -i "" "s|${SERVER_IMAGE}:[^ ]*|${SERVER_IMAGE}:${SERVER_WORKER_VERSION}|g" $DOCKER_COMPOSE_FILE
+sed -i "" "s|${WORKER_IMAGE}:[^ ]*|${WORKER_IMAGE}:${SERVER_WORKER_VERSION}|g" $DOCKER_COMPOSE_FILE
 
 wait
 
