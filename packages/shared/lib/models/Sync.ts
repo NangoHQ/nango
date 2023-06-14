@@ -58,6 +58,7 @@ export interface SyncConfig extends Timestamps {
     active: boolean;
     runs: string;
     version?: string;
+    sync_id?: string;
 }
 
 export interface IncomingSyncConfig {

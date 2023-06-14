@@ -64,7 +64,7 @@ export default class SyncRun {
     }
 
     async run(optionalLastSyncDate?: Date | null, bypassAccount?: boolean): Promise<boolean | object> {
-        const nangoConfig = await loadNangoConfig(this.nangoConnection, this.syncName, this.loadLocation);
+        const nangoConfig = await loadNangoConfig(this.nangoConnection, this.syncName, this.syncId, this.loadLocation);
 
         if (!nangoConfig) {
             const message = `No sync configuration was found for ${this.syncName}.`;

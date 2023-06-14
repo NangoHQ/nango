@@ -1,5 +1,6 @@
-import { Client, Connection, ScheduleOverlapPolicy } from '@temporalio/client';
+import { Client, Connection, ScheduleOverlapPolicy, ScheduleDescription } from '@temporalio/client';
 import type { Connection as NangoConnection } from '../models/Connection.js';
+import ms from 'ms';
 import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { NangoIntegrationData, NangoConfig, NangoIntegration } from '../integrations/index.js';
 import { Sync, SyncStatus, SyncType, ScheduleStatus, SyncCommand, SyncWithSchedule } from '../models/Sync.js';
@@ -247,6 +248,23 @@ class SyncClient {
                 console.error(e);
             }
         }
+    }
+
+    async updateSyncSchedule(schedule_id: string, interval: string, offset: number) {
+        const scheduleHandle = this.client?.schedule.getHandle(schedule_id);
+
+        function updateFunction(scheduleDescription: ScheduleDescription) {
+            scheduleDescription.spec = {
+                intervals: [
+                    {
+                        every: ms(interval),
+                        offset
+                    }
+                ]
+            };
+            return scheduleDescription;
+        }
+        scheduleHandle?.update(updateFunction);
     }
 }
 

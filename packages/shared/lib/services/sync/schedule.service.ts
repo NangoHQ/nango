@@ -2,6 +2,7 @@ import db, { schema, dbNamespace } from '../../db/database.js';
 import type { Connection as NangoConnection } from '../../models/Connection.js';
 import { Schedule as SyncSchedule, ScheduleStatus, SyncCommandToScheduleStatus, SyncCommand } from '../../models/Sync.js';
 import { getSyncsByConnectionId } from '../sync/sync.service.js';
+import { getInterval } from '../nango-config.service.js';
 import SyncClient from '../../clients/sync.client.js';
 
 const TABLE = dbNamespace + 'sync_schedules';
@@ -60,4 +61,19 @@ export const markAllAsStopped = async (): Promise<void> => {
 
 export const updateScheduleStatus = async (schedule_id: string, status: SyncCommand): Promise<void> => {
     await schema().update({ status: SyncCommandToScheduleStatus[status] }).from<SyncSchedule>(TABLE).where({ schedule_id });
+};
+
+export const updateSyncScheduleFrequency = async (sync_id: string, interval: string): Promise<void> => {
+    const existingSchedule = await getSchedule(sync_id);
+    const { interval: frequency, offset } = getInterval(interval, new Date());
+
+    if (!existingSchedule) {
+        return;
+    }
+
+    if (existingSchedule.frequency !== frequency) {
+        await schema().update({ frequency }).from<SyncSchedule>(TABLE).where({ sync_id });
+        const syncClient = await SyncClient.getInstance();
+        await syncClient?.updateSyncSchedule(existingSchedule.schedule_id, frequency, offset);
+    }
 };

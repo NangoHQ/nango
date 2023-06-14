@@ -163,7 +163,7 @@ program
         tsc();
 
         const cwd = process.cwd();
-        const config = await loadSimplifiedConfig(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/${nangoConfigFile}`));
+        const config = await loadSimplifiedConfig(path.resolve(cwd, NANGO_INTEGRATIONS_LOCATION));
 
         if (!config) {
             throw new Error(`Error loading the ${nangoConfigFile} file`);
@@ -218,7 +218,7 @@ program
     .description('Verify the parsed sync config and output the object for verification')
     .action(async () => {
         const cwd = process.cwd();
-        const config = await loadSimplifiedConfig(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/${nangoConfigFile}`));
+        const config = await loadSimplifiedConfig(path.resolve(cwd, NANGO_INTEGRATIONS_LOCATION));
 
         console.log(chalk.green(JSON.stringify(config, null, 2)));
     });

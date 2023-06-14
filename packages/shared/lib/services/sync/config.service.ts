@@ -1,6 +1,7 @@
 import { schema, dbNamespace } from '../../db/database.js';
 import configService from '../config.service.js';
 import fileService from '../file.service.js';
+import { updateSyncScheduleFrequency } from './schedule.service.js';
 import type { IncomingSyncConfig, SyncConfig } from '../../models/Sync.js';
 import type { NangoConnection } from '../../models/Connection.js';
 import type { NangoConfig } from '../../integrations/index.js';
@@ -27,6 +28,13 @@ export async function createSyncConfig(account_id: number, syncs: IncomingSyncCo
 
         if (previousSyncConfig) {
             bumpedVersion = increment(previousSyncConfig.version as string | number).toString();
+
+            // if the schedule changed then update the sync schedule and the client so that it reflects
+            // the new schedule
+            const { sync_id } = previousSyncConfig;
+            if (sync_id) {
+                await updateSyncScheduleFrequency(sync_id, runs);
+            }
         }
 
         const version = optionalVersion || bumpedVersion || '1';
@@ -63,7 +71,7 @@ export async function createSyncConfig(account_id: number, syncs: IncomingSyncCo
     }
 }
 
-export async function getSyncConfig(nangoConnection: NangoConnection, syncName?: string): Promise<NangoConfig | null> {
+export async function getSyncConfig(nangoConnection: NangoConnection, syncName?: string, syncId?: string): Promise<NangoConfig | null> {
     let syncConfigs;
 
     if (!syncName) {
@@ -89,6 +97,15 @@ export async function getSyncConfig(nangoConnection: NangoConnection, syncName?:
         },
         models: {}
     };
+
+    // we have a sync name which means we have a single sync config
+    // let's update that to have the sync id so we can link everything together
+    if (syncName && syncId && syncConfigs.length === 1) {
+        const [config] = syncConfigs;
+        if (config) {
+            await updateSyncConfigWithSyncId(config?.id as number, syncId);
+        }
+    }
 
     for (const syncConfig of syncConfigs) {
         if (nangoConnection.provider_config_key !== undefined) {
@@ -147,6 +164,10 @@ export async function getSyncConfigByParams(account_id: number, sync_name: strin
     }
 
     return null;
+}
+
+export async function updateSyncConfigWithSyncId(sync_config_id: number, sync_id: string): Promise<void> {
+    await schema().from<SyncConfig>(TABLE).where({ id: sync_config_id }).update({ sync_id });
 }
 
 function increment(input: number | string): number | string {
