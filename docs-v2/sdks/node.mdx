@@ -159,10 +159,21 @@ The response from the external API is passed back to you exactly as Nango gets i
 
 For the node SDK Nango returns an [Axios response object](https://axios-http.com/docs/res_schema).
 
-### Read data
+### Read synced data
 
 <Note>This feature is in private beta. Request access on the [community](https://nango.dev/slack).</Note>
 
-### Write data
+To read synced data from Nango use `getRecords`:
 
-<Note>This feature is in private beta. Request access on the [community](https://nango.dev/slack).</Note>
+```ts
+const records = await nango.getRecords({
+    providerConfigKey: '<integration-id>',  // Name of your integration, from nango.yaml. E.g. github
+    connectionId: '<user-id>',              // The connection id you passed to nango.auth()
+    model: '<model-name>',                  // The name of the data model, from nango.yaml. E.g. ticket
+    delta: '<timestamp>'                    // Optional. Only return records added or updated since this timestamp. E.g. 2023-05-31T11:46:13.390Z
+});
+
+console.log(records);
+```
+
+If you are using the [Nango Sync webhooks](/nango-sync/guides/webhooks#from-nango) you can use the timestamp you get from the webhook for the `delta` parameter.

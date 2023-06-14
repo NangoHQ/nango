@@ -362,6 +362,34 @@ paths:
                                 properties:
                                     message:
                                         type: string
+    /sync/records:
+        get:
+            description: Returns data synced with Nango Sync
+            parameters:
+                - name: model
+                  in: query
+                  required: true
+                  schema:
+                      type: string
+                  description: The data model to fetch
+                - name: delta
+                  in: query
+                  required: false
+                  schema:
+                      type: string
+                  description: Timestamp, e.g. 2023-05-31T11:46:13.390Z. If passed only records added or updated after this timestamp are returned, otherwise all records are returned.
+                - name: Connection-Id
+                  in: header
+                  required: true
+                  description: The Connection ID used to create the Connection.
+                  schema:
+                      type: string
+                - name: Provider-Config-Key
+                  in: header
+                  required: true
+                  description: The Integration ID used to create the Connection (aka Unique Key).
+                  schema:
+                      type: string
     /proxy/{anyPath}:
         get:
             description: Make a GET request with the Proxy.

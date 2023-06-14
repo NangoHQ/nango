@@ -275,6 +275,10 @@
             "pages": ["api-reference/connection/list", "api-reference/connection/get", "api-reference/connection/delete"]
         },
         {
+            "group": "Sync",
+            "pages": ["api-reference/sync/records-get"]
+        },
+        {
             "group": "Nango Proxy",
             "pages": [
                 "api-reference/proxy/get",
