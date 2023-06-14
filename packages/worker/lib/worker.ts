@@ -1,22 +1,40 @@
 import { Worker, NativeConnection } from '@temporalio/worker';
+import { readFileSync } from 'fs';
 import * as dotenv from 'dotenv';
 import { createRequire } from 'module';
 import * as activities from './activities.js';
-import { TASK_QUEUE } from '@nangohq/shared';
+import { TASK_QUEUE, isProd } from '@nangohq/shared';
 
 async function run() {
     if (process.env['SERVER_RUN_MODE'] !== 'DOCKERIZED') {
         dotenv.config({ path: '../../.env' });
     }
 
+    let crt: Buffer | null = null;
+    let key: Buffer | null = null;
+
+    const namespace = process.env['TEMPORAL_NAMESPACE'] || 'default';
+
+    if (isProd()) {
+        crt = readFileSync(`/etc/secrets/${namespace}.crt`);
+        key = readFileSync(`/etc/secrets/${namespace}.key`);
+    }
+
     const connection = await NativeConnection.connect({
         address: process.env['TEMPORAL_ADDRESS'] || 'localhost:7233',
-        tls: false
+        tls: !isProd()
+            ? false
+            : {
+                  clientCertPair: {
+                      crt: crt as Buffer,
+                      key: key as Buffer
+                  }
+              }
     });
 
     const worker = await Worker.create({
         connection,
-        namespace: process.env['TEMPORAL_NAMESPACE'] || 'default',
+        namespace,
         workflowsPath: createRequire(import.meta.url).resolve('./workflows'),
         activities,
         taskQueue: TASK_QUEUE
@@ -35,3 +53,4 @@ run().catch((err) => {
     console.error(err);
     process.exit(1);
 });
+
