@@ -1,6 +1,7 @@
 import { Client, Connection, ScheduleOverlapPolicy, ScheduleDescription } from '@temporalio/client';
 import type { Connection as NangoConnection } from '../models/Connection.js';
 import ms from 'ms';
+import fs from 'fs-extra';
 import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { NangoIntegrationData, NangoConfig, NangoIntegration } from '../integrations/index.js';
 import { Sync, SyncStatus, SyncType, ScheduleStatus, SyncCommand, SyncWithSchedule } from '../models/Sync.js';
@@ -13,17 +14,19 @@ import { createSchedule as createSyncSchedule } from '../services/sync/schedule.
 import connectionService from '../services/connection.service.js';
 import configService from '../services/config.service.js';
 import { createSync } from '../services/sync/sync.service.js';
-import { isCloud } from '../utils/utils.js';
+import { isCloud, isProd } from '../utils/utils.js';
 
 const generateWorkflowId = (sync: Sync, syncName: string, connectionId: string) => `${TASK_QUEUE}.${syncName}.${connectionId}-${sync.id}`;
 const generateScheduleId = (sync: Sync, syncName: string, connectionId: string) => `${TASK_QUEUE}.${syncName}.${connectionId}-schedule-${sync.id}`;
 
 const OVERLAP_POLICY: ScheduleOverlapPolicy = ScheduleOverlapPolicy.BUFFER_ONE;
 
+const namespace = process.env['TEMPORAL_NAMESPACE'] || 'default';
+
 class SyncClient {
     private static instance: Promise<SyncClient | null>;
     private client: Client | null = null;
-    private namespace = process.env['TEMPORAL_NAMESPACE'] || 'default';
+    private namespace = namespace;
 
     private constructor(client: Client) {
         this.client = client;
@@ -39,10 +42,19 @@ class SyncClient {
     private static async create(): Promise<SyncClient | null> {
         try {
             const connection = await Connection.connect({
-                address: process.env['TEMPORAL_ADDRESS'] || 'localhost:7233'
+                address: process.env['TEMPORAL_ADDRESS'] || 'localhost:7233',
+                tls: isProd()
+                    ? {
+                          clientCertPair: {
+                              crt: await fs.readFile(`/etc/secrets/${namespace}.crt`),
+                              key: await fs.readFile(`/etc/secrets/${namespace}.key`)
+                          }
+                      }
+                    : false
             });
             const client = new Client({
-                connection
+                connection,
+                namespace
             });
             return new SyncClient(client);
         } catch (e) {

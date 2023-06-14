@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/nango-worker",
-    "version": "0.20.2",
+    "version": "0.20.7",
     "type": "module",
     "main": "dist/worker.js",
     "scripts": {
@@ -15,13 +15,15 @@
         "directory": "packages/worker"
     },
     "dependencies": {
-        "@nangohq/node": "0.20.2",
-        "@nangohq/shared": "0.20.2",
+        "@nangohq/node": "0.20.7",
+        "@nangohq/shared": "0.20.7",
         "@temporalio/activity": "^1.5.2",
         "@temporalio/client": "^1.5.2",
         "@temporalio/worker": "^1.5.2",
         "@temporalio/workflow": "^1.5.2",
+        "@types/fs-extra": "^11.0.1",
         "dotenv": "^16.0.3",
+        "fs-extra": "^11.1.1",
         "js-yaml": "^4.1.0",
         "knex": "^2.4.2",
         "md5": "^2.3.0",
