@@ -66,7 +66,7 @@ npm run ts-build
 cd ./packages/webapp && npm run build && cd ../../
 
 ./scripts/docker-publish.bash nango-server $SERVER_VERSION true $3 &
-./scripts/docker-publish.bash nango-worker $WORKER_VERSION true $3 &
+./scripts/docker-publish.bash nango-worker $WORKER_VERSION true hosted &
 
 SERVER_IMAGE="nangohq/nango-server"
 WORKER_IMAGE="nangohq/nango-worker"
