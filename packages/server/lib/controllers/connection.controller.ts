@@ -260,9 +260,13 @@ class ConnectionController {
                 });
             }
 
-            if (connection && !returnRefreshToken && connection.credentials.type === ProviderAuthModes.OAuth2) {
-                delete connection.credentials.refresh_token;
-                delete connection.credentials.raw['refresh_token'];
+            if (connection && connection.credentials && connection.credentials.type === ProviderAuthModes.OAuth2 && !returnRefreshToken) {
+                if (connection.credentials.refresh_token) {
+                    delete connection.credentials.refresh_token;
+                }
+                if (connection.credentials.raw && connection.credentials.raw['refresh_token']) {
+                    delete connection.credentials.raw['refresh_token'];
+                }
             }
 
             res.status(200).send(connection);
