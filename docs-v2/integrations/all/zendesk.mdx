@@ -1,9 +1,17 @@
 ---
-title: Zendesk
+title: Zendesk (Helpdesk)
 sidebarTitle: Zendesk
 ---
 
 Integration template: [`zendesk`](https://nango.dev/providers.yaml)
+
+<Note>
+Zendesk has two kinds of OAuth apps:
+- Helpdesk/support apps
+- CRM apps
+
+Nango currently only supports OAuth for the Helpdesk apps. If you need the CRM one supported reach out or contribute it :)
+</Note>
 
 ## Features
 
@@ -28,7 +36,7 @@ Integration template: [`zendesk`](https://nango.dev/providers.yaml)
 ## API gotchas
 
 -   Make sure you specify the subdomain in the [Connection Configuration](/nango-auth/configuration) before starting an OAuth flow for Zendesk.
--   Make sure to create a Zendesk oAuth app (`https://<USER-SUBDOMAIN>.zendesk.com/admin/apps-integrations/apis/zendesk-api/settings`), _not_ a Zendesk Sales CRM oAuth app. 
+-   Make sure to create a Zendesk OAuth app (`https://<USER-SUBDOMAIN>.zendesk.com/admin/apps-integrations/apis/zendesk-api/settings`), _not_ a Zendesk Sales CRM OAuth app. 
 -   Zendesk oAuth apps [must be made "global"](https://developer.zendesk.com/documentation/marketplace/building-a-marketplace-app/set-up-a-global-oauth-client/) to connect to multiple `<USER-SUBDOMAIN>`s.
 
 <Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/zendesk.mdx)</Note>
