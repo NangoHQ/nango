@@ -242,6 +242,21 @@ paths:
                                                 created:
                                                     type: string
                                                     description: Connection creation date.
+        post:
+            description: Adds a connection for which you already have an access token
+            responses:
+                '200':
+                    description: Successfully created an Integrations
+                '400':
+                    description: Invalid request
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    message:
+                                        type: string
+
     /connection/{connectionId}:
         get:
             description: Returns a specific Connection
