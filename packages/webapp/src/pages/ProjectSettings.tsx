@@ -187,7 +187,7 @@ export default function ProjectSettings() {
                                     {!webhookEditMode && (
                                         <div className="flex">
                                             <Prism language="bash" colorScheme="dark" className="w-full">
-                                                {webhookUrl}
+                                                {webhookUrl || '\u0000'}
                                             </Prism>
                                             <button
                                                 onClick={() => setWebhookEditMode(!webhookEditMode)}
