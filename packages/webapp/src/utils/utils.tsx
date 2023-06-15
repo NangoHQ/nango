@@ -1,5 +1,6 @@
 import parser from 'cron-parser';
 import ms from 'ms';
+import { FutureActionTimes } from '../types';
 
 export const localhostUrl: string = 'http://localhost:3003';
 export const stagingUrl: string = 'https://api-staging.nango.dev';
@@ -146,3 +147,40 @@ export function getIntervals(startOfDay: Date, interval: string, offset: number)
     return intervals;
 }
 
+function formatFutureRun(nextRun: FutureActionTimes): Date | undefined {
+    if (!nextRun || !nextRun.seconds) {
+        return;
+    }
+
+    let milliseconds = nextRun?.seconds * 1000;
+
+    if (nextRun.nanos) {
+        milliseconds += nextRun.nanos / 1000000;
+    }
+
+    const date = new Date(milliseconds);
+
+    return date;
+}
+
+export function interpretNextRun(futureRuns: FutureActionTimes[]) {
+    const [nextRun, nextNextRun] = futureRuns;
+    if (!nextRun || !nextRun.seconds) {
+        return '-';
+    }
+
+    const date = formatFutureRun(nextRun);
+
+    if (!date) {
+        return '-';
+    }
+
+    const nextDate = formatFutureRun(nextNextRun);
+
+    if (!nextDate) {
+    }
+
+    const nextRuns = [date, nextDate].map(d => d && formatDateToUSFormat(d.toISOString()));
+
+    return nextRuns;
+}

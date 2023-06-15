@@ -148,7 +148,7 @@ export function convertConfigObject(config: NangoConfig): SimplifiedNangoIntegra
                 models.push({ name: model, fields: [modelFields] });
             });
 
-            syncs.push({ name: syncName, runs: sync.runs, intervals: getIntervals(sync.runs, new Date()), returns: sync.returns, models });
+            syncs.push({ name: syncName, runs: sync.runs, returns: sync.returns, models });
         }
         output.push({ providerConfigKey, syncs });
     }
@@ -196,45 +196,4 @@ export function getInterval(runs: string, date: Date): { interval: string; offse
     const offset = getOffset(interval, date);
 
     return { interval, offset };
-}
-
-export function getIntervals(runs: string, date: Date) {
-    const { interval, offset } = getInterval(runs, date);
-
-    const msInterval = ms(interval);
-    const startOfDay = new Date(date);
-    startOfDay.setHours(0, 0, 0, 0);
-
-    const intervals = [];
-    let start = offset;
-
-    while (start < 86400000) {
-        const currentTimestamp = startOfDay.getTime() + start;
-        const currentDateTime = new Date(currentTimestamp);
-
-        intervals.push({
-            ms: currentTimestamp,
-            readable: formatDateToUSFormat(currentDateTime.toISOString())
-        });
-
-        start += msInterval;
-    }
-
-    return intervals;
-}
-
-function formatDateToUSFormat(dateString: string): string {
-    const date = new Date(dateString);
-    const options: Intl.DateTimeFormatOptions = {
-        month: 'long',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-        second: 'numeric',
-        hour12: true
-    };
-
-    const formattedDate = date.toLocaleString('en-US', options);
-
-    return formattedDate;
 }

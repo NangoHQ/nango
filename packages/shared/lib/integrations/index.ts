@@ -40,7 +40,6 @@ export interface NangoSyncModel {
 export interface NangoSyncConfig {
     name: string;
     runs: string;
-    cronExpression?: string;
     returns: string[];
     models: NangoSyncModel[];
 }
