@@ -18,11 +18,6 @@ export interface ActivityResponse {
     operation_name?: string;
 }
 
-export interface FutureActionTimes {
-    seconds?: number;
-    nanos?: number;
-}
-
 export interface SyncResponse {
     id: number;
     created_at: string;
@@ -30,7 +25,7 @@ export interface SyncResponse {
     name: string;
     models: string[];
     frequency: string;
-    futureActionTimes: FutureActionTimes[];
+    futureActionTimes: number[];
     offset: number;
     schedule_status: 'RUNNING' | 'PAUSED' | 'STOPPED';
     schedule_id: string;

@@ -182,6 +182,26 @@ export class NangoError extends Error {
                 this.message = 'Reset password token expired on unknown.';
                 break;
 
+            case 'missing_required_fields_on_deploy':
+                this.status = 400;
+                this.message = 'Sync name, provider config key, the file, the models, and the runs fields are required to deploy a sync';
+                break;
+
+            case 'file_upload_error':
+                this.status = 400;
+                this.message = 'Error uploading file. Please contact support with the filename and connection details';
+                break;
+
+            case 'empty_insert_data_on_deploy':
+                this.status = 400;
+                this.message = 'The data to insert for a deploy is empty. Please try again or reach out to support with the sync name and connection details';
+                break;
+
+            case 'error_creating_sync_config':
+                this.status = 400;
+                this.message = 'Error creating sync config from a deploy. Please contact support with the sync name and connection details';
+                break;
+
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;

@@ -41,7 +41,7 @@ export default function Activity() {
     const [loaded, setLoaded] = useState(false);
     const [activities, setActivities] = useState([]);
     const [expandedRow, setExpandedRow] = useState(-1);
-    const [limit, _setLimit] = useState(30);
+    const [limit,] = useState(30);
     const [offset, setOffset] = useState(0);
 
       const location = useLocation();
@@ -70,7 +70,7 @@ export default function Activity() {
             getActivity();
         }
 
-    }, [getActivityAPI, loaded, setLoaded]);
+    }, [getActivityAPI, loaded, setLoaded, limit, offset]);
 
 
     useEffect(() => {

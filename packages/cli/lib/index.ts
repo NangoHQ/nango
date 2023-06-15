@@ -259,8 +259,9 @@ program
                 .then((_) => {
                     console.log(chalk.green(`Successfully deployed the syncs!`));
                 })
-                .catch((_err) => {
-                    console.log(chalk.red(`Error deploying the syncs`));
+                .catch((err) => {
+                    const errorMessage = JSON.stringify(err.response.data, null, 2);
+                    console.log(chalk.red(`Error deploying the syncs with the following error: ${errorMessage}}`));
                 });
         })(options as DeployOptions);
     });

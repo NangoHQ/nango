@@ -1,6 +1,4 @@
 import parser from 'cron-parser';
-import ms from 'ms';
-import { FutureActionTimes } from '../types';
 
 export const localhostUrl: string = 'http://localhost:3003';
 export const stagingUrl: string = 'https://api-staging.nango.dev';
@@ -113,59 +111,21 @@ export function parseCron(frequency: string): string {
     return formatDateToUSFormat(interval.next().toISOString());
 };
 
-/**
- * Compute Next Run
- * @desc given the start time, the interval and the offset, generate an array of
- * all intervals and figure out where the next run is
- */
-export function computeNextRun(startTime: Date, interval: string, offset: number): string {
-    const intervals = getIntervals(startTime, interval, offset);
-
-    const now = new Date();
-    const index = intervals.findIndex(number => now.getTime() <= number);
-    const nextRunTimeInMs = intervals[index];
-    const nextRunTime = new Date(nextRunTimeInMs);
-
-    return formatDateToUSFormat(nextRunTime.toISOString());
-}
-
-// TODO fix this, for a sync every 24 hours
-export function getIntervals(startOfDay: Date, interval: string, offset: number): number[] {
-    const msInterval = ms(interval);
-    startOfDay.setHours(0, 0, 0, 0);
-
-    const intervals = [];
-    let start = offset;
-
-    while (start < 86400000 * 365) {
-        const currentTimestamp = startOfDay.getTime() + start;
-
-        intervals.push(currentTimestamp);
-        start += msInterval;
-    }
-
-    return intervals;
-}
-
-function formatFutureRun(nextRun: FutureActionTimes): Date | undefined {
-    if (!nextRun || !nextRun.seconds) {
+function formatFutureRun(nextRun: number): Date | undefined {
+    if (!nextRun) {
         return;
     }
 
-    let milliseconds = nextRun?.seconds * 1000;
-
-    if (nextRun.nanos) {
-        milliseconds += nextRun.nanos / 1000000;
-    }
+    let milliseconds = Number(nextRun) * 1000;
 
     const date = new Date(milliseconds);
 
     return date;
 }
 
-export function interpretNextRun(futureRuns: FutureActionTimes[]) {
+export function interpretNextRun(futureRuns: number[]) {
     const [nextRun, nextNextRun] = futureRuns;
-    if (!nextRun || !nextRun.seconds) {
+    if (!nextRun) {
         return '-';
     }
 
@@ -176,9 +136,6 @@ export function interpretNextRun(futureRuns: FutureActionTimes[]) {
     }
 
     const nextDate = formatFutureRun(nextNextRun);
-
-    if (!nextDate) {
-    }
 
     const nextRuns = [date, nextDate].map(d => d && formatDateToUSFormat(d.toISOString()));
 
