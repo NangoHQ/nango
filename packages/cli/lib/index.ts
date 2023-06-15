@@ -123,7 +123,8 @@ program
 
 program
     .command('tsc:watch')
-    .command('compile:watch')
+    .alias('compile:watch')
+    .alias('tscw')
     .description('Watch tsc files while developing. Set --no-compile-interfaces to disable watching the config file')
     .option('--no-compile-interfaces', `Watch the ${nangoConfigFile} and recompile the interfaces on change`, true)
     .action(async function (this: Command) {
