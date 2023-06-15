@@ -107,6 +107,12 @@ export function getIntegrationFile(syncName: string, setIntegrationPath?: string
     }
 }
 
+export function getRootDir(optionalLoadLocation?: string) {
+    const loadLocation = optionalLoadLocation || path.resolve(__dirname, '../nango-integrations/dist');
+
+    return loadLocation;
+}
+
 export async function getIntegrationClass(syncName: string, setIntegrationPath?: string) {
     try {
         const filePath = setIntegrationPath || path.resolve(__dirname, `../nango-integrations/dist/${syncName}.${SYNC_FILE_EXTENSION}`);
