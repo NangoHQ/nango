@@ -63,7 +63,7 @@ nango.auth('github', '<user-id>');
 
 -   1-liner to fetch structured objects from any external API:
 
-````js
+```js
 nango.getRecords({
     providerConfigKey: 'github',
     connectionId: '<user-id>',
