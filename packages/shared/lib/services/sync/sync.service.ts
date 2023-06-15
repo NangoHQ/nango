@@ -103,7 +103,7 @@ export const getSyncsFlat = async (nangoConnectionId: number): Promise<SyncWithS
 export const getSyncs = async (nangoConnectionId: number): Promise<Sync[]> => {
     const syncClient = await SyncClient.getInstance();
 
-    if (!syncClient) {
+    if (!syncClient || !nangoConnectionId) {
         return [];
     }
 
@@ -111,6 +111,7 @@ export const getSyncs = async (nangoConnectionId: number): Promise<Sync[]> => {
     if (scheduleResponse?.schedules.length === 0) {
         await markAllAsStopped();
     }
+
     const result = await schema()
         .from<Sync>(TABLE)
         .select(
@@ -149,8 +150,19 @@ export const getSyncs = async (nangoConnectionId: number): Promise<Sync[]> => {
             `${SYNC_SCHEDULE_TABLE}.schedule_id`
         );
 
-    if (Array.isArray(result) && result.length > 0) {
-        return result;
+    const syncsWithSchedule = result.map((sync) => {
+        const { schedule_id } = sync;
+        const schedule = scheduleResponse?.schedules.find((schedule) => schedule.scheduleId === schedule_id);
+        const futureActionTimes = schedule?.info?.futureActionTimes?.map((long) => long?.seconds?.toNumber());
+
+        return {
+            ...sync,
+            futureActionTimes
+        };
+    });
+
+    if (Array.isArray(syncsWithSchedule) && syncsWithSchedule.length > 0) {
+        return syncsWithSchedule;
     }
 
     return [];

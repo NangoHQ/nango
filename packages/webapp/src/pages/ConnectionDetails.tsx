@@ -13,7 +13,7 @@ import Button from '../components/ui/button/Button';
 import Typography from '../components/ui/typography/Typography';
 import SecretInput from '../components/ui/input/SecretInput';
 import type { SyncResponse, RunSyncCommand } from '../types';
-import { formatDateToUSFormat, computeNextRun } from '../utils/utils';
+import { formatDateToUSFormat, interpretNextRun } from '../utils/utils';
 
 interface Connection {
     id: number;
@@ -486,12 +486,23 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                         <li className="w-36 ml-1 text-gray-500 text-sm">{formatDateToUSFormat(sync.latest_sync.updated_at)}</li>
                                                     )}
                                                 </Tooltip>
-                                                {sync.schedule_status === 'RUNNING' && sync.offset && (
-                                                    <li className="ml-4 w-36 text-sm text-gray-500">
-                                                        {computeNextRun(new Date(), sync.frequency, sync.offset)}
-                                                    </li>
+                                                {sync.schedule_status === 'RUNNING' && (
+                                                    <>
+                                                        {interpretNextRun(sync.futureActionTimes) === '-' ? (
+                                                            <li className="ml-4 w-36 text-sm text-gray-500">-</li>
+                                                        ) : (
+                                                            <Tooltip text={interpretNextRun(sync.futureActionTimes)[1]} type="dark">
+                                                                <li className="ml-4 w-36 text-sm text-gray-500">{interpretNextRun(sync.futureActionTimes)[0]}</li>
+                                                            </Tooltip>
+                                                        )}
+                                                    </>
                                                 )}
-                                                {sync.schedule_status === 'RUNNING' && !sync.offset && <li className="ml-4 w-36 text-sm text-gray-500">-</li>}
+                                                {sync.schedule_status === 'RUNNING' && !sync.futureActionTimes && (
+                                                    <li className="ml-4 w-36 text-sm text-gray-500">-</li>
+                                                )}
+                                                {sync.schedule_status !== 'RUNNING' && (
+                                                    <li className="ml-4 w-36 text-sm text-gray-500">-</li>
+                                                )}
                                                 {sync.schedule_status !== 'RUNNING' && <li className="ml-4 w-36 text-sm text-gray-500">-</li>}
                                                 <li className="flex ml-8">
                                                     <button

@@ -1,6 +1,6 @@
 import { NodeVM } from 'vm2';
 import type { NangoIntegrationData } from '../../integrations/index.js';
-import { getIntegrationFile } from '../nango-config.service.js';
+import { getIntegrationFile, getRootDir } from '../nango-config.service.js';
 import { createActivityLogMessage } from '../activity.service.js';
 import type { NangoSync } from '../../sdk/sync.js';
 import fileService from '../file.service.js';
@@ -51,12 +51,12 @@ class IntegrationService {
                     sandbox: { nango },
                     require: {
                         external: true,
-                        builtin: ['url', 'crypto'],
-                        root: './'
+                        builtin: ['url', 'crypto']
                     }
                 });
 
-                const scriptExports = vm.run(script as string);
+                const rootDir = getRootDir(optionalLoadLocation);
+                const scriptExports = vm.run(script as string, `${rootDir}/*.js`);
 
                 if (typeof scriptExports.default === 'function') {
                     const results = await scriptExports.default(nango);

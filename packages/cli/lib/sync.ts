@@ -181,7 +181,7 @@ export const tscWatch = () => {
 
     const watcher = chokidar.watch(watchPath, {
         ignoreInitial: false,
-        ignored: (filePath) => {
+        ignored: (filePath: string) => {
             return filePath === `${rawNangoIntegrationLocation}/models.ts`;
         }
     });
@@ -192,14 +192,20 @@ export const tscWatch = () => {
         fs.mkdirSync(distDir);
     }
 
-    watcher.on('add', (filePath) => {
+    watcher.on('add', (filePath: string) => {
         if (filePath === `${rawNangoIntegrationLocation}/${nangoConfigFile}`) {
             return;
         }
         compileFile(filePath);
     });
 
-    watcher.on('change', (filePath) => {
+    watcher.on('unlink', (filePath: string) => {
+        const jsFilePath = path.join(path.dirname(filePath), path.basename(filePath, '.ts') + '.js');
+        const distJSFilePath = jsFilePath.replace(rawNangoIntegrationLocation, `${rawNangoIntegrationLocation}/dist`);
+        fs.unlinkSync(distJSFilePath);
+    });
+
+    watcher.on('change', (filePath: string) => {
         if (filePath === `${rawNangoIntegrationLocation}/${nangoConfigFile}`) {
             // config file changed, re-compile each ts file
             const integrationFiles = glob.sync(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/*.ts`));

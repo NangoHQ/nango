@@ -8,6 +8,7 @@ import { updateSyncJobResult } from '../services/sync/job.service.js';
 import type { UpsertResponse } from '../models/Data.js';
 import type { ProxyConfiguration } from '../models/Proxy.js';
 import type { LogLevel } from '../models/Activity.js';
+import type { SyncResult } from '../models/Sync.js';
 
 import { Nango } from './index.js';
 
@@ -172,8 +173,9 @@ export class NangoSync {
             this.activityLogId as number
         );
 
-        if (responseResults) {
-            const updatedResults = { added: responseResults.addedKeys.length, updated: responseResults.updatedKeys.length };
+        if (responseResults.success) {
+            const { summary } = responseResults;
+            const updatedResults = { added: summary?.addedKeys.length, updated: summary?.updatedKeys.length };
 
             await createActivityLogMessage({
                 level: 'info',
@@ -182,14 +184,14 @@ export class NangoSync {
                 timestamp: Date.now()
             });
 
-            await updateSyncJobResult(this.syncJobId as number, updatedResults);
+            await updateSyncJobResult(this.syncJobId as number, updatedResults as SyncResult);
 
             return responseResults;
         } else {
             await createActivityLogMessage({
                 level: 'error',
                 activity_log_id: this.activityLogId as number,
-                content: `There was an issue with the batch send`,
+                content: `There was an issue with the batch send. ${responseResults?.error}`,
                 timestamp: Date.now()
             });
 

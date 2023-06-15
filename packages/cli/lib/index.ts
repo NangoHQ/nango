@@ -14,13 +14,29 @@ import { fileURLToPath } from 'url';
 import yaml from 'js-yaml';
 import ejs from 'ejs';
 import * as dotenv from 'dotenv';
+import promptly from 'promptly';
 
 import type { NangoConfig, NangoIntegration, NangoIntegrationData } from '@nangohq/shared';
 import { nangoConfigFile, loadSimplifiedConfig, checkForIntegrationFile } from '@nangohq/shared';
 import { init, run, tsc, tscWatch, configWatch, dockerRun } from './sync.js';
 import { hostport, checkEnvVars, enrichHeaders, httpsAgent, NANGO_INTEGRATIONS_LOCATION, buildInterfaces, setCloudHost, setStagingHost } from './utils.js';
 
-const program = new Command();
+interface GlobalOptions {
+    secretKey?: string;
+    host?: string;
+}
+
+class NangoCommand extends Command {
+    override createCommand(name: string) {
+        const cmd = new Command(name);
+        cmd.option('-sk, --secret-key [secretKey]', 'Set the secret key. Overrides the `NANGO_SECRET_KEY` value set in the .env file');
+        cmd.option('-h, --host [host]', 'Set the host. Overrides the `NANGO_HOSTPORT` value set in the .env file');
+
+        return cmd;
+    }
+}
+
+const program = new NangoCommand();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -99,6 +115,7 @@ program
 
 program
     .command('tsc')
+    .alias('compile')
     .description('Compile the integration files to JavaScript')
     .action(() => {
         tsc();
@@ -106,6 +123,8 @@ program
 
 program
     .command('tsc:watch')
+    .alias('compile:watch')
+    .alias('tscw')
     .description('Watch tsc files while developing. Set --no-compile-interfaces to disable watching the config file')
     .option('--no-compile-interfaces', `Watch the ${nangoConfigFile} and recompile the interfaces on change`, true)
     .action(async function (this: Command) {
@@ -120,6 +139,7 @@ program
 
 program
     .command('docker:run')
+    .alias('dr')
     .description('Run the docker container locally')
     .action(() => {
         dockerRun();
@@ -136,80 +156,114 @@ program
         dockerRun();
     });
 
+interface DeployOptions extends GlobalOptions {
+    staging: boolean;
+    version?: string;
+    sync?: string;
+}
+
 program
     .command('deploy')
     .alias('d')
     .description('Deploy a Nango integration')
     .option('--staging', 'Deploy to the staging instance')
-    .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integraion with. Can be used for rollbacks.')
+    .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integration with. Can be used for rollbacks.')
     .option('-s, --sync [syncName]', 'Optional deploy only this sync name.')
     .action(async function (this: Command) {
-        const { staging, version } = this.opts();
+        const options = this.opts();
+        (async (options: DeployOptions) => {
+            const { staging, version, sync: optionalSyncName, secretKey, host } = options;
 
-        if (!process.env['NANGO_HOSTPORT']) {
-            if (staging) {
-                setStagingHost();
-            } else {
-                setCloudHost();
+            if (host) {
+                process.env['NANGO_HOSTPORT'] = host;
             }
-        }
 
-        if (hostport !== 'http://localhost:3003' && !process.env['NANGO_SECRET_KEY']) {
-            console.log(chalk.red(`NANGO_SECRET_KEY environment variable is not set`));
-            return;
-        }
+            if (secretKey) {
+                process.env['NANGO_SECRET_KEY'] = secretKey;
+            }
 
-        checkEnvVars();
-        tsc();
+            if (!process.env['NANGO_HOSTPORT']) {
+                if (staging) {
+                    setStagingHost();
+                } else {
+                    setCloudHost();
+                }
+            }
 
-        const cwd = process.cwd();
-        const config = await loadSimplifiedConfig(path.resolve(cwd, NANGO_INTEGRATIONS_LOCATION));
+            if (hostport !== 'http://localhost:3003' && !process.env['NANGO_SECRET_KEY']) {
+                console.log(chalk.red(`NANGO_SECRET_KEY environment variable is not set. Please set it now`));
+                try {
+                    const secretKey = await promptly.prompt('Secret Key: ');
+                    if (secretKey) {
+                        process.env['NANGO_SECRET_KEY'] = secretKey;
+                    } else {
+                        return;
+                    }
+                } catch (error) {
+                    console.log('Error occurred while trying to prompt for secret key:', error);
+                    return;
+                }
+            }
 
-        if (!config) {
-            throw new Error(`Error loading the ${nangoConfigFile} file`);
-        }
+            checkEnvVars();
+            tsc();
 
-        const postData = [];
+            const cwd = process.cwd();
+            const config = await loadSimplifiedConfig(path.resolve(cwd, NANGO_INTEGRATIONS_LOCATION));
 
-        for (const integration of config) {
-            const { providerConfigKey, syncs } = integration;
+            if (!config) {
+                throw new Error(`Error loading the ${nangoConfigFile} file`);
+            }
 
-            for (const sync of syncs) {
-                const { name: syncName, runs, returns: models, models: model_schema } = sync;
-                const { path: integrationFilePath, result: integrationFileResult } = checkForIntegrationFile(
-                    syncName,
-                    path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}`)
-                );
+            const postData = [];
 
-                if (!integrationFileResult) {
-                    console.log(chalk.red(`No integration file found for ${syncName} at ${integrationFilePath}. Skipping...`));
-                    continue;
+            for (const integration of config) {
+                const { providerConfigKey } = integration;
+                let { syncs } = integration;
+
+                if (optionalSyncName) {
+                    syncs = syncs.filter((sync) => sync.name === optionalSyncName);
                 }
 
-                const body = {
-                    syncName,
-                    providerConfigKey,
-                    models,
-                    version,
-                    runs,
-                    fileBody: fs.readFileSync(integrationFilePath, 'utf8'),
-                    model_schema: JSON.stringify(model_schema)
-                };
+                for (const sync of syncs) {
+                    const { name: syncName, runs, returns: models, models: model_schema } = sync;
 
-                postData.push(body);
+                    const { path: integrationFilePath, result: integrationFileResult } = checkForIntegrationFile(
+                        syncName,
+                        path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}`)
+                    );
+
+                    if (!integrationFileResult) {
+                        console.log(chalk.red(`No integration file found for ${syncName} at ${integrationFilePath}. Skipping...`));
+                        continue;
+                    }
+
+                    const body = {
+                        syncName,
+                        providerConfigKey,
+                        models,
+                        version,
+                        runs,
+                        fileBody: fs.readFileSync(integrationFilePath, 'utf8'),
+                        model_schema: JSON.stringify(model_schema)
+                    };
+
+                    postData.push(body);
+                }
             }
-        }
 
-        const url = hostport + `/sync/deploy`;
+            const url = hostport + `/sync/deploy`;
 
-        await axios
-            .post(url, postData, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
-            .then((_) => {
-                console.log(chalk.green(`Successfully deployed the syncs!`));
-            })
-            .catch((_err) => {
-                console.log(chalk.red(`Error deploying the syncs`));
-            });
+            await axios
+                .post(url, postData, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
+                .then((_) => {
+                    console.log(chalk.green(`Successfully deployed the syncs!`));
+                })
+                .catch((err) => {
+                    const errorMessage = JSON.stringify(err.response.data, null, 2);
+                    console.log(chalk.red(`Error deploying the syncs with the following error: ${errorMessage}}`));
+                });
+        })(options as DeployOptions);
     });
 
 program

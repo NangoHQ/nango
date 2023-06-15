@@ -1,6 +1,6 @@
 import { ReactElement, useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Clock, ArrowRight, Slash, CheckInCircle, AlertCircle, Link as LinkIcon, RefreshCw } from '@geist-ui/icons'
+import { ChevronsLeft, Clock, ArrowRight, Slash, CheckInCircle, AlertCircle, Link as LinkIcon, RefreshCw } from '@geist-ui/icons'
 import { Tooltip } from '@geist-ui/core';
 import queryString from 'query-string';
 
@@ -41,6 +41,8 @@ export default function Activity() {
     const [loaded, setLoaded] = useState(false);
     const [activities, setActivities] = useState([]);
     const [expandedRow, setExpandedRow] = useState(-1);
+    const [limit,] = useState(30);
+    const [offset, setOffset] = useState(0);
 
       const location = useLocation();
       const queryParams = queryString.parse(location.search);
@@ -50,7 +52,7 @@ export default function Activity() {
 
     useEffect(() => {
         const getActivity = async () => {
-            const res = await getActivityAPI();
+            const res = await getActivityAPI(limit, offset);
 
             if (res?.status === 200) {
                 try {
@@ -68,7 +70,7 @@ export default function Activity() {
             getActivity();
         }
 
-    }, [getActivityAPI, loaded, setLoaded]);
+    }, [getActivityAPI, loaded, setLoaded, limit, offset]);
 
 
     useEffect(() => {
@@ -76,6 +78,27 @@ export default function Activity() {
         setExpandedRow(parseInt(activityLogId));
       }
     }, [activityLogId]);
+
+    const incrementPage = () => {
+        if (activities.length < limit) {
+            return;
+        }
+
+        setOffset(offset + limit);
+        setLoaded(false);
+    };
+
+    const decrementPage = () => {
+        if (offset - limit >= 0) {
+            setOffset(offset - limit);
+            setLoaded(false);
+        }
+    };
+
+    const resetOffset = () => {
+        setOffset(0);
+        setLoaded(false);
+    };
 
     const renderParams = (params: Record<string, string>) => {
         return Object.entries(params).map(([key, value]) => (
@@ -89,7 +112,7 @@ export default function Activity() {
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Activity}>
             <div className="max-w-screen-xl px-16 w-fit mx-auto">
-                <div className="flex items-center mt-16 mb-12">
+                <div className="flex items-center mt-16 mb-6">
                     <div className="flex flex-col text-left">
                         <span className="flex items-center mb-3">
                             <h2 className="text-3xl font-semibold tracking-tight text-white mr-4">Activity</h2>
@@ -109,6 +132,19 @@ export default function Activity() {
                     </div>
                 )}
                 {activities.length > 0 && (
+                    <>
+                    <div className="flex justify-end mb-4 items-center">
+                        {offset >= limit * 3 && (
+                            <ChevronsLeft onClick={resetOffset} className="flex stroke-white cursor-pointer mr-3" size="16" />
+                        )}
+                        <span onClick={decrementPage} className={`flex ${offset - limit >= 0 ? 'cursor-pointer hover:bg-gray-700' : ''} h-8 mr-2 rounded-md px-3 pt-1.5 text-sm text-white bg-gray-800`}>
+                          <svg aria-hidden="true" className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M7.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l2.293 2.293a1 1 0 010 1.414z" clip-rule="evenodd"></path></svg>
+                        </span>
+                        <span onClick={incrementPage} className={`flex ${activities.length < limit ? '' : 'cursor-pointer hover:bg-gray-700'} h-8 rounded-md px-3 pt-1.5 text-sm text-white bg-gray-800`}>
+                          <svg aria-hidden="true" className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                        </span>
+                    </div>
+
                     <div className="h-fit border border-border-gray rounded-md text-white text-sm">
                         <table className="table-auto">
                             <tbody className="px-4">
@@ -267,6 +303,7 @@ export default function Activity() {
                             </tbody>
                         </table>
                     </div>
+                </>
                 )}
             </div>
         </DashboardLayout>

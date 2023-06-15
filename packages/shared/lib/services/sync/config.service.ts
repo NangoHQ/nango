@@ -5,6 +5,7 @@ import { updateSyncScheduleFrequency } from './schedule.service.js';
 import type { IncomingSyncConfig, SyncConfig } from '../../models/Sync.js';
 import type { NangoConnection } from '../../models/Connection.js';
 import type { NangoConfig } from '../../integrations/index.js';
+import { NangoError } from '../../utils/error.js';
 import { getEnv } from '../../utils/utils.js';
 
 const TABLE = dbNamespace + 'sync_configs';
@@ -15,12 +16,13 @@ export async function createSyncConfig(account_id: number, syncs: IncomingSyncCo
     for (const sync of syncs) {
         const { syncName, providerConfigKey, fileBody, models, runs, version: optionalVersion, model_schema } = sync;
         if (!syncName || !providerConfigKey || !fileBody || !models || !runs) {
-            continue;
+            throw new NangoError('missing_required_fields_on_deploy');
         }
+
         const config = await configService.getProviderConfig(providerConfigKey, account_id);
 
         if (!config) {
-            continue;
+            throw new NangoError('unknown_provider_config');
         }
 
         const previousSyncConfig = await getSyncConfigByParams(account_id, syncName, providerConfigKey);
@@ -39,14 +41,17 @@ export async function createSyncConfig(account_id: number, syncs: IncomingSyncCo
 
         const version = optionalVersion || bumpedVersion || '1';
 
-        await schema().from(TABLE).where({ account_id, nango_config_id: config.id, sync_name: syncName }).update({ active: false });
-
         const env = getEnv();
         const file_location = await fileService.upload(fileBody, `${env}/account/${account_id}/config/${config.id}/${syncName}-v${version}.js`);
 
         if (!file_location) {
-            continue;
+            throw new NangoError('file_upload_error');
         }
+
+        await schema()
+            .from<SyncConfig>(TABLE)
+            .where({ account_id, nango_config_id: config.id as number, sync_name: syncName })
+            .update({ active: false });
 
         insertData.push({
             account_id,
@@ -61,13 +66,17 @@ export async function createSyncConfig(account_id: number, syncs: IncomingSyncCo
         });
     }
 
+    if (insertData.length === 0) {
+        throw new NangoError('empty_insert_data_on_deploy');
+    }
+
     try {
         const result = await schema().from<SyncConfig>(TABLE).insert(insertData).returning(['id', 'version']);
 
         return result;
     } catch (e) {
         console.log(e);
-        return null;
+        throw new NangoError('error_creating_sync_config');
     }
 }
 

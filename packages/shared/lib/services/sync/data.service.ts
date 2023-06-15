@@ -14,13 +14,16 @@ export async function upsert(
     nangoConnectionId: number,
     model: string,
     activityLogId: number
-): Promise<UpsertResponse | null> {
+): Promise<UpsertResponse> {
     const responseWithoutDuplicates = await removeDuplicateKey(response, uniqueKey, activityLogId, model);
     const addedKeys = await getAddedKeys(responseWithoutDuplicates, dbTable, uniqueKey, nangoConnectionId, model);
     const updatedKeys = await getUpdatedKeys(responseWithoutDuplicates, dbTable, uniqueKey, nangoConnectionId, model);
 
     if (responseWithoutDuplicates.length === 0) {
-        return null;
+        return {
+            success: false,
+            error: 'There are no records to upsert because there were no records that were not duplicates to insert'
+        };
     }
 
     try {
@@ -34,11 +37,29 @@ export async function upsert(
         const affectedInternalIds = results.map((tuple) => tuple.id) as string[];
         const affectedExternalIds = results.map((tuple) => tuple.external_id) as string[];
 
-        return { addedKeys, updatedKeys, affectedInternalIds, affectedExternalIds };
-    } catch (e) {
-        console.log(e);
+        return {
+            success: true,
+            summary: {
+                addedKeys,
+                updatedKeys,
+                affectedInternalIds,
+                affectedExternalIds
+            }
+        };
+    } catch (error: any) {
+        let errorMessage = `Failed to upsert records to table ${dbTable}.\n`;
+        errorMessage += `Model: ${model}, Unique Key: ${uniqueKey}, Nango Connection ID: ${nangoConnectionId}.\n`;
+        errorMessage += `Attempted to insert/update: ${responseWithoutDuplicates.length} records\n`;
 
-        return null;
+        if ('code' in error) errorMessage += `Error code: ${error.code}.\n`;
+        if ('detail' in error) errorMessage += `Detail: ${error.detail}.\n`;
+
+        errorMessage += `Error Message: ${error.message}`;
+
+        return {
+            success: false,
+            error: errorMessage
+        };
     }
 }
 

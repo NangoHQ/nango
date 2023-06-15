@@ -26,6 +26,10 @@ export interface Sync extends Timestamps {
     nango_connection_id: number;
     name: string;
     models: string[];
+    futureActionTimes?: {
+        seconds?: number;
+        nanos?: number;
+    };
 }
 
 export interface Job extends Timestamps {
