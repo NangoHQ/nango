@@ -69,6 +69,7 @@ nango.getRecords({
     connectionId: '<user-id>',
     model: 'GithubIssues', // Or anything else you want to sync
 });
+```
 
 ## Get started with Nango 🚀
 
