@@ -489,7 +489,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                 {sync.schedule_status === 'RUNNING' && (
                                                     <>
                                                         {interpretNextRun(sync.futureActionTimes) === '-' ? (
-                                                            <li className="ml-4 w-36 text-sm text-gray-500">{interpretNextRun(sync.futureActionTimes)}</li>
+                                                            <li className="ml-4 w-36 text-sm text-gray-500">-</li>
                                                         ) : (
                                                             <Tooltip text={interpretNextRun(sync.futureActionTimes)[1]} type="dark">
                                                                 <li className="ml-4 w-36 text-sm text-gray-500">{interpretNextRun(sync.futureActionTimes)[0]}</li>
@@ -497,13 +497,12 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                         )}
                                                     </>
                                                 )}
-                                                {sync.schedule_status === 'RUNNING' && !sync.offset && (
+                                                {sync.schedule_status === 'RUNNING' && !sync.futureActionTimes && (
                                                     <li className="ml-4 w-36 text-sm text-gray-500">-</li>
                                                 )}
                                                 {sync.schedule_status !== 'RUNNING' && (
                                                     <li className="ml-4 w-36 text-sm text-gray-500">-</li>
                                                 )}
-                                                {sync.schedule_status === 'RUNNING' && !sync.offset && <li className="ml-4 w-36 text-sm text-gray-500">-</li>}
                                                 {sync.schedule_status !== 'RUNNING' && <li className="ml-4 w-36 text-sm text-gray-500">-</li>}
                                                 <li className="flex ml-8">
                                                     <button

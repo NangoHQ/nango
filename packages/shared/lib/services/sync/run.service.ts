@@ -12,6 +12,7 @@ import integationService from './integration.service.js';
 import webhookService from '../webhook.service.js';
 import { NangoSync } from '../../sdk/sync.js';
 import { isCloud, getApiUrl } from '../../utils/utils.js';
+import errorManager from '../../utils/error.manager.js';
 import type { NangoIntegrationData, NangoConfig, NangoIntegration } from '../../integrations/index.js';
 import type { UpsertResponse, UpsertSummary } from '../../models/Data.js';
 import type { Account } from '../../models/Admin';
@@ -188,12 +189,11 @@ export default class SyncRun {
                             }
 
                             if (!upsertResult.success) {
-                                await createActivityLogMessage({
-                                    level: 'error',
-                                    activity_log_id: this.activityLogId,
-                                    content: `There was a problem upserting the data for ${this.syncName} and the model ${model}. The error message was ${upsertResult?.error}`,
-                                    timestamp: Date.now()
-                                });
+                                errorManager.report(upsertResult?.error, { accountId: this.nangoConnection.account_id as number });
+
+                                this.reportFailureForResults(`There was a problem upserting the data for ${this.syncName} and the model ${model}`);
+
+                                return false;
                             }
                         }
                     }
