@@ -420,9 +420,9 @@ export function useResetPasswordAPI() {
 }
 
 export function useActivityAPI() {
-    return async () => {
+    return async (limit: number, offset: number) => {
         try {
-            let res = await fetch(`/api/v1/activity`, {
+            let res = await fetch(`/api/v1/activity?limit=${limit}&offset=${offset}`, {
                 method: 'GET',
                 headers: getHeaders(),
             });

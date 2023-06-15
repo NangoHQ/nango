@@ -7,8 +7,10 @@ import { getLogsByAccount } from '@nangohq/shared';
 class ActivityController {
     public async retrieve(req: Request, res: Response, next: NextFunction) {
         try {
+            const limit = req.query['limit'] ? parseInt(req.query['limit'] as string) : 30;
+            const offset = req.query['offset'] ? parseInt(req.query['offset'] as string) : 0;
             const account = (await getUserAndAccountFromSession(req)).account;
-            const logs = await getLogsByAccount(account.id);
+            const logs = await getLogsByAccount(account.id, limit, offset);
             res.send(logs);
         } catch (error) {
             next(error);
