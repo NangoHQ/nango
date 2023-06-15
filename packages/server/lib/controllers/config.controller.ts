@@ -1,10 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
-import { configService, Config as ProviderConfig } from '@nangohq/shared';
-import analytics from '../utils/analytics.js';
-import { getAccount, getUserAndAccountFromSession, parseConnectionConfigParamsFromTemplate } from '../utils/utils.js';
-import errorManager from '../utils/error.manager.js';
-import connectionService from '../services/connection.service.js';
-import { NangoError } from '../utils/error.js';
+import { errorManager, NangoError, getAccount, analytics, configService, Config as ProviderConfig, connectionService } from '@nangohq/shared';
+import { getUserAndAccountFromSession, parseConnectionConfigParamsFromTemplate } from '../utils/utils.js';
 
 interface Integration {
     uniqueKey: string;
@@ -54,7 +50,7 @@ class ConfigController {
 
     async createProviderConfigWeb(req: Request, res: Response, next: NextFunction) {
         try {
-            let account = (await getUserAndAccountFromSession(req)).account;
+            const account = (await getUserAndAccountFromSession(req)).account;
 
             if (req.body == null) {
                 errorManager.errRes(res, 'missing_body');
@@ -71,7 +67,7 @@ class ConfigController {
                 return;
             }
 
-            let provider = req.body['provider'];
+            const provider = req.body['provider'];
 
             if (!configService.checkProviderTemplateExists(provider)) {
                 errorManager.errRes(res, 'unknown_provider_template');
@@ -88,14 +84,14 @@ class ConfigController {
                 return;
             }
 
-            let uniqueConfigKey = req.body['provider_config_key'];
+            const uniqueConfigKey = req.body['provider_config_key'];
 
             if ((await configService.getProviderConfig(uniqueConfigKey, account.id)) != null) {
                 errorManager.errRes(res, 'duplicate_provider_config');
                 return;
             }
 
-            let config: ProviderConfig = {
+            const config: ProviderConfig = {
                 unique_key: uniqueConfigKey,
                 provider: provider,
                 oauth_client_id: req.body['client_id'],
@@ -123,7 +119,7 @@ class ConfigController {
 
     async editProviderConfigWeb(req: Request, res: Response, next: NextFunction) {
         try {
-            let account = (await getUserAndAccountFromSession(req)).account;
+            const account = (await getUserAndAccountFromSession(req)).account;
 
             if (req.body == null) {
                 errorManager.errRes(res, 'missing_body');
@@ -148,7 +144,7 @@ class ConfigController {
                 return;
             }
 
-            let newConfig: ProviderConfig = {
+            const newConfig: ProviderConfig = {
                 unique_key: req.body['provider_config_key'],
                 provider: req.body['provider'],
                 oauth_client_id: req.body['client_id'],
@@ -157,7 +153,7 @@ class ConfigController {
                 account_id: account.id
             };
 
-            let oldConfig = await configService.getProviderConfig(newConfig.unique_key, account.id);
+            const oldConfig = await configService.getProviderConfig(newConfig.unique_key, account.id);
 
             if (oldConfig == null) {
                 errorManager.errRes(res, 'unknown_provider_config');
@@ -173,8 +169,8 @@ class ConfigController {
 
     async deleteProviderConfigWeb(req: Request, res: Response, next: NextFunction) {
         try {
-            let account = (await getUserAndAccountFromSession(req)).account;
-            let providerConfigKey = req.params['providerConfigKey'] as string;
+            const account = (await getUserAndAccountFromSession(req)).account;
+            const providerConfigKey = req.params['providerConfigKey'] as string;
 
             if (providerConfigKey == null) {
                 errorManager.errRes(res, 'missing_provider_config');
@@ -191,15 +187,15 @@ class ConfigController {
 
     async getProviderConfigWeb(req: Request, res: Response, next: NextFunction) {
         try {
-            let account = (await getUserAndAccountFromSession(req)).account;
-            let providerConfigKey = req.params['providerConfigKey'] as string;
+            const account = (await getUserAndAccountFromSession(req)).account;
+            const providerConfigKey = req.params['providerConfigKey'] as string;
 
             if (providerConfigKey == null) {
                 errorManager.errRes(res, 'missing_provider_config');
                 return;
             }
 
-            let config = await configService.getProviderConfig(providerConfigKey, account.id);
+            const config = await configService.getProviderConfig(providerConfigKey, account.id);
 
             if (config == null) {
                 errorManager.errRes(res, 'unknown_provider_config');
@@ -226,9 +222,9 @@ class ConfigController {
 
     async listProviderConfigs(_: Request, res: Response, next: NextFunction) {
         try {
-            let accountId = getAccount(res);
-            let configs = await configService.listProviderConfigs(accountId);
-            let results = configs.map((c: ProviderConfig) => ({ unique_key: c.unique_key, provider: c.provider }));
+            const accountId = getAccount(res);
+            const configs = await configService.listProviderConfigs(accountId);
+            const results = configs.map((c: ProviderConfig) => ({ unique_key: c.unique_key, provider: c.provider }));
             res.status(200).send({ configs: results });
         } catch (err) {
             next(err);
@@ -237,15 +233,15 @@ class ConfigController {
 
     async getProviderConfig(req: Request, res: Response, next: NextFunction) {
         try {
-            let accountId = getAccount(res);
-            let providerConfigKey = req.params['providerConfigKey'] as string;
+            const accountId = getAccount(res);
+            const providerConfigKey = req.params['providerConfigKey'] as string;
 
             if (providerConfigKey == null) {
                 errorManager.errRes(res, 'missing_provider_config');
                 return;
             }
 
-            let config = await configService.getProviderConfig(providerConfigKey, accountId);
+            const config = await configService.getProviderConfig(providerConfigKey, accountId);
 
             if (config == null) {
                 errorManager.errRes(res, 'unknown_provider_config');
@@ -260,7 +256,7 @@ class ConfigController {
 
     async createProviderConfig(req: Request, res: Response, next: NextFunction) {
         try {
-            let accountId = getAccount(res);
+            const accountId = getAccount(res);
             if (req.body == null) {
                 errorManager.errRes(res, 'missing_body');
                 return;
@@ -276,7 +272,7 @@ class ConfigController {
                 return;
             }
 
-            let provider = req.body['provider'];
+            const provider = req.body['provider'];
 
             if (!configService.checkProviderTemplateExists(provider)) {
                 errorManager.errRes(res, 'unknown_provider_template');
@@ -293,14 +289,14 @@ class ConfigController {
                 return;
             }
 
-            let uniqueConfigKey = req.body['provider_config_key'];
+            const uniqueConfigKey = req.body['provider_config_key'];
 
             if ((await configService.getProviderConfig(uniqueConfigKey, accountId)) != null) {
                 errorManager.errRes(res, 'duplicate_provider_config');
                 return;
             }
 
-            let config: ProviderConfig = {
+            const config: ProviderConfig = {
                 unique_key: uniqueConfigKey,
                 provider: provider,
                 oauth_client_id: req.body['oauth_client_id'],
@@ -313,7 +309,7 @@ class ConfigController {
                 account_id: accountId
             };
 
-            let result = await configService.createProviderConfig(config);
+            const result = await configService.createProviderConfig(config);
 
             if (Array.isArray(result) && result.length === 1 && result[0] != null && 'id' in result[0]) {
                 analytics.track('server:config_created', accountId, { provider: config.provider });
@@ -328,7 +324,7 @@ class ConfigController {
 
     async editProviderConfig(req: Request, res: Response, next: NextFunction) {
         try {
-            let accountId = getAccount(res);
+            const accountId = getAccount(res);
             if (req.body == null) {
                 errorManager.errRes(res, 'missing_body');
                 return;
@@ -352,7 +348,7 @@ class ConfigController {
                 return;
             }
 
-            let newConfig: ProviderConfig = {
+            const newConfig: ProviderConfig = {
                 unique_key: req.body['provider_config_key'],
                 provider: req.body['provider'],
                 oauth_client_id: req.body['oauth_client_id'],
@@ -361,7 +357,7 @@ class ConfigController {
                 account_id: accountId
             };
 
-            let oldConfig = await configService.getProviderConfig(newConfig.unique_key, accountId);
+            const oldConfig = await configService.getProviderConfig(newConfig.unique_key, accountId);
 
             if (oldConfig == null) {
                 errorManager.errRes(res, 'unknown_provider_config');
@@ -377,8 +373,8 @@ class ConfigController {
 
     async deleteProviderConfig(req: Request, res: Response, next: NextFunction) {
         try {
-            let accountId = getAccount(res);
-            let providerConfigKey = req.params['providerConfigKey'] as string;
+            const accountId = getAccount(res);
+            const providerConfigKey = req.params['providerConfigKey'] as string;
 
             if (providerConfigKey == null) {
                 errorManager.errRes(res, 'missing_provider_config');

@@ -11,6 +11,7 @@ export interface BaseConnection {
     metadata: Record<string, string>;
     credentials_iv?: string | null;
     credentials_tag?: string | null;
+    field_mappings?: Record<string, string>;
 }
 
 export interface StoredConnection extends BaseConnection {
@@ -20,3 +21,5 @@ export interface StoredConnection extends BaseConnection {
 export interface Connection extends BaseConnection {
     credentials: AuthCredentials;
 }
+
+export type NangoConnection = Pick<Connection, 'id' | 'connection_id' | 'provider_config_key' | 'account_id'>;

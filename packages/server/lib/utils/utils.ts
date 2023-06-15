@@ -1,77 +1,21 @@
 import { fileURLToPath } from 'url';
 import path, { resolve } from 'path';
-import type { Request, Response } from 'express';
-import accountService from '../services/account.service.js';
-import type { User } from '../models.js';
-import type { Account, Template as ProviderTemplate } from '@nangohq/shared';
+import type { Request } from 'express';
+import type { User, Account, Template as ProviderTemplate } from '@nangohq/shared';
 import logger from './logger.js';
 import type { WSErr } from './web-socket-error.js';
-import userService from '../services/user.service.js';
-import { NangoError } from './error.js';
 import { readFileSync } from 'fs';
-
-export const localhostUrl: string = 'http://localhost:3003';
-const accountIdLocalsKey = 'nangoAccountId';
-
-export enum NodeEnv {
-    Dev = 'development',
-    Staging = 'staging',
-    Prod = 'production'
-}
+import { NangoError, userService, accountService, interpolateString, isCloud, getBaseUrl } from '@nangohq/shared';
 
 type PackageJson = {
     version: string;
 };
 
-export function isDev() {
-    return process.env['NODE_ENV'] === NodeEnv.Dev;
-}
-
-export function isStaging() {
-    return process.env['NODE_ENV'] === NodeEnv.Staging;
-}
-
-export function isProd() {
-    return process.env['NODE_ENV'] === NodeEnv.Prod;
-}
-
-export enum UserType {
-    Local = 'localhost',
-    SelfHosted = 'self-hosted',
-    Cloud = 'cloud'
-}
-
-export function isCloud() {
-    return process.env['NANGO_CLOUD']?.toLowerCase() === 'true';
-}
-
-export function isBasicAuthEnabled() {
-    return !isCloud() && process.env['NANGO_DASHBOARD_USERNAME'] && process.env['NANGO_DASHBOARD_PASSWORD'];
-}
-
-export function dirname() {
-    return path.dirname(fileURLToPath(import.meta.url));
-}
-
-export function getPort() {
-    if (process.env['SERVER_PORT'] != null) {
-        return +process.env['SERVER_PORT'];
-    } else if (process.env['PORT'] != null) {
-        return +process.env['PORT']; // For Heroku (dynamic port)
-    } else {
-        return 3003;
-    }
-}
-
-export function getBaseUrl() {
-    return process.env['NANGO_SERVER_URL'] || localhostUrl;
-}
-
 export async function getOauthCallbackUrl(accountId?: number) {
-    let globalCallbackUrl = getGlobalOAuthCallbackUrl();
+    const globalCallbackUrl = getGlobalOAuthCallbackUrl();
 
     if (isCloud() && accountId != null) {
-        let account: Account | null = await accountService.getAccountById(accountId);
+        const account: Account | null = await accountService.getAccountById(accountId);
         return account?.callback_url || globalCallbackUrl;
     }
 
@@ -82,28 +26,20 @@ export function getGlobalOAuthCallbackUrl() {
     return process.env['NANGO_CALLBACK_URL'] || getBaseUrl() + '/oauth/callback';
 }
 
-export function isApiAuthenticated(res: Response): boolean {
-    return res.locals != null && accountIdLocalsKey in res.locals && Number.isInteger(res.locals[accountIdLocalsKey]);
-}
-
-export function isUserAuthenticated(req: Request): boolean {
-    return req.isAuthenticated() && req.user != null && req.user.id != null;
-}
-
 export async function getUserAndAccountFromSession(req: Request): Promise<{ user: User; account: Account }> {
-    let sessionUser = req.user;
+    const sessionUser = req.user;
 
     if (sessionUser == null) {
         throw new NangoError('user_not_found');
     }
 
-    let user = await userService.getUserById(sessionUser.id);
+    const user = await userService.getUserById(sessionUser.id);
 
     if (user == null) {
         throw new NangoError('user_not_found');
     }
 
-    let account = await accountService.getAccountById(user.account_id);
+    const account = await accountService.getAccountById(user.account_id);
 
     if (account == null) {
         throw new NangoError('account_not_found');
@@ -112,56 +48,8 @@ export async function getUserAndAccountFromSession(req: Request): Promise<{ user
     return { user: user, account: account };
 }
 
-export function getAccount(res: Response): number {
-    if (res.locals == null || !(accountIdLocalsKey in res.locals)) {
-        throw new NangoError('account_not_set_in_locals');
-    }
-
-    let accountId = res.locals[accountIdLocalsKey];
-
-    if (Number.isInteger(accountId)) {
-        return accountId;
-    } else {
-        throw new NangoError('account_malformed_in_locals');
-    }
-}
-
-export function parseTokenExpirationDate(expirationDate: any): Date {
-    if (expirationDate instanceof Date) {
-        return expirationDate;
-    }
-
-    // UNIX timestamp
-    if (typeof expirationDate === 'number') {
-        return new Date(expirationDate * 1000);
-    }
-
-    // ISO 8601 string
-    return new Date(expirationDate);
-}
-
-export function isTokenExpired(expireDate: Date): boolean {
-    let currDate = new Date();
-    let dateDiffMs = expireDate.getTime() - currDate.getTime();
-    return dateDiffMs < 15 * 60 * 1000;
-}
-
-export function setAccount(accountId: number, res: Response) {
-    res.locals[accountIdLocalsKey] = accountId;
-}
-
-/**
- * A helper function to interpolate a string.
- * interpolateString('Hello ${name} of ${age} years", {name: 'Tester', age: 234}) -> returns 'Hello Tester of age 234 years'
- *
- * @remarks
- * Copied from https://stackoverflow.com/a/1408373/250880
- */
-export function interpolateString(str: string, replacers: Record<string, any>) {
-    return str.replace(/\${([^{}]*)}/g, (a, b) => {
-        var r = replacers[b];
-        return typeof r === 'string' || typeof r === 'number' ? (r as string) : a; // Typecast needed to make TypeScript happy
-    });
+export function dirname() {
+    return path.dirname(fileURLToPath(import.meta.url));
 }
 
 /**
@@ -169,7 +57,7 @@ export function interpolateString(str: string, replacers: Record<string, any>) {
  * interpolateString('Hello ${name} of ${age} years", {name: 'Tester'}) -> returns false
  */
 export function missesInterpolationParam(str: string, replacers: Record<string, any>) {
-    let interpolatedStr = interpolateString(str, replacers);
+    const interpolatedStr = interpolateString(str, replacers);
     return /\${([^{}]*)}/g.test(interpolatedStr);
 }
 
@@ -177,7 +65,7 @@ export function missesInterpolationParam(str: string, replacers: Record<string, 
  * A helper function to extract the additional connection configuration options from the frontend Auth request.
  */
 export function getConnectionConfig(queryParams: any): Record<string, string> {
-    var arr = Object.entries(queryParams);
+    let arr = Object.entries(queryParams);
     arr = arr.filter(([_, v]) => typeof v === 'string'); // Filter strings
     arr = arr.map(([k, v]) => [`connectionConfig.params.${k}`, v]); // Format keys to 'connectionConfig.params.[key]'
     return Object.fromEntries(arr) as Record<string, string>;
@@ -191,10 +79,10 @@ export function getConnectionMetadataFromCallbackRequest(queryParams: any, templ
         return {};
     }
 
-    let whitelistedKeys = template.redirect_uri_metadata;
+    const whitelistedKeys = template.redirect_uri_metadata;
 
     // Filter out non-strings & non-whitelisted keys.
-    let arr = Object.entries(queryParams).filter(([k, v]) => typeof v === 'string' && whitelistedKeys.includes(k));
+    const arr = Object.entries(queryParams).filter(([k, v]) => typeof v === 'string' && whitelistedKeys.includes(k));
 
     return arr != null && arr.length > 0 ? (Object.fromEntries(arr) as Record<string, string>) : {};
 }
@@ -207,10 +95,10 @@ export function getConnectionMetadataFromTokenResponse(params: any, template: Pr
         return {};
     }
 
-    let whitelistedKeys = template.token_response_metadata;
+    const whitelistedKeys = template.token_response_metadata;
 
     // Filter out non-strings & non-whitelisted keys.
-    let arr = Object.entries(params).filter(([k, v]) => typeof v === 'string' && whitelistedKeys.includes(k));
+    const arr = Object.entries(params).filter(([k, v]) => typeof v === 'string' && whitelistedKeys.includes(k));
 
     return arr != null && arr.length > 0 ? (Object.fromEntries(arr) as Record<string, string>) : {};
 }
@@ -236,9 +124,9 @@ export function parseJsonDateAware(input: string) {
 }
 
 export function parseConnectionConfigParamsFromTemplate(template: ProviderTemplate): string[] {
-    let tokenUrlMatches = template.token_url.match(/\${connectionConfig\.params\.([^{}]*)}/g);
-    let authorizationUrlMatches = template.authorization_url.match(/\${connectionConfig\.params\.([^{}]*)}/g);
-    let params = [...(tokenUrlMatches || []), ...(authorizationUrlMatches || [])].filter((value, index, array) => array.indexOf(value) === index);
+    const tokenUrlMatches = template.token_url.match(/\${connectionConfig\.params\.([^{}]*)}/g);
+    const authorizationUrlMatches = template.authorization_url.match(/\${connectionConfig\.params\.([^{}]*)}/g);
+    const params = [...(tokenUrlMatches || []), ...(authorizationUrlMatches || [])].filter((value, index, array) => array.indexOf(value) === index);
     return params.map((param) => param.replace('${connectionConfig.params.', '').replace('}', '')); // Remove the ${connectionConfig.params.'} and return only the param name.
 }
 
@@ -252,7 +140,7 @@ export function convertJsonKeysToSnakeCase<R>(payload: Record<string, any>): R |
     }
     return Object.entries(payload).reduce((accum: any, current) => {
         const [key, value] = current;
-        let newKey = key.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase();
+        const newKey = key.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase();
         accum[newKey] = value;
         return accum;
     }, {});
@@ -268,7 +156,7 @@ export function convertJsonKeysToCamelCase<R>(payload: Record<string, any>): R |
     }
     return Object.entries(payload).reduce((accum: any, current) => {
         const [key, value] = current;
-        let newKey = key.replace(/([-_][a-z])/g, (group) => group.toUpperCase().replace('-', '').replace('_', ''));
+        const newKey = key.replace(/([-_][a-z])/g, (group) => group.toUpperCase().replace('-', '').replace('_', ''));
         accum[newKey] = value;
         return accum;
     }, {});
@@ -433,6 +321,6 @@ export function resetPasswordSecret() {
 }
 
 export function packageJsonFile(): PackageJson {
-    let localPath = process.env['SERVER_RUN_MODE'] === 'DOCKERIZED' ? 'packages/server/package.json' : 'package.json';
+    const localPath = process.env['SERVER_RUN_MODE'] === 'DOCKERIZED' ? 'packages/server/package.json' : 'package.json';
     return JSON.parse(readFileSync(resolve(process.cwd(), localPath)).toString('utf-8'));
 }

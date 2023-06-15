@@ -4,13 +4,12 @@ import { BasicStrategy } from 'passport-http';
 import express from 'express';
 import session from 'express-session';
 import path from 'path';
-import { dirname, isCloud, isBasicAuthEnabled } from '../utils/utils.js';
+import { dirname, isCloud, isBasicAuthEnabled, userService } from '@nangohq/shared';
 import crypto from 'crypto';
-import userService from '../services/user.service.js';
 import util from 'util';
 import cookieParser from 'cookie-parser';
 import connectSessionKnex from 'connect-session-knex';
-import database from '../db/database.js';
+import { database } from '@nangohq/shared';
 declare global {
     namespace Express {
         interface User {
@@ -57,14 +56,14 @@ export class AuthClient {
                     password: string,
                     cb: (error: any, user?: Express.User | false, options?: any) => void
                 ) {
-                    let user = await userService.getUserByEmail(email);
+                    const user = await userService.getUserByEmail(email);
 
                     if (user == null) {
                         return cb(null, false, { message: 'Incorrect email or password.' });
                     }
 
-                    let proposedHashedPassword = await util.promisify(crypto.pbkdf2)(password, user.salt, 310000, 32, 'sha256');
-                    let actualHashedPassword = Buffer.from(user.hashed_password, 'base64');
+                    const proposedHashedPassword = await util.promisify(crypto.pbkdf2)(password, user.salt, 310000, 32, 'sha256');
+                    const actualHashedPassword = Buffer.from(user.hashed_password, 'base64');
 
                     if (
                         proposedHashedPassword.length !== actualHashedPassword.length ||
@@ -79,7 +78,7 @@ export class AuthClient {
         } else {
             passport.use(
                 new BasicStrategy(async function (username, password, done) {
-                    let user = await userService.getUserById(0);
+                    const user = await userService.getUserById(0);
 
                     if (!isBasicAuthEnabled()) {
                         return done(null, user);

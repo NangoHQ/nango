@@ -12,9 +12,9 @@ import authMiddleware from './controllers/access.middleware.js';
 import userController from './controllers/user.controller.js';
 import proxyController from './controllers/proxy.controller.js';
 import activityController from './controllers/activity.controller.js';
+import syncController from './controllers/sync.controller.js';
 import path from 'path';
-import { dirname, getPort, getGlobalOAuthCallbackUrl, isCloud, isBasicAuthEnabled, packageJsonFile } from './utils/utils.js';
-import errorManager from './utils/error.manager.js';
+import { getGlobalOAuthCallbackUrl, packageJsonFile, dirname } from './utils/utils.js';
 import { WebSocketServer, WebSocket } from 'ws';
 import http from 'http';
 import express from 'express';
@@ -25,20 +25,20 @@ import passport from 'passport';
 import accountController from './controllers/account.controller.js';
 import type { Response, Request } from 'express';
 import Logger from './utils/logger.js';
-import accountService from './services/account.service.js';
+import { accountService, getPort, isCloud, isBasicAuthEnabled, errorManager } from '@nangohq/shared';
 import oAuthSessionService from './services/oauth-session.service.js';
 import { deleteOldActivityLogs } from './jobs/index.js';
 import migrate from './utils/migrate.js';
 
 const { NANGO_MIGRATE_AT_START = 'true' } = process.env;
 
-let app = express();
+const app = express();
 
 // Auth
 AuthClient.setup(app);
-let apiAuth = authMiddleware.secretKeyAuth.bind(authMiddleware);
-let apiPublicAuth = authMiddleware.publicKeyAuth.bind(authMiddleware);
-let webAuth = isCloud()
+const apiAuth = authMiddleware.secretKeyAuth.bind(authMiddleware);
+const apiPublicAuth = authMiddleware.publicKeyAuth.bind(authMiddleware);
+const webAuth = isCloud()
     ? [passport.authenticate('session'), authMiddleware.sessionAuth.bind(authMiddleware)]
     : isBasicAuthEnabled()
     ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth.bind(authMiddleware)]
@@ -76,6 +76,11 @@ app.route('/config/:providerConfigKey').delete(apiAuth, configController.deleteP
 app.route('/connection/:connectionId').get(apiAuth, connectionController.getConnectionCreds.bind(connectionController));
 app.route('/connection').get(apiAuth, connectionController.listConnections.bind(connectionController));
 app.route('/connection/:connectionId').delete(apiAuth, connectionController.deleteConnection.bind(connectionController));
+app.route('/connection/:connectionId/field-mapping').post(apiAuth, connectionController.setFieldMapping.bind(connectionController));
+app.route('/connection').post(apiAuth, connectionController.createConnection.bind(connectionController));
+app.route('/sync/deploy').post(apiAuth, syncController.deploySync.bind(syncController));
+app.route('/sync/records').get(apiAuth, syncController.getRecords.bind(syncController));
+app.route('/sync/trigger').post(apiAuth, syncController.trigger.bind(syncController));
 
 // Proxy Route
 app.route('/proxy/*').all(apiAuth, proxyController.routeCall.bind(proxyController));
@@ -92,6 +97,7 @@ if (isCloud()) {
 // Webapp routes (session auth).
 app.route('/api/v1/account').get(webAuth, accountController.getAccount.bind(accountController));
 app.route('/api/v1/account/callback').post(webAuth, accountController.updateCallback.bind(accountController));
+app.route('/api/v1/account/webhook').post(webAuth, accountController.updateWebhookURL.bind(accountController));
 app.route('/api/v1/integration').get(webAuth, configController.listProviderConfigsWeb.bind(configController));
 app.route('/api/v1/integration/:providerConfigKey').get(webAuth, configController.getProviderConfigWeb.bind(configController));
 app.route('/api/v1/integration').put(webAuth, configController.editProviderConfigWeb.bind(connectionController));
@@ -103,6 +109,8 @@ app.route('/api/v1/connection/:connectionId').get(webAuth, connectionController.
 app.route('/api/v1/connection/:connectionId').delete(webAuth, connectionController.deleteConnectionWeb.bind(connectionController));
 app.route('/api/v1/user').get(webAuth, userController.getUser.bind(userController));
 app.route('/api/v1/activity').get(webAuth, activityController.retrieve.bind(activityController));
+app.route('/api/v1/sync').get(webAuth, syncController.getSyncs.bind(syncController));
+app.route('/api/v1/sync/command').post(webAuth, syncController.syncCommand.bind(syncController));
 
 // Hosted signin
 if (!isCloud()) {
@@ -134,7 +142,7 @@ wsServer.on('connection', (ws: WebSocket) => {
 // kick off any job
 deleteOldActivityLogs();
 
-let port = getPort();
+const port = getPort();
 server.listen(port, () => {
     Logger.info(`✅ Nango Server with version ${packageJsonFile().version} is listening on port ${port}. OAuth callback URL: ${getGlobalOAuthCallbackUrl()}`);
     Logger.info(

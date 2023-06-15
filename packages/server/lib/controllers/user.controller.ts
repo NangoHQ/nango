@@ -4,7 +4,7 @@ import type { Request, Response, NextFunction } from 'express';
 class UserController {
     async getUser(req: Request, res: Response, next: NextFunction) {
         try {
-            let user = (await getUserAndAccountFromSession(req)).user;
+            const user = (await getUserAndAccountFromSession(req)).user;
 
             res.status(200).send({
                 user: {

@@ -45,10 +45,18 @@ class ConfigService {
         return fileEntries as { [key: string]: ProviderTemplate };
     }
 
-    async getProviderConfig(providerConfigKey: string, accountId: number, argDb?: typeof db): Promise<ProviderConfig | null> {
-        const database = argDb || db;
+    async getProviderName(providerConfigKey: string): Promise<string | null> {
+        const result = await db.knex.withSchema(db.schema()).select('provider').from<ProviderConfig>(`_nango_configs`).where({ unique_key: providerConfigKey });
 
-        const result = await database.knex
+        if (result == null || result.length == 0 || result[0] == null) {
+            return null;
+        }
+
+        return result[0].provider;
+    }
+
+    async getProviderConfig(providerConfigKey: string, accountId: number): Promise<ProviderConfig | null> {
+        const result = await db.knex
             .withSchema(db.schema())
             .select('*')
             .from<ProviderConfig>(`_nango_configs`)

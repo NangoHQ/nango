@@ -1,0 +1,68 @@
+version: '3.9'
+services:
+    nango-db:
+        image: postgres
+        container_name: nango-db
+        environment:
+            POSTGRES_PASSWORD: nango
+            POSTGRES_USER: nango
+            POSTGRES_DB: nango
+        ports:
+            - '${NANGO_DB_PORT:-5432}:5432'
+        volumes:
+            - ./nango-data:/var/lib/postgresql/data
+        networks:
+            - nango
+
+    nango-server:
+        image: nangohq/nango-server:0.20.7
+        container_name: nango-server
+        environment:
+            - TEMPORAL_ADDRESS=temporal:7233
+            - NANGO_DB_MIGRATION_FOLDER=/usr/nango-server/src/packages/shared/lib/db/migrations
+            - NANGO_CALLBACK_URL=${NANGO_CALLBACK_URL:-http://localhost:3003/oauth/callback}
+        restart: always
+        ports:
+            - '3003:3003'
+        depends_on:
+            - nango-db
+        volumes:
+            - "${NANGO_INTEGRATIONS_LOCATION:-./nango-integrations}:/usr/nango-server/src/packages/shared/dist/lib/nango-integrations"
+        networks:
+            - nango
+
+    nango-worker:
+        image: nangohq/nango-worker:0.20.7
+        container_name: nango-worker
+        restart: always
+        ports:
+            - '3004:3004'
+        environment:
+            - TEMPORAL_ADDRESS=temporal:7233
+        depends_on:
+            - nango-db
+            - temporal
+        volumes:
+            - "${NANGO_INTEGRATIONS_LOCATION:-./nango-integrations}:/usr/nango-worker/src/packages/shared/dist/lib/nango-integrations"
+        networks:
+            - nango
+
+    temporal:
+        image: temporalio/auto-setup
+        container_name: temporal
+        depends_on:
+            - nango-db
+        environment:
+            - DB=postgresql
+            - DB_PORT=5432
+            - POSTGRES_USER=nango
+            - POSTGRES_PWD=nango
+            - POSTGRES_SEEDS=nango-db
+            - LOG_LEVEL=error
+        ports:
+            - 7233:7233
+        networks:
+            - nango
+
+networks:
+    nango:

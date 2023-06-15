@@ -1,12 +1,11 @@
 import type { Request, Response, NextFunction } from 'express';
-import accountService from '../services/account.service.js';
-import { getUserAndAccountFromSession, isCloud, getOauthCallbackUrl, getBaseUrl } from '../utils/utils.js';
-import errorManager from '../utils/error.manager.js';
+import { accountService, errorManager, isCloud, getBaseUrl } from '@nangohq/shared';
+import { getOauthCallbackUrl, getUserAndAccountFromSession } from '../utils/utils.js';
 
 class AccountController {
     async getAccount(req: Request, res: Response, next: NextFunction) {
         try {
-            let account = (await getUserAndAccountFromSession(req)).account;
+            const account = (await getUserAndAccountFromSession(req)).account;
 
             if (!isCloud()) {
                 account.callback_url = await getOauthCallbackUrl();
@@ -33,9 +32,25 @@ class AccountController {
                 return;
             }
 
-            let account = (await getUserAndAccountFromSession(req)).account;
+            const account = (await getUserAndAccountFromSession(req)).account;
 
             await accountService.editAccountCallbackUrl(req.body['callback_url'], account.id);
+            res.status(200).send();
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async updateWebhookURL(req: Request, res: Response, next: NextFunction) {
+        try {
+            if (!req.body) {
+                errorManager.errRes(res, 'missing_body');
+                return;
+            }
+
+            const account = (await getUserAndAccountFromSession(req)).account;
+
+            await accountService.editAccountWebhookUrl(req.body['webhook_url'], account.id);
             res.status(200).send();
         } catch (err) {
             next(err);

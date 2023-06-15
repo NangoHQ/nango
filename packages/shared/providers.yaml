@@ -534,6 +534,8 @@ salesforce:
         - offline_access
     token_response_metadata:
         - instance_url
+    base_api_url: ${metadata.instance_url}
+    docs: https://developer.salesforce.com/docs/api
 salesloft:
     auth_mode: OAUTH2
     authorization_url: https://accounts.salesloft.com/oauth/authorize

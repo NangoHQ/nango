@@ -117,7 +117,7 @@ export class NangoError extends Error {
                 break;
 
             case 'unknown_provider_config':
-                this.status = 404;
+                this.status = 400;
                 this.message = `There is no Provider Configuration matching this key.`;
                 break;
 
@@ -151,6 +151,17 @@ export class NangoError extends Error {
                 this.message = `No connection matching params 'connection_id' and 'provider_config_key'.`;
                 break;
 
+            case 'connection_already_exists':
+                this.status = 409;
+                this.message = 'A connection already exists for this provider configuration.';
+                break;
+
+            case 'missing_base_api_url':
+                this.status = 400;
+                this.message =
+                    'The proxy is not supported for the provider. You can easily add support by following the instructions at https://docs.nango.dev/contribute-api';
+                break;
+
             case 'unknown_provider_template':
                 this.status = 400;
                 this.message = `No Provider Template matching the 'provider' parameter.`;
@@ -174,7 +185,7 @@ export class NangoError extends Error {
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;
-                this.message = `An unhandled error has occured: ${type}`;
+                this.message = `An unhandled error has occurred: ${type}`;
         }
     }
 }
