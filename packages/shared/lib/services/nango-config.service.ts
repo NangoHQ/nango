@@ -108,6 +108,10 @@ export function getIntegrationFile(syncName: string, setIntegrationPath?: string
 }
 
 export function getRootDir(optionalLoadLocation?: string) {
+    if (isCloud()) {
+        return './';
+    }
+
     const loadLocation = optionalLoadLocation || path.resolve(__dirname, '../nango-integrations/dist');
 
     return loadLocation;
