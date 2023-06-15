@@ -13,7 +13,7 @@ import webhookService from '../webhook.service.js';
 import { NangoSync } from '../../sdk/sync.js';
 import { isCloud, getApiUrl } from '../../utils/utils.js';
 import type { NangoIntegrationData, NangoConfig, NangoIntegration } from '../../integrations/index.js';
-import type { UpsertResponse } from '../../models/Data.js';
+import type { UpsertResponse, UpsertSummary } from '../../models/Data.js';
 import type { Account } from '../../models/Admin';
 
 interface SyncRunConfig {
@@ -143,8 +143,6 @@ export default class SyncRun {
                     return false;
                 }
 
-                let responseResults: UpsertResponse | null = { addedKeys: [], updatedKeys: [], affectedInternalIds: [], affectedExternalIds: [] };
-
                 if (!this.writeToDb) {
                     return userDefinedResults;
                 }
@@ -162,52 +160,41 @@ export default class SyncRun {
                             this.syncId,
                             this.syncJobId as number
                         );
-                        let upsertSuccess = true;
-                        if (formattedResults.length > 0) {
-                            try {
-                                if (this.writeToDb && this.activityLogId) {
-                                    const upsertResult = await upsert(
-                                        formattedResults,
-                                        '_nango_sync_data_records',
-                                        'external_id',
-                                        this.nangoConnection.id as number,
-                                        model,
-                                        this.activityLogId
-                                    );
 
-                                    // if it is null that means there were duplicates and nothing was actually inserted
-                                    if (upsertResult) {
-                                        responseResults = upsertResult;
-                                    }
-                                }
-                            } catch (e) {
-                                if (this.activityLogId) {
-                                    const errorMessage = JSON.stringify(e, ['message', 'name', 'stack'], 2);
-
-                                    await createActivityLogMessage({
-                                        level: 'error',
-                                        activity_log_id: this.activityLogId,
-                                        content: `There was a problem upserting the data for ${this.syncName} and the model ${model}. The error message was ${errorMessage}`,
-                                        timestamp: Date.now()
-                                    });
-                                    upsertSuccess = false;
-                                }
-                            }
-                        }
-                        if (responseResults && this.writeToDb && this.activityLogId) {
-                            this.reportResults(now, model, responseResults, formattedResults.length > 0, upsertSuccess, syncData.version);
-                        } else {
+                        if (formattedResults.length === 0) {
                             if (this.activityLogId) {
-                                const content = `There was a problem upserting the data and retrieving the changed results ${this.syncName} and the model ${model}.`;
-
                                 await createActivityLogMessage({
                                     level: 'error',
                                     activity_log_id: this.activityLogId,
-                                    content,
+                                    content: `There were no data records to insert for ${this.syncName}`,
                                     timestamp: Date.now()
                                 });
                             }
-                            upsertSuccess = false;
+                            continue;
+                        }
+
+                        if (this.writeToDb && this.activityLogId) {
+                            const upsertResult: UpsertResponse = await upsert(
+                                formattedResults,
+                                '_nango_sync_data_records',
+                                'external_id',
+                                this.nangoConnection.id as number,
+                                model,
+                                this.activityLogId
+                            );
+
+                            if (upsertResult.success) {
+                                this.reportResults(now, model, upsertResult.summary as UpsertSummary, formattedResults.length > 0, true, syncData.version);
+                            }
+
+                            if (!upsertResult.success) {
+                                await createActivityLogMessage({
+                                    level: 'error',
+                                    activity_log_id: this.activityLogId,
+                                    content: `There was a problem upserting the data for ${this.syncName} and the model ${model}. The error message was ${upsertResult?.error}`,
+                                    timestamp: Date.now()
+                                });
+                            }
                         }
                     }
                 }
@@ -226,7 +213,7 @@ export default class SyncRun {
     async reportResults(
         now: Date,
         model: string,
-        responseResults: UpsertResponse,
+        responseResults: UpsertSummary,
         anyResultsInserted: boolean,
         upsertSuccess: boolean,
         version?: string

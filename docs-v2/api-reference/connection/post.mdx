@@ -1,0 +1,38 @@
+---
+title: 'Import a Connection'
+openapi: 'POST /connection'
+---
+
+## When to use
+
+Use this API endpoint to import existing access tokens into Nango. It is mostly meant for one-off import scripts.
+
+To trigger OAuth flows with Nango use the [Nango frontend SDK](/sdks/frontend).
+
+## Request body
+
+You can use this endpoint to import both OAuth 2 and OAuth 1 tokens.
+
+The required fields depend on the type of token you are trying to import:
+
+```json
+{
+	"connection_id": "<connection-id>",          // Always required
+	"provider_config_key": "<integration-id>",   // Always required
+	"type": "OAUTH2" | "OAUTH1" ,                // OAUTH2 or OAUTH1
+
+	// IF OAUTH 1
+	"oauth_token": "XXXXXXXX",                   // Required
+	"oauth_token_secret": "YYYYYYYYYY",          // Required
+
+	// IF OAUTH 2
+	"access_token": "XXXXXXXXXXXXXX",            // Required
+	"refresh_token": "XXXXXXXX",                 // Optional, pass if you have it
+	// If refresh token is present, either expires_at or expires_in needs to be provided
+	"expires_at": "2023-05-31T11:46:13.390Z",    // Safer & preferred
+	"expires_in": 3628283,                       // in seconds
+	"metadata": {                                // Optional, store in metadata. Check API configuration in Nango docs
+		"realmId": "YYYYYYY"
+	}
+}
+```

@@ -124,7 +124,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                     const data = await res.json();
                     setSyncs(data);
                 } catch (e) {
-                    console.log(e)
+                    console.log(e);
                 }
                 setSyncLoaded(true);
             }
@@ -134,7 +134,6 @@ We could not retrieve and/or refresh your access token due to the following erro
             setSyncLoaded(true);
             getSyncs();
         }
-
     }, [getSyncAPI, syncLoaded, setLoaded, connectionId, providerConfigKey]);
 
     const syncCommand = async (command: RunSyncCommand, nango_connection_id: number, scheduleId: string, syncId: number) => {
@@ -150,26 +149,26 @@ We could not retrieve and/or refresh your access token due to the following erro
     };
 
     const ErrorBubble = () => (
-      <>
-        <X className="stroke-red-500 mr-2" size="12" />
-        <p className="inline-block text-red-500 text-sm">errored</p>
-      </>
+        <>
+            <X className="stroke-red-500 mr-2" size="12" />
+            <p className="inline-block text-red-500 text-sm">errored</p>
+        </>
     );
     const errorBubbleStyles = 'inline-flex justify-center items-center rounded-full py-1 px-4 bg-red-500 bg-opacity-20';
 
     const SuccessBubble = () => (
-      <>
-        <Check className="stroke-green-500 mr-2" size="12" />
-        <p className="inline-block text-green-500 text-sm">done</p>
-      </>
+        <>
+            <Check className="stroke-green-500 mr-2" size="12" />
+            <p className="inline-block text-green-500 text-sm">done</p>
+        </>
     );
     const successBubbleStyles = 'inline-flex justify-center items-center rounded-full py-1 px-4 bg-green-500 bg-opacity-20';
 
     const RunningBubble = () => (
-      <>
-          <Clock className="stroke-orange-500 mr-2" size="12" />
-          <p className="inline-block text-orange-500 text-sm">running</p>
-      </>
+        <>
+            <Clock className="stroke-orange-500 mr-2" size="12" />
+            <p className="inline-block text-orange-500 text-sm">running</p>
+        </>
     );
     const runningBubbleStyles = 'inline-flex justify-center items-center rounded-full py-1 px-4 bg-orange-500 bg-opacity-20';
 
@@ -225,11 +224,17 @@ We could not retrieve and/or refresh your access token due to the following erro
                         )}
                     </div>
                     <div className="flex inline-flex text-white mb-12 border border-border-gray rounded-md">
-                        <span className={`flex items-center justify-center cursor-pointer py-1 px-3 ${currentTab === 'auth' ? 'bg-gray-800' : ''}`} onClick={() => setCurrentTab('auth')}>
+                        <span
+                            className={`flex items-center justify-center cursor-pointer py-1 px-3 ${currentTab === 'auth' ? 'bg-gray-800' : ''}`}
+                            onClick={() => setCurrentTab('auth')}
+                        >
                             <Lock className="flex stroke-white mr-2 mb-0.5" size="14" />
                             Auth
                         </span>
-                        <span className={`flex items-center justify-center cursor-pointer py-1 px-3 ${currentTab === 'sync' ? 'bg-gray-800' : ''}`} onClick={() => setCurrentTab('sync')}>
+                        <span
+                            className={`flex items-center justify-center cursor-pointer py-1 px-3 ${currentTab === 'sync' ? 'bg-gray-800' : ''}`}
+                            onClick={() => setCurrentTab('sync')}
+                        >
                             <RefreshCw className="flex stroke-white mr-2 mb-0.5" size="14" />
                             Sync
                         </span>
@@ -396,19 +401,29 @@ We could not retrieve and/or refresh your access token due to the following erro
                                 {syncs.length === 0 && (
                                     <div className="flex items-center px-5 pt-8 pb-7">
                                         <Slash className="stroke-red-500" />
-                                        <div className="text-white ml-3">No syncs yet - use Nango Sync to exchange data with the external API. See the <a href="https://docs.nango.dev/nango-sync" className="text-blue-500" target="_blank" rel="noreferrer">docs</a></div>
+                                        <div className="text-white ml-3">
+                                            No syncs yet - use Nango Sync to exchange data with the external API. See the{' '}
+                                            <a href="https://docs.nango.dev/nango-sync" className="text-blue-500" target="_blank" rel="noreferrer">
+                                                docs
+                                            </a>
+                                        </div>
                                     </div>
                                 )}
                                 {syncs.length > 0 && (
                                     <>
                                         {syncs.map((sync: SyncResponse, index: number) => (
-                                            <ul key={sync.id}
-                                                className={`flex py-4 px-5 text-base items-center ${index !== syncs.length - 1 ? 'border-b border-border-gray' : ''}`}
+                                            <ul
+                                                key={sync.id}
+                                                className={`flex py-4 px-5 text-base items-center ${
+                                                    index !== syncs.length - 1 ? 'border-b border-border-gray' : ''
+                                                }`}
                                             >
                                                 <Tooltip text={sync.id} type="dark">
                                                     <li className="w-48">{sync.name}</li>
                                                 </Tooltip>
-                                                <li className="w-48 ml-6 text-sm">{sync.models.map((model) => model.charAt(0).toUpperCase() + model.slice(1)).join(', ')}</li>
+                                                <li className="w-48 ml-6 text-sm">
+                                                    {sync.models.map((model) => model.charAt(0).toUpperCase() + model.slice(1)).join(', ')}
+                                                </li>
                                                 <li className="w-32 ml-2">
                                                     {sync.schedule_status === 'PAUSED' && (
                                                         <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-red-500 bg-opacity-20">
@@ -416,48 +431,48 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                             <p className="inline-block text-red-500 text-sm">stopped</p>
                                                         </div>
                                                     )}
-                                                    {sync.latest_sync.status === 'STOPPED' && sync.schedule_status !== 'PAUSED' && (
-                                                        sync.latest_sync.activity_log_id !== null ? (
+                                                    {sync.latest_sync.status === 'STOPPED' &&
+                                                        sync.schedule_status !== 'PAUSED' &&
+                                                        (sync.latest_sync.activity_log_id !== null ? (
                                                             <Link
-                                                            to={`/activity?activity_log_id=${sync.latest_sync.activity_log_id}`}
-                                                            className={errorBubbleStyles}
-                                                        >
-                                                            <ErrorBubble />
+                                                                to={`/activity?activity_log_id=${sync.latest_sync.activity_log_id}`}
+                                                                className={errorBubbleStyles}
+                                                            >
+                                                                <ErrorBubble />
                                                             </Link>
                                                         ) : (
-                                                        <div className={errorBubbleStyles}>
-                                                            <ErrorBubble />
-                                                        </div>
-                                                        )
-                                                    )}
-                                                    {sync.latest_sync.status === 'RUNNING' && sync.schedule_status !== 'PAUSED' && (
-                                                        sync.latest_sync.activity_log_id !== null ? (
-                                                        <Link
-                                                            to={`/activity?activity_log_id=${sync.latest_sync.activity_log_id}`}
-                                                            className={runningBubbleStyles}
-                                                        >
-                                                            <RunningBubble />
+                                                            <div className={errorBubbleStyles}>
+                                                                <ErrorBubble />
+                                                            </div>
+                                                        ))}
+                                                    {sync.latest_sync.status === 'RUNNING' &&
+                                                        sync.schedule_status !== 'PAUSED' &&
+                                                        (sync.latest_sync.activity_log_id !== null ? (
+                                                            <Link
+                                                                to={`/activity?activity_log_id=${sync.latest_sync.activity_log_id}`}
+                                                                className={runningBubbleStyles}
+                                                            >
+                                                                <RunningBubble />
                                                             </Link>
                                                         ) : (
-                                                        <div className={runningBubbleStyles}>
-                                                            <RunningBubble />
-                                                        </div>
-                                                        )
-                                                    )}
-                                                    {sync.latest_sync.status === 'SUCCESS' && sync.schedule_status !== 'PAUSED' && (
-                                                        sync.latest_sync.activity_log_id !== null ? (
-                                                        <Link
-                                                            to={`/activity?activity_log_id=${sync.latest_sync.activity_log_id}`}
-                                                            className={successBubbleStyles}
-                                                        >
-                                                            <SuccessBubble />
+                                                            <div className={runningBubbleStyles}>
+                                                                <RunningBubble />
+                                                            </div>
+                                                        ))}
+                                                    {sync.latest_sync.status === 'SUCCESS' &&
+                                                        sync.schedule_status !== 'PAUSED' &&
+                                                        (sync.latest_sync.activity_log_id !== null ? (
+                                                            <Link
+                                                                to={`/activity?activity_log_id=${sync.latest_sync.activity_log_id}`}
+                                                                className={successBubbleStyles}
+                                                            >
+                                                                <SuccessBubble />
                                                             </Link>
                                                         ) : (
-                                                        <div className={successBubbleStyles}>
-                                                            <SuccessBubble />
-                                                        </div>
-                                                        )
-                                                    )}
+                                                            <div className={successBubbleStyles}>
+                                                                <SuccessBubble />
+                                                            </div>
+                                                        ))}
                                                 </li>
                                                 <Tooltip text={JSON.stringify(sync.latest_sync.result)} type="dark">
                                                     {sync.latest_sync.activity_log_id !== null ? (
@@ -488,10 +503,19 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                 {sync.schedule_status !== 'RUNNING' && (
                                                     <li className="ml-4 w-36 text-sm text-gray-500">-</li>
                                                 )}
+                                                {sync.schedule_status === 'RUNNING' && !sync.offset && <li className="ml-4 w-36 text-sm text-gray-500">-</li>}
+                                                {sync.schedule_status !== 'RUNNING' && <li className="ml-4 w-36 text-sm text-gray-500">-</li>}
                                                 <li className="flex ml-8">
                                                     <button
                                                         className="flex h-8 mr-2 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white bg-gray-800 hover:bg-gray-700"
-                                                        onClick={() => syncCommand((sync.schedule_status === 'RUNNING') ? 'PAUSE' : 'UNPAUSE', sync.nango_connection_id, sync.schedule_id, sync.id)}
+                                                        onClick={() =>
+                                                            syncCommand(
+                                                                sync.schedule_status === 'RUNNING' ? 'PAUSE' : 'UNPAUSE',
+                                                                sync.nango_connection_id,
+                                                                sync.schedule_id,
+                                                                sync.id
+                                                            )
+                                                        }
                                                     >
                                                         <p>{sync.schedule_status === 'RUNNING' ? 'Pause' : 'Start'}</p>
                                                     </button>

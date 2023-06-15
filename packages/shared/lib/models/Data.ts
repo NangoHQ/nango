@@ -3,9 +3,14 @@ export interface DataResponse {
     [index: string]: unknown | undefined | string | number | boolean | Record<string, string | boolean | number | unknown>;
 }
 
-export interface UpsertResponse {
+export interface UpsertSummary {
     addedKeys: Array<string>;
     updatedKeys: Array<string>;
     affectedInternalIds: Array<string>;
     affectedExternalIds: Array<string>;
+}
+export interface UpsertResponse {
+    success: boolean;
+    summary?: UpsertSummary;
+    error?: string;
 }

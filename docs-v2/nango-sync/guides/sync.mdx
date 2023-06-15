@@ -8,11 +8,23 @@ description: 'Continuously sync with APIs, bi-directionally.'
 
 In this guide, we will sync issues from Github as `tickets`. It entails:
 
-1. Adding a folder in your repo where your [Integration](/core-concepts#integrations) code will live
+1. Adding a folder in your repo where your [Syncs](/nango-sync/architecture) will live
 2. Defining a `ticket` data model & configuring the sync
 3. Writing minimal code to fetch issues and transform them into `tickets`
 
-## 1. Create your integrations folder
+We recommend you read the [Architecture](/nango-sync/architecture) page before this guide.
+
+## 1. Start Nango locally
+
+From your repository's root directory run:
+
+```bash
+npx nango dev
+```
+
+This will start Nango and automatically recompile your integration files as needed.
+
+## 2. Create your nango-integrations folder
 
 Regardless of your programming language, in your repo, run:
 
@@ -20,17 +32,17 @@ Regardless of your programming language, in your repo, run:
 npx nango init && cd nango-integrations # Your new integrations folder
 ```
 
-## 2. Configure your Integration
+## 3. Configure your Sync
 
 Open the `nango.yaml` config file and define a new `github-tickets` sync and `ticket` model:
 
 ```yaml
 integrations:
-	github-tickets:
-		provider: github
-		runs: 'every hour'
-		returns:
-			- ticket
+	github:
+		github-tickets:
+			runs: 'every hour'
+			returns:
+				- ticket
 models:
 	ticket:
 		id: uuid
@@ -39,58 +51,75 @@ models:
 		...
 ```
 
+Note that the `id` property is mandatory and is used by Nango to de-duplicate records.
+
 Then run:
 
 ```bash
 npx nango g # Generates the model & scaffolding
 ```
 
-## 3. Write your Integration code
+## 4. Write your Integration code
 
 Open the `github-tickets.ts` which contains the following template:
 
 ```typescript
-import { NangoSync, NangoHelper } from '@nangohq/node';
-import { ticket } from '@nangohq/models';
+import { NangoSync } from '@nangohq/node';
+import { ticket } from './models';
 
-class GitHubTicketSync extends NangoSync {
-
-async function fetchData(nango: NangoHelper): { [ticket.name]: [ticket.type] } {
+export default async function fetchData(nango: NangoSync): Promise<{ticket: ticket[]}> {
 	// Integration code goes here.
 }
-
-export GitHubSync;
 ```
 
 Fill in the `fetchData` method with your integration code:
 
 ```typescript
 // API requests: handles auth, retries, rate-limiting, pagination and more.
-const ghIssues = nango.get('/v1/issues', paginated=true);
+const ghIssues = nango.get('/NangoHQ/nango/issues');
 
 // Mapping Github issues to tickets.
-const tickets = ghIssues.map(issue => {
-    ticket.field.id: issue.unique_id,
-    ticket.field.author: issue.username,
-    ticket.field.author_id: issue.username_id,
+const tickets: ticket[] = ghIssues.map(issue => ({
+    id: issue.id,
+    author: issue.user.login,
+    author_id: issue.user.id,
     ...
-});
+}));
 
 // Return strongly-typed objects.
-return { [ticket.name]: tickets }
+return { ticket: tickets }
 ```
 
-Finally, deploy your code to Nango:
+Easily test your sync with the CLI:
+
+```bash
+npx nango sync:run -p github -s github-tickets -c <user-id>
+```
+
+Finally, if all looks good you can deploy your sync to Nango:
 
 ```bash
 npx nango deploy
 ```
 
-That's it! When a user authorizes Github with Nango Auth, their issues will sync continuously! Nango provides:
+## 5. Fetch synced data in your backend
 
--   An SDK & API to access objects (strongly-typed)
--   A webhook to get real-time updates (strongly-typed)
--   A cache with fresh & highly-available data
--   Built-in tooling for easy API requests (pagination, retries, rate-limit handling, transient errors etc.)
--   Monitoring & Management console
--   Automatic scaling & reliability
+Fetch the always-fresh data from the Sync in your backend with the [SDK](/sdks) (or the [REST API](/api-reference)):
+
+```ts Node SDK example for Nango Cloud
+import { Nango }  from '@nangohq/node';
+
+const nango = new Nango({ secretKey: '<SECRET-KEY>' });
+
+const result = await nango.getRecords({
+    providerConfigKey: 'github',
+    connectionId: '<user-id>',
+    model: 'ticket'
+});
+```
+
+Nango can also send you [webhook](/nango-sync/webhooks) whenever new data is available from a sync.
+
+That's it!
+
+When a user authorizes your Github integration through `nango.auth()` their issues will start syncing continuously.

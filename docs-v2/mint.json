@@ -37,7 +37,7 @@
     },
     "anchors": [
         {
-            "name": "API Integrations",
+            "name": "Supported APIs",
             "icon": "bars",
             "url": "integrations"
         },
@@ -70,11 +70,15 @@
             "group": "Nango Sync",
             "pages": [
                 "nango-sync/overview",
+                "nango-sync/architecture",
                 {
                     "group": "Guides",
                     "pages": ["nango-sync/guides/sync", "nango-sync/guides/nango-proxy", "nango-sync/guides/webhooks"]
                 },
-                "nango-sync/configuration"
+                {
+                    "group": "Examples",
+                    "pages": ["nango-sync/examples/overview", "nango-sync/examples/asana-tasks", "nango-sync/examples/slack-users"]
+                }
             ]
         },
         {
@@ -268,7 +272,11 @@
         },
         {
             "group": "Connections",
-            "pages": ["api-reference/connection/list", "api-reference/connection/get", "api-reference/connection/delete"]
+            "pages": ["api-reference/connection/list", "api-reference/connection/get", "api-reference/connection/post", "api-reference/connection/delete"]
+        },
+        {
+            "group": "Sync",
+            "pages": ["api-reference/sync/records-get", "api-reference/sync/trigger"]
         },
         {
             "group": "Nango Proxy",

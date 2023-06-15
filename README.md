@@ -35,27 +35,27 @@ Build the integrations your customers need. Simplify your codebase. Sleep at nig
 
 ## ⭐ Nango at a glance
 
-Nango is a new way of building product integrations:
+Nango makes it easy to integrate your product with any external API.
 
--   as **powerful** as building yourself
+It is:
+
+-   as **powerful** as building integrations yourself
 -   as **fast** as buying a pre-built solution
 
-It supports:
+Build in hours, instead of weeks with our [production-ready infrastructure](https://docs.nango.dev) and pre-built [integration components for 100+ APIs](https://docs.nango.dev/integrations/overview):
 
--   🔐 Managed auth
--   🔁 Bi-directional syncing
--   🚫 Rate-limits & retries
--   📄 Pagination
--   🧠 Strong typing
--   🪝 Webhooks
--   👀 Monitoring
--   📺 Admin console
-
-We built the [hard infrastructure](https://docs.nango.dev/core-concepts#infra), so you don't have to.
+-   🔐 Auth for 100+ APIs with 1 line of code
+-   🔁 Bi-directional data syncing
+-   ⏩️ Easy unified APIs for any category
+-   🚫 Automatic, API specific rate-limits, retries & pagination
+-   🧠 Strong typing with your custom data models
+-   🪝 Webhooks & realtime data syncs
+-   👀 Built-in monitoring
+-   📺 Admin dashboard
 
 ## 👩‍💻 How it looks in my code
 
--   1-liner to start a new OAuth flow:
+-   1-liner to start a new OAuth flow & connect an integration:
 
 ```js
 nango.auth('github', '<user-id>');
@@ -64,12 +64,25 @@ nango.auth('github', '<user-id>');
 -   1-liner to fetch structured objects from any external API:
 
 ```js
-nango.github().issues('<user-id>');
+nango.getRecords({
+    providerConfigKey: 'github',
+    connectionId: '<user-id>',
+    model: 'GithubIssues', // Or anything else you want to sync
+});
 ```
+
+## Get started with Nango 🚀
+
+You can try Nango in 10 minutes with the [Quickstart 🚀](https://nango.dev/quickstart).
+
+Or explore more:
+- Understand Nango with the [core concepts](https://docs.nango.dev/core-concepts)
+- Learn more about data syncing and unified APIs with [Nango Sync](https://docs.nango.dev/nango-sync)
+- Explore the [100+ supported APIs](https://nango.dev/integrations)
 
 ## 100+ pre-configured APIs, easily add your own
 
-Nango works with **any** API and use-case. Adding [Integration Templates](https://docs.nango.dev/core-concepts#templates) is easy and we already have the main APIs covered.
+Nango works with **any** API and use-case. Adding [API Configurations](https://docs.nango.dev/core-concepts#api-configuration) is easy and we already have the main APIs covered.
 
 100+ APIs are pre-configured to work out-of-the-box, including:
 
@@ -99,7 +112,7 @@ Run locally:
 
 ```shell
 git clone https://github.com/NangoHQ/nango.git && cd nango && docker compose up
-```
+````
 
 Or sign up for free:
 

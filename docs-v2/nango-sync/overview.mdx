@@ -6,28 +6,57 @@ description: 'The easiest way to sync data with external APIs.'
 
 ## ⭐ Nango Sync at a glance
 
-Nango Sync lets you make requests and sync data with external APIs, on behalf of users. It works in isolation and seamlessly integrates with [Nango Auth](/nango-auth).
+Nango Sync makes it fast & easy to continuously exchange data with external APIs.
 
-It supports:
+Sync Salesforce leads, GitHub issues, Slack messages or anything else you can access with an API.  
+Write data back on-demand or a schedule.
 
--   bi-directional continuous syncing
--   synchronous/asynchronous reads & writes
--   real-time updates with webhooks
--   rate-limit & retry handling
--   auto-pagination & incremental syncing
--   monitoring & an admin console
+You get:
+
+-   🔁 Bi-directional, continuous data syncs
+-   ⬆️ Write data back on demand
+-   ⬇️ Fetch data on demand
+-   🪝 Real-time updates with webhooks
+
+Nango Sync takes care of:
+
+-   Syncs scheduling & incremential syncs
+-   End-to-end type safety with your own data models
+-   Built-in cache with automatic change detection & de-duplication
+-   Built-in monitoring & detailed logging
+-   API specific rate-limit & retry handling
+-   Inbound & outbound webhooks for real-time data Syncs
 
 ## 👩‍💻 How it looks in my code
 
-1-liner to fetch structured objects from any external API:
+1-liner in your frontend to let users connect a new integration (powered by [Nango Auth](/nango-auth)):
 
 ```js
-nango.github().issues('<user-id>');
+nango.auth('github', '<user-id>');
 ```
+
+Nango then automatically starts the continuous syncs for this new [connection](/core-concepts#connections).
+
+1-liner to fetch the synced data from any external API in your backend:
+
+```js
+nango.getRecords({
+    providerConfigKey: 'github',
+    connectionId: '<user-id>',
+    model: 'GithubIssues', // Or anything else you want to sync
+});
+```
+
+Take a look at the [Nango Sync examples](/nango-sync/examples) to see Nango Sync in action.
+
+Explore how to build specific integration features with our guides:
+- Adding [continuous data syncs](/nango-sync/guides/sync)
+- Make one-off API requests to read or write data with [Nango Proxy](/nango-sync/guides/nango-proxy)
+- Make data syncs realtime with [webhooks support](/nango-sync/guides/webhooks)
 
 ## 100+ pre-configured APIs, easily add your own
 
-Nango works with **any** API and use-case. Adding [Integration Templates](/core-concepts#integration-templates) is easy and we already have the main APIs covered.
+Nango works with **any** API and use-case. Adding [API Configurations](/core-concepts#api-configuration) is easy and we already have the main APIs covered.
 
 100+ APIs are pre-configured to work out-of-the-box, including:
 
