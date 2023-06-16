@@ -25,7 +25,7 @@ interface RunArgs {
 export const init = () => {
     const data: NangoConfig = {
         integrations: {
-            'github-prod': {
+            github: {
                 'github-users': {
                     runs: 'every hour',
                     returns: ['users']
@@ -133,7 +133,7 @@ export const run = async (args: string[], options: RunArgs) => {
 
     try {
         const results = await syncRun.run(lastSyncDate, true);
-        console.log(results);
+        console.log(JSON.stringify(results, null, 2));
         process.exit(0);
     } catch (e) {
         process.exit(1);
