@@ -1,6 +1,6 @@
 {
     "name": "nango",
-    "version": "0.20.10",
+    "version": "0.21.4",
     "description": "Nango's CLI tool.",
     "type": "module",
     "main": "dist/index.js",
@@ -20,7 +20,7 @@
         "dev": "npm run copyfiles && tsc -w"
     },
     "dependencies": {
-        "@nangohq/shared": "0.20.10",
+        "@nangohq/shared": "0.21.4",
         "@types/promptly": "^3.0.2",
         "@vercel/ncc": "^0.36.1",
         "axios": "^1.2.0",
