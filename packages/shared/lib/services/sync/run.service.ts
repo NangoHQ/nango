@@ -167,7 +167,7 @@ export default class SyncRun {
 
                         if (this.writeToDb && this.activityLogId) {
                             if (formattedResults.length === 0) {
-                                this.reportResults(now, model, models, upsertSummary as UpsertSummary, false, i, models.length, syncData.version);
+                                this.reportResults(now, model, models, upsertSummary as UpsertSummary, i, models.length, syncData.version);
                             }
 
                             if (formattedResults.length > 0) {
@@ -191,7 +191,7 @@ export default class SyncRun {
                                         affectedExternalIds: [...upsertSummary.affectedExternalIds, ...(affectedExternalIds as string[])]
                                     };
 
-                                    this.reportResults(now, model, models, upsertSummary, true, i, models.length, syncData.version);
+                                    this.reportResults(now, model, models, upsertSummary, i, models.length, syncData.version);
                                 }
 
                                 if (!upsertResult.success) {
@@ -223,7 +223,6 @@ export default class SyncRun {
         model: string,
         allModels: string[],
         totalResponseResults: UpsertSummary,
-        anyResultsInserted: boolean,
         index: number,
         numberOfModels: number,
         version?: string
@@ -248,9 +247,10 @@ export default class SyncRun {
             `The ${this.syncType} "${this.syncName}" sync has been completed to the ${model} model.` +
             (version ? ` The version integration script version ran was ${version}.` : '');
 
-        const resultMessage = anyResultsInserted
-            ? `The result was ${added} added record${added === 1 ? '' : 's'} and ${updated} updated record${updated === 1 ? '.' : 's.'}`
-            : 'The external API returned no results so nothing was inserted or updated.';
+        const resultMessage =
+            added > 0 || updated > 0
+                ? `The result was ${added} added record${added === 1 ? '' : 's'} and ${updated} updated record${updated === 1 ? '.' : 's.'}`
+                : 'The external API returned no results so nothing was inserted or updated.';
 
         const content = `${successMessage} ${resultMessage}`;
 
