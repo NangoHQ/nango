@@ -2,27 +2,5 @@ import { NangoSync } from '@nangohq/node';
 import { <%= interfaceNames.join(', ') %> } from './models';
 
 export default async function fetchData(nango: NangoSync): Promise<{<% for (let i = 0; i < mappings.length; i++) { %><%= mappings[i].name %>: <%= mappings[i].type %>[]<% if (i !== mappings.length - 1) { %>, <% } %><% } %>}> {
-    /**
-     * Rest of the integration code goes below.
-     * Example:
-         const response = await nango.get({
-             endpoint: 'repos/NangoHQ/nango/issues'
-         });
-
-         const issues = response.data.map((ghIssue: any) => {
-             const issue: Issue = {
-                 id: ghIssue.id,
-                 title: ghIssue.title,
-                 description: ghIssue.body,
-                 status: ghIssue.status,
-                 author: {
-                     avatar_url: ghIssue.user.avatar_url,
-                 }
-             };
-
-             return issue;
-         });
-
-         return { issues };
-    */
+    // Integration code goes here. See github-issue-example for a working example.
 }

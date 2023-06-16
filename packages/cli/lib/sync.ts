@@ -1,16 +1,21 @@
 import fs from 'fs';
-import path from 'path';
+import path, { dirname } from 'path';
+import { fileURLToPath } from 'url';
 import yaml from 'js-yaml';
 import chalk from 'chalk';
 import chokidar from 'chokidar';
 import * as tsNode from 'ts-node';
 import glob from 'glob';
+import ejs from 'ejs';
 import * as dotenv from 'dotenv';
 import { spawn } from 'child_process';
 
-import type { NangoConfig, Connection as NangoConnection } from '@nangohq/shared';
+import type { NangoConfig, Connection as NangoConnection, NangoIntegration, NangoIntegrationData } from '@nangohq/shared';
 import { cloudHost, stagingHost, SyncType, syncRunService, nangoConfigFile } from '@nangohq/shared';
 import { hostport, getConnection, NANGO_INTEGRATIONS_LOCATION, buildInterfaces } from './utils.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 dotenv.config();
 
@@ -22,43 +27,41 @@ interface RunArgs {
     useServerLastSyncDate?: boolean;
 }
 
+const exampleSyncName = 'github-issue-example';
+
 export const init = () => {
     const data: NangoConfig = {
         integrations: {
             github: {
-                'github-users': {
-                    runs: 'every hour',
-                    returns: ['users']
-                },
-                'github-issues': {
+                [exampleSyncName]: {
                     runs: 'every half hour',
-                    returns: ['issues']
+                    returns: ['GithubIssue']
                 }
             },
             'asana-dev': {
                 'asana-projects': {
                     runs: 'every hour',
-                    returns: ['projects']
+                    returns: ['AsanaProject']
                 }
             }
         },
         models: {
-            issues: {
+            GithubIssue: {
                 id: 'integer',
+                owner: 'string',
+                repo: 'string',
+                issue_number: 'number',
                 title: 'string',
-                description: 'string',
-                status: 'string',
-                author: {
-                    avatar_url: 'string'
-                }
+                author: 'string',
+                author_id: 'string',
+                state: 'string',
+                date_created: 'date',
+                date_last_modified: 'date',
+                body: 'string'
             },
-            projects: {
+            AsanaProject: {
                 id: 'number',
                 type: 'string'
-            },
-            users: {
-                id: 'number',
-                name: 'string'
             }
         }
     };
@@ -67,9 +70,74 @@ export const init = () => {
     if (!fs.existsSync(NANGO_INTEGRATIONS_LOCATION)) {
         fs.mkdirSync(NANGO_INTEGRATIONS_LOCATION);
     }
-    fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/${nangoConfigFile}`, yamlData);
 
-    console.log(chalk.green(`${nangoConfigFile} file has been created`));
+    if (!fs.existsSync(`${NANGO_INTEGRATIONS_LOCATION}/${nangoConfigFile}`)) {
+        fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/${nangoConfigFile}`, yamlData);
+    }
+
+    // check if a .env file exists and if not create it with some default content
+    if (!fs.existsSync('.env')) {
+        fs.writeFileSync(
+            '.env',
+            `#NANGO_HOSTPORT=https://api-staging.nango.dev
+#NANGO_SECRET_KEY=xxxx-xxx-xxxx
+#NANGO_INTEGRATIONS_LOCATION=use-this-to-override-where-the-nango-integrations-directory-goes
+#NANGO_DB_PORT=use-this-to-override-the-default-5432`
+        );
+    }
+
+    console.log(chalk.green(`Nango integrations initialized!`));
+};
+
+export const generate = async () => {
+    const templateContents = fs.readFileSync(path.resolve(__dirname, './integration.ejs'), 'utf8');
+    const githubExampleTemplateContents = fs.readFileSync(path.resolve(__dirname, './integration.github.ejs'), 'utf8');
+
+    const cwd = process.cwd();
+    const configContents = fs.readFileSync(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/${nangoConfigFile}`), 'utf8');
+    const configData: NangoConfig = yaml.load(configContents) as unknown as NangoConfig;
+    const { integrations } = configData;
+    const { models } = configData;
+
+    const interfaceDefinitions = buildInterfaces(models);
+
+    fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/models.ts`, interfaceDefinitions.join('\n'));
+
+    for (let i = 0; i < Object.keys(integrations).length; i++) {
+        const providerConfigKey = Object.keys(integrations)[i] as string;
+        const syncObject = integrations[providerConfigKey] as unknown as { [key: string]: NangoIntegration };
+        const syncNames = Object.keys(syncObject);
+        for (let k = 0; k < syncNames.length; k++) {
+            const syncName = syncNames[k] as string;
+            const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
+            const { returns: models } = syncData;
+            const syncNameCamel = syncName
+                .split('-')
+                .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                .join('');
+            const ejsTeamplateContents = syncName === exampleSyncName ? githubExampleTemplateContents : templateContents;
+            const rendered = ejs.render(ejsTeamplateContents, {
+                syncName: syncNameCamel,
+                interfaceNames: models.map((model) => {
+                    const singularModel = model?.charAt(model.length - 1) === 's' ? model.slice(0, -1) : model;
+                    return `${singularModel.charAt(0).toUpperCase()}${singularModel.slice(1)}`;
+                }),
+                mappings: models.map((model) => {
+                    const singularModel = model.charAt(model.length - 1) === 's' ? model.slice(0, -1) : model;
+                    return {
+                        name: model,
+                        type: `${singularModel.charAt(0).toUpperCase()}${singularModel.slice(1)}`
+                    };
+                })
+            });
+
+            if (!fs.existsSync(`${NANGO_INTEGRATIONS_LOCATION}/${syncName}.ts`)) {
+                fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/${syncName}.ts`, rendered);
+            }
+        }
+    }
+
+    console.log(chalk.green(`Integration files have been created`));
 };
 
 export const run = async (args: string[], options: RunArgs) => {
