@@ -121,6 +121,11 @@ class ConnectionService {
             .where({ connection_id: connectionId, provider_config_key: providerConfigKey, account_id: accountId })) as unknown as StoredConnection[];
 
         const storedConnection = result == null || result.length == 0 ? null : result[0] || null;
+
+        if (!storedConnection) {
+            throw new NangoError('unkown_connection', { connectionId, providerConfigKey });
+        }
+
         const connection = encryptionManager.decryptConnection(storedConnection);
 
         // Parse the token expiration date.
