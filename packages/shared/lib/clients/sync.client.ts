@@ -7,7 +7,7 @@ import type { NangoIntegrationData, NangoConfig, NangoIntegration } from '../int
 import { Sync, SyncStatus, SyncType, ScheduleStatus, SyncCommand, SyncWithSchedule } from '../models/Sync.js';
 import type { LogLevel, LogAction } from '../models/Activity.js';
 import { TASK_QUEUE } from '../constants.js';
-import { createActivityLog, createActivityLogMessage } from '../services/activity.service.js';
+import { createActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../services/activity.service.js';
 import { createSyncJob } from '../services/sync/job.service.js';
 import { loadNangoConfig, getInterval } from '../services/nango-config.service.js';
 import { createSchedule as createSyncSchedule } from '../services/sync/schedule.service.js';
@@ -228,7 +228,7 @@ class SyncClient {
         return schedules;
     }
 
-    async runSyncCommand(syncId: string, command: SyncCommand) {
+    async runSyncCommand(syncId: string, command: SyncCommand, activityLogId: number) {
         const scheduleHandle = this.client?.schedule.getHandle(syncId);
 
         try {
@@ -247,7 +247,14 @@ class SyncClient {
                     break;
             }
         } catch (e) {
-            console.log(e);
+            const errorMessage = JSON.stringify(e, ['message', 'name', 'stack'], 2);
+
+            await createActivityLogMessageAndEnd({
+                level: 'error',
+                activity_log_id: activityLogId as number,
+                timestamp: Date.now(),
+                content: `The sync command: ${command} failed with error: ${errorMessage}`
+            });
         }
     }
 
