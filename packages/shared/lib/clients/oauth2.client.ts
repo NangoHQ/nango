@@ -75,11 +75,18 @@ export async function getFreshOAuth2Credentials(connection: Connection, config: 
 
     try {
         rawNewAccessToken = await oldAccessToken.refresh(additionalParams);
-    } catch (e) {
-        const nangoErr = new NangoError(`refresh_token_external_error`);
+    } catch (e: any) {
+        let nangoErr: NangoError;
+        let errorPayload;
+        if ('data' in e && 'payload' in e.data) {
+            errorPayload = e.data.payload;
+        }
 
         if (Boom.isBoom(e)) {
-            nangoErr.payload = { external_message: e.message, external_request_details: JSON.stringify(e.output) };
+            const payload = { external_message: e.message, external_request_details: e.output, dataMessage: errorPayload };
+            nangoErr = new NangoError(`refresh_token_external_error`, payload);
+        } else {
+            nangoErr = new NangoError(`refresh_token_external_error`, { message: errorPayload });
         }
 
         throw nangoErr;

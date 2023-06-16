@@ -150,7 +150,15 @@ export class NangoError extends Error {
                 this.status = 400;
                 this.message = `No connection matching the provided params of 'connection_id' and 'provider_config_key'.`;
                 if (this.payload) {
-                    this.message += ` Please make sure these values exist in the Nango dashboard ${JSON.stringify(payload, null, 2)}}`;
+                    this.message += ` Please make sure these values exist in the Nango dashboard ${JSON.stringify(this.payload, null, 2)}}`;
+                }
+                break;
+
+            case 'refresh_token_external_error':
+                this.status = 400;
+                this.message = `The external API returned an error when trying to refresh the access token. Please try again later.`;
+                if (this.payload) {
+                    this.message += ` ${JSON.stringify(this.payload, null, 2)}`;
                 }
                 break;
 
@@ -210,5 +218,9 @@ export class NangoError extends Error {
                 this.type = 'unhandled_' + type;
                 this.message = `An unhandled error has occurred: ${type}`;
         }
+    }
+
+    public setPayload(payload: any) {
+        this.payload = payload;
     }
 }

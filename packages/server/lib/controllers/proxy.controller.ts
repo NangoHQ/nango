@@ -544,13 +544,19 @@ class ProxyController {
                 level: 'error',
                 activity_log_id: activityLogId,
                 timestamp: Date.now(),
-                content: `The provider responded back with a ${error?.response?.status} and the message ${errorMessage} to the url: ${url}.${
-                    config.template.docs ? ` Refer to the documentation at ${config.template.docs} for help` : ''
-                }`,
+                content: JSON.stringify({
+                    nangoComment: `The provider responded back with a ${error?.response?.status} to the url: ${url}`,
+                    providerResponse: errorMessage.toString()
+                }),
                 params: {
                     headers: JSON.stringify(config.headers)
                 }
             });
+        } else {
+            const content = `The provider responded back with a ${error?.response?.status} and the message ${errorMessage} to the url: ${url}.${
+                config.template.docs ? ` Refer to the documentation at ${config.template.docs} for help` : ''
+            }`;
+            console.error(content);
         }
     }
 
