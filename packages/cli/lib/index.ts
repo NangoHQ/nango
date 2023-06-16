@@ -17,9 +17,9 @@ import * as dotenv from 'dotenv';
 import promptly from 'promptly';
 
 import type { NangoConfig, NangoIntegration, NangoIntegrationData } from '@nangohq/shared';
-import { nangoConfigFile, loadSimplifiedConfig, checkForIntegrationFile } from '@nangohq/shared';
+import { cloudHost, stagingHost, nangoConfigFile, loadSimplifiedConfig, checkForIntegrationFile } from '@nangohq/shared';
 import { init, run, tsc, tscWatch, configWatch, dockerRun } from './sync.js';
-import { hostport, checkEnvVars, enrichHeaders, httpsAgent, NANGO_INTEGRATIONS_LOCATION, buildInterfaces, setCloudHost, setStagingHost } from './utils.js';
+import { hostport, checkEnvVars, enrichHeaders, httpsAgent, NANGO_INTEGRATIONS_LOCATION, buildInterfaces } from './utils.js';
 
 interface GlobalOptions {
     secretKey?: string;
@@ -184,9 +184,9 @@ program
 
             if (!process.env['NANGO_HOSTPORT']) {
                 if (staging) {
-                    setStagingHost();
+                    process.env['NANGO_HOSTPORT'] = stagingHost;
                 } else {
-                    setCloudHost();
+                    process.env['NANGO_HOSTPORT'] = cloudHost;
                 }
             }
 
