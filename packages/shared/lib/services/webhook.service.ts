@@ -9,7 +9,7 @@ class WebhookService {
     async sendUpdate(
         nangoConnection: NangoConnection,
         syncName: string,
-        model: string,
+        models: string[],
         responseResults: SyncResult,
         syncType: SyncType,
         now: string,
@@ -29,7 +29,7 @@ class WebhookService {
             connectionId: nangoConnection.connection_id,
             providerConfigKey: nangoConnection.provider_config_key,
             syncName,
-            model,
+            models,
             responseResults: {
                 added: responseResults.added,
                 updated: responseResults.updated

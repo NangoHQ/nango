@@ -132,7 +132,7 @@ export interface SyncWebhookBody {
     connectionId: string;
     providerConfigKey: string;
     syncName: string;
-    model: string;
+    models: string[];
     responseResults: SyncResult;
     syncType: SyncType;
     queryTimeStamp: string;
