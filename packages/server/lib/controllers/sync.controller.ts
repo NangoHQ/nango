@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import type { NextFunction } from 'express';
-import type { Connection } from '@nangohq/shared';
+import type { LogAction, LogLevel, Connection } from '@nangohq/shared';
 import { getUserAndAccountFromSession } from '../utils/utils.js';
 import {
     getAccount,
@@ -11,7 +11,11 @@ import {
     verifyOwnership,
     SyncClient,
     updateScheduleStatus,
-    getSyncsFlat
+    getSyncsFlat,
+    updateSuccess as updateSuccessActivityLog,
+    createActivityLogAndLogMessage,
+    createActivityLogMessageAndEnd,
+    createActivityLog
 } from '@nangohq/shared';
 
 class SyncController {
@@ -75,7 +79,7 @@ class SyncController {
                 res.status(404).send({ message: 'Connection not found!' });
             }
 
-            const syncs = await getSyncs(connection?.id as number);
+            const syncs = await getSyncs(connection as Connection);
 
             res.send(syncs);
         } catch (e) {
@@ -99,7 +103,7 @@ class SyncController {
 
             const connection: Connection | null = await connectionService.getConnection(connectionId as string, providerConfigKey as string, accountId);
 
-            const syncs = await getSyncsFlat(connection?.id as number);
+            const syncs = await getSyncsFlat(connection as Connection);
 
             const syncClient = await SyncClient.getInstance();
 
@@ -114,14 +118,46 @@ class SyncController {
     public async syncCommand(req: Request, res: Response, next: NextFunction) {
         try {
             const account = (await getUserAndAccountFromSession(req)).account;
-            const { schedule_id, command, nango_connection_id, sync_id } = req.body;
+            const { schedule_id, command, nango_connection_id, sync_id, sync_name, provider } = req.body;
+            const connection = await connectionService.getConnectionById(nango_connection_id);
+
+            const log = {
+                level: 'info' as LogLevel,
+                success: false,
+                action: 'sync' as LogAction,
+                start: Date.now(),
+                end: Date.now(),
+                timestamp: Date.now(),
+                connection_id: connection?.connection_id as string,
+                provider,
+                provider_config_key: connection?.provider_config_key as string,
+                account_id: account.id,
+                operation_name: sync_name
+            };
+
             if (!verifyOwnership(nango_connection_id, account.id, sync_id)) {
+                await createActivityLogAndLogMessage(log, {
+                    level: 'error',
+                    timestamp: Date.now(),
+                    content: `Unauthorized access to run the command: ${command} for sync: ${sync_id}`
+                });
+
                 res.sendStatus(401);
             }
 
+            const activityLogId = await createActivityLog(log);
+
             const syncClient = await SyncClient.getInstance();
-            syncClient?.runSyncCommand(schedule_id, command);
-            await updateScheduleStatus(schedule_id, command);
+            syncClient?.runSyncCommand(schedule_id, command, activityLogId as number);
+            await updateScheduleStatus(schedule_id, command, activityLogId as number);
+
+            await createActivityLogMessageAndEnd({
+                level: 'info',
+                activity_log_id: activityLogId as number,
+                timestamp: Date.now(),
+                content: `Sync was updated with command: ${command} for sync: ${sync_id}`
+            });
+            await updateSuccessActivityLog(activityLogId as number, true);
 
             res.sendStatus(200);
         } catch (e) {
