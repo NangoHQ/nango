@@ -94,9 +94,9 @@ update_node_dep "packages/worker/package.json" $(jq -r '.version' $NODE_CLIENT_P
 rm -rf ./packages/webapp/build/fonts
 ./scripts/docker-publish.bash nango-server $SERVER_WORKER_VERSION true $2
 rm -rf ./packages/webapp/build/fonts
-./scripts/docker-publish.bash nango-server $SERVER_WORKER_VERSION true hosted &
+./scripts/docker-publish.bash nango-server $SERVER_WORKER_VERSION true hosted
 rm -rf ./packages/webapp/build/fonts
-./scripts/docker-publish.bash nango-worker $SERVER_WORKER_VERSION true hosted &
+./scripts/docker-publish.bash nango-worker $SERVER_WORKER_VERSION true hosted
 
 
 SERVER_IMAGE="nangohq/nango-server"
