@@ -206,7 +206,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                                 )
                             }}
                         >
-                            Connection: {connection?.connectionId} - {connection?.provider}
+                            Connection: {connection?.connectionId} - {connection?.providerConfigKey}
                         </Typography>
                         {currentTab === 'auth' && (
                             <Button
