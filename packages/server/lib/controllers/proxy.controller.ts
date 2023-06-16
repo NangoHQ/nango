@@ -44,6 +44,7 @@ class ProxyController {
             const connectionId = req.get('Connection-Id') as string;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
             const retries = req.get('Retries') as string;
+            const baseUrlOverride = req.get('Base-Url-Override') as string;
             const isSync = req.get('Nango-Is-Sync') as string;
             const isDryRun = req.get('Nango-Is-Dry-Run') as string;
             const existingActivityLogId = req.get('Nango-Activity-Log-Id') as number | string;
