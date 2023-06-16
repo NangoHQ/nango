@@ -450,12 +450,12 @@ export function useGetSyncAPI() {
 }
 
 export function useRunSyncAPI() {
-    return async (command: RunSyncCommand, schedule_id: string, nango_connection_id: number, sync_id: number) => {
+    return async (command: RunSyncCommand, schedule_id: string, nango_connection_id: number, sync_id: number, sync_name: string, provider?: string) => {
         try {
             const res = await fetch(`/api/v1/sync/command`, {
                 method: 'POST',
                 headers: getHeaders(),
-                body: JSON.stringify({ command, schedule_id, nango_connection_id, sync_id })
+                body: JSON.stringify({ command, schedule_id, nango_connection_id, sync_id, sync_name, provider })
             });
 
             return res;

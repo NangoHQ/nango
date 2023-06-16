@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import db, { schema, dbNamespace } from '../../db/database.js';
 import { Sync, Job as SyncJob, SyncStatus, SyncWithSchedule } from '../../models/Sync.js';
+import type { Connection } from '../../models/Connection.js';
 import SyncClient from '../../clients/sync.client.js';
 import { markAllAsStopped } from './schedule.service.js';
 
@@ -81,12 +82,12 @@ export const getSync = async (nangoConnectionId: number, name: string): Promise<
     return null;
 };
 
-export const getSyncsFlat = async (nangoConnectionId: number): Promise<SyncWithSchedule[]> => {
+export const getSyncsFlat = async (nangoConnection: Connection): Promise<SyncWithSchedule[]> => {
     const result = await schema()
         .select('*')
         .from<Sync>(TABLE)
         .join(SYNC_SCHEDULE_TABLE, `${SYNC_SCHEDULE_TABLE}.sync_id`, `${TABLE}.id`)
-        .where({ nango_connection_id: nangoConnectionId });
+        .where({ nango_connection_id: nangoConnection.id });
 
     if (Array.isArray(result) && result.length > 0) {
         return result;
@@ -100,10 +101,10 @@ export const getSyncsFlat = async (nangoConnectionId: number): Promise<SyncWithS
  * @description get the sync related to the connection
  * the latest sync and its result and the next sync based on the schedule
  */
-export const getSyncs = async (nangoConnectionId: number): Promise<Sync[]> => {
+export const getSyncs = async (nangoConnection: Connection): Promise<Sync[]> => {
     const syncClient = await SyncClient.getInstance();
 
-    if (!syncClient || !nangoConnectionId) {
+    if (!syncClient || !nangoConnection || !nangoConnection.id) {
         return [];
     }
 
@@ -123,6 +124,7 @@ export const getSyncs = async (nangoConnectionId: number): Promise<Sync[]> => {
             db.knex.raw(
                 `(
                     SELECT json_build_object(
+                        'job_id', nango.${SYNC_JOB_TABLE}.id,
                         'updated_at', nango.${SYNC_JOB_TABLE}.updated_at,
                         'type', nango.${SYNC_JOB_TABLE}.type,
                         'result', nango.${SYNC_JOB_TABLE}.result,
@@ -140,7 +142,7 @@ export const getSyncs = async (nangoConnectionId: number): Promise<Sync[]> => {
         .leftJoin(SYNC_JOB_TABLE, `${SYNC_JOB_TABLE}.sync_id`, '=', `${TABLE}.id`)
         .join(SYNC_SCHEDULE_TABLE, `${SYNC_SCHEDULE_TABLE}.sync_id`, `${TABLE}.id`)
         .where({
-            nango_connection_id: nangoConnectionId
+            nango_connection_id: nangoConnection.id
         })
         .groupBy(
             `${TABLE}.id`,
