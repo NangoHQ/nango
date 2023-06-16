@@ -1,5 +1,4 @@
-//import _ from 'lodash';
-
+import { getById as getSyncById } from '../services/sync/sync.service.js';
 import { upsert } from '../services/sync/data.service.js';
 import { formatDataRecords } from '../services/sync/data-records.service.js';
 import { createActivityLogMessage } from '../services/activity.service.js';
@@ -42,25 +41,7 @@ export class NangoSync {
     syncJobId?: number;
     dryRun?: boolean;
 
-    //private throttledCreateActivityLogMessage;
-
     constructor(config: NangoProps = {}) {
-        //this.throttledCreateActivityLogMessage = _.throttle(createActivityLogMessage, THROTTLE_TIME);
-
-        /*
-        this.throttledCreateActivityLogMessage = _.throttle(() => {
-            if (isThrottled) {
-                console.log("Throttled createActivityLogMessage called");
-            } else {
-                createActivityLogMessage();
-                isThrottled = true;
-                setTimeout(() => {
-                    isThrottled = false;
-                }, throttleDuration);
-            }
-        }, throttleDuration);
-        */
-
         if (config.activityLogId) {
             this.activityLogId = config.activityLogId;
         }
@@ -82,31 +63,7 @@ export class NangoSync {
         if (config.dryRun) {
             this.dryRun = config.dryRun;
         }
-
-        /**
-        const isThrottled = this.throttledCreateActivityLogMessage.toString() !== createActivityLogMessage.toString();
-        if (isThrottled) {
-            this.addThrottledMessage()
-                .then(() => {
-                    console.warn('nango.log is being throttled. See the activity tab for more information.');
-                })
-                .catch((error) => {
-                    console.error(error);
-                });
-        }
-        */
     }
-
-    /*
-    async addThrottledMessage() {
-        await createActivityLogMessage({
-            level: 'error',
-            activity_log_id: this.activityLogId as number,
-            content: `nango.log can only be called every ${THROTTLE_TIME} milliseconds, some logs were dropped. Please consider adding a timeout or logging less.`,
-            timestamp: Date.now()
-        });
-    }
-    */
 
     public setLastSyncDate(date: Date) {
         this.lastSyncDate = date;
@@ -165,6 +122,12 @@ export class NangoSync {
 
         const formattedResults = formatDataRecords(results, this.nangoConnectionId as number, model, this.syncId as string, this.syncJobId);
 
+        const fullSync = await getSyncById(this.syncId as string);
+
+        if (fullSync && !fullSync?.models.includes(model)) {
+            throw new Error(`The model: ${model} is not included in the declared sync models: ${fullSync.models}.`);
+        }
+
         const responseResults = await upsert(
             formattedResults,
             '_nango_sync_data_records',
@@ -210,7 +173,6 @@ export class NangoSync {
             throw new Error('There is no current activity log stream to log to');
         }
 
-        //await this.throttledCreateActivityLogMessage({
         await createActivityLogMessage({
             level: userDefinedLevel?.level ?? 'info',
             activity_log_id: this.activityLogId as number,
