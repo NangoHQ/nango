@@ -119,6 +119,9 @@ export class NangoError extends Error {
             case 'unknown_provider_config':
                 this.status = 400;
                 this.message = `There is no Provider Configuration matching this key.`;
+                if (this.payload) {
+                    this.message += ` Please make sure this value exists in the Nango dashboard ${JSON.stringify(this.payload, null, 2)}}`;
+                }
                 break;
 
             case 'missing_provider_template':
