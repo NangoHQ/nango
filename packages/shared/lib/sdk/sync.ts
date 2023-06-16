@@ -154,7 +154,8 @@ export class NangoSync {
 
     public async batchSend(results: any[], model: string): Promise<UpsertResponse | null> {
         if (this.dryRun) {
-            console.log(results);
+            console.log('A batch send call would send the following data:');
+            console.log(JSON.stringify(results, null, 2));
             return null;
         }
 
