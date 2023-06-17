@@ -177,6 +177,7 @@
                 "integrations/all/google-sheet",
                 "integrations/all/gorgias",
                 "integrations/all/greenhouse",
+		"integrations/all/gumroad",
                 "integrations/all/gusto",
                 "integrations/all/hubspot",
                 "integrations/all/healthgorilla",
