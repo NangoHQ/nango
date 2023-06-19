@@ -9,7 +9,10 @@ import glob from 'glob';
 import ejs from 'ejs';
 import * as dotenv from 'dotenv';
 import { spawn } from 'child_process';
+import parser from '@babel/parser';
+import traverse, { NodePath } from '@babel/traverse';
 import type { ChildProcess } from 'node:child_process';
+import type * as t from '@babel/types';
 
 import type { NangoConfig, Connection as NangoConnection, NangoIntegration, NangoIntegrationData } from '@nangohq/shared';
 import { cloudHost, stagingHost, SyncType, syncRunService, nangoConfigFile } from '@nangohq/shared';
@@ -268,6 +271,9 @@ export const tsc = () => {
     const integrationFiles = glob.sync(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/*.ts`));
     for (const filePath of integrationFiles) {
         try {
+            if (!nangoCallsAreAwaited(filePath)) {
+                return;
+            }
             const result = compiler.compile(fs.readFileSync(filePath, 'utf8'), filePath);
             const jsFilePath = path.join(path.dirname(filePath), path.basename(filePath, '.ts') + '.js');
             const distJSFilePath = jsFilePath.replace(rawNangoIntegrationLocation, `${rawNangoIntegrationLocation}/dist`);
@@ -279,6 +285,36 @@ export const tsc = () => {
             console.error(error);
         }
     }
+};
+
+const nangoCallsAreAwaited = (filePath: string): boolean => {
+    const code = fs.readFileSync(filePath, 'utf-8');
+    let areAwaited = true;
+
+    const ast = parser.parse(code, { sourceType: 'module', plugins: ['typescript'] });
+
+    const message = (call: string, lineNumber: number) =>
+        console.log(chalk.red(`nango.${call}() calls must be awaited in "${filePath}:${lineNumber}". Not awaiting can lead to unexpected results.`));
+
+    const nangoCalls = ['batchSend', 'log', 'getFieldMapping', 'setFieldMapping', 'get', 'post', 'put', 'patch', 'delete'];
+
+    // @ts-ignore
+    traverse.default(ast, {
+        CallExpression(path: NodePath<t.CallExpression>) {
+            const lineNumber = path.node.loc?.start.line as number;
+            const callee = path.node.callee as t.MemberExpression;
+            if (callee.object.type === 'Identifier' && callee.object.name === 'nango' && callee.property.type === 'Identifier') {
+                if (path.parent.type !== 'AwaitExpression') {
+                    if (nangoCalls.includes(callee.property.name)) {
+                        message(callee.property.name, lineNumber);
+                        areAwaited = false;
+                    }
+                }
+            }
+        }
+    });
+
+    return areAwaited;
 };
 
 export const tscWatch = () => {
@@ -336,12 +372,14 @@ export const tscWatch = () => {
         });
 
         try {
+            if (!nangoCallsAreAwaited(filePath)) {
+                return;
+            }
             const result = compiler.compile(fs.readFileSync(filePath, 'utf8'), filePath);
             const jsFilePath = path.join(path.dirname(filePath), path.basename(filePath, '.ts') + '.js');
 
             const distJSFilePath = jsFilePath.replace(rawNangoIntegrationLocation, `${rawNangoIntegrationLocation}/dist`);
             fs.writeFileSync(distJSFilePath, result);
-
             console.log(chalk.green(`Compiled ${filePath} successfully`));
         } catch (error) {
             console.error(`Error compiling ${filePath}:`);
