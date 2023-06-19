@@ -21,6 +21,7 @@
     },
     "dependencies": {
         "@nangohq/shared": "0.21.4",
+        "@types/npm-package-arg": "^6.1.1",
         "@types/promptly": "^3.0.2",
         "@vercel/ncc": "^0.36.1",
         "axios": "^1.2.0",
@@ -34,8 +35,10 @@
         "figlet": "^1.6.0",
         "js-yaml": "^4.1.0",
         "memfs": "^3.5.1",
+        "npm-package-arg": "^10.1.0",
         "ora": "^6.3.1",
         "promptly": "^3.2.0",
+        "semver": "^7.5.2",
         "ts-node": "^10.9.1",
         "typescript": "^5.0.4"
     },

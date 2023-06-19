@@ -15,7 +15,7 @@ import promptly from 'promptly';
 
 import { cloudHost, stagingHost, nangoConfigFile, loadSimplifiedConfig, checkForIntegrationFile } from '@nangohq/shared';
 import { init, run, generate, tsc, tscWatch, configWatch, dockerRun, version } from './sync.js';
-import { checkEnvVars, enrichHeaders, httpsAgent, NANGO_INTEGRATIONS_LOCATION } from './utils.js';
+import { upgradeAction, checkEnvVars, enrichHeaders, httpsAgent, NANGO_INTEGRATIONS_LOCATION } from './utils.js';
 
 interface GlobalOptions {
     secretKey?: string;
@@ -27,6 +27,9 @@ class NangoCommand extends Command {
         const cmd = new Command(name);
         cmd.option('-sk, --secret-key [secretKey]', 'Set the secret key. Overrides the `NANGO_SECRET_KEY` value set in the .env file');
         cmd.option('-h, --host [host]', 'Set the host. Overrides the `NANGO_HOSTPORT` value set in the .env file');
+        cmd.hook('preAction', async () => {
+            await upgradeAction();
+        });
 
         return cmd;
     }
@@ -97,8 +100,8 @@ program
     .command('docker:run')
     .alias('dr')
     .description('Run the docker container locally')
-    .action(() => {
-        dockerRun();
+    .action(async () => {
+        await dockerRun();
     });
 
 program
@@ -106,10 +109,10 @@ program
     .alias('develop')
     .alias('watch')
     .description('Work locally to add integration code')
-    .action(() => {
+    .action(async () => {
         configWatch();
         tscWatch();
-        dockerRun();
+        await dockerRun();
     });
 
 interface DeployOptions extends GlobalOptions {

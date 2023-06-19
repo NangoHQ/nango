@@ -9,6 +9,7 @@ import glob from 'glob';
 import ejs from 'ejs';
 import * as dotenv from 'dotenv';
 import { spawn } from 'child_process';
+import type { ChildProcess } from 'node:child_process';
 
 import type { NangoConfig, Connection as NangoConnection, NangoIntegration, NangoIntegrationData } from '@nangohq/shared';
 import { cloudHost, stagingHost, SyncType, syncRunService, nangoConfigFile } from '@nangohq/shared';
@@ -50,6 +51,17 @@ const createModelFile = (notify = false) => {
 
 export const version = () => {
     const packageJson = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../package.json'), 'utf8'));
+    const dockerComposeYaml = fs.readFileSync(path.resolve(__dirname, '../docker/docker-compose.yaml'), 'utf8');
+    const dockerCompose = yaml.load(dockerComposeYaml) as any;
+
+    const nangoServerImage = dockerCompose.services['nango-server'].image;
+    const nangoWorkerImage = dockerCompose.services['nango-worker'].image;
+
+    const nangoServerVersion = nangoServerImage.split(':').pop();
+    const nangoWorkerVersion = nangoWorkerImage.split(':').pop();
+
+    console.log(chalk.green('Nango Server version:'), nangoServerVersion);
+    console.log(chalk.green('Nango Worker version:'), nangoWorkerVersion);
     console.log(chalk.green('Nango CLI version:'), packageJson.version);
 };
 
@@ -106,6 +118,7 @@ export const init = () => {
             `#NANGO_HOSTPORT=https://api-staging.nango.dev
 #NANGO_SECRET_KEY=xxxx-xxx-xxxx
 #NANGO_INTEGRATIONS_LOCATION=use-this-to-override-where-the-nango-integrations-directory-goes
+#NANGO_PORT=use-this-to-override-the-default-3003
 #NANGO_DB_PORT=use-this-to-override-the-default-5432`
         );
     }
@@ -351,17 +364,41 @@ export const configWatch = () => {
     });
 };
 
+let child: ChildProcess | undefined;
+process.on('SIGINT', () => {
+    if (child) {
+        const dockerDown = spawn('docker', ['compose', '-f', 'node_modules/nango/docker/docker-compose.yaml', '--project-directory', '.', 'down'], {
+            stdio: 'inherit'
+        });
+        dockerDown.on('exit', () => {
+            process.exit();
+        });
+    }
+});
+
 /**
  * Docker Run
  * @desc spawn a child process to run the docker compose located in the cli
  * Look into https://www.npmjs.com/package/docker-compose to avoid dependency maybe?
  */
-export const dockerRun = () => {
+export const dockerRun = async () => {
     const cwd = process.cwd();
 
-    spawn('docker', ['compose', '-f', 'node_modules/nango/docker/docker-compose.yaml', '--project-directory', '.', 'up', '--build'], {
+    child = spawn('docker', ['compose', '-f', 'node_modules/nango/docker/docker-compose.yaml', '--project-directory', '.', 'up', '--build'], {
         cwd,
         detached: false,
         stdio: 'inherit'
+    });
+
+    await new Promise((resolve, reject) => {
+        child?.on('exit', (code) => {
+            if (code !== 0) {
+                reject(new Error(`Error with the nango docker containers, please check your containers using 'docker ps''`));
+                return;
+            }
+            resolve(true);
+        });
+
+        child?.on('error', reject);
     });
 };

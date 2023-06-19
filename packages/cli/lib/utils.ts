@@ -1,8 +1,19 @@
 import https from 'https';
 import axios from 'axios';
+import fs from 'fs';
+import npa from 'npm-package-arg';
+import path, { dirname } from 'path';
+import { fileURLToPath } from 'url';
+import semver from 'semver';
+import { spawn } from 'child_process';
+import promptly from 'promptly';
+import chalk from 'chalk';
 import type { NangoModel } from '@nangohq/shared';
 import { cloudHost, stagingHost } from '@nangohq/shared';
 import * as dotenv from 'dotenv';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 dotenv.config();
 
@@ -38,6 +49,45 @@ export function checkEnvVars(optionalHostport?: string) {
         }
     } else {
         console.log(`Assuming you are self-hosting Nango (because you set the NANGO_HOSTPORT env var to ${hostport}).`);
+    }
+}
+
+export async function upgradeAction() {
+    try {
+        const resolved = npa('nango');
+        const { version } = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../package.json'), 'utf8'));
+        const response = await axios.get(`https://registry.npmjs.org/${resolved.name}`);
+        const latestVersion = response.data['dist-tags'].latest;
+
+        if (semver.gt(latestVersion, version)) {
+            console.log(chalk.red(`A new version of ${resolved.name} is available: ${latestVersion}`));
+            const cwd = process.cwd();
+
+            const upgrade = await promptly.confirm('Would you like to upgrade? (yes/no)');
+
+            if (upgrade) {
+                console.log(chalk.yellow(`Upgrading ${resolved.name} to version ${latestVersion}...`));
+                const child = spawn('npm', ['install', '--no-audit', `nango@${latestVersion}`], {
+                    cwd,
+                    detached: false,
+                    stdio: 'inherit'
+                });
+                await new Promise((resolve, reject) => {
+                    child.on('exit', (code) => {
+                        if (code !== 0) {
+                            reject(new Error(`Upgrade process exited with code ${code}`));
+                            return;
+                        }
+                        resolve(true);
+                        console.log(chalk.green(`Successfully upgraded ${resolved.name} to version ${latestVersion}`));
+                    });
+
+                    child.on('error', reject);
+                });
+            }
+        }
+    } catch (error: any) {
+        console.error(`An error occurred: ${error.message}`);
     }
 }
 
