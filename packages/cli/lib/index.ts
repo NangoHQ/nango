@@ -14,7 +14,7 @@ import * as dotenv from 'dotenv';
 import promptly from 'promptly';
 
 import { cloudHost, stagingHost, nangoConfigFile, loadSimplifiedConfig, checkForIntegrationFile } from '@nangohq/shared';
-import { init, run, generate, tsc, tscWatch, configWatch, dockerRun } from './sync.js';
+import { init, run, generate, tsc, tscWatch, configWatch, dockerRun, version } from './sync.js';
 import { checkEnvVars, enrichHeaders, httpsAgent, NANGO_INTEGRATIONS_LOCATION } from './utils.js';
 
 interface GlobalOptions {
@@ -44,6 +44,14 @@ program
     );
 
 program.addHelpText('before', chalk.green(figlet.textSync('Nango CLI')));
+
+program
+    .command('version')
+    .alias('v')
+    .description('Print the version of the Nango CLI')
+    .action(() => {
+        version();
+    });
 
 program
     .command('init')

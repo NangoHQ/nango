@@ -29,6 +29,30 @@ interface RunArgs {
 
 const exampleSyncName = 'github-issue-example';
 
+const createModelFile = (notify = false) => {
+    if (!fs.existsSync(`${NANGO_INTEGRATIONS_LOCATION}/models.ts`)) {
+        const cwd = process.cwd();
+        const configContents = fs.readFileSync(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/${nangoConfigFile}`), 'utf8');
+        const configData: NangoConfig = yaml.load(configContents) as unknown as NangoConfig;
+        const { models } = configData;
+        const interfaceDefinitions = buildInterfaces(models);
+        fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/models.ts`, interfaceDefinitions.join('\n'));
+
+        if (notify) {
+            console.log(
+                chalk.green(
+                    `${NANGO_INTEGRATIONS_LOCATION}/${nangoConfigFile} was updated. The interface file (${NANGO_INTEGRATIONS_LOCATION}/models.ts) was updated to reflect the updated config`
+                )
+            );
+        }
+    }
+};
+
+export const version = () => {
+    const packageJson = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../package.json'), 'utf8'));
+    console.log(chalk.green('Nango CLI version:'), packageJson.version);
+};
+
 export const init = () => {
     const data: NangoConfig = {
         integrations: {
@@ -218,6 +242,10 @@ export const tsc = () => {
         fs.mkdirSync(distDir);
     }
 
+    if (!fs.existsSync(`${NANGO_INTEGRATIONS_LOCATION}/models.ts`)) {
+        createModelFile();
+    }
+
     const rawNangoIntegrationLocation = NANGO_INTEGRATIONS_LOCATION.replace('./', '');
 
     const compiler = tsNode.create({
@@ -258,6 +286,10 @@ export const tscWatch = () => {
 
     if (!fs.existsSync(distDir)) {
         fs.mkdirSync(distDir);
+    }
+
+    if (!fs.existsSync(`${NANGO_INTEGRATIONS_LOCATION}/models.ts`)) {
+        createModelFile();
     }
 
     watcher.on('add', (filePath: string) => {
@@ -310,25 +342,13 @@ export const configWatch = () => {
     const watchPath = `${NANGO_INTEGRATIONS_LOCATION}/${nangoConfigFile}`;
     const watcher = chokidar.watch(watchPath, { ignoreInitial: true });
 
-    watcher.on('add', (filePath) => {
-        buildInterface(filePath);
+    watcher.on('add', () => {
+        createModelFile(true);
     });
 
-    watcher.on('change', (filePath) => {
-        buildInterface(filePath);
+    watcher.on('change', () => {
+        createModelFile(true);
     });
-
-    function buildInterface(filePath: string) {
-        const cwd = process.cwd();
-        const configContents = fs.readFileSync(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/${nangoConfigFile}`), 'utf8');
-        const configData: NangoConfig = yaml.load(configContents) as unknown as NangoConfig;
-        const { models } = configData;
-        const interfaces = buildInterfaces(models);
-        fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/models.ts`, interfaces.join('\n'));
-        console.log(
-            chalk.green(`${filePath} was updated. The interface file (${NANGO_INTEGRATIONS_LOCATION}/models.ts) was updated to reflect the updated config`)
-        );
-    }
 };
 
 /**
