@@ -105,11 +105,10 @@ WORKER_IMAGE="nangohq/nango-worker"
 sed -i "" "s|${SERVER_IMAGE}:[^ ]*|${SERVER_IMAGE}:${SERVER_WORKER_VERSION}|g" $DOCKER_COMPOSE_FILE
 sed -i "" "s|${WORKER_IMAGE}:[^ ]*|${WORKER_IMAGE}:${SERVER_WORKER_VERSION}|g" $DOCKER_COMPOSE_FILE
 
-wait
-
 echo "nango-server and nango-worker published successfully and docker-compose in the cli was updated"
 
 CLI_PACKAGE_JSON="packages/cli/package.json"
 update_package_json_version $CLI_PACKAGE_JSON $3
 
 cd ./packages/cli && npm publish --access public && cd ../../
+npm i
