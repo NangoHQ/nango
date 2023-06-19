@@ -11,11 +11,11 @@ export enum SyncType {
 }
 
 interface Timestamps {
-    created_at?: Date;
-    updated_at?: Date;
+    created_at?: string;
+    updated_at?: string;
 }
 
-export interface SyncResult {
+export interface SyncResult extends Timestamps {
     added: number;
     updated: number;
     deleted?: number;

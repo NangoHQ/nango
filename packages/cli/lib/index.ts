@@ -9,17 +9,13 @@ import axios from 'axios';
 import chalk from 'chalk';
 import figlet from 'figlet';
 import fs from 'fs';
-import path, { dirname } from 'path';
-import { fileURLToPath } from 'url';
-import yaml from 'js-yaml';
-import ejs from 'ejs';
+import path from 'path';
 import * as dotenv from 'dotenv';
 import promptly from 'promptly';
 
-import type { NangoConfig, NangoIntegration, NangoIntegrationData } from '@nangohq/shared';
-import { nangoConfigFile, loadSimplifiedConfig, checkForIntegrationFile } from '@nangohq/shared';
-import { init, run, tsc, tscWatch, configWatch, dockerRun } from './sync.js';
-import { hostport, checkEnvVars, enrichHeaders, httpsAgent, NANGO_INTEGRATIONS_LOCATION, buildInterfaces, setCloudHost, setStagingHost } from './utils.js';
+import { cloudHost, stagingHost, nangoConfigFile, loadSimplifiedConfig, checkForIntegrationFile } from '@nangohq/shared';
+import { init, run, generate, tsc, tscWatch, configWatch, dockerRun, version } from './sync.js';
+import { upgradeAction, checkEnvVars, enrichHeaders, httpsAgent, NANGO_INTEGRATIONS_LOCATION, verifyNecessaryFiles } from './utils.js';
 
 interface GlobalOptions {
     secretKey?: string;
@@ -31,15 +27,15 @@ class NangoCommand extends Command {
         const cmd = new Command(name);
         cmd.option('-sk, --secret-key [secretKey]', 'Set the secret key. Overrides the `NANGO_SECRET_KEY` value set in the .env file');
         cmd.option('-h, --host [host]', 'Set the host. Overrides the `NANGO_HOSTPORT` value set in the .env file');
+        cmd.hook('preAction', async () => {
+            await upgradeAction();
+        });
 
         return cmd;
     }
 }
 
 const program = new NangoCommand();
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 dotenv.config();
 
@@ -51,6 +47,14 @@ program
     );
 
 program.addHelpText('before', chalk.green(figlet.textSync('Nango CLI')));
+
+program
+    .command('version')
+    .alias('v')
+    .description('Print the version of the Nango CLI')
+    .action(() => {
+        version();
+    });
 
 program
     .command('init')
@@ -65,52 +69,8 @@ program
     .alias('g')
     .description('Generate a new Nango integration')
     .action(() => {
-        const templateContents = fs.readFileSync(path.resolve(__dirname, './integration.ejs'), 'utf8');
-
-        const cwd = process.cwd();
-        const configContents = fs.readFileSync(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/${nangoConfigFile}`), 'utf8');
-        const configData: NangoConfig = yaml.load(configContents) as unknown as NangoConfig;
-        const { integrations } = configData;
-        const { models } = configData;
-
-        const interfaceDefinitions = buildInterfaces(models);
-
-        fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/models.ts`, interfaceDefinitions.join('\n'));
-
-        for (let i = 0; i < Object.keys(integrations).length; i++) {
-            const providerConfigKey = Object.keys(integrations)[i] as string;
-            const syncObject = integrations[providerConfigKey] as unknown as { [key: string]: NangoIntegration };
-            const syncNames = Object.keys(syncObject);
-            for (let k = 0; k < syncNames.length; k++) {
-                const syncName = syncNames[k] as string;
-                const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
-                const { returns: models } = syncData;
-                const syncNameCamel = syncName
-                    .split('-')
-                    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-                    .join('');
-                const rendered = ejs.render(templateContents, {
-                    syncName: syncNameCamel,
-                    interfaceNames: models.map((model) => {
-                        const singularModel = model?.charAt(model.length - 1) === 's' ? model.slice(0, -1) : model;
-                        return `${singularModel.charAt(0).toUpperCase()}${singularModel.slice(1)}`;
-                    }),
-                    mappings: models.map((model) => {
-                        const singularModel = model.charAt(model.length - 1) === 's' ? model.slice(0, -1) : model;
-                        return {
-                            name: model,
-                            type: `${singularModel.charAt(0).toUpperCase()}${singularModel.slice(1)}`
-                        };
-                    })
-                });
-
-                if (!fs.existsSync(`${NANGO_INTEGRATIONS_LOCATION}/${syncName}.ts`)) {
-                    fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/${syncName}.ts`, rendered);
-                }
-            }
-        }
-
-        console.log(chalk.green(`Integration files have been created`));
+        verifyNecessaryFiles();
+        generate();
     });
 
 program
@@ -118,6 +78,7 @@ program
     .alias('compile')
     .description('Compile the integration files to JavaScript')
     .action(() => {
+        verifyNecessaryFiles();
         tsc();
     });
 
@@ -129,6 +90,7 @@ program
     .option('--no-compile-interfaces', `Watch the ${nangoConfigFile} and recompile the interfaces on change`, true)
     .action(async function (this: Command) {
         const { compileInterfaces } = this.opts();
+        verifyNecessaryFiles();
 
         if (compileInterfaces) {
             configWatch();
@@ -141,8 +103,9 @@ program
     .command('docker:run')
     .alias('dr')
     .description('Run the docker container locally')
-    .action(() => {
-        dockerRun();
+    .action(async () => {
+        verifyNecessaryFiles();
+        await dockerRun();
     });
 
 program
@@ -150,10 +113,11 @@ program
     .alias('develop')
     .alias('watch')
     .description('Work locally to add integration code')
-    .action(() => {
+    .action(async () => {
+        verifyNecessaryFiles();
         configWatch();
         tscWatch();
-        dockerRun();
+        await dockerRun();
     });
 
 interface DeployOptions extends GlobalOptions {
@@ -173,6 +137,7 @@ program
         const options = this.opts();
         (async (options: DeployOptions) => {
             const { staging, version, sync: optionalSyncName, secretKey, host } = options;
+            verifyNecessaryFiles();
 
             if (host) {
                 process.env['NANGO_HOSTPORT'] = host;
@@ -184,13 +149,13 @@ program
 
             if (!process.env['NANGO_HOSTPORT']) {
                 if (staging) {
-                    setStagingHost();
+                    process.env['NANGO_HOSTPORT'] = stagingHost;
                 } else {
-                    setCloudHost();
+                    process.env['NANGO_HOSTPORT'] = cloudHost;
                 }
             }
 
-            if (hostport !== 'http://localhost:3003' && !process.env['NANGO_SECRET_KEY']) {
+            if (process.env['NANGO_HOSTPORT'] !== 'http://localhost:3003' && !process.env['NANGO_SECRET_KEY']) {
                 console.log(chalk.red(`NANGO_SECRET_KEY environment variable is not set. Please set it now`));
                 try {
                     const secretKey = await promptly.prompt('Secret Key: ');
@@ -205,7 +170,7 @@ program
                 }
             }
 
-            checkEnvVars();
+            checkEnvVars(process.env['NANGO_HOSTPORT']);
             tsc();
 
             const cwd = process.cwd();
@@ -252,7 +217,14 @@ program
                 }
             }
 
-            const url = hostport + `/sync/deploy`;
+            const url = process.env['NANGO_HOSTPORT'] + `/sync/deploy`;
+
+            if (postData.length === 0) {
+                console.log(
+                    chalk.red(`No syncs found to deploy. Please make sure your integration files compiled successfully and exist in your dist directory`)
+                );
+                return;
+            }
 
             await axios
                 .post(url, postData, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
@@ -271,6 +243,7 @@ program
     .alias('scc')
     .description('Verify the parsed sync config and output the object for verification')
     .action(async () => {
+        verifyNecessaryFiles();
         const cwd = process.cwd();
         const config = await loadSimplifiedConfig(path.resolve(cwd, NANGO_INTEGRATIONS_LOCATION));
 
@@ -287,7 +260,7 @@ program
     .option('-l, --lastSyncDate [lastSyncDate]', 'Optional: last sync date to retrieve records greater than this date')
     .option('-u, --useServerLastSyncDate', 'Optional boolean: use the server stored last sync date to retrieve records greater than this date')
     .action(async function (this: Command) {
-        checkEnvVars();
+        verifyNecessaryFiles();
         run(this.args, this.opts());
     });
 

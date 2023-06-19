@@ -119,6 +119,9 @@ export class NangoError extends Error {
             case 'unknown_provider_config':
                 this.status = 400;
                 this.message = `There is no Provider Configuration matching this key.`;
+                if (this.payload) {
+                    this.message += ` Please make sure this value exists in the Nango dashboard ${JSON.stringify(this.payload, null, 2)}}`;
+                }
                 break;
 
             case 'missing_provider_template':
@@ -148,7 +151,18 @@ export class NangoError extends Error {
 
             case 'unkown_connection':
                 this.status = 400;
-                this.message = `No connection matching params 'connection_id' and 'provider_config_key'.`;
+                this.message = `No connection matching the provided params of 'connection_id' and 'provider_config_key'.`;
+                if (this.payload) {
+                    this.message += ` Please make sure these values exist in the Nango dashboard ${JSON.stringify(this.payload, null, 2)}}`;
+                }
+                break;
+
+            case 'refresh_token_external_error':
+                this.status = 400;
+                this.message = `The external API returned an error when trying to refresh the access token. Please try again later.`;
+                if (this.payload) {
+                    this.message += ` ${JSON.stringify(this.payload, null, 2)}`;
+                }
                 break;
 
             case 'connection_already_exists':
@@ -207,5 +221,9 @@ export class NangoError extends Error {
                 this.type = 'unhandled_' + type;
                 this.message = `An unhandled error has occurred: ${type}`;
         }
+    }
+
+    public setPayload(payload: any) {
+        this.payload = payload;
     }
 }

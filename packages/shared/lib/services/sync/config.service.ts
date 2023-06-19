@@ -22,7 +22,7 @@ export async function createSyncConfig(account_id: number, syncs: IncomingSyncCo
         const config = await configService.getProviderConfig(providerConfigKey, account_id);
 
         if (!config) {
-            throw new NangoError('unknown_provider_config');
+            throw new NangoError('unknown_provider_config', { providerConfigKey });
         }
 
         const previousSyncConfig = await getSyncConfigByParams(account_id, syncName, providerConfigKey);

@@ -94,9 +94,9 @@ update_node_dep "packages/worker/package.json" $(jq -r '.version' $NODE_CLIENT_P
 rm -rf ./packages/webapp/build/fonts
 ./scripts/docker-publish.bash nango-server $SERVER_WORKER_VERSION true $2
 rm -rf ./packages/webapp/build/fonts
-./scripts/docker-publish.bash nango-server $SERVER_WORKER_VERSION true hosted &
+./scripts/docker-publish.bash nango-server $SERVER_WORKER_VERSION true hosted
 rm -rf ./packages/webapp/build/fonts
-./scripts/docker-publish.bash nango-worker $SERVER_WORKER_VERSION true hosted &
+./scripts/docker-publish.bash nango-worker $SERVER_WORKER_VERSION true hosted
 
 
 SERVER_IMAGE="nangohq/nango-server"
@@ -105,11 +105,10 @@ WORKER_IMAGE="nangohq/nango-worker"
 sed -i "" "s|${SERVER_IMAGE}:[^ ]*|${SERVER_IMAGE}:${SERVER_WORKER_VERSION}|g" $DOCKER_COMPOSE_FILE
 sed -i "" "s|${WORKER_IMAGE}:[^ ]*|${WORKER_IMAGE}:${SERVER_WORKER_VERSION}|g" $DOCKER_COMPOSE_FILE
 
-wait
-
 echo "nango-server and nango-worker published successfully and docker-compose in the cli was updated"
 
 CLI_PACKAGE_JSON="packages/cli/package.json"
 update_package_json_version $CLI_PACKAGE_JSON $3
 
 cd ./packages/cli && npm publish --access public && cd ../../
+npm i

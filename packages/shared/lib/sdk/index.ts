@@ -137,10 +137,10 @@ export class Nango {
         const headers: Record<string, string | number | boolean> = {
             'Connection-Id': connectionId as string,
             'Provider-Config-Key': providerConfigKey as string,
+            'Base-Url-Override': baseUrlOverride || '',
             'Nango-Is-Sync': this.isSync,
             'Nango-Is-Dry-Run': this.dryRun,
             'Nango-Activity-Log-Id': this.activityLogId || '',
-            'Nango-Base-Url-Override': baseUrlOverride || '',
             ...customHeaders
         };
 

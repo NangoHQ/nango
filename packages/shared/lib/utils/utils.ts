@@ -47,13 +47,23 @@ export function getPort() {
         return +process.env['SERVER_PORT'];
     } else if (process.env['PORT'] != null) {
         return +process.env['PORT']; // For Heroku (dynamic port)
+    } else if (process.env['NANGO_PORT'] != null) {
+        return +process.env['NANGO_PORT']; // more friendly cli port name
     } else {
         return 3003;
     }
 }
 
 export function getServerPort() {
-    return process.env['SERVER_PORT'] != null ? +process.env['SERVER_PORT'] : 3003;
+    if (process.env['SERVER_PORT'] != null) {
+        return +process.env['SERVER_PORT'];
+    } else if (process.env['PORT'] != null) {
+        return +process.env['PORT']; // For Heroku (dynamic port)
+    } else if (process.env['NANGO_PORT'] != null) {
+        return +process.env['NANGO_PORT']; // more friendly cli port name
+    } else {
+        return 3003;
+    }
 }
 
 export function isDev() {

@@ -6,7 +6,6 @@ import querystring from 'querystring';
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import { backOff } from 'exponential-backoff';
 
-import logger from '../utils/logger.js';
 import {
     Connection,
     createActivityLog,
@@ -44,10 +43,10 @@ class ProxyController {
             const connectionId = req.get('Connection-Id') as string;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
             const retries = req.get('Retries') as string;
+            const baseUrlOverride = req.get('Base-Url-Override') as string;
             const isSync = req.get('Nango-Is-Sync') as string;
             const isDryRun = req.get('Nango-Is-Dry-Run') as string;
             const existingActivityLogId = req.get('Nango-Activity-Log-Id') as number | string;
-            const baseUrlOverride = req.get('Nango-Base-Url-Override') as string;
             const accountId = getAccount(res);
 
             const logAction: LogAction = isSync ? 'sync' : ('proxy' as LogAction);
@@ -245,9 +244,17 @@ class ProxyController {
      * @param {AxiosError} error
      * @param {attemptNumber} number
      */
-    private retry = (error: AxiosError, attemptNumber: number): boolean => {
+    private retry = async (activityLogId: number, error: AxiosError, attemptNumber: number): Promise<boolean> => {
         if (error?.response?.status.toString().startsWith('5') || error?.response?.status === 429) {
-            logger.info(`API received an ${error?.response?.status} error, retrying with exponential backoffs for a total of ${attemptNumber} times`);
+            const content = `API received an ${error?.response?.status} error, retrying with exponential backoffs for a total of ${attemptNumber} times`;
+
+            await createActivityLogMessage({
+                level: 'error',
+                activity_log_id: activityLogId,
+                timestamp: Date.now(),
+                content
+            });
+
             return true;
         }
 
@@ -367,7 +374,7 @@ class ProxyController {
                         decompress: false
                     });
                 },
-                { numOfAttempts: Number(config.retries), retry: this.retry }
+                { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId) }
             );
 
             this.handleResponse(res, responseStream, config, activityLogId, url, isSync, isDryRun);
@@ -406,7 +413,7 @@ class ProxyController {
                         decompress: false
                     });
                 },
-                { numOfAttempts: Number(config.retries), retry: this.retry }
+                { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId) }
             );
 
             this.handleResponse(res, responseStream, config, activityLogId, url, isSync, isDryRun);
@@ -445,7 +452,7 @@ class ProxyController {
                         decompress: false
                     });
                 },
-                { numOfAttempts: Number(config.retries), retry: this.retry }
+                { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId) }
             );
 
             this.handleResponse(res, responseStream, config, activityLogId, url, isSync, isDryRun);
@@ -484,7 +491,7 @@ class ProxyController {
                         decompress: false
                     });
                 },
-                { numOfAttempts: Number(config.retries), retry: this.retry }
+                { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId) }
             );
 
             this.handleResponse(res, responseStream, config, activityLogId, url, isSync, isDryRun);
@@ -522,7 +529,7 @@ class ProxyController {
                         decompress: false
                     });
                 },
-                { numOfAttempts: Number(config.retries), retry: this.retry }
+                { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId) }
             );
             this.handleResponse(res, responseStream, config, activityLogId, url, isSync, isDryRun);
         } catch (error) {
@@ -537,13 +544,19 @@ class ProxyController {
                 level: 'error',
                 activity_log_id: activityLogId,
                 timestamp: Date.now(),
-                content: `The provider responded back with a ${error?.response?.status} and the message ${errorMessage} to the url: ${url}.${
-                    config.template.docs ? ` Refer to the documentation at ${config.template.docs} for help` : ''
-                }`,
+                content: JSON.stringify({
+                    nangoComment: `The provider responded back with a ${error?.response?.status} to the url: ${url}`,
+                    providerResponse: errorMessage.toString()
+                }),
                 params: {
                     headers: JSON.stringify(config.headers)
                 }
             });
+        } else {
+            const content = `The provider responded back with a ${error?.response?.status} and the message ${errorMessage} to the url: ${url}.${
+                config.template.docs ? ` Refer to the documentation at ${config.template.docs} for help` : ''
+            }`;
+            console.error(content);
         }
     }
 
