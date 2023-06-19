@@ -9,7 +9,7 @@ import { spawn } from 'child_process';
 import promptly from 'promptly';
 import chalk from 'chalk';
 import type { NangoModel } from '@nangohq/shared';
-import { cloudHost, stagingHost } from '@nangohq/shared';
+import { cloudHost, stagingHost, nangoConfigFile } from '@nangohq/shared';
 import * as dotenv from 'dotenv';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -49,6 +49,13 @@ export function checkEnvVars(optionalHostport?: string) {
         }
     } else {
         console.log(`Assuming you are self-hosting Nango (because you set the NANGO_HOSTPORT env var to ${hostport}).`);
+    }
+}
+
+export function verifyNecessaryFiles() {
+    if (!fs.existsSync(path.resolve(process.cwd(), NANGO_INTEGRATIONS_LOCATION))) {
+        console.log(chalk.red(`No ${nangoConfigFile} file found. Please run 'nango init' first`));
+        process.exit(1);
     }
 }
 

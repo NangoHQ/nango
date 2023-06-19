@@ -373,6 +373,8 @@ process.on('SIGINT', () => {
         dockerDown.on('exit', () => {
             process.exit();
         });
+    } else {
+        process.exit();
     }
 });
 

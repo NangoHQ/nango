@@ -15,7 +15,7 @@ import promptly from 'promptly';
 
 import { cloudHost, stagingHost, nangoConfigFile, loadSimplifiedConfig, checkForIntegrationFile } from '@nangohq/shared';
 import { init, run, generate, tsc, tscWatch, configWatch, dockerRun, version } from './sync.js';
-import { upgradeAction, checkEnvVars, enrichHeaders, httpsAgent, NANGO_INTEGRATIONS_LOCATION } from './utils.js';
+import { upgradeAction, checkEnvVars, enrichHeaders, httpsAgent, NANGO_INTEGRATIONS_LOCATION, verifyNecessaryFiles } from './utils.js';
 
 interface GlobalOptions {
     secretKey?: string;
@@ -69,6 +69,7 @@ program
     .alias('g')
     .description('Generate a new Nango integration')
     .action(() => {
+        verifyNecessaryFiles();
         generate();
     });
 
@@ -77,6 +78,7 @@ program
     .alias('compile')
     .description('Compile the integration files to JavaScript')
     .action(() => {
+        verifyNecessaryFiles();
         tsc();
     });
 
@@ -88,6 +90,7 @@ program
     .option('--no-compile-interfaces', `Watch the ${nangoConfigFile} and recompile the interfaces on change`, true)
     .action(async function (this: Command) {
         const { compileInterfaces } = this.opts();
+        verifyNecessaryFiles();
 
         if (compileInterfaces) {
             configWatch();
@@ -101,6 +104,7 @@ program
     .alias('dr')
     .description('Run the docker container locally')
     .action(async () => {
+        verifyNecessaryFiles();
         await dockerRun();
     });
 
@@ -110,6 +114,7 @@ program
     .alias('watch')
     .description('Work locally to add integration code')
     .action(async () => {
+        verifyNecessaryFiles();
         configWatch();
         tscWatch();
         await dockerRun();
@@ -132,6 +137,7 @@ program
         const options = this.opts();
         (async (options: DeployOptions) => {
             const { staging, version, sync: optionalSyncName, secretKey, host } = options;
+            verifyNecessaryFiles();
 
             if (host) {
                 process.env['NANGO_HOSTPORT'] = host;
@@ -213,6 +219,13 @@ program
 
             const url = process.env['NANGO_HOSTPORT'] + `/sync/deploy`;
 
+            if (postData.length === 0) {
+                console.log(
+                    chalk.red(`No syncs found to deploy. Please make sure your integration files compiled successfully and exist in your dist directory`)
+                );
+                return;
+            }
+
             await axios
                 .post(url, postData, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
                 .then((_) => {
@@ -230,6 +243,7 @@ program
     .alias('scc')
     .description('Verify the parsed sync config and output the object for verification')
     .action(async () => {
+        verifyNecessaryFiles();
         const cwd = process.cwd();
         const config = await loadSimplifiedConfig(path.resolve(cwd, NANGO_INTEGRATIONS_LOCATION));
 
@@ -246,7 +260,7 @@ program
     .option('-l, --lastSyncDate [lastSyncDate]', 'Optional: last sync date to retrieve records greater than this date')
     .option('-u, --useServerLastSyncDate', 'Optional boolean: use the server stored last sync date to retrieve records greater than this date')
     .action(async function (this: Command) {
-        checkEnvVars();
+        verifyNecessaryFiles();
         run(this.args, this.opts());
     });
 
