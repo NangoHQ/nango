@@ -1,6 +1,6 @@
 import { loadNangoConfig } from '../nango-config.service.js';
 import type { NangoConnection } from '../../models/Connection.js';
-import { SyncType, SyncStatus, SyncResult } from '../../models/Sync.js';
+import { SyncResult, SyncType, SyncStatus, Job as SyncJob } from '../../models/Sync.js';
 import { createActivityLogMessage, createActivityLogMessageAndEnd, updateSuccess as updateSuccessActivityLog } from '../activity.service.js';
 import { addSyncConfigToJob, updateSyncJobResult, updateSyncJobStatus } from '../sync/job.service.js';
 import { checkForIntegrationFile } from '../nango-config.service.js';
@@ -109,8 +109,6 @@ export default class SyncRun {
             const providerConfigKey = this.nangoConnection.provider_config_key;
             const syncObject = integrations[providerConfigKey] as unknown as { [key: string]: NangoIntegration };
 
-            const now = new Date();
-
             if (!isCloud()) {
                 const { path: integrationFilePath, result: integrationFileResult } = checkForIntegrationFile(this.syncName, this.loadLocation);
                 if (!integrationFileResult) {
@@ -167,7 +165,14 @@ export default class SyncRun {
 
                         if (this.writeToDb && this.activityLogId) {
                             if (formattedResults.length === 0) {
-                                this.reportResults(now, model, models, upsertSummary as UpsertSummary, i, models.length, syncData.version);
+                                this.reportResults(
+                                    model,
+                                    { addedKeys: [], updatedKeys: [], affectedInternalIds: [], affectedExternalIds: [] },
+                                    upsertSummary as UpsertSummary,
+                                    i,
+                                    models.length,
+                                    syncData.version
+                                );
                             }
 
                             if (formattedResults.length > 0) {
@@ -191,7 +196,7 @@ export default class SyncRun {
                                         affectedExternalIds: [...upsertSummary.affectedExternalIds, ...(affectedExternalIds as string[])]
                                     };
 
-                                    this.reportResults(now, model, models, upsertSummary, i, models.length, syncData.version);
+                                    this.reportResults(model, summary as UpsertSummary, upsertSummary, i, models.length, syncData.version);
                                 }
 
                                 if (!upsertResult.success) {
@@ -219,9 +224,8 @@ export default class SyncRun {
     }
 
     async reportResults(
-        now: Date,
         model: string,
-        allModels: string[],
+        responseResults: UpsertSummary,
         totalResponseResults: UpsertSummary,
         index: number,
         numberOfModels: number,
@@ -236,12 +240,13 @@ export default class SyncRun {
             await updateSuccessActivityLog(this.activityLogId, true);
         }
 
-        const syncResult: SyncResult = await updateSyncJobResult(this.syncJobId, {
+        const syncResult: SyncJob = await updateSyncJobResult(this.syncJobId, {
             added: totalResponseResults.addedKeys.length,
             updated: totalResponseResults.updatedKeys.length
         });
 
-        const { added, updated } = syncResult;
+        const { result } = syncResult;
+        const { added, updated } = result as SyncResult;
 
         const successMessage =
             `The ${this.syncType} "${this.syncName}" sync has been completed to the ${model} model.` +
@@ -254,9 +259,17 @@ export default class SyncRun {
 
         const content = `${successMessage} ${resultMessage}`;
 
-        if (index === numberOfModels - 1) {
-            await webhookService.sendUpdate(this.nangoConnection, this.syncName, allModels, syncResult, this.syncType, now.toISOString(), this.activityLogId);
+        await webhookService.sendUpdate(
+            this.nangoConnection,
+            this.syncName,
+            model,
+            { added: responseResults.addedKeys.length, updated: responseResults.updatedKeys.length },
+            this.syncType,
+            syncResult.updated_at as string,
+            this.activityLogId
+        );
 
+        if (index === numberOfModels - 1) {
             await createActivityLogMessageAndEnd({
                 level: 'info',
                 activity_log_id: this.activityLogId,

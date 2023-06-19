@@ -11,8 +11,6 @@ import type { SyncResult } from '../models/Sync.js';
 
 import { Nango } from './index.js';
 
-//const THROTTLE_TIME = 100;
-
 interface NangoProps {
     host?: string;
     secretKey?: string;
