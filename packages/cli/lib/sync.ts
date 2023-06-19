@@ -34,21 +34,20 @@ interface RunArgs {
 const exampleSyncName = 'github-issue-example';
 
 const createModelFile = (notify = false) => {
-    if (!fs.existsSync(`${NANGO_INTEGRATIONS_LOCATION}/models.ts`)) {
-        const cwd = process.cwd();
-        const configContents = fs.readFileSync(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/${nangoConfigFile}`), 'utf8');
-        const configData: NangoConfig = yaml.load(configContents) as unknown as NangoConfig;
-        const { models } = configData;
-        const interfaceDefinitions = buildInterfaces(models);
-        fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/models.ts`, interfaceDefinitions.join('\n'));
+    const cwd = process.cwd();
+    const configContents = fs.readFileSync(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/${nangoConfigFile}`), 'utf8');
+    const configData: NangoConfig = yaml.load(configContents) as unknown as NangoConfig;
+    const { models } = configData;
+    const interfaceDefinitions = buildInterfaces(models);
+    fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/models.ts`, interfaceDefinitions.join('\n'));
 
-        if (notify) {
-            console.log(
-                chalk.green(
-                    `${NANGO_INTEGRATIONS_LOCATION}/${nangoConfigFile} was updated. The interface file (${NANGO_INTEGRATIONS_LOCATION}/models.ts) was updated to reflect the updated config`
-                )
-            );
-        }
+    if (notify) {
+        const rawNangoIntegrationLocation = NANGO_INTEGRATIONS_LOCATION.replace('./', '');
+        console.log(
+            chalk.green(
+                `${rawNangoIntegrationLocation}/${nangoConfigFile} was updated. The interface file (${rawNangoIntegrationLocation}/models.ts) was updated to reflect the updated config`
+            )
+        );
     }
 };
 
@@ -349,6 +348,9 @@ export const tscWatch = () => {
     });
 
     watcher.on('unlink', (filePath: string) => {
+        if (filePath === `${rawNangoIntegrationLocation}/${nangoConfigFile}`) {
+            return;
+        }
         const jsFilePath = path.join(path.dirname(filePath), path.basename(filePath, '.ts') + '.js');
         const distJSFilePath = jsFilePath.replace(rawNangoIntegrationLocation, `${rawNangoIntegrationLocation}/dist`);
         fs.unlinkSync(distJSFilePath);
