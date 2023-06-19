@@ -303,7 +303,7 @@ const nangoCallsAreAwaited = (filePath: string): boolean => {
         CallExpression(path: NodePath<t.CallExpression>) {
             const lineNumber = path.node.loc?.start.line as number;
             const callee = path.node.callee as t.MemberExpression;
-            if (callee.object.type === 'Identifier' && callee.object.name === 'nango' && callee.property.type === 'Identifier') {
+            if (callee.object?.type === 'Identifier' && callee.object.name === 'nango' && callee.property?.type === 'Identifier') {
                 if (path.parent.type !== 'AwaitExpression') {
                     if (nangoCalls.includes(callee.property.name)) {
                         message(callee.property.name, lineNumber);
