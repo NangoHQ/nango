@@ -77,7 +77,7 @@ program
     .command('tsc')
     .alias('compile')
     .description('Compile the integration files to JavaScript')
-    .action(() => {
+    .action(async function (this: Command) {
         verifyNecessaryFiles();
         tsc();
     });
@@ -113,9 +113,14 @@ program
     .alias('develop')
     .alias('watch')
     .description('Work locally to add integration code')
-    .action(async () => {
+    .option('--no-compile-interfaces', `Watch the ${nangoConfigFile} and recompile the interfaces on change`, true)
+    .action(async function (this: Command) {
         verifyNecessaryFiles();
-        configWatch();
+        const { compileInterfaces } = this.opts();
+        if (compileInterfaces) {
+            configWatch();
+        }
+
         tscWatch();
         await dockerRun();
     });
@@ -133,6 +138,7 @@ program
     .option('--staging', 'Deploy to the staging instance')
     .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integration with. Can be used for rollbacks.')
     .option('-s, --sync [syncName]', 'Optional deploy only this sync name.')
+    .option('--no-compile-interfaces', `Watch the ${nangoConfigFile} and recompile the interfaces on change`, true)
     .action(async function (this: Command) {
         const options = this.opts();
         (async (options: DeployOptions) => {
