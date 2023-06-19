@@ -1,4 +1,4 @@
-import { forwardRef, type KeyboardEvent, useState, useMemo } from 'react';
+import { useEffect, forwardRef, type KeyboardEvent, useState, useMemo } from 'react';
 import { X } from '@geist-ui/icons';
 
 import useSet from '../../../hooks/useSet';
@@ -12,7 +12,15 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
 
     const [enteredValue, setEnteredValue] = useState('');
     const [error, setError] = useState('');
-    const [selectedScopes, addToScopesSet, removeFromSelectedSet] = useSet<string>(defaultScopes);
+    const [selectedScopes, addToScopesSet, removeFromSelectedSet] = useSet<string>();
+
+    useEffect(() => {
+        if (defaultScopes.length) {
+            defaultScopes.forEach((scope) => {
+                addToScopesSet(scope.trim());
+            });
+        }
+    }, [defaultScopes, addToScopesSet]);
 
     function handleEnter(e: KeyboardEvent<HTMLInputElement>) {
         //quick check for empty inputs
