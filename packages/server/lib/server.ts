@@ -30,7 +30,7 @@ import oAuthSessionService from './services/oauth-session.service.js';
 import { deleteOldActivityLogs } from './jobs/index.js';
 import migrate from './utils/migrate.js';
 
-const { NANGO_MIGRATE_AT_START = 'true' } = process.env;
+const { NANGO_MIGRATE_AT_START = 'true', NANGO_WEBSOCKETS_PATH = '/' } = process.env;
 
 const app = express();
 
@@ -133,7 +133,7 @@ app.get('*', (_, res) => {
 });
 
 const server = http.createServer(app);
-const wsServer = new WebSocketServer({ server });
+const wsServer = new WebSocketServer({ server, path: NANGO_WEBSOCKETS_PATH });
 
 wsServer.on('connection', (ws: WebSocket) => {
     webSocketClient.addClient(ws);
