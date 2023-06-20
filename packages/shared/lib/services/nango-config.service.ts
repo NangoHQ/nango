@@ -29,7 +29,15 @@ export function loadNangoConfig(
 }
 
 export function loadLocalNangoConfig(loadLocation?: string): Promise<NangoConfig | null> {
-    const location = loadLocation ? `${loadLocation}/${nangoConfigFile}` : path.resolve(__dirname, `../nango-integrations/${nangoConfigFile}`);
+    let location;
+
+    if (loadLocation) {
+        location = `${loadLocation}/${nangoConfigFile}`;
+    } else if (process.env['NANGO_INTEGRATIONS_LOCATION']) {
+        location = path.resolve(process.env['NANGO_INTEGRATIONS_LOCATION'], nangoConfigFile);
+    } else {
+        location = path.resolve(__dirname, `../nango-integrations/${nangoConfigFile}`);
+    }
 
     try {
         const yamlConfig = fs.readFileSync(location, 'utf8');
@@ -61,7 +69,16 @@ export async function loadSimplifiedConfig(loadLocation?: string): Promise<Simpl
 }
 
 export function checkForIntegrationFile(syncName: string, optionalNangoIntegrationsDirPath?: string) {
-    const nangoIntegrationsDirPath = optionalNangoIntegrationsDirPath || path.resolve(__dirname, '../nango-integrations');
+    let nangoIntegrationsDirPath;
+
+    if (optionalNangoIntegrationsDirPath) {
+        nangoIntegrationsDirPath = optionalNangoIntegrationsDirPath;
+    } else if (process.env['NANGO_INTEGRATIONS_LOCATION']) {
+        nangoIntegrationsDirPath = process.env['NANGO_INTEGRATIONS_LOCATION'];
+    } else {
+        nangoIntegrationsDirPath = path.resolve(__dirname, '../nango-integrations');
+    }
+
     const distDirPath = path.resolve(nangoIntegrationsDirPath, 'dist');
 
     if (!fs.existsSync(nangoIntegrationsDirPath)) {
@@ -92,11 +109,17 @@ export function checkForIntegrationFile(syncName: string, optionalNangoIntegrati
     };
 }
 
+const resolveIntegrationFile = (syncName: string): string => {
+    if (process.env['NANGO_INTEGRATIONS_LOCATION']) {
+        return path.resolve(process.env['NANGO_INTEGRATIONS_LOCATION'], `dist/${syncName}.${SYNC_FILE_EXTENSION}`);
+    } else {
+        return path.resolve(__dirname, `../nango-integrations/dist/${syncName}.${SYNC_FILE_EXTENSION}`);
+    }
+};
+
 export function getIntegrationFile(syncName: string, setIntegrationPath?: string | null) {
     try {
-        const filePath = setIntegrationPath
-            ? `${setIntegrationPath}/dist/${syncName}.${SYNC_FILE_EXTENSION}`
-            : path.resolve(__dirname, `../nango-integrations/dist/${syncName}.${SYNC_FILE_EXTENSION}`);
+        const filePath = setIntegrationPath ? `${setIntegrationPath}/dist/${syncName}.${SYNC_FILE_EXTENSION}` : resolveIntegrationFile(syncName);
         const realPath = fs.realpathSync(filePath);
         const integrationFileContents = fs.readFileSync(realPath, 'utf8');
 
@@ -112,14 +135,18 @@ export function getRootDir(optionalLoadLocation?: string) {
         return './';
     }
 
-    const loadLocation = optionalLoadLocation || path.resolve(__dirname, '../nango-integrations/dist');
-
-    return loadLocation;
+    if (optionalLoadLocation) {
+        return optionalLoadLocation;
+    } else if (process.env['NANGO_INTEGRATIONS_LOCATION']) {
+        return `${process.env['NANGO_INTEGRATIONS_LOCATION']}/dist`;
+    } else {
+        return path.resolve(__dirname, '../nango-integrations/dist');
+    }
 }
 
 export async function getIntegrationClass(syncName: string, setIntegrationPath?: string) {
     try {
-        const filePath = setIntegrationPath || path.resolve(__dirname, `../nango-integrations/dist/${syncName}.${SYNC_FILE_EXTENSION}`);
+        const filePath = setIntegrationPath || resolveIntegrationFile(syncName);
         const realPath = fs.realpathSync(filePath) + `?v=${Math.random().toString(36).substring(3)}`;
         const { default: integrationCode } = await import(realPath);
         const integrationClass = new integrationCode();
