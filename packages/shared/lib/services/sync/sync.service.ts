@@ -1,9 +1,12 @@
 import { v4 as uuidv4 } from 'uuid';
 import db, { schema, dbNamespace } from '../../db/database.js';
-import { Sync, Job as SyncJob, SyncStatus, SyncWithSchedule } from '../../models/Sync.js';
-import type { Connection } from '../../models/Connection.js';
+import { SyncReconciliationParams, Sync, Job as SyncJob, SyncStatus, SyncWithSchedule } from '../../models/Sync.js';
+import type { Connection, NangoConnection } from '../../models/Connection.js';
 import SyncClient from '../../clients/sync.client.js';
+import type { Config as ProviderConfig } from '../../models/Provider.js';
 import { markAllAsStopped } from './schedule.service.js';
+import connectionService from '../connection.service.js';
+import configService from '../config.service.js';
 
 const TABLE = dbNamespace + 'syncs';
 const SYNC_JOB_TABLE = dbNamespace + 'sync_jobs';
@@ -200,4 +203,35 @@ export const verifyOwnership = async (nangoConnectionId: number, accountId: numb
     }
 
     return true;
+};
+
+/**
+ * Reconcile Syncs
+ * @desc if syncs are new then initiate them, if they are deleted then delete them
+ *
+ */
+export const reconcileSyncs = async (account_id: number, syncs: SyncReconciliationParams[]): Promise<{ createdSyncs: (Sync | null)[] }> => {
+    const createdSyncs = [];
+    for (const sync of syncs) {
+        const { syncName, providerConfigKey, returns } = sync;
+
+        // get all the connection ids for this provider
+        const connections: NangoConnection[] = await connectionService.getConnectionsByAccountAndConfig(account_id, providerConfigKey);
+
+        for (const connection of connections) {
+            const existingSync = await getSync(connection.id as number, syncName);
+
+            if (!existingSync) {
+                const createdSync = await createSync(connection.id as number, syncName, returns);
+                createdSyncs.push(createdSync);
+                const syncConfig = await configService.getProviderConfig(providerConfigKey, account_id);
+                const syncClient = await SyncClient.getInstance();
+                syncClient?.startContinuous(connection, createdSync as Sync, syncConfig as ProviderConfig, syncName, sync);
+            }
+        }
+    }
+
+    // TODO if something was removed then delete it and stop the sync
+
+    return { createdSyncs };
 };

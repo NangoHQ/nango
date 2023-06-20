@@ -1,5 +1,5 @@
 import { Client, Connection, ScheduleOverlapPolicy, ScheduleDescription } from '@temporalio/client';
-import type { Connection as NangoConnection } from '../models/Connection.js';
+import type { NangoConnection } from '../models/Connection.js';
 import ms from 'ms';
 import fs from 'fs-extra';
 import type { Config as ProviderConfig } from '../models/Provider.js';
@@ -99,8 +99,7 @@ class SyncClient {
             const sync = await createSync(nangoConnectionId, syncName, models);
 
             if (sync) {
-                const syncClient = await SyncClient.getInstance();
-                syncClient?.startContinuous(nangoConnection, sync, syncConfig, syncName, syncData);
+                this.startContinuous(nangoConnection, sync, syncConfig, syncName, syncData);
             }
         }
     }

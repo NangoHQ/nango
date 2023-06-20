@@ -65,6 +65,13 @@ export interface SyncConfig extends Timestamps {
     sync_id?: string;
 }
 
+export interface SyncReconciliationParams {
+    syncName: string;
+    providerConfigKey: string;
+    returns: string[];
+    runs: string;
+}
+
 export interface IncomingSyncConfig {
     syncName: string;
     providerConfigKey: string;
