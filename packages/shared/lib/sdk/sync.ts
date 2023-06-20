@@ -17,7 +17,6 @@ interface NangoProps {
     connectionId?: string;
     activityLogId?: number;
     providerConfigKey?: string;
-    isSync?: boolean;
     lastSyncDate?: Date;
     syncId?: string | undefined;
     nangoConnectionId?: number;
@@ -39,12 +38,18 @@ export class NangoSync {
     syncJobId?: number;
     dryRun?: boolean;
 
+    public connectionId?: string;
+    public providerConfigKey?: string;
+
     constructor(config: NangoProps = {}) {
         if (config.activityLogId) {
             this.activityLogId = config.activityLogId;
         }
 
-        this.nango = new Nango(config);
+        this.nango = new Nango({
+            isSync: true,
+            ...config
+        });
 
         if (config.syncId) {
             this.syncId = config.syncId;
@@ -60,6 +65,14 @@ export class NangoSync {
 
         if (config.dryRun) {
             this.dryRun = config.dryRun;
+        }
+
+        if (config.connectionId) {
+            this.connectionId = config.connectionId;
+        }
+
+        if (config.providerConfigKey) {
+            this.providerConfigKey = config.providerConfigKey;
         }
     }
 
