@@ -15,7 +15,7 @@ interface Timestamps {
     updated_at?: string;
 }
 
-export interface SyncResult extends Timestamps {
+export interface SyncResult {
     added: number;
     updated: number;
     deleted?: number;

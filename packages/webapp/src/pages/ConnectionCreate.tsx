@@ -106,7 +106,6 @@ export default function IntegrationCreate() {
         }
 
         let params: Record<string, string> = {};
-        console.log(integration.connectionConfigParams);
         for (let i in integration.connectionConfigParams) {
             params[integration.connectionConfigParams[i]] = '';
         }
