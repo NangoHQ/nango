@@ -158,7 +158,7 @@ export const getSyncs = async (nangoConnection: Connection): Promise<Sync[]> => 
     const syncsWithSchedule = result.map((sync) => {
         const { schedule_id } = sync;
         const schedule = scheduleResponse?.schedules.find((schedule) => schedule.scheduleId === schedule_id);
-        const futureActionTimes = schedule?.info?.futureActionTimes?.map((long) => long?.seconds?.toNumber());
+        const futureActionTimes = schedule?.info?.futureActionTimes?.map((long) => long?.seconds?.toNumber()) || [];
 
         return {
             ...sync,
