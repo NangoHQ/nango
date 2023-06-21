@@ -85,7 +85,7 @@ export default function IntegrationCreate() {
             user_scopes: { value: string };
         };
 
-        const nango = new Nango({ host: hostUrl, publicKey: isCloud() ? publicKey : undefined, debug: true });
+        const nango = new Nango({ host: hostUrl, publicKey: isCloud() ? publicKey : undefined });
 
         nango
             .auth(target.integration_unique_key.value, target.connection_id.value, { user_scope: selectedScopes || [], params: connectionConfigParams || {} })
