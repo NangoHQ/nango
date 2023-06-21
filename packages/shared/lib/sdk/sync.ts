@@ -7,7 +7,7 @@ import { updateSyncJobResult } from '../services/sync/job.service.js';
 import type { UpsertResponse } from '../models/Data.js';
 import type { ProxyConfiguration } from '../models/Proxy.js';
 import type { LogLevel } from '../models/Activity.js';
-import type { SyncResult } from '../models/Sync.js';
+import type { SyncResultByModel } from '../models/Sync.js';
 
 import { Nango } from './index.js';
 
@@ -150,7 +150,12 @@ export class NangoSync {
 
         if (responseResults.success) {
             const { summary } = responseResults;
-            const updatedResults = { added: summary?.addedKeys.length, updated: summary?.updatedKeys.length };
+            const updatedResults = {
+                [model]: {
+                    added: summary?.addedKeys.length,
+                    updated: summary?.updatedKeys.length
+                }
+            };
 
             await createActivityLogMessage({
                 level: 'info',
@@ -159,7 +164,7 @@ export class NangoSync {
                 timestamp: Date.now()
             });
 
-            await updateSyncJobResult(this.syncJobId as number, updatedResults as SyncResult);
+            await updateSyncJobResult(this.syncJobId as number, updatedResults as SyncResultByModel, model);
 
             return responseResults;
         } else {
