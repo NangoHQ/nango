@@ -161,7 +161,6 @@ program
     .option('-p, --provider <provider_config_key>', 'The unique key of the provider configuration (chosen by you upon creating this provider configuration).')
     .option('-c, --connection <connection_id>', 'The ID of the Connection.')
     .option('-l, --lastSyncDate [lastSyncDate]', 'Optional: last sync date to retrieve records greater than this date')
-    .option('-u, --useServerLastSyncDate', 'Optional boolean: use the server stored last sync date to retrieve records greater than this date')
     .action(async function (this: Command) {
         await verifyNecessaryFiles();
         run(this.args, this.opts());

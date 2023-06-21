@@ -352,13 +352,13 @@ export const generate = async () => {
 };
 
 export const run = async (args: string[], options: RunArgs) => {
-    let syncName, providerConfigKey, connectionId, suppliedLastSyncDate, useServerLastSyncDate;
+    let syncName, providerConfigKey, connectionId, suppliedLastSyncDate;
     if (args.length > 0) {
-        [syncName, providerConfigKey, connectionId, suppliedLastSyncDate, useServerLastSyncDate] = args;
+        [syncName, providerConfigKey, connectionId, suppliedLastSyncDate] = args;
     }
 
     if (Object.keys(options).length > 0) {
-        ({ sync: syncName, provider: providerConfigKey, connection: connectionId, lastSyncDate: suppliedLastSyncDate, useServerLastSyncDate } = options);
+        ({ sync: syncName, provider: providerConfigKey, connection: connectionId, lastSyncDate: suppliedLastSyncDate } = options);
     }
 
     if (!syncName) {
@@ -394,10 +394,6 @@ export const run = async (args: string[], options: RunArgs) => {
 
     if (suppliedLastSyncDate) {
         lastSyncDate = new Date(suppliedLastSyncDate as string);
-    }
-
-    if (!useServerLastSyncDate) {
-        lastSyncDate = null;
     }
 
     const cwd = process.cwd();

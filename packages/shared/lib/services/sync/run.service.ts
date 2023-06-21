@@ -119,9 +119,13 @@ export default class SyncRun {
                 }
             }
 
-            const lastSyncDate =
-                // test if get last sync date works from the dry run sync script from the cli
-                optionalLastSyncDate === null ? optionalLastSyncDate : await getLastSyncDate(this.nangoConnection?.id as number, this.syncName);
+            let lastSyncDate: Date | null | undefined = null;
+
+            if (!this.writeToDb) {
+                lastSyncDate = optionalLastSyncDate;
+            } else {
+                await getLastSyncDate(this.nangoConnection?.id as number, this.syncName);
+            }
             nango.setLastSyncDate(lastSyncDate as Date);
             const syncData = syncObject[this.syncName] as unknown as NangoIntegrationData;
             const { returns: models } = syncData;
