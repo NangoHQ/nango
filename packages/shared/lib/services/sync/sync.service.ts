@@ -50,7 +50,7 @@ export const createSync = async (nangoConnectionId: number, name: string, models
 };
 
 export const getLastSyncDate = async (nangoConnectionId: number, syncName: string): Promise<Date | null> => {
-    const sync = await getSync(nangoConnectionId, syncName);
+    const sync = await getSyncByIdAndName(nangoConnectionId, syncName);
 
     if (!sync) {
         return null;
@@ -75,7 +75,7 @@ export const getLastSyncDate = async (nangoConnectionId: number, syncName: strin
     return updated_at;
 };
 
-export const getSync = async (nangoConnectionId: number, name: string): Promise<Sync | null> => {
+export const getSyncByIdAndName = async (nangoConnectionId: number, name: string): Promise<Sync | null> => {
     const result = await db.knex.withSchema(db.schema()).select('*').from<Sync>(TABLE).where({ nango_connection_id: nangoConnectionId, name });
 
     if (Array.isArray(result) && result.length > 0) {
@@ -183,6 +183,19 @@ export const getSyncsByConnectionId = async (nangoConnectionId: number): Promise
     return null;
 };
 
+export const getSyncsByProviderConfigKey = async (accountId: number, providerConfigKey: string): Promise<Sync[]> => {
+    const connections: NangoConnection[] = await connectionService.getConnectionsByAccountAndConfig(accountId, providerConfigKey);
+    const syncs: Sync[] = [];
+    for (const connection of connections) {
+        const existingSync = await getSyncsByConnectionId(connection.id as number);
+        if (existingSync) {
+            syncs.push(...existingSync);
+        }
+    }
+
+    return syncs;
+};
+
 /**
  * Verify Ownership
  * @desc verify that the incoming account id matches with the provided nango connection id
@@ -219,7 +232,7 @@ export const reconcileSyncs = async (account_id: number, syncs: SyncReconciliati
         const connections: NangoConnection[] = await connectionService.getConnectionsByAccountAndConfig(account_id, providerConfigKey);
 
         for (const connection of connections) {
-            const existingSync = await getSync(connection.id as number, syncName);
+            const existingSync = await getSyncByIdAndName(connection.id as number, syncName);
 
             if (!existingSync) {
                 const createdSync = await createSync(connection.id as number, syncName, returns);
