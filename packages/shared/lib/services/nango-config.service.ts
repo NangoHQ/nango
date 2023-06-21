@@ -33,8 +33,8 @@ export function loadLocalNangoConfig(loadLocation?: string): Promise<NangoConfig
 
     if (loadLocation) {
         location = `${loadLocation}/${nangoConfigFile}`;
-    } else if (process.env['NANGO_INTEGRATIONS_LOCATION']) {
-        location = path.resolve(process.env['NANGO_INTEGRATIONS_LOCATION'], nangoConfigFile);
+    } else if (process.env['NANGO_INTEGRATIONS_FULL_PATH']) {
+        location = path.resolve(process.env['NANGO_INTEGRATIONS_FULL_PATH'], nangoConfigFile);
     } else {
         location = path.resolve(__dirname, `../nango-integrations/${nangoConfigFile}`);
     }
@@ -73,8 +73,8 @@ export function checkForIntegrationFile(syncName: string, optionalNangoIntegrati
 
     if (optionalNangoIntegrationsDirPath) {
         nangoIntegrationsDirPath = optionalNangoIntegrationsDirPath;
-    } else if (process.env['NANGO_INTEGRATIONS_LOCATION']) {
-        nangoIntegrationsDirPath = process.env['NANGO_INTEGRATIONS_LOCATION'];
+    } else if (process.env['NANGO_INTEGRATIONS_FULL_PATH']) {
+        nangoIntegrationsDirPath = process.env['NANGO_INTEGRATIONS_FULL_PATH'];
     } else {
         nangoIntegrationsDirPath = path.resolve(__dirname, '../nango-integrations');
     }
@@ -110,8 +110,8 @@ export function checkForIntegrationFile(syncName: string, optionalNangoIntegrati
 }
 
 const resolveIntegrationFile = (syncName: string): string => {
-    if (process.env['NANGO_INTEGRATIONS_LOCATION']) {
-        return path.resolve(process.env['NANGO_INTEGRATIONS_LOCATION'], `dist/${syncName}.${SYNC_FILE_EXTENSION}`);
+    if (process.env['NANGO_INTEGRATIONS_FULL_PATH']) {
+        return path.resolve(process.env['NANGO_INTEGRATIONS_FULL_PATH'], `dist/${syncName}.${SYNC_FILE_EXTENSION}`);
     } else {
         return path.resolve(__dirname, `../nango-integrations/dist/${syncName}.${SYNC_FILE_EXTENSION}`);
     }
@@ -137,8 +137,8 @@ export function getRootDir(optionalLoadLocation?: string) {
 
     if (optionalLoadLocation) {
         return optionalLoadLocation;
-    } else if (process.env['NANGO_INTEGRATIONS_LOCATION']) {
-        return `${process.env['NANGO_INTEGRATIONS_LOCATION']}/dist`;
+    } else if (process.env['NANGO_INTEGRATIONS_FULL_PATH']) {
+        return `${process.env['NANGO_INTEGRATIONS_FULL_PATH']}/dist`;
     } else {
         return path.resolve(__dirname, '../nango-integrations/dist');
     }
