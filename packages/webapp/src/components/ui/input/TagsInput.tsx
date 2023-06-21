@@ -5,7 +5,7 @@ import useSet from '../../../hooks/useSet';
 
 type TagsInputProps = Omit<JSX.IntrinsicElements['input'], 'defaultValue'> & { defaultValue?: string; selectedScopes?: string[]; addToScopesSet?: (scope: string) => void; removeFromSelectedSet?: (scope: string) => void };
 
-const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInput({ className, defaultValue, ...props }, ref) {
+const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInput({ className, defaultValue, selectedScopes: optionalSelectedScopes, addToScopesSet: optionalAddToScopesSet, removeFromSelectedSet: optionalRemoveFromSelectedSet, ...props }, ref) {
     const defaultScopes = useMemo(() => {
         return !!defaultValue ? defaultValue.split(',') : [];
     }, [defaultValue]);
@@ -17,10 +17,10 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
     useEffect(() => {
         if (defaultScopes.length) {
             defaultScopes.forEach((scope) => {
-                typeof props.addToScopesSet === 'function' ? props.addToScopesSet(scope.trim()) : addToScopesSet(scope.trim());;
+                typeof optionalAddToScopesSet === 'function' ? optionalAddToScopesSet(scope.trim()) : addToScopesSet(scope.trim());;
             });
         }
-    }, [defaultScopes, addToScopesSet, props]);
+    }, [defaultScopes, addToScopesSet, optionalAddToScopesSet]);
 
     function handleEnter(e: KeyboardEvent<HTMLInputElement>) {
         //quick check for empty inputs
@@ -35,20 +35,20 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
             if (enteredValue.includes(',')) {
                 const enteredScopes = enteredValue.split(',');
                 enteredScopes.forEach((scope) => {
-                    typeof props.addToScopesSet === 'function' ? props.addToScopesSet(scope.trim()) : addToScopesSet(scope.trim());;
+                    typeof optionalAddToScopesSet === 'function' ? optionalAddToScopesSet(scope.trim()) : addToScopesSet(scope.trim());;
                 });
                 setEnteredValue('');
                 setError('');
                 return;
             }
-            typeof props.addToScopesSet === 'function' ? props.addToScopesSet(enteredValue.trim()) : addToScopesSet(enteredValue.trim());
+            typeof optionalAddToScopesSet === 'function' ? optionalAddToScopesSet(enteredValue.trim()) : addToScopesSet(enteredValue.trim());
             setEnteredValue('');
             setError('');
         }
     }
 
     function removeScope(scopeToBeRemoved: string) {
-        typeof props.removeFromSelectedSet === 'function' ? props.removeFromSelectedSet(scopeToBeRemoved) : removeFromSelectedSet(scopeToBeRemoved);
+        typeof optionalRemoveFromSelectedSet === 'function' ? optionalRemoveFromSelectedSet(scopeToBeRemoved) : removeFromSelectedSet(scopeToBeRemoved);
     }
 
     function showInvalid() {
@@ -58,7 +58,7 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
         }
     }
 
-    const scopes = props.selectedScopes ?? selectedScopes;
+    const scopes = optionalSelectedScopes ?? selectedScopes;
 
     return (
         <>

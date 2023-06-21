@@ -253,6 +253,7 @@ nango.auth('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr}$
                                             name="user_scopes"
                                             type="text"
                                             defaultValue={''}
+                                            onChange={() => null}
                                             selectedScopes={selectedScopes}
                                             addToScopesSet={addToScopesSet}
                                             removeFromSelectedSet={removeFromSelectedSet}
