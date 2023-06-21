@@ -50,6 +50,7 @@ class OAuthController {
         const { providerConfigKey } = req.params;
         let connectionId = req.query['connection_id'] as string | undefined;
         const wsClientId = req.query['ws_client_id'] as string | undefined;
+        const userScope = req.query['user_scope'] as string | undefined;
 
         const log = {
             level: 'info' as LogLevel,
@@ -175,6 +176,10 @@ class OAuthController {
                 webSocketClientId: wsClientId
             };
 
+            if (userScope) {
+                session.connectionConfig['user_scope'] = userScope;
+            }
+
             await updateSessionIdActivityLog(activityLogId as number, session.id);
 
             if (config?.oauth_client_id == null || config?.oauth_client_secret == null || config.oauth_scopes == null) {
@@ -191,7 +196,16 @@ class OAuthController {
             }
 
             if (template.auth_mode === ProviderAuthModes.OAuth2) {
-                return this.oauth2Request(template as ProviderTemplateOAuth2, config, session, res, connectionConfig, callbackUrl, activityLogId as number);
+                return this.oauth2Request(
+                    template as ProviderTemplateOAuth2,
+                    config,
+                    session,
+                    res,
+                    connectionConfig,
+                    callbackUrl,
+                    activityLogId as number,
+                    userScope
+                );
             } else if (template.auth_mode === ProviderAuthModes.OAuth1) {
                 return this.oauth1Request(template, config, session, res, callbackUrl, activityLogId as number);
             }
@@ -226,7 +240,8 @@ class OAuthController {
         res: Response,
         connectionConfig: Record<string, string>,
         callbackUrl: string,
-        activityLogId: number
+        activityLogId: number,
+        userScope?: string
     ) {
         const oauth2Template = template as ProviderTemplateOAuth2;
         const wsClientId = session.webSocketClientId;
@@ -300,6 +315,10 @@ class OAuthController {
                         .replace(/=+$/, '');
                     additionalAuthParams['code_challenge'] = h;
                     additionalAuthParams['code_challenge_method'] = 'S256';
+                }
+
+                if (providerConfig.provider === 'slack' && userScope) {
+                    additionalAuthParams['user_scope'] = userScope;
                 }
 
                 await oAuthSessionService.create(session);
