@@ -15,13 +15,30 @@ services:
             - nango
 
     nango-server:
-        image: nangohq/nango-server:0.21.9
+        image: nangohq/nango-server:0.21.11
         container_name: nango-server
         environment:
             - TEMPORAL_ADDRESS=temporal:7233
             - NANGO_DB_MIGRATION_FOLDER=/usr/nango-server/src/packages/shared/lib/db/migrations
-            - NANGO_CALLBACK_URL=${NANGO_CALLBACK_URL:-http://localhost:3003/oauth/callback}
+            - NANGO_SECRET_KEY=${NANGO_SECRET_KEY}
+            - NANGO_ENCRYPTION_KEY=${NANGO_ENCRYPTION_KEY}
+            - NANGO_DB_USER=${NANGO_DB_USER}
+            - NANGO_DB_PASSWORD=${NANGO_DB_PASSWORD}
+            - NANGO_DB_HOST=${NANGO_DB_HOST}
+            - NANGO_DB_NAME=${NANGO_DB_NAME}
+            - NANGO_DB_SSL=${NANGO_DB_SSL}
+            - NANGO_DB_POOL_MIN=${NANGO_DB_POOL_MIN}
+            - NANGO_DB_POOL_MAX=${NANGO_DB_POOL_MAX}
             - NANGO_PORT=${NANGO_PORT:-3003}
+            - NANGO_SERVER_URL=${NANGO_SERVER_URL:-http://localhost:3003}
+            - NANGO_CALLBACK_URL=${NANGO_CALLBACK_URL}
+            - NANGO_DASHBOARD_USERNAME=${NANGO_DASHBOARD_USERNAME}
+            - NANGO_DASHBOARD_PASSWORD=${NANGO_DASHBOARD_PASSWORD}
+            - LOG_LEVEL=${LOG_LEVEL:-info}
+            - TELEMETRY=${TELEMETRY}
+            - NANGO_HMAC_ENABLED=${NANGO_HMAC_ENABLED}
+            - NANGO_HMAC_ALGORITHM=${NANGO_HMAC_ALGORITHM}
+            - NANGO_HMAC_KEY=${NANGO_HMAC_KEY}
         restart: always
         ports:
             - '${NANGO_PORT:-3003}:${NANGO_PORT:-3003}'
@@ -33,13 +50,19 @@ services:
             - nango
 
     nango-worker:
-        image: nangohq/nango-worker:0.21.9
+        image: nangohq/nango-worker:0.21.11
         container_name: nango-worker
         restart: always
         ports:
             - '3004:3004'
         environment:
             - TEMPORAL_ADDRESS=temporal:7233
+            - NANGO_ENCRYPTION_KEY=${NANGO_ENCRYPTION_KEY}
+            - NANGO_DB_USER=${NANGO_DB_USER}
+            - NANGO_DB_PASSWORD=${NANGO_DB_PASSWORD}
+            - NANGO_DB_HOST=${NANGO_DB_HOST}
+            - NANGO_DB_NAME=${NANGO_DB_NAME}
+            - NANGO_DB_SSL=${NANGO_DB_SSL}
         depends_on:
             - nango-db
             - temporal
