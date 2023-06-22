@@ -5,6 +5,7 @@
     "type": "module",
     "main": "dist/index.js",
     "bin": "./dist/index.js",
+    "types": "dist/nango-sync.d.ts",
     "keywords": [],
     "author": "bastien@nango.dev",
     "repository": {
