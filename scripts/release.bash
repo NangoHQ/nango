@@ -50,21 +50,27 @@ function update_package_json_version() {
     echo "$PACKAGE_JSON version bumped successfully!"
 }
 
-SHARED_PACKAGE_JSON="packages/shared/package.json"
-update_package_json_version $SHARED_PACKAGE_JSON $3
-update_shared_dep "packages/server/package.json" $(jq -r '.version' $SHARED_PACKAGE_JSON)
-update_shared_dep "packages/worker/package.json" $(jq -r '.version' $SHARED_PACKAGE_JSON)
-update_shared_dep "packages/cli/package.json" $(jq -r '.version' $SHARED_PACKAGE_JSON)
-update_shared_dep "packages/node-client/package.json" $(jq -r '.version' $SHARED_PACKAGE_JSON)
-
-rm -rf packages/shared/dist
-npm run ts-build
-cd ./packages/shared && npm publish --access public && cd ../../
+# node client is the first to be published since shared depends on it
 NODE_CLIENT_PACKAGE_JSON="packages/node-client/package.json"
 update_package_json_version $NODE_CLIENT_PACKAGE_JSON $3
 npm i
 npm run ts-build
 cd ./packages/node-client && npm publish --access public && cd ../../
+
+# update the shared package that depends on the node client
+update_shared_dep "packages/shared/package.json" $(jq -r '.version' $NODE_CLIENT_PACKAGE_JSON)
+
+# Update the shared package and then bump the cli, server and worker versions that depend on it
+SHARED_PACKAGE_JSON="packages/shared/package.json"
+update_package_json_version $SHARED_PACKAGE_JSON $3
+
+rm -rf packages/shared/dist
+npm run ts-build
+cd ./packages/shared && npm publish --access public && cd ../../
+
+update_shared_dep "packages/server/package.json" $(jq -r '.version' $SHARED_PACKAGE_JSON)
+update_shared_dep "packages/worker/package.json" $(jq -r '.version' $SHARED_PACKAGE_JSON)
+update_shared_dep "packages/cli/package.json" $(jq -r '.version' $SHARED_PACKAGE_JSON)
 
 # update the webapp and frontend
 FRONTEND_PACKAGE_JSON="packages/frontend/package.json"
@@ -72,6 +78,7 @@ update_package_json_version $FRONTEND_PACKAGE_JSON $3
 cd ./packages/frontend && npm publish --access public && cd ../../
 
 update_frontend_dep "packages/webapp/package.json" $(jq -r '.version' $FRONTEND_PACKAGE_JSON)
+
 WEBAPP_PACKAGE_JSON="packages/webapp/package.json"
 npm i
 update_package_json_version $WEBAPP_PACKAGE_JSON $3
@@ -109,6 +116,9 @@ echo "nango-server and nango-worker published successfully and docker-compose in
 
 CLI_PACKAGE_JSON="packages/cli/package.json"
 update_package_json_version $CLI_PACKAGE_JSON $3
+
+# so that the cli can export the NangoSync type
+cp ./packages/shared/dist/lib/sdk/sync.d.ts ./packages/cli/dist/nango-sync.d.ts
 
 cd ./packages/cli && npm publish --access public && cd ../../
 npm i
