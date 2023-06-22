@@ -6,4 +6,3 @@ export * from './Provider.js';
 export * from './Auth.js';
 export * from './Sync.js';
 export * from './Data.js';
-export * from './Proxy.js';

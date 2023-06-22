@@ -16,6 +16,7 @@
     "dependencies": {
         "@aws-sdk/client-s3": "^3.348.0",
         "@hapi/boom": "^10.0.1",
+        "@nangohq/node": "0.21.14",
         "@sentry/node": "^7.37.2",
         "@temporalio/client": "^1.5.2",
         "@types/fs-extra": "^11.0.1",
