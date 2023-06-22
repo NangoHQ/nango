@@ -15,10 +15,14 @@ interface Timestamps {
     updated_at?: string;
 }
 
-export interface SyncResult extends Timestamps {
+export interface SyncResult {
     added: number;
     updated: number;
     deleted?: number;
+}
+
+export interface SyncResultByModel {
+    [key: string]: SyncResult;
 }
 
 export interface Sync extends Timestamps {
@@ -39,7 +43,7 @@ export interface Job extends Timestamps {
     sync_id: string;
     job_id: string;
     activity_log_id: number | null;
-    result?: SyncResult;
+    result?: SyncResultByModel;
     sync_config_id?: number;
 }
 
@@ -63,6 +67,13 @@ export interface SyncConfig extends Timestamps {
     runs: string;
     version?: string;
     sync_id?: string;
+}
+
+export interface SyncReconciliationParams {
+    syncName: string;
+    providerConfigKey: string;
+    returns: string[];
+    runs: string;
 }
 
 export interface IncomingSyncConfig {

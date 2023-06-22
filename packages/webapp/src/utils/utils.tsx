@@ -1,4 +1,5 @@
 import parser from 'cron-parser';
+import type { SyncResult } from '../types';
 
 export const localhostUrl: string = 'http://localhost:3003';
 export const stagingUrl: string = 'https://api-staging.nango.dev';
@@ -140,4 +141,16 @@ export function interpretNextRun(futureRuns: number[]) {
     const nextRuns = [date, nextDate].map(d => d && formatDateToUSFormat(d.toISOString()));
 
     return nextRuns;
+}
+
+export function parseLatestSyncResult(result: SyncResult, models: string[]) {
+    if ('added' in result || 'updated' in result || 'deleted' in result) {
+        return JSON.stringify(result);
+    } else if (models.length === 1) {
+        const [singleModel] = models;
+        const results = result[singleModel];
+        return JSON.stringify(results);
+    } else {
+        return JSON.stringify(result);
+    }
 }

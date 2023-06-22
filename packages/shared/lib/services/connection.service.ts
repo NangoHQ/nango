@@ -24,7 +24,7 @@ import { deleteScheduleForConnection as deleteSyncScheduleForConnection } from '
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import { NangoError } from '../utils/error.js';
 
-import type { Connection, StoredConnection, BaseConnection } from '../models/Connection.js';
+import type { Connection, StoredConnection, BaseConnection, NangoConnection } from '../models/Connection.js';
 import encryptionManager from '../utils/encryption.manager.js';
 import { AuthModes as ProviderAuthModes, OAuth2Credentials, ImportedCredentials } from '../models/Auth.js';
 import { schema } from '../db/database.js';
@@ -158,6 +158,20 @@ class ConnectionService {
         }
 
         return result[0].field_mappings;
+    }
+
+    public async getConnectionsByAccountAndConfig(accountId: number, providerConfigKey: string): Promise<NangoConnection[]> {
+        const result = await db.knex
+            .withSchema(db.schema())
+            .from<StoredConnection>(`_nango_connections`)
+            .select('id', 'connection_id', 'provider_config_key', 'account_id')
+            .where({ account_id: accountId, provider_config_key: providerConfigKey });
+
+        if (!result || result.length == 0 || !result[0]) {
+            return [];
+        }
+
+        return result;
     }
 
     public async updateFieldMappings(connection: Connection, fieldMappings: Record<string, string>) {

@@ -15,7 +15,8 @@ import {
     updateSuccess as updateSuccessActivityLog,
     createActivityLogAndLogMessage,
     createActivityLogMessageAndEnd,
-    createActivityLog
+    createActivityLog,
+    reconcileSyncs
 } from '@nangohq/shared';
 
 class SyncController {
@@ -25,6 +26,19 @@ class SyncController {
             const accountId = getAccount(res);
 
             const result = await createSyncConfig(accountId, syncs);
+
+            res.send(result);
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    public async reconcileSyncs(req: Request, res: Response, next: NextFunction) {
+        try {
+            const syncs = req.body;
+            const accountId = getAccount(res);
+
+            const result = await reconcileSyncs(accountId, syncs);
 
             res.send(result);
         } catch (e) {

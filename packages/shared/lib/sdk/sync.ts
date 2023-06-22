@@ -7,7 +7,7 @@ import { updateSyncJobResult } from '../services/sync/job.service.js';
 import type { UpsertResponse } from '../models/Data.js';
 import type { ProxyConfiguration } from '../models/Proxy.js';
 import type { LogLevel } from '../models/Activity.js';
-import type { SyncResult } from '../models/Sync.js';
+import type { SyncResultByModel } from '../models/Sync.js';
 
 import { Nango } from './index.js';
 
@@ -17,7 +17,6 @@ interface NangoProps {
     connectionId?: string;
     activityLogId?: number;
     providerConfigKey?: string;
-    isSync?: boolean;
     lastSyncDate?: Date;
     syncId?: string | undefined;
     nangoConnectionId?: number;
@@ -39,12 +38,18 @@ export class NangoSync {
     syncJobId?: number;
     dryRun?: boolean;
 
+    public connectionId?: string;
+    public providerConfigKey?: string;
+
     constructor(config: NangoProps = {}) {
         if (config.activityLogId) {
             this.activityLogId = config.activityLogId;
         }
 
-        this.nango = new Nango(config);
+        this.nango = new Nango({
+            isSync: true,
+            ...config
+        });
 
         if (config.syncId) {
             this.syncId = config.syncId;
@@ -60,6 +65,14 @@ export class NangoSync {
 
         if (config.dryRun) {
             this.dryRun = config.dryRun;
+        }
+
+        if (config.connectionId) {
+            this.connectionId = config.connectionId;
+        }
+
+        if (config.providerConfigKey) {
+            this.providerConfigKey = config.providerConfigKey;
         }
     }
 
@@ -137,7 +150,12 @@ export class NangoSync {
 
         if (responseResults.success) {
             const { summary } = responseResults;
-            const updatedResults = { added: summary?.addedKeys.length, updated: summary?.updatedKeys.length };
+            const updatedResults = {
+                [model]: {
+                    added: summary?.addedKeys.length,
+                    updated: summary?.updatedKeys.length
+                }
+            };
 
             await createActivityLogMessage({
                 level: 'info',
@@ -146,7 +164,7 @@ export class NangoSync {
                 timestamp: Date.now()
             });
 
-            await updateSyncJobResult(this.syncJobId as number, updatedResults as SyncResult);
+            await updateSyncJobResult(this.syncJobId as number, updatedResults as SyncResultByModel, model);
 
             return responseResults;
         } else {

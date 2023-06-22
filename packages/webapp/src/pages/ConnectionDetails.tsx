@@ -13,7 +13,7 @@ import Button from '../components/ui/button/Button';
 import Typography from '../components/ui/typography/Typography';
 import SecretInput from '../components/ui/input/SecretInput';
 import type { SyncResponse, RunSyncCommand } from '../types';
-import { formatDateToUSFormat, interpretNextRun } from '../utils/utils';
+import { parseLatestSyncResult, formatDateToUSFormat, interpretNextRun } from '../utils/utils';
 
 interface Connection {
     id: number;
@@ -474,7 +474,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                             </div>
                                                         ))}
                                                 </li>
-                                                <Tooltip text={JSON.stringify(sync.latest_sync.result)} type="dark">
+                                                <Tooltip text={parseLatestSyncResult(sync.latest_sync.result, sync.models)} type="dark">
                                                     {sync.latest_sync.activity_log_id !== null ? (
                                                         <Link
                                                             to={`/activity?activity_log_id=${sync.latest_sync.activity_log_id}`}

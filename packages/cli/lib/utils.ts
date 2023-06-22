@@ -11,6 +11,7 @@ import chalk from 'chalk';
 import type { NangoModel } from '@nangohq/shared';
 import { cloudHost, stagingHost, nangoConfigFile } from '@nangohq/shared';
 import * as dotenv from 'dotenv';
+import { init, generate } from './sync.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -19,7 +20,8 @@ dotenv.config();
 
 export const NANGO_INTEGRATIONS_LOCATION = process.env['NANGO_INTEGRATIONS_LOCATION'] || './nango-integrations';
 
-let parsedHostport = process.env['NANGO_HOSTPORT'] || 'http://localhost:3003';
+export const port = process.env['NANGO_PORT'] || '3003';
+let parsedHostport = process.env['NANGO_HOSTPORT'] || `http://localhost:${port}`;
 
 if (parsedHostport.slice(-1) === '/') {
     parsedHostport = parsedHostport.slice(0, -1);
@@ -36,9 +38,10 @@ export function setStagingHost() {
 }
 
 export function checkEnvVars(optionalHostport?: string) {
-    const hostport = optionalHostport || process.env['NANGO_HOSTPORT'] || 'http://localhost:3003';
-    if (hostport === 'http://localhost:3003') {
-        console.log(`Assuming you are running Nango on localhost:3003 because you did not set the NANGO_HOSTPORT env var.\n\n`);
+    const hostport = optionalHostport || process.env['NANGO_HOSTPORT'] || `http://localhost:${port}`;
+
+    if (hostport === `http://localhost:${port}`) {
+        console.log(`Assuming you are running Nango on localhost:${port} because you did not set the NANGO_HOSTPORT env var.\n\n`);
     } else if (hostport === cloudHost || hostport === stagingHost) {
         if (!process.env['NANGO_SECRET_KEY']) {
             console.log(`Assuming you are using Nango Cloud but you are missing the NANGO_SECRET_KEY env var.`);
@@ -52,10 +55,18 @@ export function checkEnvVars(optionalHostport?: string) {
     }
 }
 
-export function verifyNecessaryFiles() {
+export async function verifyNecessaryFiles() {
     if (!fs.existsSync(path.resolve(process.cwd(), NANGO_INTEGRATIONS_LOCATION))) {
         console.log(chalk.red(`No ${nangoConfigFile} file found. Please run 'nango init' first`));
-        process.exit(1);
+        const install = await promptly.confirm('Would you like to create some default integrations? (yes/no)');
+
+        if (install) {
+            init();
+            await generate();
+        } else {
+            console.log(chalk.red(`Exiting...`));
+            process.exit(1);
+        }
     }
 }
 
@@ -70,7 +81,7 @@ export async function upgradeAction() {
             console.log(chalk.red(`A new version of ${resolved.name} is available: ${latestVersion}`));
             const cwd = process.cwd();
 
-            const upgrade = await promptly.confirm('Would you like to upgrade? (yes/no)');
+            const upgrade = process.env['NANGO_AUTO_UPGRADE'] === 'true' || (await promptly.confirm('Would you like to upgrade? (yes/no)'));
 
             if (upgrade) {
                 console.log(chalk.yellow(`Upgrading ${resolved.name} to version ${latestVersion}...`));

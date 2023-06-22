@@ -98,7 +98,6 @@ export default class SyncRun {
                 connectionId: String(this.nangoConnection?.connection_id),
                 providerConfigKey: String(this.nangoConnection?.provider_config_key),
                 activityLogId: this.activityLogId as number,
-                isSync: true,
                 secretKey: account ? (account?.secret_key as string) : '',
                 nangoConnectionId: this.nangoConnection?.id as number,
                 syncId: this.syncId,
@@ -120,9 +119,13 @@ export default class SyncRun {
                 }
             }
 
-            const lastSyncDate =
-                // test if get last sync date works from the dry run sync script from the cli
-                optionalLastSyncDate === null ? optionalLastSyncDate : await getLastSyncDate(this.nangoConnection?.id as number, this.syncName);
+            let lastSyncDate: Date | null | undefined = null;
+
+            if (!this.writeToDb) {
+                lastSyncDate = optionalLastSyncDate;
+            } else {
+                await getLastSyncDate(this.nangoConnection?.id as number, this.syncName);
+            }
             nango.setLastSyncDate(lastSyncDate as Date);
             const syncData = syncObject[this.syncName] as unknown as NangoIntegrationData;
             const { returns: models } = syncData;
@@ -146,8 +149,6 @@ export default class SyncRun {
                     return userDefinedResults;
                 }
 
-                let upsertSummary: UpsertSummary = { addedKeys: [], updatedKeys: [], affectedInternalIds: [], affectedExternalIds: [] };
-
                 let i = 0;
                 for (const model of models) {
                     if (userDefinedResults[model]) {
@@ -168,7 +169,6 @@ export default class SyncRun {
                                 this.reportResults(
                                     model,
                                     { addedKeys: [], updatedKeys: [], affectedInternalIds: [], affectedExternalIds: [] },
-                                    upsertSummary as UpsertSummary,
                                     i,
                                     models.length,
                                     syncData.version
@@ -186,17 +186,9 @@ export default class SyncRun {
                                 );
 
                                 if (upsertResult.success) {
-                                    // if there are multiple models keep a total count
                                     const { summary } = upsertResult;
-                                    const { addedKeys, updatedKeys, affectedInternalIds, affectedExternalIds } = summary as UpsertSummary;
-                                    upsertSummary = {
-                                        addedKeys: [...upsertSummary.addedKeys, ...(addedKeys as string[])],
-                                        updatedKeys: [...upsertSummary.updatedKeys, ...(updatedKeys as string[])],
-                                        affectedInternalIds: [...upsertSummary.affectedInternalIds, ...(affectedInternalIds as string[])],
-                                        affectedExternalIds: [...upsertSummary.affectedExternalIds, ...(affectedExternalIds as string[])]
-                                    };
 
-                                    this.reportResults(model, summary as UpsertSummary, upsertSummary, i, models.length, syncData.version);
+                                    this.reportResults(model, summary as UpsertSummary, i, models.length, syncData.version);
                                 }
 
                                 if (!upsertResult.success) {
@@ -223,14 +215,7 @@ export default class SyncRun {
         return result;
     }
 
-    async reportResults(
-        model: string,
-        responseResults: UpsertSummary,
-        totalResponseResults: UpsertSummary,
-        index: number,
-        numberOfModels: number,
-        version?: string
-    ): Promise<void> {
+    async reportResults(model: string, responseResults: UpsertSummary, index: number, numberOfModels: number, version?: string): Promise<void> {
         if (!this.writeToDb || !this.activityLogId || !this.syncJobId) {
             return;
         }
@@ -240,13 +225,29 @@ export default class SyncRun {
             await updateSuccessActivityLog(this.activityLogId, true);
         }
 
-        const syncResult: SyncJob = await updateSyncJobResult(this.syncJobId, {
-            added: totalResponseResults.addedKeys.length,
-            updated: totalResponseResults.updatedKeys.length
-        });
+        const updatedResults = {
+            [model]: {
+                added: responseResults.addedKeys.length,
+                updated: responseResults.updatedKeys.length
+            }
+        };
+
+        const syncResult: SyncJob = await updateSyncJobResult(this.syncJobId, updatedResults, model);
 
         const { result } = syncResult;
-        const { added, updated } = result as SyncResult;
+
+        let added = 0;
+        let updated = 0;
+
+        if (result && result[model]) {
+            const modelResult = result[model] as SyncResult;
+            added = modelResult.added;
+            updated = modelResult.updated;
+        } else {
+            // legacy json structure
+            added = (result?.['added'] as unknown as number) ?? 0;
+            updated = (result?.['updated'] as unknown as number) ?? 0;
+        }
 
         const successMessage =
             `The ${this.syncType} "${this.syncName}" sync has been completed to the ${model} model.` +
@@ -263,7 +264,7 @@ export default class SyncRun {
             this.nangoConnection,
             this.syncName,
             model,
-            { added: responseResults.addedKeys.length, updated: responseResults.updatedKeys.length },
+            { added, updated },
             this.syncType,
             syncResult.updated_at as string,
             this.activityLogId

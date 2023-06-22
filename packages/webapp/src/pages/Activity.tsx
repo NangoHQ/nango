@@ -252,7 +252,7 @@ export default function Activity() {
                                                     </button>
                                                 )}
                                             </div>
-                                            {activity.id === expandedRow && (
+                                            {activity.id === expandedRow && activity.messages[0] && (
                                                 <>
                                                 <div className="flex flex-col space-y-4 mt-6 font-mono">
                                                     {activity.messages.map((message, index: number) => (
@@ -262,27 +262,27 @@ export default function Activity() {
                                                                     {formatTimestampWithTZ(Number(message?.timestamp))}
                                                                 </span>{' '}
                                                                 <span
-                                                                    className={`whitespace-normal break-all overflow-wrap ${message.level === 'error' ? 'text-red-500' : message.level === 'warn' ? 'text-orange-500' : ''}`}
+                                                                    className={`whitespace-normal break-all overflow-wrap ${message?.level === 'error' ? 'text-red-500' : message?.level === 'warn' ? 'text-orange-500' : ''}`}
                                                                 >
-                                                                    <JsonPrettyPrint data={message.content} />
+                                                                    <JsonPrettyPrint data={message?.content} />
                                                                 </span>
                                                             </div>
-                                                            {message.auth_mode && (
+                                                            {message?.auth_mode && (
                                                                 <div className="ml-4">
                                                                     auth_mode: {message.auth_mode}
                                                                 </div>
                                                             )}
-                                                            {message.url && (
+                                                            {message?.url && (
                                                                 <div className="whitespace-normal ml-4">
                                                                     url: {message.url}
                                                                 </div>
                                                             )}
-                                                            {message.state && (
+                                                            {message?.state && (
                                                                 <div className="whitespace-normal ml-4">
                                                                     state: {message.state}
                                                                 </div>
                                                             )}
-                                                            {message.params && (
+                                                            {message?.params && (
                                                                 <div className="ml-4">
                                                                     {renderParams(message.params as unknown as Record<string, string>)}
                                                                 </div>
