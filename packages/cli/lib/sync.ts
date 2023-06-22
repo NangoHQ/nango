@@ -115,8 +115,7 @@ const deployLocalSyncs = async () => {
             console.log(chalk.green(`Syncs were updated with the following result: ${JSON.stringify(response.data, null, 2)}`));
         })
         .catch((err) => {
-            console.log(err);
-            const errorMessage = JSON.stringify(err.response.data, null, 2);
+            const errorMessage = JSON.stringify(err?.response?.data, null, 2);
             console.log(chalk.red(`Error updating the syncs with the following error: ${errorMessage}}`));
             process.exit(1);
         });
