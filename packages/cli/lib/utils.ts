@@ -157,6 +157,11 @@ export function getFieldType(rawField: string | NangoModel): string {
             field = field.replace(/\s*\|\s*undefined\s*/g, '');
             hasUndefined = true;
         }
+
+        if (field.indexOf('Record<') !== -1) {
+            return field;
+        }
+
         switch (field) {
             case 'boolean':
             case 'bool':
