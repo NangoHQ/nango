@@ -86,15 +86,6 @@ export interface IncomingSyncConfig {
     model_schema: SyncModelSchema[];
 }
 
-export interface GetRecordsRequestConfig {
-    providerConfigKey: string;
-    connectionId: string;
-    model: string;
-    delta?: string;
-    offset?: number;
-    limit?: number;
-}
-
 export enum ScheduleStatus {
     RUNNING = 'RUNNING',
     PAUSED = 'PAUSED',
