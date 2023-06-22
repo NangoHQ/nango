@@ -20,8 +20,6 @@ class EncryptionManager {
         if (key && Buffer.from(key, this.encoding).byteLength != this.encryptionKeyByteLength) {
             throw new Error('Encryption key must be base64-encoded and 256-bit long.');
         }
-
-        logger.info(!key ? '🔓 Encryption disabled (no encryption key has been set).' : '🔐 Encryption enabled!');
     }
 
     private shouldEncrypt(): boolean {

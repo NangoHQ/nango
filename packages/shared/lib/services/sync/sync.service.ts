@@ -4,13 +4,21 @@ import { SyncReconciliationParams, Sync, Job as SyncJob, SyncStatus, SyncWithSch
 import type { Connection, NangoConnection } from '../../models/Connection.js';
 import SyncClient from '../../clients/sync.client.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
-import { markAllAsStopped } from './schedule.service.js';
+import { markAllAsStopped, deleteScheduleForSync } from './schedule.service.js';
 import connectionService from '../connection.service.js';
 import configService from '../config.service.js';
 
 const TABLE = dbNamespace + 'syncs';
 const SYNC_JOB_TABLE = dbNamespace + 'sync_jobs';
 const SYNC_SCHEDULE_TABLE = dbNamespace + 'sync_schedules';
+
+interface ReconciledSyncResult {
+    createdSyncs: (Sync | null)[];
+    deletedSyncs: {
+        id: string;
+        name: string;
+    }[];
+}
 
 /**
  * Sync Service
@@ -218,13 +226,21 @@ export const verifyOwnership = async (nangoConnectionId: number, accountId: numb
     return true;
 };
 
+export const deleteSync = async (syncId: string): Promise<string> => {
+    await schema().select('*').from<Sync>(TABLE).where({ id: syncId });
+
+    return syncId;
+};
+
 /**
  * Reconcile Syncs
  * @desc if syncs are new then initiate them, if they are deleted then delete them
  *
  */
-export const reconcileSyncs = async (account_id: number, syncs: SyncReconciliationParams[]): Promise<{ createdSyncs: (Sync | null)[] }> => {
+export const reconcileSyncs = async (account_id: number, syncs: SyncReconciliationParams[]): Promise<ReconciledSyncResult> => {
     const createdSyncs = [];
+    const deletedSyncs = [];
+
     for (const sync of syncs) {
         const { syncName, providerConfigKey, returns } = sync;
 
@@ -242,9 +258,20 @@ export const reconcileSyncs = async (account_id: number, syncs: SyncReconciliati
                 syncClient?.startContinuous(connection, createdSync as Sync, syncConfig as ProviderConfig, syncName, sync);
             }
         }
+
+        const providerSyncs = await getSyncsByProviderConfigKey(account_id, providerConfigKey);
+
+        for (const providerSync of providerSyncs) {
+            if (!syncs.find((sync) => sync.syncName === providerSync.name)) {
+                const deletedSync = await deleteSync(providerSync.id as string);
+                await deleteScheduleForSync(providerSync.id as string);
+                deletedSyncs.push({
+                    id: deletedSync,
+                    name: providerSync.name
+                });
+            }
+        }
     }
 
-    // TODO if something was removed then delete it and stop the sync
-
-    return { createdSyncs };
+    return { createdSyncs, deletedSyncs };
 };

@@ -11,7 +11,7 @@ import path from 'path';
 import * as dotenv from 'dotenv';
 
 import { nangoConfigFile, loadSimplifiedConfig } from '@nangohq/shared';
-import { init, run, generate, tsc, tscWatch, configWatch, dockerRun, version, deploy, configDeploy } from './sync.js';
+import { init, run, generate, tsc, tscWatch, configWatch, dockerRun, version, deploy } from './sync.js';
 import { port, upgradeAction, NANGO_INTEGRATIONS_LOCATION, verifyNecessaryFiles } from './utils.js';
 import type { DeployOptions } from './types.js';
 
@@ -89,9 +89,9 @@ program
             configWatch();
         }
 
-        if (!process.env['NANGO_HOSTPORT'] || process.env['NANGO_HOSTPORT'] === `http://localhost:${port}`) {
-            configDeploy();
-        }
+        //if (!process.env['NANGO_HOSTPORT'] || process.env['NANGO_HOSTPORT'] === `http://localhost:${port}`) {
+        //configDeploy();
+        //}
 
         tscWatch();
     });
@@ -118,9 +118,9 @@ program
             configWatch();
         }
 
-        if (!process.env['NANGO_HOSTPORT'] || process.env['NANGO_HOSTPORT'] === `http://localhost:${port}`) {
-            configDeploy();
-        }
+        //if (!process.env['NANGO_HOSTPORT'] || process.env['NANGO_HOSTPORT'] === `http://localhost:${port}`) {
+        //configDeploy();
+        //}
 
         tscWatch();
         await dockerRun();
