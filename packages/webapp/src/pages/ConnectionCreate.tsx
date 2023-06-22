@@ -6,10 +6,12 @@ import { Prism } from '@mantine/prism';
 import { HelpCircle } from '@geist-ui/icons';
 import { Tooltip } from '@geist-ui/core';
 
+import useSet from '../hooks/useSet';
 import { isHosted, isStaging, baseUrl, isCloud } from '../utils/utils';
 import { useGetIntegrationListAPI, useGetProjectInfoAPI } from '../utils/api';
 import { useAnalyticsTrack } from '../utils/analytics';
 import DashboardLayout from '../layout/DashboardLayout';
+import TagsInput from '../components/ui/input/TagsInput';
 import { LeftNavBarItems } from '../components/LeftNavBar';
 
 interface Integration {
@@ -28,6 +30,7 @@ export default function IntegrationCreate() {
     const [integration, setIntegration] = useState<Integration | null>(null);
     const [connectionId, setConnectionId] = useState<string>('test-connection-id');
     const [connectionConfigParams, setConnectionConfigParams] = useState<Record<string, string> | null>(null);
+    const [selectedScopes, addToScopesSet, removeFromSelectedSet] = useSet<string>();
     const [publicKey, setPublicKey] = useState('');
     const [hostUrl, setHostUrl] = useState('');
     const getIntegrationListAPI = useGetIntegrationListAPI();
@@ -79,12 +82,13 @@ export default function IntegrationCreate() {
             integration_unique_key: { value: string };
             connection_id: { value: string };
             connection_config_params: { value: string };
+            user_scopes: { value: string };
         };
 
-        let nango = new Nango({ host: hostUrl, publicKey: isCloud() ? publicKey : undefined });
+        const nango = new Nango({ host: hostUrl, publicKey: isCloud() ? publicKey : undefined });
 
         nango
-            .auth(target.integration_unique_key.value, target.connection_id.value, { params: connectionConfigParams || {} })
+            .auth(target.integration_unique_key.value, target.connection_id.value, { user_scope: selectedScopes || [], params: connectionConfigParams || {} })
             .then(() => {
                 toast.success('Connection created!', { position: toast.POSITION.BOTTOM_CENTER });
                 analyticsTrack('web:connection_created', { provider: integration?.provider || 'unknown' });
@@ -106,7 +110,6 @@ export default function IntegrationCreate() {
         }
 
         let params: Record<string, string> = {};
-        console.log(integration.connectionConfigParams);
         for (let i in integration.connectionConfigParams) {
             params[integration.connectionConfigParams[i]] = '';
         }
@@ -145,12 +148,11 @@ export default function IntegrationCreate() {
 
         let argsStr = args.length > 0 ? `{ ${args.join(', ')}}` : '';
 
-        var connectionConfigStr = '';
+        let connectionConfigStr = '';
 
         // Iterate of connectionConfigParams and create a string.
         if (connectionConfigParams != null && Object.keys(connectionConfigParams).length >= 0) {
             connectionConfigStr = ', { params: { ';
-            console.log(connectionConfigParams);
             for (const [key, value] of Object.entries(connectionConfigParams)) {
                 connectionConfigStr += `${key}: '${value}', `;
             }
@@ -158,11 +160,22 @@ export default function IntegrationCreate() {
             connectionConfigStr += ' }}';
         }
 
+        let userScopesStr = '';
+
+        if (selectedScopes != null && selectedScopes.length > 0) {
+            userScopesStr = ', { user_scope: [ ';
+            for (const scope of selectedScopes) {
+                userScopesStr += `'${scope}', `;
+            }
+            userScopesStr = userScopesStr.slice(0, -2);
+            userScopesStr += ' ] }';
+        }
+
         return `import Nango from '@nangohq/frontend';
 
-let nango = new Nango(${argsStr});
+const nango = new Nango(${argsStr});
 
-nango.auth('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr}).then((result: { providerConfigKey: string; connectionId: string }) => {
+nango.auth('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr}${userScopesStr}).then((result: { providerConfigKey: string; connectionId: string }) => {
     // do something
 }).catch((err: { message: string; type: string }) => {
     // handle error
@@ -227,6 +240,29 @@ nango.auth('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr})
                                     </div>
                                 </div>
                             </div>
+                            {integration?.provider === 'slack' && (
+                                <div>
+                                    <div className="flex mt-6">
+                                        <label htmlFor="user_scopes" className="text-text-light-gray block text-sm font-semibold">
+                                            User Scopes (Slack Only)
+                                        </label>
+                                    </div>
+                                    <div className="mt-1">
+                                        <TagsInput
+                                            id="scopes"
+                                            name="user_scopes"
+                                            type="text"
+                                            defaultValue={''}
+                                            onChange={() => null}
+                                            selectedScopes={selectedScopes}
+                                            addToScopesSet={addToScopesSet}
+                                            removeFromSelectedSet={removeFromSelectedSet}
+                                            minLength={1}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
                             {integration?.connectionConfigParams?.map((paramName: string) => (
                                 <div key={paramName}>
                                     <div className="flex mt-6">

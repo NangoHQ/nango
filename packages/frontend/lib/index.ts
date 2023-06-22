@@ -108,6 +108,10 @@ export default class Nango {
             if (connectionConfig.hmac) {
                 query.push(`hmac=${connectionConfig.hmac}`);
             }
+
+            if (connectionConfig.user_scope) {
+                query.push(`user_scope=${connectionConfig.user_scope.join(',')}`);
+            }
         }
 
         return query.length === 0 ? '' : '?' + query.join('&');
@@ -121,6 +125,7 @@ export default class Nango {
 interface ConnectionConfig {
     params: Record<string, string>;
     hmac?: string;
+    user_scope?: string[];
 }
 
 enum AuthorizationStatus {
