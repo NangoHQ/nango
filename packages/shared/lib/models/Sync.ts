@@ -130,7 +130,7 @@ export const SyncCommandToScheduleStatus = {
     RUN_FULL: ScheduleStatus.RUNNING
 };
 
-export interface SyncWebhookBody {
+export interface NangoSyncWebhookBody {
     connectionId: string;
     providerConfigKey: string;
     syncName: string;

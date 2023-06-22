@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { SyncType } from '../models/Sync';
 import type { NangoConnection } from '../models/Connection';
-import type { SyncResult, SyncWebhookBody } from '../models/Sync';
+import type { SyncResult, NangoSyncWebhookBody } from '../models/Sync';
 import accountService from './account.service.js';
 import { createActivityLogMessage } from './activity.service.js';
 
@@ -32,7 +32,7 @@ class WebhookService {
             return;
         }
 
-        const body: SyncWebhookBody = {
+        const body: NangoSyncWebhookBody = {
             connectionId: nangoConnection.connection_id,
             providerConfigKey: nangoConnection.provider_config_key,
             syncName,
