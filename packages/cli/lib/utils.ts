@@ -158,10 +158,6 @@ export function getFieldType(rawField: string | NangoModel): string {
             hasUndefined = true;
         }
 
-        if (field.indexOf('Record<') !== -1) {
-            return field;
-        }
-
         switch (field) {
             case 'boolean':
             case 'bool':
@@ -181,6 +177,8 @@ export function getFieldType(rawField: string | NangoModel): string {
             case 'date':
                 tsType = 'Date';
                 break;
+            default:
+                tsType = field;
         }
 
         if (hasNull) {
