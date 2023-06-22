@@ -25,7 +25,7 @@ import passport from 'passport';
 import accountController from './controllers/account.controller.js';
 import type { Response, Request } from 'express';
 import Logger from './utils/logger.js';
-import { accountService, getPort, isCloud, isBasicAuthEnabled, errorManager } from '@nangohq/shared';
+import { accountService, getPort, isCloud, isBasicAuthEnabled, errorManager, getWebsocketsPath } from '@nangohq/shared';
 import oAuthSessionService from './services/oauth-session.service.js';
 import { deleteOldActivityLogs } from './jobs/index.js';
 import migrate from './utils/migrate.js';
@@ -134,7 +134,7 @@ app.get('*', (_, res) => {
 });
 
 const server = http.createServer(app);
-const wsServer = new WebSocketServer({ server });
+const wsServer = new WebSocketServer({ server, path: getWebsocketsPath() });
 
 wsServer.on('connection', (ws: WebSocket) => {
     webSocketClient.addClient(ws);

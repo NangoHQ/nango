@@ -14,12 +14,14 @@ const enum WSMessageType {
 
 export default class Nango {
     private hostBaseUrl: string;
+    private websocketsBaseUrl: string;
     private status: AuthorizationStatus;
     private publicKey: string | undefined;
     private debug = false;
 
-    constructor(config: { host?: string; publicKey?: string; debug?: boolean } = {}) {
+    constructor(config: { host?: string; websocketsPath?: string; publicKey?: string; debug?: boolean } = {}) {
         config.host = config.host || prodHost; // Default to Nango Cloud.
+        config.websocketsPath = config.websocketsPath || '/'; // Default to root path.
         this.debug = config.debug || false;
 
         if (this.debug) {
@@ -36,7 +38,11 @@ export default class Nango {
         }
 
         try {
-            new URL(this.hostBaseUrl);
+            const baseUrl = new URL(this.hostBaseUrl);
+            // Build the websockets url based on the host url.
+            // The websockets path is considered relative to the baseUrl, and with the protocol updated
+            const websocketUrl = new URL(config.websocketsPath, baseUrl);
+            this.websocketsBaseUrl = websocketUrl.toString().replace('https://', 'wss://').replace('http://', 'ws://');
         } catch (err) {
             throw new Error(`Invalid URL provided for the Nango host: ${this.hostBaseUrl}`);
         }
@@ -82,7 +88,7 @@ export default class Nango {
             this.status = AuthorizationStatus.BUSY;
 
             // Open authorization modal
-            new AuthorizationModal(this.hostBaseUrl, url, successHandler, errorHandler, this.debug);
+            new AuthorizationModal(this.websocketsBaseUrl, url, successHandler, errorHandler, this.debug);
         });
     }
 
@@ -147,7 +153,7 @@ class AuthorizationModal {
     private debug: boolean;
 
     constructor(
-        host: string,
+        webSocketUrl: string,
         url: string,
         successHandler: (providerConfigKey: string, connectionId: string) => any,
         errorHandler: (errorType: string, errorDesc: string) => any,
@@ -177,7 +183,7 @@ class AuthorizationModal {
 
         this.modal = window.open('', '_blank', this.featuresToString())!;
 
-        this.swClient = new WebSocket(host.replace('https://', 'wss://').replace('http://', 'ws://'));
+        this.swClient = new WebSocket(webSocketUrl);
 
         this.swClient.onmessage = (message: MessageEvent<any>) => {
             this.handleMessage(message, successHandler, errorHandler);
