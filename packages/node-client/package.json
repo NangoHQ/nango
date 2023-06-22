@@ -13,7 +13,6 @@
     },
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
-        "@nangohq/shared": "0.21.14",
         "axios": "^1.2.0"
     },
     "engines": {
