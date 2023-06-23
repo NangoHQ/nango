@@ -71,6 +71,9 @@ function update_package_json_version() {
 # for integration scripts. Publish the package and then npm install at the root
 # to ensure all dependencies are updated
 
+# clean up any old dist folders
+rm -rf packages/shared/dist
+
 # node client is the first to be published since shared depends on it
 NODE_CLIENT_PACKAGE_JSON="packages/node-client/package.json"
 update_package_json_version $NODE_CLIENT_PACKAGE_JSON $3
@@ -84,8 +87,6 @@ update_node_dep "packages/shared/package.json" $(jq -r '.version' $NODE_CLIENT_P
 # Update the shared package and then bump the cli, server and worker versions that depend on it
 SHARED_PACKAGE_JSON="packages/shared/package.json"
 update_package_json_version $SHARED_PACKAGE_JSON $3
-
-rm -rf packages/shared/dist
 
 npm i
 npm run ts-build
