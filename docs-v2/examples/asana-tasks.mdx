@@ -1,16 +1,14 @@
 ---
 title: 'Syncing tasks from the Asana API'
-sidebarTitle: 'Asana - Tasks'
+sidebarTitle: 'Asana - Tasks (Sync)'
 description: 'An example of how you can sync Asana Tasks with Nango Sync'
 ---
-
-<Note>Nango Sync is currently in private beta. Request access on the [community](https://nango.dev/slack).</Note>
 
 ## Integration configuration
 
 This example syncs tasks from the [Asana](/integrations/all/asana) API.
 
-To run it, add an Asana [integration](/core-concepts#integrations) to your Nango with the integration name `asana`.
+To run it, add an Asana [integration](/core-concepts#integrations) to your Nango with the integration name `asana-dev`.
 
 Required scopes:
 - default
@@ -21,7 +19,7 @@ You can customize the data model as needed.
 
 ```yaml nango.yaml
 integrations:
-    asana:
+    asana-dev:
         asana-tasks:
             runs: every 30min
             returns:
@@ -40,7 +38,7 @@ models:
 ## `asana-tasks.ts` sync script
 
 ```ts
-import { NangoSync } from '@nangohq/node';
+import { NangoSync } from 'nango';
 import { AsanaTask } from './models';
 
 export default async function fetchData(nango: NangoSync): Promise<{AsanaTask: AsanaTask[]}> {

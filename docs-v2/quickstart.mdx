@@ -1,187 +1,111 @@
 ---
 title: 'Quickstart'
 sidebarTitle: '🚀 Quickstart'
-description: 'Getting started with Nango is fast & easy'
+description: 'Quickly authorize the Github API & sync Github issues, using Nango.'
 ---
 
-## Step 1: Setup Nango
+I this quickstart, we will: 
+1. Run Nango locally
+2. Authorize an API (e.g Github)
+3. Sync objects from an API (e.g. Github issues)
 
-<Tabs>
-<Tab title="Nango Cloud">
-
-The fastest way to test Nango is to sign up for a free Cloud account:
-
-[![Try Nango Cloud](/images/nango-deploy-button.svg)](https://app.nango.dev/signup)
-
-</Tab>
-
-<Tab title="Localhost">
+## Step 1: Run Nango locally
 
 Run Nango locally with Docker:
 
 ```bash
-git clone https://github.com/NangoHQ/nango.git && cd nango && docker compose up
+git clone https://github.com/NangoHQ/nango.git && cd nango
+```
+```bash
+docker compose up
 ```
 
-</Tab>
+Open the Dashboard in your browser ([http://localhost:3003](http://localhost:3003)).
 
-</Tabs>
+## Step 2: Authorize an API (e.g Github)
 
-## Step 2: Add OAuth for 100+ APIs to your app
+### Configure the Github integration in Nango
+On the Dashboard, go to the [Add New Integration](http://localhost:3003/integration/create) page. 
 
-1.  **Open the Nango Dashboard** in your browser.
+Use the value `github` for both the `Integration Provider` dropdown and the `Integration Unique Key` field.
 
-    -   [Click here for Nango Cloud](https://app.nango.dev/integrations)
-    -   [Click here for localhost](http://localhost:3003/integrations)
+To get the `Client ID` and `Client Secret` you will need to register your app with Github [here](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app). Github will ask you to submit the `Callback URL` shown at the bottom of the [Add New Integration](http://localhost:3003/integration/create) page.
 
-2.  **Add your first (OAuth) Integration**  
-    To run OAuth flows for you Nango needs a few details: Click the "Add your first integration" button and fill in the form.
+### Test the Github Integration
+Click "OAuth" next to the integration to try an OAuth flow from Nango. Keep the default value `test-connection-id` for the `Connection ID` field.
 
-    To get the `Client Id` and `Client secret` you will need to regiser your app with the API.  
-    If you have trouble with this feel free to reach out on the [Slack community](https://www.nango.dev/slack)!
+![Nango OAuth button](/images/quickstart/nango-oauth-button.png)
+- If you get an error, check the [Activity Tab](http://localhost:3003/activity): The logs there can show you helpful information to debug the issue.
+- Retrieve your access token from the [Connections page](http://localhost:3003/connections). 
+    
+<Tip>
+If you are using Nango to authorize APIs, that's it 🎉 You can check the [API Authorization Guide](/guides/oauth) to find out how to authorize users directly from your frontend and retrieve credentials from your backend.
+</Tip>
 
-    <Tip>
-        Search for your API here on the Nango docs: e.g. [Notion](/integrations/all/notion).  
-        It will show you helpful links to register your OAuth app & get scopes.
-    </Tip>
+## Step 3: Sync data from an API (e.g. Github issues)
 
-3.  **Test your new Integration:**  
-    Click "OAuth" next to the integration to try an OAuth flow from Nango.
-    ![Nango OAuth button](/images/quickstart/nango-oauth-button.png)
+### Configure a Sync
 
-            - If you get an error check the [Activity Tab](https://app.nango.dev/activity): The logs there can show you helpful information to debug the issue.
-            - If the OAuth flow succeeds you can get your access token from the [Connections page](https://app.nango.dev/connections) - Congrats! 🎉
+Stop the Docker containers that your started in Step 1 by killing the console tab or pressing `Ctrl` + `c`.
 
-4.  **Trigger OAuth flows from your frontend**  
-    Install `@nangohq/frontend` and use the code snippet from the OAuth flow page (step 3 above) to trigger OAuth flows from your frontend. [Full Frontend SDK docs](/sdks/frontend)
+In the folder where you want your integration files (recommendation: root of your project), run:
+```
+npx nango dev
+```
 
-    `<CONNECTION-ID>` identifies this user's connection with the integration in Nango. We recommend using a user ID or similar for it.
+Answer `yes` when prompted if you want to "create some default integrations and build them". This will create a `nango-integrations` folder with two prefilled files:
+- `nango.yaml` contains the **configuration** to sync Github issues
+- `github-issue-example.ts` contains the **code** to sync Github issues
 
-    ![Nango OAuth frontend code snippet](/images/quickstart/nango-frontend-snippet.png)
+The rest of the files are automatically-generated based on the two previous files (e.g. `models.ts`, `dist/*`).
 
-    Your code snippet should will look similar to this:
+### Test the Sync
 
-    <Tabs>
+Open a new terminal tab, go to folder that contains the `nango-integrations` folder and test your sync by running:
 
-    <Tab title="Nango Cloud">
+```bash
+npx nango sync:run -p github -s github-issue-example -c test-connection-id
+```
 
-     ```js
-    import Nango from '@nangohq/frontend';
+This will only execute a dry run of the Sync. Synced objects will not be persisted in Nango's storage. It allows you to quickly check if your Sync script is correct.
 
-    let nango = new Nango({ publicKey: '<PUBLIC-KEY-FROM-PROJECT-SETTINGS>' });
+### Deploy the Sync
 
-    nango
-        .auth('<INTEGRATION-ID>', '<CONNECTION-ID>')
-        .then((result: { providerConfigKey: string, connectionId: string }) => {
-            // OAuth flow succeeded!
-        })
-        .catch((err: { message: string, type: string }) => {
-            // handle error
-        });
-    ```
+Finally, you can deploy your sync locally:
 
-    </Tab>
+```bash
+npx nango deploy:local
+```
 
-    <Tab title="Localhost">
+This will automatically start syncing Github issues for the Connection that you created in Step 2, continuously. You can manage your Syncs from the [Dashboard](http://localhost:3003/syncs).
 
-     ```js
-    import Nango from '@nangohq/frontend';
+### Retrieve the synced data
 
-    let nango = new Nango();
+Fetch the always-fresh data from the Sync in your backend with the [backend SDK](/sdks) or the [REST API](/api-reference):
 
-    nango
-        .auth('<INTEGRATION-ID>', '<CONNECTION-ID>')
-        .then((result: { providerConfigKey: string, connectionId: string }) => {
-            // OAuth flow succeeded!
-        })
-        .catch((err: { message: string, type: string }) => {
-            // handle error
-        });
-    ```
+```ts Node SDK example
+import { Nango }  from '@nangohq/node';
 
-    </Tab>
+const nango = new Nango({ host: 'http://localhost:3003' });
 
-    </Tabs>
+const result = await nango.getRecords({
+    providerConfigKey: 'github',
+    connectionId: 'test-connection-id',
+    model: 'GithubIssue'
+});
+```
 
-5.  **Fetch access tokens from the backend with the SDK or REST API**  
-     In your backend you can use our [Node SDK](/sdks/node) or [Connections REST API](/api-reference/connection/get) to fetch always-fresh access tokens and run API requests.
+## Next Steps
 
-        -   `<INTEGRATION-ID>` is the name of your integration. It is listed on the [Integrations page](https://app.nango.dev/integrations) in the dashboard, e.g. `slack`
-        -   `<CONNECTION-ID>` is the connection ID you passed in step 4 above.
-
-    <Tip>
-        When you fetch access tokens from Nango **we refresh them**, if necessary. Always fetch them fresh to make sure you never work with an expired access
-        token!
-    </Tip>
-
-    ### Fetching access tokens with the [node SDK](/sdks/node)
-
-    Install `@nangohq/node`, then use:
-
-    <Tabs>
-
-    <Tab title="Nango Cloud">
-
-    ```ts
-    import { Nango } from '@nangohq/node';
-
-    let nango = new Nango({ secretKey: '<SECRET-KEY>' });
-
-    let creds = await nango.getToken('<INTEGRATION-ID>', '<CONNECTION-ID>');
-    ```
-
-    </Tab>
-
-    <Tab title="Localhost">
-
-    ```ts
-    import { Nango } from '@nangohq/node';
-
-    let nango = new Nango({ host: 'http://localhost:3003' });
-
-    let creds = await nango.getToken('<INTEGRATION-ID>', '<CONNECTION-ID>');
-    ```
-
-    </Tab>
-
-    </Tabs>
-
-    ### Fetching access tokens with the REST API
-
-    Check the [API reference](/api-reference/connection/get) for full details and an example response
-
-    <Tabs>
-
-    <Tab title="Nango Cloud">
-
-    Get the `Secret Key` from the [Project Settings](https://app.nango.dev/project-settings) page.
-
-    ```bash
-    curl --request GET \
-         --url https://api.nango.dev/connection/<CONNECTION-ID>?provider_config_key=<INTEGRATION-ID> \
-         --header 'Authorization: Bearer <SECRET-KEY-FROM-PROJECT-SETTINGS>'
-    ```
-
-    </Tab>
-
-    <Tab title="Localhost">
-
-    ```bash
-    curl --request GET \
-         --url https://api.nango.dev/connection/<CONNECTION-ID>?provider_config_key=<INTEGRATION-ID> \
-    ```
-
-    </Tab>
-
-    </Tabs>
-
-## Step 3: Exchange data with the external API with Nango Sync
-
-With [Nango Sync](/nango-sync) you can easily build integrations with external APIs: Fetch data, add and update records and create 2 way syncs.
-
-To get started follow [this guide](/nango-sync/guides/sync).
+Check out [Nango Cloud](/cloud) to deploy to production and the [Guides section](/guides) to:
+- [authorize APIs](/guides/oauth)
+- [sync data](/guides/sync)
+- [proxy requests](/guides/proxy)
+- [receive webhooks](/guides/webhooks)
 
 ## Questions, problems, feedback?
 
-We are happy to help!  
-Please reach out on the [Slack community](https://nango.dev/slack), we are very active there.
+We are happy to help! Please reach out on the [Slack community](https://nango.dev/slack), we are very active there.
+
+
+

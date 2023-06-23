@@ -63,21 +63,10 @@
             "pages": ["introduction", "quickstart", "core-concepts"]
         },
         {
-            "group": "Nango Auth",
-            "pages": ["nango-auth/overview", "nango-auth/configuration"]
-        },
-        {
-            "group": "Nango Sync",
-            "pages": [
-                "nango-sync/overview",
-                "nango-sync/architecture",
-                {
-                    "group": "Guides",
-                    "pages": ["nango-sync/guides/sync", "nango-sync/guides/nango-proxy", "nango-sync/guides/webhooks"]
-                },
-                {
+            "group": "Guides",
+            "pages": ["guides/oauth", "guides/sync", "guides/proxy", "guides/webhooks", {
                     "group": "Examples",
-                    "pages": ["nango-sync/examples/overview", "nango-sync/examples/asana-tasks", "nango-sync/examples/slack-users"]
+                    "pages": ["examples/asana-tasks", "examples/slack-users"]
                 }
             ]
         },
@@ -99,11 +88,11 @@
         },
         {
             "group": "Contribute",
-            "pages": ["contribute/nango-auth", "contribute/nango-sync"]
+            "pages": ["contribute/api-configuration"]
         },
         {
             "group": "Overview",
-            "pages": ["integrations/overview", "integrations/add-your-own-integration"]
+            "pages": ["integrations/overview", "contribute/api-configuration"]
         },
         {
             "group": "Categories",
@@ -137,7 +126,7 @@
             ]
         },
         {
-            "group": "Integrations",
+            "group": "All Supported APIs",
             "pages": [
                 "integrations/all/accelo",
                 "integrations/all/adobe",

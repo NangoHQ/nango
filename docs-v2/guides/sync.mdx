@@ -1,0 +1,294 @@
+---
+title: 'Continuous Syncing'
+sidebarTitle: 'Continuous Syncing'
+description: 'Continuously sync with APIs, bi-directionally.'
+---
+
+In this guide, we show you how to sync data from external APIs with Nango.
+
+<Tip>
+To use the Nango Proxy, you should have set up an Integration and created a Connection already (cf. [API Authorization Guide](/guides/oauth)).
+</Tip>
+
+# Step 1: Initialize Nango
+
+### Install Nango
+
+To install the Nango CLI, run at the root of your project: 
+```bash
+npm i nango
+```
+
+<Tip>
+	List all available CLI commands by running `npx nango`
+</Tip>
+
+### Create the `nango-integrations` folder
+
+Still at the root of your project, if you don't have a `nango-integrations` folder yet, create one by running: 
+```bash
+npx nango init
+```
+
+<Tip>
+**Understanding the `nango-integrations` folder**
+
+Syncs have two parts:
+- A config file called `nango.yaml`, which defines which Syncs exist, how often they should run, etc.
+- A small typescript file per Sync, which defines the logic of the Sync
+
+They all live in a folder called `nango-integrations` in your own code repository.
+
+```txt nango-integrations structure
+<YOUR-REPO>
+    |
+    nango-integrations
+            |
+            +- nango.yaml
+            +- github-issues.ts
+            +- asana-tasks.ts
+            ...
+```
+
+Our CLI helps you manage this directory, create scaffolds, validates the configuration, etc.
+</Tip>
+
+### Run Nango
+
+Start Nango locally: 
+
+```bash
+npx nango dev
+```
+
+<Tip>
+    The initial start can take some time while the database is setup. 
+
+	`npx nango dev` runs Nango and automatically watches for changes in your files and recompiles as needed. Compilation errors are printed to the terminal.
+
+	Once ready, you can access the dashboard at [http:localhost:3003](http:localhost:3003)
+</Tip>
+
+# Step 2: Create a Sync
+
+### Configure your Sync in `nango.yaml`
+
+Open the `nango.yaml` file inside the `nango-integrations` folder and inspect its field:
+```yaml nango.yaml
+integrations:
+	asana-dev: # Integration name (must match an Integration name in the Integrations tab of your Nango dashboard).
+		asana-tasks: # Arbitrary Sync name
+			runs: every 30min # Sync frequency
+			return:
+				- AsanaTask # Data model (defined below) as returned by your Sync script
+
+models: 
+	AsanaTask: # Data model referenced above
+		id: string # Required unique ID
+        project_id: string
+        name: string
+        completed: boolean
+        created_at: date
+        modified_at: date
+```
+
+<Tip>
+	Possible model types include `string`, `boolean`, `number`, `date`, `null` as well as arrays & nested objects. Union types can be used with `|`.
+</Tip>
+
+Nango uses the models you define in `nango.yaml` to provide type safety when:
+- you write Sync scripts
+- Sync scripts run
+- you fetch the synced data
+
+Syncs and data models can be combined at will:
+- A Sync can return multiple data models: e.g. `AsanaTasks` and `AsanaComments`
+- Multiple Syncs can return the same data model: e.g. Asana and Linear can both return a `Task`
+
+This lets you easily **create your own unified API** with standard data models tailored to your needs.
+
+### Write your Sync
+
+Modify the configuration of `nango.yaml` as you need and run: 
+```
+npx nango generate
+```
+
+This will generate the scaffold for your Sync script(s). Open any Sync script (named `[sync-name].ts`) which contains the following template (for the Asana example above): 
+
+```typescript asana-tasks.ts
+import { NangoSync } from 'nango';
+import { AsanaTask } from './models';
+
+export default async function fetchData(nango: NangoSync): Promise<{AsanaTask: AsanaTask[]}> {
+	// Integration code goes here.
+}
+```
+
+Sync scripts mostly do 2 things. They: 
+- incrementally fetch data from external APIs (with HTTP requests)
+- transform the external data into the models that you defined in `nango.yaml`
+
+This logic is defined by you so that you can build arbitrarily custom and complex integrations.
+
+<Tip>
+Your Sync scripts are deployed to Nango and automatically run on a schedule. 
+
+For local development, Nango runs your Sync scripts on your local machine. In production, your Sync scripts are deployed remotely and run on the Nango Cloud.
+
+Because of this, you cannot import dependencies in the Sync scripts nor declare relative imports (we plan to resolve this limitation in the near future).
+</Tip>
+
+Fill in the `fetchData` method with your integration code:
+
+```ts asana-taks.ts
+import { NangoSync } from 'nango';
+import { AsanaTask } from './models';
+
+export default async function fetchData(nango: NangoSync): Promise<{AsanaTask: AsanaTask[]}> {
+
+    // Get the user's workspaces & projects
+    // For testing we just get the first project of the first workspace
+    const workspaces = await paginate(nango, '/api/1.0/workspaces');
+    const workspace = workspaces[0];
+
+    const projects = await paginate(nango, '/api/1.0/projects', { workspace: workspace.gid });
+    const project = projects[0];
+
+    // Get all tasks for the project
+    const filters = {
+        project: project.gid,
+        opt_fields: 'name,completed,created_at,modified_at'
+    }
+    const tasks = await paginate(nango, '/api/1.0/tasks', filters);
+    let mappedTasks: AsanaTask[] = [];
+
+    for (let task of tasks) {
+
+        mappedTasks.push({
+            id: task.gid,
+            project_id: project.gid,
+            name: task.name,
+            completed: task.completed,
+            created_at: task.created_at,
+            modified_at: task.modified_at
+        });
+
+        if (mappedTasks.length > 49) {
+            await nango.batchSend(mappedTasks, 'AsanaTask');
+            mappedTasks = [];
+        }
+    }
+
+    return { AsanaTask: mappedTasks };
+}
+
+async function paginate(nango: NangoSync, endpoint: string, queryParams?: Record<string, string|string[]>) {
+    const MAX_PAGE = 100;
+    let results: any[] = [];
+    let page = null;
+    let callParams = queryParams || {};
+    while (true) {
+
+        if (page) {
+            callParams['offset'] = `${page}`;
+        }
+
+        const resp = await nango.get({
+            endpoint: endpoint,
+            params: {
+                limit: `${MAX_PAGE}`,
+                ...callParams
+            }
+        });
+
+        results = results.concat(resp.data.data);
+
+        if (resp.data.next_page) {
+            page = resp.data.next_page.offset;
+        } else {
+            break;
+        }
+    }
+
+    return results;
+}
+```
+
+Sync scripts return the created/update data to Nango in two different ways: 
+- all at once, at the end of the script, with `return { ModelName: data };` (for small datasets)
+- in batches, using `await nango.batchSend(data, 'ModelName');` (useful to break down large datasets)
+
+<Tip>
+To make API requests use the proxy exposed by `nango` ([full docs](/sdks/node#direct-requests)).
+    - `nango.get({})`
+    - `nango.post({})`
+    - etc
+</Tip>
+
+<Tip>
+The 1st run of the Sync is called a "full", meaning it fetches all the historical data (unless you have defined a backfill limit in the Sync script). On the 1st run, `nango.lastSyncDate` will be `null`.
+
+Subsequent runs are called "incremental". They should only fetch the created & updated data. It's up to you to use the `nango.lastSyncDate` value to fetch the incremental changes.
+</Tip>
+
+<Tip>
+Use `await nango.log()` to log data from within integration scripts.
+</Tip>
+
+### Test your Sync
+
+Easily test your sync with the CLI by running:
+
+```bash
+npx nango sync:run -p asana-dev -s asana-tasks -c <user-id>
+```
+
+This will only execute a dry run of the Sync. Synced objects will not be persisted in Nango's storage. It allows you to quickly check if your Sync script is correct.
+
+<Tip>
+To test incremental Sync runs, populate the `nango.lastSyncDate` value by adding the `-l` flag: 
+```bash
+npx nango sync:run -p asana-dev -s asana-tasks -c <user-id> -l "2023-06-20T10:00:00.000Z"
+```
+</Tip>
+
+# Step 3: Deploy a Sync
+
+Finally, if all looks good you can deploy your sync locally:
+
+```bash
+npx nango deploy:local
+```
+
+or to Nango Cloud: 
+
+```bash
+npx nango deploy:cloud
+```
+
+<Tip>
+Syncs will automatically start when a new Connection gets added (OAuth flow completes). You can see all Syncs for a Connection in the UI:
+
+![View Syncs in Dashboard](/images/connection-syncs.png)
+</Tip>
+
+# Step 4: Retrieve the synced data
+
+Fetch the always-fresh data from the Sync in your backend with the [backend SDK](/sdks) or the [REST API](/api-reference):
+
+```ts Node SDK example for Nango Cloud
+import { Nango }  from '@nangohq/node';
+
+const nango = new Nango({ secretKey: '<SECRET-KEY>' });
+
+const result = await nango.getRecords({
+    providerConfigKey: 'asana-dev',
+    connectionId: '<user-id>',
+    model: 'AsanaTask'
+});
+```
+
+Nango can also send you [webhook](/nango-sync/webhooks) whenever new data is available from a sync.
+
+That's it!

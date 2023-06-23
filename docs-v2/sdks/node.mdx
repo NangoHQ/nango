@@ -4,7 +4,12 @@ sidebarTitle: 'Node'
 icon: 'node'
 ---
 
-The Node SDK lets you retrieve API credentials & data, as well as work with [Connections](/core-concepts#connections) from your backend.
+The backend Node SDK lets you:
+- retrieve [API credentials](/guides/oauth)
+- retrieve [synced data](/guides/sync)
+- manage [Connections](/core-concepts#connections) and [Syncs](/core-concepts#syncs)
+- [proxy requests](/guides/proxy) to external APIs
+- get types for [webhooks](/guides/webhooks)
 
 # Installing & instantiating the node SDK
 
@@ -160,8 +165,6 @@ The response from the external API is passed back to you exactly as Nango gets i
 For the node SDK Nango returns an [Axios response object](https://axios-http.com/docs/res_schema).
 
 ### Read synced data
-
-<Note>This feature is in private beta. Request access on the [community](https://nango.dev/slack).</Note>
 
 To read synced data from Nango use `getRecords`:
 

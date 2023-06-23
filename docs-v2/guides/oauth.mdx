@@ -1,0 +1,204 @@
+---
+title: 'API Authorization (OAuth)'
+sidebarTitle: 'API Authorization (OAuth)'
+description: 'Get access tokens for APIs.'
+---
+
+## Step 1: Setup Nango
+
+We recommend you:
+- run Nango locally for development
+- use Nango Cloud for production
+
+<Tabs>
+
+<Tab title="Localhost">
+
+Run Nango locally with Docker:
+
+```bash
+git clone https://github.com/NangoHQ/nango.git && cd nango
+```
+```bash
+docker compose up
+```
+
+</Tab>
+
+<Tab title="Nango Cloud">
+
+Sign up for a free Cloud account:
+
+[![Try Nango Cloud](/images/nango-deploy-button.svg)](https://app.nango.dev/signup)
+
+</Tab>
+
+</Tabs>
+
+## Step 2: Create an Integration
+
+<Tabs>
+
+<Tab title="Localhost">
+
+Open the Nango Dashboard at [http://localhost:3003](http://localhost:3003).
+
+</Tab>
+
+<Tab title="Nango Cloud">
+
+Open the Nango Dashboard at [https://app.nango.dev](https://app.nango.dev).
+
+</Tab>
+
+</Tabs>
+
+**Add your first (OAuth) Integration**  
+To run OAuth flows for you Nango needs a few details: Click the "Add your first integration" button and fill in the form.
+
+To get the `Client Id` and `Client secret` you will need to register your app with the API.  
+If you have trouble with this feel free to reach out on the [Slack community](https://www.nango.dev/slack)!
+
+<Tip>
+    Search for your API here on the Nango docs: e.g. [Notion](/integrations/all/notion).  
+    It will show you helpful links to register your OAuth app & get scopes.
+</Tip>
+
+## Step 3: Test your Integration
+
+Click "OAuth" next to the integration to try an OAuth flow from Nango.
+![Nango OAuth button](/images/quickstart/nango-oauth-button.png)
+
+- If you get an error check the Activity Tab (for [cloud](https://app.nango.dev/activity) or [localhost](http://localhost:3003/activity)): The logs there can show you helpful information to debug the issue.
+- If the OAuth flow succeeds you can get your access token from the Connections page  (for [cloud](https://app.nango.dev/connections) or [localhost](http://localhost:3003/connections)) - Congrats! 🎉
+
+## Step 4: Embed Nango in your frontend
+
+Install `@nangohq/frontend` and use the code snippet from the OAuth flow page (step 3 above) to trigger OAuth flows from your frontend. [Full Frontend SDK docs](/sdks/frontend)
+
+`<CONNECTION-ID>` identifies this user's connection with the integration in Nango. We recommend using a user ID or similar for it.
+
+![Nango OAuth frontend code snippet](/images/quickstart/nango-frontend-snippet.png)
+
+Your code snippet should will look similar to this:
+
+<Tabs>
+
+<Tab title="Nango Cloud">
+
+    ```js
+import Nango from '@nangohq/frontend';
+
+let nango = new Nango({ publicKey: '<PUBLIC-KEY-FROM-PROJECT-SETTINGS>' });
+
+nango
+    .auth('<INTEGRATION-ID>', '<CONNECTION-ID>')
+    .then((result: { providerConfigKey: string, connectionId: string }) => {
+        // OAuth flow succeeded!
+    })
+    .catch((err: { message: string, type: string }) => {
+        // handle error
+    });
+```
+
+</Tab>
+
+<Tab title="Localhost">
+
+    ```js
+import Nango from '@nangohq/frontend';
+
+let nango = new Nango();
+
+nango
+    .auth('<INTEGRATION-ID>', '<CONNECTION-ID>')
+    .then((result: { providerConfigKey: string, connectionId: string }) => {
+        // OAuth flow succeeded!
+    })
+    .catch((err: { message: string, type: string }) => {
+        // handle error
+    });
+```
+
+</Tab>
+
+</Tabs>
+
+## Step 5: Retrieve access tokens
+    In your backend you can use our [Node SDK](/sdks/node) or [Connections REST API](/api-reference/connection/get) to fetch always-fresh access tokens and run API requests.
+
+    -   `<INTEGRATION-ID>` is the name of your integration. It is listed on the Integrations page (for [cloud](https://app.nango.dev/integrations) or [localhost](http://localhost:3003/integrations)) in the dashboard, e.g. `slack`
+    -   `<CONNECTION-ID>` is the connection ID you passed in step 4 above.
+
+<Tip>
+    When you fetch access tokens from Nango **we refresh them**, if necessary. Always fetch them fresh to make sure you never work with an expired access
+    token!
+</Tip>
+
+### With the backend Node SDK
+
+Check the [backend Node SDK reference](/sdks/node) for more details.
+
+Install `@nangohq/node`, then use:
+
+<Tabs>
+
+<Tab title="Nango Cloud">
+
+```ts
+import { Nango } from '@nangohq/node';
+
+let nango = new Nango({ secretKey: '<SECRET-KEY>' });
+
+let creds = await nango.getToken('<INTEGRATION-ID>', '<CONNECTION-ID>');
+```
+
+</Tab>
+
+<Tab title="Localhost">
+
+```ts
+import { Nango } from '@nangohq/node';
+
+let nango = new Nango({ host: 'http://localhost:3003' });
+
+let creds = await nango.getToken('<INTEGRATION-ID>', '<CONNECTION-ID>');
+```
+
+</Tab>
+
+</Tabs>
+
+### With the REST API
+
+Check the [API reference](/api-reference/connection/get) for full details and an example response
+
+<Tabs>
+
+<Tab title="Nango Cloud">
+
+Get the `Secret Key` from the Project Settings page (for [cloud](https://app.nango.dev/project-settings) or [localhost](http://localhost:3003/project-settings)).
+
+```bash
+curl --request GET \
+        --url https://api.nango.dev/connection/<CONNECTION-ID>?provider_config_key=<INTEGRATION-ID> \
+        --header 'Authorization: Bearer <SECRET-KEY-FROM-PROJECT-SETTINGS>'
+```
+
+</Tab>
+
+<Tab title="Localhost">
+
+```bash
+curl --request GET \
+        --url https://api.nango.dev/connection/<CONNECTION-ID>?provider_config_key=<INTEGRATION-ID> \
+```
+
+</Tab>
+
+</Tabs>
+
+## Questions, problems, feedback?
+
+We are happy to help!  
+Please reach out on the [Slack community](https://nango.dev/slack), we are very active there.
