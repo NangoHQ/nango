@@ -11,7 +11,7 @@ import chalk from 'chalk';
 import type { NangoModel } from '@nangohq/shared';
 import { cloudHost, stagingHost, nangoConfigFile } from '@nangohq/shared';
 import * as dotenv from 'dotenv';
-import { init, generate } from './sync.js';
+import { init, generate, tsc } from './sync.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -58,11 +58,12 @@ export function checkEnvVars(optionalHostport?: string) {
 export async function verifyNecessaryFiles() {
     if (!fs.existsSync(path.resolve(process.cwd(), NANGO_INTEGRATIONS_LOCATION))) {
         console.log(chalk.red(`No ${nangoConfigFile} file found. Please run 'nango init' first`));
-        const install = await promptly.confirm('Would you like to create some default integrations? (yes/no)');
+        const install = await promptly.confirm('Would you like to create some default integrations and build them? (yes/no)');
 
         if (install) {
             init();
             await generate();
+            tsc();
         } else {
             console.log(chalk.red(`Exiting...`));
             process.exit(1);

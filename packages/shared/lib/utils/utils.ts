@@ -1,8 +1,6 @@
 import type { Request, Response } from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import type { ProxyConfiguration } from '../models/Proxy.js';
-import type { GetRecordsRequestConfig } from '../models/Sync.js';
 import { NangoError } from './error.js';
 import type { User } from '../models/Admin.js';
 
@@ -102,26 +100,6 @@ export function isValidHttpUrl(str: string) {
 export function dirname() {
     return path.dirname(fileURLToPath(import.meta.url));
 }
-
-export const validateProxyConfiguration = (config: ProxyConfiguration) => {
-    const requiredParams: Array<keyof ProxyConfiguration> = ['endpoint', 'providerConfigKey', 'connectionId'];
-
-    requiredParams.forEach((param) => {
-        if (typeof config[param] === 'undefined') {
-            throw new Error(`${param} is missing and is required to make a proxy call!`);
-        }
-    });
-};
-
-export const validateSyncRecordConfiguration = (config: GetRecordsRequestConfig) => {
-    const requiredParams: Array<keyof GetRecordsRequestConfig> = ['model', 'providerConfigKey', 'connectionId'];
-
-    requiredParams.forEach((param) => {
-        if (typeof config[param] === 'undefined') {
-            throw new Error(`${param} is missing and is required to make a proxy call!`);
-        }
-    });
-};
 
 export function parseTokenExpirationDate(expirationDate: any): Date {
     if (expirationDate instanceof Date) {

@@ -33,7 +33,6 @@ export * from './utils/error.js';
 export * from './db/database.js';
 export * from './constants.js';
 
-export * from './sdk/index.js';
 export * from './sdk/sync.js';
 
 export {

@@ -45,6 +45,7 @@ export interface SyncResponse {
         status: 'SUCCESS' | 'STOPPED' | 'RUNNING' | 'PAUSED';
         activity_log_id: number | null;
         result: SyncResult;
+        job_id: string;
     };
 }
 
