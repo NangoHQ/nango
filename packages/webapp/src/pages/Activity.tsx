@@ -182,7 +182,7 @@ export default function Activity() {
                         </span>
                     </div>
 
-                    <div className="h-fit border border-border-gray rounded-md text-white text-sm">
+                    <div className="h-fit border border-border-gray rounded-md text-white text-sm overflow-hidden">
                         <table className="table-auto">
                             <tbody className="px-4">
                                 {activities.filter((activity: ActivityResponse) => typeof activity?.action === 'string').map((activity: ActivityResponse, index: number) => (
@@ -311,12 +311,12 @@ export default function Activity() {
                                                                 </div>
                                                             )}
                                                             {message?.url && (
-                                                                <div className="whitespace-normal ml-4">
+                                                                <div className="whitespace-normal break-all overflow-wrap ml-4">
                                                                     url: {message.url}
                                                                 </div>
                                                             )}
                                                             {message?.state && (
-                                                                <div className="whitespace-normal ml-4">
+                                                                <div className="whitespace-normal break-all overflow-wrap ml-4">
                                                                     state: {message.state}
                                                                 </div>
                                                             )}
