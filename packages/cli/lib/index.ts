@@ -13,7 +13,7 @@ import * as dotenv from 'dotenv';
 import { nangoConfigFile, loadSimplifiedConfig } from '@nangohq/shared';
 import { init, run, generate, tsc, tscWatch, configWatch, dockerRun, version, deploy } from './sync.js';
 import { port, upgradeAction, NANGO_INTEGRATIONS_LOCATION, verifyNecessaryFiles } from './utils.js';
-import type { DeployOptions } from './types.js';
+import type { ENV, DeployOptions } from './types.js';
 
 class NangoCommand extends Command {
     override createCommand(name: string) {
@@ -129,15 +129,44 @@ program
 program
     .command('deploy')
     .alias('d')
+    .alias('deploy:prod')
     .description('Deploy a Nango integration')
     .option('--staging', 'Deploy to the staging instance')
+    .option('--local', 'Deploy to the local instance')
     .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integration with. Can be used for rollbacks.')
     .option('-s, --sync [syncName]', 'Optional deploy only this sync name.')
-    .option('--no-compile-interfaces', `Watch the ${nangoConfigFile} and recompile the interfaces on change`, true)
+    .option('--no-compile-interfaces', `Don't compile the ${nangoConfigFile}`, true)
     .action(async function (this: Command) {
         const options = this.opts();
         (async (options: DeployOptions) => {
-            await deploy(options);
+            const { staging } = options;
+            let env = staging ? 'staging' : 'production';
+            env = options.local ? 'local' : env;
+            await deploy({ ...options, env: env as ENV });
+        })(options as DeployOptions);
+    });
+
+program
+    .command('deploy:staging')
+    .description('Deploy a Nango integration to staging')
+    .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integration with. Can be used for rollbacks.')
+    .option('--no-compile-interfaces', `Don't compile the ${nangoConfigFile}`, true)
+    .action(async function (this: Command) {
+        const options = this.opts();
+        (async (options: DeployOptions) => {
+            await deploy({ ...options, env: 'staging' });
+        })(options as DeployOptions);
+    });
+
+program
+    .command('deploy:local')
+    .description('Deploy a Nango integration to local')
+    .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integration with. Can be used for rollbacks.')
+    .option('--no-compile-interfaces', `Don't compile the ${nangoConfigFile}`, true)
+    .action(async function (this: Command) {
+        const options = this.opts();
+        (async (options: DeployOptions) => {
+            await deploy({ ...options, env: 'local' });
         })(options as DeployOptions);
     });
 

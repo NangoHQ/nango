@@ -122,7 +122,7 @@ const deployLocalSyncs = async () => {
 };
 
 export const deploy = async (options: DeployOptions) => {
-    const { staging, version, sync: optionalSyncName, secretKey, host } = options;
+    const { env, version, sync: optionalSyncName, secretKey, host } = options;
     await verifyNecessaryFiles();
 
     if (host) {
@@ -133,8 +133,9 @@ export const deploy = async (options: DeployOptions) => {
         process.env['NANGO_SECRET_KEY'] = secretKey;
     }
 
+    // better checking for env
     if (!process.env['NANGO_HOSTPORT']) {
-        if (staging) {
+        if (env) {
             process.env['NANGO_HOSTPORT'] = stagingHost;
         } else {
             process.env['NANGO_HOSTPORT'] = cloudHost;
