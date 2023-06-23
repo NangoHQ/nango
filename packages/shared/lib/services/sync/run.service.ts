@@ -64,7 +64,7 @@ export default class SyncRun {
         }
     }
 
-    async run(optionalLastSyncDate?: Date | null, bypassAccount?: boolean): Promise<boolean | object> {
+    async run(optionalLastSyncDate?: Date | null, bypassAccount?: boolean, optionalSecretKey?: string): Promise<boolean | object> {
         const nangoConfig = await loadNangoConfig(this.nangoConnection, this.syncName, this.syncId, this.loadLocation);
 
         if (!nangoConfig) {
@@ -98,7 +98,7 @@ export default class SyncRun {
                 connectionId: String(this.nangoConnection?.connection_id),
                 providerConfigKey: String(this.nangoConnection?.provider_config_key),
                 activityLogId: this.activityLogId as number,
-                secretKey: account ? (account?.secret_key as string) : '',
+                secretKey: optionalSecretKey || process.env['NANGO_SECRET_KEY'] ? (process.env['NANGO_SECRET_KEY'] as string) : '',
                 nangoConnectionId: this.nangoConnection?.id as number,
                 syncId: this.syncId,
                 syncJobId: this.syncJobId,
