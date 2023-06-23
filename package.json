@@ -7,7 +7,6 @@
         "packages/frontend",
         "packages/node-client",
         "packages/server",
-        "packages/shared",
         "packages/worker"
     ],
     "scripts": {

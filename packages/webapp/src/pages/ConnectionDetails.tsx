@@ -418,7 +418,16 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                     index !== syncs.length - 1 ? 'border-b border-border-gray' : ''
                                                 }`}
                                             >
-                                                <Tooltip text={sync.id} type="dark">
+                                                <Tooltip
+                                                text={
+                                                        <>
+                                                            <div>Sync ID: {sync.id}</div>
+                                                            <div>Job ID: {sync?.latest_sync.job_id}</div>
+                                                            <div>Schedule ID: {sync?.schedule_id}</div>
+                                                        </>
+                                                    }
+                                                    type="dark"
+                                                >
                                                     <li className="w-48">{sync.name}</li>
                                                 </Tooltip>
                                                 <li className="w-48 ml-6 text-sm">

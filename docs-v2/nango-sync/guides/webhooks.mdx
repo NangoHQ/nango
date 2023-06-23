@@ -29,8 +29,10 @@ The webhook from Nango is a POST request with the following body:
     "syncName": "<sync-name>",                // The name of the sync as defined in nango.yaml, e.g. github-tickets
     "model": "<data-model>",                  // The name of the data model, e.g. ticket
     "responseResults": {
+        "<data-model>": {
 		    "added": 123,                 // The number of new records
 		    "updated": 123,               // The number of updated records
+         }
     },
     "syncType": "INITIAL" | "INCREMENTAL,;
     "queryTimestamp": "2023-05-31T11:46:13.390Z", // Use this with "delta" in getRecords to fetch the data of this sync
@@ -39,7 +41,7 @@ The webhook from Nango is a POST request with the following body:
 
 If your sync returns multiple models you may receive multiple webhooks for the same sync run (one for each model).
 
-For full type safety the node-sdk exports a type annotation for the webhook. Example usage:
+For full type safety the @nangohq/node package exports a type annotation for the webhook. Example usage:
 
 ```javascript
 import express from 'express';
