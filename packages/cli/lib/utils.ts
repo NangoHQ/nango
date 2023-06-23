@@ -158,6 +158,7 @@ export function getFieldType(rawField: string | NangoModel): string {
             field = field.replace(/\s*\|\s*undefined\s*/g, '');
             hasUndefined = true;
         }
+
         switch (field) {
             case 'boolean':
             case 'bool':
@@ -177,6 +178,8 @@ export function getFieldType(rawField: string | NangoModel): string {
             case 'date':
                 tsType = 'Date';
                 break;
+            default:
+                tsType = field;
         }
 
         if (hasNull) {
