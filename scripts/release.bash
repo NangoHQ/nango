@@ -73,6 +73,7 @@ function update_package_json_version() {
 
 # clean up any old dist folders
 rm -rf packages/shared/dist
+npm run ts-build
 
 # node client is the first to be published since shared depends on it
 NODE_CLIENT_PACKAGE_JSON="packages/node-client/package.json"
