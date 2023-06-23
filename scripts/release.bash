@@ -81,13 +81,13 @@ cd ./packages/node-client && npm publish --access public && cd ../../
 # update the shared package that depends on the node client
 update_node_dep "packages/shared/package.json" $(jq -r '.version' $NODE_CLIENT_PACKAGE_JSON)
 
-npm i
-
 # Update the shared package and then bump the cli, server and worker versions that depend on it
 SHARED_PACKAGE_JSON="packages/shared/package.json"
 update_package_json_version $SHARED_PACKAGE_JSON $3
 
 rm -rf packages/shared/dist
+
+npm i
 npm run ts-build
 cd ./packages/shared && npm publish --access public && cd ../../
 
