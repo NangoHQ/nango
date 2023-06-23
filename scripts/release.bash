@@ -96,8 +96,6 @@ SERVER_PACKAGE_JSON="packages/server/package.json"
 update_package_json_version $SERVER_PACKAGE_JSON $3
 update_package_json_version $WORKER_PACKAGE_JSON $3
 
-update_node_dep "packages/worker/package.json" $(jq -r '.version' $NODE_CLIENT_PACKAGE_JSON)
-
 rm -rf ./packages/webapp/build/fonts
 ./scripts/docker-publish.bash nango-server $SERVER_WORKER_VERSION true $2
 rm -rf ./packages/webapp/build/fonts
