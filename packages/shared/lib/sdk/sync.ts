@@ -43,7 +43,6 @@ interface UserLogParameters {
 
 export class NangoSync {
     private nango: Nango;
-    secretKey?: string;
     activityLogId?: number;
     lastSyncDate?: Date;
     syncId?: string;
@@ -57,9 +56,6 @@ export class NangoSync {
     constructor(config: NangoProps = {}) {
         if (config.activityLogId) {
             this.activityLogId = config.activityLogId;
-        }
-        if (config.secretKey) {
-            this.secretKey = config.secretKey;
         }
 
         this.nango = new Nango({
