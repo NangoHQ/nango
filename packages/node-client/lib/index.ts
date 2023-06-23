@@ -28,6 +28,27 @@ interface CreateConnectionOAuth2 extends OAuth2Credentials {
     type: AuthModes.OAuth2;
 }
 
+export enum SyncType {
+    INITIAL = 'INITIAL',
+    INCREMENTAL = 'INCREMENTAL'
+}
+
+export interface SyncResult {
+    added: number;
+    updated: number;
+    deleted?: number;
+}
+
+export interface NangoSyncWebhookBody {
+    connectionId: string;
+    providerConfigKey: string;
+    syncName: string;
+    model: string;
+    responseResults: SyncResult;
+    syncType: SyncType;
+    queryTimeStamp: string;
+}
+
 export class Nango {
     serverUrl: string;
     secretKey: string;
