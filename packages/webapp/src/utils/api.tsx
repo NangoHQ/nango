@@ -2,7 +2,6 @@ import { toast } from 'react-toastify';
 import { useSignout } from './user';
 import type { RunSyncCommand } from '../types';
 
-
 function requestErrorToast() {
     toast.error('Request error...', { position: toast.POSITION.BOTTOM_CENTER });
 }
@@ -424,7 +423,7 @@ export function useActivityAPI() {
         try {
             let res = await fetch(`/api/v1/activity?limit=${limit}&offset=${offset}`, {
                 method: 'GET',
-                headers: getHeaders(),
+                headers: getHeaders()
             });
 
             return res;
@@ -439,7 +438,7 @@ export function useGetSyncAPI() {
         try {
             const res = await fetch(`/api/v1/sync?connection_id=${connectionId}&provider_config_key=${providerConfigKey}`, {
                 method: 'GET',
-                headers: getHeaders(),
+                headers: getHeaders()
             });
 
             return res;
@@ -462,6 +461,20 @@ export function useRunSyncAPI() {
         } catch (e) {
             requestErrorToast();
         }
+    };
+}
 
+export function useHmacAPI() {
+    return async (connectionId: string, providerConfigKey: string) => {
+        try {
+            const res = await fetch(`/api/v1/config/hmac?connection_id=${connectionId}&provider_config_key=${providerConfigKey}`, {
+                method: 'GET',
+                headers: getHeaders()
+            });
+
+            return res;
+        } catch (e) {
+            requestErrorToast();
+        }
     };
 }

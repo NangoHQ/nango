@@ -73,6 +73,7 @@ app.route('/config/:providerConfigKey').get(apiAuth, configController.getProvide
 app.route('/config').post(apiAuth, configController.createProviderConfig.bind(configController));
 app.route('/config').put(apiAuth, configController.editProviderConfig.bind(configController));
 app.route('/config/:providerConfigKey').delete(apiAuth, configController.deleteProviderConfig.bind(configController));
+app.route('/config/hmac').get(apiAuth, configController.getHmacConfig.bind(configController));
 app.route('/connection/:connectionId').get(apiAuth, connectionController.getConnectionCreds.bind(connectionController));
 app.route('/connection').get(apiAuth, connectionController.listConnections.bind(connectionController));
 app.route('/connection/:connectionId').delete(apiAuth, connectionController.deleteConnection.bind(connectionController));

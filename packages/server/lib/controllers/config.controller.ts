@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
 import { errorManager, NangoError, getAccount, analytics, configService, Config as ProviderConfig, connectionService } from '@nangohq/shared';
 import { getUserAndAccountFromSession, parseConnectionConfigParamsFromTemplate } from '../utils/utils.js';
+import hmacService from '../services/hmac.service.js';
 
 interface Integration {
     uniqueKey: string;
@@ -384,6 +385,23 @@ class ConfigController {
             await configService.deleteProviderConfig(providerConfigKey, accountId);
 
             res.status(200).send();
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async getHmacConfig(req: Request, res: Response, next: NextFunction) {
+        try {
+            await getUserAndAccountFromSession(req);
+            const { connection_id, provider_config_key } = req.query;
+
+            if (!hmacService.isEnabled()) {
+                res.status(200).send(false);
+            }
+
+            const digest = hmacService.digest(connection_id as string, provider_config_key as string);
+
+            res.status(200).send(digest);
         } catch (err) {
             next(err);
         }

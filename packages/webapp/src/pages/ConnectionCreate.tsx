@@ -8,7 +8,7 @@ import { Tooltip } from '@geist-ui/core';
 
 import useSet from '../hooks/useSet';
 import { isHosted, isStaging, baseUrl, isCloud } from '../utils/utils';
-import { useGetIntegrationListAPI, useGetProjectInfoAPI } from '../utils/api';
+import { useGetIntegrationListAPI, useGetProjectInfoAPI, useHmacAPI } from '../utils/api';
 import { useAnalyticsTrack } from '../utils/analytics';
 import DashboardLayout from '../layout/DashboardLayout';
 import TagsInput from '../components/ui/input/TagsInput';
@@ -36,6 +36,7 @@ export default function IntegrationCreate() {
     const getIntegrationListAPI = useGetIntegrationListAPI();
     const getProjectInfoAPI = useGetProjectInfoAPI();
     const analyticsTrack = useAnalyticsTrack();
+    const hmacAPI = useHmacAPI();
     const { providerConfigKey } = useParams();
 
     useEffect(() => {
@@ -85,10 +86,16 @@ export default function IntegrationCreate() {
             user_scopes: { value: string };
         };
 
+        const digest = await hmacAPI(target.connection_id.value, target.integration_unique_key.value);
+
         const nango = new Nango({ host: hostUrl, publicKey: isCloud() ? publicKey : undefined });
 
         nango
-            .auth(target.integration_unique_key.value, target.connection_id.value, { user_scope: selectedScopes || [], params: connectionConfigParams || {} })
+            .auth(target.integration_unique_key.value, target.connection_id.value, {
+                user_scope: selectedScopes || [],
+                params: connectionConfigParams || {},
+                hmac: digest || ''
+            })
             .then(() => {
                 toast.success('Connection created!', { position: toast.POSITION.BOTTOM_CENTER });
                 analyticsTrack('web:connection_created', { provider: integration?.provider || 'unknown' });
