@@ -403,7 +403,8 @@ export const run = async (args: string[], options: RunArgs) => {
     });
 
     try {
-        const results = await syncRun.run(lastSyncDate, true);
+        const secretKey = process.env['NANGO_SECRET_KEY'];
+        const results = await syncRun.run(lastSyncDate, true, secretKey);
         console.log(JSON.stringify(results, null, 2));
         process.exit(0);
     } catch (e) {
