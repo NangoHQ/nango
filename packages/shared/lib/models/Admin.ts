@@ -9,6 +9,7 @@ export interface Account {
     secret_key_iv?: string | null;
     secret_key_tag?: string | null;
     host?: string | null;
+    websockets_path?: string;
 }
 
 export interface User {
