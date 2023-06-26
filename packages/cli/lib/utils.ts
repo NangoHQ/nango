@@ -72,6 +72,9 @@ export async function verifyNecessaryFiles() {
 }
 
 export async function upgradeAction() {
+    if (process.env['NANGO_NO_PROMPT_FOR_UPGRADE'] === 'true') {
+        return;
+    }
     try {
         const resolved = npa('nango');
         const { version } = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../package.json'), 'utf8'));
