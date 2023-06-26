@@ -4,7 +4,7 @@ import fileService from '../file.service.js';
 import { updateSyncScheduleFrequency } from './schedule.service.js';
 import type { IncomingSyncConfig, SyncConfig } from '../../models/Sync.js';
 import type { NangoConnection } from '../../models/Connection.js';
-import type { Config as ProviderConfig } from '../models/Provider.js';
+import type { Config as ProviderConfig } from '../../models/Provider.js';
 import type { NangoConfig } from '../../integrations/index.js';
 import { NangoError } from '../../utils/error.js';
 import { getEnv } from '../../utils/utils.js';
