@@ -77,11 +77,17 @@ class IntegrationService {
 
                     return null;
                 }
-            } catch (err) {
-                const prettyError = JSON.stringify(err, ['message', 'name', 'stack'], 2);
+            } catch (err: any) {
+                let content;
+                if ('response' in err && 'data' in err.response) {
+                    const message = JSON.stringify(err.response.data, null, 2);
+                    content = `The script failed to execute for ${syncName} with the following error: ${message}`;
+                } else {
+                    const prettyError = JSON.stringify(err, ['message', 'name', 'stack'], 2);
 
-                const errorMessage = typeof err === 'object' && Object.keys(err as object).length > 0 ? prettyError : String(err);
-                const content = `The script failed to execute for ${syncName} with the following error: ${errorMessage}`;
+                    const errorMessage = typeof err === 'object' && Object.keys(err as object).length > 0 ? prettyError : String(err);
+                    content = `The script failed to execute for ${syncName} with the following error: ${errorMessage}`;
+                }
 
                 if (activityLogId) {
                     await createActivityLogMessage({

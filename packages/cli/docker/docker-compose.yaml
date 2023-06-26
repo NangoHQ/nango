@@ -15,7 +15,7 @@ services:
             - nango
 
     nango-server:
-        image: nangohq/nango-server:0.22.8
+        image: nangohq/nango-server:0.22.16
         container_name: nango-server
         environment:
             - TEMPORAL_ADDRESS=temporal:7233
@@ -30,6 +30,7 @@ services:
             - NANGO_DB_POOL_MIN=${NANGO_DB_POOL_MIN}
             - NANGO_DB_POOL_MAX=${NANGO_DB_POOL_MAX}
             - NANGO_PORT=${NANGO_PORT:-3003}
+            - SERVER_PORT=${NANGO_PORT:-3003}
             - NANGO_SERVER_URL=${NANGO_SERVER_URL:-http://localhost:3003}
             - NANGO_CALLBACK_URL=${NANGO_CALLBACK_URL}
             - NANGO_DASHBOARD_USERNAME=${NANGO_DASHBOARD_USERNAME}
@@ -50,13 +51,14 @@ services:
             - nango
 
     nango-worker:
-        image: nangohq/nango-worker:0.22.8
+        image: nangohq/nango-worker:0.22.16
         container_name: nango-worker
         restart: always
         ports:
-            - '3004:3004'
+            - '${WORKER_PORT:-3004}:${WORKER_PORT:-3004}'
         environment:
             - TEMPORAL_ADDRESS=temporal:7233
+            - NANGO_SECRET_KEY=${NANGO_SECRET_KEY}
             - NANGO_ENCRYPTION_KEY=${NANGO_ENCRYPTION_KEY}
             - NANGO_DB_USER=${NANGO_DB_USER}
             - NANGO_DB_PASSWORD=${NANGO_DB_PASSWORD}

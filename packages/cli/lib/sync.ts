@@ -287,6 +287,7 @@ export const init = () => {
             '.env',
             `#NANGO_HOSTPORT=https://api-staging.nango.dev
 #NANGO_AUTO_UPGRADE=true
+#NANGO_NO_PROMPT_FOR_UPGRADE=false
 #NANGO_SECRET_KEY=xxxx-xxx-xxxx
 #NANGO_INTEGRATIONS_LOCATION=use-this-to-override-where-the-nango-integrations-directory-goes
 #NANGO_PORT=use-this-to-override-the-default-3003
@@ -404,7 +405,8 @@ export const run = async (args: string[], options: RunArgs) => {
     });
 
     try {
-        const results = await syncRun.run(lastSyncDate, true);
+        const secretKey = process.env['NANGO_SECRET_KEY'];
+        const results = await syncRun.run(lastSyncDate, true, secretKey);
         console.log(JSON.stringify(results, null, 2));
         process.exit(0);
     } catch (e) {

@@ -44,7 +44,7 @@ const webAuth = isCloud()
     ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth.bind(authMiddleware)]
     : [authMiddleware.noAuth.bind(authMiddleware)];
 
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
 app.use(cors());
 
 // Set to 'false' to disable migration at startup. Appropriate when you
