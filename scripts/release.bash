@@ -141,6 +141,7 @@ update_package_json_version $CLI_PACKAGE_JSON $3
 
 # so that the cli can export the NangoSync type
 cp ./packages/shared/dist/lib/sdk/sync.d.ts ./packages/cli/dist/nango-sync.d.ts
+chmod +x ./packages/cli/dist/index.js
 
 cd ./packages/cli && npm publish --access public && cd ../../
 

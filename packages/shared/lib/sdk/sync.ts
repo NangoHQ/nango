@@ -25,7 +25,6 @@ interface ProxyConfiguration {
 
 interface NangoProps {
     host?: string;
-    secretKey?: string;
     connectionId?: string;
     activityLogId?: number;
     providerConfigKey?: string;
