@@ -98,7 +98,7 @@ class ConfigService {
         await deleteSyncScheduleForProviderConfig(accountId, providerConfigKey);
         if (isCloud()) {
             const config = await this.getProviderConfig(providerConfigKey, accountId);
-            await deleteSyncFilesForConfig(config);
+            await deleteSyncFilesForConfig(config as ProviderConfig);
         }
 
         await db.knex
