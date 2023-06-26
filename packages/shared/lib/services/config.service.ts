@@ -4,10 +4,11 @@ import db from '../db/database.js';
 import yaml from 'js-yaml';
 import fs from 'fs';
 import path from 'path';
-import { dirname } from '../utils/utils.js';
+import { isCloud, dirname } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
 import encryptionManager from '../utils/encryption.manager.js';
 import { deleteScheduleForProviderConfig as deleteSyncScheduleForProviderConfig } from '../services/sync/schedule.service.js';
+import { deleteSyncFilesForConfig } from '../services/sync/config.service.js';
 
 class ConfigService {
     templates: { [key: string]: ProviderTemplate };
@@ -95,6 +96,10 @@ class ConfigService {
 
     async deleteProviderConfig(providerConfigKey: string, accountId: number): Promise<number> {
         await deleteSyncScheduleForProviderConfig(accountId, providerConfigKey);
+        if (isCloud()) {
+            const config = await this.getProviderConfig(providerConfigKey, accountId);
+            await deleteSyncFilesForConfig(config);
+        }
 
         await db.knex
             .withSchema(db.schema())
