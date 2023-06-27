@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { SyncType } from '../models/Sync';
 import type { NangoConnection } from '../models/Connection';
-import type { SyncResult, SyncWebhookBody } from '../models/Sync';
+import type { SyncResult, NangoSyncWebhookBody } from '../models/Sync';
 import accountService from './account.service.js';
 import { createActivityLogMessage } from './activity.service.js';
 
@@ -15,17 +15,24 @@ class WebhookService {
         now: string,
         activityLogId: number
     ) {
-        if (responseResults.added === 0 && responseResults.updated === 0) {
-            return;
-        }
-
         const webhookUrl = await accountService.getWebhookUrl(nangoConnection.account_id);
 
         if (!webhookUrl) {
             return;
         }
 
-        const body: SyncWebhookBody = {
+        if (responseResults.added === 0 && responseResults.updated === 0) {
+            await createActivityLogMessage({
+                level: 'info',
+                activity_log_id: activityLogId,
+                content: `There were no added or updated results so a webhook with changes was not sent.`,
+                timestamp: Date.now()
+            });
+
+            return;
+        }
+
+        const body: NangoSyncWebhookBody = {
             connectionId: nangoConnection.connection_id,
             providerConfigKey: nangoConnection.provider_config_key,
             syncName,
@@ -40,11 +47,22 @@ class WebhookService {
 
         try {
             const response = await axios.post(webhookUrl, body);
-            if (response.status === 200) {
+            if (response.status >= 200 && response.status < 300) {
                 await createActivityLogMessage({
                     level: 'info',
                     activity_log_id: activityLogId,
-                    content: `Webhook sent successfully to ${webhookUrl} with the following data: ${JSON.stringify(body, null, 2)}`,
+                    content: `Webhook sent successfully and received with a ${
+                        response.status
+                    } response code to ${webhookUrl} with the following data: ${JSON.stringify(body, null, 2)}`,
+                    timestamp: Date.now()
+                });
+            } else {
+                await createActivityLogMessage({
+                    level: 'error',
+                    activity_log_id: activityLogId,
+                    content: `Webhook sent successfully to ${webhookUrl} with the following data: ${JSON.stringify(body, null, 2)} but received a ${
+                        response.status
+                    } response code. Please send a 200 on successful receipt.`,
                     timestamp: Date.now()
                 });
             }

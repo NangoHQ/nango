@@ -1,14 +1,27 @@
 import https from 'https';
 import axios from 'axios';
+import fs from 'fs';
+import npa from 'npm-package-arg';
+import path, { dirname } from 'path';
+import { fileURLToPath } from 'url';
+import semver from 'semver';
+import { spawn } from 'child_process';
+import promptly from 'promptly';
+import chalk from 'chalk';
 import type { NangoModel } from '@nangohq/shared';
-import { cloudHost, stagingHost } from '@nangohq/shared';
+import { cloudHost, stagingHost, nangoConfigFile } from '@nangohq/shared';
 import * as dotenv from 'dotenv';
+import { init, generate, tsc } from './sync.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 dotenv.config();
 
 export const NANGO_INTEGRATIONS_LOCATION = process.env['NANGO_INTEGRATIONS_LOCATION'] || './nango-integrations';
 
-let parsedHostport = process.env['NANGO_HOSTPORT'] || 'http://localhost:3003';
+export const port = process.env['NANGO_PORT'] || '3003';
+let parsedHostport = process.env['NANGO_HOSTPORT'] || `http://localhost:${port}`;
 
 if (parsedHostport.slice(-1) === '/') {
     parsedHostport = parsedHostport.slice(0, -1);
@@ -24,9 +37,11 @@ export function setStagingHost() {
     process.env['NANGO_HOSTPORT'] = stagingHost;
 }
 
-export function checkEnvVars() {
-    if (hostport === 'http://localhost:3003') {
-        console.log(`Assuming you are running Nango on localhost:3003 because you did not set the NANGO_HOSTPORT env var.\n\n`);
+export function checkEnvVars(optionalHostport?: string) {
+    const hostport = optionalHostport || process.env['NANGO_HOSTPORT'] || `http://localhost:${port}`;
+
+    if (hostport === `http://localhost:${port}`) {
+        console.log(`Assuming you are running Nango on localhost:${port} because you did not set the NANGO_HOSTPORT env var.\n\n`);
     } else if (hostport === cloudHost || hostport === stagingHost) {
         if (!process.env['NANGO_SECRET_KEY']) {
             console.log(`Assuming you are using Nango Cloud but you are missing the NANGO_SECRET_KEY env var.`);
@@ -37,6 +52,64 @@ export function checkEnvVars() {
         }
     } else {
         console.log(`Assuming you are self-hosting Nango (because you set the NANGO_HOSTPORT env var to ${hostport}).`);
+    }
+}
+
+export async function verifyNecessaryFiles() {
+    if (!fs.existsSync(path.resolve(process.cwd(), NANGO_INTEGRATIONS_LOCATION))) {
+        console.log(chalk.red(`No ${nangoConfigFile} file found. Please run 'nango init' first`));
+        const install = await promptly.confirm('Would you like to create some default integrations and build them? (yes/no)');
+
+        if (install) {
+            init();
+            await generate();
+            tsc();
+        } else {
+            console.log(chalk.red(`Exiting...`));
+            process.exit(1);
+        }
+    }
+}
+
+export async function upgradeAction() {
+    if (process.env['NANGO_NO_PROMPT_FOR_UPGRADE'] === 'true') {
+        return;
+    }
+    try {
+        const resolved = npa('nango');
+        const { version } = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../package.json'), 'utf8'));
+        const response = await axios.get(`https://registry.npmjs.org/${resolved.name}`);
+        const latestVersion = response.data['dist-tags'].latest;
+
+        if (semver.gt(latestVersion, version)) {
+            console.log(chalk.red(`A new version of ${resolved.name} is available: ${latestVersion}`));
+            const cwd = process.cwd();
+
+            const upgrade = process.env['NANGO_AUTO_UPGRADE'] === 'true' || (await promptly.confirm('Would you like to upgrade? (yes/no)'));
+
+            if (upgrade) {
+                console.log(chalk.yellow(`Upgrading ${resolved.name} to version ${latestVersion}...`));
+                const child = spawn('npm', ['install', '--no-audit', `nango@${latestVersion}`], {
+                    cwd,
+                    detached: false,
+                    stdio: 'inherit'
+                });
+                await new Promise((resolve, reject) => {
+                    child.on('exit', (code) => {
+                        if (code !== 0) {
+                            reject(new Error(`Upgrade process exited with code ${code}`));
+                            return;
+                        }
+                        resolve(true);
+                        console.log(chalk.green(`Successfully upgraded ${resolved.name} to version ${latestVersion}`));
+                    });
+
+                    child.on('error', reject);
+                });
+            }
+        }
+    } catch (error: any) {
+        console.error(`An error occurred: ${error.message}`);
     }
 }
 
@@ -88,6 +161,7 @@ export function getFieldType(rawField: string | NangoModel): string {
             field = field.replace(/\s*\|\s*undefined\s*/g, '');
             hasUndefined = true;
         }
+
         switch (field) {
             case 'boolean':
             case 'bool':
@@ -107,6 +181,8 @@ export function getFieldType(rawField: string | NangoModel): string {
             case 'date':
                 tsType = 'Date';
                 break;
+            default:
+                tsType = field;
         }
 
         if (hasNull) {

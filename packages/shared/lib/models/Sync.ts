@@ -11,14 +11,18 @@ export enum SyncType {
 }
 
 interface Timestamps {
-    created_at?: Date;
-    updated_at?: Date;
+    created_at?: string;
+    updated_at?: string;
 }
 
 export interface SyncResult {
     added: number;
     updated: number;
     deleted?: number;
+}
+
+export interface SyncResultByModel {
+    [key: string]: SyncResult;
 }
 
 export interface Sync extends Timestamps {
@@ -39,7 +43,7 @@ export interface Job extends Timestamps {
     sync_id: string;
     job_id: string;
     activity_log_id: number | null;
-    result?: SyncResult;
+    result?: SyncResultByModel;
     sync_config_id?: number;
 }
 
@@ -65,6 +69,13 @@ export interface SyncConfig extends Timestamps {
     sync_id?: string;
 }
 
+export interface SyncReconciliationParams {
+    syncName: string;
+    providerConfigKey: string;
+    returns: string[];
+    runs: string;
+}
+
 export interface IncomingSyncConfig {
     syncName: string;
     providerConfigKey: string;
@@ -73,15 +84,6 @@ export interface IncomingSyncConfig {
     runs: string;
     version?: string;
     model_schema: SyncModelSchema[];
-}
-
-export interface GetRecordsRequestConfig {
-    providerConfigKey: string;
-    connectionId: string;
-    model: string;
-    delta?: string;
-    offset?: number;
-    limit?: number;
 }
 
 export enum ScheduleStatus {
@@ -128,7 +130,7 @@ export const SyncCommandToScheduleStatus = {
     RUN_FULL: ScheduleStatus.RUNNING
 };
 
-export interface SyncWebhookBody {
+export interface NangoSyncWebhookBody {
     connectionId: string;
     providerConfigKey: string;
     syncName: string;

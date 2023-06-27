@@ -1,18 +1,27 @@
-//import _ from 'lodash';
-
+import type { ParamsSerializerOptions } from 'axios';
+import { getById as getSyncById } from '../services/sync/sync.service.js';
 import { upsert } from '../services/sync/data.service.js';
 import { formatDataRecords } from '../services/sync/data-records.service.js';
 import { createActivityLogMessage } from '../services/activity.service.js';
 import { updateSyncJobResult } from '../services/sync/job.service.js';
 
-import type { UpsertResponse } from '../models/Data.js';
-import type { ProxyConfiguration } from '../models/Proxy.js';
-import type { LogLevel } from '../models/Activity.js';
-import type { SyncResult } from '../models/Sync.js';
+import { Nango } from '@nangohq/node';
 
-import { Nango } from './index.js';
+type LogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
 
-//const THROTTLE_TIME = 100;
+interface ProxyConfiguration {
+    endpoint: string;
+    providerConfigKey?: string;
+    connectionId?: string;
+
+    method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE' | 'get' | 'post' | 'patch' | 'put' | 'delete';
+    headers?: Record<string, string>;
+    params?: string | Record<string, string>;
+    paramsSerializer?: ParamsSerializerOptions;
+    data?: unknown;
+    retries?: number;
+    baseUrlOverride?: string;
+}
 
 interface NangoProps {
     host?: string;
@@ -20,7 +29,6 @@ interface NangoProps {
     connectionId?: string;
     activityLogId?: number;
     providerConfigKey?: string;
-    isSync?: boolean;
     lastSyncDate?: Date;
     syncId?: string | undefined;
     nangoConnectionId?: number;
@@ -42,30 +50,18 @@ export class NangoSync {
     syncJobId?: number;
     dryRun?: boolean;
 
-    //private throttledCreateActivityLogMessage;
+    public connectionId?: string;
+    public providerConfigKey?: string;
 
     constructor(config: NangoProps = {}) {
-        //this.throttledCreateActivityLogMessage = _.throttle(createActivityLogMessage, THROTTLE_TIME);
-
-        /*
-        this.throttledCreateActivityLogMessage = _.throttle(() => {
-            if (isThrottled) {
-                console.log("Throttled createActivityLogMessage called");
-            } else {
-                createActivityLogMessage();
-                isThrottled = true;
-                setTimeout(() => {
-                    isThrottled = false;
-                }, throttleDuration);
-            }
-        }, throttleDuration);
-        */
-
         if (config.activityLogId) {
             this.activityLogId = config.activityLogId;
         }
 
-        this.nango = new Nango(config);
+        this.nango = new Nango({
+            isSync: true,
+            ...config
+        });
 
         if (config.syncId) {
             this.syncId = config.syncId;
@@ -83,30 +79,14 @@ export class NangoSync {
             this.dryRun = config.dryRun;
         }
 
-        /**
-        const isThrottled = this.throttledCreateActivityLogMessage.toString() !== createActivityLogMessage.toString();
-        if (isThrottled) {
-            this.addThrottledMessage()
-                .then(() => {
-                    console.warn('nango.log is being throttled. See the activity tab for more information.');
-                })
-                .catch((error) => {
-                    console.error(error);
-                });
+        if (config.connectionId) {
+            this.connectionId = config.connectionId;
         }
-        */
-    }
 
-    /*
-    async addThrottledMessage() {
-        await createActivityLogMessage({
-            level: 'error',
-            activity_log_id: this.activityLogId as number,
-            content: `nango.log can only be called every ${THROTTLE_TIME} milliseconds, some logs were dropped. Please consider adding a timeout or logging less.`,
-            timestamp: Date.now()
-        });
+        if (config.providerConfigKey) {
+            this.providerConfigKey = config.providerConfigKey;
+        }
     }
-    */
 
     public setLastSyncDate(date: Date) {
         this.lastSyncDate = date;
@@ -152,9 +132,10 @@ export class NangoSync {
         });
     }
 
-    public async batchSend(results: any[], model: string): Promise<UpsertResponse | null> {
+    public async batchSend(results: any[], model: string): Promise<boolean | null> {
         if (this.dryRun) {
-            console.log(results);
+            console.log('A batch send call would send the following data:');
+            console.log(JSON.stringify(results, null, 2));
             return null;
         }
 
@@ -163,6 +144,12 @@ export class NangoSync {
         }
 
         const formattedResults = formatDataRecords(results, this.nangoConnectionId as number, model, this.syncId as string, this.syncJobId);
+
+        const fullSync = await getSyncById(this.syncId as string);
+
+        if (fullSync && !fullSync?.models.includes(model)) {
+            throw new Error(`The model: ${model} is not included in the declared sync models: ${fullSync.models}.`);
+        }
 
         const responseResults = await upsert(
             formattedResults,
@@ -175,7 +162,12 @@ export class NangoSync {
 
         if (responseResults.success) {
             const { summary } = responseResults;
-            const updatedResults = { added: summary?.addedKeys.length, updated: summary?.updatedKeys.length };
+            const updatedResults = {
+                [model]: {
+                    added: summary?.addedKeys.length as number,
+                    updated: summary?.updatedKeys.length as number
+                }
+            };
 
             await createActivityLogMessage({
                 level: 'info',
@@ -184,9 +176,9 @@ export class NangoSync {
                 timestamp: Date.now()
             });
 
-            await updateSyncJobResult(this.syncJobId as number, updatedResults as SyncResult);
+            await updateSyncJobResult(this.syncJobId as number, updatedResults, model);
 
-            return responseResults;
+            return true;
         } else {
             await createActivityLogMessage({
                 level: 'error',
@@ -195,7 +187,7 @@ export class NangoSync {
                 timestamp: Date.now()
             });
 
-            return null;
+            return false;
         }
     }
 
@@ -209,7 +201,6 @@ export class NangoSync {
             throw new Error('There is no current activity log stream to log to');
         }
 
-        //await this.throttledCreateActivityLogMessage({
         await createActivityLogMessage({
             level: userDefinedLevel?.level ?? 'info',
             activity_log_id: this.activityLogId as number,

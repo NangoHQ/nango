@@ -1,5 +1,5 @@
 import { schema, dbNamespace } from '../../db/database.js';
-import type { Job as SyncJob, SyncStatus, SyncType, SyncResult } from '../../models/Sync.js';
+import type { Job as SyncJob, SyncStatus, SyncType, SyncResultByModel } from '../../models/Sync.js';
 
 const SYNC_JOB_TABLE = dbNamespace + 'sync_jobs';
 
@@ -8,8 +8,7 @@ export const createSyncJob = async (
     type: SyncType,
     status: SyncStatus,
     job_id: string,
-    activity_log_id: number,
-    result?: SyncResult
+    activity_log_id: number
 ): Promise<Pick<SyncJob, 'id'> | null> => {
     const job: SyncJob = {
         sync_id,
@@ -18,10 +17,6 @@ export const createSyncJob = async (
         job_id,
         activity_log_id
     };
-
-    if (result) {
-        job.result = result;
-    }
 
     const syncJob = await schema().from<SyncJob>(SYNC_JOB_TABLE).insert(job).returning('id');
 
@@ -58,29 +53,40 @@ export const updateSyncJobStatus = async (id: number, status: SyncStatus): Promi
  * Update Sync Job Result
  * @desc grab any existing results and add them to the current
  */
-export const updateSyncJobResult = async (id: number, result: SyncResult): Promise<SyncResult> => {
+export const updateSyncJobResult = async (id: number, result: SyncResultByModel, model: string): Promise<SyncJob> => {
     const { result: existingResult } = await schema().from<SyncJob>(SYNC_JOB_TABLE).select('result').where({ id }).first();
 
     if (!existingResult || Object.keys(existingResult).length === 0) {
-        await schema().from<SyncJob>(SYNC_JOB_TABLE).where({ id }).update({
-            result
-        });
+        const [updatedRow] = await schema()
+            .from<SyncJob>(SYNC_JOB_TABLE)
+            .where({ id })
+            .update({
+                result
+            })
+            .returning('*');
 
-        return result;
+        return updatedRow as SyncJob;
     } else {
-        const { added, updated, deleted } = existingResult || { added: 0, updated: 0, deleted: 0 };
+        const { added, updated } = existingResult[model] || { added: 0, updated: 0, deleted: 0 };
 
+        const incomingResult = result[model];
         const finalResult = {
-            added: Number(added) + Number(result.added),
-            updated: Number(updated) + Number(result.updated),
-            deleted: deleted ? deleted + result.deleted : result.deleted
+            ...existingResult,
+            [model]: {
+                added: Number(added) + Number(incomingResult?.added),
+                updated: Number(updated) + Number(incomingResult?.updated)
+            }
         };
 
-        await schema().from<SyncJob>(SYNC_JOB_TABLE).where({ id }).update({
-            result: finalResult
-        });
+        const [updatedRow] = await schema()
+            .from<SyncJob>(SYNC_JOB_TABLE)
+            .where({ id })
+            .update({
+                result: finalResult
+            })
+            .returning('*');
 
-        return finalResult;
+        return updatedRow as SyncJob;
     }
 };
 

@@ -1,9 +1,10 @@
-import { ReactElement, useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { ReactElement, useState, useEffect, useRef, createRef } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ChevronsLeft, Clock, ArrowRight, Slash, CheckInCircle, AlertCircle, Link as LinkIcon, RefreshCw } from '@geist-ui/icons'
 import { Tooltip } from '@geist-ui/core';
 import queryString from 'query-string';
 
+import CopyButton from '../components/ui/button/CopyButton';
 import { useActivityAPI } from '../utils/api';
 import { formatTimestamp, formatTimestampWithTZ, elapsedTime } from '../utils/utils';
 import DashboardLayout from '../layout/DashboardLayout';
@@ -38,26 +39,42 @@ const JsonPrettyPrint: React.FC<Props> = ({ data }): ReactElement<any, any> => {
 };
 
 export default function Activity() {
+    const navigate = useNavigate();
+
     const [loaded, setLoaded] = useState(false);
     const [activities, setActivities] = useState([]);
     const [expandedRow, setExpandedRow] = useState(-1);
     const [limit,] = useState(30);
     const [offset, setOffset] = useState(0);
 
-      const location = useLocation();
-      const queryParams = queryString.parse(location.search);
-      const activityLogId: string | (string | null)[] | null = queryParams.activity_log_id;
+    const location = useLocation();
+    const queryParams = queryString.parse(location.search);
+    const activityLogId: string | (string | null)[] | null = queryParams.activity_log_id;
+    const initialOffset: string | (string | null)[] | null = queryParams.offset;
 
     const getActivityAPI = useActivityAPI();
 
+
+    const isInitialMount = useRef(true);
+    const [activityRefs, setActivityRefs] = useState<{ [key: number]: React.RefObject<HTMLTableRowElement> }>({});
+
     useEffect(() => {
         const getActivity = async () => {
+            if (initialOffset && typeof initialOffset === 'string') {
+                setOffset(parseInt(initialOffset));
+            }
+
             const res = await getActivityAPI(limit, offset);
 
             if (res?.status === 200) {
                 try {
                     const data = await res.json();
                     setActivities(data);
+
+                    setActivityRefs(data.reduce((acc: Record<number, React.RefObject<HTMLTableRowElement>>, activity: ActivityResponse) => {
+                        acc[activity.id] = createRef<HTMLTableRowElement>();
+                        return acc;
+                    }, {}));
                 } catch (e) {
                     console.log(e)
                 }
@@ -69,35 +86,55 @@ export default function Activity() {
             setLoaded(true);
             getActivity();
         }
-
-    }, [getActivityAPI, loaded, setLoaded, limit, offset]);
-
+    }, [getActivityAPI, loaded, setLoaded, limit, offset, initialOffset]);
 
     useEffect(() => {
-      if (activityLogId && typeof activityLogId === 'string') {
-        setExpandedRow(parseInt(activityLogId));
-      }
-    }, [activityLogId]);
+        if (isInitialMount.current && activityLogId && typeof activityLogId === 'string' && Object.keys(activityRefs).length > 0) {
+            const id = parseInt(activityLogId);
+            setExpandedRow(id);
+
+            if (activityRefs[id] && activityRefs[id]?.current && activityRefs[id]?.current !== null) {
+                setTimeout(() => {
+                    activityRefs[id]?.current?.scrollIntoView({
+                        behavior: "smooth",
+                        block: "nearest",
+                    });
+                }, 100);
+
+                isInitialMount.current = false;
+
+            }
+        }
+    }, [activityLogId, activityRefs]);
+
 
     const incrementPage = () => {
         if (activities.length < limit) {
             return;
         }
 
-        setOffset(offset + limit);
+        const newOffset = offset + limit;
+        setOffset(newOffset);
         setLoaded(false);
+
+        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, offset: newOffset }));
     };
 
     const decrementPage = () => {
         if (offset - limit >= 0) {
-            setOffset(offset - limit);
+            const newOffset = offset - limit;
+            setOffset(newOffset);
             setLoaded(false);
+
+            navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, offset: newOffset }));
         }
     };
 
     const resetOffset = () => {
         setOffset(0);
         setLoaded(false);
+
+        navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, offset: 0 }));
     };
 
     const renderParams = (params: Record<string, string>) => {
@@ -145,11 +182,11 @@ export default function Activity() {
                         </span>
                     </div>
 
-                    <div className="h-fit border border-border-gray rounded-md text-white text-sm">
+                    <div className="h-fit border border-border-gray rounded-md text-white text-sm overflow-hidden">
                         <table className="table-auto">
                             <tbody className="px-4">
                                 {activities.filter((activity: ActivityResponse) => typeof activity?.action === 'string').map((activity: ActivityResponse, index: number) => (
-                                    <tr key={activity.id}>
+                                    <tr key={activity.id} ref={activityRefs[activity.id]}>
                                         <td
                                             className={`mx-8 flex-col px-10 py-4 whitespace-nowrap ${
                                                 index !== -1 ? 'border-b border-border-gray' : ''
@@ -251,8 +288,9 @@ export default function Activity() {
                                                         <p>{activity.id === expandedRow ? 'Hide Logs' : 'Show Logs'}</p>
                                                     </button>
                                                 )}
+                                                {activity.messages[0] && <CopyButton text={`${window.location.host}/activity?activity_log_id=${activity.id}${offset === 0 ? '': `&offset=${offset}`}`} />}
                                             </div>
-                                            {activity.id === expandedRow && (
+                                            {activity.id === expandedRow && activity.messages[0] && (
                                                 <>
                                                 <div className="flex flex-col space-y-4 mt-6 font-mono">
                                                     {activity.messages.map((message, index: number) => (
@@ -262,27 +300,27 @@ export default function Activity() {
                                                                     {formatTimestampWithTZ(Number(message?.timestamp))}
                                                                 </span>{' '}
                                                                 <span
-                                                                    className={`whitespace-normal break-all overflow-wrap ${message.level === 'error' ? 'text-red-500' : message.level === 'warn' ? 'text-orange-500' : ''}`}
+                                                                    className={`whitespace-normal break-all overflow-wrap ${message?.level === 'error' ? 'text-red-500' : message?.level === 'warn' ? 'text-orange-500' : ''}`}
                                                                 >
-                                                                    <JsonPrettyPrint data={message.content} />
+                                                                    <JsonPrettyPrint data={message?.content} />
                                                                 </span>
                                                             </div>
-                                                            {message.auth_mode && (
+                                                            {message?.auth_mode && (
                                                                 <div className="ml-4">
                                                                     auth_mode: {message.auth_mode}
                                                                 </div>
                                                             )}
-                                                            {message.url && (
-                                                                <div className="whitespace-normal ml-4">
+                                                            {message?.url && (
+                                                                <div className="whitespace-normal break-all overflow-wrap ml-4">
                                                                     url: {message.url}
                                                                 </div>
                                                             )}
-                                                            {message.state && (
-                                                                <div className="whitespace-normal ml-4">
+                                                            {message?.state && (
+                                                                <div className="whitespace-normal break-all overflow-wrap ml-4">
                                                                     state: {message.state}
                                                                 </div>
                                                             )}
-                                                            {message.params && (
+                                                            {message?.params && (
                                                                 <div className="ml-4">
                                                                     {renderParams(message.params as unknown as Record<string, string>)}
                                                                 </div>

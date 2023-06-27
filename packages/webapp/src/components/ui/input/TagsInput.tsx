@@ -1,18 +1,40 @@
-import { forwardRef, type KeyboardEvent, useState, useMemo } from 'react';
+import { useEffect, forwardRef, type KeyboardEvent, useState, useMemo } from 'react';
 import { X } from '@geist-ui/icons';
 
 import useSet from '../../../hooks/useSet';
 
-type TagsInputProps = Omit<JSX.IntrinsicElements['input'], 'defaultValue'> & { defaultValue: string };
+type TagsInputProps = Omit<JSX.IntrinsicElements['input'], 'defaultValue'> & { defaultValue?: string; selectedScopes?: string[]; addToScopesSet?: (scope: string) => void; removeFromSelectedSet?: (scope: string) => void };
 
-const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInput({ className, defaultValue, ...props }, ref) {
+const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInput({ className, defaultValue, selectedScopes: optionalSelectedScopes, addToScopesSet: optionalAddToScopesSet, removeFromSelectedSet: optionalRemoveFromSelectedSet, ...props }, ref) {
     const defaultScopes = useMemo(() => {
         return !!defaultValue ? defaultValue.split(',') : [];
     }, [defaultValue]);
 
     const [enteredValue, setEnteredValue] = useState('');
     const [error, setError] = useState('');
-    const [selectedScopes, addToScopesSet, removeFromSelectedSet] = useSet<string>(defaultScopes);
+    const [selectedScopes, addToScopesSet, removeFromSelectedSet] = useSet<string>();
+
+
+  const [scopes, setScopes] = useState(selectedScopes);
+
+  useEffect(() => {
+    const selectedScopesStr = JSON.stringify(selectedScopes);
+    const optionalSelectedScopesStr = JSON.stringify(optionalSelectedScopes);
+
+    if (optionalSelectedScopesStr !== JSON.stringify(scopes)) {
+      setScopes(optionalSelectedScopes ?? JSON.parse(selectedScopesStr));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(optionalSelectedScopes), JSON.stringify(selectedScopes)]);
+
+
+    useEffect(() => {
+        if (defaultScopes.length) {
+            defaultScopes.forEach((scope) => {
+                typeof optionalAddToScopesSet === 'function' ? optionalAddToScopesSet(scope.trim()) : addToScopesSet(scope.trim());;
+            });
+        }
+    }, [defaultScopes, addToScopesSet, optionalAddToScopesSet]);
 
     function handleEnter(e: KeyboardEvent<HTMLInputElement>) {
         //quick check for empty inputs
@@ -27,20 +49,20 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
             if (enteredValue.includes(',')) {
                 const enteredScopes = enteredValue.split(',');
                 enteredScopes.forEach((scope) => {
-                    addToScopesSet(scope.trim());
+                    typeof optionalAddToScopesSet === 'function' ? optionalAddToScopesSet(scope.trim()) : addToScopesSet(scope.trim());;
                 });
                 setEnteredValue('');
                 setError('');
                 return;
             }
-            addToScopesSet(enteredValue.trim());
+            typeof optionalAddToScopesSet === 'function' ? optionalAddToScopesSet(enteredValue.trim()) : addToScopesSet(enteredValue.trim());
             setEnteredValue('');
             setError('');
         }
     }
 
     function removeScope(scopeToBeRemoved: string) {
-        removeFromSelectedSet(scopeToBeRemoved);
+        typeof optionalRemoveFromSelectedSet === 'function' ? optionalRemoveFromSelectedSet(scopeToBeRemoved) : removeFromSelectedSet(scopeToBeRemoved);
     }
 
     function showInvalid() {
@@ -53,7 +75,7 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
     return (
         <>
             <div className="flex gap-3">
-                <input onInvalid={showInvalid} value={selectedScopes.join(',')} {...props} hidden />
+                <input onInvalid={showInvalid} value={scopes.join(',')} {...props} hidden />
                 <input
                     ref={ref}
                     value={enteredValue}
@@ -70,9 +92,9 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
                 </button>
             </div>
             {error && <p className="text-red-600 text-sm mt-3">{error}</p>}
-            {!!selectedScopes.length && (
+            {Boolean(scopes.length) && (
                 <div className="px-2 pt-2 mt-3 pb-11 mb-3 flex flex-wrap rounded-lg border border-border-gray">
-                    {selectedScopes.map((selectedScope, i) => {
+                    {scopes.map((selectedScope, i) => {
                         return (
                             <span
                                 key={selectedScope + i}

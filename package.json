@@ -7,7 +7,6 @@
         "packages/frontend",
         "packages/node-client",
         "packages/server",
-        "packages/shared",
         "packages/worker"
     ],
     "scripts": {
@@ -55,5 +54,9 @@
         "onchange": "^7.1.0",
         "prettier": "^2.7.1",
         "typescript": "^4.7.4"
+    },
+    "dependencies": {
+        "@babel/parser": "^7.22.5",
+        "@babel/traverse": "^7.22.5"
     }
 }

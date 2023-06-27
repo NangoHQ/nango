@@ -17,11 +17,9 @@ class EncryptionManager {
     constructor(key: string | undefined) {
         this.key = key;
 
-        if (key != null && Buffer.from(key, this.encoding).byteLength != this.encryptionKeyByteLength) {
+        if (key && Buffer.from(key, this.encoding).byteLength != this.encryptionKeyByteLength) {
             throw new Error('Encryption key must be base64-encoded and 256-bit long.');
         }
-
-        logger.info(key == null ? '🔓 Encryption disabled (no encryption key has been set).' : '🔐 Encryption enabled!');
     }
 
     private shouldEncrypt(): boolean {

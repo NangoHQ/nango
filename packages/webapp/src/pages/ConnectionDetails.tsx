@@ -13,7 +13,7 @@ import Button from '../components/ui/button/Button';
 import Typography from '../components/ui/typography/Typography';
 import SecretInput from '../components/ui/input/SecretInput';
 import type { SyncResponse, RunSyncCommand } from '../types';
-import { formatDateToUSFormat, interpretNextRun } from '../utils/utils';
+import { parseLatestSyncResult, formatDateToUSFormat, interpretNextRun } from '../utils/utils';
 
 interface Connection {
     id: number;
@@ -136,8 +136,8 @@ We could not retrieve and/or refresh your access token due to the following erro
         }
     }, [getSyncAPI, syncLoaded, setLoaded, connectionId, providerConfigKey]);
 
-    const syncCommand = async (command: RunSyncCommand, nango_connection_id: number, scheduleId: string, syncId: number) => {
-        const res = await runCommandSyncAPI(command, scheduleId, nango_connection_id, syncId);
+    const syncCommand = async (command: RunSyncCommand, nango_connection_id: number, scheduleId: string, syncId: number, syncName: string) => {
+        const res = await runCommandSyncAPI(command, scheduleId, nango_connection_id, syncId, syncName, connection?.provider);
 
         if (res?.status === 200) {
             try {
@@ -206,7 +206,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                                 )
                             }}
                         >
-                            Connection: {connection?.connectionId} - {connection?.provider}
+                            Connection: {connection?.connectionId} - {connection?.providerConfigKey}
                         </Typography>
                         {currentTab === 'auth' && (
                             <Button
@@ -418,7 +418,16 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                     index !== syncs.length - 1 ? 'border-b border-border-gray' : ''
                                                 }`}
                                             >
-                                                <Tooltip text={sync.id} type="dark">
+                                                <Tooltip
+                                                text={
+                                                        <>
+                                                            <div>Sync ID: {sync.id}</div>
+                                                            <div>Job ID: {sync?.latest_sync.job_id}</div>
+                                                            <div>Schedule ID: {sync?.schedule_id}</div>
+                                                        </>
+                                                    }
+                                                    type="dark"
+                                                >
                                                     <li className="w-48">{sync.name}</li>
                                                 </Tooltip>
                                                 <li className="w-48 ml-6 text-sm">
@@ -474,7 +483,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                             </div>
                                                         ))}
                                                 </li>
-                                                <Tooltip text={JSON.stringify(sync.latest_sync.result)} type="dark">
+                                                <Tooltip text={parseLatestSyncResult(sync.latest_sync.result, sync.models)} type="dark">
                                                     {sync.latest_sync.activity_log_id !== null ? (
                                                         <Link
                                                             to={`/activity?activity_log_id=${sync.latest_sync.activity_log_id}`}
@@ -503,7 +512,6 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                 {sync.schedule_status !== 'RUNNING' && (
                                                     <li className="ml-4 w-36 text-sm text-gray-500">-</li>
                                                 )}
-                                                {sync.schedule_status !== 'RUNNING' && <li className="ml-4 w-36 text-sm text-gray-500">-</li>}
                                                 <li className="flex ml-8">
                                                     <button
                                                         className="flex h-8 mr-2 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white bg-gray-800 hover:bg-gray-700"
@@ -512,7 +520,8 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                                 sync.schedule_status === 'RUNNING' ? 'PAUSE' : 'UNPAUSE',
                                                                 sync.nango_connection_id,
                                                                 sync.schedule_id,
-                                                                sync.id
+                                                                sync.id,
+                                                                sync.name
                                                             )
                                                         }
                                                     >
@@ -520,14 +529,14 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                     </button>
                                                     <button
                                                         className="flex h-8 mr-2 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white bg-gray-800 hover:bg-gray-700"
-                                                        onClick={() => syncCommand('RUN', sync.nango_connection_id, sync.schedule_id, sync.id)}
+                                                        onClick={() => syncCommand('RUN', sync.nango_connection_id, sync.schedule_id, sync.id, sync.name)}
                                                     >
                                                         <p>Sync</p>
                                                     </button>
                                                     {/*
                                                     <button
                                                         className="inline-flex items-center justify-center h-8 mr-2 rounded-md pl-2 pr-3 text-sm text-white bg-gray-800 hover:bg-gray-700 leading-none"
-                                                        onClick={() => syncCommand('RUN_FULL', sync.nango_connection_id, sync.id)}
+                                                        onClick={() => syncCommand('RUN_FULL', sync.nango_connection_id, sync.id, sync.name)}
                                                     >
                                                         Full Resync
                                                     </button>

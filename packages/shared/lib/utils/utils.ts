@@ -1,8 +1,6 @@
 import type { Request, Response } from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import type { ProxyConfiguration } from '../models/Proxy.js';
-import type { GetRecordsRequestConfig } from '../models/Sync.js';
 import { NangoError } from './error.js';
 import type { User } from '../models/Admin.js';
 
@@ -43,17 +41,27 @@ export function isStaging() {
 }
 
 export function getPort() {
-    if (process.env['SERVER_PORT'] != null) {
+    if (process.env['SERVER_PORT']) {
         return +process.env['SERVER_PORT'];
-    } else if (process.env['PORT'] != null) {
+    } else if (process.env['PORT']) {
         return +process.env['PORT']; // For Heroku (dynamic port)
+    } else if (process.env['NANGO_PORT']) {
+        return +process.env['NANGO_PORT']; // more friendly cli port name
     } else {
         return 3003;
     }
 }
 
 export function getServerPort() {
-    return process.env['SERVER_PORT'] != null ? +process.env['SERVER_PORT'] : 3003;
+    if (process.env['SERVER_PORT']) {
+        return +process.env['SERVER_PORT'];
+    } else if (process.env['PORT']) {
+        return +process.env['PORT']; // For Heroku (dynamic port)
+    } else if (process.env['NANGO_PORT']) {
+        return +process.env['NANGO_PORT']; // more friendly cli port name
+    } else {
+        return 3003;
+    }
 }
 
 export function isDev() {
@@ -93,26 +101,6 @@ export function dirname() {
     return path.dirname(fileURLToPath(import.meta.url));
 }
 
-export const validateProxyConfiguration = (config: ProxyConfiguration) => {
-    const requiredParams: Array<keyof ProxyConfiguration> = ['endpoint', 'providerConfigKey', 'connectionId'];
-
-    requiredParams.forEach((param) => {
-        if (typeof config[param] === 'undefined') {
-            throw new Error(`${param} is missing and is required to make a proxy call!`);
-        }
-    });
-};
-
-export const validateSyncRecordConfiguration = (config: GetRecordsRequestConfig) => {
-    const requiredParams: Array<keyof GetRecordsRequestConfig> = ['model', 'providerConfigKey', 'connectionId'];
-
-    requiredParams.forEach((param) => {
-        if (typeof config[param] === 'undefined') {
-            throw new Error(`${param} is missing and is required to make a proxy call!`);
-        }
-    });
-};
-
 export function parseTokenExpirationDate(expirationDate: any): Date {
     if (expirationDate instanceof Date) {
         return expirationDate;
@@ -144,6 +132,16 @@ export function getApiUrl() {
         return cloudHost;
     }
     return getServerBaseUrl();
+}
+
+/**
+ * Get any custom path for the websockets server.
+ * Defaults to '/' for backwards compatibility
+ *
+ * @returns the path for the websockets server
+ */
+export function getWebsocketsPath(): string {
+    return process.env['NANGO_SERVER_WEBSOCKETS_PATH'] || '/';
 }
 
 /**

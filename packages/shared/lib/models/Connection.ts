@@ -22,4 +22,9 @@ export interface Connection extends BaseConnection {
     credentials: AuthCredentials;
 }
 
-export type NangoConnection = Pick<Connection, 'id' | 'connection_id' | 'provider_config_key' | 'account_id'>;
+export interface NangoConnection {
+    id?: number;
+    connection_id: string;
+    provider_config_key: string;
+    account_id: number;
+}

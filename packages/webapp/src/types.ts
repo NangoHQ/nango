@@ -18,6 +18,16 @@ export interface ActivityResponse {
     operation_name?: string;
 }
 
+export interface SyncResult {
+    [key: string]: Result;
+}
+
+export interface Result {
+    added: number;
+    updated: number;
+    deleted?: number;
+}
+
 export interface SyncResponse {
     id: number;
     created_at: string;
@@ -34,11 +44,8 @@ export interface SyncResponse {
         type: 'INITIAL' | 'INCREMENTAL';
         status: 'SUCCESS' | 'STOPPED' | 'RUNNING' | 'PAUSED';
         activity_log_id: number | null;
-        result: {
-            added: number;
-            updated: number;
-            deleted?: number;
-        };
+        result: SyncResult;
+        job_id: string;
     };
 }
 

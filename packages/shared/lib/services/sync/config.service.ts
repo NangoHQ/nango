@@ -4,6 +4,7 @@ import fileService from '../file.service.js';
 import { updateSyncScheduleFrequency } from './schedule.service.js';
 import type { IncomingSyncConfig, SyncConfig } from '../../models/Sync.js';
 import type { NangoConnection } from '../../models/Connection.js';
+import type { Config as ProviderConfig } from '../../models/Provider.js';
 import type { NangoConfig } from '../../integrations/index.js';
 import { NangoError } from '../../utils/error.js';
 import { getEnv } from '../../utils/utils.js';
@@ -22,7 +23,7 @@ export async function createSyncConfig(account_id: number, syncs: IncomingSyncCo
         const config = await configService.getProviderConfig(providerConfigKey, account_id);
 
         if (!config) {
-            throw new NangoError('unknown_provider_config');
+            throw new NangoError('unknown_provider_config', { providerConfigKey });
         }
 
         const previousSyncConfig = await getSyncConfigByParams(account_id, syncName, providerConfigKey);
@@ -177,6 +178,18 @@ export async function getSyncConfigByParams(account_id: number, sync_name: strin
 
 export async function updateSyncConfigWithSyncId(sync_config_id: number, sync_id: string): Promise<void> {
     await schema().from<SyncConfig>(TABLE).where({ id: sync_config_id }).update({ sync_id });
+}
+
+export async function deleteSyncFilesForConfig(config: ProviderConfig): Promise<void> {
+    const { id } = config;
+
+    const files = await schema()
+        .from<SyncConfig>(TABLE)
+        .where({ nango_config_id: id as number })
+        .select('file_location')
+        .pluck('file_location');
+
+    await fileService.deleteFiles(files);
 }
 
 function increment(input: number | string): number | string {

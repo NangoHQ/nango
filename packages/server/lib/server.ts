@@ -25,7 +25,7 @@ import passport from 'passport';
 import accountController from './controllers/account.controller.js';
 import type { Response, Request } from 'express';
 import Logger from './utils/logger.js';
-import { accountService, getPort, isCloud, isBasicAuthEnabled, errorManager } from '@nangohq/shared';
+import { accountService, getPort, isCloud, isBasicAuthEnabled, errorManager, getWebsocketsPath } from '@nangohq/shared';
 import oAuthSessionService from './services/oauth-session.service.js';
 import { deleteOldActivityLogs } from './jobs/index.js';
 import migrate from './utils/migrate.js';
@@ -44,7 +44,7 @@ const webAuth = isCloud()
     ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth.bind(authMiddleware)]
     : [authMiddleware.noAuth.bind(authMiddleware)];
 
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
 app.use(cors());
 
 // Set to 'false' to disable migration at startup. Appropriate when you
@@ -79,6 +79,7 @@ app.route('/connection/:connectionId').delete(apiAuth, connectionController.dele
 app.route('/connection/:connectionId/field-mapping').post(apiAuth, connectionController.setFieldMapping.bind(connectionController));
 app.route('/connection').post(apiAuth, connectionController.createConnection.bind(connectionController));
 app.route('/sync/deploy').post(apiAuth, syncController.deploySync.bind(syncController));
+app.route('/sync/reconcile').post(apiAuth, syncController.reconcileSyncs.bind(syncController));
 app.route('/sync/records').get(apiAuth, syncController.getRecords.bind(syncController));
 app.route('/sync/trigger').post(apiAuth, syncController.trigger.bind(syncController));
 
@@ -133,7 +134,7 @@ app.get('*', (_, res) => {
 });
 
 const server = http.createServer(app);
-const wsServer = new WebSocketServer({ server });
+const wsServer = new WebSocketServer({ server, path: getWebsocketsPath() });
 
 wsServer.on('connection', (ws: WebSocket) => {
     webSocketClient.addClient(ws);

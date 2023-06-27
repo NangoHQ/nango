@@ -1,7 +1,7 @@
 import { loadNangoConfig } from '../nango-config.service.js';
 import type { NangoConnection } from '../../models/Connection.js';
-import { SyncType, SyncStatus, SyncResult } from '../../models/Sync.js';
-import { createActivityLogMessageAndEnd, createActivityLogMessage, updateSuccess as updateSuccessActivityLog } from '../activity.service.js';
+import { SyncResult, SyncType, SyncStatus, Job as SyncJob } from '../../models/Sync.js';
+import { createActivityLogMessage, createActivityLogMessageAndEnd, updateSuccess as updateSuccessActivityLog } from '../activity.service.js';
 import { addSyncConfigToJob, updateSyncJobResult, updateSyncJobStatus } from '../sync/job.service.js';
 import { checkForIntegrationFile } from '../nango-config.service.js';
 import { getLastSyncDate } from './sync.service.js';
@@ -64,7 +64,7 @@ export default class SyncRun {
         }
     }
 
-    async run(optionalLastSyncDate?: Date | null, bypassAccount?: boolean): Promise<boolean | object> {
+    async run(optionalLastSyncDate?: Date | null, bypassAccount?: boolean, optionalSecretKey?: string): Promise<boolean | object> {
         const nangoConfig = await loadNangoConfig(this.nangoConnection, this.syncName, this.syncId, this.loadLocation);
 
         if (!nangoConfig) {
@@ -93,13 +93,20 @@ export default class SyncRun {
                 return false;
             }
 
+            let secretKey;
+
+            if (isCloud()) {
+                secretKey = account ? (account?.secret_key as string) : '';
+            } else {
+                secretKey = optionalSecretKey || process.env['NANGO_SECRET_KEY'] ? (process.env['NANGO_SECRET_KEY'] as string) : '';
+            }
+
             const nango = new NangoSync({
                 host: getApiUrl(),
                 connectionId: String(this.nangoConnection?.connection_id),
                 providerConfigKey: String(this.nangoConnection?.provider_config_key),
                 activityLogId: this.activityLogId as number,
-                isSync: true,
-                secretKey: account ? (account?.secret_key as string) : '',
+                secretKey,
                 nangoConnectionId: this.nangoConnection?.id as number,
                 syncId: this.syncId,
                 syncJobId: this.syncJobId,
@@ -108,8 +115,6 @@ export default class SyncRun {
 
             const providerConfigKey = this.nangoConnection.provider_config_key;
             const syncObject = integrations[providerConfigKey] as unknown as { [key: string]: NangoIntegration };
-
-            const now = new Date();
 
             if (!isCloud()) {
                 const { path: integrationFilePath, result: integrationFileResult } = checkForIntegrationFile(this.syncName, this.loadLocation);
@@ -122,9 +127,13 @@ export default class SyncRun {
                 }
             }
 
-            const lastSyncDate =
-                // test if get last sync date works from the dry run sync script from the cli
-                optionalLastSyncDate === null ? optionalLastSyncDate : await getLastSyncDate(this.nangoConnection?.id as number, this.syncName);
+            let lastSyncDate: Date | null | undefined = null;
+
+            if (!this.writeToDb) {
+                lastSyncDate = optionalLastSyncDate;
+            } else {
+                await getLastSyncDate(this.nangoConnection?.id as number, this.syncName);
+            }
             nango.setLastSyncDate(lastSyncDate as Date);
             const syncData = syncObject[this.syncName] as unknown as NangoIntegrationData;
             const { returns: models } = syncData;
@@ -148,6 +157,7 @@ export default class SyncRun {
                     return userDefinedResults;
                 }
 
+                let i = 0;
                 for (const model of models) {
                     if (userDefinedResults[model]) {
                         if (!this.syncId) {
@@ -162,41 +172,44 @@ export default class SyncRun {
                             this.syncJobId as number
                         );
 
-                        if (formattedResults.length === 0) {
-                            if (this.activityLogId) {
-                                await createActivityLogMessage({
-                                    level: 'error',
-                                    activity_log_id: this.activityLogId,
-                                    content: `There were no data records to insert for ${this.syncName}`,
-                                    timestamp: Date.now()
-                                });
-                            }
-                            continue;
-                        }
-
                         if (this.writeToDb && this.activityLogId) {
-                            const upsertResult: UpsertResponse = await upsert(
-                                formattedResults,
-                                '_nango_sync_data_records',
-                                'external_id',
-                                this.nangoConnection.id as number,
-                                model,
-                                this.activityLogId
-                            );
-
-                            if (upsertResult.success) {
-                                this.reportResults(now, model, upsertResult.summary as UpsertSummary, formattedResults.length > 0, true, syncData.version);
+                            if (formattedResults.length === 0) {
+                                this.reportResults(
+                                    model,
+                                    { addedKeys: [], updatedKeys: [], affectedInternalIds: [], affectedExternalIds: [] },
+                                    i,
+                                    models.length,
+                                    syncData.version
+                                );
                             }
 
-                            if (!upsertResult.success) {
-                                errorManager.report(upsertResult?.error, { accountId: this.nangoConnection.account_id as number });
+                            if (formattedResults.length > 0) {
+                                const upsertResult: UpsertResponse = await upsert(
+                                    formattedResults,
+                                    '_nango_sync_data_records',
+                                    'external_id',
+                                    this.nangoConnection.id as number,
+                                    model,
+                                    this.activityLogId
+                                );
 
-                                this.reportFailureForResults(`There was a problem upserting the data for ${this.syncName} and the model ${model}`);
+                                if (upsertResult.success) {
+                                    const { summary } = upsertResult;
 
-                                return false;
+                                    this.reportResults(model, summary as UpsertSummary, i, models.length, syncData.version);
+                                }
+
+                                if (!upsertResult.success) {
+                                    errorManager.report(upsertResult?.error, { accountId: this.nangoConnection.account_id as number });
+
+                                    this.reportFailureForResults(`There was a problem upserting the data for ${this.syncName} and the model ${model}`);
+
+                                    return false;
+                                }
                             }
                         }
                     }
+                    i++;
                 }
             } catch (e) {
                 result = false;
@@ -210,52 +223,76 @@ export default class SyncRun {
         return result;
     }
 
-    async reportResults(
-        now: Date,
-        model: string,
-        responseResults: UpsertSummary,
-        anyResultsInserted: boolean,
-        upsertSuccess: boolean,
-        version?: string
-    ): Promise<void> {
+    async reportResults(model: string, responseResults: UpsertSummary, index: number, numberOfModels: number, version?: string): Promise<void> {
         if (!this.writeToDb || !this.activityLogId || !this.syncJobId) {
             return;
         }
 
-        await updateSyncJobStatus(this.syncJobId, SyncStatus.SUCCESS);
-        await updateSuccessActivityLog(this.activityLogId, true);
-        const syncResult: SyncResult = await updateSyncJobResult(this.syncJobId, {
-            added: responseResults.addedKeys.length,
-            updated: responseResults.updatedKeys.length
-        });
+        if (index === numberOfModels - 1) {
+            await updateSyncJobStatus(this.syncJobId, SyncStatus.SUCCESS);
+            await updateSuccessActivityLog(this.activityLogId, true);
+        }
 
-        const { added, updated } = syncResult;
+        const updatedResults = {
+            [model]: {
+                added: responseResults.addedKeys.length,
+                updated: responseResults.updatedKeys.length
+            }
+        };
+
+        const syncResult: SyncJob = await updateSyncJobResult(this.syncJobId, updatedResults, model);
+
+        const { result } = syncResult;
+
+        let added = 0;
+        let updated = 0;
+
+        if (result && result[model]) {
+            const modelResult = result[model] as SyncResult;
+            added = modelResult.added;
+            updated = modelResult.updated;
+        } else {
+            // legacy json structure
+            added = (result?.['added'] as unknown as number) ?? 0;
+            updated = (result?.['updated'] as unknown as number) ?? 0;
+        }
 
         const successMessage =
             `The ${this.syncType} "${this.syncName}" sync has been completed to the ${model} model.` +
             (version ? ` The version integration script version ran was ${version}.` : '');
 
-        let resultMessage = '';
-
-        if (!upsertSuccess) {
-            resultMessage = `There was an error in upserting the results`;
-        } else {
-            if (anyResultsInserted) {
-                await webhookService.sendUpdate(this.nangoConnection, this.syncName, model, syncResult, this.syncType, now.toISOString(), this.activityLogId);
-            }
-            resultMessage = anyResultsInserted
+        const resultMessage =
+            added > 0 || updated > 0
                 ? `The result was ${added} added record${added === 1 ? '' : 's'} and ${updated} updated record${updated === 1 ? '.' : 's.'}`
                 : 'The external API returned no results so nothing was inserted or updated.';
-        }
 
         const content = `${successMessage} ${resultMessage}`;
 
-        await createActivityLogMessageAndEnd({
-            level: 'info',
-            activity_log_id: this.activityLogId,
-            timestamp: Date.now(),
-            content
-        });
+        await webhookService.sendUpdate(
+            this.nangoConnection,
+            this.syncName,
+            model,
+            { added, updated },
+            this.syncType,
+            syncResult.updated_at as string,
+            this.activityLogId
+        );
+
+        if (index === numberOfModels - 1) {
+            await createActivityLogMessageAndEnd({
+                level: 'info',
+                activity_log_id: this.activityLogId,
+                timestamp: Date.now(),
+                content
+            });
+        } else {
+            await createActivityLogMessage({
+                level: 'info',
+                activity_log_id: this.activityLogId,
+                timestamp: Date.now(),
+                content
+            });
+        }
     }
 
     async reportFailureForResults(content: string) {

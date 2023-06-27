@@ -24,7 +24,7 @@ import { deleteScheduleForConnection as deleteSyncScheduleForConnection } from '
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import { NangoError } from '../utils/error.js';
 
-import type { Connection, StoredConnection, BaseConnection } from '../models/Connection.js';
+import type { Connection, StoredConnection, BaseConnection, NangoConnection } from '../models/Connection.js';
 import encryptionManager from '../utils/encryption.manager.js';
 import { AuthModes as ProviderAuthModes, OAuth2Credentials, ImportedCredentials } from '../models/Auth.js';
 import { schema } from '../db/database.js';
@@ -73,7 +73,10 @@ class ConnectionService {
             throw new NangoError('unknown_provider_config');
         }
 
-        const connection = await this.getConnection(connection_id, provider_config_key, accountId);
+        let connection = undefined;
+        try {
+            connection = await this.getConnection(connection_id, provider_config_key, accountId);
+        } catch {}
 
         if (connection) {
             throw new NangoError('connection_already_exists');
@@ -121,6 +124,11 @@ class ConnectionService {
             .where({ connection_id: connectionId, provider_config_key: providerConfigKey, account_id: accountId })) as unknown as StoredConnection[];
 
         const storedConnection = result == null || result.length == 0 ? null : result[0] || null;
+
+        if (!storedConnection) {
+            throw new NangoError('unkown_connection', { connectionId, providerConfigKey });
+        }
+
         const connection = encryptionManager.decryptConnection(storedConnection);
 
         // Parse the token expiration date.
@@ -153,6 +161,20 @@ class ConnectionService {
         }
 
         return result[0].field_mappings;
+    }
+
+    public async getConnectionsByAccountAndConfig(accountId: number, providerConfigKey: string): Promise<NangoConnection[]> {
+        const result = await db.knex
+            .withSchema(db.schema())
+            .from<StoredConnection>(`_nango_connections`)
+            .select('id', 'connection_id', 'provider_config_key', 'account_id')
+            .where({ account_id: accountId, provider_config_key: providerConfigKey });
+
+        if (!result || result.length == 0 || !result[0]) {
+            return [];
+        }
+
+        return result;
     }
 
     public async updateFieldMappings(connection: Connection, fieldMappings: Record<string, string>) {

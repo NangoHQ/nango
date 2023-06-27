@@ -1,12 +1,24 @@
 import { v4 as uuidv4 } from 'uuid';
 import db, { schema, dbNamespace } from '../../db/database.js';
-import { Sync, Job as SyncJob, SyncStatus, SyncWithSchedule } from '../../models/Sync.js';
+import { SyncReconciliationParams, Sync, Job as SyncJob, SyncStatus, SyncWithSchedule } from '../../models/Sync.js';
+import type { Connection, NangoConnection } from '../../models/Connection.js';
 import SyncClient from '../../clients/sync.client.js';
-import { markAllAsStopped } from './schedule.service.js';
+import type { Config as ProviderConfig } from '../../models/Provider.js';
+import { markAllAsStopped, deleteScheduleForSync } from './schedule.service.js';
+import connectionService from '../connection.service.js';
+import configService from '../config.service.js';
 
 const TABLE = dbNamespace + 'syncs';
 const SYNC_JOB_TABLE = dbNamespace + 'sync_jobs';
 const SYNC_SCHEDULE_TABLE = dbNamespace + 'sync_schedules';
+
+interface ReconciledSyncResult {
+    createdSyncs: (Sync | null)[];
+    deletedSyncs: {
+        id: string;
+        name: string;
+    }[];
+}
 
 /**
  * Sync Service
@@ -46,7 +58,7 @@ export const createSync = async (nangoConnectionId: number, name: string, models
 };
 
 export const getLastSyncDate = async (nangoConnectionId: number, syncName: string): Promise<Date | null> => {
-    const sync = await getSync(nangoConnectionId, syncName);
+    const sync = await getSyncByIdAndName(nangoConnectionId, syncName);
 
     if (!sync) {
         return null;
@@ -71,7 +83,7 @@ export const getLastSyncDate = async (nangoConnectionId: number, syncName: strin
     return updated_at;
 };
 
-export const getSync = async (nangoConnectionId: number, name: string): Promise<Sync | null> => {
+export const getSyncByIdAndName = async (nangoConnectionId: number, name: string): Promise<Sync | null> => {
     const result = await db.knex.withSchema(db.schema()).select('*').from<Sync>(TABLE).where({ nango_connection_id: nangoConnectionId, name });
 
     if (Array.isArray(result) && result.length > 0) {
@@ -81,12 +93,12 @@ export const getSync = async (nangoConnectionId: number, name: string): Promise<
     return null;
 };
 
-export const getSyncsFlat = async (nangoConnectionId: number): Promise<SyncWithSchedule[]> => {
+export const getSyncsFlat = async (nangoConnection: Connection): Promise<SyncWithSchedule[]> => {
     const result = await schema()
         .select('*')
         .from<Sync>(TABLE)
         .join(SYNC_SCHEDULE_TABLE, `${SYNC_SCHEDULE_TABLE}.sync_id`, `${TABLE}.id`)
-        .where({ nango_connection_id: nangoConnectionId });
+        .where({ nango_connection_id: nangoConnection.id });
 
     if (Array.isArray(result) && result.length > 0) {
         return result;
@@ -100,10 +112,10 @@ export const getSyncsFlat = async (nangoConnectionId: number): Promise<SyncWithS
  * @description get the sync related to the connection
  * the latest sync and its result and the next sync based on the schedule
  */
-export const getSyncs = async (nangoConnectionId: number): Promise<Sync[]> => {
+export const getSyncs = async (nangoConnection: Connection): Promise<Sync[]> => {
     const syncClient = await SyncClient.getInstance();
 
-    if (!syncClient || !nangoConnectionId) {
+    if (!syncClient || !nangoConnection || !nangoConnection.id) {
         return [];
     }
 
@@ -123,6 +135,7 @@ export const getSyncs = async (nangoConnectionId: number): Promise<Sync[]> => {
             db.knex.raw(
                 `(
                     SELECT json_build_object(
+                        'job_id', nango.${SYNC_JOB_TABLE}.id,
                         'updated_at', nango.${SYNC_JOB_TABLE}.updated_at,
                         'type', nango.${SYNC_JOB_TABLE}.type,
                         'result', nango.${SYNC_JOB_TABLE}.result,
@@ -140,7 +153,7 @@ export const getSyncs = async (nangoConnectionId: number): Promise<Sync[]> => {
         .leftJoin(SYNC_JOB_TABLE, `${SYNC_JOB_TABLE}.sync_id`, '=', `${TABLE}.id`)
         .join(SYNC_SCHEDULE_TABLE, `${SYNC_SCHEDULE_TABLE}.sync_id`, `${TABLE}.id`)
         .where({
-            nango_connection_id: nangoConnectionId
+            nango_connection_id: nangoConnection.id
         })
         .groupBy(
             `${TABLE}.id`,
@@ -153,7 +166,7 @@ export const getSyncs = async (nangoConnectionId: number): Promise<Sync[]> => {
     const syncsWithSchedule = result.map((sync) => {
         const { schedule_id } = sync;
         const schedule = scheduleResponse?.schedules.find((schedule) => schedule.scheduleId === schedule_id);
-        const futureActionTimes = schedule?.info?.futureActionTimes?.map((long) => long?.seconds?.toNumber());
+        const futureActionTimes = schedule?.info?.futureActionTimes?.map((long) => long?.seconds?.toNumber()) || [];
 
         return {
             ...sync,
@@ -178,6 +191,19 @@ export const getSyncsByConnectionId = async (nangoConnectionId: number): Promise
     return null;
 };
 
+export const getSyncsByProviderConfigKey = async (accountId: number, providerConfigKey: string): Promise<Sync[]> => {
+    const connections: NangoConnection[] = await connectionService.getConnectionsByAccountAndConfig(accountId, providerConfigKey);
+    const syncs: Sync[] = [];
+    for (const connection of connections) {
+        const existingSync = await getSyncsByConnectionId(connection.id as number);
+        if (existingSync) {
+            syncs.push(...existingSync);
+        }
+    }
+
+    return syncs;
+};
+
 /**
  * Verify Ownership
  * @desc verify that the incoming account id matches with the provided nango connection id
@@ -198,4 +224,54 @@ export const verifyOwnership = async (nangoConnectionId: number, accountId: numb
     }
 
     return true;
+};
+
+export const deleteSync = async (syncId: string): Promise<string> => {
+    await schema().select('*').from<Sync>(TABLE).where({ id: syncId });
+
+    return syncId;
+};
+
+/**
+ * Reconcile Syncs
+ * @desc if syncs are new then initiate them, if they are deleted then delete them
+ *
+ */
+export const reconcileSyncs = async (account_id: number, syncs: SyncReconciliationParams[]): Promise<ReconciledSyncResult> => {
+    const createdSyncs = [];
+    const deletedSyncs = [];
+
+    for (const sync of syncs) {
+        const { syncName, providerConfigKey, returns } = sync;
+
+        // get all the connection ids for this provider
+        const connections: NangoConnection[] = await connectionService.getConnectionsByAccountAndConfig(account_id, providerConfigKey);
+
+        for (const connection of connections) {
+            const existingSync = await getSyncByIdAndName(connection.id as number, syncName);
+
+            if (!existingSync) {
+                const createdSync = await createSync(connection.id as number, syncName, returns);
+                createdSyncs.push(createdSync);
+                const syncConfig = await configService.getProviderConfig(providerConfigKey, account_id);
+                const syncClient = await SyncClient.getInstance();
+                syncClient?.startContinuous(connection, createdSync as Sync, syncConfig as ProviderConfig, syncName, sync);
+            }
+        }
+
+        const providerSyncs = await getSyncsByProviderConfigKey(account_id, providerConfigKey);
+
+        for (const providerSync of providerSyncs) {
+            if (!syncs.find((sync) => sync.syncName === providerSync.name)) {
+                const deletedSync = await deleteSync(providerSync.id as string);
+                await deleteScheduleForSync(providerSync.id as string);
+                deletedSyncs.push({
+                    id: deletedSync,
+                    name: providerSync.name
+                });
+            }
+        }
+    }
+
+    return { createdSyncs, deletedSyncs };
 };
