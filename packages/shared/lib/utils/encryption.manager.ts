@@ -23,7 +23,7 @@ class EncryptionManager {
     }
 
     private shouldEncrypt(): boolean {
-        return this.key != null && this.key.length > 0;
+        return Boolean((this?.key as string) && (this.key as string).length > 0);
     }
 
     private encrypt(str: string): [string, string | null, string | null] {
