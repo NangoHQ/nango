@@ -12,7 +12,7 @@ import * as dotenv from 'dotenv';
 
 import { nangoConfigFile, loadSimplifiedConfig } from '@nangohq/shared';
 import { init, run, generate, tsc, tscWatch, configWatch, dockerRun, version, deploy } from './sync.js';
-import { port, upgradeAction, NANGO_INTEGRATIONS_LOCATION, verifyNecessaryFiles } from './utils.js';
+import { upgradeAction, NANGO_INTEGRATIONS_LOCATION, verifyNecessaryFiles } from './utils.js';
 import type { DeployOptions } from './types.js';
 
 class NangoCommand extends Command {
@@ -32,12 +32,10 @@ const program = new NangoCommand();
 
 dotenv.config();
 
-// Test from the package root (/packages/cli) with 'node dist/index.js'
-program
-    .name('nango')
-    .description(
-        `A CLI tool to configure Nango:\n- By defaults, the CLI assumes that you are running Nango on localhost:${port}\n- For Nango Cloud: Set the NANGO_HOSTPORT & NANGO_SECRET_KEY env variables\n- For Self-Hosting: set the NANGO_HOSTPORT env variable`
-    );
+program.name('nango').description(
+    `By default, the CLI assumes that you are using Nango Cloud so you need to set the NANGO_SECRET_KEY env variable or pass in the --secret-key flag with each command .\n
+         For Self-Hosting: set the NANGO_HOSTPORT env variable or pass in the --host flag with each command.`
+);
 
 program.addHelpText('before', chalk.green(figlet.textSync('Nango CLI')));
 
@@ -89,10 +87,6 @@ program
             configWatch();
         }
 
-        //if (!process.env['NANGO_HOSTPORT'] || process.env['NANGO_HOSTPORT'] === `http://localhost:${port}`) {
-        //configDeploy();
-        //}
-
         tscWatch();
     });
 
@@ -117,10 +111,6 @@ program
         if (compileInterfaces) {
             configWatch();
         }
-
-        //if (!process.env['NANGO_HOSTPORT'] || process.env['NANGO_HOSTPORT'] === `http://localhost:${port}`) {
-        //configDeploy();
-        //}
 
         tscWatch();
         await dockerRun();
@@ -156,7 +146,7 @@ program
 program
     .command('sync:run')
     .alias('sr')
-    .description('Run the sync process to help with debugging')
+    .description('Run the sync process to help with debugging. Assumes local development environment.')
     .option('-s, --sync <syncName>', 'The name of the sync (e.g. account-sync).')
     .option('-p, --provider <provider_config_key>', 'The unique key of the provider configuration (chosen by you upon creating this provider configuration).')
     .option('-c, --connection <connection_id>', 'The ID of the Connection.')
