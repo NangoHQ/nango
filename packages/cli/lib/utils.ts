@@ -2,6 +2,7 @@ import https from 'https';
 import axios from 'axios';
 import fs from 'fs';
 import npa from 'npm-package-arg';
+import Module from 'node:module';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import semver from 'semver';
@@ -15,6 +16,8 @@ import { init, generate, tsc } from './sync.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+const require = Module.createRequire(import.meta.url);
 
 dotenv.config();
 
@@ -221,4 +224,25 @@ export function buildInterfaces(models: NangoModel): (string | undefined)[] {
     });
 
     return interfaceDefinitions;
+}
+
+export function getNangoRootPath() {
+    const packagePath = getPackagePath();
+    if (!packagePath) {
+        return null;
+    }
+
+    return path.resolve(packagePath, '..');
+}
+
+function getPackagePath() {
+    try {
+        const packageMainPath = require.resolve('nango');
+        const packagePath = path.dirname(packageMainPath);
+
+        return packagePath;
+    } catch (e) {
+        console.log(e);
+        return null;
+    }
 }
