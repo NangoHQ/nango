@@ -1,11 +1,10 @@
 {
     "name": "@nangohq/shared",
-    "version": "0.22.19",
+    "version": "0.22.28",
     "description": "Nango's shared components.",
     "type": "module",
     "main": "dist/lib/index.js",
     "typings": "dist/lib/index.d.ts",
-    "scripts": {},
     "scripts": {
         "build": "rimraf dist && tsc"
     },
@@ -19,7 +18,7 @@
     "dependencies": {
         "@aws-sdk/client-s3": "^3.348.0",
         "@hapi/boom": "^10.0.1",
-        "@nangohq/node": "0.22.19",
+        "@nangohq/node": "0.22.28",
         "@sentry/node": "^7.37.2",
         "@temporalio/client": "^1.5.2",
         "@types/fs-extra": "^11.0.1",

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /*
- * Copyright (c) 2022 Nango, all rights reserved.
+ * Copyright (c) 2023 Nango, all rights reserved.
  */
 
 import { Command } from 'commander';
@@ -33,8 +33,8 @@ const program = new NangoCommand();
 dotenv.config();
 
 program.name('nango').description(
-    `By default, the CLI assumes that you are using Nango Cloud so you need to set the NANGO_SECRET_KEY env variable or pass in the --secret-key flag with each command .\n
-         For Self-Hosting: set the NANGO_HOSTPORT env variable or pass in the --host flag with each command.`
+    `By default, the CLI assumes that you are using Nango Cloud so you need to set the NANGO_SECRET_KEY env variable or pass in the --secret-key flag with each command.
+For Self-Hosting: set the NANGO_HOSTPORT env variable or pass in the --host flag with each command.`
 );
 
 program.addHelpText('before', chalk.green(figlet.textSync('Nango CLI')));
@@ -42,7 +42,7 @@ program.addHelpText('before', chalk.green(figlet.textSync('Nango CLI')));
 program
     .command('version')
     .alias('v')
-    .description('Print the version of the Nango CLI')
+    .description('Print the version of the Nango CLI, Nango Worker, and Nango Server.')
     .action(() => {
         version();
     });
