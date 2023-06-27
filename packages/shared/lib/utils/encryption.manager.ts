@@ -141,9 +141,9 @@ class EncryptionManager {
     public async encryptDatabaseIfNeeded() {
         const dbConfig: DBConfig | null = await db.knex.withSchema(db.schema()).first().from<DBConfig>('_nango_db_config');
         const previousEncryptionKeyHash = dbConfig?.encryption_key_hash;
-        const encryptionKeyHash = this.key != null ? await this.hashEncryptionKey(this.key, this.keySalt) : null;
+        const encryptionKeyHash = this.key ? await this.hashEncryptionKey(this.key, this.keySalt) : null;
 
-        const isEncryptionKeyNew = dbConfig == null && this.key != null;
+        const isEncryptionKeyNew = dbConfig == null && this.key;
         const isEncryptionIncomplete = dbConfig != null && previousEncryptionKeyHash === encryptionKeyHash && dbConfig.encryption_complete == false;
 
         if (isEncryptionKeyNew || isEncryptionIncomplete) {
