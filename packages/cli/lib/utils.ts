@@ -242,7 +242,8 @@ function getPackagePath() {
 
         return packagePath;
     } catch (e) {
-        console.log(e);
-        return null;
+        throw new Error(
+            'Could not find nango package. Please make sure it is installed in your project or installed globally. Reach out to us in the Slack community if you continue to have issues!'
+        );
     }
 }
