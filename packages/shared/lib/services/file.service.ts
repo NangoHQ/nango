@@ -1,4 +1,4 @@
-import { PutObjectCommand, GetObjectCommand, GetObjectCommandOutput, S3Client } from '@aws-sdk/client-s3';
+import { PutObjectCommand, GetObjectCommand, GetObjectCommandOutput, S3Client, DeleteObjectsCommand } from '@aws-sdk/client-s3';
 import { Readable } from 'stream';
 
 const client = new S3Client({
@@ -55,6 +55,17 @@ class FileService {
                     reject(err);
                 });
         });
+    }
+
+    async deleteFiles(fileNames: string[]): Promise<void> {
+        const deleteObjectsCommand = new DeleteObjectsCommand({
+            Bucket: this.bucket,
+            Delete: {
+                Objects: fileNames.map((fileName) => ({ Key: fileName }))
+            }
+        });
+
+        await client.send(deleteObjectsCommand);
     }
 }
 

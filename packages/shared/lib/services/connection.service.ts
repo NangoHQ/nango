@@ -73,7 +73,10 @@ class ConnectionService {
             throw new NangoError('unknown_provider_config');
         }
 
-        const connection = await this.getConnection(connection_id, provider_config_key, accountId);
+        let connection = undefined;
+        try {
+            connection = await this.getConnection(connection_id, provider_config_key, accountId);
+        } catch {}
 
         if (connection) {
             throw new NangoError('connection_already_exists');

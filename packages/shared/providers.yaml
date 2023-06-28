@@ -428,6 +428,17 @@ notion:
     body_format: json
     base_api_url: https://api.notion.com
     docs: https://developers.notion.com/reference
+notion2:
+    auth_mode: OAUTH2
+    authorization_url: https://api.notion.com/v1/oauth/authorize
+    token_url: https://api.notion.com/v1/oauth/token
+    authorization_params:
+        response_type: code
+        owner: user
+    authorization_method: header
+    body_format: json
+    base_api_url: https://api.notion.com
+    docs: https://developers.notion.com/reference
 one-drive:
     auth_mode: OAUTH2
     authorization_url: https://login.microsoftonline.com/common/oauth2/v2.0/authorize

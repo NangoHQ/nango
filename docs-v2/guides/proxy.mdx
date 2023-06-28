@@ -1,12 +1,12 @@
 ---
-title: 'One-Off Request Proxying'
-sidebarTitle: 'One-Off Request Proxying'
+title: 'Proxy Requests'
+sidebarTitle: 'Proxy Requests'
 description: 'Call APIs directly, with the full power of the Nango infrastructure.'
 ---
 
-## When to use the Nango Proxy
+## When to use the Proxy
 
-The **Nango Proxy** makes it faster for you to query external APIs by handling:
+The **Proxy** makes it faster for you to query external APIs by handling:
 * Authentication
 * Automatically sets the correct base URL
 * Automatic logging & monitoring
@@ -17,12 +17,12 @@ It is especially useful for:
 * Writing data back to the API on demand
 * Performing API requests in Sync scripts
 
-If you want to continuously sync data from the external API, check out the [Continuous Syncing Guide](/guides/sync).
+If you want to continuously sync data from the external API, check out the [Sync Data guide](/guides/sync).
 
 ## Using the Proxy
 
 <Tip>
-To use the Nango Proxy, you should have set up an Integration and created a Connection already (cf. [API Authorization Guide](/guides/oauth)).
+To use the Proxy, you should have set up an Integration and created a Connection already (cf. [API Authorization guide](/guides/oauth)).
 </Tip>
 
 ### Proxy requests 
@@ -49,7 +49,7 @@ const res = await nango.proxy({
 });
 ```
 
-<Tip>
+<Info>
     Some APIs are not yet fully-configured to work with the Proxy and require you to indicate the base URL. 
 
     You can check if your API contains the `base_api_url` field in the [providers.yaml](https://nango.dev/providers.yaml) configuration file.
@@ -64,7 +64,7 @@ const res = await nango.proxy({
     ```
 
     Feel free to contribuge the `base_api_url` field to any API in the [providers.yaml](https://nango.dev/providers.yaml) public file, or reach out on the [Slack community](https://www.nango.dev/slack) to ask us to do it.
-</Tip>
+</Info>
 </Tab>
 
 <Tab title="REST API">
@@ -81,7 +81,7 @@ curl -X POST -H 'Content-Type: application/json' \
 ```
 
 
-<Tip>
+<Note>
     Some APIs are not yet fully-configured to work with the Proxy and require you to indicate the base URL to use. 
 
     You can check if your API contains the `base_api_url` field in the [providers.yaml](https://nango.dev/providers.yaml) configuration file.
@@ -92,7 +92,7 @@ curl -X POST -H 'Content-Type: application/json' \
     ```
 
     Feel free to add the `base_api_url` field to any API and contribute the change, or reach out on the [Slack community](https://www.nango.dev/slack) to ask us to do it.
-</Tip>
+</Note>
 
 </Tab>
 
@@ -100,9 +100,9 @@ curl -X POST -H 'Content-Type: application/json' \
 
 ### Proxy request logging
 
-All requests that run through the Proxy are automatically logged to the Activity tab in the Nango Dashboard. The logs there can help you debug failing requests.
+All requests that run through the Proxy are automatically logged to the Activity tab ([localhost](http://localhost:3003/activity) / [cloud](https://app.nango.dev/activity)) in the Nango Dashboard. The logs there can help you debug failing requests.
 
-![Nango Proxy in Activity Tab](/images/nango-proxy-activity-tab.png)
+![Proxy in Activity Tab](/images/nango-proxy-activity-tab.png)
 
 ## Need help?
 

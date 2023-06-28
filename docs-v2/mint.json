@@ -42,7 +42,7 @@
             "url": "integrations"
         },
         {
-            "name": "SDKs",
+            "name": "SDKs & CLI",
             "icon": "cubes",
             "url": "sdks"
         },
@@ -65,8 +65,8 @@
         {
             "group": "Guides",
             "pages": ["guides/oauth", "guides/sync", "guides/proxy", "guides/webhooks", {
-                    "group": "Examples",
-                    "pages": ["examples/asana-tasks", "examples/slack-users"]
+                    "group": "Sync Data - Examples",
+                    "pages": ["examples/overview", "examples/asana-tasks", "examples/slack-users"]
                 }
             ]
         },
@@ -88,11 +88,11 @@
         },
         {
             "group": "Contribute",
-            "pages": ["contribute/api-configuration"]
+            "pages": ["contribute"]
         },
         {
             "group": "Overview",
-            "pages": ["integrations/overview", "contribute/api-configuration"]
+            "pages": ["integrations/overview", "contribute"]
         },
         {
             "group": "Categories",
@@ -242,6 +242,10 @@
             "pages": ["sdks/frontend"]
         },
         {
+            "group": "CLI",
+            "pages": ["sdks/cli"]
+        },
+        {
             "group": "Backend SDKs",
             "pages": ["sdks/node", "sdks/python", "sdks/java", "sdks/ruby", "sdks/go", "sdks/rust", "sdks/php"]
         },
@@ -268,7 +272,7 @@
             "pages": ["api-reference/sync/records-get", "api-reference/sync/trigger"]
         },
         {
-            "group": "Nango Proxy",
+            "group": "Proxy",
             "pages": [
                 "api-reference/proxy/get",
                 "api-reference/proxy/post",

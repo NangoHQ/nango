@@ -1,0 +1,51 @@
+---
+title: 'CLI'
+sidebarTitle: 'CLI'
+icon: 'terminal'
+---
+
+## All CLI commands & command details
+
+Check out all CLI commands by running: 
+```bash
+npx nango
+```
+
+Get details about a specific command by running: 
+```bash
+npx nango [command] --help
+```
+
+## Run Nango locally
+
+If you are only using Nango for OAuth, you can run Nango locally by running (cf. [Authorize APIs guide](/guides/sync)): 
+```bash
+npx nango start
+```
+
+If you are developing [Syncs](/core-concepts#syncs), instead run (cf. [Sync Data guide](/guides/sync)): 
+```bash
+npx nango dev
+```
+
+## Environment variables & Global flags & environment variables
+
+Your can use the following global flags: 
+```bash
+-sk, --secret-key [secretKey] # Set the secret key. Overrides the `NANGO_SECRET_KEY` value set in the .env file
+```
+```bash
+-h, --host [host] # Set the host. Overrides the `NANGO_HOSTPORT` value set in the .env file
+```
+
+You can also use the following environment variables (e.g. by adding an `.env` where you run the CLI):
+```bash
+#NANGO_AUTO_UPGRADE=true
+#NANGO_NO_PROMPT_FOR_UPGRADE=false
+#NANGO_DEPLOY_AUTO_CONFIRM=false
+#NANGO_SECRET_KEY=xxxx-xxx-xxxx
+#NANGO_INTEGRATIONS_LOCATION=use-this-to-override-where-the-nango-integrations-directory-goes
+#NANGO_PORT=use-this-to-override-the-default-3003
+#NANGO_DB_PORT=use-this-to-override-the-default-5432`
+```
+

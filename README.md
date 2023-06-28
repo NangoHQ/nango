@@ -112,7 +112,7 @@ If your favorite API is missing
 Run locally:
 
 ```shell
-git clone https://github.com/NangoHQ/nango.git && cd nango && docker compose up
+npx nango start
 ```
 
 Or sign up for free:

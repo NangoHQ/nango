@@ -14,6 +14,20 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
     const [error, setError] = useState('');
     const [selectedScopes, addToScopesSet, removeFromSelectedSet] = useSet<string>();
 
+
+  const [scopes, setScopes] = useState(selectedScopes);
+
+  useEffect(() => {
+    const selectedScopesStr = JSON.stringify(selectedScopes);
+    const optionalSelectedScopesStr = JSON.stringify(optionalSelectedScopes);
+
+    if (optionalSelectedScopesStr !== JSON.stringify(scopes)) {
+      setScopes(optionalSelectedScopes ?? JSON.parse(selectedScopesStr));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(optionalSelectedScopes), JSON.stringify(selectedScopes)]);
+
+
     useEffect(() => {
         if (defaultScopes.length) {
             defaultScopes.forEach((scope) => {
@@ -57,8 +71,6 @@ const TagsInput = forwardRef<HTMLInputElement, TagsInputProps>(function TagsInpu
             setError('Please enter at least one scope for this provider');
         }
     }
-
-    const scopes = optionalSelectedScopes ?? selectedScopes;
 
     return (
         <>

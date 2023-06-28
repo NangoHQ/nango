@@ -11,13 +11,9 @@ I this quickstart, we will:
 
 ## Step 1: Run Nango locally
 
-Run Nango locally with Docker:
-
+Run Nango locally (with Docker):
 ```bash
-git clone https://github.com/NangoHQ/nango.git && cd nango
-```
-```bash
-docker compose up
+npx nango start
 ```
 
 Open the Dashboard in your browser ([http://localhost:3003](http://localhost:3003)).
@@ -25,28 +21,28 @@ Open the Dashboard in your browser ([http://localhost:3003](http://localhost:300
 ## Step 2: Authorize an API (e.g Github)
 
 ### Configure the Github integration in Nango
-On the Dashboard, go to the [Add New Integration](http://localhost:3003/integration/create) page. 
+On the Dashboard, go to the [New Integration page](http://localhost:3003/integration/create). 
 
 Use the value `github` for both the `Integration Provider` dropdown and the `Integration Unique Key` field.
 
-To get the `Client ID` and `Client Secret` you will need to register your app with Github [here](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app). Github will ask you to submit the `Callback URL` shown at the bottom of the [Add New Integration](http://localhost:3003/integration/create) page.
+To get the `Client ID` and `Client Secret` you will need to register your app with Github [here](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app). Github will ask you to submit the `Callback URL` shown at the bottom of the New Integration page on Nango. You should also select the `repo` scope both while creating the OAuth app on Github and on the New Integration page on Nango. 
 
 ### Test the Github Integration
 Click "OAuth" next to the integration to try an OAuth flow from Nango. Keep the default value `test-connection-id` for the `Connection ID` field.
 
 ![Nango OAuth button](/images/quickstart/nango-oauth-button.png)
-- If you get an error, check the [Activity Tab](http://localhost:3003/activity): The logs there can show you helpful information to debug the issue.
-- Retrieve your access token from the [Connections page](http://localhost:3003/connections). 
+- If you get an error, check the [Activity tab](http://localhost:3003/activity): The logs there can show you helpful information to debug the issue.
+- Retrieve your access token from the [Connections tab](http://localhost:3003/connections). 
     
 <Tip>
-If you are using Nango to authorize APIs, that's it 🎉 You can check the [API Authorization Guide](/guides/oauth) to find out how to authorize users directly from your frontend and retrieve credentials from your backend.
+If you are using Nango to authorize APIs, that's it 🎉 You can check the [API Authorization guide](/guides/oauth) to find out how to authorize users directly from your frontend and retrieve credentials from your backend.
 </Tip>
 
 ## Step 3: Sync data from an API (e.g. Github issues)
 
 ### Configure a Sync
 
-Stop the Docker containers that your started in Step 1 by killing the console tab or pressing `Ctrl` + `c`.
+Kill the console tab when you ran `npx nango start` in Step 1 (or press `Ctrl` + `c`).
 
 In the folder where you want your integration files (recommendation: root of your project), run:
 ```

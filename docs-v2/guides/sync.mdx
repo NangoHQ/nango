@@ -1,31 +1,18 @@
 ---
-title: 'Continuous Syncing'
-sidebarTitle: 'Continuous Syncing'
+title: 'Sync Data'
+sidebarTitle: 'Sync Data'
 description: 'Continuously sync with APIs, bi-directionally.'
 ---
 
 In this guide, we show you how to sync data from external APIs with Nango.
 
-<Tip>
-To use the Nango Proxy, you should have set up an Integration and created a Connection already (cf. [API Authorization Guide](/guides/oauth)).
-</Tip>
-
 # Step 1: Initialize Nango
-
-### Install Nango
-
-To install the Nango CLI, run at the root of your project: 
-```bash
-npm i nango
-```
-
-<Tip>
-	List all available CLI commands by running `npx nango`
-</Tip>
 
 ### Create the `nango-integrations` folder
 
-Still at the root of your project, if you don't have a `nango-integrations` folder yet, create one by running: 
+If you don't have a `nango-integrations` folder yet, `cd` to the folder where you want your integration files to live (recommendation: root of your project).
+
+Then run:
 ```bash
 npx nango init
 ```
@@ -55,6 +42,10 @@ Our CLI helps you manage this directory, create scaffolds, validates the configu
 
 ### Run Nango
 
+<Note>
+Make sure you are not running `npx nango start` somewhere, if so kill the tab. It is redundant with the following command.
+</Note>
+
 Start Nango locally: 
 
 ```bash
@@ -62,9 +53,9 @@ npx nango dev
 ```
 
 <Tip>
-    The initial start can take some time while the database is setup. 
+    The initial start can take some time while the database is setup (&lt;5mins). 
 
-	`npx nango dev` runs Nango and automatically watches for changes in your files and recompiles as needed. Compilation errors are printed to the terminal.
+	`npx nango dev` runs Nango (like `npx nango start`) but also automatically watches for changes in your files and recompiles as needed. Compilation errors are printed to the terminal.
 
 	Once ready, you can access the dashboard at [http:localhost:3003](http:localhost:3003)
 </Tip>
@@ -136,7 +127,7 @@ Your Sync scripts are deployed to Nango and automatically run on a schedule.
 
 For local development, Nango runs your Sync scripts on your local machine. In production, your Sync scripts are deployed remotely and run on the Nango Cloud.
 
-Because of this, you cannot import dependencies in the Sync scripts nor declare relative imports (we plan to resolve this limitation in the near future).
+Because of this, you cannot import additional modules (external or relative) in the Sync scripts at the moment (we plan to resolve this limitation in the near future).
 </Tip>
 
 Fill in the `fetchData` method with your integration code:
@@ -220,14 +211,14 @@ Sync scripts return the created/update data to Nango in two different ways:
 - in batches, using `await nango.batchSend(data, 'ModelName');` (useful to break down large datasets)
 
 <Tip>
-To make API requests use the proxy exposed by `nango` ([full docs](/sdks/node#direct-requests)).
+To make API requests, use the proxy exposed by the `nango` object ([Proxy guide](/guides/proxy)).
     - `nango.get({})`
     - `nango.post({})`
     - etc
 </Tip>
 
 <Tip>
-The 1st run of the Sync is called a "full", meaning it fetches all the historical data (unless you have defined a backfill limit in the Sync script). On the 1st run, `nango.lastSyncDate` will be `null`.
+The 1st run of the Sync is called "initial", meaning it fetches all the historical data (unless you have defined a backfill limit in the Sync script). On the 1st run, `nango.lastSyncDate` will be `null`.
 
 Subsequent runs are called "incremental". They should only fetch the created & updated data. It's up to you to use the `nango.lastSyncDate` value to fetch the incremental changes.
 </Tip>
@@ -238,7 +229,11 @@ Use `await nango.log()` to log data from within integration scripts.
 
 ### Test your Sync
 
-Easily test your sync with the CLI by running:
+<Tip>
+For this step, you should have already set up an Integration and created a Connection **localhost** (cf. [Authorize APIs guide](/guides/oauth)).
+</Tip>
+
+Easily test your Sync with the CLI by running:
 
 ```bash
 npx nango sync:run -p asana-dev -s asana-tasks -c <user-id>
@@ -255,23 +250,35 @@ npx nango sync:run -p asana-dev -s asana-tasks -c <user-id> -l "2023-06-20T10:00
 
 # Step 3: Deploy a Sync
 
-Finally, if all looks good you can deploy your sync locally:
+**1. Deploy locally**
+    
+    When you Sync script is ready, you can deploy your Sync locally:
 
-```bash
-npx nango deploy:local
-```
+    ```bash
+    npx nango deploy:local
+    ```
 
-or to Nango Cloud: 
+    Inspect the [Sync tab](http://localhost:3003/syncs) on the **localhost** Dashboard the verify the deployment succeeded.
 
-```bash
-npx nango deploy:cloud
-```
+    <Tip>
+        Syncs will automatically start for previous Connections and when a new Connection gets added (OAuth flow completes) for the given Integration. You can see all Syncs for a Connection in the UI:
 
-<Tip>
-Syncs will automatically start when a new Connection gets added (OAuth flow completes). You can see all Syncs for a Connection in the UI:
+        ![View Syncs in Dashboard](/images/connection-syncs.png)
+    </Tip>
 
-![View Syncs in Dashboard](/images/connection-syncs.png)
-</Tip>
+**2. Deploy to Nango Cloud**
+
+    <Note>
+        To deploy to Nango Cloud, you should have already set up an Integration **on Cloud** (cf. [Authorize APIs guide](/guides/oauth)).
+    </Note>
+    
+    Once your Sync is tested locally and you are ready to deploy it to production on Nango Cloud, you can run:
+
+    ```bash
+    npx nango deploy:cloud
+    ```
+
+    Inspect the [Sync tab](https://app.nango.dev/syncs) on the **Cloud** Dashboard to verify the deployment succeeded.
 
 # Step 4: Retrieve the synced data
 
@@ -289,6 +296,18 @@ const result = await nango.getRecords({
 });
 ```
 
-Nango can also send you [webhook](/nango-sync/webhooks) whenever new data is available from a sync.
+Nango can also send you [webhooks](/guides/webhooks) whenever new data is available from a Sync.
 
 That's it!
+
+## Advanced Configuration
+
+### Field Mapping
+
+You can store field mapping data that is specific to a Connection. The object must be JSON serializable, but there are no other constraints. 
+
+For this, call:
+    - `nango.setFieldMapping(...)` in the node SDK to store the field mapping
+    - `nango.getFieldMapping()` in the Sync script to retrieve the field mapping of the current Connection
+
+In the future we want to help you more with field mappings (metadata requests to get available objects & fields, UI components etc.). 

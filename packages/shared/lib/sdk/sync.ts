@@ -1,15 +1,27 @@
+import type { ParamsSerializerOptions } from 'axios';
 import { getById as getSyncById } from '../services/sync/sync.service.js';
 import { upsert } from '../services/sync/data.service.js';
 import { formatDataRecords } from '../services/sync/data-records.service.js';
 import { createActivityLogMessage } from '../services/activity.service.js';
 import { updateSyncJobResult } from '../services/sync/job.service.js';
 
-import type { UpsertResponse } from '../models/Data.js';
-import type { ProxyConfiguration } from '../models/Proxy.js';
-import type { LogLevel } from '../models/Activity.js';
-import type { SyncResultByModel } from '../models/Sync.js';
+import { Nango } from '@nangohq/node';
 
-import { Nango } from './index.js';
+type LogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
+
+interface ProxyConfiguration {
+    endpoint: string;
+    providerConfigKey?: string;
+    connectionId?: string;
+
+    method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE' | 'get' | 'post' | 'patch' | 'put' | 'delete';
+    headers?: Record<string, string>;
+    params?: string | Record<string, string>;
+    paramsSerializer?: ParamsSerializerOptions;
+    data?: unknown;
+    retries?: number;
+    baseUrlOverride?: string;
+}
 
 interface NangoProps {
     host?: string;
@@ -120,7 +132,7 @@ export class NangoSync {
         });
     }
 
-    public async batchSend(results: any[], model: string): Promise<UpsertResponse | null> {
+    public async batchSend(results: any[], model: string): Promise<boolean | null> {
         if (this.dryRun) {
             console.log('A batch send call would send the following data:');
             console.log(JSON.stringify(results, null, 2));
@@ -152,8 +164,8 @@ export class NangoSync {
             const { summary } = responseResults;
             const updatedResults = {
                 [model]: {
-                    added: summary?.addedKeys.length,
-                    updated: summary?.updatedKeys.length
+                    added: summary?.addedKeys.length as number,
+                    updated: summary?.updatedKeys.length as number
                 }
             };
 
@@ -164,9 +176,9 @@ export class NangoSync {
                 timestamp: Date.now()
             });
 
-            await updateSyncJobResult(this.syncJobId as number, updatedResults as SyncResultByModel, model);
+            await updateSyncJobResult(this.syncJobId as number, updatedResults, model);
 
-            return responseResults;
+            return true;
         } else {
             await createActivityLogMessage({
                 level: 'error',
@@ -175,7 +187,7 @@ export class NangoSync {
                 timestamp: Date.now()
             });
 
-            return null;
+            return false;
         }
     }
 

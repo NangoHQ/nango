@@ -27,7 +27,8 @@ import {
     NANGO_INTEGRATIONS_LOCATION,
     buildInterfaces,
     enrichHeaders,
-    checkEnvVars
+    checkEnvVars,
+    getNangoRootPath
 } from './utils.js';
 import type { DeployOptions } from './types.js';
 
@@ -286,6 +287,7 @@ export const init = () => {
             '.env',
             `#NANGO_HOSTPORT=https://api-staging.nango.dev
 #NANGO_AUTO_UPGRADE=true
+#NANGO_NO_PROMPT_FOR_UPGRADE=false
 #NANGO_SECRET_KEY=xxxx-xxx-xxxx
 #NANGO_INTEGRATIONS_LOCATION=use-this-to-override-where-the-nango-integrations-directory-goes
 #NANGO_PORT=use-this-to-override-the-default-3003
@@ -403,7 +405,8 @@ export const run = async (args: string[], options: RunArgs) => {
     });
 
     try {
-        const results = await syncRun.run(lastSyncDate, true);
+        const secretKey = process.env['NANGO_SECRET_KEY'];
+        const results = await syncRun.run(lastSyncDate, true, secretKey);
         console.log(JSON.stringify(results, null, 2));
         process.exit(0);
     } catch (e) {
@@ -413,7 +416,7 @@ export const run = async (args: string[], options: RunArgs) => {
 
 export const tsc = () => {
     const cwd = process.cwd();
-    const tsconfig = fs.readFileSync('./node_modules/nango/tsconfig.dev.json', 'utf8');
+    const tsconfig = fs.readFileSync(`${getNangoRootPath()}/tsconfig.dev.json`, 'utf8');
 
     const distDir = path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/dist`);
 
@@ -482,7 +485,7 @@ const nangoCallsAreAwaited = (filePath: string): boolean => {
 
 export const tscWatch = () => {
     const cwd = process.cwd();
-    const tsconfig = fs.readFileSync('./node_modules/nango/tsconfig.dev.json', 'utf8');
+    const tsconfig = fs.readFileSync(`${getNangoRootPath()}/tsconfig.dev.json`, 'utf8');
 
     const watchPath = [`${NANGO_INTEGRATIONS_LOCATION}/*.ts`, `${NANGO_INTEGRATIONS_LOCATION}/${nangoConfigFile}`];
     const rawNangoIntegrationLocation = NANGO_INTEGRATIONS_LOCATION.replace('./', '');
@@ -588,7 +591,7 @@ export const configDeploy = async () => {
 let child: ChildProcess | undefined;
 process.on('SIGINT', () => {
     if (child) {
-        const dockerDown = spawn('docker', ['compose', '-f', 'node_modules/nango/docker/docker-compose.yaml', '--project-directory', '.', 'down'], {
+        const dockerDown = spawn('docker', ['compose', '-f', `${getNangoRootPath()}/docker/docker-compose.yaml`, '--project-directory', '.', 'down'], {
             stdio: 'inherit'
         });
         dockerDown.on('exit', () => {
@@ -607,7 +610,7 @@ process.on('SIGINT', () => {
 export const dockerRun = async () => {
     const cwd = process.cwd();
 
-    child = spawn('docker', ['compose', '-f', 'node_modules/nango/docker/docker-compose.yaml', '--project-directory', '.', 'up', '--build'], {
+    child = spawn('docker', ['compose', '-f', `${getNangoRootPath()}/docker/docker-compose.yaml`, '--project-directory', '.', 'up', '--build'], {
         cwd,
         detached: false,
         stdio: 'inherit'

@@ -2,6 +2,7 @@ import https from 'https';
 import axios from 'axios';
 import fs from 'fs';
 import npa from 'npm-package-arg';
+import Module from 'node:module';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import semver from 'semver';
@@ -11,10 +12,12 @@ import chalk from 'chalk';
 import type { NangoModel } from '@nangohq/shared';
 import { cloudHost, stagingHost, nangoConfigFile } from '@nangohq/shared';
 import * as dotenv from 'dotenv';
-import { init, generate } from './sync.js';
+import { init, generate, tsc } from './sync.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+const require = Module.createRequire(import.meta.url);
 
 dotenv.config();
 
@@ -58,11 +61,12 @@ export function checkEnvVars(optionalHostport?: string) {
 export async function verifyNecessaryFiles() {
     if (!fs.existsSync(path.resolve(process.cwd(), NANGO_INTEGRATIONS_LOCATION))) {
         console.log(chalk.red(`No ${nangoConfigFile} file found. Please run 'nango init' first`));
-        const install = await promptly.confirm('Would you like to create some default integrations? (yes/no)');
+        const install = await promptly.confirm('Would you like to create some default integrations and build them? (yes/no)');
 
         if (install) {
             init();
             await generate();
+            tsc();
         } else {
             console.log(chalk.red(`Exiting...`));
             process.exit(1);
@@ -71,6 +75,9 @@ export async function verifyNecessaryFiles() {
 }
 
 export async function upgradeAction() {
+    if (process.env['NANGO_NO_PROMPT_FOR_UPGRADE'] === 'true') {
+        return;
+    }
     try {
         const resolved = npa('nango');
         const { version } = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../package.json'), 'utf8'));
@@ -157,6 +164,7 @@ export function getFieldType(rawField: string | NangoModel): string {
             field = field.replace(/\s*\|\s*undefined\s*/g, '');
             hasUndefined = true;
         }
+
         switch (field) {
             case 'boolean':
             case 'bool':
@@ -176,6 +184,8 @@ export function getFieldType(rawField: string | NangoModel): string {
             case 'date':
                 tsType = 'Date';
                 break;
+            default:
+                tsType = field;
         }
 
         if (hasNull) {
@@ -214,4 +224,26 @@ export function buildInterfaces(models: NangoModel): (string | undefined)[] {
     });
 
     return interfaceDefinitions;
+}
+
+export function getNangoRootPath() {
+    const packagePath = getPackagePath();
+    if (!packagePath) {
+        return null;
+    }
+
+    return path.resolve(packagePath, '..');
+}
+
+function getPackagePath() {
+    try {
+        const packageMainPath = require.resolve('nango');
+        const packagePath = path.dirname(packageMainPath);
+
+        return packagePath;
+    } catch (e) {
+        throw new Error(
+            'Could not find nango package. Please make sure it is installed in your project or installed globally. Reach out to us in the Slack community if you continue to have issues!'
+        );
+    }
 }

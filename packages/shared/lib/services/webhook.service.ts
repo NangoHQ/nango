@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { SyncType } from '../models/Sync';
 import type { NangoConnection } from '../models/Connection';
-import type { SyncResult, SyncWebhookBody } from '../models/Sync';
+import type { SyncResult, NangoSyncWebhookBody } from '../models/Sync';
 import accountService from './account.service.js';
 import { createActivityLogMessage } from './activity.service.js';
 
@@ -32,7 +32,7 @@ class WebhookService {
             return;
         }
 
-        const body: SyncWebhookBody = {
+        const body: NangoSyncWebhookBody = {
             connectionId: nangoConnection.connection_id,
             providerConfigKey: nangoConnection.provider_config_key,
             syncName,
@@ -47,11 +47,13 @@ class WebhookService {
 
         try {
             const response = await axios.post(webhookUrl, body);
-            if (response.status === 200) {
+            if (response.status >= 200 && response.status < 300) {
                 await createActivityLogMessage({
                     level: 'info',
                     activity_log_id: activityLogId,
-                    content: `Webhook sent successfully to ${webhookUrl} with the following data: ${JSON.stringify(body, null, 2)}`,
+                    content: `Webhook sent successfully and received with a ${
+                        response.status
+                    } response code to ${webhookUrl} with the following data: ${JSON.stringify(body, null, 2)}`,
                     timestamp: Date.now()
                 });
             } else {

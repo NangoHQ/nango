@@ -1,6 +1,6 @@
 ---
-title: 'Add an API Configuration'
-sidebarTitle: 'Add an API Configuration'
+title: 'Add an API'
+sidebarTitle: 'Add an API'
 description: 'Contribute a new API Configuration. It is fast and easy!'
 ---
 
@@ -55,8 +55,6 @@ Fork the repo and edit the [providers.yaml](https://nango.dev/providers.yaml) fi
 above to add support for the new provider. The API documentation should contain
 all the details you need on the OAuth flow to complete this step.
 
-[We are here](https://nango.dev/slack) if you need help with this.
-
 ### Step 2: Test your new provider
 
 <Tip>
@@ -82,34 +80,25 @@ To test your new provider:
 Start the docker containers:
 
 ```bash
-docker compose up
+npx nango start # Keep the tab open. 
 ```
 
-The docker compose configuration in the root of the repo `docker-compose.yaml`
-will run 2 containers.
-
-1. Postgres DB
-2. Nango Server
-
-To propagate your changes after editing the `providers.yaml` file, run:
-
-```bash
-docker compose restart nango-server # Force a restart, which will load in the yaml again
-docker compose run nango-server cat packages/shared/providers.yaml # print the contents of the providers file from inside the container
-```
+<Tip>
+To propagate your changes after editing the `providers.yaml` file, kill the tab (or press `Ctrl` + `c`), then rerun `npx nango start`.
+</Tip>
 
 When you are ready to test your new API Configuration:
 
 **1\. Add your client credentials to the local Nango Server**
 
-Open the [local dashboard](http://localhost:3003) in your browser and add a new
+Open the [local Dashboard](http://localhost:3003) in your browser and add a new
 [Integration](/core-concepts#integrations) with your freshly added provider (it should show up in the provider
 dropdown).
 
 **2\. Trigger the OAuth Flow**
 
 Run an OAuth flow on the
-[local dashboard](http://localhost:3003/connection/create).
+[local Dashboard](http://localhost:3003/connection/create).
 
 You can modify the ports in the docker compose if there are any conflicts with
 other local services on your host machine.
@@ -117,7 +106,7 @@ other local services on your host machine.
 **3\. Check the access token in the dashboard**
 
 If all goes well you should see your new Connection in the
-[Connections list](http://localhost:3003/connections) in the dashboard.
+[Connections tab](http://localhost:3003/connections) in the dashboard.
 
 Check the Connection details and make sure all looks as expected (access token,
 refresh token, metadata).
