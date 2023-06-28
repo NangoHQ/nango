@@ -132,8 +132,9 @@ export default class SyncRun {
             if (!this.writeToDb) {
                 lastSyncDate = optionalLastSyncDate;
             } else {
-                await getLastSyncDate(this.nangoConnection?.id as number, this.syncName);
+                lastSyncDate = await getLastSyncDate(this.nangoConnection?.id as number, this.syncName);
             }
+
             nango.setLastSyncDate(lastSyncDate as Date);
             const syncData = syncObject[this.syncName] as unknown as NangoIntegrationData;
             const { returns: models } = syncData;
