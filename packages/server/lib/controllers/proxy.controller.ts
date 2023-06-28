@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import type { OutgoingHttpHeaders } from 'http';
-import stream, { Transform, TransformCallback, PassThrough } from 'stream';
+import stream, { Readable, Transform, TransformCallback, PassThrough } from 'stream';
 import url, { UrlWithParsedQuery } from 'url';
 import querystring from 'querystring';
 import axios, { AxiosError, AxiosResponse } from 'axios';
@@ -329,6 +329,43 @@ class ProxyController {
 
     private async handleErrorResponse(res: Response, e: unknown, url: string, config: ProxyBodyConfiguration, activityLogId: number) {
         const error = e as AxiosError;
+
+        if (!error?.response?.data) {
+            const {
+                message,
+                stack,
+                config: { method },
+                code,
+                status
+            } = error?.toJSON() as any;
+
+            const errorObject = { message, stack, code, status, url, method };
+
+            if (activityLogId) {
+                await createActivityLogMessageAndEnd({
+                    level: 'error',
+                    activity_log_id: activityLogId,
+                    timestamp: Date.now(),
+                    content: `${method.toUpperCase()} request to ${url} failed`,
+                    params: errorObject
+                });
+            } else {
+                console.error(`Error: ${method.toUpperCase()} request to ${url} failed with the following params: ${JSON.stringify(errorObject)}`);
+            }
+
+            const responseStatus = error.response?.status || 500;
+            const responseHeaders = error.response?.headers || {};
+
+            res.writeHead(responseStatus, responseHeaders as OutgoingHttpHeaders);
+
+            const stream = new Readable();
+            stream.push(JSON.stringify(errorObject));
+            stream.push(null);
+
+            stream.pipe(res);
+
+            return;
+        }
         const errorData = error?.response?.data as stream.Readable;
         const stringify = new Transform({
             transform(chunk: Buffer, _encoding: BufferEncoding, callback: TransformCallback) {
@@ -355,7 +392,7 @@ class ProxyController {
      */
     private async get(
         res: Response,
-        next: NextFunction,
+        _next: NextFunction,
         url: string,
         config: ProxyBodyConfiguration,
         activityLogId: number,
@@ -380,7 +417,6 @@ class ProxyController {
             this.handleResponse(res, responseStream, config, activityLogId, url, isSync, isDryRun);
         } catch (e: unknown) {
             this.handleErrorResponse(res, e, url, config, activityLogId);
-            next(e);
         }
     }
 
@@ -393,7 +429,7 @@ class ProxyController {
      */
     private async post(
         res: Response,
-        next: NextFunction,
+        _next: NextFunction,
         url: string,
         config: ProxyBodyConfiguration,
         activityLogId: number,
@@ -419,7 +455,6 @@ class ProxyController {
             this.handleResponse(res, responseStream, config, activityLogId, url, isSync, isDryRun);
         } catch (error) {
             this.handleErrorResponse(res, error, url, config, activityLogId);
-            next(error);
         }
     }
 
@@ -432,7 +467,7 @@ class ProxyController {
      */
     private async patch(
         res: Response,
-        next: NextFunction,
+        _next: NextFunction,
         url: string,
         config: ProxyBodyConfiguration,
         activityLogId: number,
@@ -458,7 +493,6 @@ class ProxyController {
             this.handleResponse(res, responseStream, config, activityLogId, url, isSync, isDryRun);
         } catch (error) {
             this.handleErrorResponse(res, error, url, config, activityLogId);
-            next(error);
         }
     }
 
@@ -471,7 +505,7 @@ class ProxyController {
      */
     private async put(
         res: Response,
-        next: NextFunction,
+        _next: NextFunction,
         url: string,
         config: ProxyBodyConfiguration,
         activityLogId: number,
@@ -497,7 +531,6 @@ class ProxyController {
             this.handleResponse(res, responseStream, config, activityLogId, url, isSync, isDryRun);
         } catch (error) {
             this.handleErrorResponse(res, error, url, config, activityLogId);
-            next(error);
         }
     }
 
@@ -510,7 +543,7 @@ class ProxyController {
      */
     private async delete(
         res: Response,
-        next: NextFunction,
+        _next: NextFunction,
         url: string,
         config: ProxyBodyConfiguration,
         activityLogId: number,
@@ -532,9 +565,8 @@ class ProxyController {
                 { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId) }
             );
             this.handleResponse(res, responseStream, config, activityLogId, url, isSync, isDryRun);
-        } catch (error) {
-            this.handleErrorResponse(res, error, url, config, activityLogId);
-            next(error);
+        } catch (e) {
+            this.handleErrorResponse(res, e, url, config, activityLogId);
         }
     }
 
