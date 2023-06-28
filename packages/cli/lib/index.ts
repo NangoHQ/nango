@@ -89,10 +89,6 @@ program
             configWatch();
         }
 
-        //if (!process.env['NANGO_HOSTPORT'] || process.env['NANGO_HOSTPORT'] === `http://localhost:${port}`) {
-        //configDeploy();
-        //}
-
         tscWatch();
     });
 
@@ -118,10 +114,6 @@ program
             configWatch();
         }
 
-        //if (!process.env['NANGO_HOSTPORT'] || process.env['NANGO_HOSTPORT'] === `http://localhost:${port}`) {
-        //configDeploy();
-        //}
-
         tscWatch();
         await dockerRun();
     });
@@ -130,6 +122,7 @@ program
     .command('deploy')
     .alias('d')
     .alias('deploy:prod')
+    .alias('deploy:cloud')
     .description('Deploy a Nango integration')
     .option('--staging', 'Deploy to the staging instance')
     .option('--local', 'Deploy to the local instance')

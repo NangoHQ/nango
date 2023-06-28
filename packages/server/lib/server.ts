@@ -79,7 +79,7 @@ app.route('/connection/:connectionId').delete(apiAuth, connectionController.dele
 app.route('/connection/:connectionId/field-mapping').post(apiAuth, connectionController.setFieldMapping.bind(connectionController));
 app.route('/connection').post(apiAuth, connectionController.createConnection.bind(connectionController));
 app.route('/sync/deploy').post(apiAuth, syncController.deploySync.bind(syncController));
-app.route('/sync/reconcile').post(apiAuth, syncController.reconcileSyncs.bind(syncController));
+app.route('/sync/deploy/confirmation').post(apiAuth, syncController.confirmation.bind(syncController));
 app.route('/sync/records').get(apiAuth, syncController.getRecords.bind(syncController));
 app.route('/sync/trigger').post(apiAuth, syncController.trigger.bind(syncController));
 

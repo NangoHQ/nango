@@ -16,7 +16,7 @@ import type { ChildProcess } from 'node:child_process';
 import promptly from 'promptly';
 import type * as t from '@babel/types';
 
-import type { NangoConfig, Connection as NangoConnection, NangoIntegration, NangoIntegrationData } from '@nangohq/shared';
+import type { SyncModelSchema, IncomingSyncConfig, NangoConfig, Connection as NangoConnection, NangoIntegration, NangoIntegrationData } from '@nangohq/shared';
 import { loadSimplifiedConfig, cloudHost, stagingHost, SyncType, syncRunService, nangoConfigFile, checkForIntegrationFile } from '@nangohq/shared';
 import {
     port,
@@ -75,52 +75,6 @@ const getConfig = async () => {
     return config;
 };
 
-const deployLocalSyncs = async () => {
-    console.log(chalk.green(`Syncing the updated config so syncs will be created or deleted according to the changed config`));
-
-    const url = hostport + `/sync/reconcile`;
-    const config = await getConfig();
-
-    const postData = [];
-
-    const cwd = process.cwd();
-
-    for (const integration of config) {
-        const { providerConfigKey } = integration;
-        const { syncs } = integration;
-
-        for (const sync of syncs) {
-            const { name: syncName, runs, returns } = sync;
-
-            const { result: integrationFileResult } = checkForIntegrationFile(syncName, path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}`));
-
-            if (!integrationFileResult) {
-                continue;
-            }
-
-            const body = {
-                syncName,
-                providerConfigKey,
-                runs,
-                returns
-            };
-
-            postData.push(body);
-        }
-    }
-
-    await axios
-        .post(url, postData, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
-        .then((response: any) => {
-            console.log(chalk.green(`Syncs were updated with the following result: ${JSON.stringify(response.data, null, 2)}`));
-        })
-        .catch((err) => {
-            const errorMessage = JSON.stringify(err?.response?.data, null, 2);
-            console.log(chalk.red(`Error updating the syncs with the following error: ${errorMessage}}`));
-            process.exit(1);
-        });
-};
-
 export const deploy = async (options: DeployOptions) => {
     const { env, version, sync: optionalSyncName, secretKey, host } = options;
     await verifyNecessaryFiles();
@@ -163,7 +117,7 @@ export const deploy = async (options: DeployOptions) => {
     const config = await getConfig();
     const cwd = process.cwd();
 
-    const postData = [];
+    const postData: IncomingSyncConfig[] = [];
 
     for (const integration of config) {
         const { providerConfigKey } = integration;
@@ -190,10 +144,10 @@ export const deploy = async (options: DeployOptions) => {
                 syncName,
                 providerConfigKey,
                 models,
-                version,
+                version: version as string,
                 runs,
                 fileBody: fs.readFileSync(integrationFilePath, 'utf8'),
-                model_schema: JSON.stringify(model_schema)
+                model_schema: JSON.stringify(model_schema) as unknown as SyncModelSchema[]
             };
 
             postData.push(body);
@@ -207,17 +161,74 @@ export const deploy = async (options: DeployOptions) => {
         return;
     }
 
+    if (!process.env['NANGO_DEPLOY_AUTO_CONFIRM']) {
+        const confirmationUrl = process.env['NANGO_HOSTPORT'] + `/sync/deploy/confirmation`;
+        try {
+            const response = await axios.post(confirmationUrl, postData, { headers: enrichHeaders(), httpsAgent: httpsAgent() });
+            console.log(JSON.stringify(response.data, null, 2));
+            const { newSyncs, deletedSyncs } = response.data;
+
+            for (const sync of newSyncs) {
+                const actionMessage =
+                    sync.connections === 0
+                        ? 'create the configuration for this sync.'
+                        : `start syncing the corresponding data for ${sync.connections} existing connections.`;
+                console.log(chalk.yellow(`Sync "${sync.name}" as been added. Nango will ${actionMessage}`));
+            }
+
+            for (const sync of deletedSyncs) {
+                console.log(
+                    chalk.red(
+                        `Sync "${sync.name}" has been removed. It will stop running and the corresponding data will be deleted for ${sync.connections} existing connections.`
+                    )
+                );
+            }
+
+            const confirmation = await promptly.confirm(
+                "Do you want to continue with these changes? If no, the new syncs will be created but any existing connections won't be automatically started and no syncs will be removed. y/n"
+            );
+            if (confirmation) {
+                await axios
+                    .post(
+                        process.env['NANGO_HOSTPORT'] + `/sync/deploy`,
+                        { syncs: postData, reconcile: true },
+                        { headers: enrichHeaders(), httpsAgent: httpsAgent() }
+                    )
+                    .then((_) => {
+                        console.log(chalk.green(`Successfully deployed the syncs!`));
+                    })
+                    .catch((err) => {
+                        const errorMessage = JSON.stringify(err.response.data, null, 2);
+                        console.log(chalk.red(`Error deploying the syncs with the following error: ${errorMessage}`));
+                        process.exit(1);
+                    });
+            } else {
+                await deploySyncs(url, postData);
+                process.exit(0);
+            }
+        } catch (err: any) {
+            console.log(err);
+            const errorMessage = JSON.stringify(err.response.data, null, 2);
+            console.log(chalk.red(`Error deploying the syncs with the following error: ${errorMessage}`));
+            process.exit(1);
+        }
+    } else {
+        await deploySyncs(url, postData, true);
+    }
+};
+
+async function deploySyncs(url: string, syncs: IncomingSyncConfig[], reconcile = false) {
     await axios
-        .post(url, postData, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
+        .post(url, { syncs, reconcile }, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
         .then((_) => {
             console.log(chalk.green(`Successfully deployed the syncs!`));
         })
         .catch((err) => {
             const errorMessage = JSON.stringify(err.response.data, null, 2);
-            console.log(chalk.red(`Error deploying the syncs with the following error: ${errorMessage}}`));
+            console.log(chalk.red(`Error deploying the syncs with the following error: ${errorMessage}`));
             process.exit(1);
         });
-};
+}
 
 export const version = () => {
     const packageJson = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../package.json'), 'utf8'));
@@ -288,6 +299,7 @@ export const init = () => {
             `#NANGO_HOSTPORT=https://api-staging.nango.dev
 #NANGO_AUTO_UPGRADE=true
 #NANGO_NO_PROMPT_FOR_UPGRADE=false
+#NANGO_DEPLOY_AUTO_CONFIRM=false
 #NANGO_SECRET_KEY=xxxx-xxx-xxxx
 #NANGO_INTEGRATIONS_LOCATION=use-this-to-override-where-the-nango-integrations-directory-goes
 #NANGO_PORT=use-this-to-override-the-default-3003
@@ -564,27 +576,6 @@ export const configWatch = () => {
 
     watcher.on('change', () => {
         createModelFile(true);
-    });
-};
-
-/**
- * Config Deploy
- * @desc if the config is changed and a new sync is added or deleted, make sure
- * the worker runs the new sync or removes that new sync
- * so any changes are seamless
- */
-let isDeploying = false;
-
-export const configDeploy = async () => {
-    const watchPath = `${NANGO_INTEGRATIONS_LOCATION}/${nangoConfigFile}`;
-    const watcher = chokidar.watch(watchPath, { ignoreInitial: true });
-
-    watcher.on('all', async (event: string) => {
-        if (!isDeploying && (event === 'add' || event === 'change')) {
-            isDeploying = true;
-            await deployLocalSyncs();
-            isDeploying = false;
-        }
     });
 };
 
