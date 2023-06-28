@@ -91,8 +91,9 @@ program
     });
 
 program
-    .command('docker:run')
+    .command('start')
     .alias('dr')
+    .alias('docker:run')
     .description('Run the docker container locally')
     .action(async () => {
         await verifyNecessaryFiles();
