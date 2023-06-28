@@ -72,7 +72,6 @@ function update_package_json_version() {
 # to ensure all dependencies are updated
 
 # clean up any old dist folders
-rm -rf packages/shared/dist
 npm run ts-build
 
 # node client is the first to be published since shared depends on it
