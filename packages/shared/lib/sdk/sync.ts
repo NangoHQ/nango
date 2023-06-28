@@ -96,6 +96,10 @@ export class NangoSync {
         return this.nango.proxy(config);
     }
 
+    public async getConnection() {
+        return this.nango.getConnection(this.providerConfigKey as string, this.connectionId as string);
+    }
+
     public async setFieldMapping(fieldMapping: Record<string, string>, optionalProviderConfigKey?: string, optionalConnectionId?: string) {
         return this.nango.setFieldMapping(fieldMapping, optionalProviderConfigKey, optionalConnectionId);
     }
