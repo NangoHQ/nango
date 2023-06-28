@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { accountService, errorManager, isCloud, getBaseUrl } from '@nangohq/shared';
+import { accountService, errorManager, isCloud, getBaseUrl, getWebsocketsPath } from '@nangohq/shared';
 import { getOauthCallbackUrl, getUserAndAccountFromSession } from '../utils/utils.js';
 
 class AccountController {
@@ -10,6 +10,7 @@ class AccountController {
             if (!isCloud()) {
                 account.callback_url = await getOauthCallbackUrl();
                 account.secret_key = process.env['NANGO_SECRET_KEY'] || '(none)';
+                account.websockets_path = getWebsocketsPath();
             }
 
             account.host = getBaseUrl();

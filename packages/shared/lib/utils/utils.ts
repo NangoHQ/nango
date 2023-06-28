@@ -135,6 +135,16 @@ export function getApiUrl() {
 }
 
 /**
+ * Get any custom path for the websockets server.
+ * Defaults to '/' for backwards compatibility
+ *
+ * @returns the path for the websockets server
+ */
+export function getWebsocketsPath(): string {
+    return process.env['NANGO_SERVER_WEBSOCKETS_PATH'] || '/';
+}
+
+/**
  * A helper function to interpolate a string.
  * interpolateString('Hello ${name} of ${age} years", {name: 'Tester', age: 234}) -> returns 'Hello Tester of age 234 years'
  *
