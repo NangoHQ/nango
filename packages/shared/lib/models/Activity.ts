@@ -15,9 +15,9 @@ export interface ActivityLog {
     timestamp: number;
     start: number;
     end?: number;
-    connection_id: string;
-    provider_config_key: string;
-    provider?: string;
+    connection_id: string | null;
+    provider_config_key: string | null;
+    provider?: string | null;
     method?: HTTP_VERB;
     endpoint?: string;
     session_id?: string;

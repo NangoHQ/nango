@@ -34,7 +34,7 @@ const JsonPrettyPrint: React.FC<Props> = ({ data }): ReactElement<any, any> => {
           <pre className="max-w-5xl overflow-auto whitespace-pre-wrap break-all">{prettyJson}</pre>
       );
   } catch(e) {
-      return <span className="whitespace-normal break-all overflow-wrap">data</span>;
+      return <span className="whitespace-normal break-all overflow-wrap">{data}</span>;
   }
 };
 
@@ -261,14 +261,24 @@ export default function Activity() {
                                                 <Tooltip text={activity?.connection_id} type="dark">
                                                     <Link
                                                         to={`/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '#sync' : ''}`}
-                                                        className="block ml-30 w-48 mr-12 text-[#5AC2B3] font-mono overflow-hidden truncate"
+                                                        className={`block ml-30 w-48 mr-12 text-[#5AC2B3] font-mono overflow-hidden truncate ${activity.connection_id === null ? 'cursor-default' : ''}`}
+                                                        onClick={(e) => {
+                                                            if (activity.connection_id === null) {
+                                                                e.preventDefault();
+                                                            }
+                                                        }}
                                                     >
-                                                        `{activity.connection_id}`
+                                                        `{activity.connection_id === null ? 'n/a': activity.connection_id }`
                                                     </Link>
                                                 </Tooltip>
                                                 <Link
                                                     to={`/integration/${activity.provider_config_key}`}
-                                                    className="block w-36 mr-12"
+                                                    className={`block w-36 mr-12 ${activity.provider === null ? 'cursor-default' : ''}`}
+                                                    onClick={(e) => {
+                                                        if (activity.provider === null) {
+                                                            e.preventDefault();
+                                                        }
+                                                    }}
                                                 >
                                                     {activity?.provider ? (
                                                         <div className="w-80 flex">
