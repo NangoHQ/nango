@@ -1,4 +1,4 @@
-import { loadNangoConfig } from '../nango-config.service.js';
+import { loadNangoConfig, loadLocalNangoConfig } from '../nango-config.service.js';
 import type { NangoConnection } from '../../models/Connection.js';
 import { SyncResult, SyncType, SyncStatus, Job as SyncJob } from '../../models/Sync.js';
 import { createActivityLogMessage, createActivityLogMessageAndEnd, updateSuccess as updateSuccessActivityLog } from '../activity.service.js';
@@ -65,7 +65,9 @@ export default class SyncRun {
     }
 
     async run(optionalLastSyncDate?: Date | null, bypassAccount?: boolean, optionalSecretKey?: string): Promise<boolean | object> {
-        const nangoConfig = await loadNangoConfig(this.nangoConnection, this.syncName, this.syncId, this.loadLocation);
+        const nangoConfig = this.loadLocation
+            ? loadLocalNangoConfig(this.loadLocation)
+            : await loadNangoConfig(this.nangoConnection, this.syncName, this.syncId);
 
         if (!nangoConfig) {
             const message = `No sync configuration was found for ${this.syncName}.`;
