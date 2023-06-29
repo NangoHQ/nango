@@ -300,10 +300,10 @@ greenhouse:
     auth_mode: OAUTH2
     authorization_url: https://api.greenhouse.io/oauth/authorize
     token_url: https://api.greenhouse.io/oauth/token
-health-gorilla:
+gumroad:
     auth_mode: OAUTH2
-    authorization_url: https://api.healthgorilla.com/oauth/authorize
-    token_url: https://api.healthgorilla.com/oauth/token
+    authorization_url: https://gumroad.com/oauth/authorize
+    token_url: https://api.gumroad.com/oauth/token
     authorization_params:
         response_type: code
     token_params:
@@ -314,6 +314,16 @@ gusto:
     auth_mode: OAUTH2
     authorization_url: https://api.gusto.com/oauth/authorize
     token_url: https://api.gusto.com/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+health-gorilla:
+    auth_mode: OAUTH2
+    authorization_url: https://api.healthgorilla.com/oauth/authorize
+    token_url: https://api.healthgorilla.com/oauth/token
     authorization_params:
         response_type: code
     token_params:
@@ -417,6 +427,12 @@ mural:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+netsuite:
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.params.accountId}.app.netsuite.com/app/login/oauth2/authorize.nl
+    token_url: https://${connectionConfig.params.accountId}.suitetalk.api.netsuite.com/services/rest/auth/oauth2/v1/token
+    default_scopes:
+        - restlets
 notion:
     auth_mode: OAUTH2
     authorization_url: https://api.notion.com/v1/oauth/authorize

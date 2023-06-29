@@ -138,11 +138,11 @@ export default function Activity() {
         navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, offset: 0 }));
     };
 
-    const renderParams = (params: Record<string, string>) => {
+    const renderParams = (params: Record<string, string>, level: string) => {
         return Object.entries(params).map(([key, value]) => (
-            <div className="max-w-5xl whitespace-normal break-all overflow-wrap" key={key}>
+            <div className={`max-w-5xl whitespace-normal break-all overflow-wrap ${level === 'error' ? 'text-red-500' : level === 'warn' ? 'text-orange-500' : ''}`} key={key}>
                 <span>{key}: </span>
-                <span className="max-w-5xl whitespace-normal break-all overflow-wrap">{value.toString()}</span>
+                <span className="max-w-5xl whitespace-normal break-all overflow-wrap">{value === null ? '' : value.toString()}</span>
             </div>
         ));
     };
@@ -345,7 +345,7 @@ export default function Activity() {
                                                             )}
                                                             {message?.params && (
                                                                 <div className="ml-4">
-                                                                    {renderParams(message.params as unknown as Record<string, string>)}
+                                                                    {renderParams(message.params as unknown as Record<string, string>, message.level as string)}
                                                                 </div>
                                                             )}
                                                         </div>
