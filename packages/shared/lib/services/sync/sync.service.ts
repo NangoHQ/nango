@@ -3,24 +3,14 @@ import db, { schema, dbNamespace } from '../../db/database.js';
 import { IncomingSyncConfig, SyncDifferences, Sync, Job as SyncJob, SyncStatus, SyncWithSchedule, SlimSync } from '../../models/Sync.js';
 import type { Connection, NangoConnection } from '../../models/Connection.js';
 import SyncClient from '../../clients/sync.client.js';
-import type { Config as ProviderConfig } from '../../models/Provider.js';
-import { markAllAsStopped, deleteScheduleForSync } from './schedule.service.js';
+import { markAllAsStopped } from './schedule.service.js';
 import { getActiveSyncConfigsByAccountId, getSyncConfigsByProviderConfigKey } from './config.service.js';
 import syncOrchestrator from './orchestrator.service.js';
 import connectionService from '../connection.service.js';
-import configService from '../config.service.js';
 
 const TABLE = dbNamespace + 'syncs';
 const SYNC_JOB_TABLE = dbNamespace + 'sync_jobs';
 const SYNC_SCHEDULE_TABLE = dbNamespace + 'sync_schedules';
-
-interface ReconciledSyncResult {
-    createdSyncs: (Sync | null)[];
-    deletedSyncs: {
-        id: string;
-        name: string;
-    }[];
-}
 
 /**
  * Sync Service
