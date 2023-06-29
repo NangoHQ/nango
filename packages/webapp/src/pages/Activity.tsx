@@ -4,6 +4,7 @@ import { ChevronsLeft, Clock, ArrowRight, Slash, CheckInCircle, AlertCircle, Lin
 import { Tooltip } from '@geist-ui/core';
 import queryString from 'query-string';
 
+import { ReactComponent as SyncIcon } from '../icons/sync-code-icon.svg';
 import CopyButton from '../components/ui/button/CopyButton';
 import { useActivityAPI } from '../utils/api';
 import { formatTimestamp, formatTimestampWithTZ, elapsedTime } from '../utils/utils';
@@ -230,7 +231,7 @@ export default function Activity() {
                                                     {activity?.action === 'sync' && (
                                                         <span className="flex items-center">
                                                             <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-green-500 bg-opacity-20">
-                                                                <img className="h-4 mr-2" src="/images/network-icon.svg" alt="" />
+                                                                <SyncIcon className="h-4 -ml-3 -mr-1 stroke-green-500" />
                                                                 <p className="inline-block text-green-500">sync</p>
                                                             </div>
                                                             <Link
@@ -239,6 +240,18 @@ export default function Activity() {
                                                                 {activity.operation_name && (
                                                                     <p className="text-gray-500 ml-2 text-sm">({activity?.operation_name})</p>
                                                                 )}
+                                                            </Link>
+                                                        </span>
+                                                    )}
+                                                    {activity?.action === 'sync deploy' && (
+                                                        <span className="flex items-center">
+                                                            <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-[#8247FF] bg-opacity-20">
+                                                                <img className="h-4 mr-2" src="/images/sync-deploy-icon.svg" alt="" />
+                                                                <p className="inline-block text-[#8247FF]">sync deploy</p>
+                                                            </div>
+                                                            <Link
+                                                                to="/syncs"
+                                                            >
                                                             </Link>
                                                         </span>
                                                     )}
