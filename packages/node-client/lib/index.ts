@@ -269,6 +269,12 @@ export class Nango {
         return response.data;
     }
 
+    public async getIntegration(providerConfigKey: string, includeIntegrationCredetials = false) {
+        const url = `${this.serverUrl}/config/${providerConfigKey}`;
+        const response = await axios.get(url, { headers: this.enrichHeaders({}), params: { include_creds: includeIntegrationCredetials } });
+        return response.data;
+    }
+
     public async setFieldMapping(fieldMapping: Record<string, string>, optionalProviderConfigKey?: string, optionalConnectionId?: string) {
         const providerConfigKey = optionalProviderConfigKey || this.providerConfigKey;
         const connectionId = optionalConnectionId || this.connectionId;

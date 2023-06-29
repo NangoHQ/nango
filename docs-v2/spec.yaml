@@ -137,6 +137,12 @@ paths:
                   schema:
                       type: string
                   description: The Integration ID that you created in Nango.
+                - name: include_creds
+                  in: query
+                  required: false
+                  description: If true, the response will contain the client ID, secret and scopes (false by default).
+                  schema:
+                      type: boolean
             responses:
                 '200':
                     description: Successfully returned an Integration
