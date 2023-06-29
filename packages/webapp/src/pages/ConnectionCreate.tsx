@@ -33,6 +33,7 @@ export default function IntegrationCreate() {
     const [selectedScopes, addToScopesSet, removeFromSelectedSet] = useSet<string>();
     const [publicKey, setPublicKey] = useState('');
     const [hostUrl, setHostUrl] = useState('');
+    const [websocketsPath, setWebsocketsPath] = useState('');
     const getIntegrationListAPI = useGetIntegrationListAPI();
     const getProjectInfoAPI = useGetProjectInfoAPI();
     const analyticsTrack = useAnalyticsTrack();
@@ -64,6 +65,7 @@ export default function IntegrationCreate() {
                 const account = (await res.json())['account'];
                 setPublicKey(account.public_key);
                 setHostUrl(account.host || baseUrl());
+                setWebsocketsPath(account.websockets_path); // Undefined is ok, as it's optional.
             }
         };
 
@@ -85,7 +87,7 @@ export default function IntegrationCreate() {
             user_scopes: { value: string };
         };
 
-        const nango = new Nango({ host: hostUrl, publicKey: isCloud() ? publicKey : undefined });
+        const nango = new Nango({ host: hostUrl, websocketsPath: websocketsPath, publicKey: isCloud() ? publicKey : undefined });
 
         nango
             .auth(target.integration_unique_key.value, target.connection_id.value, { user_scope: selectedScopes || [], params: connectionConfigParams || {} })
@@ -140,13 +142,16 @@ export default function IntegrationCreate() {
 
         if (isStaging() || isHosted()) {
             args.push(`host: '${hostUrl}'`);
+            if (websocketsPath && websocketsPath !== '/') {
+                args.push(`websocketsPath: '${websocketsPath}'`);
+            }
         }
 
         if (isCloud() && publicKey) {
             args.push(`publicKey: '${publicKey}'`);
         }
 
-        let argsStr = args.length > 0 ? `{ ${args.join(', ')}}` : '';
+        let argsStr = args.length > 0 ? `{ ${args.join(', ')} }` : '';
 
         let connectionConfigStr = '';
 

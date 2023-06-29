@@ -196,21 +196,21 @@ export default function Activity() {
                                             <div className="flex items-center px-2">
                                                 {activity?.success === null && (
                                                     <Link
-                                                        to={`/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '#sync' : ''}`}
+                                                        to={activity?.action === 'sync deploy' ? '/syncs' : `/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '#sync' : ''}`}
                                                     >
                                                         <Clock className="stroke-yellow-500" size="32" />
                                                     </Link>
                                                 )}
                                                 {activity?.success === true && (
                                                     <Link
-                                                        to={`/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '#sync' : ''}`}
+                                                        to={activity?.action === 'sync deploy' ? '/syncs' : `/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '#sync' : ''}`}
                                                     >
                                                         <CheckInCircle className="stroke-green-500" size="32" />
                                                     </Link>
                                                 )}
                                                 {activity?.success === false && (
                                                     <Link
-                                                        to={`/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '#sync' : ''}`}
+                                                        to={activity?.action === 'sync deploy' ? '/syncs' : `/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '#sync' : ''}`}
                                                     >
                                                         <AlertCircle className="stroke-red-500" size="32" />
                                                     </Link>
@@ -285,10 +285,10 @@ export default function Activity() {
                                                     </Link>
                                                 </Tooltip>
                                                 <Link
-                                                    to={`/integration/${activity.provider_config_key}`}
-                                                    className={`block w-36 mr-12 ${activity.provider === null ? 'cursor-default' : ''}`}
+                                                    to={activity.provider === null ? '/syncs' : `/integration/${activity.provider_config_key}`}
+                                                    className={`block w-36 mr-12 ${activity.provider === null && activity.action !== 'sync deploy' ? 'cursor-default' : ''}`}
                                                     onClick={(e) => {
-                                                        if (activity.provider === null) {
+                                                        if (activity.provider === null && activity.action !== 'sync deploy') {
                                                             e.preventDefault();
                                                         }
                                                     }}

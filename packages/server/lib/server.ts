@@ -110,8 +110,9 @@ app.route('/api/v1/connection/:connectionId').get(webAuth, connectionController.
 app.route('/api/v1/connection/:connectionId').delete(webAuth, connectionController.deleteConnectionWeb.bind(connectionController));
 app.route('/api/v1/user').get(webAuth, userController.getUser.bind(userController));
 app.route('/api/v1/activity').get(webAuth, activityController.retrieve.bind(activityController));
-app.route('/api/v1/sync').get(webAuth, syncController.getSyncs.bind(syncController));
+app.route('/api/v1/sync').get(webAuth, syncController.getSyncsByParams.bind(syncController));
 app.route('/api/v1/sync/command').post(webAuth, syncController.syncCommand.bind(syncController));
+app.route('/api/v1/syncs').get(webAuth, syncController.getSyncs.bind(syncController));
 
 // Hosted signin
 if (!isCloud()) {

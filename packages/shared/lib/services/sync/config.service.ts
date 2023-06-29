@@ -1,4 +1,4 @@
-import { schema, dbNamespace } from '../../db/database.js';
+import db, { schema, dbNamespace } from '../../db/database.js';
 import configService from '../config.service.js';
 import fileService from '../file.service.js';
 import { updateSyncScheduleFrequency } from './schedule.service.js';
@@ -21,16 +21,19 @@ const TABLE = dbNamespace + 'sync_configs';
 export async function createSyncConfig(account_id: number, syncs: IncomingSyncConfig[]) {
     const insertData = [];
 
+    const providers = syncs.map((sync) => sync.providerConfigKey);
+    const providerConfigKeys = [...new Set(providers)];
+
     const log = {
         level: 'info' as LogLevel,
         success: null,
-        action: 'sync' as LogAction,
+        action: 'sync deploy' as LogAction,
         start: Date.now(),
         end: Date.now(),
         timestamp: Date.now(),
         connection_id: null,
         provider: null,
-        provider_config_key: `${syncs.length} providers`,
+        provider_config_key: `${syncs.length} syncs from ${providerConfigKeys.length} integrations`,
         account_id: account_id,
         operation_name: 'sync.deploy'
     };
@@ -241,7 +244,7 @@ export async function updateSyncConfigWithSyncId(sync_config_id: number, sync_id
 }
 
 export async function deleteSyncConfig(id: number): Promise<void> {
-    await schema().from<SyncConfig>(TABLE).where({ id }).delete();
+    await schema().from<SyncConfig>(TABLE).where({ id }).del();
 }
 
 export async function deleteSyncFilesForConfig(id: number): Promise<void> {
@@ -250,13 +253,75 @@ export async function deleteSyncFilesForConfig(id: number): Promise<void> {
     await fileService.deleteFiles(files);
 }
 
-export async function getSyncConfigsByAccountId(account_id: number): Promise<(SyncConfig & ProviderConfig)[]> {
-    const result = await schema().select('*').from<SyncConfig>(TABLE).join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id').where({
-        '_nango_configs.account_id': account_id,
-        active: true
-    });
+export async function getLastActiveOrLatestSyncConfigsByAccountId(account_id: number): Promise<(SyncConfig & ProviderConfig)[]> {
+    const result = await schema()
+        .select(
+            `${TABLE}.id`,
+            `${TABLE}.sync_name`,
+            `${TABLE}.runs`,
+            `${TABLE}.sync_id`,
+            `${TABLE}.models`,
+            `${TABLE}.updated_at`,
+            '_nango_configs.provider',
+            '_nango_configs.unique_key'
+        )
+        .from<SyncConfig>(TABLE)
+        .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')
+        .where({
+            '_nango_configs.account_id': account_id
+        })
+        .andWhere(function (this: any) {
+            this.whereNotNull('sync_id').orWhere({ active: true });
+        });
 
     return result;
+}
+
+export async function getSyncConfigsWithConnectionsByAccountId(account_id: number): Promise<(SyncConfig & ProviderConfig)[]> {
+    const result = await schema()
+        .select(
+            `${TABLE}.id`,
+            `${TABLE}.sync_name`,
+            `${TABLE}.runs`,
+            `${TABLE}.sync_id`,
+            `${TABLE}.models`,
+            `${TABLE}.updated_at`,
+            '_nango_configs.provider',
+            '_nango_configs.unique_key',
+            db.knex.raw(
+                `(
+                    SELECT json_agg(
+                        json_build_object(
+                            'connection_id', _nango_connections.connection_id,
+                            'field_mappings', _nango_connections.field_mappings
+                        )
+                    )
+                    FROM nango._nango_connections
+                    WHERE _nango_configs.account_id = _nango_connections.account_id
+                    AND _nango_configs.unique_key = _nango_connections.provider_config_key
+                ) as connections
+                `
+            )
+        )
+        .from<SyncConfig>(TABLE)
+        .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')
+        .where({
+            '_nango_configs.account_id': account_id,
+            active: true
+        });
+
+    // if the result array has duplicate ids choose the one that has
+    // a sync_id of not null
+    //const idMap = {};
+    //for (const item of result) {
+    //if (!idMap[item.id]) {
+    //idMap[item.id] = item;
+    //} else {
+    //if (item.sync_id) {
+    //idMap[item.id] = item;
+    //}
+    //}
+    //}
 }
 
 export async function getSyncConfigsByProviderConfigKey(account_id: number, providerConfigKey: string): Promise<{ name: string }[]> {
@@ -266,9 +331,9 @@ export async function getSyncConfigsByProviderConfigKey(account_id: number, prov
         .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')
         .where({
             '_nango_configs.account_id': account_id,
-            '_nango_configs.unique_key': providerConfigKey,
-            active: true
-        });
+            '_nango_configs.unique_key': providerConfigKey
+        })
+        .whereNotNull(`${TABLE}.sync_id`);
 
     return result;
 }

@@ -154,6 +154,15 @@ export class Nango {
 
         const url = `${this.serverUrl}/proxy/${config.endpoint}`;
 
+        const customPrefixedHeaders =
+            customHeaders && Object.keys(customHeaders as Record<string, string>).length > 0
+                ? Object.keys(customHeaders as Record<string, string>).reduce((acc, key) => {
+                      // @ts-ignore // TODO types
+                      acc[`Nango-Proxy-${key}`] = customHeaders[key];
+                      return acc;
+                  }, {} as Record<string, string | number | boolean>)
+                : {};
+
         const headers: Record<string, string | number | boolean> = {
             'Connection-Id': connectionId as string,
             'Provider-Config-Key': providerConfigKey as string,
@@ -161,7 +170,7 @@ export class Nango {
             'Nango-Is-Sync': this.isSync,
             'Nango-Is-Dry-Run': this.dryRun,
             'Nango-Activity-Log-Id': this.activityLogId || '',
-            ...customHeaders
+            ...customPrefixedHeaders
         };
 
         if (retries) {

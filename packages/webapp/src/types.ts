@@ -1,7 +1,7 @@
 export interface ActivityResponse {
     id: number;
     level: 'info' | 'debug' | 'error' | 'warn';
-    action: 'oauth' | 'proxy' | 'token' | 'sync';
+    action: 'oauth' | 'proxy' | 'token' | 'sync' | 'sync deploy';
     success: boolean;
     timestamp: number;
     start: number;
@@ -26,6 +26,22 @@ export interface Result {
     added: number;
     updated: number;
     deleted?: number;
+}
+
+export interface Sync {
+    id: string;
+    sync_name: string;
+    provider: string;
+    runs: string;
+    unique_key: string;
+    models: string[];
+    updated_at: string;
+    connections:
+        | {
+              connection_id: string;
+              field_mappings: Record<string, string>;
+          }[]
+        | null;
 }
 
 export interface SyncResponse {

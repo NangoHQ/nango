@@ -23,6 +23,23 @@ interface ProxyConfiguration {
     baseUrlOverride?: string;
 }
 
+interface Connection {
+    id: number;
+    connectionId: string;
+    provider: string;
+    providerConfigKey: number;
+    creationDate: string;
+    oauthType: string;
+    connectionConfig: Record<string, string>;
+    connectionMetadata: Record<string, string>;
+    accessToken: string | null;
+    refreshToken: string | null;
+    expiresAt: string | null;
+    oauthToken: string | null;
+    oauthTokenSecret: string | null;
+    rawCredentials: object;
+}
+
 interface NangoProps {
     host?: string;
     secretKey?: string;
@@ -95,7 +112,7 @@ export class NangoSync {
         return this.nango.proxy(config);
     }
 
-    public async getConnection() {
+    public async getConnection(): Promise<Connection> {
         return this.nango.getConnection(this.providerConfigKey as string, this.connectionId as string);
     }
 

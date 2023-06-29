@@ -47,7 +47,7 @@ export interface Job extends Timestamps {
     sync_config_id?: number;
 }
 
-interface SyncModelSchema {
+export interface SyncModelSchema {
     name: string;
     fields: {
         name: string;
@@ -69,11 +69,15 @@ export interface SyncConfig extends Timestamps {
     sync_id?: string;
 }
 
-export interface SyncReconciliationParams {
-    syncName: string;
-    providerConfigKey: string;
-    returns: string[];
-    runs: string;
+export interface SlimSync {
+    name: string;
+    providerConfigKey?: string;
+    connections?: number;
+}
+
+export interface SyncDifferences {
+    newSyncs: SlimSync[];
+    deletedSyncs: SlimSync[];
 }
 
 export interface IncomingSyncConfig {

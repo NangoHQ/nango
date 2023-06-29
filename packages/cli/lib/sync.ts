@@ -165,7 +165,7 @@ export const deploy = async (options: DeployOptions) => {
     if (!process.env['NANGO_DEPLOY_AUTO_CONFIRM']) {
         const confirmationUrl = process.env['NANGO_HOSTPORT'] + `/sync/deploy/confirmation`;
         try {
-            const response = await axios.post(confirmationUrl, postData, { headers: enrichHeaders(), httpsAgent: httpsAgent() });
+            const response = await axios.post(confirmationUrl, { syncs: postData, reconcile: false }, { headers: enrichHeaders(), httpsAgent: httpsAgent() });
             console.log(JSON.stringify(response.data, null, 2));
             const { newSyncs, deletedSyncs } = response.data;
 
@@ -204,7 +204,7 @@ export const deploy = async (options: DeployOptions) => {
                         process.exit(1);
                     });
             } else {
-                await deploySyncs(url, postData);
+                await deploySyncs(url, { syncs: postData, reconcile: false });
                 process.exit(0);
             }
         } catch (err: any) {
@@ -214,13 +214,13 @@ export const deploy = async (options: DeployOptions) => {
             process.exit(1);
         }
     } else {
-        await deploySyncs(url, postData, true);
+        await deploySyncs(url, { syncs: postData, reconcile: true });
     }
 };
 
-async function deploySyncs(url: string, syncs: IncomingSyncConfig[], reconcile = false) {
+async function deploySyncs(url: string, body: { syncs: IncomingSyncConfig[]; reconcile: boolean }) {
     await axios
-        .post(url, { syncs, reconcile }, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
+        .post(url, body, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
         .then((_) => {
             console.log(chalk.green(`Successfully deployed the syncs!`));
         })

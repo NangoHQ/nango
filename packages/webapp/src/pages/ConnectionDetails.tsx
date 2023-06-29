@@ -431,7 +431,11 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                     <li className="w-48">{sync.name}</li>
                                                 </Tooltip>
                                                 <li className="w-48 ml-6 text-sm">
-                                                    {sync.models.map((model) => model.charAt(0).toUpperCase() + model.slice(1)).join(', ')}
+                                                    {sync.models ? (
+                                                        <>
+                                                            {sync.models.map((model) => model.charAt(0).toUpperCase() + model.slice(1)).join(', ')}
+                                                        </>
+                                                    ) : '-'}
                                                 </li>
                                                 <li className="w-32 ml-2">
                                                     {sync.schedule_status === 'PAUSED' && (
@@ -483,18 +487,33 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                             </div>
                                                         ))}
                                                 </li>
-                                                <Tooltip text={parseLatestSyncResult(sync.latest_sync.result, sync.models)} type="dark">
-                                                    {sync.latest_sync.activity_log_id !== null ? (
-                                                        <Link
-                                                            to={`/activity?activity_log_id=${sync.latest_sync.activity_log_id}`}
-                                                            className="block w-36 ml-1 text-gray-500 text-sm"
-                                                        >
-                                                            {formatDateToUSFormat(sync.latest_sync.updated_at)}
-                                                        </Link>
-                                                    ) : (
-                                                        <li className="w-36 ml-1 text-gray-500 text-sm">{formatDateToUSFormat(sync.latest_sync.updated_at)}</li>
-                                                    )}
-                                                </Tooltip>
+                                                {Object.keys(sync.latest_sync.result).length > 0 ? (
+                                                    <Tooltip text={<pre>{parseLatestSyncResult(sync.latest_sync.result, sync.models)}</pre>} type="dark">
+                                                        {sync.latest_sync.activity_log_id !== null ? (
+                                                            <Link
+                                                                to={`/activity?activity_log_id=${sync.latest_sync.activity_log_id}`}
+                                                                className="block w-36 ml-1 text-gray-500 text-sm"
+                                                            >
+                                                                {formatDateToUSFormat(sync.latest_sync.updated_at)}
+                                                            </Link>
+                                                        ) : (
+                                                            <li className="w-36 ml-1 text-gray-500 text-sm">{formatDateToUSFormat(sync.latest_sync.updated_at)}</li>
+                                                        )}
+                                                    </Tooltip>
+                                                ): (
+                                                    <>
+                                                        {sync.latest_sync.activity_log_id !== null ? (
+                                                            <Link
+                                                                to={`/activity?activity_log_id=${sync.latest_sync.activity_log_id}`}
+                                                                className="block w-36 ml-1 text-gray-500 text-sm"
+                                                            >
+                                                                {formatDateToUSFormat(sync.latest_sync.updated_at)}
+                                                            </Link>
+                                                        ) : (
+                                                            <li className="w-36 ml-1 text-gray-500 text-sm">{formatDateToUSFormat(sync.latest_sync.updated_at)}</li>
+                                                        )}
+                                                    </>
+                                                )}
                                                 {sync.schedule_status === 'RUNNING' && (
                                                     <>
                                                         {interpretNextRun(sync.futureActionTimes) === '-' ? (

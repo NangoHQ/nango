@@ -1,5 +1,6 @@
 import { PutObjectCommand, GetObjectCommand, GetObjectCommandOutput, S3Client, DeleteObjectsCommand } from '@aws-sdk/client-s3';
 import { Readable } from 'stream';
+import { isCloud } from '../utils/utils.js';
 
 const client = new S3Client({
     region: process.env['AWS_REGION'] as string,
@@ -13,6 +14,10 @@ class FileService {
     bucket = process.env['AWS_BUCKET_NAME'] as string;
 
     async upload(fileContents: string, fileName: string): Promise<string | null> {
+        if (!isCloud()) {
+            return '_LOCAL_FILE_';
+        }
+
         try {
             await client.send(
                 new PutObjectCommand({
@@ -58,6 +63,10 @@ class FileService {
     }
 
     async deleteFiles(fileNames: string[]): Promise<void> {
+        if (!isCloud()) {
+            return;
+        }
+
         const deleteObjectsCommand = new DeleteObjectsCommand({
             Bucket: this.bucket,
             Delete: {
