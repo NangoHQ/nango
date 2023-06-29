@@ -151,7 +151,11 @@ export default class SyncRun {
                 const userDefinedResults = await integationService.runScript(this.syncName, this.activityLogId as number, nango, syncData, this.loadLocation);
 
                 if (userDefinedResults === null) {
-                    this.reportFailureForResults(`The integration was run but there was a problem in retrieving the results from the script.`);
+                    this.reportFailureForResults(
+                        `The integration was run but there was a problem in retrieving the results from the script "${this.syncName}"${
+                            syncData?.version ? ` version: ${syncData.version}` : ''
+                        }.`
+                    );
 
                     return false;
                 }
@@ -218,7 +222,9 @@ export default class SyncRun {
                 result = false;
                 const errorMessage = JSON.stringify(e, ['message', 'name', 'stack'], 2);
                 this.reportFailureForResults(
-                    `The ${this.syncType} "${this.syncName}" sync did not complete successfully and has the following error: ${errorMessage}`
+                    `The ${this.syncType} "${this.syncName}"${
+                        syncData?.version ? ` version: ${syncData?.version}` : ''
+                    } sync did not complete successfully and has the following error: ${errorMessage}`
                 );
             }
         }

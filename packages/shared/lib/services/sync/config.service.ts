@@ -9,7 +9,7 @@ import {
     createActivityLogDatabaseErrorMessageAndEnd
 } from '../activity.service.js';
 import type { LogLevel, LogAction } from '../../models/Activity.js';
-import type { IncomingSyncConfig, SyncConfig } from '../../models/Sync.js';
+import type { IncomingSyncConfig, SyncConfig, SlimSync } from '../../models/Sync.js';
 import type { NangoConnection } from '../../models/Connection.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
 import type { NangoConfig } from '../../integrations/index.js';
@@ -23,6 +23,8 @@ export async function createSyncConfig(account_id: number, syncs: IncomingSyncCo
 
     const providers = syncs.map((sync) => sync.providerConfigKey);
     const providerConfigKeys = [...new Set(providers)];
+
+    const idsToMarkAsInvactive = [];
 
     const log = {
         level: 'info' as LogLevel,
@@ -97,10 +99,27 @@ export async function createSyncConfig(account_id: number, syncs: IncomingSyncCo
             throw new NangoError('file_upload_error');
         }
 
-        await schema()
+        const oldConfigs = await schema()
             .from<SyncConfig>(TABLE)
-            .where({ account_id, nango_config_id: config.id as number, sync_name: syncName })
-            .update({ active: false });
+            .select('id', 'sync_id')
+            .where({
+                account_id,
+                nango_config_id: config.id as number,
+                sync_name: syncName,
+                active: true
+            });
+
+        let oldSyncId = null;
+
+        if (oldConfigs.length > 0) {
+            const ids = oldConfigs.map((oldConfig: SyncConfig) => oldConfig.id as number);
+            idsToMarkAsInvactive.push(...ids);
+
+            const oldConfig = oldConfigs.find((oldConfig: SyncConfig) => oldConfig && oldConfig.sync_id !== null);
+            if (oldConfig && oldConfig.sync_id) {
+                oldSyncId = oldConfig.sync_id;
+            }
+        }
 
         insertData.push({
             account_id,
@@ -111,7 +130,8 @@ export async function createSyncConfig(account_id: number, syncs: IncomingSyncCo
             file_location,
             runs,
             active: true,
-            model_schema
+            model_schema,
+            sync_id: oldSyncId
         });
     }
 
@@ -121,6 +141,10 @@ export async function createSyncConfig(account_id: number, syncs: IncomingSyncCo
 
     try {
         const result = await schema().from<SyncConfig>(TABLE).insert(insertData).returning(['id', 'version']);
+
+        if (idsToMarkAsInvactive.length > 0) {
+            await schema().from<SyncConfig>(TABLE).update({ active: false }).whereIn('id', idsToMarkAsInvactive);
+        }
 
         await updateSuccessActivityLog(activityLogId as number, true);
 
@@ -253,7 +277,7 @@ export async function deleteSyncFilesForConfig(id: number): Promise<void> {
     await fileService.deleteFiles(files);
 }
 
-export async function getLastActiveOrLatestSyncConfigsByAccountId(account_id: number): Promise<(SyncConfig & ProviderConfig)[]> {
+export async function getActiveSyncConfigsByAccountId(account_id: number): Promise<(SyncConfig & ProviderConfig)[]> {
     const result = await schema()
         .select(
             `${TABLE}.id`,
@@ -268,10 +292,8 @@ export async function getLastActiveOrLatestSyncConfigsByAccountId(account_id: nu
         .from<SyncConfig>(TABLE)
         .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')
         .where({
+            active: true,
             '_nango_configs.account_id': account_id
-        })
-        .andWhere(function (this: any) {
-            this.whereNotNull('sync_id').orWhere({ active: true });
         });
 
     return result;
@@ -285,6 +307,7 @@ export async function getSyncConfigsWithConnectionsByAccountId(account_id: numbe
             `${TABLE}.runs`,
             `${TABLE}.sync_id`,
             `${TABLE}.models`,
+            `${TABLE}.version`,
             `${TABLE}.updated_at`,
             '_nango_configs.provider',
             '_nango_configs.unique_key',
@@ -310,30 +333,21 @@ export async function getSyncConfigsWithConnectionsByAccountId(account_id: numbe
             active: true
         });
 
-    // if the result array has duplicate ids choose the one that has
-    // a sync_id of not null
-    //const idMap = {};
-    //for (const item of result) {
-    //if (!idMap[item.id]) {
-    //idMap[item.id] = item;
-    //} else {
-    //if (item.sync_id) {
-    //idMap[item.id] = item;
-    //}
-    //}
-    //}
+    return result;
 }
 
-export async function getSyncConfigsByProviderConfigKey(account_id: number, providerConfigKey: string): Promise<{ name: string }[]> {
+export async function getSyncConfigsByProviderConfigKey(account_id: number, providerConfigKey: string): Promise<SlimSync[]> {
     const result = await schema()
-        .select(`${TABLE}.sync_name as name`)
+        .select(`${TABLE}.sync_name as name`, `${TABLE}.sync_id`)
         .from<SyncConfig>(TABLE)
         .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')
         .where({
             '_nango_configs.account_id': account_id,
             '_nango_configs.unique_key': providerConfigKey
         })
-        .whereNotNull(`${TABLE}.sync_id`);
+        .andWhere(function (this: any) {
+            this.whereNotNull('sync_id').orWhere({ active: true });
+        });
 
     return result;
 }

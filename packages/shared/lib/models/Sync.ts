@@ -71,6 +71,7 @@ export interface SyncConfig extends Timestamps {
 
 export interface SlimSync {
     name: string;
+    sync_id?: string | null;
     providerConfigKey?: string;
     connections?: number;
 }

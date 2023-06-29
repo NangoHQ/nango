@@ -5,7 +5,7 @@ import type { Connection, NangoConnection } from '../../models/Connection.js';
 import SyncClient from '../../clients/sync.client.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
 import { markAllAsStopped, deleteScheduleForSync } from './schedule.service.js';
-import { getLastActiveOrLatestSyncConfigsByAccountId, getSyncConfigsByProviderConfigKey } from './config.service.js';
+import { getActiveSyncConfigsByAccountId, getSyncConfigsByProviderConfigKey } from './config.service.js';
 import syncOrchestrator from './orchestrator.service.js';
 import connectionService from '../connection.service.js';
 import configService from '../config.service.js';
@@ -251,7 +251,7 @@ export const deleteSync = async (syncId: string): Promise<string> => {
 };
 
 export const getAndReconcileSyncDifferences = async (accountId: number, syncs: IncomingSyncConfig[], performAction: boolean): Promise<SyncDifferences> => {
-    const newSyncs = [];
+    const newSyncs: SlimSync[] = [];
 
     const existingSyncsByProviderConfig: { [key: string]: SlimSync[] } = {};
     const existingConnectionsByProviderConfig: { [key: string]: NangoConnection[] } = {};
@@ -259,15 +259,24 @@ export const getAndReconcileSyncDifferences = async (accountId: number, syncs: I
     for (const sync of syncs) {
         const { syncName, providerConfigKey, models } = sync;
         if (!existingSyncsByProviderConfig[providerConfigKey]) {
+            // this gets syncs that have a sync config and are active OR just have a sync config
             existingSyncsByProviderConfig[providerConfigKey] = await getSyncConfigsByProviderConfigKey(accountId, providerConfigKey);
             existingConnectionsByProviderConfig[providerConfigKey] = await connectionService.getConnectionsByAccountAndConfig(accountId, providerConfigKey);
         }
 
-        const exists = existingSyncsByProviderConfig[providerConfigKey]?.find((existingSync) => existingSync.name === syncName);
+        const currentSync = existingSyncsByProviderConfig[providerConfigKey];
 
-        if (!exists) {
+        const exists = currentSync?.filter((existingSync) => existingSync.name === syncName);
+        const connections = existingConnectionsByProviderConfig[providerConfigKey] as Connection[];
+
+        let isNew = false;
+        // if it has connections but doesn't have an active sync then it is considered a new sync
+        if (connections.length > 0 && exists?.filter((sync) => sync.sync_id !== null).length === 0) {
+            isNew = true;
+        }
+
+        if (exists?.length === 0 || isNew) {
             newSyncs.push({ name: syncName, providerConfigKey, connections: existingConnectionsByProviderConfig[providerConfigKey]?.length as number });
-            const connections = existingConnectionsByProviderConfig[providerConfigKey] as Connection[];
             if (performAction) {
                 for (const connection of connections) {
                     await syncOrchestrator.create(connection, syncName, models, providerConfigKey, accountId, sync);
@@ -276,7 +285,7 @@ export const getAndReconcileSyncDifferences = async (accountId: number, syncs: I
         }
     }
 
-    const existingSyncs = await getLastActiveOrLatestSyncConfigsByAccountId(accountId);
+    const existingSyncs = await getActiveSyncConfigsByAccountId(accountId);
     const deletedSyncs = [];
 
     for (const existingSync of existingSyncs) {
@@ -300,48 +309,4 @@ export const getAndReconcileSyncDifferences = async (accountId: number, syncs: I
         newSyncs,
         deletedSyncs
     };
-};
-
-/**
- * Reconcile Syncs
- * @desc if syncs are new then initiate them, if they are deleted then delete them
- *
- */
-export const reconcileSyncs = async (account_id: number, syncs: IncomingSyncConfig[]): Promise<ReconciledSyncResult> => {
-    const createdSyncs = [];
-    const deletedSyncs = [];
-
-    for (const sync of syncs) {
-        const { syncName, providerConfigKey, models } = sync;
-
-        // get all the connection ids for this provider
-        const connections: NangoConnection[] = await connectionService.getConnectionsByAccountAndConfig(account_id, providerConfigKey);
-
-        for (const connection of connections) {
-            const existingSync = await getSyncByIdAndName(connection.id as number, syncName);
-
-            if (!existingSync) {
-                const createdSync = await createSync(connection.id as number, syncName, models);
-                createdSyncs.push(createdSync);
-                const syncConfig = await configService.getProviderConfig(providerConfigKey, account_id);
-                const syncClient = await SyncClient.getInstance();
-                syncClient?.startContinuous(connection, createdSync as Sync, syncConfig as ProviderConfig, syncName, { ...sync, returns: sync.models });
-            }
-        }
-
-        const providerSyncs = await getSyncsByProviderConfigKey(account_id, providerConfigKey);
-
-        for (const providerSync of providerSyncs) {
-            if (!syncs.find((sync) => sync.syncName === providerSync.name)) {
-                const deletedSync = await deleteSync(providerSync.id as string);
-                await deleteScheduleForSync(providerSync.id as string);
-                deletedSyncs.push({
-                    id: deletedSync,
-                    name: providerSync.name
-                });
-            }
-        }
-    }
-
-    return { createdSyncs, deletedSyncs };
 };

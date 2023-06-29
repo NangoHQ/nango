@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Slash } from '@geist-ui/icons';
+import { Slash, RefreshCw } from '@geist-ui/icons';
 import DashboardLayout from '../layout/DashboardLayout';
 import { Tooltip } from '@geist-ui/core';
 import { LeftNavBarItems } from '../components/LeftNavBar';
@@ -32,8 +32,13 @@ export default function Syncs() {
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Syncs}>
             <div className="px-16 w-fit mx-auto">
-                <div className="flex">
-                    <h2 className="mt-16 text-left text-3xl font-semibold tracking-tight text-white mb-12">Syncs</h2>
+                <div className="flex flex-col text-left">
+                    <span className="flex items-center mb-3">
+                        <h2 className="flex mt-16 text-left text-3xl font-semibold tracking-tight text-white mb-12">Syncs</h2>
+                        <Tooltip text="Refresh logs" type="dark">
+                            <RefreshCw className="flex stroke-white cursor-pointer mt-4 ml-5" size="24" onClick={() => setLoaded(false)} />
+                        </Tooltip>
+                    </span>
                 </div>
                 <div className="border border-border-gray rounded-md h-fit pt-6 text-white text-sm">
                     <div className="text-white px-5">
@@ -62,7 +67,9 @@ export default function Syncs() {
                             {syncs.map((sync: Sync, index: number) => (
                                 <div key={index} className="text-white px-5">
                                     <ul className="flex space-x-20 pb-4 text-base py-6 items-center border-b border-border-gray">
-                                        <li className="w-32 mr-2">{sync.sync_name}</li>
+                                        <Tooltip text={`version: ${sync.version}`} type="dark">
+                                            <li className="w-32 mr-2">{sync.sync_name}</li>
+                                        </Tooltip>
                                         <li>
                                             {sync?.provider ? (
                                                 <div className="flex">

@@ -36,6 +36,7 @@ export interface Sync {
     unique_key: string;
     models: string[];
     updated_at: string;
+    version: string;
     connections:
         | {
               connection_id: string;
