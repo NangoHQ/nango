@@ -113,6 +113,18 @@ Returns a list of minimalistic [Connection](/core-concepts#connections) objects.
 
 Please check the [REST API reference](/api-reference/connection/list) for an example response and the full list of returned fields.
 
+### Retrieve Integration details
+
+Use this method to retrieve all the details Nango stores on a specific Integration:
+
+```js
+let integration = await nango.getIntegration(
+    '<INTEGRATION-ID>',
+    '<INCLUDE-INTEGRATION-CREDENTIALS?: boolean>', // Optional: if true, the response will contain the client ID, secret and scopes (false by default).
+);
+```
+
+Please check the [REST API reference](/api-reference/integration/get) for an example response and the full list of returned fields.
 ## Sync
 
 ### Nango Proxy
