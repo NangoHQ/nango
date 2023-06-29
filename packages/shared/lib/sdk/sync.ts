@@ -37,7 +37,6 @@ interface NangoProps {
 }
 
 interface UserLogParameters {
-    success?: boolean;
     level?: LogLevel;
 }
 
@@ -145,6 +144,7 @@ export class NangoSync {
 
         const formattedResults = formatDataRecords(results, this.nangoConnectionId as number, model, this.syncId as string, this.syncJobId);
 
+        // TODO better check
         const fullSync = await getSyncById(this.syncId as string);
 
         if (fullSync && !fullSync?.models.includes(model)) {
