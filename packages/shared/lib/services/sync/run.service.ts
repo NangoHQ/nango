@@ -1,4 +1,4 @@
-import { loadNangoConfig, loadLocalNangoConfig } from '../nango-config.service.js';
+import { loadNangoConfig, loadLocalNangoConfig, nangoConfigFile } from '../nango-config.service.js';
 import type { NangoConnection } from '../../models/Connection.js';
 import { SyncResult, SyncType, SyncStatus, Job as SyncJob } from '../../models/Sync.js';
 import { createActivityLogMessage, createActivityLogMessageAndEnd, updateSuccess as updateSuccessActivityLog } from '../activity.service.js';
@@ -83,7 +83,7 @@ export default class SyncRun {
         let result = true;
 
         if (!integrations[this.nangoConnection.provider_config_key] && !this.writeToDb) {
-            const message = `No integration was found for ${this.nangoConnection.provider_config_key}.`;
+            const message = `The connection you provided which applies to integration "${this.nangoConnection.provider_config_key}" does not match any integration in the ${nangoConfigFile}`;
             console.error(message);
 
             return false;
