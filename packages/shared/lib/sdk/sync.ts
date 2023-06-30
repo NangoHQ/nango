@@ -65,21 +65,44 @@ interface ProxyConfiguration {
     baseUrlOverride?: string;
 }
 
+enum AuthModes {
+    OAuth1 = 'OAUTH1',
+    OAuth2 = 'OAUTH2'
+}
+
+interface CredentialsCommon {
+    type: AuthModes;
+    raw: Record<string, string>; // Raw response for credentials as received by the OAuth server or set by the user
+}
+
+interface OAuth2Credentials extends CredentialsCommon {
+    type: AuthModes.OAuth2;
+    access_token: string;
+
+    refresh_token?: string;
+    expires_at?: Date | undefined;
+}
+
+interface OAuth1Credentials extends CredentialsCommon {
+    type: AuthModes.OAuth1;
+    oauth_token: string;
+    oauth_token_secret: string;
+}
+type AuthCredentials = OAuth2Credentials | OAuth1Credentials;
+
 interface Connection {
-    id: number;
-    connectionId: string;
-    provider: string;
-    providerConfigKey: number;
-    creationDate: string;
-    oauthType: string;
-    connectionConfig: Record<string, string>;
-    connectionMetadata: Record<string, string>;
-    accessToken: string | null;
-    refreshToken: string | null;
-    expiresAt: string | null;
-    oauthToken: string | null;
-    oauthTokenSecret: string | null;
-    rawCredentials: object;
+    id?: number;
+    created_at?: Date;
+    updated_at?: Date;
+    provider_config_key: string;
+    connection_id: string;
+    connection_config: Record<string, string>;
+    account_id: number;
+    metadata: Record<string, string>;
+    credentials_iv?: string | null;
+    credentials_tag?: string | null;
+    field_mappings?: Record<string, string>;
+    credentials: AuthCredentials;
 }
 
 interface NangoProps {
