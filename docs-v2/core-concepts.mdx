@@ -78,7 +78,7 @@ You can view detailed logs of every sync run and also log your own messages from
 
 ![Activity overview of Syncs](/images/nango-sync/nango-sync-activity.png)
 
-You can also see and manage the Syncs for each [Connection](/core-concepts#connections).
+You can also see and manage the Syncs for each [Connection](/core-concepts#connections) (integration setup by a user).
 
 ![Syncs for a connection](/images/nango-sync/nango-connection-sync.png)
 
@@ -95,13 +95,13 @@ An API Configuration (e.g. the `hubspot` configuration) contains the configurati
 
 These configuration are contributed and regularly improved by Nango and its community. Configurations allow to rapidly adapt Nango to work with any API, by editing a `.yaml` configuration file.
 
-You can find more information and contribute API Configurations [here]/contribute)
+You can find more information and contribute API Configurations [here](/contribute).
 
 ### Integrations[](#integrations)
 
 Developers create Integrations, based on [API Configurations](/core-concepts#api-configurations), to work with external APIs from their app.
 
-Integrations are created by you in the Nango Dashboard. You can then control them with SDKs and REST APIs.
+Integrations are created by you in the Nango Dashboard. You then control how they work with syncs and our SDKs or REST APIs.
 
 ### Connections[](#connections)
 
@@ -113,9 +113,9 @@ Connections represent the relation between an end user and an external API. It c
 
 Syncs are responsible to continuously synchronize data between an external API and Nango. Each Sync has: 
 - an entry in the `nango.yaml` configuration file in the `nango-integrations` folder
-- a Sync typescript file in the `nango-integrations` folder
+- a Sync file (typescript script) in the `nango-integrations` folder
 
-Syncs have 'runs' or 'jobs' that are executed periodically. They can be managed (stopped, paused, resync, etc.) from the Dashboard and in code.
+Syncs have 'runs' or 'jobs' that are executed periodically. They can be managed (stopped, paused, resync, etc.) from the Dashboard or your code (with the SDK/REST API).
 
 ### Nango Infrastructure[](#nango-infrastructure)
 
