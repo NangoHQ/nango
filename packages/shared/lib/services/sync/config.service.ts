@@ -274,9 +274,13 @@ export async function deleteSyncConfig(id: number): Promise<void> {
 }
 
 export async function deleteSyncFilesForConfig(id: number): Promise<void> {
-    const files = await schema().from<SyncConfig>(TABLE).where({ nango_config_id: id }).select('file_location').pluck('file_location');
+    try {
+        const files = await schema().from<SyncConfig>(TABLE).where({ nango_config_id: id }).select('file_location').pluck('file_location');
 
-    await fileService.deleteFiles(files);
+        await fileService.deleteFiles(files);
+    } catch (error) {
+        console.log(error);
+    }
 }
 
 export async function getActiveSyncConfigsByAccountId(account_id: number): Promise<(SyncConfig & ProviderConfig)[]> {
