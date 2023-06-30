@@ -98,12 +98,17 @@ export const deploy = async (options: DeployOptions) => {
         process.env['NANGO_SECRET_KEY'] = secretKey;
     }
 
-    // better checking for env
     if (!process.env['NANGO_HOSTPORT']) {
-        if (env) {
-            process.env['NANGO_HOSTPORT'] = stagingHost;
-        } else {
-            process.env['NANGO_HOSTPORT'] = cloudHost;
+        switch (env) {
+            case 'local':
+                process.env['NANGO_HOSTPORT'] = `http://localhost:${port}`;
+                break;
+            case 'staging':
+                process.env['NANGO_HOSTPORT'] = stagingHost;
+                break;
+            default:
+                process.env['NANGO_HOSTPORT'] = cloudHost;
+                break;
         }
     }
 
