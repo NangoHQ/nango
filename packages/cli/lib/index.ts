@@ -20,6 +20,7 @@ class NangoCommand extends Command {
         const cmd = new Command(name);
         cmd.option('--secret-key [secretKey]', 'Set the secret key. Overrides the `NANGO_SECRET_KEY` value set in the .env file');
         cmd.option('--host [host]', 'Set the host. Overrides the `NANGO_HOSTPORT` value set in the .env file');
+        cmd.option('--auto-confirm', 'Auto confirm yes to all prompts.');
         cmd.hook('preAction', async () => {
             await upgradeAction();
         });
@@ -34,7 +35,22 @@ dotenv.config();
 
 program.name('nango').description(
     `By default, the CLI assumes that you are using Nango Cloud so you need to set the NANGO_SECRET_KEY env variable or pass in the --secret-key flag with each command.
-For Self-Hosting: set the NANGO_HOSTPORT env variable or pass in the --host flag with each command.`
+
+For Self-Hosting: set the NANGO_HOSTPORT env variable or pass in the --host flag with each command.
+
+Global flags: --secret-key, --host, --auto-confirm
+
+Available environment variables available:
+
+NANGO_HOSTPORT=https://api.nango.dev | http://localhost:3003 | your-self-hosted-address
+NANGO_AUTO_UPGRADE=true // upgrade the CLI automatically
+NANGO_NO_PROMPT_FOR_UPGRADE=false // don't prompt for upgrades
+NANGO_DEPLOY_AUTO_CONFIRM=false // deploy without any prompts
+NANGO_SECRET_KEY=xxxx-xxx-xxxx // Required for Nango Cloud to authenticate
+NANGO_INTEGRATIONS_LOCATION=use-this-to-override-where-the-nango-integrations-directory-goes // set a custom location for the nango-integrations directory
+NANGO_PORT=use-this-to-override-the-default-3003 // set a custom port for the Nango Server
+NANGO_DB_PORT=use-this-to-override-the-default-5432 // set a custom port for the Nango database
+`
 );
 
 program.addHelpText('before', chalk.green(figlet.textSync('Nango CLI')));
@@ -59,8 +75,9 @@ program
     .command('generate')
     .alias('g')
     .description('Generate a new Nango integration')
-    .action(async () => {
-        await verifyNecessaryFiles();
+    .action(async function (this: Command) {
+        const { autoConfirm } = this.opts();
+        await verifyNecessaryFiles(autoConfirm);
         generate();
     });
 
@@ -69,7 +86,8 @@ program
     .alias('compile')
     .description('Compile the integration files to JavaScript')
     .action(async function (this: Command) {
-        await verifyNecessaryFiles();
+        const { autoConfirm } = this.opts();
+        await verifyNecessaryFiles(autoConfirm);
         tsc();
     });
 
@@ -80,8 +98,8 @@ program
     .description('Watch tsc files while developing. Set --no-compile-interfaces to disable watching the config file')
     .option('--no-compile-interfaces', `Watch the ${nangoConfigFile} and recompile the interfaces on change`, true)
     .action(async function (this: Command) {
-        const { compileInterfaces } = this.opts();
-        await verifyNecessaryFiles();
+        const { compileInterfaces, autoConfirm } = this.opts();
+        await verifyNecessaryFiles(autoConfirm);
 
         if (compileInterfaces) {
             configWatch();
@@ -95,8 +113,9 @@ program
     .alias('dr')
     .alias('docker:run')
     .description('Run the docker container locally')
-    .action(async () => {
-        await verifyNecessaryFiles();
+    .action(async function (this: Command) {
+        const { autoConfirm } = this.opts();
+        await verifyNecessaryFiles(autoConfirm);
         await dockerRun();
     });
 
@@ -107,8 +126,8 @@ program
     .description('Work locally to add integration code')
     .option('--no-compile-interfaces', `Watch the ${nangoConfigFile} and recompile the interfaces on change`, true)
     .action(async function (this: Command) {
-        const { compileInterfaces } = this.opts();
-        await verifyNecessaryFiles();
+        const { compileInterfaces, autoConfirm } = this.opts();
+        await verifyNecessaryFiles(autoConfirm);
         if (compileInterfaces) {
             configWatch();
         }
@@ -166,8 +185,9 @@ program
     .command('sync:config.check')
     .alias('scc')
     .description('Verify the parsed sync config and output the object for verification')
-    .action(async () => {
-        await verifyNecessaryFiles();
+    .action(async function (this: Command) {
+        const { autoConfirm } = this.opts();
+        await verifyNecessaryFiles(autoConfirm);
         const cwd = process.cwd();
         const config = await loadSimplifiedConfig(path.resolve(cwd, NANGO_INTEGRATIONS_LOCATION));
 
@@ -183,7 +203,8 @@ program
     .option('-c, --connection <connection_id>', 'The ID of the Connection.')
     .option('-l, --lastSyncDate [lastSyncDate]', 'Optional: last sync date to retrieve records greater than this date')
     .action(async function (this: Command) {
-        await verifyNecessaryFiles();
+        const { autoConfirm } = this.opts();
+        await verifyNecessaryFiles(autoConfirm);
         run(this.args, this.opts());
     });
 

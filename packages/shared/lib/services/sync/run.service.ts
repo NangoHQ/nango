@@ -64,9 +64,9 @@ export default class SyncRun {
         }
     }
 
-    async run(optionalLastSyncDate?: Date | null, bypassAccount?: boolean, optionalSecretKey?: string): Promise<boolean | object> {
+    async run(optionalLastSyncDate?: Date | null, bypassAccount?: boolean, optionalSecretKey?: string, optionalHost?: string): Promise<boolean | object> {
         const nangoConfig = this.loadLocation
-            ? loadLocalNangoConfig(this.loadLocation)
+            ? await loadLocalNangoConfig(this.loadLocation)
             : await loadNangoConfig(this.nangoConnection, this.syncName, this.syncId);
 
         if (!nangoConfig) {
@@ -98,13 +98,13 @@ export default class SyncRun {
             let secretKey;
 
             if (isCloud()) {
-                secretKey = account ? (account?.secret_key as string) : '';
+                secretKey = optionalSecretKey || (account ? (account?.secret_key as string) : '');
             } else {
                 secretKey = optionalSecretKey || process.env['NANGO_SECRET_KEY'] ? (process.env['NANGO_SECRET_KEY'] as string) : '';
             }
 
             const nango = new NangoSync({
-                host: getApiUrl(),
+                host: optionalHost || getApiUrl(),
                 connectionId: String(this.nangoConnection?.connection_id),
                 providerConfigKey: String(this.nangoConnection?.provider_config_key),
                 activityLogId: this.activityLogId as number,
