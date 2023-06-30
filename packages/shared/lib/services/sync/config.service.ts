@@ -277,7 +277,9 @@ export async function deleteSyncFilesForConfig(id: number): Promise<void> {
     try {
         const files = await schema().from<SyncConfig>(TABLE).where({ nango_config_id: id }).select('file_location').pluck('file_location');
 
-        await fileService.deleteFiles(files);
+        if (files.length > 0) {
+            await fileService.deleteFiles(files);
+        }
     } catch (error) {
         console.log(error);
     }
