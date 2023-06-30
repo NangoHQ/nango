@@ -3,10 +3,10 @@ import axios from 'axios';
 import fs from 'fs';
 import npa from 'npm-package-arg';
 import Module from 'node:module';
-import path, { dirname } from 'path';
-import { fileURLToPath } from 'url';
+import path from 'path';
 import semver from 'semver';
-import { spawn } from 'child_process';
+import util from 'util';
+import { exec, spawn } from 'child_process';
 import promptly from 'promptly';
 import chalk from 'chalk';
 import type { NangoModel } from '@nangohq/shared';
@@ -14,12 +14,11 @@ import { cloudHost, stagingHost, nangoConfigFile } from '@nangohq/shared';
 import * as dotenv from 'dotenv';
 import { init, generate, tsc } from './sync.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
 const require = Module.createRequire(import.meta.url);
 
 dotenv.config();
+
+const execPromise = util.promisify(exec);
 
 export const NANGO_INTEGRATIONS_LOCATION = process.env['NANGO_INTEGRATIONS_LOCATION'] || './nango-integrations';
 
@@ -38,6 +37,17 @@ export function setCloudHost() {
 
 export function setStagingHost() {
     process.env['NANGO_HOSTPORT'] = stagingHost;
+}
+
+export async function isGlobal(packageName: string) {
+    try {
+        const { stdout } = await execPromise(`npm list -g --depth=0 ${packageName}`);
+
+        return stdout.includes(packageName);
+    } catch (err) {
+        console.error(`Error checking if package is global: ${err}`);
+        return false;
+    }
 }
 
 export function checkEnvVars(optionalHostport?: string) {
@@ -81,7 +91,7 @@ export async function upgradeAction() {
     }
     try {
         const resolved = npa('nango');
-        const { version } = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../package.json'), 'utf8'));
+        const { version } = JSON.parse(fs.readFileSync(path.resolve(getNangoRootPath() as string, 'package.json'), 'utf8'));
         const response = await axios.get(`https://registry.npmjs.org/${resolved.name}`);
         const latestVersion = response.data['dist-tags'].latest;
 
@@ -92,8 +102,14 @@ export async function upgradeAction() {
             const upgrade = process.env['NANGO_AUTO_UPGRADE'] === 'true' || (await promptly.confirm('Would you like to upgrade? (yes/no)'));
 
             if (upgrade) {
+                const isGlobalInstallation = await isGlobal('nango');
+
                 console.log(chalk.yellow(`Upgrading ${resolved.name} to version ${latestVersion}...`));
-                const child = spawn('npm', ['install', '--no-audit', `nango@${latestVersion}`], {
+                const args = isGlobalInstallation
+                    ? ['install', '-g', '--no-audit', `nango@${latestVersion}`]
+                    : ['install', '--no-audit', `nango@${latestVersion}`];
+
+                const child = spawn('npm', args, {
                     cwd,
                     detached: false,
                     stdio: 'inherit'

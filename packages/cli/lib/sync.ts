@@ -205,9 +205,7 @@ export const deploy = async (options: DeployOptions) => {
                 );
             }
 
-            const confirmation = await promptly.confirm(
-                "Do you want to continue with these changes? If no, the new syncs will be created but any existing connections won't be automatically started and no syncs will be removed. y/n"
-            );
+            const confirmation = await promptly.confirm('Do you want to continue with these changes y/n?');
             if (confirmation) {
                 await axios
                     .post(
@@ -224,7 +222,8 @@ export const deploy = async (options: DeployOptions) => {
                         process.exit(1);
                     });
             } else {
-                await deploySyncs(url, { syncs: postData, reconcile: false });
+                //await deploySyncs(url, { syncs: postData, reconcile: false });
+                console.log(chalk.yellow('Syncs were not deployed. Exiting'));
                 process.exit(0);
             }
         } catch (err: any) {
@@ -254,7 +253,7 @@ async function deploySyncs(url: string, body: { syncs: IncomingSyncConfig[]; rec
 }
 
 export const version = () => {
-    const packageJson = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../package.json'), 'utf8'));
+    const packageJson = JSON.parse(fs.readFileSync(path.resolve(getNangoRootPath() as string, 'package.json'), 'utf8'));
     const dockerComposeYaml = fs.readFileSync(path.resolve(__dirname, '../docker/docker-compose.yaml'), 'utf8');
     const dockerCompose = yaml.load(dockerComposeYaml) as any;
 
