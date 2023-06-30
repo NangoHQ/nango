@@ -3,7 +3,8 @@ import axios from 'axios';
 import fs from 'fs';
 import npa from 'npm-package-arg';
 import Module from 'node:module';
-import path from 'path';
+import path, { dirname } from 'path';
+import { fileURLToPath } from 'url';
 import semver from 'semver';
 import util from 'util';
 import { exec, spawn } from 'child_process';
@@ -13,6 +14,9 @@ import type { NangoModel } from '@nangohq/shared';
 import { cloudHost, stagingHost, nangoConfigFile } from '@nangohq/shared';
 import * as dotenv from 'dotenv';
 import { init, generate, tsc } from './sync.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const require = Module.createRequire(import.meta.url);
 
@@ -267,6 +271,9 @@ export function getNangoRootPath() {
 
 function getPackagePath() {
     try {
+        if (isLocallyInstalled('nango')) {
+            return path.resolve(__dirname, '../package.json');
+        }
         const packageMainPath = require.resolve('nango');
         const packagePath = path.dirname(packageMainPath);
 
