@@ -4,7 +4,12 @@ sidebarTitle: 'Node'
 icon: 'node'
 ---
 
-The Node SDK lets you retrieve API credentials & data, as well as work with [Connections](/core-concepts#connections) from your backend.
+The backend Node SDK lets you:
+- retrieve [API credentials](/guides/oauth)
+- retrieve [synced data](/guides/sync)
+- manage [Connections](/core-concepts#connections) and [Syncs](/core-concepts#syncs)
+- [proxy requests](/guides/proxy) to external APIs
+- get types for [webhooks](/guides/webhooks)
 
 # Installing & instantiating the node SDK
 
@@ -127,14 +132,24 @@ let integration = await nango.getIntegration(
 Please check the [REST API reference](/api-reference/integration/get) for an example response and the full list of returned fields.
 ## Sync
 
-### Nango Proxy
+### Proxy
 
-<Note>
-    The Nango Proxy is not available for all APIs yet.  
-    Check the API's [Integrations page](/integrations) (`Cmd + K` for search) to see if it is available for you API.
+<Info>
+    Some APIs are not yet fully-configured to work with the Proxy and require you to indicate the base URL. 
 
-    If you need additional APIs supported please reach out on the [Slack community](https://www.nango.dev/slack): We can enable support within a few hours.
-</Note>
+    You can check if your API contains the `base_api_url` field in the [providers.yaml](https://nango.dev/providers.yaml) configuration file.
+
+    If not, you need to add a `baseUrlOverride` field in your call to the Proxy as follow:
+    ```typescript
+const res = await nango.proxy({
+    ...
+    baseUrlOverride: 'https://gmail.googleapis.com',
+    ...
+});
+    ```
+
+    Feel free to contribuge the `base_api_url` field to any API in the [providers.yaml](https://nango.dev/providers.yaml) public file, or reach out on the [Slack community](https://www.nango.dev/slack) to ask us to do it.
+</Info>
 
 To execute proxy requests, use:
 
@@ -173,8 +188,6 @@ For the node SDK Nango returns an [Axios response object](https://axios-http.com
 
 ### Read synced data
 
-<Note>This feature is in private beta. Request access on the [community](https://nango.dev/slack).</Note>
-
 To read synced data from Nango use `getRecords`:
 
 ```ts
@@ -183,9 +196,11 @@ const records = await nango.getRecords({
     connectionId: '<user-id>',              // The connection id you passed to nango.auth()
     model: '<model-name>',                  // The name of the data model, from nango.yaml. E.g. ticket
     delta: '<timestamp>'                    // Optional. Only return records added or updated since this timestamp. E.g. 2023-05-31T11:46:13.390Z
+    limit: <number>,                        // For pagination: Maximum of records to return. If not passed, all records are returned.
+    offset: <number>                        // For pagination: The number of records to skip. If not passed, no records are skipped.
 });
 
 console.log(records);
 ```
 
-If you are using the [Nango Sync webhooks](/nango-sync/guides/webhooks#from-nango) you can use the timestamp you get from the webhook for the `delta` parameter.
+If you are using the [Nango webhooks](/guides/webhooks#from-nango) you can use the timestamp you get from the webhook for the `delta` parameter.
