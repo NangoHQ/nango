@@ -46,6 +46,7 @@ const __dirname = dirname(__filename);
 dotenv.config();
 
 const TYPES_FILE_NAME = 'models.ts';
+const NangoSyncTypesFileLocation = 'dist/nango-sync.d.ts';
 
 interface RunArgs {
     sync: string;
@@ -64,6 +65,10 @@ const createModelFile = (notify = false) => {
     const { models } = configData;
     const interfaceDefinitions = buildInterfaces(models);
     fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/${TYPES_FILE_NAME}`, interfaceDefinitions.join('\n'));
+
+    // insert NangoSync types to the bottom of the file
+    const typesContent = fs.readFileSync(`${getNangoRootPath()}/${NangoSyncTypesFileLocation}`, 'utf8');
+    fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/${TYPES_FILE_NAME}`, typesContent, { flag: 'a' });
 
     if (notify) {
         const rawNangoIntegrationLocation = NANGO_INTEGRATIONS_LOCATION.replace('./', '');
@@ -341,6 +346,10 @@ export const generate = async () => {
     const interfaceDefinitions = buildInterfaces(models);
 
     fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/${TYPES_FILE_NAME}`, interfaceDefinitions.join('\n'));
+
+    // insert NangoSync types to the bottom of the file
+    const typesContent = fs.readFileSync(`${getNangoRootPath()}/${NangoSyncTypesFileLocation}`, 'utf8');
+    fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/${TYPES_FILE_NAME}`, typesContent, { flag: 'a' });
 
     for (let i = 0; i < Object.keys(integrations).length; i++) {
         const providerConfigKey = Object.keys(integrations)[i] as string;
