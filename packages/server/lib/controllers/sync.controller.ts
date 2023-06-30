@@ -30,12 +30,10 @@ class SyncController {
             const result = await createSyncConfig(accountId, syncs);
 
             if (reconcile) {
-                const reconciledResult = await getAndReconcileSyncDifferences(accountId, syncs, true);
-
-                res.send(reconciledResult);
-            } else {
-                res.send(result);
+                await getAndReconcileSyncDifferences(accountId, syncs, true);
             }
+
+            res.send(result);
         } catch (e) {
             next(e);
         }
