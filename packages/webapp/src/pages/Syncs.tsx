@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Slash, RefreshCw } from '@geist-ui/icons';
 import DashboardLayout from '../layout/DashboardLayout';
 import { Tooltip } from '@geist-ui/core';
@@ -71,6 +72,9 @@ export default function Syncs() {
                                             <li className="w-32 mr-2">{sync.sync_name}</li>
                                         </Tooltip>
                                         <li>
+                                            <Link
+                                                to={`/integration/${sync.unique_key}`}
+                                            >
                                             {sync?.provider ? (
                                                 <div className="flex">
                                                     <img src={`images/template-logos/${sync.provider}.svg`} alt="" className="h-7 mt-0.5" />
@@ -79,13 +83,27 @@ export default function Syncs() {
                                             ) : (
                                                 <div className="w-44">{sync.unique_key}</div>
                                             )}
+                                            </Link>
                                         </li>
                                         <li className="w-28">{sync.runs}</li>
                                         <Tooltip text={sync.models.join(', ')} type="dark">
                                             <li className="w-12 ml-4 mr-2">{sync.models.length}</li>
                                         </Tooltip>
-                                        <Tooltip text={sync.connections === null ? '' : sync.connections.slice(0, 20).map(sync => sync.connection_id).join(', ')} type="dark">
-                                            <li className="w-12 ml-6">{sync.connections === null ? 0 : sync.connections.length}</li>
+                                        <Tooltip
+                                          text={
+                                            sync.connections === null
+                                              ? ''
+                                              : sync.connections.slice(0, 20).map((connection) => (
+                                                  <span key={connection.connection_id}>
+                                                      <Link to={`/connections/${sync.unique_key}/${connection.connection_id}#sync`}>{connection.connection_id}</Link>
+                                                  </span>
+                                                ))
+                                          }
+                                          type="dark"
+                                        >
+                                          <li className="w-12 ml-6">
+                                            {sync.connections === null ? 0 : sync.connections.length}
+                                          </li>
                                         </Tooltip>
                                         <li className="text-gray-500">{formatDateToUSFormat(sync.updated_at)}</li>
                                     </ul>
