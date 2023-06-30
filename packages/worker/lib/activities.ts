@@ -69,7 +69,7 @@ export async function syncProvider(
         };
         activityLogId = (await createActivityLog(log)) as number;
 
-        updateJobActivityLogId(syncJobId, activityLogId);
+        await updateJobActivityLogId(syncJobId, activityLogId);
     }
 
     const syncRun = new syncRunService({

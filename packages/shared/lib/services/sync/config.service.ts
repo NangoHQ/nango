@@ -37,7 +37,7 @@ export async function createSyncConfig(account_id: number, syncs: IncomingSyncCo
         provider: null,
         provider_config_key: `${syncs.length} sync${syncs.length === 1 ? '' : 's'} from ${providerConfigKeys.length} integration${
             providerConfigKeys.length === 1 ? '' : 's'
-        }}`,
+        }`,
         account_id: account_id,
         operation_name: 'sync.deploy'
     };
@@ -274,9 +274,15 @@ export async function deleteSyncConfig(id: number): Promise<void> {
 }
 
 export async function deleteSyncFilesForConfig(id: number): Promise<void> {
-    const files = await schema().from<SyncConfig>(TABLE).where({ nango_config_id: id }).select('file_location').pluck('file_location');
+    try {
+        const files = await schema().from<SyncConfig>(TABLE).where({ nango_config_id: id }).select('file_location').pluck('file_location');
 
-    await fileService.deleteFiles(files);
+        if (files.length > 0) {
+            await fileService.deleteFiles(files);
+        }
+    } catch (error) {
+        console.log(error);
+    }
 }
 
 export async function getActiveSyncConfigsByAccountId(account_id: number): Promise<(SyncConfig & ProviderConfig)[]> {
