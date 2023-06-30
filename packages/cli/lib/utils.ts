@@ -50,6 +50,20 @@ export async function isGlobal(packageName: string) {
     }
 }
 
+export function isLocallyInstalled(packageName: string) {
+    try {
+        const packageJson = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../package.json'), 'utf8'));
+
+        const dependencies = packageJson.dependencies || {};
+        const devDependencies = packageJson.devDependencies || {};
+
+        return packageName in dependencies || packageName in devDependencies;
+    } catch (err) {
+        console.error(`Error checking if package is installed: ${err}`);
+        return false;
+    }
+}
+
 export function checkEnvVars(optionalHostport?: string) {
     const hostport = optionalHostport || process.env['NANGO_HOSTPORT'] || `http://localhost:${port}`;
 
@@ -102,12 +116,11 @@ export async function upgradeAction() {
             const upgrade = process.env['NANGO_AUTO_UPGRADE'] === 'true' || (await promptly.confirm('Would you like to upgrade? (yes/no)'));
 
             if (upgrade) {
-                const isGlobalInstallation = await isGlobal('nango');
-
                 console.log(chalk.yellow(`Upgrading ${resolved.name} to version ${latestVersion}...`));
-                const args = isGlobalInstallation
-                    ? ['install', '-g', '--no-audit', `nango@${latestVersion}`]
-                    : ['install', '--no-audit', `nango@${latestVersion}`];
+
+                const args = isLocallyInstalled('nango')
+                    ? ['install', '--no-audit', `nango@${latestVersion}`]
+                    : ['install', '-g', '--no-audit', `nango@${latestVersion}`];
 
                 const child = spawn('npm', args, {
                     cwd,
