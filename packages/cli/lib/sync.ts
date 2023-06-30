@@ -45,7 +45,7 @@ const __dirname = dirname(__filename);
 
 dotenv.config();
 
-const TYPES_FILE_NAME = 'types.ts';
+const TYPES_FILE_NAME = 'models.ts';
 
 interface RunArgs {
     sync: string;
