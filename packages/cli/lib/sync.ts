@@ -194,7 +194,7 @@ export const deploy = async (options: DeployOptions) => {
                     sync.connections === 0
                         ? 'create the configuration for this sync.'
                         : `start syncing the corresponding data for ${sync.connections} existing connections.`;
-                console.log(chalk.yellow(`Sync "${sync.name}" as been added. Nango will ${actionMessage}`));
+                console.log(chalk.yellow(`Sync "${sync.name}" has been added. Nango will ${actionMessage}`));
             }
 
             for (const sync of deletedSyncs) {

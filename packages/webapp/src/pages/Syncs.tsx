@@ -93,9 +93,10 @@ export default function Syncs() {
                                           text={
                                             sync.connections === null
                                               ? ''
-                                              : sync.connections.slice(0, 20).map((connection) => (
+                                              : sync.connections.slice(0, 20).map((connection, index: number) => (
                                                   <span key={connection.connection_id}>
                                                       <Link to={`/connections/${sync.unique_key}/${connection.connection_id}#sync`}>{connection.connection_id}</Link>
+                                                      {sync.connections && index < sync?.connections?.length - 1 ? ', ' : ''}
                                                   </span>
                                                 ))
                                           }
