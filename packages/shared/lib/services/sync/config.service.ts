@@ -35,7 +35,9 @@ export async function createSyncConfig(account_id: number, syncs: IncomingSyncCo
         timestamp: Date.now(),
         connection_id: null,
         provider: null,
-        provider_config_key: `${syncs.length} syncs from ${providerConfigKeys.length} integrations`,
+        provider_config_key: `${syncs.length} sync${syncs.length === 1 ? '' : 's'} from ${providerConfigKeys.length} integration${
+            providerConfigKeys.length === 1 ? '' : 's'
+        }}`,
         account_id: account_id,
         operation_name: 'sync.deploy'
     };
