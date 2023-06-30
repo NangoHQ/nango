@@ -223,7 +223,7 @@ export const deploy = async (options: DeployOptions) => {
                     });
             } else {
                 //await deploySyncs(url, { syncs: postData, reconcile: false });
-                console.log(chalk.yellow('Syncs were not deployed. Exiting'));
+                console.log(chalk.red('Syncs were not deployed. Exiting'));
                 process.exit(0);
             }
         } catch (err: any) {
