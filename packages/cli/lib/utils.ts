@@ -58,10 +58,11 @@ export function checkEnvVars(optionalHostport?: string) {
     }
 }
 
-export async function verifyNecessaryFiles() {
+export async function verifyNecessaryFiles(autoConfirm: boolean) {
     if (!fs.existsSync(path.resolve(process.cwd(), NANGO_INTEGRATIONS_LOCATION))) {
-        console.log(chalk.red(`No ${nangoConfigFile} file found. Please run 'nango init' first`));
-        const install = await promptly.confirm('Would you like to create some default integrations and build them? (yes/no)');
+        const install = autoConfirm
+            ? true
+            : await promptly.confirm(`No ${nangoConfigFile} file was found. Would you like to create some default integrations and build them? (yes/no)`);
 
         if (install) {
             init();

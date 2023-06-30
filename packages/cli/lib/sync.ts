@@ -45,6 +45,8 @@ const __dirname = dirname(__filename);
 
 dotenv.config();
 
+const TYPES_FILE_NAME = 'types.ts';
+
 interface RunArgs {
     sync: string;
     provider: string;
@@ -61,13 +63,13 @@ const createModelFile = (notify = false) => {
     const configData: NangoConfig = yaml.load(configContents) as unknown as NangoConfig;
     const { models } = configData;
     const interfaceDefinitions = buildInterfaces(models);
-    fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/models.ts`, interfaceDefinitions.join('\n'));
+    fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/${TYPES_FILE_NAME}`, interfaceDefinitions.join('\n'));
 
     if (notify) {
         const rawNangoIntegrationLocation = NANGO_INTEGRATIONS_LOCATION.replace('./', '');
         console.log(
             chalk.green(
-                `${rawNangoIntegrationLocation}/${nangoConfigFile} was updated. The interface file (${rawNangoIntegrationLocation}/models.ts) was updated to reflect the updated config`
+                `${rawNangoIntegrationLocation}/${nangoConfigFile} was updated. The interface file (${rawNangoIntegrationLocation}/${TYPES_FILE_NAME}) was updated to reflect the updated config`
             )
         );
     }
@@ -85,8 +87,8 @@ const getConfig = async () => {
 };
 
 export const deploy = async (options: DeployOptions) => {
-    const { env, version, sync: optionalSyncName, secretKey, host } = options;
-    await verifyNecessaryFiles();
+    const { env, version, sync: optionalSyncName, secretKey, host, autoConfirm } = options;
+    await verifyNecessaryFiles(autoConfirm);
 
     if (host) {
         process.env['NANGO_HOSTPORT'] = host;
@@ -170,7 +172,7 @@ export const deploy = async (options: DeployOptions) => {
         return;
     }
 
-    if (!process.env['NANGO_DEPLOY_AUTO_CONFIRM']) {
+    if (!process.env['NANGO_DEPLOY_AUTO_CONFIRM'] && !autoConfirm) {
         const confirmationUrl = process.env['NANGO_HOSTPORT'] + `/sync/deploy/confirmation`;
         try {
             const response = await axios.post(confirmationUrl, { syncs: postData, reconcile: false }, { headers: enrichHeaders(), httpsAgent: httpsAgent() });
@@ -333,7 +335,7 @@ export const generate = async () => {
 
     const interfaceDefinitions = buildInterfaces(models);
 
-    fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/models.ts`, interfaceDefinitions.join('\n'));
+    fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/${TYPES_FILE_NAME}`, interfaceDefinitions.join('\n'));
 
     for (let i = 0; i < Object.keys(integrations).length; i++) {
         const providerConfigKey = Object.keys(integrations)[i] as string;
@@ -350,6 +352,7 @@ export const generate = async () => {
             const ejsTeamplateContents = syncName === exampleSyncName ? githubExampleTemplateContents : templateContents;
             const rendered = ejs.render(ejsTeamplateContents, {
                 syncName: syncNameCamel,
+                interfaceFileName: TYPES_FILE_NAME.replace('.ts', ''),
                 interfaceNames: models.map((model) => {
                     const singularModel = model?.charAt(model.length - 1) === 's' ? model.slice(0, -1) : model;
                     return `${singularModel.charAt(0).toUpperCase()}${singularModel.slice(1)}`;
@@ -429,7 +432,7 @@ export const run = async (args: string[], options: RunArgs) => {
 
     try {
         const secretKey = process.env['NANGO_SECRET_KEY'];
-        const results = await syncRun.run(lastSyncDate, true, secretKey);
+        const results = await syncRun.run(lastSyncDate, true, secretKey, hostport);
         console.log(JSON.stringify(results, null, 2));
         process.exit(0);
     } catch (e) {
@@ -447,7 +450,7 @@ export const tsc = () => {
         fs.mkdirSync(distDir);
     }
 
-    if (!fs.existsSync(`${NANGO_INTEGRATIONS_LOCATION}/models.ts`)) {
+    if (!fs.existsSync(`${NANGO_INTEGRATIONS_LOCATION}/${TYPES_FILE_NAME}`)) {
         createModelFile();
     }
 
@@ -516,7 +519,7 @@ export const tscWatch = () => {
     const watcher = chokidar.watch(watchPath, {
         ignoreInitial: false,
         ignored: (filePath: string) => {
-            return filePath === `${rawNangoIntegrationLocation}/models.ts`;
+            return filePath === `${rawNangoIntegrationLocation}/${TYPES_FILE_NAME}`;
         }
     });
 
@@ -526,7 +529,7 @@ export const tscWatch = () => {
         fs.mkdirSync(distDir);
     }
 
-    if (!fs.existsSync(`${NANGO_INTEGRATIONS_LOCATION}/models.ts`)) {
+    if (!fs.existsSync(`${NANGO_INTEGRATIONS_LOCATION}/${TYPES_FILE_NAME}`)) {
         createModelFile();
     }
 
