@@ -405,7 +405,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                                             No syncs yet - use Nango Sync to exchange data with the external API. See the{' '}
                                             <a href="https://docs.nango.dev/nango-sync" className="text-blue-500" target="_blank" rel="noreferrer">
                                                 docs
-                                            </a>
+                                            </a>. If you have a sync please make sure you have deployed it!
                                         </div>
                                     </div>
                                 )}
