@@ -4,7 +4,7 @@ import { Schedule as SyncSchedule, ScheduleStatus, SyncCommandToScheduleStatus, 
 import { getSyncsByConnectionId, getSyncsByProviderConfigKey } from '../sync/sync.service.js';
 import { getInterval } from '../nango-config.service.js';
 import SyncClient from '../../clients/sync.client.js';
-import { createActivityLogMessageAndEnd } from '../activity.service.js';
+import { createActivityLogDatabaseErrorMessageAndEnd } from '../activity.service.js';
 
 const TABLE = dbNamespace + 'sync_schedules';
 
@@ -55,14 +55,8 @@ export const deleteScheduleForConnection = async (connection: NangoConnection): 
         return;
     }
 
-    const syncClient = await SyncClient.getInstance();
-
     for (const sync of syncs) {
-        const schedule = await getSchedule(sync.id as string);
-
-        if (schedule && syncClient) {
-            await syncClient.deleteSyncSchedule(schedule?.schedule_id as string);
-        }
+        await deleteScheduleForSync(sync.id as string);
     }
 };
 
@@ -73,14 +67,8 @@ export const deleteScheduleForProviderConfig = async (accountId: number, provide
         return;
     }
 
-    const syncClient = await SyncClient.getInstance();
-
     for (const sync of syncs) {
-        const schedule = await getSchedule(sync.id as string);
-
-        if (schedule && syncClient) {
-            await syncClient.deleteSyncSchedule(schedule?.schedule_id as string);
-        }
+        await deleteScheduleForSync(sync.id as string);
     }
 };
 
@@ -92,33 +80,29 @@ export const updateScheduleStatus = async (schedule_id: string, status: SyncComm
     try {
         await schema().update({ status: SyncCommandToScheduleStatus[status] }).from<SyncSchedule>(TABLE).where({ schedule_id });
     } catch (error: any) {
-        let errorMessage = `Failed to update schedule status to ${status} for schedule_id: ${schedule_id}.\n`;
-
-        if ('code' in error) errorMessage += `Error code: ${error.code}.\n`;
-        if ('detail' in error) errorMessage += `Detail: ${error.detail}.\n`;
-
-        errorMessage += `Error Message: ${error.message}`;
-
-        await createActivityLogMessageAndEnd({
-            level: 'error',
-            activity_log_id: activityLogId,
-            timestamp: Date.now(),
-            content: errorMessage
-        });
+        await createActivityLogDatabaseErrorMessageAndEnd(
+            `Failed to update schedule status to ${status} for schedule_id: ${schedule_id}.`,
+            error,
+            activityLogId
+        );
     }
 };
 
-export const updateSyncScheduleFrequency = async (sync_id: string, interval: string): Promise<void> => {
+export const updateSyncScheduleFrequency = async (sync_id: string, interval: string): Promise<boolean> => {
     const existingSchedule = await getSchedule(sync_id);
     const { interval: frequency, offset } = getInterval(interval, new Date());
 
     if (!existingSchedule) {
-        return;
+        return false;
     }
 
     if (existingSchedule.frequency !== frequency) {
         await schema().update({ frequency }).from<SyncSchedule>(TABLE).where({ sync_id });
         const syncClient = await SyncClient.getInstance();
         await syncClient?.updateSyncSchedule(existingSchedule.schedule_id, frequency, offset);
+
+        return true;
     }
+
+    return false;
 };

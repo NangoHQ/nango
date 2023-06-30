@@ -145,12 +145,12 @@ export function interpretNextRun(futureRuns: number[]) {
 
 export function parseLatestSyncResult(result: SyncResult, models: string[]) {
     if ('added' in result || 'updated' in result || 'deleted' in result) {
-        return JSON.stringify(result);
-    } else if (models.length === 1) {
+        return JSON.stringify(result, null, 2);
+    } else if (models && models.length === 1) {
         const [singleModel] = models;
         const results = result[singleModel];
-        return JSON.stringify(results);
+        return JSON.stringify(results, null, 2);
     } else {
-        return JSON.stringify(result);
+        return JSON.stringify(result, null, 2);
     }
 }

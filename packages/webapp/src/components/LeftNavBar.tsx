@@ -5,7 +5,8 @@ export enum LeftNavBarItems {
     Integrations = 0,
     Connections,
     ProjectSettings,
-    Activity
+    Activity,
+    Syncs
 }
 
 export interface LeftNavBarProps {
@@ -34,6 +35,15 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                     >
                         <img className="h-5 mr-3" src="/images/connections-icon.svg" alt="" />
                         <p>Connections</p>
+                    </Link>
+                    <Link
+                        to="/syncs"
+                        className={`flex h-10 rounded-md ml-4 pl-2 pr-3 pt-2.5 text-sm text-white w-44 ${
+                            props.selectedItem === LeftNavBarItems.Syncs ? 'bg-gray-800' : 'hover:bg-gray-700'
+                        }`}
+                    >
+                        <img className="h-5 mr-3 stroke-white fill-white" src="/images/sync-code-icon.svg" alt="" />
+                        <p>Syncs</p>
                     </Link>
                     <Link
                         to="/activity"

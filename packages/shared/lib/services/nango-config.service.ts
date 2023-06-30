@@ -15,17 +15,8 @@ const __dirname = dirname(__filename);
 export const nangoConfigFile = 'nango.yaml';
 export const SYNC_FILE_EXTENSION = 'js';
 
-export function loadNangoConfig(
-    nangoConnection: NangoConnection | null,
-    syncName?: string,
-    syncId?: string,
-    loadLocation?: string
-): Promise<NangoConfig | null> {
-    if (isCloud()) {
-        return getSyncConfig(nangoConnection as NangoConnection, syncName, syncId);
-    } else {
-        return loadLocalNangoConfig(loadLocation);
-    }
+export function loadNangoConfig(nangoConnection: NangoConnection | null, syncName?: string, syncId?: string): Promise<NangoConfig | null> {
+    return getSyncConfig(nangoConnection as NangoConnection, syncName, syncId);
 }
 
 export function loadLocalNangoConfig(loadLocation?: string): Promise<NangoConfig | null> {

@@ -1,4 +1,3 @@
-import type { ParamsSerializerOptions } from 'axios';
 import { getById as getSyncById } from '../services/sync/sync.service.js';
 import { upsert } from '../services/sync/data.service.js';
 import { formatDataRecords } from '../services/sync/data-records.service.js';
@@ -8,6 +7,49 @@ import { updateSyncJobResult } from '../services/sync/job.service.js';
 import { Nango } from '@nangohq/node';
 
 type LogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
+
+interface ParamEncoder {
+    (value: any, defaultEncoder: (value: any) => any): any;
+}
+
+interface GenericFormData {
+    append(name: string, value: any, options?: any): any;
+}
+
+interface SerializerVisitor {
+    (this: GenericFormData, value: any, key: string | number, path: null | Array<string | number>, helpers: FormDataVisitorHelpers): boolean;
+}
+
+interface CustomParamsSerializer {
+    (params: Record<string, any>, options?: ParamsSerializerOptions): string;
+}
+
+interface FormDataVisitorHelpers {
+    defaultVisitor: SerializerVisitor;
+    convertValue: (value: any) => any;
+    isVisitable: (value: any) => boolean;
+}
+
+interface SerializerOptions {
+    visitor?: SerializerVisitor;
+    dots?: boolean;
+    metaTokens?: boolean;
+    indexes?: boolean | null;
+}
+
+interface ParamsSerializerOptions extends SerializerOptions {
+    encode?: ParamEncoder;
+    serialize?: CustomParamsSerializer;
+}
+
+interface AxiosResponse<T = any, D = any> {
+    data: T;
+    status: number;
+    statusText: string;
+    headers: any;
+    config: D;
+    request?: any;
+}
 
 interface ProxyConfiguration {
     endpoint: string;
@@ -21,6 +63,23 @@ interface ProxyConfiguration {
     data?: unknown;
     retries?: number;
     baseUrlOverride?: string;
+}
+
+interface Connection {
+    id: number;
+    connectionId: string;
+    provider: string;
+    providerConfigKey: number;
+    creationDate: string;
+    oauthType: string;
+    connectionConfig: Record<string, string>;
+    connectionMetadata: Record<string, string>;
+    accessToken: string | null;
+    refreshToken: string | null;
+    expiresAt: string | null;
+    oauthToken: string | null;
+    oauthTokenSecret: string | null;
+    rawCredentials: object;
 }
 
 interface NangoProps {
@@ -37,7 +96,6 @@ interface NangoProps {
 }
 
 interface UserLogParameters {
-    success?: boolean;
     level?: LogLevel;
 }
 
@@ -92,44 +150,48 @@ export class NangoSync {
         this.lastSyncDate = date;
     }
 
-    public async proxy(config: ProxyConfiguration) {
+    public async proxy(config: ProxyConfiguration): Promise<AxiosResponse<any, any>> {
         return this.nango.proxy(config);
     }
 
-    public async getConnection() {
+    public async getConnection(): Promise<Connection> {
         return this.nango.getConnection(this.providerConfigKey as string, this.connectionId as string);
     }
 
-    public async setFieldMapping(fieldMapping: Record<string, string>, optionalProviderConfigKey?: string, optionalConnectionId?: string) {
+    public async setFieldMapping(
+        fieldMapping: Record<string, string>,
+        optionalProviderConfigKey?: string,
+        optionalConnectionId?: string
+    ): Promise<AxiosResponse<any, any>> {
         return this.nango.setFieldMapping(fieldMapping, optionalProviderConfigKey, optionalConnectionId);
     }
 
-    public async getFieldMapping(optionalProviderConfigKey?: string, optionalConnectionId?: string) {
+    public async getFieldMapping(optionalProviderConfigKey?: string, optionalConnectionId?: string): Promise<AxiosResponse<any, any>> {
         return this.nango.getFieldMapping(optionalProviderConfigKey, optionalConnectionId);
     }
 
-    public async get(config: ProxyConfiguration) {
+    public async get(config: ProxyConfiguration): Promise<AxiosResponse<any, any>> {
         return this.proxy({
             ...config,
             method: 'GET'
         });
     }
 
-    public async post(config: ProxyConfiguration) {
+    public async post(config: ProxyConfiguration): Promise<AxiosResponse<any, any>> {
         return this.proxy({
             ...config,
             method: 'POST'
         });
     }
 
-    public async patch(config: ProxyConfiguration) {
+    public async patch(config: ProxyConfiguration): Promise<AxiosResponse<any, any>> {
         return this.proxy({
             ...config,
             method: 'PATCH'
         });
     }
 
-    public async delete(config: ProxyConfiguration) {
+    public async delete(config: ProxyConfiguration): Promise<AxiosResponse<any, any>> {
         return this.proxy({
             ...config,
             method: 'DELETE'
@@ -149,6 +211,7 @@ export class NangoSync {
 
         const formattedResults = formatDataRecords(results, this.nangoConnectionId as number, model, this.syncId as string, this.syncJobId);
 
+        // TODO better check
         const fullSync = await getSyncById(this.syncId as string);
 
         if (fullSync && !fullSync?.models.includes(model)) {

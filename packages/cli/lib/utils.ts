@@ -6,7 +6,8 @@ import Module from 'node:module';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import semver from 'semver';
-import { spawn } from 'child_process';
+import util from 'util';
+import { exec, spawn } from 'child_process';
 import promptly from 'promptly';
 import chalk from 'chalk';
 import type { NangoModel } from '@nangohq/shared';
@@ -20,6 +21,8 @@ const __dirname = dirname(__filename);
 const require = Module.createRequire(import.meta.url);
 
 dotenv.config();
+
+const execPromise = util.promisify(exec);
 
 export const NANGO_INTEGRATIONS_LOCATION = process.env['NANGO_INTEGRATIONS_LOCATION'] || './nango-integrations';
 
@@ -40,6 +43,31 @@ export function setStagingHost() {
     process.env['NANGO_HOSTPORT'] = stagingHost;
 }
 
+export async function isGlobal(packageName: string) {
+    try {
+        const { stdout } = await execPromise(`npm list -g --depth=0 ${packageName}`);
+
+        return stdout.includes(packageName);
+    } catch (err) {
+        console.error(`Error checking if package is global: ${err}`);
+        return false;
+    }
+}
+
+export function isLocallyInstalled(packageName: string) {
+    try {
+        const packageJson = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../package.json'), 'utf8'));
+
+        const dependencies = packageJson.dependencies || {};
+        const devDependencies = packageJson.devDependencies || {};
+
+        return packageName in dependencies || packageName in devDependencies;
+    } catch (err) {
+        console.error(`Error checking if package is installed: ${err}`);
+        return false;
+    }
+}
+
 export function checkEnvVars(optionalHostport?: string) {
     const hostport = optionalHostport || process.env['NANGO_HOSTPORT'] || `http://localhost:${port}`;
 
@@ -58,10 +86,11 @@ export function checkEnvVars(optionalHostport?: string) {
     }
 }
 
-export async function verifyNecessaryFiles() {
+export async function verifyNecessaryFiles(autoConfirm: boolean) {
     if (!fs.existsSync(path.resolve(process.cwd(), NANGO_INTEGRATIONS_LOCATION))) {
-        console.log(chalk.red(`No ${nangoConfigFile} file found. Please run 'nango init' first`));
-        const install = await promptly.confirm('Would you like to create some default integrations and build them? (yes/no)');
+        const install = autoConfirm
+            ? true
+            : await promptly.confirm(`No ${nangoConfigFile} file was found. Would you like to create some default integrations and build them? (yes/no)`);
 
         if (install) {
             init();
@@ -80,7 +109,7 @@ export async function upgradeAction() {
     }
     try {
         const resolved = npa('nango');
-        const { version } = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../package.json'), 'utf8'));
+        const { version } = JSON.parse(fs.readFileSync(path.resolve(getNangoRootPath() as string, 'package.json'), 'utf8'));
         const response = await axios.get(`https://registry.npmjs.org/${resolved.name}`);
         const latestVersion = response.data['dist-tags'].latest;
 
@@ -92,7 +121,12 @@ export async function upgradeAction() {
 
             if (upgrade) {
                 console.log(chalk.yellow(`Upgrading ${resolved.name} to version ${latestVersion}...`));
-                const child = spawn('npm', ['install', '--no-audit', `nango@${latestVersion}`], {
+
+                const args = isLocallyInstalled('nango')
+                    ? ['install', '--no-audit', `nango@${latestVersion}`]
+                    : ['install', '-g', '--no-audit', `nango@${latestVersion}`];
+
+                const child = spawn('npm', args, {
                     cwd,
                     detached: false,
                     stdio: 'inherit'
@@ -237,6 +271,9 @@ export function getNangoRootPath() {
 
 function getPackagePath() {
     try {
+        if (isLocallyInstalled('nango')) {
+            return path.resolve(__dirname, '../package.json');
+        }
         const packageMainPath = require.resolve('nango');
         const packagePath = path.dirname(packageMainPath);
 

@@ -1,4 +1,4 @@
-import { loadNangoConfig } from '../nango-config.service.js';
+import { loadNangoConfig, loadLocalNangoConfig, nangoConfigFile } from '../nango-config.service.js';
 import type { NangoConnection } from '../../models/Connection.js';
 import { SyncResult, SyncType, SyncStatus, Job as SyncJob } from '../../models/Sync.js';
 import { createActivityLogMessage, createActivityLogMessageAndEnd, updateSuccess as updateSuccessActivityLog } from '../activity.service.js';
@@ -64,8 +64,10 @@ export default class SyncRun {
         }
     }
 
-    async run(optionalLastSyncDate?: Date | null, bypassAccount?: boolean, optionalSecretKey?: string): Promise<boolean | object> {
-        const nangoConfig = await loadNangoConfig(this.nangoConnection, this.syncName, this.syncId, this.loadLocation);
+    async run(optionalLastSyncDate?: Date | null, bypassAccount?: boolean, optionalSecretKey?: string, optionalHost?: string): Promise<boolean | object> {
+        const nangoConfig = this.loadLocation
+            ? await loadLocalNangoConfig(this.loadLocation)
+            : await loadNangoConfig(this.nangoConnection, this.syncName, this.syncId);
 
         if (!nangoConfig) {
             const message = `No sync configuration was found for ${this.syncName}.`;
@@ -79,6 +81,13 @@ export default class SyncRun {
 
         const { integrations } = nangoConfig as NangoConfig;
         let result = true;
+
+        if (!integrations[this.nangoConnection.provider_config_key] && !this.writeToDb) {
+            const message = `The connection you provided which applies to integration "${this.nangoConnection.provider_config_key}" does not match any integration in the ${nangoConfigFile}`;
+            console.error(message);
+
+            return false;
+        }
 
         // if there is a matching customer integration code for the provider config key then run it
         if (integrations[this.nangoConnection.provider_config_key]) {
@@ -96,13 +105,13 @@ export default class SyncRun {
             let secretKey;
 
             if (isCloud()) {
-                secretKey = account ? (account?.secret_key as string) : '';
+                secretKey = optionalSecretKey || (account ? (account?.secret_key as string) : '');
             } else {
                 secretKey = optionalSecretKey || process.env['NANGO_SECRET_KEY'] ? (process.env['NANGO_SECRET_KEY'] as string) : '';
             }
 
             const nango = new NangoSync({
-                host: getApiUrl(),
+                host: optionalHost || getApiUrl(),
                 connectionId: String(this.nangoConnection?.connection_id),
                 providerConfigKey: String(this.nangoConnection?.provider_config_key),
                 activityLogId: this.activityLogId as number,
@@ -149,7 +158,11 @@ export default class SyncRun {
                 const userDefinedResults = await integationService.runScript(this.syncName, this.activityLogId as number, nango, syncData, this.loadLocation);
 
                 if (userDefinedResults === null) {
-                    this.reportFailureForResults(`The integration was run but there was a problem in retrieving the results from the script.`);
+                    this.reportFailureForResults(
+                        `The integration was run but there was a problem in retrieving the results from the script "${this.syncName}"${
+                            syncData?.version ? ` version: ${syncData.version}` : ''
+                        }.`
+                    );
 
                     return false;
                 }
@@ -216,7 +229,9 @@ export default class SyncRun {
                 result = false;
                 const errorMessage = JSON.stringify(e, ['message', 'name', 'stack'], 2);
                 this.reportFailureForResults(
-                    `The ${this.syncType} "${this.syncName}" sync did not complete successfully and has the following error: ${errorMessage}`
+                    `The ${this.syncType} "${this.syncName}"${
+                        syncData?.version ? ` version: ${syncData?.version}` : ''
+                    } sync did not complete successfully and has the following error: ${errorMessage}`
                 );
             }
         }
