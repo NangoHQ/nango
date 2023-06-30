@@ -28,6 +28,10 @@ interface CreateConnectionOAuth2 extends OAuth2Credentials {
     type: AuthModes.OAuth2;
 }
 
+interface CustomHeaders {
+    [key: string]: string | number | boolean;
+}
+
 export enum SyncType {
     INITIAL = 'INITIAL',
     INCREMENTAL = 'INCREMENTAL'
@@ -154,16 +158,15 @@ export class Nango {
 
         const url = `${this.serverUrl}/proxy/${config.endpoint}`;
 
-        const customPrefixedHeaders =
-            customHeaders && Object.keys(customHeaders as Record<string, string>).length > 0
-                ? Object.keys(customHeaders as Record<string, string>).reduce((acc, key) => {
-                      // @ts-ignore // TODO types
-                      acc[`Nango-Proxy-${key}`] = customHeaders[key];
+        const customPrefixedHeaders: CustomHeaders =
+            customHeaders && Object.keys(customHeaders as CustomHeaders).length > 0
+                ? Object.keys(customHeaders as CustomHeaders).reduce((acc: CustomHeaders, key: string) => {
+                      acc[`Nango-Proxy-${key}`] = customHeaders[key] as string;
                       return acc;
-                  }, {} as Record<string, string | number | boolean>)
-                : {};
+                  }, {})
+                : ({} as CustomHeaders);
 
-        const headers: Record<string, string | number | boolean> = {
+        const headers: Record<string, string | number | boolean | CustomHeaders> = {
             'Connection-Id': connectionId as string,
             'Provider-Config-Key': providerConfigKey as string,
             'Base-Url-Override': baseUrlOverride || '',
@@ -178,7 +181,7 @@ export class Nango {
         }
 
         const options: AxiosRequestConfig = {
-            headers: this.enrichHeaders(headers)
+            headers: this.enrichHeaders(headers as Record<string, string | number | boolean>)
         };
 
         if (config.params) {
