@@ -82,6 +82,13 @@ export default class SyncRun {
         const { integrations } = nangoConfig as NangoConfig;
         let result = true;
 
+        if (!integrations[this.nangoConnection.provider_config_key] && !this.writeToDb) {
+            const message = `No integration was found for ${this.nangoConnection.provider_config_key}.`;
+            console.error(message);
+
+            return false;
+        }
+
         // if there is a matching customer integration code for the provider config key then run it
         if (integrations[this.nangoConnection.provider_config_key]) {
             let account: Account | null = null;
