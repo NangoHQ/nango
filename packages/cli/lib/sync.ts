@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import yaml from 'js-yaml';
 import chalk from 'chalk';
 import chokidar from 'chokidar';
@@ -16,7 +16,15 @@ import type { ChildProcess } from 'node:child_process';
 import promptly from 'promptly';
 import type * as t from '@babel/types';
 
-import type { SyncModelSchema, IncomingSyncConfig, NangoConfig, Connection as NangoConnection, NangoIntegration, NangoIntegrationData } from '@nangohq/shared';
+import type {
+    SyncDeploymentResult,
+    SyncModelSchema,
+    IncomingSyncConfig,
+    NangoConfig,
+    Connection as NangoConnection,
+    NangoIntegration,
+    NangoIntegrationData
+} from '@nangohq/shared';
 import { loadSimplifiedConfig, cloudHost, stagingHost, SyncType, syncRunService, nangoConfigFile, checkForIntegrationFile } from '@nangohq/shared';
 import {
     port,
@@ -221,8 +229,10 @@ export const deploy = async (options: DeployOptions) => {
 async function deploySyncs(url: string, body: { syncs: IncomingSyncConfig[]; reconcile: boolean }) {
     await axios
         .post(url, body, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
-        .then((_) => {
-            console.log(chalk.green(`Successfully deployed the syncs!`));
+        .then((response: AxiosResponse) => {
+            const results: SyncDeploymentResult[] = response.data;
+            const nameAndVersions = results.map((result) => `${result.sync_name}@v${result.version}`);
+            console.log(chalk.green(`Successfully deployed the syncs: ${nameAndVersions.join(', ')}!`));
         })
         .catch((err) => {
             const errorMessage = JSON.stringify(err.response.data, null, 2);

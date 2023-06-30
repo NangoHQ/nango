@@ -76,6 +76,8 @@ export interface SlimSync {
     connections?: number;
 }
 
+export type SyncDeploymentResult = Pick<SyncConfig, 'id' | 'version' | 'sync_name'>;
+
 export interface SyncDifferences {
     newSyncs: SlimSync[];
     deletedSyncs: SlimSync[];

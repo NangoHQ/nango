@@ -9,7 +9,7 @@ import {
     createActivityLogDatabaseErrorMessageAndEnd
 } from '../activity.service.js';
 import type { LogLevel, LogAction } from '../../models/Activity.js';
-import type { IncomingSyncConfig, SyncConfig, SlimSync } from '../../models/Sync.js';
+import type { IncomingSyncConfig, SyncConfig, SlimSync, SyncDeploymentResult } from '../../models/Sync.js';
 import type { NangoConnection } from '../../models/Connection.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
 import type { NangoConfig } from '../../integrations/index.js';
@@ -18,7 +18,7 @@ import { getEnv } from '../../utils/utils.js';
 
 const TABLE = dbNamespace + 'sync_configs';
 
-export async function createSyncConfig(account_id: number, syncs: IncomingSyncConfig[]) {
+export async function createSyncConfig(account_id: number, syncs: IncomingSyncConfig[]): Promise<SyncDeploymentResult[] | null> {
     const insertData = [];
 
     const providers = syncs.map((sync) => sync.providerConfigKey);
@@ -140,7 +140,7 @@ export async function createSyncConfig(account_id: number, syncs: IncomingSyncCo
     }
 
     try {
-        const result = await schema().from<SyncConfig>(TABLE).insert(insertData).returning(['id', 'version']);
+        const result = await schema().from<SyncConfig>(TABLE).insert(insertData).returning(['id', 'version', 'sync_name']);
 
         if (idsToMarkAsInvactive.length > 0) {
             await schema().from<SyncConfig>(TABLE).update({ active: false }).whereIn('id', idsToMarkAsInvactive);
