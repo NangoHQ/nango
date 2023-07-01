@@ -240,9 +240,6 @@ export function getFieldType(rawField: string | NangoModel): string {
 
 export function buildInterfaces(models: NangoModel): (string | undefined)[] {
     const interfaceDefinitions = Object.keys(models).map((modelName: string) => {
-        if (modelName.charAt(0) === '_') {
-            return;
-        }
         const fields = models[modelName] as NangoModel;
         const singularModelName = modelName.charAt(modelName.length - 1) === 's' ? modelName.slice(0, -1) : modelName;
         const interfaceName = `${singularModelName.charAt(0).toUpperCase()}${singularModelName.slice(1)}`;
