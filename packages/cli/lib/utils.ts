@@ -43,6 +43,10 @@ export function setStagingHost() {
     process.env['NANGO_HOSTPORT'] = stagingHost;
 }
 
+export function printDebug(message: string) {
+    console.log(chalk.gray(message));
+}
+
 export async function isGlobal(packageName: string) {
     try {
         const { stdout } = await execPromise(`npm list -g --depth=0 ${packageName}`);
@@ -267,22 +271,36 @@ export function buildInterfaces(models: NangoModel): (string | undefined)[] {
     return interfaceDefinitions;
 }
 
-export function getNangoRootPath() {
-    const packagePath = getPackagePath();
+export function getNangoRootPath(debug = false) {
+    const packagePath = getPackagePath(debug);
     if (!packagePath) {
+        if (debug) {
+            printDebug('Could not find package path locally');
+        }
         return null;
+    }
+
+    if (debug) {
+        printDebug(`Found the root cli path at ${path.resolve(packagePath, '..')}`);
     }
 
     return path.resolve(packagePath, '..');
 }
 
-function getPackagePath() {
+function getPackagePath(debug = false) {
     try {
         if (isLocallyInstalled('nango')) {
+            if (debug) {
+                printDebug('Found locally installed nango');
+            }
             return path.resolve(__dirname, '../package.json');
         }
         const packageMainPath = require.resolve('nango');
         const packagePath = path.dirname(packageMainPath);
+
+        if (debug) {
+            printDebug(`Found nango at ${packagePath}`);
+        }
 
         return packagePath;
     } catch (e) {

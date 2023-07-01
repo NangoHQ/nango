@@ -36,7 +36,8 @@ import {
     buildInterfaces,
     enrichHeaders,
     checkEnvVars,
-    getNangoRootPath
+    getNangoRootPath,
+    printDebug
 } from './utils.js';
 import type { DeployOptions } from './types.js';
 
@@ -252,9 +253,12 @@ async function deploySyncs(url: string, body: { syncs: IncomingSyncConfig[]; rec
         });
 }
 
-export const version = () => {
-    const packageJson = JSON.parse(fs.readFileSync(path.resolve(getNangoRootPath() as string, 'package.json'), 'utf8'));
-    const dockerComposeYaml = fs.readFileSync(path.resolve(__dirname, '../docker/docker-compose.yaml'), 'utf8');
+export const version = (debug: boolean) => {
+    if (debug) {
+        printDebug('Looking up the version first for a local path first then globally');
+    }
+    const packageJson = JSON.parse(fs.readFileSync(path.resolve(getNangoRootPath(debug) as string, 'package.json'), 'utf8'));
+    const dockerComposeYaml = fs.readFileSync(path.resolve(getNangoRootPath() as string, 'docker/docker-compose.yaml'), 'utf8');
     const dockerCompose = yaml.load(dockerComposeYaml) as any;
 
     const nangoServerImage = dockerCompose.services['nango-server'].image;

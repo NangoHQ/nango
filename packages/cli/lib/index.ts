@@ -60,8 +60,9 @@ program
     .command('version')
     .alias('v')
     .description('Print the version of the Nango CLI, Nango Worker, and Nango Server.')
-    .action(() => {
-        version();
+    .action(function (this: Command) {
+        const { debug } = this.opts();
+        version(debug);
     });
 
 program
@@ -155,18 +156,6 @@ program
             let env = staging ? 'staging' : 'production';
             env = options.local ? 'local' : env;
             await deploy({ ...options, env: env as ENV });
-        })(options as DeployOptions);
-    });
-
-program
-    .command('deploy:staging')
-    .description('Deploy a Nango integration to staging')
-    .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integration with. Can be used for rollbacks.')
-    .option('--no-compile-interfaces', `Don't compile the ${nangoConfigFile}`, true)
-    .action(async function (this: Command) {
-        const options = this.opts();
-        (async (options: DeployOptions) => {
-            await deploy({ ...options, env: 'staging' });
         })(options as DeployOptions);
     });
 
