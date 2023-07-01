@@ -243,14 +243,24 @@ export function buildInterfaces(models: NangoModel): (string | undefined)[] {
         const fields = models[modelName] as NangoModel;
         const singularModelName = modelName.charAt(modelName.length - 1) === 's' ? modelName.slice(0, -1) : modelName;
         const interfaceName = `${singularModelName.charAt(0).toUpperCase()}${singularModelName.slice(1)}`;
+        let extendsClause = '';
         const fieldDefinitions = Object.keys(fields)
+            .filter((fieldName: string) => {
+                if (fieldName === '__extends') {
+                    const fieldModel = fields[fieldName] as unknown as string;
+                    const multipleExtends = fieldModel.split(',').map((e) => e.trim());
+                    extendsClause = ` extends ${multipleExtends.join(', ')}`;
+                    return false;
+                }
+                return true;
+            })
             .map((fieldName: string) => {
                 const fieldModel = fields[fieldName] as string | NangoModel;
                 const fieldType = getFieldType(fieldModel);
                 return `  ${fieldName}: ${fieldType};`;
             })
             .join('\n');
-        const interfaceDefinition = `export interface ${interfaceName} {\n${fieldDefinitions}\n}\n`;
+        const interfaceDefinition = `export interface ${interfaceName}${extendsClause} {\n${fieldDefinitions}\n}\n`;
         return interfaceDefinition;
     });
 
