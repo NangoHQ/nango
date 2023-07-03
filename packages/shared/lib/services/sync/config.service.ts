@@ -10,7 +10,7 @@ import {
 } from '../activity.service.js';
 import { getSyncsByProviderConfigAndSyncName } from './sync.service.js';
 import type { LogLevel, LogAction } from '../../models/Activity.js';
-import type { SyncConfigWithJobAndProvider, IncomingSyncConfig, SyncConfig, SlimSync, SyncDeploymentResult } from '../../models/Sync.js';
+import type { SyncConfigWithProvider, IncomingSyncConfig, SyncConfig, SlimSync, SyncDeploymentResult } from '../../models/Sync.js';
 import type { NangoConnection } from '../../models/Connection.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
 import type { NangoConfig } from '../../integrations/index.js';
@@ -263,7 +263,7 @@ export async function deleteSyncFilesForConfig(id: number): Promise<void> {
     }
 }
 
-export async function getActiveSyncConfigsByAccountId(account_id: number): Promise<SyncConfigWithJobAndProvider[]> {
+export async function getActiveSyncConfigsByAccountId(account_id: number): Promise<SyncConfigWithProvider[]> {
     const result = await schema()
         .select(
             `${TABLE}.id`,

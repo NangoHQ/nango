@@ -146,7 +146,7 @@ export interface NangoSyncWebhookBody {
     queryTimeStamp: string;
 }
 
-export interface SyncConfigWithJobAndProvider {
+export interface SyncConfigWithProvider {
     id: number;
     sync_name: string;
     runs: string;
@@ -154,10 +154,4 @@ export interface SyncConfigWithJobAndProvider {
     updated_at: string;
     provider_config_key: string;
     unique_key: string;
-    job: {
-        id: number;
-        status: SyncStatus;
-        type: SyncType;
-        sync_id: string;
-    };
 }
