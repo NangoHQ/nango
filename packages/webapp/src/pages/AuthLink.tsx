@@ -8,7 +8,7 @@ import { isCloud } from '../utils/utils';
 
 export default function AuthLink() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');
-    const [searchParams, _] = useSearchParams();
+    const searchParams = useSearchParams()[0];
 
     const handleCreate = async (e: React.SyntheticEvent) => {
         e.preventDefault();
@@ -33,7 +33,9 @@ export default function AuthLink() {
         let host = searchParams.get('host') || baseUrl();
         let websocketsPath = searchParams.get('websockets_path') || '/';
         let userScopes = searchParams.get('selected_scopes')?.split(',') || []; // Slack only.
-        let connectionConfig = searchParams.get('connection_config_params');
+        let connectionConfig = searchParams.get('config');
+
+        console.log('host', host);
 
         const nango = new Nango({ host: host, websocketsPath: websocketsPath, publicKey: publicKey });
 
