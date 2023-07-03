@@ -8,8 +8,9 @@ import {
     createActivityLogMessageAndEnd,
     createActivityLogDatabaseErrorMessageAndEnd
 } from '../activity.service.js';
+import { getSyncsByProviderConfigAndSyncName } from './sync.service.js';
 import type { LogLevel, LogAction } from '../../models/Activity.js';
-import type { SyncConfigWithSync, SyncConfigWithJobAndProvider, IncomingSyncConfig, SyncConfig, SlimSync, SyncDeploymentResult } from '../../models/Sync.js';
+import type { SyncConfigWithJobAndProvider, IncomingSyncConfig, SyncConfig, SlimSync, SyncDeploymentResult } from '../../models/Sync.js';
 import type { NangoConnection } from '../../models/Connection.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
 import type { NangoConfig } from '../../integrations/index.js';
@@ -68,11 +69,9 @@ export async function createSyncConfig(account_id: number, syncs: IncomingSyncCo
         if (previousSyncConfig) {
             bumpedVersion = increment(previousSyncConfig.version as string | number).toString();
 
-            // if the schedule changed then update the sync schedule and the client so that it reflects
-            // the new schedule
-            const { sync_id } = previousSyncConfig;
-            if (sync_id) {
-                await updateSyncScheduleFrequency(sync_id, runs);
+            const syncs = await getSyncsByProviderConfigAndSyncName(account_id, providerConfigKey, syncName);
+            for (const sync of syncs) {
+                await updateSyncScheduleFrequency(sync.id as string, runs);
             }
         }
 
@@ -228,7 +227,7 @@ export async function getSyncConfigsByParams(account_id: number, providerConfigK
     return null;
 }
 
-export async function getSyncConfigByParams(account_id: number, sync_name: string, providerConfigKey: string): Promise<SyncConfigWithSync | null> {
+export async function getSyncConfigByParams(account_id: number, sync_name: string, providerConfigKey: string): Promise<SyncConfig | null> {
     const config = await configService.getProviderConfig(providerConfigKey, account_id);
 
     if (!config) {

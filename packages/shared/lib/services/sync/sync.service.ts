@@ -206,6 +206,21 @@ export const getSyncsByProviderConfigKey = async (accountId: number, providerCon
     return results;
 };
 
+export const getSyncsByProviderConfigAndSyncName = async (accountId: number, providerConfigKey: string, syncName: string): Promise<Sync[]> => {
+    const results = await db.knex
+        .withSchema(db.schema())
+        .select(`${TABLE}.*`)
+        .from<Sync>(TABLE)
+        .join('_nango_connections', '_nango_connections.id', `${TABLE}.nango_connection_id`)
+        .where({
+            account_id: accountId,
+            provider_config_key: providerConfigKey,
+            name: syncName
+        });
+
+    return results;
+};
+
 export const getSyncsByAccountId = async (accountId: number): Promise<Sync[]> => {
     const results = await db.knex
         .withSchema(db.schema())
