@@ -27,8 +27,8 @@ import type {
 } from '@nangohq/shared';
 import { loadSimplifiedConfig, cloudHost, stagingHost, SyncType, syncRunService, nangoConfigFile, checkForIntegrationFile } from '@nangohq/shared';
 import {
-    port,
     hostport,
+    port,
     httpsAgent,
     verifyNecessaryFiles,
     getConnection,
@@ -39,7 +39,7 @@ import {
     getNangoRootPath,
     printDebug
 } from './utils.js';
-import type { DeployOptions } from './types.js';
+import type { DeployOptions, GlobalOptions } from './types.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -49,7 +49,7 @@ dotenv.config();
 const TYPES_FILE_NAME = 'models.ts';
 const NangoSyncTypesFileLocation = 'dist/nango-sync.d.ts';
 
-interface RunArgs {
+interface RunArgs extends GlobalOptions {
     sync: string;
     provider: string;
     connection: string;
@@ -393,13 +393,13 @@ export const generate = async () => {
 };
 
 export const run = async (args: string[], options: RunArgs) => {
-    let syncName, providerConfigKey, connectionId, suppliedLastSyncDate;
+    let syncName, providerConfigKey, connectionId, suppliedLastSyncDate, host, secretKey, debug;
     if (args.length > 0) {
         [syncName, providerConfigKey, connectionId, suppliedLastSyncDate] = args;
     }
 
     if (Object.keys(options).length > 0) {
-        ({ sync: syncName, provider: providerConfigKey, connection: connectionId, lastSyncDate: suppliedLastSyncDate } = options);
+        ({ sync: syncName, provider: providerConfigKey, connection: connectionId, lastSyncDate: suppliedLastSyncDate, host, secretKey, debug } = options);
     }
 
     if (!syncName) {
@@ -417,17 +417,43 @@ export const run = async (args: string[], options: RunArgs) => {
         return;
     }
 
-    const nangoConnection = (await getConnection(providerConfigKey as string, connectionId as string, {
-        'Nango-Is-Sync': true,
-        'Nango-Is-Dry-Run': true
-    })) as unknown as NangoConnection;
+    if (debug) {
+        if (host) {
+            printDebug(`Host value is set to ${host}. This will override the value in the .env file`);
+        }
+    }
+
+    if (host) {
+        process.env['NANGO_HOSTPORT'] = host;
+    }
+
+    if (secretKey) {
+        process.env['NANGO_SECRET_KEY'] = secretKey;
+    }
+
+    if (!process.env['NANGO_HOSTPORT']) {
+        if (debug) {
+            printDebug(`NANGO_HOSTPORT is not set. Setting the default to ${hostport}`);
+        }
+        process.env['NANGO_HOSTPORT'] = hostport;
+    }
+
+    const nangoConnection = (await getConnection(
+        providerConfigKey as string,
+        connectionId as string,
+        {
+            'Nango-Is-Sync': true,
+            'Nango-Is-Dry-Run': true
+        },
+        debug
+    )) as unknown as NangoConnection;
 
     if (!nangoConnection) {
         console.log(chalk.red('Connection not found'));
         return;
     }
 
-    if (hostport === cloudHost || hostport === stagingHost) {
+    if (process.env['NANGO_HOSTPORT'] === cloudHost || process.env['NANGO_HOSTPORT'] === stagingHost) {
         process.env['NANGO_CLOUD'] = 'true';
     }
 
@@ -449,7 +475,7 @@ export const run = async (args: string[], options: RunArgs) => {
 
     try {
         const secretKey = process.env['NANGO_SECRET_KEY'];
-        const results = await syncRun.run(lastSyncDate, true, secretKey, hostport);
+        const results = await syncRun.run(lastSyncDate, true, secretKey, process.env['NANGO_HOSTPORT']);
         console.log(JSON.stringify(results, null, 2));
         process.exit(0);
     } catch (e) {

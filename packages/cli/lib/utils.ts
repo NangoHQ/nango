@@ -154,9 +154,11 @@ export async function upgradeAction() {
     }
 }
 
-export async function getConnection(providerConfigKey: string, connectionId: string, headers?: Record<string, string | boolean>) {
-    checkEnvVars();
-    const url = hostport + `/connection/${connectionId}`;
+export async function getConnection(providerConfigKey: string, connectionId: string, headers?: Record<string, string | boolean>, debug = false) {
+    const url = process.env['NANGO_HOSTPORT'] + `/connection/${connectionId}`;
+    if (debug) {
+        printDebug(`getConnection endpoint to the URL: ${url}`);
+    }
     return await axios
         .get(url, { params: { provider_config_key: providerConfigKey }, headers: enrichHeaders(headers), httpsAgent: httpsAgent() })
         .then((res) => {
