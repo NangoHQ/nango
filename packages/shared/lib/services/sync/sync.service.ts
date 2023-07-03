@@ -11,14 +11,20 @@ import connectionService from '../connection.service.js';
 const TABLE = dbNamespace + 'syncs';
 const SYNC_JOB_TABLE = dbNamespace + 'sync_jobs';
 const SYNC_SCHEDULE_TABLE = dbNamespace + 'sync_schedules';
+const SYNC_CONFIG_TABLE = dbNamespace + 'sync_configs';
 
 /**
  * Sync Service
  * @description
- *  A Sync a Nango Sync that has
+ *  A Sync is active Nango Sync on the connection level that has:
  *  - collection of sync jobs (initial or incremental)
  *  - sync schedule
  *  - bunch of sync data records
+ *
+ *  A Sync config is a separate entity that is not necessarily active on the
+ *  provider level that has no direction to a sync
+ *  A Sync job can connect a sync and a sync config as it has both a `sync_id`
+ * and `sync_config_id`
  *
  */
 
@@ -32,15 +38,14 @@ export const getById = async (id: string): Promise<Sync | null> => {
     return result[0];
 };
 
-export const createSync = async (nangoConnectionId: number, name: string, models: string[]): Promise<Sync | null> => {
+export const createSync = async (nangoConnectionId: number, name: string): Promise<Sync | null> => {
     const sync: Sync = {
         id: uuidv4(),
         nango_connection_id: nangoConnectionId,
-        name,
-        models
+        name
     };
 
-    const result = await db.knex.withSchema(db.schema()).from<Sync>(TABLE).insert(sync).returning('*');
+    const result = await schema().from<Sync>(TABLE).insert(sync).returning('*');
 
     if (!result || result.length == 0 || !result[0]) {
         return null;
@@ -132,9 +137,13 @@ export const getSyncs = async (nangoConnection: Connection): Promise<Sync[]> => 
                         'type', nango.${SYNC_JOB_TABLE}.type,
                         'result', nango.${SYNC_JOB_TABLE}.result,
                         'status', nango.${SYNC_JOB_TABLE}.status,
-                        'activity_log_id', nango.${SYNC_JOB_TABLE}.activity_log_id
+                        'activity_log_id', nango.${SYNC_JOB_TABLE}.activity_log_id,
+                        'sync_config_id', nango.${SYNC_JOB_TABLE}.sync_config_id,
+                        'version', nango.${SYNC_CONFIG_TABLE}.version,
+                        'models', nango.${SYNC_CONFIG_TABLE}.models
                     )
                     FROM nango.${SYNC_JOB_TABLE}
+                    JOIN nango.${SYNC_CONFIG_TABLE} ON nango.${SYNC_CONFIG_TABLE}.id = nango.${SYNC_JOB_TABLE}.sync_config_id
                     WHERE nango.${SYNC_JOB_TABLE}.sync_id = nango.${TABLE}.id
                     ORDER BY nango.${SYNC_JOB_TABLE}.updated_at DESC
                     LIMIT 1
@@ -203,7 +212,7 @@ export const getSyncsByAccountId = async (accountId: number): Promise<Sync[]> =>
         .select('*')
         .from<Sync>(TABLE)
         .join('_nango_connections', '_nango_connections.id', `${TABLE}.nango_connection_id`)
-        .join('_nango_sync_configs', '_nango_sync_configs.id', `${TABLE}.nango_sync_config_id`)
+        .join(SYNC_CONFIG_TABLE, `${SYNC_CONFIG_TABLE}.id`, `${TABLE}.sync_config_id`)
         .where({
             account_id: accountId,
             active: true
@@ -240,39 +249,54 @@ export const deleteSync = async (syncId: string): Promise<string> => {
     return syncId;
 };
 
+export const findSyncByConnections = async (connectionIds: number[]): Promise<Sync[]> => {
+    const results = await schema().select('*').from<Sync>(TABLE).whereIn('nango_connection_id', connectionIds);
+
+    if (Array.isArray(results) && results.length > 0) {
+        return results;
+    }
+
+    return [];
+};
+
 export const getAndReconcileSyncDifferences = async (accountId: number, syncs: IncomingSyncConfig[], performAction: boolean): Promise<SyncDifferences> => {
     const newSyncs: SlimSync[] = [];
+    const syncsToCreate = [];
 
     const existingSyncsByProviderConfig: { [key: string]: SlimSync[] } = {};
     const existingConnectionsByProviderConfig: { [key: string]: NangoConnection[] } = {};
 
     for (const sync of syncs) {
-        const { syncName, providerConfigKey, models } = sync;
+        const { syncName, providerConfigKey } = sync;
         if (!existingSyncsByProviderConfig[providerConfigKey]) {
             // this gets syncs that have a sync config and are active OR just have a sync config
             existingSyncsByProviderConfig[providerConfigKey] = await getSyncConfigsByProviderConfigKey(accountId, providerConfigKey);
             existingConnectionsByProviderConfig[providerConfigKey] = await connectionService.getConnectionsByAccountAndConfig(accountId, providerConfigKey);
         }
-
         const currentSync = existingSyncsByProviderConfig[providerConfigKey];
 
-        const exists = currentSync?.filter((existingSync) => existingSync.name === syncName);
+        const exists = currentSync?.find((existingSync) => existingSync.name === syncName);
         const connections = existingConnectionsByProviderConfig[providerConfigKey] as Connection[];
 
         let isNew = false;
+
         // if it has connections but doesn't have an active sync then it is considered a new sync
-        if (connections.length > 0 && exists?.filter((sync) => sync.sync_id !== null).length === 0) {
-            isNew = true;
+        if (exists && connections.length > 0) {
+            const syncsByConnection = await findSyncByConnections(connections.map((connection) => connection.id as number));
+            isNew = syncsByConnection.length === 0;
         }
 
-        if (exists?.length === 0 || isNew) {
+        if (!exists || isNew) {
             newSyncs.push({ name: syncName, providerConfigKey, connections: existingConnectionsByProviderConfig[providerConfigKey]?.length as number });
             if (performAction) {
-                for (const connection of connections) {
-                    await syncOrchestrator.create(connection, syncName, models, providerConfigKey, accountId, sync);
-                }
+                syncsToCreate.push({ connections, syncName, sync, providerConfigKey, accountId });
             }
         }
+    }
+
+    if (syncsToCreate.length > 0) {
+        // this is taken out of the loop to ensure it awaits all the calls properly
+        await syncOrchestrator.createSyncs(syncsToCreate);
     }
 
     const existingSyncs = await getActiveSyncConfigsByAccountId(accountId);
@@ -290,7 +314,13 @@ export const getAndReconcileSyncDifferences = async (accountId: number, syncs: I
             });
 
             if (performAction) {
-                await syncOrchestrator.delete(existingSync.id as number, existingSync.sync_id);
+                await syncOrchestrator.deleteConfig(existingSync.id as number);
+                for (const connection of connections) {
+                    const syncId = await getSyncByIdAndName(connection.id as number, existingSync.sync_name);
+                    if (syncId) {
+                        await syncOrchestrator.deleteSync(syncId.id as string);
+                    }
+                }
             }
         }
     }

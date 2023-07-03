@@ -7,12 +7,29 @@ import type { Connection } from '../../models/Connection.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
 import type { IncomingSyncConfig, Sync } from '../../models/Sync.js';
 
+interface CreateSyncArgs {
+    connections: Connection[];
+    providerConfigKey: string;
+    accountId: number;
+    sync: IncomingSyncConfig;
+    syncName: string;
+}
+
 export class Orchestrator {
-    public async create(connection: Connection, syncName: string, models: string[], providerConfigKey: string, accountId: number, sync: IncomingSyncConfig) {
-        const createdSync = await createSync(connection.id as number, syncName, models);
+    public async create(connections: Connection[], syncName: string, providerConfigKey: string, accountId: number, sync: IncomingSyncConfig) {
         const syncConfig = await configService.getProviderConfig(providerConfigKey, accountId);
-        const syncClient = await SyncClient.getInstance();
-        syncClient?.startContinuous(connection, createdSync as Sync, syncConfig as ProviderConfig, syncName, { ...sync, returns: sync.models });
+        for (const connection of connections) {
+            const createdSync = await createSync(connection.id as number, syncName);
+            const syncClient = await SyncClient.getInstance();
+            await syncClient?.startContinuous(connection, createdSync as Sync, syncConfig as ProviderConfig, syncName, { ...sync, returns: sync.models });
+        }
+    }
+
+    public async createSyncs(syncArgs: CreateSyncArgs[]) {
+        for (const syncToCreate of syncArgs) {
+            const { connections, providerConfigKey, accountId, sync, syncName } = syncToCreate;
+            await this.create(connections, syncName, providerConfigKey, accountId, sync);
+        }
     }
 
     /**
@@ -20,16 +37,15 @@ export class Orchestrator {
      * @desc delete a sync and all the related objects
      * 1) sync config files
      * 2) sync config
-     * 3) sync schedule
-     * 4) sync and that will cascade to other tables
      */
-    public async delete(syncConfigId: number, syncId?: string) {
-        /* 1. */ await deleteSyncFilesForConfig(syncConfigId);
-        /* 2. */ await deleteSyncConfig(syncConfigId);
-        if (syncId) {
-            /* 3. */ await deleteScheduleForSync(syncId as string);
-            /* 4. */ await deleteSync(syncId as string);
-        }
+    public async deleteConfig(syncConfigId: number) {
+        await deleteSyncFilesForConfig(syncConfigId);
+        await deleteSyncConfig(syncConfigId);
+    }
+
+    public async deleteSync(syncId: string) {
+        await deleteScheduleForSync(syncId as string);
+        await deleteSync(syncId as string);
     }
 }
 

@@ -29,7 +29,6 @@ export interface Sync extends Timestamps {
     id?: string;
     nango_connection_id: number;
     name: string;
-    models: string[];
     futureActionTimes?: {
         seconds?: number;
         nanos?: number;
@@ -66,10 +65,10 @@ export interface SyncConfig extends Timestamps {
     active: boolean;
     runs: string;
     version?: string;
-    sync_id?: string;
 }
 
 export interface SlimSync {
+    id?: number;
     name: string;
     sync_id?: string | null;
     providerConfigKey?: string;
@@ -145,4 +144,24 @@ export interface NangoSyncWebhookBody {
     responseResults: SyncResult;
     syncType: SyncType;
     queryTimeStamp: string;
+}
+
+export interface SyncConfigWithSync extends SyncConfig {
+    sync_id: string;
+}
+
+export interface SyncConfigWithJobAndProvider {
+    id: number;
+    sync_name: string;
+    runs: string;
+    models: string[];
+    updated_at: string;
+    provider_config_key: string;
+    unique_key: string;
+    job: {
+        id: number;
+        status: SyncStatus;
+        type: SyncType;
+        sync_id: string;
+    };
 }

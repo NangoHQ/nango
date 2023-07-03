@@ -1,4 +1,4 @@
-import { getById as getSyncById } from '../services/sync/sync.service.js';
+import { getSyncConfigByJobId } from '../services/sync/config.service.js';
 import { upsert } from '../services/sync/data.service.js';
 import { formatDataRecords } from '../services/sync/data-records.service.js';
 import { createActivityLogMessage } from '../services/activity.service.js';
@@ -234,11 +234,10 @@ export class NangoSync {
 
         const formattedResults = formatDataRecords(results, this.nangoConnectionId as number, model, this.syncId as string, this.syncJobId);
 
-        // TODO better check
-        const fullSync = await getSyncById(this.syncId as string);
+        const syncConfig = await getSyncConfigByJobId(this.syncJobId as number);
 
-        if (fullSync && !fullSync?.models.includes(model)) {
-            throw new Error(`The model: ${model} is not included in the declared sync models: ${fullSync.models}.`);
+        if (syncConfig && !syncConfig?.models.includes(model)) {
+            throw new Error(`The model: ${model} is not included in the declared sync models: ${syncConfig.models}.`);
         }
 
         const responseResults = await upsert(
