@@ -50,7 +50,6 @@ export interface SyncResponse {
     created_at: string;
     nango_connection_id: number;
     name: string;
-    models: string[];
     frequency: string;
     futureActionTimes: number[];
     offset: number;
@@ -63,6 +62,9 @@ export interface SyncResponse {
         activity_log_id: number | null;
         result: SyncResult;
         job_id: string;
+        sync_config_id: number;
+        version: string;
+        models: string[];
     };
 }
 

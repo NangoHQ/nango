@@ -9,7 +9,8 @@ import type { LogLevel, LogAction } from '../models/Activity.js';
 import { TASK_QUEUE } from '../constants.js';
 import { createActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../services/activity.service.js';
 import { createSyncJob } from '../services/sync/job.service.js';
-import { loadNangoConfig, getInterval } from '../services/nango-config.service.js';
+import { getInterval } from '../services/nango-config.service.js';
+import { getSyncConfig } from '../services/sync/config.service.js';
 import { createSchedule as createSyncSchedule } from '../services/sync/schedule.service.js';
 import connectionService from '../services/connection.service.js';
 import configService from '../services/config.service.js';
@@ -65,7 +66,7 @@ class SyncClient {
 
     async initiate(nangoConnectionId: number): Promise<void> {
         const nangoConnection = (await connectionService.getConnectionById(nangoConnectionId)) as NangoConnection;
-        const nangoConfig = await loadNangoConfig(nangoConnection);
+        const nangoConfig = await getSyncConfig(nangoConnection);
         if (!nangoConfig) {
             const message = isCloud() ? ' If you expect to see a sync make sure you used the nango cli deploy command' : '';
             console.log('Failed to load Nango config - will not start any syncs!' + message);
@@ -94,12 +95,11 @@ class SyncClient {
         for (let k = 0; k < syncNames.length; k++) {
             const syncName = syncNames[k] as string;
             const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
-            const { returns: models } = syncData;
 
-            const sync = await createSync(nangoConnectionId, syncName, models);
+            const sync = await createSync(nangoConnectionId, syncName);
 
             if (sync) {
-                this.startContinuous(nangoConnection, sync, syncConfig, syncName, syncData);
+                await this.startContinuous(nangoConnection, sync, syncConfig, syncName, syncData);
             }
         }
     }
