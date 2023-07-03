@@ -12,6 +12,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import Activity from './pages/Activity';
 import Syncs from './pages/Syncs';
+import AuthLink from './pages/AuthLink';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { isCloud } from './utils/utils';
@@ -51,6 +52,7 @@ const App = () => {
                 <Route path="/project-settings" element={<PrivateRoute />}>
                     <Route path="/project-settings" element={<ProjectSettings />} />
                 </Route>
+                <Route path="/auth-link" element={<AuthLink />} />
                 {isCloud() && <Route path="/signin" element={<Signin />} />}
                 {isCloud() && <Route path="/signup" element={<Signup />} />}
                 {isCloud() && <Route path="/forgot-password" element={<ForgotPassword />} />}
