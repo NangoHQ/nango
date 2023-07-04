@@ -24,13 +24,13 @@ import {
 class SyncController {
     public async deploySync(req: Request, res: Response, next: NextFunction) {
         try {
-            const { syncs, reconcile }: { syncs: IncomingSyncConfig[]; reconcile: boolean } = req.body;
+            const { syncs, reconcile, debug }: { syncs: IncomingSyncConfig[]; reconcile: boolean; debug: boolean } = req.body;
             const accountId = getAccount(res);
 
-            const result = await createSyncConfig(accountId, syncs);
+            const result = await createSyncConfig(accountId, syncs, debug);
 
             if (reconcile) {
-                await getAndReconcileSyncDifferences(accountId, syncs, true);
+                await getAndReconcileSyncDifferences(accountId, syncs, reconcile, debug);
             }
 
             res.send(result);
@@ -41,10 +41,10 @@ class SyncController {
 
     public async confirmation(req: Request, res: Response, next: NextFunction) {
         try {
-            const { syncs }: { syncs: IncomingSyncConfig[]; reconcile: boolean } = req.body;
+            const { syncs, debug }: { syncs: IncomingSyncConfig[]; reconcile: boolean; debug: boolean } = req.body;
             const accountId = getAccount(res);
 
-            const result = await getAndReconcileSyncDifferences(accountId, syncs, false);
+            const result = await getAndReconcileSyncDifferences(accountId, syncs, false, debug);
 
             res.send(result);
         } catch (e) {

@@ -29,6 +29,7 @@ interface SyncRunConfig {
     activityLogId?: number;
 
     loadLocation?: string;
+    debug?: boolean;
 }
 
 export default class SyncRun {
@@ -41,6 +42,7 @@ export default class SyncRun {
     syncJobId?: number;
     activityLogId?: number;
     loadLocation?: string;
+    debug?: boolean;
 
     constructor(config: SyncRunConfig) {
         this.writeToDb = config.writeToDb;
@@ -63,13 +65,30 @@ export default class SyncRun {
         if (config.loadLocation) {
             this.loadLocation = config.loadLocation;
         }
+
+        if (config.debug) {
+            this.debug = config.debug;
+        }
     }
 
     async run(optionalLastSyncDate?: Date | null, bypassAccount?: boolean, optionalSecretKey?: string, optionalHost?: string): Promise<boolean | object> {
+        if (this.debug) {
+            const content = this.loadLocation ? `Looking for a local nango config at ${this.loadLocation}` : `Looking for a sync config for ${this.syncName}`;
+            if (this.writeToDb) {
+                await createActivityLogMessage({
+                    level: 'debug',
+                    activity_log_id: this.activityLogId as number,
+                    timestamp: Date.now(),
+                    content
+                });
+            } else {
+                console.log(content);
+            }
+        }
         const nangoConfig = this.loadLocation ? await loadLocalNangoConfig(this.loadLocation) : await getSyncConfig(this.nangoConnection, this.syncName);
 
         if (!nangoConfig) {
-            const message = `UMMM No sync configuration was found for ${this.syncName}.`;
+            const message = `No sync configuration was found for ${this.syncName}.`;
             if (this.activityLogId) {
                 await this.reportFailureForResults(message);
             } else {
@@ -143,6 +162,20 @@ export default class SyncRun {
                 lastSyncDate = optionalLastSyncDate;
             } else {
                 lastSyncDate = await getLastSyncDate(this.nangoConnection?.id as number, this.syncName);
+            }
+
+            if (this.debug) {
+                const content = `Last sync date is ${lastSyncDate}`;
+                if (this.writeToDb) {
+                    await createActivityLogMessage({
+                        level: 'debug',
+                        activity_log_id: this.activityLogId as number,
+                        timestamp: Date.now(),
+                        content
+                    });
+                } else {
+                    console.log(content);
+                }
             }
 
             nango.setLastSyncDate(lastSyncDate as Date);
@@ -281,7 +314,7 @@ export default class SyncRun {
         const resultMessage =
             added > 0 || updated > 0
                 ? `The result was ${added} added record${added === 1 ? '' : 's'} and ${updated} updated record${updated === 1 ? '.' : 's.'}`
-                : 'The external API returned no results so nothing was inserted or updated.';
+                : 'The external API returned did not return any new or updated data so nothing was inserted or updated.';
 
         const content = `${successMessage} ${resultMessage}`;
 
