@@ -188,7 +188,8 @@ program
     });
 
 program
-    .command('sync:run')
+    .command('run')
+    .alias('sync:run')
     .alias('sr')
     .description('Run the sync process to help with debugging. Assumes local development environment.')
     .option('-s, --sync <syncName>', 'The name of the sync (e.g. account-sync).')
