@@ -221,7 +221,7 @@ class ConnectionController {
             const accountId = getAccount(res);
             const connectionId = req.params['connectionId'] as string;
             const providerConfigKey = req.query['provider_config_key'] as string;
-            const returnRefreshToken = ((req.query['refresh_token'] === 'true') as boolean) || false;
+            const returnRefreshToken = req.query['refresh_token'] === 'true';
             const instantRefresh = req.query['force_refresh'] === 'true';
             const isSync = req.get('Nango-Is-Sync') as string;
             const isDryRun = req.get('Nango-Is-Dry-Run') as string;
@@ -264,8 +264,11 @@ class ConnectionController {
                 if (connection.credentials.refresh_token) {
                     delete connection.credentials.refresh_token;
                 }
+
                 if (connection.credentials.raw && connection.credentials.raw['refresh_token']) {
-                    delete connection.credentials.raw['refresh_token'];
+                    const rawCreds = { ...connection.credentials.raw }; // Properties from 'raw' are not mutable so we need to create a new object.
+                    delete rawCreds['refresh_token'];
+                    connection.credentials.raw = rawCreds;
                 }
             }
 
