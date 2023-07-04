@@ -570,7 +570,8 @@ export const run = async (args: string[], options: RunArgs, debug = false) => {
         nangoConnection,
         syncName,
         syncType: SyncType.INITIAL,
-        loadLocation: path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}`)
+        loadLocation: path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}`),
+        debug
     });
 
     try {
