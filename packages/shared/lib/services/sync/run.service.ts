@@ -281,7 +281,7 @@ export default class SyncRun {
         const resultMessage =
             added > 0 || updated > 0
                 ? `The result was ${added} added record${added === 1 ? '' : 's'} and ${updated} updated record${updated === 1 ? '.' : 's.'}`
-                : 'The external API returned no results so nothing was inserted or updated.';
+                : 'The external API returned did not return any new or updated data so nothing was inserted or updated.';
 
         const content = `${successMessage} ${resultMessage}`;
 
