@@ -86,8 +86,22 @@ program
     });
 
 program
-    .command('tsc')
-    .alias('compile')
+    .command('run')
+    .alias('sync:run')
+    .alias('sr')
+    .description('Run the sync process to help with debugging. Assumes local development environment.')
+    .option('-s, --sync <syncName>', 'The name of the sync (e.g. account-sync).')
+    .option('-p, --provider <provider_config_key>', 'The unique key of the provider configuration (chosen by you upon creating this provider configuration).')
+    .option('-c, --connection <connection_id>', 'The ID of the Connection.')
+    .option('-l, --lastSyncDate [lastSyncDate]', 'Optional: last sync date to retrieve records greater than this date')
+    .action(async function (this: Command) {
+        const { autoConfirm, debug } = this.opts();
+        await verifyNecessaryFiles(autoConfirm, debug);
+        run(this.args, this.opts(), debug);
+    });
+
+program
+    .command('compile')
     .description('Compile the integration files to JavaScript')
     .action(async function (this: Command) {
         const { autoConfirm, debug } = this.opts();
@@ -96,8 +110,9 @@ program
     });
 
 program
-    .command('tsc:watch')
+    .command('dev')
     .alias('compile:watch')
+    .alias('tsc:watch')
     .alias('tscw')
     .description('Watch tsc files while developing. Set --no-compile-interfaces to disable watching the config file')
     .option('--no-compile-interfaces', `Watch the ${nangoConfigFile} and recompile the interfaces on change`, true)
@@ -113,31 +128,16 @@ program
     });
 
 program
-    .command('start')
-    .alias('dr')
-    .alias('docker:run')
-    .description('Run the docker container locally')
+    .command('deploy:local')
+    .alias('dl')
+    .description('Deploy a Nango integration to local')
+    .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integration with. Can be used for rollbacks.')
+    .option('--no-compile-interfaces', `Don't compile the ${nangoConfigFile}`, true)
     .action(async function (this: Command) {
-        const { autoConfirm, debug } = this.opts();
-        await verifyNecessaryFiles(autoConfirm, debug);
-        await dockerRun(debug);
-    });
-
-program
-    .command('dev')
-    .alias('develop')
-    .alias('watch')
-    .description('Work locally to add integration code')
-    .option('--no-compile-interfaces', `Watch the ${nangoConfigFile} and recompile the interfaces on change`, true)
-    .action(async function (this: Command) {
-        const { compileInterfaces, autoConfirm, debug } = this.opts();
-        await verifyNecessaryFiles(autoConfirm, debug);
-        if (compileInterfaces) {
-            configWatch(debug);
-        }
-
-        tscWatch(debug);
-        await dockerRun(debug);
+        const options = this.opts();
+        (async (options: DeployOptions) => {
+            await deploy({ ...options, env: 'local' }, options.debug);
+        })(options as DeployOptions);
     });
 
 program
@@ -161,21 +161,34 @@ program
         })(options as DeployOptions);
     });
 
+// Hidden commands //
+
 program
-    .command('deploy:local')
-    .alias('dl')
-    .description('Deploy a Nango integration to local')
-    .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integration with. Can be used for rollbacks.')
-    .option('--no-compile-interfaces', `Don't compile the ${nangoConfigFile}`, true)
+    .command('sync:dev', { hidden: true })
+    .description('Work locally to develop integration code')
+    .option('--no-compile-interfaces', `Watch the ${nangoConfigFile} and recompile the interfaces on change`, true)
     .action(async function (this: Command) {
-        const options = this.opts();
-        (async (options: DeployOptions) => {
-            await deploy({ ...options, env: 'local' }, options.debug);
-        })(options as DeployOptions);
+        const { compileInterfaces, autoConfirm, debug } = this.opts();
+        await verifyNecessaryFiles(autoConfirm, debug);
+        if (compileInterfaces) {
+            configWatch(debug);
+        }
+
+        tscWatch(debug);
+        await dockerRun(debug);
     });
 
 program
-    .command('sync:config.check')
+    .command('sync:docker.run', { hidden: true })
+    .description('Run the docker container locally')
+    .action(async function (this: Command) {
+        const { autoConfirm, debug } = this.opts();
+        await verifyNecessaryFiles(autoConfirm, debug);
+        await dockerRun(debug);
+    });
+
+program
+    .command('sync:config.check', { hidden: true })
     .alias('scc')
     .description('Verify the parsed sync config and output the object for verification')
     .action(async function (this: Command) {
@@ -185,21 +198,6 @@ program
         const config = await loadSimplifiedConfig(path.resolve(cwd, NANGO_INTEGRATIONS_LOCATION));
 
         console.log(chalk.green(JSON.stringify(config, null, 2)));
-    });
-
-program
-    .command('run')
-    .alias('sync:run')
-    .alias('sr')
-    .description('Run the sync process to help with debugging. Assumes local development environment.')
-    .option('-s, --sync <syncName>', 'The name of the sync (e.g. account-sync).')
-    .option('-p, --provider <provider_config_key>', 'The unique key of the provider configuration (chosen by you upon creating this provider configuration).')
-    .option('-c, --connection <connection_id>', 'The ID of the Connection.')
-    .option('-l, --lastSyncDate [lastSyncDate]', 'Optional: last sync date to retrieve records greater than this date')
-    .action(async function (this: Command) {
-        const { autoConfirm, debug } = this.opts();
-        await verifyNecessaryFiles(autoConfirm, debug);
-        run(this.args, this.opts(), debug);
     });
 
 program.parse();
