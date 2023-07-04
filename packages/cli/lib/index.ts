@@ -40,7 +40,7 @@ program.name('nango').description(
 
 For Self-Hosting: set the NANGO_HOSTPORT env variable or pass in the --host flag with each command.
 
-Global flags: --secret-key, --host, --auto-confirm
+Global flags: --secret-key, --host, --auto-confirm, --debug (output verbose logs for debugging purposes)
 
 Available environment variables available:
 
