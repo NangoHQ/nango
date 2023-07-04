@@ -21,8 +21,14 @@ export class Orchestrator {
         for (const connection of connections) {
             const createdSync = await createSync(connection.id as number, syncName);
             const syncClient = await SyncClient.getInstance();
-            await syncClient?.startContinuous(connection, createdSync as Sync, syncConfig as ProviderConfig, syncName, { ...sync, returns: sync.models }),
-                debug;
+            await syncClient?.startContinuous(
+                connection,
+                createdSync as Sync,
+                syncConfig as ProviderConfig,
+                syncName,
+                { ...sync, returns: sync.models },
+                debug
+            );
         }
     }
 

@@ -187,7 +187,8 @@ class SyncClient {
                             syncId: sync.id,
                             activityLogId,
                             nangoConnection,
-                            syncName
+                            syncName,
+                            debug
                         }
                     ]
                 }
