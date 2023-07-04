@@ -14,13 +14,13 @@ import {
 import type { ContinuousSyncArgs, InitialSyncArgs } from './models/Worker';
 
 export async function routeSync(args: InitialSyncArgs): Promise<boolean | object> {
-    const { syncId, syncJobId, syncName, activityLogId, nangoConnection } = args;
+    const { syncId, syncJobId, syncName, activityLogId, nangoConnection, debug } = args;
     const syncConfig: ProviderConfig = (await configService.getProviderConfig(
         nangoConnection?.provider_config_key as string,
         nangoConnection?.account_id as number
     )) as ProviderConfig;
 
-    return syncProvider(syncConfig, syncId, syncJobId, syncName, SyncType.INITIAL, nangoConnection, activityLogId);
+    return syncProvider(syncConfig, syncId, syncJobId, syncName, SyncType.INITIAL, nangoConnection, activityLogId, debug);
 }
 
 export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<boolean | object> {
@@ -48,7 +48,8 @@ export async function syncProvider(
     syncName: string,
     syncType: SyncType,
     nangoConnection: NangoConnection,
-    existingActivityLogId: number
+    existingActivityLogId: number,
+    debug = false
 ): Promise<boolean | object> {
     let activityLogId = existingActivityLogId;
 
@@ -79,7 +80,8 @@ export async function syncProvider(
         nangoConnection,
         syncName,
         syncType,
-        activityLogId
+        activityLogId,
+        debug
     });
 
     const result = await syncRun.run();

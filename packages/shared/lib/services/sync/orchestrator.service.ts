@@ -16,19 +16,20 @@ interface CreateSyncArgs {
 }
 
 export class Orchestrator {
-    public async create(connections: Connection[], syncName: string, providerConfigKey: string, accountId: number, sync: IncomingSyncConfig) {
+    public async create(connections: Connection[], syncName: string, providerConfigKey: string, accountId: number, sync: IncomingSyncConfig, debug = false) {
         const syncConfig = await configService.getProviderConfig(providerConfigKey, accountId);
         for (const connection of connections) {
             const createdSync = await createSync(connection.id as number, syncName);
             const syncClient = await SyncClient.getInstance();
-            await syncClient?.startContinuous(connection, createdSync as Sync, syncConfig as ProviderConfig, syncName, { ...sync, returns: sync.models });
+            await syncClient?.startContinuous(connection, createdSync as Sync, syncConfig as ProviderConfig, syncName, { ...sync, returns: sync.models }),
+                debug;
         }
     }
 
-    public async createSyncs(syncArgs: CreateSyncArgs[]) {
+    public async createSyncs(syncArgs: CreateSyncArgs[], debug = false) {
         for (const syncToCreate of syncArgs) {
             const { connections, providerConfigKey, accountId, sync, syncName } = syncToCreate;
-            await this.create(connections, syncName, providerConfigKey, accountId, sync);
+            await this.create(connections, syncName, providerConfigKey, accountId, sync, debug);
         }
     }
 

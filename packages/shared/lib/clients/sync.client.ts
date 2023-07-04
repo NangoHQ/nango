@@ -115,7 +115,8 @@ class SyncClient {
         sync: Sync,
         syncConfig: ProviderConfig,
         syncName: string,
-        syncData: NangoIntegrationData
+        syncData: NangoIntegrationData,
+        debug = false
     ): Promise<void> {
         try {
             const log = {
@@ -136,6 +137,14 @@ class SyncClient {
 
             const jobId = generateWorkflowId(sync, syncName, nangoConnection?.connection_id as string);
 
+            if (debug) {
+                await createActivityLogMessage({
+                    level: 'debug',
+                    activity_log_id: activityLogId as number,
+                    timestamp: Date.now(),
+                    content: `Starting sync job ${jobId} for sync ${sync.id}`
+                });
+            }
             const syncJobId = await createSyncJob(sync.id as string, SyncType.INITIAL, SyncStatus.RUNNING, jobId, activityLogId as number);
 
             const handle = await this.client?.workflow.start('initialSync', {
@@ -147,7 +156,8 @@ class SyncClient {
                         syncJobId: syncJobId?.id as number,
                         nangoConnection,
                         syncName,
-                        activityLogId
+                        activityLogId,
+                        debug
                     }
                 ]
             });

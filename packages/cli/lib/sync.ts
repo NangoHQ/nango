@@ -202,7 +202,11 @@ export const deploy = async (options: DeployOptions, debug = false) => {
     if (!process.env['NANGO_DEPLOY_AUTO_CONFIRM'] && !autoConfirm) {
         const confirmationUrl = process.env['NANGO_HOSTPORT'] + `/sync/deploy/confirmation`;
         try {
-            const response = await axios.post(confirmationUrl, { syncs: postData, reconcile: false }, { headers: enrichHeaders(), httpsAgent: httpsAgent() });
+            const response = await axios.post(
+                confirmationUrl,
+                { syncs: postData, reconcile: false, debug },
+                { headers: enrichHeaders(), httpsAgent: httpsAgent() }
+            );
             console.log(JSON.stringify(response.data, null, 2));
             const { newSyncs, deletedSyncs } = response.data;
 
@@ -227,7 +231,7 @@ export const deploy = async (options: DeployOptions, debug = false) => {
                 await axios
                     .post(
                         process.env['NANGO_HOSTPORT'] + `/sync/deploy`,
-                        { syncs: postData, reconcile: true },
+                        { syncs: postData, reconcile: true, debug },
                         { headers: enrichHeaders(), httpsAgent: httpsAgent() }
                     )
                     .then((response: AxiosResponse) => {
@@ -267,11 +271,11 @@ export const deploy = async (options: DeployOptions, debug = false) => {
         if (debug) {
             printDebug(`Auto confirm is set so deploy will start without confirmation`);
         }
-        await deploySyncs(url, { syncs: postData, reconcile: true });
+        await deploySyncs(url, { syncs: postData, reconcile: true, debug });
     }
 };
 
-async function deploySyncs(url: string, body: { syncs: IncomingSyncConfig[]; reconcile: boolean }) {
+async function deploySyncs(url: string, body: { syncs: IncomingSyncConfig[]; reconcile: boolean; debug: boolean }) {
     await axios
         .post(url, body, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
         .then((response: AxiosResponse) => {

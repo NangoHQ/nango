@@ -6,6 +6,7 @@ export interface InitialSyncArgs {
     syncName: string;
     activityLogId: number;
     nangoConnection: NangoConnection;
+    debug?: boolean;
 }
 
 export interface ContinuousSyncArgs {
@@ -14,4 +15,5 @@ export interface ContinuousSyncArgs {
     syncName: string;
     syncData: NangoIntegrationData;
     nangoConnection: NangoConnection;
+    debug?: boolean;
 }
