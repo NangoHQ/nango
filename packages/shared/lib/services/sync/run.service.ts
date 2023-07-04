@@ -1,8 +1,9 @@
-import { loadNangoConfig, loadLocalNangoConfig, nangoConfigFile } from '../nango-config.service.js';
+import { loadLocalNangoConfig, nangoConfigFile } from '../nango-config.service.js';
 import type { NangoConnection } from '../../models/Connection.js';
 import { SyncResult, SyncType, SyncStatus, Job as SyncJob } from '../../models/Sync.js';
 import { createActivityLogMessage, createActivityLogMessageAndEnd, updateSuccess as updateSuccessActivityLog } from '../activity.service.js';
 import { addSyncConfigToJob, updateSyncJobResult, updateSyncJobStatus } from '../sync/job.service.js';
+import { getSyncConfig } from './config.service.js';
 import { checkForIntegrationFile } from '../nango-config.service.js';
 import { getLastSyncDate } from './sync.service.js';
 import { formatDataRecords } from './data-records.service.js';
@@ -65,14 +66,12 @@ export default class SyncRun {
     }
 
     async run(optionalLastSyncDate?: Date | null, bypassAccount?: boolean, optionalSecretKey?: string, optionalHost?: string): Promise<boolean | object> {
-        const nangoConfig = this.loadLocation
-            ? await loadLocalNangoConfig(this.loadLocation)
-            : await loadNangoConfig(this.nangoConnection, this.syncName, this.syncId);
+        const nangoConfig = this.loadLocation ? await loadLocalNangoConfig(this.loadLocation) : await getSyncConfig(this.nangoConnection, this.syncName);
 
         if (!nangoConfig) {
-            const message = `No sync configuration was found for ${this.syncName}.`;
-            if (!this.activityLogId) {
-                this.reportFailureForResults(message);
+            const message = `UMMM No sync configuration was found for ${this.syncName}.`;
+            if (this.activityLogId) {
+                await this.reportFailureForResults(message);
             } else {
                 console.error(message);
             }
@@ -98,7 +97,9 @@ export default class SyncRun {
             }
 
             if (!account && !bypassAccount) {
-                this.reportFailureForResults(`No account was found for ${this.nangoConnection.account_id}. The sync cannot continue without a valid account`);
+                await this.reportFailureForResults(
+                    `No account was found for ${this.nangoConnection.account_id}. The sync cannot continue without a valid account`
+                );
                 return false;
             }
 
@@ -128,7 +129,7 @@ export default class SyncRun {
             if (!isCloud()) {
                 const { path: integrationFilePath, result: integrationFileResult } = checkForIntegrationFile(this.syncName, this.loadLocation);
                 if (!integrationFileResult) {
-                    this.reportFailureForResults(
+                    await this.reportFailureForResults(
                         `Integration was attempted to run for ${this.syncName} but no integration file was found at ${integrationFilePath}.`
                     );
 
@@ -158,7 +159,7 @@ export default class SyncRun {
                 const userDefinedResults = await integationService.runScript(this.syncName, this.activityLogId as number, nango, syncData, this.loadLocation);
 
                 if (userDefinedResults === null) {
-                    this.reportFailureForResults(
+                    await this.reportFailureForResults(
                         `The integration was run but there was a problem in retrieving the results from the script "${this.syncName}"${
                             syncData?.version ? ` version: ${syncData.version}` : ''
                         }.`
@@ -216,7 +217,7 @@ export default class SyncRun {
                                 if (!upsertResult.success) {
                                     errorManager.report(upsertResult?.error, { accountId: this.nangoConnection.account_id as number });
 
-                                    this.reportFailureForResults(`There was a problem upserting the data for ${this.syncName} and the model ${model}`);
+                                    await this.reportFailureForResults(`There was a problem upserting the data for ${this.syncName} and the model ${model}`);
 
                                     return false;
                                 }
@@ -228,7 +229,7 @@ export default class SyncRun {
             } catch (e) {
                 result = false;
                 const errorMessage = JSON.stringify(e, ['message', 'name', 'stack'], 2);
-                this.reportFailureForResults(
+                await this.reportFailureForResults(
                     `The ${this.syncType} "${this.syncName}"${
                         syncData?.version ? ` version: ${syncData?.version}` : ''
                     } sync did not complete successfully and has the following error: ${errorMessage}`
