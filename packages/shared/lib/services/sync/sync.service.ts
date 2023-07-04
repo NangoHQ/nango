@@ -4,7 +4,7 @@ import { IncomingSyncConfig, SyncDifferences, Sync, Job as SyncJob, SyncStatus, 
 import type { Connection, NangoConnection } from '../../models/Connection.js';
 import SyncClient from '../../clients/sync.client.js';
 import type { LogLevel, LogAction } from '../../models/Activity.js';
-import { createActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../activity.service.js';
+import { updateSuccess as updateSuccessActivityLog, createActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../activity.service.js';
 import { markAllAsStopped } from './schedule.service.js';
 import { getActiveSyncConfigsByAccountId, getSyncConfigsByProviderConfigKey } from './config.service.js';
 import syncOrchestrator from './orchestrator.service.js';
@@ -393,8 +393,9 @@ export const getAndReconcileSyncDifferences = async (
             level: 'debug',
             activity_log_id: activityLogId,
             timestamp: Date.now(),
-            content: 'Sync deploy diff in debug mode process complete successfully'
+            content: 'Sync deploy diff in debug mode process complete successfully.'
         });
+        await updateSuccessActivityLog(activityLogId, true);
     }
 
     return {
