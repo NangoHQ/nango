@@ -90,32 +90,46 @@ export function checkEnvVars(optionalHostport?: string) {
     }
 }
 
-export async function verifyNecessaryFiles(autoConfirm: boolean) {
+export async function verifyNecessaryFiles(autoConfirm: boolean, debug = false) {
     if (!fs.existsSync(path.resolve(process.cwd(), NANGO_INTEGRATIONS_LOCATION))) {
         const install = autoConfirm
             ? true
             : await promptly.confirm(`No ${nangoConfigFile} file was found. Would you like to create some default integrations and build them? (yes/no)`);
 
         if (install) {
-            init();
-            await generate();
-            tsc();
+            if (debug) {
+                printDebug(`Running init, generate, and tsc to create ${nangoConfigFile} file, generate the integration files and then compile them.`);
+            }
+            init(debug);
+            await generate(debug);
+            tsc(debug);
         } else {
             console.log(chalk.red(`Exiting...`));
             process.exit(1);
         }
+    } else {
+        if (debug) {
+            printDebug(`Found ${nangoConfigFile} file successfullly.`);
+        }
     }
 }
 
-export async function upgradeAction() {
+export async function upgradeAction(debug = false) {
     if (process.env['NANGO_NO_PROMPT_FOR_UPGRADE'] === 'true') {
         return;
     }
     try {
         const resolved = npa('nango');
-        const { version } = JSON.parse(fs.readFileSync(path.resolve(getNangoRootPath() as string, 'package.json'), 'utf8'));
+        const { version } = JSON.parse(fs.readFileSync(path.resolve(getNangoRootPath(debug) as string, 'package.json'), 'utf8'));
+        if (debug) {
+            printDebug(`Version ${version} of nango is installed.`);
+        }
         const response = await axios.get(`https://registry.npmjs.org/${resolved.name}`);
         const latestVersion = response.data['dist-tags'].latest;
+
+        if (debug) {
+            printDebug(`Latest version of ${resolved.name} is ${latestVersion}.`);
+        }
 
         if (semver.gt(latestVersion, version)) {
             console.log(chalk.red(`A new version of ${resolved.name} is available: ${latestVersion}`));
@@ -129,6 +143,10 @@ export async function upgradeAction() {
                 const args = isLocallyInstalled('nango')
                     ? ['install', '--no-audit', `nango@${latestVersion}`]
                     : ['install', '-g', '--no-audit', `nango@${latestVersion}`];
+
+                if (debug) {
+                    printDebug(`Running npm ${args.join(' ')}`);
+                }
 
                 const child = spawn('npm', args, {
                     cwd,
@@ -277,13 +295,13 @@ export function getNangoRootPath(debug = false) {
     const packagePath = getPackagePath(debug);
     if (!packagePath) {
         if (debug) {
-            printDebug('Could not find package path locally');
+            printDebug('Could not find nango cli root path locally');
         }
         return null;
     }
 
     if (debug) {
-        printDebug(`Found the root cli path at ${path.resolve(packagePath, '..')}`);
+        printDebug(`Found the nango cli root path at ${path.resolve(packagePath, '..')}`);
     }
 
     return path.resolve(packagePath, '..');

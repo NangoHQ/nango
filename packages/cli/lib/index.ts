@@ -22,8 +22,9 @@ class NangoCommand extends Command {
         cmd.option('--host [host]', 'Set the host. Overrides the `NANGO_HOSTPORT` value set in the .env file');
         cmd.option('--auto-confirm', 'Auto confirm yes to all prompts.');
         cmd.option('--debug', 'Run cli in debug mode, outputting verbose logs.');
-        cmd.hook('preAction', async () => {
-            await upgradeAction();
+        cmd.hook('preAction', async function (this: Command, actionCommand: Command) {
+            const { debug } = actionCommand.opts();
+            await upgradeAction(debug);
         });
 
         return cmd;
@@ -69,8 +70,9 @@ program
     .command('init')
     .alias('i')
     .description('Initialize a new Nango project')
-    .action(() => {
-        init();
+    .action(function (this: Command) {
+        const { debug } = this.opts();
+        init(debug);
     });
 
 program
@@ -78,9 +80,9 @@ program
     .alias('g')
     .description('Generate a new Nango integration')
     .action(async function (this: Command) {
-        const { autoConfirm } = this.opts();
-        await verifyNecessaryFiles(autoConfirm);
-        generate();
+        const { autoConfirm, debug } = this.opts();
+        await verifyNecessaryFiles(autoConfirm, debug);
+        generate(debug);
     });
 
 program
@@ -88,9 +90,9 @@ program
     .alias('compile')
     .description('Compile the integration files to JavaScript')
     .action(async function (this: Command) {
-        const { autoConfirm } = this.opts();
-        await verifyNecessaryFiles(autoConfirm);
-        tsc();
+        const { autoConfirm, debug } = this.opts();
+        await verifyNecessaryFiles(autoConfirm, debug);
+        tsc(debug);
     });
 
 program
@@ -100,14 +102,14 @@ program
     .description('Watch tsc files while developing. Set --no-compile-interfaces to disable watching the config file')
     .option('--no-compile-interfaces', `Watch the ${nangoConfigFile} and recompile the interfaces on change`, true)
     .action(async function (this: Command) {
-        const { compileInterfaces, autoConfirm } = this.opts();
-        await verifyNecessaryFiles(autoConfirm);
+        const { compileInterfaces, autoConfirm, debug } = this.opts();
+        await verifyNecessaryFiles(autoConfirm, debug);
 
         if (compileInterfaces) {
-            configWatch();
+            configWatch(debug);
         }
 
-        tscWatch();
+        tscWatch(debug);
     });
 
 program
@@ -116,9 +118,9 @@ program
     .alias('docker:run')
     .description('Run the docker container locally')
     .action(async function (this: Command) {
-        const { autoConfirm } = this.opts();
-        await verifyNecessaryFiles(autoConfirm);
-        await dockerRun();
+        const { autoConfirm, debug } = this.opts();
+        await verifyNecessaryFiles(autoConfirm, debug);
+        await dockerRun(debug);
     });
 
 program
@@ -128,14 +130,14 @@ program
     .description('Work locally to add integration code')
     .option('--no-compile-interfaces', `Watch the ${nangoConfigFile} and recompile the interfaces on change`, true)
     .action(async function (this: Command) {
-        const { compileInterfaces, autoConfirm } = this.opts();
-        await verifyNecessaryFiles(autoConfirm);
+        const { compileInterfaces, autoConfirm, debug } = this.opts();
+        await verifyNecessaryFiles(autoConfirm, debug);
         if (compileInterfaces) {
-            configWatch();
+            configWatch(debug);
         }
 
-        tscWatch();
-        await dockerRun();
+        tscWatch(debug);
+        await dockerRun(debug);
     });
 
 program
@@ -152,22 +154,23 @@ program
     .action(async function (this: Command) {
         const options = this.opts();
         (async (options: DeployOptions) => {
-            const { staging } = options;
+            const { staging, debug } = options;
             let env = staging ? 'staging' : 'production';
             env = options.local ? 'local' : env;
-            await deploy({ ...options, env: env as ENV });
+            await deploy({ ...options, env: env as ENV }, debug);
         })(options as DeployOptions);
     });
 
 program
     .command('deploy:local')
+    .alias('dl')
     .description('Deploy a Nango integration to local')
     .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integration with. Can be used for rollbacks.')
     .option('--no-compile-interfaces', `Don't compile the ${nangoConfigFile}`, true)
     .action(async function (this: Command) {
         const options = this.opts();
         (async (options: DeployOptions) => {
-            await deploy({ ...options, env: 'local' });
+            await deploy({ ...options, env: 'local' }, options.debug);
         })(options as DeployOptions);
     });
 
@@ -193,9 +196,9 @@ program
     .option('-c, --connection <connection_id>', 'The ID of the Connection.')
     .option('-l, --lastSyncDate [lastSyncDate]', 'Optional: last sync date to retrieve records greater than this date')
     .action(async function (this: Command) {
-        const { autoConfirm } = this.opts();
-        await verifyNecessaryFiles(autoConfirm);
-        run(this.args, this.opts());
+        const { autoConfirm, debug } = this.opts();
+        await verifyNecessaryFiles(autoConfirm, debug);
+        run(this.args, this.opts(), debug);
     });
 
 program.parse();
