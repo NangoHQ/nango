@@ -8,8 +8,9 @@ import {
     createActivityLogMessageAndEnd,
     createActivityLogDatabaseErrorMessageAndEnd
 } from '../activity.service.js';
+import { getSyncsByProviderConfigAndSyncName } from './sync.service.js';
 import type { LogLevel, LogAction } from '../../models/Activity.js';
-import type { IncomingSyncConfig, SyncConfig, SlimSync, SyncDeploymentResult } from '../../models/Sync.js';
+import type { SyncConfigWithProvider, IncomingSyncConfig, SyncConfig, SlimSync, SyncDeploymentResult } from '../../models/Sync.js';
 import type { NangoConnection } from '../../models/Connection.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
 import type { NangoConfig } from '../../integrations/index.js';
@@ -68,11 +69,9 @@ export async function createSyncConfig(account_id: number, syncs: IncomingSyncCo
         if (previousSyncConfig) {
             bumpedVersion = increment(previousSyncConfig.version as string | number).toString();
 
-            // if the schedule changed then update the sync schedule and the client so that it reflects
-            // the new schedule
-            const { sync_id } = previousSyncConfig;
-            if (sync_id) {
-                await updateSyncScheduleFrequency(sync_id, runs);
+            const syncs = await getSyncsByProviderConfigAndSyncName(account_id, providerConfigKey, syncName);
+            for (const sync of syncs) {
+                await updateSyncScheduleFrequency(sync.id as string, runs);
             }
         }
 
@@ -103,7 +102,7 @@ export async function createSyncConfig(account_id: number, syncs: IncomingSyncCo
 
         const oldConfigs = await schema()
             .from<SyncConfig>(TABLE)
-            .select('id', 'sync_id')
+            .select('id')
             .where({
                 account_id,
                 nango_config_id: config.id as number,
@@ -111,16 +110,9 @@ export async function createSyncConfig(account_id: number, syncs: IncomingSyncCo
                 active: true
             });
 
-        let oldSyncId = null;
-
         if (oldConfigs.length > 0) {
             const ids = oldConfigs.map((oldConfig: SyncConfig) => oldConfig.id as number);
             idsToMarkAsInvactive.push(...ids);
-
-            const oldConfig = oldConfigs.find((oldConfig: SyncConfig) => oldConfig && oldConfig.sync_id !== null);
-            if (oldConfig && oldConfig.sync_id) {
-                oldSyncId = oldConfig.sync_id;
-            }
         }
 
         insertData.push({
@@ -132,8 +124,7 @@ export async function createSyncConfig(account_id: number, syncs: IncomingSyncCo
             file_location,
             runs,
             active: true,
-            model_schema,
-            sync_id: oldSyncId
+            model_schema
         });
     }
 
@@ -170,7 +161,7 @@ export async function createSyncConfig(account_id: number, syncs: IncomingSyncCo
     }
 }
 
-export async function getSyncConfig(nangoConnection: NangoConnection, syncName?: string, syncId?: string): Promise<NangoConfig | null> {
+export async function getSyncConfig(nangoConnection: NangoConnection, syncName?: string): Promise<NangoConfig | null> {
     let syncConfigs;
 
     if (!syncName) {
@@ -196,15 +187,6 @@ export async function getSyncConfig(nangoConnection: NangoConnection, syncName?:
         },
         models: {}
     };
-
-    // we have a sync name which means we have a single sync config
-    // let's update that to have the sync id so we can link everything together
-    if (syncName && syncId && syncConfigs.length === 1) {
-        const [config] = syncConfigs;
-        if (config) {
-            await updateSyncConfigWithSyncId(config?.id as number, syncId);
-        }
-    }
 
     for (const syncConfig of syncConfigs) {
         if (nangoConnection.provider_config_key !== undefined) {
@@ -265,10 +247,6 @@ export async function getSyncConfigByParams(account_id: number, sync_name: strin
     return null;
 }
 
-export async function updateSyncConfigWithSyncId(sync_config_id: number, sync_id: string): Promise<void> {
-    await schema().from<SyncConfig>(TABLE).where({ id: sync_config_id }).update({ sync_id });
-}
-
 export async function deleteSyncConfig(id: number): Promise<void> {
     await schema().from<SyncConfig>(TABLE).where({ id }).del();
 }
@@ -285,13 +263,12 @@ export async function deleteSyncFilesForConfig(id: number): Promise<void> {
     }
 }
 
-export async function getActiveSyncConfigsByAccountId(account_id: number): Promise<(SyncConfig & ProviderConfig)[]> {
+export async function getActiveSyncConfigsByAccountId(account_id: number): Promise<SyncConfigWithProvider[]> {
     const result = await schema()
         .select(
             `${TABLE}.id`,
             `${TABLE}.sync_name`,
             `${TABLE}.runs`,
-            `${TABLE}.sync_id`,
             `${TABLE}.models`,
             `${TABLE}.updated_at`,
             '_nango_configs.provider',
@@ -313,7 +290,6 @@ export async function getSyncConfigsWithConnectionsByAccountId(account_id: numbe
             `${TABLE}.id`,
             `${TABLE}.sync_name`,
             `${TABLE}.runs`,
-            `${TABLE}.sync_id`,
             `${TABLE}.models`,
             `${TABLE}.version`,
             `${TABLE}.updated_at`,
@@ -344,18 +320,36 @@ export async function getSyncConfigsWithConnectionsByAccountId(account_id: numbe
     return result;
 }
 
+/**
+ * Get Sync Configs By Provider Key
+ * @desc grab all the sync configs by a provider key
+ */
 export async function getSyncConfigsByProviderConfigKey(account_id: number, providerConfigKey: string): Promise<SlimSync[]> {
     const result = await schema()
-        .select(`${TABLE}.sync_name as name`, `${TABLE}.sync_id`)
+        .select(`${TABLE}.sync_name as name`, `${TABLE}.id`)
         .from<SyncConfig>(TABLE)
         .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')
         .where({
             '_nango_configs.account_id': account_id,
-            '_nango_configs.unique_key': providerConfigKey
-        })
-        .andWhere(function (this: any) {
-            this.whereNotNull('sync_id').orWhere({ active: true });
+            '_nango_configs.unique_key': providerConfigKey,
+            active: true
         });
+
+    return result;
+}
+
+export async function getSyncConfigByJobId(job_id: number): Promise<SyncConfig | null> {
+    const result = await schema()
+        .from<SyncConfig>(TABLE)
+        .select(`${TABLE}.*`)
+        .join('_nango_sync_jobs', `${TABLE}.id`, '_nango_sync_jobs.sync_config_id')
+        .where({ '_nango_sync_jobs.id': job_id })
+        .first()
+        .orderBy('created_at', 'desc');
+
+    if (!result) {
+        return null;
+    }
 
     return result;
 }

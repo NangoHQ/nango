@@ -68,9 +68,7 @@ export default function Syncs() {
                             {syncs.map((sync: Sync, index: number) => (
                                 <div key={index} className="text-white px-5">
                                     <ul className="flex space-x-20 pb-4 text-base py-6 items-center border-b border-border-gray">
-                                        <Tooltip text={`version: ${sync.version}`} type="dark">
-                                            <li className="w-32 mr-2">{sync.sync_name}</li>
-                                        </Tooltip>
+                                        <li className="w-32 mr-2">{sync.sync_name}@v{sync.version}</li>
                                         <li>
                                             <Link
                                                 to={`/integration/${sync.unique_key}`}
