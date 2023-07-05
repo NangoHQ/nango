@@ -30,6 +30,8 @@ export default function IntegrationCreate() {
     const [integration, setIntegration] = useState<Integration | null>(null);
     const [connectionId, setConnectionId] = useState<string>('test-connection-id');
     const [connectionConfigParams, setConnectionConfigParams] = useState<Record<string, string> | null>(null);
+    const [authorizationParams, setAuthorizationParams] = useState<Record<string, string> | null>(null);
+    const [authorizationParamsError, setAuthorizationParamsError] = useState<boolean>(false);
     const [selectedScopes, addToScopesSet, removeFromSelectedSet] = useSet<string>();
     const [publicKey, setPublicKey] = useState('');
     const [hostUrl, setHostUrl] = useState('');
@@ -85,12 +87,17 @@ export default function IntegrationCreate() {
             connection_id: { value: string };
             connection_config_params: { value: string };
             user_scopes: { value: string };
+            authorization_params: { value: string | undefined };
         };
 
         const nango = new Nango({ host: hostUrl, websocketsPath: websocketsPath, publicKey: isCloud() ? publicKey : undefined });
 
         nango
-            .auth(target.integration_unique_key.value, target.connection_id.value, { user_scope: selectedScopes || [], params: connectionConfigParams || {} })
+            .auth(target.integration_unique_key.value, target.connection_id.value, {
+                user_scope: selectedScopes || [],
+                params: connectionConfigParams || {},
+                authorization_params: authorizationParams || {}
+            })
             .then(() => {
                 toast.success('Connection created!', { position: toast.POSITION.BOTTOM_CENTER });
                 analyticsTrack('web:connection_created', { provider: integration?.provider || 'unknown' });
@@ -137,6 +144,16 @@ export default function IntegrationCreate() {
         setConnectionConfigParams(params);
     };
 
+    const handleAuthorizationParamsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        try {
+            setAuthorizationParams(JSON.parse(e.target.value));
+            setAuthorizationParamsError(false);
+        } catch (e) {
+            setAuthorizationParams(null);
+            setAuthorizationParamsError(true);
+        }
+    };
+
     const snippet = () => {
         let args = [];
 
@@ -155,10 +172,20 @@ export default function IntegrationCreate() {
 
         let connectionConfigStr = '';
 
-        // Iterate of connectionConfigParams and create a string.
+        // Iterate of connection config params and create a string.
         if (connectionConfigParams != null && Object.keys(connectionConfigParams).length >= 0) {
             connectionConfigStr = ', { params: { ';
             for (const [key, value] of Object.entries(connectionConfigParams)) {
+                connectionConfigStr += `${key}: '${value}', `;
+            }
+            connectionConfigStr = connectionConfigStr.slice(0, -2);
+            connectionConfigStr += ' }}';
+        }
+
+        // Iterate of authorization params and create a string.
+        if (authorizationParams != null && Object.keys(authorizationParams).length >= 0 && Object.keys(authorizationParams)[0]) {
+            connectionConfigStr = ', authorization_params: { ';
+            for (const [key, value] of Object.entries(authorizationParams)) {
                 connectionConfigStr += `${key}: '${value}', `;
             }
             connectionConfigStr = connectionConfigStr.slice(0, -2);
@@ -307,6 +334,37 @@ nango.auth('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr}$
                                     </div>
                                 </div>
                             ))}
+
+                            <div>
+                                <div className="flex mt-6">
+                                    <label htmlFor="client_id" className="text-text-light-gray block text-sm font-semibold">
+                                        Optional: Additional Authorization Params
+                                    </label>
+                                    <Tooltip
+                                        text={
+                                            <>
+                                                <div className="flex text-black text-sm">
+                                                    <p>{`Add query parameters in the authorization URL, on a per-connection basis. Most integrations don't require this. This should be formatted as a JSON object, e.g. { "key" : "value" }. `}</p>
+                                                </div>
+                                            </>
+                                        }
+                                    >
+                                        <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                    </Tooltip>
+                                </div>
+                                <div className="mt-1">
+                                    <input
+                                        id="authorization_params"
+                                        name="authorization_params"
+                                        type="text"
+                                        defaultValue="{ }"
+                                        className={`${authorizationParamsError ? 'border-red-700' : 'border-border-gray'}  ${
+                                            authorizationParamsError ? 'text-red-700' : 'text-text-light-gray'
+                                        } focus:ring-white bg-bg-black block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none`}
+                                        onChange={handleAuthorizationParamsChange}
+                                    />
+                                </div>
+                            </div>
 
                             <div>
                                 {serverErrorMessage && <p className="mt-6 text-sm text-red-600">{serverErrorMessage}</p>}
