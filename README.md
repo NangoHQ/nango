@@ -117,7 +117,7 @@ npm install nango -g
 Run locally:
 
 ```shell
-npx nango start
+nango start
 ```
 
 Or sign up for free:
