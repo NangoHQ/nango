@@ -4,16 +4,23 @@ sidebarTitle: '🚀 Quickstart'
 description: 'Quickly authorize the Github API & sync Github issues, using Nango.'
 ---
 
-I this quickstart, we will: 
+I this quickstart, we will:
 1. Run Nango locally
 2. Authorize an API (e.g Github)
 3. Sync objects from an API (e.g. Github issues)
 
 ## Step 1: Run Nango locally
 
+<Tip>
+    We recommend you install nango globally via the command
+    ```bash
+        npm install nango -g
+    ```
+</Tip>
+
 Run Nango locally (with Docker):
 ```bash
-npx nango start
+nango start
 ```
 
 Open the Dashboard in your browser ([http://localhost:3003](http://localhost:3003)).
@@ -21,19 +28,19 @@ Open the Dashboard in your browser ([http://localhost:3003](http://localhost:300
 ## Step 2: Authorize an API (e.g Github)
 
 ### Configure the Github integration in Nango
-On the Dashboard, go to the [New Integration page](http://localhost:3003/integration/create). 
+On the Dashboard, go to the [New Integration page](http://localhost:3003/integration/create).
 
 Use the value `github` for both the `Integration Provider` dropdown and the `Integration Unique Key` field.
 
-To get the `Client ID` and `Client Secret` you will need to register your app with Github [here](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app). Github will ask you to submit the `Callback URL` shown at the bottom of the New Integration page on Nango. You should also select the `repo` scope both while creating the OAuth app on Github and on the New Integration page on Nango. 
+To get the `Client ID` and `Client Secret` you will need to register your app with Github [here](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app). Github will ask you to submit the `Callback URL` shown at the bottom of the New Integration page on Nango. You should also select the `repo` scope both while creating the OAuth app on Github and on the New Integration page on Nango.
 
 ### Test the Github Integration
 Click "OAuth" next to the integration to try an OAuth flow from Nango. Keep the default value `test-connection-id` for the `Connection ID` field.
 
 ![Nango OAuth button](/images/quickstart/nango-oauth-button.png)
 - If you get an error, check the [Activity tab](http://localhost:3003/activity): The logs there can show you helpful information to debug the issue.
-- Retrieve your access token from the [Connections tab](http://localhost:3003/connections). 
-    
+- Retrieve your access token from the [Connections tab](http://localhost:3003/connections).
+
 <Tip>
 If you are using Nango to authorize APIs, that's it 🎉 You can check the [API Authorization guide](/guides/oauth) to find out how to authorize users directly from your frontend and retrieve credentials from your backend.
 </Tip>
@@ -42,11 +49,11 @@ If you are using Nango to authorize APIs, that's it 🎉 You can check the [API 
 
 ### Configure a Sync
 
-Kill the console tab when you ran `npx nango start` in Step 1 (or press `Ctrl` + `c`).
+Kill the console tab when you ran `nango start` in Step 1 (or press `Ctrl` + `c`).
 
 In the folder where you want your integration files (recommendation: root of your project), run:
 ```
-npx nango dev
+nango dev
 ```
 
 Answer `yes` when prompted if you want to "create some default integrations and build them". This will create a `nango-integrations` folder with two prefilled files:
@@ -60,7 +67,7 @@ The rest of the files are automatically-generated based on the two previous file
 Open a new terminal tab, go to folder that contains the `nango-integrations` folder and test your sync by running:
 
 ```bash
-npx nango sync:run -p github -s github-issue-example -c test-connection-id
+nango sync:run -p github -s github-issue-example -c test-connection-id
 ```
 
 This will only execute a dry run of the Sync. Synced objects will not be persisted in Nango's storage. It allows you to quickly check if your Sync script is correct.
@@ -70,7 +77,7 @@ This will only execute a dry run of the Sync. Synced objects will not be persist
 Finally, you can deploy your sync locally:
 
 ```bash
-npx nango deploy:local
+nango deploy:local
 ```
 
 This will automatically start syncing Github issues for the Connection that you created in Step 2, continuously. You can manage your Syncs from the [Dashboard](http://localhost:3003/syncs).

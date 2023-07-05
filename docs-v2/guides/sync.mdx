@@ -5,11 +5,18 @@ description: 'Continuously sync with APIs, bi-directionally.'
 ---
 
 <Note>
-Nango Sync is currently in private beta.  
+Nango Sync is currently in private beta.
 Please reach out on the [Slack community](https://nango.dev/slack) to get access!
 </Note>
 
 In this guide, we show you how to sync data from external APIs with Nango.
+
+<Tip>
+    We recommend you install nango globally via the command
+    ```bash
+        npm install nango -g
+    ```
+</Tip>
 
 # Step 1: Initialize Nango
 
@@ -19,7 +26,7 @@ If you don't have a `nango-integrations` folder yet, `cd` to the folder where yo
 
 Then run:
 ```bash
-npx nango init
+nango init
 ```
 
 <Tip>
@@ -48,19 +55,19 @@ Our CLI helps you manage this directory, create scaffolds, validates the configu
 ### Run Nango
 
 <Note>
-Make sure you are not running `npx nango start` somewhere, if so kill the tab. It is redundant with the following command.
+Make sure you are not running `nango start` somewhere, if so kill the tab. It is redundant with the following command.
 </Note>
 
-Start Nango locally: 
+Start Nango locally:
 
 ```bash
-npx nango dev
+nango dev
 ```
 
 <Tip>
-    The initial start can take some time while the database is setup (&lt;5mins). 
+    The initial start can take some time while the database is setup (&lt;5mins).
 
-	`npx nango dev` runs Nango (like `npx nango start`) but also automatically watches for changes in your files and recompiles as needed. Compilation errors are printed to the terminal.
+	`nango dev` runs Nango (like `nango start`) but also automatically watches for changes in your files and recompiles as needed. Compilation errors are printed to the terminal.
 
 	Once ready, you can access the dashboard at [http:localhost:3003](http:localhost:3003)
 </Tip>
@@ -78,7 +85,7 @@ integrations:
 			return:
 				- AsanaTask # Data model (defined below) as returned by your Sync script
 
-models: 
+models:
 	AsanaTask: # Data model referenced above
 		id: string # Required unique ID
         project_id: string
@@ -105,12 +112,12 @@ This lets you easily **create your own unified API** with standard data models t
 
 ### Write your Sync
 
-Modify the configuration of `nango.yaml` as you need and run: 
+Modify the configuration of `nango.yaml` as you need and run:
 ```
-npx nango generate
+nango generate
 ```
 
-This will generate the scaffold for your Sync script(s). Open any Sync script (named `[sync-name].ts`) which contains the following template (for the Asana example above): 
+This will generate the scaffold for your Sync script(s). Open any Sync script (named `[sync-name].ts`) which contains the following template (for the Asana example above):
 
 ```typescript asana-tasks.ts
 import { NangoSync } from 'nango';
@@ -121,14 +128,14 @@ export default async function fetchData(nango: NangoSync): Promise<{AsanaTask: A
 }
 ```
 
-Sync scripts mostly do 2 things. They: 
+Sync scripts mostly do 2 things. They:
 - incrementally fetch data from external APIs (with HTTP requests)
 - transform the external data into the models that you defined in `nango.yaml`
 
 This logic is defined by you so that you can build arbitrarily custom and complex integrations.
 
 <Tip>
-Your Sync scripts are deployed to Nango and automatically run on a schedule. 
+Your Sync scripts are deployed to Nango and automatically run on a schedule.
 
 For local development, Nango runs your Sync scripts on your local machine. In production, your Sync scripts are deployed remotely and run on the Nango Cloud.
 
@@ -211,7 +218,7 @@ async function paginate(nango: NangoSync, endpoint: string, queryParams?: Record
 }
 ```
 
-Sync scripts return the created/update data to Nango in two different ways: 
+Sync scripts return the created/update data to Nango in two different ways:
 - all at once, at the end of the script, with `return { ModelName: data };` (for small datasets)
 - in batches, using `await nango.batchSend(data, 'ModelName');` (useful to break down large datasets)
 
@@ -243,26 +250,26 @@ For this step, you should have already set up an Integration and created a Conne
 Easily test your Sync with the CLI by running:
 
 ```bash
-npx nango sync:run -p asana-dev -s asana-tasks -c <user-id>
+nango sync:run -p asana-dev -s asana-tasks -c <user-id>
 ```
 
 This will only execute a dry run of the Sync. Synced objects will not be persisted in Nango's storage. It allows you to quickly check if your Sync script is correct.
 
 <Tip>
-To test incremental Sync runs, populate the `nango.lastSyncDate` value by adding the `-l` flag: 
+To test incremental Sync runs, populate the `nango.lastSyncDate` value by adding the `-l` flag:
 ```bash
-npx nango sync:run -p asana-dev -s asana-tasks -c <user-id> -l "2023-06-20T10:00:00.000Z"
+nango sync:run -p asana-dev -s asana-tasks -c <user-id> -l "2023-06-20T10:00:00.000Z"
 ```
 </Tip>
 
 # Step 3: Deploy a Sync
 
 **1. Deploy locally**
-    
+
     When you Sync script is ready, you can deploy your Sync locally:
 
     ```bash
-    npx nango deploy:local
+    nango deploy:local
     ```
 
     Inspect the [Sync tab](http://localhost:3003/syncs) on the **localhost** Dashboard the verify the deployment succeeded.
@@ -278,11 +285,11 @@ npx nango sync:run -p asana-dev -s asana-tasks -c <user-id> -l "2023-06-20T10:00
     <Note>
         To deploy to Nango Cloud, you should have already set up an Integration **on Cloud** (cf. [Authorize APIs guide](/guides/oauth)).
     </Note>
-    
+
     Once your Sync is tested locally and you are ready to deploy it to production on Nango Cloud, you can run:
 
     ```bash
-    npx nango deploy:cloud
+    nango deploy:cloud
     ```
 
     Inspect the [Sync tab](https://app.nango.dev/syncs) on the **Cloud** Dashboard to verify the deployment succeeded.
@@ -311,10 +318,10 @@ That's it!
 
 ### Field Mapping
 
-You can store field mapping data that is specific to a Connection. The object must be JSON serializable, but there are no other constraints. 
+You can store field mapping data that is specific to a Connection. The object must be JSON serializable, but there are no other constraints.
 
 For this, call:
     - `nango.setFieldMapping(...)` in the node SDK to store the field mapping
     - `nango.getFieldMapping()` in the Sync script to retrieve the field mapping of the current Connection
 
-In the future we want to help you more with field mappings (metadata requests to get available objects & fields, UI components etc.). 
+In the future we want to help you more with field mappings (metadata requests to get available objects & fields, UI components etc.).

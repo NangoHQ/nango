@@ -14,10 +14,17 @@ We recommend that you:
 
 <Tab title="Localhost">
 
+<Tip>
+    We recommend you install nango globally via the command
+    ```bash
+        npm install nango -g
+    ```
+</Tip>
+
 Run Nango locally (with Docker):
 
 ```bash
-npx nango start
+nango start
 ```
 
 Open the Dashboard in your browser ([http://localhost:3003](http://localhost:3003)).
@@ -40,10 +47,10 @@ Open the Dashboard in your browser ([http://localhost:3003](https://app.nango.de
 
 On the Dashboard, go to the New Integration page ([localhost](http://localhost:3003/integration/create) / [cloud](https://app.nango.dev/integration/create)) and fill in the form.
 
-To get the `Client ID` and `Client Secret` you will need to register your app with the API. The API provider will ask you to submit the `Callback URL` shown at the bottom of the New Integration page on Nango. You should also register the necessary scopes both with the API provider and on the New Integration page on Nango. 
+To get the `Client ID` and `Client Secret` you will need to register your app with the API. The API provider will ask you to submit the `Callback URL` shown at the bottom of the New Integration page on Nango. You should also register the necessary scopes both with the API provider and on the New Integration page on Nango.
 
 <Tip>
-    Search for your API here on the Nango docs: e.g. [Notion](/integrations/all/notion).  
+    Search for your API here on the Nango docs: e.g. [Notion](/integrations/all/notion).
     It will show you helpful links to register your OAuth app & get scopes.
 </Tip>
 
@@ -216,8 +223,8 @@ To specify the subdomain, pass in an additional configuration object to `nango.a
 
 ```javascript
 nango.auth('zendesk', '<CONNECTION-ID>', {
-    params: { 
-        subdomain: '<ZENDESK-SUBDOMAIN>' 
+    params: {
+        subdomain: '<ZENDESK-SUBDOMAIN>'
     }
 });
 ```

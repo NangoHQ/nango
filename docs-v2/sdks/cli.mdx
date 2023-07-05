@@ -6,7 +6,7 @@ icon: 'terminal'
 
 ## Installing the CLI
 
-We recommend that you install the CLI globally by simply running `npx nango [command]` directly. It will prompt you for updates automatically.
+We recommend that you install the CLI globally by running `npm install nango -g`.
 
 By default, the CLI assumes that you are using Nango Cloud so you need to set the `NANGO_SECRET_KEY` env variable or pass in the `--secret-key` flag with each command.
 
@@ -14,31 +14,31 @@ For self-hosting, set the `NANGO_HOSTPORT` env variable or pass in the --host fl
 
 ## All CLI commands & command details
 
-Check out all CLI commands by running: 
+Check out all CLI commands by running:
 ```bash
-npx nango
+nango
 ```
 
-Get details about a specific command by running: 
+Get details about a specific command by running:
 ```bash
-npx nango [command] --help
+nango [command] --help
 ```
 
 ## Run Nango locally
 
-If you are only using Nango for OAuth, you can run Nango locally by running (cf. [Authorize APIs guide](/guides/sync)): 
+If you are only using Nango for OAuth, you can run Nango locally by running (cf. [Authorize APIs guide](/guides/sync)):
 ```bash
-npx nango start
+nango start
 ```
 
-If you are developing [Syncs](/core-concepts#syncs), instead run (cf. [Sync Data guide](/guides/sync)): 
+If you are developing [Syncs](/core-concepts#syncs), instead run (cf. [Sync Data guide](/guides/sync)):
 ```bash
-npx nango dev
+nango dev
 ```
 
 ## Flags & environment variables
 
-Your can use the following flags on every CLI command: 
+Your can use the following flags on every CLI command:
 ```bash
 --secret-key [secretKey] # Set the secret key. Overrides the `NANGO_SECRET_KEY` value set in the .env file
 ```
