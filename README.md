@@ -109,10 +109,15 @@ If your favorite API is missing
 
 ## 🚀 Quickstart
 
+Install nango globally
+```
+npm install nango -g
+```
+
 Run locally:
 
 ```shell
-npx nango start
+nango start
 ```
 
 Or sign up for free:

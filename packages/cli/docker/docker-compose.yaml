@@ -15,7 +15,7 @@ services:
             - nango
 
     nango-server:
-        image: nangohq/nango-server:0.23.10
+        image: nangohq/nango-server:0.23.14
         container_name: nango-server
         environment:
             - TEMPORAL_ADDRESS=temporal:7233
@@ -47,11 +47,12 @@ services:
             - nango-db
         volumes:
             - "${NANGO_INTEGRATIONS_LOCATION:-./nango-integrations}:/usr/nango-server/src/packages/shared/dist/lib/nango-integrations"
+            - './packages/shared/providers.yaml:/usr/nango-server/src/packages/shared/providers.yaml'
         networks:
             - nango
 
     nango-worker:
-        image: nangohq/nango-worker:0.23.10
+        image: nangohq/nango-worker:0.23.14
         container_name: nango-worker
         restart: always
         ports:
