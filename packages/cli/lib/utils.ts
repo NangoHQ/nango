@@ -69,7 +69,7 @@ export function isLocallyInstalled(packageName: string, debug = false) {
 
             if (dir.startsWith(npxCacheDir)) {
                 if (debug) {
-                    printDebug(`Ignoring npx cache directory: ${dir} while trying to find if nango is locally installed.`)
+                    printDebug(`Ignoring npx cache directory: ${dir} while trying to find if nango is locally installed.`);
                 }
             } else if (fs.existsSync(packageJsonPath)) {
                 const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
@@ -135,7 +135,7 @@ export async function verifyNecessaryFiles(autoConfirm: boolean, debug = false) 
 }
 
 export async function upgradeAction(debug = false) {
-    const isRunViaNpx = process.argv.some(arg => arg.includes('npx'));
+    const isRunViaNpx = process.argv.some((arg) => arg.includes('npx'));
     const locallyInstalled = isLocallyInstalled('nango', debug);
 
     if (debug) {
