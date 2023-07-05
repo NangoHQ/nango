@@ -59,7 +59,6 @@ program.addHelpText('before', chalk.green(figlet.textSync('Nango CLI')));
 
 program
     .command('version')
-    .alias('v')
     .description('Print the version of the Nango CLI, Nango Worker, and Nango Server.')
     .action(function (this: Command) {
         const { debug } = this.opts();
@@ -68,7 +67,6 @@ program
 
 program
     .command('init')
-    .alias('i')
     .description('Initialize a new Nango project')
     .action(function (this: Command) {
         const { debug } = this.opts();
@@ -77,7 +75,6 @@ program
 
 program
     .command('generate')
-    .alias('g')
     .description('Generate a new Nango integration')
     .action(async function (this: Command) {
         const { autoConfirm, debug } = this.opts();
@@ -87,8 +84,6 @@ program
 
 program
     .command('run')
-    .alias('sync:run')
-    .alias('sr')
     .description('Run the sync process to help with debugging. Assumes local development environment.')
     .option('-s, --sync <syncName>', 'The name of the sync (e.g. account-sync).')
     .option('-p, --provider <provider_config_key>', 'The unique key of the provider configuration (chosen by you upon creating this provider configuration).')
@@ -101,19 +96,7 @@ program
     });
 
 program
-    .command('compile')
-    .description('Compile the integration files to JavaScript')
-    .action(async function (this: Command) {
-        const { autoConfirm, debug } = this.opts();
-        await verifyNecessaryFiles(autoConfirm, debug);
-        tsc(debug);
-    });
-
-program
     .command('dev')
-    .alias('compile:watch')
-    .alias('tsc:watch')
-    .alias('tscw')
     .description('Watch tsc files while developing. Set --no-compile-interfaces to disable watching the config file')
     .option('--no-compile-interfaces', `Watch the ${nangoConfigFile} and recompile the interfaces on change`, true)
     .action(async function (this: Command) {
@@ -128,23 +111,7 @@ program
     });
 
 program
-    .command('deploy:local')
-    .alias('dl')
-    .description('Deploy a Nango integration to local')
-    .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integration with. Can be used for rollbacks.')
-    .option('--no-compile-interfaces', `Don't compile the ${nangoConfigFile}`, true)
-    .action(async function (this: Command) {
-        const options = this.opts();
-        (async (options: DeployOptions) => {
-            await deploy({ ...options, env: 'local' }, options.debug);
-        })(options as DeployOptions);
-    });
-
-program
     .command('deploy')
-    .alias('d')
-    .alias('deploy:prod')
-    .alias('deploy:cloud')
     .description('Deploy a Nango integration')
     .option('--staging', 'Deploy to the staging instance')
     .option('--local', 'Deploy to the local instance')
@@ -162,6 +129,28 @@ program
     });
 
 // Hidden commands //
+
+program
+    .command('deploy:local', { hidden: true })
+    .alias('dl')
+    .description('Deploy a Nango integration to local')
+    .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integration with. Can be used for rollbacks.')
+    .option('--no-compile-interfaces', `Don't compile the ${nangoConfigFile}`, true)
+    .action(async function (this: Command) {
+        const options = this.opts();
+        (async (options: DeployOptions) => {
+            await deploy({ ...options, env: 'local' }, options.debug);
+        })(options as DeployOptions);
+    });
+
+program
+    .command('compile', { hidden: true })
+    .description('Compile the integration files to JavaScript')
+    .action(async function (this: Command) {
+        const { autoConfirm, debug } = this.opts();
+        await verifyNecessaryFiles(autoConfirm, debug);
+        tsc(debug);
+    });
 
 program
     .command('sync:dev', { hidden: true })
