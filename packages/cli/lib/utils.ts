@@ -141,7 +141,7 @@ export async function upgradeAction(debug = false) {
                 console.log(chalk.yellow(`Upgrading ${resolved.name} to version ${latestVersion}...`));
 
                 const args = isLocallyInstalled('nango')
-                    ? ['install', '--no-audit', `nango@${latestVersion}`]
+                    ? ['install', '--no-audit', '--save', `nango@${latestVersion}`]
                     : ['install', '-g', '--no-audit', `nango@${latestVersion}`];
 
                 if (debug) {
