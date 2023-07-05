@@ -405,7 +405,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                                             No syncs yet - use Nango Sync to exchange data with the external API. See the{' '}
                                             <a href="https://docs.nango.dev/nango-sync" className="text-blue-500" target="_blank" rel="noreferrer">
                                                 docs
-                                            </a>
+                                            </a>. If you have a sync please make sure you have deployed it!
                                         </div>
                                     </div>
                                 )}
@@ -422,16 +422,20 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                 text={
                                                         <>
                                                             <div>Sync ID: {sync.id}</div>
-                                                            <div>Job ID: {sync?.latest_sync.job_id}</div>
+                                                            <div>Job ID: {sync?.latest_sync?.job_id}</div>
                                                             <div>Schedule ID: {sync?.schedule_id}</div>
                                                         </>
                                                     }
                                                     type="dark"
                                                 >
-                                                    <li className="w-48">{sync.name}</li>
+                                                            <li className="w-48">{sync.name}{sync.latest_sync && (<>@v{sync?.latest_sync?.version}</>)}</li>
                                                 </Tooltip>
                                                 <li className="w-48 ml-6 text-sm">
-                                                    {sync.models.map((model) => model.charAt(0).toUpperCase() + model.slice(1)).join(', ')}
+                                                    {sync.latest_sync && sync.latest_sync.models ? (
+                                                        <>
+                                                            {sync.latest_sync.models.map((model) => model.charAt(0).toUpperCase() + model.slice(1)).join(', ')}
+                                                        </>
+                                                    ) : '-'}
                                                 </li>
                                                 <li className="w-32 ml-2">
                                                     {sync.schedule_status === 'PAUSED' && (
@@ -440,11 +444,11 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                             <p className="inline-block text-red-500 text-sm">stopped</p>
                                                         </div>
                                                     )}
-                                                    {sync.latest_sync.status === 'STOPPED' &&
+                                                    {sync?.latest_sync?.status === 'STOPPED' &&
                                                         sync.schedule_status !== 'PAUSED' &&
                                                         (sync.latest_sync.activity_log_id !== null ? (
                                                             <Link
-                                                                to={`/activity?activity_log_id=${sync.latest_sync.activity_log_id}`}
+                                                                to={`/activity?activity_log_id=${sync.latest_sync?.activity_log_id}`}
                                                                 className={errorBubbleStyles}
                                                             >
                                                                 <ErrorBubble />
@@ -454,11 +458,11 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                                 <ErrorBubble />
                                                             </div>
                                                         ))}
-                                                    {sync.latest_sync.status === 'RUNNING' &&
+                                                    {sync.latest_sync?.status === 'RUNNING' &&
                                                         sync.schedule_status !== 'PAUSED' &&
-                                                        (sync.latest_sync.activity_log_id !== null ? (
+                                                        (sync.latest_sync?.activity_log_id !== null ? (
                                                             <Link
-                                                                to={`/activity?activity_log_id=${sync.latest_sync.activity_log_id}`}
+                                                                to={`/activity?activity_log_id=${sync.latest_sync?.activity_log_id}`}
                                                                 className={runningBubbleStyles}
                                                             >
                                                                 <RunningBubble />
@@ -468,11 +472,11 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                                 <RunningBubble />
                                                             </div>
                                                         ))}
-                                                    {sync.latest_sync.status === 'SUCCESS' &&
+                                                    {sync.latest_sync?.status === 'SUCCESS' &&
                                                         sync.schedule_status !== 'PAUSED' &&
-                                                        (sync.latest_sync.activity_log_id !== null ? (
+                                                        (sync.latest_sync?.activity_log_id !== null ? (
                                                             <Link
-                                                                to={`/activity?activity_log_id=${sync.latest_sync.activity_log_id}`}
+                                                                to={`/activity?activity_log_id=${sync.latest_sync?.activity_log_id}`}
                                                                 className={successBubbleStyles}
                                                             >
                                                                 <SuccessBubble />
@@ -483,18 +487,33 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                             </div>
                                                         ))}
                                                 </li>
-                                                <Tooltip text={parseLatestSyncResult(sync.latest_sync.result, sync.models)} type="dark">
-                                                    {sync.latest_sync.activity_log_id !== null ? (
-                                                        <Link
-                                                            to={`/activity?activity_log_id=${sync.latest_sync.activity_log_id}`}
-                                                            className="block w-36 ml-1 text-gray-500 text-sm"
-                                                        >
-                                                            {formatDateToUSFormat(sync.latest_sync.updated_at)}
-                                                        </Link>
-                                                    ) : (
-                                                        <li className="w-36 ml-1 text-gray-500 text-sm">{formatDateToUSFormat(sync.latest_sync.updated_at)}</li>
-                                                    )}
-                                                </Tooltip>
+                                                {sync.latest_sync?.result && Object.keys(sync.latest_sync?.result).length > 0 ? (
+                                                    <Tooltip text={<pre>{parseLatestSyncResult(sync.latest_sync.result, sync.latest_sync.models)}</pre>} type="dark">
+                                                        {sync.latest_sync?.activity_log_id !== null ? (
+                                                            <Link
+                                                                to={`/activity?activity_log_id=${sync.latest_sync?.activity_log_id}`}
+                                                                className="block w-36 ml-1 text-gray-500 text-sm"
+                                                            >
+                                                                {formatDateToUSFormat(sync.latest_sync?.updated_at)}
+                                                            </Link>
+                                                        ) : (
+                                                            <li className="w-36 ml-1 text-gray-500 text-sm">{formatDateToUSFormat(sync.latest_sync?.updated_at)}</li>
+                                                        )}
+                                                    </Tooltip>
+                                                ): (
+                                                    <>
+                                                        {sync.latest_sync?.activity_log_id !== null ? (
+                                                            <Link
+                                                                to={`/activity?activity_log_id=${sync.latest_sync?.activity_log_id}`}
+                                                                className="block w-36 ml-1 text-gray-500 text-sm"
+                                                            >
+                                                                {formatDateToUSFormat(sync.latest_sync?.updated_at)}
+                                                            </Link>
+                                                        ) : (
+                                                            <li className="w-36 ml-1 text-gray-500 text-sm">{formatDateToUSFormat(sync.latest_sync?.updated_at)}</li>
+                                                        )}
+                                                    </>
+                                                )}
                                                 {sync.schedule_status === 'RUNNING' && (
                                                     <>
                                                         {interpretNextRun(sync.futureActionTimes) === '-' ? (

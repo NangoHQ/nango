@@ -235,6 +235,7 @@ class ConfigController {
         try {
             const accountId = getAccount(res);
             const providerConfigKey = req.params['providerConfigKey'] as string;
+            const includeCreds = req.query['include_creds'] === 'true';
 
             if (providerConfigKey == null) {
                 errorManager.errRes(res, 'missing_provider_config');
@@ -248,7 +249,17 @@ class ConfigController {
                 return;
             }
 
-            res.status(200).send({ config: { unique_key: config.unique_key, provider: config.provider } });
+            const configRes = includeCreds
+                ? {
+                      uniqueKey: config.unique_key,
+                      provider: config.provider,
+                      clientId: config.oauth_client_id,
+                      clientSecret: config.oauth_client_secret,
+                      scopes: config.oauth_scopes
+                  }
+                : { uniqueKey: config.unique_key, provider: config.provider };
+
+            res.status(200).send({ config: { configRes } });
         } catch (err) {
             next(err);
         }

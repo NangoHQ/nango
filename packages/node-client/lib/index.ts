@@ -28,6 +28,10 @@ interface CreateConnectionOAuth2 extends OAuth2Credentials {
     type: AuthModes.OAuth2;
 }
 
+interface CustomHeaders {
+    [key: string]: string | number | boolean;
+}
+
 export enum SyncType {
     INITIAL = 'INITIAL',
     INCREMENTAL = 'INCREMENTAL'
@@ -154,14 +158,22 @@ export class Nango {
 
         const url = `${this.serverUrl}/proxy/${config.endpoint}`;
 
-        const headers: Record<string, string | number | boolean> = {
+        const customPrefixedHeaders: CustomHeaders =
+            customHeaders && Object.keys(customHeaders as CustomHeaders).length > 0
+                ? Object.keys(customHeaders as CustomHeaders).reduce((acc: CustomHeaders, key: string) => {
+                      acc[`Nango-Proxy-${key}`] = customHeaders[key] as string;
+                      return acc;
+                  }, {})
+                : ({} as CustomHeaders);
+
+        const headers: Record<string, string | number | boolean | CustomHeaders> = {
             'Connection-Id': connectionId as string,
             'Provider-Config-Key': providerConfigKey as string,
             'Base-Url-Override': baseUrlOverride || '',
             'Nango-Is-Sync': this.isSync,
             'Nango-Is-Dry-Run': this.dryRun,
             'Nango-Activity-Log-Id': this.activityLogId || '',
-            ...customHeaders
+            ...customPrefixedHeaders
         };
 
         if (retries) {
@@ -169,7 +181,7 @@ export class Nango {
         }
 
         const options: AxiosRequestConfig = {
-            headers: this.enrichHeaders(headers)
+            headers: this.enrichHeaders(headers as Record<string, string | number | boolean>)
         };
 
         if (config.params) {
@@ -178,6 +190,10 @@ export class Nango {
 
         if (config.paramsSerializer) {
             options.paramsSerializer = config.paramsSerializer;
+        }
+
+        if (this.dryRun) {
+            console.log(`Nango Proxy Request: ${method?.toUpperCase()} ${url}`);
         }
 
         if (method?.toUpperCase() === 'POST') {
@@ -266,6 +282,12 @@ export class Nango {
      */
     public async listConnections(connectionId?: string) {
         const response = await this.listConnectionDetails(connectionId);
+        return response.data;
+    }
+
+    public async getIntegration(providerConfigKey: string, includeIntegrationCredetials = false) {
+        const url = `${this.serverUrl}/config/${providerConfigKey}`;
+        const response = await axios.get(url, { headers: this.enrichHeaders({}), params: { include_creds: includeIntegrationCredetials } });
         return response.data;
     }
 

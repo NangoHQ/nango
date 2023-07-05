@@ -139,3 +139,19 @@ export async function getLogsByAccount(account_id: number, limit = 30, offset = 
 
     return logs;
 }
+
+export async function createActivityLogDatabaseErrorMessageAndEnd(baseMessage: string, error: any, activityLogId: number) {
+    let errorMessage = baseMessage;
+
+    if ('code' in error) errorMessage += ` Error code: ${error.code}.\n`;
+    if ('detail' in error) errorMessage += ` Detail: ${error.detail}.\n`;
+
+    errorMessage += `Error Message: ${error.message}`;
+
+    await createActivityLogMessageAndEnd({
+        level: 'error',
+        activity_log_id: activityLogId,
+        timestamp: Date.now(),
+        content: errorMessage
+    });
+}

@@ -1,0 +1,63 @@
+---
+title: 'CLI'
+sidebarTitle: 'CLI'
+icon: 'terminal'
+---
+
+## Installing the CLI
+
+We recommend that you install the CLI globally by simply running `npx nango [command]` directly. It will prompt you for updates automatically.
+
+By default, the CLI assumes that you are using Nango Cloud so you need to set the `NANGO_SECRET_KEY` env variable or pass in the `--secret-key` flag with each command.
+
+For self-hosting, set the `NANGO_HOSTPORT` env variable or pass in the --host flag with each command.
+
+## All CLI commands & command details
+
+Check out all CLI commands by running: 
+```bash
+npx nango
+```
+
+Get details about a specific command by running: 
+```bash
+npx nango [command] --help
+```
+
+## Run Nango locally
+
+If you are only using Nango for OAuth, you can run Nango locally by running (cf. [Authorize APIs guide](/guides/sync)): 
+```bash
+npx nango start
+```
+
+If you are developing [Syncs](/core-concepts#syncs), instead run (cf. [Sync Data guide](/guides/sync)): 
+```bash
+npx nango dev
+```
+
+## Flags & environment variables
+
+Your can use the following flags on every CLI command: 
+```bash
+--secret-key [secretKey] # Set the secret key. Overrides the `NANGO_SECRET_KEY` value set in the .env file
+```
+```bash
+--host [host] # Set the host. Overrides the `NANGO_HOSTPORT` value set in the .env file
+```
+```bash
+--auto-confirm # Auto confirm yes to all prompts (for CI).
+```
+
+You can also use the following environment variables (e.g. by adding an `.env` where you run the CLI):
+```bash
+NANGO_HOSTPORT=https://api.nango.dev | http://localhost:3003 | your-self-hosted-address
+NANGO_AUTO_UPGRADE=true # upgrade the CLI automatically
+NANGO_NO_PROMPT_FOR_UPGRADE=false # don't prompt for upgrades
+NANGO_DEPLOY_AUTO_CONFIRM=false # deploy without any prompts
+NANGO_SECRET_KEY=xxxx-xxx-xxxx # Required for Nango Cloud to authenticate
+NANGO_INTEGRATIONS_LOCATION=use-this-to-override-where-the-nango-integrations-directory-goes # set a custom location for the nango-integrations directory
+NANGO_PORT=use-this-to-override-the-default-3003 # set a custom port for the Nango Server
+NANGO_DB_PORT=use-this-to-override-the-default-5432 # set a custom port for the Nango database
+```
+

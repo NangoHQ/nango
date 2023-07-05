@@ -15,9 +15,10 @@ class IntegrationService {
         optionalLoadLocation?: string
     ): Promise<any> {
         try {
-            const script: string | null = isCloud()
-                ? await fileService.getFile(integrationData.fileLocation as string)
-                : getIntegrationFile(syncName, optionalLoadLocation);
+            const script: string | null =
+                isCloud() && !optionalLoadLocation
+                    ? await fileService.getFile(integrationData.fileLocation as string)
+                    : getIntegrationFile(syncName, optionalLoadLocation);
 
             if (!script) {
                 const content = `Unable to find integration file for ${syncName}`;

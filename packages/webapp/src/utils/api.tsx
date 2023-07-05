@@ -449,6 +449,21 @@ export function useGetSyncAPI() {
     };
 }
 
+export function useGetAllSyncsAPI() {
+    return async () => {
+        try {
+            const res = await fetch(`/api/v1/syncs`, {
+                method: 'GET',
+                headers: getHeaders(),
+            });
+
+            return res;
+        } catch (e) {
+            requestErrorToast();
+        }
+    };
+}
+
 export function useRunSyncAPI() {
     return async (command: RunSyncCommand, schedule_id: string, nango_connection_id: number, sync_id: number, sync_name: string, provider?: string) => {
         try {

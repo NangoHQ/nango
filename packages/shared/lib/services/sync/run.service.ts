@@ -1,8 +1,9 @@
-import { loadNangoConfig } from '../nango-config.service.js';
+import { loadLocalNangoConfig, nangoConfigFile } from '../nango-config.service.js';
 import type { NangoConnection } from '../../models/Connection.js';
 import { SyncResult, SyncType, SyncStatus, Job as SyncJob } from '../../models/Sync.js';
 import { createActivityLogMessage, createActivityLogMessageAndEnd, updateSuccess as updateSuccessActivityLog } from '../activity.service.js';
 import { addSyncConfigToJob, updateSyncJobResult, updateSyncJobStatus } from '../sync/job.service.js';
+import { getSyncConfig } from './config.service.js';
 import { checkForIntegrationFile } from '../nango-config.service.js';
 import { getLastSyncDate } from './sync.service.js';
 import { formatDataRecords } from './data-records.service.js';
@@ -28,6 +29,7 @@ interface SyncRunConfig {
     activityLogId?: number;
 
     loadLocation?: string;
+    debug?: boolean;
 }
 
 export default class SyncRun {
@@ -40,6 +42,7 @@ export default class SyncRun {
     syncJobId?: number;
     activityLogId?: number;
     loadLocation?: string;
+    debug?: boolean;
 
     constructor(config: SyncRunConfig) {
         this.writeToDb = config.writeToDb;
@@ -62,15 +65,32 @@ export default class SyncRun {
         if (config.loadLocation) {
             this.loadLocation = config.loadLocation;
         }
+
+        if (config.debug) {
+            this.debug = config.debug;
+        }
     }
 
-    async run(optionalLastSyncDate?: Date | null, bypassAccount?: boolean, optionalSecretKey?: string): Promise<boolean | object> {
-        const nangoConfig = await loadNangoConfig(this.nangoConnection, this.syncName, this.syncId, this.loadLocation);
+    async run(optionalLastSyncDate?: Date | null, bypassAccount?: boolean, optionalSecretKey?: string, optionalHost?: string): Promise<boolean | object> {
+        if (this.debug) {
+            const content = this.loadLocation ? `Looking for a local nango config at ${this.loadLocation}` : `Looking for a sync config for ${this.syncName}`;
+            if (this.writeToDb) {
+                await createActivityLogMessage({
+                    level: 'debug',
+                    activity_log_id: this.activityLogId as number,
+                    timestamp: Date.now(),
+                    content
+                });
+            } else {
+                console.log(content);
+            }
+        }
+        const nangoConfig = this.loadLocation ? await loadLocalNangoConfig(this.loadLocation) : await getSyncConfig(this.nangoConnection, this.syncName);
 
         if (!nangoConfig) {
             const message = `No sync configuration was found for ${this.syncName}.`;
-            if (!this.activityLogId) {
-                this.reportFailureForResults(message);
+            if (this.activityLogId) {
+                await this.reportFailureForResults(message);
             } else {
                 console.error(message);
             }
@@ -79,6 +99,13 @@ export default class SyncRun {
 
         const { integrations } = nangoConfig as NangoConfig;
         let result = true;
+
+        if (!integrations[this.nangoConnection.provider_config_key] && !this.writeToDb) {
+            const message = `The connection you provided which applies to integration "${this.nangoConnection.provider_config_key}" does not match any integration in the ${nangoConfigFile}`;
+            console.error(message);
+
+            return false;
+        }
 
         // if there is a matching customer integration code for the provider config key then run it
         if (integrations[this.nangoConnection.provider_config_key]) {
@@ -89,20 +116,22 @@ export default class SyncRun {
             }
 
             if (!account && !bypassAccount) {
-                this.reportFailureForResults(`No account was found for ${this.nangoConnection.account_id}. The sync cannot continue without a valid account`);
+                await this.reportFailureForResults(
+                    `No account was found for ${this.nangoConnection.account_id}. The sync cannot continue without a valid account`
+                );
                 return false;
             }
 
             let secretKey;
 
             if (isCloud()) {
-                secretKey = account ? (account?.secret_key as string) : '';
+                secretKey = optionalSecretKey || (account ? (account?.secret_key as string) : '');
             } else {
                 secretKey = optionalSecretKey || process.env['NANGO_SECRET_KEY'] ? (process.env['NANGO_SECRET_KEY'] as string) : '';
             }
 
             const nango = new NangoSync({
-                host: getApiUrl(),
+                host: optionalHost || getApiUrl(),
                 connectionId: String(this.nangoConnection?.connection_id),
                 providerConfigKey: String(this.nangoConnection?.provider_config_key),
                 activityLogId: this.activityLogId as number,
@@ -119,7 +148,7 @@ export default class SyncRun {
             if (!isCloud()) {
                 const { path: integrationFilePath, result: integrationFileResult } = checkForIntegrationFile(this.syncName, this.loadLocation);
                 if (!integrationFileResult) {
-                    this.reportFailureForResults(
+                    await this.reportFailureForResults(
                         `Integration was attempted to run for ${this.syncName} but no integration file was found at ${integrationFilePath}.`
                     );
 
@@ -132,8 +161,23 @@ export default class SyncRun {
             if (!this.writeToDb) {
                 lastSyncDate = optionalLastSyncDate;
             } else {
-                await getLastSyncDate(this.nangoConnection?.id as number, this.syncName);
+                lastSyncDate = await getLastSyncDate(this.nangoConnection?.id as number, this.syncName);
             }
+
+            if (this.debug) {
+                const content = `Last sync date is ${lastSyncDate}`;
+                if (this.writeToDb) {
+                    await createActivityLogMessage({
+                        level: 'debug',
+                        activity_log_id: this.activityLogId as number,
+                        timestamp: Date.now(),
+                        content
+                    });
+                } else {
+                    console.log(content);
+                }
+            }
+
             nango.setLastSyncDate(lastSyncDate as Date);
             const syncData = syncObject[this.syncName] as unknown as NangoIntegrationData;
             const { returns: models } = syncData;
@@ -148,7 +192,11 @@ export default class SyncRun {
                 const userDefinedResults = await integationService.runScript(this.syncName, this.activityLogId as number, nango, syncData, this.loadLocation);
 
                 if (userDefinedResults === null) {
-                    this.reportFailureForResults(`The integration was run but there was a problem in retrieving the results from the script.`);
+                    await this.reportFailureForResults(
+                        `The integration was run but there was a problem in retrieving the results from the script "${this.syncName}"${
+                            syncData?.version ? ` version: ${syncData.version}` : ''
+                        }.`
+                    );
 
                     return false;
                 }
@@ -202,7 +250,7 @@ export default class SyncRun {
                                 if (!upsertResult.success) {
                                     errorManager.report(upsertResult?.error, { accountId: this.nangoConnection.account_id as number });
 
-                                    this.reportFailureForResults(`There was a problem upserting the data for ${this.syncName} and the model ${model}`);
+                                    await this.reportFailureForResults(`There was a problem upserting the data for ${this.syncName} and the model ${model}`);
 
                                     return false;
                                 }
@@ -214,8 +262,10 @@ export default class SyncRun {
             } catch (e) {
                 result = false;
                 const errorMessage = JSON.stringify(e, ['message', 'name', 'stack'], 2);
-                this.reportFailureForResults(
-                    `The ${this.syncType} "${this.syncName}" sync did not complete successfully and has the following error: ${errorMessage}`
+                await this.reportFailureForResults(
+                    `The ${this.syncType} "${this.syncName}"${
+                        syncData?.version ? ` version: ${syncData?.version}` : ''
+                    } sync did not complete successfully and has the following error: ${errorMessage}`
                 );
             }
         }
@@ -264,7 +314,7 @@ export default class SyncRun {
         const resultMessage =
             added > 0 || updated > 0
                 ? `The result was ${added} added record${added === 1 ? '' : 's'} and ${updated} updated record${updated === 1 ? '.' : 's.'}`
-                : 'The external API returned no results so nothing was inserted or updated.';
+                : 'The external API returned did not return any new or updated data so nothing was inserted or updated.';
 
         const content = `${successMessage} ${resultMessage}`;
 

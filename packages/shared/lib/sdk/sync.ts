@@ -1,5 +1,4 @@
-import type { ParamsSerializerOptions } from 'axios';
-import { getById as getSyncById } from '../services/sync/sync.service.js';
+import { getSyncConfigByJobId } from '../services/sync/config.service.js';
 import { upsert } from '../services/sync/data.service.js';
 import { formatDataRecords } from '../services/sync/data-records.service.js';
 import { createActivityLogMessage } from '../services/activity.service.js';
@@ -8,6 +7,49 @@ import { updateSyncJobResult } from '../services/sync/job.service.js';
 import { Nango } from '@nangohq/node';
 
 type LogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
+
+interface ParamEncoder {
+    (value: any, defaultEncoder: (value: any) => any): any;
+}
+
+interface GenericFormData {
+    append(name: string, value: any, options?: any): any;
+}
+
+interface SerializerVisitor {
+    (this: GenericFormData, value: any, key: string | number, path: null | Array<string | number>, helpers: FormDataVisitorHelpers): boolean;
+}
+
+interface CustomParamsSerializer {
+    (params: Record<string, any>, options?: ParamsSerializerOptions): string;
+}
+
+interface FormDataVisitorHelpers {
+    defaultVisitor: SerializerVisitor;
+    convertValue: (value: any) => any;
+    isVisitable: (value: any) => boolean;
+}
+
+interface SerializerOptions {
+    visitor?: SerializerVisitor;
+    dots?: boolean;
+    metaTokens?: boolean;
+    indexes?: boolean | null;
+}
+
+interface ParamsSerializerOptions extends SerializerOptions {
+    encode?: ParamEncoder;
+    serialize?: CustomParamsSerializer;
+}
+
+interface AxiosResponse<T = any, D = any> {
+    data: T;
+    status: number;
+    statusText: string;
+    headers: any;
+    config: D;
+    request?: any;
+}
 
 interface ProxyConfiguration {
     endpoint: string;
@@ -21,6 +63,46 @@ interface ProxyConfiguration {
     data?: unknown;
     retries?: number;
     baseUrlOverride?: string;
+}
+
+enum AuthModes {
+    OAuth1 = 'OAUTH1',
+    OAuth2 = 'OAUTH2'
+}
+
+interface CredentialsCommon {
+    type: AuthModes;
+    raw: Record<string, string>; // Raw response for credentials as received by the OAuth server or set by the user
+}
+
+interface OAuth2Credentials extends CredentialsCommon {
+    type: AuthModes.OAuth2;
+    access_token: string;
+
+    refresh_token?: string;
+    expires_at?: Date | undefined;
+}
+
+interface OAuth1Credentials extends CredentialsCommon {
+    type: AuthModes.OAuth1;
+    oauth_token: string;
+    oauth_token_secret: string;
+}
+type AuthCredentials = OAuth2Credentials | OAuth1Credentials;
+
+interface Connection {
+    id?: number;
+    created_at?: Date;
+    updated_at?: Date;
+    provider_config_key: string;
+    connection_id: string;
+    connection_config: Record<string, string>;
+    account_id: number;
+    metadata: Record<string, string>;
+    credentials_iv?: string | null;
+    credentials_tag?: string | null;
+    field_mappings?: Record<string, string>;
+    credentials: AuthCredentials;
 }
 
 interface NangoProps {
@@ -37,7 +119,6 @@ interface NangoProps {
 }
 
 interface UserLogParameters {
-    success?: boolean;
     level?: LogLevel;
 }
 
@@ -92,40 +173,48 @@ export class NangoSync {
         this.lastSyncDate = date;
     }
 
-    public async proxy(config: ProxyConfiguration) {
+    public async proxy(config: ProxyConfiguration): Promise<AxiosResponse<any, any>> {
         return this.nango.proxy(config);
     }
 
-    public async setFieldMapping(fieldMapping: Record<string, string>, optionalProviderConfigKey?: string, optionalConnectionId?: string) {
+    public async getConnection(): Promise<Connection> {
+        return this.nango.getConnection(this.providerConfigKey as string, this.connectionId as string);
+    }
+
+    public async setFieldMapping(
+        fieldMapping: Record<string, string>,
+        optionalProviderConfigKey?: string,
+        optionalConnectionId?: string
+    ): Promise<AxiosResponse<any, any>> {
         return this.nango.setFieldMapping(fieldMapping, optionalProviderConfigKey, optionalConnectionId);
     }
 
-    public async getFieldMapping(optionalProviderConfigKey?: string, optionalConnectionId?: string) {
+    public async getFieldMapping(optionalProviderConfigKey?: string, optionalConnectionId?: string): Promise<AxiosResponse<any, any>> {
         return this.nango.getFieldMapping(optionalProviderConfigKey, optionalConnectionId);
     }
 
-    public async get(config: ProxyConfiguration) {
+    public async get(config: ProxyConfiguration): Promise<AxiosResponse<any, any>> {
         return this.proxy({
             ...config,
             method: 'GET'
         });
     }
 
-    public async post(config: ProxyConfiguration) {
+    public async post(config: ProxyConfiguration): Promise<AxiosResponse<any, any>> {
         return this.proxy({
             ...config,
             method: 'POST'
         });
     }
 
-    public async patch(config: ProxyConfiguration) {
+    public async patch(config: ProxyConfiguration): Promise<AxiosResponse<any, any>> {
         return this.proxy({
             ...config,
             method: 'PATCH'
         });
     }
 
-    public async delete(config: ProxyConfiguration) {
+    public async delete(config: ProxyConfiguration): Promise<AxiosResponse<any, any>> {
         return this.proxy({
             ...config,
             method: 'DELETE'
@@ -145,10 +234,10 @@ export class NangoSync {
 
         const formattedResults = formatDataRecords(results, this.nangoConnectionId as number, model, this.syncId as string, this.syncJobId);
 
-        const fullSync = await getSyncById(this.syncId as string);
+        const syncConfig = await getSyncConfigByJobId(this.syncJobId as number);
 
-        if (fullSync && !fullSync?.models.includes(model)) {
-            throw new Error(`The model: ${model} is not included in the declared sync models: ${fullSync.models}.`);
+        if (syncConfig && !syncConfig?.models.includes(model)) {
+            throw new Error(`The model: ${model} is not included in the declared sync models: ${syncConfig.models}.`);
         }
 
         const responseResults = await upsert(

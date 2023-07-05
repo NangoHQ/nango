@@ -137,6 +137,12 @@ paths:
                   schema:
                       type: string
                   description: The Integration ID that you created in Nango.
+                - name: include_creds
+                  in: query
+                  required: false
+                  description: If true, the response will contain the client ID, secret and scopes (false by default).
+                  schema:
+                      type: boolean
             responses:
                 '200':
                     description: Successfully returned an Integration
@@ -393,6 +399,18 @@ paths:
                   schema:
                       type: string
                   description: Timestamp, e.g. 2023-05-31T11:46:13.390Z. If passed only records added or updated after this timestamp are returned, otherwise all records are returned.
+                - name: limit
+                  in: query
+                  required: false
+                  schema:
+                      type: integer
+                  description: The maximum number of records to return. If not passed, all records are returned.
+                - name: offset
+                  in: query
+                  required: false
+                  schema:
+                      type: integer
+                  description: The number of records to skip. If not passed, no records are skipped.
                 - name: Connection-Id
                   in: header
                   required: true

@@ -16,16 +16,22 @@ import {
     createActivityLogAndLogMessage,
     createActivityLogMessageAndEnd,
     createActivityLog,
-    reconcileSyncs
+    getAndReconcileSyncDifferences,
+    getSyncConfigsWithConnectionsByAccountId,
+    IncomingSyncConfig
 } from '@nangohq/shared';
 
 class SyncController {
     public async deploySync(req: Request, res: Response, next: NextFunction) {
         try {
-            const syncs = req.body;
+            const { syncs, reconcile, debug }: { syncs: IncomingSyncConfig[]; reconcile: boolean; debug: boolean } = req.body;
             const accountId = getAccount(res);
 
-            const result = await createSyncConfig(accountId, syncs);
+            const result = await createSyncConfig(accountId, syncs, debug);
+
+            if (reconcile) {
+                await getAndReconcileSyncDifferences(accountId, syncs, reconcile, debug);
+            }
 
             res.send(result);
         } catch (e) {
@@ -33,12 +39,12 @@ class SyncController {
         }
     }
 
-    public async reconcileSyncs(req: Request, res: Response, next: NextFunction) {
+    public async confirmation(req: Request, res: Response, next: NextFunction) {
         try {
-            const syncs = req.body;
+            const { syncs, debug }: { syncs: IncomingSyncConfig[]; reconcile: boolean; debug: boolean } = req.body;
             const accountId = getAccount(res);
 
-            const result = await reconcileSyncs(accountId, syncs);
+            const result = await getAndReconcileSyncDifferences(accountId, syncs, false, debug);
 
             res.send(result);
         } catch (e) {
@@ -74,7 +80,7 @@ class SyncController {
         }
     }
 
-    public async getSyncs(req: Request, res: Response, next: NextFunction) {
+    public async getSyncsByParams(req: Request, res: Response, next: NextFunction) {
         try {
             const account = (await getUserAndAccountFromSession(req)).account;
             const { connection_id, provider_config_key } = req.query;
@@ -94,6 +100,18 @@ class SyncController {
             }
 
             const syncs = await getSyncs(connection as Connection);
+
+            res.send(syncs);
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    public async getSyncs(req: Request, res: Response, next: NextFunction) {
+        try {
+            const account = (await getUserAndAccountFromSession(req)).account;
+
+            const syncs = await getSyncConfigsWithConnectionsByAccountId(account.id);
 
             res.send(syncs);
         } catch (e) {

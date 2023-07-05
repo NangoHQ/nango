@@ -11,6 +11,8 @@ import PrivateRoute from './components/PrivateRoute';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import Activity from './pages/Activity';
+import Syncs from './pages/Syncs';
+import AuthLink from './pages/AuthLink';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { isCloud } from './utils/utils';
@@ -28,6 +30,9 @@ const App = () => {
                 </Route>
                 <Route path="/integration/:providerConfigKey" element={<PrivateRoute />}>
                     <Route path="/integration/:providerConfigKey" element={<IntegrationCreate />} />
+                </Route>
+                <Route path="/syncs" element={<PrivateRoute />}>
+                    <Route path="/syncs" element={<Syncs />} />
                 </Route>
                 <Route path="/connections" element={<PrivateRoute />}>
                     <Route path="/connections" element={<ConnectionList />} />
@@ -47,6 +52,7 @@ const App = () => {
                 <Route path="/project-settings" element={<PrivateRoute />}>
                     <Route path="/project-settings" element={<ProjectSettings />} />
                 </Route>
+                <Route path="/auth-link" element={<AuthLink />} />
                 {isCloud() && <Route path="/signin" element={<Signin />} />}
                 {isCloud() && <Route path="/signup" element={<Signup />} />}
                 {isCloud() && <Route path="/forgot-password" element={<ForgotPassword />} />}

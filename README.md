@@ -39,7 +39,7 @@ Nango makes it easy to integrate your product with any external API.
 
 It is:
 
--   as **powerful** as building integrations yourself
+-   as **flexible** as building integrations yourself
 -   as **fast** as buying a pre-built solution
 
 Build in hours, instead of weeks with our [production-ready infrastructure](https://docs.nango.dev) and pre-built [integration components for 100+ APIs](https://docs.nango.dev/integrations/overview):
@@ -67,7 +67,7 @@ nango.auth('github', '<user-id>');
 nango.getRecords({
     providerConfigKey: 'github',
     connectionId: '<user-id>',
-    model: 'GithubIssues', // Or anything else you want to sync
+    model: 'GithubIssues' // Or anything else you want to sync
 });
 ```
 
@@ -76,13 +76,14 @@ nango.getRecords({
 You can try Nango in 10 minutes with the [Quickstart 🚀](https://nango.dev/quickstart).
 
 Or explore more:
-- Understand Nango with the [core concepts](https://docs.nango.dev/core-concepts)
-- Learn more about data syncing and unified APIs with [Nango Sync](https://docs.nango.dev/nango-sync)
-- Explore the [100+ supported APIs](https://nango.dev/integrations)
+
+-   Understand Nango with the [core concepts](https://docs.nango.dev/core-concepts)
+-   Learn more about data syncing and unified APIs with [Nango Sync](https://docs.nango.dev/nango-sync)
+-   Explore the [100+ supported APIs](https://nango.dev/integrations)
 
 ## 100+ pre-configured APIs, easily add your own
 
-Nango works with **any** API and use-case. Adding [API Configurations](https://docs.nango.dev/core-concepts#api-configuration) is easy and we already have the main APIs covered.
+Nango works with **any** API and use-case. Adding [API Configurations](https://docs.nango.dev/core-concepts#api-configurations) is easy and we already have the main APIs covered.
 
 100+ APIs are pre-configured to work out-of-the-box, including:
 
@@ -111,8 +112,8 @@ If your favorite API is missing
 Run locally:
 
 ```shell
-git clone https://github.com/NangoHQ/nango.git && cd nango && docker compose up
-````
+npx nango start
+```
 
 Or sign up for free:
 

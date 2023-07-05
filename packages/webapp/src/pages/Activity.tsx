@@ -4,6 +4,7 @@ import { ChevronsLeft, Clock, ArrowRight, Slash, CheckInCircle, AlertCircle, Lin
 import { Tooltip } from '@geist-ui/core';
 import queryString from 'query-string';
 
+import { ReactComponent as SyncIcon } from '../icons/sync-code-icon.svg';
 import CopyButton from '../components/ui/button/CopyButton';
 import { useActivityAPI } from '../utils/api';
 import { formatTimestamp, formatTimestampWithTZ, elapsedTime } from '../utils/utils';
@@ -34,7 +35,7 @@ const JsonPrettyPrint: React.FC<Props> = ({ data }): ReactElement<any, any> => {
           <pre className="max-w-5xl overflow-auto whitespace-pre-wrap break-all">{prettyJson}</pre>
       );
   } catch(e) {
-      return <span className="whitespace-normal break-all overflow-wrap">data</span>;
+      return <span className="whitespace-normal break-all overflow-wrap">{data}</span>;
   }
 };
 
@@ -137,11 +138,11 @@ export default function Activity() {
         navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, offset: 0 }));
     };
 
-    const renderParams = (params: Record<string, string>) => {
+    const renderParams = (params: Record<string, string>, level: string) => {
         return Object.entries(params).map(([key, value]) => (
-            <div className="max-w-5xl whitespace-normal break-all overflow-wrap" key={key}>
+            <div className={`max-w-5xl whitespace-normal break-all overflow-wrap ${level === 'error' ? 'text-red-500' : level === 'warn' ? 'text-orange-500' : ''}`} key={key}>
                 <span>{key}: </span>
-                <span className="max-w-5xl whitespace-normal break-all overflow-wrap">{value.toString()}</span>
+                <span className="max-w-5xl whitespace-normal break-all overflow-wrap">{value === null ? '' : value.toString()}</span>
             </div>
         ));
     };
@@ -195,21 +196,21 @@ export default function Activity() {
                                             <div className="flex items-center px-2">
                                                 {activity?.success === null && (
                                                     <Link
-                                                        to={`/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '#sync' : ''}`}
+                                                        to={activity?.action === 'sync deploy' ? '/syncs' : `/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '#sync' : ''}`}
                                                     >
                                                         <Clock className="stroke-yellow-500" size="32" />
                                                     </Link>
                                                 )}
                                                 {activity?.success === true && (
                                                     <Link
-                                                        to={`/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '#sync' : ''}`}
+                                                        to={activity?.action === 'sync deploy' ? '/syncs' : `/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '#sync' : ''}`}
                                                     >
                                                         <CheckInCircle className="stroke-green-500" size="32" />
                                                     </Link>
                                                 )}
                                                 {activity?.success === false && (
                                                     <Link
-                                                        to={`/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '#sync' : ''}`}
+                                                        to={activity?.action === 'sync deploy' ? '/syncs' : `/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '#sync' : ''}`}
                                                     >
                                                         <AlertCircle className="stroke-red-500" size="32" />
                                                     </Link>
@@ -230,7 +231,7 @@ export default function Activity() {
                                                     {activity?.action === 'sync' && (
                                                         <span className="flex items-center">
                                                             <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-green-500 bg-opacity-20">
-                                                                <img className="h-4 mr-2" src="/images/network-icon.svg" alt="" />
+                                                                <SyncIcon className="h-4 -ml-3 -mr-1 stroke-green-500" />
                                                                 <p className="inline-block text-green-500">sync</p>
                                                             </div>
                                                             <Link
@@ -239,6 +240,18 @@ export default function Activity() {
                                                                 {activity.operation_name && (
                                                                     <p className="text-gray-500 ml-2 text-sm">({activity?.operation_name})</p>
                                                                 )}
+                                                            </Link>
+                                                        </span>
+                                                    )}
+                                                    {activity?.action === 'sync deploy' && (
+                                                        <span className="flex items-center">
+                                                            <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-[#8247FF] bg-opacity-20">
+                                                                <img className="h-4 mr-2" src="/images/sync-deploy-icon.svg" alt="" />
+                                                                <p className="inline-block text-[#8247FF]">sync deploy</p>
+                                                            </div>
+                                                            <Link
+                                                                to="/syncs"
+                                                            >
                                                             </Link>
                                                         </span>
                                                     )}
@@ -261,14 +274,24 @@ export default function Activity() {
                                                 <Tooltip text={activity?.connection_id} type="dark">
                                                     <Link
                                                         to={`/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '#sync' : ''}`}
-                                                        className="block ml-30 w-48 mr-12 text-[#5AC2B3] font-mono overflow-hidden truncate"
+                                                        className={`block ml-30 w-48 mr-12 text-[#5AC2B3] font-mono overflow-hidden truncate ${activity.connection_id === null ? 'cursor-default' : ''}`}
+                                                        onClick={(e) => {
+                                                            if (activity.connection_id === null) {
+                                                                e.preventDefault();
+                                                            }
+                                                        }}
                                                     >
-                                                        `{activity.connection_id}`
+                                                        `{activity.connection_id === null ? 'n/a': activity.connection_id }`
                                                     </Link>
                                                 </Tooltip>
                                                 <Link
-                                                    to={`/integration/${activity.provider_config_key}`}
-                                                    className="block w-36 mr-12"
+                                                    to={activity.provider === null ? '/syncs' : `/integration/${activity.provider_config_key}`}
+                                                    className={`block w-36 mr-12 ${activity.provider === null && activity.action !== 'sync deploy' ? 'cursor-default' : ''}`}
+                                                    onClick={(e) => {
+                                                        if (activity.provider === null && activity.action !== 'sync deploy') {
+                                                            e.preventDefault();
+                                                        }
+                                                    }}
                                                 >
                                                     {activity?.provider ? (
                                                         <div className="w-80 flex">
@@ -322,7 +345,7 @@ export default function Activity() {
                                                             )}
                                                             {message?.params && (
                                                                 <div className="ml-4">
-                                                                    {renderParams(message.params as unknown as Record<string, string>)}
+                                                                    {renderParams(message.params as unknown as Record<string, string>, message.level as string)}
                                                                 </div>
                                                             )}
                                                         </div>

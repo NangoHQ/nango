@@ -42,7 +42,7 @@
             "url": "integrations"
         },
         {
-            "name": "SDKs",
+            "name": "SDKs & CLI",
             "icon": "cubes",
             "url": "sdks"
         },
@@ -63,21 +63,10 @@
             "pages": ["introduction", "quickstart", "core-concepts"]
         },
         {
-            "group": "Nango Auth",
-            "pages": ["nango-auth/overview", "nango-auth/configuration"]
-        },
-        {
-            "group": "Nango Sync",
-            "pages": [
-                "nango-sync/overview",
-                "nango-sync/architecture",
-                {
-                    "group": "Guides",
-                    "pages": ["nango-sync/guides/sync", "nango-sync/guides/nango-proxy", "nango-sync/guides/webhooks"]
-                },
-                {
-                    "group": "Examples",
-                    "pages": ["nango-sync/examples/overview", "nango-sync/examples/asana-tasks", "nango-sync/examples/slack-users"]
+            "group": "Guides",
+            "pages": ["guides/oauth", "guides/sync", "guides/proxy", "guides/webhooks", {
+                    "group": "Sync Data - Examples",
+                    "pages": ["examples/overview", "examples/asana-tasks", "examples/slack-users"]
                 }
             ]
         },
@@ -99,11 +88,11 @@
         },
         {
             "group": "Contribute",
-            "pages": ["contribute/nango-auth", "contribute/nango-sync"]
+            "pages": ["contribute"]
         },
         {
             "group": "Overview",
-            "pages": ["integrations/overview", "integrations/add-your-own-integration"]
+            "pages": ["integrations/overview", "contribute"]
         },
         {
             "group": "Categories",
@@ -118,6 +107,7 @@
                 "integrations/design",
                 "integrations/dev-tools",
                 "integrations/ecommerce",
+                "integrations/erp",
                 "integrations/gaming",
                 "integrations/invoicing",
                 "integrations/hr",
@@ -137,7 +127,7 @@
             ]
         },
         {
-            "group": "Integrations",
+            "group": "All Supported APIs",
             "pages": [
                 "integrations/all/accelo",
                 "integrations/all/adobe",
@@ -177,9 +167,10 @@
                 "integrations/all/google-sheet",
                 "integrations/all/gorgias",
                 "integrations/all/greenhouse",
+		        "integrations/all/gumroad",
                 "integrations/all/gusto",
-                "integrations/all/hubspot",
                 "integrations/all/healthgorilla",
+                "integrations/all/hubspot",
                 "integrations/all/instagram",
                 "integrations/all/intercom",
                 "integrations/all/intuit",
@@ -193,6 +184,7 @@
                 "integrations/all/miro",
                 "integrations/all/monday",
                 "integrations/all/mural",
+                "integrations/all/netsuite",
                 "integrations/all/notion",
                 "integrations/all/one-drive",
                 "integrations/all/osu",
@@ -253,6 +245,10 @@
             "pages": ["sdks/frontend"]
         },
         {
+            "group": "CLI",
+            "pages": ["sdks/cli"]
+        },
+        {
             "group": "Backend SDKs",
             "pages": ["sdks/node", "sdks/python", "sdks/java", "sdks/ruby", "sdks/go", "sdks/rust", "sdks/php"]
         },
@@ -279,7 +275,7 @@
             "pages": ["api-reference/sync/records-get", "api-reference/sync/trigger"]
         },
         {
-            "group": "Nango Proxy",
+            "group": "Proxy",
             "pages": [
                 "api-reference/proxy/get",
                 "api-reference/proxy/post",

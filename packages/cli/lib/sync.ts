@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import yaml from 'js-yaml';
 import chalk from 'chalk';
 import chokidar from 'chokidar';
@@ -16,27 +16,39 @@ import type { ChildProcess } from 'node:child_process';
 import promptly from 'promptly';
 import type * as t from '@babel/types';
 
-import type { NangoConfig, Connection as NangoConnection, NangoIntegration, NangoIntegrationData } from '@nangohq/shared';
+import type {
+    SyncDeploymentResult,
+    SyncModelSchema,
+    IncomingSyncConfig,
+    NangoConfig,
+    Connection as NangoConnection,
+    NangoIntegration,
+    NangoIntegrationData
+} from '@nangohq/shared';
 import { loadSimplifiedConfig, cloudHost, stagingHost, SyncType, syncRunService, nangoConfigFile, checkForIntegrationFile } from '@nangohq/shared';
 import {
-    port,
     hostport,
+    port,
     httpsAgent,
     verifyNecessaryFiles,
     getConnection,
     NANGO_INTEGRATIONS_LOCATION,
     buildInterfaces,
     enrichHeaders,
-    checkEnvVars
+    getNangoRootPath,
+    printDebug
 } from './utils.js';
-import type { DeployOptions } from './types.js';
+import type { DeployOptions, GlobalOptions } from './types.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 dotenv.config();
 
-interface RunArgs {
+const TYPES_FILE_NAME = 'models.ts';
+const NangoSyncTypesFileLocation = 'dist/nango-sync.d.ts';
+
+interface RunArgs extends GlobalOptions {
     sync: string;
     provider: string;
     connection: string;
@@ -52,19 +64,23 @@ const createModelFile = (notify = false) => {
     const configData: NangoConfig = yaml.load(configContents) as unknown as NangoConfig;
     const { models } = configData;
     const interfaceDefinitions = buildInterfaces(models);
-    fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/models.ts`, interfaceDefinitions.join('\n'));
+    fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/${TYPES_FILE_NAME}`, interfaceDefinitions.join('\n'));
+
+    // insert NangoSync types to the bottom of the file
+    const typesContent = fs.readFileSync(`${getNangoRootPath()}/${NangoSyncTypesFileLocation}`, 'utf8');
+    fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/${TYPES_FILE_NAME}`, typesContent, { flag: 'a' });
 
     if (notify) {
         const rawNangoIntegrationLocation = NANGO_INTEGRATIONS_LOCATION.replace('./', '');
         console.log(
             chalk.green(
-                `${rawNangoIntegrationLocation}/${nangoConfigFile} was updated. The interface file (${rawNangoIntegrationLocation}/models.ts) was updated to reflect the updated config`
+                `${rawNangoIntegrationLocation}/${nangoConfigFile} was updated. The interface file (${rawNangoIntegrationLocation}/${TYPES_FILE_NAME}) was updated to reflect the updated config`
             )
         );
     }
 };
 
-const getConfig = async () => {
+const getConfig = async (debug = false) => {
     const cwd = process.cwd();
     const config = await loadSimplifiedConfig(path.resolve(cwd, NANGO_INTEGRATIONS_LOCATION));
 
@@ -72,73 +88,47 @@ const getConfig = async () => {
         throw new Error(`Error loading the ${nangoConfigFile} file`);
     }
 
+    if (debug) {
+        printDebug(`Config file file found`);
+    }
+
     return config;
 };
 
-const deployLocalSyncs = async () => {
-    console.log(chalk.green(`Syncing the updated config so syncs will be created or deleted according to the changed config`));
-
-    const url = hostport + `/sync/reconcile`;
-    const config = await getConfig();
-
-    const postData = [];
-
-    const cwd = process.cwd();
-
-    for (const integration of config) {
-        const { providerConfigKey } = integration;
-        const { syncs } = integration;
-
-        for (const sync of syncs) {
-            const { name: syncName, runs, returns } = sync;
-
-            const { result: integrationFileResult } = checkForIntegrationFile(syncName, path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}`));
-
-            if (!integrationFileResult) {
-                continue;
-            }
-
-            const body = {
-                syncName,
-                providerConfigKey,
-                runs,
-                returns
-            };
-
-            postData.push(body);
-        }
-    }
-
-    await axios
-        .post(url, postData, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
-        .then((response: any) => {
-            console.log(chalk.green(`Syncs were updated with the following result: ${JSON.stringify(response.data, null, 2)}`));
-        })
-        .catch((err) => {
-            const errorMessage = JSON.stringify(err?.response?.data, null, 2);
-            console.log(chalk.red(`Error updating the syncs with the following error: ${errorMessage}}`));
-            process.exit(1);
-        });
-};
-
-export const deploy = async (options: DeployOptions) => {
-    const { staging, version, sync: optionalSyncName, secretKey, host } = options;
-    await verifyNecessaryFiles();
+export const deploy = async (options: DeployOptions, debug = false) => {
+    const { env, version, sync: optionalSyncName, secretKey, host, autoConfirm } = options;
+    await verifyNecessaryFiles(autoConfirm);
 
     if (host) {
+        if (debug) {
+            printDebug(`Global host flag is set, setting NANGO_HOSTPORT to ${host}.`);
+        }
         process.env['NANGO_HOSTPORT'] = host;
     }
 
     if (secretKey) {
+        if (debug) {
+            printDebug(`Global secretKey flag is set, setting NANGO_SECRET_KEY.`);
+        }
         process.env['NANGO_SECRET_KEY'] = secretKey;
     }
 
     if (!process.env['NANGO_HOSTPORT']) {
-        if (staging) {
-            process.env['NANGO_HOSTPORT'] = stagingHost;
-        } else {
-            process.env['NANGO_HOSTPORT'] = cloudHost;
+        switch (env) {
+            case 'local':
+                process.env['NANGO_HOSTPORT'] = `http://localhost:${port}`;
+                break;
+            case 'staging':
+                process.env['NANGO_HOSTPORT'] = stagingHost;
+                break;
+            default:
+                process.env['NANGO_HOSTPORT'] = cloudHost;
+                break;
         }
+    }
+
+    if (debug) {
+        printDebug(`NANGO_HOSTPORT is set to ${process.env['NANGO_HOSTPORT']}.`);
     }
 
     if (process.env['NANGO_HOSTPORT'] !== `http://localhost:${port}` && !process.env['NANGO_SECRET_KEY']) {
@@ -156,13 +146,12 @@ export const deploy = async (options: DeployOptions) => {
         }
     }
 
-    checkEnvVars(process.env['NANGO_HOSTPORT']);
-    tsc();
+    tsc(debug);
 
-    const config = await getConfig();
+    const config = await getConfig(debug);
     const cwd = process.cwd();
 
-    const postData = [];
+    const postData: IncomingSyncConfig[] = [];
 
     for (const integration of config) {
         const { providerConfigKey } = integration;
@@ -185,14 +174,18 @@ export const deploy = async (options: DeployOptions) => {
                 continue;
             }
 
+            if (debug) {
+                printDebug(`Integration file found for ${syncName} at ${integrationFilePath}`);
+            }
+
             const body = {
                 syncName,
                 providerConfigKey,
                 models,
-                version,
+                version: version as string,
                 runs,
                 fileBody: fs.readFileSync(integrationFilePath, 'utf8'),
-                model_schema: JSON.stringify(model_schema)
+                model_schema: JSON.stringify(model_schema) as unknown as SyncModelSchema[]
             };
 
             postData.push(body);
@@ -206,21 +199,117 @@ export const deploy = async (options: DeployOptions) => {
         return;
     }
 
-    await axios
-        .post(url, postData, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
-        .then((_) => {
-            console.log(chalk.green(`Successfully deployed the syncs!`));
-        })
-        .catch((err) => {
-            const errorMessage = JSON.stringify(err.response.data, null, 2);
-            console.log(chalk.red(`Error deploying the syncs with the following error: ${errorMessage}}`));
+    if (!process.env['NANGO_DEPLOY_AUTO_CONFIRM'] && !autoConfirm) {
+        const confirmationUrl = process.env['NANGO_HOSTPORT'] + `/sync/deploy/confirmation`;
+        try {
+            const response = await axios.post(
+                confirmationUrl,
+                { syncs: postData, reconcile: false, debug },
+                { headers: enrichHeaders(), httpsAgent: httpsAgent() }
+            );
+            console.log(JSON.stringify(response.data, null, 2));
+            const { newSyncs, deletedSyncs } = response.data;
+
+            for (const sync of newSyncs) {
+                const actionMessage =
+                    sync.connections === 0
+                        ? 'create the configuration for this sync.'
+                        : `start syncing the corresponding data for ${sync.connections} existing connections.`;
+                console.log(chalk.yellow(`Sync "${sync.name}" has been added. Nango will ${actionMessage}`));
+            }
+
+            for (const sync of deletedSyncs) {
+                console.log(
+                    chalk.red(
+                        `Sync "${sync.name}" has been removed. It will stop running and the corresponding data will be deleted for ${sync.connections} existing connections.`
+                    )
+                );
+            }
+
+            const confirmation = await promptly.confirm('Do you want to continue with these changes y/n?');
+            if (confirmation) {
+                await axios
+                    .post(
+                        process.env['NANGO_HOSTPORT'] + `/sync/deploy`,
+                        { syncs: postData, reconcile: true, debug },
+                        { headers: enrichHeaders(), httpsAgent: httpsAgent() }
+                    )
+                    .then((response: AxiosResponse) => {
+                        const results: SyncDeploymentResult[] = response.data;
+                        const nameAndVersions = results.map((result) => `${result.sync_name}@v${result.version}`);
+                        console.log(chalk.green(`Successfully deployed the syncs: ${nameAndVersions.join(', ')}!`));
+                    })
+                    .catch((err) => {
+                        const errorMessage = JSON.stringify(err.response.data, null, 2);
+                        console.log(chalk.red(`Error deploying the syncs with the following error: ${errorMessage}`));
+                        process.exit(1);
+                    });
+            } else {
+                console.log(chalk.red('Syncs were not deployed. Exiting'));
+                process.exit(0);
+            }
+        } catch (err: any) {
+            let errorMessage;
+            if (!err?.response?.data) {
+                const {
+                    message,
+                    stack,
+                    config: { method },
+                    code,
+                    status
+                } = err?.toJSON() as any;
+
+                const errorObject = { message, stack, code, status, url, method };
+                errorMessage = JSON.stringify(errorObject, null, 2);
+            } else {
+                errorMessage = JSON.stringify(err.response.data, null, 2);
+            }
+            console.log(chalk.red(`Error deploying the syncs with the following error: ${errorMessage}`));
             process.exit(1);
-        });
+        }
+    } else {
+        if (debug) {
+            printDebug(`Auto confirm is set so deploy will start without confirmation`);
+        }
+        await deploySyncs(url, { syncs: postData, reconcile: true, debug });
+    }
 };
 
-export const version = () => {
-    const packageJson = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../package.json'), 'utf8'));
-    const dockerComposeYaml = fs.readFileSync(path.resolve(__dirname, '../docker/docker-compose.yaml'), 'utf8');
+async function deploySyncs(url: string, body: { syncs: IncomingSyncConfig[]; reconcile: boolean; debug: boolean }) {
+    await axios
+        .post(url, body, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
+        .then((response: AxiosResponse) => {
+            const results: SyncDeploymentResult[] = response.data;
+            const nameAndVersions = results.map((result) => `${result.sync_name}@v${result.version}`);
+            console.log(chalk.green(`Successfully deployed the syncs: ${nameAndVersions.join(', ')}!`));
+        })
+        .catch((err: any) => {
+            let errorMessage;
+            if (!err?.response?.data) {
+                const {
+                    message,
+                    stack,
+                    config: { method },
+                    code,
+                    status
+                } = err?.toJSON() as any;
+
+                const errorObject = { message, stack, code, status, url, method };
+                errorMessage = JSON.stringify(errorObject, null, 2);
+            } else {
+                errorMessage = JSON.stringify(err.response.data, null, 2);
+            }
+            console.log(chalk.red(`Error deploying the syncs with the following error: ${errorMessage}`));
+            process.exit(1);
+        });
+}
+
+export const version = (debug: boolean) => {
+    if (debug) {
+        printDebug('Looking up the version first for a local path first then globally');
+    }
+    const packageJson = JSON.parse(fs.readFileSync(path.resolve(getNangoRootPath(debug) as string, 'package.json'), 'utf8'));
+    const dockerComposeYaml = fs.readFileSync(path.resolve(getNangoRootPath() as string, 'docker/docker-compose.yaml'), 'utf8');
     const dockerCompose = yaml.load(dockerComposeYaml) as any;
 
     const nangoServerImage = dockerCompose.services['nango-server'].image;
@@ -234,7 +323,7 @@ export const version = () => {
     console.log(chalk.green('Nango CLI version:'), packageJson.version);
 };
 
-export const init = () => {
+export const init = (debug = false) => {
     const data: NangoConfig = {
         integrations: {
             github: {
@@ -273,31 +362,53 @@ export const init = () => {
     const yamlData = yaml.dump(data);
 
     if (!fs.existsSync(NANGO_INTEGRATIONS_LOCATION)) {
+        if (debug) {
+            printDebug('Creating the nango integrations directory');
+        }
         fs.mkdirSync(NANGO_INTEGRATIONS_LOCATION);
+    } else {
+        if (debug) {
+            printDebug('Nango integrations directory already exists');
+        }
     }
 
     if (!fs.existsSync(`${NANGO_INTEGRATIONS_LOCATION}/${nangoConfigFile}`)) {
+        if (debug) {
+            printDebug('Creating the ${nangoConfigFile} file}');
+        }
         fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/${nangoConfigFile}`, yamlData);
+    } else {
+        if (debug) {
+            printDebug('Nango config file already exists');
+        }
     }
 
     // check if a .env file exists and if not create it with some default content
     if (!fs.existsSync('.env')) {
+        if (debug) {
+            printDebug('Creating the .env file');
+        }
         fs.writeFileSync(
             '.env',
             `#NANGO_HOSTPORT=https://api-staging.nango.dev
-#NANGO_AUTO_UPGRADE=true
-#NANGO_NO_PROMPT_FOR_UPGRADE=false
-#NANGO_SECRET_KEY=xxxx-xxx-xxxx
+#NANGO_AUTO_UPGRADE=true # set to true to automatically upgrade to the latest version of nango
+#NANGO_NO_PROMPT_FOR_UPGRADE=true # set to true to not prompt for upgrade
+#NANGO_DEPLOY_AUTO_CONFIRM=true # set to true to automatically confirm deployment without prompting
+#NANGO_SECRET_KEY=xxxx-xxx-xxxx # required if deploying to cloud
 #NANGO_INTEGRATIONS_LOCATION=use-this-to-override-where-the-nango-integrations-directory-goes
 #NANGO_PORT=use-this-to-override-the-default-3003
 #NANGO_DB_PORT=use-this-to-override-the-default-5432`
         );
+    } else {
+        if (debug) {
+            printDebug('.env file already exists');
+        }
     }
 
     console.log(chalk.green(`Nango integrations initialized!`));
 };
 
-export const generate = async () => {
+export const generate = async (debug = false) => {
     const templateContents = fs.readFileSync(path.resolve(__dirname, './integration.ejs'), 'utf8');
     const githubExampleTemplateContents = fs.readFileSync(path.resolve(__dirname, './integration.github.ejs'), 'utf8');
 
@@ -309,14 +420,32 @@ export const generate = async () => {
 
     const interfaceDefinitions = buildInterfaces(models);
 
-    fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/models.ts`, interfaceDefinitions.join('\n'));
+    fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/${TYPES_FILE_NAME}`, interfaceDefinitions.join('\n'));
+
+    if (debug) {
+        printDebug(`Interfaces from the ${nangoConfigFile} file written to ${TYPES_FILE_NAME}`);
+    }
+
+    // insert NangoSync types to the bottom of the file
+    const typesContent = fs.readFileSync(`${getNangoRootPath()}/${NangoSyncTypesFileLocation}`, 'utf8');
+    fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/${TYPES_FILE_NAME}`, typesContent, { flag: 'a' });
+
+    if (debug) {
+        printDebug(`NangoSync types written to ${TYPES_FILE_NAME}`);
+    }
 
     for (let i = 0; i < Object.keys(integrations).length; i++) {
         const providerConfigKey = Object.keys(integrations)[i] as string;
+        if (debug) {
+            printDebug(`Generating ${providerConfigKey} integrations`);
+        }
         const syncObject = integrations[providerConfigKey] as unknown as { [key: string]: NangoIntegration };
         const syncNames = Object.keys(syncObject);
         for (let k = 0; k < syncNames.length; k++) {
             const syncName = syncNames[k] as string;
+            if (debug) {
+                printDebug(`Generating ${syncName} integration`);
+            }
             const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
             const { returns: models } = syncData;
             const syncNameCamel = syncName
@@ -326,6 +455,7 @@ export const generate = async () => {
             const ejsTeamplateContents = syncName === exampleSyncName ? githubExampleTemplateContents : templateContents;
             const rendered = ejs.render(ejsTeamplateContents, {
                 syncName: syncNameCamel,
+                interfaceFileName: TYPES_FILE_NAME.replace('.ts', ''),
                 interfaceNames: models.map((model) => {
                     const singularModel = model?.charAt(model.length - 1) === 's' ? model.slice(0, -1) : model;
                     return `${singularModel.charAt(0).toUpperCase()}${singularModel.slice(1)}`;
@@ -341,6 +471,13 @@ export const generate = async () => {
 
             if (!fs.existsSync(`${NANGO_INTEGRATIONS_LOCATION}/${syncName}.ts`)) {
                 fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/${syncName}.ts`, rendered);
+                if (debug) {
+                    printDebug(`Created ${syncName}.ts file`);
+                }
+            } else {
+                if (debug) {
+                    printDebug(`${syncName}.ts file already exists, so will not overwrite it.`);
+                }
             }
         }
     }
@@ -348,14 +485,14 @@ export const generate = async () => {
     console.log(chalk.green(`Integration files have been created`));
 };
 
-export const run = async (args: string[], options: RunArgs) => {
-    let syncName, providerConfigKey, connectionId, suppliedLastSyncDate;
+export const run = async (args: string[], options: RunArgs, debug = false) => {
+    let syncName, providerConfigKey, connectionId, suppliedLastSyncDate, host, secretKey;
     if (args.length > 0) {
         [syncName, providerConfigKey, connectionId, suppliedLastSyncDate] = args;
     }
 
     if (Object.keys(options).length > 0) {
-        ({ sync: syncName, provider: providerConfigKey, connection: connectionId, lastSyncDate: suppliedLastSyncDate } = options);
+        ({ sync: syncName, provider: providerConfigKey, connection: connectionId, lastSyncDate: suppliedLastSyncDate, host, secretKey } = options);
     }
 
     if (!syncName) {
@@ -373,23 +510,56 @@ export const run = async (args: string[], options: RunArgs) => {
         return;
     }
 
-    const nangoConnection = (await getConnection(providerConfigKey as string, connectionId as string, {
-        'Nango-Is-Sync': true,
-        'Nango-Is-Dry-Run': true
-    })) as unknown as NangoConnection;
+    if (debug) {
+        if (host) {
+            printDebug(`Host value is set to ${host}. This will override the value in the .env file`);
+        }
+    }
+
+    if (host) {
+        process.env['NANGO_HOSTPORT'] = host;
+    }
+
+    if (secretKey) {
+        process.env['NANGO_SECRET_KEY'] = secretKey;
+    }
+
+    if (!process.env['NANGO_HOSTPORT']) {
+        if (debug) {
+            printDebug(`NANGO_HOSTPORT is not set. Setting the default to ${hostport}`);
+        }
+        process.env['NANGO_HOSTPORT'] = hostport;
+    }
+
+    if (debug) {
+        printDebug(`NANGO_HOSTPORT is set to ${process.env['NANGO_HOSTPORT']}`);
+    }
+
+    const nangoConnection = (await getConnection(
+        providerConfigKey as string,
+        connectionId as string,
+        {
+            'Nango-Is-Sync': true,
+            'Nango-Is-Dry-Run': true
+        },
+        debug
+    )) as unknown as NangoConnection;
 
     if (!nangoConnection) {
         console.log(chalk.red('Connection not found'));
         return;
     }
 
-    if (hostport === cloudHost || hostport === stagingHost) {
+    if (process.env['NANGO_HOSTPORT'] === cloudHost || process.env['NANGO_HOSTPORT'] === stagingHost) {
         process.env['NANGO_CLOUD'] = 'true';
     }
 
     let lastSyncDate = null;
 
     if (suppliedLastSyncDate) {
+        if (debug) {
+            printDebug(`Last sync date supplied as ${suppliedLastSyncDate}`);
+        }
         lastSyncDate = new Date(suppliedLastSyncDate as string);
     }
 
@@ -400,12 +570,13 @@ export const run = async (args: string[], options: RunArgs) => {
         nangoConnection,
         syncName,
         syncType: SyncType.INITIAL,
-        loadLocation: path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}`)
+        loadLocation: path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}`),
+        debug
     });
 
     try {
         const secretKey = process.env['NANGO_SECRET_KEY'];
-        const results = await syncRun.run(lastSyncDate, true, secretKey);
+        const results = await syncRun.run(lastSyncDate, true, secretKey, process.env['NANGO_HOSTPORT']);
         console.log(JSON.stringify(results, null, 2));
         process.exit(0);
     } catch (e) {
@@ -413,17 +584,23 @@ export const run = async (args: string[], options: RunArgs) => {
     }
 };
 
-export const tsc = () => {
+export const tsc = (debug = false) => {
     const cwd = process.cwd();
-    const tsconfig = fs.readFileSync('./node_modules/nango/tsconfig.dev.json', 'utf8');
+    const tsconfig = fs.readFileSync(`${getNangoRootPath()}/tsconfig.dev.json`, 'utf8');
 
     const distDir = path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/dist`);
 
     if (!fs.existsSync(distDir)) {
+        if (debug) {
+            printDebug(`Creating ${distDir} directory`);
+        }
         fs.mkdirSync(distDir);
     }
 
-    if (!fs.existsSync(`${NANGO_INTEGRATIONS_LOCATION}/models.ts`)) {
+    if (!fs.existsSync(`${NANGO_INTEGRATIONS_LOCATION}/${TYPES_FILE_NAME}`)) {
+        if (debug) {
+            printDebug(`Creating ${TYPES_FILE_NAME} file`);
+        }
         createModelFile();
     }
 
@@ -432,6 +609,10 @@ export const tsc = () => {
     const compiler = tsNode.create({
         compilerOptions: JSON.parse(tsconfig).compilerOptions
     });
+
+    if (debug) {
+        printDebug(`Compiler options: ${JSON.stringify(JSON.parse(tsconfig).compilerOptions, null, 2)}`);
+    }
 
     const integrationFiles = glob.sync(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/*.ts`));
     for (const filePath of integrationFiles) {
@@ -461,7 +642,7 @@ const nangoCallsAreAwaited = (filePath: string): boolean => {
     const message = (call: string, lineNumber: number) =>
         console.log(chalk.red(`nango.${call}() calls must be awaited in "${filePath}:${lineNumber}". Not awaiting can lead to unexpected results.`));
 
-    const nangoCalls = ['batchSend', 'log', 'getFieldMapping', 'setFieldMapping', 'get', 'post', 'put', 'patch', 'delete'];
+    const nangoCalls = ['batchSend', 'log', 'getFieldMapping', 'setFieldMapping', 'get', 'post', 'put', 'patch', 'delete', 'getConnection'];
 
     // @ts-ignore
     traverse.default(ast, {
@@ -482,27 +663,38 @@ const nangoCallsAreAwaited = (filePath: string): boolean => {
     return areAwaited;
 };
 
-export const tscWatch = () => {
+export const tscWatch = (debug = false) => {
     const cwd = process.cwd();
-    const tsconfig = fs.readFileSync('./node_modules/nango/tsconfig.dev.json', 'utf8');
+    const tsconfig = fs.readFileSync(`${getNangoRootPath()}/tsconfig.dev.json`, 'utf8');
 
     const watchPath = [`${NANGO_INTEGRATIONS_LOCATION}/*.ts`, `${NANGO_INTEGRATIONS_LOCATION}/${nangoConfigFile}`];
+
+    if (debug) {
+        printDebug(`Watching ${watchPath.join(', ')}`);
+    }
+
     const rawNangoIntegrationLocation = NANGO_INTEGRATIONS_LOCATION.replace('./', '');
 
     const watcher = chokidar.watch(watchPath, {
         ignoreInitial: false,
         ignored: (filePath: string) => {
-            return filePath === `${rawNangoIntegrationLocation}/models.ts`;
+            return filePath === `${rawNangoIntegrationLocation}/${TYPES_FILE_NAME}`;
         }
     });
 
     const distDir = path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/dist`);
 
     if (!fs.existsSync(distDir)) {
+        if (debug) {
+            printDebug(`Creating ${distDir} directory`);
+        }
         fs.mkdirSync(distDir);
     }
 
-    if (!fs.existsSync(`${NANGO_INTEGRATIONS_LOCATION}/models.ts`)) {
+    if (!fs.existsSync(`${NANGO_INTEGRATIONS_LOCATION}/${TYPES_FILE_NAME}`)) {
+        if (debug) {
+            printDebug(`Creating ${TYPES_FILE_NAME} file`);
+        }
         createModelFile();
     }
 
@@ -557,8 +749,11 @@ export const tscWatch = () => {
     }
 };
 
-export const configWatch = () => {
+export const configWatch = (debug = false) => {
     const watchPath = `${NANGO_INTEGRATIONS_LOCATION}/${nangoConfigFile}`;
+    if (debug) {
+        printDebug(`Watching ${watchPath}`);
+    }
     const watcher = chokidar.watch(watchPath, { ignoreInitial: true });
 
     watcher.on('change', () => {
@@ -566,31 +761,10 @@ export const configWatch = () => {
     });
 };
 
-/**
- * Config Deploy
- * @desc if the config is changed and a new sync is added or deleted, make sure
- * the worker runs the new sync or removes that new sync
- * so any changes are seamless
- */
-let isDeploying = false;
-
-export const configDeploy = async () => {
-    const watchPath = `${NANGO_INTEGRATIONS_LOCATION}/${nangoConfigFile}`;
-    const watcher = chokidar.watch(watchPath, { ignoreInitial: true });
-
-    watcher.on('all', async (event: string) => {
-        if (!isDeploying && (event === 'add' || event === 'change')) {
-            isDeploying = true;
-            await deployLocalSyncs();
-            isDeploying = false;
-        }
-    });
-};
-
 let child: ChildProcess | undefined;
 process.on('SIGINT', () => {
     if (child) {
-        const dockerDown = spawn('docker', ['compose', '-f', 'node_modules/nango/docker/docker-compose.yaml', '--project-directory', '.', 'down'], {
+        const dockerDown = spawn('docker', ['compose', '-f', `${getNangoRootPath()}/docker/docker-compose.yaml`, '--project-directory', '.', 'down'], {
             stdio: 'inherit'
         });
         dockerDown.on('exit', () => {
@@ -606,10 +780,16 @@ process.on('SIGINT', () => {
  * @desc spawn a child process to run the docker compose located in the cli
  * Look into https://www.npmjs.com/package/docker-compose to avoid dependency maybe?
  */
-export const dockerRun = async () => {
+export const dockerRun = async (debug = false) => {
     const cwd = process.cwd();
 
-    child = spawn('docker', ['compose', '-f', 'node_modules/nango/docker/docker-compose.yaml', '--project-directory', '.', 'up', '--build'], {
+    const args = ['compose', '-f', `${getNangoRootPath()}/docker/docker-compose.yaml`, '--project-directory', '.', 'up', '--build'];
+
+    if (debug) {
+        printDebug(`Running docker with args: ${args.join(' ')}`);
+    }
+
+    child = spawn('docker', args, {
         cwd,
         detached: false,
         stdio: 'inherit'

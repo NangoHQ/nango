@@ -1,7 +1,7 @@
 import type { HTTP_VERB } from './Generic.js';
 
 export type LogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
-export type LogAction = 'oauth' | 'proxy' | 'token' | 'sync';
+export type LogAction = 'oauth' | 'proxy' | 'token' | 'sync' | 'sync deploy';
 interface Message {
     [index: string]: unknown | undefined | string | number | boolean | Record<string, string | boolean | number | unknown>;
 }
@@ -15,9 +15,9 @@ export interface ActivityLog {
     timestamp: number;
     start: number;
     end?: number;
-    connection_id: string;
-    provider_config_key: string;
-    provider?: string;
+    connection_id: string | null;
+    provider_config_key: string | null;
+    provider?: string | null;
     method?: HTTP_VERB;
     endpoint?: string;
     session_id?: string;

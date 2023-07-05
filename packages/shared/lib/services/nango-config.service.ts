@@ -5,8 +5,6 @@ import yaml from 'js-yaml';
 import ms from 'ms';
 
 import type { NangoConfig, SimplifiedNangoIntegration, NangoSyncConfig, NangoSyncModel } from '../integrations/index.js';
-import type { NangoConnection } from '../models/Connection.js';
-import { getSyncConfig } from './sync/config.service.js';
 import { isCloud } from '../utils/utils.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -14,19 +12,6 @@ const __dirname = dirname(__filename);
 
 export const nangoConfigFile = 'nango.yaml';
 export const SYNC_FILE_EXTENSION = 'js';
-
-export function loadNangoConfig(
-    nangoConnection: NangoConnection | null,
-    syncName?: string,
-    syncId?: string,
-    loadLocation?: string
-): Promise<NangoConfig | null> {
-    if (isCloud()) {
-        return getSyncConfig(nangoConnection as NangoConnection, syncName, syncId);
-    } else {
-        return loadLocalNangoConfig(loadLocation);
-    }
-}
 
 export function loadLocalNangoConfig(loadLocation?: string): Promise<NangoConfig | null> {
     let location;
