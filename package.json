@@ -39,7 +39,8 @@
         "dev:watch:apps": "concurrently --kill-others \"npm run server:dev:watch\" \"npm run webapp:dev:watch\" \"npm run worker:dev:watch\" ",
         "watch:dev:apps": "npm run dev:watch:apps",
         "dw": "npm run dev:watch",
-        "dwa": "npm run dev:watch:apps"
+        "dwa": "npm run dev:watch:apps",
+        "i": "npm run install:all"
     },
     "devDependencies": {
         "@tsconfig/node18-strictest-esm": "^1.0.1",

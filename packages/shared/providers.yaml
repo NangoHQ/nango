@@ -600,6 +600,8 @@ spotify:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    base_api_url: https://api.spotify.com
+    docs: https://developer.spotify.com/documentation/web-api
 squareup:
     auth_mode: OAUTH2
     authorization_url: https://connect.squareup.com/oauth2/authorize

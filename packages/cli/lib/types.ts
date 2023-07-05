@@ -2,6 +2,7 @@ export interface GlobalOptions {
     secretKey?: string;
     host?: string;
     autoConfirm: boolean;
+    debug: boolean;
 }
 
 export type ENV = 'local' | 'staging' | 'production';

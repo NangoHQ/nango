@@ -192,6 +192,10 @@ export class Nango {
             options.paramsSerializer = config.paramsSerializer;
         }
 
+        if (this.dryRun) {
+            console.log(`Nango Proxy Request: ${method?.toUpperCase()} ${url}`);
+        }
+
         if (method?.toUpperCase() === 'POST') {
             return axios.post(url, config.data, options);
         } else if (method?.toUpperCase() === 'PATCH') {

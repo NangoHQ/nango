@@ -4,6 +4,7 @@ import fileService from '../file.service.js';
 import { updateSyncScheduleFrequency } from './schedule.service.js';
 import {
     createActivityLog,
+    createActivityLogMessage,
     updateSuccess as updateSuccessActivityLog,
     createActivityLogMessageAndEnd,
     createActivityLogDatabaseErrorMessageAndEnd
@@ -19,7 +20,7 @@ import { getEnv } from '../../utils/utils.js';
 
 const TABLE = dbNamespace + 'sync_configs';
 
-export async function createSyncConfig(account_id: number, syncs: IncomingSyncConfig[]): Promise<SyncDeploymentResult[] | null> {
+export async function createSyncConfig(account_id: number, syncs: IncomingSyncConfig[], debug = false): Promise<SyncDeploymentResult[] | null> {
     const insertData = [];
 
     const providers = syncs.map((sync) => sync.providerConfigKey);
@@ -69,6 +70,15 @@ export async function createSyncConfig(account_id: number, syncs: IncomingSyncCo
         if (previousSyncConfig) {
             bumpedVersion = increment(previousSyncConfig.version as string | number).toString();
 
+            if (debug) {
+                await createActivityLogMessage({
+                    level: 'debug',
+                    activity_log_id: activityLogId as number,
+                    timestamp: Date.now(),
+                    content: `A previous sync config was found for ${syncName} with version ${previousSyncConfig.version}`
+                });
+            }
+
             const syncs = await getSyncsByProviderConfigAndSyncName(account_id, providerConfigKey, syncName);
             for (const sync of syncs) {
                 await updateSyncScheduleFrequency(sync.id as string, runs);
@@ -113,6 +123,15 @@ export async function createSyncConfig(account_id: number, syncs: IncomingSyncCo
         if (oldConfigs.length > 0) {
             const ids = oldConfigs.map((oldConfig: SyncConfig) => oldConfig.id as number);
             idsToMarkAsInvactive.push(...ids);
+
+            if (debug) {
+                await createActivityLogMessage({
+                    level: 'debug',
+                    activity_log_id: activityLogId as number,
+                    timestamp: Date.now(),
+                    content: `Marking ${ids.length} old sync configs as inactive for ${syncName} with version ${version} as the active sync config`
+                });
+            }
         }
 
         insertData.push({
