@@ -33,6 +33,7 @@ import {
     verifyNecessaryFiles,
     getConnection,
     NANGO_INTEGRATIONS_LOCATION,
+    NANGO_INTEGRATIONS_NAME,
     buildInterfaces,
     enrichHeaders,
     getNangoRootPath,
@@ -323,19 +324,18 @@ export const version = (debug: boolean) => {
     console.log(chalk.green('Nango CLI version:'), packageJson.version);
 };
 
+/**
+ * Init
+ * If we're not currently in the nango-integrations directory create one
+ * and create an example nango.yaml file
+ */
 export const init = (debug = false) => {
     const data: NangoConfig = {
         integrations: {
-            github: {
+            'demo-github-integration': {
                 [exampleSyncName]: {
                     runs: 'every half hour',
                     returns: ['GithubIssue']
-                }
-            },
-            'asana-dev': {
-                'asana-projects': {
-                    runs: 'every hour',
-                    returns: ['AsanaProject']
                 }
             }
         },
@@ -352,56 +352,70 @@ export const init = (debug = false) => {
                 date_created: 'date',
                 date_last_modified: 'date',
                 body: 'string'
-            },
-            AsanaProject: {
-                id: 'number',
-                type: 'string'
             }
         }
     };
     const yamlData = yaml.dump(data);
 
-    if (!fs.existsSync(NANGO_INTEGRATIONS_LOCATION)) {
+    // if currently in the nango-integrations directory then don't create another one
+    const cwd = process.cwd();
+    const currentDirectorySplit = cwd.split('/');
+    const currentDirectory = currentDirectorySplit[currentDirectorySplit.length - 1];
+
+    let dirExists = false;
+    let inParentDirectory = true;
+
+    if (currentDirectory === NANGO_INTEGRATIONS_NAME) {
+        dirExists = true;
+        inParentDirectory = false;
         if (debug) {
-            printDebug('Creating the nango integrations directory');
-        }
-        fs.mkdirSync(NANGO_INTEGRATIONS_LOCATION);
-    } else {
-        if (debug) {
-            printDebug('Nango integrations directory already exists');
+            printDebug(`Currently in the ${NANGO_INTEGRATIONS_NAME} directory so the directory will not be created`);
         }
     }
 
-    if (!fs.existsSync(`${NANGO_INTEGRATIONS_LOCATION}/${nangoConfigFile}`)) {
+    if (fs.existsSync(`./${NANGO_INTEGRATIONS_NAME}`)) {
+        dirExists = true;
+        console.log(chalk.red(`The ${NANGO_INTEGRATIONS_NAME} directory already exists. You should run commands from within this directory`));
+    }
+
+    if (!dirExists) {
         if (debug) {
-            printDebug('Creating the ${nangoConfigFile} file}');
+            printDebug(`Creating the nango integrations directory at ./${NANGO_INTEGRATIONS_NAME}`);
         }
-        fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/${nangoConfigFile}`, yamlData);
+        fs.mkdirSync(`./${NANGO_INTEGRATIONS_NAME}`);
+    }
+
+    const configFileLocation = inParentDirectory ? `./${NANGO_INTEGRATIONS_NAME}/${nangoConfigFile}` : `./${nangoConfigFile}`;
+
+    if (!fs.existsSync(configFileLocation)) {
+        if (debug) {
+            printDebug(`Creating the ${nangoConfigFile} file at ${configFileLocation}`);
+        }
+        fs.writeFileSync(configFileLocation, yamlData);
     } else {
         if (debug) {
-            printDebug('Nango config file already exists');
+            printDebug(`Nango config file already exists at ${configFileLocation} so not creating a new one`);
         }
     }
 
-    // check if a .env file exists and if not create it with some default content
-    if (!fs.existsSync('.env')) {
+    const envFileLocation = inParentDirectory ? `./${NANGO_INTEGRATIONS_NAME}/.env` : './.env';
+    if (!fs.existsSync(envFileLocation)) {
         if (debug) {
-            printDebug('Creating the .env file');
+            printDebug(`Creating the .env file at ${envFileLocation}`);
         }
         fs.writeFileSync(
-            '.env',
+            envFileLocation,
             `#NANGO_HOSTPORT=https://api-staging.nango.dev
 #NANGO_AUTO_UPGRADE=true # set to true to automatically upgrade to the latest version of nango
 #NANGO_NO_PROMPT_FOR_UPGRADE=true # set to true to not prompt for upgrade
 #NANGO_DEPLOY_AUTO_CONFIRM=true # set to true to automatically confirm deployment without prompting
 #NANGO_SECRET_KEY=xxxx-xxx-xxxx # required if deploying to cloud
-#NANGO_INTEGRATIONS_LOCATION=use-this-to-override-where-the-nango-integrations-directory-goes
 #NANGO_PORT=use-this-to-override-the-default-3003
 #NANGO_DB_PORT=use-this-to-override-the-default-5432`
         );
     } else {
         if (debug) {
-            printDebug('.env file already exists');
+            printDebug(`.env file already exists at ${envFileLocation} so not creating a new one`);
         }
     }
 
@@ -604,8 +618,6 @@ export const tsc = (debug = false) => {
         createModelFile();
     }
 
-    const rawNangoIntegrationLocation = NANGO_INTEGRATIONS_LOCATION.replace('./', '');
-
     const compiler = tsNode.create({
         compilerOptions: JSON.parse(tsconfig).compilerOptions
     });
@@ -621,10 +633,9 @@ export const tsc = (debug = false) => {
                 return;
             }
             const result = compiler.compile(fs.readFileSync(filePath, 'utf8'), filePath);
-            const jsFilePath = path.join(path.dirname(filePath), path.basename(filePath, '.ts') + '.js');
-            const distJSFilePath = jsFilePath.replace(rawNangoIntegrationLocation, `${rawNangoIntegrationLocation}/dist`);
+            const jsFilePath = filePath.replace(/\/[^\/]*$/, `/dist/${path.basename(filePath.replace('.ts', '.js'))}`);
 
-            fs.writeFileSync(distJSFilePath, result);
+            fs.writeFileSync(jsFilePath, result);
             console.log(chalk.green(`Compiled "${filePath}" successfully`));
         } catch (error) {
             console.error(`Error compiling "${filePath}":`);

@@ -24,7 +24,8 @@ dotenv.config();
 
 const execPromise = util.promisify(exec);
 
-export const NANGO_INTEGRATIONS_LOCATION = process.env['NANGO_INTEGRATIONS_LOCATION'] || './nango-integrations';
+export const NANGO_INTEGRATIONS_NAME = 'nango-integrations';
+export const NANGO_INTEGRATIONS_LOCATION = process.env['NANGO_INTEGRATIONS_LOCATION'] || './';
 
 export const port = process.env['NANGO_PORT'] || '3003';
 let parsedHostport = process.env['NANGO_HOSTPORT'] || `http://localhost:${port}`;
