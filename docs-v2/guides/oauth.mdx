@@ -214,15 +214,23 @@ https://<USER-SUBDOMAIN>.zendesk.com/oauth/authorizations/new
 
 To specify the subdomain, pass in an additional configuration object to `nango.auth()`:
 
-```javascript
-nango.auth('zendesk', '<CONNECTION-ID>', {
-    params: { 
-        subdomain: '<ZENDESK-SUBDOMAIN>' 
-    }
-});
+```typescript
+nango.auth('zendesk', '<CONNECTION-ID>', { params: { subdomain: '<ZENDESK-SUBDOMAIN>' } });
 ```
 
 You can find which configuration parameters are necessary for your [Connection](/core-concepts#connections) in the [providers.yaml](https://nango.dev/providers.yaml) file.
+
+### Connection-Specific Authorization Params
+
+Some APIs require to pass additional query parameters in the authorization URL. If this applies to all users & use-cases, these params can be added to the [providers.yaml](https://nango.dev/providers.yaml) API configurations. 
+
+But sometimes, the additional authorization parameter is specific to a user or a use-case. In this case, it is possible to add it to the `nango.auth()` call from the Frontend SDK:
+
+```typescript
+nango.auth('discord', '<CONNECTION-ID>', { authorization_params: { key: 'value' } });
+```
+
+
 
 ### Connection Metadata
 

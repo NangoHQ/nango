@@ -170,44 +170,51 @@ export default function IntegrationCreate() {
 
         let argsStr = args.length > 0 ? `{ ${args.join(', ')} }` : '';
 
-        let connectionConfigStr = '';
+        let connectionConfigParamsStr = '';
 
         // Iterate of connection config params and create a string.
         if (connectionConfigParams != null && Object.keys(connectionConfigParams).length >= 0) {
-            connectionConfigStr = ', { params: { ';
+            connectionConfigParamsStr = 'params: { ';
             for (const [key, value] of Object.entries(connectionConfigParams)) {
-                connectionConfigStr += `${key}: '${value}', `;
+                connectionConfigParamsStr += `${key}: '${value}', `;
             }
-            connectionConfigStr = connectionConfigStr.slice(0, -2);
-            connectionConfigStr += ' }}';
+            connectionConfigParamsStr = connectionConfigParamsStr.slice(0, -2);
+            connectionConfigParamsStr += ' }';
         }
+
+        let authorizationParamsStr = '';
 
         // Iterate of authorization params and create a string.
         if (authorizationParams != null && Object.keys(authorizationParams).length >= 0 && Object.keys(authorizationParams)[0]) {
-            connectionConfigStr = ', authorization_params: { ';
+            authorizationParamsStr = 'authorization_params: { ';
             for (const [key, value] of Object.entries(authorizationParams)) {
-                connectionConfigStr += `${key}: '${value}', `;
+                authorizationParamsStr += `${key}: '${value}', `;
             }
-            connectionConfigStr = connectionConfigStr.slice(0, -2);
-            connectionConfigStr += ' }}';
+            authorizationParamsStr = authorizationParamsStr.slice(0, -2);
+            authorizationParamsStr += ' }';
         }
 
         let userScopesStr = '';
 
         if (selectedScopes != null && selectedScopes.length > 0) {
-            userScopesStr = ', { user_scope: [ ';
+            userScopesStr = 'user_scope: [ ';
             for (const scope of selectedScopes) {
                 userScopesStr += `'${scope}', `;
             }
             userScopesStr = userScopesStr.slice(0, -2);
-            userScopesStr += ' ] }';
+            userScopesStr += ' ]';
         }
+
+        const connectionConfigStr =
+            !connectionConfigParamsStr && !authorizationParamsStr && !userScopesStr
+                ? ''
+                : ', { ' + [connectionConfigParamsStr, authorizationParamsStr, userScopesStr].filter(Boolean).join(', ') + ' }';
 
         return `import Nango from '@nangohq/frontend';
 
 const nango = new Nango(${argsStr});
 
-nango.auth('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr}${userScopesStr}).then((result: { providerConfigKey: string; connectionId: string }) => {
+nango.auth('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr}).then((result: { providerConfigKey: string; connectionId: string }) => {
     // do something
 }).catch((err: { message: string; type: string }) => {
     // handle error
