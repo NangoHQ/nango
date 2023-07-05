@@ -6,7 +6,7 @@ import { Tooltip } from '@geist-ui/core';
 import { LeftNavBarItems } from '../components/LeftNavBar';
 import { useGetAllSyncsAPI } from '../utils/api';
 import { Sync } from '../types';
-import { formatDateToUSFormat } from '../utils/utils';
+import { syncDocs, formatDateToUSFormat } from '../utils/utils';
 
 export default function Syncs() {
     const [loaded, setLoaded] = useState(false);
@@ -57,7 +57,7 @@ export default function Syncs() {
                             <Slash className="stroke-red-500" />
                             <div className="text-white ml-3">
                                 No syncs yet - use Nango Sync to exchange data with the external API. See the{' '}
-                                <a href="https://docs.nango.dev/nango-sync" className="text-blue-500" target="_blank" rel="noreferrer">
+                                <a href={syncDocs} className="text-blue-500" target="_blank" rel="noreferrer">
                                     docs
                                 </a>
                             </div>
