@@ -115,6 +115,13 @@ export async function verifyNecessaryFiles(autoConfirm: boolean, debug = false) 
 }
 
 export async function upgradeAction(debug = false) {
+    if (!isLocallyInstalled('nango') && process.env['npm_config_user_agent']?.includes('npx')) {
+        console.log(
+            chalk.red(`It appears you are running nango via npx. We recommend installing nango globally ("npm install nango -g") and running it directly.`)
+        );
+        process.exit(1);
+    }
+
     if (process.env['NANGO_NO_PROMPT_FOR_UPGRADE'] === 'true') {
         return;
     }
@@ -141,7 +148,7 @@ export async function upgradeAction(debug = false) {
                 console.log(chalk.yellow(`Upgrading ${resolved.name} to version ${latestVersion}...`));
 
                 const args = isLocallyInstalled('nango')
-                    ? ['install', '--no-audit', `nango@${latestVersion}`]
+                    ? ['install', '--no-audit', '--save', `nango@${latestVersion}`]
                     : ['install', '-g', '--no-audit', `nango@${latestVersion}`];
 
                 if (debug) {
