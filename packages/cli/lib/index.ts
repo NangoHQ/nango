@@ -118,8 +118,7 @@ program
     .alias('docker:run')
     .description('Run the docker container locally')
     .action(async function (this: Command) {
-        const { autoConfirm, debug } = this.opts();
-        await verifyNecessaryFiles(autoConfirm, debug);
+        const { debug } = this.opts();
         await dockerRun(debug);
     });
 
