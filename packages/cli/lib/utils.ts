@@ -1,6 +1,7 @@
 import https from 'https';
 import axios from 'axios';
 import fs from 'fs';
+import * as os from 'os';
 import npa from 'npm-package-arg';
 import Module from 'node:module';
 import path, { dirname } from 'path';
@@ -59,14 +60,33 @@ export async function isGlobal(packageName: string) {
     }
 }
 
-export function isLocallyInstalled(packageName: string) {
+export function isLocallyInstalled(packageName: string, debug = false) {
     try {
-        const packageJson = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../package.json'), 'utf8'));
+        let dir = __dirname;
+        const npxCacheDir = path.join(os.homedir(), '.npm/_npx');
 
-        const dependencies = packageJson.dependencies || {};
-        const devDependencies = packageJson.devDependencies || {};
+        while (dir !== path.resolve(dir, '..')) {
+            const packageJsonPath = path.resolve(dir, 'package.json');
 
-        return packageName in dependencies || packageName in devDependencies;
+            if (dir.startsWith(npxCacheDir)) {
+                if (debug) {
+                    printDebug(`Ignoring npx cache directory: ${dir} while trying to find if nango is locally installed.`);
+                }
+            } else if (fs.existsSync(packageJsonPath)) {
+                const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+
+                const dependencies = packageJson.dependencies || {};
+                const devDependencies = packageJson.devDependencies || {};
+
+                if (packageName in dependencies || packageName in devDependencies) {
+                    return true;
+                }
+            }
+
+            dir = path.resolve(dir, '..');
+        }
+
+        return false;
     } catch (err) {
         console.error(`Error checking if package is installed: ${err}`);
         return false;
@@ -125,6 +145,20 @@ export async function verifyNecessaryFiles(autoConfirm: boolean, debug = false) 
 }
 
 export async function upgradeAction(debug = false) {
+    const isRunViaNpx = process.argv.some((arg) => arg.includes('npx'));
+    const locallyInstalled = isLocallyInstalled('nango', debug);
+
+    if (debug) {
+        printDebug(`Is run via npx: ${isRunViaNpx}. Is locally installed: ${locallyInstalled}`);
+    }
+
+    if (!locallyInstalled && isRunViaNpx) {
+        console.log(
+            chalk.red(`It appears you are running nango via npx. We recommend installing nango globally ("npm install nango -g") and running it directly.`)
+        );
+        process.exit(1);
+    }
+
     if (process.env['NANGO_NO_PROMPT_FOR_UPGRADE'] === 'true') {
         return;
     }
@@ -150,8 +184,8 @@ export async function upgradeAction(debug = false) {
             if (upgrade) {
                 console.log(chalk.yellow(`Upgrading ${resolved.name} to version ${latestVersion}...`));
 
-                const args = isLocallyInstalled('nango')
-                    ? ['install', '--no-audit', `nango@${latestVersion}`]
+                const args = locallyInstalled
+                    ? ['install', '--no-audit', '--save', `nango@${latestVersion}`]
                     : ['install', '-g', '--no-audit', `nango@${latestVersion}`];
 
                 if (debug) {
@@ -319,7 +353,7 @@ export function getNangoRootPath(debug = false) {
 
 function getPackagePath(debug = false) {
     try {
-        if (isLocallyInstalled('nango')) {
+        if (isLocallyInstalled('nango', debug)) {
             if (debug) {
                 printDebug('Found locally installed nango');
             }
