@@ -219,6 +219,17 @@ epic-games:
     authorization_url: https://www.epicgames.com/id/authorize
     token_url: https://api.epicgames.dev/epic/oauth/v1/token
     authorization_method: header
+exact-online:
+    auth_mode: OAUTH2
+    authorization_url: https://start.exactonline.${connectionConfig.params.extension}/api/oauth2/auth
+    token_url: https://start.exactonline.${connectionConfig.params.extension}/api/oauth2/token
+    authorization_method: header
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 factorial:
     auth_mode: OAUTH2
     authorization_url: https://api.factorialhr.com/oauth/authorize
