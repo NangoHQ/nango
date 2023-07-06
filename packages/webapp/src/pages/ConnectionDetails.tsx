@@ -13,7 +13,7 @@ import Button from '../components/ui/button/Button';
 import Typography from '../components/ui/typography/Typography';
 import SecretInput from '../components/ui/input/SecretInput';
 import type { SyncResponse, RunSyncCommand } from '../types';
-import { parseLatestSyncResult, formatDateToUSFormat, interpretNextRun } from '../utils/utils';
+import { syncDocs, parseLatestSyncResult, formatDateToUSFormat, interpretNextRun } from '../utils/utils';
 
 interface Connection {
     id: number;
@@ -403,7 +403,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                                         <Slash className="stroke-red-500" />
                                         <div className="text-white ml-3">
                                             No syncs yet - use Nango Sync to exchange data with the external API. See the{' '}
-                                            <a href="https://docs.nango.dev/nango-sync" className="text-blue-500" target="_blank" rel="noreferrer">
+                                            <a href={syncDocs} className="text-blue-500" target="_blank" rel="noreferrer">
                                                 docs
                                             </a>. If you have a sync please make sure you have deployed it!
                                         </div>
