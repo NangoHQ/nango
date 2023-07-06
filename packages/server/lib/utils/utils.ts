@@ -1,22 +1,22 @@
 import { fileURLToPath } from 'url';
 import path, { resolve } from 'path';
 import type { Request } from 'express';
-import type { User, Account, Template as ProviderTemplate } from '@nangohq/shared';
+import type { User, Environment, Account, Template as ProviderTemplate } from '@nangohq/shared';
 import logger from './logger.js';
 import type { WSErr } from './web-socket-error.js';
 import { readFileSync } from 'fs';
-import { NangoError, userService, accountService, interpolateString, isCloud, getBaseUrl } from '@nangohq/shared';
+import { NangoError, userService, environmentAccountService, accountService, interpolateString, isCloud, getBaseUrl } from '@nangohq/shared';
 
 type PackageJson = {
     version: string;
 };
 
-export async function getOauthCallbackUrl(accountId?: number) {
+export async function getOauthCallbackUrl(accountId?: number, environment?: string) {
     const globalCallbackUrl = getGlobalOAuthCallbackUrl();
 
-    if (isCloud() && accountId != null) {
-        const account: Account | null = await accountService.getAccountById(accountId);
-        return account?.callback_url || globalCallbackUrl;
+    if (isCloud() && accountId != null && environment != null) {
+        const environmentAccount: Environment | null = await environmentAccountService.getByAccountIdAndEnvironment(accountId, environment);
+        return environmentAccount?.callback_url || globalCallbackUrl;
     }
 
     return globalCallbackUrl;

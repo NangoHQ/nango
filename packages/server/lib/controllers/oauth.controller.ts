@@ -52,6 +52,8 @@ class OAuthController {
         const wsClientId = req.query['ws_client_id'] as string | undefined;
         const userScope = req.query['user_scope'] as string | undefined;
 
+        const accountEnvironment = req.cookies['env'] || 'prod';
+
         const log = {
             level: 'info' as LogLevel,
             success: false,
@@ -71,7 +73,7 @@ class OAuthController {
                 analytics.track('server:pre_ws_oauth', accountId);
             }
 
-            const callbackUrl = await getOauthCallbackUrl(accountId);
+            const callbackUrl = await getOauthCallbackUrl(accountId, accountEnvironment);
             const connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
 
             if (connectionId == null) {

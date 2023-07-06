@@ -3,6 +3,7 @@ import logger from '../logger/console.js';
 import type { Config as ProviderConfig } from '../models/Provider';
 import type { DBConfig } from '../models/Generic.js';
 import type { Account } from '../models/Admin.js';
+import type { Environment } from '../models/Environment.js';
 import type { Connection, StoredConnection } from '../models/Connection.js';
 import db from '../db/database.js';
 import util from 'util';
@@ -55,6 +56,18 @@ class EncryptionManager {
         encryptedAccount.secret_key_tag = authTag;
 
         return encryptedAccount;
+    }
+
+    public decryptEnvironment(environment: Environment | null): Environment | null {
+        // Check if the individual row is encrypted.
+        if (environment == null || environment.secret_key_iv == null || environment.secret_key_tag == null) {
+            return environment;
+        }
+
+        const decryptedEnvironment: Environment = Object.assign({}, environment);
+
+        decryptedEnvironment.secret_key = this.decrypt(environment.secret_key, environment.secret_key_iv, environment.secret_key_tag);
+        return decryptedEnvironment;
     }
 
     public decryptAccount(account: Account | null): Account | null {
