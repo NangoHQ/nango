@@ -145,8 +145,7 @@ Because of this, you cannot import additional modules (external or relative) in 
 Fill in the `fetchData` method with your integration code:
 
 ```ts asana-taks.ts
-import { NangoSync } from 'nango';
-import { AsanaTask } from './models';
+import { NangoSync, AsanaTask } from './models';
 
 export default async function fetchData(nango: NangoSync): Promise<{AsanaTask: AsanaTask[]}> {
 
@@ -228,7 +227,7 @@ To make API requests, use the proxy exposed by the `nango` object ([Proxy guide]
     - `nango.post({})`
     - etc
 
-To do not need to specify the `providerConfigKey` and `connectionId` fields in the call to the Proxy. They are automatically injected.
+You do not need to specify the `providerConfigKey` and `connectionId` fields in the call to the Proxy. They are automatically injected.
 </Tip>
 
 <Tip>
