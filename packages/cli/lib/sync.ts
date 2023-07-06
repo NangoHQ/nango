@@ -374,7 +374,7 @@ export const init = (debug = false) => {
 
     if (!fs.existsSync(`${NANGO_INTEGRATIONS_LOCATION}/${nangoConfigFile}`)) {
         if (debug) {
-            printDebug('Creating the ${nangoConfigFile} file}');
+            printDebug(`Creating the ${nangoConfigFile} file}`);
         }
         fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/${nangoConfigFile}`, yamlData);
     } else {
