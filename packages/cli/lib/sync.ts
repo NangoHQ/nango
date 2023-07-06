@@ -331,12 +331,6 @@ export const init = (debug = false) => {
                     runs: 'every half hour',
                     returns: ['GithubIssue']
                 }
-            },
-            'asana-dev': {
-                'asana-projects': {
-                    runs: 'every hour',
-                    returns: ['AsanaProject']
-                }
             }
         },
         models: {
@@ -352,10 +346,6 @@ export const init = (debug = false) => {
                 date_created: 'date',
                 date_last_modified: 'date',
                 body: 'string'
-            },
-            AsanaProject: {
-                id: 'number',
-                type: 'string'
             }
         }
     };
