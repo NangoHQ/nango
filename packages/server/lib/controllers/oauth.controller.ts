@@ -7,6 +7,7 @@ import { SyncClient } from '@nangohq/shared';
 import {
     getOauthCallbackUrl,
     getConnectionConfig,
+    getAdditionalAuthorizationParams,
     getConnectionMetadataFromCallbackRequest,
     missesInterpolationParam,
     getConnectionMetadataFromTokenResponse
@@ -73,6 +74,7 @@ class OAuthController {
 
             const callbackUrl = await getOauthCallbackUrl(accountId);
             const connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
+            const authorizationParams = req.query['authorization_params'] != null ? getAdditionalAuthorizationParams(req.query['authorization_params']) : {};
 
             if (connectionId == null) {
                 await createActivityLogMessageAndEnd({
@@ -202,6 +204,7 @@ class OAuthController {
                     session,
                     res,
                     connectionConfig,
+                    authorizationParams,
                     callbackUrl,
                     activityLogId as number,
                     userScope
@@ -239,6 +242,7 @@ class OAuthController {
         session: OAuthSession,
         res: Response,
         connectionConfig: Record<string, string>,
+        authorizationParams: Record<string, string>,
         callbackUrl: string,
         activityLogId: number,
         userScope?: string
@@ -298,9 +302,10 @@ class OAuthController {
                 oauth2Template.token_params.grant_type == undefined ||
                 oauth2Template.token_params.grant_type == 'authorization_code'
             ) {
-                let additionalAuthParams: Record<string, string> = {};
+                let additionalAuthParams: Record<string, string> = authorizationParams;
+
                 if (oauth2Template.authorization_params) {
-                    additionalAuthParams = oauth2Template.authorization_params;
+                    additionalAuthParams = { ...authorizationParams, ...oauth2Template.authorization_params };
                 }
 
                 // We always implement PKCE, no matter whether the server requires it or not,

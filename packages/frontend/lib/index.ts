@@ -118,6 +118,13 @@ export default class Nango {
             if (connectionConfig.user_scope) {
                 query.push(`user_scope=${connectionConfig.user_scope.join(',')}`);
             }
+
+            for (const param in connectionConfig.authorization_params) {
+                const val = connectionConfig.authorization_params[param];
+                if (typeof val === 'string') {
+                    query.push(`authorization_params[${param}]=${val}`);
+                }
+            }
         }
 
         return query.length === 0 ? '' : '?' + query.join('&');
@@ -132,6 +139,7 @@ interface ConnectionConfig {
     params: Record<string, string>;
     hmac?: string;
     user_scope?: string[];
+    authorization_params?: Record<string, string>;
 }
 
 enum AuthorizationStatus {
