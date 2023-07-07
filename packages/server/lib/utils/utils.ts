@@ -5,18 +5,18 @@ import type { User, Environment, Account, Template as ProviderTemplate } from '@
 import logger from './logger.js';
 import type { WSErr } from './web-socket-error.js';
 import { readFileSync } from 'fs';
-import { NangoError, userService, environmentAccountService, accountService, interpolateString, isCloud, getBaseUrl } from '@nangohq/shared';
+import { NangoError, userService, environmentService, interpolateString, isCloud, getBaseUrl } from '@nangohq/shared';
 
 type PackageJson = {
     version: string;
 };
 
-export async function getOauthCallbackUrl(accountId?: number, environment?: string) {
+export async function getOauthCallbackUrl(accountId?: number, currentEnvironment?: string) {
     const globalCallbackUrl = getGlobalOAuthCallbackUrl();
 
-    if (isCloud() && accountId != null && environment != null) {
-        const environmentAccount: Environment | null = await environmentAccountService.getByAccountIdAndEnvironment(accountId, environment);
-        return environmentAccount?.callback_url || globalCallbackUrl;
+    if (isCloud() && accountId != null && currentEnvironment != null) {
+        const environment: Environment | null = await environmentService.getByAccountIdAndEnvironment(accountId, currentEnvironment);
+        return environment?.callback_url || globalCallbackUrl;
     }
 
     return globalCallbackUrl;
@@ -26,8 +26,9 @@ export function getGlobalOAuthCallbackUrl() {
     return process.env['NANGO_CALLBACK_URL'] || getBaseUrl() + '/oauth/callback';
 }
 
-export async function getUserAndAccountFromSession(req: Request): Promise<{ user: User; account: Account }> {
+export async function getUserAccountAndEnvironmentFromSession(req: Request): Promise<{ user: User; account: Account; environment: Environment }> {
     const sessionUser = req.user;
+    const currentEnvironment = req.cookies['env'] || 'prod';
 
     if (sessionUser == null) {
         throw new NangoError('user_not_found');
@@ -39,13 +40,15 @@ export async function getUserAndAccountFromSession(req: Request): Promise<{ user
         throw new NangoError('user_not_found');
     }
 
-    const account = await accountService.getAccountById(user.account_id);
+    const environmentAndAccount = await environmentService.getAccountAndEnvironmentById(user.account_id, currentEnvironment);
 
-    if (account == null) {
+    if (environmentAndAccount == null) {
         throw new NangoError('account_not_found');
     }
 
-    return { user: user, account: account };
+    const { account, environment } = environmentAndAccount as { account: Account; environment: Environment };
+
+    return { user, account, environment };
 }
 
 export function dirname() {

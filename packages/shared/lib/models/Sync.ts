@@ -56,7 +56,7 @@ export interface SyncModelSchema {
 
 export interface SyncConfig extends Timestamps {
     id?: number;
-    account_id: number;
+    environment_id: number;
     sync_name: string;
     file_location: string;
     nango_config_id: number;

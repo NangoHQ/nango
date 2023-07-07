@@ -8,11 +8,19 @@ import { useGetAllSyncsAPI } from '../utils/api';
 import { Sync } from '../types';
 import { formatDateToUSFormat } from '../utils/utils';
 
+import { useStore } from '../store';
+
+
 export default function Syncs() {
     const [loaded, setLoaded] = useState(false);
     const [syncs, setSyncs] = useState<Sync[]>([]);
     const getSyncsAPI = useGetAllSyncsAPI();
-    console.log(syncs)
+
+    const env = useStore(state => state.cookieValue);
+
+    useEffect(() => {
+        setLoaded(false);
+    }, [env]);
 
     useEffect(() => {
         const getSyncs = async () => {

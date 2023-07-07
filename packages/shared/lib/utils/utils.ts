@@ -9,6 +9,7 @@ export const cloudHost = 'https://api.nango.dev';
 export const stagingHost = 'https://api-staging.nango.dev';
 
 const accountIdLocalsKey = 'nangoAccountId';
+const environmentIdLocalsKey = 'nangoEnvironmentId';
 
 export enum UserType {
     Local = 'localhost',
@@ -177,6 +178,10 @@ export function setAccount(accountId: number, res: Response) {
     res.locals[accountIdLocalsKey] = accountId;
 }
 
+export function setEnvironmentId(environmentId: number, res: Response) {
+    res.locals[environmentIdLocalsKey] = environmentId;
+}
+
 export function getAccount(res: Response): number {
     if (res.locals == null || !(accountIdLocalsKey in res.locals)) {
         throw new NangoError('account_not_set_in_locals');
@@ -188,6 +193,20 @@ export function getAccount(res: Response): number {
         return accountId;
     } else {
         throw new NangoError('account_malformed_in_locals');
+    }
+}
+
+export function getEnvironmentId(res: Response): number {
+    if (res.locals == null || !(environmentIdLocalsKey in res.locals)) {
+        throw new NangoError('environment_not_set_in_locals');
+    }
+
+    const environmentId = res.locals[environmentIdLocalsKey];
+
+    if (Number.isInteger(environmentId)) {
+        return environmentId;
+    } else {
+        throw new NangoError('environment_malformed_in_locals');
     }
 }
 

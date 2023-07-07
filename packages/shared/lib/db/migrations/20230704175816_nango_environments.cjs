@@ -15,6 +15,9 @@ exports.up = async function (knex, _) {
         table.boolean('hmac_enabled').defaultTo(false);
         table.string('hmac_key');
         table.timestamps(true, true);
+
+        table.index('account_id');
+        table.index('name');
     });
 };
 

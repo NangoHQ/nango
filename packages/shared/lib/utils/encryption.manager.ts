@@ -2,7 +2,6 @@ import crypto, { CipherGCMTypes } from 'crypto';
 import logger from '../logger/console.js';
 import type { Config as ProviderConfig } from '../models/Provider';
 import type { DBConfig } from '../models/Generic.js';
-import type { Account } from '../models/Admin.js';
 import type { Environment } from '../models/Environment.js';
 import type { Connection, StoredConnection } from '../models/Connection.js';
 import db from '../db/database.js';
@@ -43,19 +42,19 @@ class EncryptionManager {
         return str;
     }
 
-    public encryptAccount(account: Account): Account {
+    public encryptEnvironment(environment: Environment) {
         if (!this.shouldEncrypt()) {
-            return account;
+            return environment;
         }
 
-        const encryptedAccount: Account = Object.assign({}, account);
+        const encryptedEnvironment: Environment = Object.assign({}, environment);
 
-        const [encryptedClientSecret, iv, authTag] = this.encrypt(encryptedAccount.secret_key);
-        encryptedAccount.secret_key = encryptedClientSecret;
-        encryptedAccount.secret_key_iv = iv;
-        encryptedAccount.secret_key_tag = authTag;
+        const [encryptedClientSecret, iv, authTag] = this.encrypt(encryptedEnvironment.secret_key);
+        encryptedEnvironment.secret_key = encryptedClientSecret;
+        encryptedEnvironment.secret_key_iv = iv;
+        encryptedEnvironment.secret_key_tag = authTag;
 
-        return encryptedAccount;
+        return encryptedEnvironment;
     }
 
     public decryptEnvironment(environment: Environment | null): Environment | null {
@@ -68,18 +67,6 @@ class EncryptionManager {
 
         decryptedEnvironment.secret_key = this.decrypt(environment.secret_key, environment.secret_key_iv, environment.secret_key_tag);
         return decryptedEnvironment;
-    }
-
-    public decryptAccount(account: Account | null): Account | null {
-        // Check if the individual row is encrypted.
-        if (account == null || account.secret_key_iv == null || account.secret_key_tag == null) {
-            return account;
-        }
-
-        const decryptedAccount: Account = Object.assign({}, account);
-
-        decryptedAccount.secret_key = this.decrypt(account.secret_key, account.secret_key_iv, account.secret_key_tag);
-        return decryptedAccount;
     }
 
     public encryptConnection(connection: Connection): StoredConnection {
@@ -181,15 +168,15 @@ class EncryptionManager {
     private async encryptDatabase() {
         logger.info('🔐⚙️ Starting encryption of database...');
 
-        const accounts: Account[] = await db.knex.withSchema(db.schema()).select('*').from<Account>(`_nango_accounts`);
+        const environments: Environment[] = await db.knex.withSchema(db.schema()).select('*').from<Environment>(`_nango_environments`);
 
-        for (let account of accounts) {
-            if (account.secret_key_iv && account.secret_key_tag) {
+        for (let environment of environments) {
+            if (environment.secret_key_iv && environment.secret_key_tag) {
                 continue;
             }
 
-            account = this.encryptAccount(account);
-            await db.knex.withSchema(db.schema()).from<Account>(`_nango_accounts`).where({ id: account.id }).update(account);
+            environment = this.encryptEnvironment(environment);
+            await db.knex.withSchema(db.schema()).from<Environment>(`_nango_environments`).where({ id: environment.id }).update(environment);
         }
 
         const connections: Connection[] = await db.knex.withSchema(db.schema()).select('*').from<Connection>(`_nango_connections`);

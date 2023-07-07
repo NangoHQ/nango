@@ -35,7 +35,6 @@ exports.up = async function (knex, _) {
         table.dropColumn('callback_url');
         table.dropColumn('webhook_url');
     });
-
 };
 
 exports.down = async function (knex, _) {

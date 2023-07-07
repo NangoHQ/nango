@@ -6,7 +6,7 @@ import providerClientManager from './clients/provider.client.js';
 import SyncClient from './clients/sync.client.js';
 import errorManager from './utils/error.manager.js';
 import accountService from './services/account.service.js';
-import environmentAccountService from './services/environment-account.service.js';
+import environmentService from './services/environment.service.js';
 import webhookService from './services/webhook.service.js';
 import userService from './services/user.service.js';
 import fileService from './services/file.service.js';
@@ -45,7 +45,7 @@ export {
     SyncClient,
     errorManager,
     accountService,
-    environmentAccountService,
+    environmentService,
     userService,
     webhookService,
     fileService,

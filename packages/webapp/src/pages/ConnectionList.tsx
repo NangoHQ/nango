@@ -5,6 +5,8 @@ import { useGetConnectionListAPI } from '../utils/api';
 import DashboardLayout from '../layout/DashboardLayout';
 import { LeftNavBarItems } from '../components/LeftNavBar';
 
+import { useStore } from '../store';
+
 interface Connection {
     id: number;
     connectionId: string;
@@ -17,6 +19,12 @@ export default function ConnectionList() {
     const [loaded, setLoaded] = useState(false);
     const [connections, setConnections] = useState<Connection[] | null>(null);
     const getConnectionListAPI = useGetConnectionListAPI();
+
+    const env = useStore(state => state.cookieValue);
+
+    useEffect(() => {
+        setLoaded(false);
+    }, [env]);
 
     useEffect(() => {
         const getConnections = async () => {

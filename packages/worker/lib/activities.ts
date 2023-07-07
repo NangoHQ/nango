@@ -17,7 +17,7 @@ export async function routeSync(args: InitialSyncArgs): Promise<boolean | object
     const { syncId, syncJobId, syncName, activityLogId, nangoConnection, debug } = args;
     const syncConfig: ProviderConfig = (await configService.getProviderConfig(
         nangoConnection?.provider_config_key as string,
-        nangoConnection?.account_id as number
+        nangoConnection?.environment_id as number
     )) as ProviderConfig;
 
     return syncProvider(syncConfig, syncId, syncJobId, syncName, SyncType.INITIAL, nangoConnection, activityLogId, debug);
@@ -29,7 +29,7 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
     const syncJobId = await createSyncJob(syncId as string, SyncType.INCREMENTAL, SyncStatus.RUNNING, '', activityLogId);
     const syncConfig: ProviderConfig = (await configService.getProviderConfig(
         nangoConnection?.provider_config_key as string,
-        nangoConnection?.account_id as number
+        nangoConnection?.environment_id as number
     )) as ProviderConfig;
 
     return syncProvider(syncConfig, syncId, syncJobId?.id as number, syncName, SyncType.INCREMENTAL, nangoConnection, activityLogId);
@@ -65,7 +65,7 @@ export async function syncProvider(
             provider_config_key: nangoConnection?.provider_config_key as string,
             provider: syncConfig.provider,
             session_id: syncJobId.toString(),
-            account_id: nangoConnection?.account_id as number,
+            environment_id: nangoConnection?.environment_id as number,
             operation_name: syncName
         };
         activityLogId = (await createActivityLog(log)) as number;

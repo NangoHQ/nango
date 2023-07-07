@@ -25,7 +25,7 @@ import passport from 'passport';
 import accountController from './controllers/account.controller.js';
 import type { Response, Request } from 'express';
 import Logger from './utils/logger.js';
-import { accountService, getPort, isCloud, isBasicAuthEnabled, errorManager, getWebsocketsPath } from '@nangohq/shared';
+import { environmentService, getPort, isCloud, isBasicAuthEnabled, errorManager, getWebsocketsPath } from '@nangohq/shared';
 import oAuthSessionService from './services/oauth-session.service.js';
 import { deleteOldActivityLogs } from './jobs/index.js';
 import migrate from './utils/migrate.js';
@@ -57,7 +57,7 @@ if (NANGO_MIGRATE_AT_START === 'true') {
     Logger.info('Not migrating database');
 }
 
-await accountService.cacheAccountSecrets();
+await environmentService.cacheSecrets();
 await oAuthSessionService.clearStaleSessions();
 
 // API routes (no/public auth).

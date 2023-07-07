@@ -87,7 +87,7 @@ class SyncClient {
 
         const syncConfig: ProviderConfig = (await configService.getProviderConfig(
             nangoConnection?.provider_config_key as string,
-            nangoConnection?.account_id as number
+            nangoConnection?.environment_id as number
         )) as ProviderConfig;
 
         const syncObject = integrations[providerConfigKey] as unknown as { [key: string]: NangoIntegration };
@@ -130,7 +130,7 @@ class SyncClient {
                 provider_config_key: nangoConnection?.provider_config_key as string,
                 provider: syncConfig.provider,
                 session_id: sync?.id?.toString() as string,
-                account_id: nangoConnection?.account_id as number,
+                environment_id: nangoConnection?.environment_id as number,
                 operation_name: syncName
             };
             const activityLogId = await createActivityLog(log);

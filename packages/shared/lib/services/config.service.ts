@@ -57,12 +57,12 @@ class ConfigService {
         return result[0].provider;
     }
 
-    async getProviderConfig(providerConfigKey: string, accountId: number): Promise<ProviderConfig | null> {
+    async getProviderConfig(providerConfigKey: string, environment_id: number): Promise<ProviderConfig | null> {
         const result = await db.knex
             .withSchema(db.schema())
             .select('*')
             .from<ProviderConfig>(`_nango_configs`)
-            .where({ unique_key: providerConfigKey, account_id: accountId });
+            .where({ unique_key: providerConfigKey, environment_id });
 
         if (result == null || result.length == 0 || result[0] == null) {
             return null;
@@ -71,8 +71,8 @@ class ConfigService {
         return encryptionManager.decryptProviderConfig(result[0]);
     }
 
-    async listProviderConfigs(accountId: number): Promise<ProviderConfig[]> {
-        return (await db.knex.withSchema(db.schema()).select('*').from<ProviderConfig>(`_nango_configs`).where({ account_id: accountId }))
+    async listProviderConfigs(environment_id: number): Promise<ProviderConfig[]> {
+        return (await db.knex.withSchema(db.schema()).select('*').from<ProviderConfig>(`_nango_configs`).where({ environment_id }))
             .map((config) => encryptionManager.decryptProviderConfig(config))
             .filter((config) => config != null) as ProviderConfig[];
     }
@@ -82,38 +82,38 @@ class ConfigService {
     }
 
     async createDefaultProviderConfig(accountId: number) {
-        const config: ProviderConfig = {
-            account_id: accountId,
-            unique_key: 'demo-github-integration',
-            provider: 'github',
-            oauth_client_id: process.env['DEFAULT_GITHUB_CLIENT_ID'] || '',
-            oauth_client_secret: process.env['DEFAULT_GITHUB_CLIENT_SECRET'] || '',
-            oauth_scopes: 'public_repo'
-        };
+        const environments = await db.knex.withSchema(db.schema()).select('*').from(`_nango_environments`).where({ account_id: accountId });
 
-        await this.createProviderConfig(config);
+        for (const environment of environments) {
+            const config: ProviderConfig = {
+                environment_id: environment.id,
+                unique_key: 'demo-github-integration',
+                provider: 'github',
+                oauth_client_id: process.env['DEFAULT_GITHUB_CLIENT_ID'] || '',
+                oauth_client_secret: process.env['DEFAULT_GITHUB_CLIENT_SECRET'] || '',
+                oauth_scopes: 'public_repo'
+            };
+
+            await this.createProviderConfig(config);
+        }
     }
 
-    async deleteProviderConfig(providerConfigKey: string, accountId: number): Promise<number> {
-        await deleteSyncScheduleForProviderConfig(accountId, providerConfigKey);
+    async deleteProviderConfig(providerConfigKey: string, environment_id: number): Promise<number> {
+        await deleteSyncScheduleForProviderConfig(environment_id, providerConfigKey);
         if (isCloud()) {
-            const config = await this.getProviderConfig(providerConfigKey, accountId);
+            const config = await this.getProviderConfig(providerConfigKey, environment_id);
             await deleteSyncFilesForConfig(config?.id as number);
         }
 
-        await db.knex
-            .withSchema(db.schema())
-            .from<Connection>(`_nango_connections`)
-            .where({ provider_config_key: providerConfigKey, account_id: accountId })
-            .del();
-        return db.knex.withSchema(db.schema()).from<ProviderConfig>(`_nango_configs`).where({ unique_key: providerConfigKey, account_id: accountId }).del();
+        await db.knex.withSchema(db.schema()).from<Connection>(`_nango_connections`).where({ provider_config_key: providerConfigKey, environment_id }).del();
+        return db.knex.withSchema(db.schema()).from<ProviderConfig>(`_nango_configs`).where({ unique_key: providerConfigKey, environment_id }).del();
     }
 
     async editProviderConfig(config: ProviderConfig) {
         return db.knex
             .withSchema(db.schema())
             .from<ProviderConfig>(`_nango_configs`)
-            .where({ unique_key: config.unique_key, account_id: config.account_id })
+            .where({ unique_key: config.unique_key, environment_id: config.environment_id })
             .update(encryptionManager.encryptProviderConfig(config));
     }
 

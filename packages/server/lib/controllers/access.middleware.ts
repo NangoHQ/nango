@@ -1,6 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import type { Account } from '@nangohq/shared';
-import { accountService, isCloud, setAccount, isBasicAuthEnabled, errorManager, userService } from '@nangohq/shared';
+import { environmentService, isCloud, setAccount, setEnvironmentId, isBasicAuthEnabled, errorManager, userService } from '@nangohq/shared';
 
 export class AccessMiddleware {
     async secretKeyAuth(req: Request, res: Response, next: NextFunction) {
@@ -21,21 +20,29 @@ export class AccessMiddleware {
                 return errorManager.errRes(res, 'invalid_secret_key_format');
             }
 
-            let account: Account | null;
+            let accountId: number | null;
+            let environmentId: number | null;
             try {
-                account = await accountService.getAccountBySecretKey(secret);
+                const result = await environmentService.getAccountIdAndEnvironmentIdBySecretKey(secret);
+                accountId = result?.accountId as number;
+                environmentId = result?.environmentId as number;
             } catch (_) {
                 return errorManager.errRes(res, 'malformed_auth_header');
             }
 
-            if (account == null) {
+            if (accountId == null) {
                 return errorManager.errRes(res, 'unkown_account');
             }
 
-            setAccount(account.id, res);
+            setAccount(accountId, res);
+            setEnvironmentId(environmentId, res);
             next();
         } else {
             setAccount(0, res);
+
+            const accountEnvironment = req.cookies['env'] || 'prod';
+            const environmentId = accountEnvironment === 'prod' ? 1 : 2;
+            setEnvironmentId(environmentId, res);
 
             const secretKey = process.env['NANGO_SECRET_KEY'];
 
@@ -72,22 +79,30 @@ export class AccessMiddleware {
                 return errorManager.errRes(res, 'invalid_public_key');
             }
 
-            let account: Account | null | undefined;
+            let accountId: number | null | undefined;
+            let environmentId: number | null | undefined;
             try {
-                account = await accountService.getAccountByPublicKey(publicKey);
+                const result = await environmentService.getAccountIdAndEnvironmentIdByPublicKey(publicKey);
+                accountId = result?.accountId as number;
+                environmentId = result?.environmentId as number;
             } catch (e) {
                 errorManager.report(e);
                 return errorManager.errRes(res, 'unkown_account');
             }
 
-            if (account == null) {
+            if (accountId == null) {
                 return errorManager.errRes(res, 'unkown_account');
             }
 
-            setAccount(account.id, res);
+            setAccount(accountId, res);
+            setEnvironmentId(environmentId, res);
             next();
         } else {
             setAccount(0, res);
+
+            const accountEnvironment = req.cookies['env'] || 'prod';
+            const environmentId = accountEnvironment === 'prod' ? 1 : 2;
+            setEnvironmentId(environmentId, res);
             next();
         }
     }

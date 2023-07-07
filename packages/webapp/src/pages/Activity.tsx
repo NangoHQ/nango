@@ -12,6 +12,8 @@ import DashboardLayout from '../layout/DashboardLayout';
 import { LeftNavBarItems } from '../components/LeftNavBar';
 import type { ActivityResponse } from '../types';
 
+import { useStore } from '../store';
+
 interface Props {
   data: string | number | undefined;
 }
@@ -48,6 +50,8 @@ export default function Activity() {
     const [limit,] = useState(30);
     const [offset, setOffset] = useState(0);
 
+    const env = useStore(state => state.cookieValue);
+
     const location = useLocation();
     const queryParams = queryString.parse(location.search);
     const activityLogId: string | (string | null)[] | null = queryParams.activity_log_id;
@@ -58,6 +62,10 @@ export default function Activity() {
 
     const isInitialMount = useRef(true);
     const [activityRefs, setActivityRefs] = useState<{ [key: number]: React.RefObject<HTMLTableRowElement> }>({});
+
+    useEffect(() => {
+        setLoaded(false);
+    }, [env]);
 
     useEffect(() => {
         const getActivity = async () => {

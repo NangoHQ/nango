@@ -25,6 +25,7 @@ import {
     LogAction,
     configService,
     connectionService,
+    environmentService,
     Config as ProviderConfig,
     Template as ProviderTemplate,
     TemplateOAuth2 as ProviderTemplateOAuth2,
@@ -34,6 +35,7 @@ import {
     AuthCredentials,
     oauth2Client,
     getAccount,
+    getEnvironmentId,
     providerClientManager,
     errorManager,
     analytics
@@ -47,6 +49,7 @@ import hmacService from '../services/hmac.service.js';
 class OAuthController {
     public async oauthRequest(req: Request, res: Response, _: NextFunction) {
         const accountId = getAccount(res);
+        const environmentId = getEnvironmentId(res);
         const { providerConfigKey } = req.params;
         let connectionId = req.query['connection_id'] as string | undefined;
         const wsClientId = req.query['ws_client_id'] as string | undefined;
@@ -63,7 +66,7 @@ class OAuthController {
             timestamp: Date.now(),
             connection_id: connectionId as string,
             provider_config_key: providerConfigKey as string,
-            account_id: accountId
+            environment_id: environmentId
         };
 
         const activityLogId = await createActivityLog(log);
@@ -134,7 +137,7 @@ class OAuthController {
                 }
             });
 
-            const config = await configService.getProviderConfig(providerConfigKey, accountId);
+            const config = await configService.getProviderConfig(providerConfigKey, environmentId);
 
             await updateProviderActivityLog(activityLogId as number, String(config?.provider));
 
@@ -174,7 +177,7 @@ class OAuthController {
                 codeVerifier: crypto.randomBytes(24).toString('hex'),
                 id: uuid.v1(),
                 connectionConfig: connectionConfig,
-                accountId: accountId,
+                environmentId,
                 webSocketClientId: wsClientId
             };
 
@@ -429,7 +432,8 @@ class OAuthController {
             tokenResult = await oAuth1Client.getOAuthRequestToken();
         } catch (e) {
             const error = e as { statusCode: number; data?: any };
-            errorManager.report(new Error('token_retrieval_error'), { accountId: session.accountId, metadata: error });
+            const accountId = (await environmentService.getAccountIdFromEnvironment(session.environmentId)) as number;
+            errorManager.report(new Error('token_retrieval_error'), { accountId, metadata: error });
 
             await createActivityLogMessage({
                 level: 'error',
@@ -508,7 +512,7 @@ class OAuthController {
             });
 
             const template = configService.getTemplate(session.provider);
-            const config = (await configService.getProviderConfig(session.providerConfigKey, session.accountId))!;
+            const config = (await configService.getProviderConfig(session.providerConfigKey, session.environmentId))!;
 
             if (session.authMode === ProviderAuthModes.OAuth2) {
                 return this.oauth2Callback(template as ProviderTemplateOAuth2, config, session, req, res, activityLogId as number);
@@ -528,8 +532,9 @@ class OAuthController {
 
             return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownAuthMode(session.authMode));
         } catch (e) {
+            const accountId = (await environmentService.getAccountIdFromEnvironment(session.environmentId)) as number;
             errorManager.report(e, {
-                accountId: session?.accountId,
+                accountId,
                 metadata: errorManager.getExpressRequestContext(req)
             });
 
@@ -657,13 +662,16 @@ class OAuthController {
                 return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError());
             }
 
+            const accountId = (await environmentService.getAccountIdFromEnvironment(session.environmentId)) as number;
+
             const [updatedConnection] = await connectionService.upsertConnection(
                 connectionId,
                 providerConfigKey,
                 session.provider,
                 parsedRawCredentials,
                 session.connectionConfig,
-                session.accountId,
+                session.environmentId,
+                accountId,
                 { ...callbackMetadata, ...tokenMetadata }
             );
 
@@ -693,7 +701,8 @@ class OAuthController {
 
             return wsClient.notifySuccess(res, wsClientId, providerConfigKey, connectionId);
         } catch (e) {
-            errorManager.report(e, { accountId: session.accountId });
+            const accountId = (await environmentService.getAccountIdFromEnvironment(session.environmentId)) as number;
+            errorManager.report(e, { accountId });
 
             await createActivityLogMessageAndEnd({
                 level: 'error',
@@ -733,6 +742,8 @@ class OAuthController {
 
         const oauth_token_secret = session.requestTokenSecret!;
 
+        const accountId = (await environmentService.getAccountIdFromEnvironment(session.environmentId)) as number;
+
         const oAuth1Client = new OAuth1Client(config, template, '');
         oAuth1Client
             .getOAuthAccessToken(oauth_token as string, oauth_token_secret, oauth_verifier as string)
@@ -745,7 +756,8 @@ class OAuthController {
                     session.provider,
                     parsedAccessTokenResult,
                     session.connectionConfig,
-                    session.accountId,
+                    session.environmentId,
+                    accountId,
                     metadata
                 );
 
@@ -763,7 +775,7 @@ class OAuthController {
                 return wsClient.notifySuccess(res, wsClientId, providerConfigKey, connectionId);
             })
             .catch(async (e) => {
-                errorManager.report(e, { accountId: session.accountId });
+                errorManager.report(e, { accountId });
 
                 await createActivityLogMessageAndEnd({
                     level: 'error',

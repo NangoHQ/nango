@@ -8,6 +8,7 @@ import { isCloud, defaultCallback } from '../utils/utils';
 import DashboardLayout from '../layout/DashboardLayout';
 import { LeftNavBarItems } from '../components/LeftNavBar';
 import SecretInput from '../components/ui/input/SecretInput';
+import { useStore } from '../store';
 
 export default function ProjectSettings() {
     const [loaded, setLoaded] = useState(false);
@@ -20,6 +21,12 @@ export default function ProjectSettings() {
     const getProjectInfoAPI = useGetProjectInfoAPI();
     const editCallbackUrlAPI = useEditCallbackUrlAPI();
     const editWebhookUrlAPI = useEditWebhookUrlAPI();
+
+    const env = useStore(state => state.cookieValue);
+
+    useEffect(() => {
+        setLoaded(false);
+    }, [env]);
 
     useEffect(() => {
         const getAccount = async () => {
@@ -38,7 +45,7 @@ export default function ProjectSettings() {
             setLoaded(true);
             getAccount();
         }
-    }, [getProjectInfoAPI, loaded, setLoaded]);
+    }, [getProjectInfoAPI, loaded, setLoaded, env]);
 
     const handleCallbackSave = async (e: React.SyntheticEvent) => {
         e.preventDefault();
@@ -103,7 +110,7 @@ export default function ProjectSettings() {
                                         </label>
                                         <p className="ml-2 text-text-dark-gray text-sm">(do not share!)</p>
                                     </div>
-                                    <SecretInput disabled copy={true} defaultValue={secretKey} />
+                                    <SecretInput disabled copy={true} optionalValue={secretKey} setOptionalValue={setSecretKey} />
                                 </div>
                             </div>
                             <div>

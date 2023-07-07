@@ -8,7 +8,7 @@ import { checkForIntegrationFile } from '../nango-config.service.js';
 import { getLastSyncDate } from './sync.service.js';
 import { formatDataRecords } from './data-records.service.js';
 import { upsert } from './data.service.js';
-import accountService from '../account.service.js';
+import environmentService from '../environment.service.js';
 import integationService from './integration.service.js';
 import webhookService from '../webhook.service.js';
 import { NangoSync } from '../../sdk/sync.js';
@@ -16,7 +16,7 @@ import { isCloud, getApiUrl } from '../../utils/utils.js';
 import errorManager from '../../utils/error.manager.js';
 import type { NangoIntegrationData, NangoConfig, NangoIntegration } from '../../integrations/index.js';
 import type { UpsertResponse, UpsertSummary } from '../../models/Data.js';
-import type { Account } from '../../models/Admin';
+import type { Environment } from '../../models/Environment';
 
 interface SyncRunConfig {
     writeToDb: boolean;
@@ -71,7 +71,7 @@ export default class SyncRun {
         }
     }
 
-    async run(optionalLastSyncDate?: Date | null, bypassAccount?: boolean, optionalSecretKey?: string, optionalHost?: string): Promise<boolean | object> {
+    async run(optionalLastSyncDate?: Date | null, bypassEnvironment?: boolean, optionalSecretKey?: string, optionalHost?: string): Promise<boolean | object> {
         if (this.debug) {
             const content = this.loadLocation ? `Looking for a local nango config at ${this.loadLocation}` : `Looking for a sync config for ${this.syncName}`;
             if (this.writeToDb) {
@@ -109,15 +109,15 @@ export default class SyncRun {
 
         // if there is a matching customer integration code for the provider config key then run it
         if (integrations[this.nangoConnection.provider_config_key]) {
-            let account: Account | null = null;
+            let environment: Environment | null = null;
 
-            if (!bypassAccount) {
-                account = await accountService.getAccountById(this.nangoConnection.account_id as number);
+            if (!bypassEnvironment) {
+                environment = await environmentService.getById(this.nangoConnection.environment_id as number);
             }
 
-            if (!account && !bypassAccount) {
+            if (!environment && !bypassEnvironment) {
                 await this.reportFailureForResults(
-                    `No account was found for ${this.nangoConnection.account_id}. The sync cannot continue without a valid account`
+                    `No environment was found for ${this.nangoConnection.environment_id}. The sync cannot continue without a valid environment`
                 );
                 return false;
             }
@@ -125,7 +125,7 @@ export default class SyncRun {
             let secretKey;
 
             if (isCloud()) {
-                secretKey = optionalSecretKey || (account ? (account?.secret_key as string) : '');
+                secretKey = optionalSecretKey || (environment ? (environment?.secret_key as string) : '');
             } else {
                 secretKey = optionalSecretKey || process.env['NANGO_SECRET_KEY'] ? (process.env['NANGO_SECRET_KEY'] as string) : '';
             }
@@ -248,7 +248,8 @@ export default class SyncRun {
                                 }
 
                                 if (!upsertResult.success) {
-                                    errorManager.report(upsertResult?.error, { accountId: this.nangoConnection.account_id as number });
+                                    const accountId = (await environmentService.getAccountIdFromEnvironment(this.nangoConnection.environment_id)) as number;
+                                    errorManager.report(upsertResult?.error, { accountId: accountId });
 
                                     await this.reportFailureForResults(`There was a problem upserting the data for ${this.syncName} and the model ${model}`);
 

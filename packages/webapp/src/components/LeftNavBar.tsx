@@ -1,7 +1,8 @@
-import { useState } from 'react';
 import Cookies from 'js-cookie';
 import { Link } from 'react-router-dom';
 import Activity from '@geist-ui/icons/activity';
+
+import { useStore } from '../store';
 
 export enum LeftNavBarItems {
     Integrations = 0,
@@ -16,12 +17,14 @@ export interface LeftNavBarProps {
 }
 
 export default function LeftNavBar(props: LeftNavBarProps) {
-    const [env, setEnv] = useState(Cookies.get('env') || 'prod');
+    const env = useStore(state => state.cookieValue);
+
+    const setCookieValue = useStore(state => state.setCookieValue);
 
     const handleEnvChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const newEnv = e.target.value;
-        setEnv(newEnv);
         Cookies.set('env', newEnv);
+        setCookieValue(newEnv);
     }
 
     return (

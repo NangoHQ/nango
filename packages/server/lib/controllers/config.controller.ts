@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
-import { errorManager, NangoError, getAccount, analytics, configService, Config as ProviderConfig, connectionService } from '@nangohq/shared';
-import { getUserAndAccountFromSession, parseConnectionConfigParamsFromTemplate } from '../utils/utils.js';
+import { errorManager, NangoError, getAccount, getEnvironmentId, analytics, configService, Config as ProviderConfig, connectionService } from '@nangohq/shared';
+import { getUserAccountAndEnvironmentFromSession, parseConnectionConfigParamsFromTemplate } from '../utils/utils.js';
 
 interface Integration {
     uniqueKey: string;
@@ -17,11 +17,11 @@ class ConfigController {
 
     async listProviderConfigsWeb(req: Request, res: Response, next: NextFunction) {
         try {
-            const account = (await getUserAndAccountFromSession(req)).account;
+            const environment = (await getUserAccountAndEnvironmentFromSession(req)).environment;
 
-            const configs = await configService.listProviderConfigs(account.id);
+            const configs = await configService.listProviderConfigs(environment.id);
 
-            const connections = await connectionService.listConnections(account.id);
+            const connections = await connectionService.listConnections(environment.id);
 
             const integrations = configs.map((config: ProviderConfig) => {
                 const template = configService.getTemplates()[config.provider];
@@ -50,7 +50,10 @@ class ConfigController {
 
     async createProviderConfigWeb(req: Request, res: Response, next: NextFunction) {
         try {
-            const account = (await getUserAndAccountFromSession(req)).account;
+            const info = await getUserAccountAndEnvironmentFromSession(req);
+
+            const environment = info.environment;
+            const account = info.account;
 
             if (req.body == null) {
                 errorManager.errRes(res, 'missing_body');
@@ -86,7 +89,7 @@ class ConfigController {
 
             const uniqueConfigKey = req.body['provider_config_key'];
 
-            if ((await configService.getProviderConfig(uniqueConfigKey, account.id)) != null) {
+            if ((await configService.getProviderConfig(uniqueConfigKey, environment.id)) != null) {
                 errorManager.errRes(res, 'duplicate_provider_config');
                 return;
             }
@@ -101,7 +104,7 @@ class ConfigController {
                     .split(',')
                     .filter((w: string) => w)
                     .join(','), // Make coma-separated if needed
-                account_id: account.id
+                environment_id: environment.id
             };
 
             const result = await configService.createProviderConfig(config);
@@ -119,7 +122,7 @@ class ConfigController {
 
     async editProviderConfigWeb(req: Request, res: Response, next: NextFunction) {
         try {
-            const account = (await getUserAndAccountFromSession(req)).account;
+            const environment = (await getUserAccountAndEnvironmentFromSession(req)).environment;
 
             if (req.body == null) {
                 errorManager.errRes(res, 'missing_body');
@@ -150,10 +153,10 @@ class ConfigController {
                 oauth_client_id: req.body['client_id'],
                 oauth_client_secret: req.body['client_secret'],
                 oauth_scopes: req.body['scopes'],
-                account_id: account.id
+                environment_id: environment.id
             };
 
-            const oldConfig = await configService.getProviderConfig(newConfig.unique_key, account.id);
+            const oldConfig = await configService.getProviderConfig(newConfig.unique_key, environment.id);
 
             if (oldConfig == null) {
                 errorManager.errRes(res, 'unknown_provider_config');
@@ -169,7 +172,7 @@ class ConfigController {
 
     async deleteProviderConfigWeb(req: Request, res: Response, next: NextFunction) {
         try {
-            const account = (await getUserAndAccountFromSession(req)).account;
+            const environment = (await getUserAccountAndEnvironmentFromSession(req)).environment;
             const providerConfigKey = req.params['providerConfigKey'] as string;
 
             if (providerConfigKey == null) {
@@ -177,7 +180,7 @@ class ConfigController {
                 return;
             }
 
-            await configService.deleteProviderConfig(providerConfigKey, account.id);
+            await configService.deleteProviderConfig(providerConfigKey, environment.id);
 
             res.status(200).send();
         } catch (err) {
@@ -187,7 +190,7 @@ class ConfigController {
 
     async getProviderConfigWeb(req: Request, res: Response, next: NextFunction) {
         try {
-            const account = (await getUserAndAccountFromSession(req)).account;
+            const environment = (await getUserAccountAndEnvironmentFromSession(req)).environment;
             const providerConfigKey = req.params['providerConfigKey'] as string;
 
             if (providerConfigKey == null) {
@@ -195,7 +198,7 @@ class ConfigController {
                 return;
             }
 
-            const config = await configService.getProviderConfig(providerConfigKey, account.id);
+            const config = await configService.getProviderConfig(providerConfigKey, environment.id);
 
             if (config == null) {
                 errorManager.errRes(res, 'unknown_provider_config');
@@ -222,8 +225,8 @@ class ConfigController {
 
     async listProviderConfigs(_: Request, res: Response, next: NextFunction) {
         try {
-            const accountId = getAccount(res);
-            const configs = await configService.listProviderConfigs(accountId);
+            const environmentId = getEnvironmentId(res);
+            const configs = await configService.listProviderConfigs(environmentId);
             const results = configs.map((c: ProviderConfig) => ({ unique_key: c.unique_key, provider: c.provider }));
             res.status(200).send({ configs: results });
         } catch (err) {
@@ -233,7 +236,7 @@ class ConfigController {
 
     async getProviderConfig(req: Request, res: Response, next: NextFunction) {
         try {
-            const accountId = getAccount(res);
+            const environmentId = getEnvironmentId(res);
             const providerConfigKey = req.params['providerConfigKey'] as string;
             const includeCreds = req.query['include_creds'] === 'true';
 
@@ -242,7 +245,7 @@ class ConfigController {
                 return;
             }
 
-            const config = await configService.getProviderConfig(providerConfigKey, accountId);
+            const config = await configService.getProviderConfig(providerConfigKey, environmentId);
 
             if (config == null) {
                 errorManager.errRes(res, 'unknown_provider_config');
@@ -268,6 +271,7 @@ class ConfigController {
     async createProviderConfig(req: Request, res: Response, next: NextFunction) {
         try {
             const accountId = getAccount(res);
+            const environmentId = getEnvironmentId(res);
             if (req.body == null) {
                 errorManager.errRes(res, 'missing_body');
                 return;
@@ -302,7 +306,7 @@ class ConfigController {
 
             const uniqueConfigKey = req.body['provider_config_key'];
 
-            if ((await configService.getProviderConfig(uniqueConfigKey, accountId)) != null) {
+            if ((await configService.getProviderConfig(uniqueConfigKey, environmentId)) != null) {
                 errorManager.errRes(res, 'duplicate_provider_config');
                 return;
             }
@@ -317,7 +321,7 @@ class ConfigController {
                     .split(',')
                     .filter((w: string) => w)
                     .join(','), // Make coma-separated if needed
-                account_id: accountId
+                environment_id: environmentId
             };
 
             const result = await configService.createProviderConfig(config);
@@ -335,7 +339,7 @@ class ConfigController {
 
     async editProviderConfig(req: Request, res: Response, next: NextFunction) {
         try {
-            const accountId = getAccount(res);
+            const environmentId = getEnvironmentId(res);
             if (req.body == null) {
                 errorManager.errRes(res, 'missing_body');
                 return;
@@ -365,10 +369,10 @@ class ConfigController {
                 oauth_client_id: req.body['oauth_client_id'],
                 oauth_client_secret: req.body['oauth_client_secret'],
                 oauth_scopes: req.body['oauth_scopes'],
-                account_id: accountId
+                environment_id: environmentId
             };
 
-            const oldConfig = await configService.getProviderConfig(newConfig.unique_key, accountId);
+            const oldConfig = await configService.getProviderConfig(newConfig.unique_key, environmentId);
 
             if (oldConfig == null) {
                 errorManager.errRes(res, 'unknown_provider_config');
@@ -384,7 +388,7 @@ class ConfigController {
 
     async deleteProviderConfig(req: Request, res: Response, next: NextFunction) {
         try {
-            const accountId = getAccount(res);
+            const environmentId = getEnvironmentId(res);
             const providerConfigKey = req.params['providerConfigKey'] as string;
 
             if (providerConfigKey == null) {
@@ -392,7 +396,7 @@ class ConfigController {
                 return;
             }
 
-            await configService.deleteProviderConfig(providerConfigKey, accountId);
+            await configService.deleteProviderConfig(providerConfigKey, environmentId);
 
             res.status(200).send();
         } catch (err) {

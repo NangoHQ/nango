@@ -1,11 +1,22 @@
 import type { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
 import util from 'util';
-import { resetPasswordSecret, getUserAndAccountFromSession } from '../utils/utils.js';
+import { resetPasswordSecret, getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import jwt from 'jsonwebtoken';
 import Mailgun from 'mailgun.js';
 import formData from 'form-data';
-import { User, userService, configService, errorManager, accountService, analytics, isCloud, getBaseUrl, NangoError } from '@nangohq/shared';
+import {
+    User,
+    userService,
+    configService,
+    errorManager,
+    accountService,
+    environmentService,
+    analytics,
+    isCloud,
+    getBaseUrl,
+    NangoError
+} from '@nangohq/shared';
 
 export interface WebUser {
     id: number;
@@ -17,7 +28,7 @@ export interface WebUser {
 class AuthController {
     async signin(req: Request, res: Response, next: NextFunction) {
         try {
-            const user = (await getUserAndAccountFromSession(req)).user;
+            const user = (await getUserAccountAndEnvironmentFromSession(req)).user;
             const webUser: WebUser = {
                 id: user.id,
                 accountId: user.account_id,
@@ -74,7 +85,7 @@ class AuthController {
                 return;
             }
 
-            const account = await accountService.createAccount(`${name}'s Organization`);
+            const account = await environmentService.createAccount(`${name}'s Organization`);
 
             if (account == null) {
                 throw new NangoError('account_creation_failure');

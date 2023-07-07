@@ -60,8 +60,8 @@ export const deleteScheduleForConnection = async (connection: NangoConnection): 
     }
 };
 
-export const deleteScheduleForProviderConfig = async (accountId: number, providerConfigKey: string): Promise<void> => {
-    const syncs = await getSyncsByProviderConfigKey(accountId, providerConfigKey);
+export const deleteScheduleForProviderConfig = async (environmentId: number, providerConfigKey: string): Promise<void> => {
+    const syncs = await getSyncsByProviderConfigKey(environmentId, providerConfigKey);
 
     if (!syncs) {
         return;

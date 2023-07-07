@@ -10,14 +10,21 @@ import type { IncomingSyncConfig, Sync } from '../../models/Sync.js';
 interface CreateSyncArgs {
     connections: Connection[];
     providerConfigKey: string;
-    accountId: number;
+    environmentId: number;
     sync: IncomingSyncConfig;
     syncName: string;
 }
 
 export class Orchestrator {
-    public async create(connections: Connection[], syncName: string, providerConfigKey: string, accountId: number, sync: IncomingSyncConfig, debug = false) {
-        const syncConfig = await configService.getProviderConfig(providerConfigKey, accountId);
+    public async create(
+        connections: Connection[],
+        syncName: string,
+        providerConfigKey: string,
+        environmentId: number,
+        sync: IncomingSyncConfig,
+        debug = false
+    ) {
+        const syncConfig = await configService.getProviderConfig(providerConfigKey, environmentId);
         for (const connection of connections) {
             const createdSync = await createSync(connection.id as number, syncName);
             const syncClient = await SyncClient.getInstance();
@@ -34,8 +41,8 @@ export class Orchestrator {
 
     public async createSyncs(syncArgs: CreateSyncArgs[], debug = false) {
         for (const syncToCreate of syncArgs) {
-            const { connections, providerConfigKey, accountId, sync, syncName } = syncToCreate;
-            await this.create(connections, syncName, providerConfigKey, accountId, sync, debug);
+            const { connections, providerConfigKey, environmentId, sync, syncName } = syncToCreate;
+            await this.create(connections, syncName, providerConfigKey, environmentId, sync, debug);
         }
     }
 
