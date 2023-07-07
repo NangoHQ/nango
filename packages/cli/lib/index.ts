@@ -21,6 +21,7 @@ class NangoCommand extends Command {
         cmd.option('--secret-key [secretKey]', 'Set the secret key. Overrides the `NANGO_SECRET_KEY` value set in the .env file');
         cmd.option('--host [host]', 'Set the host. Overrides the `NANGO_HOSTPORT` value set in the .env file');
         cmd.option('--auto-confirm', 'Auto confirm yes to all prompts.');
+        cmd.option('--environment', 'Set which environment to run in');
         cmd.option('--debug', 'Run cli in debug mode, outputting verbose logs.');
         cmd.hook('preAction', async function (this: Command, actionCommand: Command) {
             const { debug } = actionCommand.opts();

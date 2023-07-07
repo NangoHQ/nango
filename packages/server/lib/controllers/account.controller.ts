@@ -1,21 +1,20 @@
 import type { Request, Response, NextFunction } from 'express';
-import { accountService, errorManager, isCloud, getBaseUrl, getWebsocketsPath } from '@nangohq/shared';
-import { getOauthCallbackUrl, getUserAndAccountFromSession } from '../utils/utils.js';
+import { environmentService, errorManager, getBaseUrl } from '@nangohq/shared';
+import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 
 class AccountController {
     async getAccount(req: Request, res: Response, next: NextFunction) {
         try {
-            const account = (await getUserAndAccountFromSession(req)).account;
+            const { environment } = await getUserAccountAndEnvironmentFromSession(req);
 
-            if (!isCloud()) {
-                account.callback_url = await getOauthCallbackUrl();
-                account.secret_key = process.env['NANGO_SECRET_KEY'] || '(none)';
-                account.websockets_path = getWebsocketsPath();
-            }
+            // TODO KJG verify
+            //if (!isCloud()) {
+            //environment.callback_url = await getOauthCallbackUrl();
+            //environment.secret_key = process.env['NANGO_SECRET_KEY'] || '(none)';
+            //environment.websockets_path = getWebsocketsPath();
+            //}
 
-            account.host = getBaseUrl();
-
-            res.status(200).send({ account: account });
+            res.status(200).send({ account: { ...environment, host: getBaseUrl() } });
         } catch (err) {
             next(err);
         }
@@ -33,9 +32,9 @@ class AccountController {
                 return;
             }
 
-            const account = (await getUserAndAccountFromSession(req)).account;
+            const environment = (await getUserAccountAndEnvironmentFromSession(req)).environment;
 
-            await accountService.editAccountCallbackUrl(req.body['callback_url'], account.id);
+            await environmentService.editCallbackUrl(req.body['callback_url'], environment.id);
             res.status(200).send();
         } catch (err) {
             next(err);
@@ -49,9 +48,9 @@ class AccountController {
                 return;
             }
 
-            const account = (await getUserAndAccountFromSession(req)).account;
+            const environment = (await getUserAccountAndEnvironmentFromSession(req)).environment;
 
-            await accountService.editAccountWebhookUrl(req.body['webhook_url'], account.id);
+            await environmentService.editWebhookUrl(req.body['webhook_url'], environment.id);
             res.status(200).send();
         } catch (err) {
             next(err);
