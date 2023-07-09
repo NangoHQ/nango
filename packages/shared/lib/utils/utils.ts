@@ -115,10 +115,10 @@ export function parseTokenExpirationDate(expirationDate: any): Date {
     return new Date(expirationDate);
 }
 
-export function isTokenExpired(expireDate: Date): boolean {
+export function isTokenExpired(expireDate: Date, bufferInSeconds: number): boolean {
     const currDate = new Date();
     const dateDiffMs = expireDate.getTime() - currDate.getTime();
-    return dateDiffMs < 15 * 60 * 1000;
+    return dateDiffMs < bufferInSeconds * 1000;
 }
 
 export function getBaseUrl() {

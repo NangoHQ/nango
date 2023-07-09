@@ -28,6 +28,7 @@ export interface Template {
     token_response_metadata?: Array<string>;
     base_api_url?: string;
     docs?: string;
+    token_expiration_buffer?: number; // In seconds.
 }
 
 export interface TemplateAlias {
