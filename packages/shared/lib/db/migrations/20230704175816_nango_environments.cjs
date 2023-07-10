@@ -11,7 +11,6 @@ exports.up = async function (knex, _) {
         table.unique('public_key');
         table.text('callback_url');
         table.text('webhook_url');
-        table.text('websockets_path');
         table.boolean('hmac_enabled').defaultTo(false);
         table.string('hmac_key');
         table.timestamps(true, true);

@@ -100,7 +100,8 @@ class OAuthController {
             }
             connectionId = connectionId.toString();
 
-            if (hmacService.isEnabled()) {
+            const hmacEnabled = await hmacService.isEnabled(environmentId);
+            if (hmacEnabled) {
                 const hmac = req.query['hmac'] as string | undefined;
                 if (!hmac) {
                     await createActivityLogMessageAndEnd({
@@ -112,7 +113,7 @@ class OAuthController {
 
                     return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.MissingHmac());
                 }
-                const verified = hmacService.verify(hmac, providerConfigKey, connectionId);
+                const verified = await hmacService.verify(hmac, environmentId, providerConfigKey, connectionId);
                 if (!verified) {
                     await createActivityLogMessageAndEnd({
                         level: 'error',
@@ -133,7 +134,7 @@ class OAuthController {
                 url: callbackUrl,
                 params: {
                     ...connectionConfig,
-                    hmacEnabled: hmacService.isEnabled() === true
+                    hmacEnabled
                 }
             });
 

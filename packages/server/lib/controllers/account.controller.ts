@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { environmentService, errorManager, getBaseUrl } from '@nangohq/shared';
+import { environmentService, errorManager, getBaseUrl, isCloud, getWebsocketsPath } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 
 class AccountController {
@@ -7,12 +7,10 @@ class AccountController {
         try {
             const { environment } = await getUserAccountAndEnvironmentFromSession(req);
 
-            // TODO KJG verify
-            //if (!isCloud()) {
-            //environment.callback_url = await getOauthCallbackUrl();
-            //environment.secret_key = process.env['NANGO_SECRET_KEY'] || '(none)';
-            //environment.websockets_path = getWebsocketsPath();
-            //}
+            if (!isCloud()) {
+                environment.websockets_path = getWebsocketsPath();
+                environment.callback_url = getBaseUrl() + '/oauth/callback';
+            }
 
             res.status(200).send({ account: { ...environment, host: getBaseUrl() } });
         } catch (err) {
@@ -51,6 +49,38 @@ class AccountController {
             const environment = (await getUserAccountAndEnvironmentFromSession(req)).environment;
 
             await environmentService.editWebhookUrl(req.body['webhook_url'], environment.id);
+            res.status(200).send();
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async updateHmacEnabled(req: Request, res: Response, next: NextFunction) {
+        try {
+            if (!req.body) {
+                errorManager.errRes(res, 'missing_body');
+                return;
+            }
+
+            const environment = (await getUserAccountAndEnvironmentFromSession(req)).environment;
+
+            await environmentService.editHmacEnabled(req.body['hmac_enabled'], environment.id);
+            res.status(200).send();
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async updateHmacKey(req: Request, res: Response, next: NextFunction) {
+        try {
+            if (!req.body) {
+                errorManager.errRes(res, 'missing_body');
+                return;
+            }
+
+            const environment = (await getUserAccountAndEnvironmentFromSession(req)).environment;
+
+            await environmentService.editHmacKey(req.body['hmac_key'], environment.id);
             res.status(200).send();
         } catch (err) {
             next(err);

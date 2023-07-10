@@ -147,6 +147,10 @@ class SyncClient {
             }
             const syncJobId = await createSyncJob(sync.id as string, SyncType.INITIAL, SyncStatus.RUNNING, jobId, activityLogId as number);
 
+            if (!syncJobId) {
+                return;
+            }
+
             const handle = await this.client?.workflow.start('initialSync', {
                 taskQueue: TASK_QUEUE,
                 workflowId: jobId,

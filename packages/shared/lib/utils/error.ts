@@ -106,6 +106,11 @@ export class NangoError extends Error {
                 this.message = 'The API endpoint returned back a 400 error. Check the headers to ensure all proper headers are passed to the API.';
                 break;
 
+            case 'missing_environment_id':
+                this.status = 400;
+                this.message = `Missing param 'environment_id'.`;
+                break;
+
             case 'missing_provider_config':
                 this.status = 400;
                 this.message = `Missing param 'provider_config_key'.`;

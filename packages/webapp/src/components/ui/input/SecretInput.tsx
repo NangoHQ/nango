@@ -2,7 +2,7 @@ import { forwardRef, useCallback, useState } from 'react';
 import classNames from 'classnames';
 import CopyButton from '../button/CopyButton';
 
-type SecretInputProps = Omit<JSX.IntrinsicElements['input'], 'defaultValue'> & { copy?: boolean; defaultValue?: string, optionalValue?: string; setOptionalValue?: (value: string) => void };
+type SecretInputProps = Omit<JSX.IntrinsicElements['input'], 'defaultValue'> & { copy?: boolean; defaultValue?: string, optionalValue?: string; setOptionalValue?: (value: string) => void; additionalClass?: string; };
 
 const SecretInput = forwardRef<HTMLInputElement, SecretInputProps>(function PasswordField({ className, copy, ...props }, ref) {
     const [isSecretVisible, setIsSecretVisible] = useState(false);
@@ -15,7 +15,7 @@ const SecretInput = forwardRef<HTMLInputElement, SecretInputProps>(function Pass
     const toggleSecretVisibility = useCallback(() => setIsSecretVisible(!isSecretVisible), [isSecretVisible, setIsSecretVisible]);
 
     return (
-        <div className="relative flex">
+        <div className={`relative flex ${props.additionalClass ?? ''}`}>
             <input
                 type={isSecretVisible ? 'text' : 'password'}
                 ref={ref}

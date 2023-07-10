@@ -176,6 +176,14 @@ class EnvironmentService {
 
         return result[0].webhook_url;
     }
+
+    async editHmacEnabled(hmacEnabled: boolean, id: number): Promise<Environment | null> {
+        return db.knex.withSchema(db.schema()).from<Environment>(TABLE).where({ id }).update({ hmac_enabled: hmacEnabled }, ['id']);
+    }
+
+    async editHmacKey(hmacKey: string, id: number): Promise<Environment | null> {
+        return db.knex.withSchema(db.schema()).from<Environment>(TABLE).where({ id }).update({ hmac_key: hmacKey }, ['id']);
+    }
 }
 
 export default new EnvironmentService();

@@ -8,7 +8,7 @@ export interface Environment {
     secret_key_tag?: string | null;
     callback_url: string | null;
     webhook_url: string | null;
-    websockets_path: string | null;
+    websockets_path?: string | null;
     hmac_enabled: boolean;
     hmac_key: string | null;
     created_at: string;

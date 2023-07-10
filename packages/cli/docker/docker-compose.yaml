@@ -20,7 +20,6 @@ services:
         environment:
             - TEMPORAL_ADDRESS=temporal:7233
             - NANGO_DB_MIGRATION_FOLDER=/usr/nango-server/src/packages/shared/lib/db/migrations
-            - NANGO_SECRET_KEY=${NANGO_SECRET_KEY}
             - NANGO_ENCRYPTION_KEY=${NANGO_ENCRYPTION_KEY}
             - NANGO_DB_USER=${NANGO_DB_USER}
             - NANGO_DB_PASSWORD=${NANGO_DB_PASSWORD}
@@ -37,9 +36,7 @@ services:
             - NANGO_DASHBOARD_PASSWORD=${NANGO_DASHBOARD_PASSWORD}
             - LOG_LEVEL=${LOG_LEVEL:-info}
             - TELEMETRY=${TELEMETRY}
-            - NANGO_HMAC_ENABLED=${NANGO_HMAC_ENABLED}
-            - NANGO_HMAC_ALGORITHM=${NANGO_HMAC_ALGORITHM}
-            - NANGO_HMAC_KEY=${NANGO_HMAC_KEY}
+            - NANGO_SERVER_WEBSOCKETS_PATH=${NANGO_SERVER_WEBSOCKETS_PATH}
         restart: always
         ports:
             - '${NANGO_PORT:-3003}:${NANGO_PORT:-3003}'
@@ -58,7 +55,6 @@ services:
             - '${WORKER_PORT:-3004}:${WORKER_PORT:-3004}'
         environment:
             - TEMPORAL_ADDRESS=temporal:7233
-            - NANGO_SECRET_KEY=${NANGO_SECRET_KEY}
             - NANGO_ENCRYPTION_KEY=${NANGO_ENCRYPTION_KEY}
             - NANGO_DB_USER=${NANGO_DB_USER}
             - NANGO_DB_PASSWORD=${NANGO_DB_PASSWORD}

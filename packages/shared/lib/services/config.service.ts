@@ -58,6 +58,13 @@ class ConfigService {
     }
 
     async getProviderConfig(providerConfigKey: string, environment_id: number): Promise<ProviderConfig | null> {
+        if (!providerConfigKey) {
+            throw new NangoError('missing_provider_config');
+        }
+        if (!environment_id) {
+            throw new NangoError('missing_environment_id');
+        }
+
         const result = await db.knex
             .withSchema(db.schema())
             .select('*')
