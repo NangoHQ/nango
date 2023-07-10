@@ -11,6 +11,7 @@ export interface Environment {
     websockets_path?: string | null;
     hmac_enabled: boolean;
     hmac_key: string | null;
+    hmac_digest?: string | null;
     created_at: string;
     updated_at: string;
 }

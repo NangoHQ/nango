@@ -505,6 +505,21 @@ export function useGetSyncAPI() {
     };
 }
 
+export function useGetHmacAPI() {
+    return async (providerConfigKey: string, connectionId: string) => {
+        try {
+            const res = await fetch(`/api/v1/account/hmac?connection_id=${connectionId}&provider_config_key=${providerConfigKey}`, {
+                method: 'GET',
+                headers: getHeaders(),
+            });
+
+            return res;
+        } catch (e) {
+            requestErrorToast();
+        }
+    };
+}
+
 export function useGetAllSyncsAPI() {
     return async () => {
         try {

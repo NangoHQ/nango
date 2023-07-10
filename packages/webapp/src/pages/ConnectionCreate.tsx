@@ -8,11 +8,12 @@ import { Tooltip } from '@geist-ui/core';
 
 import useSet from '../hooks/useSet';
 import { isHosted, isStaging, baseUrl, isCloud } from '../utils/utils';
-import { useGetIntegrationListAPI, useGetProjectInfoAPI } from '../utils/api';
+import { useGetIntegrationListAPI, useGetProjectInfoAPI, useGetHmacAPI } from '../utils/api';
 import { useAnalyticsTrack } from '../utils/analytics';
 import DashboardLayout from '../layout/DashboardLayout';
 import TagsInput from '../components/ui/input/TagsInput';
 import { LeftNavBarItems } from '../components/LeftNavBar';
+import { useStore } from '../store';
 
 interface Integration {
     uniqueKey: string;
@@ -36,11 +37,34 @@ export default function IntegrationCreate() {
     const [publicKey, setPublicKey] = useState('');
     const [hostUrl, setHostUrl] = useState('');
     const [websocketsPath, setWebsocketsPath] = useState('');
-    const [hmacKey, setHmacKey] = useState('');
+    const [isHmacEnabled, setIsHmacEnabled] = useState(false);
+    const [hmacDigest, setHmacDigest] = useState('');
     const getIntegrationListAPI = useGetIntegrationListAPI();
     const getProjectInfoAPI = useGetProjectInfoAPI();
     const analyticsTrack = useAnalyticsTrack();
+    const getHmacAPI = useGetHmacAPI();
     const { providerConfigKey } = useParams();
+    const env = useStore(state => state.cookieValue);
+
+    useEffect(() => {
+        setLoaded(false);
+    }, [env]);
+
+    useEffect(() => {
+        const getHmac = async () => {
+            let res = await getHmacAPI(integration?.uniqueKey as string, connectionId);
+
+            if (res?.status === 200) {
+                const hmacDigest = (await res.json())['hmac_digest'];
+                setHmacDigest(hmacDigest);
+            }
+        }
+        if (isHmacEnabled && integration?.uniqueKey && connectionId) {
+            console.log(isHmacEnabled, integration?.uniqueKey, connectionId, getHmacAPI)
+            getHmac();
+        }
+    }, [isHmacEnabled, integration?.uniqueKey, connectionId, getHmacAPI]);
+
 
     useEffect(() => {
         const getIntegrations = async () => {
@@ -69,7 +93,8 @@ export default function IntegrationCreate() {
                 setPublicKey(account.public_key);
                 setHostUrl(account.host || baseUrl());
                 setWebsocketsPath(account.websockets_path); // Undefined is ok, as it's optional.
-                setHmacKey(account.hmac_key);
+                setHmacDigest(account.hmac_digest ?? '');
+                setIsHmacEnabled(Boolean(account.hmac_key))
             }
         };
 
@@ -98,7 +123,8 @@ export default function IntegrationCreate() {
             .auth(target.integration_unique_key.value, target.connection_id.value, {
                 user_scope: selectedScopes || [],
                 params: connectionConfigParams || {},
-                authorization_params: authorizationParams || {}
+                authorization_params: authorizationParams || {},
+                hmac: hmacDigest || ''
             })
             .then(() => {
                 toast.success('Connection created!', { position: toast.POSITION.BOTTOM_CENTER });
@@ -196,6 +222,12 @@ export default function IntegrationCreate() {
             authorizationParamsStr += ' }';
         }
 
+        let hmacKeyStr = '';
+
+        if (hmacDigest) {
+            hmacKeyStr = `hmac: '${hmacDigest}'`;
+        }
+
         let userScopesStr = '';
 
         if (selectedScopes != null && selectedScopes.length > 0) {
@@ -208,9 +240,9 @@ export default function IntegrationCreate() {
         }
 
         const connectionConfigStr =
-            !connectionConfigParamsStr && !authorizationParamsStr && !userScopesStr
+            !connectionConfigParamsStr && !authorizationParamsStr && !userScopesStr && !hmacKeyStr
                 ? ''
-                : ', { ' + [connectionConfigParamsStr, authorizationParamsStr, userScopesStr].filter(Boolean).join(', ') + ' }';
+                : ', { ' + [connectionConfigParamsStr, authorizationParamsStr, hmacKeyStr, userScopesStr].filter(Boolean).join(', ') + ' }';
 
         return `import Nango from '@nangohq/frontend';
 

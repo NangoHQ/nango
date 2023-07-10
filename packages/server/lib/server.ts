@@ -99,6 +99,7 @@ if (isCloud()) {
 app.route('/api/v1/account').get(webAuth, accountController.getAccount.bind(accountController));
 app.route('/api/v1/account/callback').post(webAuth, accountController.updateCallback.bind(accountController));
 app.route('/api/v1/account/webhook').post(webAuth, accountController.updateWebhookURL.bind(accountController));
+app.route('/api/v1/account/hmac').get(webAuth, accountController.getHmacDigest.bind(accountController));
 app.route('/api/v1/account/hmac-enabled').post(webAuth, accountController.updateHmacEnabled.bind(accountController));
 app.route('/api/v1/account/hmac-key').post(webAuth, accountController.updateHmacKey.bind(accountController));
 app.route('/api/v1/integration').get(webAuth, configController.listProviderConfigsWeb.bind(configController));
