@@ -253,7 +253,7 @@ class ConnectionService {
             await createActivityLogMessageAndEnd({
                 level: 'error',
                 activity_log_id: activityLogId,
-                content: `Configuration not found using the providerConfigKey: ${providerConfigKey} and the account id: ${accountId}}`,
+                content: `Configuration not found using the providerConfigKey: ${providerConfigKey} and the account id: ${accountId}`,
                 timestamp: Date.now()
             });
 
