@@ -1,7 +1,6 @@
 import { Book, Slack, Github } from '@geist-ui/icons';
 import { isCloud } from '../utils/utils';
 import { useSignout } from '../utils/user';
-import Banner from '../components/Banner';
 
 export default function NavBar() {
     const signout = useSignout();
@@ -54,7 +53,6 @@ export default function NavBar() {
                     )}
                 </div>
             </div>
-            <Banner />
         </div>
     );
 }
