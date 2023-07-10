@@ -7,7 +7,7 @@ interface State {
 }
 
 export const useStore = create<State>((set: SetState<State>, get: GetState<State>) => ({
-    cookieValue: Cookies.get('env') || '',
+    cookieValue: Cookies.get('env') || 'prod',
     setCookieValue: (value) => {
         Cookies.set('env', value);
         set({ cookieValue: value });
