@@ -34,6 +34,7 @@ export default function IntegrationCreate() {
     const [publicKey, setPublicKey] = useState('');
     const [hostUrl, setHostUrl] = useState('');
     const [websocketsPath, setWebsocketsPath] = useState('');
+    const [hmacKey, setHmacKey] = useState('');
     const getIntegrationListAPI = useGetIntegrationListAPI();
     const getProjectInfoAPI = useGetProjectInfoAPI();
     const analyticsTrack = useAnalyticsTrack();
@@ -66,6 +67,7 @@ export default function IntegrationCreate() {
                 setPublicKey(account.public_key);
                 setHostUrl(account.host || baseUrl());
                 setWebsocketsPath(account.websockets_path); // Undefined is ok, as it's optional.
+                setHmacKey(account.hmac_key);
             }
         };
 
