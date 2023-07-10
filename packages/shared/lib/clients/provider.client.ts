@@ -206,7 +206,7 @@ class ProviderClient {
 
         const expireDate = parseTokenExpirationDate(res.data['exp']);
 
-        return isTokenExpired(expireDate);
+        return isTokenExpired(expireDate, 15 * 60);
     }
 }
 

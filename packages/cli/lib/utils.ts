@@ -25,7 +25,8 @@ dotenv.config();
 
 const execPromise = util.promisify(exec);
 
-export const NANGO_INTEGRATIONS_LOCATION = process.env['NANGO_INTEGRATIONS_LOCATION'] || './nango-integrations';
+export const NANGO_INTEGRATIONS_NAME = 'nango-integrations';
+export const NANGO_INTEGRATIONS_LOCATION = process.env['NANGO_INTEGRATIONS_LOCATION'] || './';
 
 export const port = process.env['NANGO_PORT'] || '3003';
 let parsedHostport = process.env['NANGO_HOSTPORT'] || `http://localhost:${port}`;
@@ -111,7 +112,16 @@ export function checkEnvVars(optionalHostport?: string) {
 }
 
 export async function verifyNecessaryFiles(autoConfirm: boolean, debug = false) {
-    if (!fs.existsSync(path.resolve(process.cwd(), NANGO_INTEGRATIONS_LOCATION))) {
+    const cwd = process.cwd();
+    const currentDirectorySplit = cwd.split('/');
+    const currentDirectory = currentDirectorySplit[currentDirectorySplit.length - 1];
+
+    if (currentDirectory !== NANGO_INTEGRATIONS_NAME) {
+        console.log(chalk.red(`You must run this command in the ${NANGO_INTEGRATIONS_NAME} directory.`));
+        process.exit(1);
+    }
+
+    if (!fs.existsSync(`./${nangoConfigFile}`)) {
         const install = autoConfirm
             ? true
             : await promptly.confirm(`No ${nangoConfigFile} file was found. Would you like to create some default integrations and build them? (yes/no)`);
