@@ -18,12 +18,15 @@ API Configuration: [`notion`](https://nango.dev/providers.yaml)
 <Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
 ## Getting started
 
--   [How to register an Application](https://developers.notion.com/docs/authorization#step-1-navigate-the-user-to-the-integrations-authorization-url)
+-   [How to register an Application](https://developers.notion.com/docs/authorization)
 -   [OAuth-related docs](https://developers.notion.com/docs/authorization#public-integration-auth-flow-set-up)
--   [API](https://developers.notion.com/docs/working-with-comments)
+-   [API reference](https://developers.notion.com/reference/intro)
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
 ## API gotchas
+
+- Your OAuth app will initially be "internal". You need to [make it "public"](https://developers.notion.com/docs/authorization#how-to-make-an-integration-public)) to use it to be able to use OAuth. Only then will you get the OAuth client ID/secret as well as be able to register your callback URL.
+- No OAuth scope is required by default.
 
 <Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/notion.mdx)</Note>
