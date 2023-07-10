@@ -159,6 +159,16 @@ class EnvironmentService {
         return null;
     }
 
+    async getEnvironmentName(id: number): Promise<string | null> {
+        const result = await db.knex.withSchema(db.schema()).select('name').from<Environment>(TABLE).where({ id });
+
+        if (result == null || result.length == 0 || result[0] == null) {
+            return null;
+        }
+
+        return result[0].name;
+    }
+
     async editCallbackUrl(callbackUrl: string, id: number): Promise<Environment | null> {
         return db.knex.withSchema(db.schema()).from<Environment>(TABLE).where({ id }).update({ callback_url: callbackUrl }, ['id']);
     }

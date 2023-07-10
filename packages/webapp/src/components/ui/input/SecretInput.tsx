@@ -31,7 +31,7 @@ const SecretInput = forwardRef<HTMLInputElement, SecretInputProps>(function Pass
                 <span onClick={toggleSecretVisibility} className="bg-gray-300 hover:bg-gray-400 rounded px-2 py-1 text-sm text-gray-600 cursor-pointer">
                     {isSecretVisible ? 'hide' : 'show'}
                 </span>
-                {copy && <CopyButton text={changedValue!} />}
+                {copy && <CopyButton text={value as string} />}
             </span>
         </div>
     );

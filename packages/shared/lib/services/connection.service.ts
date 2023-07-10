@@ -21,6 +21,7 @@ import connectionService from '../services/connection.service.js';
 import providerClient from '../clients/provider.client.js';
 import configService from '../services/config.service.js';
 import { deleteScheduleForConnection as deleteSyncScheduleForConnection } from '../services/sync/schedule.service.js';
+import environmentService from '../services/environment.service.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import { NangoError } from '../utils/error.js';
 
@@ -137,7 +138,9 @@ class ConnectionService {
         const storedConnection = result == null || result.length == 0 ? null : result[0] || null;
 
         if (!storedConnection) {
-            throw new NangoError('unkown_connection', { connectionId, providerConfigKey });
+            const environmentName = await environmentService.getEnvironmentName(environment_id);
+
+            throw new NangoError('unkown_connection', { connectionId, providerConfigKey, environmentName });
         }
 
         const connection = encryptionManager.decryptConnection(storedConnection);
@@ -247,7 +250,7 @@ class ConnectionService {
             await createActivityLogMessageAndEnd({
                 level: 'error',
                 activity_log_id: activityLogId,
-                content: `Connection not found using connectionId: ${connectionId} and providerConfigKey: ${providerConfigKey}`,
+                content: `Connection not found using connectionId: ${connectionId} and providerConfigKey: ${providerConfigKey} and the environment: ${environmentId}`,
                 timestamp: Date.now()
             });
 

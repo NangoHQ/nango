@@ -282,15 +282,19 @@ const getConfig = async (debug = false) => {
     return config;
 };
 
-export const deploy = async (options: DeployOptions, debug = false) => {
-    const { env, version, sync: optionalSyncName, secretKey, host, autoConfirm } = options;
-    await verifyNecessaryFiles(autoConfirm);
-
-    if (host) {
+async function parseSecretKey(secretKey: string | undefined, environment: string, debug = false): Promise<void> {
+    if (process.env['NANGO_SECRET_KEY_PROD'] && !secretKey && environment === 'prod') {
         if (debug) {
-            printDebug(`Global host flag is set, setting NANGO_HOSTPORT to ${host}.`);
+            printDebug(`Global secretKey flag is not set and environment is set to prod, setting NANGO_SECRET_KEY to NANGO_SECRET_KEY_PROD.`);
         }
-        process.env['NANGO_HOSTPORT'] = host;
+        process.env['NANGO_SECRET_KEY'] = process.env['NANGO_SECRET_KEY_PROD'];
+    }
+
+    if (process.env['NANGO_SECRET_KEY_DEV'] && !secretKey && environment === 'dev') {
+        if (debug) {
+            printDebug(`Global secretKey flag is not set, and environment is set to dev, setting NANGO_SECRET_KEY to NANGO_SECRET_KEY_DEV.`);
+        }
+        process.env['NANGO_SECRET_KEY'] = process.env['NANGO_SECRET_KEY_DEV'];
     }
 
     if (secretKey) {
@@ -298,6 +302,41 @@ export const deploy = async (options: DeployOptions, debug = false) => {
             printDebug(`Global secretKey flag is set, setting NANGO_SECRET_KEY.`);
         }
         process.env['NANGO_SECRET_KEY'] = secretKey;
+    }
+
+    if (process.env['NANGO_HOSTPORT'] !== `http://localhost:${port}` && !process.env['NANGO_SECRET_KEY']) {
+        console.log(chalk.red(`NANGO_SECRET_KEY environment variable is not set. Please set it now`));
+        try {
+            const secretKey = await promptly.prompt('Secret Key: ');
+            if (secretKey) {
+                process.env['NANGO_SECRET_KEY'] = secretKey;
+            } else {
+                return;
+            }
+        } catch (error) {
+            console.log('Error occurred while trying to prompt for secret key:', error);
+            process.exit(1);
+        }
+    }
+}
+
+export const deploy = async (options: DeployOptions, debug = false) => {
+    const { env, version, sync: optionalSyncName, secretKey, host, autoConfirm, environment: setEnvironment } = options;
+    await verifyNecessaryFiles(autoConfirm);
+
+    const environment = setEnvironment ?? 'prod';
+
+    if (debug) {
+        printDebug(`Environment is set to ${environment}${!setEnvironment ? ' by default' : ''}.`);
+    }
+
+    await parseSecretKey(secretKey, environment, debug);
+
+    if (host) {
+        if (debug) {
+            printDebug(`Global host flag is set, setting NANGO_HOSTPORT to ${host}.`);
+        }
+        process.env['NANGO_HOSTPORT'] = host;
     }
 
     if (!process.env['NANGO_HOSTPORT']) {
@@ -316,21 +355,6 @@ export const deploy = async (options: DeployOptions, debug = false) => {
 
     if (debug) {
         printDebug(`NANGO_HOSTPORT is set to ${process.env['NANGO_HOSTPORT']}.`);
-    }
-
-    if (process.env['NANGO_HOSTPORT'] !== `http://localhost:${port}` && !process.env['NANGO_SECRET_KEY']) {
-        console.log(chalk.red(`NANGO_SECRET_KEY environment variable is not set. Please set it now`));
-        try {
-            const secretKey = await promptly.prompt('Secret Key: ');
-            if (secretKey) {
-                process.env['NANGO_SECRET_KEY'] = secretKey;
-            } else {
-                return;
-            }
-        } catch (error) {
-            console.log('Error occurred while trying to prompt for secret key:', error);
-            process.exit(1);
-        }
     }
 
     tsc(debug);
@@ -487,7 +511,7 @@ async function deploySyncs(url: string, body: { syncs: IncomingSyncConfig[]; rec
         });
 }
 
-export const run = async (args: string[], options: RunArgs, debug = false) => {
+export const run = async (args: string[], options: RunArgs, debug = false, environment = 'prod') => {
     let syncName, providerConfigKey, connectionId, suppliedLastSyncDate, host, secretKey;
     if (args.length > 0) {
         [syncName, providerConfigKey, connectionId, suppliedLastSyncDate] = args;
@@ -522,9 +546,11 @@ export const run = async (args: string[], options: RunArgs, debug = false) => {
         process.env['NANGO_HOSTPORT'] = host;
     }
 
-    if (secretKey) {
-        process.env['NANGO_SECRET_KEY'] = secretKey;
+    if (debug) {
+        printDebug(`Environment is set to ${environment}.`);
     }
+
+    await parseSecretKey(secretKey, environment, debug);
 
     if (!process.env['NANGO_HOSTPORT']) {
         if (debug) {
@@ -550,6 +576,10 @@ export const run = async (args: string[], options: RunArgs, debug = false) => {
     if (!nangoConnection) {
         console.log(chalk.red('Connection not found'));
         return;
+    }
+
+    if (debug) {
+        printDebug(`Connection found with ${JSON.stringify(nangoConnection, null, 2)}`);
     }
 
     if (process.env['NANGO_HOSTPORT'] === cloudHost || process.env['NANGO_HOSTPORT'] === stagingHost) {

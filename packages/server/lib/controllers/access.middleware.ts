@@ -3,68 +3,39 @@ import { environmentService, isCloud, setAccount, setEnvironmentId, isBasicAuthE
 
 export class AccessMiddleware {
     async secretKeyAuth(req: Request, res: Response, next: NextFunction) {
-        if (isCloud()) {
-            const authorizationHeader = req.get('authorization');
+        const authorizationHeader = req.get('authorization');
 
-            if (!authorizationHeader) {
-                return errorManager.errRes(res, 'missing_auth_header');
-            }
-
-            const secret = authorizationHeader.split('Bearer ').pop();
-
-            if (!secret) {
-                return errorManager.errRes(res, 'malformed_auth_header');
-            }
-
-            if (!/^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i.test(secret)) {
-                return errorManager.errRes(res, 'invalid_secret_key_format');
-            }
-
-            let accountId: number | null;
-            let environmentId: number | null;
-            try {
-                const result = await environmentService.getAccountIdAndEnvironmentIdBySecretKey(secret);
-                accountId = result?.accountId as number;
-                environmentId = result?.environmentId as number;
-            } catch (_) {
-                return errorManager.errRes(res, 'malformed_auth_header');
-            }
-
-            if (accountId == null) {
-                return errorManager.errRes(res, 'unknown_account');
-            }
-
-            setAccount(accountId, res);
-            setEnvironmentId(environmentId, res);
-            next();
-        } else {
-            setAccount(0, res);
-
-            const accountEnvironment = req.cookies['env'] || 'prod';
-            const environmentId = accountEnvironment === 'prod' ? 1 : 2;
-            setEnvironmentId(environmentId, res);
-
-            const secretKey = process.env['NANGO_SECRET_KEY'];
-
-            if (!secretKey) {
-                next();
-                return;
-            }
-
-            const authorizationHeader = req.get('authorization');
-
-            if (!authorizationHeader) {
-                return errorManager.errRes(res, 'missing_auth_header');
-            }
-
-            const { providedUser } = this.fromBasicAuth(authorizationHeader);
-
-            if (providedUser !== secretKey) {
-                return errorManager.errRes(res, 'invalid_secret_key');
-            }
-
-            next();
+        if (!authorizationHeader) {
+            return errorManager.errRes(res, 'missing_auth_header');
         }
+
+        const secret = authorizationHeader.split('Bearer ').pop();
+
+        if (!secret) {
+            return errorManager.errRes(res, 'malformed_auth_header');
+        }
+
+        if (!/^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i.test(secret)) {
+            return errorManager.errRes(res, 'invalid_secret_key_format');
+        }
+
+        let accountId: number | null;
+        let environmentId: number | null;
+        try {
+            const result = await environmentService.getAccountIdAndEnvironmentIdBySecretKey(secret);
+            accountId = result?.accountId as number;
+            environmentId = result?.environmentId as number;
+        } catch (_) {
+            return errorManager.errRes(res, 'malformed_auth_header');
+        }
+
+        if (accountId == null) {
+            return errorManager.errRes(res, 'unknown_account');
+        }
+
+        setAccount(accountId, res);
+        setEnvironmentId(environmentId, res);
+        next();
     }
 
     async publicKeyAuth(req: Request, res: Response, next: NextFunction) {
@@ -169,18 +140,6 @@ export class AccessMiddleware {
         }
 
         next();
-    }
-
-    private fromBasicAuth(authorizationHeader: string) {
-        const basicAsBase64 = authorizationHeader.split('Basic ').pop() || '';
-        const basicAsBuffer = Buffer.from(basicAsBase64, 'base64');
-        const basicAsString = basicAsBuffer.toString('utf-8');
-
-        const providedCredentials = basicAsString.split(':');
-        const providedUser: string = providedCredentials.shift() || '';
-        const providedPassword: string = providedCredentials.shift() || '';
-
-        return { providedUser, providedPassword };
     }
 }
 

@@ -357,11 +357,7 @@ export class Nango {
     }
 
     private enrichHeaders(headers: Record<string, string | number | boolean> = {}) {
-        if (this.serverUrl === prodHost || this.serverUrl === stagingHost) {
-            headers['Authorization'] = 'Bearer ' + this.secretKey;
-        } else if (this.secretKey) {
-            headers['Authorization'] = 'Basic ' + Buffer.from(this.secretKey + ':').toString('base64');
-        }
+        headers['Authorization'] = 'Bearer ' + this.secretKey;
 
         return headers;
     }

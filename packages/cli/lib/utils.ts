@@ -216,13 +216,14 @@ export async function upgradeAction(debug = false) {
     }
 }
 
-export async function getConnection(providerConfigKey: string, connectionId: string, headers?: Record<string, string | boolean>, debug = false) {
+export async function getConnection(providerConfigKey: string, connectionId: string, setHeaders?: Record<string, string | boolean>, debug = false) {
     const url = process.env['NANGO_HOSTPORT'] + `/connection/${connectionId}`;
+    const headers = enrichHeaders(setHeaders);
     if (debug) {
-        printDebug(`getConnection endpoint to the URL: ${url}`);
+        printDebug(`getConnection endpoint to the URL: ${url} with headers: ${JSON.stringify(headers, null, 2)}`);
     }
     return await axios
-        .get(url, { params: { provider_config_key: providerConfigKey }, headers: enrichHeaders(headers), httpsAgent: httpsAgent() })
+        .get(url, { params: { provider_config_key: providerConfigKey }, headers, httpsAgent: httpsAgent() })
         .then((res) => {
             return res.data;
         })
@@ -232,13 +233,7 @@ export async function getConnection(providerConfigKey: string, connectionId: str
 }
 
 export function enrichHeaders(headers: Record<string, string | number | boolean> = {}) {
-    if ((process.env['NANGO_HOSTPORT'] === cloudHost || process.env['NANGO_HOSTPORT'] === stagingHost) && process.env['NANGO_SECRET_KEY']) {
-        // For Nango Cloud (unified)
-        headers['Authorization'] = 'Bearer ' + process.env['NANGO_SECRET_KEY'];
-    } else if (process.env['NANGO_SECRET_KEY']) {
-        // For Nango OSS
-        headers['Authorization'] = 'Basic ' + Buffer.from(process.env['NANGO_SECRET_KEY'] + ':').toString('base64');
-    }
+    headers['Authorization'] = 'Bearer ' + process.env['NANGO_SECRET_KEY'];
 
     headers['Accept-Encoding'] = 'application/json';
 

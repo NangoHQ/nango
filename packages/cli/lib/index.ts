@@ -5,6 +5,7 @@
  */
 
 import { Command } from 'commander';
+import fs from 'fs';
 import chalk from 'chalk';
 import figlet from 'figlet';
 import path from 'path';
@@ -12,7 +13,7 @@ import * as dotenv from 'dotenv';
 
 import { nangoConfigFile, loadSimplifiedConfig } from '@nangohq/shared';
 import { init, run, generate, tsc, tscWatch, configWatch, dockerRun, version, deploy } from './sync.js';
-import { upgradeAction, NANGO_INTEGRATIONS_LOCATION, verifyNecessaryFiles } from './utils.js';
+import { upgradeAction, NANGO_INTEGRATIONS_LOCATION, verifyNecessaryFiles, printDebug } from './utils.js';
 import type { ENV, DeployOptions } from './types.js';
 
 class NangoCommand extends Command {
@@ -21,10 +22,17 @@ class NangoCommand extends Command {
         cmd.option('--secret-key [secretKey]', 'Set the secret key. Overrides the `NANGO_SECRET_KEY` value set in the .env file');
         cmd.option('--host [host]', 'Set the host. Overrides the `NANGO_HOSTPORT` value set in the .env file');
         cmd.option('--auto-confirm', 'Auto confirm yes to all prompts.');
-        cmd.option('--environment', 'Set which environment to run in');
+        cmd.option('--environment [environment]', 'Set which environment to run in, typically "dev" or "prod", defaults to "prod".');
         cmd.option('--debug', 'Run cli in debug mode, outputting verbose logs.');
         cmd.hook('preAction', async function (this: Command, actionCommand: Command) {
             const { debug } = actionCommand.opts();
+            if (debug) {
+                printDebug('Debug mode enabled');
+                if (fs.existsSync('.env')) {
+                    printDebug('.env file detected and loaded');
+                }
+            }
+
             await upgradeAction(debug);
         });
 
@@ -41,7 +49,7 @@ program.name('nango').description(
 
 For Self-Hosting: set the NANGO_HOSTPORT env variable or pass in the --host flag with each command.
 
-Global flags: --secret-key, --host, --auto-confirm, --debug (output verbose logs for debugging purposes)
+Global flags: --secret-key, --host, --auto-confirm, --debug (output verbose logs for debugging purposes), --environment (defaults to prod)
 
 Available environment variables available:
 
@@ -91,9 +99,9 @@ program
     .option('-c, --connection <connection_id>', 'The ID of the Connection.')
     .option('-l, --lastSyncDate [lastSyncDate]', 'Optional: last sync date to retrieve records greater than this date')
     .action(async function (this: Command) {
-        const { autoConfirm, debug } = this.opts();
+        const { autoConfirm, debug, environment } = this.opts();
         await verifyNecessaryFiles(autoConfirm, debug);
-        run(this.args, this.opts(), debug);
+        run(this.args, this.opts(), debug, environment);
     });
 
 program

@@ -122,13 +122,7 @@ export default class SyncRun {
                 return false;
             }
 
-            let secretKey;
-
-            if (isCloud()) {
-                secretKey = optionalSecretKey || (environment ? (environment?.secret_key as string) : '');
-            } else {
-                secretKey = optionalSecretKey || process.env['NANGO_SECRET_KEY'] ? (process.env['NANGO_SECRET_KEY'] as string) : '';
-            }
+            const secretKey = optionalSecretKey || (environment ? (environment?.secret_key as string) : '');
 
             const nango = new NangoSync({
                 host: optionalHost || getApiUrl(),
