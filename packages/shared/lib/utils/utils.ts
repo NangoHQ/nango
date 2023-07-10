@@ -136,7 +136,7 @@ export function getBaseUrl() {
  * for local development
  * @see https://github.com/kodie/redirectmeto
  */
-export function getOauthCallbackUrlBaseUrl() {
+export function getLocalOAuthCallbackUrlBaseUrl() {
     return 'https://redirectmeto.com/' + localhostUrl;
 }
 
@@ -150,7 +150,7 @@ export function getApiUrl() {
 }
 
 export function getGlobalOAuthCallbackUrl() {
-    const baseUrl = isCloud() ? getBaseUrl() : getOauthCallbackUrlBaseUrl();
+    const baseUrl = isCloud() ? getBaseUrl() : getLocalOAuthCallbackUrlBaseUrl();
     return baseUrl + '/oauth/callback';
 }
 
