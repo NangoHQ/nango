@@ -253,7 +253,7 @@ class ConnectionService {
             await createActivityLogMessageAndEnd({
                 level: 'error',
                 activity_log_id: activityLogId,
-                content: `Configuration not found using the providerConfigKey: ${providerConfigKey} and the account id: ${accountId}}`,
+                content: `Configuration not found using the providerConfigKey: ${providerConfigKey} and the account id: ${accountId}`,
                 timestamp: Date.now()
             });
 
@@ -358,7 +358,10 @@ class ConnectionService {
             instantRefresh ||
             (providerClient.shouldIntrospectToken(providerConfig.provider) && (await providerClient.introspectedTokenExpired(providerConfig, connection)));
         // If not expiration date is set, e.g. Github, we assume the token doesn't expire (unless introspection enable like Salesforce).
-        if (credentials.refresh_token && (refresh || (credentials.expires_at && isTokenExpired(credentials.expires_at)))) {
+        if (
+            credentials.refresh_token &&
+            (refresh || (credentials.expires_at && isTokenExpired(credentials.expires_at, template.token_expiration_buffer || 15 * 60)))
+        ) {
             const promise = new Promise<OAuth2Credentials>(async (resolve, reject) => {
                 try {
                     let newCredentials: OAuth2Credentials;

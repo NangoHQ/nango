@@ -12,7 +12,6 @@ export default function Syncs() {
     const [loaded, setLoaded] = useState(false);
     const [syncs, setSyncs] = useState<Sync[]>([]);
     const getSyncsAPI = useGetAllSyncsAPI();
-    console.log(syncs)
 
     useEffect(() => {
         const getSyncs = async () => {
@@ -56,10 +55,11 @@ export default function Syncs() {
                         <div className="flex items-center px-5 pt-8 pb-7">
                             <Slash className="stroke-red-500" />
                             <div className="text-white ml-3">
-                                No syncs yet - use Nango Sync to exchange data with the external API. See the{' '}
-                                <a href="https://docs.nango.dev/nango-sync" className="text-blue-500" target="_blank" rel="noreferrer">
-                                    docs
+                                No Syncs yet! Interested in syncing data with Nango? Request access on the{' '}
+                                <a href="https://nango.dev/slack" className="text-blue-500" target="_blank" rel="noreferrer">
+                                    community
                                 </a>
+                                .
                             </div>
                         </div>
                     )}
@@ -68,19 +68,19 @@ export default function Syncs() {
                             {syncs.map((sync: Sync, index: number) => (
                                 <div key={index} className="text-white px-5">
                                     <ul className="flex space-x-20 pb-4 text-base py-6 items-center border-b border-border-gray">
-                                        <li className="w-32 mr-2">{sync.sync_name}@v{sync.version}</li>
+                                        <li className="w-32 mr-2">
+                                            {sync.sync_name}@v{sync.version}
+                                        </li>
                                         <li>
-                                            <Link
-                                                to={`/integration/${sync.unique_key}`}
-                                            >
-                                            {sync?.provider ? (
-                                                <div className="flex">
-                                                    <img src={`images/template-logos/${sync.provider}.svg`} alt="" className="h-7 mt-0.5" />
-                                                    <p className="mt-1.5 ml-2 w-44">{sync.unique_key}</p>
-                                                </div>
-                                            ) : (
-                                                <div className="w-44">{sync.unique_key}</div>
-                                            )}
+                                            <Link to={`/integration/${sync.unique_key}`}>
+                                                {sync?.provider ? (
+                                                    <div className="flex">
+                                                        <img src={`images/template-logos/${sync.provider}.svg`} alt="" className="h-7 mt-0.5" />
+                                                        <p className="mt-1.5 ml-2 w-44">{sync.unique_key}</p>
+                                                    </div>
+                                                ) : (
+                                                    <div className="w-44">{sync.unique_key}</div>
+                                                )}
                                             </Link>
                                         </li>
                                         <li className="w-28">{sync.runs}</li>
@@ -88,21 +88,21 @@ export default function Syncs() {
                                             <li className="w-12 ml-4 mr-2">{sync.models.length}</li>
                                         </Tooltip>
                                         <Tooltip
-                                          text={
-                                            sync.connections === null
-                                              ? ''
-                                              : sync.connections.slice(0, 20).map((connection, index: number) => (
-                                                  <span key={connection.connection_id}>
-                                                      <Link to={`/connections/${sync.unique_key}/${connection.connection_id}#sync`}>{connection.connection_id}</Link>
-                                                      {sync.connections && index < sync?.connections?.length - 1 ? ', ' : ''}
-                                                  </span>
-                                                ))
-                                          }
-                                          type="dark"
+                                            text={
+                                                sync.connections === null
+                                                    ? ''
+                                                    : sync.connections.slice(0, 20).map((connection, index: number) => (
+                                                          <span key={connection.connection_id}>
+                                                              <Link to={`/connections/${sync.unique_key}/${connection.connection_id}#sync`}>
+                                                                  {connection.connection_id}
+                                                              </Link>
+                                                              {sync.connections && index < sync?.connections?.length - 1 ? ', ' : ''}
+                                                          </span>
+                                                      ))
+                                            }
+                                            type="dark"
                                         >
-                                          <li className="w-12 ml-6">
-                                            {sync.connections === null ? 0 : sync.connections.length}
-                                          </li>
+                                            <li className="w-12 ml-6">{sync.connections === null ? 0 : sync.connections.length}</li>
                                         </Tooltip>
                                         <li className="text-gray-500">{formatDateToUSFormat(sync.updated_at)}</li>
                                     </ul>

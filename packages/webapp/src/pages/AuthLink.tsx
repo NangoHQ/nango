@@ -33,7 +33,8 @@ export default function AuthLink() {
         let host = searchParams.get('host') || baseUrl();
         let websocketsPath = searchParams.get('websockets_path') || '/';
         let userScopes = searchParams.get('selected_scopes')?.split(',') || []; // Slack only.
-        let connectionConfig = searchParams.get('config');
+        let params = searchParams.get('params');
+        let authorizationParams = searchParams.get('authorization_params');
 
         console.log('host', host);
 
@@ -42,7 +43,8 @@ export default function AuthLink() {
         nango
             .auth(integrationUniqueKey, connectionId, {
                 user_scope: userScopes,
-                params: connectionConfig ? JSON.parse(connectionConfig) : {}
+                params: params ? JSON.parse(params) : {},
+                authorization_params: authorizationParams ? JSON.parse(authorizationParams) : {}
             })
             .then(() => {
                 toast.success('Connection created!', { position: toast.POSITION.BOTTOM_CENTER });

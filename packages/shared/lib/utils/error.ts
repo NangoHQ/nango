@@ -120,7 +120,7 @@ export class NangoError extends Error {
                 this.status = 400;
                 this.message = `There is no Provider Configuration matching this key.`;
                 if (this.payload) {
-                    this.message += ` Please make sure this value exists in the Nango dashboard ${JSON.stringify(this.payload, null, 2)}}`;
+                    this.message += ` Please make sure this value exists in the Nango dashboard ${JSON.stringify(this.payload, null, 2)}`;
                 }
                 break;
 
@@ -153,7 +153,7 @@ export class NangoError extends Error {
                 this.status = 400;
                 this.message = `No connection matching the provided params of 'connection_id' and 'provider_config_key'.`;
                 if (this.payload) {
-                    this.message += ` Please make sure these values exist in the Nango dashboard ${JSON.stringify(this.payload, null, 2)}}`;
+                    this.message += ` Please make sure these values exist in the Nango dashboard ${JSON.stringify(this.payload, null, 2)}`;
                 }
                 break;
 

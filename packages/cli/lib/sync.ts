@@ -396,9 +396,9 @@ export const deploy = async (options: DeployOptions, debug = false) => {
             for (const sync of newSyncs) {
                 const actionMessage =
                     sync.connections === 0
-                        ? 'create the configuration for this sync.'
-                        : `start syncing the corresponding data for ${sync.connections} existing connections.`;
-                console.log(chalk.yellow(`Sync "${sync.name}" has been added. Nango will ${actionMessage}`));
+                        ? 'The sync will be added to your Nango instance if you deploy.'
+                        : `Nango will start syncing the corresponding data for ${sync.connections} existing connections.`;
+                console.log(chalk.yellow(`Sync "${sync.name}" is new. ${actionMessage}`));
             }
 
             for (const sync of deletedSyncs) {
@@ -409,7 +409,7 @@ export const deploy = async (options: DeployOptions, debug = false) => {
                 );
             }
 
-            const confirmation = await promptly.confirm('Do you want to continue with these changes y/n?');
+            const confirmation = await promptly.confirm('Do you want to continue y/n?');
             if (confirmation) {
                 await axios
                     .post(
