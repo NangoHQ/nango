@@ -60,6 +60,15 @@ export function getConnectionConfig(queryParams: any): Record<string, string> {
 }
 
 /**
+ * A helper function to extract the additional authorization parameters from the frontend Auth request.
+ */
+export function getAdditionalAuthorizationParams(params: any): Record<string, string> {
+    let arr = Object.entries(params);
+    arr = arr.filter(([_, v]) => typeof v === 'string'); // Filter strings
+    return Object.fromEntries(arr) as Record<string, string>;
+}
+
+/**
  * A helper function to extract the additional connection metadata returned from the Provider in the callback request.
  */
 export function getConnectionMetadataFromCallbackRequest(queryParams: any, template: ProviderTemplate): Record<string, string> {

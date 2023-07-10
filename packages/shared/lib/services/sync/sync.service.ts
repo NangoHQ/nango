@@ -353,8 +353,17 @@ export const getAndReconcileSyncDifferences = async (
     }
 
     if (syncsToCreate.length > 0) {
+        if (debug) {
+            const syncNames = syncsToCreate.map((sync) => sync.syncName);
+            await createActivityLogMessage({
+                level: 'debug',
+                activity_log_id: activityLogId as number,
+                timestamp: Date.now(),
+                content: `Creating ${syncsToCreate.length} sync${syncsToCreate.length === 1 ? '' : 's'} ${JSON.stringify(syncNames, null, 2)}`
+            });
+        }
         // this is taken out of the loop to ensure it awaits all the calls properly
-        await syncOrchestrator.createSyncs(syncsToCreate, debug);
+        await syncOrchestrator.createSyncs(syncsToCreate, debug, activityLogId as number);
     }
 
     const existingSyncs = await getActiveSyncConfigsByEnvironmentId(environmentId);

@@ -15,7 +15,7 @@ services:
             - nango
 
     nango-server:
-        image: nangohq/nango-server:0.23.31
+        image: nangohq/nango-server
         container_name: nango-server
         environment:
             - TEMPORAL_ADDRESS=temporal:7233
@@ -28,33 +28,32 @@ services:
             - NANGO_DB_SSL=${NANGO_DB_SSL}
             - NANGO_DB_POOL_MIN=${NANGO_DB_POOL_MIN}
             - NANGO_DB_POOL_MAX=${NANGO_DB_POOL_MAX}
-            - NANGO_PORT=${NANGO_PORT:-3003}
-            - SERVER_PORT=${NANGO_PORT:-3003}
+            - SERVER_PORT=${SERVER_PORT}
             - NANGO_SERVER_URL=${NANGO_SERVER_URL:-http://localhost:3003}
-            - NANGO_CALLBACK_URL=${NANGO_CALLBACK_URL}
             - NANGO_DASHBOARD_USERNAME=${NANGO_DASHBOARD_USERNAME}
             - NANGO_DASHBOARD_PASSWORD=${NANGO_DASHBOARD_PASSWORD}
             - LOG_LEVEL=${LOG_LEVEL:-info}
             - TELEMETRY=${TELEMETRY}
             - NANGO_SERVER_WEBSOCKETS_PATH=${NANGO_SERVER_WEBSOCKETS_PATH}
+        volumes:
+            - './packages/shared/providers.yaml:/usr/nango-server/src/packages/shared/providers.yaml'
         restart: always
         ports:
-            - '${NANGO_PORT:-3003}:${NANGO_PORT:-3003}'
+            - '${SERVER_PORT:-3003}:${SERVER_PORT:-3003}'
         depends_on:
             - nango-db
-        volumes:
-            - "${NANGO_INTEGRATIONS_LOCATION:-./nango-integrations}:/usr/nango-server/src/packages/shared/dist/lib/nango-integrations"
         networks:
             - nango
 
     nango-worker:
-        image: nangohq/nango-worker:0.23.31
+        image: nangohq/nango-worker
         container_name: nango-worker
         restart: always
         ports:
             - '${WORKER_PORT:-3004}:${WORKER_PORT:-3004}'
         environment:
             - TEMPORAL_ADDRESS=temporal:7233
+            - NANGO_SECRET_KEY=${NANGO_SECRET_KEY}
             - NANGO_ENCRYPTION_KEY=${NANGO_ENCRYPTION_KEY}
             - NANGO_DB_USER=${NANGO_DB_USER}
             - NANGO_DB_PASSWORD=${NANGO_DB_PASSWORD}
@@ -64,8 +63,6 @@ services:
         depends_on:
             - nango-db
             - temporal
-        volumes:
-            - "${NANGO_INTEGRATIONS_LOCATION:-./nango-integrations}:/usr/nango-worker/src/packages/shared/dist/lib/nango-integrations"
         networks:
             - nango
 
@@ -80,7 +77,6 @@ services:
             - POSTGRES_USER=nango
             - POSTGRES_PWD=nango
             - POSTGRES_SEEDS=nango-db
-            - LOG_LEVEL=error
         ports:
             - 7233:7233
         networks:
