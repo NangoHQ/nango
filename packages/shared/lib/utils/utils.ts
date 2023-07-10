@@ -6,7 +6,8 @@ import type { User } from '../models/Admin.js';
 import type { Environment } from '../models/Environment.js';
 import environmentService from '../services/environment.service.js';
 
-export const localhostUrl = 'http://localhost:3003';
+const PORT = process.env['SERVER_PORT'] || 3003;
+export const localhostUrl = `http://localhost:${PORT}`;
 export const cloudHost = 'https://api.nango.dev';
 export const stagingHost = 'https://api-staging.nango.dev';
 
@@ -128,6 +129,17 @@ export function getBaseUrl() {
     return process.env['NANGO_SERVER_URL'] || localhostUrl;
 }
 
+/**
+ * Get Oauth callback url base url.
+ * @desc for ease of use with APIs that require a secure redirect
+ * redirectmeto is automatically used. This is intentioned
+ * for local development
+ * @see https://github.com/kodie/redirectmeto
+ */
+export function getOauthCallbackUrlBaseUrl() {
+    return 'https://redirectmeto.com/' + localhostUrl;
+}
+
 export function getApiUrl() {
     if (isStaging()) {
         return stagingHost;
@@ -138,7 +150,8 @@ export function getApiUrl() {
 }
 
 export function getGlobalOAuthCallbackUrl() {
-    return getBaseUrl() + '/oauth/callback';
+    const baseUrl = isCloud() ? getBaseUrl() : getOauthCallbackUrlBaseUrl();
+    return baseUrl + '/oauth/callback';
 }
 
 export async function getOauthCallbackUrl(environmentId?: number) {

@@ -149,7 +149,7 @@ export default function ProjectSettings() {
                                         <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
                                             Callback URL
                                         </label>
-                                        <a href="https://docs.nango.dev/reference/configuration#custom-callback-url" target="_blank" rel="noreferrer">
+                                        <a href="https://docs.nango.dev/guides/oauth#custom-callback-url" target="_blank" rel="noreferrer">
                                             <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
                                         </a>
                                     </div>
@@ -180,7 +180,7 @@ export default function ProjectSettings() {
                                                 ) : (
                                                     <>
                                                         Customizing the callback URL requires that you set up a redirect from the custom callback URL to
-                                                        {' '}{callbackUrl}.
+                                                        {' '}{defaultCallback()}.
                                                     </>
                                                 )}
                                             </p>

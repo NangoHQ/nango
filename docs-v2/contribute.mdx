@@ -56,13 +56,6 @@ above to add support for the new API.
 
 ### Step 2: Test your new provider
 
-<Tip>
-Some APIs require `https` or forbid `localhost` in the callback URL, which makes local development harder. A workaround is to use [https://redirectmeto.com](https://redirectmeto.com/). In this case, edit the `.env` file with your new (local) callback URL:
-```bash
-NANGO_CALLBACK_URL=https://redirectmeto.com/http://localhost:3003/oauth/callback
-```
-</Tip>
-
 To test your new provider, go to the `nango` folder root and run:
 
 ```bash
