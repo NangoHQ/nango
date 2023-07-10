@@ -31,7 +31,7 @@ export class AccessMiddleware {
             }
 
             if (accountId == null) {
-                return errorManager.errRes(res, 'unkown_account');
+                return errorManager.errRes(res, 'unknown_account');
             }
 
             setAccount(accountId, res);

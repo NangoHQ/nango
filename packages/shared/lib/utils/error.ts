@@ -86,7 +86,7 @@ export class NangoError extends Error {
                 this.message = 'Email already exists.';
                 break;
 
-            case 'unkown_user':
+            case 'unknown_user':
                 this.status = 404;
                 this.message = 'No user matching this email.';
                 break;

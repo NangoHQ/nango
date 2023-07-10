@@ -138,7 +138,7 @@ class AuthController {
             const user = await userService.getUserByEmail(email);
 
             if (user == null) {
-                errorManager.errRes(res, 'unkown_user');
+                errorManager.errRes(res, 'unknown_user');
                 return;
             }
 

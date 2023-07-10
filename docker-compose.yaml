@@ -53,7 +53,6 @@ services:
             - '${WORKER_PORT:-3004}:${WORKER_PORT:-3004}'
         environment:
             - TEMPORAL_ADDRESS=temporal:7233
-            - NANGO_SECRET_KEY=${NANGO_SECRET_KEY}
             - NANGO_ENCRYPTION_KEY=${NANGO_ENCRYPTION_KEY}
             - NANGO_DB_USER=${NANGO_DB_USER}
             - NANGO_DB_PASSWORD=${NANGO_DB_PASSWORD}
