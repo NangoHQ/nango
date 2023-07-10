@@ -5,26 +5,11 @@ import type { User, Environment, Account, Template as ProviderTemplate } from '@
 import logger from './logger.js';
 import type { WSErr } from './web-socket-error.js';
 import { readFileSync } from 'fs';
-import { NangoError, userService, environmentService, interpolateString, isCloud, getBaseUrl } from '@nangohq/shared';
+import { NangoError, userService, environmentService, interpolateString } from '@nangohq/shared';
 
 type PackageJson = {
     version: string;
 };
-
-export async function getOauthCallbackUrl(accountId?: number, currentEnvironment?: string) {
-    const globalCallbackUrl = getGlobalOAuthCallbackUrl();
-
-    if (isCloud() && accountId != null && currentEnvironment != null) {
-        const environment: Environment | null = await environmentService.getByAccountIdAndEnvironment(accountId, currentEnvironment);
-        return environment?.callback_url || globalCallbackUrl;
-    }
-
-    return globalCallbackUrl;
-}
-
-export function getGlobalOAuthCallbackUrl() {
-    return process.env['NANGO_CALLBACK_URL'] || getBaseUrl() + '/oauth/callback';
-}
 
 export async function getUserAccountAndEnvironmentFromSession(req: Request): Promise<{ user: User; account: Account; environment: Environment }> {
     const sessionUser = req.user;

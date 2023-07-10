@@ -3,6 +3,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { NangoError } from './error.js';
 import type { User } from '../models/Admin.js';
+import type { Environment } from '../models/Environment.js';
+import environmentService from '../services/environment.service.js';
 
 export const localhostUrl = 'http://localhost:3003';
 export const cloudHost = 'https://api.nango.dev';
@@ -133,6 +135,21 @@ export function getApiUrl() {
         return cloudHost;
     }
     return getServerBaseUrl();
+}
+
+export function getGlobalOAuthCallbackUrl() {
+    return getBaseUrl() + '/oauth/callback';
+}
+
+export async function getOauthCallbackUrl(environmentId?: number) {
+    const globalCallbackUrl = getGlobalOAuthCallbackUrl();
+
+    if (environmentId != null) {
+        const environment: Environment | null = await environmentService.getByAccountIdAndEnvironment(environmentId);
+        return environment?.callback_url || globalCallbackUrl;
+    }
+
+    return globalCallbackUrl;
 }
 
 /**

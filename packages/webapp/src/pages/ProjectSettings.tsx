@@ -172,8 +172,17 @@ export default function ProjectSettings() {
                                                 </button>
                                             </div>
                                             <p className="mt-2 text-sm text-red-700">
-                                                Customizing the callback URL requires that you set up a 308 redirect from the custom callback URL to
-                                                https://api.nango.dev/oauth/callback.
+                                                {isCloud() ? (
+                                                    <>
+                                                        Customizing the callback URL requires that you set up a 308 redirect from the custom callback URL to
+                                                        https://api.nango.dev/oauth/callback.
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        Customizing the callback URL requires that you set up a redirect from the custom callback URL to
+                                                        {' '}{callbackUrl}.
+                                                    </>
+                                                )}
                                             </p>
                                         </form>
                                     )}
@@ -182,14 +191,12 @@ export default function ProjectSettings() {
                                             <Prism language="bash" colorScheme="dark" className="w-full">
                                                 {callbackUrl}
                                             </Prism>
-                                            {isCloud() && (
-                                                <button
-                                                    onClick={handleCallbackEdit}
-                                                    className="hover:bg-gray-700 bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
-                                                >
-                                                    Edit
-                                                </button>
-                                            )}
+                                            <button
+                                                onClick={handleCallbackEdit}
+                                                className="hover:bg-gray-700 bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
+                                            >
+                                                Edit
+                                            </button>
                                         </div>
                                     )}
                                 </div>

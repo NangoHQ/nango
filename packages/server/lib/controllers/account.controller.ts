@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { environmentService, errorManager, getBaseUrl, isCloud, getWebsocketsPath } from '@nangohq/shared';
+import { environmentService, errorManager, getBaseUrl, isCloud, getWebsocketsPath, getOauthCallbackUrl } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 
 class AccountController {
@@ -9,8 +9,9 @@ class AccountController {
 
             if (!isCloud()) {
                 environment.websockets_path = getWebsocketsPath();
-                environment.callback_url = getBaseUrl() + '/oauth/callback';
             }
+
+            environment.callback_url = await getOauthCallbackUrl(environment.id);
 
             res.status(200).send({ account: { ...environment, host: getBaseUrl() } });
         } catch (err) {

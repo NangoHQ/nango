@@ -5,13 +5,13 @@ import simpleOauth2 from 'simple-oauth2';
 import { OAuth1Client } from '../clients/oauth1.client.js';
 import { SyncClient } from '@nangohq/shared';
 import {
-    getOauthCallbackUrl,
     getConnectionConfig,
     getConnectionMetadataFromCallbackRequest,
     missesInterpolationParam,
     getConnectionMetadataFromTokenResponse
 } from '../utils/utils.js';
 import {
+    getOauthCallbackUrl,
     createActivityLog,
     createActivityLogMessageAndEnd,
     createActivityLogMessage,
@@ -55,8 +55,6 @@ class OAuthController {
         const wsClientId = req.query['ws_client_id'] as string | undefined;
         const userScope = req.query['user_scope'] as string | undefined;
 
-        const accountEnvironment = req.cookies['env'] || 'prod';
-
         const log = {
             level: 'info' as LogLevel,
             success: false,
@@ -76,7 +74,7 @@ class OAuthController {
                 analytics.track('server:pre_ws_oauth', accountId);
             }
 
-            const callbackUrl = await getOauthCallbackUrl(accountId, accountEnvironment);
+            const callbackUrl = await getOauthCallbackUrl(environmentId);
             const connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
 
             if (connectionId == null) {
