@@ -4,13 +4,31 @@ sidebarTitle: 'CLI'
 icon: 'terminal'
 ---
 
-## Installing the CLI
+### Install the Nango CLI
 
-We recommend that you install the CLI globally by running `npm install nango -g`.
+Install the Nango CLI globally: 
+```bash
+npm install nango -g
+```
 
-By default, the CLI assumes that you are using Nango Cloud so you need to set the `NANGO_SECRET_KEY` env variable or pass in the `--secret-key` flag with each command.
+In the folder where you want your integration folder (e.g. root of your project), run:
+```bash
+nango init # Creates `/nango-integrations` with initial config
+```
 
-For self-hosting, set the `NANGO_HOSTPORT` env variable or pass in the --host flag with each command.
+### CLI Authentication
+
+Add the following env vars. We recommend that you have a `.env` file in `/nango-integrations`:
+```bash
+NANGO_SECRET_KEY_PROD='<prod-secret-key>'
+NANGO_SECRET_KEY_DEV='<dev-secret-key>'
+```
+
+Get your `prod` and `dev` secret keys from the [Project Settings tab](https://app.nango.dev/project-settings) (toggle between the `prod` and `dev` environment in the left nav bar).
+
+<Info>
+For self-hosting, set the `NANGO_HOSTPORT` env variable to `http://localhost:3003` (for local development) or your instance's URL.
+</Info>
 
 ## All CLI commands & command details
 
@@ -24,40 +42,30 @@ Get details about a specific command by running:
 nango [command] --help
 ```
 
-## Run Nango locally
-
-If you are only using Nango for OAuth, you can run Nango locally by running (cf. [Authorize APIs guide](/guides/sync)): 
-```bash
-nango start
-```
-
-If you are developing [Syncs](/core-concepts#syncs), instead run (cf. [Sync Data guide](/guides/sync)): 
-```bash
-nango dev
-```
-
 ## Flags & environment variables
 
-Your can use the following flags on every CLI command: 
+Global command flags:
+
 ```bash
---secret-key [secretKey] # Set the secret key. Overrides the `NANGO_SECRET_KEY` value set in the .env file
-```
-```bash
---host [host] # Set the host. Overrides the `NANGO_HOSTPORT` value set in the .env file
-```
-```bash
---auto-confirm # Auto confirm yes to all prompts (for CI).
+# Command flag to auto-confirm all prompts (useful for CI).
+--auto-confirm 
 ```
 
-You can also use the following environment variables (e.g. by adding an `.env` where you run the CLI):
+Environment variables:
 ```bash
-NANGO_HOSTPORT=https://api.nango.dev | http://localhost:3003 | your-self-hosted-address
-NANGO_AUTO_UPGRADE=true # upgrade the CLI automatically
-NANGO_NO_PROMPT_FOR_UPGRADE=false # don't prompt for upgrades
-NANGO_DEPLOY_AUTO_CONFIRM=false # deploy without any prompts
-NANGO_SECRET_KEY=xxxx-xxx-xxxx # Required for Nango Cloud to authenticate
-NANGO_INTEGRATIONS_LOCATION=use-this-to-override-where-the-nango-integrations-directory-goes # set a custom location for the nango-integrations directory
-NANGO_PORT=use-this-to-override-the-default-3003 # set a custom port for the Nango Server
-NANGO_DB_PORT=use-this-to-override-the-default-5432 # set a custom port for the Nango database
+# Recommendation: in a ".env" file in /nango-integrations.
+
+# Required to authenticate
+NANGO_SECRET_KEY_DEV=xxxx-xxx-xxxx
+NANGO_SECRET_KEY_PROD=xxxx-xxx-xxxx
+
+# Nango's instance URL (OSS: change to http://localhost:3003 or your instance URL).
+NANGO_HOSTPORT=https://api.nango.dev
+
+# Whether to prompt for CLI upgrades.
+NANGO_NO_PROMPT_FOR_UPGRADE=false
+
+# Whether to prompt before deployments.
+NANGO_DEPLOY_AUTO_CONFIRM=false
 ```
 

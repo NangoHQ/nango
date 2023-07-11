@@ -7,7 +7,7 @@ import { HelpCircle } from '@geist-ui/icons';
 import { Tooltip } from '@geist-ui/core';
 
 import useSet from '../hooks/useSet';
-import { isHosted, isStaging, baseUrl, isCloud } from '../utils/utils';
+import { isHosted, isStaging, baseUrl } from '../utils/utils';
 import { useGetIntegrationListAPI, useGetProjectInfoAPI, useGetHmacAPI } from '../utils/api';
 import { useAnalyticsTrack } from '../utils/analytics';
 import DashboardLayout from '../layout/DashboardLayout';
@@ -117,7 +117,7 @@ export default function IntegrationCreate() {
             authorization_params: { value: string | undefined };
         };
 
-        const nango = new Nango({ host: hostUrl, websocketsPath: websocketsPath, publicKey: isCloud() ? publicKey : undefined });
+        const nango = new Nango({ host: hostUrl, websocketsPath, publicKey });
 
         nango
             .auth(target.integration_unique_key.value, target.connection_id.value, {
@@ -192,7 +192,7 @@ export default function IntegrationCreate() {
             }
         }
 
-        if (isCloud() && publicKey) {
+        if (publicKey) {
             args.push(`publicKey: '${publicKey}'`);
         }
 
