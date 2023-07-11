@@ -33,7 +33,7 @@ export default class Nango {
         this.status = AuthorizationStatus.IDLE;
         this.publicKey = config.publicKey;
 
-        if (this.isCloud() && !config.publicKey) {
+        if (!config.publicKey) {
             throw new Error('You should specify a Public Key when using Nango Cloud (cf. documentation).');
         }
 

@@ -24,7 +24,7 @@ export default function AuthLink() {
             return;
         }
 
-        if (isCloud() && !publicKey) {
+        if (!publicKey) {
             setServerErrorMessage('Missing public key.');
             return;
         }

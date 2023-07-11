@@ -120,18 +120,16 @@ export default function ProjectSettings() {
                     <div className="mx-20 h-full mb-20">
                         <h2 className="mt-16 text-left text-3xl font-semibold tracking-tight text-white mb-12">Project Details</h2>
                         <div className="border border-border-gray rounded-md h-fit pt-6 pb-14">
-                            {isCloud() && (
-                                <div>
-                                    <div className="mx-8 mt-8">
-                                        <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold  mb-2">
-                                            Public Key
-                                        </label>
-                                        <Prism language="bash" colorScheme="dark">
-                                            {publicKey}
-                                        </Prism>
-                                    </div>
+                            <div>
+                                <div className="mx-8 mt-8">
+                                    <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold  mb-2">
+                                        Public Key
+                                    </label>
+                                    <Prism language="bash" colorScheme="dark">
+                                        {publicKey}
+                                    </Prism>
                                 </div>
-                            )}
+                            </div>
                             <div>
                                 <div className="mx-8 mt-8">
                                     <div className="flex mb-2">
