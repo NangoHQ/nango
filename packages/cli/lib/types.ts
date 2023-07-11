@@ -3,7 +3,6 @@ export interface GlobalOptions {
     host?: string;
     autoConfirm: boolean;
     debug: boolean;
-    environment?: string;
 }
 
 export type ENV = 'local' | 'staging' | 'production';

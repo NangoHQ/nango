@@ -320,14 +320,12 @@ async function parseSecretKey(secretKey: string | undefined, environment: string
     }
 }
 
-export const deploy = async (options: DeployOptions, debug = false) => {
-    const { env, version, sync: optionalSyncName, secretKey, host, autoConfirm, environment: setEnvironment } = options;
+export const deploy = async (options: DeployOptions, environment: string, debug = false) => {
+    const { env, version, sync: optionalSyncName, secretKey, host, autoConfirm } = options;
     await verifyNecessaryFiles(autoConfirm);
 
-    const environment = setEnvironment ?? 'prod';
-
     if (debug) {
-        printDebug(`Environment is set to ${environment}${!setEnvironment ? ' by default' : ''}.`);
+        printDebug(`Environment is set to ${environment}.`);
     }
 
     await parseSecretKey(secretKey, environment, debug);
@@ -511,7 +509,7 @@ async function deploySyncs(url: string, body: { syncs: IncomingSyncConfig[]; rec
         });
 }
 
-export const run = async (args: string[], options: RunArgs, debug = false, environment = 'prod') => {
+export const run = async (args: string[], options: RunArgs, environment: string, debug = false) => {
     let syncName, providerConfigKey, connectionId, suppliedLastSyncDate, host, secretKey;
     if (args.length > 0) {
         [syncName, providerConfigKey, connectionId, suppliedLastSyncDate] = args;

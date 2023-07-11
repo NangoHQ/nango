@@ -22,7 +22,6 @@ class NangoCommand extends Command {
         cmd.option('--secret-key [secretKey]', 'Set the secret key. Overrides the `NANGO_SECRET_KEY` value set in the .env file');
         cmd.option('--host [host]', 'Set the host. Overrides the `NANGO_HOSTPORT` value set in the .env file');
         cmd.option('--auto-confirm', 'Auto confirm yes to all prompts.');
-        cmd.option('--environment [environment]', 'Set which environment to run in, typically "dev" or "prod", defaults to "prod".');
         cmd.option('--debug', 'Run cli in debug mode, outputting verbose logs.');
         cmd.hook('preAction', async function (this: Command, actionCommand: Command) {
             const { debug } = actionCommand.opts();
@@ -49,7 +48,7 @@ program.name('nango').description(
 
 For Self-Hosting: set the NANGO_HOSTPORT env variable or pass in the --host flag with each command.
 
-Global flags: --secret-key, --host, --auto-confirm, --debug (output verbose logs for debugging purposes), --environment (defaults to prod)
+Global flags: --secret-key, --host, --auto-confirm, --debug (output verbose logs for debugging purposes)
 
 Available environment variables available:
 
@@ -93,15 +92,16 @@ program
 
 program
     .command('run')
-    .description('Run the sync process to help with debugging. Assumes local development environment.')
+    .description('Run the sync process to help with debugging. Assumes cloud environment.')
+    .arguments('environment')
     .option('-s, --sync <syncName>', 'The name of the sync (e.g. account-sync).')
     .option('-p, --provider <provider_config_key>', 'The unique key of the provider configuration (chosen by you upon creating this provider configuration).')
     .option('-c, --connection <connection_id>', 'The ID of the Connection.')
     .option('-l, --lastSyncDate [lastSyncDate]', 'Optional: last sync date to retrieve records greater than this date')
-    .action(async function (this: Command) {
-        const { autoConfirm, debug, environment } = this.opts();
+    .action(async function (this: Command, environment: string) {
+        const { autoConfirm, debug } = this.opts();
         await verifyNecessaryFiles(autoConfirm, debug);
-        run(this.args, this.opts(), debug, environment);
+        run(this.args, this.opts(), environment, debug);
     });
 
 program
@@ -122,6 +122,7 @@ program
 program
     .command('deploy')
     .description('Deploy a Nango integration')
+    .arguments('environment')
     .option('--staging', 'Deploy to the staging instance')
     .option('--local', 'Deploy to the local instance')
     .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integration with. Can be used for rollbacks.')
@@ -133,7 +134,7 @@ program
             const { staging, debug } = options;
             let env = staging ? 'staging' : 'production';
             env = options.local ? 'local' : env;
-            await deploy({ ...options, env: env as ENV }, debug);
+            await deploy({ ...options, env: env as ENV }, environment, debug);
         })(options as DeployOptions);
     });
 
