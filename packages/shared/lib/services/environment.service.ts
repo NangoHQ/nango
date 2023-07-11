@@ -49,6 +49,10 @@ class EnvironmentService {
     }
 
     async getAccountIdAndEnvironmentIdBySecretKey(secretKey: string): Promise<{ accountId: number; environmentId: number } | null> {
+        if (!this.environmentAccountSecrets[secretKey]) {
+            return null;
+        }
+
         const { accountId, environmentId } = this.environmentAccountSecrets[secretKey] as EnvironmentAccount;
 
         return accountId != null && environmentId != null ? { accountId, environmentId } : null;
