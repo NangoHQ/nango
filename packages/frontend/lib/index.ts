@@ -129,10 +129,6 @@ export default class Nango {
 
         return query.length === 0 ? '' : '?' + query.join('&');
     }
-
-    private isCloud() {
-        return this.hostBaseUrl === prodHost || this.hostBaseUrl === stagingHost;
-    }
 }
 
 interface ConnectionConfig {
