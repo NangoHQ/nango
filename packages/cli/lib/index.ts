@@ -128,7 +128,7 @@ program
     .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integration with. Can be used for rollbacks.')
     .option('-s, --sync [syncName]', 'Optional deploy only this sync name.')
     .option('--no-compile-interfaces', `Don't compile the ${nangoConfigFile}`, true)
-    .action(async function (this: Command) {
+    .action(async function (this: Command, environment: string) {
         const options = this.opts();
         (async (options: DeployOptions) => {
             const { staging, debug } = options;
@@ -144,12 +144,13 @@ program
     .command('deploy:local', { hidden: true })
     .alias('dl')
     .description('Deploy a Nango integration to local')
+    .arguments('environment')
     .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integration with. Can be used for rollbacks.')
     .option('--no-compile-interfaces', `Don't compile the ${nangoConfigFile}`, true)
-    .action(async function (this: Command) {
+    .action(async function (this: Command, environment: string) {
         const options = this.opts();
         (async (options: DeployOptions) => {
-            await deploy({ ...options, env: 'local' }, options.debug);
+            await deploy({ ...options, env: 'local' }, environment, options.debug);
         })(options as DeployOptions);
     });
 
