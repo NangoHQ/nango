@@ -101,7 +101,7 @@ program
     .action(async function (this: Command, environment: string) {
         const { autoConfirm, debug } = this.opts();
         await verifyNecessaryFiles(autoConfirm, debug);
-        run(this.args, this.opts(), environment, debug);
+        run(this.opts(), environment, debug);
     });
 
 program

@@ -14,6 +14,7 @@ import parser from '@babel/parser';
 import traverse, { NodePath } from '@babel/traverse';
 import type { ChildProcess } from 'node:child_process';
 import promptly from 'promptly';
+import { select } from '@inquirer/prompts';
 import type * as t from '@babel/types';
 
 import type {
@@ -23,7 +24,8 @@ import type {
     NangoConfig,
     Connection as NangoConnection,
     NangoIntegration,
-    NangoIntegrationData
+    NangoIntegrationData,
+    SyncConfigWithProvider
 } from '@nangohq/shared';
 import { loadSimplifiedConfig, cloudHost, stagingHost, SyncType, syncRunService, nangoConfigFile, checkForIntegrationFile } from '@nangohq/shared';
 import {
@@ -37,6 +39,7 @@ import {
     buildInterfaces,
     enrichHeaders,
     getNangoRootPath,
+    getSyncNamesWithProvider,
     printDebug
 } from './utils.js';
 import type { DeployOptions, GlobalOptions } from './types.js';
@@ -509,30 +512,8 @@ async function deploySyncs(url: string, body: { syncs: IncomingSyncConfig[]; rec
         });
 }
 
-export const run = async (args: string[], options: RunArgs, environment: string, debug = false) => {
+export const run = async (options: RunArgs, environment: string, debug = false) => {
     let syncName, providerConfigKey, connectionId, suppliedLastSyncDate, host, secretKey;
-    if (args.length > 0) {
-        [syncName, providerConfigKey, connectionId, suppliedLastSyncDate] = args;
-    }
-
-    if (Object.keys(options).length > 0) {
-        ({ sync: syncName, provider: providerConfigKey, connection: connectionId, lastSyncDate: suppliedLastSyncDate, host, secretKey } = options);
-    }
-
-    if (!syncName) {
-        console.log(chalk.red('Sync name is required'));
-        return;
-    }
-
-    if (!providerConfigKey) {
-        console.log(chalk.red('Provider config key is required'));
-        return;
-    }
-
-    if (!connectionId) {
-        console.log(chalk.red('Connection id is required'));
-        return;
-    }
 
     if (debug) {
         if (host) {
@@ -559,6 +540,67 @@ export const run = async (args: string[], options: RunArgs, environment: string,
 
     if (debug) {
         printDebug(`NANGO_HOSTPORT is set to ${process.env['NANGO_HOSTPORT']}`);
+    }
+
+    if (Object.keys(options).length > 0) {
+        ({ sync: syncName, provider: providerConfigKey, connection: connectionId, lastSyncDate: suppliedLastSyncDate, host, secretKey } = options);
+    }
+
+    if (!syncName || !providerConfigKey || !connectionId) {
+        if (debug) {
+            printDebug(`No options provided, entering prompt mode`);
+        }
+
+        const syncs = await getSyncNamesWithProvider(debug);
+        if (syncs.length === 0) {
+            console.log(chalk.red('No syncs found'));
+            return;
+        }
+
+        const configuration = (await select({
+            message: 'Select a sync to run',
+            choices: syncs.map((sync: SyncConfigWithProvider) => {
+                return {
+                    name: `${sync.sync_name} (${sync.unique_key})`,
+                    value: [sync.sync_name, sync.unique_key]
+                };
+            })
+        })) as string[];
+
+        [syncName, providerConfigKey] = configuration;
+
+        if (debug) {
+            printDebug(`Sync name selected is ${syncName}`);
+            printDebug(`Provider config key selected is ${providerConfigKey}`);
+        }
+
+        connectionId = await promptly.prompt('Enter the connection id: ', {
+            validator: (value: string) => {
+                if (!value) {
+                    throw new Error('Connection id is required');
+                }
+                return value;
+            }
+        });
+
+        if (debug) {
+            printDebug(`Connection id selected is ${connectionId}`);
+        }
+    }
+
+    if (!syncName) {
+        console.log(chalk.red('Sync name is required'));
+        return;
+    }
+
+    if (!providerConfigKey) {
+        console.log(chalk.red('Provider config key is required'));
+        return;
+    }
+
+    if (!connectionId) {
+        console.log(chalk.red('Connection id is required'));
+        return;
     }
 
     const nangoConnection = (await getConnection(

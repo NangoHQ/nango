@@ -223,21 +223,6 @@ export const getSyncsByProviderConfigAndSyncName = async (environment_id: number
     return results;
 };
 
-export const getSyncsByEnvironmentId = async (environment_id: number): Promise<Sync[]> => {
-    const results = await db.knex
-        .withSchema(db.schema())
-        .select('*')
-        .from<Sync>(TABLE)
-        .join('_nango_connections', '_nango_connections.id', `${TABLE}.nango_connection_id`)
-        .join(SYNC_CONFIG_TABLE, `${SYNC_CONFIG_TABLE}.id`, `${TABLE}.sync_config_id`)
-        .where({
-            environment_id,
-            active: true
-        });
-
-    return results;
-};
-
 /**
  * Verify Ownership
  * @desc verify that the incoming account id matches with the provided nango connection id

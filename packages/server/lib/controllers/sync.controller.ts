@@ -18,6 +18,7 @@ import {
     createActivityLog,
     getAndReconcileSyncDifferences,
     getSyncConfigsWithConnectionsByEnvironmentId,
+    getActiveSyncConfigsByEnvironmentId,
     IncomingSyncConfig
 } from '@nangohq/shared';
 
@@ -112,6 +113,18 @@ class SyncController {
             const environment = (await getUserAccountAndEnvironmentFromSession(req)).environment;
 
             const syncs = await getSyncConfigsWithConnectionsByEnvironmentId(environment.id);
+
+            res.send(syncs);
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    public async getSyncNames(_req: Request, res: Response, next: NextFunction) {
+        try {
+            const environmentId = getEnvironmentId(res);
+
+            const syncs = await getActiveSyncConfigsByEnvironmentId(environmentId);
 
             res.send(syncs);
         } catch (e) {

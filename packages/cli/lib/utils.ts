@@ -139,7 +139,7 @@ export async function verifyNecessaryFiles(autoConfirm: boolean, debug = false) 
         }
     } else {
         if (debug) {
-            printDebug(`Found ${nangoConfigFile} file successfullly.`);
+            printDebug(`Found ${nangoConfigFile} file successfully.`);
         }
     }
 }
@@ -224,6 +224,22 @@ export async function getConnection(providerConfigKey: string, connectionId: str
     }
     return await axios
         .get(url, { params: { provider_config_key: providerConfigKey }, headers, httpsAgent: httpsAgent() })
+        .then((res) => {
+            return res.data;
+        })
+        .catch((err) => {
+            console.log(`❌ ${err.response?.data.error || JSON.stringify(err)}`);
+        });
+}
+
+export async function getSyncNamesWithProvider(debug = false) {
+    const url = process.env['NANGO_HOSTPORT'] + `/sync/names`;
+    const headers = enrichHeaders();
+    if (debug) {
+        printDebug(`getConnection endpoint to the URL: ${url} with headers: ${JSON.stringify(headers, null, 2)}`);
+    }
+    return await axios
+        .get(url, { headers, httpsAgent: httpsAgent() })
         .then((res) => {
             return res.data;
         })
