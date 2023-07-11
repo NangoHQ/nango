@@ -3,7 +3,6 @@
  */
 
 const prodHost = 'https://api.nango.dev';
-const stagingHost = 'https://staging.nango.dev';
 const debugLogPrefix = 'NANGO DEBUG LOG: ';
 
 const enum WSMessageType {
