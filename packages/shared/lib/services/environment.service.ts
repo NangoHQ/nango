@@ -169,6 +169,21 @@ class EnvironmentService {
         return result[0].name;
     }
 
+    /**
+     * Get Environment Id For Account Assuming Prod
+     * @desc legacy function to get the environment id for an account assuming prod
+     * while the transition is being made from account_id to environment_id
+     */
+    async getEnvironmentIdForAccountAssumingProd(accountId: number): Promise<number | null> {
+        const result = await db.knex.withSchema(db.schema()).select('id').from<Environment>(TABLE).where({ account_id: accountId, name: 'prod' });
+
+        if (result == null || result.length == 0 || result[0] == null) {
+            return null;
+        }
+
+        return result[0].id;
+    }
+
     async editCallbackUrl(callbackUrl: string, id: number): Promise<Environment | null> {
         return db.knex.withSchema(db.schema()).from<Environment>(TABLE).where({ id }).update({ callback_url: callbackUrl }, ['id']);
     }

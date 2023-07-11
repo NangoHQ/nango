@@ -68,8 +68,9 @@ class SyncClient {
         const nangoConnection = (await connectionService.getConnectionById(nangoConnectionId)) as NangoConnection;
         const nangoConfig = await getSyncConfig(nangoConnection);
         if (!nangoConfig) {
-            const message = isCloud() ? ' If you expect to see a sync make sure you used the nango cli deploy command' : '';
-            console.log('Failed to load Nango config - will not start any syncs!' + message);
+            console.log(
+                'Failed to load the Nango config - will not start any syncs! If you expect to see a sync make sure you used the nango cli deploy command'
+            );
             return;
         }
         const { integrations }: NangoConfig = nangoConfig;
