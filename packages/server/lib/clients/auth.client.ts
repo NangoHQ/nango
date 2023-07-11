@@ -35,7 +35,7 @@ export class AuthClient {
 
         app.use(
             session({
-                secret: process.env['NANGO_ADMIN_KEY'] || process.env['NANGO_SECRET_KEY'] || 'nango',
+                secret: process.env['NANGO_ADMIN_KEY'] || 'nango',
                 resave: false,
                 saveUninitialized: false,
                 store: sessionStore,
