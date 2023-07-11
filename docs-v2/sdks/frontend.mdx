@@ -27,7 +27,7 @@ let nango = new Nango({ publicKey: '<PUBLIC-KEY>' });
 ```ts
 import Nango from '@nangohq/frontend';
 
-let nango = new Nango();
+let nango = new Nango({ host: 'http://localhost:3003', publicKey: '<PUBLIC-KEY>' });
 ```
 
 </Tab>
@@ -37,7 +37,7 @@ let nango = new Nango();
 ```ts
 import Nango from '@nangohq/frontend';
 
-let nango = new Nango({ host: 'https://<YOUR-NANGO-INSTANCE>' });
+let nango = new Nango({ host: '<INSTANCE-URL>', publicKey: '<PUBLIC-KEY>' });
 ```
 
 If you have configured your self-hosted instance to use a [custom websockets path](/self-host/instructions#custom-websockets-path)
@@ -46,7 +46,7 @@ you will also need to set the `websocketsPath` configuration option:
 ```ts
 import Nango from '@nangohq/frontend';
 
-let nango = new Nango({ host: 'https://<YOUR-NANGO-INSTANCE>', websocketsPath: '/<YOUR-WEBSOCKETS-PATH>' });
+let nango = new Nango({ host: '<INSTANCE-URL>', publicKey: '<PUBLIC-KEY>', websocketsPath: '/<YOUR-WEBSOCKETS-PATH>' });
 ```
 </Tab>
 

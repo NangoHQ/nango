@@ -5,35 +5,30 @@ description: 'Continuously sync with APIs, bi-directionally.'
 ---
 
 <Note>
-Nango Sync is currently in private beta.  
-Please reach out on the [Slack community](https://nango.dev/slack) to get access!
+This feature is currently in private beta. Please reach out on the [Slack community](https://nango.dev/slack) to get access!
 </Note>
 
-In this guide, we show you how to sync data from external APIs with Nango.
-
 <Tip>
-    We recommend you install nango globally via the command
-    ```bash
-    npm install nango -g
-    ```
+    If you haven't already, start by authorizing the API by following the [Quickstart](/quickstart) (for Github) or the [Authorize APIs guide](/oauth) (for any API).
 </Tip>
 
-# Step 1: Initialize Nango
+# Step 1: Install the Nango CLI
 
-### Create the `nango-integrations` folder
-
-If you don't have a `nango-integrations` folder yet, `cd` to the folder where you want your integration files to live (recommendation: root of your project).
-
-Then run:
+Install the Nango CLI globally: 
 ```bash
-nango init
+npm install nango -g
+```
+
+In the folder where you want your integration folder (e.g. root of your project), run:
+```bash
+nango init # Creates `/nango-integrations` with initial config
 ```
 
 <Tip>
 **Understanding the `nango-integrations` folder**
 
 Syncs have two parts:
-- A config file called `nango.yaml`, which defines which Syncs exist, how often they should run, etc.
+- A global config file called `nango.yaml` with Sync names, frequency, models, etc.
 - A small typescript file per Sync, which defines the logic of the Sync
 
 They all live in a folder called `nango-integrations` in your own code repository.
@@ -52,25 +47,13 @@ They all live in a folder called `nango-integrations` in your own code repositor
 Our CLI helps you manage this directory, create scaffolds, validates the configuration, etc.
 </Tip>
 
-### Run Nango
-
-<Note>
-Make sure you are not running `nango start` somewhere, if so kill the tab. It is redundant with the following command.
-</Note>
-
-Start Nango locally: 
-
+Next, we need to authenticate the CLI. Add the following env vars (e.g. in an `.env` file in `/nango-integrations`):
 ```bash
-nango dev
+NANGO_SECRET_KEY_PROD='<prod-secret-key>'
+NANGO_SECRET_KEY_DEV='<dev-secret-key>'
 ```
 
-<Tip>
-    The initial start can take some time while the database is setup (&lt;5mins). 
-
-	`nango dev` runs Nango (like `nango start`) but also automatically watches for changes in your files and recompiles as needed. Compilation errors are printed to the terminal.
-
-	Once ready, you can access the dashboard at [http:localhost:3003](http:localhost:3003)
-</Tip>
+Get your `prod` and `dev` secret keys from the [Project Settings tab](https://app.nango.dev/project-settings) (toggle between the `prod` and `dev` environment in the left nav bar).
 
 # Step 2: Create a Sync
 
@@ -80,7 +63,7 @@ Open the `nango.yaml` file inside the `nango-integrations` folder and inspect it
 ```yaml nango.yaml
 integrations:
 	asana-dev: # Integration name (must match an Integration name in the Integrations tab of your Nango dashboard).
-		asana-tasks: # Arbitrary Sync name
+		asana-tasks: # Arbitrary (unique) Sync name
 			runs: every 30min # Sync frequency
 			return:
 				- AsanaTask # Data model (defined below) as returned by your Sync script
@@ -135,11 +118,9 @@ Sync scripts mostly do 2 things. They:
 This logic is defined by you so that you can build arbitrarily custom and complex integrations.
 
 <Tip>
-Your Sync scripts are deployed to Nango and automatically run on a schedule. 
+Your Sync scripts are deployed to Nango and automatically run on a schedule. Nango offers you multiple environments (dev & prod) to test & deploy your Syncs.
 
-For local development, Nango runs your Sync scripts on your local machine. In production, your Sync scripts are deployed remotely and run on the Nango Cloud.
-
-Because of this, you cannot import additional modules (external or relative) in the Sync scripts at the moment (we plan to resolve this limitation in the near future).
+Because your scripts run in Nango's cloud, you cannot import additional modules (external or relative) in the Sync scripts at the moment (we plan to resolve this limitation in the near future).
 </Tip>
 
 Fill in the `fetchData` method with your integration code:
@@ -240,38 +221,36 @@ Subsequent runs are called "incremental". They should only fetch the created & u
 Use `await nango.log()` to log data from within integration scripts.
 </Tip>
 
-### Test your Sync
-
-<Tip>
-For this step, you should have already set up an Integration and created a Connection **localhost** (cf. [Authorize APIs guide](/guides/oauth)).
-</Tip>
+### Dry run your Sync
 
 Easily test your Sync with the CLI by running:
 
 ```bash
-nango sync:run -p asana-dev -s asana-tasks -c <user-id>
+nango dryrun asana-tasks <connection-id>
 ```
 
 This will only execute a dry run of the Sync. Synced objects will not be persisted in Nango's storage. It allows you to quickly check if your Sync script is correct.
 
 <Tip>
-To test incremental Sync runs, populate the `nango.lastSyncDate` value by adding the `-l` flag: 
+By default, the Connection ID is fetched from your `Dev` environment. You can fetch Connections from your `Prod` environment with the `-e prod` flag.
+
+To test incremental Sync runs, add the `-l` flag (which will populate the `nango.lastSyncDate` value in your script): 
 ```bash
-nango sync:run -p asana-dev -s asana-tasks -c <user-id> -l "2023-06-20T10:00:00.000Z"
+nango dryrun asana-tasks <connection-id> -l "2023-06-20T10:00:00.000Z"
 ```
 </Tip>
 
 # Step 3: Deploy a Sync
 
-**1. Deploy locally**
+**1. Deploy to the `Dev` environment**
     
-    When you Sync script is ready, you can deploy your Sync locally:
+    When you Sync script is ready, deploy it to your `Dev` env:
 
     ```bash
-    nango deploy:local
+    nango deploy dev
     ```
 
-    Inspect the [Sync tab](http://localhost:3003/syncs) on the **localhost** Dashboard the verify the deployment succeeded.
+    Inspect the [Sync tab](https://app.nango.dev/syncs) to verify the deployment succeeded.
 
     <Tip>
         Syncs will automatically start for previous Connections and when a new Connection gets added (OAuth flow completes) for the given Integration. You can see all Syncs for a Connection in the UI:
@@ -279,35 +258,47 @@ nango sync:run -p asana-dev -s asana-tasks -c <user-id> -l "2023-06-20T10:00:00.
         ![View Syncs in Dashboard](/images/connection-syncs.png)
     </Tip>
 
-**2. Deploy to Nango Cloud**
-
-    <Note>
-        To deploy to Nango Cloud, you should have already set up an Integration **on Cloud** (cf. [Authorize APIs guide](/guides/oauth)).
-    </Note>
+**2. Deploy to the `Prod` environment**
     
-    Once your Sync is tested locally and you are ready to deploy it to production on Nango Cloud, you can run:
+    Once you are ready to deploy to production, run:
 
     ```bash
-    nango deploy:cloud
+    nango deploy prod
     ```
-
-    Inspect the [Sync tab](https://app.nango.dev/syncs) on the **Cloud** Dashboard to verify the deployment succeeded.
 
 # Step 4: Retrieve the synced data
 
 Fetch the always-fresh data from the Sync in your backend with the [backend SDK](/sdks) or the [REST API](/api-reference):
 
-```ts Node SDK example for Nango Cloud
+<Tabs>
+
+<Tab title="Node SDK">
+
+```ts
 import { Nango }  from '@nangohq/node';
 
-const nango = new Nango({ secretKey: '<SECRET-KEY>' });
+const nango = new Nango({ secretKey: '<your-dev-secret-key>' });
 
 const result = await nango.getRecords({
-    providerConfigKey: 'asana-dev',
-    connectionId: '<user-id>',
-    model: 'AsanaTask'
+    providerConfigKey: 'github',
+    connectionId: 'test-connection-id',
+    model: 'GithubIssue'
 });
 ```
+</Tab>
+
+<Tab title="cURL">
+
+```bash
+curl --request GET \
+  --url https://api.nango.dev/sync/records?model=GithubIssue \
+  --header 'Authorization: Bearer <your-dev-secret-key>' \
+  --header 'Connection-Id: test-connection-id' \
+  --header 'Provider-Config-Key: github'
+```
+</Tab>
+
+</Tabs>
 
 Nango can also send you [webhooks](/guides/webhooks) whenever new data is available from a Sync.
 
