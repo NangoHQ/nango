@@ -284,7 +284,7 @@ export function httpsAgent() {
     });
 }
 
-export function getFieldType(rawField: string | NangoModel): string {
+export function getFieldType(rawField: string | NangoModel, debug = false): string {
     if (typeof rawField === 'string') {
         let field = rawField;
         let hasNull = false;
@@ -293,6 +293,13 @@ export function getFieldType(rawField: string | NangoModel): string {
         if (field.indexOf('null') !== -1) {
             field = field.replace(/\s*\|\s*null\s*/g, '');
             hasNull = true;
+        }
+
+        if (field === 'undefined') {
+            if (debug) {
+                printDebug(`Field is defined undefined which isn't recommended.`);
+            }
+            return 'undefined';
         }
 
         if (field.indexOf('undefined') !== -1) {
@@ -332,14 +339,19 @@ export function getFieldType(rawField: string | NangoModel): string {
         }
         return tsType;
     } else {
-        const nestedFields = Object.keys(rawField)
-            .map((fieldName: string) => `  ${fieldName}: ${getFieldType(rawField[fieldName] as string | NangoModel)};`)
-            .join('\n');
-        return `{\n${nestedFields}\n}`;
+        try {
+            const nestedFields = Object.keys(rawField)
+                .map((fieldName: string) => `  ${fieldName}: ${getFieldType(rawField[fieldName] as string | NangoModel)};`)
+                .join('\n');
+            return `{\n${nestedFields}\n}`;
+        } catch (_) {
+            console.log(chalk.red(`Failed to parse field ${rawField} so just returning it back as a string`));
+            return String(rawField);
+        }
     }
 }
 
-export function buildInterfaces(models: NangoModel): (string | undefined)[] {
+export function buildInterfaces(models: NangoModel, debug = false): (string | undefined)[] {
     const interfaceDefinitions = Object.keys(models).map((modelName: string) => {
         const fields = models[modelName] as NangoModel;
         const singularModelName = modelName.charAt(modelName.length - 1) === 's' ? modelName.slice(0, -1) : modelName;
@@ -357,7 +369,7 @@ export function buildInterfaces(models: NangoModel): (string | undefined)[] {
             })
             .map((fieldName: string) => {
                 const fieldModel = fields[fieldName] as string | NangoModel;
-                const fieldType = getFieldType(fieldModel);
+                const fieldType = getFieldType(fieldModel, debug);
                 return `  ${fieldName}: ${fieldType};`;
             })
             .join('\n');

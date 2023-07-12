@@ -190,7 +190,7 @@ export const generate = async (debug = false) => {
     const { integrations } = configData;
     const { models } = configData;
 
-    const interfaceDefinitions = buildInterfaces(models);
+    const interfaceDefinitions = buildInterfaces(models, debug);
 
     fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/${TYPES_FILE_NAME}`, interfaceDefinitions.join('\n'));
 
@@ -218,7 +218,7 @@ export const generate = async (debug = false) => {
         for (let k = 0; k < syncNames.length; k++) {
             const syncName = syncNames[k] as string;
 
-            if (allSyncNames[syncName] !== undefined) {
+            if (allSyncNames[syncName] === undefined) {
                 allSyncNames[syncName] = true;
             } else {
                 console.log(chalk.red(`The sync name ${syncName} is duplicated in the ${nangoConfigFile} file. All sync names must be unique.`));
