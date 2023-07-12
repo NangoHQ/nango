@@ -40,7 +40,7 @@ export class AccessMiddleware {
         } else {
             setAccount(0, res);
 
-            const accountEnvironment = req.cookies['env'] || 'prod';
+            const accountEnvironment = req.cookies['env'] || 'dev';
             const environmentId = accountEnvironment === 'prod' ? 1 : 2;
             setEnvironmentId(environmentId, res);
 
@@ -100,7 +100,7 @@ export class AccessMiddleware {
         } else {
             setAccount(0, res);
 
-            const accountEnvironment = req.cookies['env'] || 'prod';
+            const accountEnvironment = req.cookies['env'] || 'dev';
             const environmentId = accountEnvironment === 'prod' ? 1 : 2;
             setEnvironmentId(environmentId, res);
             next();
