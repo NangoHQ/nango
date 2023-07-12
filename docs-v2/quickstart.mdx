@@ -1,16 +1,19 @@
 ---
 title: 'Quickstart'
 sidebarTitle: '🚀 Quickstart'
-description: 'Quickly authorize the Github API & sync Github issues, using Nango.'
+description: 'See Nango in action in 5 minutes'
 ---
 
-In this 5min Quickstart, you will: 
-1. authorize an example API 
-2. continuously sync data from that API
+Exprience Nango by syncing GitHub issues from your public repos.
+
+In the next 5 minutes, we will: 
+1. Authorize an example API with Nango's builtin OAuth flow (GitHub)
+2. Setup a continuous data sync for this API (for GitHub issues)
+3. Show you how you can use the synced data in your app
 
 ## Authorize an API (Github)
 
-Create a free Nango account (no credit card required):
+First, create a free Nango account (no credit card required):
 [![Try Nango Cloud](/images/nango-deploy-button.svg)](https://app.nango.dev/signup)
 
 On the [Integrations tab](https://app.nango.dev), with the left bar environment toggle set to `Dev`, click `OAuth` next to the example Github integration:
@@ -37,10 +40,10 @@ If you get an error, check the [Activity tab](https://app.nango.dev/activity): T
 
 Install the Nango CLI globally: 
 ```bash
-npm install nango -g
+npm install -g nango
 ```
 
-In the folder where you want your integration folder (e.g. root of your project), run:
+In the root of your project run:
 ```bash
 nango init # Creates `./nango-integrations` with initial config
 ```
@@ -68,25 +71,29 @@ The rest of the files (`models.ts`, `dist/*`) are automatically generated thanks
 
 ### Dry run the _sync_
 
+Before you deploy your _sync_ to your cloud account you can test it locally.
+
 Open a new terminal tab, go to `./nango-integrations`. Dry run your _sync_ by running:
 
 ```bash
 nango dryrun github-issue-example test-connection-id
 ```
 
-This will use the _connection_ you created in the [Authorize an API section](#authorize-an-api-github) to run your _sync_ script. Synced objects will not be persisted in Nango's storage. It allows you to quickly check if your _sync_ script is correct.
+This will use the _connection_ you created in the [Authorize an API section](#authorize-an-api-github) to run your _sync_ script. Because this is a dry run, the fetched data will not be stored in Nango.
 
 ### Deploy the _sync_
 
-Finally, deploy your new configuration:
+Finally, deploy your new sync to Nango Cloud:
 
 ```bash
 nango deploy dev # Deploys to your cloud "dev" environment.
 ```
 
-Your _sync_ will run on Nango's cloud infrastructure, syncing Github issues for all the Github _connections_, continuously 🎉 You can manage your _syncs_ from the [Syncs tab](https://app.nango.dev/syncs).
+Nango automatically adds your _sync_ to all Github connections and starts syncing data for them. 🎉
 
-### Retrieve the synced data
+Take a look at your new _sync_ in the [Syncs tab](https://app.nango.dev/syncs) and check the [Activity tab](https://app.nango.dev/activity) to see every sync run live as Nango is fetching the data.
+
+## Retrieve the synced data
 
 Fetch the always-fresh data from the _sync_ in your backend with the [backend SDK](/sdks) or the [REST API](/api-reference):
 
