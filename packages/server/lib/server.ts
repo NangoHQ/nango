@@ -83,6 +83,7 @@ app.route('/sync/deploy/confirmation').post(apiAuth, syncController.confirmation
 app.route('/sync/records').get(apiAuth, syncController.getRecords.bind(syncController));
 app.route('/sync/trigger').post(apiAuth, syncController.trigger.bind(syncController));
 app.route('/sync/names').get(apiAuth, syncController.getSyncNames.bind(syncController));
+app.route('/sync/provider').get(apiAuth, syncController.getSyncProvider.bind(syncController));
 
 // Proxy Route
 app.route('/proxy/*').all(apiAuth, proxyController.routeCall.bind(proxyController));

@@ -1,6 +1,4 @@
 export interface GlobalOptions {
-    secretKey?: string;
-    host?: string;
     autoConfirm: boolean;
     debug: boolean;
 }

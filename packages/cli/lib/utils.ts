@@ -29,7 +29,7 @@ export const NANGO_INTEGRATIONS_NAME = 'nango-integrations';
 export const NANGO_INTEGRATIONS_LOCATION = process.env['NANGO_INTEGRATIONS_LOCATION'] || './';
 
 export const port = process.env['NANGO_PORT'] || '3003';
-let parsedHostport = process.env['NANGO_HOSTPORT'] || `http://localhost:${port}`;
+let parsedHostport = process.env['NANGO_HOSTPORT'] || cloudHost;
 
 if (parsedHostport.slice(-1) === '/') {
     parsedHostport = parsedHostport.slice(0, -1);
@@ -159,7 +159,7 @@ export async function upgradeAction(debug = false) {
         process.exit(1);
     }
 
-    if (process.env['NANGO_NO_PROMPT_FOR_UPGRADE'] === 'true') {
+    if (process.env['NANGO_CLI_UPGRADE_MODE'] === 'ignore') {
         return;
     }
     try {
@@ -179,7 +179,7 @@ export async function upgradeAction(debug = false) {
             console.log(chalk.red(`A new version of ${resolved.name} is available: ${latestVersion}`));
             const cwd = process.cwd();
 
-            const upgrade = process.env['NANGO_AUTO_UPGRADE'] === 'true' || (await promptly.confirm('Would you like to upgrade? (yes/no)'));
+            const upgrade = process.env['NANGO_CLI_UPGRADE_MODE'] === 'auto' || (await promptly.confirm('Would you like to upgrade? (yes/no)'));
 
             if (upgrade) {
                 console.log(chalk.yellow(`Upgrading ${resolved.name} to version ${latestVersion}...`));
@@ -240,6 +240,28 @@ export async function getSyncNamesWithProvider(debug = false) {
     }
     return await axios
         .get(url, { headers, httpsAgent: httpsAgent() })
+        .then((res) => {
+            return res.data;
+        })
+        .catch((err) => {
+            console.log(`❌ ${err.response?.data.error || JSON.stringify(err)}`);
+        });
+}
+
+export async function getProviderBySyncName(params: Record<string, string>, debug = false) {
+    const url = process.env['NANGO_HOSTPORT'] + `/sync/provider`;
+    const headers = enrichHeaders();
+    if (debug) {
+        printDebug(
+            `getProviderBySyncName endpoint to the URL: ${url} with headers: ${JSON.stringify(headers, null, 2)} with params: ${JSON.stringify(
+                params,
+                null,
+                2
+            )}}`
+        );
+    }
+    return await axios
+        .get(url, { params, headers, httpsAgent: httpsAgent() })
         .then((res) => {
             return res.data;
         })

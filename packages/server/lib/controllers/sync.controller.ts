@@ -19,7 +19,8 @@ import {
     getAndReconcileSyncDifferences,
     getSyncConfigsWithConnectionsByEnvironmentId,
     getActiveSyncConfigsByEnvironmentId,
-    IncomingSyncConfig
+    IncomingSyncConfig,
+    getProviderConfigBySyncAndAccount
 } from '@nangohq/shared';
 
 class SyncController {
@@ -155,6 +156,23 @@ class SyncController {
             await syncClient?.triggerSyncs(syncs);
 
             res.sendStatus(200);
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    public async getSyncProvider(req: Request, res: Response, next: NextFunction) {
+        try {
+            const environmentId = getEnvironmentId(res);
+            const { syncName } = req.query;
+
+            if (!syncName) {
+                res.status(400).send({ message: 'Missing sync name!' });
+            }
+
+            const providerConfigKey = await getProviderConfigBySyncAndAccount(syncName as string, environmentId as number);
+
+            res.send(providerConfigKey);
         } catch (e) {
             next(e);
         }
