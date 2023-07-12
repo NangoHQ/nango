@@ -14,7 +14,6 @@ import parser from '@babel/parser';
 import traverse, { NodePath } from '@babel/traverse';
 import type { ChildProcess } from 'node:child_process';
 import promptly from 'promptly';
-import { select } from '@inquirer/prompts';
 import type * as t from '@babel/types';
 
 import type {
@@ -24,8 +23,7 @@ import type {
     NangoConfig,
     Connection as NangoConnection,
     NangoIntegration,
-    NangoIntegrationData,
-    SyncConfigWithProvider
+    NangoIntegrationData
 } from '@nangohq/shared';
 import { loadSimplifiedConfig, cloudHost, stagingHost, SyncType, syncRunService, nangoConfigFile, checkForIntegrationFile } from '@nangohq/shared';
 import {
@@ -39,7 +37,7 @@ import {
     buildInterfaces,
     enrichHeaders,
     getNangoRootPath,
-    getSyncNamesWithProvider,
+    getProviderBySyncName,
     printDebug
 } from './utils.js';
 import type { DeployOptions, GlobalOptions } from './types.js';
@@ -54,8 +52,7 @@ const NangoSyncTypesFileLocation = 'dist/nango-sync.d.ts';
 
 interface RunArgs extends GlobalOptions {
     sync: string;
-    provider: string;
-    connection: string;
+    connectionId: string;
     lastSyncDate?: string;
     useServerLastSyncDate?: boolean;
 }
@@ -162,13 +159,18 @@ export const init = (debug = false) => {
         }
         fs.writeFileSync(
             envFileLocation,
-            `#NANGO_HOSTPORT=https://api-staging.nango.dev
-#NANGO_AUTO_UPGRADE=true # set to true to automatically upgrade to the latest version of nango
-#NANGO_NO_PROMPT_FOR_UPGRADE=true # set to true to not prompt for upgrade
-#NANGO_DEPLOY_AUTO_CONFIRM=true # set to true to automatically confirm deployment without prompting
-#NANGO_SECRET_KEY=xxxx-xxx-xxxx # required if deploying to cloud
-#NANGO_PORT=use-this-to-override-the-default-3003
-#NANGO_DB_PORT=use-this-to-override-the-default-5432`
+            `# Authenticates the CLI (get the keys in the dashboard's Projects Settings).
+#NANGO_SECRET_KEY_DEV=xxxx-xxx-xxxx
+#NANGO_SECRET_KEY_PROD=xxxx-xxx-xxxx
+
+# Nango's instance URL (OSS: change to http://localhost:3003 or your instance URL).
+NANGO_HOSTPORT=https://api.nango.dev # Default value
+
+# How to handle CLI upgrades ("prompt", "auto" or "ignore").
+NANGO_CLI_UPGRADE_MODE=prompt # Default value
+
+# Whether to prompt before deployments.
+NANGO_DEPLOY_AUTO_CONFIRM=false # Default value`
         );
     } else {
         if (debug) {
@@ -188,7 +190,7 @@ export const generate = async (debug = false) => {
     const { integrations } = configData;
     const { models } = configData;
 
-    const interfaceDefinitions = buildInterfaces(models);
+    const interfaceDefinitions = buildInterfaces(models, debug);
 
     fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/${TYPES_FILE_NAME}`, interfaceDefinitions.join('\n'));
 
@@ -204,6 +206,8 @@ export const generate = async (debug = false) => {
         printDebug(`NangoSync types written to ${TYPES_FILE_NAME}`);
     }
 
+    const allSyncNames: Record<string, boolean> = {};
+
     for (let i = 0; i < Object.keys(integrations).length; i++) {
         const providerConfigKey = Object.keys(integrations)[i] as string;
         if (debug) {
@@ -213,6 +217,14 @@ export const generate = async (debug = false) => {
         const syncNames = Object.keys(syncObject);
         for (let k = 0; k < syncNames.length; k++) {
             const syncName = syncNames[k] as string;
+
+            if (allSyncNames[syncName] === undefined) {
+                allSyncNames[syncName] = true;
+            } else {
+                console.log(chalk.red(`The sync name ${syncName} is duplicated in the ${nangoConfigFile} file. All sync names must be unique.`));
+                process.exit(1);
+            }
+
             if (debug) {
                 printDebug(`Generating ${syncName} integration`);
             }
@@ -285,29 +297,22 @@ const getConfig = async (debug = false) => {
     return config;
 };
 
-async function parseSecretKey(secretKey: string | undefined, environment: string, debug = false): Promise<void> {
-    if (process.env['NANGO_SECRET_KEY_PROD'] && !secretKey && environment === 'prod') {
+async function parseSecretKey(environment: string, debug = false): Promise<void> {
+    if (process.env['NANGO_SECRET_KEY_PROD'] && environment === 'prod') {
         if (debug) {
-            printDebug(`Global secretKey flag is not set and environment is set to prod, setting NANGO_SECRET_KEY to NANGO_SECRET_KEY_PROD.`);
+            printDebug(`Environment is set to prod, setting NANGO_SECRET_KEY to NANGO_SECRET_KEY_PROD.`);
         }
         process.env['NANGO_SECRET_KEY'] = process.env['NANGO_SECRET_KEY_PROD'];
     }
 
-    if (process.env['NANGO_SECRET_KEY_DEV'] && !secretKey && environment === 'dev') {
+    if (process.env['NANGO_SECRET_KEY_DEV'] && environment === 'dev') {
         if (debug) {
-            printDebug(`Global secretKey flag is not set, and environment is set to dev, setting NANGO_SECRET_KEY to NANGO_SECRET_KEY_DEV.`);
+            printDebug(`Environment is set to dev, setting NANGO_SECRET_KEY to NANGO_SECRET_KEY_DEV.`);
         }
         process.env['NANGO_SECRET_KEY'] = process.env['NANGO_SECRET_KEY_DEV'];
     }
 
-    if (secretKey) {
-        if (debug) {
-            printDebug(`Global secretKey flag is set, setting NANGO_SECRET_KEY.`);
-        }
-        process.env['NANGO_SECRET_KEY'] = secretKey;
-    }
-
-    if (process.env['NANGO_HOSTPORT'] !== `http://localhost:${port}` && !process.env['NANGO_SECRET_KEY']) {
+    if (!process.env['NANGO_SECRET_KEY']) {
         console.log(chalk.red(`NANGO_SECRET_KEY environment variable is not set. Please set it now`));
         try {
             const secretKey = await promptly.prompt('Secret Key: ');
@@ -324,21 +329,10 @@ async function parseSecretKey(secretKey: string | undefined, environment: string
 }
 
 export const deploy = async (options: DeployOptions, environment: string, debug = false) => {
-    const { env, version, sync: optionalSyncName, secretKey, host, autoConfirm } = options;
+    const { env, version, sync: optionalSyncName, autoConfirm } = options;
     await verifyNecessaryFiles(autoConfirm);
 
-    if (debug) {
-        printDebug(`Environment is set to ${environment}.`);
-    }
-
-    await parseSecretKey(secretKey, environment, debug);
-
-    if (host) {
-        if (debug) {
-            printDebug(`Global host flag is set, setting NANGO_HOSTPORT to ${host}.`);
-        }
-        process.env['NANGO_HOSTPORT'] = host;
-    }
+    await parseSecretKey(environment, debug);
 
     if (!process.env['NANGO_HOSTPORT']) {
         switch (env) {
@@ -356,6 +350,7 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
 
     if (debug) {
         printDebug(`NANGO_HOSTPORT is set to ${process.env['NANGO_HOSTPORT']}.`);
+        printDebug(`Environment is set to ${environment}`);
     }
 
     tsc(debug);
@@ -407,7 +402,7 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
         return;
     }
 
-    if (!process.env['NANGO_DEPLOY_AUTO_CONFIRM'] && !autoConfirm) {
+    if (process.env['NANGO_DEPLOY_AUTO_CONFIRM'] !== 'true' && !autoConfirm) {
         const confirmationUrl = process.env['NANGO_HOSTPORT'] + `/sync/deploy/confirmation`;
         try {
             const response = await axios.post(
@@ -512,24 +507,10 @@ async function deploySyncs(url: string, body: { syncs: IncomingSyncConfig[]; rec
         });
 }
 
-export const run = async (options: RunArgs, environment: string, debug = false) => {
-    let syncName, providerConfigKey, connectionId, suppliedLastSyncDate, host, secretKey;
+export const dryRun = async (options: RunArgs, environment: string, debug = false) => {
+    let syncName, connectionId, suppliedLastSyncDate;
 
-    if (debug) {
-        if (host) {
-            printDebug(`Host value is set to ${host}. This will override the value in the .env file`);
-        }
-    }
-
-    if (host) {
-        process.env['NANGO_HOSTPORT'] = host;
-    }
-
-    if (debug) {
-        printDebug(`Environment is set to ${environment}.`);
-    }
-
-    await parseSecretKey(secretKey, environment, debug);
+    await parseSecretKey(environment, debug);
 
     if (!process.env['NANGO_HOSTPORT']) {
         if (debug) {
@@ -543,49 +524,7 @@ export const run = async (options: RunArgs, environment: string, debug = false) 
     }
 
     if (Object.keys(options).length > 0) {
-        ({ sync: syncName, provider: providerConfigKey, connection: connectionId, lastSyncDate: suppliedLastSyncDate, host, secretKey } = options);
-    }
-
-    if (!syncName || !providerConfigKey || !connectionId) {
-        if (debug) {
-            printDebug(`No options provided, entering prompt mode`);
-        }
-
-        const syncs = await getSyncNamesWithProvider(debug);
-        if (syncs.length === 0) {
-            console.log(chalk.red('No syncs found'));
-            return;
-        }
-
-        const configuration = (await select({
-            message: 'Select a sync to run',
-            choices: syncs.map((sync: SyncConfigWithProvider) => {
-                return {
-                    name: `${sync.sync_name} (${sync.unique_key})`,
-                    value: [sync.sync_name, sync.unique_key]
-                };
-            })
-        })) as string[];
-
-        [syncName, providerConfigKey] = configuration;
-
-        if (debug) {
-            printDebug(`Sync name selected is ${syncName}`);
-            printDebug(`Provider config key selected is ${providerConfigKey}`);
-        }
-
-        connectionId = await promptly.prompt('Enter the connection id: ', {
-            validator: (value: string) => {
-                if (!value) {
-                    throw new Error('Connection id is required');
-                }
-                return value;
-            }
-        });
-
-        if (debug) {
-            printDebug(`Connection id selected is ${connectionId}`);
-        }
+        ({ sync: syncName, connectionId, lastSyncDate: suppliedLastSyncDate } = options);
     }
 
     if (!syncName) {
@@ -593,14 +532,20 @@ export const run = async (options: RunArgs, environment: string, debug = false) 
         return;
     }
 
-    if (!providerConfigKey) {
-        console.log(chalk.red('Provider config key is required'));
-        return;
-    }
-
     if (!connectionId) {
         console.log(chalk.red('Connection id is required'));
         return;
+    }
+
+    const providerConfigKey = await getProviderBySyncName({ syncName }, debug);
+
+    if (!providerConfigKey) {
+        console.log(chalk.red(`Provider config key not found, please check that the provider exists for this sync name: ${syncName}`));
+        return;
+    }
+
+    if (debug) {
+        printDebug(`Provider config key found to be ${providerConfigKey}`);
     }
 
     const nangoConnection = (await getConnection(

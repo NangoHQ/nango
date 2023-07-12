@@ -29,7 +29,7 @@ export const NANGO_INTEGRATIONS_NAME = 'nango-integrations';
 export const NANGO_INTEGRATIONS_LOCATION = process.env['NANGO_INTEGRATIONS_LOCATION'] || './';
 
 export const port = process.env['NANGO_PORT'] || '3003';
-let parsedHostport = process.env['NANGO_HOSTPORT'] || `http://localhost:${port}`;
+let parsedHostport = process.env['NANGO_HOSTPORT'] || cloudHost;
 
 if (parsedHostport.slice(-1) === '/') {
     parsedHostport = parsedHostport.slice(0, -1);
@@ -159,7 +159,7 @@ export async function upgradeAction(debug = false) {
         process.exit(1);
     }
 
-    if (process.env['NANGO_NO_PROMPT_FOR_UPGRADE'] === 'true') {
+    if (process.env['NANGO_CLI_UPGRADE_MODE'] === 'ignore') {
         return;
     }
     try {
@@ -179,7 +179,7 @@ export async function upgradeAction(debug = false) {
             console.log(chalk.red(`A new version of ${resolved.name} is available: ${latestVersion}`));
             const cwd = process.cwd();
 
-            const upgrade = process.env['NANGO_AUTO_UPGRADE'] === 'true' || (await promptly.confirm('Would you like to upgrade? (yes/no)'));
+            const upgrade = process.env['NANGO_CLI_UPGRADE_MODE'] === 'auto' || (await promptly.confirm('Would you like to upgrade? (yes/no)'));
 
             if (upgrade) {
                 console.log(chalk.yellow(`Upgrading ${resolved.name} to version ${latestVersion}...`));
@@ -248,6 +248,28 @@ export async function getSyncNamesWithProvider(debug = false) {
         });
 }
 
+export async function getProviderBySyncName(params: Record<string, string>, debug = false) {
+    const url = process.env['NANGO_HOSTPORT'] + `/sync/provider`;
+    const headers = enrichHeaders();
+    if (debug) {
+        printDebug(
+            `getProviderBySyncName endpoint to the URL: ${url} with headers: ${JSON.stringify(headers, null, 2)} with params: ${JSON.stringify(
+                params,
+                null,
+                2
+            )}}`
+        );
+    }
+    return await axios
+        .get(url, { params, headers, httpsAgent: httpsAgent() })
+        .then((res) => {
+            return res.data;
+        })
+        .catch((err) => {
+            console.log(`❌ ${err.response?.data.error || JSON.stringify(err)}`);
+        });
+}
+
 export function enrichHeaders(headers: Record<string, string | number | boolean> = {}) {
     headers['Authorization'] = 'Bearer ' + process.env['NANGO_SECRET_KEY'];
 
@@ -262,7 +284,7 @@ export function httpsAgent() {
     });
 }
 
-export function getFieldType(rawField: string | NangoModel): string {
+export function getFieldType(rawField: string | NangoModel, debug = false): string {
     if (typeof rawField === 'string') {
         let field = rawField;
         let hasNull = false;
@@ -271,6 +293,13 @@ export function getFieldType(rawField: string | NangoModel): string {
         if (field.indexOf('null') !== -1) {
             field = field.replace(/\s*\|\s*null\s*/g, '');
             hasNull = true;
+        }
+
+        if (field === 'undefined') {
+            if (debug) {
+                printDebug(`Field is defined undefined which isn't recommended.`);
+            }
+            return 'undefined';
         }
 
         if (field.indexOf('undefined') !== -1) {
@@ -310,14 +339,19 @@ export function getFieldType(rawField: string | NangoModel): string {
         }
         return tsType;
     } else {
-        const nestedFields = Object.keys(rawField)
-            .map((fieldName: string) => `  ${fieldName}: ${getFieldType(rawField[fieldName] as string | NangoModel)};`)
-            .join('\n');
-        return `{\n${nestedFields}\n}`;
+        try {
+            const nestedFields = Object.keys(rawField)
+                .map((fieldName: string) => `  ${fieldName}: ${getFieldType(rawField[fieldName] as string | NangoModel)};`)
+                .join('\n');
+            return `{\n${nestedFields}\n}`;
+        } catch (_) {
+            console.log(chalk.red(`Failed to parse field ${rawField} so just returning it back as a string`));
+            return String(rawField);
+        }
     }
 }
 
-export function buildInterfaces(models: NangoModel): (string | undefined)[] {
+export function buildInterfaces(models: NangoModel, debug = false): (string | undefined)[] {
     const interfaceDefinitions = Object.keys(models).map((modelName: string) => {
         const fields = models[modelName] as NangoModel;
         const singularModelName = modelName.charAt(modelName.length - 1) === 's' ? modelName.slice(0, -1) : modelName;
@@ -335,7 +369,7 @@ export function buildInterfaces(models: NangoModel): (string | undefined)[] {
             })
             .map((fieldName: string) => {
                 const fieldModel = fields[fieldName] as string | NangoModel;
-                const fieldType = getFieldType(fieldModel);
+                const fieldType = getFieldType(fieldModel, debug);
                 return `  ${fieldName}: ${fieldType};`;
             })
             .join('\n');

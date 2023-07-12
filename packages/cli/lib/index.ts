@@ -12,15 +12,13 @@ import path from 'path';
 import * as dotenv from 'dotenv';
 
 import { nangoConfigFile, loadSimplifiedConfig } from '@nangohq/shared';
-import { init, run, generate, tsc, tscWatch, configWatch, dockerRun, version, deploy } from './sync.js';
+import { init, dryRun, generate, tsc, tscWatch, configWatch, dockerRun, version, deploy } from './sync.js';
 import { upgradeAction, NANGO_INTEGRATIONS_LOCATION, verifyNecessaryFiles, printDebug } from './utils.js';
 import type { ENV, DeployOptions } from './types.js';
 
 class NangoCommand extends Command {
     override createCommand(name: string) {
         const cmd = new Command(name);
-        cmd.option('--secret-key [secretKey]', 'Set the secret key. Overrides the `NANGO_SECRET_KEY` value set in the .env file');
-        cmd.option('--host [host]', 'Set the host. Overrides the `NANGO_HOSTPORT` value set in the .env file');
         cmd.option('--auto-confirm', 'Auto confirm yes to all prompts.');
         cmd.option('--debug', 'Run cli in debug mode, outputting verbose logs.');
         cmd.hook('preAction', async function (this: Command, actionCommand: Command) {
@@ -44,22 +42,28 @@ const program = new NangoCommand();
 dotenv.config();
 
 program.name('nango').description(
-    `By default, the CLI assumes that you are using Nango Cloud so you need to set the NANGO_SECRET_KEY env variable or pass in the --secret-key flag with each command.
+    `By default, the CLI assumes that you are using Nango Cloud so you need to set the NANGO_SECRET_KEY env variable.
 
 For Self-Hosting: set the NANGO_HOSTPORT env variable or pass in the --host flag with each command.
 
-Global flags: --secret-key, --host, --auto-confirm, --debug (output verbose logs for debugging purposes)
+Global flags: --auto-confirm, --debug (output verbose logs for debugging purposes)
 
 Available environment variables available:
 
-NANGO_HOSTPORT=https://api.nango.dev | http://localhost:3003 | your-self-hosted-address
-NANGO_AUTO_UPGRADE=true // upgrade the CLI automatically
-NANGO_NO_PROMPT_FOR_UPGRADE=false // don't prompt for upgrades
-NANGO_DEPLOY_AUTO_CONFIRM=false // deploy without any prompts
-NANGO_SECRET_KEY=xxxx-xxx-xxxx // Required for Nango Cloud to authenticate
-NANGO_INTEGRATIONS_LOCATION=use-this-to-override-where-the-nango-integrations-directory-goes // set a custom location for the nango-integrations directory
-NANGO_PORT=use-this-to-override-the-default-3003 // set a custom port for the Nango Server
-NANGO_DB_PORT=use-this-to-override-the-default-5432 // set a custom port for the Nango database
+# Recommendation: in a ".env" file in ./nango-integrations.
+
+# Authenticates the CLI (get the keys in the dashboard's Projects Settings).
+NANGO_SECRET_KEY_DEV=xxxx-xxx-xxxx
+NANGO_SECRET_KEY_PROD=xxxx-xxx-xxxx
+
+# Nango's instance URL (OSS: change to http://localhost:3003 or your instance URL).
+NANGO_HOSTPORT=https://api.nango.dev # Default value
+
+# How to handle CLI upgrades ("prompt", "auto" or "ignore").
+NANGO_CLI_UPGRADE_MODE=prompt # Default value
+
+# Whether to prompt before deployments.
+NANGO_DEPLOY_AUTO_CONFIRM=false # Default value
 `
 );
 
@@ -91,17 +95,15 @@ program
     });
 
 program
-    .command('run')
-    .description('Run the sync process to help with debugging. Assumes cloud environment.')
-    .arguments('environment')
-    .option('-s, --sync <syncName>', 'The name of the sync (e.g. account-sync).')
-    .option('-p, --provider <provider_config_key>', 'The unique key of the provider configuration (chosen by you upon creating this provider configuration).')
-    .option('-c, --connection <connection_id>', 'The ID of the Connection.')
+    .command('dryrun')
+    .description('Dry run the sync process to help with debugging against an existing connection in cloud.')
+    .arguments('sync connection_id')
+    .option('-e [environment]', 'The environment to dry run the sync in, defaults to dev.', 'dev')
     .option('-l, --lastSyncDate [lastSyncDate]', 'Optional: last sync date to retrieve records greater than this date')
-    .action(async function (this: Command, environment: string) {
-        const { autoConfirm, debug } = this.opts();
+    .action(async function (this: Command, sync: string, connectionId: string) {
+        const { autoConfirm, debug, e: environment } = this.opts();
         await verifyNecessaryFiles(autoConfirm, debug);
-        run(this.opts(), environment, debug);
+        dryRun({ ...this.opts(), sync, connectionId }, environment, debug);
     });
 
 program
@@ -123,18 +125,14 @@ program
     .command('deploy')
     .description('Deploy a Nango integration')
     .arguments('environment')
-    .option('--staging', 'Deploy to the staging instance')
-    .option('--local', 'Deploy to the local instance')
     .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integration with. Can be used for rollbacks.')
     .option('-s, --sync [syncName]', 'Optional deploy only this sync name.')
     .option('--no-compile-interfaces', `Don't compile the ${nangoConfigFile}`, true)
     .action(async function (this: Command, environment: string) {
         const options = this.opts();
         (async (options: DeployOptions) => {
-            const { staging, debug } = options;
-            let env = staging ? 'staging' : 'production';
-            env = options.local ? 'local' : env;
-            await deploy({ ...options, env: env as ENV }, environment, debug);
+            const { debug } = options;
+            await deploy({ ...options, env: 'production' as ENV }, environment, debug);
         })(options as DeployOptions);
     });
 
@@ -151,6 +149,20 @@ program
         const options = this.opts();
         (async (options: DeployOptions) => {
             await deploy({ ...options, env: 'local' }, environment, options.debug);
+        })(options as DeployOptions);
+    });
+
+program
+    .command('deploy:staging', { hidden: true })
+    .alias('ds')
+    .description('Deploy a Nango integration to local')
+    .arguments('environment')
+    .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integration with. Can be used for rollbacks.')
+    .option('--no-compile-interfaces', `Don't compile the ${nangoConfigFile}`, true)
+    .action(async function (this: Command, environment: string) {
+        const options = this.opts();
+        (async (options: DeployOptions) => {
+            await deploy({ ...options, env: 'staging' }, environment, options.debug);
         })(options as DeployOptions);
     });
 

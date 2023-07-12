@@ -378,6 +378,25 @@ export async function getSyncConfigByJobId(job_id: number): Promise<SyncConfig |
     return result;
 }
 
+export async function getProviderConfigBySyncAndAccount(sync_name: string, environment_id: number): Promise<string | null> {
+    const providerConfigKey = await schema()
+        .from<SyncConfig>(TABLE)
+        .select('_nango_configs.unique_key')
+        .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')
+        .where({
+            active: true,
+            sync_name,
+            '_nango_configs.environment_id': environment_id
+        })
+        .first();
+
+    if (providerConfigKey) {
+        return providerConfigKey.unique_key;
+    }
+
+    return null;
+}
+
 function increment(input: number | string): number | string {
     if (typeof input === 'string' && input.includes('.')) {
         const parts = input.split('.');

@@ -106,6 +106,9 @@ export function formatDateToUSFormat(dateString: string): string {
 
     const formattedDate = date.toLocaleString('en-US', options);
 
+    if (formattedDate === 'Invalid Date') {
+        return '-';
+    }
     return formattedDate;
 }
 
