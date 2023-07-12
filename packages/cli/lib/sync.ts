@@ -312,7 +312,7 @@ async function parseSecretKey(environment: string, debug = false): Promise<void>
         process.env['NANGO_SECRET_KEY'] = process.env['NANGO_SECRET_KEY_DEV'];
     }
 
-    if (process.env['NANGO_HOSTPORT'] !== `http://localhost:${port}` && !process.env['NANGO_SECRET_KEY']) {
+    if (!process.env['NANGO_SECRET_KEY']) {
         console.log(chalk.red(`NANGO_SECRET_KEY environment variable is not set. Please set it now`));
         try {
             const secretKey = await promptly.prompt('Secret Key: ');
@@ -350,6 +350,7 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
 
     if (debug) {
         printDebug(`NANGO_HOSTPORT is set to ${process.env['NANGO_HOSTPORT']}.`);
+        printDebug(`Environment is set to ${environment}`);
     }
 
     tsc(debug);
@@ -401,7 +402,7 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
         return;
     }
 
-    if (!process.env['NANGO_DEPLOY_AUTO_CONFIRM'] && !autoConfirm) {
+    if (process.env['NANGO_DEPLOY_AUTO_CONFIRM'] !== 'true' && !autoConfirm) {
         const confirmationUrl = process.env['NANGO_HOSTPORT'] + `/sync/deploy/confirmation`;
         try {
             const response = await axios.post(

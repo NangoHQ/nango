@@ -502,7 +502,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                     </Tooltip>
                                                 ): (
                                                     <>
-                                                        {sync.latest_sync?.activity_log_id !== null ? (
+                                                        {sync.latest_sync?.activity_log_id? (
                                                             <Link
                                                                 to={`/activity?activity_log_id=${sync.latest_sync?.activity_log_id}`}
                                                                 className="block w-36 ml-1 text-gray-500 text-sm"
