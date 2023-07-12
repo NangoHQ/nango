@@ -13,7 +13,7 @@ type PackageJson = {
 
 export async function getUserAccountAndEnvironmentFromSession(req: Request): Promise<{ user: User; account: Account; environment: Environment }> {
     const sessionUser = req.user;
-    const currentEnvironment = req.cookies['env'] || 'prod';
+    const currentEnvironment = req.cookies['env'] || 'dev';
 
     if (sessionUser == null) {
         throw new NangoError('user_not_found');

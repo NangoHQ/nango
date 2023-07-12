@@ -39,43 +39,34 @@ export class AccessMiddleware {
     }
 
     async publicKeyAuth(req: Request, res: Response, next: NextFunction) {
-        if (isCloud()) {
-            const publicKey = req.query['public_key'] as string;
+        const publicKey = req.query['public_key'] as string;
 
-            if (!publicKey) {
-                return errorManager.errRes(res, 'missing_public_key');
-            }
-
-            if (!/^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i.test(publicKey)) {
-                return errorManager.errRes(res, 'invalid_public_key');
-            }
-
-            let accountId: number | null | undefined;
-            let environmentId: number | null | undefined;
-            try {
-                const result = await environmentService.getAccountIdAndEnvironmentIdByPublicKey(publicKey);
-                accountId = result?.accountId as number;
-                environmentId = result?.environmentId as number;
-            } catch (e) {
-                errorManager.report(e);
-                return errorManager.errRes(res, 'unkown_account');
-            }
-
-            if (accountId == null) {
-                return errorManager.errRes(res, 'unkown_account');
-            }
-
-            setAccount(accountId, res);
-            setEnvironmentId(environmentId, res);
-            next();
-        } else {
-            setAccount(0, res);
-
-            const accountEnvironment = req.cookies['env'] || 'prod';
-            const environmentId = accountEnvironment === 'prod' ? 1 : 2;
-            setEnvironmentId(environmentId, res);
-            next();
+        if (!publicKey) {
+            return errorManager.errRes(res, 'missing_public_key');
         }
+
+        if (!/^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i.test(publicKey)) {
+            return errorManager.errRes(res, 'invalid_public_key');
+        }
+
+        let accountId: number | null | undefined;
+        let environmentId: number | null | undefined;
+        try {
+            const result = await environmentService.getAccountIdAndEnvironmentIdByPublicKey(publicKey);
+            accountId = result?.accountId as number;
+            environmentId = result?.environmentId as number;
+        } catch (e) {
+            errorManager.report(e);
+            return errorManager.errRes(res, 'unkown_account');
+        }
+
+        if (accountId == null) {
+            return errorManager.errRes(res, 'unkown_account');
+        }
+
+        setAccount(accountId, res);
+        setEnvironmentId(environmentId, res);
+        next();
     }
 
     async sessionAuth(req: Request, res: Response, next: NextFunction) {

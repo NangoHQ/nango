@@ -88,21 +88,24 @@ class ConfigService {
         return db.knex.withSchema(db.schema()).from<ProviderConfig>(`_nango_configs`).insert(encryptionManager.encryptProviderConfig(config), ['id']);
     }
 
+    /**
+     * Create Default Provider Config
+     * @desc create a default Github config only for the dev environment
+     */
     async createDefaultProviderConfig(accountId: number) {
-        const environments = await db.knex.withSchema(db.schema()).select('*').from(`_nango_environments`).where({ account_id: accountId });
+        const environments = await db.knex.withSchema(db.schema()).select('*').from(`_nango_environments`).where({ account_id: accountId, name: 'dev' });
+        const devEnvironment = environments[0];
 
-        for (const environment of environments) {
-            const config: ProviderConfig = {
-                environment_id: environment.id,
-                unique_key: 'demo-github-integration',
-                provider: 'github',
-                oauth_client_id: process.env['DEFAULT_GITHUB_CLIENT_ID'] || '',
-                oauth_client_secret: process.env['DEFAULT_GITHUB_CLIENT_SECRET'] || '',
-                oauth_scopes: 'public_repo'
-            };
+        const config: ProviderConfig = {
+            environment_id: devEnvironment.id,
+            unique_key: 'demo-github-integration',
+            provider: 'github',
+            oauth_client_id: process.env['DEFAULT_GITHUB_CLIENT_ID'] || '',
+            oauth_client_secret: process.env['DEFAULT_GITHUB_CLIENT_SECRET'] || '',
+            oauth_scopes: 'public_repo'
+        };
 
-            await this.createProviderConfig(config);
-        }
+        await this.createProviderConfig(config);
     }
 
     async deleteProviderConfig(providerConfigKey: string, environment_id: number): Promise<number> {
