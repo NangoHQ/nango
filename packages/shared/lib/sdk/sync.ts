@@ -70,9 +70,9 @@ enum AuthModes {
     OAuth2 = 'OAUTH2'
 }
 
-interface CredentialsCommon {
+interface CredentialsCommon<T = Record<string, any>> {
     type: AuthModes;
-    raw: Record<string, string>; // Raw response for credentials as received by the OAuth server or set by the user
+    raw: T;
 }
 
 interface OAuth2Credentials extends CredentialsCommon {
