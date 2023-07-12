@@ -206,6 +206,8 @@ export const generate = async (debug = false) => {
         printDebug(`NangoSync types written to ${TYPES_FILE_NAME}`);
     }
 
+    const allSyncNames: Record<string, boolean> = {};
+
     for (let i = 0; i < Object.keys(integrations).length; i++) {
         const providerConfigKey = Object.keys(integrations)[i] as string;
         if (debug) {
@@ -215,6 +217,14 @@ export const generate = async (debug = false) => {
         const syncNames = Object.keys(syncObject);
         for (let k = 0; k < syncNames.length; k++) {
             const syncName = syncNames[k] as string;
+
+            if (allSyncNames[syncName] !== undefined) {
+                allSyncNames[syncName] = true;
+            } else {
+                console.log(chalk.red(`The sync name ${syncName} is duplicated in the ${nangoConfigFile} file. All sync names must be unique.`));
+                process.exit(1);
+            }
+
             if (debug) {
                 printDebug(`Generating ${syncName} integration`);
             }
