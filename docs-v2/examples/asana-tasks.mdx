@@ -42,8 +42,7 @@ models:
 ## `asana-tasks.ts` sync script
 
 ```ts
-import { NangoSync } from 'nango';
-import { AsanaTask } from './models';
+import { NangoSync, AsanaTask } from './models';
 
 export default async function fetchData(nango: NangoSync): Promise<{AsanaTask: AsanaTask[]}> {
 
@@ -114,6 +113,6 @@ async function paginate(nango: NangoSync, endpoint: string, queryParams?: Record
 }
 ```
 
-## Need help with your sync?
+## Need help with your _sync_?
 
 Please reach out on the [Slack community](https://nango.dev/slack), we are very active there and happy to help!

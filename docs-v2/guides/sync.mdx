@@ -21,15 +21,15 @@ npm install nango -g
 
 In the folder where you want your integration folder (e.g. root of your project), run:
 ```bash
-nango init # Creates `/nango-integrations` with initial config
+nango init # Creates `./nango-integrations` with initial config
 ```
 
 <Tip>
 **Understanding the `nango-integrations` folder**
 
-Syncs have two parts:
-- A global config file called `nango.yaml` with Sync names, frequency, models, etc.
-- A small typescript file per Sync, which defines the logic of the Sync
+_Syncs_ have two parts:
+- A global config file called `nango.yaml` with _sync_ names, frequency, models, etc.
+- A small typescript file per _sync_, which defines the logic of the _sync_
 
 They all live in a folder called `nango-integrations` in your own code repository.
 
@@ -47,7 +47,7 @@ They all live in a folder called `nango-integrations` in your own code repositor
 Our CLI helps you manage this directory, create scaffolds, validates the configuration, etc.
 </Tip>
 
-Next, we need to authenticate the CLI. Add the following env vars (e.g. in an `.env` file in `/nango-integrations`):
+Next, we need to authenticate the CLI. Add the following env vars (e.g. in an `.env` file in `./nango-integrations`):
 ```bash
 NANGO_SECRET_KEY_PROD='<prod-secret-key>'
 NANGO_SECRET_KEY_DEV='<dev-secret-key>'
@@ -55,18 +55,18 @@ NANGO_SECRET_KEY_DEV='<dev-secret-key>'
 
 Get your `prod` and `dev` secret keys from the [Project Settings tab](https://app.nango.dev/project-settings) (toggle between the `prod` and `dev` environment in the left nav bar).
 
-# Step 2: Create a Sync
+# Step 2: Create a _sync_
 
-### Configure your Sync in `nango.yaml`
+### Configure your _sync_ in `nango.yaml`
 
 Open the `nango.yaml` file inside the `nango-integrations` folder and inspect its field:
 ```yaml nango.yaml
 integrations:
-	asana-dev: # Integration name (must match an Integration name in the Integrations tab of your Nango dashboard).
-		asana-tasks: # Arbitrary (unique) Sync name
+	asana-dev: # Integration name (must match an integration name in the Integrations tab of your Nango dashboard).
+		asana-tasks: # Arbitrary (unique) sync name
 			runs: every 30min # Sync frequency
 			return:
-				- AsanaTask # Data model (defined below) as returned by your Sync script
+				- AsanaTask # Data model (defined below) as returned by your sync script
 
 models: 
 	AsanaTask: # Data model referenced above
@@ -83,45 +83,49 @@ models:
 </Tip>
 
 Nango uses the models you define in `nango.yaml` to provide type safety when:
-- you write Sync scripts
-- Sync scripts run
+- you write _sync_ scripts
+- _sync_ scripts run
 - you fetch the synced data
-
-Syncs and data models can be combined at will:
-- A Sync can return multiple data models: e.g. `AsanaTasks` and `AsanaComments`
-- Multiple Syncs can return the same data model: e.g. Asana and Linear can both return a `Task`
+_Syncs_ and data models can be combined at will:
+- A _sync_ can return multiple data models: e.g. `AsanaTasks` and `AsanaComments`
+- Multiple _syncs_ can return the same data model: e.g. Asana and Linear can both return a `Task`
 
 This lets you easily **create your own unified API** with standard data models tailored to your needs.
 
-### Write your Sync
+### Write your _sync_
 
-Modify the configuration of `nango.yaml` as you need and run: 
+Modify the configuration of `nango.yaml` as you need and run (in `./nango-integrations`): 
 ```
 nango generate
 ```
 
-This will generate the scaffold for your Sync script(s). Open any Sync script (named `[sync-name].ts`) which contains the following template (for the Asana example above): 
+This will generate the scaffold for your _sync_ script(s). Open any _sync_ script (named `[sync-name].ts`) which contains the following template (for the Asana example above): 
 
 ```typescript asana-tasks.ts
-import { NangoSync } from 'nango';
-import { AsanaTask } from './models';
+import { NangoSync, AsanaTask } from './models';
 
 export default async function fetchData(nango: NangoSync): Promise<{AsanaTask: AsanaTask[]}> {
 	// Integration code goes here.
 }
 ```
-
-Sync scripts mostly do 2 things. They: 
+_Sync_ scripts mostly do 2 things. They: 
 - incrementally fetch data from external APIs (with HTTP requests)
 - transform the external data into the models that you defined in `nango.yaml`
 
 This logic is defined by you so that you can build arbitrarily custom and complex integrations.
 
 <Tip>
-Your Sync scripts are deployed to Nango and automatically run on a schedule. Nango offers you multiple environments (dev & prod) to test & deploy your Syncs.
+Your _sync_ scripts are deployed to Nango and automatically run on a schedule. Nango offers you multiple environments (dev & prod) to test & deploy your _syncs_.
 
-Because your scripts run in Nango's cloud, you cannot import additional modules (external or relative) in the Sync scripts at the moment (we plan to resolve this limitation in the near future).
+Because your scripts run in Nango's cloud, you cannot import additional modules (external or relative) in the _sync_ scripts at the moment (we plan to resolve this limitation in the near future).
 </Tip>
+
+Within `./nango-integrations`, run:
+```bash
+nango dev # Continuously watches integration files for changes.
+```
+
+The rest of the files (`models.ts`, `dist/*`) are automatically generated thanks to this `dev` command.
 
 Fill in the `fetchData` method with your integration code:
 
@@ -197,8 +201,7 @@ async function paginate(nango: NangoSync, endpoint: string, queryParams?: Record
     return results;
 }
 ```
-
-Sync scripts return the created/update data to Nango in two different ways: 
+_Sync_ scripts return the created/update data to Nango in two different ways: 
 - all at once, at the end of the script, with `return { ModelName: data };` (for small datasets)
 - in batches, using `await nango.batchSend(data, 'ModelName');` (useful to break down large datasets)
 
@@ -212,7 +215,7 @@ You do not need to specify the `providerConfigKey` and `connectionId` fields in 
 </Tip>
 
 <Tip>
-The 1st run of the Sync is called "initial", meaning it fetches all the historical data (unless you have defined a backfill limit in the Sync script). On the 1st run, `nango.lastSyncDate` will be `null`.
+The 1st run of the _sync_ is called "initial", meaning it fetches all the historical data (unless you have defined a backfill limit in the _sync_ script). On the 1st run, `nango.lastSyncDate` will be `null`.
 
 Subsequent runs are called "incremental". They should only fetch the created & updated data. It's up to you to use the `nango.lastSyncDate` value to fetch the incremental changes.
 </Tip>
@@ -221,30 +224,30 @@ Subsequent runs are called "incremental". They should only fetch the created & u
 Use `await nango.log()` to log data from within integration scripts.
 </Tip>
 
-### Dry run your Sync
+### Dry run your _sync_
 
-Easily test your Sync with the CLI by running:
+Easily test your _sync_ with the CLI by running:
 
 ```bash
 nango dryrun asana-tasks <connection-id>
 ```
 
-This will only execute a dry run of the Sync. Synced objects will not be persisted in Nango's storage. It allows you to quickly check if your Sync script is correct.
+This will only execute a dry run of the _sync_. Synced objects will not be persisted in Nango's storage. It allows you to quickly check if your _sync_ script is correct.
 
 <Tip>
-By default, the Connection ID is fetched from your `Dev` environment. You can fetch Connections from your `Prod` environment with the `-e prod` flag.
+By default, the Connection ID is fetched from your `Dev` environment. You can fetch _connections_ from your `Prod` environment with the `-e prod` flag.
 
-To test incremental Sync runs, add the `-l` flag (which will populate the `nango.lastSyncDate` value in your script): 
+To test incremental _sync_ runs, add the `-l` flag (which will populate the `nango.lastSyncDate` value in your script): 
 ```bash
 nango dryrun asana-tasks <connection-id> -l "2023-06-20T10:00:00.000Z"
 ```
 </Tip>
 
-# Step 3: Deploy a Sync
+# Step 3: Deploy a _sync_
 
 **1. Deploy to the `Dev` environment**
     
-    When you Sync script is ready, deploy it to your `Dev` env:
+    When you _sync_ script is ready, deploy it to your `Dev` env:
 
     ```bash
     nango deploy dev
@@ -253,9 +256,9 @@ nango dryrun asana-tasks <connection-id> -l "2023-06-20T10:00:00.000Z"
     Inspect the [Sync tab](https://app.nango.dev/syncs) to verify the deployment succeeded.
 
     <Tip>
-        Syncs will automatically start for previous Connections and when a new Connection gets added (OAuth flow completes) for the given Integration. You can see all Syncs for a Connection in the UI:
+        _Syncs_ will automatically start for previous _connections_ and when a new _connection_ gets added (OAuth flow completes) for the given _integration_. You can see all _syncs_ for a _connection_ in the UI:
 
-        ![View Syncs in Dashboard](/images/connection-syncs.png)
+        ![View syncs in Dashboard](/images/connection-syncs.png)
     </Tip>
 
 **2. Deploy to the `Prod` environment**
@@ -268,7 +271,7 @@ nango dryrun asana-tasks <connection-id> -l "2023-06-20T10:00:00.000Z"
 
 # Step 4: Retrieve the synced data
 
-Fetch the always-fresh data from the Sync in your backend with the [backend SDK](/sdks) or the [REST API](/api-reference):
+Fetch the always-fresh data from the _sync_ in your backend with the [backend SDK](/sdks) or the [REST API](/api-reference):
 
 <Tabs>
 
@@ -300,7 +303,7 @@ curl --request GET \
 
 </Tabs>
 
-Nango can also send you [webhooks](/guides/webhooks) whenever new data is available from a Sync.
+Nango can also send you [webhooks](/guides/webhooks) whenever new data is available from a _sync_.
 
 That's it!
 
@@ -308,10 +311,10 @@ That's it!
 
 ### Field Mapping
 
-You can store field mapping data that is specific to a Connection. The object must be JSON serializable, but there are no other constraints. 
+You can store field mapping data that is specific to a _connection_. The object must be JSON serializable, but there are no other constraints. 
 
 For this, call:
     - `nango.setFieldMapping(...)` in the node SDK to store the field mapping
-    - `nango.getFieldMapping()` in the Sync script to retrieve the field mapping of the current Connection
+    - `nango.getFieldMapping()` in the _sync_ script to retrieve the field mapping of the current _connection_
 
 In the future we want to help you more with field mappings (metadata requests to get available objects & fields, UI components etc.). 

@@ -13,12 +13,12 @@ npm install nango -g
 
 In the folder where you want your integration folder (e.g. root of your project), run:
 ```bash
-nango init # Creates `/nango-integrations` with initial config
+nango init # Creates `./nango-integrations` with initial config
 ```
 
 ### CLI Authentication
 
-Add the following env vars. We recommend that you have a `.env` file in `/nango-integrations`:
+Add the following env vars. We recommend that you have a `.env` file in `./nango-integrations`:
 ```bash
 NANGO_SECRET_KEY_PROD='<prod-secret-key>'
 NANGO_SECRET_KEY_DEV='<dev-secret-key>'
@@ -53,19 +53,19 @@ Global command flags:
 
 Environment variables:
 ```bash
-# Recommendation: in a ".env" file in /nango-integrations.
+# Recommendation: in a ".env" file in ./nango-integrations.
 
-# Required to authenticate
+# Authenticates the CLI (get the keys in the dashboard's Projects Settings).
 NANGO_SECRET_KEY_DEV=xxxx-xxx-xxxx
 NANGO_SECRET_KEY_PROD=xxxx-xxx-xxxx
 
 # Nango's instance URL (OSS: change to http://localhost:3003 or your instance URL).
-NANGO_HOSTPORT=https://api.nango.dev
+NANGO_HOSTPORT=https://api.nango.dev # Default value
 
-# Whether to prompt for CLI upgrades.
-NANGO_NO_PROMPT_FOR_UPGRADE=false
+# How to handle CLI upgrades ("prompt", "auto" or "ignore").
+NANGO_CLI_UPGRADE_MODE=prompt # Default value
 
 # Whether to prompt before deployments.
-NANGO_DEPLOY_AUTO_CONFIRM=false
+NANGO_DEPLOY_AUTO_CONFIRM=false # Default value
 ```
 
