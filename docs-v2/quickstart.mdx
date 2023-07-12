@@ -42,10 +42,10 @@ npm install nango -g
 
 In the folder where you want your integration folder (e.g. root of your project), run:
 ```bash
-nango init # Creates `/nango-integrations` with initial config
+nango init # Creates `./nango-integrations` with initial config
 ```
 
-Next, we need to authenticate the CLI. Add the following env vars (e.g. in an `.env` file in `/nango-integrations`):
+Next, we need to authenticate the CLI. Add the following env vars (e.g. in an `.env` file in `./nango-integrations`):
 ```bash
 NANGO_SECRET_KEY_PROD='<prod-secret-key>'
 NANGO_SECRET_KEY_DEV='<dev-secret-key>'
@@ -53,30 +53,30 @@ NANGO_SECRET_KEY_DEV='<dev-secret-key>'
 
 Get your `prod` and `dev` secret keys from the [Project Settings tab](https://app.nango.dev/project-settings) (toggle between the `prod` and `dev` environment in the left nav bar).
 
-### Configure a Sync
+### Configure a _sync_
 
-`/nango-integrations` initially contains two files:
+`./nango-integrations` initially contains two files:
 - `nango.yaml`: the **configuration** to sync Github issues
 - `github-issue-example.ts`: the **code** to sync Github issues
 
-Within `/nango-integrations`, run:
+Within `./nango-integrations`, run:
 ```bash
-nango dev # Continuously watches your integration files for changes.
+nango dev # Continuously watches integration files for changes.
 ```
 
 The rest of the files (`models.ts`, `dist/*`) are automatically generated thanks to this `dev` command.
 
-### Dry run the Sync
+### Dry run the _sync_
 
-Open a new terminal tab, go to `/nango-integrations`. Dry run your sync by running:
+Open a new terminal tab, go to `./nango-integrations`. Dry run your _sync_ by running:
 
 ```bash
 nango dryrun github-issue-example test-connection-id
 ```
 
-This will use the Connection you created in the [Authorize an API section](#authorize-an-api-github) to run your Sync script. Synced objects will not be persisted in Nango's storage. It allows you to quickly check if your Sync script is correct.
+This will use the _connection_ you created in the [Authorize an API section](#authorize-an-api-github) to run your _sync_ script. Synced objects will not be persisted in Nango's storage. It allows you to quickly check if your _sync_ script is correct.
 
-### Deploy the Sync
+### Deploy the _sync_
 
 Finally, deploy your new configuration:
 
@@ -84,11 +84,11 @@ Finally, deploy your new configuration:
 nango deploy dev # Deploys to your cloud "dev" environment.
 ```
 
-Your Sync will run on Nango's cloud infrastructure, syncing Github issues for all the Github Connections, continuously 🎉 You can manage your Syncs from the [Syncs tab](https://app.nango.dev/syncs).
+Your _sync_ will run on Nango's cloud infrastructure, syncing Github issues for all the Github _connections_, continuously 🎉 You can manage your _syncs_ from the [Syncs tab](https://app.nango.dev/syncs).
 
 ### Retrieve the synced data
 
-Fetch the always-fresh data from the Sync in your backend with the [backend SDK](/sdks) or the [REST API](/api-reference):
+Fetch the always-fresh data from the _sync_ in your backend with the [backend SDK](/sdks) or the [REST API](/api-reference):
 
 <Tabs>
 
