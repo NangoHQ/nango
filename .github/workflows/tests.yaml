@@ -21,6 +21,4 @@ jobs:
                   node-version: ${{ matrix.node-version }}
             - name: Install dependencies
               run: npm ci
-            - name: Install node sdk
-              run: npm install @nangohq/node --no-audit
             - run: npm run test
