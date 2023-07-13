@@ -42,11 +42,11 @@ const program = new NangoCommand();
 dotenv.config();
 
 program.name('nango').description(
-    `By default, the CLI assumes that you are using Nango Cloud so you need to set the NANGO_SECRET_KEY env variable.
+    `The CLI requires that you set the NANGO_SECRET_KEY_DEV and NANGO_SECRET_KEY_PROD env variables.
 
-For Self-Hosting: set the NANGO_HOSTPORT env variable or pass in the --host flag with each command.
+In addition for self-Hosting: set the NANGO_HOSTPORT env variable.
 
-Global flags: --auto-confirm, --debug (output verbose logs for debugging purposes)
+Global flag: --auto-confirm - automatically confirm yes to all prompts.
 
 Available environment variables available:
 
