@@ -11,7 +11,6 @@ import {
     updateJobActivityLogId,
     NangoConnection,
     environmentService,
-    createActivityLogMessage,
     createActivityLogAndLogMessage
 } from '@nangohq/shared';
 import type { ContinuousSyncArgs, InitialSyncArgs } from './models/Worker';
@@ -21,15 +20,6 @@ export async function routeSync(args: InitialSyncArgs): Promise<boolean | object
     let environmentId = nangoConnection?.environment_id;
     if (!nangoConnection?.environment_id) {
         environmentId = (await environmentService.getEnvironmentIdForAccountAssumingProd(nangoConnection.account_id as number)) as number;
-
-        if (debug) {
-            await createActivityLogMessage({
-                level: 'info',
-                activity_log_id: activityLogId,
-                timestamp: Date.now(),
-                content: `The environment id was not provided for the initial sync: ${syncName}. The environment id was obtained from the account id: ${nangoConnection.account_id} and is: ${environmentId}`
-            });
-        }
     }
     const syncConfig: ProviderConfig = (await configService.getProviderConfig(nangoConnection?.provider_config_key as string, environmentId)) as ProviderConfig;
 
@@ -39,20 +29,14 @@ export async function routeSync(args: InitialSyncArgs): Promise<boolean | object
 export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<boolean | object> {
     const { syncId, activityLogId, syncName, nangoConnection, debug } = args;
     let environmentId = nangoConnection?.environment_id;
+    let syncJobId;
     if (!nangoConnection?.environment_id) {
         environmentId = (await environmentService.getEnvironmentIdForAccountAssumingProd(nangoConnection.account_id as number)) as number;
-
-        if (debug) {
-            await createActivityLogMessage({
-                level: 'info',
-                activity_log_id: activityLogId,
-                timestamp: Date.now(),
-                content: `The environment id was not provided for the continuous sync: ${syncName}. The environment id was obtained from the account id: ${nangoConnection.account_id} and is: ${environmentId}`
-            });
-        }
+        // TODO recreate the job id to be in the format created by temporal: nango-syncs.accounts-syncs-schedule-29768402-c6a8-462b-8334-37adf2b76be4-workflow-2023-05-30T08:45:00Z
+        syncJobId = await createSyncJob(syncId as string, SyncType.INCREMENTAL, SyncStatus.RUNNING, '', null);
+    } else {
+        syncJobId = await createSyncJob(syncId as string, SyncType.INCREMENTAL, SyncStatus.RUNNING, '', activityLogId);
     }
-    // TODO recreate the job id to be in the format created by temporal: nango-syncs.accounts-syncs-schedule-29768402-c6a8-462b-8334-37adf2b76be4-workflow-2023-05-30T08:45:00Z
-    const syncJobId = await createSyncJob(syncId as string, SyncType.INCREMENTAL, SyncStatus.RUNNING, '', activityLogId);
 
     try {
         const syncConfig: ProviderConfig = (await configService.getProviderConfig(
@@ -67,7 +51,7 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
             syncName,
             SyncType.INCREMENTAL,
             { ...nangoConnection, environment_id: environmentId },
-            activityLogId,
+            activityLogId ?? 0,
             debug
         );
     } catch (err: any) {
@@ -124,13 +108,15 @@ export async function syncProvider(
             connection_id: nangoConnection?.connection_id as string,
             provider_config_key: nangoConnection?.provider_config_key as string,
             provider: syncConfig.provider,
-            session_id: syncJobId.toString(),
+            session_id: syncJobId ? syncJobId?.toString() : '',
             environment_id: nangoConnection?.environment_id as number,
             operation_name: syncName
         };
         activityLogId = (await createActivityLog(log)) as number;
 
-        await updateJobActivityLogId(syncJobId, activityLogId);
+        if (syncJobId && activityLogId) {
+            await updateJobActivityLogId(syncJobId, activityLogId);
+        }
     }
 
     const syncRun = new syncRunService({

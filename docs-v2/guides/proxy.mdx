@@ -19,14 +19,13 @@ The **Proxy** makes it faster for you to query external APIs by handling:
 It is especially useful for:
 * One-off requests to fetch e.g. metadata from the API
 * Writing data back to the API on demand
-* Performing API requests in _sync_ scripts
 
 If you want to continuously sync data from the external API, check out the [Sync Data guide](/guides/sync).
 
 ## Using the Proxy
 
 <Tip>
-To use the Proxy, you should have set up an _integration_ and created a _connection_ already (cf. [API Authorization guide](/guides/oauth)).
+Before you can use Proxy requests you need to setup auth by following the [Authorize APIs guide](/oauth).
 </Tip>
 
 ### Proxy requests 
@@ -39,18 +38,30 @@ The backend Node SDK supports the Proxy and offers convenience functions such as
 Refer to the [SDK Reference](/sdks) for full details on proxy options.
 
 ```typescript
-const res = await nango.proxy({
-    method: 'POST',
-    endpoint: '/calendar/v3/users/me/calendarList',
-    providerConfigKey: '<INTEGRATION-ID>',
-    connectionId: '<CONNECTION-ID>',
-    retries: 5, // Retries with exponential backoff (optional, default 0)
-    data: {
-        id: 1,
-        colorId: 'blue',
-        selected: true
-    }
-});
+try {
+    const res = await nango.proxy({
+        method: 'POST',
+        endpoint: '/calendar/v3/users/me/calendarList',
+        providerConfigKey: '<INTEGRATION-ID>',
+        connectionId: '<CONNECTION-ID>',
+        retries: 5, // Retries with exponential backoff (optional, default 0)
+        data: {
+            id: 1,
+            colorId: 'blue',
+            selected: true
+        }
+    });
+
+    // Response was 200!
+    // See https://axios-http.com/docs/res_schema
+    console.log(res.data);
+} catch (error) {
+    // Status of response != 200
+    // See https://axios-http.com/docs/handling_errors
+    console.log(error.response.data);
+    console.log(error.response.status);
+    console.log(error.response.headers);
+}
 ```
 
 <Info>

@@ -18,7 +18,7 @@ export default class Nango {
     private publicKey: string;
     private debug = false;
 
-    constructor(config: { host: string; websocketsPath?: string; publicKey: string; debug?: boolean }) {
+    constructor(config: { host?: string; websocketsPath?: string; publicKey: string; debug?: boolean }) {
         config.host = config.host || prodHost; // Default to Nango Cloud.
         config.websocketsPath = config.websocketsPath || '/'; // Default to root path.
         this.debug = config.debug || false;

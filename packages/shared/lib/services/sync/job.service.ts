@@ -9,7 +9,7 @@ export const createSyncJob = async (
     type: SyncType,
     status: SyncStatus,
     job_id: string,
-    activity_log_id: number
+    activity_log_id: number | null
 ): Promise<Pick<SyncJob, 'id'> | null> => {
     const job: SyncJob = {
         sync_id,
