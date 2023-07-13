@@ -29,11 +29,14 @@ export async function routeSync(args: InitialSyncArgs): Promise<boolean | object
 export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<boolean | object> {
     const { syncId, activityLogId, syncName, nangoConnection, debug } = args;
     let environmentId = nangoConnection?.environment_id;
+    let syncJobId;
     if (!nangoConnection?.environment_id) {
         environmentId = (await environmentService.getEnvironmentIdForAccountAssumingProd(nangoConnection.account_id as number)) as number;
+        // TODO recreate the job id to be in the format created by temporal: nango-syncs.accounts-syncs-schedule-29768402-c6a8-462b-8334-37adf2b76be4-workflow-2023-05-30T08:45:00Z
+        syncJobId = await createSyncJob(syncId as string, SyncType.INCREMENTAL, SyncStatus.RUNNING, '', null);
+    } else {
+        syncJobId = await createSyncJob(syncId as string, SyncType.INCREMENTAL, SyncStatus.RUNNING, '', activityLogId);
     }
-    // TODO recreate the job id to be in the format created by temporal: nango-syncs.accounts-syncs-schedule-29768402-c6a8-462b-8334-37adf2b76be4-workflow-2023-05-30T08:45:00Z
-    const syncJobId = await createSyncJob(syncId as string, SyncType.INCREMENTAL, SyncStatus.RUNNING, '', activityLogId);
 
     try {
         const syncConfig: ProviderConfig = (await configService.getProviderConfig(
@@ -105,13 +108,15 @@ export async function syncProvider(
             connection_id: nangoConnection?.connection_id as string,
             provider_config_key: nangoConnection?.provider_config_key as string,
             provider: syncConfig.provider,
-            session_id: syncJobId.toString(),
+            session_id: syncJobId ? syncJobId?.toString() : '',
             environment_id: nangoConnection?.environment_id as number,
             operation_name: syncName
         };
         activityLogId = (await createActivityLog(log)) as number;
 
-        await updateJobActivityLogId(syncJobId, activityLogId);
+        if (syncJobId && activityLogId) {
+            await updateJobActivityLogId(syncJobId, activityLogId);
+        }
     }
 
     const syncRun = new syncRunService({
