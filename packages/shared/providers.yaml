@@ -230,6 +230,7 @@ exact-online:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    token_expiration_buffer: 30
 factorial:
     auth_mode: OAUTH2
     authorization_url: https://api.factorialhr.com/oauth/authorize
