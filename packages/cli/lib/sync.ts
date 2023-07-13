@@ -23,7 +23,8 @@ import type {
     NangoConfig,
     Connection as NangoConnection,
     NangoIntegration,
-    NangoIntegrationData
+    NangoIntegrationData,
+    SimplifiedNangoIntegration
 } from '@nangohq/shared';
 import { loadSimplifiedConfig, cloudHost, stagingHost, SyncType, syncRunService, nangoConfigFile, checkForIntegrationFile } from '@nangohq/shared';
 import {
@@ -37,7 +38,6 @@ import {
     buildInterfaces,
     enrichHeaders,
     getNangoRootPath,
-    getProviderBySyncName,
     printDebug
 } from './utils.js';
 import type { DeployOptions, GlobalOptions } from './types.js';
@@ -283,7 +283,7 @@ const createModelFile = (notify = false) => {
     }
 };
 
-const getConfig = async (debug = false) => {
+const getConfig = async (debug = false): Promise<SimplifiedNangoIntegration[]> => {
     const config = await loadSimplifiedConfig('./');
 
     if (!config) {
@@ -508,7 +508,8 @@ async function deploySyncs(url: string, body: { syncs: IncomingSyncConfig[]; rec
 }
 
 export const dryRun = async (options: RunArgs, environment: string, debug = false) => {
-    let syncName, connectionId, suppliedLastSyncDate;
+    let syncName = '';
+    let connectionId, suppliedLastSyncDate;
 
     await parseSecretKey(environment, debug);
 
@@ -537,7 +538,9 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
         return;
     }
 
-    const providerConfigKey = await getProviderBySyncName({ syncName }, debug);
+    const config = await getConfig(debug);
+
+    const providerConfigKey = config.find((config) => config.syncs.find((sync) => sync.name === syncName))?.providerConfigKey;
 
     if (!providerConfigKey) {
         console.log(chalk.red(`Provider config key not found, please check that the provider exists for this sync name: ${syncName}`));
