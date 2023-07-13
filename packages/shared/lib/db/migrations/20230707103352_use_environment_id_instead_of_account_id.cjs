@@ -24,7 +24,7 @@ exports.up = async function (knex, _) {
         });
 
         if (truncate) {
-            await knex.withSchema('nango').truncateTable(tableToReplace);
+            await knex.raw('TRUNCATE TABLE ?? CASCADE', ['nango.' + tableToReplace]);
         }
 
         const records = await knex.withSchema('nango').select('id', 'account_id').from(tableToReplace);
