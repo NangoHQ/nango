@@ -19,5 +19,5 @@ jobs:
               uses: actions/setup-node@v3
               with:
                   node-version: ${{ matrix.node-version }}
-            - run: npm run build:hosted
+            - run: npm run install:all
             - run: npm run test
