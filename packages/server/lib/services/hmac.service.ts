@@ -1,38 +1,34 @@
-import { NangoError } from '@nangohq/shared';
+import { schema } from '@nangohq/shared';
+import type { Environment } from '@nangohq/shared';
 import * as crypto from 'node:crypto';
 
 class HmacService {
-    private enabled = process.env['NANGO_HMAC_ENABLED'] === 'true';
-    private algorithm = process.env['NANGO_HMAC_ALGORITHM'] || 'sha256';
-    private key = process.env['NANGO_HMAC_KEY'];
+    private algorithm = 'sha256';
 
-    constructor() {
-        if (!this.enabled) {
-            return;
-        } else if (!this.key) {
-            throw new NangoError('hmac_key_required');
-        }
+    async isEnabled(id: number): Promise<boolean> {
+        const result = await schema().select('hmac_enabled').from<Environment>('_nango_environments').where({ id });
+
+        const enabled = result[0]?.hmac_enabled ?? false;
+
+        return enabled;
     }
 
-    isEnabled(): boolean {
-        return this.enabled;
+    async getKey(id: number): Promise<string> {
+        const result = await schema().select('hmac_key').from<Environment>('_nango_environments').where({ id });
+
+        const key = result[0]?.hmac_key ?? '';
+
+        return key;
     }
 
-    verify(expectedDigest: string, ...values: string[]): boolean {
-        if (!this.enabled) {
-            throw new NangoError('hmac_not_enabled');
-        }
-        const actualDigest = this.digest(...values);
+    async verify(expectedDigest: string, id: number, ...values: string[]): Promise<boolean> {
+        const actualDigest = await this.digest(id, ...values);
         return expectedDigest === actualDigest;
     }
 
-    digest(...values: string[]): string {
-        if (!this.enabled) {
-            throw new NangoError('hmac_not_enabled');
-        } else if (!this.key) {
-            throw new NangoError('hmac_key_required');
-        }
-        const hmac = crypto.createHmac(this.algorithm, this.key);
+    async digest(id: number, ...values: string[]): Promise<string> {
+        const key = await this.getKey(id);
+        const hmac = crypto.createHmac(this.algorithm, key);
         const data = values.join(':');
         hmac.update(data);
         return hmac.digest('hex');

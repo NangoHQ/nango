@@ -3,12 +3,16 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { NangoError } from './error.js';
 import type { User } from '../models/Admin.js';
+import type { Environment } from '../models/Environment.js';
+import environmentService from '../services/environment.service.js';
 
-export const localhostUrl = 'http://localhost:3003';
+const PORT = process.env['SERVER_PORT'] || 3003;
+export const localhostUrl = `http://localhost:${PORT}`;
 export const cloudHost = 'https://api.nango.dev';
 export const stagingHost = 'https://api-staging.nango.dev';
 
 const accountIdLocalsKey = 'nangoAccountId';
+const environmentIdLocalsKey = 'nangoEnvironmentId';
 
 export enum UserType {
     Local = 'localhost',
@@ -115,14 +119,25 @@ export function parseTokenExpirationDate(expirationDate: any): Date {
     return new Date(expirationDate);
 }
 
-export function isTokenExpired(expireDate: Date): boolean {
+export function isTokenExpired(expireDate: Date, bufferInSeconds: number): boolean {
     const currDate = new Date();
     const dateDiffMs = expireDate.getTime() - currDate.getTime();
-    return dateDiffMs < 15 * 60 * 1000;
+    return dateDiffMs < bufferInSeconds * 1000;
 }
 
 export function getBaseUrl() {
     return process.env['NANGO_SERVER_URL'] || localhostUrl;
+}
+
+/**
+ * Get Oauth callback url base url.
+ * @desc for ease of use with APIs that require a secure redirect
+ * redirectmeto is automatically used. This is intentioned
+ * for local development
+ * @see https://github.com/kodie/redirectmeto
+ */
+export function getLocalOAuthCallbackUrlBaseUrl() {
+    return 'https://redirectmeto.com/' + localhostUrl;
 }
 
 export function getApiUrl() {
@@ -132,6 +147,22 @@ export function getApiUrl() {
         return cloudHost;
     }
     return getServerBaseUrl();
+}
+
+export function getGlobalOAuthCallbackUrl() {
+    const baseUrl = isCloud() ? getBaseUrl() : getLocalOAuthCallbackUrlBaseUrl();
+    return baseUrl + '/oauth/callback';
+}
+
+export async function getOauthCallbackUrl(environmentId?: number) {
+    const globalCallbackUrl = getGlobalOAuthCallbackUrl();
+
+    if (environmentId != null) {
+        const environment: Environment | null = await environmentService.getByAccountIdAndEnvironment(environmentId);
+        return environment?.callback_url || globalCallbackUrl;
+    }
+
+    return globalCallbackUrl;
 }
 
 /**
@@ -177,6 +208,10 @@ export function setAccount(accountId: number, res: Response) {
     res.locals[accountIdLocalsKey] = accountId;
 }
 
+export function setEnvironmentId(environmentId: number, res: Response) {
+    res.locals[environmentIdLocalsKey] = environmentId;
+}
+
 export function getAccount(res: Response): number {
     if (res.locals == null || !(accountIdLocalsKey in res.locals)) {
         throw new NangoError('account_not_set_in_locals');
@@ -188,6 +223,20 @@ export function getAccount(res: Response): number {
         return accountId;
     } else {
         throw new NangoError('account_malformed_in_locals');
+    }
+}
+
+export function getEnvironmentId(res: Response): number {
+    if (res.locals == null || !(environmentIdLocalsKey in res.locals)) {
+        throw new NangoError('environment_not_set_in_locals');
+    }
+
+    const environmentId = res.locals[environmentIdLocalsKey];
+
+    if (Number.isInteger(environmentId)) {
+        return environmentId;
+    } else {
+        throw new NangoError('environment_malformed_in_locals');
     }
 }
 

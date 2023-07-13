@@ -4,15 +4,15 @@ sidebarTitle: 'Add an API'
 description: 'Make Nango compatible with any new API in minutes!'
 ---
 
-## How API Configurations work in Nango
+## How _API configurations_ work in Nango
 
-Contributing a new API Configuration means Nango users will be able to build integrations for this API.
+Contributing a new _API configuration_ means Nango users will be able to build integrations for this API.
 
 The only required part of the configuration is related to authentication. The rest is optional and optimizes the developer experience of building integrations for this API (e.g. Proxy default base URL, pagination helper, rate-limit helper).
 
-API Configurations take the form of short YAML entries, living in a single file called [providers.yaml](https://nango.dev/providers.yaml). Most API Configurations only need to make use of 2-3 configuration keys, but in some cases you might need more.
+_API configurations_ take the form of short YAML entries, living in a single file called [providers.yaml](https://nango.dev/providers.yaml). Most _API configurations_ only need to make use of 2-3 configuration keys, but in some cases you might need more.
 
-## API Configuration options
+## _API configuration_ options
 
 ```yaml
 provider-slug: # Shorthand for the provider, ideally the provider's name. Must be unique. Kebab case.
@@ -26,6 +26,10 @@ provider-slug: # Shorthand for the provider, ideally the provider's name. Must b
     ##########
     # Optional fields
     ##########
+    # Proxy
+    base_api_url: https://gitlab.example.com/api/v4 # Presets the base URL when using the Proxy (supports string interpolation, e.g. Salesforce).  
+
+    # Additional params
     authorization_params: # Additional parameters to pass along in the authorization step
         response_type: code
     token_params: # Additional parameters to pass along in the token request
@@ -38,16 +42,18 @@ provider-slug: # Shorthand for the provider, ideally the provider's name. Must b
         - subdomain # Save the 'subdomain' query parameter value returned in the Redirect URI (Connection Metadata)
     token_response_metadata:
         - scopes # Save the 'scopes' query parameter value returned in the token response (Connection Metadata)
+
+    # Advanced
+    token_expiration_buffer: 360 # In seconds. If omitted, tokens refresh if fetched within 15mins of expiration. This field overrides this buffer (e.g. for APIs with very-short-lived tokens).
 ```
 
-<Note>API Configurations support parameters using string interpolation for dynamic URLs, etc.</Note>
+<Note>_API configurations_ support parameters using string interpolation for dynamic URLs, etc.</Note>
 
 <Note>
-    You can configure some [Connection Metadata](/nango-auth/configuration), which is additional metadata that you want to capture during the OAuth flow and
-    store in the Connection.
+    You can configure some [Connection Metadata](/nango-auth/configuration), which is additional metadata that you want to capture during the OAuth flow and store in the _connection_.
 </Note>
 
-## Step-by-step guide to add an API Configuration
+## Step-by-step guide to add an _API configuration_
 
 ### Step 1: Add your new provider to `providers.yaml`
 
@@ -56,20 +62,13 @@ above to add support for the new API.
 
 ### Step 2: Test your new provider
 
-<Tip>
-Some APIs require `https` or forbid `localhost` in the callback URL, which makes local development harder. A workaround is to use [https://redirectmeto.com](https://redirectmeto.com/). In this case, edit the `.env` file with your new (local) callback URL:
-```bash
-NANGO_CALLBACK_URL=https://redirectmeto.com/http://localhost:3003/oauth/callback
-```
-</Tip>
-
 To test your new provider, go to the `nango` folder root and run:
 
 ```bash
 docker compose up
 ```
 
-When you are ready to test your new API Configuration:
+When you are ready to test your new _API configuration_:
 
 **Add your client credentials to the local Nango Server**
 
@@ -87,10 +86,10 @@ other local services on your host machine.
 
 **Check the access token in the dashboard**
 
-If all goes well you should see your new Connection in the
+If all goes well you should see your new _connection_ in the
 [Connections tab](http://localhost:3003/connections) in the dashboard.
 
-Check the Connection details and make sure all looks as expected (access token,
+Check the _connection_ details and make sure all looks as expected (access token,
 refresh token, metadata).
 
 ### Step 3: Add your integration to the Documentation

@@ -34,13 +34,13 @@ export const formatDataRecords = (
 export async function getDataRecords(
     connectionId: string,
     providerConfigKey: string,
-    accountId: number,
+    environmentId: number,
     model: string,
     delta: string,
     offset: number | string,
     limit: number | string
 ): Promise<Pick<SyncDataRecord, 'json'>[] | null> {
-    const nangoConnection = await connectionService.getConnection(connectionId, providerConfigKey, accountId);
+    const nangoConnection = await connectionService.getConnection(connectionId, providerConfigKey, environmentId);
 
     if (!nangoConnection) {
         throw new Error(`No connection found for connectionId ${connectionId} and providerConfigKey ${providerConfigKey}`);

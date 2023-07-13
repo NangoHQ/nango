@@ -6,7 +6,7 @@ import SyncClient from '../../clients/sync.client.js';
 import type { LogLevel, LogAction } from '../../models/Activity.js';
 import { updateSuccess as updateSuccessActivityLog, createActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../activity.service.js';
 import { markAllAsStopped } from './schedule.service.js';
-import { getActiveSyncConfigsByAccountId, getSyncConfigsByProviderConfigKey } from './config.service.js';
+import { getActiveSyncConfigsByEnvironmentId, getSyncConfigsByProviderConfigKey } from './config.service.js';
 import syncOrchestrator from './orchestrator.service.js';
 import connectionService from '../connection.service.js';
 
@@ -194,45 +194,30 @@ export const getSyncsByConnectionId = async (nangoConnectionId: number): Promise
     return null;
 };
 
-export const getSyncsByProviderConfigKey = async (accountId: number, providerConfigKey: string): Promise<Sync[]> => {
+export const getSyncsByProviderConfigKey = async (environment_id: number, providerConfigKey: string): Promise<Sync[]> => {
     const results = await db.knex
         .withSchema(db.schema())
         .select(`${TABLE}.*`)
         .from<Sync>(TABLE)
         .join('_nango_connections', '_nango_connections.id', `${TABLE}.nango_connection_id`)
         .where({
-            account_id: accountId,
+            environment_id,
             provider_config_key: providerConfigKey
         });
 
     return results;
 };
 
-export const getSyncsByProviderConfigAndSyncName = async (accountId: number, providerConfigKey: string, syncName: string): Promise<Sync[]> => {
+export const getSyncsByProviderConfigAndSyncName = async (environment_id: number, providerConfigKey: string, syncName: string): Promise<Sync[]> => {
     const results = await db.knex
         .withSchema(db.schema())
         .select(`${TABLE}.*`)
         .from<Sync>(TABLE)
         .join('_nango_connections', '_nango_connections.id', `${TABLE}.nango_connection_id`)
         .where({
-            account_id: accountId,
+            environment_id,
             provider_config_key: providerConfigKey,
             name: syncName
-        });
-
-    return results;
-};
-
-export const getSyncsByAccountId = async (accountId: number): Promise<Sync[]> => {
-    const results = await db.knex
-        .withSchema(db.schema())
-        .select('*')
-        .from<Sync>(TABLE)
-        .join('_nango_connections', '_nango_connections.id', `${TABLE}.nango_connection_id`)
-        .join(SYNC_CONFIG_TABLE, `${SYNC_CONFIG_TABLE}.id`, `${TABLE}.sync_config_id`)
-        .where({
-            account_id: accountId,
-            active: true
         });
 
     return results;
@@ -242,13 +227,13 @@ export const getSyncsByAccountId = async (accountId: number): Promise<Sync[]> =>
  * Verify Ownership
  * @desc verify that the incoming account id matches with the provided nango connection id
  */
-export const verifyOwnership = async (nangoConnectionId: number, accountId: number, syncId: string): Promise<boolean> => {
+export const verifyOwnership = async (nangoConnectionId: number, environment_id: number, syncId: string): Promise<boolean> => {
     const result = await schema()
         .select('*')
         .from<Sync>(TABLE)
         .join('_nango_connections', '_nango_connections.id', `${TABLE}.nango_connection_id`)
         .where({
-            account_id: accountId,
+            environment_id,
             [`${TABLE}.id`]: syncId,
             nango_connection_id: nangoConnectionId
         });
@@ -277,7 +262,7 @@ export const findSyncByConnections = async (connectionIds: number[]): Promise<Sy
 };
 
 export const getAndReconcileSyncDifferences = async (
-    accountId: number,
+    environmentId: number,
     syncs: IncomingSyncConfig[],
     performAction: boolean,
     debug = false
@@ -297,7 +282,7 @@ export const getAndReconcileSyncDifferences = async (
         provider_config_key: `${syncs.length} sync${syncs.length === 1 ? '' : 's'} from ${providerConfigKeys.length} integration${
             providerConfigKeys.length === 1 ? '' : 's'
         }`,
-        account_id: accountId,
+        environment_id: environmentId,
         operation_name: 'sync.deploy'
     };
 
@@ -317,8 +302,11 @@ export const getAndReconcileSyncDifferences = async (
         const { syncName, providerConfigKey } = sync;
         if (!existingSyncsByProviderConfig[providerConfigKey]) {
             // this gets syncs that have a sync config and are active OR just have a sync config
-            existingSyncsByProviderConfig[providerConfigKey] = await getSyncConfigsByProviderConfigKey(accountId, providerConfigKey);
-            existingConnectionsByProviderConfig[providerConfigKey] = await connectionService.getConnectionsByAccountAndConfig(accountId, providerConfigKey);
+            existingSyncsByProviderConfig[providerConfigKey] = await getSyncConfigsByProviderConfigKey(environmentId, providerConfigKey);
+            existingConnectionsByProviderConfig[providerConfigKey] = await connectionService.getConnectionsByEnvironmentAndConfig(
+                environmentId,
+                providerConfigKey
+            );
         }
         const currentSync = existingSyncsByProviderConfig[providerConfigKey];
 
@@ -344,24 +332,33 @@ export const getAndReconcileSyncDifferences = async (
                         content: `Creating sync ${syncName} for ${providerConfigKey} with ${connections.length} connections and initiating`
                     });
                 }
-                syncsToCreate.push({ connections, syncName, sync, providerConfigKey, accountId });
+                syncsToCreate.push({ connections, syncName, sync, providerConfigKey, environmentId });
             }
         }
     }
 
     if (syncsToCreate.length > 0) {
+        if (debug) {
+            const syncNames = syncsToCreate.map((sync) => sync.syncName);
+            await createActivityLogMessage({
+                level: 'debug',
+                activity_log_id: activityLogId as number,
+                timestamp: Date.now(),
+                content: `Creating ${syncsToCreate.length} sync${syncsToCreate.length === 1 ? '' : 's'} ${JSON.stringify(syncNames, null, 2)}`
+            });
+        }
         // this is taken out of the loop to ensure it awaits all the calls properly
-        await syncOrchestrator.createSyncs(syncsToCreate, debug);
+        await syncOrchestrator.createSyncs(syncsToCreate, debug, activityLogId as number);
     }
 
-    const existingSyncs = await getActiveSyncConfigsByAccountId(accountId);
+    const existingSyncs = await getActiveSyncConfigsByEnvironmentId(environmentId);
     const deletedSyncs = [];
 
     for (const existingSync of existingSyncs) {
         const exists = syncs.find((sync) => sync.syncName === existingSync.sync_name && sync.providerConfigKey === existingSync.unique_key);
 
         if (!exists) {
-            const connections = await connectionService.getConnectionsByAccountAndConfig(accountId, existingSync.unique_key);
+            const connections = await connectionService.getConnectionsByEnvironmentAndConfig(environmentId, existingSync.unique_key);
             deletedSyncs.push({
                 name: existingSync.sync_name,
                 providerConfigKey: existingSync.unique_key,

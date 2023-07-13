@@ -15,11 +15,12 @@ import {
     configService,
     connectionService,
     getAccount,
+    getEnvironmentId,
     errorManager,
     analytics,
     createActivityLogAndLogMessage
 } from '@nangohq/shared';
-import { getUserAndAccountFromSession } from '../utils/utils.js';
+import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import { WSErrBuilder } from '../utils/web-socket-error.js';
 
 class ConnectionController {
@@ -29,7 +30,7 @@ class ConnectionController {
 
     async getConnectionWeb(req: Request, res: Response, next: NextFunction) {
         try {
-            const account = (await getUserAndAccountFromSession(req)).account;
+            const environment = (await getUserAccountAndEnvironmentFromSession(req)).environment;
 
             const connectionId = req.params['connectionId'] as string;
             const providerConfigKey = req.query['provider_config_key'] as string;
@@ -45,7 +46,7 @@ class ConnectionController {
                 connection_id: connectionId as string,
                 provider: '',
                 provider_config_key: providerConfigKey as string,
-                account_id: account.id
+                environment_id: environment.id
             };
 
             if (connectionId == null) {
@@ -70,7 +71,7 @@ class ConnectionController {
                 return;
             }
 
-            const connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, account.id);
+            const connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
 
             if (connection == null) {
                 await createActivityLogAndLogMessage(log, {
@@ -83,7 +84,7 @@ class ConnectionController {
                 return;
             }
 
-            const config: ProviderConfig | null = await configService.getProviderConfig(connection.provider_config_key, account.id);
+            const config: ProviderConfig | null = await configService.getProviderConfig(connection.provider_config_key, environment.id);
 
             if (config == null) {
                 await createActivityLogAndLogMessage(log, {
@@ -146,11 +147,11 @@ class ConnectionController {
 
     async getConnectionsWeb(req: Request, res: Response, next: NextFunction) {
         try {
-            const account = (await getUserAndAccountFromSession(req)).account;
+            const environment = (await getUserAccountAndEnvironmentFromSession(req)).environment;
 
-            const connections = await connectionService.listConnections(account.id);
+            const connections = await connectionService.listConnections(environment.id);
 
-            const configs = await configService.listProviderConfigs(account.id);
+            const configs = await configService.listProviderConfigs(environment.id);
 
             if (configs == null) {
                 res.status(200).send({ connections: [] });
@@ -183,7 +184,7 @@ class ConnectionController {
 
     async deleteConnectionWeb(req: Request, res: Response, next: NextFunction) {
         try {
-            const account = (await getUserAndAccountFromSession(req)).account;
+            const environment = (await getUserAccountAndEnvironmentFromSession(req)).environment;
             const connectionId = req.params['connectionId'] as string;
             const providerConfigKey = req.query['provider_config_key'] as string;
 
@@ -197,14 +198,14 @@ class ConnectionController {
                 return;
             }
 
-            const connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, account.id);
+            const connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
 
             if (connection == null) {
                 errorManager.errRes(res, 'unkown_connection');
                 return;
             }
 
-            await connectionService.deleteConnection(connection, providerConfigKey, account.id);
+            await connectionService.deleteConnection(connection, providerConfigKey, environment.id);
 
             res.status(200).send();
         } catch (err) {
@@ -218,7 +219,7 @@ class ConnectionController {
 
     async getConnectionCreds(req: Request, res: Response, next: NextFunction) {
         try {
-            const accountId = getAccount(res);
+            const environmentId = getEnvironmentId(res);
             const connectionId = req.params['connectionId'] as string;
             const providerConfigKey = req.query['provider_config_key'] as string;
             const returnRefreshToken = req.query['refresh_token'] === 'true';
@@ -239,7 +240,7 @@ class ConnectionController {
                 method: req.method as HTTP_VERB,
                 connection_id: connectionId as string,
                 provider_config_key: providerConfigKey as string,
-                account_id: accountId
+                environment_id: environmentId
             };
 
             if (!isSync && !isDryRun) {
@@ -281,8 +282,9 @@ class ConnectionController {
     async listConnections(req: Request, res: Response, next: NextFunction) {
         try {
             const accountId = getAccount(res);
+            const environmentId = getEnvironmentId(res);
             const { connectionId } = req.query;
-            const connections: Object[] = await connectionService.listConnections(accountId, connectionId as string);
+            const connections: Object[] = await connectionService.listConnections(environmentId, connectionId as string);
 
             analytics.track('server:connection_list_fetched', accountId);
 
@@ -294,7 +296,7 @@ class ConnectionController {
 
     async deleteConnection(req: Request, res: Response, next: NextFunction) {
         try {
-            const accountId = getAccount(res);
+            const environmentId = getEnvironmentId(res);
             const connectionId = req.params['connectionId'] as string;
             const providerConfigKey = req.query['provider_config_key'] as string;
 
@@ -308,14 +310,14 @@ class ConnectionController {
                 return;
             }
 
-            const connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, accountId);
+            const connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, environmentId);
 
             if (connection == null) {
                 errorManager.errRes(res, 'unkown_connection');
                 return;
             }
 
-            await connectionService.deleteConnection(connection, providerConfigKey, accountId);
+            await connectionService.deleteConnection(connection, providerConfigKey, environmentId);
 
             res.status(200).send();
         } catch (err) {
@@ -342,7 +344,7 @@ class ConnectionController {
 
     async setFieldMapping(req: Request, res: Response, next: NextFunction) {
         try {
-            const accountId = getAccount(res);
+            const environmentId = getEnvironmentId(res);
             const connectionId = (req.params['connectionId'] as string) || (req.get('Connection-Id') as string);
             const providerConfigKey = (req.params['provider_config_key'] as string) || (req.get('Provider-Config-Key') as string);
 
@@ -356,7 +358,7 @@ class ConnectionController {
                 return;
             }
 
-            const connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, accountId);
+            const connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, environmentId);
 
             if (!connection) {
                 errorManager.errRes(res, 'unknown_connection');
@@ -373,6 +375,7 @@ class ConnectionController {
 
     async createConnection(req: Request, res: Response, next: NextFunction) {
         try {
+            const environmentId = getEnvironmentId(res);
             const accountId = getAccount(res);
 
             const { connection_id, provider_config_key, type } = req.body;
@@ -431,7 +434,7 @@ class ConnectionController {
                 return;
             }
 
-            await connectionService.importConnection(connection_id, provider_config_key, accountId, credentials);
+            await connectionService.importConnection(connection_id, provider_config_key, environmentId, accountId, credentials);
 
             res.status(201).send(req.body);
         } catch (err) {

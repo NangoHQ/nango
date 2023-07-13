@@ -15,12 +15,11 @@ services:
             - nango
 
     nango-server:
-        image: nangohq/nango-server:0.23.25
+        image: nangohq/nango-server:0.24.1
         container_name: nango-server
         environment:
             - TEMPORAL_ADDRESS=temporal:7233
             - NANGO_DB_MIGRATION_FOLDER=/usr/nango-server/src/packages/shared/lib/db/migrations
-            - NANGO_SECRET_KEY=${NANGO_SECRET_KEY}
             - NANGO_ENCRYPTION_KEY=${NANGO_ENCRYPTION_KEY}
             - NANGO_DB_USER=${NANGO_DB_USER}
             - NANGO_DB_PASSWORD=${NANGO_DB_PASSWORD}
@@ -32,14 +31,11 @@ services:
             - NANGO_PORT=${NANGO_PORT:-3003}
             - SERVER_PORT=${NANGO_PORT:-3003}
             - NANGO_SERVER_URL=${NANGO_SERVER_URL:-http://localhost:3003}
-            - NANGO_CALLBACK_URL=${NANGO_CALLBACK_URL}
             - NANGO_DASHBOARD_USERNAME=${NANGO_DASHBOARD_USERNAME}
             - NANGO_DASHBOARD_PASSWORD=${NANGO_DASHBOARD_PASSWORD}
             - LOG_LEVEL=${LOG_LEVEL:-info}
             - TELEMETRY=${TELEMETRY}
-            - NANGO_HMAC_ENABLED=${NANGO_HMAC_ENABLED}
-            - NANGO_HMAC_ALGORITHM=${NANGO_HMAC_ALGORITHM}
-            - NANGO_HMAC_KEY=${NANGO_HMAC_KEY}
+            - NANGO_SERVER_WEBSOCKETS_PATH=${NANGO_SERVER_WEBSOCKETS_PATH}
         restart: always
         ports:
             - '${NANGO_PORT:-3003}:${NANGO_PORT:-3003}'
@@ -51,14 +47,13 @@ services:
             - nango
 
     nango-worker:
-        image: nangohq/nango-worker:0.23.25
+        image: nangohq/nango-worker:0.24.1
         container_name: nango-worker
         restart: always
         ports:
             - '${WORKER_PORT:-3004}:${WORKER_PORT:-3004}'
         environment:
             - TEMPORAL_ADDRESS=temporal:7233
-            - NANGO_SECRET_KEY=${NANGO_SECRET_KEY}
             - NANGO_ENCRYPTION_KEY=${NANGO_ENCRYPTION_KEY}
             - NANGO_DB_USER=${NANGO_DB_USER}
             - NANGO_DB_PASSWORD=${NANGO_DB_PASSWORD}

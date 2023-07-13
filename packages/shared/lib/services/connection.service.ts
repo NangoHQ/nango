@@ -21,6 +21,7 @@ import connectionService from '../services/connection.service.js';
 import providerClient from '../clients/provider.client.js';
 import configService from '../services/config.service.js';
 import { deleteScheduleForConnection as deleteSyncScheduleForConnection } from '../services/sync/schedule.service.js';
+import environmentService from '../services/environment.service.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import { NangoError } from '../utils/error.js';
 
@@ -28,7 +29,7 @@ import type { Connection, StoredConnection, BaseConnection, NangoConnection } fr
 import encryptionManager from '../utils/encryption.manager.js';
 import { AuthModes as ProviderAuthModes, OAuth2Credentials, ImportedCredentials } from '../models/Auth.js';
 import { schema } from '../db/database.js';
-import { getAccount, parseTokenExpirationDate, isTokenExpired } from '../utils/utils.js';
+import { getEnvironmentId, getAccount, parseTokenExpirationDate, isTokenExpired } from '../utils/utils.js';
 import SyncClient from '../clients/sync.client.js';
 import errorManager from '../utils/error.manager.js';
 
@@ -41,6 +42,7 @@ class ConnectionService {
         provider: string,
         parsedRawCredentials: AuthCredentials,
         connectionConfig: Record<string, string>,
+        environment_id: number,
         accountId: number,
         metadata: Record<string, string>
     ) {
@@ -53,12 +55,12 @@ class ConnectionService {
                     provider_config_key: providerConfigKey,
                     credentials: parsedRawCredentials,
                     connection_config: connectionConfig,
-                    account_id: accountId,
+                    environment_id,
                     metadata: metadata
                 }),
                 ['id']
             )
-            .onConflict(['provider_config_key', 'connection_id', 'account_id'])
+            .onConflict(['provider_config_key', 'connection_id', 'environment_id'])
             .merge();
 
         analytics.track('server:connection_upserted', accountId, { provider });
@@ -66,7 +68,13 @@ class ConnectionService {
         return id;
     }
 
-    public async importConnection(connection_id: string, provider_config_key: string, accountId: number, parsedRawCredentials: ImportedCredentials) {
+    public async importConnection(
+        connection_id: string,
+        provider_config_key: string,
+        environmentId: number,
+        accountId: number,
+        parsedRawCredentials: ImportedCredentials
+    ) {
         const provider = await configService.getProviderName(provider_config_key);
 
         if (!provider) {
@@ -75,7 +83,7 @@ class ConnectionService {
 
         let connection = undefined;
         try {
-            connection = await this.getConnection(connection_id, provider_config_key, accountId);
+            connection = await this.getConnection(connection_id, provider_config_key, environmentId);
         } catch {}
 
         if (connection) {
@@ -90,6 +98,7 @@ class ConnectionService {
             provider,
             parsedRawCredentials,
             connection_config as Record<string, string>,
+            environmentId,
             accountId,
             metadata as Record<string, string>
         );
@@ -104,9 +113,12 @@ class ConnectionService {
 
     public async getConnectionById(
         id: number
-    ): Promise<Pick<Connection, 'id' | 'connection_id' | 'provider_config_key' | 'account_id' | 'connection_config' | 'metadata' | 'field_mappings'> | null> {
+    ): Promise<Pick<
+        Connection,
+        'id' | 'connection_id' | 'provider_config_key' | 'environment_id' | 'connection_config' | 'metadata' | 'field_mappings'
+    > | null> {
         const result = await schema()
-            .select('id', 'connection_id', 'provider_config_key', 'account_id', 'connection_config', 'metadata', 'field_mappings')
+            .select('id', 'connection_id', 'provider_config_key', 'environment_id', 'connection_config', 'metadata', 'field_mappings')
             .from<StoredConnection>('_nango_connections')
             .where({ id: id });
 
@@ -117,16 +129,18 @@ class ConnectionService {
         return result[0];
     }
 
-    public async getConnection(connectionId: string, providerConfigKey: string, accountId: number): Promise<Connection | null> {
+    public async getConnection(connectionId: string, providerConfigKey: string, environment_id: number): Promise<Connection | null> {
         const result: StoredConnection[] | null = (await schema()
             .select('*')
             .from<StoredConnection>(`_nango_connections`)
-            .where({ connection_id: connectionId, provider_config_key: providerConfigKey, account_id: accountId })) as unknown as StoredConnection[];
+            .where({ connection_id: connectionId, provider_config_key: providerConfigKey, environment_id })) as unknown as StoredConnection[];
 
         const storedConnection = result == null || result.length == 0 ? null : result[0] || null;
 
         if (!storedConnection) {
-            throw new NangoError('unkown_connection', { connectionId, providerConfigKey });
+            const environmentName = await environmentService.getEnvironmentName(environment_id);
+
+            throw new NangoError('unkown_connection', { connectionId, providerConfigKey, environmentName });
         }
 
         const connection = encryptionManager.decryptConnection(storedConnection);
@@ -145,7 +159,7 @@ class ConnectionService {
         await db.knex
             .withSchema(db.schema())
             .from<StoredConnection>(`_nango_connections`)
-            .where({ connection_id: connection.connection_id, provider_config_key: connection.provider_config_key, account_id: connection.account_id })
+            .where({ connection_id: connection.connection_id, provider_config_key: connection.provider_config_key, environment_id: connection.environment_id })
             .update(encryptionManager.encryptConnection(connection));
     }
 
@@ -154,7 +168,7 @@ class ConnectionService {
             .withSchema(db.schema())
             .from<StoredConnection>(`_nango_connections`)
             .select('field_mappings')
-            .where({ connection_id: connection.connection_id, provider_config_key: connection.provider_config_key, account_id: connection.account_id });
+            .where({ connection_id: connection.connection_id, provider_config_key: connection.provider_config_key, environment_id: connection.environment_id });
 
         if (!result || result.length == 0 || !result[0]) {
             return {};
@@ -163,12 +177,12 @@ class ConnectionService {
         return result[0].field_mappings;
     }
 
-    public async getConnectionsByAccountAndConfig(accountId: number, providerConfigKey: string): Promise<NangoConnection[]> {
+    public async getConnectionsByEnvironmentAndConfig(environment_id: number, providerConfigKey: string): Promise<NangoConnection[]> {
         const result = await db.knex
             .withSchema(db.schema())
             .from<StoredConnection>(`_nango_connections`)
-            .select('id', 'connection_id', 'provider_config_key', 'account_id')
-            .where({ account_id: accountId, provider_config_key: providerConfigKey });
+            .select('id', 'connection_id', 'provider_config_key', 'environment_id')
+            .where({ environment_id, provider_config_key: providerConfigKey });
 
         if (!result || result.length == 0 || !result[0]) {
             return [];
@@ -185,19 +199,19 @@ class ConnectionService {
             .update({ field_mappings: fieldMappings });
     }
 
-    async listConnections(accountId: number, connectionId?: string): Promise<{ id: number; connection_id: number; provider: string; created: string }[]> {
+    async listConnections(environment_id: number, connectionId?: string): Promise<{ id: number; connection_id: number; provider: string; created: string }[]> {
         const queryBuilder = db.knex
             .withSchema(db.schema())
             .from<Connection>(`_nango_connections`)
             .select({ id: 'id' }, { connection_id: 'connection_id' }, { provider: 'provider_config_key' }, { created: 'created_at' })
-            .where({ account_id: accountId });
+            .where({ environment_id });
         if (connectionId) {
             queryBuilder.where({ connection_id: connectionId });
         }
         return queryBuilder;
     }
 
-    async deleteConnection(connection: Connection, providerConfigKey: string, accountId: number): Promise<number> {
+    async deleteConnection(connection: Connection, providerConfigKey: string, environment_id: number): Promise<number> {
         if (connection) {
             await deleteSyncScheduleForConnection(connection);
         }
@@ -205,7 +219,7 @@ class ConnectionService {
         return await db.knex
             .withSchema(db.schema())
             .from<Connection>(`_nango_connections`)
-            .where({ connection_id: connection.connection_id, provider_config_key: providerConfigKey, account_id: accountId })
+            .where({ connection_id: connection.connection_id, provider_config_key: providerConfigKey, environment_id })
             .del();
     }
 
@@ -218,6 +232,7 @@ class ConnectionService {
         instantRefresh = false
     ) {
         const accountId = getAccount(res);
+        const environmentId = getEnvironmentId(res);
 
         if (connectionId === null) {
             errorManager.errRes(res, 'missing_connection');
@@ -229,13 +244,13 @@ class ConnectionService {
             return;
         }
 
-        const connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, accountId);
+        const connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, environmentId);
 
         if (connection === null && activityLogId) {
             await createActivityLogMessageAndEnd({
                 level: 'error',
                 activity_log_id: activityLogId,
-                content: `Connection not found using connectionId: ${connectionId} and providerConfigKey: ${providerConfigKey}`,
+                content: `Connection not found using connectionId: ${connectionId} and providerConfigKey: ${providerConfigKey} and the environment: ${environmentId}`,
                 timestamp: Date.now()
             });
 
@@ -243,7 +258,7 @@ class ConnectionService {
             throw new Error(`Connection not found`);
         }
 
-        const config: ProviderConfig | null = await configService.getProviderConfig(connection?.provider_config_key as string, accountId);
+        const config: ProviderConfig | null = await configService.getProviderConfig(connection?.provider_config_key as string, environmentId);
 
         if (activityLogId) {
             await updateProviderActivityLog(activityLogId, config?.provider as string);
@@ -253,7 +268,7 @@ class ConnectionService {
             await createActivityLogMessageAndEnd({
                 level: 'error',
                 activity_log_id: activityLogId,
-                content: `Configuration not found using the providerConfigKey: ${providerConfigKey} and the account id: ${accountId}}`,
+                content: `Configuration not found using the providerConfigKey: ${providerConfigKey}, the account id: ${accountId} and the environment: ${environmentId}`,
                 timestamp: Date.now()
             });
 
@@ -358,7 +373,10 @@ class ConnectionService {
             instantRefresh ||
             (providerClient.shouldIntrospectToken(providerConfig.provider) && (await providerClient.introspectedTokenExpired(providerConfig, connection)));
         // If not expiration date is set, e.g. Github, we assume the token doesn't expire (unless introspection enable like Salesforce).
-        if (credentials.refresh_token && (refresh || (credentials.expires_at && isTokenExpired(credentials.expires_at)))) {
+        if (
+            credentials.refresh_token &&
+            (refresh || (credentials.expires_at && isTokenExpired(credentials.expires_at, template.token_expiration_buffer || 15 * 60)))
+        ) {
             const promise = new Promise<OAuth2Credentials>(async (resolve, reject) => {
                 try {
                     let newCredentials: OAuth2Credentials;

@@ -5,15 +5,14 @@ description: 'An example of how you can sync Slack Users with Nango'
 ---
 
 <Note>
-Nango Sync is currently in private beta.  
-Please reach out on the [Slack community](https://nango.dev/slack) to get access!
+This feature is currently in private beta. Please reach out on the [Slack community](https://nango.dev/slack) to get access!
 </Note>
 
 ## Integration configuration
 
 This example syncs users from the [Slack](/integrations/all/slack) API.
 
-To run it, configure a Slack integration ([localhost](http://localhost:3003/integration/create) / [cloud](https://app.nango.dev/integration/create)), using the Integration Unique Key `slack-dev` (cf. [Authorize APIs guide](/guides/oauth)).
+To run it, [configure a Slack integration](https://app.nango.dev/integration/create), using the _integration_Unique Key `slack-dev` (cf. [Authorize APIs guide](/guides/oauth)).
 
 Required scopes:
 - users:read
@@ -124,6 +123,6 @@ export default async function fetchData(nango: NangoSync): Promise<{SlackUser: S
 }
 ```
 
-## Need help with your sync?
+## Need help with your _sync_?
 
 Please reach out on the [Slack community](https://nango.dev/slack), we are very active there and happy to help!

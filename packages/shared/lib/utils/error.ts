@@ -86,7 +86,7 @@ export class NangoError extends Error {
                 this.message = 'Email already exists.';
                 break;
 
-            case 'unkown_user':
+            case 'unknown_user':
                 this.status = 404;
                 this.message = 'No user matching this email.';
                 break;
@@ -106,6 +106,11 @@ export class NangoError extends Error {
                 this.message = 'The API endpoint returned back a 400 error. Check the headers to ensure all proper headers are passed to the API.';
                 break;
 
+            case 'missing_environment_id':
+                this.status = 400;
+                this.message = `Missing param 'environment_id'.`;
+                break;
+
             case 'missing_provider_config':
                 this.status = 400;
                 this.message = `Missing param 'provider_config_key'.`;
@@ -120,7 +125,7 @@ export class NangoError extends Error {
                 this.status = 400;
                 this.message = `There is no Provider Configuration matching this key.`;
                 if (this.payload) {
-                    this.message += ` Please make sure this value exists in the Nango dashboard ${JSON.stringify(this.payload, null, 2)}}`;
+                    this.message += ` Please make sure this value exists in the Nango dashboard ${JSON.stringify(this.payload, null, 2)}`;
                 }
                 break;
 
@@ -153,7 +158,7 @@ export class NangoError extends Error {
                 this.status = 400;
                 this.message = `No connection matching the provided params of 'connection_id' and 'provider_config_key'.`;
                 if (this.payload) {
-                    this.message += ` Please make sure these values exist in the Nango dashboard ${JSON.stringify(this.payload, null, 2)}}`;
+                    this.message += ` Please make sure these values exist in the Nango dashboard ${JSON.stringify(this.payload, null, 2)}`;
                 }
                 break;
 

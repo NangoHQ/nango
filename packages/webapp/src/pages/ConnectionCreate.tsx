@@ -7,12 +7,13 @@ import { HelpCircle } from '@geist-ui/icons';
 import { Tooltip } from '@geist-ui/core';
 
 import useSet from '../hooks/useSet';
-import { isHosted, isStaging, baseUrl, isCloud } from '../utils/utils';
-import { useGetIntegrationListAPI, useGetProjectInfoAPI } from '../utils/api';
+import { isHosted, isStaging, baseUrl } from '../utils/utils';
+import { useGetIntegrationListAPI, useGetProjectInfoAPI, useGetHmacAPI } from '../utils/api';
 import { useAnalyticsTrack } from '../utils/analytics';
 import DashboardLayout from '../layout/DashboardLayout';
 import TagsInput from '../components/ui/input/TagsInput';
 import { LeftNavBarItems } from '../components/LeftNavBar';
+import { useStore } from '../store';
 
 interface Integration {
     uniqueKey: string;
@@ -30,14 +31,40 @@ export default function IntegrationCreate() {
     const [integration, setIntegration] = useState<Integration | null>(null);
     const [connectionId, setConnectionId] = useState<string>('test-connection-id');
     const [connectionConfigParams, setConnectionConfigParams] = useState<Record<string, string> | null>(null);
+    const [authorizationParams, setAuthorizationParams] = useState<Record<string, string> | null>(null);
+    const [authorizationParamsError, setAuthorizationParamsError] = useState<boolean>(false);
     const [selectedScopes, addToScopesSet, removeFromSelectedSet] = useSet<string>();
     const [publicKey, setPublicKey] = useState('');
     const [hostUrl, setHostUrl] = useState('');
     const [websocketsPath, setWebsocketsPath] = useState('');
+    const [isHmacEnabled, setIsHmacEnabled] = useState(false);
+    const [hmacDigest, setHmacDigest] = useState('');
     const getIntegrationListAPI = useGetIntegrationListAPI();
     const getProjectInfoAPI = useGetProjectInfoAPI();
     const analyticsTrack = useAnalyticsTrack();
+    const getHmacAPI = useGetHmacAPI();
     const { providerConfigKey } = useParams();
+    const env = useStore(state => state.cookieValue);
+
+    useEffect(() => {
+        setLoaded(false);
+    }, [env]);
+
+    useEffect(() => {
+        const getHmac = async () => {
+            let res = await getHmacAPI(integration?.uniqueKey as string, connectionId);
+
+            if (res?.status === 200) {
+                const hmacDigest = (await res.json())['hmac_digest'];
+                setHmacDigest(hmacDigest);
+            }
+        }
+        if (isHmacEnabled && integration?.uniqueKey && connectionId) {
+            console.log(isHmacEnabled, integration?.uniqueKey, connectionId, getHmacAPI)
+            getHmac();
+        }
+    }, [isHmacEnabled, integration?.uniqueKey, connectionId, getHmacAPI]);
+
 
     useEffect(() => {
         const getIntegrations = async () => {
@@ -66,6 +93,8 @@ export default function IntegrationCreate() {
                 setPublicKey(account.public_key);
                 setHostUrl(account.host || baseUrl());
                 setWebsocketsPath(account.websockets_path); // Undefined is ok, as it's optional.
+                setHmacDigest(account.hmac_digest ?? '');
+                setIsHmacEnabled(Boolean(account.hmac_key))
             }
         };
 
@@ -85,12 +114,18 @@ export default function IntegrationCreate() {
             connection_id: { value: string };
             connection_config_params: { value: string };
             user_scopes: { value: string };
+            authorization_params: { value: string | undefined };
         };
 
-        const nango = new Nango({ host: hostUrl, websocketsPath: websocketsPath, publicKey: isCloud() ? publicKey : undefined });
+        const nango = new Nango({ host: hostUrl, websocketsPath, publicKey });
 
         nango
-            .auth(target.integration_unique_key.value, target.connection_id.value, { user_scope: selectedScopes || [], params: connectionConfigParams || {} })
+            .auth(target.integration_unique_key.value, target.connection_id.value, {
+                user_scope: selectedScopes || [],
+                params: connectionConfigParams || {},
+                authorization_params: authorizationParams || {},
+                hmac: hmacDigest || ''
+            })
             .then(() => {
                 toast.success('Connection created!', { position: toast.POSITION.BOTTOM_CENTER });
                 analyticsTrack('web:connection_created', { provider: integration?.provider || 'unknown' });
@@ -137,6 +172,16 @@ export default function IntegrationCreate() {
         setConnectionConfigParams(params);
     };
 
+    const handleAuthorizationParamsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        try {
+            setAuthorizationParams(JSON.parse(e.target.value));
+            setAuthorizationParamsError(false);
+        } catch (e) {
+            setAuthorizationParams(null);
+            setAuthorizationParamsError(true);
+        }
+    };
+
     const snippet = () => {
         let args = [];
 
@@ -147,40 +192,63 @@ export default function IntegrationCreate() {
             }
         }
 
-        if (isCloud() && publicKey) {
+        if (publicKey) {
             args.push(`publicKey: '${publicKey}'`);
         }
 
         let argsStr = args.length > 0 ? `{ ${args.join(', ')} }` : '';
 
-        let connectionConfigStr = '';
+        let connectionConfigParamsStr = '';
 
-        // Iterate of connectionConfigParams and create a string.
+        // Iterate of connection config params and create a string.
         if (connectionConfigParams != null && Object.keys(connectionConfigParams).length >= 0) {
-            connectionConfigStr = ', { params: { ';
+            connectionConfigParamsStr = 'params: { ';
             for (const [key, value] of Object.entries(connectionConfigParams)) {
-                connectionConfigStr += `${key}: '${value}', `;
+                connectionConfigParamsStr += `${key}: '${value}', `;
             }
-            connectionConfigStr = connectionConfigStr.slice(0, -2);
-            connectionConfigStr += ' }}';
+            connectionConfigParamsStr = connectionConfigParamsStr.slice(0, -2);
+            connectionConfigParamsStr += ' }';
+        }
+
+        let authorizationParamsStr = '';
+
+        // Iterate of authorization params and create a string.
+        if (authorizationParams != null && Object.keys(authorizationParams).length >= 0 && Object.keys(authorizationParams)[0]) {
+            authorizationParamsStr = 'authorization_params: { ';
+            for (const [key, value] of Object.entries(authorizationParams)) {
+                authorizationParamsStr += `${key}: '${value}', `;
+            }
+            authorizationParamsStr = authorizationParamsStr.slice(0, -2);
+            authorizationParamsStr += ' }';
+        }
+
+        let hmacKeyStr = '';
+
+        if (hmacDigest) {
+            hmacKeyStr = `hmac: '${hmacDigest}'`;
         }
 
         let userScopesStr = '';
 
         if (selectedScopes != null && selectedScopes.length > 0) {
-            userScopesStr = ', { user_scope: [ ';
+            userScopesStr = 'user_scope: [ ';
             for (const scope of selectedScopes) {
                 userScopesStr += `'${scope}', `;
             }
             userScopesStr = userScopesStr.slice(0, -2);
-            userScopesStr += ' ] }';
+            userScopesStr += ' ]';
         }
+
+        const connectionConfigStr =
+            !connectionConfigParamsStr && !authorizationParamsStr && !userScopesStr && !hmacKeyStr
+                ? ''
+                : ', { ' + [connectionConfigParamsStr, authorizationParamsStr, hmacKeyStr, userScopesStr].filter(Boolean).join(', ') + ' }';
 
         return `import Nango from '@nangohq/frontend';
 
 const nango = new Nango(${argsStr});
 
-nango.auth('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr}${userScopesStr}).then((result: { providerConfigKey: string; connectionId: string }) => {
+nango.auth('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr}).then((result: { providerConfigKey: string; connectionId: string }) => {
     // do something
 }).catch((err: { message: string; type: string }) => {
     // handle error
@@ -307,6 +375,37 @@ nango.auth('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr}$
                                     </div>
                                 </div>
                             ))}
+
+                            <div>
+                                <div className="flex mt-6">
+                                    <label htmlFor="client_id" className="text-text-light-gray block text-sm font-semibold">
+                                        Optional: Additional Authorization Params
+                                    </label>
+                                    <Tooltip
+                                        text={
+                                            <>
+                                                <div className="flex text-black text-sm">
+                                                    <p>{`Add query parameters in the authorization URL, on a per-connection basis. Most integrations don't require this. This should be formatted as a JSON object, e.g. { "key" : "value" }. `}</p>
+                                                </div>
+                                            </>
+                                        }
+                                    >
+                                        <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                    </Tooltip>
+                                </div>
+                                <div className="mt-1">
+                                    <input
+                                        id="authorization_params"
+                                        name="authorization_params"
+                                        type="text"
+                                        defaultValue="{ }"
+                                        className={`${authorizationParamsError ? 'border-red-700' : 'border-border-gray'}  ${
+                                            authorizationParamsError ? 'text-red-700' : 'text-text-light-gray'
+                                        } focus:ring-white bg-bg-black block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none`}
+                                        onChange={handleAuthorizationParamsChange}
+                                    />
+                                </div>
+                            </div>
 
                             <div>
                                 {serverErrorMessage && <p className="mt-6 text-sm text-red-600">{serverErrorMessage}</p>}

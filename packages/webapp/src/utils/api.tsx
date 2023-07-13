@@ -130,6 +130,62 @@ export function useEditCallbackUrlAPI() {
     };
 }
 
+export function useEditHmacEnabledAPI() {
+    const signout = useSignout();
+
+    return async (hmacEnabled: boolean) => {
+        try {
+            const options = {
+                method: 'POST',
+                headers: getHeaders(),
+                body: JSON.stringify({ hmac_enabled: hmacEnabled })
+            };
+
+            let res = await fetch('/api/v1/account/hmac-enabled', options);
+
+            if (res.status === 401) {
+                return signout();
+            }
+
+            if (res.status !== 200) {
+                return serverErrorToast();
+            }
+
+            return res;
+        } catch (e) {
+            requestErrorToast();
+        }
+    };
+}
+
+export function useEditHmacKeyAPI() {
+    const signout = useSignout();
+
+    return async (hmacKey: string) => {
+        try {
+            const options = {
+                method: 'POST',
+                headers: getHeaders(),
+                body: JSON.stringify({ hmac_key: hmacKey })
+            };
+
+            let res = await fetch('/api/v1/account/hmac-key', options);
+
+            if (res.status === 401) {
+                return signout();
+            }
+
+            if (res.status !== 200) {
+                return serverErrorToast();
+            }
+
+            return res;
+        } catch (e) {
+            requestErrorToast();
+        }
+    };
+}
+
 export function useEditWebhookUrlAPI() {
     const signout = useSignout();
 
@@ -449,6 +505,21 @@ export function useGetSyncAPI() {
     };
 }
 
+export function useGetHmacAPI() {
+    return async (providerConfigKey: string, connectionId: string) => {
+        try {
+            const res = await fetch(`/api/v1/account/hmac?connection_id=${connectionId}&provider_config_key=${providerConfigKey}`, {
+                method: 'GET',
+                headers: getHeaders(),
+            });
+
+            return res;
+        } catch (e) {
+            requestErrorToast();
+        }
+    };
+}
+
 export function useGetAllSyncsAPI() {
     return async () => {
         try {
@@ -480,3 +551,4 @@ export function useRunSyncAPI() {
 
     };
 }
+

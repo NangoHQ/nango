@@ -9,7 +9,7 @@ export interface Config {
     oauth_client_id: string;
     oauth_client_secret: string;
     oauth_scopes?: string;
-    account_id: number;
+    environment_id: number;
     oauth_client_secret_iv?: string | null;
     oauth_client_secret_tag?: string | null;
 }
@@ -28,6 +28,7 @@ export interface Template {
     token_response_metadata?: Array<string>;
     base_api_url?: string;
     docs?: string;
+    token_expiration_buffer?: number; // In seconds.
 }
 
 export interface TemplateAlias {

@@ -5,21 +5,20 @@ description: 'Get real-time updates when new data is available.'
 ---
 
 <Note>
-Nango Sync is currently in private beta.  
-Please reach out on the [Slack community](https://nango.dev/slack) to get access!
+This feature is currently in private beta. Please reach out on the [Slack community](https://nango.dev/slack) to get access!
 </Note>
 
 ## Webhooks from Nango to your app[](#from-nango)
 
 You can configure Nango to send a webhook to your app every time a sync finishes and new data is available.
 
-To set this up go to Project Settings page ([localhost](http://localhost:3003/project-settings) / [cloud](https://app.nango.dev/project-settings)) and set your webhook receive URL there.
+To set this up go to [Project Settings page](https://app.nango.dev/project-settings) and set your webhook receive URL there.
 
 The webhook from Nango is a POST request with the following body:
 
 ```json
 {
-    "connectionId": "<user-id>",              // The Connection's ID, as set by you in nango.auth
+    "connectionId": "<user-id>",              // The connection's ID, as set by you in nango.auth
     "providerConfigKey": "<integration-id>",  // The name of the integration in Nango, e.g. github
     "syncName": "<sync-name>",                // The name of the sync as defined in nango.yaml, e.g. github-tickets
     "model": "<data-model>",                  // The name of the data model, e.g. ticket
@@ -55,5 +54,5 @@ app.post('/webhook', (req, res) => {
 
 You can handle incoming webhooks form external APIs using Nango:
 - Configure the webhook with your application as you would normally do
-- Write a Sync script that returns the data models you want (it can perform additional API requests if needed)
-- Upon webhook reception, trigger the Sync script and pass it the webhook payload
+- Write a _sync_ script that returns the data models you want (it can perform additional API requests if needed)
+- Upon webhook reception, trigger the _sync_ script and pass it the webhook payload
