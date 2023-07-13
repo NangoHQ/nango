@@ -6,6 +6,5 @@
     "sourceMap": true,
     "composite": true,
     "checkJs": false
-  },
-  "exclude": ["**/*.test.ts", "**/*.spec.ts", "node_modules"]
+  }
 }

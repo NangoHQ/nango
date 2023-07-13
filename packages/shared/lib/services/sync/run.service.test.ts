@@ -5,6 +5,7 @@ import environmentService from '../environment.service.js';
 import * as NangoConfigService from '../nango-config.service.js';
 import integationService from './integration.service.js';
 import { SyncType } from '../../models/Sync.js';
+import type { Environment } from '../../models/Environment.js';
 
 describe('SyncRun', () => {
     it('should initialize correctly', () => {
@@ -57,21 +58,21 @@ describe('SyncRun', () => {
         const syncRun = new SyncRun(config);
 
         vi.spyOn(environmentService, 'getById').mockImplementation(() => {
-            return {
-                environment_id: 1,
+            return Promise.resolve({
+                id: 1,
                 name: 'test',
                 account_id: 1,
                 secret_key: '1234'
-            };
+            } as Environment);
         });
 
         vi.spyOn(ConfigService, 'getSyncConfig').mockImplementation(() => {
-            return {
+            return Promise.resolve({
                 integrations: {
                     test_key: {
                         test_sync: {
                             runs: 'every 6h',
-                            returns: 'Foo'
+                            returns: ['Foo']
                         }
                     }
                 },
@@ -80,7 +81,7 @@ describe('SyncRun', () => {
                         name: 'Foo'
                     }
                 }
-            };
+            });
         });
 
         vi.spyOn(NangoConfigService, 'checkForIntegrationFile').mockImplementation(() => {
@@ -91,9 +92,9 @@ describe('SyncRun', () => {
         });
 
         vi.spyOn(integationService, 'runScript').mockImplementation(() => {
-            return {
+            return Promise.resolve({
                 some: 'data'
-            };
+            });
         });
 
         const run = await syncRun.run();
