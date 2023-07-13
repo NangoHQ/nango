@@ -7,7 +7,7 @@ icon: 'node'
 The backend Node SDK lets you:
 - retrieve [API credentials](/guides/oauth)
 - retrieve [synced data](/guides/sync)
-- manage [Connections](/core-concepts#connections) and [Syncs](/core-concepts#syncs)
+- manage [connections](/core-concepts#connections) and [syncs](/core-concepts#syncs)
 - [proxy requests](/guides/proxy) to external APIs
 - get types for [webhooks](/guides/webhooks)
 
@@ -37,7 +37,7 @@ let nango = new Nango({ secretKey: '<SECRET-KEY>' });
 ```js
 import { Nango } from '@nangohq/node';
 
-let nango = new Nango({ host: 'http://localhost:3003' });
+let nango = new Nango({ host: 'http://localhost:3003', secretKey: '<SECRET-KEY>' });
 ```
 
 </Tab>
@@ -47,7 +47,7 @@ let nango = new Nango({ host: 'http://localhost:3003' });
 ```js
 import { Nango } from '@nangohq/node';
 
-let nango = new Nango({ host: '<NANGO-HOST-AND-PORT>' });
+let nango = new Nango({ host: '<INSTANCE-URL>', secretKey: '<SECRET-KEY>' });
 ```
 
 </Tab>
@@ -71,9 +71,9 @@ let creds = await nango.getToken('<INTEGRATION-ID>', '<CONNECTION-ID>');
 We refresh the token if needed. Caching it on your side could lead to failed requests.
 </Tip>
 
-### Retrieve Connection details
+### Retrieve _connection_ details
 
-Use this method to retrieve all the details Nango stores on a specific Connection:
+Use this method to retrieve all the details Nango stores on a specific _connection_:
 
 ```js
 let connection = await nango.getConnection(
@@ -114,13 +114,13 @@ This returns you all [Connections](/core-concepts#connections) of a specific use
 let list = await nango.listConnections();
 ```
 
-Returns a list of minimalistic [Connection](/core-concepts#connections) objects. This can be helpful if you need to check whether a user has setup a specific [Integration](/core-concepts#integrations). Note that the list does not contain any access credentials and fetching it also does not refresh the access tokens of any Connections.
+Returns a list of minimalistic [Connection](/core-concepts#connections) objects. This can be helpful if you need to check whether a user has setup a specific [Integration](/core-concepts#integrations). Note that the list does not contain any access credentials and fetching it also does not refresh the access tokens of any _connections_.
 
 Please check the [REST API reference](/api-reference/connection/list) for an example response and the full list of returned fields.
 
-### Retrieve Integration details
+### Retrieve _integration_ details
 
-Use this method to retrieve all the details Nango stores on a specific Integration:
+Use this method to retrieve all the details Nango stores on a specific _integration_:
 
 ```js
 let integration = await nango.getIntegration(

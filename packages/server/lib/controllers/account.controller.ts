@@ -1,21 +1,46 @@
 import type { Request, Response, NextFunction } from 'express';
-import { accountService, errorManager, isCloud, getBaseUrl, getWebsocketsPath } from '@nangohq/shared';
-import { getOauthCallbackUrl, getUserAndAccountFromSession } from '../utils/utils.js';
+import { environmentService, errorManager, getBaseUrl, isCloud, getWebsocketsPath, getOauthCallbackUrl } from '@nangohq/shared';
+import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
+import hmacService from '../services/hmac.service.js';
 
 class AccountController {
     async getAccount(req: Request, res: Response, next: NextFunction) {
         try {
-            const account = (await getUserAndAccountFromSession(req)).account;
+            const { environment } = await getUserAccountAndEnvironmentFromSession(req);
 
             if (!isCloud()) {
-                account.callback_url = await getOauthCallbackUrl();
-                account.secret_key = process.env['NANGO_SECRET_KEY'] || '(none)';
-                account.websockets_path = getWebsocketsPath();
+                environment.websockets_path = getWebsocketsPath();
             }
 
-            account.host = getBaseUrl();
+            environment.callback_url = await getOauthCallbackUrl(environment.id);
 
-            res.status(200).send({ account: account });
+            res.status(200).send({ account: { ...environment, host: getBaseUrl() } });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async getHmacDigest(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { environment } = await getUserAccountAndEnvironmentFromSession(req);
+            const { provider_config_key: providerConfigKey, connection_id: connectionId } = req.query;
+
+            if (!providerConfigKey) {
+                errorManager.errRes(res, 'missing_provider_config_key');
+                return;
+            }
+
+            if (!connectionId) {
+                errorManager.errRes(res, 'missing_connection_id');
+                return;
+            }
+
+            if (environment.hmac_enabled && environment.hmac_key) {
+                const digest = await hmacService.digest(environment.id, providerConfigKey as string, connectionId as string);
+                res.status(200).send({ hmac_digest: digest });
+            } else {
+                res.status(200).send({ hmac_digest: null });
+            }
         } catch (err) {
             next(err);
         }
@@ -33,9 +58,9 @@ class AccountController {
                 return;
             }
 
-            const account = (await getUserAndAccountFromSession(req)).account;
+            const environment = (await getUserAccountAndEnvironmentFromSession(req)).environment;
 
-            await accountService.editAccountCallbackUrl(req.body['callback_url'], account.id);
+            await environmentService.editCallbackUrl(req.body['callback_url'], environment.id);
             res.status(200).send();
         } catch (err) {
             next(err);
@@ -49,9 +74,41 @@ class AccountController {
                 return;
             }
 
-            const account = (await getUserAndAccountFromSession(req)).account;
+            const environment = (await getUserAccountAndEnvironmentFromSession(req)).environment;
 
-            await accountService.editAccountWebhookUrl(req.body['webhook_url'], account.id);
+            await environmentService.editWebhookUrl(req.body['webhook_url'], environment.id);
+            res.status(200).send();
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async updateHmacEnabled(req: Request, res: Response, next: NextFunction) {
+        try {
+            if (!req.body) {
+                errorManager.errRes(res, 'missing_body');
+                return;
+            }
+
+            const environment = (await getUserAccountAndEnvironmentFromSession(req)).environment;
+
+            await environmentService.editHmacEnabled(req.body['hmac_enabled'], environment.id);
+            res.status(200).send();
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async updateHmacKey(req: Request, res: Response, next: NextFunction) {
+        try {
+            if (!req.body) {
+                errorManager.errRes(res, 'missing_body');
+                return;
+            }
+
+            const environment = (await getUserAccountAndEnvironmentFromSession(req)).environment;
+
+            await environmentService.editHmacKey(req.body['hmac_key'], environment.id);
             res.status(200).send();
         } catch (err) {
             next(err);

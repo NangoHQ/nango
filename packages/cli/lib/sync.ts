@@ -33,9 +33,11 @@ import {
     verifyNecessaryFiles,
     getConnection,
     NANGO_INTEGRATIONS_LOCATION,
+    NANGO_INTEGRATIONS_NAME,
     buildInterfaces,
     enrichHeaders,
     getNangoRootPath,
+    getProviderBySyncName,
     printDebug
 } from './utils.js';
 import type { DeployOptions, GlobalOptions } from './types.js';
@@ -50,39 +52,239 @@ const NangoSyncTypesFileLocation = 'dist/nango-sync.d.ts';
 
 interface RunArgs extends GlobalOptions {
     sync: string;
-    provider: string;
-    connection: string;
+    connectionId: string;
     lastSyncDate?: string;
     useServerLastSyncDate?: boolean;
 }
 
 const exampleSyncName = 'github-issue-example';
 
-const createModelFile = (notify = false) => {
+export const version = (debug: boolean) => {
+    if (debug) {
+        printDebug('Looking up the version first for a local path first then globally');
+    }
+    const packageJson = JSON.parse(fs.readFileSync(path.resolve(getNangoRootPath(debug) as string, 'package.json'), 'utf8'));
+    const dockerComposeYaml = fs.readFileSync(path.resolve(getNangoRootPath() as string, 'docker/docker-compose.yaml'), 'utf8');
+    const dockerCompose = yaml.load(dockerComposeYaml) as any;
+
+    const nangoServerImage = dockerCompose.services['nango-server'].image;
+    const nangoWorkerImage = dockerCompose.services['nango-worker'].image;
+
+    const nangoServerVersion = nangoServerImage.split(':').pop();
+    const nangoWorkerVersion = nangoWorkerImage.split(':').pop();
+
+    console.log(chalk.green('Nango Server version:'), nangoServerVersion);
+    console.log(chalk.green('Nango Worker version:'), nangoWorkerVersion);
+    console.log(chalk.green('Nango CLI version:'), packageJson.version);
+};
+
+/**
+ * Init
+ * If we're not currently in the nango-integrations directory create one
+ * and create an example nango.yaml file
+ */
+export const init = (debug = false) => {
+    const data: NangoConfig = {
+        integrations: {
+            'demo-github-integration': {
+                [exampleSyncName]: {
+                    runs: 'every half hour',
+                    returns: ['GithubIssue']
+                }
+            }
+        },
+        models: {
+            GithubIssue: {
+                id: 'integer',
+                owner: 'string',
+                repo: 'string',
+                issue_number: 'number',
+                title: 'string',
+                author: 'string',
+                author_id: 'string',
+                state: 'string',
+                date_created: 'date',
+                date_last_modified: 'date',
+                body: 'string'
+            }
+        }
+    };
+    const yamlData = yaml.dump(data);
+
+    // if currently in the nango-integrations directory then don't create another one
     const cwd = process.cwd();
-    const configContents = fs.readFileSync(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/${nangoConfigFile}`), 'utf8');
+    const currentDirectorySplit = cwd.split('/');
+    const currentDirectory = currentDirectorySplit[currentDirectorySplit.length - 1];
+
+    let dirExists = false;
+    let inParentDirectory = true;
+
+    if (currentDirectory === NANGO_INTEGRATIONS_NAME) {
+        dirExists = true;
+        inParentDirectory = false;
+        if (debug) {
+            printDebug(`Currently in the ${NANGO_INTEGRATIONS_NAME} directory so the directory will not be created`);
+        }
+    }
+
+    if (fs.existsSync(`./${NANGO_INTEGRATIONS_NAME}`)) {
+        dirExists = true;
+        console.log(chalk.red(`The ${NANGO_INTEGRATIONS_NAME} directory already exists. You should run commands from within this directory`));
+    }
+
+    if (!dirExists) {
+        if (debug) {
+            printDebug(`Creating the nango integrations directory at ./${NANGO_INTEGRATIONS_NAME}`);
+        }
+        fs.mkdirSync(`./${NANGO_INTEGRATIONS_NAME}`);
+    }
+
+    const configFileLocation = inParentDirectory ? `./${NANGO_INTEGRATIONS_NAME}/${nangoConfigFile}` : `./${nangoConfigFile}`;
+
+    if (!fs.existsSync(configFileLocation)) {
+        if (debug) {
+            printDebug(`Creating the ${nangoConfigFile} file at ${configFileLocation}`);
+        }
+        fs.writeFileSync(configFileLocation, yamlData);
+    } else {
+        if (debug) {
+            printDebug(`Nango config file already exists at ${configFileLocation} so not creating a new one`);
+        }
+    }
+
+    const envFileLocation = inParentDirectory ? `./${NANGO_INTEGRATIONS_NAME}/.env` : './.env';
+    if (!fs.existsSync(envFileLocation)) {
+        if (debug) {
+            printDebug(`Creating the .env file at ${envFileLocation}`);
+        }
+        fs.writeFileSync(
+            envFileLocation,
+            `# Authenticates the CLI (get the keys in the dashboard's Projects Settings).
+#NANGO_SECRET_KEY_DEV=xxxx-xxx-xxxx
+#NANGO_SECRET_KEY_PROD=xxxx-xxx-xxxx
+
+# Nango's instance URL (OSS: change to http://localhost:3003 or your instance URL).
+NANGO_HOSTPORT=https://api.nango.dev # Default value
+
+# How to handle CLI upgrades ("prompt", "auto" or "ignore").
+NANGO_CLI_UPGRADE_MODE=prompt # Default value
+
+# Whether to prompt before deployments.
+NANGO_DEPLOY_AUTO_CONFIRM=false # Default value`
+        );
+    } else {
+        if (debug) {
+            printDebug(`.env file already exists at ${envFileLocation} so not creating a new one`);
+        }
+    }
+
+    console.log(chalk.green(`Nango integrations initialized!`));
+};
+
+export const generate = async (debug = false) => {
+    const templateContents = fs.readFileSync(path.resolve(__dirname, './integration.ejs'), 'utf8');
+    const githubExampleTemplateContents = fs.readFileSync(path.resolve(__dirname, './integration.github.ejs'), 'utf8');
+
+    const configContents = fs.readFileSync(`./${nangoConfigFile}`, 'utf8');
     const configData: NangoConfig = yaml.load(configContents) as unknown as NangoConfig;
+    const { integrations } = configData;
     const { models } = configData;
-    const interfaceDefinitions = buildInterfaces(models);
+
+    const interfaceDefinitions = buildInterfaces(models, debug);
+
     fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/${TYPES_FILE_NAME}`, interfaceDefinitions.join('\n'));
+
+    if (debug) {
+        printDebug(`Interfaces from the ${nangoConfigFile} file written to ${TYPES_FILE_NAME}`);
+    }
 
     // insert NangoSync types to the bottom of the file
     const typesContent = fs.readFileSync(`${getNangoRootPath()}/${NangoSyncTypesFileLocation}`, 'utf8');
     fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/${TYPES_FILE_NAME}`, typesContent, { flag: 'a' });
 
+    if (debug) {
+        printDebug(`NangoSync types written to ${TYPES_FILE_NAME}`);
+    }
+
+    const allSyncNames: Record<string, boolean> = {};
+
+    for (let i = 0; i < Object.keys(integrations).length; i++) {
+        const providerConfigKey = Object.keys(integrations)[i] as string;
+        if (debug) {
+            printDebug(`Generating ${providerConfigKey} integrations`);
+        }
+        const syncObject = integrations[providerConfigKey] as unknown as { [key: string]: NangoIntegration };
+        const syncNames = Object.keys(syncObject);
+        for (let k = 0; k < syncNames.length; k++) {
+            const syncName = syncNames[k] as string;
+
+            if (allSyncNames[syncName] === undefined) {
+                allSyncNames[syncName] = true;
+            } else {
+                console.log(chalk.red(`The sync name ${syncName} is duplicated in the ${nangoConfigFile} file. All sync names must be unique.`));
+                process.exit(1);
+            }
+
+            if (debug) {
+                printDebug(`Generating ${syncName} integration`);
+            }
+            const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
+            const { returns: models } = syncData;
+            const syncNameCamel = syncName
+                .split('-')
+                .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                .join('');
+            const ejsTeamplateContents = syncName === exampleSyncName ? githubExampleTemplateContents : templateContents;
+            const rendered = ejs.render(ejsTeamplateContents, {
+                syncName: syncNameCamel,
+                interfaceFileName: TYPES_FILE_NAME.replace('.ts', ''),
+                interfaceNames: models.map((model) => {
+                    const singularModel = model?.charAt(model.length - 1) === 's' ? model.slice(0, -1) : model;
+                    return `${singularModel.charAt(0).toUpperCase()}${singularModel.slice(1)}`;
+                }),
+                mappings: models.map((model) => {
+                    const singularModel = model.charAt(model.length - 1) === 's' ? model.slice(0, -1) : model;
+                    return {
+                        name: model,
+                        type: `${singularModel.charAt(0).toUpperCase()}${singularModel.slice(1)}`
+                    };
+                })
+            });
+
+            if (!fs.existsSync(`${NANGO_INTEGRATIONS_LOCATION}/${syncName}.ts`)) {
+                fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/${syncName}.ts`, rendered);
+                if (debug) {
+                    printDebug(`Created ${syncName}.ts file`);
+                }
+            } else {
+                if (debug) {
+                    printDebug(`${syncName}.ts file already exists, so will not overwrite it.`);
+                }
+            }
+        }
+    }
+
+    console.log(chalk.green(`Integration files have been created`));
+};
+
+const createModelFile = (notify = false) => {
+    const configContents = fs.readFileSync(`./${nangoConfigFile}`, 'utf8');
+    const configData: NangoConfig = yaml.load(configContents) as unknown as NangoConfig;
+    const { models } = configData;
+    const interfaceDefinitions = buildInterfaces(models);
+    fs.writeFileSync(`./${TYPES_FILE_NAME}`, interfaceDefinitions.join('\n'));
+
+    // insert NangoSync types to the bottom of the file
+    const typesContent = fs.readFileSync(`${getNangoRootPath()}/${NangoSyncTypesFileLocation}`, 'utf8');
+    fs.writeFileSync(`./${TYPES_FILE_NAME}`, typesContent, { flag: 'a' });
+
     if (notify) {
-        const rawNangoIntegrationLocation = NANGO_INTEGRATIONS_LOCATION.replace('./', '');
-        console.log(
-            chalk.green(
-                `${rawNangoIntegrationLocation}/${nangoConfigFile} was updated. The interface file (${rawNangoIntegrationLocation}/${TYPES_FILE_NAME}) was updated to reflect the updated config`
-            )
-        );
+        console.log(chalk.green(`The ${nangoConfigFile} was updated. The interface file (${TYPES_FILE_NAME}) was updated to reflect the updated config`));
     }
 };
 
 const getConfig = async (debug = false) => {
-    const cwd = process.cwd();
-    const config = await loadSimplifiedConfig(path.resolve(cwd, NANGO_INTEGRATIONS_LOCATION));
+    const config = await loadSimplifiedConfig('./');
 
     if (!config) {
         throw new Error(`Error loading the ${nangoConfigFile} file`);
@@ -95,23 +297,42 @@ const getConfig = async (debug = false) => {
     return config;
 };
 
-export const deploy = async (options: DeployOptions, debug = false) => {
-    const { env, version, sync: optionalSyncName, secretKey, host, autoConfirm } = options;
+async function parseSecretKey(environment: string, debug = false): Promise<void> {
+    if (process.env['NANGO_SECRET_KEY_PROD'] && environment === 'prod') {
+        if (debug) {
+            printDebug(`Environment is set to prod, setting NANGO_SECRET_KEY to NANGO_SECRET_KEY_PROD.`);
+        }
+        process.env['NANGO_SECRET_KEY'] = process.env['NANGO_SECRET_KEY_PROD'];
+    }
+
+    if (process.env['NANGO_SECRET_KEY_DEV'] && environment === 'dev') {
+        if (debug) {
+            printDebug(`Environment is set to dev, setting NANGO_SECRET_KEY to NANGO_SECRET_KEY_DEV.`);
+        }
+        process.env['NANGO_SECRET_KEY'] = process.env['NANGO_SECRET_KEY_DEV'];
+    }
+
+    if (!process.env['NANGO_SECRET_KEY']) {
+        console.log(chalk.red(`NANGO_SECRET_KEY environment variable is not set. Please set it now`));
+        try {
+            const secretKey = await promptly.prompt('Secret Key: ');
+            if (secretKey) {
+                process.env['NANGO_SECRET_KEY'] = secretKey;
+            } else {
+                return;
+            }
+        } catch (error) {
+            console.log('Error occurred while trying to prompt for secret key:', error);
+            process.exit(1);
+        }
+    }
+}
+
+export const deploy = async (options: DeployOptions, environment: string, debug = false) => {
+    const { env, version, sync: optionalSyncName, autoConfirm } = options;
     await verifyNecessaryFiles(autoConfirm);
 
-    if (host) {
-        if (debug) {
-            printDebug(`Global host flag is set, setting NANGO_HOSTPORT to ${host}.`);
-        }
-        process.env['NANGO_HOSTPORT'] = host;
-    }
-
-    if (secretKey) {
-        if (debug) {
-            printDebug(`Global secretKey flag is set, setting NANGO_SECRET_KEY.`);
-        }
-        process.env['NANGO_SECRET_KEY'] = secretKey;
-    }
+    await parseSecretKey(environment, debug);
 
     if (!process.env['NANGO_HOSTPORT']) {
         switch (env) {
@@ -129,27 +350,12 @@ export const deploy = async (options: DeployOptions, debug = false) => {
 
     if (debug) {
         printDebug(`NANGO_HOSTPORT is set to ${process.env['NANGO_HOSTPORT']}.`);
-    }
-
-    if (process.env['NANGO_HOSTPORT'] !== `http://localhost:${port}` && !process.env['NANGO_SECRET_KEY']) {
-        console.log(chalk.red(`NANGO_SECRET_KEY environment variable is not set. Please set it now`));
-        try {
-            const secretKey = await promptly.prompt('Secret Key: ');
-            if (secretKey) {
-                process.env['NANGO_SECRET_KEY'] = secretKey;
-            } else {
-                return;
-            }
-        } catch (error) {
-            console.log('Error occurred while trying to prompt for secret key:', error);
-            process.exit(1);
-        }
+        printDebug(`Environment is set to ${environment}`);
     }
 
     tsc(debug);
 
     const config = await getConfig(debug);
-    const cwd = process.cwd();
 
     const postData: IncomingSyncConfig[] = [];
 
@@ -164,10 +370,7 @@ export const deploy = async (options: DeployOptions, debug = false) => {
         for (const sync of syncs) {
             const { name: syncName, runs, returns: models, models: model_schema } = sync;
 
-            const { path: integrationFilePath, result: integrationFileResult } = checkForIntegrationFile(
-                syncName,
-                path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}`)
-            );
+            const { path: integrationFilePath, result: integrationFileResult } = checkForIntegrationFile(syncName, './');
 
             if (!integrationFileResult) {
                 console.log(chalk.red(`No integration file found for ${syncName} at ${integrationFilePath}. Skipping...`));
@@ -199,7 +402,7 @@ export const deploy = async (options: DeployOptions, debug = false) => {
         return;
     }
 
-    if (!process.env['NANGO_DEPLOY_AUTO_CONFIRM'] && !autoConfirm) {
+    if (process.env['NANGO_DEPLOY_AUTO_CONFIRM'] !== 'true' && !autoConfirm) {
         const confirmationUrl = process.env['NANGO_HOSTPORT'] + `/sync/deploy/confirmation`;
         try {
             const response = await axios.post(
@@ -304,215 +507,10 @@ async function deploySyncs(url: string, body: { syncs: IncomingSyncConfig[]; rec
         });
 }
 
-export const version = (debug: boolean) => {
-    if (debug) {
-        printDebug('Looking up the version first for a local path first then globally');
-    }
-    const packageJson = JSON.parse(fs.readFileSync(path.resolve(getNangoRootPath(debug) as string, 'package.json'), 'utf8'));
-    const dockerComposeYaml = fs.readFileSync(path.resolve(getNangoRootPath() as string, 'docker/docker-compose.yaml'), 'utf8');
-    const dockerCompose = yaml.load(dockerComposeYaml) as any;
+export const dryRun = async (options: RunArgs, environment: string, debug = false) => {
+    let syncName, connectionId, suppliedLastSyncDate;
 
-    const nangoServerImage = dockerCompose.services['nango-server'].image;
-    const nangoWorkerImage = dockerCompose.services['nango-worker'].image;
-
-    const nangoServerVersion = nangoServerImage.split(':').pop();
-    const nangoWorkerVersion = nangoWorkerImage.split(':').pop();
-
-    console.log(chalk.green('Nango Server version:'), nangoServerVersion);
-    console.log(chalk.green('Nango Worker version:'), nangoWorkerVersion);
-    console.log(chalk.green('Nango CLI version:'), packageJson.version);
-};
-
-export const init = (debug = false) => {
-    const data: NangoConfig = {
-        integrations: {
-            github: {
-                [exampleSyncName]: {
-                    runs: 'every half hour',
-                    returns: ['GithubIssue']
-                }
-            }
-        },
-        models: {
-            GithubIssue: {
-                id: 'integer',
-                owner: 'string',
-                repo: 'string',
-                issue_number: 'number',
-                title: 'string',
-                author: 'string',
-                author_id: 'string',
-                state: 'string',
-                date_created: 'date',
-                date_last_modified: 'date',
-                body: 'string'
-            }
-        }
-    };
-    const yamlData = yaml.dump(data);
-
-    if (!fs.existsSync(NANGO_INTEGRATIONS_LOCATION)) {
-        if (debug) {
-            printDebug('Creating the nango integrations directory');
-        }
-        fs.mkdirSync(NANGO_INTEGRATIONS_LOCATION);
-    } else {
-        if (debug) {
-            printDebug('Nango integrations directory already exists');
-        }
-    }
-
-    if (!fs.existsSync(`${NANGO_INTEGRATIONS_LOCATION}/${nangoConfigFile}`)) {
-        if (debug) {
-            printDebug(`Creating the ${nangoConfigFile} file}`);
-        }
-        fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/${nangoConfigFile}`, yamlData);
-    } else {
-        if (debug) {
-            printDebug('Nango config file already exists');
-        }
-    }
-
-    // check if a .env file exists and if not create it with some default content
-    if (!fs.existsSync('.env')) {
-        if (debug) {
-            printDebug('Creating the .env file');
-        }
-        fs.writeFileSync(
-            '.env',
-            `#NANGO_HOSTPORT=https://api-staging.nango.dev
-#NANGO_AUTO_UPGRADE=true # set to true to automatically upgrade to the latest version of nango
-#NANGO_NO_PROMPT_FOR_UPGRADE=true # set to true to not prompt for upgrade
-#NANGO_DEPLOY_AUTO_CONFIRM=true # set to true to automatically confirm deployment without prompting
-#NANGO_SECRET_KEY=xxxx-xxx-xxxx # required if deploying to cloud
-#NANGO_INTEGRATIONS_LOCATION=use-this-to-override-where-the-nango-integrations-directory-goes
-#NANGO_PORT=use-this-to-override-the-default-3003
-#NANGO_DB_PORT=use-this-to-override-the-default-5432`
-        );
-    } else {
-        if (debug) {
-            printDebug('.env file already exists');
-        }
-    }
-
-    console.log(chalk.green(`Nango integrations initialized!`));
-};
-
-export const generate = async (debug = false) => {
-    const templateContents = fs.readFileSync(path.resolve(__dirname, './integration.ejs'), 'utf8');
-    const githubExampleTemplateContents = fs.readFileSync(path.resolve(__dirname, './integration.github.ejs'), 'utf8');
-
-    const cwd = process.cwd();
-    const configContents = fs.readFileSync(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/${nangoConfigFile}`), 'utf8');
-    const configData: NangoConfig = yaml.load(configContents) as unknown as NangoConfig;
-    const { integrations } = configData;
-    const { models } = configData;
-
-    const interfaceDefinitions = buildInterfaces(models);
-
-    fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/${TYPES_FILE_NAME}`, interfaceDefinitions.join('\n'));
-
-    if (debug) {
-        printDebug(`Interfaces from the ${nangoConfigFile} file written to ${TYPES_FILE_NAME}`);
-    }
-
-    // insert NangoSync types to the bottom of the file
-    const typesContent = fs.readFileSync(`${getNangoRootPath()}/${NangoSyncTypesFileLocation}`, 'utf8');
-    fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/${TYPES_FILE_NAME}`, typesContent, { flag: 'a' });
-
-    if (debug) {
-        printDebug(`NangoSync types written to ${TYPES_FILE_NAME}`);
-    }
-
-    for (let i = 0; i < Object.keys(integrations).length; i++) {
-        const providerConfigKey = Object.keys(integrations)[i] as string;
-        if (debug) {
-            printDebug(`Generating ${providerConfigKey} integrations`);
-        }
-        const syncObject = integrations[providerConfigKey] as unknown as { [key: string]: NangoIntegration };
-        const syncNames = Object.keys(syncObject);
-        for (let k = 0; k < syncNames.length; k++) {
-            const syncName = syncNames[k] as string;
-            if (debug) {
-                printDebug(`Generating ${syncName} integration`);
-            }
-            const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
-            const { returns: models } = syncData;
-            const syncNameCamel = syncName
-                .split('-')
-                .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-                .join('');
-            const ejsTeamplateContents = syncName === exampleSyncName ? githubExampleTemplateContents : templateContents;
-            const rendered = ejs.render(ejsTeamplateContents, {
-                syncName: syncNameCamel,
-                interfaceFileName: TYPES_FILE_NAME.replace('.ts', ''),
-                interfaceNames: models.map((model) => {
-                    const singularModel = model?.charAt(model.length - 1) === 's' ? model.slice(0, -1) : model;
-                    return `${singularModel.charAt(0).toUpperCase()}${singularModel.slice(1)}`;
-                }),
-                mappings: models.map((model) => {
-                    const singularModel = model.charAt(model.length - 1) === 's' ? model.slice(0, -1) : model;
-                    return {
-                        name: model,
-                        type: `${singularModel.charAt(0).toUpperCase()}${singularModel.slice(1)}`
-                    };
-                })
-            });
-
-            if (!fs.existsSync(`${NANGO_INTEGRATIONS_LOCATION}/${syncName}.ts`)) {
-                fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/${syncName}.ts`, rendered);
-                if (debug) {
-                    printDebug(`Created ${syncName}.ts file`);
-                }
-            } else {
-                if (debug) {
-                    printDebug(`${syncName}.ts file already exists, so will not overwrite it.`);
-                }
-            }
-        }
-    }
-
-    console.log(chalk.green(`Integration files have been created`));
-};
-
-export const run = async (args: string[], options: RunArgs, debug = false) => {
-    let syncName, providerConfigKey, connectionId, suppliedLastSyncDate, host, secretKey;
-    if (args.length > 0) {
-        [syncName, providerConfigKey, connectionId, suppliedLastSyncDate] = args;
-    }
-
-    if (Object.keys(options).length > 0) {
-        ({ sync: syncName, provider: providerConfigKey, connection: connectionId, lastSyncDate: suppliedLastSyncDate, host, secretKey } = options);
-    }
-
-    if (!syncName) {
-        console.log(chalk.red('Sync name is required'));
-        return;
-    }
-
-    if (!providerConfigKey) {
-        console.log(chalk.red('Provider config key is required'));
-        return;
-    }
-
-    if (!connectionId) {
-        console.log(chalk.red('Connection id is required'));
-        return;
-    }
-
-    if (debug) {
-        if (host) {
-            printDebug(`Host value is set to ${host}. This will override the value in the .env file`);
-        }
-    }
-
-    if (host) {
-        process.env['NANGO_HOSTPORT'] = host;
-    }
-
-    if (secretKey) {
-        process.env['NANGO_SECRET_KEY'] = secretKey;
-    }
+    await parseSecretKey(environment, debug);
 
     if (!process.env['NANGO_HOSTPORT']) {
         if (debug) {
@@ -523,6 +521,31 @@ export const run = async (args: string[], options: RunArgs, debug = false) => {
 
     if (debug) {
         printDebug(`NANGO_HOSTPORT is set to ${process.env['NANGO_HOSTPORT']}`);
+    }
+
+    if (Object.keys(options).length > 0) {
+        ({ sync: syncName, connectionId, lastSyncDate: suppliedLastSyncDate } = options);
+    }
+
+    if (!syncName) {
+        console.log(chalk.red('Sync name is required'));
+        return;
+    }
+
+    if (!connectionId) {
+        console.log(chalk.red('Connection id is required'));
+        return;
+    }
+
+    const providerConfigKey = await getProviderBySyncName({ syncName }, debug);
+
+    if (!providerConfigKey) {
+        console.log(chalk.red(`Provider config key not found, please check that the provider exists for this sync name: ${syncName}`));
+        return;
+    }
+
+    if (debug) {
+        printDebug(`Provider config key found to be ${providerConfigKey}`);
     }
 
     const nangoConnection = (await getConnection(
@@ -540,6 +563,10 @@ export const run = async (args: string[], options: RunArgs, debug = false) => {
         return;
     }
 
+    if (debug) {
+        printDebug(`Connection found with ${JSON.stringify(nangoConnection, null, 2)}`);
+    }
+
     if (process.env['NANGO_HOSTPORT'] === cloudHost || process.env['NANGO_HOSTPORT'] === stagingHost) {
         process.env['NANGO_CLOUD'] = 'true';
     }
@@ -553,14 +580,12 @@ export const run = async (args: string[], options: RunArgs, debug = false) => {
         lastSyncDate = new Date(suppliedLastSyncDate as string);
     }
 
-    const cwd = process.cwd();
-
     const syncRun = new syncRunService({
         writeToDb: false,
         nangoConnection,
         syncName,
         syncType: SyncType.INITIAL,
-        loadLocation: path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}`),
+        loadLocation: './',
         debug
     });
 
@@ -575,11 +600,9 @@ export const run = async (args: string[], options: RunArgs, debug = false) => {
 };
 
 export const tsc = (debug = false) => {
-    const cwd = process.cwd();
     const tsconfig = fs.readFileSync(`${getNangoRootPath()}/tsconfig.dev.json`, 'utf8');
 
-    const distDir = path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/dist`);
-
+    const distDir = './dist';
     if (!fs.existsSync(distDir)) {
         if (debug) {
             printDebug(`Creating ${distDir} directory`);
@@ -587,14 +610,12 @@ export const tsc = (debug = false) => {
         fs.mkdirSync(distDir);
     }
 
-    if (!fs.existsSync(`${NANGO_INTEGRATIONS_LOCATION}/${TYPES_FILE_NAME}`)) {
+    if (!fs.existsSync(`./${TYPES_FILE_NAME}`)) {
         if (debug) {
             printDebug(`Creating ${TYPES_FILE_NAME} file`);
         }
         createModelFile();
     }
-
-    const rawNangoIntegrationLocation = NANGO_INTEGRATIONS_LOCATION.replace('./', '');
 
     const compiler = tsNode.create({
         compilerOptions: JSON.parse(tsconfig).compilerOptions
@@ -604,17 +625,16 @@ export const tsc = (debug = false) => {
         printDebug(`Compiler options: ${JSON.stringify(JSON.parse(tsconfig).compilerOptions, null, 2)}`);
     }
 
-    const integrationFiles = glob.sync(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/*.ts`));
+    const integrationFiles = glob.sync(`./*.ts`);
     for (const filePath of integrationFiles) {
         try {
             if (!nangoCallsAreAwaited(filePath)) {
                 return;
             }
             const result = compiler.compile(fs.readFileSync(filePath, 'utf8'), filePath);
-            const jsFilePath = path.join(path.dirname(filePath), path.basename(filePath, '.ts') + '.js');
-            const distJSFilePath = jsFilePath.replace(rawNangoIntegrationLocation, `${rawNangoIntegrationLocation}/dist`);
+            const jsFilePath = filePath.replace(/\/[^\/]*$/, `/dist/${path.basename(filePath.replace('.ts', '.js'))}`);
 
-            fs.writeFileSync(distJSFilePath, result);
+            fs.writeFileSync(jsFilePath, result);
             console.log(chalk.green(`Compiled "${filePath}" successfully`));
         } catch (error) {
             console.error(`Error compiling "${filePath}":`);
@@ -654,25 +674,22 @@ const nangoCallsAreAwaited = (filePath: string): boolean => {
 };
 
 export const tscWatch = (debug = false) => {
-    const cwd = process.cwd();
     const tsconfig = fs.readFileSync(`${getNangoRootPath()}/tsconfig.dev.json`, 'utf8');
 
-    const watchPath = [`${NANGO_INTEGRATIONS_LOCATION}/*.ts`, `${NANGO_INTEGRATIONS_LOCATION}/${nangoConfigFile}`];
+    const watchPath = [`./*.ts`, `./${nangoConfigFile}`];
 
     if (debug) {
         printDebug(`Watching ${watchPath.join(', ')}`);
     }
 
-    const rawNangoIntegrationLocation = NANGO_INTEGRATIONS_LOCATION.replace('./', '');
-
     const watcher = chokidar.watch(watchPath, {
         ignoreInitial: false,
         ignored: (filePath: string) => {
-            return filePath === `${rawNangoIntegrationLocation}/${TYPES_FILE_NAME}`;
+            return filePath === TYPES_FILE_NAME;
         }
     });
 
-    const distDir = path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/dist`);
+    const distDir = './dist';
 
     if (!fs.existsSync(distDir)) {
         if (debug) {
@@ -681,7 +698,7 @@ export const tscWatch = (debug = false) => {
         fs.mkdirSync(distDir);
     }
 
-    if (!fs.existsSync(`${NANGO_INTEGRATIONS_LOCATION}/${TYPES_FILE_NAME}`)) {
+    if (!fs.existsSync(`./${TYPES_FILE_NAME}`)) {
         if (debug) {
             printDebug(`Creating ${TYPES_FILE_NAME} file`);
         }
@@ -689,27 +706,29 @@ export const tscWatch = (debug = false) => {
     }
 
     watcher.on('add', (filePath: string) => {
-        if (filePath === `${rawNangoIntegrationLocation}/${nangoConfigFile}`) {
+        if (filePath === nangoConfigFile) {
             return;
         }
         compileFile(filePath);
     });
 
     watcher.on('unlink', (filePath: string) => {
-        if (filePath === `${rawNangoIntegrationLocation}/${nangoConfigFile}`) {
+        if (filePath === nangoConfigFile) {
             return;
         }
-        const jsFilePath = path.join(path.dirname(filePath), path.basename(filePath, '.ts') + '.js');
-        const distJSFilePath = jsFilePath.replace(rawNangoIntegrationLocation, `${rawNangoIntegrationLocation}/dist`);
-        fs.unlinkSync(distJSFilePath);
+        const jsFilePath = `./dist/${path.basename(filePath.replace('.ts', '.js'))}`;
+
+        fs.unlinkSync(jsFilePath);
     });
 
     watcher.on('change', (filePath: string) => {
-        if (filePath === `${rawNangoIntegrationLocation}/${nangoConfigFile}`) {
+        if (filePath === nangoConfigFile) {
             // config file changed, re-compile each ts file
-            const integrationFiles = glob.sync(path.resolve(cwd, `${NANGO_INTEGRATIONS_LOCATION}/*.ts`));
+            const integrationFiles = glob.sync(`./*.ts`);
             for (const file of integrationFiles) {
-                compileFile(file);
+                // strip the file to just the last part
+                const strippedFile = file.replace(/^.*[\\\/]/, '');
+                compileFile(strippedFile);
             }
             return;
         }
@@ -726,10 +745,9 @@ export const tscWatch = (debug = false) => {
                 return;
             }
             const result = compiler.compile(fs.readFileSync(filePath, 'utf8'), filePath);
-            const jsFilePath = path.join(path.dirname(filePath), path.basename(filePath, '.ts') + '.js');
+            const jsFilePath = `./dist/${path.basename(filePath.replace('.ts', '.js'))}`;
 
-            const distJSFilePath = jsFilePath.replace(rawNangoIntegrationLocation, `${rawNangoIntegrationLocation}/dist`);
-            fs.writeFileSync(distJSFilePath, result);
+            fs.writeFileSync(jsFilePath, result);
             console.log(chalk.green(`Compiled ${filePath} successfully`));
         } catch (error) {
             console.error(`Error compiling ${filePath}:`);
@@ -740,7 +758,7 @@ export const tscWatch = (debug = false) => {
 };
 
 export const configWatch = (debug = false) => {
-    const watchPath = `${NANGO_INTEGRATIONS_LOCATION}/${nangoConfigFile}`;
+    const watchPath = `./${nangoConfigFile}`;
     if (debug) {
         printDebug(`Watching ${watchPath}`);
     }

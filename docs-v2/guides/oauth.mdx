@@ -4,48 +4,16 @@ sidebarTitle: 'Authorize APIs (OAuth)'
 description: 'Get access tokens for APIs.'
 ---
 
-## Step 1: Setup Nango
+## Step 1: Set up Nango
 
-We recommend that you:
-- run Nango locally for development
-- use Nango Cloud for production
-
-<Tabs>
-
-<Tab title="Localhost">
-
-<Tip>
-    We recommend you install nango globally via the command
-    ```bash
-    npm install nango -g
-    ```
-</Tip>
-
-Run Nango locally (with Docker):
-
-```bash
-nango start
-```
-
-Open the Dashboard in your browser ([http://localhost:3003](http://localhost:3003)).
-
-</Tab>
-
-<Tab title="Nango Cloud">
-
-Sign up for a free Cloud account:
-
+Create a free Nango account (no credit card required):
 [![Try Nango Cloud](/images/nango-deploy-button.svg)](https://app.nango.dev/signup)
 
-Open the Dashboard in your browser ([http://localhost:3003](https://app.nango.dev)).
+Open the [Dashboard](https://app.nango.dev) in your browser.
 
-</Tab>
+## Step 2: Create an _integration_
 
-</Tabs>
-
-## Step 2: Create an Integration
-
-On the Dashboard, go to the New Integration page ([localhost](http://localhost:3003/integration/create) / [cloud](https://app.nango.dev/integration/create)) and fill in the form.
+On the Dashboard, go to the [New Integration page](https://app.nango.dev/integration/create) and fill in the form.
 
 To get the `Client ID` and `Client Secret` you will need to register your app with the API. The API provider will ask you to submit the `Callback URL` shown at the bottom of the New Integration page on Nango. You should also register the necessary scopes both with the API provider and on the New Integration page on Nango. 
 
@@ -54,74 +22,28 @@ To get the `Client ID` and `Client Secret` you will need to register your app wi
     It will show you helpful links to register your OAuth app & get scopes.
 </Tip>
 
-## Step 3: Test your Integration
+## Step 3: Test your _integration_
 
 Click "OAuth" next to the integration to try an OAuth flow from Nango.
 ![Nango OAuth button](/images/quickstart/nango-oauth-button.png)
 
-- If you get an error check the Activity tab ([localhost](http://localhost:3003/activity) / [cloud](https://app.nango.dev/activity)): The logs there can show you helpful information to debug the issue.
-- If the OAuth flow succeeds, you can get your access token from the Connections tab ( [localhost](http://localhost:3003/connections) / [cloud](https://app.nango.dev/connections)) - Congrats! 🎉
+- If you get an error check the [Activity tab](https://app.nango.dev/activity): The logs there can show you helpful information to debug the issue.
+- If the OAuth flow succeeds, you can get your access token from the [Connections tab](https://app.nango.dev/connections) - Congrats! 🎉
 
 ## Step 4: Embed Nango in your frontend
 
-Install `@nangohq/frontend` and use the code snippet from the OAuth flow page (step 3 above) to trigger OAuth flows from your frontend. [Full Frontend SDK docs](/sdks/frontend)
+Install `@nangohq/frontend` and use the code snippet from the [Add New Connection page](https://app.nango.dev/connections/create) (step 3 above) to trigger OAuth flows from your frontend (cf. [Frontend SDK docs](/sdks/frontend)).
 
-`<CONNECTION-ID>` identifies this user's connection with the Integration in Nango. We recommend using a user ID or similar for it.
-
-![Nango OAuth frontend code snippet](/images/quickstart/nango-frontend-snippet.png)
-
-Your code snippet should will look similar to this:
-
-<Tabs>
-
-<Tab title="Localhost">
-
-    ```js
-import Nango from '@nangohq/frontend';
-
-let nango = new Nango();
-
-nango
-    .auth('<INTEGRATION-ID>', '<CONNECTION-ID>')
-    .then((result: { providerConfigKey: string, connectionId: string }) => {
-        // OAuth flow succeeded!
-    })
-    .catch((err: { message: string, type: string }) => {
-        // handle error
-    });
-```
-
-</Tab>
-
-<Tab title="Nango Cloud">
-
-    ```js
-import Nango from '@nangohq/frontend';
-
-let nango = new Nango({ publicKey: '<PUBLIC-KEY-FROM-PROJECT-SETTINGS>' });
-
-nango
-    .auth('<INTEGRATION-ID>', '<CONNECTION-ID>')
-    .then((result: { providerConfigKey: string, connectionId: string }) => {
-        // OAuth flow succeeded!
-    })
-    .catch((err: { message: string, type: string }) => {
-        // handle error
-    });
-```
-
-</Tab>
-
-</Tabs>
+`<CONNECTION-ID>` identifies this user's connection with the _integration_ in Nango. We recommend using a user ID or similar for it.
 
 ## Step 5: Retrieve access tokens
 In your backend you can use our [Node SDK](/sdks/node) or [Connections REST API](/api-reference/connection/get) to fetch always-fresh access tokens (which will allow you to query the external API).
 
--   `<INTEGRATION-ID>` is the name of your integration. It is listed on the Integrations tab ([localhost](http://localhost:3003/integrations) / [cloud](https://app.nango.dev/integrations)) in the Dashboard, e.g. `slack`
+-   `<INTEGRATION-ID>` is the name of your integration. It is listed on the [Integrations tab](https://app.nango.dev/integrations) in the Dashboard, e.g. `slack`
 -   `<CONNECTION-ID>` is the Connection ID you passed in step 4 above.
 
 <Tip>
-    When you fetch access tokens from Nango, **we refresh them** if necessary. Always fetch them fresh to make sure you never work with an expired access token!
+    When you fetch access tokens from Nango, Nango refreshes them if necessary. Always fetch them **fresh** to make sure you never work with an expired access token!
 </Tip>
 
 ### With the backend Node SDK
@@ -129,22 +51,6 @@ In your backend you can use our [Node SDK](/sdks/node) or [Connections REST API]
 Check the [backend Node SDK reference](/sdks/node) for more details.
 
 Install `@nangohq/node`, then use:
-
-<Tabs>
-
-<Tab title="Localhost">
-
-```ts
-import { Nango } from '@nangohq/node';
-
-let nango = new Nango({ host: 'http://localhost:3003' });
-
-let creds = await nango.getToken('<INTEGRATION-ID>', '<CONNECTION-ID>');
-```
-
-</Tab>
-
-<Tab title="Nango Cloud">
 
 ```ts
 import { Nango } from '@nangohq/node';
@@ -154,38 +60,17 @@ let nango = new Nango({ secretKey: '<SECRET-KEY>' });
 let creds = await nango.getToken('<INTEGRATION-ID>', '<CONNECTION-ID>');
 ```
 
-</Tab>
-
-</Tabs>
-
 ### With the REST API
 
 Check the [API reference](/api-reference/connection/get) for full details and an example response
 
-<Tabs>
-
-<Tab title="Localhost">
-
-```bash
-curl --request GET \
-        --url https://api.nango.dev/connection/<CONNECTION-ID>?provider_config_key=<INTEGRATION-ID> \
-```
-
-</Tab>
-
-<Tab title="Nango Cloud">
-
-Get the `Secret Key` from the Project Settings page (for [cloud](https://app.nango.dev/project-settings) or [localhost](http://localhost:3003/project-settings)).
+Get the `Secret Key` from the [Project Settings page](https://app.nango.dev/project-settings).
 
 ```bash
 curl --request GET \
         --url https://api.nango.dev/connection/<CONNECTION-ID>?provider_config_key=<INTEGRATION-ID> \
         --header 'Authorization: Bearer <SECRET-KEY-FROM-PROJECT-SETTINGS>'
 ```
-
-</Tab>
-
-</Tabs>
 
 ## Advanced Configuration
 
@@ -229,15 +114,13 @@ You can find which configuration parameters are necessary for your [Connection](
 
 ### Connection-Specific Authorization Params
 
-Some APIs require to pass additional query parameters in the authorization URL. If this applies to all users & use-cases, these params can be added to the [providers.yaml](https://nango.dev/providers.yaml) API configurations. 
+Some APIs require to pass additional query parameters in the authorization URL. If this applies to all users & use-cases, these params can be added to the [providers.yaml](https://nango.dev/providers.yaml) _API configurations_. 
 
 But sometimes, the additional authorization parameter is specific to a user or a use-case. In this case, it is possible to add it to the `nango.auth()` call from the Frontend SDK:
 
 ```typescript
 nango.auth('discord', '<CONNECTION-ID>', { authorization_params: { key: 'value' } });
 ```
-
-
 
 ### Connection Metadata
 
@@ -246,6 +129,40 @@ During the OAuth flow, certain APIs return important metadata in addition to cre
 To see if Nango stores metadata for a specific API check the [providers.yaml](https://nango.dev/providers.yaml) and look for the `metadata` property.
 
 Nango stores this metadata in the [Connection](/core-concepts#connections) objects. You can retrieve it with the [SDKs](/sdks) or [REST API](/api-reference).
+
+### Securing the Frontend SDK calls with HMAC
+
+By default, this feature is disabled and your frontend can attempt to create a new _connection_ using any Integration ID and Connection ID.
+
+But you might want to ensure that the app user is the only one that can create a new connection with that Connection ID.
+
+To enable this feature:
+1. Add a secret HMAC key in your [Project Settings](https://app.nango.dev/project-settings). Pick a large, random value!
+2. Generate the HMAC signature in your backend and pass it to your frontend where you make the `nango.auth` calls.
+2. When ready, enable the HMAC check in the Project settings. Nango will now reject auth calls without or mismatching HMAC signature, so make sure your code is ready before you flip the switch! 
+
+The HMAC digest is generated by your backend using the secret HMAC key you set and the combination of the **Integration ID** and the **Connection ID**. Your backend should keep the secret HMAC key private and not reveal it to your frontend or end-users!
+
+In your frontend pass the HMAC digest as follows in `nango.auth`:
+
+```ts
+nango.auth('<INTEGRATION-ID>', '<CONNECTION-ID>', { hmac: '<HMAC-DIGEST>' });
+```
+
+The HMAC digest can be generated by using the following code in your backend (node example):
+
+```js
+import * as crypto from 'node:crypto';
+
+// TODO: execute authentication and authorization checks before generating the HMAC digest.
+
+// The value of '<HMAC-KEY>' should match the secret HMAC key set in your project settings.
+const hmac = crypto.createHmac('sha256', '<HMAC-KEY>');
+hmac.update('<INTEGRATION-ID>:<CONNECTION-ID>');
+const digest = hmac.digest('hex');
+
+// TODO: return the value of `digest` to the frontend to pass to `nango.auth`.
+```
 
 ### Configure Integrations Programmatically
 

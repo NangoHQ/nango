@@ -8,7 +8,7 @@ export const prodHost = 'https://api.nango.dev';
 
 interface NangoProps {
     host?: string;
-    secretKey?: string;
+    secretKey: string;
     connectionId?: string;
     providerConfigKey?: string;
     isSync?: boolean;
@@ -62,12 +62,16 @@ export class Nango {
     dryRun = false;
     activityLogId?: number;
 
-    constructor(config: NangoProps = {}) {
+    constructor(config: NangoProps) {
         config.host = config.host || prodHost;
         this.serverUrl = config.host;
 
         if (this.serverUrl.slice(-1) === '/') {
             this.serverUrl = this.serverUrl.slice(0, -1);
+        }
+
+        if (!config.secretKey) {
+            throw new Error('You must specify a secret key (cf. documentation).');
         }
 
         try {
@@ -76,7 +80,7 @@ export class Nango {
             throw new Error(`Invalid URL provided for the Nango host: ${this.serverUrl}`);
         }
 
-        this.secretKey = config.secretKey || '';
+        this.secretKey = config.secretKey;
         this.connectionId = config.connectionId || '';
         this.providerConfigKey = config.providerConfigKey || '';
 
@@ -357,11 +361,7 @@ export class Nango {
     }
 
     private enrichHeaders(headers: Record<string, string | number | boolean> = {}) {
-        if (this.serverUrl === prodHost || this.serverUrl === stagingHost) {
-            headers['Authorization'] = 'Bearer ' + this.secretKey;
-        } else if (this.secretKey) {
-            headers['Authorization'] = 'Basic ' + Buffer.from(this.secretKey + ':').toString('base64');
-        }
+        headers['Authorization'] = 'Bearer ' + this.secretKey;
 
         return headers;
     }

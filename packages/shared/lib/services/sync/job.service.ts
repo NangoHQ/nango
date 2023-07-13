@@ -1,4 +1,5 @@
 import { schema, dbNamespace } from '../../db/database.js';
+import { createActivityLogDatabaseErrorMessageAndEnd } from '../activity.service.js';
 import type { Job as SyncJob, SyncStatus, SyncType, SyncResultByModel } from '../../models/Sync.js';
 
 const SYNC_JOB_TABLE = dbNamespace + 'sync_jobs';
@@ -18,10 +19,19 @@ export const createSyncJob = async (
         activity_log_id
     };
 
-    const syncJob = await schema().from<SyncJob>(SYNC_JOB_TABLE).insert(job).returning('id');
+    try {
+        const syncJob = await schema().from<SyncJob>(SYNC_JOB_TABLE).insert(job).returning('id');
 
-    if (syncJob && syncJob.length > 0 && syncJob[0]) {
-        return syncJob[0];
+        if (syncJob && syncJob.length > 0 && syncJob[0]) {
+            return syncJob[0];
+        }
+    } catch (e) {
+        await createActivityLogDatabaseErrorMessageAndEnd(
+            `Failed to create a sync job for sync_id: ${sync_id} and job_id: ${job_id}`,
+            e,
+            activity_log_id as number
+        );
+        return null;
     }
 
     return null;

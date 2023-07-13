@@ -3,7 +3,6 @@
  */
 
 const prodHost = 'https://api.nango.dev';
-const stagingHost = 'https://staging.nango.dev';
 const debugLogPrefix = 'NANGO DEBUG LOG: ';
 
 const enum WSMessageType {
@@ -16,10 +15,10 @@ export default class Nango {
     private hostBaseUrl: string;
     private websocketsBaseUrl: string;
     private status: AuthorizationStatus;
-    private publicKey: string | undefined;
+    private publicKey: string;
     private debug = false;
 
-    constructor(config: { host?: string; websocketsPath?: string; publicKey?: string; debug?: boolean } = {}) {
+    constructor(config: { host?: string; websocketsPath?: string; publicKey: string; debug?: boolean }) {
         config.host = config.host || prodHost; // Default to Nango Cloud.
         config.websocketsPath = config.websocketsPath || '/'; // Default to root path.
         this.debug = config.debug || false;
@@ -33,8 +32,8 @@ export default class Nango {
         this.status = AuthorizationStatus.IDLE;
         this.publicKey = config.publicKey;
 
-        if (this.isCloud() && !config.publicKey) {
-            throw new Error('You should specify a Public Key when using Nango Cloud (cf. documentation).');
+        if (!config.publicKey) {
+            throw new Error('You must specify a public key (cf. documentation).');
         }
 
         try {
@@ -99,9 +98,7 @@ export default class Nango {
             query.push(`connection_id=${connectionId}`);
         }
 
-        if (this.publicKey) {
-            query.push(`public_key=${this.publicKey}`);
-        }
+        query.push(`public_key=${this.publicKey}`);
 
         if (connectionConfig != null) {
             for (const param in connectionConfig.params) {
@@ -128,10 +125,6 @@ export default class Nango {
         }
 
         return query.length === 0 ? '' : '?' + query.join('&');
-    }
-
-    private isCloud() {
-        return this.hostBaseUrl === prodHost || this.hostBaseUrl === stagingHost;
     }
 }
 

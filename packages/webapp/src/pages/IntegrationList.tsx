@@ -5,6 +5,8 @@ import { useGetIntegrationListAPI } from '../utils/api';
 import DashboardLayout from '../layout/DashboardLayout';
 import { LeftNavBarItems } from '../components/LeftNavBar';
 
+import { useStore } from '../store';
+
 interface Integration {
     uniqueKey: string;
     provider: string;
@@ -16,6 +18,12 @@ export default function IntegrationList() {
     const [loaded, setLoaded] = useState(false);
     const [integrations, setIntegrations] = useState<Integration[] | null>(null);
     const getIntegrationListAPI = useGetIntegrationListAPI();
+
+    const env = useStore(state => state.cookieValue);
+
+    useEffect(() => {
+        setLoaded(false);
+    }, [env]);
 
     useEffect(() => {
         const getIntegrations = async () => {

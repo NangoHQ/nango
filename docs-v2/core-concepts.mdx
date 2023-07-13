@@ -30,15 +30,14 @@ You can then retrieve API access tokens, always fresh, with the [backend SDKs](s
   <img src="/images/nango-auth-architecture.png" />
 </Frame>
 
-### Continuous Syncs
+### Continuous _syncs_
 
 Nango lets you define how data is synced with external APIs, e.g. fetch Salesforce contacts, GitHub issues, Slack messages, Google Calendar events etc.
+_Syncs_ are defined by you and live in your own repository: They are version-controlled with the rest of your codebase.
 
-Syncs are defined by you and live in your own repository: They are version-controlled with the rest of your codebase.
+We have [examples](/examples) for many popular use cases to help you get started and we have tooling to help you write and test _syncs_ locally (see the [guide on writing syncs](guides/sync)).
 
-We have [examples](/examples) for many popular use cases to help you get started and we have tooling to help you write and test syncs locally (see the [guide on writing syncs](guides/sync)).
-
-When your Syncs are ready, you deploy them with a CLI command to Nango: Nango then runs them for you in production and handles scaling, scheduling, retries, data caching, de-duplication etc.
+When your _syncs_ are ready, you deploy them with a CLI command to Nango: Nango then runs them for you in production and handles scaling, scheduling, retries, data caching, de-duplication etc.
 
 
 <Frame caption="Continuous Sync Architecture">
@@ -71,14 +70,14 @@ Nango supports two kinds of webhooks:
 
 Learn more in the [Webhooks guide](/guides/webhooks)
 
-## Dashboard: Monitoring & management of syncs
+## Dashboard: Monitoring & management of _syncs_
 
 The [Nango Dashboard](https://app.nango.dev) shows you a detailed activity log of every sync and proxy request.  
-You can view detailed logs of every sync run and also log your own messages from Sync scripts.
+You can view detailed logs of every sync run and also log your own messages from _sync_ scripts.
 
-![Activity overview of Syncs](/images/nango-sync/nango-sync-activity.png)
+![Activity overview of syncs](/images/nango-sync/nango-sync-activity.png)
 
-You can also see and manage the Syncs for each [Connection](/core-concepts#connections) (integration setup by a user).
+You can also see and manage the _syncs_ for each [connection](/core-concepts#connections) (integration setup by a user).
 
 ![Syncs for a connection](/images/nango-sync/nango-connection-sync.png)
 
@@ -86,36 +85,34 @@ You can also see and manage the Syncs for each [Connection](/core-concepts#conne
 
 Terms we frequently use:
 
-### API Configurations[](#api-configurations)
+### API configurations[](#api-configurations)
 
-An API Configuration (e.g. the `hubspot` configuration) contains the configuration in Nango that is specific to an external API. In particular:
+An _API configuration_ (e.g. the `hubspot` configuration) contains the configuration in Nango that is specific to an external API. In particular:
 
 -   Auth-related configuration (auth type, OAuth URLs, auth quirks, etc.)
 -   Sync-related configuration (rate-limits, pagination strategy, etc.)
 
 These configuration are contributed and regularly improved by Nango and its community. Configurations allow to rapidly adapt Nango to work with any API, by editing a `.yaml` configuration file.
 
-You can find more information and contribute API Configurations [here](/contribute).
+You can find more information and contribute _API configurations_ [here](/contribute).
 
 ### Integrations[](#integrations)
 
-Developers create Integrations, based on [API Configurations](/core-concepts#api-configurations), to work with external APIs from their app.
+Developers create _integrations_, based on [API configurations](/core-concepts#api-configurations), to work with external APIs from their app.
 
 Integrations are created by you in the Nango Dashboard. You then control how they work with syncs and our SDKs or REST APIs.
 
 ### Connections[](#connections)
 
-When a user of your app authorizes an [Integration](/core-concepts#integrations), Nango calls this a new Connection: E.g. `user1` authorizes a `Github` integration to sync issues in your app.
+When a user of your app authorizes an [integration](/core-concepts#integrations), Nango calls this a new _connection_: E.g. `user1` authorizes a `Github` _integration_ to sync issues in your app.
 
 Connections represent the relation between an end user and an external API. It contains the necessary credentials to access the external API on behalf of the user together with metadata and per-user configuration.
 
 ### Syncs[](#syncs)
-
-Syncs are responsible to continuously synchronize data between an external API and Nango. Each Sync has: 
+_Syncs_ are responsible to continuously synchronize data between an external API and Nango. Each _sync_ has: 
 - an entry in the `nango.yaml` configuration file in the `nango-integrations` folder
-- a Sync file (typescript script) in the `nango-integrations` folder
-
-Syncs have 'runs' or 'jobs' that are executed periodically. They can be managed (stopped, paused, resync, etc.) from the Dashboard or your code (with the SDK/REST API).
+- a _sync_ file (typescript script) in the `nango-integrations` folder
+_Syncs_ have 'runs' or 'jobs' that are executed periodically. They can be managed (stopped, paused, resync, etc.) from the Dashboard or your code (with the SDK/REST API).
 
 ### Nango Infrastructure[](#nango-infrastructure)
 

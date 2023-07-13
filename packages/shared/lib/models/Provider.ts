@@ -9,7 +9,7 @@ export interface Config {
     oauth_client_id: string;
     oauth_client_secret: string;
     oauth_scopes?: string;
-    account_id: number;
+    environment_id: number;
     oauth_client_secret_iv?: string | null;
     oauth_client_secret_tag?: string | null;
 }

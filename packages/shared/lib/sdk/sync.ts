@@ -97,7 +97,7 @@ interface Connection {
     provider_config_key: string;
     connection_id: string;
     connection_config: Record<string, string>;
-    account_id: number;
+    environment_id: number;
     metadata: Record<string, string>;
     credentials_iv?: string | null;
     credentials_tag?: string | null;
@@ -107,7 +107,7 @@ interface Connection {
 
 interface NangoProps {
     host?: string;
-    secretKey?: string;
+    secretKey: string;
     connectionId?: string;
     activityLogId?: number;
     providerConfigKey?: string;
@@ -134,7 +134,7 @@ export class NangoSync {
     public connectionId?: string;
     public providerConfigKey?: string;
 
-    constructor(config: NangoProps = {}) {
+    constructor(config: NangoProps) {
         if (config.activityLogId) {
             this.activityLogId = config.activityLogId;
         }

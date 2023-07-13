@@ -86,7 +86,7 @@ export class NangoError extends Error {
                 this.message = 'Email already exists.';
                 break;
 
-            case 'unkown_user':
+            case 'unknown_user':
                 this.status = 404;
                 this.message = 'No user matching this email.';
                 break;
@@ -104,6 +104,11 @@ export class NangoError extends Error {
             case 'bad_request':
                 this.status = 400;
                 this.message = 'The API endpoint returned back a 400 error. Check the headers to ensure all proper headers are passed to the API.';
+                break;
+
+            case 'missing_environment_id':
+                this.status = 400;
+                this.message = `Missing param 'environment_id'.`;
                 break;
 
             case 'missing_provider_config':

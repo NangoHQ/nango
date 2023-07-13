@@ -1,9 +1,9 @@
 import type { Request, Response } from 'express';
 import type { NextFunction } from 'express';
 import type { LogAction, LogLevel, Connection } from '@nangohq/shared';
-import { getUserAndAccountFromSession } from '../utils/utils.js';
+import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import {
-    getAccount,
+    getEnvironmentId,
     createSyncConfig,
     syncDataService,
     connectionService,
@@ -17,20 +17,22 @@ import {
     createActivityLogMessageAndEnd,
     createActivityLog,
     getAndReconcileSyncDifferences,
-    getSyncConfigsWithConnectionsByAccountId,
-    IncomingSyncConfig
+    getSyncConfigsWithConnectionsByEnvironmentId,
+    getActiveSyncConfigsByEnvironmentId,
+    IncomingSyncConfig,
+    getProviderConfigBySyncAndAccount
 } from '@nangohq/shared';
 
 class SyncController {
     public async deploySync(req: Request, res: Response, next: NextFunction) {
         try {
             const { syncs, reconcile, debug }: { syncs: IncomingSyncConfig[]; reconcile: boolean; debug: boolean } = req.body;
-            const accountId = getAccount(res);
+            const environmentId = getEnvironmentId(res);
 
-            const result = await createSyncConfig(accountId, syncs, debug);
+            const result = await createSyncConfig(environmentId, syncs, debug);
 
             if (reconcile) {
-                await getAndReconcileSyncDifferences(accountId, syncs, reconcile, debug);
+                await getAndReconcileSyncDifferences(environmentId, syncs, reconcile, debug);
             }
 
             res.send(result);
@@ -42,9 +44,9 @@ class SyncController {
     public async confirmation(req: Request, res: Response, next: NextFunction) {
         try {
             const { syncs, debug }: { syncs: IncomingSyncConfig[]; reconcile: boolean; debug: boolean } = req.body;
-            const accountId = getAccount(res);
+            const environmentId = getEnvironmentId(res);
 
-            const result = await getAndReconcileSyncDifferences(accountId, syncs, false, debug);
+            const result = await getAndReconcileSyncDifferences(environmentId, syncs, false, debug);
 
             res.send(result);
         } catch (e) {
@@ -55,7 +57,7 @@ class SyncController {
     public async getRecords(req: Request, res: Response, next: NextFunction) {
         try {
             const { model, delta, offset, limit } = req.query;
-            const accountId = getAccount(res);
+            const environmentId = getEnvironmentId(res);
 
             if (!model) {
                 res.status(400).send({ message: 'Missing sync model' });
@@ -67,7 +69,7 @@ class SyncController {
             const records = await syncDataService.getDataRecords(
                 connectionId,
                 providerConfigKey,
-                accountId,
+                environmentId,
                 model as string,
                 delta as string,
                 offset as string,
@@ -82,7 +84,7 @@ class SyncController {
 
     public async getSyncsByParams(req: Request, res: Response, next: NextFunction) {
         try {
-            const account = (await getUserAndAccountFromSession(req)).account;
+            const environment = (await getUserAccountAndEnvironmentFromSession(req)).environment;
             const { connection_id, provider_config_key } = req.query;
 
             if (!connection_id) {
@@ -93,7 +95,7 @@ class SyncController {
                 res.status(400).send({ message: 'Missing provider config key' });
             }
 
-            const connection: Connection | null = await connectionService.getConnection(connection_id as string, provider_config_key as string, account.id);
+            const connection: Connection | null = await connectionService.getConnection(connection_id as string, provider_config_key as string, environment.id);
 
             if (!connection) {
                 res.status(404).send({ message: 'Connection not found!' });
@@ -109,9 +111,21 @@ class SyncController {
 
     public async getSyncs(req: Request, res: Response, next: NextFunction) {
         try {
-            const account = (await getUserAndAccountFromSession(req)).account;
+            const environment = (await getUserAccountAndEnvironmentFromSession(req)).environment;
 
-            const syncs = await getSyncConfigsWithConnectionsByAccountId(account.id);
+            const syncs = await getSyncConfigsWithConnectionsByEnvironmentId(environment.id);
+
+            res.send(syncs);
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    public async getSyncNames(_req: Request, res: Response, next: NextFunction) {
+        try {
+            const environmentId = getEnvironmentId(res);
+
+            const syncs = await getActiveSyncConfigsByEnvironmentId(environmentId);
 
             res.send(syncs);
         } catch (e) {
@@ -121,7 +135,7 @@ class SyncController {
 
     public async trigger(req: Request, res: Response, next: NextFunction) {
         try {
-            const accountId = getAccount(res);
+            const environmentId = getEnvironmentId(res);
             const connectionId = req.get('Connection-Id') as string;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
 
@@ -133,7 +147,7 @@ class SyncController {
                 res.status(400).send({ message: 'Missing provider config key' });
             }
 
-            const connection: Connection | null = await connectionService.getConnection(connectionId as string, providerConfigKey as string, accountId);
+            const connection: Connection | null = await connectionService.getConnection(connectionId as string, providerConfigKey as string, environmentId);
 
             const syncs = await getSyncsFlat(connection as Connection);
 
@@ -147,9 +161,26 @@ class SyncController {
         }
     }
 
+    public async getSyncProvider(req: Request, res: Response, next: NextFunction) {
+        try {
+            const environmentId = getEnvironmentId(res);
+            const { syncName } = req.query;
+
+            if (!syncName) {
+                res.status(400).send({ message: 'Missing sync name!' });
+            }
+
+            const providerConfigKey = await getProviderConfigBySyncAndAccount(syncName as string, environmentId as number);
+
+            res.send(providerConfigKey);
+        } catch (e) {
+            next(e);
+        }
+    }
+
     public async syncCommand(req: Request, res: Response, next: NextFunction) {
         try {
-            const account = (await getUserAndAccountFromSession(req)).account;
+            const environment = (await getUserAccountAndEnvironmentFromSession(req)).environment;
             const { schedule_id, command, nango_connection_id, sync_id, sync_name, provider } = req.body;
             const connection = await connectionService.getConnectionById(nango_connection_id);
 
@@ -163,11 +194,11 @@ class SyncController {
                 connection_id: connection?.connection_id as string,
                 provider,
                 provider_config_key: connection?.provider_config_key as string,
-                account_id: account.id,
+                environment_id: environment.id,
                 operation_name: sync_name
             };
 
-            if (!verifyOwnership(nango_connection_id, account.id, sync_id)) {
+            if (!verifyOwnership(nango_connection_id, environment.id, sync_id)) {
                 await createActivityLogAndLogMessage(log, {
                     level: 'error',
                     timestamp: Date.now(),

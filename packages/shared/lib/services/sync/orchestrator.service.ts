@@ -11,7 +11,7 @@ import type { IncomingSyncConfig, Sync } from '../../models/Sync.js';
 interface CreateSyncArgs {
     connections: Connection[];
     providerConfigKey: string;
-    accountId: number;
+    environmentId: number;
     sync: IncomingSyncConfig;
     syncName: string;
 }
@@ -21,12 +21,12 @@ export class Orchestrator {
         connections: Connection[],
         syncName: string,
         providerConfigKey: string,
-        accountId: number,
+        environmentId: number,
         sync: IncomingSyncConfig,
         debug = false,
         activityLogId?: number
     ) {
-        const syncConfig = await configService.getProviderConfig(providerConfigKey, accountId);
+        const syncConfig = await configService.getProviderConfig(providerConfigKey, environmentId);
         if (debug && activityLogId) {
             await createActivityLogMessage({
                 level: 'debug',
@@ -59,8 +59,8 @@ export class Orchestrator {
 
     public async createSyncs(syncArgs: CreateSyncArgs[], debug = false, activityLogId?: number) {
         for (const syncToCreate of syncArgs) {
-            const { connections, providerConfigKey, accountId, sync, syncName } = syncToCreate;
-            await this.create(connections, syncName, providerConfigKey, accountId, sync, debug, activityLogId);
+            const { connections, providerConfigKey, environmentId, sync, syncName } = syncToCreate;
+            await this.create(connections, syncName, providerConfigKey, environmentId, sync, debug, activityLogId);
         }
     }
 

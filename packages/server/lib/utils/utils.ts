@@ -1,33 +1,19 @@
 import { fileURLToPath } from 'url';
 import path, { resolve } from 'path';
 import type { Request } from 'express';
-import type { User, Account, Template as ProviderTemplate } from '@nangohq/shared';
+import type { User, Environment, Account, Template as ProviderTemplate } from '@nangohq/shared';
 import logger from './logger.js';
 import type { WSErr } from './web-socket-error.js';
 import { readFileSync } from 'fs';
-import { NangoError, userService, accountService, interpolateString, isCloud, getBaseUrl } from '@nangohq/shared';
+import { NangoError, userService, environmentService, interpolateString } from '@nangohq/shared';
 
 type PackageJson = {
     version: string;
 };
 
-export async function getOauthCallbackUrl(accountId?: number) {
-    const globalCallbackUrl = getGlobalOAuthCallbackUrl();
-
-    if (isCloud() && accountId != null) {
-        const account: Account | null = await accountService.getAccountById(accountId);
-        return account?.callback_url || globalCallbackUrl;
-    }
-
-    return globalCallbackUrl;
-}
-
-export function getGlobalOAuthCallbackUrl() {
-    return process.env['NANGO_CALLBACK_URL'] || getBaseUrl() + '/oauth/callback';
-}
-
-export async function getUserAndAccountFromSession(req: Request): Promise<{ user: User; account: Account }> {
+export async function getUserAccountAndEnvironmentFromSession(req: Request): Promise<{ user: User; account: Account; environment: Environment }> {
     const sessionUser = req.user;
+    const currentEnvironment = req.cookies['env'] || 'dev';
 
     if (sessionUser == null) {
         throw new NangoError('user_not_found');
@@ -39,13 +25,15 @@ export async function getUserAndAccountFromSession(req: Request): Promise<{ user
         throw new NangoError('user_not_found');
     }
 
-    const account = await accountService.getAccountById(user.account_id);
+    const environmentAndAccount = await environmentService.getAccountAndEnvironmentById(user.account_id, currentEnvironment);
 
-    if (account == null) {
+    if (environmentAndAccount == null) {
         throw new NangoError('account_not_found');
     }
 
-    return { user: user, account: account };
+    const { account, environment } = environmentAndAccount as { account: Account; environment: Environment };
+
+    return { user, account, environment };
 }
 
 export function dirname() {

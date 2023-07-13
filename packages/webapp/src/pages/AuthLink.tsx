@@ -4,8 +4,6 @@ import { useState } from 'react';
 import { baseUrl } from '../utils/utils';
 import Nango from '@nangohq/frontend';
 
-import { isCloud } from '../utils/utils';
-
 export default function AuthLink() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');
     const searchParams = useSearchParams()[0];
@@ -24,7 +22,7 @@ export default function AuthLink() {
             return;
         }
 
-        if (isCloud() && !publicKey) {
+        if (!publicKey) {
             setServerErrorMessage('Missing public key.');
             return;
         }

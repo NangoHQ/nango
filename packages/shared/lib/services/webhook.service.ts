@@ -2,7 +2,7 @@ import axios from 'axios';
 import type { SyncType } from '../models/Sync';
 import type { NangoConnection } from '../models/Connection';
 import type { SyncResult, NangoSyncWebhookBody } from '../models/Sync';
-import accountService from './account.service.js';
+import environmentService from './environment.service.js';
 import { createActivityLogMessage } from './activity.service.js';
 
 class WebhookService {
@@ -15,7 +15,7 @@ class WebhookService {
         now: string,
         activityLogId: number
     ) {
-        const webhookUrl = await accountService.getWebhookUrl(nangoConnection.account_id);
+        const webhookUrl = await environmentService.getWebhookUrl(nangoConnection.environment_id);
 
         if (!webhookUrl) {
             return;

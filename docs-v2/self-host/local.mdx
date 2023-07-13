@@ -3,5 +3,20 @@ title: 'Deploy Nango on your local machine'
 sidebarTitle: 'Local Machine'
 ---
 
-Deploy Nango on your local machine in 3 minutes with the
-[Quickstart 🚀](/quickstart).
+Set up Nango locally in 3 minutes. Run: 
+```bash
+git clone https://github.com/NangoHQ/nango && cd nango
+```
+```bash
+docker compose up
+```
+
+Go to your [local Dashboard](http://localhost:3003).
+
+Check out the `.env.example` file for all configuration options. 
+
+Nango uses the following ports (all overridable with `docker-compose.yaml` or env vars): 
+- Server: 3003
+- Worker: 3004
+- Postgres: 5432
+- Temporal: 7233

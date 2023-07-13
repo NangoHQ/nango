@@ -8,7 +8,7 @@ interface Message {
 
 export interface ActivityLog {
     id?: number;
-    account_id: number;
+    environment_id: number;
     level: LogLevel;
     action: LogAction;
     success: boolean | null;

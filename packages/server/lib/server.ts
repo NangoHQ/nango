@@ -14,7 +14,7 @@ import proxyController from './controllers/proxy.controller.js';
 import activityController from './controllers/activity.controller.js';
 import syncController from './controllers/sync.controller.js';
 import path from 'path';
-import { getGlobalOAuthCallbackUrl, packageJsonFile, dirname } from './utils/utils.js';
+import { packageJsonFile, dirname } from './utils/utils.js';
 import { WebSocketServer, WebSocket } from 'ws';
 import http from 'http';
 import express from 'express';
@@ -25,7 +25,7 @@ import passport from 'passport';
 import accountController from './controllers/account.controller.js';
 import type { Response, Request } from 'express';
 import Logger from './utils/logger.js';
-import { accountService, getPort, isCloud, isBasicAuthEnabled, errorManager, getWebsocketsPath } from '@nangohq/shared';
+import { getGlobalOAuthCallbackUrl, environmentService, getPort, isCloud, isBasicAuthEnabled, errorManager, getWebsocketsPath } from '@nangohq/shared';
 import oAuthSessionService from './services/oauth-session.service.js';
 import { deleteOldActivityLogs } from './jobs/index.js';
 import migrate from './utils/migrate.js';
@@ -57,7 +57,7 @@ if (NANGO_MIGRATE_AT_START === 'true') {
     Logger.info('Not migrating database');
 }
 
-await accountService.cacheAccountSecrets();
+await environmentService.cacheSecrets();
 await oAuthSessionService.clearStaleSessions();
 
 // API routes (no/public auth).
@@ -82,6 +82,8 @@ app.route('/sync/deploy').post(apiAuth, syncController.deploySync.bind(syncContr
 app.route('/sync/deploy/confirmation').post(apiAuth, syncController.confirmation.bind(syncController));
 app.route('/sync/records').get(apiAuth, syncController.getRecords.bind(syncController));
 app.route('/sync/trigger').post(apiAuth, syncController.trigger.bind(syncController));
+app.route('/sync/names').get(apiAuth, syncController.getSyncNames.bind(syncController));
+app.route('/sync/provider').get(apiAuth, syncController.getSyncProvider.bind(syncController));
 
 // Proxy Route
 app.route('/proxy/*').all(apiAuth, proxyController.routeCall.bind(proxyController));
@@ -99,6 +101,9 @@ if (isCloud()) {
 app.route('/api/v1/account').get(webAuth, accountController.getAccount.bind(accountController));
 app.route('/api/v1/account/callback').post(webAuth, accountController.updateCallback.bind(accountController));
 app.route('/api/v1/account/webhook').post(webAuth, accountController.updateWebhookURL.bind(accountController));
+app.route('/api/v1/account/hmac').get(webAuth, accountController.getHmacDigest.bind(accountController));
+app.route('/api/v1/account/hmac-enabled').post(webAuth, accountController.updateHmacEnabled.bind(accountController));
+app.route('/api/v1/account/hmac-key').post(webAuth, accountController.updateHmacKey.bind(accountController));
 app.route('/api/v1/integration').get(webAuth, configController.listProviderConfigsWeb.bind(configController));
 app.route('/api/v1/integration/:providerConfigKey').get(webAuth, configController.getProviderConfigWeb.bind(configController));
 app.route('/api/v1/integration').put(webAuth, configController.editProviderConfigWeb.bind(connectionController));

@@ -1,5 +1,8 @@
+import Cookies from 'js-cookie';
 import { Link } from 'react-router-dom';
 import Activity from '@geist-ui/icons/activity';
+
+import { useStore } from '../store';
 
 export enum LeftNavBarItems {
     Integrations = 0,
@@ -11,13 +14,42 @@ export enum LeftNavBarItems {
 
 export interface LeftNavBarProps {
     selectedItem: LeftNavBarItems;
+    hideEnvironmentSelect?: boolean;
 }
 
 export default function LeftNavBar(props: LeftNavBarProps) {
+    const env = useStore(state => state.cookieValue);
+
+    const setCookieValue = useStore(state => state.setCookieValue);
+
+    const handleEnvChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const newEnv = e.target.value;
+        Cookies.set('env', newEnv);
+        setCookieValue(newEnv);
+    }
+
     return (
         <div>
-            <div className="mt-14 border-r-2 border-t-2 border-border-gray flex justify-between h-full w-60 fixed bg-bg-black z-50">
-                <div className="ml-4 mt-16 space-y-1">
+            <div className="mt-14 border-r-2 border-t-2 border-border-gray flex flex-col h-full w-60 fixed bg-bg-black z-50">
+                {props.hideEnvironmentSelect ? null : (
+                    <div className="mt-10">
+                        <select
+                            id="environment"
+                            name="env"
+                            className="ml-8 border-border-gray bg-bg-black text-text-light-gray block h-11 w-24 appearance-none rounded-md border px-3 py-2 text-base shadow-sm active:outline-none focus:outline-none active:border-white focus:border-white"
+                            onChange={handleEnvChange}
+                            value={env}
+                        >
+                            <option key="dev" value="dev">
+                                Dev
+                            </option>
+                            <option key="prod" value="prod">
+                                Prod
+                            </option>
+                        </select>
+                    </div>
+                )}
+                <div className="ml-4 mt-8 space-y-1">
                     <Link
                         to="/integrations"
                         className={`flex h-10 rounded-md ml-4 pl-2 pr-3 pt-2.5 text-sm text-white mt-3 w-44 ${

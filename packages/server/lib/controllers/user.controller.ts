@@ -1,10 +1,10 @@
-import { getUserAndAccountFromSession } from '../utils/utils.js';
+import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import type { Request, Response, NextFunction } from 'express';
 
 class UserController {
     async getUser(req: Request, res: Response, next: NextFunction) {
         try {
-            const user = (await getUserAndAccountFromSession(req)).user;
+            const user = (await getUserAccountAndEnvironmentFromSession(req)).user;
 
             res.status(200).send({
                 user: {

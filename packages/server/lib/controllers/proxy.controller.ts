@@ -20,7 +20,7 @@ import {
     configService,
     errorManager,
     connectionService,
-    getAccount,
+    getEnvironmentId,
     interpolateIfNeeded
 } from '@nangohq/shared';
 import type { ProxyBodyConfiguration } from '../models.js';
@@ -47,7 +47,7 @@ class ProxyController {
             const isSync = req.get('Nango-Is-Sync') as string;
             const isDryRun = req.get('Nango-Is-Dry-Run') as string;
             const existingActivityLogId = req.get('Nango-Activity-Log-Id') as number | string;
-            const accountId = getAccount(res);
+            const environment_id = getEnvironmentId(res);
 
             const logAction: LogAction = isSync ? 'sync' : ('proxy' as LogAction);
 
@@ -61,7 +61,7 @@ class ProxyController {
                 method: req.method as HTTP_VERB,
                 connection_id: connectionId,
                 provider_config_key: providerConfigKey,
-                account_id: accountId
+                environment_id
             };
 
             let activityLogId = null;
@@ -165,7 +165,7 @@ class ProxyController {
                 });
             }
 
-            const providerConfig = await configService.getProviderConfig(providerConfigKey, accountId);
+            const providerConfig = await configService.getProviderConfig(providerConfigKey, environment_id);
             const headers = this.parseHeaders(req);
 
             if (!providerConfig) {
@@ -190,7 +190,9 @@ class ProxyController {
                     timestamp: Date.now(),
                     content: `${Date.now()} The proxy is not supported for this provider ${String(
                         providerConfig?.provider
-                    )}. You can easily add support by following the instructions at https://docs.nango.dev/contribute/nango-auth`
+                    )}. You can easily add support by following the instructions at https://docs.nango.dev/contribute/nango-auth.
+                        You can also use the baseUrlOverride to get started right away.
+                        See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
                 });
 
                 errorManager.errRes(res, 'missing_base_api_url');

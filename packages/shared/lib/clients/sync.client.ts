@@ -15,7 +15,7 @@ import { createSchedule as createSyncSchedule } from '../services/sync/schedule.
 import connectionService from '../services/connection.service.js';
 import configService from '../services/config.service.js';
 import { createSync } from '../services/sync/sync.service.js';
-import { isCloud, isProd } from '../utils/utils.js';
+import { isProd } from '../utils/utils.js';
 
 const generateWorkflowId = (sync: Sync, syncName: string, connectionId: string) => `${TASK_QUEUE}.${syncName}.${connectionId}-${sync.id}`;
 const generateScheduleId = (sync: Sync, syncName: string, connectionId: string) => `${TASK_QUEUE}.${syncName}.${connectionId}-schedule-${sync.id}`;
@@ -68,8 +68,9 @@ class SyncClient {
         const nangoConnection = (await connectionService.getConnectionById(nangoConnectionId)) as NangoConnection;
         const nangoConfig = await getSyncConfig(nangoConnection);
         if (!nangoConfig) {
-            const message = isCloud() ? ' If you expect to see a sync make sure you used the nango cli deploy command' : '';
-            console.log('Failed to load Nango config - will not start any syncs!' + message);
+            console.log(
+                'Failed to load the Nango config - will not start any syncs! If you expect to see a sync make sure you used the nango cli deploy command'
+            );
             return;
         }
         const { integrations }: NangoConfig = nangoConfig;
@@ -87,7 +88,7 @@ class SyncClient {
 
         const syncConfig: ProviderConfig = (await configService.getProviderConfig(
             nangoConnection?.provider_config_key as string,
-            nangoConnection?.account_id as number
+            nangoConnection?.environment_id as number
         )) as ProviderConfig;
 
         const syncObject = integrations[providerConfigKey] as unknown as { [key: string]: NangoIntegration };
@@ -130,7 +131,7 @@ class SyncClient {
                 provider_config_key: nangoConnection?.provider_config_key as string,
                 provider: syncConfig.provider,
                 session_id: sync?.id?.toString() as string,
-                account_id: nangoConnection?.account_id as number,
+                environment_id: nangoConnection?.environment_id as number,
                 operation_name: syncName
             };
             const activityLogId = await createActivityLog(log);
@@ -146,6 +147,10 @@ class SyncClient {
                 });
             }
             const syncJobId = await createSyncJob(sync.id as string, SyncType.INITIAL, SyncStatus.RUNNING, jobId, activityLogId as number);
+
+            if (!syncJobId) {
+                return;
+            }
 
             const handle = await this.client?.workflow.start('initialSync', {
                 taskQueue: TASK_QUEUE,
