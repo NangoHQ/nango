@@ -38,7 +38,6 @@ import {
     buildInterfaces,
     enrichHeaders,
     getNangoRootPath,
-    getProviderBySyncName,
     printDebug
 } from './utils.js';
 import type { DeployOptions, GlobalOptions } from './types.js';
