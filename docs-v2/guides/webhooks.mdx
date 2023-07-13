@@ -52,7 +52,7 @@ app.post('/webhook', (req, res) => {
 
 ## Webhooks from external APIs to Nango[](#to-nango)
 
-You can handle incoming webhooks form external APIs using Nango:
+You can handle incoming webhooks from external APIs using Nango:
 - Configure the webhook with your application as you would normally do
 - Write a _sync_ script that returns the data models you want (it can perform additional API requests if needed)
 - Upon webhook reception, trigger the _sync_ script and pass it the webhook payload
