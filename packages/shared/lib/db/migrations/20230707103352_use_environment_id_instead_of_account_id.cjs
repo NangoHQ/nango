@@ -10,19 +10,24 @@ const TABLE_PREFIX = '_nango_';
 
 exports.up = async function (knex, _) {
     const tablesToReplace = [
-        { name: `${TABLE_PREFIX}activity_logs`, dropForeign: true },
-        { name: `${TABLE_PREFIX}configs`, dropForeign: true },
-        { name: `${TABLE_PREFIX}connections`, dropForeign: true },
-        { name: `${TABLE_PREFIX}oauth_sessions`, dropForeign: false },
-        { name: `${TABLE_PREFIX}sync_configs`, dropForeign: true }
+        { name: `${TABLE_PREFIX}activity_logs`, dropForeign: true, truncate: true },
+        { name: `${TABLE_PREFIX}configs`, dropForeign: true, truncate: false },
+        { name: `${TABLE_PREFIX}connections`, dropForeign: true, truncate: false },
+        { name: `${TABLE_PREFIX}oauth_sessions`, dropForeign: false, truncate: false },
+        { name: `${TABLE_PREFIX}sync_configs`, dropForeign: true, truncate: false }
     ];
 
     for (const tableObject of tablesToReplace) {
-        const { name: tableToReplace, dropForeign } = tableObject;
-        const records = await knex.withSchema('nango').select('id', 'account_id').from(tableToReplace);
+        const { name: tableToReplace, dropForeign, truncate } = tableObject;
         await knex.schema.withSchema('nango').alterTable(tableToReplace, function (table) {
-            table.integer('environment_id').unsigned().references('id').inTable(`nango.${TABLE_PREFIX}environments`);
+            table.integer('environment_id').unsigned().references('id').inTable(`nango.${TABLE_PREFIX}environments`).index();
         });
+
+        if (truncate) {
+            await knex.raw('TRUNCATE TABLE ?? CASCADE', ['nango.' + tableToReplace]);
+        }
+
+        const records = await knex.withSchema('nango').select('id', 'account_id').from(tableToReplace);
 
         for (const record of records) {
             const environment = await knex.withSchema('nango')
