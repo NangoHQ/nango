@@ -1,3 +1,4 @@
+import { Context } from '@temporalio/activity';
 import {
     createSyncJob,
     SyncStatus,
@@ -11,6 +12,7 @@ import {
     updateJobActivityLogId,
     NangoConnection,
     environmentService,
+    createActivityLogMessage,
     createActivityLogAndLogMessage
 } from '@nangohq/shared';
 import type { ContinuousSyncArgs, InitialSyncArgs } from './models/Worker';
@@ -18,27 +20,48 @@ import type { ContinuousSyncArgs, InitialSyncArgs } from './models/Worker';
 export async function routeSync(args: InitialSyncArgs): Promise<boolean | object> {
     const { syncId, syncJobId, syncName, activityLogId, nangoConnection, debug } = args;
     let environmentId = nangoConnection?.environment_id;
+
+    // https://typescript.temporal.io/api/classes/activity.Context
+    const context: Context = Context.current();
     if (!nangoConnection?.environment_id) {
         environmentId = (await environmentService.getEnvironmentIdForAccountAssumingProd(nangoConnection.account_id as number)) as number;
     }
     const syncConfig: ProviderConfig = (await configService.getProviderConfig(nangoConnection?.provider_config_key as string, environmentId)) as ProviderConfig;
 
-    return syncProvider(syncConfig, syncId, syncJobId, syncName, SyncType.INITIAL, { ...nangoConnection, environment_id: environmentId }, activityLogId, debug);
+    return syncProvider(
+        syncConfig,
+        syncId,
+        syncJobId,
+        syncName,
+        SyncType.INITIAL,
+        { ...nangoConnection, environment_id: environmentId },
+        activityLogId,
+        context,
+        debug
+    );
 }
 
 export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<boolean | object> {
     const { syncId, activityLogId, syncName, nangoConnection, debug } = args;
     let environmentId = nangoConnection?.environment_id;
     let syncJobId;
-    if (!nangoConnection?.environment_id) {
-        environmentId = (await environmentService.getEnvironmentIdForAccountAssumingProd(nangoConnection.account_id as number)) as number;
-        // TODO recreate the job id to be in the format created by temporal: nango-syncs.accounts-syncs-schedule-29768402-c6a8-462b-8334-37adf2b76be4-workflow-2023-05-30T08:45:00Z
-        syncJobId = await createSyncJob(syncId as string, SyncType.INCREMENTAL, SyncStatus.RUNNING, '', null);
-    } else {
-        syncJobId = await createSyncJob(syncId as string, SyncType.INCREMENTAL, SyncStatus.RUNNING, '', activityLogId);
-    }
 
+    // https://typescript.temporal.io/api/classes/activity.Context
+    const context: Context = Context.current();
     try {
+        if (!nangoConnection?.environment_id) {
+            environmentId = (await environmentService.getEnvironmentIdForAccountAssumingProd(nangoConnection.account_id as number)) as number;
+            syncJobId = await createSyncJob(syncId as string, SyncType.INCREMENTAL, SyncStatus.RUNNING, context.info.workflowExecution.workflowId, null);
+        } else {
+            syncJobId = await createSyncJob(
+                syncId as string,
+                SyncType.INCREMENTAL,
+                SyncStatus.RUNNING,
+                context.info.workflowExecution.workflowId,
+                activityLogId
+            );
+        }
+
         const syncConfig: ProviderConfig = (await configService.getProviderConfig(
             nangoConnection?.provider_config_key as string,
             environmentId
@@ -52,6 +75,7 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
             SyncType.INCREMENTAL,
             { ...nangoConnection, environment_id: environmentId },
             activityLogId ?? 0,
+            context,
             debug
         );
     } catch (err: any) {
@@ -93,14 +117,62 @@ export async function syncProvider(
     syncType: SyncType,
     nangoConnection: NangoConnection,
     existingActivityLogId: number,
+    temporalContext: Context,
     debug = false
 ): Promise<boolean | object> {
-    let activityLogId = existingActivityLogId;
+    try {
+        let activityLogId = existingActivityLogId;
 
-    if (syncType === SyncType.INCREMENTAL) {
+        if (syncType === SyncType.INCREMENTAL) {
+            const log = {
+                level: 'info' as LogLevel,
+                success: null,
+                action: 'sync' as LogAction,
+                start: Date.now(),
+                end: Date.now(),
+                timestamp: Date.now(),
+                connection_id: nangoConnection?.connection_id as string,
+                provider_config_key: nangoConnection?.provider_config_key as string,
+                provider: syncConfig.provider,
+                session_id: syncJobId ? syncJobId?.toString() : '',
+                environment_id: nangoConnection?.environment_id as number,
+                operation_name: syncName
+            };
+            activityLogId = (await createActivityLog(log)) as number;
+
+            if (syncJobId && activityLogId) {
+                await updateJobActivityLogId(syncJobId, activityLogId);
+            }
+        }
+
+        if (debug) {
+            await createActivityLogMessage({
+                level: 'info',
+                activity_log_id: activityLogId,
+                timestamp: Date.now(),
+                content: `Starting sync ${syncType} for ${syncName} with syncId ${syncId} and syncJobId ${syncJobId} with execution id of ${temporalContext.info.workflowExecution.workflowId} for attempt #${temporalContext.info.attempt}`
+            });
+        }
+
+        const syncRun = new syncRunService({
+            writeToDb: true,
+            syncId,
+            syncJobId,
+            nangoConnection,
+            syncName,
+            syncType,
+            activityLogId,
+            debug
+        });
+
+        const result = await syncRun.run();
+
+        return result as boolean;
+    } catch (err: any) {
+        const prettyError = JSON.stringify(err, ['message', 'name', 'stack'], 2);
         const log = {
             level: 'info' as LogLevel,
-            success: null,
+            success: false,
             action: 'sync' as LogAction,
             start: Date.now(),
             end: Date.now(),
@@ -112,25 +184,12 @@ export async function syncProvider(
             environment_id: nangoConnection?.environment_id as number,
             operation_name: syncName
         };
-        activityLogId = (await createActivityLog(log)) as number;
+        await createActivityLogAndLogMessage(log, {
+            level: 'error',
+            timestamp: Date.now(),
+            content: `The ${syncType} sync failed to run because of a failure to create the job and run the sync with the error: ${prettyError}`
+        });
 
-        if (syncJobId && activityLogId) {
-            await updateJobActivityLogId(syncJobId, activityLogId);
-        }
+        return false;
     }
-
-    const syncRun = new syncRunService({
-        writeToDb: true,
-        syncId,
-        syncJobId,
-        nangoConnection,
-        syncName,
-        syncType,
-        activityLogId,
-        debug
-    });
-
-    const result = await syncRun.run();
-
-    return result as boolean;
 }
