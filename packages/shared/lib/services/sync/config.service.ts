@@ -9,7 +9,7 @@ import {
     updateSuccess as updateSuccessActivityLog,
     createActivityLogMessageAndEnd,
     createActivityLogDatabaseErrorMessageAndEnd
-} from '../activity.service.js';
+} from '../activity/activity.service.js';
 import { getSyncsByProviderConfigAndSyncName } from './sync.service.js';
 import type { LogLevel, LogAction } from '../../models/Activity.js';
 import type { SyncConfigWithProvider, IncomingSyncConfig, SyncConfig, SlimSync, SyncDeploymentResult } from '../../models/Sync.js';

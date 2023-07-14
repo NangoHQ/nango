@@ -1,7 +1,7 @@
 import { deleteSyncConfig, deleteSyncFilesForConfig } from './config.service.js';
 import { deleteScheduleForSync } from './schedule.service.js';
 import { createSync, deleteSync } from './sync.service.js';
-import { createActivityLogMessage } from '../activity.service.js';
+import { createActivityLogMessage } from '../activity/activity.service.js';
 import SyncClient from '../../clients/sync.client.js';
 import configService from '../config.service.js';
 import type { Connection } from '../../models/Connection.js';

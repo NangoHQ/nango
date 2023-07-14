@@ -1,7 +1,7 @@
 import { NodeVM } from 'vm2';
 import type { NangoIntegrationData } from '../../integrations/index.js';
 import { getIntegrationFile, getRootDir } from '../nango-config.service.js';
-import { createActivityLogMessage } from '../activity.service.js';
+import { createActivityLogMessage } from '../activity/activity.service.js';
 import type { NangoSync } from '../../sdk/sync.js';
 import fileService from '../file.service.js';
 import { isCloud } from '../../utils/utils.js';

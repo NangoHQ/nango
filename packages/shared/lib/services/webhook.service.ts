@@ -3,7 +3,7 @@ import type { SyncType } from '../models/Sync';
 import type { NangoConnection } from '../models/Connection';
 import type { SyncResult, NangoSyncWebhookBody } from '../models/Sync';
 import environmentService from './environment.service.js';
-import { createActivityLogMessage } from './activity.service.js';
+import { createActivityLogMessage } from './activity/activity.service.js';
 
 class WebhookService {
     async sendUpdate(

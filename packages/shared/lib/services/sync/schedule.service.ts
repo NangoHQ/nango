@@ -4,7 +4,7 @@ import { Schedule as SyncSchedule, ScheduleStatus, SyncCommandToScheduleStatus, 
 import { getSyncsByConnectionId, getSyncsByProviderConfigKey } from '../sync/sync.service.js';
 import { getInterval } from '../nango-config.service.js';
 import SyncClient from '../../clients/sync.client.js';
-import { createActivityLogDatabaseErrorMessageAndEnd } from '../activity.service.js';
+import { createActivityLogDatabaseErrorMessageAndEnd } from '../activity/activity.service.js';
 
 const TABLE = dbNamespace + 'sync_schedules';
 

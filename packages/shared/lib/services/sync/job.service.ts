@@ -1,5 +1,5 @@
 import { schema, dbNamespace } from '../../db/database.js';
-import { createActivityLogDatabaseErrorMessageAndEnd } from '../activity.service.js';
+import { createActivityLogDatabaseErrorMessageAndEnd } from '../activity/activity.service.js';
 import type { Job as SyncJob, SyncStatus, SyncType, SyncResultByModel } from '../../models/Sync.js';
 
 const SYNC_JOB_TABLE = dbNamespace + 'sync_jobs';
