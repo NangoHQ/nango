@@ -134,6 +134,7 @@ export default function Activity() {
 
             }
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activityLogId, activityRefs]);
 
 
