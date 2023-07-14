@@ -519,8 +519,8 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                         {interpretNextRun(sync.futureActionTimes) === '-' ? (
                                                             <li className="ml-4 w-36 text-sm text-gray-500">-</li>
                                                         ) : (
-                                                            <Tooltip text={interpretNextRun(sync.futureActionTimes)[1]} type="dark">
-                                                                <li className="ml-4 w-36 text-sm text-gray-500">{interpretNextRun(sync.futureActionTimes)[0]}</li>
+                                                            <Tooltip text={interpretNextRun(sync.futureActionTimes, sync.latest_sync?.updated_at)[1]} type="dark">
+                                                                <li className="ml-4 w-36 text-sm text-gray-500">{interpretNextRun(sync.futureActionTimes, sync.latest_sync?.updated_at)[0]}</li>
                                                             </Tooltip>
                                                         )}
                                                     </>
