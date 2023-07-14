@@ -72,9 +72,9 @@ export type OAuth1RequestTokenResult = {
     parsed_query_string: any;
 };
 
-export interface CredentialsCommon {
+export interface CredentialsCommon<T = Record<string, any>> {
     type: AuthModes;
-    raw: Record<string, string>; // Raw response for credentials as received by the OAuth server or set by the user
+    raw: T;
 }
 
 export type AuthCredentials = OAuth2Credentials | OAuth1Credentials;
