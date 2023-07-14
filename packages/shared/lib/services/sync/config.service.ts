@@ -153,7 +153,17 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
     }
 
     if (insertData.length === 0) {
-        throw new NangoError('empty_insert_data_on_deploy');
+        if (debug) {
+            await createActivityLogMessage({
+                level: 'debug',
+                activity_log_id: activityLogId as number,
+                timestamp: Date.now(),
+                content: `All syncs were deleted.`
+            });
+        }
+        await updateSuccessActivityLog(activityLogId as number, true);
+
+        return [] as unknown as SyncDeploymentResult[];
     }
 
     try {
