@@ -48,7 +48,7 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
 
     let syncsWithVersions: Omit<IncomingSyncConfig, 'fileBody'>[] = syncs.map((sync) => {
         const { fileBody: _fileBody, model_schema, ...rest } = sync;
-        const modelSchema = JSON.parse(model_schema as unknown as string);
+        const modelSchema = JSON.parse(model_schema);
         return { ...rest, model_schema: modelSchema };
     });
 

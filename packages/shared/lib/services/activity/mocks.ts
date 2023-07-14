@@ -12,3 +12,9 @@ export function mockCreateActivityLogMessage() {
         return Promise.resolve(true);
     });
 }
+
+export function mockUpdateSuccess() {
+    return vi.spyOn(ActivityService, 'updateSuccess').mockImplementation(() => {
+        return Promise.resolve(undefined);
+    });
+}

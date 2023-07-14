@@ -89,7 +89,7 @@ export interface IncomingSyncConfig {
     models: string[];
     runs: string;
     version?: string;
-    model_schema: SyncModelSchema[];
+    model_schema: string;
 }
 
 export enum ScheduleStatus {
