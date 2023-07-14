@@ -12,6 +12,7 @@ import {
     updateJobActivityLogId,
     NangoConnection,
     environmentService,
+    createActivityLogMessage,
     createActivityLogAndLogMessage
 } from '@nangohq/shared';
 import type { ContinuousSyncArgs, InitialSyncArgs } from './models/Worker';
@@ -19,12 +20,25 @@ import type { ContinuousSyncArgs, InitialSyncArgs } from './models/Worker';
 export async function routeSync(args: InitialSyncArgs): Promise<boolean | object> {
     const { syncId, syncJobId, syncName, activityLogId, nangoConnection, debug } = args;
     let environmentId = nangoConnection?.environment_id;
+
+    // https://typescript.temporal.io/api/classes/activity.Context
+    const context: Context = Context.current();
     if (!nangoConnection?.environment_id) {
         environmentId = (await environmentService.getEnvironmentIdForAccountAssumingProd(nangoConnection.account_id as number)) as number;
     }
     const syncConfig: ProviderConfig = (await configService.getProviderConfig(nangoConnection?.provider_config_key as string, environmentId)) as ProviderConfig;
 
-    return syncProvider(syncConfig, syncId, syncJobId, syncName, SyncType.INITIAL, { ...nangoConnection, environment_id: environmentId }, activityLogId, debug);
+    return syncProvider(
+        syncConfig,
+        syncId,
+        syncJobId,
+        syncName,
+        SyncType.INITIAL,
+        { ...nangoConnection, environment_id: environmentId },
+        activityLogId,
+        context,
+        debug
+    );
 }
 
 export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<boolean | object> {
@@ -61,6 +75,7 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
             SyncType.INCREMENTAL,
             { ...nangoConnection, environment_id: environmentId },
             activityLogId ?? 0,
+            context,
             debug
         );
     } catch (err: any) {
@@ -102,6 +117,7 @@ export async function syncProvider(
     syncType: SyncType,
     nangoConnection: NangoConnection,
     existingActivityLogId: number,
+    temporalContext: Context,
     debug = false
 ): Promise<boolean | object> {
     try {
@@ -127,6 +143,15 @@ export async function syncProvider(
             if (syncJobId && activityLogId) {
                 await updateJobActivityLogId(syncJobId, activityLogId);
             }
+        }
+
+        if (debug) {
+            await createActivityLogMessage({
+                level: 'info',
+                activity_log_id: activityLogId,
+                timestamp: Date.now(),
+                content: `Starting sync ${syncType} for ${syncName} with syncId ${syncId} and syncJobId ${syncJobId} with execution id of ${temporalContext.info.workflowExecution.workflowId} for attempt #${temporalContext.info.attempt}`
+            });
         }
 
         const syncRun = new syncRunService({
