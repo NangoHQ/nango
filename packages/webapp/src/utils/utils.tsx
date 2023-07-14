@@ -129,13 +129,21 @@ function formatFutureRun(nextRun: number): Date | undefined {
     return date;
 }
 
-export function interpretNextRun(futureRuns: number[]) {
+export function interpretNextRun(futureRuns: number[], previousRun?: string): string | string[] {
     const [nextRun, nextNextRun] = futureRuns;
     if (!nextRun) {
         return '-';
     }
 
     const date = formatFutureRun(nextRun);
+
+    // if the future date is less than the previous date for some reason then return '-'
+    if (previousRun) {
+        const previousRunTime = new Date(previousRun);
+        if (date && date < previousRunTime) {
+            return '-';
+        }
+    }
 
     if (!date) {
         return '-';
@@ -145,7 +153,14 @@ export function interpretNextRun(futureRuns: number[]) {
 
     const nextRuns = [date, nextDate].map(d => d && formatDateToUSFormat(d.toISOString()));
 
-    return nextRuns;
+    if (previousRun) {
+        const previousRunTime = new Date(previousRun);
+        if (nextDate && nextDate < previousRunTime) {
+            nextRuns[1] = '-';
+        }
+    }
+
+    return nextRuns as string[];
 }
 
 export function parseLatestSyncResult(result: SyncResult, models: string[]) {
