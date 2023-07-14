@@ -70,7 +70,7 @@ export default function Activity() {
 
     const getActivityAPI = useActivityAPI();
 
-    let env = useStore(state => state.cookieValue);
+    const env = useStore(state => state.cookieValue);
     const setCookieValue = useStore(state => state.setCookieValue);
 
     if (initialEnv) {
