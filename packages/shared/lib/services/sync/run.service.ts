@@ -177,6 +177,19 @@ export default class SyncRun {
             const { returns: models } = syncData;
 
             if (syncData.sync_config_id) {
+                if (this.debug) {
+                    const content = `Sync config id is ${syncData.sync_config_id}`;
+                    if (this.writeToDb) {
+                        await createActivityLogMessage({
+                            level: 'debug',
+                            activity_log_id: this.activityLogId as number,
+                            timestamp: Date.now(),
+                            content
+                        });
+                    } else {
+                        console.log(content);
+                    }
+                }
                 await addSyncConfigToJob(this.syncJobId as number, syncData.sync_config_id);
             }
 
