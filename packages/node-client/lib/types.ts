@@ -5,9 +5,9 @@ export enum AuthModes {
     OAuth2 = 'OAUTH2'
 }
 
-export interface CredentialsCommon {
+export interface CredentialsCommon<T = Record<string, any>> {
     type: AuthModes;
-    raw: Record<string, string>; // Raw response for credentials as received by the OAuth server or set by the user
+    raw: T;
 }
 
 export interface OAuth1Credentials extends CredentialsCommon {
