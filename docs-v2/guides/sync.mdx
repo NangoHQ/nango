@@ -67,7 +67,7 @@ integrations:
 	asana-dev: # Integration name (must match an integration name in the Integrations tab of your Nango dashboard).
 		asana-tasks: # Arbitrary (unique) sync name
 			runs: every 30min # Sync frequency
-			return:
+			returns:
 				- AsanaTask # Data model (defined below) as returned by your sync script
 
 models: 
@@ -82,6 +82,7 @@ models:
 
 <Tip>
 	Possible model types include `string`, `boolean`, `number`, `date`, `null` as well as arrays & nested objects. Union types can be used with `|`.
+    Model names must be singular as they are a single entity.
 
     A more complex example:
     ```yaml
