@@ -229,6 +229,16 @@ export const generate = async (debug = false) => {
                 printDebug(`Generating ${syncName} integration`);
             }
             const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
+
+            if (!syncData.returns) {
+                console.log(
+                    chalk.red(
+                        `The ${syncName} integration is missing a returns property for what models the sync returns. Make sure you have "returns" instead of "return"`
+                    )
+                );
+                process.exit(1);
+            }
+
             const { returns: models } = syncData;
             const syncNameCamel = syncName
                 .split('-')
@@ -397,11 +407,6 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
 
     const url = process.env['NANGO_HOSTPORT'] + `/sync/deploy`;
 
-    if (postData.length === 0) {
-        console.log(chalk.red(`No syncs found to deploy. Please make sure your integration files compiled successfully and exist in your dist directory`));
-        return;
-    }
-
     if (process.env['NANGO_DEPLOY_AUTO_CONFIRM'] !== 'true' && !autoConfirm) {
         const confirmationUrl = process.env['NANGO_HOSTPORT'] + `/sync/deploy/confirmation`;
         try {
@@ -439,8 +444,12 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
                     )
                     .then((response: AxiosResponse) => {
                         const results: SyncDeploymentResult[] = response.data;
-                        const nameAndVersions = results.map((result) => `${result.sync_name}@v${result.version}`);
-                        console.log(chalk.green(`Successfully deployed the syncs: ${nameAndVersions.join(', ')}!`));
+                        if (results.length === 0) {
+                            console.log(chalk.green(`Successfully removed the syncs.`));
+                        } else {
+                            const nameAndVersions = results.map((result) => `${result.sync_name}@v${result.version}`);
+                            console.log(chalk.green(`Successfully deployed the syncs: ${nameAndVersions.join(', ')}!`));
+                        }
                     })
                     .catch((err) => {
                         const errorMessage = JSON.stringify(err.response.data, null, 2);
@@ -483,8 +492,12 @@ async function deploySyncs(url: string, body: { syncs: IncomingSyncConfig[]; rec
         .post(url, body, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
         .then((response: AxiosResponse) => {
             const results: SyncDeploymentResult[] = response.data;
-            const nameAndVersions = results.map((result) => `${result.sync_name}@v${result.version}`);
-            console.log(chalk.green(`Successfully deployed the syncs: ${nameAndVersions.join(', ')}!`));
+            if (results.length === 0) {
+                console.log(chalk.green(`Successfully removed the syncs.`));
+            } else {
+                const nameAndVersions = results.map((result) => `${result.sync_name}@v${result.version}`);
+                console.log(chalk.green(`Successfully deployed the syncs: ${nameAndVersions.join(', ')}!`));
+            }
         })
         .catch((err: any) => {
             let errorMessage;
