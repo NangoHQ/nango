@@ -1,0 +1,23 @@
+name: Run Tests
+
+on: [push, pull_request]
+
+concurrency:
+    group: tests-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    unit:
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                node-version: [18.x, 19.x]
+
+        steps:
+            - uses: actions/checkout@v3
+            - name: Use Node.js ${{ matrix.node-version }}
+              uses: actions/setup-node@v3
+              with:
+                  node-version: ${{ matrix.node-version }}
+            - run: npm run build:hosted
+            - run: npm run test
