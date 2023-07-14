@@ -62,15 +62,20 @@ export default function Activity() {
     const [limit,] = useState(30);
     const [offset, setOffset] = useState(0);
 
-    const env = useStore(state => state.cookieValue);
-
     const location = useLocation();
     const queryParams = queryString.parse(location.search);
     const activityLogId: string | (string | null)[] | null = queryParams.activity_log_id;
     const initialOffset: string | (string | null)[] | null = queryParams.offset;
+    const initialEnv: string | (string | null)[] | null = queryParams.env;
 
     const getActivityAPI = useActivityAPI();
 
+    let env = useStore(state => state.cookieValue);
+    const setCookieValue = useStore(state => state.setCookieValue);
+
+    if (initialEnv) {
+        setCookieValue(initialEnv as string);
+    }
 
     const isInitialMount = useRef(true);
     const [activityRefs, setActivityRefs] = useState<{ [key: number]: React.RefObject<HTMLTableRowElement> }>({});
@@ -113,6 +118,9 @@ export default function Activity() {
         if (isInitialMount.current && activityLogId && typeof activityLogId === 'string' && Object.keys(activityRefs).length > 0) {
             const id = parseInt(activityLogId);
             setExpandedRow(id);
+
+            // remove query param env from the url without updating the push state
+            navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, env: null }), { replace: true });
 
             if (activityRefs[id] && activityRefs[id]?.current && activityRefs[id]?.current !== null) {
                 setTimeout(() => {
@@ -376,7 +384,7 @@ export default function Activity() {
                                                         <p>{activity.id === expandedRow ? 'Hide Logs' : 'Show Logs'}</p>
                                                     </button>
                                                 )}
-                                                {activity.messages[0] && <CopyButton icontype="link" text={`${window.location.host}/activity?activity_log_id=${activity.id}${offset === 0 ? '': `&offset=${offset}`}`} />}
+                                                {activity.messages[0] && <CopyButton icontype="link" text={`${window.location.host}/activity?env=${env}&activity_log_id=${activity.id}${offset === 0 ? '': `&offset=${offset}`}`} />}
                                             </div>
                                             {activity.id === expandedRow && activity.messages[0] && (
                                                 <>
