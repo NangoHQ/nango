@@ -50,13 +50,7 @@ class EnvironmentService {
 
     async getAccountIdAndEnvironmentIdBySecretKey(secretKey: string): Promise<{ accountId: number; environmentId: number } | null> {
         if (!this.environmentAccountSecrets[secretKey]) {
-            const environmentAccount = await db.knex.withSchema(db.schema()).select('*').from<Environment>(TABLE).where({ secret_key: secretKey });
-
-            if (environmentAccount == null || environmentAccount.length == 0 || environmentAccount[0] == null) {
-                return null;
-            }
-
-            return { accountId: environmentAccount[0].account_id, environmentId: environmentAccount[0].id };
+            return null;
         }
 
         const { accountId, environmentId } = this.environmentAccountSecrets[secretKey] as EnvironmentAccount;
