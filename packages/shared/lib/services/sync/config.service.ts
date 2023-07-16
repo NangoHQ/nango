@@ -83,7 +83,7 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
 
             const syncs = await getSyncsByProviderConfigAndSyncName(environment_id, providerConfigKey, syncName);
             for (const sync of syncs) {
-                await updateSyncScheduleFrequency(sync.id as string, runs, syncName, activityLogId);
+                await updateSyncScheduleFrequency(sync.id as string, runs, syncName, activityLogId as number);
             }
         }
 
