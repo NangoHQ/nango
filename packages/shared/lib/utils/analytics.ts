@@ -40,7 +40,7 @@ class Analytics {
             eventProperties['host'] = baseUrl;
             eventProperties['user-type'] = userType;
             eventProperties['user-account'] = userId;
-            eventProperties['nango-server-version'] = this.packageVersion || 'unkown';
+            eventProperties['nango-server-version'] = this.packageVersion || 'unknown';
 
             if (isCloud() && accountId != null) {
                 const account: Account | null = await accountService.getAccountById(accountId);
