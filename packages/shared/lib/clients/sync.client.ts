@@ -305,7 +305,7 @@ class SyncClient {
             await createActivityLogMessage({
                 level: 'info',
                 activity_log_id: activityLogId as number,
-                content: `Updated sync ${syncName} schedule ${schedule_id} with interval ${interval} and offset ${offset}.`,
+                content: `Updated sync "${syncName}" schedule "${schedule_id}" with interval ${interval} and offset ${offset}.`,
                 timestamp: Date.now()
             });
         } catch (e) {
@@ -313,7 +313,7 @@ class SyncClient {
             await createActivityLogMessage({
                 level: 'error',
                 activity_log_id: activityLogId as number,
-                content: `There was an error updating sync ${syncName} schedule ${schedule_id} with interval ${interval} and offset ${offset} with error: ${errorMessage}.`,
+                content: `There was an error updating sync "${syncName}" schedule "${schedule_id}" with interval ${interval} and offset ${offset} with error: ${errorMessage}.`,
                 timestamp: Date.now()
             });
         }
