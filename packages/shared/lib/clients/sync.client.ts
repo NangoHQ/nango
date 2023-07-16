@@ -284,9 +284,7 @@ class SyncClient {
         }
     }
 
-    async updateSyncSchedule(schedule_id: string, interval: string, offset: number) {
-        const scheduleHandle = this.client?.schedule.getHandle(schedule_id);
-
+    async updateSyncSchedule(schedule_id: string, interval: string, offset: number, syncName: string, activityLogId: number) {
         function updateFunction(scheduleDescription: ScheduleDescription) {
             scheduleDescription.spec = {
                 intervals: [
@@ -298,7 +296,27 @@ class SyncClient {
             };
             return scheduleDescription;
         }
-        scheduleHandle?.update(updateFunction);
+
+        try {
+            const scheduleHandle = this.client?.schedule.getHandle(schedule_id);
+
+            scheduleHandle?.update(updateFunction);
+
+            await createActivityLogMessage({
+                level: 'info',
+                activity_log_id: activityLogId as number,
+                content: `Updated sync ${syncName} schedule ${schedule_id} with interval ${interval} and offset ${offset}.`,
+                timestamp: Date.now()
+            });
+        } catch (e) {
+            const errorMessage = JSON.stringify(e, ['message', 'name', 'stack'], 2);
+            await createActivityLogMessage({
+                level: 'error',
+                activity_log_id: activityLogId as number,
+                content: `There was an error updating sync ${syncName} schedule ${schedule_id} with interval ${interval} and offset ${offset} with error: ${errorMessage}.`,
+                timestamp: Date.now()
+            });
+        }
     }
 }
 
