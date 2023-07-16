@@ -300,7 +300,7 @@ class SyncClient {
         try {
             const scheduleHandle = this.client?.schedule.getHandle(schedule_id);
 
-            scheduleHandle?.update(updateFunction);
+            await scheduleHandle?.update(updateFunction);
 
             await createActivityLogMessage({
                 level: 'info',
