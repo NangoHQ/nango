@@ -258,7 +258,9 @@ export default class SyncRun {
                                     const accountId = (await environmentService.getAccountIdFromEnvironment(this.nangoConnection.environment_id)) as number;
                                     errorManager.report(upsertResult?.error, { accountId: accountId });
 
-                                    await this.reportFailureForResults(`There was a problem upserting the data for ${this.syncName} and the model ${model}`);
+                                    await this.reportFailureForResults(
+                                        `There was a problem upserting the data for ${this.syncName} and the model ${model} with the error message: ${upsertResult?.error}}`
+                                    );
 
                                     return false;
                                 }
