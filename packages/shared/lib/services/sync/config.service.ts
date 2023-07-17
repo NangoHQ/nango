@@ -12,7 +12,7 @@ import {
 } from '../activity/activity.service.js';
 import { getSyncsByProviderConfigAndSyncName } from './sync.service.js';
 import type { LogLevel, LogAction } from '../../models/Activity.js';
-import type { SyncConfigWithProvider, IncomingSyncConfig, SyncConfig, SlimSync, SyncDeploymentResult } from '../../models/Sync.js';
+import type { SyncModelSchema, SyncConfigWithProvider, IncomingSyncConfig, SyncConfig, SlimSync, SyncDeploymentResult } from '../../models/Sync.js';
 import type { NangoConnection } from '../../models/Connection.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
 import type { NangoConfig } from '../../integrations/index.js';
@@ -148,7 +148,7 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
             file_location,
             runs,
             active: true,
-            model_schema
+            model_schema: model_schema as unknown as SyncModelSchema[]
         });
     }
 
@@ -268,17 +268,19 @@ export async function getSyncConfigByParams(environment_id: number, sync_name: s
         throw new Error('Provider config not found');
     }
 
-    const result = await schema()
-        .from<SyncConfig>(TABLE)
-        .where({ environment_id, sync_name, nango_config_id: config.id as number, active: true })
-        .orderBy('created_at', 'desc')
-        .first();
+    try {
+        const result = await schema()
+            .from<SyncConfig>(TABLE)
+            .where({ environment_id, sync_name, nango_config_id: config.id as number, active: true })
+            .orderBy('created_at', 'desc')
+            .first();
 
-    if (result) {
-        return result;
+        if (result) {
+            return result;
+        }
+    } catch (_) {
+        return null;
     }
-
-    return null;
 }
 
 export async function deleteSyncConfig(id: number): Promise<void> {

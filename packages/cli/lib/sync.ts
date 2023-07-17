@@ -18,7 +18,6 @@ import type * as t from '@babel/types';
 
 import type {
     SyncDeploymentResult,
-    SyncModelSchema,
     IncomingSyncConfig,
     NangoConfig,
     Connection as NangoConnection,
@@ -398,7 +397,7 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
                 version: version as string,
                 runs,
                 fileBody: fs.readFileSync(integrationFilePath, 'utf8'),
-                model_schema: JSON.stringify(model_schema) as unknown as SyncModelSchema[]
+                model_schema: JSON.stringify(model_schema)
             };
 
             postData.push(body);
