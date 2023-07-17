@@ -9,13 +9,17 @@ import type { User } from '../models/Admin.js';
 
 class ErrorManager {
     constructor() {
-        if (isCloud() && process.env['SENTRY_DNS']) {
-            sentry.init({
-                dsn: process.env['SENTRY_DNS'],
-                beforeSend(event: ErrorEvent, _: EventHint) {
-                    return event.user?.id === 'account-78' ? null : event;
-                }
-            });
+        try {
+            if (isCloud() && process.env['SENTRY_DNS']) {
+                sentry.init({
+                    dsn: process.env['SENTRY_DNS'],
+                    beforeSend(event: ErrorEvent, _: EventHint) {
+                        return event.user?.id === 'account-78' ? null : event;
+                    }
+                });
+            }
+        } catch (_) {
+            return;
         }
     }
 
