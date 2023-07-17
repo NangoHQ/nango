@@ -20,6 +20,7 @@ import {
     configService,
     errorManager,
     connectionService,
+    environmentService,
     getEnvironmentId,
     interpolateIfNeeded
 } from '@nangohq/shared';
@@ -234,7 +235,18 @@ class ProxyController {
 
             await this.sendToHttpMethod(res, next, method as HTTP_VERB, configBody, activityLogId as number, connection, isSync, isDryRun);
         } catch (error) {
-            console.log(error);
+            const environment_id = getEnvironmentId(res);
+            const accountId = (await environmentService.getAccountIdFromEnvironment(environment_id)) as number;
+            const connectionId = req.get('Connection-Id') as string;
+            const providerConfigKey = req.get('Provider-Config-Key') as string;
+
+            errorManager.report(error, {
+                accountId,
+                metadata: {
+                    connectionId,
+                    providerConfigKey
+                }
+            });
             next(error);
         }
     }
