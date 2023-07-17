@@ -18,3 +18,9 @@ export function mockUpdateSuccess() {
         return Promise.resolve(undefined);
     });
 }
+
+export function mockAddEndTime() {
+    return vi.spyOn(ActivityService, 'addEndTime').mockImplementation(() => {
+        return Promise.resolve(undefined);
+    });
+}

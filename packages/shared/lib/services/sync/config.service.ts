@@ -1,3 +1,4 @@
+import semver from 'semver';
 import db, { schema, dbNamespace } from '../../db/database.js';
 import configService from '../config.service.js';
 import fileService from '../file.service.js';
@@ -116,15 +117,7 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
             throw new NangoError('file_upload_error');
         }
 
-        const oldConfigs = await schema()
-            .from<SyncConfig>(TABLE)
-            .select('id')
-            .where({
-                environment_id,
-                nango_config_id: config.id as number,
-                sync_name: syncName,
-                active: true
-            });
+        const oldConfigs = await getSyncConfigsBySyncNameAndConfigId(environment_id, config.id as number, syncName);
 
         if (oldConfigs.length > 0) {
             const ids = oldConfigs.map((oldConfig: SyncConfig) => oldConfig.id as number);
@@ -262,6 +255,30 @@ export async function getSyncConfigsByParams(environment_id: number, providerCon
     return null;
 }
 
+export async function getSyncConfigsBySyncNameAndConfigId(environment_id: number, nango_config_id: number, sync_name: string): Promise<SyncConfig[]> {
+    try {
+        const result = await schema().from<SyncConfig>(TABLE).where({
+            environment_id,
+            nango_config_id,
+            sync_name,
+            active: true
+        });
+
+        if (result) {
+            return result;
+        }
+    } catch (error) {
+        errorManager.report(error, {
+            metadata: {
+                environment_id,
+                nango_config_id,
+                sync_name
+            }
+        });
+    }
+    return [];
+}
+
 export async function getSyncConfigByParams(environment_id: number, sync_name: string, providerConfigKey: string): Promise<SyncConfig | null> {
     const config = await configService.getProviderConfig(providerConfigKey, environment_id);
 
@@ -279,9 +296,18 @@ export async function getSyncConfigByParams(environment_id: number, sync_name: s
         if (result) {
             return result;
         }
-    } catch (_) {
+    } catch (error) {
+        errorManager.report(error, {
+            metadata: {
+                environment_id,
+                sync_name,
+                providerConfigKey
+            }
+        });
         return null;
     }
+
+    return null;
 }
 
 export async function deleteSyncConfig(id: number): Promise<void> {
@@ -414,29 +440,21 @@ export async function getProviderConfigBySyncAndAccount(sync_name: string, envir
     return null;
 }
 
-function increment(input: number | string): number | string {
-    if (typeof input === 'string' && input.includes('.')) {
-        const parts = input.split('.');
-        for (let i = parts.length - 1; i >= 0; i--) {
-            const part = parts[i] as string;
-            const num = parseInt(part);
+export function increment(input: number | string): number | string {
+    if (typeof input === 'string') {
+        if (input.includes('.')) {
+            const valid = semver.valid(input);
+            if (!valid) {
+                throw new Error(`Invalid version string: ${input}`);
+            }
+            return semver.inc(input, 'patch') as string;
+        } else {
+            const num = parseInt(input);
             if (isNaN(num)) {
-                throw new Error(`Invalid version string segment: ${parts[i]}`);
+                throw new Error(`Invalid version string segment: ${input}`);
             }
-            if (num < 9) {
-                parts[i] = (num + 1).toString();
-                break;
-            } else {
-                parts[i] = '0';
-            }
+            return (num + 1).toString();
         }
-        return parts.join('.');
-    } else if (typeof input === 'string') {
-        const num = parseInt(input);
-        if (isNaN(num)) {
-            throw new Error(`Invalid version string segment: ${input}`);
-        }
-        return num + 1;
     } else if (typeof input === 'number') {
         return input + 1;
     } else {

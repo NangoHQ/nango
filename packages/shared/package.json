@@ -39,6 +39,7 @@
         "pg": "^8.8.0",
         "posthog-node": "^2.2.3",
         "rimraf": "^5.0.1",
+        "semver": "^7.5.4",
         "simple-oauth2": "^5.0.0",
         "ts-node": "^10.9.1",
         "uuid": "^9.0.0",

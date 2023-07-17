@@ -3,12 +3,15 @@ import type { IncomingSyncConfig } from '../../models/Sync.js';
 import environmentService from '../environment.service.js';
 import * as SyncConfigService from './config.service';
 import configService from '../config.service.js';
-import { mockCreateActivityLog, mockUpdateSuccess } from '../activity/mocks.js';
+import { mockAddEndTime, mockCreateActivityLog, mockUpdateSuccess } from '../activity/mocks.js';
 
-describe('SyncConfigService', () => {
+describe('Sync config create', () => {
+    const environment_id = 1;
+    const debug = true;
+
     it('Create sync configs correctly', async () => {
         const environment_id = 1;
-        let syncs: IncomingSyncConfig[] = [];
+        const syncs: IncomingSyncConfig[] = [];
         const debug = true;
 
         vi.spyOn(environmentService, 'getAccountIdFromEnvironment').mockImplementation(() => {
@@ -17,12 +20,16 @@ describe('SyncConfigService', () => {
 
         mockCreateActivityLog();
         mockUpdateSuccess();
+        mockAddEndTime();
 
         // empty sync config should return back an empty array
         const emptyConfig = await SyncConfigService.createSyncConfig(environment_id, syncs, debug);
-        expect(emptyConfig).not.toBe([]);
 
-        syncs = [
+        expect(emptyConfig).not.toBe([]);
+    });
+
+    it('Throws an error at the end of the create sync process', async () => {
+        const syncs = [
             {
                 syncName: 'test-sync',
                 providerConfigKey: 'google',
@@ -33,8 +40,6 @@ describe('SyncConfigService', () => {
                 model_schema: '[{ "name": "model", "fields": [{ "name": "some", "type": "value" }] }]'
             }
         ];
-
-        const testConfig = await SyncConfigService.createSyncConfig(environment_id, syncs, debug);
 
         vi.spyOn(configService, 'getProviderConfig').mockImplementation(() => {
             return Promise.resolve({
@@ -62,7 +67,43 @@ describe('SyncConfigService', () => {
             });
         });
 
-        console.log(testConfig);
-        //expect(emptyConfig).not.toBe([]);
+        await expect(SyncConfigService.createSyncConfig(environment_id, syncs, debug)).rejects.toThrowError(
+            'Error creating sync config from a deploy. Please contact support with the sync name and connection details'
+        );
+    });
+});
+
+describe('Sync config increment', () => {
+    it('should increment a number', () => {
+        expect(SyncConfigService.increment(1)).toBe(2);
+        expect(SyncConfigService.increment(0)).toBe(1);
+        expect(SyncConfigService.increment(9)).toBe(10);
+    });
+
+    it('should increment a string number', () => {
+        expect(SyncConfigService.increment('1')).toBe('2');
+        expect(SyncConfigService.increment('0')).toBe('1');
+        expect(SyncConfigService.increment('999')).toBe('1000');
+    });
+
+    it('should increment version string', () => {
+        expect(SyncConfigService.increment('1.9.9')).toBe('1.9.10');
+        expect(SyncConfigService.increment('1.0.9')).toBe('1.0.10');
+        expect(SyncConfigService.increment('1.1.1')).toBe('1.1.2');
+        expect(SyncConfigService.increment('1.1.9')).toBe('1.1.10');
+        expect(SyncConfigService.increment('1.1.9999')).toBe('1.1.10000');
+        expect(SyncConfigService.increment('1.9.9')).toBe('1.9.10');
+        expect(SyncConfigService.increment('99.2.2')).toBe('99.2.3');
+        expect(SyncConfigService.increment('9.9.9')).toBe('9.9.10');
+    });
+
+    it('should throw error on invalid version segment', () => {
+        expect(() => SyncConfigService.increment('1.1.a')).toThrowError('Invalid version string: 1.1.a');
+        expect(() => SyncConfigService.increment('a.b.c')).toThrowError('Invalid version string: a.b.c');
+    });
+
+    it('should throw error on invalid input', () => {
+        expect(() => SyncConfigService.increment({} as unknown as string)).toThrowError('Invalid version input: [object Object]');
+        expect(() => SyncConfigService.increment(undefined as unknown as string)).toThrowError('Invalid version input: undefined');
     });
 });

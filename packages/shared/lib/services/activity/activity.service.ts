@@ -15,7 +15,11 @@ export async function createActivityLog(log: ActivityLog): Promise<number | null
             return result[0].id;
         }
     } catch (e) {
-        console.log(e);
+        errorManager.report(e, {
+            metadata: {
+                log
+            }
+        });
     }
 
     return null;
@@ -102,9 +106,17 @@ export async function createActivityLogMessage(logMessage: ActivityLogMessage): 
 }
 
 export async function addEndTime(activity_log_id: number): Promise<void> {
-    await db.knex.withSchema(db.schema()).from<ActivityLog>(activityLogTableName).where({ id: activity_log_id }).update({
-        end: Date.now()
-    });
+    try {
+        await db.knex.withSchema(db.schema()).from<ActivityLog>(activityLogTableName).where({ id: activity_log_id }).update({
+            end: Date.now()
+        });
+    } catch (e) {
+        errorManager.report(e, {
+            metadata: {
+                activity_log_id
+            }
+        });
+    }
 }
 
 export async function createActivityLogMessageAndEnd(logMessage: ActivityLogMessage): Promise<void> {
