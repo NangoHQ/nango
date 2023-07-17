@@ -28,6 +28,30 @@ describe('Sync config create', () => {
         expect(emptyConfig).not.toBe([]);
     });
 
+    it('Throws a provider not found error', async () => {
+        const syncs = [
+            {
+                syncName: 'test-sync',
+                providerConfigKey: 'google-wrong',
+                fileBody: 'integrations',
+                models: ['Model_1', 'Model_2'],
+                runs: 'every 6h',
+                version: '1',
+                model_schema: '[{ "name": "model", "fields": [{ "name": "some", "type": "value" }] }]'
+            }
+        ];
+
+        vi.spyOn(configService, 'getProviderConfig').mockImplementation(() => {
+            return Promise.resolve(null);
+        });
+
+        await expect(SyncConfigService.createSyncConfig(environment_id, syncs, debug)).rejects.toThrowError(
+            `There is no Provider Configuration matching this key. Please make sure this value exists in the Nango dashboard {
+  "providerConfigKey": "google-wrong"
+}`
+        );
+    });
+
     it('Throws an error at the end of the create sync process', async () => {
         const syncs = [
             {
