@@ -1,6 +1,18 @@
 import { ReactElement, useState, useEffect, useRef, createRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ChevronsLeft, Clock, ArrowRight, Slash, CheckInCircle, AlertCircle, Link as LinkIcon, RefreshCw } from '@geist-ui/icons'
+import {
+    ChevronsLeft,
+    Clock,
+    ArrowRight,
+    Slash,
+    CheckInCircle,
+    AlertCircle,
+    Link as LinkIcon,
+    RefreshCw,
+    Pause,
+    Play,
+    FastForward
+} from '@geist-ui/icons'
 import { Tooltip } from '@geist-ui/core';
 import queryString from 'query-string';
 
@@ -50,15 +62,20 @@ export default function Activity() {
     const [limit,] = useState(30);
     const [offset, setOffset] = useState(0);
 
-    const env = useStore(state => state.cookieValue);
-
     const location = useLocation();
     const queryParams = queryString.parse(location.search);
     const activityLogId: string | (string | null)[] | null = queryParams.activity_log_id;
     const initialOffset: string | (string | null)[] | null = queryParams.offset;
+    const initialEnv: string | (string | null)[] | null = queryParams.env;
 
     const getActivityAPI = useActivityAPI();
 
+    const env = useStore(state => state.cookieValue);
+    const setCookieValue = useStore(state => state.setCookieValue);
+
+    if (initialEnv) {
+        setCookieValue(initialEnv as string);
+    }
 
     const isInitialMount = useRef(true);
     const [activityRefs, setActivityRefs] = useState<{ [key: number]: React.RefObject<HTMLTableRowElement> }>({});
@@ -102,6 +119,9 @@ export default function Activity() {
             const id = parseInt(activityLogId);
             setExpandedRow(id);
 
+            // remove query param env from the url without updating the push state
+            navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, env: null }), { replace: true });
+
             if (activityRefs[id] && activityRefs[id]?.current && activityRefs[id]?.current !== null) {
                 setTimeout(() => {
                     activityRefs[id]?.current?.scrollIntoView({
@@ -114,6 +134,7 @@ export default function Activity() {
 
             }
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activityLogId, activityRefs]);
 
 
@@ -263,6 +284,51 @@ export default function Activity() {
                                                             </Link>
                                                         </span>
                                                     )}
+                                                    {activity?.action === 'pause sync' && (
+                                                        <span className="flex items-center">
+                                                            <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-gray-500 bg-opacity-20">
+                                                                <Pause className="stroke-gray-500 mr-2" size="16" />
+                                                                <p className="inline-block text-gray-500">pause sync</p>
+                                                            </div>
+                                                            <Link
+                                                                to="/syncs"
+                                                            >
+                                                                {activity.operation_name && (
+                                                                    <p className="text-gray-500 ml-2 text-sm">({activity?.operation_name})</p>
+                                                                )}
+                                                            </Link>
+                                                        </span>
+                                                    )}
+                                                    {activity?.action === 'restart sync' && (
+                                                        <span className="flex items-center">
+                                                            <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-gray-500 bg-opacity-20">
+                                                                <Play className="stroke-gray-500 mr-2" size="16" />
+                                                                <p className="inline-block text-gray-500">restart sync</p>
+                                                            </div>
+                                                            <Link
+                                                                to="/syncs"
+                                                            >
+                                                                {activity.operation_name && (
+                                                                    <p className="text-gray-500 ml-2 text-sm">({activity?.operation_name})</p>
+                                                                )}
+                                                            </Link>
+                                                        </span>
+                                                    )}
+                                                    {activity?.action === 'trigger sync' && (
+                                                        <span className="flex items-center">
+                                                            <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-gray-500 bg-opacity-20">
+                                                                <FastForward className="stroke-gray-500 mr-2" size="16" />
+                                                                <p className="inline-block text-gray-500">trigger sync</p>
+                                                            </div>
+                                                            <Link
+                                                                to="/syncs"
+                                                            >
+                                                                {activity.operation_name && (
+                                                                    <p className="text-gray-500 ml-2 text-sm">({activity?.operation_name})</p>
+                                                                )}
+                                                            </Link>
+                                                        </span>
+                                                    )}
                                                     {activity?.action === 'proxy' && (
                                                         <div className="flex items-center">
                                                             <div className="inline-flex justify-center items-center rounded-full py-1 px-3 bg-[#6BA4F8] bg-opacity-20">
@@ -319,7 +385,7 @@ export default function Activity() {
                                                         <p>{activity.id === expandedRow ? 'Hide Logs' : 'Show Logs'}</p>
                                                     </button>
                                                 )}
-                                                {activity.messages[0] && <CopyButton text={`${window.location.host}/activity?activity_log_id=${activity.id}${offset === 0 ? '': `&offset=${offset}`}`} />}
+                                                {activity.messages[0] && <CopyButton icontype="link" text={`${window.location.host}/activity?env=${env}&activity_log_id=${activity.id}${offset === 0 ? '': `&offset=${offset}`}`} />}
                                             </div>
                                             {activity.id === expandedRow && activity.messages[0] && (
                                                 <>

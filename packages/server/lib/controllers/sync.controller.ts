@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import type { NextFunction } from 'express';
-import type { LogAction, LogLevel, Connection } from '@nangohq/shared';
+import type { LogLevel, Connection } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import {
     getEnvironmentId,
@@ -20,7 +20,9 @@ import {
     getSyncConfigsWithConnectionsByEnvironmentId,
     getActiveSyncConfigsByEnvironmentId,
     IncomingSyncConfig,
-    getProviderConfigBySyncAndAccount
+    getProviderConfigBySyncAndAccount,
+    SyncCommand,
+    CommandToActivityLog
 } from '@nangohq/shared';
 
 class SyncController {
@@ -184,10 +186,12 @@ class SyncController {
             const { schedule_id, command, nango_connection_id, sync_id, sync_name, provider } = req.body;
             const connection = await connectionService.getConnectionById(nango_connection_id);
 
+            const action = CommandToActivityLog[command as SyncCommand];
+
             const log = {
                 level: 'info' as LogLevel,
                 success: false,
-                action: 'sync' as LogAction,
+                action,
                 start: Date.now(),
                 end: Date.now(),
                 timestamp: Date.now(),
@@ -202,7 +206,7 @@ class SyncController {
                 await createActivityLogAndLogMessage(log, {
                     level: 'error',
                     timestamp: Date.now(),
-                    content: `Unauthorized access to run the command: ${command} for sync: ${sync_id}`
+                    content: `Unauthorized access to run the command: "${action}" for sync: ${sync_id}`
                 });
 
                 res.sendStatus(401);
@@ -218,7 +222,7 @@ class SyncController {
                 level: 'info',
                 activity_log_id: activityLogId as number,
                 timestamp: Date.now(),
-                content: `Sync was updated with command: ${command} for sync: ${sync_id}`
+                content: `Sync was updated with command: "${action}" for sync: ${sync_id}`
             });
             await updateSuccessActivityLog(activityLogId as number, true);
 

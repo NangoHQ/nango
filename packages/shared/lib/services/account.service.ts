@@ -1,5 +1,6 @@
 import db from '../db/database.js';
 import type { Account } from '../models/Admin';
+import errorManager from '../utils/error.manager.js';
 
 class AccountService {
     async getAccountById(id: number): Promise<Account | null> {
@@ -12,7 +13,10 @@ class AccountService {
 
             return result[0];
         } catch (e) {
-            console.log(e);
+            errorManager.report(e, {
+                accountId: id
+            });
+
             return null;
         }
     }

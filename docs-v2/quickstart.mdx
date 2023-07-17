@@ -109,7 +109,7 @@ import { Nango }  from '@nangohq/node';
 const nango = new Nango({ secretKey: '<your-dev-secret-key>' });
 
 const result = await nango.getRecords({
-    providerConfigKey: 'github',
+    providerConfigKey: 'github-issue-example',
     connectionId: 'test-connection-id',
     model: 'GithubIssue'
 });
@@ -123,7 +123,7 @@ curl --request GET \
   --url https://api.nango.dev/sync/records?model=GithubIssue \
   --header 'Authorization: Bearer <your-dev-secret-key>' \
   --header 'Connection-Id: test-connection-id' \
-  --header 'Provider-Config-Key: github'
+  --header 'Provider-Config-Key: github-issue-example'
 ```
 </Tab>
 

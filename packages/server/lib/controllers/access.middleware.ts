@@ -57,11 +57,11 @@ export class AccessMiddleware {
             environmentId = result?.environmentId as number;
         } catch (e) {
             errorManager.report(e);
-            return errorManager.errRes(res, 'unkown_account');
+            return errorManager.errRes(res, 'unknown_account');
         }
 
         if (accountId == null) {
-            return errorManager.errRes(res, 'unkown_account');
+            return errorManager.errRes(res, 'unknown_account');
         }
 
         setAccount(accountId, res);

@@ -1,21 +1,28 @@
-import { isCloud } from './utils.js';
 import sentry, { EventHint } from '@sentry/node';
+import { readFileSync } from 'fs';
+import path from 'path';
 import type { ErrorEvent } from '@sentry/types';
 import logger from '../logger/console.js';
 import { NangoError } from './error.js';
 import type { Request } from 'express';
-import { getAccount, isApiAuthenticated, isUserAuthenticated } from './utils.js';
+import { isCloud, getAccount, dirname, isApiAuthenticated, isUserAuthenticated } from './utils.js';
 import type { User } from '../models/Admin.js';
 
 class ErrorManager {
     constructor() {
-        if (isCloud() && process.env['SENTRY_DNS']) {
-            sentry.init({
-                dsn: process.env['SENTRY_DNS'],
-                beforeSend(event: ErrorEvent, _: EventHint) {
-                    return event.user?.id === 'account-78' ? null : event;
-                }
-            });
+        try {
+            if (isCloud() && process.env['SENTRY_DNS']) {
+                const packageVersion = JSON.parse(readFileSync(path.resolve(dirname(), '../../../package.json'), 'utf8')).version;
+                sentry.init({
+                    dsn: process.env['SENTRY_DNS'],
+                    beforeSend(event: ErrorEvent, _: EventHint) {
+                        return event.user?.id === 'account-78' ? null : event;
+                    },
+                    release: 'nango@' + packageVersion
+                });
+            }
+        } catch (_) {
+            return;
         }
     }
 

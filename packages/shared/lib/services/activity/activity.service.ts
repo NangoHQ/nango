@@ -1,5 +1,7 @@
 import db from '../../db/database.js';
 import type { ActivityLog, ActivityLogMessage, LogAction } from '../../models';
+import errorManager from '../../utils/error.manager.js';
+
 import logger from '../../logger/console.js';
 
 const activityLogTableName = '_nango_activity_logs';
@@ -89,7 +91,11 @@ export async function createActivityLogMessage(logMessage: ActivityLogMessage): 
             return true;
         }
     } catch (e) {
-        console.log(e);
+        errorManager.report(e, {
+            metadata: {
+                logMessage
+            }
+        });
     }
 
     return false;

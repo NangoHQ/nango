@@ -43,7 +43,6 @@ class ConfigController {
                 })
             });
         } catch (err) {
-            console.log(err);
             next(err);
         }
     }

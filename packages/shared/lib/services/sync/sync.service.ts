@@ -163,6 +163,7 @@ export const getSyncs = async (nangoConnection: Connection): Promise<Sync[]> => 
         .where({
             nango_connection_id: nangoConnection.id
         })
+        .orderBy(`${TABLE}.name`, 'asc')
         .groupBy(
             `${TABLE}.id`,
             `${SYNC_SCHEDULE_TABLE}.frequency`,

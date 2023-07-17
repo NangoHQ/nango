@@ -1,3 +1,5 @@
+import type { LogAction } from './Activity.js';
+
 export enum SyncStatus {
     RUNNING = 'RUNNING',
     PAUSED = 'PAUSED',
@@ -128,6 +130,13 @@ export enum SyncCommand {
     RUN = 'RUN',
     RUN_FULL = 'RUN_FULL'
 }
+
+export const CommandToActivityLog = {
+    PAUSE: 'pause sync' as LogAction,
+    UNPAUSE: 'restart sync' as LogAction,
+    RUN: 'trigger sync' as LogAction,
+    RUN_FULL: 'full sync' as LogAction
+};
 
 export const SyncCommandToScheduleStatus = {
     PAUSE: ScheduleStatus.PAUSED,

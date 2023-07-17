@@ -130,6 +130,18 @@ class ConnectionService {
     }
 
     public async getConnection(connectionId: string, providerConfigKey: string, environment_id: number): Promise<Connection | null> {
+        if (!connectionId) {
+            throw new NangoError('missing_connection');
+        }
+
+        if (!providerConfigKey) {
+            throw new NangoError('missing_provider_config');
+        }
+
+        if (!environment_id) {
+            throw new NangoError('missing_environment');
+        }
+
         const result: StoredConnection[] | null = (await schema()
             .select('*')
             .from<StoredConnection>(`_nango_connections`)
@@ -140,7 +152,7 @@ class ConnectionService {
         if (!storedConnection) {
             const environmentName = await environmentService.getEnvironmentName(environment_id);
 
-            throw new NangoError('unkown_connection', { connectionId, providerConfigKey, environmentName });
+            throw new NangoError('unknown_connection', { connectionId, providerConfigKey, environmentName });
         }
 
         const connection = encryptionManager.decryptConnection(storedConnection);
@@ -254,7 +266,7 @@ class ConnectionService {
                 timestamp: Date.now()
             });
 
-            errorManager.errRes(res, 'unkown_connection');
+            errorManager.errRes(res, 'unknown_connection');
             throw new Error(`Connection not found`);
         }
 

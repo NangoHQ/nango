@@ -11,10 +11,12 @@ import { createActivityLog, createActivityLogMessage, createActivityLogMessageAn
 import { createSyncJob } from '../services/sync/job.service.js';
 import { getInterval } from '../services/nango-config.service.js';
 import { getSyncConfig } from '../services/sync/config.service.js';
+import environmentService from '../services/environment.service.js';
 import { createSchedule as createSyncSchedule } from '../services/sync/schedule.service.js';
 import connectionService from '../services/connection.service.js';
 import configService from '../services/config.service.js';
 import { createSync } from '../services/sync/sync.service.js';
+import errorManager from '../utils/error.manager.js';
 import { isProd } from '../utils/utils.js';
 
 const generateWorkflowId = (sync: Sync, syncName: string, connectionId: string) => `${TASK_QUEUE}.${syncName}.${connectionId}-${sync.id}`;
@@ -59,7 +61,12 @@ class SyncClient {
             });
             return new SyncClient(client);
         } catch (e) {
-            console.error(e);
+            errorManager.report(e, {
+                metadata: {
+                    namespace,
+                    address: process.env['TEMPORAL_ADDRESS'] || 'localhost:7233'
+                }
+            });
             return null;
         }
     }
@@ -208,7 +215,16 @@ class SyncClient {
                 timestamp: Date.now()
             });
         } catch (e) {
-            console.error(e);
+            const accountId = (await environmentService.getAccountIdFromEnvironment(nangoConnection.environment_id)) as number;
+            errorManager.report(e, {
+                accountId: accountId,
+                metadata: {
+                    syncName,
+                    connectionDetails: nangoConnection,
+                    syncId: sync.id,
+                    syncConfig
+                }
+            });
         }
     }
 
@@ -225,6 +241,11 @@ class SyncClient {
             });
             return true;
         } catch (e) {
+            errorManager.report(e, {
+                metadata: {
+                    id
+                }
+            });
             return false;
         }
     }
@@ -279,14 +300,16 @@ class SyncClient {
                 const scheduleHandle = this.client?.schedule.getHandle(sync.schedule_id);
                 await scheduleHandle?.trigger(OVERLAP_POLICY);
             } catch (e) {
-                console.error(e);
+                errorManager.report(e, {
+                    metadata: {
+                        syncs
+                    }
+                });
             }
         }
     }
 
-    async updateSyncSchedule(schedule_id: string, interval: string, offset: number) {
-        const scheduleHandle = this.client?.schedule.getHandle(schedule_id);
-
+    async updateSyncSchedule(schedule_id: string, interval: string, offset: number, syncName: string, activityLogId: number) {
         function updateFunction(scheduleDescription: ScheduleDescription) {
             scheduleDescription.spec = {
                 intervals: [
@@ -298,7 +321,28 @@ class SyncClient {
             };
             return scheduleDescription;
         }
-        scheduleHandle?.update(updateFunction);
+
+        try {
+            const scheduleHandle = this.client?.schedule.getHandle(schedule_id);
+
+            await scheduleHandle?.update(updateFunction);
+
+            await createActivityLogMessage({
+                level: 'info',
+                activity_log_id: activityLogId as number,
+                content: `Updated sync "${syncName}" schedule "${schedule_id}" with interval ${interval} and offset ${offset}.`,
+                timestamp: Date.now()
+            });
+        } catch (e) {
+            errorManager.report(e, {
+                metadata: {
+                    syncName,
+                    schedule_id,
+                    interval,
+                    offset
+                }
+            });
+        }
     }
 }
 

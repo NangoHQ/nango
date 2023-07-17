@@ -88,7 +88,7 @@ export const updateScheduleStatus = async (schedule_id: string, status: SyncComm
     }
 };
 
-export const updateSyncScheduleFrequency = async (sync_id: string, interval: string): Promise<boolean> => {
+export const updateSyncScheduleFrequency = async (sync_id: string, interval: string, syncName: string, activityLogId: number): Promise<boolean> => {
     const existingSchedule = await getSchedule(sync_id);
     const { interval: frequency, offset } = getInterval(interval, new Date());
 
@@ -99,7 +99,7 @@ export const updateSyncScheduleFrequency = async (sync_id: string, interval: str
     if (existingSchedule.frequency !== frequency) {
         await schema().update({ frequency }).from<SyncSchedule>(TABLE).where({ sync_id });
         const syncClient = await SyncClient.getInstance();
-        await syncClient?.updateSyncSchedule(existingSchedule.schedule_id, frequency, offset);
+        await syncClient?.updateSyncSchedule(existingSchedule.schedule_id, frequency, offset, syncName, activityLogId);
 
         return true;
     }
