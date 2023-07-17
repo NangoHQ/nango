@@ -7,7 +7,7 @@ import type { NangoIntegrationData, NangoConfig, NangoIntegration } from '../int
 import { Sync, SyncStatus, SyncType, ScheduleStatus, SyncCommand, SyncWithSchedule } from '../models/Sync.js';
 import type { LogLevel, LogAction } from '../models/Activity.js';
 import { TASK_QUEUE } from '../constants.js';
-import { createActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../services/activity.service.js';
+import { createActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../services/activity/activity.service.js';
 import { createSyncJob } from '../services/sync/job.service.js';
 import { getInterval } from '../services/nango-config.service.js';
 import { getSyncConfig } from '../services/sync/config.service.js';

@@ -1,6 +1,6 @@
 import { schema } from '../../db/database.js';
 import { verifyUniqueKeysAreUnique } from './data-records.service.js';
-import { createActivityLogMessage } from '../activity.service.js';
+import { createActivityLogMessage } from '../activity/activity.service.js';
 import type { UpsertResponse } from '../../models/Data.js';
 import type { DataRecord } from '../../models/Sync.js';
 

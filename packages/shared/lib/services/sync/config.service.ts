@@ -1,3 +1,4 @@
+import semver from 'semver';
 import db, { schema, dbNamespace } from '../../db/database.js';
 import configService from '../config.service.js';
 import fileService from '../file.service.js';
@@ -9,10 +10,10 @@ import {
     updateSuccess as updateSuccessActivityLog,
     createActivityLogMessageAndEnd,
     createActivityLogDatabaseErrorMessageAndEnd
-} from '../activity.service.js';
+} from '../activity/activity.service.js';
 import { getSyncsByProviderConfigAndSyncName } from './sync.service.js';
 import type { LogLevel, LogAction } from '../../models/Activity.js';
-import type { SyncConfigWithProvider, IncomingSyncConfig, SyncConfig, SlimSync, SyncDeploymentResult } from '../../models/Sync.js';
+import type { SyncModelSchema, SyncConfigWithProvider, IncomingSyncConfig, SyncConfig, SlimSync, SyncDeploymentResult } from '../../models/Sync.js';
 import type { NangoConnection } from '../../models/Connection.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
 import type { NangoConfig } from '../../integrations/index.js';
@@ -49,7 +50,7 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
 
     let syncsWithVersions: Omit<IncomingSyncConfig, 'fileBody'>[] = syncs.map((sync) => {
         const { fileBody: _fileBody, model_schema, ...rest } = sync;
-        const modelSchema = JSON.parse(model_schema as unknown as string);
+        const modelSchema = JSON.parse(model_schema);
         return { ...rest, model_schema: modelSchema };
     });
 
@@ -116,15 +117,7 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
             throw new NangoError('file_upload_error');
         }
 
-        const oldConfigs = await schema()
-            .from<SyncConfig>(TABLE)
-            .select('id')
-            .where({
-                environment_id,
-                nango_config_id: config.id as number,
-                sync_name: syncName,
-                active: true
-            });
+        const oldConfigs = await getSyncConfigsBySyncNameAndConfigId(environment_id, config.id as number, syncName);
 
         if (oldConfigs.length > 0) {
             const ids = oldConfigs.map((oldConfig: SyncConfig) => oldConfig.id as number);
@@ -149,7 +142,7 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
             file_location,
             runs,
             active: true,
-            model_schema
+            model_schema: model_schema as unknown as SyncModelSchema[]
         });
     }
 
@@ -262,6 +255,30 @@ export async function getSyncConfigsByParams(environment_id: number, providerCon
     return null;
 }
 
+export async function getSyncConfigsBySyncNameAndConfigId(environment_id: number, nango_config_id: number, sync_name: string): Promise<SyncConfig[]> {
+    try {
+        const result = await schema().from<SyncConfig>(TABLE).where({
+            environment_id,
+            nango_config_id,
+            sync_name,
+            active: true
+        });
+
+        if (result) {
+            return result;
+        }
+    } catch (error) {
+        errorManager.report(error, {
+            metadata: {
+                environment_id,
+                nango_config_id,
+                sync_name
+            }
+        });
+    }
+    return [];
+}
+
 export async function getSyncConfigByParams(environment_id: number, sync_name: string, providerConfigKey: string): Promise<SyncConfig | null> {
     const config = await configService.getProviderConfig(providerConfigKey, environment_id);
 
@@ -269,14 +286,25 @@ export async function getSyncConfigByParams(environment_id: number, sync_name: s
         throw new Error('Provider config not found');
     }
 
-    const result = await schema()
-        .from<SyncConfig>(TABLE)
-        .where({ environment_id, sync_name, nango_config_id: config.id as number, active: true })
-        .orderBy('created_at', 'desc')
-        .first();
+    try {
+        const result = await schema()
+            .from<SyncConfig>(TABLE)
+            .where({ environment_id, sync_name, nango_config_id: config.id as number, active: true })
+            .orderBy('created_at', 'desc')
+            .first();
 
-    if (result) {
-        return result;
+        if (result) {
+            return result;
+        }
+    } catch (error) {
+        errorManager.report(error, {
+            metadata: {
+                environment_id,
+                sync_name,
+                providerConfigKey
+            }
+        });
+        return null;
     }
 
     return null;
@@ -412,29 +440,21 @@ export async function getProviderConfigBySyncAndAccount(sync_name: string, envir
     return null;
 }
 
-function increment(input: number | string): number | string {
-    if (typeof input === 'string' && input.includes('.')) {
-        const parts = input.split('.');
-        for (let i = parts.length - 1; i >= 0; i--) {
-            const part = parts[i] as string;
-            const num = parseInt(part);
+export function increment(input: number | string): number | string {
+    if (typeof input === 'string') {
+        if (input.includes('.')) {
+            const valid = semver.valid(input);
+            if (!valid) {
+                throw new Error(`Invalid version string: ${input}`);
+            }
+            return semver.inc(input, 'patch') as string;
+        } else {
+            const num = parseInt(input);
             if (isNaN(num)) {
-                throw new Error(`Invalid version string segment: ${parts[i]}`);
+                throw new Error(`Invalid version string segment: ${input}`);
             }
-            if (num < 9) {
-                parts[i] = (num + 1).toString();
-                break;
-            } else {
-                parts[i] = '0';
-            }
+            return (num + 1).toString();
         }
-        return parts.join('.');
-    } else if (typeof input === 'string') {
-        const num = parseInt(input);
-        if (isNaN(num)) {
-            throw new Error(`Invalid version string segment: ${input}`);
-        }
-        return num + 1;
     } else if (typeof input === 'number') {
         return input + 1;
     } else {

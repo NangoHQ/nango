@@ -13,7 +13,7 @@ import fileService from './services/file.service.js';
 import syncRunService from './services/sync/run.service.js';
 import analytics from './utils/analytics.js';
 
-export * from './services/activity.service.js';
+export * from './services/activity/activity.service.js';
 export * from './services/sync/sync.service.js';
 export * from './services/sync/job.service.js';
 export * from './services/sync/schedule.service.js';

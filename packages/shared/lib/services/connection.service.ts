@@ -16,7 +16,7 @@ import {
     createActivityLogMessage,
     createActivityLogMessageAndEnd,
     updateProvider as updateProviderActivityLog
-} from '../services/activity.service.js';
+} from '../services/activity/activity.service.js';
 import connectionService from '../services/connection.service.js';
 import providerClient from '../clients/provider.client.js';
 import configService from '../services/config.service.js';

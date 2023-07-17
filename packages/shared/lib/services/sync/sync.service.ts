@@ -4,7 +4,12 @@ import { IncomingSyncConfig, SyncDifferences, Sync, Job as SyncJob, SyncStatus, 
 import type { Connection, NangoConnection } from '../../models/Connection.js';
 import SyncClient from '../../clients/sync.client.js';
 import type { LogLevel, LogAction } from '../../models/Activity.js';
-import { updateSuccess as updateSuccessActivityLog, createActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../activity.service.js';
+import {
+    updateSuccess as updateSuccessActivityLog,
+    createActivityLog,
+    createActivityLogMessage,
+    createActivityLogMessageAndEnd
+} from '../activity/activity.service.js';
 import { markAllAsStopped } from './schedule.service.js';
 import { getActiveSyncConfigsByEnvironmentId, getSyncConfigsByProviderConfigKey } from './config.service.js';
 import syncOrchestrator from './orchestrator.service.js';

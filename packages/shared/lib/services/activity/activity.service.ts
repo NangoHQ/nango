@@ -1,8 +1,8 @@
-import db from '../db/database.js';
-import type { ActivityLog, ActivityLogMessage, LogAction } from '../models';
-import errorManager from '../utils/error.manager.js';
+import db from '../../db/database.js';
+import type { ActivityLog, ActivityLogMessage, LogAction } from '../../models';
+import errorManager from '../../utils/error.manager.js';
 
-import logger from '../logger/console.js';
+import logger from '../../logger/console.js';
 
 const activityLogTableName = '_nango_activity_logs';
 const activityLogMessageTableName = '_nango_activity_log_messages';
@@ -15,7 +15,11 @@ export async function createActivityLog(log: ActivityLog): Promise<number | null
             return result[0].id;
         }
     } catch (e) {
-        console.log(e);
+        errorManager.report(e, {
+            metadata: {
+                log
+            }
+        });
     }
 
     return null;
@@ -102,9 +106,17 @@ export async function createActivityLogMessage(logMessage: ActivityLogMessage): 
 }
 
 export async function addEndTime(activity_log_id: number): Promise<void> {
-    await db.knex.withSchema(db.schema()).from<ActivityLog>(activityLogTableName).where({ id: activity_log_id }).update({
-        end: Date.now()
-    });
+    try {
+        await db.knex.withSchema(db.schema()).from<ActivityLog>(activityLogTableName).where({ id: activity_log_id }).update({
+            end: Date.now()
+        });
+    } catch (e) {
+        errorManager.report(e, {
+            metadata: {
+                activity_log_id
+            }
+        });
+    }
 }
 
 export async function createActivityLogMessageAndEnd(logMessage: ActivityLogMessage): Promise<void> {
