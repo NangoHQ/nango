@@ -167,14 +167,14 @@ class AuthController {
             if (token) {
                 jwt.verify(token, resetPasswordSecret(), async (error: any, _: any) => {
                     if (error) {
-                        errorManager.errRes(res, 'unkown_password_reset_token');
+                        errorManager.errRes(res, 'unknown_password_reset_token');
                         return;
                     }
 
                     const user = await userService.getUserByResetPasswordToken(token);
 
                     if (!user) {
-                        errorManager.errRes(res, 'unkown_password_reset_token');
+                        errorManager.errRes(res, 'unknown_password_reset_token');
                         return;
                     }
 

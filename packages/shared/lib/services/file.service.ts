@@ -1,6 +1,7 @@
 import { PutObjectCommand, GetObjectCommand, GetObjectCommandOutput, S3Client, DeleteObjectsCommand } from '@aws-sdk/client-s3';
 import { Readable } from 'stream';
 import { isCloud } from '../utils/utils.js';
+import errorManager from '../utils/error.manager.js';
 
 const client = new S3Client({
     region: process.env['AWS_REGION'] as string,
@@ -29,7 +30,12 @@ class FileService {
 
             return fileName;
         } catch (e) {
-            console.log(e);
+            errorManager.report(e, {
+                metadata: {
+                    fileName
+                }
+            });
+
             return null;
         }
     }
@@ -57,6 +63,11 @@ class FileService {
                     }
                 })
                 .catch((err) => {
+                    errorManager.report(err, {
+                        metadata: {
+                            fileName
+                        }
+                    });
                     reject(err);
                 });
         });

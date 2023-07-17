@@ -21,7 +21,7 @@ export class NangoError extends Error {
                 this.message = 'Authentication failed. The Authorization header is malformed.';
                 break;
 
-            case 'unkown_account':
+            case 'unknown_account':
                 this.status = 401;
                 this.message = 'Authentication failed. The provided secret/public key does not match any account.';
                 break;
@@ -154,7 +154,7 @@ export class NangoError extends Error {
                 this.message = `Missing param 'connection_id'.`;
                 break;
 
-            case 'unkown_connection':
+            case 'unknown_connection':
                 this.status = 400;
                 this.message = `No connection matching the provided params of 'connection_id' and 'provider_config_key'.`;
                 if (this.payload) {
@@ -196,7 +196,7 @@ export class NangoError extends Error {
                 this.message = 'Missing reset token (or password).';
                 break;
 
-            case 'unkown_password_reset_token':
+            case 'unknown_password_reset_token':
                 this.status = 404;
                 this.message = 'Reset password token expired on unknown.';
                 break;

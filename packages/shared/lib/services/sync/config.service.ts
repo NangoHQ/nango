@@ -17,6 +17,7 @@ import type { NangoConnection } from '../../models/Connection.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
 import type { NangoConfig } from '../../integrations/index.js';
 import { NangoError } from '../../utils/error.js';
+import errorManager from '../../utils/error.manager.js';
 import { getEnv } from '../../utils/utils.js';
 
 const TABLE = dbNamespace + 'sync_configs';
@@ -83,7 +84,7 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
 
             const syncs = await getSyncsByProviderConfigAndSyncName(environment_id, providerConfigKey, syncName);
             for (const sync of syncs) {
-                await updateSyncScheduleFrequency(sync.id as string, runs);
+                await updateSyncScheduleFrequency(sync.id as string, runs, syncName, activityLogId as number);
             }
         }
 
@@ -293,7 +294,11 @@ export async function deleteSyncFilesForConfig(id: number): Promise<void> {
             await fileService.deleteFiles(files);
         }
     } catch (error) {
-        console.log(error);
+        errorManager.report(error, {
+            metadata: {
+                id
+            }
+        });
     }
 }
 

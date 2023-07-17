@@ -80,7 +80,7 @@ class ConnectionController {
                     content: 'Unknown connection'
                 });
 
-                errorManager.errRes(res, 'unkown_connection');
+                errorManager.errRes(res, 'unknown_connection');
                 return;
             }
 
@@ -201,7 +201,7 @@ class ConnectionController {
             const connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
 
             if (connection == null) {
-                errorManager.errRes(res, 'unkown_connection');
+                errorManager.errRes(res, 'unknown_connection');
                 return;
             }
 
@@ -313,7 +313,7 @@ class ConnectionController {
             const connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, environmentId);
 
             if (connection == null) {
-                errorManager.errRes(res, 'unkown_connection');
+                errorManager.errRes(res, 'unknown_connection');
                 return;
             }
 

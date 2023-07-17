@@ -2,6 +2,7 @@ import db from '../db/database.js';
 import encryptionManager from '../utils/encryption.manager.js';
 import type { Environment } from '../models/Environment.js';
 import type { Account } from '../models/Admin.js';
+import errorManager from '../utils/error.manager.js';
 
 const TABLE = '_nango_environments';
 
@@ -88,7 +89,12 @@ class EnvironmentService {
 
             return encryptionManager.decryptEnvironment(result[0]);
         } catch (e) {
-            console.log(e);
+            errorManager.report(e, {
+                metadata: {
+                    id
+                }
+            });
+
             return null;
         }
     }
@@ -119,7 +125,11 @@ class EnvironmentService {
 
             return encryptionManager.decryptEnvironment(result[0]);
         } catch (e) {
-            console.log(e);
+            errorManager.report(e, {
+                metadata: {
+                    id
+                }
+            });
             return null;
         }
     }
