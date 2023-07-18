@@ -3,13 +3,7 @@ import db, { schema, dbNamespace } from '../../db/database.js';
 import { IncomingSyncConfig, SyncDifferences, Sync, Job as SyncJob, SyncStatus, SyncWithSchedule, SlimSync } from '../../models/Sync.js';
 import type { Connection, NangoConnection } from '../../models/Connection.js';
 import SyncClient from '../../clients/sync.client.js';
-import type { LogLevel, LogAction } from '../../models/Activity.js';
-import {
-    updateSuccess as updateSuccessActivityLog,
-    createActivityLog,
-    createActivityLogMessage,
-    createActivityLogMessageAndEnd
-} from '../activity/activity.service.js';
+import { updateSuccess as updateSuccessActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../activity/activity.service.js';
 import { markAllAsStopped } from './schedule.service.js';
 import { getActiveSyncConfigsByEnvironmentId, getSyncConfigsByProviderConfigKey } from './config.service.js';
 import syncOrchestrator from './orchestrator.service.js';
@@ -46,6 +40,12 @@ export const getById = async (id: string): Promise<Sync | null> => {
 };
 
 export const createSync = async (nangoConnectionId: number, name: string): Promise<Sync | null> => {
+    const existingSync = await getSyncByIdAndName(nangoConnectionId, name);
+
+    if (existingSync) {
+        throw new Error(`Sync with name ${name} already exists. Please reach out to support to report this issue.`);
+    }
+
     const sync: Sync = {
         id: uuidv4(),
         nango_connection_id: nangoConnectionId,
@@ -271,33 +271,9 @@ export const getAndReconcileSyncDifferences = async (
     environmentId: number,
     syncs: IncomingSyncConfig[],
     performAction: boolean,
+    activityLogId: number | null,
     debug = false
-): Promise<SyncDifferences> => {
-    const providers = syncs.map((sync) => sync.providerConfigKey);
-    const providerConfigKeys = [...new Set(providers)];
-
-    const log = {
-        level: 'info' as LogLevel,
-        success: null,
-        action: 'sync deploy' as LogAction,
-        start: Date.now(),
-        end: Date.now(),
-        timestamp: Date.now(),
-        connection_id: null,
-        provider: null,
-        provider_config_key: `${syncs.length} sync${syncs.length === 1 ? '' : 's'} from ${providerConfigKeys.length} integration${
-            providerConfigKeys.length === 1 ? '' : 's'
-        }`,
-        environment_id: environmentId,
-        operation_name: 'sync.deploy'
-    };
-
-    let activityLogId = null;
-
-    if (debug && performAction) {
-        activityLogId = await createActivityLog(log);
-    }
-
+): Promise<SyncDifferences | null> => {
     const newSyncs: SlimSync[] = [];
     const syncsToCreate = [];
 
@@ -330,7 +306,7 @@ export const getAndReconcileSyncDifferences = async (
         if (!exists || isNew) {
             newSyncs.push({ name: syncName, providerConfigKey, connections: existingConnectionsByProviderConfig[providerConfigKey]?.length as number });
             if (performAction) {
-                if (activityLogId) {
+                if (debug && activityLogId) {
                     await createActivityLogMessage({
                         level: 'debug',
                         activity_log_id: activityLogId as number,
@@ -344,7 +320,7 @@ export const getAndReconcileSyncDifferences = async (
     }
 
     if (syncsToCreate.length > 0) {
-        if (debug) {
+        if (debug && activityLogId) {
             const syncNames = syncsToCreate.map((sync) => sync.syncName);
             await createActivityLogMessage({
                 level: 'debug',
@@ -354,7 +330,14 @@ export const getAndReconcileSyncDifferences = async (
             });
         }
         // this is taken out of the loop to ensure it awaits all the calls properly
-        await syncOrchestrator.createSyncs(syncsToCreate, debug, activityLogId as number);
+        const result = await syncOrchestrator.createSyncs(syncsToCreate, debug, activityLogId as number);
+
+        if (!result) {
+            if (activityLogId) {
+                await updateSuccessActivityLog(activityLogId as number, false);
+            }
+            return null;
+        }
     }
 
     const existingSyncs = await getActiveSyncConfigsByEnvironmentId(environmentId);
@@ -372,7 +355,7 @@ export const getAndReconcileSyncDifferences = async (
             });
 
             if (performAction) {
-                if (activityLogId) {
+                if (debug && activityLogId) {
                     await createActivityLogMessage({
                         level: 'debug',
                         activity_log_id: activityLogId as number,
@@ -391,14 +374,13 @@ export const getAndReconcileSyncDifferences = async (
         }
     }
 
-    if (activityLogId) {
+    if (debug && activityLogId) {
         await createActivityLogMessageAndEnd({
             level: 'debug',
-            activity_log_id: activityLogId,
+            activity_log_id: activityLogId as number,
             timestamp: Date.now(),
             content: 'Sync deploy diff in debug mode process complete successfully.'
         });
-        await updateSuccessActivityLog(activityLogId, true);
     }
 
     return {

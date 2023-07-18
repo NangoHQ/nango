@@ -79,6 +79,11 @@ export interface SlimSync {
 
 export type SyncDeploymentResult = Pick<SyncConfig, 'id' | 'version' | 'sync_name'>;
 
+export interface SyncConfigResult {
+    result: SyncDeploymentResult[];
+    activityLogId: number | null;
+}
+
 export interface SyncDifferences {
     newSyncs: SlimSync[];
     deletedSyncs: SlimSync[];

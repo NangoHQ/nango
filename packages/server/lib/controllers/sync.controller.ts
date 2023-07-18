@@ -22,7 +22,9 @@ import {
     IncomingSyncConfig,
     getProviderConfigBySyncAndAccount,
     SyncCommand,
-    CommandToActivityLog
+    CommandToActivityLog,
+    environmentService,
+    errorManager
 } from '@nangohq/shared';
 
 class SyncController {
@@ -30,15 +32,28 @@ class SyncController {
         try {
             const { syncs, reconcile, debug }: { syncs: IncomingSyncConfig[]; reconcile: boolean; debug: boolean } = req.body;
             const environmentId = getEnvironmentId(res);
+            let reconcileSuccess = true;
 
-            const result = await createSyncConfig(environmentId, syncs, debug);
+            const syncConfigDeployResult = await createSyncConfig(environmentId, syncs, debug);
 
             if (reconcile) {
-                await getAndReconcileSyncDifferences(environmentId, syncs, reconcile, debug);
+                const success = await getAndReconcileSyncDifferences(environmentId, syncs, reconcile, syncConfigDeployResult?.activityLogId as number, debug);
+                if (!success) {
+                    reconcileSuccess = false;
+                }
             }
 
-            res.send(result);
+            if (!reconcileSuccess) {
+                res.status(500).send({ message: 'There was an error deploying syncs, please check the activity tab and report this issue to support' });
+            }
+
+            res.send(syncConfigDeployResult?.result);
         } catch (e) {
+            const environmentId = getEnvironmentId(res);
+            const accountId = (await environmentService.getAccountIdFromEnvironment(environmentId)) as number;
+            errorManager.report(new Error('error_creating_sync_config'), {
+                accountId
+            });
             next(e);
         }
     }
@@ -48,7 +63,7 @@ class SyncController {
             const { syncs, debug }: { syncs: IncomingSyncConfig[]; reconcile: boolean; debug: boolean } = req.body;
             const environmentId = getEnvironmentId(res);
 
-            const result = await getAndReconcileSyncDifferences(environmentId, syncs, false, debug);
+            const result = await getAndReconcileSyncDifferences(environmentId, syncs, false, null, debug);
 
             res.send(result);
         } catch (e) {
