@@ -88,10 +88,10 @@ export class WSErrBuilder {
         };
     }
 
-    public static UnkownError(): WSErr {
+    public static UnkownError(errorMessage?: string): WSErr {
         return {
             type: 'unknown_err',
-            message: `Unkown error during the Oauth flow.`
+            message: `Unkown error during the Oauth flow.${errorMessage ? ' ' + errorMessage : ''}`
         };
     }
 
