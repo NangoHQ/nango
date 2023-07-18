@@ -20,7 +20,7 @@ def validate(input_file, schema_file):
 
 if __name__ == "__main__":
     yaml_file = sys.argv[1]
-    schema_file = './schema.json'
+    schema_file = './scripts/validation/providers/schema.json'
     if validate(yaml_file, schema_file):
         print("Validation successful.")
     else:
