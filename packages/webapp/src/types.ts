@@ -1,7 +1,7 @@
 export interface ActivityResponse {
     id: number;
     level: 'info' | 'debug' | 'error' | 'warn';
-    action: 'oauth' |  'auth' | 'proxy' | 'token' | 'sync' | 'sync deploy' | 'pause sync' | 'restart sync' | 'trigger sync';
+    action: 'oauth' | 'auth' | 'proxy' | 'token' | 'sync' | 'sync deploy' | 'pause sync' | 'restart sync' | 'trigger sync';
     success: boolean;
     timestamp: number;
     start: number;
