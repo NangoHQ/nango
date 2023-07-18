@@ -245,7 +245,7 @@ export default function Activity() {
                                                     </Link>
                                                 )}
                                                 <div className="ml-10 w-36 mr-36">
-                                                    {activity?.action === 'oauth' && (
+                                                    {(activity?.action === 'oauth' || activity?.action === 'auth') && (
                                                         <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-pink-500 bg-opacity-20">
                                                             <LinkIcon className="stroke-pink-500 mr-2" size="16" />
                                                             <p className="inline-block text-pink-500">auth</p>

@@ -3,7 +3,9 @@ import type { BaseConnection } from './Connection.js';
 
 export enum AuthModes {
     OAuth1 = 'OAUTH1',
-    OAuth2 = 'OAUTH2'
+    OAuth2 = 'OAUTH2',
+    Basic = 'BASIC',
+    ApiKey = 'API_ KEY'
 }
 
 export enum OAuthAuthorizationMethod {

@@ -1,9 +1,8 @@
-import type { Request, Response } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import * as crypto from 'node:crypto';
 import * as uuid from 'uuid';
 import simpleOauth2 from 'simple-oauth2';
 import { OAuth1Client } from '../clients/oauth1.client.js';
-import { SyncClient } from '@nangohq/shared';
 import {
     getConnectionConfig,
     getAdditionalAuthorizationParams,
@@ -12,6 +11,7 @@ import {
     getConnectionMetadataFromTokenResponse
 } from '../utils/utils.js';
 import {
+    SyncClient,
     getOauthCallbackUrl,
     createActivityLog,
     createActivityLogMessageAndEnd,
@@ -27,6 +27,7 @@ import {
     configService,
     connectionService,
     environmentService,
+    authService,
     Config as ProviderConfig,
     Template as ProviderTemplate,
     TemplateOAuth2 as ProviderTemplateOAuth2,
@@ -41,14 +42,13 @@ import {
     errorManager,
     analytics
 } from '@nangohq/shared';
-import type { NextFunction } from 'express';
 import wsClient from '../clients/web-socket.client.js';
 import { WSErrBuilder } from '../utils/web-socket-error.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
 import hmacService from '../services/hmac.service.js';
 
 class OAuthController {
-    public async oauthRequest(req: Request, res: Response, _: NextFunction) {
+    public async oauthRequest(req: Request, res: Response, next: NextFunction) {
         const accountId = getAccount(res);
         const environmentId = getEnvironmentId(res);
         const { providerConfigKey } = req.params;
@@ -59,7 +59,7 @@ class OAuthController {
         const log = {
             level: 'info' as LogLevel,
             success: false,
-            action: 'oauth' as LogAction,
+            action: 'auth' as LogAction,
             start: Date.now(),
             end: Date.now(),
             timestamp: Date.now(),
@@ -169,6 +169,18 @@ class OAuthController {
                 return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownProviderTemplate(config.provider));
             }
 
+            if (template.auth_mode === ProviderAuthModes.Basic || template.auth_mode === ProviderAuthModes.ApiKey) {
+                const AuthService = new authService({ config, template, environmentId, activityLogId: activityLogId as number });
+
+                if (template.auth_mode === ProviderAuthModes.Basic) {
+                    return AuthService.basicAuth(res, req, next);
+                }
+
+                if (template.auth_mode === ProviderAuthModes.ApiKey) {
+                    return AuthService.apiKeyAuth(res, req, next);
+                }
+            }
+
             const session: OAuthSession = {
                 providerConfigKey: providerConfigKey,
                 provider: config.provider,
@@ -177,7 +189,7 @@ class OAuthController {
                 authMode: template.auth_mode,
                 codeVerifier: crypto.randomBytes(24).toString('hex'),
                 id: uuid.v1(),
-                connectionConfig: connectionConfig,
+                connectionConfig,
                 environmentId,
                 webSocketClientId: wsClientId
             };
