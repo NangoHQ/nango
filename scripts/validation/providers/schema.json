@@ -12,9 +12,13 @@
                 "token_url": { "type": "string" },
                 "authorization_params": { "type": "object" },
                 "token_params": { "type": "object" },
-                "refresh_params": { "type": "object" }
+                "refresh_params": { "type": "object" },
+                "scope_separator": { "type": "string" }
+                "docs": { "type": "string" },
+                "body_format": { "type": "string" },
+                "base_api_url": { "type": "string" }
             },
-            "additionalProperties": false
+            "additionalProperties": true
         }
     },
     "additionalProperties": false
