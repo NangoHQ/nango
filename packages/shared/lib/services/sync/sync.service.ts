@@ -370,6 +370,17 @@ export const getAndReconcileSyncDifferences = async (
                         await syncOrchestrator.deleteSync(syncId.id as string);
                     }
                 }
+
+                if (activityLogId) {
+                    await createActivityLogMessage({
+                        level: 'debug',
+                        activity_log_id: activityLogId as number,
+                        timestamp: Date.now(),
+                        content: `Successfully deleted sync ${existingSync.sync_name} for ${existingSync.unique_key} with ${connections.length} connection${
+                            connections.length > 1 ? 's' : ''
+                        }.`
+                    });
+                }
             }
         }
     }
