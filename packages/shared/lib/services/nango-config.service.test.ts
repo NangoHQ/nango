@@ -15,4 +15,8 @@ describe('Nango Config Interval tests', () => {
         const date = new Date('2023-07-18T00:00:00');
         expect(NangoConfigService.getInterval('every 1.5 hours', date)).toEqual({ interval: '1.5 hours', offset: 0 });
     });
+    it('Can parse every day', async () => {
+        const date = new Date('2023-07-18T00:00:00');
+        expect(NangoConfigService.getInterval('every day', date)).toEqual({ interval: '1d', offset: 0 });
+    });
 });

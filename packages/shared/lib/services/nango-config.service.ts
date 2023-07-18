@@ -213,6 +213,10 @@ export function getInterval(runs: string, date: Date): { interval: string; offse
         return { interval: '1h', offset: getOffset('1h', date) };
     }
 
+    if (runs === 'every day') {
+        return { interval: '1d', offset: getOffset('1d', date) };
+    }
+
     const interval = runs.replace('every ', '');
 
     if (ms(interval) < ms('5m')) {
