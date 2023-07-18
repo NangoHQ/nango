@@ -114,13 +114,13 @@ export function checkEnvVars(optionalHostport?: string) {
 export async function verifyNecessaryFiles(autoConfirm: boolean, debug = false) {
     const cwd = process.cwd();
     if (debug) {
-        printDebug(`Current working directory is read as: ${cwd}`);
+        printDebug(`Current full working directory is read as: ${cwd}`);
     }
     const currentDirectorySplit = cwd.split(/[\/\\]/);
     const currentDirectory = currentDirectorySplit[currentDirectorySplit.length - 1];
 
     if (debug) {
-        printDebug(`Current directory is read as: ${currentDirectory}`);
+        printDebug(`Current stripped directory is read as: ${currentDirectory}`);
     }
 
     if (currentDirectory !== NANGO_INTEGRATIONS_NAME) {
