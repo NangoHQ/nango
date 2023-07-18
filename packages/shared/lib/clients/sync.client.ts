@@ -220,9 +220,10 @@ class SyncClient {
                 accountId: accountId,
                 metadata: {
                     syncName,
-                    connectionDetails: nangoConnection,
+                    connectionDetails: JSON.stringify(nangoConnection),
                     syncId: sync.id,
-                    syncConfig
+                    syncConfig,
+                    syncData: JSON.stringify(syncData)
                 }
             });
         }
