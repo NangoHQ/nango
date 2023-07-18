@@ -707,7 +707,7 @@ class OAuthController {
 
             if (updatedConnection) {
                 const syncClient = await SyncClient.getInstance();
-                syncClient?.initiate(updatedConnection.id);
+                await syncClient?.initiate(updatedConnection.id);
             }
 
             await updateSuccessActivityLog(activityLogId, true);

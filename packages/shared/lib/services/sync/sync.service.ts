@@ -43,7 +43,7 @@ export const createSync = async (nangoConnectionId: number, name: string): Promi
     const existingSync = await getSyncByIdAndName(nangoConnectionId, name);
 
     if (existingSync) {
-        throw new Error(`Sync with name ${name} already exists. Please reach out to support to report this issue.`);
+        return null;
     }
 
     const sync: Sync = {
