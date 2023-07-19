@@ -51,7 +51,7 @@ class SyncController {
         } catch (e) {
             const environmentId = getEnvironmentId(res);
             const accountId = (await environmentService.getAccountIdFromEnvironment(environmentId)) as number;
-            errorManager.report(new Error('error_creating_sync_config'), {
+            errorManager.report(e, {
                 accountId
             });
             next(e);
