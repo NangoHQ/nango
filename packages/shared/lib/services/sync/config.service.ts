@@ -13,7 +13,7 @@ import {
 } from '../activity/activity.service.js';
 import { getSyncsByProviderConfigAndSyncName } from './sync.service.js';
 import type { LogLevel, LogAction } from '../../models/Activity.js';
-import type { SyncModelSchema, SyncConfigWithProvider, IncomingSyncConfig, SyncConfig, SlimSync, SyncDeploymentResult } from '../../models/Sync.js';
+import type { SyncModelSchema, SyncConfigWithProvider, IncomingSyncConfig, SyncConfig, SlimSync, SyncConfigResult } from '../../models/Sync.js';
 import type { NangoConnection } from '../../models/Connection.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
 import type { NangoConfig } from '../../integrations/index.js';
@@ -23,7 +23,7 @@ import { getEnv } from '../../utils/utils.js';
 
 const TABLE = dbNamespace + 'sync_configs';
 
-export async function createSyncConfig(environment_id: number, syncs: IncomingSyncConfig[], debug = false): Promise<SyncDeploymentResult[] | null> {
+export async function createSyncConfig(environment_id: number, syncs: IncomingSyncConfig[], debug = false): Promise<SyncConfigResult | null> {
     const insertData = [];
 
     const providers = syncs.map((sync) => sync.providerConfigKey);
@@ -157,7 +157,7 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
         }
         await updateSuccessActivityLog(activityLogId as number, true);
 
-        return [] as unknown as SyncDeploymentResult[];
+        return { result: [], activityLogId };
     }
 
     try {
@@ -176,7 +176,7 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
             content: `Successfully deployed the syncs (${JSON.stringify(syncsWithVersions, null, 2)}).`
         });
 
-        return result;
+        return { result, activityLogId };
     } catch (e) {
         await updateSuccessActivityLog(activityLogId as number, false);
 

@@ -239,16 +239,17 @@ class OAuthController {
 
             return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownAuthMode(template.auth_mode));
         } catch (e) {
+            const prettyError = JSON.stringify(e, ['message', 'name'], 2);
             await createActivityLogMessage({
                 level: 'error',
                 activity_log_id: activityLogId as number,
-                content: WSErrBuilder.UnkownError().message,
+                content: WSErrBuilder.UnkownError().message + '\n' + prettyError,
                 timestamp: Date.now()
             });
 
             errorManager.report(e, { accountId: accountId });
 
-            return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError());
+            return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError(prettyError));
         }
     }
 
@@ -395,10 +396,14 @@ class OAuthController {
                 return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownGrantType(grantType));
             }
         } catch (error: any) {
+            const prettyError = JSON.stringify(error, ['message', 'name'], 2);
+
+            const content = WSErrBuilder.UnkownError().message + '\n' + prettyError;
+
             await createActivityLogMessage({
                 level: 'error',
                 activity_log_id: activityLogId as number,
-                content: WSErrBuilder.UnkownError().message + ' ' + error.code ?? '',
+                content,
                 timestamp: Date.now(),
                 auth_mode: template.auth_mode,
                 url: callbackUrl,
@@ -407,7 +412,7 @@ class OAuthController {
                 }
             });
 
-            return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError());
+            return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError(prettyError));
         }
     }
 
@@ -549,22 +554,26 @@ class OAuthController {
             return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownAuthMode(session.authMode));
         } catch (e) {
             const accountId = (await environmentService.getAccountIdFromEnvironment(session.environmentId)) as number;
+            const prettyError = JSON.stringify(e, ['message', 'name'], 2);
+
             errorManager.report(e, {
                 accountId,
                 metadata: errorManager.getExpressRequestContext(req)
             });
 
+            const content = WSErrBuilder.UnkownError().message + '\n' + prettyError;
+
             await createActivityLogMessage({
                 level: 'error',
                 activity_log_id: activityLogId as number,
-                content: WSErrBuilder.UnkownError().message,
+                content,
                 timestamp: Date.now(),
                 params: {
                     ...errorManager.getExpressRequestContext(req)
                 }
             });
 
-            return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError());
+            return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError(prettyError));
         }
     }
 
@@ -710,7 +719,7 @@ class OAuthController {
 
             if (updatedConnection) {
                 const syncClient = await SyncClient.getInstance();
-                syncClient?.initiate(updatedConnection.id);
+                await syncClient?.initiate(updatedConnection.id);
             }
 
             await updateSuccessActivityLog(activityLogId, true);
@@ -718,16 +727,17 @@ class OAuthController {
             return wsClient.notifySuccess(res, wsClientId, providerConfigKey, connectionId);
         } catch (e) {
             const accountId = (await environmentService.getAccountIdFromEnvironment(session.environmentId)) as number;
+            const prettyError = JSON.stringify(e, ['message', 'name'], 2);
             errorManager.report(e, { accountId });
 
             await createActivityLogMessageAndEnd({
                 level: 'error',
                 activity_log_id: activityLogId as number,
-                content: WSErrBuilder.UnkownError().message,
+                content: WSErrBuilder.UnkownError().message + '\n' + prettyError,
                 timestamp: Date.now()
             });
 
-            return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError());
+            return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError(prettyError));
         }
     }
 
@@ -792,15 +802,16 @@ class OAuthController {
             })
             .catch(async (e) => {
                 errorManager.report(e, { accountId });
+                const prettyError = JSON.stringify(e, ['message', 'name'], 2);
 
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     activity_log_id: activityLogId as number,
-                    content: WSErrBuilder.UnkownError().message,
+                    content: WSErrBuilder.UnkownError().message + '\n' + prettyError,
                     timestamp: Date.now()
                 });
 
-                return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError());
+                return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError(prettyError));
             });
     }
 }

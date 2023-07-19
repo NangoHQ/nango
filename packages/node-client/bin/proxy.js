@@ -1,13 +1,14 @@
 import { Nango } from '../dist/index.js';
-const nango = new Nango({ host: 'http://localhost:3003' });
 const args = process.argv.slice(2);
+
+const nango = new Nango({ host: 'http://localhost:3003', secretKey: args[0] });
 
 nango
     .proxy({
-        providerConfigKey: args[0],
-        connectionId: args[1],
-        method: args[2],
-        endpoint: args[3],
+        providerConfigKey: args[1],
+        connectionId: args[2],
+        method: args[3],
+        endpoint: args[4],
         retries: 3,
         data: {
             summary: 'TEST',

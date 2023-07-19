@@ -113,8 +113,15 @@ export function checkEnvVars(optionalHostport?: string) {
 
 export async function verifyNecessaryFiles(autoConfirm: boolean, debug = false) {
     const cwd = process.cwd();
-    const currentDirectorySplit = cwd.split('/');
+    if (debug) {
+        printDebug(`Current full working directory is read as: ${cwd}`);
+    }
+    const currentDirectorySplit = cwd.split(/[\/\\]/);
     const currentDirectory = currentDirectorySplit[currentDirectorySplit.length - 1];
+
+    if (debug) {
+        printDebug(`Current stripped directory is read as: ${currentDirectory}`);
+    }
 
     if (currentDirectory !== NANGO_INTEGRATIONS_NAME) {
         console.log(chalk.red(`You must run this command in the ${NANGO_INTEGRATIONS_NAME} directory.`));

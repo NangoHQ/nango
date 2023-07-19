@@ -197,6 +197,10 @@ export function getOffset(interval: string, date: Date): number {
  * greater than the interval
  */
 export function getInterval(runs: string, date: Date): { interval: string; offset: number } {
+    if (runs === 'every half day') {
+        return { interval: '12h', offset: getOffset('12h', date) };
+    }
+
     if (runs === 'every half hour') {
         return { interval: '30m', offset: getOffset('30m', date) };
     }
@@ -207,6 +211,10 @@ export function getInterval(runs: string, date: Date): { interval: string; offse
 
     if (runs === 'every hour') {
         return { interval: '1h', offset: getOffset('1h', date) };
+    }
+
+    if (runs === 'every day') {
+        return { interval: '1d', offset: getOffset('1d', date) };
     }
 
     const interval = runs.replace('every ', '');

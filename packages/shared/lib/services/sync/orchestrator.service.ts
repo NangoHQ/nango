@@ -25,43 +25,63 @@ export class Orchestrator {
         sync: IncomingSyncConfig,
         debug = false,
         activityLogId?: number
-    ) {
-        const syncConfig = await configService.getProviderConfig(providerConfigKey, environmentId);
-        if (debug && activityLogId) {
+    ): Promise<boolean> {
+        try {
+            const syncConfig = await configService.getProviderConfig(providerConfigKey, environmentId);
+            if (debug && activityLogId) {
+                await createActivityLogMessage({
+                    level: 'debug',
+                    activity_log_id: activityLogId as number,
+                    timestamp: Date.now(),
+                    content: `Beginning iteration of starting syncs for ${syncName} with ${connections.length} connections`
+                });
+            }
+            for (const connection of connections) {
+                const createdSync = await createSync(connection.id as number, syncName);
+                const syncClient = await SyncClient.getInstance();
+                await syncClient?.startContinuous(
+                    connection,
+                    createdSync as Sync,
+                    syncConfig as ProviderConfig,
+                    syncName,
+                    { ...sync, returns: sync.models },
+                    debug
+                );
+            }
+            if (debug && activityLogId) {
+                await createActivityLogMessage({
+                    level: 'debug',
+                    activity_log_id: activityLogId as number,
+                    timestamp: Date.now(),
+                    content: `Finished iteration of starting syncs for ${syncName} with ${connections.length} connections`
+                });
+            }
+
+            return true;
+        } catch (e) {
+            const prettyError = JSON.stringify(e, ['message', 'name'], 2);
             await createActivityLogMessage({
-                level: 'debug',
+                level: 'error',
                 activity_log_id: activityLogId as number,
                 timestamp: Date.now(),
-                content: `Beginning iteration of starting syncs for ${syncName} with ${connections.length} connections`
+                content: `Error starting syncs for ${syncName} with ${connections.length} connections: ${prettyError}`
             });
-        }
-        for (const connection of connections) {
-            const createdSync = await createSync(connection.id as number, syncName);
-            const syncClient = await SyncClient.getInstance();
-            await syncClient?.startContinuous(
-                connection,
-                createdSync as Sync,
-                syncConfig as ProviderConfig,
-                syncName,
-                { ...sync, returns: sync.models },
-                debug
-            );
-        }
-        if (debug && activityLogId) {
-            await createActivityLogMessage({
-                level: 'debug',
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: `Finished iteration of starting syncs for ${syncName} with ${connections.length} connections`
-            });
+
+            return false;
         }
     }
 
-    public async createSyncs(syncArgs: CreateSyncArgs[], debug = false, activityLogId?: number) {
+    public async createSyncs(syncArgs: CreateSyncArgs[], debug = false, activityLogId?: number): Promise<boolean> {
+        let success = true;
         for (const syncToCreate of syncArgs) {
             const { connections, providerConfigKey, environmentId, sync, syncName } = syncToCreate;
-            await this.create(connections, syncName, providerConfigKey, environmentId, sync, debug, activityLogId);
+            const result = await this.create(connections, syncName, providerConfigKey, environmentId, sync, debug, activityLogId);
+            if (!result) {
+                success = false;
+            }
         }
+
+        return success;
     }
 
     /**
