@@ -7,6 +7,8 @@ import {
     Template as ProviderTemplate,
     AuthModes as ProviderAuthModes,
     ImportedCredentials,
+    OAuth1Credentials,
+    OAuth2Credentials,
     TemplateOAuth2 as ProviderTemplateOAuth2,
     Connection,
     LogLevel,
@@ -99,7 +101,9 @@ class ConnectionController {
 
             const template: ProviderTemplate | undefined = configService.getTemplate(config.provider);
 
-            if (connection.credentials.type === ProviderAuthModes.OAuth2) {
+            const credentials = connection.credentials as OAuth1Credentials | OAuth2Credentials;
+
+            if (credentials.type === ProviderAuthModes.OAuth2) {
                 connection.credentials = await connectionService.refreshOauth2CredentialsIfNeeded(
                     connection,
                     config,
@@ -129,15 +133,15 @@ class ConnectionController {
                     provider: config.provider,
                     providerConfigKey: connection.provider_config_key,
                     creationDate: connection.created_at,
-                    oauthType: connection.credentials.type,
+                    oauthType: credentials.type,
                     connectionConfig: connection.connection_config,
                     connectionMetadata: connection.metadata,
-                    accessToken: connection.credentials.type === ProviderAuthModes.OAuth2 ? connection.credentials.access_token : null,
-                    refreshToken: connection.credentials.type === ProviderAuthModes.OAuth2 ? connection.credentials.refresh_token : null,
-                    expiresAt: connection.credentials.type === ProviderAuthModes.OAuth2 ? connection.credentials.expires_at : null,
-                    oauthToken: connection.credentials.type === ProviderAuthModes.OAuth1 ? connection.credentials.oauth_token : null,
-                    oauthTokenSecret: connection.credentials.type === ProviderAuthModes.OAuth1 ? connection.credentials.oauth_token_secret : null,
-                    rawCredentials: connection.credentials.raw
+                    accessToken: credentials.type === ProviderAuthModes.OAuth2 ? credentials.access_token : null,
+                    refreshToken: credentials.type === ProviderAuthModes.OAuth2 ? credentials.refresh_token : null,
+                    expiresAt: credentials.type === ProviderAuthModes.OAuth2 ? credentials.expires_at : null,
+                    oauthToken: credentials.type === ProviderAuthModes.OAuth1 ? credentials.oauth_token : null,
+                    oauthTokenSecret: credentials.type === ProviderAuthModes.OAuth1 ? credentials.oauth_token_secret : null,
+                    rawCredentials: !credentials.type ? credentials : credentials.raw
                 }
             });
         } catch (err) {
@@ -261,15 +265,18 @@ class ConnectionController {
                 });
             }
 
-            if (connection && connection.credentials && connection.credentials.type === ProviderAuthModes.OAuth2 && !returnRefreshToken) {
-                if (connection.credentials.refresh_token) {
-                    delete connection.credentials.refresh_token;
-                }
+            if (connection && connection.credentials) {
+                const credentials = connection.credentials as OAuth1Credentials | OAuth2Credentials;
+                if (credentials.type === ProviderAuthModes.OAuth2 && !returnRefreshToken) {
+                    if (credentials.refresh_token) {
+                        delete credentials.refresh_token;
+                    }
 
-                if (connection.credentials.raw && connection.credentials.raw['refresh_token']) {
-                    const rawCreds = { ...connection.credentials.raw }; // Properties from 'raw' are not mutable so we need to create a new object.
-                    delete rawCreds['refresh_token'];
-                    connection.credentials.raw = rawCreds;
+                    if (credentials.raw && credentials.raw['refresh_token']) {
+                        const rawCreds = { ...credentials.raw }; // Properties from 'raw' are not mutable so we need to create a new object.
+                        delete rawCreds['refresh_token'];
+                        credentials.raw = rawCreds;
+                    }
                 }
             }
 
@@ -332,7 +339,8 @@ class ConnectionController {
                     const [provider, properties] = providerProperties;
                     return {
                         name: provider,
-                        defaultScopes: properties.default_scopes
+                        defaultScopes: properties.default_scopes,
+                        authMode: properties.auth_mode
                     };
                 })
                 .sort((a, b) => a.name.localeCompare(b.name));

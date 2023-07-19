@@ -13,9 +13,12 @@ import { useAnalyticsTrack } from '../utils/analytics';
 import DashboardLayout from '../layout/DashboardLayout';
 import TagsInput from '../components/ui/input/TagsInput';
 import { LeftNavBarItems } from '../components/LeftNavBar';
+import SecretInput from '../components/ui/input/SecretInput';
 import { useStore } from '../store';
+import { AuthModes } from '../types';
 
 interface Integration {
+    authMode: AuthModes;
     uniqueKey: string;
     provider: string;
     connectionCount: number;
@@ -30,6 +33,7 @@ export default function IntegrationCreate() {
     const navigate = useNavigate();
     const [integration, setIntegration] = useState<Integration | null>(null);
     const [connectionId, setConnectionId] = useState<string>('test-connection-id');
+    const [authMode, setAuthMode] = useState<AuthModes>(AuthModes.OAuth2);
     const [connectionConfigParams, setConnectionConfigParams] = useState<Record<string, string> | null>(null);
     const [authorizationParams, setAuthorizationParams] = useState<Record<string, string> | null>(null);
     const [authorizationParamsError, setAuthorizationParamsError] = useState<boolean>(false);
@@ -40,7 +44,10 @@ export default function IntegrationCreate() {
     const [isHmacEnabled, setIsHmacEnabled] = useState(false);
     const [hmacDigest, setHmacDigest] = useState('');
     const getIntegrationListAPI = useGetIntegrationListAPI();
-    const getProjectInfoAPI = useGetProjectInfoAPI();
+    const getProjectInfoAPI = useGetProjectInfoAPI()
+    const [apiKey, setApiKey] = useState('');
+    const [apiAuthUsername, setApiAuthUsername] = useState('');
+    const [apiAuthPassword, setApiAuthPassword] = useState('');
     const analyticsTrack = useAnalyticsTrack();
     const getHmacAPI = useGetHmacAPI();
     const { providerConfigKey } = useParams();
@@ -81,6 +88,7 @@ export default function IntegrationCreate() {
 
                     setIntegration(defaultIntegration);
                     setUpConnectionConfigParams(defaultIntegration);
+                    setAuthMode(defaultIntegration.authMode);
                 }
             }
         };
@@ -119,12 +127,29 @@ export default function IntegrationCreate() {
 
         const nango = new Nango({ host: hostUrl, websocketsPath, publicKey });
 
+        let credentials = {};
+
+        if (authMode === AuthModes.Basic) {
+            credentials = {
+                username: apiAuthUsername,
+                password: apiAuthPassword
+            };
+        };
+
+        if (authMode === AuthModes.ApiKey) {
+            credentials = {
+                apiKey: apiKey
+            };
+        }
+
         nango
             .auth(target.integration_unique_key.value, target.connection_id.value, {
                 user_scope: selectedScopes || [],
                 params: connectionConfigParams || {},
                 authorization_params: authorizationParams || {},
-                hmac: hmacDigest || ''
+                hmac: hmacDigest || '',
+                credentials
+
             })
             .then(() => {
                 toast.success('Connection created!', { position: toast.POSITION.BOTTOM_CENTER });
@@ -159,6 +184,7 @@ export default function IntegrationCreate() {
         if (integration != null) {
             setIntegration(integration);
             setUpConnectionConfigParams(integration);
+            setAuthMode(integration.authMode);
         }
     };
 
@@ -239,6 +265,23 @@ export default function IntegrationCreate() {
             userScopesStr += ' ]';
         }
 
+        let apiAuthString = '';
+        if (integration?.authMode === AuthModes.ApiKey) {
+        apiAuthString = `, {
+    credentials: {
+      apiKey: ${apiKey},
+    }
+}`;
+        }
+        if (integration?.authMode === AuthModes.Basic) {
+        apiAuthString = `, {
+    credentials: {
+      username: ${apiAuthUsername},
+      password: ${apiAuthPassword}
+    }
+}`;
+        }
+
         const connectionConfigStr =
             !connectionConfigParamsStr && !authorizationParamsStr && !userScopesStr && !hmacKeyStr
                 ? ''
@@ -248,7 +291,7 @@ export default function IntegrationCreate() {
 
 const nango = new Nango(${argsStr});
 
-nango.auth('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr}).then((result: { providerConfigKey: string; connectionId: string }) => {
+nango.auth('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr}${apiAuthString}).then((result: { providerConfigKey: string; connectionId: string }) => {
     // do something
 }).catch((err: { message: string; type: string }) => {
     // handle error
@@ -265,7 +308,7 @@ nango.auth('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr})
                             <div>
                                 <div>
                                     <div className="flex">
-                                        <label htmlFor="client_id" className="text-text-light-gray block text-sm font-semibold">
+                                        <label htmlFor="integration_unique_key" className="text-text-light-gray block text-sm font-semibold">
                                             Integration Unique Key
                                         </label>
                                     </div>
@@ -285,7 +328,7 @@ nango.auth('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr})
                                 </div>
                                 <div>
                                     <div className="flex mt-6">
-                                        <label htmlFor="client_id" className="text-text-light-gray block text-sm font-semibold">
+                                        <label htmlFor="connection_id" className="text-text-light-gray block text-sm font-semibold">
                                             Connection ID
                                         </label>
                                         <Tooltip
@@ -339,7 +382,7 @@ nango.auth('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr})
                             {integration?.connectionConfigParams?.map((paramName: string) => (
                                 <div key={paramName}>
                                     <div className="flex mt-6">
-                                        <label htmlFor="client_id" className="text-text-light-gray block text-sm font-semibold">
+                                        <label htmlFor="extra_configuration" className="text-text-light-gray block text-sm font-semibold">
                                             Extra Configuration: {paramName}
                                         </label>
                                         <Tooltip
@@ -376,42 +419,131 @@ nango.auth('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr})
                                 </div>
                             ))}
 
-                            <div>
-                                <div className="flex mt-6">
-                                    <label htmlFor="client_id" className="text-text-light-gray block text-sm font-semibold">
-                                        Optional: Additional Authorization Params
-                                    </label>
-                                    <Tooltip
-                                        text={
-                                            <>
-                                                <div className="flex text-black text-sm">
-                                                    <p>{`Add query parameters in the authorization URL, on a per-connection basis. Most integrations don't require this. This should be formatted as a JSON object, e.g. { "key" : "value" }. `}</p>
-                                                </div>
-                                            </>
-                                        }
-                                    >
-                                        <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
-                                    </Tooltip>
+                            {(authMode === AuthModes.ApiKey || authMode === AuthModes.Basic) && (
+                                <>
+                                    <div>
+                                        <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
+                                            Auth Type
+                                        </label>
+                                        <p className="mt-3 mb-5">{`${authMode}`}</p>
+                                    </div>
+
+                                    {authMode === AuthModes.Basic && (
+                                        <div>
+                                            <div className="flex mt-6">
+                                                <label htmlFor="username" className="text-text-light-gray block text-sm font-semibold">
+                                                    Username
+                                                </label>
+                                            </div>
+
+                                            <div className="mt-1">
+                                                <SecretInput
+                                                    copy={true}
+                                                    id="username"
+                                                    name="username"
+                                                    defaultValue=""
+                                                    optionalValue={apiAuthUsername}
+                                                    setOptionalValue={setApiAuthUsername}
+                                                    required
+                                                />
+                                            </div>
+
+                                            <div className="flex mt-6">
+                                                <label htmlFor="password" className="text-text-light-gray block text-sm font-semibold">
+                                                    Password
+                                                </label>
+                                            </div>
+
+                                            <div className="mt-1">
+                                                <SecretInput
+                                                    copy={true}
+                                                    id="password"
+                                                    name="password"
+                                                    defaultValue=""
+                                                    optionalValue={apiAuthPassword}
+                                                    setOptionalValue={setApiAuthPassword}
+                                                    required
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+                                    {authMode === AuthModes.ApiKey && (
+                                        <>
+                                            <div className="flex mt-6">
+                                                <label htmlFor="connection_id" className="text-text-light-gray block text-sm font-semibold">
+                                                    API Key
+                                                </label>
+                                                <Tooltip
+                                                    text={
+                                                        <>
+                                                            <div className="flex text-black text-sm">
+                                                                <p>{`The API key to authenticate requests`}</p>
+                                                            </div>
+                                                        </>
+                                                    }
+                                                >
+                                                    <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                                </Tooltip>
+                                            </div>
+
+                                            <div className="mt-1">
+                                                <SecretInput
+                                                    copy={true}
+                                                    id="api_key"
+                                                    name="api_key"
+                                                    defaultValue=""
+                                                    optionalValue={apiKey}
+                                                    setOptionalValue={setApiKey}
+                                                    required
+                                                />
+                                            </div>
+                                        </>
+                                    )}
+                                </>
+                            )}
+
+                            {(authMode === AuthModes.OAuth1 || authMode === AuthModes.OAuth2) && (
+                                <div>
+                                    <div className="flex mt-6">
+                                        <label htmlFor="optional_authorization_params" className="text-text-light-gray block text-sm font-semibold">
+                                            Optional: Additional Authorization Params
+                                        </label>
+                                        <Tooltip
+                                            text={
+                                                <>
+                                                    <div className="flex text-black text-sm">
+                                                        <p>{`Add query parameters in the authorization URL, on a per-connection basis. Most integrations don't require this. This should be formatted as a JSON object, e.g. { "key" : "value" }. `}</p>
+                                                    </div>
+                                                </>
+                                            }
+                                        >
+                                            <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                        </Tooltip>
+                                    </div>
+                                    <div className="mt-1">
+                                        <input
+                                            id="authorization_params"
+                                            name="authorization_params"
+                                            type="text"
+                                            defaultValue="{ }"
+                                            className={`${authorizationParamsError ? 'border-red-700' : 'border-border-gray'}  ${
+                                                authorizationParamsError ? 'text-red-700' : 'text-text-light-gray'
+                                            } focus:ring-white bg-bg-black block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none`}
+                                            onChange={handleAuthorizationParamsChange}
+                                        />
+                                    </div>
                                 </div>
-                                <div className="mt-1">
-                                    <input
-                                        id="authorization_params"
-                                        name="authorization_params"
-                                        type="text"
-                                        defaultValue="{ }"
-                                        className={`${authorizationParamsError ? 'border-red-700' : 'border-border-gray'}  ${
-                                            authorizationParamsError ? 'text-red-700' : 'text-text-light-gray'
-                                        } focus:ring-white bg-bg-black block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none`}
-                                        onChange={handleAuthorizationParamsChange}
-                                    />
-                                </div>
-                            </div>
+                            )}
 
                             <div>
                                 {serverErrorMessage && <p className="mt-6 text-sm text-red-600">{serverErrorMessage}</p>}
                                 <div className="flex">
                                     <button type="submit" className="bg-white mt-4 h-8 rounded-md hover:bg-gray-300 border px-3 pt-0.5 text-sm text-black">
-                                        Start OAuth Flow
+                                        {(authMode === AuthModes.OAuth1 || authMode === AuthModes.OAuth2) ? (
+                                            <>Start OAuth Flow</>
+                                        ): (
+                                            <>Create Connection</>
+                                        )}
                                     </button>
                                     <label htmlFor="email" className="text-text-light-gray block text-sm pt-5 ml-4">
                                         or from your frontend:

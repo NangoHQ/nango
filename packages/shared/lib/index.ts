@@ -12,7 +12,6 @@ import userService from './services/user.service.js';
 import fileService from './services/file.service.js';
 import syncRunService from './services/sync/run.service.js';
 import analytics from './utils/analytics.js';
-import authService from './services/auth.service.js';
 
 export * from './services/activity/activity.service.js';
 export * from './services/sync/sync.service.js';
@@ -51,6 +50,5 @@ export {
     webhookService,
     fileService,
     syncRunService,
-    authService,
     analytics
 };

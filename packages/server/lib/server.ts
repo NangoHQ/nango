@@ -13,6 +13,7 @@ import userController from './controllers/user.controller.js';
 import proxyController from './controllers/proxy.controller.js';
 import activityController from './controllers/activity.controller.js';
 import syncController from './controllers/sync.controller.js';
+import apiAuthController from './controllers/apiAuth.controller.js';
 import path from 'path';
 import { packageJsonFile, dirname } from './utils/utils.js';
 import { WebSocketServer, WebSocket } from 'ws';
@@ -66,6 +67,8 @@ app.get('/health', (_, res) => {
 });
 app.route('/oauth/callback').get(oauthController.oauthCallback.bind(oauthController));
 app.route('/oauth/connect/:providerConfigKey').get(apiPublicAuth, oauthController.oauthRequest.bind(oauthController));
+app.route('/api-auth/api-key/:providerConfigKey').post(apiPublicAuth, apiAuthController.apiKey.bind(authController));
+app.route('/api-auth/basic/:providerConfigKey').post(apiPublicAuth, apiAuthController.basic.bind(authController));
 
 // API routes (API key auth).
 app.route('/config').get(apiAuth, configController.listProviderConfigs.bind(configController));

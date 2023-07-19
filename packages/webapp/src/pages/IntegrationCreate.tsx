@@ -19,6 +19,7 @@ import { LeftNavBarItems } from '../components/LeftNavBar';
 import DashboardLayout from '../layout/DashboardLayout';
 import SecretInput from '../components/ui/input/SecretInput';
 import TagsInput from '../components/ui/input/TagsInput';
+import { AuthModes } from '../types';
 
 interface Integration {
     uniqueKey: string;
@@ -31,6 +32,7 @@ interface Integration {
 interface Providers {
     name: string;
     defaultScopes: string[];
+    authMode: AuthModes;
 }
 
 export default function IntegrationCreate() {
@@ -51,6 +53,7 @@ export default function IntegrationCreate() {
     const deleteIntegrationAPI = useDeleteIntegrationAPI();
     const [selectedProvider, setSelectedProvider] = useState<string>('my-integration');
     const [providerDefaultScope, setProviderDefaultScope] = useState<string>('');
+    const [authMode, setAuthMode] = useState<AuthModes>(AuthModes.OAuth2);
 
     useEffect(() => {
         const getProviders = async () => {
@@ -60,6 +63,11 @@ export default function IntegrationCreate() {
                 if (res?.status === 200) {
                     let data = await res.json();
                     setIntegration(data['integration']);
+                    const currentIntegration = data['integration'];
+                    if (currentIntegration.clientId === null && currentIntegration.clientSecret === null && currentIntegration.scopes === null) {
+                        // set to either api type to not have empty credentials fields
+                        setAuthMode(AuthModes.Basic);
+                    }
                 }
             } else {
                 // Create integration
@@ -70,6 +78,7 @@ export default function IntegrationCreate() {
                     setProviders(data);
                     setSelectedProvider(data[0].name);
                     setProviderDefaultScope(data[0].defaultScopes?.join(',') ?? '');
+                    setAuthMode(data[0].authMode);
                 }
             }
         };
@@ -91,9 +100,10 @@ export default function IntegrationCreate() {
     }, [providerConfigKey, getIntegrationDetailsAPI, getProvidersAPI, getProjectInfoAPI, loaded, setLoaded]);
 
     const handleIntegrationProviderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        let [provider, defaultScope] = e.target.value.split('|');
+        let [provider, defaultScope, authMode] = e.target.value.split('|');
         setSelectedProvider(provider);
         setProviderDefaultScope(defaultScope ?? '');
+        setAuthMode(authMode as AuthModes);
     };
 
     const handleSave = async (e: React.SyntheticEvent) => {
@@ -113,6 +123,7 @@ export default function IntegrationCreate() {
 
             let res = await editIntegrationAPI(
                 integration.provider,
+                authMode,
                 providerConfigKey,
                 target.client_id.value,
                 target.client_secret.value,
@@ -132,7 +143,7 @@ export default function IntegrationCreate() {
                 scopes: { value: string };
             };
             const [provider] = target.provider.value.split('|');
-            let res = await createIntegrationAPI(provider, target.unique_key.value, target.client_id.value, target.client_secret.value, target.scopes.value);
+            let res = await createIntegrationAPI(provider, authMode, target.unique_key?.value, target.client_id?.value, target.client_secret?.value, target.scopes?.value);
 
             if (res?.status === 200) {
                 toast.success('Integration created!', { position: toast.POSITION.BOTTOM_CENTER });
@@ -204,7 +215,7 @@ export default function IntegrationCreate() {
                                                 onChange={handleIntegrationProviderChange}
                                             >
                                                 {providers.map((provider, key) => (
-                                                    <option key={key} value={`${provider.name}|${provider.defaultScopes?.join(',') ?? ''}`}>
+                                                    <option key={key} value={`${provider.name}|${provider.defaultScopes?.join(',') ?? ''}|${provider.authMode}`}>
                                                         {provider.name}
                                                     </option>
                                                 ))}
@@ -263,115 +274,123 @@ export default function IntegrationCreate() {
                                 </div>
                             )}
 
-                            <div>
-                                <div className="flex">
-                                    <label htmlFor="client_id" className="text-text-light-gray block text-sm font-semibold">
-                                        Client ID
-                                    </label>
-                                    <Tooltip
-                                        text={
-                                            <>
-                                                <div className="flex text-black text-sm">
-                                                    <p>{`Obtain the Client ID on the developer portal of the Integration Provider.`}</p>
-                                                </div>
-                                            </>
-                                        }
-                                    >
-                                        <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
-                                    </Tooltip>
-                                </div>
-                                <div className="mt-1">
-                                    <input
-                                        id="client_id"
-                                        name="client_id"
-                                        type="text"
-                                        defaultValue={integration ? integration.clientId : ''}
-                                        required
-                                        minLength={1}
-                                        className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none"
-                                    />
-                                </div>
-                            </div>
+                            {(authMode === AuthModes.Basic || authMode === AuthModes.ApiKey) && !providerConfigKey && (
+                                <div>The "{selectedProvider}" provider uses {authMode} authentication</div>
+                            )}
 
-                            <div>
-                                <div className="flex">
-                                    <label htmlFor="client_id" className="text-text-light-gray block text-sm font-semibold">
-                                        Client Secret
-                                    </label>
-                                    <Tooltip
-                                        text={
-                                            <>
-                                                <div className="flex text-black text-sm">
-                                                    <p>{`Obtain the Client Secret on the developer portal of the Integration Provider.`}</p>
-                                                </div>
-                                            </>
-                                        }
-                                    >
-                                        <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
-                                    </Tooltip>
-                                </div>
-                                <div className="mt-1">
-                                    <SecretInput
-                                        copy={true}
-                                        id="client_secret"
-                                        name="client_secret"
-                                        defaultValue={integration ? integration.clientSecret : ''}
-                                        required
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <div className="flex">
-                                    <label htmlFor="client_id" className="text-text-light-gray block text-sm font-semibold">
-                                        Scopes
-                                    </label>
-                                    <Tooltip
-                                        text={
-                                            <>
-                                                <div className="flex text-black text-sm">
-                                                    <p>{`The list of scope should be found in the documentation of the external provider.`}</p>
-                                                </div>
-                                            </>
-                                        }
-                                    >
-                                        <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
-                                    </Tooltip>
-                                </div>
-                                <div className="mt-1">
-                                    <TagsInput
-                                        id="scopes"
-                                        name="scopes"
-                                        type="text"
-                                        defaultValue={integration ? integration.scopes : providerDefaultScope}
-                                        minLength={1}
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <div>
-                                    <div className="flex">
-                                        <label htmlFor="client_id" className="text-text-light-gray block text-sm font-semibold">
-                                            Callback URL
-                                        </label>
-                                        <Tooltip
-                                            text={
-                                                <>
-                                                    <div className="flex text-black text-sm">
-                                                        <p>{`Register this callback URL on the developer portal of the Integration Provider.`}</p>
-                                                    </div>
-                                                </>
-                                            }
-                                        >
-                                            <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
-                                        </Tooltip>
+                            {(authMode === AuthModes.OAuth1 || authMode === AuthModes.OAuth2) && (
+                                <>
+                                    <div>
+                                        <div className="flex">
+                                            <label htmlFor="client_id" className="text-text-light-gray block text-sm font-semibold">
+                                                Client ID
+                                            </label>
+                                            <Tooltip
+                                                text={
+                                                    <>
+                                                        <div className="flex text-black text-sm">
+                                                            <p>{`Obtain the Client ID on the developer portal of the Integration Provider.`}</p>
+                                                        </div>
+                                                    </>
+                                                }
+                                            >
+                                                <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                            </Tooltip>
+                                        </div>
+                                        <div className="mt-1">
+                                            <input
+                                                id="client_id"
+                                                name="client_id"
+                                                type="text"
+                                                defaultValue={integration ? integration.clientId : ''}
+                                                required
+                                                minLength={1}
+                                                className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none"
+                                            />
+                                        </div>
                                     </div>
-                                    <Prism language="bash" colorScheme="dark">
-                                        {callbackUrl}
-                                    </Prism>
-                                </div>
-                            </div>
+
+                                    <div>
+                                        <div className="flex">
+                                            <label htmlFor="client_id" className="text-text-light-gray block text-sm font-semibold">
+                                                Client Secret
+                                            </label>
+                                            <Tooltip
+                                                text={
+                                                    <>
+                                                        <div className="flex text-black text-sm">
+                                                            <p>{`Obtain the Client Secret on the developer portal of the Integration Provider.`}</p>
+                                                        </div>
+                                                    </>
+                                                }
+                                            >
+                                                <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                            </Tooltip>
+                                        </div>
+                                        <div className="mt-1">
+                                            <SecretInput
+                                                copy={true}
+                                                id="client_secret"
+                                                name="client_secret"
+                                                defaultValue={integration ? integration.clientSecret : ''}
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <div className="flex">
+                                            <label htmlFor="client_id" className="text-text-light-gray block text-sm font-semibold">
+                                                Scopes
+                                            </label>
+                                            <Tooltip
+                                                text={
+                                                    <>
+                                                        <div className="flex text-black text-sm">
+                                                            <p>{`The list of scope should be found in the documentation of the external provider.`}</p>
+                                                        </div>
+                                                    </>
+                                                }
+                                            >
+                                                <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                            </Tooltip>
+                                        </div>
+                                        <div className="mt-1">
+                                            <TagsInput
+                                                id="scopes"
+                                                name="scopes"
+                                                type="text"
+                                                defaultValue={integration ? integration.scopes : providerDefaultScope}
+                                                minLength={1}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <div>
+                                            <div className="flex">
+                                                <label htmlFor="client_id" className="text-text-light-gray block text-sm font-semibold">
+                                                    Callback URL
+                                                </label>
+                                                <Tooltip
+                                                    text={
+                                                        <>
+                                                            <div className="flex text-black text-sm">
+                                                                <p>{`Register this callback URL on the developer portal of the Integration Provider.`}</p>
+                                                            </div>
+                                                        </>
+                                                    }
+                                                >
+                                                    <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                                </Tooltip>
+                                            </div>
+                                            <Prism language="bash" colorScheme="dark">
+                                                {callbackUrl}
+                                            </Prism>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
 
                             <div>
                                 <div className="flex justify-between">

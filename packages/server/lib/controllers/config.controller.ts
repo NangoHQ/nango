@@ -1,8 +1,19 @@
 import type { NextFunction, Request, Response } from 'express';
-import { errorManager, NangoError, getAccount, getEnvironmentId, analytics, configService, Config as ProviderConfig, connectionService } from '@nangohq/shared';
+import {
+    AuthModes,
+    errorManager,
+    NangoError,
+    getAccount,
+    getEnvironmentId,
+    analytics,
+    configService,
+    Config as ProviderConfig,
+    connectionService
+} from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession, parseConnectionConfigParamsFromTemplate } from '../utils/utils.js';
 
 interface Integration {
+    authMode: AuthModes;
     uniqueKey: string;
     provider: string;
     connectionCount: number;
@@ -26,6 +37,7 @@ class ConfigController {
             const integrations = configs.map((config: ProviderConfig) => {
                 const template = configService.getTemplates()[config.provider];
                 const integration: Integration = {
+                    authMode: template?.auth_mode as AuthModes,
                     uniqueKey: config.unique_key,
                     provider: config.provider,
                     connectionCount: connections.filter((connection) => connection.provider === config.unique_key).length,
@@ -54,6 +66,8 @@ class ConfigController {
             const environment = info.environment;
             const account = info.account;
 
+            const authMode = req.body['auth_mode'] ?? null;
+
             if (req.body == null) {
                 errorManager.errRes(res, 'missing_body');
                 return;
@@ -76,12 +90,12 @@ class ConfigController {
                 return;
             }
 
-            if (req.body['client_id'] == null) {
+            if (authMode !== AuthModes.ApiKey && authMode !== AuthModes.Basic && req.body['client_id'] == null) {
                 errorManager.errRes(res, 'missing_client_id');
                 return;
             }
 
-            if (req.body['client_secret'] == null) {
+            if (authMode !== AuthModes.ApiKey && authMode !== AuthModes.Basic && req.body['client_secret'] == null) {
                 errorManager.errRes(res, 'missing_client_secret');
                 return;
             }
@@ -93,16 +107,22 @@ class ConfigController {
                 return;
             }
 
+            const oauth_client_id = req.body['client_id'] ?? null;
+            const oauth_client_secret = req.body['client_secret'] ?? null;
+            const oauth_scopes = req.body['scopes'] ?? null;
+
             const config: ProviderConfig = {
                 unique_key: uniqueConfigKey,
                 provider: provider,
-                oauth_client_id: req.body['client_id'],
-                oauth_client_secret: req.body['client_secret'],
-                oauth_scopes: req.body['scopes']
-                    .replace(/ /g, ',')
-                    .split(',')
-                    .filter((w: string) => w)
-                    .join(','), // Make coma-separated if needed
+                oauth_client_id,
+                oauth_client_secret,
+                oauth_scopes: oauth_scopes
+                    ? oauth_scopes
+                          .replace(/ /g, ',')
+                          .split(',')
+                          .filter((w: string) => w)
+                          .join(',')
+                    : null, // Make coma-separated if needed
                 environment_id: environment.id
             };
 

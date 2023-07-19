@@ -1,4 +1,4 @@
-import type { AuthCredentials } from './Auth.js';
+import type { AuthCredentials, ApiKeyCredentials, BasicApiCredentials } from './Auth.js';
 
 export interface BaseConnection {
     id?: number;
@@ -8,7 +8,7 @@ export interface BaseConnection {
     connection_id: string;
     connection_config: Record<string, string>;
     environment_id: number;
-    metadata: Record<string, string>;
+    metadata?: Record<string, string>;
     credentials_iv?: string | null;
     credentials_tag?: string | null;
     field_mappings?: Record<string, string>;
@@ -19,7 +19,18 @@ export interface StoredConnection extends BaseConnection {
 }
 
 export interface Connection extends BaseConnection {
-    credentials: AuthCredentials;
+    credentials: AuthCredentials | ApiKeyCredentials | BasicApiCredentials;
+}
+
+export interface ApiConnection {
+    id?: number;
+    connection_id: string;
+    provider_config_key: string;
+    environment_id: number;
+    connection_config: Record<string, string>;
+    credentials_iv?: string | null;
+    credentials_tag?: string | null;
+    credentials: BasicApiCredentials | ApiKeyCredentials;
 }
 
 export interface NangoConnection {

@@ -27,7 +27,7 @@ import { NangoError } from '../utils/error.js';
 
 import type { Connection, StoredConnection, BaseConnection, NangoConnection } from '../models/Connection.js';
 import encryptionManager from '../utils/encryption.manager.js';
-import { AuthModes as ProviderAuthModes, OAuth2Credentials, ImportedCredentials } from '../models/Auth.js';
+import { AuthModes as ProviderAuthModes, OAuth2Credentials, ImportedCredentials, ApiKeyCredentials, BasicApiCredentials } from '../models/Auth.js';
 import { schema } from '../db/database.js';
 import { getEnvironmentId, getAccount, parseTokenExpirationDate, isTokenExpired } from '../utils/utils.js';
 import SyncClient from '../clients/sync.client.js';
@@ -57,6 +57,36 @@ class ConnectionService {
                     connection_config: connectionConfig,
                     environment_id,
                     metadata: metadata
+                }),
+                ['id']
+            )
+            .onConflict(['provider_config_key', 'connection_id', 'environment_id'])
+            .merge();
+
+        analytics.track('server:connection_upserted', accountId, { provider });
+
+        return id;
+    }
+
+    public async upsertApiConnection(
+        connectionId: string,
+        providerConfigKey: string,
+        provider: string,
+        credentials: ApiKeyCredentials | BasicApiCredentials,
+        connectionConfig: Record<string, string>,
+        environment_id: number,
+        accountId: number
+    ) {
+        const id = await db.knex
+            .withSchema(db.schema())
+            .from<StoredConnection>(`_nango_connections`)
+            .insert(
+                encryptionManager.encryptApiConnection({
+                    connection_id: connectionId,
+                    provider_config_key: providerConfigKey,
+                    credentials,
+                    connection_config: connectionConfig,
+                    environment_id
                 }),
                 ['id']
             )
@@ -158,10 +188,13 @@ class ConnectionService {
         const connection = encryptionManager.decryptConnection(storedConnection);
 
         // Parse the token expiration date.
-        if (connection != null && connection.credentials.type === ProviderAuthModes.OAuth2) {
-            const creds = connection.credentials as OAuth2Credentials;
-            creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
-            connection.credentials = creds;
+        if (connection != null) {
+            const credentials = connection.credentials as OAuth1Credentials | OAuth2Credentials;
+            if (credentials.type && credentials.type === ProviderAuthModes.OAuth2) {
+                const creds = credentials as OAuth2Credentials;
+                creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
+                connection.credentials = creds;
+            }
         }
 
         return connection;
@@ -290,15 +323,20 @@ class ConnectionService {
 
         const template: ProviderTemplate | undefined = configService.getTemplate(config?.provider as string);
 
-        if (connection?.credentials.type === ProviderAuthModes.OAuth2) {
-            connection.credentials = await connectionService.refreshOauth2CredentialsIfNeeded(
-                connection,
+        let credentials = connection?.credentials as OAuth1Credentials | OAuth2Credentials;
+        if (credentials.type === ProviderAuthModes.OAuth2) {
+            credentials = await connectionService.refreshOauth2CredentialsIfNeeded(
+                connection as Connection,
                 config as ProviderConfig,
                 template as ProviderTemplateOAuth2,
                 activityLogId,
                 instantRefresh,
                 action
             );
+
+            if (connection) {
+                connection.credentials = credentials;
+            }
         }
 
         analytics.track('server:connection_fetched', accountId, { provider: config?.provider });

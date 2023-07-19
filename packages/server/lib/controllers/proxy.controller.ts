@@ -145,15 +145,20 @@ class ProxyController {
 
             let token;
 
+            // TODO
+            // @ts-ignore
             switch (connection?.credentials?.type) {
                 case 'OAUTH2':
+                    // @ts-ignore
                     token = connection?.credentials?.access_token;
                     break;
                 // TODO
                 case 'OAUTH1':
+                    // @ts-ignore
                     token = { oAuthToken: connection?.credentials?.oauth_token, oAuthTokenSecret: connection?.credentials?.oauth_token_secret };
                     break;
                 default:
+                    // @ts-ignore
                     throw new Error(`Unrecognized OAuth type '${connection?.credentials?.type}' in stored credentials.`);
             }
 

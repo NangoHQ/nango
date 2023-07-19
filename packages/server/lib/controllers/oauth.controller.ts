@@ -27,7 +27,6 @@ import {
     configService,
     connectionService,
     environmentService,
-    authService,
     Config as ProviderConfig,
     Template as ProviderTemplate,
     TemplateOAuth2 as ProviderTemplateOAuth2,
@@ -48,7 +47,7 @@ import oAuthSessionService from '../services/oauth-session.service.js';
 import hmacService from '../services/hmac.service.js';
 
 class OAuthController {
-    public async oauthRequest(req: Request, res: Response, next: NextFunction) {
+    public async oauthRequest(req: Request, res: Response, _next: NextFunction) {
         const accountId = getAccount(res);
         const environmentId = getEnvironmentId(res);
         const { providerConfigKey } = req.params;
@@ -167,18 +166,6 @@ class OAuthController {
                 });
 
                 return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownProviderTemplate(config.provider));
-            }
-
-            if (template.auth_mode === ProviderAuthModes.Basic || template.auth_mode === ProviderAuthModes.ApiKey) {
-                const AuthService = new authService({ config, template, environmentId, activityLogId: activityLogId as number });
-
-                if (template.auth_mode === ProviderAuthModes.Basic) {
-                    return AuthService.basicAuth(res, req, next);
-                }
-
-                if (template.auth_mode === ProviderAuthModes.ApiKey) {
-                    return AuthService.apiKeyAuth(res, req, next);
-                }
             }
 
             const session: OAuthSession = {

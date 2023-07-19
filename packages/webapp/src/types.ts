@@ -69,3 +69,10 @@ export interface SyncResponse {
 }
 
 export type RunSyncCommand = 'PAUSE' | 'UNPAUSE' | 'RUN' | 'RUN_FULL';
+
+export enum AuthModes {
+    OAuth1 = 'OAUTH1',
+    OAuth2 = 'OAUTH2',
+    Basic = 'BASIC',
+    ApiKey = 'API_KEY'
+}

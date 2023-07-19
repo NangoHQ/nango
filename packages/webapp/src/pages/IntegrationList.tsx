@@ -76,7 +76,7 @@ export default function IntegrationList() {
                                                     to={`/connections/create/${uniqueKey}`}
                                                     className="flex mr-2 h-8 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white bg-gray-800 hover:bg-gray-700"
                                                 >
-                                                    <p>OAuth</p>
+                                                    <p>Auth</p>
                                                 </Link>
                                                 <Link
                                                     to={`/integration/${uniqueKey}`}

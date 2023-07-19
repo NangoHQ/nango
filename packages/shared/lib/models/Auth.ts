@@ -5,7 +5,7 @@ export enum AuthModes {
     OAuth1 = 'OAUTH1',
     OAuth2 = 'OAUTH2',
     Basic = 'BASIC',
-    ApiKey = 'API_ KEY'
+    ApiKey = 'API_KEY'
 }
 
 export enum OAuthAuthorizationMethod {
@@ -77,6 +77,19 @@ export type OAuth1RequestTokenResult = {
 export interface CredentialsCommon<T = Record<string, any>> {
     type: AuthModes;
     raw: T;
+}
+
+export interface BasicApiCredentials {
+    credentials: {
+        username: string;
+        password: string;
+    };
+}
+
+export interface ApiKeyCredentials {
+    credentials: {
+        apiKey: string;
+    };
 }
 
 export type AuthCredentials = OAuth2Credentials | OAuth1Credentials;

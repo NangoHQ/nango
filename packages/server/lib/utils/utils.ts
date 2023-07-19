@@ -121,6 +121,9 @@ export function parseJsonDateAware(input: string) {
 }
 
 export function parseConnectionConfigParamsFromTemplate(template: ProviderTemplate): string[] {
+    if (!template.token_url || !template.authorization_url) {
+        return [];
+    }
     const tokenUrlMatches = template.token_url.match(/\${connectionConfig\.params\.([^{}]*)}/g);
     const authorizationUrlMatches = template.authorization_url.match(/\${connectionConfig\.params\.([^{}]*)}/g);
     const params = [...(tokenUrlMatches || []), ...(authorizationUrlMatches || [])].filter((value, index, array) => array.indexOf(value) === index);

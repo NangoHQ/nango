@@ -89,7 +89,8 @@ class ConfigService {
     }
 
     async createProviderConfig(config: ProviderConfig): Promise<void | Pick<ProviderConfig, 'id'>[]> {
-        return db.knex.withSchema(db.schema()).from<ProviderConfig>(`_nango_configs`).insert(encryptionManager.encryptProviderConfig(config), ['id']);
+        const configToInsert = config.oauth_client_secret ? encryptionManager.encryptProviderConfig(config) : config;
+        return db.knex.withSchema(db.schema()).from<ProviderConfig>(`_nango_configs`).insert(configToInsert, ['id']);
     }
 
     /**
