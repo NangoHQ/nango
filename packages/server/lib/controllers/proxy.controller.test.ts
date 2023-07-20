@@ -53,6 +53,31 @@ describe('Proxy Controller Construct Header Tests', () => {
         });
     });
 
+    it('Should correctly construct headers for Basic auth + any custom headers', () => {
+        const config = {
+            template: {
+                auth_mode: AuthModes.Basic,
+                proxy: {
+                    headers: {
+                        'X-Test': 'test'
+                    }
+                }
+            },
+            token: {
+                username: 'testuser',
+                password: 'testpassword'
+            }
+        };
+
+        // @ts-ignore
+        const result = proxyController.constructHeaders(config);
+
+        expect(result).toEqual({
+            Authorization: 'Basic ' + Buffer.from('testuser:testpassword').toString('base64'),
+            'X-Test': 'test'
+        });
+    });
+
     it('Should correctly construct headers with an Authorization override', () => {
         const config = {
             template: {

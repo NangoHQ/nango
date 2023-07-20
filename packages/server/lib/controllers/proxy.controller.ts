@@ -664,15 +664,7 @@ class ProxyController {
                 }
                 break;
             case AuthModes.ApiKey:
-                {
-                    if ('proxy' in config.template && 'headers' in config.template.proxy) {
-                        // iterate over each header and interpolate if need
-                        headers = Object.entries(config.template.proxy.headers).reduce((acc: Record<string, string>, [key, value]: [string, string]) => {
-                            acc[key] = interpolateIfNeeded(value, config.token as unknown as Record<string, string>);
-                            return acc;
-                        }, {});
-                    }
-                }
+                headers = {};
                 break;
             default:
                 headers = {
@@ -680,6 +672,18 @@ class ProxyController {
                 };
                 break;
         }
+
+        if ('proxy' in config.template && 'headers' in config.template.proxy) {
+            // iterate over each header and interpolate if need
+            headers = Object.entries(config.template.proxy.headers).reduce(
+                (acc: Record<string, string>, [key, value]: [string, string]) => {
+                    acc[key] = interpolateIfNeeded(value, config.token as unknown as Record<string, string>);
+                    return acc;
+                },
+                { ...headers }
+            );
+        }
+
         if (config.headers) {
             const { headers: configHeaders } = config;
             headers = { ...headers, ...configHeaders };
