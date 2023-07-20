@@ -1,6 +1,6 @@
 import axios, { AxiosRequestConfig } from 'axios';
 
-import type { AuthModes, OAuth1Credentials, OAuth2Credentials, ProxyConfiguration, GetRecordsRequestConfig } from './types.js';
+import { AuthModes, OAuth1Credentials, OAuth2Credentials, ProxyConfiguration, GetRecordsRequestConfig } from './types.js';
 import { validateProxyConfiguration, validateSyncRecordConfiguration } from './utils.js';
 
 export const stagingHost = 'https://api-staging.nango.dev';
@@ -111,12 +111,12 @@ export class Nango {
         const response = await this.getConnectionDetails(providerConfigKey, connectionId, forceRefresh);
 
         switch (response.data.credentials.type) {
-            case 'OAUTH2':
+            case AuthModes.OAuth2:
                 return response.data.credentials.access_token;
-            case 'OAUTH1':
+            case AuthModes.OAuth1:
                 return { oAuthToken: response.data.credentials.oauth_token, oAuthTokenSecret: response.data.credentials.oauth_token_secret };
             default:
-                throw new Error(`Unrecognized OAuth type '${response.data.credentials.type}' in stored credentials.`);
+                return response.data.credentials;
         }
     }
 

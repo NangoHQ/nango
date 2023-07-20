@@ -2,7 +2,9 @@ import type { ParamsSerializerOptions } from 'axios';
 
 export enum AuthModes {
     OAuth1 = 'OAUTH1',
-    OAuth2 = 'OAUTH2'
+    OAuth2 = 'OAUTH2',
+    Basic = 'BASIC',
+    ApiKey = 'API_KEY'
 }
 
 export interface CredentialsCommon<T = Record<string, any>> {
