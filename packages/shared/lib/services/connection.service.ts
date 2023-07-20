@@ -323,9 +323,8 @@ class ConnectionService {
 
         const template: ProviderTemplate | undefined = configService.getTemplate(config?.provider as string);
 
-        let credentials = connection?.credentials as OAuth1Credentials | OAuth2Credentials;
-        if (credentials.type === ProviderAuthModes.OAuth2) {
-            credentials = await connectionService.refreshOauth2CredentialsIfNeeded(
+        if (connection?.credentials?.type === ProviderAuthModes.OAuth2) {
+            connection.credentials = await connectionService.refreshOauth2CredentialsIfNeeded(
                 connection as Connection,
                 config as ProviderConfig,
                 template as ProviderTemplateOAuth2,
@@ -333,10 +332,6 @@ class ConnectionService {
                 instantRefresh,
                 action
             );
-
-            if (connection) {
-                connection.credentials = credentials;
-            }
         }
 
         analytics.track('server:connection_fetched', accountId, { provider: config?.provider });
