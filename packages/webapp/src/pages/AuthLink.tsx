@@ -58,8 +58,8 @@ export default function AuthLink() {
             .auth(integrationUniqueKey, connectionId, {
                 user_scope: userScopes,
                 params: params ? JSON.parse(params) : {},
-                authorization_params: authorizationParams ? JSON.parse(authorizationParams) : {}
                 authorization_params: authorizationParams ? JSON.parse(authorizationParams) : {},
+                // @ts-ignore
                 credentials
             })
             .then(() => {
