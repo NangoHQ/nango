@@ -16,6 +16,13 @@ export interface Config {
 
 export interface Template {
     auth_mode: AuthModes;
+    proxy: {
+        base_url: string;
+        headers?: Record<string, string>;
+        query?: {
+            api_key: string;
+        };
+    };
     authorization_url: string;
     authorization_params?: Record<string, string>;
     scope_separator?: string;

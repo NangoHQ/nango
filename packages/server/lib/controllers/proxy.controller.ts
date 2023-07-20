@@ -16,13 +16,16 @@ import {
     updateEndpoint as updateEndpointActivityLog,
     HTTP_VERB,
     LogLevel,
+    BasicApiCredentials,
     LogAction,
     configService,
     errorManager,
     connectionService,
     environmentService,
     getEnvironmentId,
-    interpolateIfNeeded
+    interpolateIfNeeded,
+    AuthModes,
+    OAuth2Credentials
 } from '@nangohq/shared';
 import type { ProxyBodyConfiguration } from '../models.js';
 
@@ -145,21 +148,25 @@ class ProxyController {
 
             let token;
 
-            // TODO
-            // @ts-ignore
             switch (connection?.credentials?.type) {
-                case 'OAUTH2':
-                    // @ts-ignore
-                    token = connection?.credentials?.access_token;
+                case AuthModes.OAuth2:
+                    {
+                        const credentials = connection.credentials as OAuth2Credentials;
+                        token = credentials?.access_token;
+                    }
                     break;
-                // TODO
-                case 'OAUTH1':
-                    // @ts-ignore
-                    token = { oAuthToken: connection?.credentials?.oauth_token, oAuthTokenSecret: connection?.credentials?.oauth_token_secret };
+                case AuthModes.OAuth1:
+                    throw new Error('OAuth1 is not supported yet in the proxy.');
+                case AuthModes.Basic:
+                    delete connection?.credentials?.type;
+                    token = connection?.credentials;
+                    break;
+                case AuthModes.ApiKey:
+                    delete connection?.credentials?.type;
+                    token = connection?.credentials;
                     break;
                 default:
-                    // @ts-ignore
-                    throw new Error(`Unrecognized OAuth type '${connection?.credentials?.type}' in stored credentials.`);
+                    throw new Error(`Unrecognized Auth type '${connection?.credentials?.type}' in stored credentials.`);
             }
 
             if (!isSync) {
@@ -218,8 +225,7 @@ class ProxyController {
                 endpoint,
                 method: method as HTTP_VERB,
                 template,
-                // handle oauth1
-                token: String(token),
+                token,
                 provider: String(providerConfig?.provider),
                 providerConfigKey,
                 connectionId,
@@ -625,7 +631,17 @@ class ProxyController {
         const apiBase = config.baseUrlOverride || templateApiBase;
 
         const base = apiBase?.substr(-1) === '/' ? apiBase.slice(0, -1) : apiBase;
-        const endpoint = apiEndpoint?.charAt(0) === '/' ? apiEndpoint.slice(1) : apiEndpoint;
+        let endpoint = apiEndpoint?.charAt(0) === '/' ? apiEndpoint.slice(1) : apiEndpoint;
+
+        if (
+            config.template.auth_mode === AuthModes.ApiKey &&
+            'proxy' in config.template &&
+            'query' in config.template.proxy &&
+            'api_key' in config.template.proxy.query
+        ) {
+            endpoint += endpoint.includes('?') ? '&' : '?';
+            endpoint += `api_key=${config.token}`;
+        }
 
         const fullEndpoint = interpolateIfNeeded(`${base}/${endpoint}`, connection as unknown as Record<string, string>);
 
@@ -637,9 +653,34 @@ class ProxyController {
      * @param {ProxyBodyConfiguration} config
      */
     private constructHeaders(config: ProxyBodyConfiguration) {
-        let headers = {
-            Authorization: `Bearer ${config.token}`
-        };
+        let headers = {};
+
+        switch (config.template.auth_mode) {
+            case AuthModes.Basic:
+                {
+                    const token = config.token as BasicApiCredentials;
+                    headers = {
+                        Authorization: `Basic ${Buffer.from(`${token.username}:${token.password}`).toString('base64')}`
+                    };
+                }
+                break;
+            case AuthModes.ApiKey:
+                {
+                    if ('proxy' in config.template && 'headers' in config.template.proxy) {
+                        // iterate over each header and interpolate if need
+                        headers = Object.entries(config.template.proxy.headers).reduce((acc: Record<string, string>, [key, value]: [string, string]) => {
+                            acc[key] = interpolateIfNeeded(value, { apiKey: config.token });
+                            return acc;
+                        }, {});
+                    }
+                }
+                break;
+            default:
+                headers = {
+                    Authorization: `Bearer ${config.token}`
+                };
+                break;
+        }
         if (config.headers) {
             const { headers: configHeaders } = config;
             headers = { ...headers, ...configHeaders };
