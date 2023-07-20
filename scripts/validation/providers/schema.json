@@ -6,7 +6,7 @@
             "properties": {
                 "auth_mode": {
                     "type": "string",
-                    "enum": ["BASIC", "API_KEY","OAUTH1", "OAUTH2"]
+                    "enum": ["BASIC", "API_KEY", "OAUTH1", "OAUTH2"]
                 },
                 "authorization_url": { "type": "string" },
                 "token_url": { "type": "string" },
@@ -16,7 +16,24 @@
                 "scope_separator": { "type": "string" },
                 "docs": { "type": "string" },
                 "body_format": { "type": "string" },
-                "base_api_url": { "type": "string" }
+                "proxy": {
+                    "type": "object",
+                    "properties": {
+                        "base_url": { "type": "string" },
+                        "headers": {
+                            "type": "object",
+                            "patternProperties": {
+                                "^[a-zA-Z0-9-]+$": { "type": "string" }
+                            }
+                        },
+                        "query": {
+                            "type": "object",
+                            "properties": {
+                                "api_key": { "type": "string" }
+                            }
+                        }
+                    }
+                }
             },
             "additionalProperties": true
         }

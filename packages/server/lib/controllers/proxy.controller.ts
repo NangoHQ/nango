@@ -196,7 +196,7 @@ class ProxyController {
 
             const template = configService.getTemplate(String(providerConfig?.provider));
 
-            if (!template.base_api_url && !baseUrlOverride) {
+            if (!template.proxy.base_url && !baseUrlOverride) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     activity_log_id: activityLogId as number,
@@ -217,7 +217,7 @@ class ProxyController {
                     level: 'debug',
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
-                    content: `Proxy: API call configuration constructed successfully with the base api url set to ${template.base_api_url}`
+                    content: `Proxy: API call configuration constructed successfully with the base api url set to ${template.proxy.base_url}`
                 });
             }
 
@@ -623,10 +623,7 @@ class ProxyController {
      *
      */
     private constructUrl(config: ProxyBodyConfiguration, connection: Connection) {
-        const {
-            template: { base_api_url: templateApiBase },
-            endpoint: apiEndpoint
-        } = config;
+        const { template: { proxy: { base_url: templateApiBase } = {} } = {}, endpoint: apiEndpoint } = config;
 
         const apiBase = config.baseUrlOverride || templateApiBase;
 

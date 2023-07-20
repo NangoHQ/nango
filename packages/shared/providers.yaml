@@ -28,7 +28,8 @@ airtable:
     authorization_method: header
     auth:
         response_type: code
-    base_api_url: https://api.airtable.com
+    proxy:
+      base_api: https://api.airtable.com
     docs: https://airtable.com/developers/web/api/introduction
 amazon:
     auth_mode: OAUTH2
@@ -52,7 +53,8 @@ asana:
         response_type: code
     refresh_params:
         grant_type: refresh_token
-    base_api_url: https://app.asana.com
+    proxy:
+        base_url: https://app.asana.com
     docs: https://developers.asana.com/reference
 atlassian:
     auth_mode: OAUTH2
@@ -269,7 +271,8 @@ github:
     auth_mode: OAUTH2
     authorization_url: https://github.com/login/oauth/authorize
     token_url: https://github.com/login/oauth/access_token
-    base_api_url: https://api.github.com
+    proxy:
+        base_url: https://api.github.com
     docs: https://docs.github.com/en/rest
 gitlab:
     auth_mode: OAUTH2
@@ -287,15 +290,18 @@ google:
         prompt: consent
 google-calendar:
     alias: google
-    base_api_url: https://www.googleapis.com
+    proxy:
+        base_url: https://www.googleapis.com
     docs: https://developers.google.com/calendar/api/v3/reference
 google-mail:
     alias: google
-    base_api_url: https://gmail.googleapis.com
+    proxy:
+        base_url: https://gmail.googleapis.com
     docs: https://developers.google.com/gmail/api/reference/rest
 google-sheet:
     alias: google
-    base_api_url: https://sheets.googleapis.com
+    proxy:
+        base_url: https://sheets.googleapis.com
     docs: https://developers.google.com/sheets/api/reference/rest
 gorgias:
     auth_mode: OAUTH2
@@ -348,7 +354,8 @@ hubspot:
     auth_mode: OAUTH2
     authorization_url: https://app.hubspot.com/oauth/authorize
     token_url: https://api.hubapi.com/oauth/v1/token
-    base_api_url: https://api.hubapi.com
+    proxy:
+        base_url: https://api.hubapi.com
     docs: https://developers.hubspot.com/docs/api/overview
 instagram:
     auth_mode: OAUTH2
@@ -394,7 +401,8 @@ linear:
     scope_separator: ','
     authorization_params:
         prompt: consent
-    base_api_url: https://api.linear.app
+    proxy:
+        base_url: https://api.linear.app
     disable_pkce: true
 linkedin:
     auth_mode: OAUTH2
@@ -457,7 +465,8 @@ notion:
         owner: user
     authorization_method: header
     body_format: json
-    base_api_url: https://api.notion.com
+    proxy:
+        base_url: https://api.notion.com
     docs: https://developers.notion.com/reference
 notion2:
     auth_mode: OAUTH2
@@ -468,7 +477,8 @@ notion2:
         owner: user
     authorization_method: header
     body_format: json
-    base_api_url: https://api.notion.com
+    proxy:
+        base_url: https://api.notion.com
     docs: https://developers.notion.com/reference
 one-drive:
     auth_mode: OAUTH2
@@ -569,7 +579,8 @@ sage:
     token_url: https://oauth.accounting.sage.com/token
     authorization_params:
         filter: apiv3.1
-    base_api_url: https://api.accounting.sage.com/v3.1
+    proxy:
+        base_url: https://api.accounting.sage.com/v3.1
 salesforce:
     auth_mode: OAUTH2
     authorization_url: https://login.salesforce.com/services/oauth2/authorize
@@ -578,7 +589,8 @@ salesforce:
         - offline_access
     token_response_metadata:
         - instance_url
-    base_api_url: ${metadata.instance_url}
+    proxy:
+        base_url: ${metadata.instance_url}
     docs: https://developer.salesforce.com/docs/api
 salesloft:
     auth_mode: OAUTH2
@@ -597,7 +609,8 @@ slack:
     auth_mode: OAUTH2
     authorization_url: https://slack.com/oauth/v2/authorize
     token_url: https://slack.com/api/oauth.v2.access
-    base_api_url: https://slack.com/api
+    proxy:
+        base_url: https://slack.com/api
     docs: https://api.slack.com/apis
 smugmug:
     auth_mode: OAUTH1
@@ -620,7 +633,8 @@ spotify:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
-    base_api_url: https://api.spotify.com
+    proxy:
+        base_url: https://api.spotify.com
     docs: https://developer.spotify.com/documentation/web-api
 squareup:
     auth_mode: OAUTH2
@@ -693,7 +707,8 @@ timely:
         response_type: code
     token_params:
         grant_type: authorization_code
-    base_api_url: https://api.timelyapp.com
+    proxy:
+        base_url: https://api.timelyapp.com
     docs: https://dev.timelyapp.com
 trello:
     auth_mode: OAUTH1

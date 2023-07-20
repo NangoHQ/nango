@@ -33,12 +33,13 @@ export interface Template {
     };
     redirect_uri_metadata?: Array<string>;
     token_response_metadata?: Array<string>;
-    base_api_url?: string;
     docs?: string;
     token_expiration_buffer?: number; // In seconds.
 }
 
 export interface TemplateAlias {
     alias?: string;
-    base_api_url?: string;
+    proxy: {
+        base_url?: string;
+    };
 }

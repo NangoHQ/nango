@@ -123,7 +123,9 @@ describe('Proxy Controller Construct URL Tests', () => {
     it('should correctly construct url with no trailing slash and no leading slash', () => {
         const config = {
             template: {
-                base_api_url: 'https://example.com'
+                proxy: {
+                    base_url: 'https://example.com'
+                }
             },
             endpoint: 'api/test'
         };
@@ -138,7 +140,9 @@ describe('Proxy Controller Construct URL Tests', () => {
     it('should correctly construct url with trailing slash in base and leading slash in endpoint', () => {
         const config = {
             template: {
-                base_api_url: 'https://example.com/'
+                proxy: {
+                    base_url: 'https://example.com/'
+                }
             },
             endpoint: '/api/test'
         };
@@ -153,7 +157,9 @@ describe('Proxy Controller Construct URL Tests', () => {
     it('should correctly construct url with baseUrlOverride', () => {
         const config = {
             template: {
-                base_api_url: 'https://example.com/'
+                proxy: {
+                    base_url: 'https://example.com/'
+                }
             },
             endpoint: '/api/test',
             baseUrlOverride: 'https://override.com'
@@ -170,7 +176,9 @@ describe('Proxy Controller Construct URL Tests', () => {
     it('should correctly construct url with baseUrlOverride with no leading slash', () => {
         const config = {
             template: {
-                base_api_url: 'https://example.com/'
+                proxy: {
+                    base_url: 'https://example.com/'
+                }
             },
             endpoint: 'api/test',
             baseUrlOverride: 'https://override.com'
@@ -188,8 +196,8 @@ describe('Proxy Controller Construct URL Tests', () => {
         const config = {
             template: {
                 auth_mode: AuthModes.ApiKey,
-                base_api_url: 'https://example.com/',
                 proxy: {
+                    base_url: 'https://example.com/',
                     query: {
                         api_key: '${apiKey}'
                     }
@@ -212,8 +220,8 @@ describe('Proxy Controller Construct URL Tests', () => {
         const config = {
             template: {
                 auth_mode: AuthModes.ApiKey,
-                base_api_url: 'https://example.com/',
                 proxy: {
+                    base_url: 'https://example.com/',
                     query: {
                         api_key: '${apiKey}'
                     }
@@ -236,8 +244,8 @@ describe('Proxy Controller Construct URL Tests', () => {
         const config = {
             template: {
                 auth_mode: AuthModes.ApiKey,
-                base_api_url: 'https://example.com/',
                 proxy: {
+                    base_url: 'https://example.com/',
                     query: {
                         api_key: '${apiKey}'
                     },

@@ -27,7 +27,8 @@ provider-slug: # Shorthand for the provider, ideally the provider's name. Must b
     # Optional fields
     ##########
     # Proxy
-    base_api_url: https://gitlab.example.com/api/v4 # Presets the base URL when using the Proxy (supports string interpolation, e.g. Salesforce).  
+    proxy:
+        base_url: https://gitlab.example.com/api/v4 # Presets the base URL when using the Proxy (supports string interpolation, e.g. Salesforce).
 
     # Additional params
     authorization_params: # Additional parameters to pass along in the authorization step
