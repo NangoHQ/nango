@@ -10,6 +10,7 @@ import environmentService from './services/environment.service.js';
 import webhookService from './services/webhook.service.js';
 import userService from './services/user.service.js';
 import fileService from './services/file.service.js';
+import hmacService from './services/hmac.service.js';
 import syncRunService from './services/sync/run.service.js';
 import analytics from './utils/analytics.js';
 
@@ -50,5 +51,6 @@ export {
     webhookService,
     fileService,
     syncRunService,
+    hmacService,
     analytics
 };

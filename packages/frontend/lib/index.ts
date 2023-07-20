@@ -54,7 +54,8 @@ export default class Nango {
     ): Promise<any> {
         if (conectionConfigOrCredentials && 'credentials' in conectionConfigOrCredentials) {
             const credentials = conectionConfigOrCredentials.credentials as BasicApiCredentials | ApiKeyCredentials;
-            return this.apiAuth(providerConfigKey, connectionId, this.convertCredentialsToConfig(credentials));
+            const { credentials: _, ...connectionConfig } = conectionConfigOrCredentials as ConnectionConfig;
+            return this.apiAuth(providerConfigKey, connectionId, this.convertCredentialsToConfig(credentials), connectionConfig);
         }
 
         const url =
@@ -117,7 +118,12 @@ export default class Nango {
         return { params };
     }
 
-    private async apiAuth(providerConfigKey: string, connectionId: string, connectionConfigWithCredentials?: ConnectionConfig): Promise<void> {
+    private async apiAuth(
+        providerConfigKey: string,
+        connectionId: string,
+        connectionConfigWithCredentials: ConnectionConfig,
+        connectionConfig: ConnectionConfig
+    ): Promise<Response | void> {
         const { params: credentials } = connectionConfigWithCredentials as ConnectionConfig;
 
         if (!credentials) {
@@ -126,15 +132,20 @@ export default class Nango {
 
         if ('apiKey' in credentials) {
             const apiKeyCredential = credentials as ApiKeyCredentials;
-            const url = this.hostBaseUrl + `/api-auth/api-key/${providerConfigKey}${this.toQueryString(connectionId)}`;
+            const url = this.hostBaseUrl + `/api-auth/api-key/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`;
 
-            await fetch(url, {
+            const res = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(apiKeyCredential)
             });
+
+            if (!res.ok) {
+                const errorResponse = await res.json();
+                throw { ...errorResponse, message: errorResponse.error };
+            }
         }
 
         if ('username' in credentials || 'password' in credentials) {
@@ -147,15 +158,20 @@ export default class Nango {
                 throw new Error('You must specify a password.');
             }
 
-            const url = this.hostBaseUrl + `/api-auth/basic/${providerConfigKey}${this.toQueryString(connectionId)}`;
+            const url = this.hostBaseUrl + `/api-auth/basic/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`;
 
-            await fetch(url, {
+            const res = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(basicCredentials)
             });
+
+            if (!res.ok) {
+                const errorResponse = await res.json();
+                throw { ...errorResponse, message: errorResponse.error };
+            }
         }
     }
 

@@ -1,7 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
-import { environmentService, errorManager, getBaseUrl, isCloud, getWebsocketsPath, getOauthCallbackUrl } from '@nangohq/shared';
+import { hmacService, environmentService, errorManager, getBaseUrl, isCloud, getWebsocketsPath, getOauthCallbackUrl } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
-import hmacService from '../services/hmac.service.js';
 
 class AccountController {
     async getAccount(req: Request, res: Response, next: NextFunction) {

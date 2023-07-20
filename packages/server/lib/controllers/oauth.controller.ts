@@ -39,12 +39,12 @@ import {
     getEnvironmentId,
     providerClientManager,
     errorManager,
-    analytics
+    analytics,
+    hmacService
 } from '@nangohq/shared';
 import wsClient from '../clients/web-socket.client.js';
 import { WSErrBuilder } from '../utils/web-socket-error.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
-import hmacService from '../services/hmac.service.js';
 
 class OAuthController {
     public async oauthRequest(req: Request, res: Response, _next: NextFunction) {

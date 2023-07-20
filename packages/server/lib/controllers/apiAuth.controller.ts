@@ -13,7 +13,8 @@ import {
     configService,
     connectionService,
     createActivityLogMessageAndEnd,
-    AuthModes
+    AuthModes,
+    hmacService
 } from '@nangohq/shared';
 
 class ApiAuthController {
@@ -47,6 +48,32 @@ class ApiAuthController {
 
             if (!connectionId) {
                 errorManager.errRes(res, 'missing_connection_id');
+            }
+
+            const hmacEnabled = await hmacService.isEnabled(environmentId);
+            if (hmacEnabled) {
+                const hmac = req.query['hmac'] as string | undefined;
+                if (!hmac) {
+                    await createActivityLogMessageAndEnd({
+                        level: 'error',
+                        activity_log_id: activityLogId as number,
+                        timestamp: Date.now(),
+                        content: 'Missing HMAC in query params'
+                    });
+
+                    errorManager.errRes(res, 'missing_hmac');
+                }
+                const verified = await hmacService.verify(hmac as string, environmentId, providerConfigKey as string, connectionId as string);
+                if (!verified) {
+                    await createActivityLogMessageAndEnd({
+                        level: 'error',
+                        activity_log_id: activityLogId as number,
+                        timestamp: Date.now(),
+                        content: 'Invalid HMAC'
+                    });
+
+                    errorManager.errRes(res, 'invalid_hmac');
+                }
             }
 
             const config = await configService.getProviderConfig(providerConfigKey as string, environmentId);
@@ -146,6 +173,35 @@ class ApiAuthController {
 
             if (!req.body.password) {
                 errorManager.errRes(res, 'missing_basic_password');
+            }
+
+            const hmacEnabled = await hmacService.isEnabled(environmentId);
+            if (hmacEnabled) {
+                const hmac = req.query['hmac'] as string | undefined;
+                if (!hmac) {
+                    await createActivityLogMessageAndEnd({
+                        level: 'error',
+                        activity_log_id: activityLogId as number,
+                        timestamp: Date.now(),
+                        content: 'Missing HMAC in query params'
+                    });
+
+                    errorManager.errRes(res, 'missing_hmac');
+
+                    return;
+                }
+                const verified = await hmacService.verify(hmac as string, environmentId, providerConfigKey as string, connectionId as string);
+                if (!verified) {
+                    await createActivityLogMessageAndEnd({
+                        level: 'error',
+                        activity_log_id: activityLogId as number,
+                        timestamp: Date.now(),
+                        content: 'Invalid HMAC'
+                    });
+
+                    errorManager.errRes(res, 'invalid_hmac');
+                    return;
+                }
             }
 
             const { username, password } = req.body;

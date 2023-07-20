@@ -67,7 +67,6 @@ export default function IntegrationCreate() {
             }
         }
         if (isHmacEnabled && integration?.uniqueKey && connectionId) {
-            console.log(isHmacEnabled, integration?.uniqueKey, connectionId, getHmacAPI)
             getHmac();
         }
     }, [isHmacEnabled, integration?.uniqueKey, connectionId, getHmacAPI]);

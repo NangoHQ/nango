@@ -126,6 +126,16 @@ export class NangoError extends Error {
                 this.message = `Missing param password for basic api authentication.`;
                 break;
 
+            case 'missing_hmac':
+                this.status = 400;
+                this.message = `Missing param 'hmac'.`;
+                break;
+
+            case 'invalid_hmac':
+                this.status = 400;
+                this.message = `Invalid HMAC signature.`;
+                break;
+
             case 'missing_provider_config':
                 this.status = 400;
                 this.message = `Missing param 'provider_config_key'.`;
