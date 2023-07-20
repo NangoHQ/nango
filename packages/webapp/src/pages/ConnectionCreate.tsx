@@ -269,7 +269,7 @@ export default function IntegrationCreate() {
         if (integration?.authMode === AuthModes.ApiKey) {
         apiAuthString = `, {
     credentials: {
-      apiKey: ${apiKey},
+      apiKey: ${apiKey}
     }
 }`;
         }

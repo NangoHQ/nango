@@ -111,6 +111,21 @@ export class NangoError extends Error {
                 this.message = `Missing param 'environment_id'.`;
                 break;
 
+            case 'missing_api_key':
+                this.status = 400;
+                this.message = `Missing param 'api_key'.`;
+                break;
+
+            case 'missing_basic_username':
+                this.status = 400;
+                this.message = `Missing param username for basic api authentication.`;
+                break;
+
+            case 'missing_basic_password':
+                this.status = 400;
+                this.message = `Missing param password for basic api authentication.`;
+                break;
+
             case 'missing_provider_config':
                 this.status = 400;
                 this.message = `Missing param 'provider_config_key'.`;

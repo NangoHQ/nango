@@ -53,12 +53,16 @@ class ApiAuthController {
 
             await updateProviderActivityLog(activityLogId as number, String(config?.provider));
 
+            if (!req.body.apiKey) {
+                errorManager.errRes(res, 'missing_api_key');
+            }
+
             const { apiKey } = req.body;
 
             await createActivityLogMessage({
                 level: 'info',
                 activity_log_id: activityLogId as number,
-                content: `API key auth successful`,
+                content: `API key auth creation was successful`,
                 timestamp: Date.now()
             });
 
@@ -136,9 +140,16 @@ class ApiAuthController {
                 errorManager.errRes(res, 'missing_connection_id');
             }
 
+            if (!req.body.username) {
+                errorManager.errRes(res, 'missing_basic_username');
+            }
+
+            if (!req.body.password) {
+                errorManager.errRes(res, 'missing_basic_password');
+            }
+
             const { username, password } = req.body;
 
-            console.log(username, password);
             const config = await configService.getProviderConfig(providerConfigKey as string, environmentId);
 
             if (config == null) {
