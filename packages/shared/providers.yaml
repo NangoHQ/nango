@@ -43,6 +43,8 @@ amazon:
         grant_type: refresh_token
 amplitude:
     auth_mode: BASIC
+    proxy:
+        base_url: https://amplitude.com
 asana:
     auth_mode: OAUTH2
     authorization_url: https://app.asana.com/-/oauth_authorize

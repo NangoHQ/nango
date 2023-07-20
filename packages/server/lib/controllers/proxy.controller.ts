@@ -14,6 +14,7 @@ import {
     updateProvider as updateProviderActivityLog,
     updateSuccess as updateSuccessActivityLog,
     updateEndpoint as updateEndpointActivityLog,
+    ApiKeyCredentials,
     HTTP_VERB,
     LogLevel,
     BasicApiCredentials,
@@ -636,8 +637,9 @@ class ProxyController {
             'query' in config.template.proxy &&
             'api_key' in config.template.proxy.query
         ) {
+            const token = config.token as ApiKeyCredentials;
             endpoint += endpoint.includes('?') ? '&' : '?';
-            endpoint += `api_key=${config.token}`;
+            endpoint += `api_key=${token.apiKey}`;
         }
 
         const fullEndpoint = interpolateIfNeeded(`${base}/${endpoint}`, connection as unknown as Record<string, string>);
@@ -666,7 +668,7 @@ class ProxyController {
                     if ('proxy' in config.template && 'headers' in config.template.proxy) {
                         // iterate over each header and interpolate if need
                         headers = Object.entries(config.template.proxy.headers).reduce((acc: Record<string, string>, [key, value]: [string, string]) => {
-                            acc[key] = interpolateIfNeeded(value, { apiKey: config.token });
+                            acc[key] = interpolateIfNeeded(value, config.token as unknown as Record<string, string>);
                             return acc;
                         }, {});
                     }
