@@ -792,6 +792,8 @@ xero:
     token_url: https://identity.xero.com/connect/token
     authorization_params:
         response_type: code
+    default_scopes:
+        - offline_access
 yahoo:
     auth_mode: OAUTH2
     authorization_url: https://api.login.yahoo.com/oauth2/request_auth
