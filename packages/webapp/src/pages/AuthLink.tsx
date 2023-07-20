@@ -59,6 +59,8 @@ export default function AuthLink() {
                 user_scope: userScopes,
                 params: params ? JSON.parse(params) : {},
                 authorization_params: authorizationParams ? JSON.parse(authorizationParams) : {}
+                authorization_params: authorizationParams ? JSON.parse(authorizationParams) : {},
+                credentials
             })
             .then(() => {
                 toast.success('Connection created!', { position: toast.POSITION.BOTTOM_CENTER });
