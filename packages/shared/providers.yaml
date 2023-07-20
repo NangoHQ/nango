@@ -198,6 +198,8 @@ dropbox:
     auth_mode: OAUTH2
     authorization_url: https://www.dropbox.com/oauth2/authorize
     token_url: https://api.dropboxapi.com/oauth2/token
+    authorization_params:
+        token_access_type: offline
 docusign:
     auth_mode: OAUTH2
     authorization_url: https://account.docusign.com/oauth/auth
@@ -817,6 +819,8 @@ xero:
     token_url: https://identity.xero.com/connect/token
     authorization_params:
         response_type: code
+    default_scopes:
+        - offline_access
 yahoo:
     auth_mode: OAUTH2
     authorization_url: https://api.login.yahoo.com/oauth2/request_auth
