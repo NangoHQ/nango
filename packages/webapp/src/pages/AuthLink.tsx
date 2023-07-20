@@ -33,10 +33,26 @@ export default function AuthLink() {
         let userScopes = searchParams.get('selected_scopes')?.split(',') || []; // Slack only.
         let params = searchParams.get('params');
         let authorizationParams = searchParams.get('authorization_params');
-
-        console.log('host', host);
+        const username = searchParams.get('username');
+        const password = searchParams.get('password');
+        const apiKey = searchParams.get('api_key');
 
         const nango = new Nango({ host: host, websocketsPath: websocketsPath, publicKey: publicKey });
+
+        let credentials = {};
+
+        if (username && password) {
+            credentials = {
+                username,
+                password,
+            };
+        };
+
+        if (apiKey) {
+            credentials = {
+                apiKey: apiKey
+            };
+        }
 
         nango
             .auth(integrationUniqueKey, connectionId, {
