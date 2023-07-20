@@ -11,7 +11,7 @@ import {
     useDeleteIntegrationAPI
 } from '../utils/api';
 import AlertOverLay from '../components/AlertOverLay';
-import { HelpCircle } from '@geist-ui/icons';
+import { Info, HelpCircle } from '@geist-ui/icons';
 import { Tooltip } from '@geist-ui/core';
 import { defaultCallback } from '../utils/utils';
 import { Prism } from '@mantine/prism';
@@ -275,7 +275,10 @@ export default function IntegrationCreate() {
                             )}
 
                             {(authMode === AuthModes.Basic || authMode === AuthModes.ApiKey) && !providerConfigKey && (
-                                <div>The "{selectedProvider}" provider uses {authMode} authentication</div>
+                                <div className="flex items-center p-2 bg-gray-800 outline outline-blue-900 rounded">
+                                    <Info className="h-8 mr-3 stroke-blue-900"></Info>
+                                    <span>The "{selectedProvider}" integration provider uses {authMode === AuthModes.Basic ? 'basic auth' : 'API Keys'} for authentication (<a href="https://docs.nango.dev" target="_blank">docs</a>).</span>
+                                </div>
                             )}
 
                             {(authMode === AuthModes.OAuth1 || authMode === AuthModes.OAuth2) && (
