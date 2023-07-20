@@ -592,7 +592,7 @@ shortcut:
     auth_mode: API_KEY
     proxy:
         headers:
-          Shortcut-Token: ${apiKey}
+            Shortcut-Token: ${apiKey}
 slack:
     auth_mode: OAUTH2
     authorization_url: https://slack.com/oauth/v2/authorize

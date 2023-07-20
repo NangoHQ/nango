@@ -289,6 +289,14 @@ class ConnectionController {
                 }
             }
 
+            if (
+                connection &&
+                connection.credentials &&
+                (connection.credentials.type === ProviderAuthModes.Basic || connection.credentials.type === ProviderAuthModes.ApiKey)
+            ) {
+                delete connection.credentials.type;
+            }
+
             res.status(200).send(connection);
         } catch (err) {
             next(err);
@@ -447,6 +455,7 @@ class ConnectionController {
                     raw: req.body.raw || req.body
                 };
             } else {
+                // TODO
                 errorManager.errRes(res, 'unknown_oauth_type');
                 return;
             }

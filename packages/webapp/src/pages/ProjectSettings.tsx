@@ -204,7 +204,7 @@ export default function ProjectSettings() {
                                             <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
                                         </Tooltip>
                                     </div>
-                                    <SecretInput disabled copy={true} optionalValue={secretKey} setOptionalValue={setSecretKey} />
+                                    <SecretInput disabled copy={true} optionalvalue={secretKey} setoptionalvalue={setSecretKey} />
                                 </div>
                             </div>
                             <div>

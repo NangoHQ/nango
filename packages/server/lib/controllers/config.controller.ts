@@ -3,8 +3,8 @@ import {
     AuthModes,
     errorManager,
     NangoError,
-    getAccount,
     getEnvironmentId,
+    getEnvironmentAndAccountId,
     analytics,
     configService,
     Config as ProviderConfig,
@@ -59,86 +59,6 @@ class ConfigController {
         }
     }
 
-    async createProviderConfigWeb(req: Request, res: Response, next: NextFunction) {
-        try {
-            const info = await getUserAccountAndEnvironmentFromSession(req);
-
-            const environment = info.environment;
-            const account = info.account;
-
-            const authMode = req.body['auth_mode'] ?? null;
-
-            if (req.body == null) {
-                errorManager.errRes(res, 'missing_body');
-                return;
-            }
-
-            if (req.body['provider_config_key'] == null) {
-                errorManager.errRes(res, 'missing_provider_config');
-                return;
-            }
-
-            if (req.body['provider'] == null) {
-                errorManager.errRes(res, 'missing_provider_template');
-                return;
-            }
-
-            const provider = req.body['provider'];
-
-            if (!configService.checkProviderTemplateExists(provider)) {
-                errorManager.errRes(res, 'unknown_provider_template');
-                return;
-            }
-
-            if (authMode !== AuthModes.ApiKey && authMode !== AuthModes.Basic && req.body['client_id'] == null) {
-                errorManager.errRes(res, 'missing_client_id');
-                return;
-            }
-
-            if (authMode !== AuthModes.ApiKey && authMode !== AuthModes.Basic && req.body['client_secret'] == null) {
-                errorManager.errRes(res, 'missing_client_secret');
-                return;
-            }
-
-            const uniqueConfigKey = req.body['provider_config_key'];
-
-            if ((await configService.getProviderConfig(uniqueConfigKey, environment.id)) != null) {
-                errorManager.errRes(res, 'duplicate_provider_config');
-                return;
-            }
-
-            const oauth_client_id = req.body['client_id'] ?? null;
-            const oauth_client_secret = req.body['client_secret'] ?? null;
-            const oauth_scopes = req.body['scopes'] ?? null;
-
-            const config: ProviderConfig = {
-                unique_key: uniqueConfigKey,
-                provider: provider,
-                oauth_client_id,
-                oauth_client_secret,
-                oauth_scopes: oauth_scopes
-                    ? oauth_scopes
-                          .replace(/ /g, ',')
-                          .split(',')
-                          .filter((w: string) => w)
-                          .join(',')
-                    : null, // Make coma-separated if needed
-                environment_id: environment.id
-            };
-
-            const result = await configService.createProviderConfig(config);
-
-            if (Array.isArray(result) && result.length === 1 && result[0] != null && 'id' in result[0]) {
-                analytics.track('server:config_created', account.id, { provider: config.provider });
-                res.status(200).send();
-            } else {
-                throw new NangoError('provider_config_creation_failure');
-            }
-        } catch (err) {
-            next(err);
-        }
-    }
-
     async editProviderConfigWeb(req: Request, res: Response, next: NextFunction) {
         try {
             const environment = (await getUserAccountAndEnvironmentFromSession(req)).environment;
@@ -183,24 +103,6 @@ class ConfigController {
             }
 
             await configService.editProviderConfig(newConfig);
-            res.status(200).send();
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    async deleteProviderConfigWeb(req: Request, res: Response, next: NextFunction) {
-        try {
-            const environment = (await getUserAccountAndEnvironmentFromSession(req)).environment;
-            const providerConfigKey = req.params['providerConfigKey'] as string;
-
-            if (providerConfigKey == null) {
-                errorManager.errRes(res, 'missing_provider_config');
-                return;
-            }
-
-            await configService.deleteProviderConfig(providerConfigKey, environment.id);
-
             res.status(200).send();
         } catch (err) {
             next(err);
@@ -289,8 +191,8 @@ class ConfigController {
 
     async createProviderConfig(req: Request, res: Response, next: NextFunction) {
         try {
-            const accountId = getAccount(res);
-            const environmentId = getEnvironmentId(res);
+            const { accountId, environmentId } = await getEnvironmentAndAccountId(res, req);
+
             if (req.body == null) {
                 errorManager.errRes(res, 'missing_body');
                 return;
@@ -313,12 +215,15 @@ class ConfigController {
                 return;
             }
 
-            if (req.body['oauth_client_id'] == null) {
+            const providerTemplate = configService.getTemplate(provider);
+            const authMode = providerTemplate.auth_mode;
+
+            if (authMode !== AuthModes.ApiKey && authMode !== AuthModes.Basic && req.body['oauth_client_id'] == null) {
                 errorManager.errRes(res, 'missing_client_id');
                 return;
             }
 
-            if (req.body['oauth_client_secret'] == null) {
+            if (authMode !== AuthModes.ApiKey && authMode !== AuthModes.Basic && req.body['oauth_client_secret'] == null) {
                 errorManager.errRes(res, 'missing_client_secret');
                 return;
             }
@@ -330,16 +235,22 @@ class ConfigController {
                 return;
             }
 
+            const oauth_client_id = req.body['oauth_client_id'] ?? null;
+            const oauth_client_secret = req.body['oauth_client_secret'] ?? null;
+            const oauth_scopes = req.body['oauth_scopes'] ?? null;
+
             const config: ProviderConfig = {
                 unique_key: uniqueConfigKey,
                 provider: provider,
-                oauth_client_id: req.body['oauth_client_id'],
-                oauth_client_secret: req.body['oauth_client_secret'],
-                oauth_scopes: req.body['oauth_scopes']
-                    .replace(/ /g, ',')
-                    .split(',')
-                    .filter((w: string) => w)
-                    .join(','), // Make coma-separated if needed
+                oauth_client_id,
+                oauth_client_secret,
+                oauth_scopes: oauth_scopes
+                    ? oauth_scopes
+                          .replace(/ /g, ',')
+                          .split(',')
+                          .filter((w: string) => w)
+                          .join(',')
+                    : null,
                 environment_id: environmentId
             };
 
@@ -407,7 +318,7 @@ class ConfigController {
 
     async deleteProviderConfig(req: Request, res: Response, next: NextFunction) {
         try {
-            const environmentId = getEnvironmentId(res);
+            const { environmentId } = await getEnvironmentAndAccountId(res, req);
             const providerConfigKey = req.params['providerConfigKey'] as string;
 
             if (providerConfigKey == null) {

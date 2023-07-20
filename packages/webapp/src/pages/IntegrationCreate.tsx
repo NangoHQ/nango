@@ -394,9 +394,11 @@ export default function IntegrationCreate() {
 
                             <div>
                                 <div className="flex justify-between">
-                                    <button type="submit" className="bg-white mt-4 h-8 rounded-md hover:bg-gray-300 border px-3 pt-0.5 text-sm text-black">
-                                        Save
-                                    </button>
+                                    {((!providerConfigKey && !integration) || (authMode !== AuthModes.Basic && authMode !== AuthModes.ApiKey)) && (
+                                        <button type="submit" className="bg-white mt-4 h-8 rounded-md hover:bg-gray-300 border px-3 pt-0.5 text-sm text-black">
+                                            Save
+                                        </button>
+                                    )}
                                     {providerConfigKey && integration && (
                                         <button
                                             type="button"

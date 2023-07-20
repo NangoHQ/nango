@@ -441,9 +441,8 @@ nango.auth('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr}$
                                                     copy={true}
                                                     id="username"
                                                     name="username"
-                                                    defaultValue=""
-                                                    optionalValue={apiAuthUsername}
-                                                    setOptionalValue={setApiAuthUsername}
+                                                    optionalvalue={apiAuthUsername}
+                                                    setoptionalvalue={setApiAuthUsername}
                                                     required
                                                 />
                                             </div>
@@ -459,9 +458,8 @@ nango.auth('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr}$
                                                     copy={true}
                                                     id="password"
                                                     name="password"
-                                                    defaultValue=""
-                                                    optionalValue={apiAuthPassword}
-                                                    setOptionalValue={setApiAuthPassword}
+                                                    optionalvalue={apiAuthPassword}
+                                                    setoptionalvalue={setApiAuthPassword}
                                                     required
                                                 />
                                             </div>
@@ -491,9 +489,8 @@ nango.auth('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr}$
                                                     copy={true}
                                                     id="api_key"
                                                     name="api_key"
-                                                    defaultValue=""
-                                                    optionalValue={apiKey}
-                                                    setOptionalValue={setApiKey}
+                                                    optionalvalue={apiKey}
+                                                    setoptionalvalue={setApiKey}
                                                     required
                                                 />
                                             </div>
