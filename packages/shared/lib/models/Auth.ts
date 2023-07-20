@@ -80,16 +80,14 @@ export interface CredentialsCommon<T = Record<string, any>> {
 }
 
 export interface BasicApiCredentials {
-    credentials: {
-        username: string;
-        password: string;
-    };
+    type?: AuthModes.Basic;
+    username: string;
+    password: string;
 }
 
 export interface ApiKeyCredentials {
-    credentials: {
-        apiKey: string;
-    };
+    type?: AuthModes.ApiKey;
+    apiKey: string;
 }
 
 export type AuthCredentials = OAuth2Credentials | OAuth1Credentials;

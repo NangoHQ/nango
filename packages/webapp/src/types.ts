@@ -76,3 +76,14 @@ export enum AuthModes {
     Basic = 'BASIC',
     ApiKey = 'API_KEY'
 }
+
+export interface BasicApiCredentials {
+    [key: string]: string;
+    username: string;
+    password: string;
+}
+
+export interface ApiKeyCredentials {
+    [key: string]: string;
+    apiKey: string;
+}

@@ -53,11 +53,11 @@ class ProviderClient {
     }
 
     public async refreshToken(template: ProviderTemplateOAuth2, config: ProviderConfig, connection: Connection): Promise<object> {
-        const credentials = connection.credentials as OAuth2Credentials;
-
-        if (credentials.type != ProviderAuthModes.OAuth2) {
+        if (connection.credentials.type != ProviderAuthModes.OAuth2) {
             throw new NangoError('wrong_credentials_type');
         }
+
+        const credentials = connection.credentials as OAuth2Credentials;
 
         if (!credentials.refresh_token) {
             throw new NangoError('missing_refresh_token');
@@ -77,11 +77,12 @@ class ProviderClient {
     }
 
     public async introspectedTokenExpired(config: ProviderConfig, connection: Connection): Promise<boolean> {
-        const credentials = connection.credentials as OAuth2Credentials;
-
-        if (credentials.type != ProviderAuthModes.OAuth2) {
+        if (connection.credentials.type != ProviderAuthModes.OAuth2) {
             throw new NangoError('wrong_credentials_type');
         }
+
+        const credentials = connection.credentials as OAuth2Credentials;
+        const oauthConnection = connection as Connection & { metadata: { token_expires_at?: string } };
 
         switch (config.provider) {
             case 'salesforce':
@@ -89,7 +90,7 @@ class ProviderClient {
                     credentials.access_token,
                     config.oauth_client_id,
                     config.oauth_client_secret,
-                    connection.metadata as Record<string, string>
+                    oauthConnection.metadata
                 );
             default:
                 throw new NangoError('unknown_provider_client');

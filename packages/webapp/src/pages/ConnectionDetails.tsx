@@ -12,7 +12,7 @@ import PrismPlus from '../components/ui/prism/PrismPlus';
 import Button from '../components/ui/button/Button';
 import Typography from '../components/ui/typography/Typography';
 import SecretInput from '../components/ui/input/SecretInput';
-import type { SyncResponse, RunSyncCommand } from '../types';
+import { SyncResponse, RunSyncCommand, AuthModes, ApiKeyCredentials, BasicApiCredentials } from '../types';
 import { syncDocs, parseLatestSyncResult, formatDateToUSFormat, interpretNextRun } from '../utils/utils';
 
 interface Connection {
@@ -30,6 +30,7 @@ interface Connection {
     oauthToken: string | null;
     oauthTokenSecret: string | null;
     rawCredentials: object;
+    credentials: BasicApiCredentials | ApiKeyCredentials | null;
 }
 
 export default function ConnectionDetails() {
@@ -286,7 +287,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                                         <div>
                                             <div className="mx-8 mt-8">
                                                 <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                                    OAuth Type
+                                                    Auth Type
                                                 </label>
                                                 <p className="mt-3 mb-5">{connection.oauthType}</p>
                                             </div>
@@ -342,36 +343,70 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                 </div>
                                             </div>
                                         )}
-                                        <div>
-                                            <div className="mx-8 mt-8">
-                                                <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                                    Connection Configuration
-                                                </label>
-                                                <Prism language="json" colorScheme="dark">
-                                                    {JSON.stringify(connection.connectionConfig, null, 4) || '{}'}
-                                                </Prism>
+                                        {connection.credentials && connection.oauthType === AuthModes.ApiKey && (
+                                            <div>
+                                                <div className="mx-8 mt-8">
+                                                    <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
+                                                        API Key
+                                                    </label>
+                                                    <SecretInput disabled defaultValue={connection.credentials.apiKey} copy={true} />
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div>
-                                            <div className="mx-8 mt-8">
-                                                <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                                    Connection Metadata
-                                                </label>
-                                                <Prism language="json" colorScheme="dark">
-                                                    {JSON.stringify(connection.connectionMetadata, null, 4) || '{}'}
-                                                </Prism>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <div className="mx-8 mt-8">
-                                                <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                                    Raw Token Response
-                                                </label>
-                                                <PrismPlus language="json" colorScheme="dark">
-                                                    {JSON.stringify(connection.rawCredentials, null, 4) || '{}'}
-                                                </PrismPlus>
-                                            </div>
-                                        </div>
+                                        )}
+                                        {connection.credentials && connection.oauthType === AuthModes.Basic && (
+                                            <>
+                                                <div>
+                                                    <div className="mx-8 mt-8">
+                                                        <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
+                                                            Username
+                                                        </label>
+                                                        <SecretInput disabled defaultValue={connection.credentials.username} copy={true} />
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <div className="mx-8 mt-8">
+                                                        <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
+                                                            Password
+                                                        </label>
+                                                        <SecretInput disabled defaultValue={connection.credentials.password} copy={true} />
+                                                    </div>
+                                                </div>
+                                            </>
+                                        )}
+                                        {(connection.oauthType === AuthModes.OAuth1 || connection.oauthType === AuthModes.OAuth2) && (
+                                            <>
+                                                <div>
+                                                    <div className="mx-8 mt-8">
+                                                        <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
+                                                            Connection Configuration
+                                                        </label>
+                                                        <Prism language="json" colorScheme="dark">
+                                                            {JSON.stringify(connection.connectionConfig, null, 4) || '{}'}
+                                                        </Prism>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <div className="mx-8 mt-8">
+                                                        <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
+                                                            Connection Metadata
+                                                        </label>
+                                                        <Prism language="json" colorScheme="dark">
+                                                            {JSON.stringify(connection.connectionMetadata, null, 4) || '{}'}
+                                                        </Prism>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <div className="mx-8 mt-8">
+                                                        <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
+                                                            Raw Token Response
+                                                        </label>
+                                                        <PrismPlus language="json" colorScheme="dark">
+                                                            {JSON.stringify(connection.rawCredentials, null, 4) || '{}'}
+                                                        </PrismPlus>
+                                                    </div>
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
                                 )}
                                 {serverErrorMessage && (

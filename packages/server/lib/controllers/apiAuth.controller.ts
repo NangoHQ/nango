@@ -6,12 +6,14 @@ import {
     createActivityLog,
     errorManager,
     analytics,
+    SyncClient,
     createActivityLogMessage,
     updateSuccess as updateSuccessActivityLog,
     updateProvider as updateProviderActivityLog,
     configService,
     connectionService,
-    createActivityLogMessageAndEnd
+    createActivityLogMessageAndEnd,
+    AuthModes
 } from '@nangohq/shared';
 
 class ApiAuthController {
@@ -52,7 +54,6 @@ class ApiAuthController {
             await updateProviderActivityLog(activityLogId as number, String(config?.provider));
 
             const { apiKey } = req.body;
-            console.log(apiKey);
 
             await createActivityLogMessage({
                 level: 'info',
@@ -63,7 +64,24 @@ class ApiAuthController {
 
             await updateSuccessActivityLog(activityLogId as number, true);
 
-            // TODO store this apikey
+            const [updatedConnection] = await connectionService.upsertApiConnection(
+                connectionId as string,
+                providerConfigKey as string,
+                config?.provider as string,
+                {
+                    type: AuthModes.ApiKey,
+                    apiKey
+                },
+                {},
+                environmentId,
+                accountId
+            );
+
+            if (updatedConnection) {
+                const syncClient = await SyncClient.getInstance();
+                await syncClient?.initiate(updatedConnection.id);
+            }
+
             res.status(200).send();
         } catch (err) {
             const prettyError = JSON.stringify(err, ['message', 'name'], 2);
@@ -149,16 +167,21 @@ class ApiAuthController {
                 connectionId as string,
                 providerConfigKey as string,
                 config?.provider as string,
-                { credentials: { username, password } },
+                {
+                    type: AuthModes.Basic,
+                    username,
+                    password
+                },
                 {},
                 environmentId,
                 accountId
             );
 
-            console.log(updatedConnection);
-            // kick off sync?
+            if (updatedConnection) {
+                const syncClient = await SyncClient.getInstance();
+                await syncClient?.initiate(updatedConnection.id);
+            }
 
-            // TODO store this apikey
             res.status(200).send();
         } catch (err) {
             const prettyError = JSON.stringify(err, ['message', 'name'], 2);
