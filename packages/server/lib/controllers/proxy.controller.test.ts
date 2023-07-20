@@ -53,6 +53,28 @@ describe('Proxy Controller Construct Header Tests', () => {
         });
     });
 
+    it('Should correctly construct headers with an Authorization override', () => {
+        const config = {
+            template: {
+                auth_mode: AuthModes.Basic
+            },
+            token: {
+                username: 'testuser',
+                password: 'testpassword'
+            },
+            headers: {
+                Authorization: 'Bearer testtoken'
+            }
+        };
+
+        // @ts-ignore
+        const result = proxyController.constructHeaders(config);
+
+        expect(result).toEqual({
+            Authorization: 'Bearer testtoken'
+        });
+    });
+
     it('Should correctly construct headers for default auth', () => {
         const config = {
             template: {
