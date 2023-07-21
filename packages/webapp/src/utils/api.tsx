@@ -241,7 +241,7 @@ export function useGetIntegrationDetailsAPI() {
 
     return async (providerConfigKey: string) => {
         try {
-            let res = await fetch(`/api/v1/integration/${encodeURIComponent(providerConfigKey)}`, {
+            let res = await fetch(`/api/v1/integration/${encodeURIComponent(providerConfigKey)}?include_creds=true`, {
                 headers: getHeaders()
             });
 

@@ -58,19 +58,17 @@ export default function IntegrationCreate() {
     useEffect(() => {
         const getProviders = async () => {
             if (providerConfigKey) {
-                // Edit integration.
                 let res = await getIntegrationDetailsAPI(providerConfigKey);
                 if (res?.status === 200) {
-                    let data = await res.json();
-                    setIntegration(data['integration']);
-                    const currentIntegration = data['integration'];
+                    const data = await res.json();
+                    setIntegration(data['config']);
+                    const currentIntegration = data['config'];
                     if (currentIntegration.clientId === null && currentIntegration.clientSecret === null && currentIntegration.scopes === null) {
                         // set to either api type to not have empty credentials fields
                         setAuthMode(AuthModes.Basic);
                     }
                 }
             } else {
-                // Create integration
                 let res = await getProvidersAPI();
 
                 if (res?.status === 200) {

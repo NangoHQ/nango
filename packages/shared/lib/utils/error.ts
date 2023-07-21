@@ -226,6 +226,11 @@ export class NangoError extends Error {
                     'The proxy is not supported for the provider. You can easily add support by following the instructions at https://docs.nango.dev/contribute/nango-auth. You can also use the baseUrlOverride to get started right away. See https://docs.nango.dev/guides/proxy#proxy-requests for more information.';
                 break;
 
+            case 'provider_config_edit_not_allowed':
+                this.status = 400;
+                this.message = 'Provider configuration cannot be edited for API key based authentication.';
+                break;
+
             case 'unknown_provider_template':
                 this.status = 400;
                 this.message = `No Provider Template matching the 'provider' parameter.`;

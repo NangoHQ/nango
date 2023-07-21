@@ -241,14 +241,15 @@ export function getEnvironmentId(res: Response): number {
     }
 }
 
-export async function getEnvironmentAndAccountId(res: Response, req: Request): Promise<{ accountId: number; environmentId: number }> {
+export async function getEnvironmentAndAccountId(res: Response, req: Request): Promise<{ accountId: number; environmentId: number; isWeb: boolean }> {
     if (req.user) {
-        return getAccountIdAndEnvironmentIdFromSession(req);
+        const accountIdAndEnvironmentId = await getAccountIdAndEnvironmentIdFromSession(req);
+        return { ...accountIdAndEnvironmentId, isWeb: true };
     } else {
         const accountId = getAccount(res);
         const environmentId = getEnvironmentId(res);
 
-        return Promise.resolve({ accountId, environmentId });
+        return Promise.resolve({ accountId, environmentId, isWeb: false });
     }
 }
 

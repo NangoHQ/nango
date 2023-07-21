@@ -109,37 +109,6 @@ class ConfigController {
         }
     }
 
-    async getProviderConfigWeb(req: Request, res: Response, next: NextFunction) {
-        try {
-            const environment = (await getUserAccountAndEnvironmentFromSession(req)).environment;
-            const providerConfigKey = req.params['providerConfigKey'] as string;
-
-            if (providerConfigKey == null) {
-                errorManager.errRes(res, 'missing_provider_config');
-                return;
-            }
-
-            const config = await configService.getProviderConfig(providerConfigKey, environment.id);
-
-            if (config == null) {
-                errorManager.errRes(res, 'unknown_provider_config');
-                return;
-            }
-
-            res.status(200).send({
-                integration: {
-                    uniqueKey: config.unique_key,
-                    provider: config.provider,
-                    clientId: config.oauth_client_id,
-                    clientSecret: config.oauth_client_secret,
-                    scopes: config.oauth_scopes
-                }
-            });
-        } catch (err) {
-            next(err);
-        }
-    }
-
     /**
      * CLI
      */
@@ -157,7 +126,7 @@ class ConfigController {
 
     async getProviderConfig(req: Request, res: Response, next: NextFunction) {
         try {
-            const environmentId = getEnvironmentId(res);
+            const { environmentId } = await getEnvironmentAndAccountId(res, req);
             const providerConfigKey = req.params['providerConfigKey'] as string;
             const includeCreds = req.query['include_creds'] === 'true';
 
@@ -183,7 +152,7 @@ class ConfigController {
                   }
                 : { uniqueKey: config.unique_key, provider: config.provider };
 
-            res.status(200).send({ config: { configRes } });
+            res.status(200).send({ config: configRes });
         } catch (err) {
             next(err);
         }
@@ -277,6 +246,15 @@ class ConfigController {
 
             if (req.body['provider_config_key'] == null) {
                 errorManager.errRes(res, 'missing_provider_config');
+                return;
+            }
+
+            const provider = req.body['provider'];
+
+            const template = await configService.getTemplate(provider as string);
+
+            if (template.auth_mode === AuthModes.ApiKey || template.auth_mode === AuthModes.Basic) {
+                errorManager.errRes(res, 'provider_config_edit_not_allowed');
                 return;
             }
 

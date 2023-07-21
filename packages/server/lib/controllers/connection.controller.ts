@@ -10,6 +10,7 @@ import {
     OAuth2Credentials,
     ImportedCredentials,
     TemplateOAuth2 as ProviderTemplateOAuth2,
+    getEnvironmentAndAccountId,
     Connection,
     LogLevel,
     LogAction,
@@ -198,37 +199,6 @@ class ConnectionController {
         }
     }
 
-    async deleteConnectionWeb(req: Request, res: Response, next: NextFunction) {
-        try {
-            const environment = (await getUserAccountAndEnvironmentFromSession(req)).environment;
-            const connectionId = req.params['connectionId'] as string;
-            const providerConfigKey = req.query['provider_config_key'] as string;
-
-            if (connectionId == null) {
-                errorManager.errRes(res, 'missing_connection');
-                return;
-            }
-
-            if (providerConfigKey == null) {
-                errorManager.errRes(res, 'missing_provider_config');
-                return;
-            }
-
-            const connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
-
-            if (connection == null) {
-                errorManager.errRes(res, 'unknown_connection');
-                return;
-            }
-
-            await connectionService.deleteConnection(connection, providerConfigKey, environment.id);
-
-            res.status(200).send();
-        } catch (err) {
-            next(err);
-        }
-    }
-
     /**
      * CLI/SDK/API
      */
@@ -297,14 +267,42 @@ class ConnectionController {
 
     async listConnections(req: Request, res: Response, next: NextFunction) {
         try {
-            const accountId = getAccount(res);
-            const environmentId = getEnvironmentId(res);
-            const { connectionId } = req.query;
-            const connections: Object[] = await connectionService.listConnections(environmentId, connectionId as string);
+            const { accountId, environmentId, isWeb } = await getEnvironmentAndAccountId(res, req);
+            const connections = await connectionService.listConnections(environmentId);
 
-            analytics.track('server:connection_list_fetched', accountId);
+            if (!isWeb) {
+                analytics.track('server:connection_list_fetched', accountId);
+                res.status(200).send({ connections });
 
-            res.status(200).send({ connections: connections });
+                return;
+            }
+
+            const configs = await configService.listProviderConfigs(environmentId);
+
+            if (configs == null) {
+                res.status(200).send({ connections: [] });
+            }
+
+            const uniqueKeyToProvider: { [key: string]: string } = {};
+            const providerConfigKeys = configs.map((config: ProviderConfig) => config.unique_key);
+
+            providerConfigKeys.forEach((key: string, i: number) => (uniqueKeyToProvider[key] = configs[i]!.provider));
+
+            const result = connections.map((connection) => {
+                return {
+                    id: connection.id,
+                    connectionId: connection.connection_id,
+                    providerConfigKey: connection.provider,
+                    provider: uniqueKeyToProvider[connection.provider],
+                    creationDate: connection.created
+                };
+            });
+
+            res.status(200).send({
+                connections: result.sort(function (a, b) {
+                    return new Date(b.creationDate).getTime() - new Date(a.creationDate).getTime();
+                })
+            });
         } catch (err) {
             next(err);
         }
@@ -312,7 +310,7 @@ class ConnectionController {
 
     async deleteConnection(req: Request, res: Response, next: NextFunction) {
         try {
-            const environmentId = getEnvironmentId(res);
+            const { environmentId } = await getEnvironmentAndAccountId(res, req);
             const connectionId = req.params['connectionId'] as string;
             const providerConfigKey = req.query['provider_config_key'] as string;
 
