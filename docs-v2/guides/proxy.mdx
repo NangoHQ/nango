@@ -28,7 +28,7 @@ If you want to continuously sync data from the external API, check out the [Sync
 Before you can use Proxy requests you need to setup auth by following the [Authorize APIs guide](/oauth).
 </Tip>
 
-### Proxy requests
+### Proxy requests 
 
 <Tabs>
 <Tab title="Backend Node SDK">
@@ -65,9 +65,9 @@ try {
 ```
 
 <Info>
-    Some APIs are not yet fully-configured to work with the Proxy and require you to indicate the base URL.
+    Some APIs are not yet fully-configured to work with the Proxy and require you to indicate the base URL. 
 
-    You can check if your API contains the `proxy.base_url` field in the [providers.yaml](https://nango.dev/providers.yaml) configuration file.
+    You can check if your API contains the `base_api_url` field in the [providers.yaml](https://nango.dev/providers.yaml) configuration file.
 
     If not, you need to add a `baseUrlOverride` field in your call to the Proxy as follow:
     ```typescript
@@ -78,7 +78,7 @@ const res = await nango.proxy({
 });
     ```
 
-    Feel free to contribute the `proxy.base_url` field to any API in the [providers.yaml](https://nango.dev/providers.yaml) public file, or reach out on the [Slack community](https://www.nango.dev/slack) to ask us to do it.
+    Feel free to contribuge the `base_api_url` field to any API in the [providers.yaml](https://nango.dev/providers.yaml) public file, or reach out on the [Slack community](https://www.nango.dev/slack) to ask us to do it.
 </Info>
 </Tab>
 
@@ -97,16 +97,16 @@ curl -X POST -H 'Content-Type: application/json' \
 
 
 <Note>
-    Some APIs are not yet fully-configured to work with the Proxy and require you to indicate the base URL to use.
+    Some APIs are not yet fully-configured to work with the Proxy and require you to indicate the base URL to use. 
 
-    You can check if your API contains the `proxy.base_url` field in the [providers.yaml](https://nango.dev/providers.yaml) configuration file.
+    You can check if your API contains the `base_api_url` field in the [providers.yaml](https://nango.dev/providers.yaml) configuration file.
 
     If not, you need to add a `Base-Url-Override` header in your call to the Proxy as follow:
     ```bash
     -H 'Base-Url-Override: https://gmail.googleapis.com' \
     ```
 
-    Feel free to add the `proxy.base_url` field to any API and contribute the change, or reach out on the [Slack community](https://www.nango.dev/slack) to ask us to do it.
+    Feel free to add the `base_api_url` field to any API and contribute the change, or reach out on the [Slack community](https://www.nango.dev/slack) to ask us to do it.
 </Note>
 
 </Tab>

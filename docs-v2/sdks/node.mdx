@@ -67,7 +67,7 @@ let creds = await nango.getToken('<INTEGRATION-ID>', '<CONNECTION-ID>');
 ```
 
 <Tip>
-**Always fetch the current access_token from Nango before you run an API request.**
+**Always fetch the current access_token from Nango before you run an API request.**  
 We refresh the token if needed. Caching it on your side could lead to failed requests.
 </Tip>
 
@@ -135,9 +135,9 @@ Please check the [REST API reference](/api-reference/integration/get) for an exa
 ### Proxy
 
 <Info>
-    Some APIs are not yet fully-configured to work with the Proxy and require you to indicate the base URL.
+    Some APIs are not yet fully-configured to work with the Proxy and require you to indicate the base URL. 
 
-    You can check if your API contains the `proxy.base_url` field in the [providers.yaml](https://nango.dev/providers.yaml) configuration file.
+    You can check if your API contains the `base_api_url` field in the [providers.yaml](https://nango.dev/providers.yaml) configuration file.
 
     If not, you need to add a `baseUrlOverride` field in your call to the Proxy as follow:
     ```typescript
@@ -148,7 +148,7 @@ const res = await nango.proxy({
 });
     ```
 
-    Feel free to contribuge the `proxy.base_url` field to any API in the [providers.yaml](https://nango.dev/providers.yaml) public file, or reach out on the [Slack community](https://www.nango.dev/slack) to ask us to do it.
+    Feel free to contribuge the `base_api_url` field to any API in the [providers.yaml](https://nango.dev/providers.yaml) public file, or reach out on the [Slack community](https://www.nango.dev/slack) to ask us to do it.
 </Info>
 
 To execute proxy requests, use:
@@ -176,7 +176,7 @@ const res = await nango.proxy({
 
 There are also convenience methods available: `nango.get({})`, `nango.post({})`, `nango.patch{{}}` and `nango.delete({})`.
 
-**Return value**
+**Return value**  
 When you call the proxy Nango creates the API request to the external API and runs it for you (possibly with retries).
 
 The response from the external API is passed back to you exactly as Nango gets it:
