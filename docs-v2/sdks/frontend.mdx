@@ -52,11 +52,15 @@ let nango = new Nango({ host: '<INSTANCE-URL>', publicKey: '<PUBLIC-KEY>', webso
 
 </Tabs>
 
-## Triggering OAuth flows
+## Collecting & storing end-user credentials
 
-You trigger OAuth flows with `nango.auth`. This function returns a promise,
-which resolves if the OAuth flow was successful, and rejects if there was an
-error.
+You store end-user credentials with the `nango.auth` method. 
+
+<Tabs>
+
+<Tab title="OAuth">
+
+For OAuth, the `nango.auth()` method will trigger the OAuth flow in a popup, to let the user log in to their external account.
 
 ```js
 nango
@@ -78,6 +82,72 @@ nango
         // }
     });
 ```
+
+</Tab>
+
+<Tab title="API Key">
+
+For API keys, the `nango.auth()` method is used to store the end-user's API key (that you have previously collected from them).
+
+```js
+nango
+    .auth('<INTEGRATION-ID>', '<CONNECTION-ID>', {
+        credentials: {
+            apiKey: '<END-USER-API-KEY>'
+        }
+    })
+    .then((result) => {
+        // result is an object with:
+        // {
+        //      providerConfigKey: '<INTEGRATION-ID>',
+        //      connectionId: '<CONNECTION-ID>
+        // }
+    })
+    .catch((error) => {
+        // Error is an object with:
+        // {
+        //    error: {
+        //      type: 'authorization_cancelled', (or similar)
+        //      message: 'Authorization fail: The user has closed the authorization modal before the process was complete.'  (or similar)
+        //    }
+        // }
+    });
+```
+
+</Tab>
+
+<Tab title="Basic Auth">
+
+For Basic Auth, the `nango.auth()` method is used to store the end-user's username & password (that you have previously collected from them).
+
+```js
+nango
+    .auth('<INTEGRATION-ID>', '<CONNECTION-ID>', {
+        credentials: {
+            username: '<END-USER-API-KEY>',
+            password: '<END-USER-PASSWORD>'
+        }
+    })
+    .then((result) => {
+        // result is an object with:
+        // {
+        //      providerConfigKey: '<INTEGRATION-ID>',
+        //      connectionId: '<CONNECTION-ID>
+        // }
+    })
+    .catch((error) => {
+        // Error is an object with:
+        // {
+        //    error: {
+        //      type: 'authorization_cancelled', (or similar)
+        //      message: 'Authorization fail: The user has closed the authorization modal before the process was complete.'  (or similar)
+        //    }
+        // }
+    });
+```
+</Tab>
+
+</Tabs>
 
 ## OAuth flows requiring extra configuration
 

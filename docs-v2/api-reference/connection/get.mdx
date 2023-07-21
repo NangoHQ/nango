@@ -33,6 +33,14 @@ openapi: 'GET /connection/{connectionId}'
   ```
 </ResponseExample>
 
+<Info>
+
+The response content depends on the API authentication type (OAuth 2, OAuth 1, API key, Basic auth). 
+
+If you do not want to deal with collecting & injecting credentials in requests for multiple authentication types, use the [Proxy](/guides/proxy).
+
+</Info>
+
 <Tip>
 Every time you fetch the connection with this API endpoint Nango will check if the access token has expired. If it has, it will refresh it.
 

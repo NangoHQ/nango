@@ -54,26 +54,9 @@ let nango = new Nango({ host: '<INSTANCE-URL>', secretKey: '<SECRET-KEY>' });
 </Tabs>
 
 ## Auth
-
 ### Retrieve API credentials
 
-The easiest and fastest way to get the current API credentials.
-
-For OAuth 2 integrations this will return you the current access token (already refreshed if needed). For API key based integrations it will return the API key.
-For OAuth 1.0a integrations it will return you a small object with the neccessary details to sign the request.
-
-```js
-let creds = await nango.getToken('<INTEGRATION-ID>', '<CONNECTION-ID>');
-```
-
-<Tip>
-**Always fetch the current access_token from Nango before you run an API request.**  
-We refresh the token if needed. Caching it on your side could lead to failed requests.
-</Tip>
-
-### Retrieve _connection_ details
-
-Use this method to retrieve all the details Nango stores on a specific _connection_:
+Nango stores API credentials in _connections_ objects. Retrieve a _connection_ with:
 
 ```js
 let connection = await nango.getConnection(
@@ -84,7 +67,21 @@ let connection = await nango.getConnection(
 );
 ```
 
+The `nango.getConnection()` method returns the necessary information authenticate API requests:
+- OAuth 2: fresh access token
+- OAuth 1: token & token secret
+- API key: API key
+- Basic: username and password
+
+<Tip>
+If you do not want to deal with collecting & injecting credentials in API requests for multiple authentication types, use the [Proxy](/guides/proxy).
+</Tip>
+
 Please check the [REST API reference](/api-reference/connection/get) for an example response and the full list of returned fields.
+
+<Tip>
+For OAuth 2, always fetch the latest access token from Nango before you run an API request, as we refresh tokens if needed. Caching tokens on your side could lead to failed requests.
+</Tip>
 
 
 ### List all connections for a user
@@ -134,6 +131,8 @@ Please check the [REST API reference](/api-reference/integration/get) for an exa
 
 ### Proxy
 
+<<<<<<< HEAD
+=======
 <Info>
     Some APIs are not yet fully-configured to work with the Proxy and require you to indicate the base URL. 
 
@@ -151,6 +150,7 @@ const res = await nango.proxy({
     Feel free to contribute the `proxy.base_url` field to any API in the [providers.yaml](https://nango.dev/providers.yaml) public file, or reach out on the [Slack community](https://www.nango.dev/slack) to ask us to do it.
 </Info>
 
+>>>>>>> fa3b38a1ee1aa89c07bee018ed5b3a7f2f9e6e54
 To execute proxy requests, use:
 
 ```typescript
@@ -170,9 +170,16 @@ const res = await nango.proxy({
         id: 1,
         colorId: 'blue',
         selected: true
-    }
+    },
+    baseUrlOverride: 'https://api.google.com' // Optional
 });
 ```
+
+<Info>
+    The base URL should already be set for you for each API, but you can override with the `baseUrlOverride` field. 
+    
+    Some APIs don't have a default base URL (because it hasn't been configured in Nango or they have multiple ones). You can check this by looking at the `proxy.base_url` field in the [providers.yaml](https://nango.dev/providers.yaml) configuration file. Feel free to contribute this field or reach out on the [Slack community](https://www.nango.dev/slack) to ask us to do it.
+</Info>
 
 There are also convenience methods available: `nango.get({})`, `nango.post({})`, `nango.patch{{}}` and `nango.delete({})`.
 

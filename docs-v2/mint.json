@@ -64,7 +64,10 @@
         },
         {
             "group": "Guides",
-            "pages": ["guides/oauth", "guides/sync", "guides/proxy", "guides/webhooks", {
+            "pages": [{
+                    "group": "Authorize APIs",
+                    "pages": ["guides/oauth", "guides/api-key"]
+                }, "guides/sync", "guides/proxy", "guides/webhooks", {
                     "group": "Sync Data - Examples",
                     "pages": ["examples/overview", "examples/asana-tasks", "examples/slack-users"]
                 }
@@ -133,6 +136,7 @@
                 "integrations/all/adobe",
                 "integrations/all/airtable",
                 "integrations/all/amazon",
+                "integrations/all/amplitude",
                 "integrations/all/asana",
                 "integrations/all/atlassian",
                 "integrations/all/bamboohr",
@@ -203,6 +207,7 @@
                 "integrations/all/salesloft",
                 "integrations/all/segment",
                 "integrations/all/shopify",
+                "integrations/all/shortcut",
                 "integrations/all/slack",
                 "integrations/all/smugmug",
                 "integrations/all/splitwise",
