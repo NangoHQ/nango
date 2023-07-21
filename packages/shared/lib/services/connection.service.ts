@@ -46,6 +46,7 @@ class ConnectionService {
         accountId: number,
         metadata: Record<string, string>
     ) {
+        console.log('ummm');
         const id = await db.knex
             .withSchema(db.schema())
             .from<StoredConnection>(`_nango_connections`)
@@ -56,11 +57,13 @@ class ConnectionService {
                     credentials: parsedRawCredentials,
                     connection_config: connectionConfig,
                     environment_id,
-                    metadata: metadata
+                    metadata: metadata,
+                    deleted: false,
+                    deleted_at: null
                 }),
                 ['id']
             )
-            .onConflict(['provider_config_key', 'connection_id', 'environment_id'])
+            .onConflict(['provider_config_key', 'connection_id', 'environment_id', 'deleted_at'])
             .merge();
 
         analytics.track('server:connection_upserted', accountId, { provider });
@@ -86,11 +89,13 @@ class ConnectionService {
                     provider_config_key: providerConfigKey,
                     credentials,
                     connection_config: connectionConfig,
-                    environment_id
+                    environment_id,
+                    deleted: false,
+                    deleted_at: null
                 }),
                 ['id']
             )
-            .onConflict(['provider_config_key', 'connection_id', 'environment_id'])
+            .onConflict(['provider_config_key', 'connection_id', 'environment_id', 'deleted_at'])
             .merge();
 
         analytics.track('server:connection_upserted', accountId, { provider });
@@ -160,7 +165,7 @@ class ConnectionService {
         const result = await schema()
             .select('id', 'connection_id', 'provider_config_key', 'environment_id', 'connection_config', 'metadata', 'field_mappings')
             .from<StoredConnection>('_nango_connections')
-            .where({ id: id });
+            .where({ id: id, deleted: false });
 
         if (!result || result.length == 0 || !result[0]) {
             return null;
@@ -170,7 +175,10 @@ class ConnectionService {
     }
 
     public async checkIfConnectionExists(connection_id: string, provider_config_key: string, environment_id: number): Promise<boolean> {
-        const result = await schema().select('id').from<StoredConnection>('_nango_connections').where({ connection_id, provider_config_key, environment_id });
+        const result = await schema()
+            .select('id')
+            .from<StoredConnection>('_nango_connections')
+            .where({ connection_id, provider_config_key, environment_id, deleted: false });
 
         return result && result.length > 0;
     }
@@ -191,7 +199,7 @@ class ConnectionService {
         const result: StoredConnection[] | null = (await schema()
             .select('*')
             .from<StoredConnection>(`_nango_connections`)
-            .where({ connection_id: connectionId, provider_config_key: providerConfigKey, environment_id })) as unknown as StoredConnection[];
+            .where({ connection_id: connectionId, provider_config_key: providerConfigKey, environment_id, deleted: false })) as unknown as StoredConnection[];
 
         const storedConnection = result == null || result.length == 0 ? null : result[0] || null;
 
@@ -220,16 +228,22 @@ class ConnectionService {
         await db.knex
             .withSchema(db.schema())
             .from<StoredConnection>(`_nango_connections`)
-            .where({ connection_id: connection.connection_id, provider_config_key: connection.provider_config_key, environment_id: connection.environment_id })
+            .where({
+                connection_id: connection.connection_id,
+                provider_config_key: connection.provider_config_key,
+                environment_id: connection.environment_id,
+                deleted: false
+            })
             .update(encryptionManager.encryptConnection(connection));
     }
 
     public async getFieldMappings(connection: Connection): Promise<Record<string, string>> {
-        const result = await db.knex
-            .withSchema(db.schema())
-            .from<StoredConnection>(`_nango_connections`)
-            .select('field_mappings')
-            .where({ connection_id: connection.connection_id, provider_config_key: connection.provider_config_key, environment_id: connection.environment_id });
+        const result = await db.knex.withSchema(db.schema()).from<StoredConnection>(`_nango_connections`).select('field_mappings').where({
+            connection_id: connection.connection_id,
+            provider_config_key: connection.provider_config_key,
+            environment_id: connection.environment_id,
+            deleted: false
+        });
 
         if (!result || result.length == 0 || !result[0]) {
             return {};
@@ -243,7 +257,7 @@ class ConnectionService {
             .withSchema(db.schema())
             .from<StoredConnection>(`_nango_connections`)
             .select('id', 'connection_id', 'provider_config_key', 'environment_id')
-            .where({ environment_id, provider_config_key: providerConfigKey });
+            .where({ environment_id, provider_config_key: providerConfigKey, deleted: false });
 
         if (!result || result.length == 0 || !result[0]) {
             return [];
@@ -256,7 +270,7 @@ class ConnectionService {
         await db.knex
             .withSchema(db.schema())
             .from<StoredConnection>(`_nango_connections`)
-            .where({ id: connection.id as number })
+            .where({ id: connection.id as number, deleted: false })
             .update({ field_mappings: fieldMappings });
     }
 
@@ -265,7 +279,7 @@ class ConnectionService {
             .withSchema(db.schema())
             .from<Connection>(`_nango_connections`)
             .select({ id: 'id' }, { connection_id: 'connection_id' }, { provider: 'provider_config_key' }, { created: 'created_at' })
-            .where({ environment_id });
+            .where({ environment_id, deleted: false });
         if (connectionId) {
             queryBuilder.where({ connection_id: connectionId });
         }
@@ -281,7 +295,7 @@ class ConnectionService {
             .withSchema(db.schema())
             .from<Connection>(`_nango_connections`)
             .where({ connection_id: connection.connection_id, provider_config_key: providerConfigKey, environment_id })
-            .del();
+            .update({ deleted: true, deleted_at: new Date() });
     }
 
     public async getConnectionCredentials(

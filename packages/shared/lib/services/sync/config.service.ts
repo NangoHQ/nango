@@ -246,7 +246,7 @@ export async function getSyncConfigsByParams(environment_id: number, providerCon
 
     const result = await schema()
         .from<SyncConfig>(TABLE)
-        .where({ environment_id, nango_config_id: config.id as number, active: true });
+        .where({ environment_id, nango_config_id: config.id as number, active: true, deleted: false });
 
     if (result) {
         return result;
@@ -261,7 +261,8 @@ export async function getSyncConfigsBySyncNameAndConfigId(environment_id: number
             environment_id,
             nango_config_id,
             sync_name,
-            active: true
+            active: true,
+            deleted: false
         });
 
         if (result) {
@@ -289,7 +290,7 @@ export async function getSyncConfigByParams(environment_id: number, sync_name: s
     try {
         const result = await schema()
             .from<SyncConfig>(TABLE)
-            .where({ environment_id, sync_name, nango_config_id: config.id as number, active: true })
+            .where({ environment_id, sync_name, nango_config_id: config.id as number, active: true, deleted: false })
             .orderBy('created_at', 'desc')
             .first();
 
@@ -311,12 +312,16 @@ export async function getSyncConfigByParams(environment_id: number, sync_name: s
 }
 
 export async function deleteSyncConfig(id: number): Promise<void> {
-    await schema().from<SyncConfig>(TABLE).where({ id }).del();
+    await schema().from<SyncConfig>(TABLE).where({ id }).update({ deleted: true, deleted_at: new Date() });
+}
+
+export async function deleteByConfigId(nango_config_id: number): Promise<void> {
+    await schema().from<SyncConfig>(TABLE).where({ nango_config_id }).update({ deleted: true, deleted_at: new Date() });
 }
 
 export async function deleteSyncFilesForConfig(id: number): Promise<void> {
     try {
-        const files = await schema().from<SyncConfig>(TABLE).where({ nango_config_id: id }).select('file_location').pluck('file_location');
+        const files = await schema().from<SyncConfig>(TABLE).where({ nango_config_id: id, deleted: false }).select('file_location').pluck('file_location');
 
         if (files.length > 0) {
             await fileService.deleteFiles(files);
@@ -345,7 +350,8 @@ export async function getActiveSyncConfigsByEnvironmentId(environment_id: number
         .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')
         .where({
             active: true,
-            '_nango_configs.environment_id': environment_id
+            '_nango_configs.environment_id': environment_id,
+            [`${TABLE}.deleted`]: false
         });
 
     return result;
@@ -381,7 +387,8 @@ export async function getSyncConfigsWithConnectionsByEnvironmentId(environment_i
         .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')
         .where({
             '_nango_configs.environment_id': environment_id,
-            active: true
+            active: true,
+            [`${TABLE}.deleted`]: false
         });
 
     return result;
@@ -399,7 +406,8 @@ export async function getSyncConfigsByProviderConfigKey(environment_id: number, 
         .where({
             '_nango_configs.environment_id': environment_id,
             '_nango_configs.unique_key': providerConfigKey,
-            active: true
+            active: true,
+            [`${TABLE}.deleted`]: false
         });
 
     return result;
@@ -410,7 +418,10 @@ export async function getSyncConfigByJobId(job_id: number): Promise<SyncConfig |
         .from<SyncConfig>(TABLE)
         .select(`${TABLE}.*`)
         .join('_nango_sync_jobs', `${TABLE}.id`, '_nango_sync_jobs.sync_config_id')
-        .where({ '_nango_sync_jobs.id': job_id })
+        .where({
+            '_nango_sync_jobs.id': job_id,
+            [`${TABLE}.deleted`]: false
+        })
         .first()
         .orderBy('created_at', 'desc');
 
@@ -429,7 +440,8 @@ export async function getProviderConfigBySyncAndAccount(sync_name: string, envir
         .where({
             active: true,
             sync_name,
-            '_nango_configs.environment_id': environment_id
+            '_nango_configs.environment_id': environment_id,
+            [`${TABLE}.deleted`]: false
         })
         .first();
 

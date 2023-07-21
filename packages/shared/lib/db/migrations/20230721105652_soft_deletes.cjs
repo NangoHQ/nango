@@ -2,7 +2,6 @@ const CONNECTIONS_TABLE = '_nango_connections';
 const SYNCS_TABLE = '_nango_syncs';
 const SYNC_CONFIGS_TABLE = '_nango_sync_configs';
 const CONFIGS_TABLE = '_nango_configs';
-const SYNC_DATA_RECORDS_TABLE = '_nango_sync_data_records';
 const SYNC_JOBS_TABLE = '_nango_sync_jobs';
 const SYNC_SCHEDULES_TABLE = '_nango_sync_schedules';
 

@@ -8,7 +8,7 @@ import { isCloud, dirname } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
 import encryptionManager from '../utils/encryption.manager.js';
 import { deleteScheduleForProviderConfig as deleteSyncScheduleForProviderConfig } from '../services/sync/schedule.service.js';
-import { deleteSyncFilesForConfig } from '../services/sync/config.service.js';
+import { deleteSyncFilesForConfig, deleteByConfigId as deleteSyncConfigByConfigId } from '../services/sync/config.service.js';
 
 class ConfigService {
     templates: { [key: string]: ProviderTemplate } | null;
@@ -52,7 +52,11 @@ class ConfigService {
     }
 
     async getProviderName(providerConfigKey: string): Promise<string | null> {
-        const result = await db.knex.withSchema(db.schema()).select('provider').from<ProviderConfig>(`_nango_configs`).where({ unique_key: providerConfigKey });
+        const result = await db.knex
+            .withSchema(db.schema())
+            .select('provider')
+            .from<ProviderConfig>(`_nango_configs`)
+            .where({ unique_key: providerConfigKey, deleted: false });
 
         if (result == null || result.length == 0 || result[0] == null) {
             return null;
@@ -73,7 +77,7 @@ class ConfigService {
             .withSchema(db.schema())
             .select('*')
             .from<ProviderConfig>(`_nango_configs`)
-            .where({ unique_key: providerConfigKey, environment_id });
+            .where({ unique_key: providerConfigKey, environment_id, deleted: false });
 
         if (result == null || result.length == 0 || result[0] == null) {
             return null;
@@ -83,7 +87,7 @@ class ConfigService {
     }
 
     async listProviderConfigs(environment_id: number): Promise<ProviderConfig[]> {
-        return (await db.knex.withSchema(db.schema()).select('*').from<ProviderConfig>(`_nango_configs`).where({ environment_id }))
+        return (await db.knex.withSchema(db.schema()).select('*').from<ProviderConfig>(`_nango_configs`).where({ environment_id, deleted: false }))
             .map((config) => encryptionManager.decryptProviderConfig(config))
             .filter((config) => config != null) as ProviderConfig[];
     }
@@ -114,21 +118,37 @@ class ConfigService {
     }
 
     async deleteProviderConfig(providerConfigKey: string, environment_id: number): Promise<number> {
+        const id = (
+            await db.knex.withSchema(db.schema()).select('id').from<ProviderConfig>(`_nango_configs`).where({ unique_key: providerConfigKey, environment_id })
+        )[0].id;
+
+        if (!id) {
+            throw new NangoError('unknown_provider_config');
+        }
+
         await deleteSyncScheduleForProviderConfig(environment_id, providerConfigKey);
+
         if (isCloud()) {
             const config = await this.getProviderConfig(providerConfigKey, environment_id);
             await deleteSyncFilesForConfig(config?.id as number);
         }
 
-        await db.knex.withSchema(db.schema()).from<Connection>(`_nango_connections`).where({ provider_config_key: providerConfigKey, environment_id }).del();
-        return db.knex.withSchema(db.schema()).from<ProviderConfig>(`_nango_configs`).where({ unique_key: providerConfigKey, environment_id }).del();
+        await deleteSyncConfigByConfigId(id);
+
+        await db.knex.withSchema(db.schema()).from<ProviderConfig>(`_nango_configs`).where({ id }).update({ deleted: true, deleted_at: new Date() });
+
+        return db.knex
+            .withSchema(db.schema())
+            .from<Connection>(`_nango_connections`)
+            .where({ provider_config_key: providerConfigKey, environment_id })
+            .update({ deleted: true, deleted_at: new Date() });
     }
 
     async editProviderConfig(config: ProviderConfig) {
         return db.knex
             .withSchema(db.schema())
             .from<ProviderConfig>(`_nango_configs`)
-            .where({ unique_key: config.unique_key, environment_id: config.environment_id })
+            .where({ unique_key: config.unique_key, environment_id: config.environment_id, deleted: false })
             .update(encryptionManager.encryptProviderConfig(config));
     }
 
