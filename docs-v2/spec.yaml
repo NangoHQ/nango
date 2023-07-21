@@ -56,7 +56,7 @@ paths:
                                     description: The Nango API Configuration.
                                 oauth_client_id:
                                     type: string
-                                    description: The ID of your OAuth app (registed with the external API). Required for OAuth APIs. 
+                                    description: The ID of your OAuth app (registed with the external API). Required for OAuth APIs.
                                 oauth_client_secret:
                                     type: string
                                     description: The secret of your OAuth app (registed with the external API). Required for OAuth APIs.
