@@ -667,8 +667,9 @@ class ProxyController {
                 break;
         }
 
+        // even if the auth mode isn't api key a header might exist in the proxy
+        // so inject it if so
         if ('proxy' in config.template && 'headers' in config.template.proxy) {
-            // iterate over each header and interpolate if need
             headers = Object.entries(config.template.proxy.headers).reduce(
                 (acc: Record<string, string>, [key, value]: [string, string]) => {
                     acc[key] = interpolateIfNeeded(value, config.token as unknown as Record<string, string>);
