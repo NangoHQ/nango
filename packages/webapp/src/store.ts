@@ -1,4 +1,4 @@
-import create, { SetState, GetState } from 'zustand';
+import { create, SetState, GetState } from 'zustand';
 import Cookies from 'js-cookie';
 
 interface State {

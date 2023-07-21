@@ -67,7 +67,20 @@ interface ProxyConfiguration {
 
 enum AuthModes {
     OAuth1 = 'OAUTH1',
-    OAuth2 = 'OAUTH2'
+    OAuth2 = 'OAUTH2',
+    Basic = 'BASIC',
+    ApiKey = 'API_KEY'
+}
+
+interface BasicApiCredentials {
+    type?: AuthModes.Basic;
+    username: string;
+    password: string;
+}
+
+interface ApiKeyCredentials {
+    type?: AuthModes.ApiKey;
+    apiKey: string;
 }
 
 interface CredentialsCommon<T = Record<string, any>> {
@@ -88,17 +101,18 @@ interface OAuth1Credentials extends CredentialsCommon {
     oauth_token: string;
     oauth_token_secret: string;
 }
-type AuthCredentials = OAuth2Credentials | OAuth1Credentials;
+
+type AuthCredentials = OAuth2Credentials | OAuth1Credentials | BasicApiCredentials | ApiKeyCredentials;
 
 interface Connection {
     id?: number;
-    created_at?: Date;
-    updated_at?: Date;
+    created_at?: string;
+    updated_at?: string;
     provider_config_key: string;
     connection_id: string;
     connection_config: Record<string, string>;
     environment_id: number;
-    metadata: Record<string, string>;
+    metadata: Record<string, string> | null;
     credentials_iv?: string | null;
     credentials_tag?: string | null;
     field_mappings?: Record<string, string>;

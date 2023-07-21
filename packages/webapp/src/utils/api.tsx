@@ -1,6 +1,6 @@
 import { toast } from 'react-toastify';
 import { useSignout } from './user';
-import type { RunSyncCommand } from '../types';
+import { AuthModes, RunSyncCommand } from '../types';
 
 
 function requestErrorToast() {
@@ -241,7 +241,7 @@ export function useGetIntegrationDetailsAPI() {
 
     return async (providerConfigKey: string) => {
         try {
-            let res = await fetch(`/api/v1/integration/${encodeURIComponent(providerConfigKey)}`, {
+            let res = await fetch(`/api/v1/integration/${encodeURIComponent(providerConfigKey)}?include_creds=true`, {
                 headers: getHeaders()
             });
 
@@ -263,16 +263,17 @@ export function useGetIntegrationDetailsAPI() {
 export function useCreateIntegrationAPI() {
     const signout = useSignout();
 
-    return async (provider: string, providerConfigKey: string, clientId: string, clientSecret: string, scopes: string) => {
+    return async (provider: string, authMode: AuthModes, providerConfigKey: string, clientId: string, clientSecret: string, scopes: string) => {
         try {
             const options = {
                 method: 'POST',
                 headers: getHeaders(),
                 body: JSON.stringify({
+                    auth_mode: authMode,
                     provider: provider,
                     provider_config_key: providerConfigKey,
-                    client_id: clientId,
-                    client_secret: clientSecret,
+                    oauth_client_id: clientId,
+                    oauth_client_secret: clientSecret,
                     scopes: scopes
                 })
             };
@@ -293,12 +294,13 @@ export function useCreateIntegrationAPI() {
 export function useEditIntegrationAPI() {
     const signout = useSignout();
 
-    return async (provider: string, providerConfigKey: string, clientId: string, clientSecret: string, scopes: string) => {
+    return async (provider: string, authMode: AuthModes, providerConfigKey: string, clientId: string, clientSecret: string, scopes: string) => {
         try {
             const options = {
                 method: 'PUT',
                 headers: getHeaders(),
                 body: JSON.stringify({
+                    auth_mode: authMode,
                     provider: provider,
                     provider_config_key: providerConfigKey,
                     client_id: clientId,

@@ -14,15 +14,19 @@ import {
     updateProvider as updateProviderActivityLog,
     updateSuccess as updateSuccessActivityLog,
     updateEndpoint as updateEndpointActivityLog,
+    ApiKeyCredentials,
     HTTP_VERB,
     LogLevel,
+    BasicApiCredentials,
     LogAction,
     configService,
     errorManager,
     connectionService,
     environmentService,
     getEnvironmentId,
-    interpolateIfNeeded
+    interpolateIfNeeded,
+    AuthModes,
+    OAuth2Credentials
 } from '@nangohq/shared';
 import type { ProxyBodyConfiguration } from '../models.js';
 
@@ -72,26 +76,26 @@ class ProxyController {
             }
 
             if (!connectionId) {
-                errorManager.errRes(res, 'missing_connection_id');
-
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: `The connection id value is missing. If you're making a HTTP request then it should be included in the header 'Connection-Id'. If you're using the SDK the connectionId property should be specified.`
                 });
+
+                errorManager.errRes(res, 'missing_connection_id');
                 return;
             }
 
             if (!providerConfigKey) {
-                errorManager.errRes(res, 'missing_provider_config_key');
-
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: `The provider config key value is missing. If you're making a HTTP request then it should be included in the header 'Provider-Config-Key'. If you're using the SDK the providerConfigKey property should be specified.`
                 });
+
+                errorManager.errRes(res, 'missing_provider_config_key');
                 return;
             }
 
@@ -130,14 +134,14 @@ class ProxyController {
             const endpoint = `${path}${queryString ? `?${queryString}` : ''}`;
 
             if (!endpoint) {
-                errorManager.errRes(res, 'missing_endpoint');
-
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: 'Proxy: a API URL endpoint is missing.'
                 });
+
+                errorManager.errRes(res, 'missing_endpoint');
                 return;
             }
 
@@ -146,15 +150,22 @@ class ProxyController {
             let token;
 
             switch (connection?.credentials?.type) {
-                case 'OAUTH2':
-                    token = connection?.credentials?.access_token;
+                case AuthModes.OAuth2:
+                    {
+                        const credentials = connection.credentials as OAuth2Credentials;
+                        token = credentials?.access_token;
+                    }
                     break;
-                // TODO
-                case 'OAUTH1':
-                    token = { oAuthToken: connection?.credentials?.oauth_token, oAuthTokenSecret: connection?.credentials?.oauth_token_secret };
+                case AuthModes.OAuth1:
+                    throw new Error('OAuth1 is not supported yet in the proxy.');
+                case AuthModes.Basic:
+                    token = connection?.credentials;
+                    break;
+                case AuthModes.ApiKey:
+                    token = connection?.credentials;
                     break;
                 default:
-                    throw new Error(`Unrecognized OAuth type '${connection?.credentials?.type}' in stored credentials.`);
+                    throw new Error(`Unrecognized Auth type '${connection?.credentials?.type}' in stored credentials.`);
             }
 
             if (!isSync) {
@@ -184,7 +195,7 @@ class ProxyController {
 
             const template = configService.getTemplate(String(providerConfig?.provider));
 
-            if (!template.base_api_url && !baseUrlOverride) {
+            if ((!template.proxy || !template.proxy.base_url) && !baseUrlOverride) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     activity_log_id: activityLogId as number,
@@ -205,7 +216,7 @@ class ProxyController {
                     level: 'debug',
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
-                    content: `Proxy: API call configuration constructed successfully with the base api url set to ${template.base_api_url}`
+                    content: `Proxy: API call configuration constructed successfully with the base api url set to ${template.proxy.base_url}`
                 });
             }
 
@@ -213,8 +224,7 @@ class ProxyController {
                 endpoint,
                 method: method as HTTP_VERB,
                 template,
-                // handle oauth1
-                token: String(token),
+                token,
                 provider: String(providerConfig?.provider),
                 providerConfigKey,
                 connectionId,
@@ -612,15 +622,19 @@ class ProxyController {
      *
      */
     private constructUrl(config: ProxyBodyConfiguration, connection: Connection) {
-        const {
-            template: { base_api_url: templateApiBase },
-            endpoint: apiEndpoint
-        } = config;
+        const { template: { proxy: { base_url: templateApiBase } = {} } = {}, endpoint: apiEndpoint } = config;
 
         const apiBase = config.baseUrlOverride || templateApiBase;
 
         const base = apiBase?.substr(-1) === '/' ? apiBase.slice(0, -1) : apiBase;
-        const endpoint = apiEndpoint?.charAt(0) === '/' ? apiEndpoint.slice(1) : apiEndpoint;
+        let endpoint = apiEndpoint?.charAt(0) === '/' ? apiEndpoint.slice(1) : apiEndpoint;
+
+        if (config.template.auth_mode === AuthModes.ApiKey && 'proxy' in config.template && 'query' in config.template.proxy) {
+            const apiKeyProp = Object.keys(config.template.proxy.query)[0];
+            const token = config.token as ApiKeyCredentials;
+            endpoint += endpoint.includes('?') ? '&' : '?';
+            endpoint += `${apiKeyProp}=${token.apiKey}`;
+        }
 
         const fullEndpoint = interpolateIfNeeded(`${base}/${endpoint}`, connection as unknown as Record<string, string>);
 
@@ -632,9 +646,39 @@ class ProxyController {
      * @param {ProxyBodyConfiguration} config
      */
     private constructHeaders(config: ProxyBodyConfiguration) {
-        let headers = {
-            Authorization: `Bearer ${config.token}`
-        };
+        let headers = {};
+
+        switch (config.template.auth_mode) {
+            case AuthModes.Basic:
+                {
+                    const token = config.token as BasicApiCredentials;
+                    headers = {
+                        Authorization: `Basic ${Buffer.from(`${token.username}:${token.password}`).toString('base64')}`
+                    };
+                }
+                break;
+            case AuthModes.ApiKey:
+                headers = {};
+                break;
+            default:
+                headers = {
+                    Authorization: `Bearer ${config.token}`
+                };
+                break;
+        }
+
+        // even if the auth mode isn't api key a header might exist in the proxy
+        // so inject it if so
+        if ('proxy' in config.template && 'headers' in config.template.proxy) {
+            headers = Object.entries(config.template.proxy.headers).reduce(
+                (acc: Record<string, string>, [key, value]: [string, string]) => {
+                    acc[key] = interpolateIfNeeded(value, config.token as unknown as Record<string, string>);
+                    return acc;
+                },
+                { ...headers }
+            );
+        }
+
         if (config.headers) {
             const { headers: configHeaders } = config;
             headers = { ...headers, ...configHeaders };

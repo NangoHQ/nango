@@ -268,7 +268,7 @@ export default class SyncRun {
                                     });
 
                                     await this.reportFailureForResults(
-                                        `There was a problem upserting the data for ${this.syncName} and the model ${model} with the error message: ${upsertResult?.error}}`
+                                        `There was a problem upserting the data for ${this.syncName} and the model ${model} with the error message: ${upsertResult?.error}`
                                     );
 
                                     return false;

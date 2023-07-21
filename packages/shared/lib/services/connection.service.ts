@@ -27,7 +27,7 @@ import { NangoError } from '../utils/error.js';
 
 import type { Connection, StoredConnection, BaseConnection, NangoConnection } from '../models/Connection.js';
 import encryptionManager from '../utils/encryption.manager.js';
-import { AuthModes as ProviderAuthModes, OAuth2Credentials, ImportedCredentials } from '../models/Auth.js';
+import { AuthModes as ProviderAuthModes, OAuth2Credentials, ImportedCredentials, ApiKeyCredentials, BasicApiCredentials } from '../models/Auth.js';
 import { schema } from '../db/database.js';
 import { getEnvironmentId, getAccount, parseTokenExpirationDate, isTokenExpired } from '../utils/utils.js';
 import SyncClient from '../clients/sync.client.js';
@@ -68,28 +68,44 @@ class ConnectionService {
         return id;
     }
 
-    public async importConnection(
+    public async upsertApiConnection(
+        connectionId: string,
+        providerConfigKey: string,
+        provider: string,
+        credentials: ApiKeyCredentials | BasicApiCredentials,
+        connectionConfig: Record<string, string>,
+        environment_id: number,
+        accountId: number
+    ) {
+        const id = await db.knex
+            .withSchema(db.schema())
+            .from<StoredConnection>(`_nango_connections`)
+            .insert(
+                encryptionManager.encryptApiConnection({
+                    connection_id: connectionId,
+                    provider_config_key: providerConfigKey,
+                    credentials,
+                    connection_config: connectionConfig,
+                    environment_id
+                }),
+                ['id']
+            )
+            .onConflict(['provider_config_key', 'connection_id', 'environment_id'])
+            .merge();
+
+        analytics.track('server:connection_upserted', accountId, { provider });
+
+        return id;
+    }
+
+    public async importOAuthConnection(
         connection_id: string,
         provider_config_key: string,
+        provider: string,
         environmentId: number,
         accountId: number,
         parsedRawCredentials: ImportedCredentials
     ) {
-        const provider = await configService.getProviderName(provider_config_key);
-
-        if (!provider) {
-            throw new NangoError('unknown_provider_config');
-        }
-
-        let connection = undefined;
-        try {
-            connection = await this.getConnection(connection_id, provider_config_key, environmentId);
-        } catch {}
-
-        if (connection) {
-            throw new NangoError('connection_already_exists');
-        }
-
         const { connection_config, metadata } = parsedRawCredentials as Partial<Pick<BaseConnection, 'metadata' | 'connection_config'>>;
 
         const importedConnection = await this.upsertConnection(
@@ -102,6 +118,30 @@ class ConnectionService {
             accountId,
             metadata as Record<string, string>
         );
+
+        if (importedConnection) {
+            const syncClient = await SyncClient.getInstance();
+            syncClient?.initiate(importedConnection[0].id);
+        }
+
+        return importedConnection;
+    }
+
+    public async importApiAuthConnection(
+        connection_id: string,
+        provider_config_key: string,
+        provider: string,
+        environmentId: number,
+        accountId: number,
+        credentials: BasicApiCredentials | ApiKeyCredentials
+    ) {
+        const connection = await this.checkIfConnectionExists(connection_id, provider_config_key, environmentId);
+
+        if (connection) {
+            throw new NangoError('connection_already_exists');
+        }
+
+        const importedConnection = await this.upsertApiConnection(connection_id, provider_config_key, provider, credentials, {}, environmentId, accountId);
 
         if (importedConnection) {
             const syncClient = await SyncClient.getInstance();
@@ -127,6 +167,12 @@ class ConnectionService {
         }
 
         return result[0];
+    }
+
+    public async checkIfConnectionExists(connection_id: string, provider_config_key: string, environment_id: number): Promise<boolean> {
+        const result = await schema().select('id').from<StoredConnection>('_nango_connections').where({ connection_id, provider_config_key, environment_id });
+
+        return result && result.length > 0;
     }
 
     public async getConnection(connectionId: string, providerConfigKey: string, environment_id: number): Promise<Connection | null> {
@@ -158,10 +204,13 @@ class ConnectionService {
         const connection = encryptionManager.decryptConnection(storedConnection);
 
         // Parse the token expiration date.
-        if (connection != null && connection.credentials.type === ProviderAuthModes.OAuth2) {
-            const creds = connection.credentials as OAuth2Credentials;
-            creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
-            connection.credentials = creds;
+        if (connection != null) {
+            const credentials = connection.credentials as OAuth1Credentials | OAuth2Credentials;
+            if (credentials.type && credentials.type === ProviderAuthModes.OAuth2) {
+                const creds = credentials as OAuth2Credentials;
+                creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
+                connection.credentials = creds;
+            }
         }
 
         return connection;
@@ -290,9 +339,9 @@ class ConnectionService {
 
         const template: ProviderTemplate | undefined = configService.getTemplate(config?.provider as string);
 
-        if (connection?.credentials.type === ProviderAuthModes.OAuth2) {
+        if (connection?.credentials?.type === ProviderAuthModes.OAuth2) {
             connection.credentials = await connectionService.refreshOauth2CredentialsIfNeeded(
-                connection,
+                connection as Connection,
                 config as ProviderConfig,
                 template as ProviderTemplateOAuth2,
                 activityLogId,

@@ -16,6 +16,13 @@ export interface Config {
 
 export interface Template {
     auth_mode: AuthModes;
+    proxy: {
+        base_url: string;
+        headers?: Record<string, string>;
+        query?: {
+            api_key: string;
+        };
+    };
     authorization_url: string;
     authorization_params?: Record<string, string>;
     scope_separator?: string;
@@ -26,12 +33,13 @@ export interface Template {
     };
     redirect_uri_metadata?: Array<string>;
     token_response_metadata?: Array<string>;
-    base_api_url?: string;
     docs?: string;
     token_expiration_buffer?: number; // In seconds.
 }
 
 export interface TemplateAlias {
     alias?: string;
-    base_api_url?: string;
+    proxy: {
+        base_url?: string;
+    };
 }

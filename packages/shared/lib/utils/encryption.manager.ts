@@ -3,7 +3,7 @@ import logger from '../logger/console.js';
 import type { Config as ProviderConfig } from '../models/Provider';
 import type { DBConfig } from '../models/Generic.js';
 import type { Environment } from '../models/Environment.js';
-import type { Connection, StoredConnection } from '../models/Connection.js';
+import type { Connection, ApiConnection, StoredConnection } from '../models/Connection.js';
 import db from '../db/database.js';
 import util from 'util';
 
@@ -69,12 +69,29 @@ class EncryptionManager {
         return decryptedEnvironment;
     }
 
+    public encryptApiConnection(connection: ApiConnection): StoredConnection {
+        if (!this.shouldEncrypt()) {
+            return connection as StoredConnection;
+        }
+
+        const storedConnection: StoredConnection = Object.assign({}, connection) as StoredConnection;
+
+        const [encryptedClientSecret, iv, authTag] = this.encrypt(JSON.stringify(connection.credentials));
+        const encryptedCreds = { encrypted_credentials: encryptedClientSecret };
+
+        storedConnection.credentials = encryptedCreds;
+        storedConnection.credentials_iv = iv;
+        storedConnection.credentials_tag = authTag;
+
+        return storedConnection;
+    }
+
     public encryptConnection(connection: Connection): StoredConnection {
         if (!this.shouldEncrypt()) {
             return connection as StoredConnection;
         }
 
-        const storedConnection: StoredConnection = Object.assign({}, connection);
+        const storedConnection: StoredConnection = Object.assign({}, connection) as StoredConnection;
 
         const [encryptedClientSecret, iv, authTag] = this.encrypt(JSON.stringify(connection.credentials));
         const encryptedCreds = { encrypted_credentials: encryptedClientSecret };

@@ -6,8 +6,11 @@ import {
     Config as ProviderConfig,
     Template as ProviderTemplate,
     AuthModes as ProviderAuthModes,
+    OAuth1Credentials,
+    OAuth2Credentials,
     ImportedCredentials,
     TemplateOAuth2 as ProviderTemplateOAuth2,
+    getEnvironmentAndAccountId,
     Connection,
     LogLevel,
     LogAction,
@@ -18,6 +21,7 @@ import {
     getEnvironmentId,
     errorManager,
     analytics,
+    NangoError,
     createActivityLogAndLogMessage
 } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
@@ -122,6 +126,18 @@ class ConnectionController {
                 });
             }
 
+            let rawCredentials = null;
+            let credentials = null;
+
+            if (connection.credentials.type === ProviderAuthModes.OAuth1 || connection.credentials.type === ProviderAuthModes.OAuth2) {
+                const credentials = connection.credentials as OAuth2Credentials | OAuth1Credentials;
+                rawCredentials = credentials.raw;
+            }
+
+            if (connection.credentials.type === ProviderAuthModes.Basic || connection.credentials.type === ProviderAuthModes.ApiKey) {
+                credentials = connection.credentials;
+            }
+
             res.status(200).send({
                 connection: {
                     id: connection.id,
@@ -137,7 +153,8 @@ class ConnectionController {
                     expiresAt: connection.credentials.type === ProviderAuthModes.OAuth2 ? connection.credentials.expires_at : null,
                     oauthToken: connection.credentials.type === ProviderAuthModes.OAuth1 ? connection.credentials.oauth_token : null,
                     oauthTokenSecret: connection.credentials.type === ProviderAuthModes.OAuth1 ? connection.credentials.oauth_token_secret : null,
-                    rawCredentials: connection.credentials.raw
+                    credentials,
+                    rawCredentials
                 }
             });
         } catch (err) {
@@ -177,37 +194,6 @@ class ConnectionController {
                     return new Date(b.creationDate).getTime() - new Date(a.creationDate).getTime();
                 })
             });
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    async deleteConnectionWeb(req: Request, res: Response, next: NextFunction) {
-        try {
-            const environment = (await getUserAccountAndEnvironmentFromSession(req)).environment;
-            const connectionId = req.params['connectionId'] as string;
-            const providerConfigKey = req.query['provider_config_key'] as string;
-
-            if (connectionId == null) {
-                errorManager.errRes(res, 'missing_connection');
-                return;
-            }
-
-            if (providerConfigKey == null) {
-                errorManager.errRes(res, 'missing_provider_config');
-                return;
-            }
-
-            const connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
-
-            if (connection == null) {
-                errorManager.errRes(res, 'unknown_connection');
-                return;
-            }
-
-            await connectionService.deleteConnection(connection, providerConfigKey, environment.id);
-
-            res.status(200).send();
         } catch (err) {
             next(err);
         }
@@ -281,14 +267,42 @@ class ConnectionController {
 
     async listConnections(req: Request, res: Response, next: NextFunction) {
         try {
-            const accountId = getAccount(res);
-            const environmentId = getEnvironmentId(res);
-            const { connectionId } = req.query;
-            const connections: Object[] = await connectionService.listConnections(environmentId, connectionId as string);
+            const { accountId, environmentId, isWeb } = await getEnvironmentAndAccountId(res, req);
+            const connections = await connectionService.listConnections(environmentId);
 
-            analytics.track('server:connection_list_fetched', accountId);
+            if (!isWeb) {
+                analytics.track('server:connection_list_fetched', accountId);
+                res.status(200).send({ connections });
 
-            res.status(200).send({ connections: connections });
+                return;
+            }
+
+            const configs = await configService.listProviderConfigs(environmentId);
+
+            if (configs == null) {
+                res.status(200).send({ connections: [] });
+            }
+
+            const uniqueKeyToProvider: { [key: string]: string } = {};
+            const providerConfigKeys = configs.map((config: ProviderConfig) => config.unique_key);
+
+            providerConfigKeys.forEach((key: string, i: number) => (uniqueKeyToProvider[key] = configs[i]!.provider));
+
+            const result = connections.map((connection) => {
+                return {
+                    id: connection.id,
+                    connectionId: connection.connection_id,
+                    providerConfigKey: connection.provider,
+                    provider: uniqueKeyToProvider[connection.provider],
+                    creationDate: connection.created
+                };
+            });
+
+            res.status(200).send({
+                connections: result.sort(function (a, b) {
+                    return new Date(b.creationDate).getTime() - new Date(a.creationDate).getTime();
+                })
+            });
         } catch (err) {
             next(err);
         }
@@ -296,7 +310,7 @@ class ConnectionController {
 
     async deleteConnection(req: Request, res: Response, next: NextFunction) {
         try {
-            const environmentId = getEnvironmentId(res);
+            const { environmentId } = await getEnvironmentAndAccountId(res, req);
             const connectionId = req.params['connectionId'] as string;
             const providerConfigKey = req.query['provider_config_key'] as string;
 
@@ -332,7 +346,8 @@ class ConnectionController {
                     const [provider, properties] = providerProperties;
                     return {
                         name: provider,
-                        defaultScopes: properties.default_scopes
+                        defaultScopes: properties.default_scopes,
+                        authMode: properties.auth_mode
                     };
                 })
                 .sort((a, b) => a.name.localeCompare(b.name));
@@ -378,7 +393,7 @@ class ConnectionController {
             const environmentId = getEnvironmentId(res);
             const accountId = getAccount(res);
 
-            const { connection_id, provider_config_key, type } = req.body;
+            const { connection_id, provider_config_key } = req.body;
 
             if (!connection_id) {
                 errorManager.errRes(res, 'missing_connection');
@@ -390,18 +405,25 @@ class ConnectionController {
                 return;
             }
 
-            if (!type) {
-                errorManager.errRes(res, 'missing_oauth_type');
-                return;
+            const provider = await configService.getProviderName(provider_config_key);
+
+            if (!provider) {
+                throw new NangoError('unknown_provider_config');
             }
 
-            const oauthType = type.toUpperCase();
-            let credentials: ImportedCredentials;
+            const template = await configService.getTemplate(provider as string);
 
-            if (oauthType === ProviderAuthModes.OAuth2) {
+            let oAuthCredentials: ImportedCredentials;
+
+            if (template.auth_mode === ProviderAuthModes.OAuth2) {
                 const { access_token, refresh_token, expires_at, expires_in, metadata, connection_config } = req.body;
-                credentials = {
-                    type: oauthType as ProviderAuthModes.OAuth2,
+
+                if (!access_token) {
+                    errorManager.errRes(res, 'missing_access_token');
+                    return;
+                }
+                oAuthCredentials = {
+                    type: template.auth_mode,
                     access_token,
                     refresh_token,
                     expires_at,
@@ -410,7 +432,9 @@ class ConnectionController {
                     connection_config,
                     raw: req.body.raw || req.body
                 };
-            } else if (oauthType === ProviderAuthModes.OAuth1) {
+
+                await connectionService.importOAuthConnection(connection_id, provider, provider_config_key, environmentId, accountId, oAuthCredentials);
+            } else if (template.auth_mode === ProviderAuthModes.OAuth1) {
                 const { oauth_token, oauth_token_secret } = req.body;
 
                 if (!oauth_token) {
@@ -423,18 +447,52 @@ class ConnectionController {
                     return;
                 }
 
-                credentials = {
-                    type: oauthType as ProviderAuthModes.OAuth1,
+                oAuthCredentials = {
+                    type: template.auth_mode,
                     oauth_token,
                     oauth_token_secret,
                     raw: req.body.raw || req.body
                 };
+
+                await connectionService.importOAuthConnection(connection_id, provider, provider_config_key, environmentId, accountId, oAuthCredentials);
+            } else if (template.auth_mode === ProviderAuthModes.Basic) {
+                const { username, password } = req.body;
+
+                if (!username) {
+                    errorManager.errRes(res, 'missing_basic_username');
+                    return;
+                }
+
+                if (!password) {
+                    errorManager.errRes(res, 'missing_basic_password');
+                    return;
+                }
+
+                const credentials = {
+                    type: template.auth_mode,
+                    username,
+                    password
+                };
+
+                await connectionService.importApiAuthConnection(connection_id, provider, provider_config_key, environmentId, accountId, credentials);
+            } else if (template.auth_mode === ProviderAuthModes.ApiKey) {
+                const { api_key: apiKey } = req.body;
+
+                if (!apiKey) {
+                    errorManager.errRes(res, 'missing_api_key');
+                    return;
+                }
+
+                const credentials = {
+                    type: template.auth_mode,
+                    apiKey
+                };
+
+                await connectionService.importApiAuthConnection(connection_id, provider, provider_config_key, environmentId, accountId, credentials);
             } else {
                 errorManager.errRes(res, 'unknown_oauth_type');
                 return;
             }
-
-            await connectionService.importConnection(connection_id, provider_config_key, environmentId, accountId, credentials);
 
             res.status(201).send(req.body);
         } catch (err) {

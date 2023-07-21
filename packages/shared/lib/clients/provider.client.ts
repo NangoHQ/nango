@@ -82,6 +82,7 @@ class ProviderClient {
         }
 
         const credentials = connection.credentials as OAuth2Credentials;
+        const oauthConnection = connection as Connection & { metadata: { token_expires_at?: string } };
 
         switch (config.provider) {
             case 'salesforce':
@@ -89,7 +90,7 @@ class ProviderClient {
                     credentials.access_token,
                     config.oauth_client_id,
                     config.oauth_client_secret,
-                    connection.metadata
+                    oauthConnection.metadata
                 );
             default:
                 throw new NangoError('unknown_provider_client');

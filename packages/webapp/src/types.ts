@@ -1,7 +1,7 @@
 export interface ActivityResponse {
     id: number;
     level: 'info' | 'debug' | 'error' | 'warn';
-    action: 'oauth' | 'proxy' | 'token' | 'sync' | 'sync deploy' | 'pause sync' | 'restart sync' | 'trigger sync';
+    action: 'oauth' | 'auth' | 'proxy' | 'token' | 'sync' | 'sync deploy' | 'pause sync' | 'restart sync' | 'trigger sync';
     success: boolean;
     timestamp: number;
     start: number;
@@ -69,3 +69,21 @@ export interface SyncResponse {
 }
 
 export type RunSyncCommand = 'PAUSE' | 'UNPAUSE' | 'RUN' | 'RUN_FULL';
+
+export enum AuthModes {
+    OAuth1 = 'OAUTH1',
+    OAuth2 = 'OAUTH2',
+    Basic = 'BASIC',
+    ApiKey = 'API_KEY'
+}
+
+export interface BasicApiCredentials {
+    [key: string]: string;
+    username: string;
+    password: string;
+}
+
+export interface ApiKeyCredentials {
+    [key: string]: string;
+    apiKey: string;
+}

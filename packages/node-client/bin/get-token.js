@@ -4,7 +4,7 @@ const args = process.argv.slice(2);
 const nango = new Nango({ host: 'http://localhost:3003', secretKey: args[0] });
 
 nango
-    .getConnection(args[1], args[2], args[3], args[4])
+    .getToken(args[1], args[2], args[3])
     .then((response) => {
         console.log(response);
     })

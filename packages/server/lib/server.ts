@@ -13,6 +13,7 @@ import userController from './controllers/user.controller.js';
 import proxyController from './controllers/proxy.controller.js';
 import activityController from './controllers/activity.controller.js';
 import syncController from './controllers/sync.controller.js';
+import apiAuthController from './controllers/apiAuth.controller.js';
 import path from 'path';
 import { packageJsonFile, dirname } from './utils/utils.js';
 import { WebSocketServer, WebSocket } from 'ws';
@@ -66,6 +67,8 @@ app.get('/health', (_, res) => {
 });
 app.route('/oauth/callback').get(oauthController.oauthCallback.bind(oauthController));
 app.route('/oauth/connect/:providerConfigKey').get(apiPublicAuth, oauthController.oauthRequest.bind(oauthController));
+app.route('/api-auth/api-key/:providerConfigKey').post(apiPublicAuth, apiAuthController.apiKey.bind(authController));
+app.route('/api-auth/basic/:providerConfigKey').post(apiPublicAuth, apiAuthController.basic.bind(authController));
 
 // API routes (API key auth).
 app.route('/config').get(apiAuth, configController.listProviderConfigs.bind(configController));
@@ -105,14 +108,14 @@ app.route('/api/v1/account/hmac').get(webAuth, accountController.getHmacDigest.b
 app.route('/api/v1/account/hmac-enabled').post(webAuth, accountController.updateHmacEnabled.bind(accountController));
 app.route('/api/v1/account/hmac-key').post(webAuth, accountController.updateHmacKey.bind(accountController));
 app.route('/api/v1/integration').get(webAuth, configController.listProviderConfigsWeb.bind(configController));
-app.route('/api/v1/integration/:providerConfigKey').get(webAuth, configController.getProviderConfigWeb.bind(configController));
+app.route('/api/v1/integration/:providerConfigKey').get(webAuth, configController.getProviderConfig.bind(configController));
 app.route('/api/v1/integration').put(webAuth, configController.editProviderConfigWeb.bind(connectionController));
-app.route('/api/v1/integration').post(webAuth, configController.createProviderConfigWeb.bind(configController));
-app.route('/api/v1/integration/:providerConfigKey').delete(webAuth, configController.deleteProviderConfigWeb.bind(connectionController));
+app.route('/api/v1/integration').post(webAuth, configController.createProviderConfig.bind(configController));
+app.route('/api/v1/integration/:providerConfigKey').delete(webAuth, configController.deleteProviderConfig.bind(connectionController));
 app.route('/api/v1/provider').get(connectionController.listProviders.bind(connectionController));
-app.route('/api/v1/connection').get(webAuth, connectionController.getConnectionsWeb.bind(connectionController));
+app.route('/api/v1/connection').get(webAuth, connectionController.listConnections.bind(connectionController));
 app.route('/api/v1/connection/:connectionId').get(webAuth, connectionController.getConnectionWeb.bind(connectionController));
-app.route('/api/v1/connection/:connectionId').delete(webAuth, connectionController.deleteConnectionWeb.bind(connectionController));
+app.route('/api/v1/connection/:connectionId').delete(webAuth, connectionController.deleteConnection.bind(connectionController));
 app.route('/api/v1/user').get(webAuth, userController.getUser.bind(userController));
 app.route('/api/v1/activity').get(webAuth, activityController.retrieve.bind(activityController));
 app.route('/api/v1/sync').get(webAuth, syncController.getSyncsByParams.bind(syncController));

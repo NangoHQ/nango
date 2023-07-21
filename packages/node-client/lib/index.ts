@@ -1,6 +1,15 @@
 import axios, { AxiosRequestConfig } from 'axios';
 
-import type { AuthModes, OAuth1Credentials, OAuth2Credentials, ProxyConfiguration, GetRecordsRequestConfig } from './types.js';
+import {
+    AuthModes,
+    OAuth1Credentials,
+    OAuth2Credentials,
+    ProxyConfiguration,
+    GetRecordsRequestConfig,
+    BasicApiCredentials,
+    ApiKeyCredentials,
+    Connection
+} from './types.js';
 import { validateProxyConfiguration, validateSyncRecordConfiguration } from './utils.js';
 
 export const stagingHost = 'https://api-staging.nango.dev';
@@ -20,6 +29,11 @@ interface CreateConnectionOAuth1 extends OAuth1Credentials {
     connection_id: string;
     provider_config_key: string;
     type: AuthModes.OAuth1;
+}
+
+interface OAuth1Token {
+    oAuthToken: string;
+    oAuthTokenSecret: string;
 }
 
 interface CreateConnectionOAuth2 extends OAuth2Credentials {
@@ -107,16 +121,20 @@ export class Nango {
      * @param [forceRefresh] - When set, this is used to  obtain a new refresh token from the provider before the current token has expired,
      * you can set the forceRefresh argument to true.
      * */
-    public async getToken(providerConfigKey: string, connectionId: string, forceRefresh?: boolean) {
+    public async getToken(
+        providerConfigKey: string,
+        connectionId: string,
+        forceRefresh?: boolean
+    ): Promise<string | OAuth1Token | BasicApiCredentials | ApiKeyCredentials> {
         const response = await this.getConnectionDetails(providerConfigKey, connectionId, forceRefresh);
 
         switch (response.data.credentials.type) {
-            case 'OAUTH2':
+            case AuthModes.OAuth2:
                 return response.data.credentials.access_token;
-            case 'OAUTH1':
+            case AuthModes.OAuth1:
                 return { oAuthToken: response.data.credentials.oauth_token, oAuthTokenSecret: response.data.credentials.oauth_token_secret };
             default:
-                throw new Error(`Unrecognized OAuth type '${response.data.credentials.type}' in stored credentials.`);
+                return response.data.credentials;
         }
     }
 
@@ -142,7 +160,7 @@ export class Nango {
      * you can set the forceRefresh argument to true.
      * @param [refreshToken] - When set this returns the refresh token as part of the response
      */
-    public async getConnection(providerConfigKey: string, connectionId: string, forceRefresh?: boolean, refreshToken?: boolean) {
+    public async getConnection(providerConfigKey: string, connectionId: string, forceRefresh?: boolean, refreshToken?: boolean): Promise<Connection> {
         const response = await this.getConnectionDetails(providerConfigKey, connectionId, forceRefresh, refreshToken);
         return response.data;
     }
@@ -338,12 +356,10 @@ export class Nango {
         return axios.post(url, {}, { headers: this.enrichHeaders(headers) });
     }
 
-    public async createConnection(connectionArgs: CreateConnectionOAuth1 | (CreateConnectionOAuth2 & { metadata: string; connection_config: string })) {
-        const url = `${this.serverUrl}/connection`;
-
-        const body = connectionArgs;
-
-        return axios.post(url, body, { headers: this.enrichHeaders() });
+    public async createConnection(_connectionArgs: CreateConnectionOAuth1 | (CreateConnectionOAuth2 & { metadata: string; connection_config: string })) {
+        throw new Error(
+            'This method has been deprecated, please use the REST API to create a connection. See https://docs.nango.dev/api-reference/connection/post'
+        );
     }
 
     private async listConnectionDetails(connectionId?: string) {

@@ -3,7 +3,9 @@ import type { BaseConnection } from './Connection.js';
 
 export enum AuthModes {
     OAuth1 = 'OAUTH1',
-    OAuth2 = 'OAUTH2'
+    OAuth2 = 'OAUTH2',
+    Basic = 'BASIC',
+    ApiKey = 'API_KEY'
 }
 
 export enum OAuthAuthorizationMethod {
@@ -75,6 +77,17 @@ export type OAuth1RequestTokenResult = {
 export interface CredentialsCommon<T = Record<string, any>> {
     type: AuthModes;
     raw: T;
+}
+
+export interface BasicApiCredentials {
+    type?: AuthModes.Basic;
+    username: string;
+    password: string;
+}
+
+export interface ApiKeyCredentials {
+    type?: AuthModes.ApiKey;
+    apiKey: string;
 }
 
 export type AuthCredentials = OAuth2Credentials | OAuth1Credentials;

@@ -2,15 +2,15 @@ import { forwardRef, useCallback, useState } from 'react';
 import classNames from 'classnames';
 import CopyButton from '../button/CopyButton';
 
-type SecretInputProps = Omit<JSX.IntrinsicElements['input'], 'defaultValue'> & { copy?: boolean; defaultValue?: string, optionalValue?: string; setOptionalValue?: (value: string) => void; additionalClass?: string; };
+type SecretInputProps = Omit<JSX.IntrinsicElements['input'], 'defaultValue'> & { copy?: boolean; defaultValue?: string, optionalvalue?: string; setoptionalvalue?: (value: string) => void; additionalClass?: string; };
 
 const SecretInput = forwardRef<HTMLInputElement, SecretInputProps>(function PasswordField({ className, copy, ...props }, ref) {
     const [isSecretVisible, setIsSecretVisible] = useState(false);
 
     const [changedValue, setChangedValue] = useState(props.defaultValue);
 
-    const value = props.optionalValue || changedValue;
-    const updateValue = props.setOptionalValue || setChangedValue;
+    const value = props.optionalvalue || changedValue;
+    const updateValue = props.setoptionalvalue || setChangedValue;
 
     const toggleSecretVisibility = useCallback(() => setIsSecretVisible(!isSecretVisible), [isSecretVisible, setIsSecretVisible]);
 

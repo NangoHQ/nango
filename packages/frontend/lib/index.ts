@@ -47,8 +47,19 @@ export default class Nango {
         }
     }
 
-    public auth(providerConfigKey: string, connectionId: string, connectionConfig?: ConnectionConfig): Promise<any> {
-        const url = this.hostBaseUrl + `/oauth/connect/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig)}`;
+    public auth(
+        providerConfigKey: string,
+        connectionId: string,
+        conectionConfigOrCredentials?: ConnectionConfig | BasicApiCredentials | ApiKeyCredentials
+    ): Promise<any> {
+        if (conectionConfigOrCredentials && 'credentials' in conectionConfigOrCredentials && Object.keys(conectionConfigOrCredentials.credentials).length > 1) {
+            const credentials = conectionConfigOrCredentials.credentials as BasicApiCredentials | ApiKeyCredentials;
+            const { credentials: _, ...connectionConfig } = conectionConfigOrCredentials as ConnectionConfig;
+            return this.apiAuth(providerConfigKey, connectionId, this.convertCredentialsToConfig(credentials), connectionConfig);
+        }
+
+        const url =
+            this.hostBaseUrl + `/oauth/connect/${providerConfigKey}${this.toQueryString(connectionId, conectionConfigOrCredentials as ConnectionConfig)}`;
 
         try {
             new URL(url);
@@ -91,6 +102,79 @@ export default class Nango {
         });
     }
 
+    public convertCredentialsToConfig(credentials: BasicApiCredentials | ApiKeyCredentials): ConnectionConfig {
+        const params: Record<string, string> = {};
+
+        if ('username' in credentials) {
+            params['username'] = credentials.username || '';
+        }
+        if ('password' in credentials) {
+            params['password'] = credentials.password || '';
+        }
+        if ('apiKey' in credentials) {
+            params['apiKey'] = credentials.apiKey || '';
+        }
+
+        return { params };
+    }
+
+    private async apiAuth(
+        providerConfigKey: string,
+        connectionId: string,
+        connectionConfigWithCredentials: ConnectionConfig,
+        connectionConfig: ConnectionConfig
+    ): Promise<Response | void> {
+        const { params: credentials } = connectionConfigWithCredentials as ConnectionConfig;
+
+        if (!credentials) {
+            return;
+        }
+
+        if ('apiKey' in credentials) {
+            const apiKeyCredential = credentials as ApiKeyCredentials;
+            const url = this.hostBaseUrl + `/api-auth/api-key/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`;
+
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(apiKeyCredential)
+            });
+
+            if (!res.ok) {
+                const errorResponse = await res.json();
+                throw { ...errorResponse, message: errorResponse.error };
+            }
+        }
+
+        if ('username' in credentials || 'password' in credentials) {
+            const basicCredentials = credentials as BasicApiCredentials;
+            if (!basicCredentials.username) {
+                throw new Error('You must specify a username.');
+            }
+
+            if (!basicCredentials.password) {
+                throw new Error('You must specify a password.');
+            }
+
+            const url = this.hostBaseUrl + `/api-auth/basic/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`;
+
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(basicCredentials)
+            });
+
+            if (!res.ok) {
+                const errorResponse = await res.json();
+                throw { ...errorResponse, message: errorResponse.error };
+            }
+        }
+    }
+
     private toQueryString(connectionId: string, connectionConfig?: ConnectionConfig): string {
         const query: string[] = [];
 
@@ -100,7 +184,7 @@ export default class Nango {
 
         query.push(`public_key=${this.publicKey}`);
 
-        if (connectionConfig != null) {
+        if (connectionConfig) {
             for (const param in connectionConfig.params) {
                 const val = connectionConfig.params[param];
                 if (typeof val === 'string') {
@@ -133,6 +217,16 @@ interface ConnectionConfig {
     hmac?: string;
     user_scope?: string[];
     authorization_params?: Record<string, string>;
+    credentials?: BasicApiCredentials | ApiKeyCredentials;
+}
+
+interface BasicApiCredentials {
+    username?: string;
+    password?: string;
+}
+
+interface ApiKeyCredentials {
+    apiKey?: string;
 }
 
 enum AuthorizationStatus {

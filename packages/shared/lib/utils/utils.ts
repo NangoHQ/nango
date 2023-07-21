@@ -2,9 +2,10 @@ import type { Request, Response } from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { NangoError } from './error.js';
-import type { User } from '../models/Admin.js';
+import type { User, Account } from '../models/Admin.js';
 import type { Environment } from '../models/Environment.js';
 import environmentService from '../services/environment.service.js';
+import userService from '../services/user.service.js';
 
 const PORT = process.env['SERVER_PORT'] || 3003;
 export const localhostUrl = `http://localhost:${PORT}`;
@@ -238,6 +239,43 @@ export function getEnvironmentId(res: Response): number {
     } else {
         throw new NangoError('environment_malformed_in_locals');
     }
+}
+
+export async function getEnvironmentAndAccountId(res: Response, req: Request): Promise<{ accountId: number; environmentId: number; isWeb: boolean }> {
+    if (req.user) {
+        const accountIdAndEnvironmentId = await getAccountIdAndEnvironmentIdFromSession(req);
+        return { ...accountIdAndEnvironmentId, isWeb: true };
+    } else {
+        const accountId = getAccount(res);
+        const environmentId = getEnvironmentId(res);
+
+        return Promise.resolve({ accountId, environmentId, isWeb: false });
+    }
+}
+
+export async function getAccountIdAndEnvironmentIdFromSession(req: Request): Promise<{ accountId: number; environmentId: number }> {
+    const sessionUser = req.user as User;
+    const currentEnvironment = req.cookies['env'] || 'dev';
+
+    if (sessionUser == null) {
+        throw new NangoError('user_not_found');
+    }
+
+    const user = await userService.getUserById(sessionUser.id);
+
+    if (user == null) {
+        throw new NangoError('user_not_found');
+    }
+
+    const environmentAndAccount = await environmentService.getAccountAndEnvironmentById(user.account_id, currentEnvironment);
+
+    if (environmentAndAccount == null) {
+        throw new NangoError('account_not_found');
+    }
+
+    const { account, environment } = environmentAndAccount as { account: Account; environment: Environment };
+
+    return { accountId: account.id, environmentId: environment.id };
 }
 
 export function isApiAuthenticated(res: Response): boolean {

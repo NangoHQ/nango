@@ -19,16 +19,17 @@ provider-slug: # Shorthand for the provider, ideally the provider's name. Must b
     ##########
     # Mandatory fields
     ##########
-    auth_mode: OAUTH2 # Either OAUTH1 (for OAuth 1.0a) or OAUTH2
-    authorization_url: https://${connectionConfig.params.subdomain}.gitlab.com/oauth/authorize # The URL of the authorization page for the OAuth service (supports string interpolation)
-    token_url: https://${connectionConfig.params.subdomain}.gitlab.com/oauth/token # The URL for the token request (supports string interpolation)
+    auth_mode: OAUTH2 # OAUTH1, OAUTH2, API_KEY or BASIC
+    authorization_url: https://${connectionConfig.params.subdomain}.gitlab.com/oauth/authorize # (OAuth) The URL of the authorization page for the OAuth service (supports string interpolation)
+    token_url: https://${connectionConfig.params.subdomain}.gitlab.com/oauth/token # (OAuth 2) The URL for the token request (supports string interpolation)
+
+    # Proxy
+    proxy:
+        base_url: https://gitlab.example.com # Presets the base URL when using the Proxy (supports string interpolation, e.g. Salesforce).
 
     ##########
     # Optional fields
     ##########
-    # Proxy
-    base_api_url: https://gitlab.example.com/api/v4 # Presets the base URL when using the Proxy (supports string interpolation, e.g. Salesforce).  
-
     # Additional params
     authorization_params: # Additional parameters to pass along in the authorization step
         response_type: code

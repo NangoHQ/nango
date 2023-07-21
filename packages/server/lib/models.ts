@@ -1,5 +1,5 @@
 import type { ParamsSerializerOptions } from 'axios';
-import type { Template as ProviderTemplate, HTTP_VERB } from '@nangohq/shared';
+import type { Template as ProviderTemplate, HTTP_VERB, BasicApiCredentials, ApiKeyCredentials } from '@nangohq/shared';
 
 export interface DBConfig {
     encryption_key_hash?: string | null;
@@ -11,7 +11,7 @@ export interface ProxyBodyConfiguration {
     provider: string;
     providerConfigKey: string;
     connectionId: string;
-    token: string;
+    token: string | BasicApiCredentials | ApiKeyCredentials;
     method: HTTP_VERB;
     template: ProviderTemplate;
 
