@@ -336,9 +336,9 @@ export default function Activity() {
                                                                 <p className="inline-block text-[#6BA4F8]">proxy</p>
                                                             </div>
                                                             {activity.endpoint && (
-                                                                <Tooltip text={`/${activity.endpoint}`} type="dark">
+                                                                <Tooltip text={`${activity.endpoint}`} type="dark">
                                                                     <div className="w-52 text-gray-500 overflow-hidden truncate">
-                                                                        <span className="ml-3">/{activity.endpoint}</span>
+                                                                        <span className="ml-3">{activity.endpoint}</span>
                                                                     </div>
                                                                 </Tooltip>
                                                             )}

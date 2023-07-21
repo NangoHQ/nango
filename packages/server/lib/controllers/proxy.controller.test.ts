@@ -9,7 +9,7 @@ describe('Proxy Controller Construct Header Tests', () => {
             provider: 'test',
             providerConfigKey: 'test',
             connectionId: 'test',
-            token: 'sweet-secret-token',
+            token: { apiKey: 'sweet-secret-token' },
             method: 'GET' as HTTP_VERB,
             template: {
                 auth_mode: AuthModes.ApiKey,
@@ -50,6 +50,31 @@ describe('Proxy Controller Construct Header Tests', () => {
 
         expect(result).toEqual({
             Authorization: 'Basic ' + Buffer.from('testuser:testpassword').toString('base64')
+        });
+    });
+
+    it('Should correctly construct headers for Basic auth + any custom headers', () => {
+        const config = {
+            template: {
+                auth_mode: AuthModes.Basic,
+                proxy: {
+                    headers: {
+                        'X-Test': 'test'
+                    }
+                }
+            },
+            token: {
+                username: 'testuser',
+                password: 'testpassword'
+            }
+        };
+
+        // @ts-ignore
+        const result = proxyController.constructHeaders(config);
+
+        expect(result).toEqual({
+            Authorization: 'Basic ' + Buffer.from('testuser:testpassword').toString('base64'),
+            'X-Test': 'test'
         });
     });
 
@@ -101,7 +126,7 @@ describe('Proxy Controller Construct Header Tests', () => {
                     }
                 }
             },
-            token: 'some-abc-token',
+            token: { apiKey: 'some-abc-token' },
             headers: {
                 'x-custom-header': 'custom value',
                 'y-custom-header': 'custom values'
@@ -203,7 +228,7 @@ describe('Proxy Controller Construct URL Tests', () => {
                     }
                 }
             },
-            token: 'sweet-secret-token',
+            token: { apiKey: 'sweet-secret-token' },
             endpoint: '/api/test',
             baseUrlOverride: 'https://override.com'
         };
@@ -214,6 +239,29 @@ describe('Proxy Controller Construct URL Tests', () => {
 
         // Assuming interpolateIfNeeded doesn't change the input
         expect(result).toBe('https://override.com/api/test?api_key=sweet-secret-token');
+    });
+
+    it('should correctly insert a query param if the auth_mode is API_KEY and the template has a proxy.query.key property', () => {
+        const config = {
+            template: {
+                auth_mode: AuthModes.ApiKey,
+                proxy: {
+                    base_url: 'https://example.com/',
+                    query: {
+                        key: '${apiKey}'
+                    }
+                }
+            },
+            token: { apiKey: 'sweet-secret-token' },
+            endpoint: '/api/test',
+            baseUrlOverride: 'https://override.com'
+        };
+        const connection = {};
+
+        // @ts-ignore
+        const result = proxyController.constructUrl(config, connection);
+
+        expect(result).toBe('https://override.com/api/test?key=sweet-secret-token');
     });
 
     it('should correctly insert a query param if the auth_mode is API_KEY and the template has a proxy.query.api_key property with existing query params', () => {
@@ -227,16 +275,15 @@ describe('Proxy Controller Construct URL Tests', () => {
                     }
                 }
             },
-            token: 'sweet-secret-token',
+            token: { apiKey: 'sweet-secret-token' },
             endpoint: '/api/test?foo=bar',
             baseUrlOverride: 'https://override.com'
         };
-        const connection = {}; // Fill this based on your Connection interface
+        const connection = {};
 
         // @ts-ignore
         const result = proxyController.constructUrl(config, connection);
 
-        // Assuming interpolateIfNeeded doesn't change the input
         expect(result).toBe('https://override.com/api/test?foo=bar&api_key=sweet-secret-token');
     });
 
@@ -256,16 +303,15 @@ describe('Proxy Controller Construct URL Tests', () => {
                     }
                 }
             },
-            token: 'sweet-secret-token',
+            token: { apiKey: 'sweet-secret-token' },
             endpoint: '/api/test?foo=bar',
             baseUrlOverride: 'https://override.com'
         };
-        const connection = {}; // Fill this based on your Connection interface
+        const connection = {};
 
         // @ts-ignore
         const url = proxyController.constructUrl(config, connection);
 
-        // Assuming interpolateIfNeeded doesn't change the input
         expect(url).toBe('https://override.com/api/test?foo=bar&api_key=sweet-secret-token');
 
         // @ts-ignore

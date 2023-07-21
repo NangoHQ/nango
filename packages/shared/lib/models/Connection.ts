@@ -2,8 +2,8 @@ import type { AuthCredentials, ApiKeyCredentials, BasicApiCredentials } from './
 
 export interface BaseConnection {
     id?: number;
-    created_at?: Date;
-    updated_at?: Date;
+    created_at?: string;
+    updated_at?: string;
     provider_config_key: string;
     connection_id: string;
     connection_config: Record<string, string>;

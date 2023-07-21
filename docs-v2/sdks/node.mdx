@@ -74,7 +74,7 @@ The `nango.getConnection()` method returns the necessary information authenticat
 - Basic: username and password
 
 <Tip>
-If you do not want to with differentiating authentication types for your various integrations, use the [Proxy](#proxy) described below.
+If you do not want to deal with collecting & injecting credentials in API requests for multiple authentication types, use the [Proxy](/guides/proxy).
 </Tip>
 
 Please check the [REST API reference](/api-reference/connection/get) for an example response and the full list of returned fields.
@@ -131,6 +131,26 @@ Please check the [REST API reference](/api-reference/integration/get) for an exa
 
 ### Proxy
 
+<<<<<<< HEAD
+=======
+<Info>
+    Some APIs are not yet fully-configured to work with the Proxy and require you to indicate the base URL. 
+
+    You can check if your API contains the `proxy.base_url` field in the [providers.yaml](https://nango.dev/providers.yaml) configuration file.
+
+    If not, you need to add a `baseUrlOverride` field in your call to the Proxy as follow:
+    ```typescript
+const res = await nango.proxy({
+    ...
+    baseUrlOverride: 'https://gmail.googleapis.com',
+    ...
+});
+    ```
+
+    Feel free to contribute the `proxy.base_url` field to any API in the [providers.yaml](https://nango.dev/providers.yaml) public file, or reach out on the [Slack community](https://www.nango.dev/slack) to ask us to do it.
+</Info>
+
+>>>>>>> fa3b38a1ee1aa89c07bee018ed5b3a7f2f9e6e54
 To execute proxy requests, use:
 
 ```typescript
@@ -163,7 +183,7 @@ const res = await nango.proxy({
 
 There are also convenience methods available: `nango.get({})`, `nango.post({})`, `nango.patch{{}}` and `nango.delete({})`.
 
-**Return value**
+**Return value**  
 When you call the proxy Nango creates the API request to the external API and runs it for you (possibly with retries).
 
 The response from the external API is passed back to you exactly as Nango gets it:

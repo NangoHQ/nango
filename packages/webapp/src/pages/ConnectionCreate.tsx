@@ -147,6 +147,7 @@ export default function IntegrationCreate() {
                 params: connectionConfigParams || {},
                 authorization_params: authorizationParams || {},
                 hmac: hmacDigest || '',
+                // @ts-ignore
                 credentials
 
             })
@@ -268,15 +269,15 @@ export default function IntegrationCreate() {
         if (integration?.authMode === AuthModes.ApiKey) {
         apiAuthString = `, {
     credentials: {
-      apiKey: ${apiKey}
+      apiKey: '${apiKey}'
     }
 }`;
         }
         if (integration?.authMode === AuthModes.Basic) {
         apiAuthString = `, {
     credentials: {
-      username: ${apiAuthUsername},
-      password: ${apiAuthPassword}
+      username: '${apiAuthUsername}',
+      password: '${apiAuthPassword}'
     }
 }`;
         }

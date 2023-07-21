@@ -14,6 +14,7 @@ import {
     updateProvider as updateProviderActivityLog,
     updateSuccess as updateSuccessActivityLog,
     updateEndpoint as updateEndpointActivityLog,
+    ApiKeyCredentials,
     HTTP_VERB,
     LogLevel,
     BasicApiCredentials,
@@ -75,26 +76,26 @@ class ProxyController {
             }
 
             if (!connectionId) {
-                errorManager.errRes(res, 'missing_connection_id');
-
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: `The connection id value is missing. If you're making a HTTP request then it should be included in the header 'Connection-Id'. If you're using the SDK the connectionId property should be specified.`
                 });
+
+                errorManager.errRes(res, 'missing_connection_id');
                 return;
             }
 
             if (!providerConfigKey) {
-                errorManager.errRes(res, 'missing_provider_config_key');
-
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: `The provider config key value is missing. If you're making a HTTP request then it should be included in the header 'Provider-Config-Key'. If you're using the SDK the providerConfigKey property should be specified.`
                 });
+
+                errorManager.errRes(res, 'missing_provider_config_key');
                 return;
             }
 
@@ -133,14 +134,14 @@ class ProxyController {
             const endpoint = `${path}${queryString ? `?${queryString}` : ''}`;
 
             if (!endpoint) {
-                errorManager.errRes(res, 'missing_endpoint');
-
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: 'Proxy: a API URL endpoint is missing.'
                 });
+
+                errorManager.errRes(res, 'missing_endpoint');
                 return;
             }
 
@@ -158,11 +159,9 @@ class ProxyController {
                 case AuthModes.OAuth1:
                     throw new Error('OAuth1 is not supported yet in the proxy.');
                 case AuthModes.Basic:
-                    delete connection?.credentials?.type;
                     token = connection?.credentials;
                     break;
                 case AuthModes.ApiKey:
-                    delete connection?.credentials?.type;
                     token = connection?.credentials;
                     break;
                 default:
@@ -196,7 +195,7 @@ class ProxyController {
 
             const template = configService.getTemplate(String(providerConfig?.provider));
 
-            if (!template.proxy.base_url && !baseUrlOverride) {
+            if ((!template.proxy || !template.proxy.base_url) && !baseUrlOverride) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     activity_log_id: activityLogId as number,
@@ -630,14 +629,11 @@ class ProxyController {
         const base = apiBase?.substr(-1) === '/' ? apiBase.slice(0, -1) : apiBase;
         let endpoint = apiEndpoint?.charAt(0) === '/' ? apiEndpoint.slice(1) : apiEndpoint;
 
-        if (
-            config.template.auth_mode === AuthModes.ApiKey &&
-            'proxy' in config.template &&
-            'query' in config.template.proxy &&
-            'api_key' in config.template.proxy.query
-        ) {
+        if (config.template.auth_mode === AuthModes.ApiKey && 'proxy' in config.template && 'query' in config.template.proxy) {
+            const apiKeyProp = Object.keys(config.template.proxy.query)[0];
+            const token = config.token as ApiKeyCredentials;
             endpoint += endpoint.includes('?') ? '&' : '?';
-            endpoint += `api_key=${config.token}`;
+            endpoint += `${apiKeyProp}=${token.apiKey}`;
         }
 
         const fullEndpoint = interpolateIfNeeded(`${base}/${endpoint}`, connection as unknown as Record<string, string>);
@@ -662,15 +658,7 @@ class ProxyController {
                 }
                 break;
             case AuthModes.ApiKey:
-                {
-                    if ('proxy' in config.template && 'headers' in config.template.proxy) {
-                        // iterate over each header and interpolate if need
-                        headers = Object.entries(config.template.proxy.headers).reduce((acc: Record<string, string>, [key, value]: [string, string]) => {
-                            acc[key] = interpolateIfNeeded(value, { apiKey: config.token });
-                            return acc;
-                        }, {});
-                    }
-                }
+                headers = {};
                 break;
             default:
                 headers = {
@@ -678,6 +666,19 @@ class ProxyController {
                 };
                 break;
         }
+
+        // even if the auth mode isn't api key a header might exist in the proxy
+        // so inject it if so
+        if ('proxy' in config.template && 'headers' in config.template.proxy) {
+            headers = Object.entries(config.template.proxy.headers).reduce(
+                (acc: Record<string, string>, [key, value]: [string, string]) => {
+                    acc[key] = interpolateIfNeeded(value, config.token as unknown as Record<string, string>);
+                    return acc;
+                },
+                { ...headers }
+            );
+        }
+
         if (config.headers) {
             const { headers: configHeaders } = config;
             headers = { ...headers, ...configHeaders };

@@ -121,9 +121,29 @@ export class NangoError extends Error {
                 this.message = `Missing param username for basic api authentication.`;
                 break;
 
+            case 'missing_username_mismatch_template':
+                this.status = 400;
+                this.message = `Missing param 'username' for the provider template of Basic auth.`;
+                break;
+
+            case 'missing_password_mismatch_template':
+                this.status = 400;
+                this.message = `Missing param 'password' for the provider template of Basic auth.`;
+                break;
+
+            case 'missing_api_key_mismatch_template':
+                this.status = 400;
+                this.message = `Missing param 'api_key' for the provider template of API Key auth.`;
+                break;
+
             case 'missing_basic_password':
                 this.status = 400;
                 this.message = `Missing param password for basic api authentication.`;
+                break;
+
+            case 'missing_access_token':
+                this.status = 400;
+                this.message = `Missing param 'access_token'.`;
                 break;
 
             case 'missing_hmac':
@@ -203,7 +223,17 @@ export class NangoError extends Error {
             case 'missing_base_api_url':
                 this.status = 400;
                 this.message =
-                    'The proxy is not supported for the provider. You can easily add support by following the instructions at https://docs.nango.dev/contribute-api';
+                    'The proxy is not supported for the provider. You can easily add support by following the instructions at https://docs.nango.dev/contribute/nango-auth. You can also use the baseUrlOverride to get started right away. See https://docs.nango.dev/guides/proxy#proxy-requests for more information.';
+                break;
+
+            case 'provider_config_edit_not_allowed':
+                this.status = 400;
+                this.message = 'Provider configuration cannot be edited for API key based authentication.';
+                break;
+
+            case 'invalid_auth_mode':
+                this.status = 400;
+                this.message = 'Invalid auth mode. The provider does not support this auth mode.';
                 break;
 
             case 'unknown_provider_template':

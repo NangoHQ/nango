@@ -48,3 +48,31 @@ export interface GetRecordsRequestConfig {
     offset?: number;
     limit?: number;
 }
+
+export interface BasicApiCredentials {
+    type?: AuthModes.Basic;
+    username: string;
+    password: string;
+}
+
+export interface ApiKeyCredentials {
+    type?: AuthModes.ApiKey;
+    apiKey: string;
+}
+
+type AuthCredentials = OAuth2Credentials | OAuth1Credentials | BasicApiCredentials | ApiKeyCredentials;
+
+export interface Connection {
+    id?: number;
+    created_at?: string;
+    updated_at?: string;
+    provider_config_key: string;
+    connection_id: string;
+    connection_config: Record<string, string>;
+    environment_id: number;
+    metadata: Record<string, string> | null;
+    credentials_iv?: string | null;
+    credentials_tag?: string | null;
+    field_mappings?: Record<string, string>;
+    credentials: AuthCredentials;
+}
