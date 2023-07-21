@@ -231,6 +231,11 @@ export class NangoError extends Error {
                 this.message = 'Provider configuration cannot be edited for API key based authentication.';
                 break;
 
+            case 'invalid_auth_mode':
+                this.status = 400;
+                this.message = 'Invalid auth mode. The provider does not support this auth mode.';
+                break;
+
             case 'unknown_provider_template':
                 this.status = 400;
                 this.message = `No Provider Template matching the 'provider' parameter.`;

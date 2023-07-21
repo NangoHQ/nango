@@ -43,10 +43,14 @@ class ApiAuthController {
 
             if (!providerConfigKey) {
                 errorManager.errRes(res, 'missing_connection');
+
+                return;
             }
 
             if (!connectionId) {
                 errorManager.errRes(res, 'missing_connection_id');
+
+                return;
             }
 
             const hmacEnabled = await hmacService.isEnabled(environmentId);
@@ -61,6 +65,8 @@ class ApiAuthController {
                     });
 
                     errorManager.errRes(res, 'missing_hmac');
+
+                    return;
                 }
                 const verified = await hmacService.verify(hmac as string, environmentId, providerConfigKey as string, connectionId as string);
                 if (!verified) {
@@ -72,15 +78,47 @@ class ApiAuthController {
                     });
 
                     errorManager.errRes(res, 'invalid_hmac');
+
+                    return;
                 }
             }
 
             const config = await configService.getProviderConfig(providerConfigKey as string, environmentId);
 
+            if (config == null) {
+                await createActivityLogMessageAndEnd({
+                    level: 'error',
+                    activity_log_id: activityLogId as number,
+                    content: `Error during API Key auth: config not found`,
+                    timestamp: Date.now()
+                });
+
+                errorManager.errRes(res, 'unknown_provider_config');
+
+                return;
+            }
+
+            const template = await configService.getTemplate(config?.provider as string);
+
+            if (template.auth_mode !== AuthModes.ApiKey) {
+                await createActivityLogMessageAndEnd({
+                    level: 'error',
+                    activity_log_id: activityLogId as number,
+                    timestamp: Date.now(),
+                    content: `Provider ${config?.provider} does not support API key auth`
+                });
+
+                errorManager.errRes(res, 'invalid_auth_mode');
+
+                return;
+            }
+
             await updateProviderActivityLog(activityLogId as number, String(config?.provider));
 
             if (!req.body.apiKey) {
                 errorManager.errRes(res, 'missing_api_key');
+
+                return;
             }
 
             const { apiKey } = req.body;
@@ -159,18 +197,26 @@ class ApiAuthController {
 
             if (!providerConfigKey) {
                 errorManager.errRes(res, 'missing_connection');
+
+                return;
             }
 
             if (!connectionId) {
                 errorManager.errRes(res, 'missing_connection_id');
+
+                return;
             }
 
             if (!req.body.username) {
                 errorManager.errRes(res, 'missing_basic_username');
+
+                return;
             }
 
             if (!req.body.password) {
                 errorManager.errRes(res, 'missing_basic_password');
+
+                return;
             }
 
             const hmacEnabled = await hmacService.isEnabled(environmentId);
@@ -214,7 +260,24 @@ class ApiAuthController {
                     timestamp: Date.now()
                 });
 
-                res.status(404).send();
+                errorManager.errRes(res, 'unknown_provider_config');
+
+                return;
+            }
+
+            const template = await configService.getTemplate(config?.provider as string);
+
+            if (template.auth_mode !== AuthModes.Basic) {
+                await createActivityLogMessageAndEnd({
+                    level: 'error',
+                    activity_log_id: activityLogId as number,
+                    timestamp: Date.now(),
+                    content: `Provider ${config?.provider} does not support Basic API auth`
+                });
+
+                errorManager.errRes(res, 'invalid_auth_mode');
+
+                return;
             }
 
             await updateProviderActivityLog(activityLogId as number, String(config?.provider));
