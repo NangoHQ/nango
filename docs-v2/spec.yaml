@@ -257,7 +257,6 @@ paths:
                             required:
                                 - connection_id
                                 - provider_config_key
-                                - type
                             properties:
                                 connection_id:
                                     type: string
@@ -265,9 +264,6 @@ paths:
                                 provider_config_key:
                                     type: string
                                     description: The integration ID that you created on Nango.
-                                type:
-                                    type: string
-                                    description: Should be 'OAUTH1' or 'OAUTH1' or 'BASIC' or 'API_KEY'
                                 access_token:
                                     type: string
                                     description: (OAuth 2, required) Existing access token.
