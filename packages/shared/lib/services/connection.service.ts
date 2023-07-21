@@ -98,28 +98,14 @@ class ConnectionService {
         return id;
     }
 
-    public async importConnection(
+    public async importOAuthConnection(
         connection_id: string,
         provider_config_key: string,
+        provider: string,
         environmentId: number,
         accountId: number,
         parsedRawCredentials: ImportedCredentials
     ) {
-        const provider = await configService.getProviderName(provider_config_key);
-
-        if (!provider) {
-            throw new NangoError('unknown_provider_config');
-        }
-
-        let connection = undefined;
-        try {
-            connection = await this.getConnection(connection_id, provider_config_key, environmentId);
-        } catch {}
-
-        if (connection) {
-            throw new NangoError('connection_already_exists');
-        }
-
         const { connection_config, metadata } = parsedRawCredentials as Partial<Pick<BaseConnection, 'metadata' | 'connection_config'>>;
 
         const importedConnection = await this.upsertConnection(
@@ -132,6 +118,30 @@ class ConnectionService {
             accountId,
             metadata as Record<string, string>
         );
+
+        if (importedConnection) {
+            const syncClient = await SyncClient.getInstance();
+            syncClient?.initiate(importedConnection[0].id);
+        }
+
+        return importedConnection;
+    }
+
+    public async importApiAuthConnection(
+        connection_id: string,
+        provider_config_key: string,
+        provider: string,
+        environmentId: number,
+        accountId: number,
+        credentials: BasicApiCredentials | ApiKeyCredentials
+    ) {
+        const connection = await this.checkIfConnectionExists(connection_id, provider_config_key, environmentId);
+
+        if (connection) {
+            throw new NangoError('connection_already_exists');
+        }
+
+        const importedConnection = await this.upsertApiConnection(connection_id, provider_config_key, provider, credentials, {}, environmentId, accountId);
 
         if (importedConnection) {
             const syncClient = await SyncClient.getInstance();
@@ -157,6 +167,12 @@ class ConnectionService {
         }
 
         return result[0];
+    }
+
+    public async checkIfConnectionExists(connection_id: string, provider_config_key: string, environment_id: number): Promise<boolean> {
+        const result = await schema().select('id').from<StoredConnection>('_nango_connections').where({ connection_id, provider_config_key, environment_id });
+
+        return result && result.length > 0;
     }
 
     public async getConnection(connectionId: string, providerConfigKey: string, environment_id: number): Promise<Connection | null> {

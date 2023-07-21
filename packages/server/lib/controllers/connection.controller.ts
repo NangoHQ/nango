@@ -20,6 +20,7 @@ import {
     getEnvironmentId,
     errorManager,
     analytics,
+    NangoError,
     createActivityLogAndLogMessage
 } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
@@ -133,8 +134,7 @@ class ConnectionController {
             }
 
             if (connection.credentials.type === ProviderAuthModes.Basic || connection.credentials.type === ProviderAuthModes.ApiKey) {
-                const { type: _type, ...rest } = connection.credentials;
-                credentials = rest;
+                credentials = connection.credentials;
             }
 
             res.status(200).send({
@@ -395,7 +395,7 @@ class ConnectionController {
             const environmentId = getEnvironmentId(res);
             const accountId = getAccount(res);
 
-            const { connection_id, provider_config_key, type } = req.body;
+            const { connection_id, provider_config_key } = req.body;
 
             if (!connection_id) {
                 errorManager.errRes(res, 'missing_connection');
@@ -407,18 +407,25 @@ class ConnectionController {
                 return;
             }
 
-            if (!type) {
-                errorManager.errRes(res, 'missing_oauth_type');
-                return;
+            const provider = await configService.getProviderName(provider_config_key);
+
+            if (!provider) {
+                throw new NangoError('unknown_provider_config');
             }
 
-            const oauthType = type.toUpperCase();
-            let credentials: ImportedCredentials;
+            const template = await configService.getTemplate(provider as string);
 
-            if (oauthType === ProviderAuthModes.OAuth2) {
+            let oAuthCredentials: ImportedCredentials;
+
+            if (template.auth_mode === ProviderAuthModes.OAuth2) {
                 const { access_token, refresh_token, expires_at, expires_in, metadata, connection_config } = req.body;
-                credentials = {
-                    type: oauthType as ProviderAuthModes.OAuth2,
+
+                if (!access_token) {
+                    errorManager.errRes(res, 'missing_access_token');
+                    return;
+                }
+                oAuthCredentials = {
+                    type: template.auth_mode,
                     access_token,
                     refresh_token,
                     expires_at,
@@ -427,7 +434,9 @@ class ConnectionController {
                     connection_config,
                     raw: req.body.raw || req.body
                 };
-            } else if (oauthType === ProviderAuthModes.OAuth1) {
+
+                await connectionService.importOAuthConnection(connection_id, provider, provider_config_key, environmentId, accountId, oAuthCredentials);
+            } else if (template.auth_mode === ProviderAuthModes.OAuth1) {
                 const { oauth_token, oauth_token_secret } = req.body;
 
                 if (!oauth_token) {
@@ -440,19 +449,52 @@ class ConnectionController {
                     return;
                 }
 
-                credentials = {
-                    type: oauthType as ProviderAuthModes.OAuth1,
+                oAuthCredentials = {
+                    type: template.auth_mode,
                     oauth_token,
                     oauth_token_secret,
                     raw: req.body.raw || req.body
                 };
+
+                await connectionService.importOAuthConnection(connection_id, provider, provider_config_key, environmentId, accountId, oAuthCredentials);
+            } else if (template.auth_mode === ProviderAuthModes.Basic) {
+                const { username, password } = req.body;
+
+                if (!username) {
+                    errorManager.errRes(res, 'missing_basic_username');
+                    return;
+                }
+
+                if (!password) {
+                    errorManager.errRes(res, 'missing_basic_password');
+                    return;
+                }
+
+                const credentials = {
+                    type: template.auth_mode,
+                    username,
+                    password
+                };
+
+                await connectionService.importApiAuthConnection(connection_id, provider, provider_config_key, environmentId, accountId, credentials);
+            } else if (template.auth_mode === ProviderAuthModes.ApiKey) {
+                const { api_key: apiKey } = req.body;
+
+                if (!apiKey) {
+                    errorManager.errRes(res, 'missing_api_key');
+                    return;
+                }
+
+                const credentials = {
+                    type: template.auth_mode,
+                    apiKey
+                };
+
+                await connectionService.importApiAuthConnection(connection_id, provider, provider_config_key, environmentId, accountId, credentials);
             } else {
-                // TODO
                 errorManager.errRes(res, 'unknown_oauth_type');
                 return;
             }
-
-            await connectionService.importConnection(connection_id, provider_config_key, environmentId, accountId, credentials);
 
             res.status(201).send(req.body);
         } catch (err) {

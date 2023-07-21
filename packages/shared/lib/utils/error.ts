@@ -121,9 +121,29 @@ export class NangoError extends Error {
                 this.message = `Missing param username for basic api authentication.`;
                 break;
 
+            case 'missing_username_mismatch_template':
+                this.status = 400;
+                this.message = `Missing param 'username' for the provider template of Basic auth.`;
+                break;
+
+            case 'missing_password_mismatch_template':
+                this.status = 400;
+                this.message = `Missing param 'password' for the provider template of Basic auth.`;
+                break;
+
+            case 'missing_api_key_mismatch_template':
+                this.status = 400;
+                this.message = `Missing param 'api_key' for the provider template of API Key auth.`;
+                break;
+
             case 'missing_basic_password':
                 this.status = 400;
                 this.message = `Missing param password for basic api authentication.`;
+                break;
+
+            case 'missing_access_token':
+                this.status = 400;
+                this.message = `Missing param 'access_token'.`;
                 break;
 
             case 'missing_hmac':
