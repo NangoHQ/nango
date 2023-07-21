@@ -76,26 +76,26 @@ class ProxyController {
             }
 
             if (!connectionId) {
-                errorManager.errRes(res, 'missing_connection_id');
-
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: `The connection id value is missing. If you're making a HTTP request then it should be included in the header 'Connection-Id'. If you're using the SDK the connectionId property should be specified.`
                 });
+
+                errorManager.errRes(res, 'missing_connection_id');
                 return;
             }
 
             if (!providerConfigKey) {
-                errorManager.errRes(res, 'missing_provider_config_key');
-
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: `The provider config key value is missing. If you're making a HTTP request then it should be included in the header 'Provider-Config-Key'. If you're using the SDK the providerConfigKey property should be specified.`
                 });
+
+                errorManager.errRes(res, 'missing_provider_config_key');
                 return;
             }
 
@@ -134,14 +134,14 @@ class ProxyController {
             const endpoint = `${path}${queryString ? `?${queryString}` : ''}`;
 
             if (!endpoint) {
-                errorManager.errRes(res, 'missing_endpoint');
-
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: 'Proxy: a API URL endpoint is missing.'
                 });
+
+                errorManager.errRes(res, 'missing_endpoint');
                 return;
             }
 
