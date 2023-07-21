@@ -241,6 +241,29 @@ describe('Proxy Controller Construct URL Tests', () => {
         expect(result).toBe('https://override.com/api/test?api_key=sweet-secret-token');
     });
 
+    it('should correctly insert a query param if the auth_mode is API_KEY and the template has a proxy.query.key property', () => {
+        const config = {
+            template: {
+                auth_mode: AuthModes.ApiKey,
+                proxy: {
+                    base_url: 'https://example.com/',
+                    query: {
+                        key: '${apiKey}'
+                    }
+                }
+            },
+            token: { apiKey: 'sweet-secret-token' },
+            endpoint: '/api/test',
+            baseUrlOverride: 'https://override.com'
+        };
+        const connection = {};
+
+        // @ts-ignore
+        const result = proxyController.constructUrl(config, connection);
+
+        expect(result).toBe('https://override.com/api/test?key=sweet-secret-token');
+    });
+
     it('should correctly insert a query param if the auth_mode is API_KEY and the template has a proxy.query.api_key property with existing query params', () => {
         const config = {
             template: {

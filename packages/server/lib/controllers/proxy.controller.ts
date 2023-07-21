@@ -631,15 +631,11 @@ class ProxyController {
         const base = apiBase?.substr(-1) === '/' ? apiBase.slice(0, -1) : apiBase;
         let endpoint = apiEndpoint?.charAt(0) === '/' ? apiEndpoint.slice(1) : apiEndpoint;
 
-        if (
-            config.template.auth_mode === AuthModes.ApiKey &&
-            'proxy' in config.template &&
-            'query' in config.template.proxy &&
-            'api_key' in config.template.proxy.query
-        ) {
+        if (config.template.auth_mode === AuthModes.ApiKey && 'proxy' in config.template && 'query' in config.template.proxy) {
+            const apiKeyProp = Object.keys(config.template.proxy.query)[0];
             const token = config.token as ApiKeyCredentials;
             endpoint += endpoint.includes('?') ? '&' : '?';
-            endpoint += `api_key=${token.apiKey}`;
+            endpoint += `${apiKeyProp}=${token.apiKey}`;
         }
 
         const fullEndpoint = interpolateIfNeeded(`${base}/${endpoint}`, connection as unknown as Record<string, string>);
