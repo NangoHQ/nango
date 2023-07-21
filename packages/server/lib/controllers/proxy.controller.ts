@@ -159,11 +159,9 @@ class ProxyController {
                 case AuthModes.OAuth1:
                     throw new Error('OAuth1 is not supported yet in the proxy.');
                 case AuthModes.Basic:
-                    delete connection?.credentials?.type;
                     token = connection?.credentials;
                     break;
                 case AuthModes.ApiKey:
-                    delete connection?.credentials?.type;
                     token = connection?.credentials;
                     break;
                 default:

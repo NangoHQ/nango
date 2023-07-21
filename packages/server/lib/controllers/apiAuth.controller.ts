@@ -39,7 +39,6 @@ class ApiAuthController {
         const activityLogId = await createActivityLog(log);
 
         try {
-            // TODO create analytics
             analytics.track('server:pre_api_key_auth', accountId);
 
             if (!providerConfigKey) {
@@ -156,7 +155,6 @@ class ApiAuthController {
         const activityLogId = await createActivityLog(log);
 
         try {
-            // TODO create analytics
             analytics.track('server:pre_basic_api_key_auth', accountId);
 
             if (!providerConfigKey) {
