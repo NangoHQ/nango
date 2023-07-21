@@ -223,7 +223,7 @@ export class NangoError extends Error {
             case 'missing_base_api_url':
                 this.status = 400;
                 this.message =
-                    'The proxy is not supported for the provider. You can easily add support by following the instructions at https://docs.nango.dev/contribute-api';
+                    'The proxy is not supported for the provider. You can easily add support by following the instructions at https://docs.nango.dev/contribute/nango-auth. You can also use the baseUrlOverride to get started right away. See https://docs.nango.dev/guides/proxy#proxy-requests for more information.';
                 break;
 
             case 'unknown_provider_template':

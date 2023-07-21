@@ -197,7 +197,7 @@ class ProxyController {
 
             const template = configService.getTemplate(String(providerConfig?.provider));
 
-            if (!template.proxy.base_url && !baseUrlOverride) {
+            if ((!template.proxy || !template.proxy.base_url) && !baseUrlOverride) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     activity_log_id: activityLogId as number,
