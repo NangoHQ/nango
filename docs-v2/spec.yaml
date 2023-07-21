@@ -11,10 +11,10 @@ servers:
 paths:
     /config:
         get:
-            description: Returns a list of Integrations
+            description: Returns a list of integrations
             responses:
                 '200':
-                    description: Successfully returned a list of Integrations
+                    description: Successfully returned a list of integrations
                     content:
                         application/json:
                             schema:
@@ -32,12 +32,12 @@ paths:
                                             properties:
                                                 unique_key:
                                                     type: string
-                                                    description: The Integration ID that you created in Nango.
+                                                    description: The integration ID that you created in Nango.
                                                 provider:
                                                     type: string
                                                     description: The Nango API Configuration.
         post:
-            description: Create a new Integration
+            description: Create a new integration
             requestBody:
                 required: true
                 content:
@@ -47,27 +47,25 @@ paths:
                             required:
                                 - provider_config_key
                                 - provider
-                                - oauth_client_id
-                                - oauth_client_secret
                             properties:
                                 provider_config_key:
                                     type: string
-                                    description: The Integration ID that you created on Nango.
+                                    description: The integration ID that you created on Nango.
                                 provider:
                                     type: string
                                     description: The Nango API Configuration.
                                 oauth_client_id:
                                     type: string
-                                    description: The ID of your OAuth app (registed with the external API).
+                                    description: The ID of your OAuth app (registed with the external API). Required for OAuth APIs. 
                                 oauth_client_secret:
                                     type: string
-                                    description: The secret of your OAuth app (registed with the external API).
+                                    description: The secret of your OAuth app (registed with the external API). Required for OAuth APIs.
                                 oauth_scopes:
                                     type: string
                                     description: Comma separated list of scopes.
             responses:
                 '200':
-                    description: Successfully created an Integrations
+                    description: Successfully created an integrations
                 '400':
                     description: Invalid request
                     content:
@@ -78,7 +76,7 @@ paths:
                                     message:
                                         type: string
         put:
-            description: Edit an Integration
+            description: Edit an integration (only for OAuth APIs)
             requestBody:
                 required: true
                 content:
@@ -93,7 +91,7 @@ paths:
                             properties:
                                 provider_config_key:
                                     type: string
-                                    description: The Integration ID that you created on Nango.
+                                    description: The integration ID that you created on Nango.
                                 provider:
                                     type: string
                                     description: The Nango API Configuration.
@@ -108,7 +106,7 @@ paths:
                                     description: Comma separated list of scopes.
             responses:
                 '200':
-                    description: Successfully edit an Integration
+                    description: Successfully edit an integration
                 '400':
                     description: Invalid request
                     content:
@@ -119,7 +117,7 @@ paths:
                                     message:
                                         type: string
                 '404':
-                    description: Unknown Integration
+                    description: Unknown integration
                     content:
                         application/json:
                             schema:
@@ -129,14 +127,14 @@ paths:
                                         type: string
     /config/{providerConfigKey}:
         get:
-            description: Returns a specific Integration
+            description: Returns a specific integration
             parameters:
                 - name: providerConfigKey
                   in: path
                   required: true
                   schema:
                       type: string
-                  description: The Integration ID that you created in Nango.
+                  description: The integration ID that you created in Nango.
                 - name: include_creds
                   in: query
                   required: false
@@ -145,7 +143,7 @@ paths:
                       type: boolean
             responses:
                 '200':
-                    description: Successfully returned an Integration
+                    description: Successfully returned an integration
                     content:
                         application/json:
                             schema:
@@ -161,7 +159,7 @@ paths:
                                         properties:
                                             unique_key:
                                                 type: string
-                                                description: The Integration ID that you created in Nango.
+                                                description: The integration ID that you created in Nango.
                                             provider:
                                                 type: string
                                                 description: The Nango API Configuration.
@@ -175,7 +173,7 @@ paths:
                                     message:
                                         type: string
                 '404':
-                    description: Unknown Integration
+                    description: Unknown integration
                     content:
                         application/json:
                             schema:
@@ -184,17 +182,17 @@ paths:
                                     message:
                                         type: string
         delete:
-            description: Deletes a specific Integration
+            description: Deletes a specific integration
             parameters:
                 - name: providerConfigKey
                   in: path
                   required: true
                   schema:
                       type: string
-                  description: The Integration ID that you created in Nango.
+                  description: The integration ID that you created in Nango.
             responses:
                 '200':
-                    description: Successfully deleled an Integration
+                    description: Successfully deleled an integration
                 '400':
                     description: Invalid request
                     content:
@@ -205,7 +203,7 @@ paths:
                                     message:
                                         type: string
                 '404':
-                    description: Unknown Integration
+                    description: Unknown integration
                     content:
                         application/json:
                             schema:
@@ -215,10 +213,10 @@ paths:
                                         type: string
     /connection:
         get:
-            description: Returns a list of Connections
+            description: Returns a list of connections
             responses:
                 '200':
-                    description: Successfully returned a list of Connections
+                    description: Successfully returned a list of connections
                     content:
                         application/json:
                             schema:
@@ -238,21 +236,74 @@ paths:
                                             properties:
                                                 id:
                                                     type: integer
-                                                    description: The internal Nango ID used for the Connection.
+                                                    description: The internal Nango ID used for the connection.
                                                 connection_id:
                                                     type: string
-                                                    description: The connection ID used to create the Connection.
+                                                    description: The connection ID used to create the connection.
                                                 provider:
                                                     type: string
-                                                    description: The Integration ID used to create the Connection (aka Unique Key, Provider Config Key).
+                                                    description: The integration ID used to create the connection (aka Unique Key, Provider Config Key).
                                                 created:
                                                     type: string
                                                     description: Connection creation date.
         post:
             description: Adds a connection for which you already have an access token
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - connection_id
+                                - provider_config_key
+                                - type
+                            properties:
+                                connection_id:
+                                    type: string
+                                    description: The connection ID used to create the connection.
+                                provider_config_key:
+                                    type: string
+                                    description: The integration ID that you created on Nango.
+                                type:
+                                    type: string
+                                    description: Should be 'OAUTH1' or 'OAUTH1' or 'BASIC' or 'API_KEY'
+                                access_token:
+                                    type: string
+                                    description: (OAuth 2, required) Existing access token.
+                                refresh_token:
+                                    type: string
+                                    description: (OAuth 2, optional) Pass the refresh token if you have it.
+                                expires_at:
+                                    type: Date
+                                    description: (OAuth 2, optional) Safer and preferred.
+                                expires_in:
+                                    type: integer
+                                    description: (OAuth 2, optional) In seconds.
+                                oauth_token:
+                                    type: string
+                                    description: (OAuth 1, required) The client token to be attached to the connection.
+                                oauth_token_secret:
+                                    type: string
+                                    description: (OAuth 1, required) The client token secret to be attached to the connection.
+                                metadata:
+                                    type: object
+                                    description: (OAuth, required for some APIs) Metadata to be attached to the connection.
+                                connection_config:
+                                    type: object
+                                    description: (OAuth, required for some APIs) Additional configuration to be attached to the connection.
+                                username:
+                                    type: string
+                                    description: (Basic, required) username to be attached to the connection.
+                                password:
+                                    type: string
+                                    description: (Basic, required) password to be attached to the connection.
+                                api_key:
+                                    type: string
+                                    description: (API Key, required) API key to be attached to the connection.
             responses:
                 '200':
-                    description: Successfully created an Integrations
+                    description: Successfully created an integrations
                 '400':
                     description: Invalid request
                     content:
@@ -265,18 +316,18 @@ paths:
 
     /connection/{connectionId}:
         get:
-            description: Returns a specific Connection
+            description: Returns a specific connection
             parameters:
                 - name: connectionId
                   in: path
                   required: true
                   schema:
                       type: string
-                  description: The Connection ID used to create the Connection.
+                  description: The connection ID used to create the connection.
                 - name: provider_config_key
                   in: query
                   required: true
-                  description: The Integration ID used to create the Connection (aka Unique Key).
+                  description: The integration ID used to create the connection (aka Unique Key).
                   schema:
                       type: string
                 - name: force_refresh
@@ -291,7 +342,7 @@ paths:
                       type: boolean
             responses:
                 '200':
-                    description: Successfully returned a Connection
+                    description: Successfully returned a connection
                     # content:
                     #     application/json:
                     #         schema:
@@ -306,19 +357,19 @@ paths:
                     #             properties:
                     #                 id:
                     #                     type: integer
-                    #                     description: The internal Nango ID used for the Connection.
+                    #                     description: The internal Nango ID used for the connection.
                     #                 created_at:
                     #                     type: string
-                    #                     description: Connection creation date.
+                    #                     description: connection creation date.
                     #                 updated_at:
                     #                     type: string
-                    #                     description: Connection update date.
+                    #                     description: connection update date.
                     #                 provider_config_key:
                     #                     type: string
-                    #                     description: The Integration ID used to create the Connection (aka Unique Key).
+                    #                     description: The integration ID used to create the connection (aka Unique Key).
                     #                 connection_id:
                     #                     type: string
-                    #                     description: The connection ID used to create the Connection.
+                    #                     description: The connection ID used to create the connection.
                     #                 connection_config:
                     #                     type: object
                     #                     description: Important configuration passed in by you during the OAuth flow.
@@ -348,23 +399,23 @@ paths:
                                     message:
                                         type: string
         delete:
-            description: Deletes a specific Connection
+            description: Deletes a specific connection
             parameters:
                 - name: connectionId
                   in: path
                   required: true
                   schema:
                       type: string
-                  description: The Connection ID used to create the Connection.
+                  description: The connection ID used to create the connection.
                 - name: provider_config_key
                   in: query
                   required: true
-                  description: The Integration ID used to create the Connection (aka Unique Key).
+                  description: The integration ID used to create the connection (aka Unique Key).
                   schema:
                       type: string
             responses:
                 '200':
-                    description: Successfully deleled an Connection
+                    description: Successfully deleled an connection
                 '400':
                     description: Invalid request
                     content:
@@ -375,7 +426,7 @@ paths:
                                     message:
                                         type: string
                 '404':
-                    description: Unknown Connection
+                    description: Unknown connection
                     content:
                         application/json:
                             schema:
@@ -414,29 +465,29 @@ paths:
                 - name: Connection-Id
                   in: header
                   required: true
-                  description: The Connection ID used to create the Connection.
+                  description: The connection ID used to create the connection.
                   schema:
                       type: string
                 - name: Provider-Config-Key
                   in: header
                   required: true
-                  description: The Integration ID used to create the Connection (aka Unique Key).
+                  description: The integration ID used to create the connection (aka Unique Key).
                   schema:
                       type: string
     /sync/trigger:
         post:
-            description: Triggers an additional, one-off sync run for all syncs of a Connection
+            description: Triggers an additional, one-off sync run for all syncs of a connection
             parameters:
                 - name: Connection-Id
                   in: header
                   required: true
-                  description: The Connection ID used to create the Connection.
+                  description: The connection ID used to create the connection.
                   schema:
                       type: string
                 - name: Provider-Config-Key
                   in: header
                   required: true
-                  description: The Integration ID used to create the Connection (aka Unique Key).
+                  description: The integration ID used to create the connection (aka Unique Key).
                   schema:
                       type: string
     /proxy/{anyPath}:
@@ -458,13 +509,13 @@ paths:
                   required: true
                   schema:
                       type: string
-                  description: The Connection ID used to create the Connection.
+                  description: The connection ID used to create the connection.
                 - in: header
                   name: Provider-Config-Key
                   required: true
                   schema:
                       type: string
-                  description: The Integration ID used to create the Connection (aka Unique Key).
+                  description: The integration ID used to create the connection (aka Unique Key).
                 - in: header
                   name: Retries
                   schema:
@@ -493,13 +544,13 @@ paths:
                   required: true
                   schema:
                       type: string
-                  description: The Connection ID used to create the Connection.
+                  description: The connection ID used to create the connection.
                 - in: header
                   name: Provider-Config-Key
                   required: true
                   schema:
                       type: string
-                  description: The Integration ID used to create the Connection (aka Unique Key).
+                  description: The integration ID used to create the connection (aka Unique Key).
                 - in: header
                   name: Retries
                   schema:
@@ -536,13 +587,13 @@ paths:
                   required: true
                   schema:
                       type: string
-                  description: The Connection ID used to create the Connection.
+                  description: The connection ID used to create the connection.
                 - in: header
                   name: Provider-Config-Key
                   required: true
                   schema:
                       type: string
-                  description: The Integration ID used to create the Connection (aka Unique Key).
+                  description: The integration ID used to create the connection (aka Unique Key).
                 - in: header
                   name: Retries
                   schema:
@@ -579,13 +630,13 @@ paths:
                   required: true
                   schema:
                       type: string
-                  description: The Connection ID used to create the Connection.
+                  description: The connection ID used to create the connection.
                 - in: header
                   name: Provider-Config-Key
                   required: true
                   schema:
                       type: string
-                  description: The Integration ID used to create the Connection (aka Unique Key).
+                  description: The integration ID used to create the connection (aka Unique Key).
                 - in: header
                   name: Retries
                   schema:
@@ -627,13 +678,13 @@ paths:
                   required: true
                   schema:
                       type: string
-                  description: The Connection ID used to create the Connection.
+                  description: The connection ID used to create the connection.
                 - in: header
                   name: Provider-Config-Key
                   required: true
                   schema:
                       type: string
-                  description: The Integration ID used to create the Connection (aka Unique Key).
+                  description: The integration ID used to create the connection (aka Unique Key).
                 - in: header
                   name: Retries
                   schema:

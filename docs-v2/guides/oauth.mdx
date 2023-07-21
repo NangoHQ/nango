@@ -1,6 +1,6 @@
 ---
-title: 'Authorize APIs (OAuth)'
-sidebarTitle: 'Authorize APIs (OAuth)'
+title: 'Authorize APIs With OAuth'
+sidebarTitle: 'OAuth'
 description: 'Get access tokens for APIs.'
 ---
 
@@ -24,7 +24,7 @@ To get the `Client ID` and `Client Secret` you will need to register your app wi
 
 ## Step 3: Test your _integration_
 
-Click "OAuth" next to the integration to try an OAuth flow from Nango.
+Click "Auth" next to the integration to try an OAuth flow from Nango.
 ![Nango OAuth button](/images/quickstart/nango-oauth-button.png)
 
 - If you get an error check the [Activity tab](https://app.nango.dev/activity): The logs there can show you helpful information to debug the issue.
@@ -57,7 +57,7 @@ import { Nango } from '@nangohq/node';
 
 let nango = new Nango({ secretKey: '<SECRET-KEY>' });
 
-let creds = await nango.getToken('<INTEGRATION-ID>', '<CONNECTION-ID>');
+let creds = await nango.getConnection('<INTEGRATION-ID>', '<CONNECTION-ID>');
 ```
 
 ### With the REST API
