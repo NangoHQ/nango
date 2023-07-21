@@ -272,8 +272,8 @@ export function useCreateIntegrationAPI() {
                     auth_mode: authMode,
                     provider: provider,
                     provider_config_key: providerConfigKey,
-                    client_id: clientId,
-                    client_secret: clientSecret,
+                    oauth_client_id: clientId,
+                    oauth_client_secret: clientSecret,
                     scopes: scopes
                 })
             };
