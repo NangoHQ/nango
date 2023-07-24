@@ -149,6 +149,43 @@ export async function verifyNecessaryFiles(autoConfirm: boolean, debug = false) 
             printDebug(`Found ${nangoConfigFile} file successfully.`);
         }
     }
+
+    const distDir = './dist';
+
+    if (!fs.existsSync(distDir)) {
+        if (debug) {
+            printDebug("Dist directory doesn't exist.");
+        }
+        const createDist = autoConfirm
+            ? true
+            : await promptly.confirm(`No dist directory was found. Would you like to create it and create default integrations? (yes/no)`);
+
+        if (createDist) {
+            if (debug) {
+                printDebug(`Creating the dist directory and generating the default integration files.`);
+            }
+            fs.mkdirSync(distDir);
+            await generate(debug);
+            await tsc(debug);
+        }
+    } else {
+        const files = fs.readdirSync(distDir);
+        if (files.length === 0) {
+            if (debug) {
+                printDebug(`Dist directory exists but is empty.`);
+            }
+            const compile = autoConfirm
+                ? true
+                : await promptly.confirm(`The dist directory is empty. Would you like to generate the default integrations? (yes/no)`);
+
+            if (compile) {
+                if (debug) {
+                    printDebug(`Generating the default integration files.`);
+                }
+                await tsc(debug);
+            }
+        }
+    }
 }
 
 export async function upgradeAction(debug = false) {
