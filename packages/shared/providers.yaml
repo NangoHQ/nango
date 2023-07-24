@@ -284,6 +284,10 @@ gitlab:
     token_url: https://gitlab.com/oauth/token
     authorization_params:
         response_type: code
+gong:
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.gong.io
 google:
     auth_mode: OAUTH2
     authorization_url: https://accounts.google.com/o/oauth2/v2/auth

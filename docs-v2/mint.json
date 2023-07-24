@@ -166,6 +166,7 @@
                 "integrations/all/front",
                 "integrations/all/github",
                 "integrations/all/gitlab",
+                "integrations/all/gong",
                 "integrations/all/google",
                 "integrations/all/google-calendar",
                 "integrations/all/google-mail",

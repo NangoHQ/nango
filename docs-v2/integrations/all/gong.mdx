@@ -1,0 +1,34 @@
+---
+title: Gong
+sidebarTitle: Gong
+---
+
+API configuration: [`gong`](https://nango.dev/providers.yaml)
+
+## Features
+
+| Feature                                                                          | Status                          |
+| -------------------------------------------------------------------------------- | ------------------------------- |
+| [Auth (Basic)](/guides/api-key)                                                      | ✅                              |
+| [Sync](/guides/sync)                                                              | ✅                              |
+| [Nango Proxy](/guides/proxy)                          | ✅                              |
+| Auto-pagination                     | 🚫 (time to contribute: &lt;1h) |
+| API-specific rate limits | 🚫 (time to contribute: &lt;1h) |
+
+<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+## Getting started
+
+Gong offers both Basic auth (API key) and OAuth as authentication. For now Nango only implements Basic auth, see [this issue](https://github.com/NangoHQ/nango/issues/648) for OAuth support. 
+
+-   [How to find API credentials (for end-users)](https://help.gong.io/hc/en-us/articles/360042449451-Receive-access-to-the-API)
+-   [API Docs](https://app.gong.io/settings/api/documentation#overview)
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+## API gotchas
+
+- End users can generate API keys [on the Gong API page](https://app.gong.io/company/api). They must have the "technical administrator" user role to do this.
+- Gong uses BASIC auth for their API, but doesn't call them username and password: `Access Key` is the username in Nango and `Access Key Secret` is the password in Nango.
+- [Gong rate-limits](https://app.gong.io/settings/api/documentation#overview) are per second and a total of 10k requests a day.
+
+<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/gong.mdx)</Note>
