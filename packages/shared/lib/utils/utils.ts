@@ -6,6 +6,7 @@ import type { User, Account } from '../models/Admin.js';
 import type { Environment } from '../models/Environment.js';
 import environmentService from '../services/environment.service.js';
 import userService from '../services/user.service.js';
+import type { Connection } from '../models/Connection.js';
 
 const PORT = process.env['SERVER_PORT'] || 3003;
 export const localhostUrl = `http://localhost:${PORT}`;
@@ -195,6 +196,35 @@ export function interpolateStringFromObject(str: string, replacers: Record<strin
         const r = b.split('.').reduce((o: Record<string, any>, i: string) => o[i], replacers);
         return typeof r === 'string' || typeof r === 'number' ? (r as string) : a;
     });
+}
+
+export function connectionCopyWithParsedConnectionConfig(connection: Connection) {
+    const connectionCopy = Object.assign({}, connection);
+
+    const rawConfig: Record<string, string> = connectionCopy.connection_config;
+
+    if (!rawConfig || Object.keys(rawConfig).length === 0) {
+        return connectionCopy;
+    }
+
+    const parsedConfig: Record<string, string> = {};
+
+    Object.keys(rawConfig).forEach(function (key, _) {
+        const newKey = key.replace('connectionConfig.params.', '');
+        const value = rawConfig[key];
+
+        if (newKey && value) {
+            parsedConfig[newKey] = value;
+        }
+    });
+
+    connectionCopy.connection_config = parsedConfig;
+    return connectionCopy;
+}
+
+export function mapProxyBaseUrlInterpolationFormat(baseUrl: string | undefined): string | undefined {
+    // Maps the format that is used in providers.yaml (inherited from oauth), to the format of the Connection model.
+    return baseUrl ? baseUrl.replace('connectionConfig.params', 'connection_config') : baseUrl;
 }
 
 export function interpolateIfNeeded(str: string, replacers: Record<string, any>) {
