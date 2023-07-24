@@ -111,7 +111,7 @@ export function checkEnvVars(optionalHostport?: string) {
     }
 }
 
-export async function verifyNecessaryFiles(autoConfirm: boolean, debug = false) {
+export async function verifyNecessaryFiles(autoConfirm: boolean, debug = false, checkDist = false) {
     const cwd = process.cwd();
     if (debug) {
         printDebug(`Current full working directory is read as: ${cwd}`);
@@ -148,6 +148,10 @@ export async function verifyNecessaryFiles(autoConfirm: boolean, debug = false) 
         if (debug) {
             printDebug(`Found ${nangoConfigFile} file successfully.`);
         }
+    }
+
+    if (!checkDist) {
+        return;
     }
 
     const distDir = './dist';
