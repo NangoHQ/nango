@@ -12,8 +12,8 @@ API configuration: [`salesforce`](https://nango.dev/providers.yaml)
 | [Auth (OAuth)](/guides/oauth)                                                      | ✅                              |
 | [Sync](/guides/sync)                                                              | ✅                              |
 | [Nango Proxy](/guides/proxy)                          | ✅   |
-| [Auto-pagination](/nango-sync/configuration#auto-pagination)                     | 🚫 (time to contribute: &lt;1h) |
-| [API-specific rate limits](/nango-sync/configuration#rate-limits-retry-policies) | 🚫 (time to contribute: &lt;1h) |
+| Auto-pagination                     | 🚫 (time to contribute: &lt;1h) |
+| API-specific rate limits | 🚫 (time to contribute: &lt;1h) |
 
 <Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
 ## Getting started
@@ -29,6 +29,6 @@ API configuration: [`salesforce`](https://nango.dev/providers.yaml)
 -   Salesforce calls the `client_id` and `client_secret` the `Consumer Key` and `Consumer Secret`
 -   To enable offline data access with a refresh token, add the `refresh_token` (or its synonym, `offline_access`) scope. By default access tokens expire in ~2h (but customers can configure this value).
 -   If you encounter an error in your flow that says `invalid_client_id` [make sure your (developer) User's password does not contain any special characters](https://developer.salesforce.com/forums/?id=906F00000009ABLIA2) (yes, really.)
--   Nango automatically stores the `instance_url` (e.g. `https://yourInstance.salesforce.com/`) in the [Connection metadata](nango-auth/core-concepts.md#metadata) for you. You can easily retrieve this with the [backend SDK](nango-auth/node-sdk.md#connectionDetails) or [Connections API](nango-auth/connections-api.md#connectionDetails)
+-   Nango automatically stores the `instance_url` (e.g. `https://yourInstance.salesforce.com/`) in the [Connection metadata](guides/oauth#connection-metadata) for you. You can easily retrieve this with the [backend SDK](sdks/node#retrieve-api-credentials) or [Connections API](api-reference/connection/get)
 
 <Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/salesforce.mdx)</Note>
