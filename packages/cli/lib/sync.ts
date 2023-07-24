@@ -32,7 +32,6 @@ import {
     httpsAgent,
     verifyNecessaryFiles,
     getConnection,
-    NANGO_INTEGRATIONS_LOCATION,
     NANGO_INTEGRATIONS_NAME,
     buildInterfaces,
     enrichHeaders,
@@ -77,12 +76,109 @@ export const version = (debug: boolean) => {
     console.log(chalk.green('Nango CLI version:'), packageJson.version);
 };
 
+export const generate = async (debug = false, inParentDirectory = false) => {
+    const dirPrefix = inParentDirectory ? `./${NANGO_INTEGRATIONS_NAME}` : '.';
+    const templateContents = fs.readFileSync(path.resolve(__dirname, './integration.ejs'), 'utf8');
+    const githubExampleTemplateContents = fs.readFileSync(path.resolve(__dirname, './integration.github.ejs'), 'utf8');
+
+    const configContents = fs.readFileSync(`${dirPrefix}/${nangoConfigFile}`, 'utf8');
+    const configData: NangoConfig = yaml.load(configContents) as unknown as NangoConfig;
+    const { integrations } = configData;
+    const { models } = configData;
+
+    const interfaceDefinitions = buildInterfaces(models, debug);
+
+    fs.writeFileSync(`${dirPrefix}/${TYPES_FILE_NAME}`, interfaceDefinitions.join('\n'));
+
+    if (debug) {
+        printDebug(`Interfaces from the ${nangoConfigFile} file written to ${TYPES_FILE_NAME}`);
+    }
+
+    // insert NangoSync types to the bottom of the file
+    const typesContent = fs.readFileSync(`${getNangoRootPath()}/${NangoSyncTypesFileLocation}`, 'utf8');
+    fs.writeFileSync(`${dirPrefix}/${TYPES_FILE_NAME}`, typesContent, { flag: 'a' });
+
+    if (debug) {
+        printDebug(`NangoSync types written to ${TYPES_FILE_NAME}`);
+    }
+
+    const allSyncNames: Record<string, boolean> = {};
+
+    for (let i = 0; i < Object.keys(integrations).length; i++) {
+        const providerConfigKey = Object.keys(integrations)[i] as string;
+        if (debug) {
+            printDebug(`Generating ${providerConfigKey} integrations`);
+        }
+        const syncObject = integrations[providerConfigKey] as unknown as { [key: string]: NangoIntegration };
+        const syncNames = Object.keys(syncObject);
+        for (let k = 0; k < syncNames.length; k++) {
+            const syncName = syncNames[k] as string;
+
+            if (allSyncNames[syncName] === undefined) {
+                allSyncNames[syncName] = true;
+            } else {
+                console.log(chalk.red(`The sync name ${syncName} is duplicated in the ${nangoConfigFile} file. All sync names must be unique.`));
+                process.exit(1);
+            }
+
+            if (debug) {
+                printDebug(`Generating ${syncName} integration`);
+            }
+            const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
+
+            if (!syncData.returns) {
+                console.log(
+                    chalk.red(
+                        `The ${syncName} integration is missing a returns property for what models the sync returns. Make sure you have "returns" instead of "return"`
+                    )
+                );
+                process.exit(1);
+            }
+
+            const { returns: models } = syncData;
+            const syncNameCamel = syncName
+                .split('-')
+                .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                .join('');
+            const ejsTeamplateContents = syncName === exampleSyncName ? githubExampleTemplateContents : templateContents;
+            const rendered = ejs.render(ejsTeamplateContents, {
+                syncName: syncNameCamel,
+                interfaceFileName: TYPES_FILE_NAME.replace('.ts', ''),
+                interfaceNames: models.map((model) => {
+                    const singularModel = model?.charAt(model.length - 1) === 's' ? model.slice(0, -1) : model;
+                    return `${singularModel.charAt(0).toUpperCase()}${singularModel.slice(1)}`;
+                }),
+                mappings: models.map((model) => {
+                    const singularModel = model.charAt(model.length - 1) === 's' ? model.slice(0, -1) : model;
+                    return {
+                        name: model,
+                        type: `${singularModel.charAt(0).toUpperCase()}${singularModel.slice(1)}`
+                    };
+                })
+            });
+
+            if (!fs.existsSync(`${dirPrefix}/${syncName}.ts`)) {
+                fs.writeFileSync(`${dirPrefix}/${syncName}.ts`, rendered);
+                if (debug) {
+                    printDebug(`Created ${syncName}.ts file`);
+                }
+            } else {
+                if (debug) {
+                    printDebug(`${syncName}.ts file already exists, so will not overwrite it.`);
+                }
+            }
+        }
+    }
+
+    console.log(chalk.green(`Integration files have been created`));
+};
+
 /**
  * Init
  * If we're not currently in the nango-integrations directory create one
  * and create an example nango.yaml file
  */
-export const init = (debug = false) => {
+export const init = async (debug = false) => {
     const data: NangoConfig = {
         integrations: {
             'demo-github-integration': {
@@ -177,103 +273,9 @@ NANGO_DEPLOY_AUTO_CONFIRM=false # Default value`
         }
     }
 
+    await generate(debug, inParentDirectory);
+
     console.log(chalk.green(`Nango integrations initialized!`));
-};
-
-export const generate = async (debug = false) => {
-    const templateContents = fs.readFileSync(path.resolve(__dirname, './integration.ejs'), 'utf8');
-    const githubExampleTemplateContents = fs.readFileSync(path.resolve(__dirname, './integration.github.ejs'), 'utf8');
-
-    const configContents = fs.readFileSync(`./${nangoConfigFile}`, 'utf8');
-    const configData: NangoConfig = yaml.load(configContents) as unknown as NangoConfig;
-    const { integrations } = configData;
-    const { models } = configData;
-
-    const interfaceDefinitions = buildInterfaces(models, debug);
-
-    fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/${TYPES_FILE_NAME}`, interfaceDefinitions.join('\n'));
-
-    if (debug) {
-        printDebug(`Interfaces from the ${nangoConfigFile} file written to ${TYPES_FILE_NAME}`);
-    }
-
-    // insert NangoSync types to the bottom of the file
-    const typesContent = fs.readFileSync(`${getNangoRootPath()}/${NangoSyncTypesFileLocation}`, 'utf8');
-    fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/${TYPES_FILE_NAME}`, typesContent, { flag: 'a' });
-
-    if (debug) {
-        printDebug(`NangoSync types written to ${TYPES_FILE_NAME}`);
-    }
-
-    const allSyncNames: Record<string, boolean> = {};
-
-    for (let i = 0; i < Object.keys(integrations).length; i++) {
-        const providerConfigKey = Object.keys(integrations)[i] as string;
-        if (debug) {
-            printDebug(`Generating ${providerConfigKey} integrations`);
-        }
-        const syncObject = integrations[providerConfigKey] as unknown as { [key: string]: NangoIntegration };
-        const syncNames = Object.keys(syncObject);
-        for (let k = 0; k < syncNames.length; k++) {
-            const syncName = syncNames[k] as string;
-
-            if (allSyncNames[syncName] === undefined) {
-                allSyncNames[syncName] = true;
-            } else {
-                console.log(chalk.red(`The sync name ${syncName} is duplicated in the ${nangoConfigFile} file. All sync names must be unique.`));
-                process.exit(1);
-            }
-
-            if (debug) {
-                printDebug(`Generating ${syncName} integration`);
-            }
-            const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
-
-            if (!syncData.returns) {
-                console.log(
-                    chalk.red(
-                        `The ${syncName} integration is missing a returns property for what models the sync returns. Make sure you have "returns" instead of "return"`
-                    )
-                );
-                process.exit(1);
-            }
-
-            const { returns: models } = syncData;
-            const syncNameCamel = syncName
-                .split('-')
-                .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-                .join('');
-            const ejsTeamplateContents = syncName === exampleSyncName ? githubExampleTemplateContents : templateContents;
-            const rendered = ejs.render(ejsTeamplateContents, {
-                syncName: syncNameCamel,
-                interfaceFileName: TYPES_FILE_NAME.replace('.ts', ''),
-                interfaceNames: models.map((model) => {
-                    const singularModel = model?.charAt(model.length - 1) === 's' ? model.slice(0, -1) : model;
-                    return `${singularModel.charAt(0).toUpperCase()}${singularModel.slice(1)}`;
-                }),
-                mappings: models.map((model) => {
-                    const singularModel = model.charAt(model.length - 1) === 's' ? model.slice(0, -1) : model;
-                    return {
-                        name: model,
-                        type: `${singularModel.charAt(0).toUpperCase()}${singularModel.slice(1)}`
-                    };
-                })
-            });
-
-            if (!fs.existsSync(`${NANGO_INTEGRATIONS_LOCATION}/${syncName}.ts`)) {
-                fs.writeFileSync(`${NANGO_INTEGRATIONS_LOCATION}/${syncName}.ts`, rendered);
-                if (debug) {
-                    printDebug(`Created ${syncName}.ts file`);
-                }
-            } else {
-                if (debug) {
-                    printDebug(`${syncName}.ts file already exists, so will not overwrite it.`);
-                }
-            }
-        }
-    }
-
-    console.log(chalk.green(`Integration files have been created`));
 };
 
 const createModelFile = (notify = false) => {

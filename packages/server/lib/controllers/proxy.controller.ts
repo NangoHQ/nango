@@ -216,7 +216,7 @@ class ProxyController {
                     level: 'debug',
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
-                    content: `Proxy: API call configuration constructed successfully with the base api url set to ${template.proxy.base_url}`
+                    content: `Proxy: API call configuration constructed successfully with the base api url set to ${baseUrlOverride || template.proxy.base_url}`
                 });
             }
 
