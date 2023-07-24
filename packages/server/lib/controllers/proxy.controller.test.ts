@@ -323,4 +323,48 @@ describe('Proxy Controller Construct URL Tests', () => {
             'My-Token': 'sweet-secret-token'
         });
     });
+
+    it('Should handle Proxy base URL interpolation with connection configuration param', () => {
+        const config = {
+            template: {
+                auth_mode: AuthModes.OAuth2,
+                proxy: {
+                    base_url: 'https://www.zohoapis.${connectionConfig.params.extension}'
+                }
+            },
+            token: { apiKey: 'sweet-secret-token' },
+            endpoint: '/api/test'
+        };
+
+        const connection = {
+            connection_config: { 'connectionConfig.params.extension': 'eu' }
+        };
+
+        // @ts-ignore
+        const url = proxyController.constructUrl(config, connection);
+
+        expect(url).toBe('https://www.zohoapis.eu/api/test');
+    });
+
+    it('Should handle Proxy base URL interpolation with connection metadata param', () => {
+        const config = {
+            template: {
+                auth_mode: AuthModes.OAuth2,
+                proxy: {
+                    base_url: '${metadata.instance_url}'
+                }
+            },
+            token: { apiKey: 'sweet-secret-token' },
+            endpoint: '/api/test'
+        };
+
+        const connection = {
+            metadata: { instance_url: 'https://myinstanceurl.com' }
+        };
+
+        // @ts-ignore
+        const url = proxyController.constructUrl(config, connection);
+
+        expect(url).toBe('https://myinstanceurl.com/api/test');
+    });
 });

@@ -202,6 +202,11 @@ export function connectionCopyWithParsedConnectionConfig(connection: Connection)
     const connectionCopy = Object.assign({}, connection);
 
     const rawConfig: Record<string, string> = connectionCopy.connection_config;
+
+    if (!rawConfig || Object.keys(rawConfig).length === 0) {
+        return connectionCopy;
+    }
+
     const parsedConfig: Record<string, string> = {};
 
     Object.keys(rawConfig).forEach(function (key, _) {
