@@ -325,7 +325,10 @@ export const getAndReconcileSyncDifferences = async (
 
         // if it has connections but doesn't have an active sync then it is considered a new sync
         if (exists && connections.length > 0) {
-            const syncsByConnection = await findSyncByConnections(connections.map((connection) => connection.id as number));
+            const syncsByConnection = await findSyncByConnections(
+                connections.map((connection) => connection.id as number),
+                syncName
+            );
             isNew = syncsByConnection.length === 0;
         }
 
