@@ -312,7 +312,7 @@ export async function getSyncConfigByParams(environment_id: number, sync_name: s
 }
 
 export async function deleteSyncConfig(id: number): Promise<void> {
-    await schema().from<SyncConfig>(TABLE).where({ id, deleted: false }).update({ deleted: true, deleted_at: new Date() });
+    await schema().from<SyncConfig>(TABLE).where({ id, deleted: false }).update({ active: false, deleted: true, deleted_at: new Date() });
 }
 
 export async function deleteByConfigId(nango_config_id: number): Promise<void> {
