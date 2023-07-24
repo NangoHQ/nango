@@ -833,27 +833,6 @@ zendesk:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.params.subdomain}.zendesk.com/oauth/authorizations/new
     token_url: https://${connectionConfig.params.subdomain}.zendesk.com/oauth/tokens
-zoho-crm:
-    auth_mode: OAUTH2
-    authorization_url: https://accounts.zoho.com/oauth/v2/auth
-    token_url: https://accounts.zoho.com/oauth/v2/token
-    authorization_params:
-        response_type: code
-        access_type: offline
-zoho-desk:
-    auth_mode: OAUTH2
-    authorization_url: https://accounts.zoho.${connectionConfig.params.extension}/oauth/v2/auth
-    token_url: https://accounts.zoho.${connectionConfig.params.extension}/oauth/v2/token
-    authorization_params:
-        response_type: code
-        access_type: offline
-zoho-invoice:
-    auth_mode: OAUTH2
-    authorization_url: https://accounts.zoho.com/oauth/v2/auth
-    token_url: https://accounts.zoho.com/oauth/v2/token
-    authorization_params:
-        prompt: consent
-        access_type: offline
 zenefits:
     auth_mode: OAUTH2
     authorization_url: https://secure.zenefits.com/oauth2/platform-authorize
@@ -864,13 +843,23 @@ zenefits:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
-zoho-books:
+zoho:
     auth_mode: OAUTH2
-    authorization_url: https://accounts.zoho.com/oauth/v2/auth
-    token_url: https://accounts.zoho.com/oauth/v2/token
+    authorization_url: https://accounts.zoho.${connectionConfig.params.extension}/oauth/v2/auth
+    token_url: https://accounts.zoho.${connectionConfig.params.extension}/oauth/v2/token
     authorization_params:
         prompt: consent
         access_type: offline
+zoho-books:
+    alias: zoho
+zoho-crm:
+    alias: zoho
+zoho-desk:
+    alias: zoho
+zoho-inventory:
+    alias: zoho
+zoho-invoice:
+    alias: zoho
 zoom:
     auth_mode: OAUTH2
     authorization_url: https://zoom.us/oauth/authorize
