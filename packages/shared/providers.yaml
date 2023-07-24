@@ -816,7 +816,7 @@ wave-accounting:
 workable:
     auth_mode: API_KEY
     proxy:
-        header:
+        headers:
             Authorization: Bearer ${apiKey}
         base_url: https://${connectionConfig.params.subdomain}.workable.com
 xero:
