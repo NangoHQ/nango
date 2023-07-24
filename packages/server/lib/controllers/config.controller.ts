@@ -206,7 +206,7 @@ class ConfigController {
 
             const oauth_client_id = req.body['oauth_client_id'] ?? null;
             const oauth_client_secret = req.body['oauth_client_secret'] ?? null;
-            const oauth_scopes = req.body['oauth_scopes'] ?? null;
+            const oauth_scopes = req.body['oauth_scopes'] ?? '';
 
             const config: ProviderConfig = {
                 unique_key: uniqueConfigKey,
@@ -219,7 +219,7 @@ class ConfigController {
                           .split(',')
                           .filter((w: string) => w)
                           .join(',')
-                    : null,
+                    : '',
                 environment_id: environmentId
             };
 

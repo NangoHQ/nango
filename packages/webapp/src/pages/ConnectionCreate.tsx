@@ -147,7 +147,6 @@ export default function IntegrationCreate() {
                 params: connectionConfigParams || {},
                 authorization_params: authorizationParams || {},
                 hmac: hmacDigest || '',
-                // @ts-ignore
                 credentials
 
             })

@@ -52,7 +52,7 @@ export default class Nango {
         connectionId: string,
         conectionConfigOrCredentials?: ConnectionConfig | BasicApiCredentials | ApiKeyCredentials
     ): Promise<any> {
-        if (conectionConfigOrCredentials && 'credentials' in conectionConfigOrCredentials && Object.keys(conectionConfigOrCredentials.credentials).length > 1) {
+        if (conectionConfigOrCredentials && 'credentials' in conectionConfigOrCredentials && Object.keys(conectionConfigOrCredentials.credentials).length > 0) {
             const credentials = conectionConfigOrCredentials.credentials as BasicApiCredentials | ApiKeyCredentials;
             const { credentials: _, ...connectionConfig } = conectionConfigOrCredentials as ConnectionConfig;
             return this.apiAuth(providerConfigKey, connectionId, this.convertCredentialsToConfig(credentials), connectionConfig);
@@ -60,7 +60,6 @@ export default class Nango {
 
         const url =
             this.hostBaseUrl + `/oauth/connect/${providerConfigKey}${this.toQueryString(connectionId, conectionConfigOrCredentials as ConnectionConfig)}`;
-        console.log(url);
 
         try {
             new URL(url);

@@ -89,13 +89,11 @@ class ConnectionService {
                     provider_config_key: providerConfigKey,
                     credentials,
                     connection_config: connectionConfig,
-                    environment_id,
-                    deleted: false,
-                    deleted_at: null
+                    environment_id
                 }),
                 ['id']
             )
-            .onConflict(['provider_config_key', 'connection_id', 'environment_id', 'deleted_at'])
+            .onConflict(['provider_config_key', 'connection_id', 'environment_id'])
             .merge();
 
         analytics.track('server:connection_upserted', accountId, { provider });
@@ -175,10 +173,7 @@ class ConnectionService {
     }
 
     public async checkIfConnectionExists(connection_id: string, provider_config_key: string, environment_id: number): Promise<boolean> {
-        const result = await schema()
-            .select('id')
-            .from<StoredConnection>('_nango_connections')
-            .where({ connection_id, provider_config_key, environment_id, deleted: false });
+        const result = await schema().select('id').from<StoredConnection>('_nango_connections').where({ connection_id, provider_config_key, environment_id });
 
         return result && result.length > 0;
     }

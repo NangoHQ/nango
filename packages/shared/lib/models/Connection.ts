@@ -1,8 +1,9 @@
 import type { AuthCredentials, ApiKeyCredentials, BasicApiCredentials } from './Auth.js';
-import type { TimestampsAndDeleted } from './Generic.js';
 
 export interface BaseConnection extends TimestampsAndDeleted {
     id?: number;
+    created_at?: string;
+    updated_at?: string;
     provider_config_key: string;
     connection_id: string;
     connection_config: Record<string, string>;
@@ -21,7 +22,7 @@ export interface Connection extends BaseConnection {
     credentials: AuthCredentials | ApiKeyCredentials | BasicApiCredentials;
 }
 
-export interface ApiConnection extends TimestampsAndDeleted {
+export interface ApiConnection {
     id?: number;
     connection_id: string;
     provider_config_key: string;

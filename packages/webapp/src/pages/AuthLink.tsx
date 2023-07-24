@@ -59,7 +59,6 @@ export default function AuthLink() {
                 user_scope: userScopes,
                 params: params ? JSON.parse(params) : {},
                 authorization_params: authorizationParams ? JSON.parse(authorizationParams) : {},
-                // @ts-ignore
                 credentials
             })
             .then(() => {

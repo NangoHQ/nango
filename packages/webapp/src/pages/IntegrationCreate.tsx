@@ -63,7 +63,7 @@ export default function IntegrationCreate() {
                     const data = await res.json();
                     setIntegration(data['config']);
                     const currentIntegration = data['config'];
-                    if (currentIntegration.clientId === null && currentIntegration.clientSecret === null && currentIntegration.scopes === null) {
+                    if (currentIntegration.clientId === null && currentIntegration.clientSecret === null && currentIntegration.scopes === '') {
                         // set to either api type to not have empty credentials fields
                         setAuthMode(AuthModes.Basic);
                     }
