@@ -97,7 +97,6 @@ export default class Nango {
             // Save authorization status (for handler)
             this.status = AuthorizationStatus.BUSY;
 
-            console.log(debugLogPrefix, `Opening authorization modal...`);
             // Open authorization modal
             new AuthorizationModal(this.websocketsBaseUrl, url, successHandler, errorHandler, this.debug);
         });
