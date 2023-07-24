@@ -59,7 +59,7 @@ class ConnectionService {
             encryptedConnection.updated_at = new Date();
             await db.knex.withSchema(db.schema()).from<StoredConnection>(`_nango_connections`).where({ id: storedConnectionId }).update(encryptedConnection);
 
-            analytics.track('server:connection_upserted', accountId, { provider });
+            analytics.track('server:connection_updated', accountId, { provider });
 
             return [{ id: storedConnectionId }];
         }
@@ -79,7 +79,7 @@ class ConnectionService {
                 ['id']
             );
 
-        analytics.track('server:connection_upserted', accountId, { provider });
+        analytics.track('server:connection_inserted', accountId, { provider });
 
         return id;
     }
@@ -106,7 +106,7 @@ class ConnectionService {
             encryptedConnection.updated_at = new Date();
             await db.knex.withSchema(db.schema()).from<StoredConnection>(`_nango_connections`).where({ id: storedConnectionId }).update(encryptedConnection);
 
-            analytics.track('server:api_connection_upserted', accountId, { provider });
+            analytics.track('server:api_key_connection_updated', accountId, { provider });
 
             return [{ id: storedConnectionId }];
         }
@@ -122,9 +122,7 @@ class ConnectionService {
                     environment_id
                 }),
                 ['id']
-            )
-            .onConflict(['provider_config_key', 'connection_id', 'environment_id', 'deleted_at'])
-            .merge();
+            );
 
         analytics.track('server:api_key_connection_inserted', accountId, { provider });
 

@@ -55,7 +55,8 @@ export const getLatestSyncJob = async (sync_id: string): Promise<SyncJob | null>
 
 export const updateSyncJobStatus = async (id: number, status: SyncStatus): Promise<void> => {
     return schema().from<SyncJob>(SYNC_JOB_TABLE).where({ id, deleted: false }).update({
-        status
+        status,
+        updated_at: new Date()
     });
 };
 
