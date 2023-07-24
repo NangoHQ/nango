@@ -334,7 +334,12 @@ class ConnectionService {
         return await db.knex
             .withSchema(db.schema())
             .from<Connection>(`_nango_connections`)
-            .where({ connection_id: connection.connection_id, provider_config_key: providerConfigKey, environment_id })
+            .where({
+                connection_id: connection.connection_id,
+                provider_config_key: providerConfigKey,
+                environment_id,
+                deleted: false
+            })
             .update({ deleted: true, deleted_at: new Date() });
     }
 
