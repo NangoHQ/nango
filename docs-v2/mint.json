@@ -187,6 +187,7 @@
                 "integrations/all/mailchimp",
                 "integrations/all/microsoft-teams",
                 "integrations/all/miro",
+                "integrations/all/mixpanel",
                 "integrations/all/monday",
                 "integrations/all/mural",
                 "integrations/all/netsuite",
