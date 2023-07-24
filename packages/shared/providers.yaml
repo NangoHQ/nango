@@ -850,6 +850,8 @@ zoho:
     authorization_params:
         prompt: consent
         access_type: offline
+    proxy:
+        base_url: https://www.zohoapis.${connectionConfig.params.extension}
 zoho-books:
     alias: zoho
 zoho-crm:

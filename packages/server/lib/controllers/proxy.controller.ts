@@ -26,7 +26,9 @@ import {
     getEnvironmentId,
     interpolateIfNeeded,
     AuthModes,
-    OAuth2Credentials
+    OAuth2Credentials,
+    connectionCopyWithParsedConnectionConfig,
+    mapProxyBaseUrlInterpolationFormat
 } from '@nangohq/shared';
 import type { ProxyBodyConfiguration } from '../models.js';
 
@@ -636,7 +638,10 @@ class ProxyController {
             endpoint += `${apiKeyProp}=${token.apiKey}`;
         }
 
-        const fullEndpoint = interpolateIfNeeded(`${base}/${endpoint}`, connection as unknown as Record<string, string>);
+        const fullEndpoint = interpolateIfNeeded(
+            `${mapProxyBaseUrlInterpolationFormat(base)}/${endpoint}`,
+            connectionCopyWithParsedConnectionConfig(connection) as unknown as Record<string, string>
+        );
 
         return fullEndpoint;
     }
