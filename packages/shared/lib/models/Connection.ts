@@ -11,6 +11,7 @@ export interface BaseConnection extends TimestampsAndDeleted {
     credentials_iv?: string | null;
     credentials_tag?: string | null;
     field_mappings?: Record<string, string>;
+    last_fetched_at?: Date | null;
 }
 
 export interface StoredConnection extends BaseConnection {

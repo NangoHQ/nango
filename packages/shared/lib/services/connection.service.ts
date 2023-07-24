@@ -57,7 +57,11 @@ class ConnectionService {
                 metadata: metadata
             });
             encryptedConnection.updated_at = new Date();
-            await db.knex.withSchema(db.schema()).from<StoredConnection>(`_nango_connections`).where({ id: storedConnectionId }).update(encryptedConnection);
+            await db.knex
+                .withSchema(db.schema())
+                .from<StoredConnection>(`_nango_connections`)
+                .where({ id: storedConnectionId, deleted: false })
+                .update(encryptedConnection);
 
             analytics.track('server:connection_updated', accountId, { provider });
 
@@ -104,7 +108,11 @@ class ConnectionService {
                 environment_id
             });
             encryptedConnection.updated_at = new Date();
-            await db.knex.withSchema(db.schema()).from<StoredConnection>(`_nango_connections`).where({ id: storedConnectionId }).update(encryptedConnection);
+            await db.knex
+                .withSchema(db.schema())
+                .from<StoredConnection>(`_nango_connections`)
+                .where({ id: storedConnectionId, deleted: false })
+                .update(encryptedConnection);
 
             analytics.track('server:api_key_connection_updated', accountId, { provider });
 
@@ -397,8 +405,17 @@ class ConnectionService {
         }
 
         analytics.track('server:connection_fetched', accountId, { provider: config?.provider });
+        await this.updateLastFetched(connection?.id as number);
 
         return connection;
+    }
+
+    public async updateLastFetched(connectionId: number) {
+        await db.knex
+            .withSchema(db.schema())
+            .from<Connection>(`_nango_connections`)
+            .where({ id: connectionId, deleted: false })
+            .update({ last_fetched_at: new Date() });
     }
 
     // Parses and arbitrary object (e.g. a server response or a user provided auth object) into AuthCredentials.
