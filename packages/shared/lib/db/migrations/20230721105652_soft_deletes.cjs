@@ -10,7 +10,6 @@ const tables = [
     SYNCS_TABLE,
     SYNC_CONFIGS_TABLE,
     CONFIGS_TABLE,
-    SYNC_DATA_RECORDS_TABLE,
     SYNC_JOBS_TABLE,
     SYNC_SCHEDULES_TABLE,
 ];
@@ -19,7 +18,7 @@ exports.up = async function (knex, _) {
     for (const nangoTable of tables) {
         await knex.schema.withSchema('nango').alterTable(nangoTable, function (table) {
             table.boolean('deleted').defaultTo(false);
-            table.dateTime('deleted_at');
+            table.dateTime('deleted_at').defaultTo(null);
         });
     }
 };

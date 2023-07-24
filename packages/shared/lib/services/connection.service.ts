@@ -17,7 +17,6 @@ import {
     createActivityLogMessageAndEnd,
     updateProvider as updateProviderActivityLog
 } from '../services/activity/activity.service.js';
-import connectionService from '../services/connection.service.js';
 import providerClient from '../clients/provider.client.js';
 import configService from '../services/config.service.js';
 import { deleteScheduleForConnection as deleteSyncScheduleForConnection } from '../services/sync/schedule.service.js';
@@ -46,7 +45,25 @@ class ConnectionService {
         accountId: number,
         metadata: Record<string, string>
     ) {
-        console.log('ummm');
+        const storedConnectionId = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment_id);
+
+        if (storedConnectionId) {
+            const encryptedConnection = encryptionManager.encryptConnection({
+                connection_id: connectionId,
+                provider_config_key: providerConfigKey,
+                credentials: parsedRawCredentials,
+                connection_config: connectionConfig,
+                environment_id,
+                metadata: metadata
+            });
+            encryptedConnection.updated_at = new Date();
+            await db.knex.withSchema(db.schema()).from<StoredConnection>(`_nango_connections`).where({ id: storedConnectionId }).update(encryptedConnection);
+
+            analytics.track('server:connection_upserted', accountId, { provider });
+
+            return [{ id: storedConnectionId }];
+        }
+
         const id = await db.knex
             .withSchema(db.schema())
             .from<StoredConnection>(`_nango_connections`)
@@ -57,14 +74,10 @@ class ConnectionService {
                     credentials: parsedRawCredentials,
                     connection_config: connectionConfig,
                     environment_id,
-                    metadata: metadata,
-                    deleted: false,
-                    deleted_at: null
+                    metadata: metadata
                 }),
                 ['id']
-            )
-            .onConflict(['provider_config_key', 'connection_id', 'environment_id', 'deleted_at'])
-            .merge();
+            );
 
         analytics.track('server:connection_upserted', accountId, { provider });
 
@@ -80,6 +93,23 @@ class ConnectionService {
         environment_id: number,
         accountId: number
     ) {
+        const storedConnectionId = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment_id);
+
+        if (storedConnectionId) {
+            const encryptedConnection = encryptionManager.encryptConnection({
+                connection_id: connectionId,
+                provider_config_key: providerConfigKey,
+                credentials,
+                connection_config: connectionConfig,
+                environment_id
+            });
+            encryptedConnection.updated_at = new Date();
+            await db.knex.withSchema(db.schema()).from<StoredConnection>(`_nango_connections`).where({ id: storedConnectionId }).update(encryptedConnection);
+
+            analytics.track('server:api_connection_upserted', accountId, { provider });
+
+            return [{ id: storedConnectionId }];
+        }
         const id = await db.knex
             .withSchema(db.schema())
             .from<StoredConnection>(`_nango_connections`)
@@ -93,10 +123,10 @@ class ConnectionService {
                 }),
                 ['id']
             )
-            .onConflict(['provider_config_key', 'connection_id', 'environment_id'])
+            .onConflict(['provider_config_key', 'connection_id', 'environment_id', 'deleted_at'])
             .merge();
 
-        analytics.track('server:connection_upserted', accountId, { provider });
+        analytics.track('server:api_key_connection_inserted', accountId, { provider });
 
         return id;
     }
@@ -172,10 +202,19 @@ class ConnectionService {
         return result[0];
     }
 
-    public async checkIfConnectionExists(connection_id: string, provider_config_key: string, environment_id: number): Promise<boolean> {
-        const result = await schema().select('id').from<StoredConnection>('_nango_connections').where({ connection_id, provider_config_key, environment_id });
+    public async checkIfConnectionExists(connection_id: string, provider_config_key: string, environment_id: number): Promise<null | number> {
+        const result = await schema().select('id').from<StoredConnection>('_nango_connections').where({
+            connection_id,
+            provider_config_key,
+            environment_id,
+            deleted: false
+        });
 
-        return result && result.length > 0;
+        if (!result || result.length == 0 || !result[0]) {
+            return null;
+        }
+
+        return result[0].id;
     }
 
     public async getConnection(connectionId: string, providerConfigKey: string, environment_id: number): Promise<Connection | null> {
@@ -314,7 +353,7 @@ class ConnectionService {
             return;
         }
 
-        const connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, environmentId);
+        const connection: Connection | null = await this.getConnection(connectionId, providerConfigKey, environmentId);
 
         if (connection === null && activityLogId) {
             await createActivityLogMessageAndEnd({
@@ -349,7 +388,7 @@ class ConnectionService {
         const template: ProviderTemplate | undefined = configService.getTemplate(config?.provider as string);
 
         if (connection?.credentials?.type === ProviderAuthModes.OAuth2) {
-            connection.credentials = await connectionService.refreshOauth2CredentialsIfNeeded(
+            connection.credentials = await this.refreshOauth2CredentialsIfNeeded(
                 connection as Connection,
                 config as ProviderConfig,
                 template as ProviderTemplateOAuth2,
