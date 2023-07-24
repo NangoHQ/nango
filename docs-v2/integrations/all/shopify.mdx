@@ -14,8 +14,8 @@ API configuration: [`shopify`](https://nango.dev/providers.yaml)
 | [Auth (OAuth)](/guides/oauth)                                                      | ✅                              |
 | [Sync](/guides/sync)                                                              | ✅                              |
 | [Nango Proxy](/guides/proxy)                          | ✅   |
-| [Auto-pagination](/nango-sync/configuration#auto-pagination)                     | 🚫 (time to contribute: &lt;1h) |
-| [API-specific rate limits](/nango-sync/configuration#rate-limits-retry-policies) | 🚫 (time to contribute: &lt;1h) |
+| Auto-pagination                     | 🚫 (time to contribute: &lt;1h) |
+| API-specific rate limits | 🚫 (time to contribute: &lt;1h) |
 
 <Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
 ## Getting started
@@ -29,6 +29,6 @@ API configuration: [`shopify`](https://nango.dev/providers.yaml)
 
 ## API gotchas
 
--   You need to set the correct shop subdomain when you call `nango.auth()` in the frontend. Use the `subdomain` parameter as [explained here](/nango-auth/configuration#connection-configuration).
+-   You need to set the correct shop subdomain when you call `nango.auth()` in the frontend. Use the `subdomain` parameter as [explained here](/guides/oauth#connection-configuration).
 
 <Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/shopify.mdx)</Note>
