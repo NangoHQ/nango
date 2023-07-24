@@ -430,6 +430,10 @@ microsoft-teams:
     authorization_params:
         response_type: code
         response_mode: query
+mixpanel:
+    auth_mode: BASIC
+    proxy:
+        base_url: https://mixpanel.com
 miro:
     auth_mode: OAUTH2
     authorization_url: https://miro.com/oauth/authorize
