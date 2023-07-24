@@ -80,18 +80,17 @@ program
 program
     .command('init')
     .description('Initialize a new Nango project')
-    .action(function (this: Command) {
+    .action(async function (this: Command) {
         const { debug } = this.opts();
-        init(debug);
+        await init(debug);
     });
 
 program
     .command('generate')
     .description('Generate a new Nango integration')
     .action(async function (this: Command) {
-        const { autoConfirm, debug } = this.opts();
-        await verifyNecessaryFiles(autoConfirm, debug);
-        generate(debug);
+        const { debug } = this.opts();
+        await generate(debug);
     });
 
 program
@@ -112,7 +111,7 @@ program
     .option('--no-compile-interfaces', `Watch the ${nangoConfigFile} and recompile the interfaces on change`, true)
     .action(async function (this: Command) {
         const { compileInterfaces, autoConfirm, debug } = this.opts();
-        await verifyNecessaryFiles(autoConfirm, debug);
+        await verifyNecessaryFiles(autoConfirm, debug, false);
 
         if (compileInterfaces) {
             configWatch(debug);
