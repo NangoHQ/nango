@@ -105,6 +105,7 @@ export const getSyncsFlat = async (nangoConnection: Connection): Promise<SyncWit
         .join(SYNC_SCHEDULE_TABLE, `${SYNC_SCHEDULE_TABLE}.sync_id`, `${TABLE}.id`)
         .where({
             nango_connection_id: nangoConnection.id,
+            [`${SYNC_SCHEDULE_TABLE}.deleted`]: false,
             [`${TABLE}.deleted`]: false
         });
 
@@ -156,6 +157,7 @@ export const getSyncs = async (nangoConnection: Connection): Promise<Sync[]> => 
                     FROM nango.${SYNC_JOB_TABLE}
                     JOIN nango.${SYNC_CONFIG_TABLE} ON nango.${SYNC_CONFIG_TABLE}.id = nango.${SYNC_JOB_TABLE}.sync_config_id
                     WHERE nango.${SYNC_JOB_TABLE}.sync_id = nango.${TABLE}.id
+                    AND nango.${SYNC_JOB_TABLE}.deleted = false
                     ORDER BY nango.${SYNC_JOB_TABLE}.updated_at DESC
                     LIMIT 1
                 ) as latest_sync
@@ -166,6 +168,8 @@ export const getSyncs = async (nangoConnection: Connection): Promise<Sync[]> => 
         .join(SYNC_SCHEDULE_TABLE, `${SYNC_SCHEDULE_TABLE}.sync_id`, `${TABLE}.id`)
         .where({
             nango_connection_id: nangoConnection.id,
+            [`${SYNC_SCHEDULE_TABLE}.deleted`]: false,
+            [`${SYNC_JOB_TABLE}.deleted`]: false,
             [`${TABLE}.deleted`]: false
         })
         .orderBy(`${TABLE}.name`, 'asc')
@@ -214,6 +218,7 @@ export const getSyncsByProviderConfigKey = async (environment_id: number, provid
         .where({
             environment_id,
             provider_config_key: providerConfigKey,
+            [`_nango_connections.deleted`]: false,
             [`${TABLE}.deleted`]: false
         });
 
@@ -230,6 +235,7 @@ export const getSyncsByProviderConfigAndSyncName = async (environment_id: number
             environment_id,
             provider_config_key: providerConfigKey,
             name: syncName,
+            [`_nango_connections.deleted`]: false,
             [`${TABLE}.deleted`]: false
         });
 

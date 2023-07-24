@@ -351,6 +351,7 @@ export async function getActiveSyncConfigsByEnvironmentId(environment_id: number
         .where({
             active: true,
             '_nango_configs.environment_id': environment_id,
+            '_nango_configs.deleted': false,
             [`${TABLE}.deleted`]: false
         });
 
@@ -379,6 +380,7 @@ export async function getSyncConfigsWithConnectionsByEnvironmentId(environment_i
                     FROM nango._nango_connections
                     WHERE _nango_configs.environment_id = _nango_connections.environment_id
                     AND _nango_configs.unique_key = _nango_connections.provider_config_key
+                    AND nango._nango_connections.deleted = false
                 ) as connections
                 `
             )
@@ -388,6 +390,7 @@ export async function getSyncConfigsWithConnectionsByEnvironmentId(environment_i
         .where({
             '_nango_configs.environment_id': environment_id,
             active: true,
+            '_nango_configs.deleted': false,
             [`${TABLE}.deleted`]: false
         });
 
@@ -407,6 +410,7 @@ export async function getSyncConfigsByProviderConfigKey(environment_id: number, 
             '_nango_configs.environment_id': environment_id,
             '_nango_configs.unique_key': providerConfigKey,
             active: true,
+            '_nango_configs.deleted': false,
             [`${TABLE}.deleted`]: false
         });
 
@@ -420,6 +424,7 @@ export async function getSyncConfigByJobId(job_id: number): Promise<SyncConfig |
         .join('_nango_sync_jobs', `${TABLE}.id`, '_nango_sync_jobs.sync_config_id')
         .where({
             '_nango_sync_jobs.id': job_id,
+            '_nango_sync_jobs.deleted': false,
             [`${TABLE}.deleted`]: false
         })
         .first()
@@ -441,6 +446,7 @@ export async function getProviderConfigBySyncAndAccount(sync_name: string, envir
             active: true,
             sync_name,
             '_nango_configs.environment_id': environment_id,
+            '_nango_configs.deleted': false,
             [`${TABLE}.deleted`]: false
         })
         .first();
