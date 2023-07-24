@@ -41,7 +41,7 @@ class ConfigController {
                     uniqueKey: config.unique_key,
                     provider: config.provider,
                     connectionCount: connections.filter((connection) => connection.provider === config.unique_key).length,
-                    creationDate: config.created_at as unknown as Date
+                    creationDate: config.created_at
                 };
                 if (template) {
                     integration['connectionConfigParams'] = parseConnectionConfigParamsFromTemplate(template!);
