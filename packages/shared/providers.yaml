@@ -9,6 +9,8 @@ accelo:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.params.subdomain}.api.accelo.com/api/v0
 adobe:
     auth_mode: OAUTH2
     authorization_url: https://ims-na1.adobelogin.com/ims/authorize/v2
@@ -41,6 +43,8 @@ amazon:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.params.subdomain}.api.accelo.com/api/v0
 amplitude:
     auth_mode: BASIC
     proxy:
@@ -76,6 +80,8 @@ atlassian:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        base_url: https://api.atlassian.com/ex
 bamboohr:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.bamboohr.com/authorize.php
@@ -86,6 +92,8 @@ bamboohr:
     token_params:
         grant_type: authorization_code
         request: token
+    proxy:
+        base_url: https://api.bamboohr.com/api/gateway.php/${connectionConfig.params.subdomain}/v1
 battlenet:
     auth_mode: OAUTH2
     authorization_url: https://oauth.battle.${connectionConfig.extension}/authorize
@@ -98,6 +106,8 @@ bitbucket:
     auth_mode: OAUTH2
     authorization_url: https://bitbucket.org/site/oauth2/authorize
     token_url: https://bitbucket.org/site/oauth2/access_token
+    proxy:
+        base_url: https://api.bitbucket.org/2.0
 boldsign:
     auth_mode: OAUTH2
     authorization_url: https://account.boldsign.com/connect/authorize
@@ -108,10 +118,14 @@ boldsign:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        base_url: https://api.boldsign.com/v1
 box:
     auth_mode: OAUTH2
     authorization_url: https://account.box.com/api/oauth2/authorize
     token_url: https://api.box.com/oauth2/token
+    proxy:
+        base_url: https://api.box.com/2.0
 braintree:
     auth_mode: OAUTH2
     authorization_url: https://api.braintreegateway.com/oauth/connect
@@ -139,21 +153,30 @@ brex:
     authorization_url: https://accounts-api.brex.com/oauth2/default/v1/authorize
     token_url: https://accounts-api.brex.com/oauth2/default/v1/token
     default_scopes:
+        - openid
         - offline_access
+    proxy:
+        base_url: https://platform.brexapis.com/v1
 brex-staging:
     auth_mode: OAUTH2
     authorization_url: https://accounts-api.staging.brexapps.com/oauth2/default/v1/authorize
     token_url: https://accounts-api.staging.brexapps.com/oauth2/default/v1/token
+    proxy:
+        base_url: https://platform.staging.brexapis.com/v1
 calendly:
     auth_mode: OAUTH2
     authorization_url: https://auth.calendly.com/oauth/authorize
     token_url: https://auth.calendly.com/oauth/token
     authorization_params:
         response_type: code
+    proxy:
+        base_url: https://api.calendly.com
 clickup:
     auth_mode: OAUTH2
     authorization_url: https://app.clickup.com/api
     token_url: https://api.clickup.com/api/v2/oauth/token
+    proxy:
+        base_url: https://api.clickup.com/api/v2
 confluence:
     alias: jira
 contentstack:
@@ -171,6 +194,8 @@ deel:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        base_url: https://api.letsdeel.com/rest/v1
 deel-sandbox:
     auth_mode: OAUTH2
     authorization_url: https://auth-demo.letsdeel.com/oauth2/authorize
@@ -182,6 +207,8 @@ deel-sandbox:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        base_url: https://api-staging.letsdeel.com/rest/v1
 digitalocean:
     auth_mode: OAUTH2
     authorization_url: https://cloud.digitalocean.com/v1/oauth/authorize
@@ -192,18 +219,16 @@ digitalocean:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        base_url: https://api.digitalocean.com/v2
 discord:
     auth_mode: OAUTH2
     authorization_url: https://discord.com/api/oauth2/authorize
     token_url: https://discord.com/api/oauth2/token
     authorization_params:
         response_type: code
-dropbox:
-    auth_mode: OAUTH2
-    authorization_url: https://www.dropbox.com/oauth2/authorize
-    token_url: https://api.dropboxapi.com/oauth2/token
-    authorization_params:
-        token_access_type: offline
+    proxy:
+        base_url: https://discord.com/api/10
 docusign:
     auth_mode: OAUTH2
     authorization_url: https://account.docusign.com/oauth/auth
@@ -215,6 +240,8 @@ docusign:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        base_url: https://www.docusign.net/restapi
 docusign-sandbox:
     auth_mode: OAUTH2
     authorization_url: https://account-d.docusign.com/oauth/auth
@@ -226,11 +253,23 @@ docusign-sandbox:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        base_url: https://demo.docusign.net/restapi
+dropbox:
+    auth_mode: OAUTH2
+    authorization_url: https://www.dropbox.com/oauth2/authorize
+    token_url: https://api.dropboxapi.com/oauth2/token
+    authorization_params:
+        token_access_type: offline
+    proxy:
+        base_url: https://api.dropboxapi.com/2
 epic-games:
     auth_mode: OAUTH2
     authorization_url: https://www.epicgames.com/id/authorize
     token_url: https://api.epicgames.dev/epic/oauth/v1/token
     authorization_method: header
+    proxy:
+        base_url: https://api.epicgames.dev
 exact-online:
     auth_mode: OAUTH2
     authorization_url: https://start.exactonline.${connectionConfig.extension}/api/oauth2/auth
@@ -252,6 +291,8 @@ facebook:
     auth_mode: OAUTH2
     authorization_url: https://www.facebook.com/v15.0/dialog/oauth
     token_url: https://graph.facebook.com/v15.0/oauth/access_token
+    proxy:
+        base_url: https://graph.facebook.com
 figjam:
     alias: figma
 figma:
@@ -260,21 +301,29 @@ figma:
     token_url: https://www.figma.com/api/oauth/token
     refresh_url: https://www.figma.com/api/oauth/refresh
     disable_pkce: true
+    proxy:
+        base_url: https://api.figma.com
 fitbit:
     auth_mode: OAUTH2
     authorization_url: https://www.fitbit.com/oauth2/authorize
     token_url: https://api.fitbit.com/oauth2/token
     authorization_method: header
+    proxy:
+        base_url: https://api.fitbit.com/1
 freshbooks:
     auth_mode: OAUTH2
     authorization_url: https://auth.freshbooks.com/oauth/authorize
     token_url: https://api.freshbooks.com/auth/oauth/token
     authorization_params:
         response_type: code
+    proxy:
+        base_url: https://api.freshbooks.com
 front:
     auth_mode: OAUTH2
     authorization_url: https://app.frontapp.com/oauth/authorize
     token_url: https://app.frontapp.com/oauth/token
+    proxy:
+        base_url:  https://api2.frontapp.com
 github:
     auth_mode: OAUTH2
     authorization_url: https://github.com/login/oauth/authorize
@@ -388,6 +437,8 @@ jira:
     authorization_params:
         audience: api.atlassian.com
         prompt: consent
+    proxy:
+        base_url: https://api.atlassian.com/ex
 keap:
     auth_mode: OAUTH2
     authorization_url: https://accounts.infusionsoft.com/app/oauth/authorize
