@@ -90,3 +90,7 @@ export function verifyUniqueKeysAreUnique(data: DataResponse[], optionalUniqueKe
 
     return { isUnique, nonUniqueKey };
 }
+
+export async function deleteRecordsBySyncId(sync_id: string): Promise<void> {
+    await schema().from<SyncDataRecord>('_nango_sync_data_records').where({ sync_id }).del();
+}

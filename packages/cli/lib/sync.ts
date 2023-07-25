@@ -25,7 +25,7 @@ import type {
     NangoIntegrationData,
     SimplifiedNangoIntegration
 } from '@nangohq/shared';
-import { loadSimplifiedConfig, cloudHost, stagingHost, SyncType, syncRunService, nangoConfigFile, checkForIntegrationFile } from '@nangohq/shared';
+import { analytics, loadSimplifiedConfig, cloudHost, stagingHost, SyncType, syncRunService, nangoConfigFile, checkForIntegrationFile } from '@nangohq/shared';
 import {
     hostport,
     port,
@@ -609,6 +609,14 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
     try {
         const secretKey = process.env['NANGO_SECRET_KEY'];
         const results = await syncRun.run(lastSyncDate, true, secretKey, process.env['NANGO_HOSTPORT']);
+
+        analytics.trackByEnvironmentId('sync:cli_dry_run_performed', nangoConnection.environment_id, {
+            connection_id: nangoConnection.id,
+            sync_name: syncName,
+            provider_config_key: providerConfigKey,
+            last_sync_date: lastSyncDate?.toISOString()
+        });
+
         console.log(JSON.stringify(results, null, 2));
         process.exit(0);
     } catch (e) {

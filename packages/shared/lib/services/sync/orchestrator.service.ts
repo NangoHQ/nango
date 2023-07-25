@@ -1,5 +1,7 @@
 import { deleteSyncConfig, deleteSyncFilesForConfig } from './config.service.js';
-import { deleteScheduleForSync } from './schedule.service.js';
+import { deleteScheduleForSync, deleteSchedulesBySyncId as deleteSyncSchedulesBySyncId } from './schedule.service.js';
+import { deleteJobsBySyncId as deleteSyncJobsBySyncId } from './job.service.js';
+import { deleteRecordsBySyncId as deleteSyncResultsBySyncId } from './data-records.service.js';
 import { createSync, deleteSync } from './sync.service.js';
 import { createActivityLogMessage } from '../activity/activity.service.js';
 import SyncClient from '../../clients/sync.client.js';
@@ -98,6 +100,12 @@ export class Orchestrator {
     public async deleteSync(syncId: string) {
         await deleteScheduleForSync(syncId as string);
         await deleteSync(syncId as string);
+    }
+
+    public async deleteSyncRelatedObjects(syncId: string) {
+        await deleteSyncJobsBySyncId(syncId);
+        await deleteSyncSchedulesBySyncId(syncId);
+        await deleteSyncResultsBySyncId(syncId);
     }
 }
 

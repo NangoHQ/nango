@@ -5,6 +5,7 @@ import errorManager from './error.manager.js';
 import { readFileSync } from 'fs';
 import path from 'path';
 import accountService from '../services/account.service.js';
+import environmentService from '../services/environment.service.js';
 import userService from '../services/user.service.js';
 import type { Account, User } from '../models/Admin.js';
 
@@ -65,6 +66,18 @@ class Analytics {
             });
         } catch (e) {
             errorManager.report(e, { accountId: accountId });
+        }
+    }
+
+    public async trackByEnvironmentId(
+        name: string,
+        environmentId: number,
+        eventProperties?: Record<string | number, any>,
+        userProperties?: Record<string | number, any>
+    ) {
+        const accountId = await environmentService.getAccountIdFromEnvironment(environmentId);
+        if (accountId) {
+            this.track(name, accountId as number, eventProperties, userProperties);
         }
     }
 

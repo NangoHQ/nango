@@ -4,3 +4,15 @@ export interface DBConfig {
     encryption_key_hash?: string | null;
     encryption_complete: boolean;
 }
+
+export interface Timestamps {
+    created_at?: Date;
+    updated_at?: Date;
+}
+
+export interface Deleted {
+    deleted_at?: Date | null;
+    deleted?: boolean;
+}
+
+export interface TimestampsAndDeleted extends Timestamps, Deleted {}

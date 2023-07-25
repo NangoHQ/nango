@@ -12,7 +12,7 @@ class WebhookService {
         model: string,
         responseResults: SyncResult,
         syncType: SyncType,
-        now: string,
+        now: Date | undefined,
         activityLogId: number
     ) {
         const webhookUrl = await environmentService.getWebhookUrl(nangoConnection.environment_id);
@@ -42,7 +42,7 @@ class WebhookService {
                 updated: responseResults.updated
             },
             syncType,
-            queryTimeStamp: now
+            queryTimeStamp: now as unknown as string
         };
 
         try {

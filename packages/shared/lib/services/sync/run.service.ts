@@ -343,7 +343,7 @@ export default class SyncRun {
             model,
             { added, updated },
             this.syncType,
-            syncResult.updated_at as string,
+            syncResult.updated_at,
             this.activityLogId
         );
 
