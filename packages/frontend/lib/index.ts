@@ -11,6 +11,8 @@ const enum WSMessageType {
     Success = 'success'
 }
 
+type AuthError = { message: string; type: string };
+
 export default class Nango {
     private hostBaseUrl: string;
     private websocketsBaseUrl: string;
@@ -51,10 +53,11 @@ export default class Nango {
         providerConfigKey: string,
         connectionId: string,
         conectionConfigOrCredentials?: ConnectionConfig | BasicApiCredentials | ApiKeyCredentials
-    ): Promise<any> {
+    ): Promise<{ providerConfigKey: string; connectionId: string } | AuthError | void> {
         if (conectionConfigOrCredentials && 'credentials' in conectionConfigOrCredentials && Object.keys(conectionConfigOrCredentials.credentials).length > 0) {
             const credentials = conectionConfigOrCredentials.credentials as BasicApiCredentials | ApiKeyCredentials;
             const { credentials: _, ...connectionConfig } = conectionConfigOrCredentials as ConnectionConfig;
+
             return this.apiAuth(providerConfigKey, connectionId, this.convertCredentialsToConfig(credentials), connectionConfig);
         }
 
@@ -123,7 +126,7 @@ export default class Nango {
         connectionId: string,
         connectionConfigWithCredentials: ConnectionConfig,
         connectionConfig: ConnectionConfig
-    ): Promise<Response | void> {
+    ): Promise<void | AuthError> {
         const { params: credentials } = connectionConfigWithCredentials as ConnectionConfig;
 
         if (!credentials) {
