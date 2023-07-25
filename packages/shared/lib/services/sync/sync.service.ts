@@ -275,8 +275,17 @@ export const deleteSync = async (syncId: string): Promise<string> => {
     return syncId;
 };
 
-export const findSyncByConnections = async (connectionIds: number[]): Promise<Sync[]> => {
-    const results = await schema().select('*').from<Sync>(TABLE).whereIn('nango_connection_id', connectionIds).andWhere({ deleted: false });
+export const findSyncByConnections = async (connectionIds: number[], sync_name: string): Promise<Sync[]> => {
+    const results = await schema()
+        .select('*')
+        .from<Sync>(TABLE)
+        .join('_nango_connections', '_nango_connections.id', `${TABLE}.nango_connection_id`)
+        .whereIn('nango_connection_id', connectionIds)
+        .andWhere({
+            name: sync_name,
+            [`${TABLE}.deleted`]: false,
+            [`_nango_connections.deleted`]: false
+        });
 
     if (Array.isArray(results) && results.length > 0) {
         return results;
@@ -317,7 +326,10 @@ export const getAndReconcileSyncDifferences = async (
 
         // if it has connections but doesn't have an active sync then it is considered a new sync
         if (exists && connections.length > 0) {
-            const syncsByConnection = await findSyncByConnections(connections.map((connection) => connection.id as number));
+            const syncsByConnection = await findSyncByConnections(
+                connections.map((connection) => connection.id as number),
+                syncName
+            );
             isNew = syncsByConnection.length === 0;
         }
 
