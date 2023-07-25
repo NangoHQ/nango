@@ -119,7 +119,11 @@ class ConfigService {
 
     async deleteProviderConfig(providerConfigKey: string, environment_id: number): Promise<number> {
         const id = (
-            await db.knex.withSchema(db.schema()).select('id').from<ProviderConfig>(`_nango_configs`).where({ unique_key: providerConfigKey, environment_id })
+            await db.knex
+                .withSchema(db.schema())
+                .select('id')
+                .from<ProviderConfig>(`_nango_configs`)
+                .where({ unique_key: providerConfigKey, environment_id, deleted: false })
         )[0].id;
 
         if (!id) {
@@ -135,12 +139,16 @@ class ConfigService {
 
         await deleteSyncConfigByConfigId(id);
 
-        await db.knex.withSchema(db.schema()).from<ProviderConfig>(`_nango_configs`).where({ id }).update({ deleted: true, deleted_at: new Date() });
+        await db.knex
+            .withSchema(db.schema())
+            .from<ProviderConfig>(`_nango_configs`)
+            .where({ id, deleted: false })
+            .update({ deleted: true, deleted_at: new Date() });
 
         return db.knex
             .withSchema(db.schema())
             .from<Connection>(`_nango_connections`)
-            .where({ provider_config_key: providerConfigKey, environment_id })
+            .where({ provider_config_key: providerConfigKey, environment_id, deleted: false })
             .update({ deleted: true, deleted_at: new Date() });
     }
 
