@@ -266,31 +266,29 @@ export default function IntegrationCreate() {
 
         let apiAuthString = '';
         if (integration?.authMode === AuthModes.ApiKey) {
-        apiAuthString = `, {
-    credentials: {
-      apiKey: '${apiKey}'
-    }
+        apiAuthString = `
+credentials: {
+  apiKey: '${apiKey}'
 }`;
         }
         if (integration?.authMode === AuthModes.Basic) {
-        apiAuthString = `, {
-    credentials: {
-      username: '${apiAuthUsername}',
-      password: '${apiAuthPassword}'
-    }
+        apiAuthString = `
+credentials: {
+  username: '${apiAuthUsername}',
+  password: '${apiAuthPassword}'
 }`;
         }
 
         const connectionConfigStr =
             !connectionConfigParamsStr && !authorizationParamsStr && !userScopesStr && !hmacKeyStr
                 ? ''
-                : ', { ' + [connectionConfigParamsStr, authorizationParamsStr, hmacKeyStr, userScopesStr].filter(Boolean).join(', ') + ' }';
+                : ', { ' + [connectionConfigParamsStr, authorizationParamsStr, hmacKeyStr, userScopesStr, apiAuthString].filter(Boolean).join(', ') + ' }';
 
         return `import Nango from '@nangohq/frontend';
 
 const nango = new Nango(${argsStr});
 
-nango.auth('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr}${apiAuthString}).then((result: { providerConfigKey: string; connectionId: string }) => {
+nango.auth('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr}).then((result: { providerConfigKey: string; connectionId: string }) => {
     // do something
 }).catch((err: { message: string; type: string }) => {
     // handle error
@@ -390,7 +388,7 @@ nango.auth('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr}$
                                                     <div className="flex text-black text-sm">
                                                         <p className="ml-1">{`Some integrations require extra configuration (cf.`}</p>
                                                         <a
-                                                            href="https://docs.nango.dev/reference/frontend-sdk#connection-config"
+                                                            href="https://docs.nango.dev/guides/oauth#connection-configuration"
                                                             target="_blank"
                                                             rel="noreferrer"
                                                             className="text-text-blue hover:text-text-light-blue ml-1"
