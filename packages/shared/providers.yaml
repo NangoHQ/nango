@@ -692,6 +692,12 @@ stripe:
     auth_mode: OAUTH2
     authorization_url: https://connect.stripe.com/oauth/authorize
     token_url: https://connect.stripe.com/oauth/token
+stripe-express:
+    auth_mode: OAUTH2
+    authorization_url: https://connect.stripe.com/express/oauth/authorize
+    token_url: https://connect.stripe.com/oauth/token
+    token_response_metadata:
+        - stripe_user_id
 survey-monkey:
     auth_mode: OAUTH2
     authorization_url: https://api.surveymonkey.com/oauth/authorize
