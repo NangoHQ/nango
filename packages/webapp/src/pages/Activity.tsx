@@ -59,7 +59,7 @@ export default function Activity() {
     const [loaded, setLoaded] = useState(false);
     const [activities, setActivities] = useState([]);
     const [expandedRow, setExpandedRow] = useState(-1);
-    const [limit,] = useState(30);
+    const [limit,] = useState(20);
     const [offset, setOffset] = useState(0);
 
     const location = useLocation();
