@@ -14,6 +14,7 @@ import {
     connectionService,
     createActivityLogMessageAndEnd,
     AuthModes,
+    getConnectionConfig,
     hmacService
 } from '@nangohq/shared';
 
@@ -23,6 +24,7 @@ class ApiAuthController {
         const environmentId = getEnvironmentId(res);
         const { providerConfigKey } = req.params;
         const connectionId = req.query['connection_id'] as string | undefined;
+        const connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
 
         const log = {
             level: 'info' as LogLevel,
@@ -140,7 +142,7 @@ class ApiAuthController {
                     type: AuthModes.ApiKey,
                     apiKey
                 },
-                {},
+                connectionConfig,
                 environmentId,
                 accountId
             );
@@ -177,6 +179,7 @@ class ApiAuthController {
         const environmentId = getEnvironmentId(res);
         const { providerConfigKey } = req.params;
         const connectionId = req.query['connection_id'] as string | undefined;
+        const connectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
 
         const log = {
             level: 'info' as LogLevel,
@@ -294,7 +297,7 @@ class ApiAuthController {
                     username,
                     password
                 },
-                {},
+                connectionConfig,
                 environmentId,
                 accountId
             );
