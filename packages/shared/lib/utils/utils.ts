@@ -316,3 +316,13 @@ export function isUserAuthenticated(req: Request): boolean {
     const user = req.user as User;
     return req.isAuthenticated() && user != null && user.id != null;
 }
+
+/**
+ * A helper function to extract the additional connection configuration options from the frontend Auth request.
+ */
+export function getConnectionConfig(queryParams: any): Record<string, string> {
+    let arr = Object.entries(queryParams);
+    arr = arr.filter(([_, v]) => typeof v === 'string'); // Filter strings
+    arr = arr.map(([k, v]) => [`connectionConfig.params.${k}`, v]); // Format keys to 'connectionConfig.params.[key]'
+    return Object.fromEntries(arr) as Record<string, string>;
+}

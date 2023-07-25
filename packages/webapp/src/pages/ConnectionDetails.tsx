@@ -373,18 +373,18 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                 </div>
                                             </>
                                         )}
+                                        <div>
+                                            <div className="mx-8 mt-8">
+                                                <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
+                                                    Connection Configuration
+                                                </label>
+                                                <Prism language="json" colorScheme="dark">
+                                                    {JSON.stringify(connection.connectionConfig, null, 4) || '{}'}
+                                                </Prism>
+                                            </div>
+                                        </div>
                                         {(connection.oauthType === AuthModes.OAuth1 || connection.oauthType === AuthModes.OAuth2) && (
                                             <>
-                                                <div>
-                                                    <div className="mx-8 mt-8">
-                                                        <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
-                                                            Connection Configuration
-                                                        </label>
-                                                        <Prism language="json" colorScheme="dark">
-                                                            {JSON.stringify(connection.connectionConfig, null, 4) || '{}'}
-                                                        </Prism>
-                                                    </div>
-                                                </div>
                                                 <div>
                                                     <div className="mx-8 mt-8">
                                                         <label htmlFor="email" className="text-text-light-gray block text-sm font-semibold">
