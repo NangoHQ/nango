@@ -264,7 +264,7 @@ export class Nango {
         });
     }
 
-    public async getRecords<T = any>(config: GetRecordsRequestConfig): Promise<T[]> {
+    public async getRecords<T = any>(config: GetRecordsRequestConfig): Promise<T> {
         const { connectionId, providerConfigKey, model, delta, offset, limit } = config;
         validateSyncRecordConfiguration(config);
 
