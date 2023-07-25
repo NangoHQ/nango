@@ -174,7 +174,7 @@ We could not retrieve and/or refresh your access token due to the following erro
     const runningBubbleStyles = 'inline-flex justify-center items-center rounded-full py-1 px-4 bg-orange-500 bg-opacity-20';
 
     return (
-        <DashboardLayout selectedItem={LeftNavBarItems.Connections} hideEnvironmentSelect>
+        <DashboardLayout selectedItem={LeftNavBarItems.Connections}>
             <div className="mx-auto w-largebox">
                 <div className="mx-16 pb-40">
                     <div className="flex mt-16 mb-6 justify-between">
