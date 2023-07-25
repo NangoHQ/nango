@@ -261,6 +261,8 @@ class ConnectionService {
             }
         }
 
+        await this.updateLastFetched(connection?.id as number);
+
         return connection;
     }
 
@@ -405,7 +407,6 @@ class ConnectionService {
         }
 
         analytics.track('server:connection_fetched', accountId, { provider: config?.provider });
-        await this.updateLastFetched(connection?.id as number);
 
         return connection;
     }
