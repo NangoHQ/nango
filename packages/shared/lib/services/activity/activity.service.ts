@@ -136,7 +136,7 @@ export async function findActivityLogBySession(session_id: string): Promise<numb
     return result[0].id;
 }
 
-export async function getLogsByEnvironment(environment_id: number, limit = 30, offset = 0): Promise<ActivityLog[]> {
+export async function getLogsByEnvironment(environment_id: number, limit = 20, offset = 0): Promise<ActivityLog[]> {
     const logs = await db.knex
         .withSchema(db.schema())
         .from<ActivityLog>('_nango_activity_logs')
@@ -144,18 +144,14 @@ export async function getLogsByEnvironment(environment_id: number, limit = 30, o
             '_nango_activity_logs.*',
             db.knex.raw('json_agg(_nango_activity_log_messages ORDER BY _nango_activity_log_messages.created_at ASC) as messages')
         )
-        .leftJoin('_nango_activity_log_messages', '_nango_activity_logs.id', '=', '_nango_activity_log_messages.activity_log_id')
+        .innerJoin('_nango_activity_log_messages', '_nango_activity_logs.id', '=', '_nango_activity_log_messages.activity_log_id')
         .where({ environment_id })
         .groupBy('_nango_activity_logs.id')
         .orderBy('_nango_activity_logs.timestamp', 'desc')
         .offset(offset)
         .limit(limit);
 
-    if (!logs || logs.length == 0 || !logs[0]) {
-        return [];
-    }
-
-    return logs;
+    return logs || [];
 }
 
 export async function createActivityLogDatabaseErrorMessageAndEnd(baseMessage: string, error: any, activityLogId: number) {
