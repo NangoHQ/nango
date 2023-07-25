@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import type { LogLevel, LogAction } from '@nangohq/shared';
+import type { LogLevel } from '@nangohq/shared';
 import {
     getAccount,
     getEnvironmentId,
@@ -15,7 +15,9 @@ import {
     createActivityLogMessageAndEnd,
     AuthModes,
     getConnectionConfig,
-    hmacService
+    hmacService,
+    ErrorSourceEnum,
+    LogActionEnum
 } from '@nangohq/shared';
 
 class ApiAuthController {
@@ -29,7 +31,7 @@ class ApiAuthController {
         const log = {
             level: 'info' as LogLevel,
             success: false,
-            action: 'auth' as LogAction,
+            action: LogActionEnum.AUTH,
             start: Date.now(),
             end: Date.now(),
             timestamp: Date.now(),
@@ -163,8 +165,10 @@ class ApiAuthController {
                 timestamp: Date.now()
             });
 
-            errorManager.report(err, {
-                accountId,
+            await errorManager.report(err, {
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.AUTH,
+                environmentId,
                 metadata: {
                     providerConfigKey,
                     connectionId
@@ -184,7 +188,7 @@ class ApiAuthController {
         const log = {
             level: 'info' as LogLevel,
             success: false,
-            action: 'auth' as LogAction,
+            action: LogActionEnum.AUTH,
             start: Date.now(),
             end: Date.now(),
             timestamp: Date.now(),
@@ -318,8 +322,10 @@ class ApiAuthController {
                 timestamp: Date.now()
             });
 
-            errorManager.report(err, {
-                accountId,
+            await errorManager.report(err, {
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.AUTH,
+                environmentId,
                 metadata: {
                     providerConfigKey,
                     connectionId

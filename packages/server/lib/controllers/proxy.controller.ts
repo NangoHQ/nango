@@ -19,15 +19,18 @@ import {
     LogLevel,
     BasicApiCredentials,
     LogAction,
+    LogActionEnum,
     configService,
     errorManager,
     connectionService,
-    environmentService,
+    getAccount,
     getEnvironmentId,
     interpolateIfNeeded,
     AuthModes,
     OAuth2Credentials,
     connectionCopyWithParsedConnectionConfig,
+    NangoError,
+    ErrorSourceEnum,
     mapProxyBaseUrlInterpolationFormat
 } from '@nangohq/shared';
 import type { ProxyBodyConfiguration } from '../models.js';
@@ -55,8 +58,9 @@ class ProxyController {
             const isDryRun = req.get('Nango-Is-Dry-Run') as string;
             const existingActivityLogId = req.get('Nango-Activity-Log-Id') as number | string;
             const environment_id = getEnvironmentId(res);
+            const accountId = getAccount(res);
 
-            const logAction: LogAction = isSync ? 'sync' : ('proxy' as LogAction);
+            const logAction: LogAction = isSync ? LogActionEnum.SYNC : LogActionEnum.PROXY;
 
             const log = {
                 level: 'debug' as LogLevel,
@@ -85,7 +89,9 @@ class ProxyController {
                     content: `The connection id value is missing. If you're making a HTTP request then it should be included in the header 'Connection-Id'. If you're using the SDK the connectionId property should be specified.`
                 });
 
-                errorManager.errRes(res, 'missing_connection_id');
+                const error = new NangoError('missing_connection_id');
+                errorManager.errResFromNangoErr(res, error);
+
                 return;
             }
 
@@ -97,7 +103,9 @@ class ProxyController {
                     content: `The provider config key value is missing. If you're making a HTTP request then it should be included in the header 'Provider-Config-Key'. If you're using the SDK the providerConfigKey property should be specified.`
                 });
 
-                errorManager.errRes(res, 'missing_provider_config_key');
+                const error = new NangoError('missing_provider_config_key');
+                errorManager.errResFromNangoErr(res, error);
+
                 return;
             }
 
@@ -110,14 +118,25 @@ class ProxyController {
                 });
             }
 
-            const connection = await connectionService.getConnectionCredentials(
-                res,
+            const {
+                success,
+                error,
+                response: connection
+            } = await connectionService.getConnectionCredentials(
+                accountId,
+                environment_id,
                 connectionId,
                 providerConfigKey,
                 activityLogId as number,
                 logAction,
                 false
             );
+
+            if (!success) {
+                errorManager.errResFromNangoErr(res, error);
+
+                return;
+            }
 
             if (!isSync) {
                 await createActivityLogMessage({
@@ -143,7 +162,9 @@ class ProxyController {
                     content: 'Proxy: a API URL endpoint is missing.'
                 });
 
-                errorManager.errRes(res, 'missing_endpoint');
+                const error = new NangoError('missing_endpoint');
+                errorManager.errResFromNangoErr(res, error);
+
                 return;
             }
 
@@ -191,6 +212,8 @@ class ProxyController {
                 });
 
                 res.status(404).send();
+
+                return;
             }
 
             await updateProviderActivityLog(activityLogId as number, String(providerConfig?.provider));
@@ -247,13 +270,14 @@ class ProxyController {
 
             await this.sendToHttpMethod(res, next, method as HTTP_VERB, configBody, activityLogId as number, connection, isSync, isDryRun);
         } catch (error) {
-            const environment_id = getEnvironmentId(res);
-            const accountId = (await environmentService.getAccountIdFromEnvironment(environment_id)) as number;
+            const environmentId = getEnvironmentId(res);
             const connectionId = req.get('Connection-Id') as string;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
 
-            errorManager.report(error, {
-                accountId,
+            await errorManager.report(error, {
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.PROXY,
+                environmentId,
                 metadata: {
                     connectionId,
                     providerConfigKey

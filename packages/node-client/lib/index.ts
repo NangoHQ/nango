@@ -183,7 +183,7 @@ export class Nango {
 
         const { providerConfigKey, connectionId, method, retries, headers: customHeaders, baseUrlOverride } = config;
 
-        const url = `${this.serverUrl}/proxy/${config.endpoint}`;
+        const url = `${this.serverUrl}/proxy${config.endpoint[0] === '/' ? '' : '/'}${config.endpoint}`;
 
         const customPrefixedHeaders: CustomHeaders =
             customHeaders && Object.keys(customHeaders as CustomHeaders).length > 0
@@ -324,7 +324,11 @@ export class Nango {
         return response.data;
     }
 
-    public async setFieldMapping(fieldMapping: Record<string, string>, optionalProviderConfigKey?: string, optionalConnectionId?: string): Promise<void> {
+    public async setFieldMapping(
+        fieldMapping: Record<string, string>,
+        optionalProviderConfigKey?: string,
+        optionalConnectionId?: string
+    ): Promise<AxiosResponse<void>> {
         const providerConfigKey = optionalProviderConfigKey || this.providerConfigKey;
         const connectionId = optionalConnectionId || this.connectionId;
         const url = `${this.serverUrl}/connection/${connectionId}/field-mapping?provider_config_key=${providerConfigKey}`;

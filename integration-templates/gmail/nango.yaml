@@ -1,0 +1,16 @@
+integrations:
+  gmail:
+    gmail-emails:
+      runs: every hour
+      returns:
+        - GmailEmail
+
+models:
+  GmailEmail:
+    id: string
+    sender: string
+    recipients: string
+    date: date
+    subject: string
+    body: string
+    threadId: string

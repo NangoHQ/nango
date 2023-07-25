@@ -3,6 +3,8 @@ import { upsert } from '../services/sync/data.service.js';
 import { formatDataRecords } from '../services/sync/data-records.service.js';
 import { createActivityLogMessage } from '../services/activity/activity.service.js';
 import { updateSyncJobResult } from '../services/sync/job.service.js';
+import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
+import { LogActionEnum } from '../models/Activity.js';
 
 import { Nango } from '@nangohq/node';
 
@@ -128,6 +130,7 @@ interface NangoProps {
     host?: string;
     secretKey: string;
     connectionId?: string;
+    environmentId?: number;
     activityLogId?: number;
     providerConfigKey?: string;
     lastSyncDate?: Date;
@@ -147,6 +150,7 @@ export class NangoSync {
     lastSyncDate?: Date;
     syncId?: string;
     nangoConnectionId?: number;
+    environmentId?: number;
     syncJobId?: number;
     dryRun?: boolean;
 
@@ -185,6 +189,10 @@ export class NangoSync {
 
         if (config.providerConfigKey) {
             this.providerConfigKey = config.providerConfigKey;
+        }
+
+        if (config.environmentId) {
+            this.environmentId = config.environmentId;
         }
     }
 
@@ -228,7 +236,11 @@ export class NangoSync {
         return this.nango.getConnection(this.providerConfigKey as string, this.connectionId as string);
     }
 
-    public async setFieldMapping(fieldMapping: Record<string, string>, optionalProviderConfigKey?: string, optionalConnectionId?: string): Promise<void> {
+    public async setFieldMapping(
+        fieldMapping: Record<string, string>,
+        optionalProviderConfigKey?: string,
+        optionalConnectionId?: string
+    ): Promise<AxiosResponse<void>> {
         return this.nango.setFieldMapping(fieldMapping, optionalProviderConfigKey, optionalConnectionId);
     }
 
@@ -237,23 +249,34 @@ export class NangoSync {
     }
 
     public async batchSend<T = any>(results: T[], model: string): Promise<boolean | null> {
+        if (!this.nangoConnectionId || !this.syncId || !this.activityLogId || !this.syncJobId) {
+            throw new Error('Nango Connection Id, Sync Id, Activity Log Id and Sync Job Id are all required');
+        }
+
+        const {
+            success,
+            error,
+            response: formattedResults
+        } = formatDataRecords(results as unknown as DataResponse[], this.nangoConnectionId as number, model, this.syncId as string, this.syncJobId);
+
+        if (!success || formattedResults === null) {
+            if (!this.dryRun) {
+                await createActivityLogMessage({
+                    level: 'error',
+                    activity_log_id: this.activityLogId as number,
+                    content: `There was an issue with the batch send. ${error?.message}`,
+                    timestamp: Date.now()
+                });
+            }
+
+            throw error;
+        }
+
         if (this.dryRun) {
             console.log('A batch send call would send the following data:');
             console.log(JSON.stringify(results, null, 2));
             return null;
         }
-
-        if (!this.nangoConnectionId || !this.syncId || !this.activityLogId || !this.syncJobId) {
-            throw new Error('Nango Connection Id, Sync Id, Activity Log Id and Sync Job Id are all required');
-        }
-
-        const formattedResults = formatDataRecords(
-            results as unknown as DataResponse[],
-            this.nangoConnectionId as number,
-            model,
-            this.syncId as string,
-            this.syncJobId
-        );
 
         const syncConfig = await getSyncConfigByJobId(this.syncJobId as number);
 
@@ -290,14 +313,31 @@ export class NangoSync {
 
             return true;
         } else {
-            await createActivityLogMessage({
-                level: 'error',
-                activity_log_id: this.activityLogId as number,
-                content: `There was an issue with the batch send. ${responseResults?.error}`,
-                timestamp: Date.now()
-            });
+            const content = `There was an issue with the batch send. ${responseResults?.error}`;
 
-            return false;
+            if (!this.dryRun) {
+                await createActivityLogMessage({
+                    level: 'error',
+                    activity_log_id: this.activityLogId as number,
+                    content,
+                    timestamp: Date.now()
+                });
+
+                await errorManager.report(content, {
+                    environmentId: this.environmentId as number,
+                    source: ErrorSourceEnum.CUSTOMER,
+                    operation: LogActionEnum.SYNC,
+                    metadata: {
+                        connectionId: this.connectionId,
+                        providerConfigKey: this.providerConfigKey,
+                        syncId: this.syncId,
+                        nanogConnectionId: this.nangoConnectionId,
+                        syncJobId: this.syncJobId
+                    }
+                });
+            }
+
+            throw new Error(responseResults?.error);
         }
     }
 

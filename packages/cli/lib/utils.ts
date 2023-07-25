@@ -402,6 +402,11 @@ export function getFieldType(rawField: string | NangoModel, debug = false): stri
 export function buildInterfaces(models: NangoModel, debug = false): (string | undefined)[] {
     const interfaceDefinitions = Object.keys(models).map((modelName: string) => {
         const fields = models[modelName] as NangoModel;
+
+        if (!fields['id']) {
+            throw new Error(`Model "${modelName}" doesn't have an id field. This is required to be able to uniquely identify the data record.`);
+        }
+
         const singularModelName = modelName.charAt(modelName.length - 1) === 's' ? modelName.slice(0, -1) : modelName;
         const interfaceName = `${singularModelName.charAt(0).toUpperCase()}${singularModelName.slice(1)}`;
         let extendsClause = '';

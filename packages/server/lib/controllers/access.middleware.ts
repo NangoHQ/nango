@@ -1,5 +1,15 @@
 import type { Request, Response, NextFunction } from 'express';
-import { environmentService, isCloud, setAccount, setEnvironmentId, isBasicAuthEnabled, errorManager, userService } from '@nangohq/shared';
+import {
+    LogActionEnum,
+    ErrorSourceEnum,
+    environmentService,
+    isCloud,
+    setAccount,
+    setEnvironmentId,
+    isBasicAuthEnabled,
+    errorManager,
+    userService
+} from '@nangohq/shared';
 
 export class AccessMiddleware {
     async secretKeyAuth(req: Request, res: Response, next: NextFunction) {
@@ -56,7 +66,7 @@ export class AccessMiddleware {
             accountId = result?.accountId as number;
             environmentId = result?.environmentId as number;
         } catch (e) {
-            errorManager.report(e);
+            errorManager.report(e, { source: ErrorSourceEnum.PLATFORM, operation: LogActionEnum.INTERNAL_AUTHORIZATION });
             return errorManager.errRes(res, 'unknown_account');
         }
 

@@ -393,11 +393,11 @@ export const getAndReconcileSyncDifferences = async (
                         content: `Deleting sync ${existingSync.sync_name} for ${existingSync.unique_key} with ${connections.length} connections`
                     });
                 }
-                await syncOrchestrator.deleteConfig(existingSync.id as number);
+                await syncOrchestrator.deleteConfig(existingSync.id as number, environmentId);
                 for (const connection of connections) {
                     const syncId = await getSyncByIdAndName(connection.id as number, existingSync.sync_name);
                     if (syncId) {
-                        await syncOrchestrator.deleteSync(syncId.id as string);
+                        await syncOrchestrator.deleteSync(syncId.id as string, environmentId);
                     }
                 }
 

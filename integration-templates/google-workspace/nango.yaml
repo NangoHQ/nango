@@ -1,0 +1,27 @@
+integrations:
+    google: # scopes: https://www.googleapis.com/auth/admin.directory.user.readonly,https://www.googleapis.com/auth/admin.directory.user.security
+        google-workspace-users:
+            runs: every 10min
+            returns:
+                - GoogleWorkspaceUser
+                - GoogleWorkspaceUserToken
+
+models:
+    GoogleWorkspaceUser:
+        id: string
+        name: string
+        email: string
+        suspended: boolean
+        archived: boolean
+        last_login_time: date
+        customer_id: string
+        thumbnail_url: string
+        two_fa_enabled: boolean
+        org_unit_path: string
+
+    GoogleWorkspaceUserToken:
+        id: string
+        user_id: string
+        app_name: string
+        anonymous_app: boolean
+        scopes: string

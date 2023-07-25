@@ -1,51 +1,6 @@
----
-title: 'Syncing tasks from the Asana API'
-sidebarTitle: 'Asana - Tasks (Sync)'
-description: 'An example of how you can sync Asana Tasks with Nango'
----
+import { AsanaTask, NangoSync } from './models';
 
-<Note>
-This feature is currently in private beta. Please reach out on the [Slack community](https://nango.dev/slack) to get access!
-</Note>
-
-## Integration configuration
-
-This example syncs tasks from the [Asana](/integrations/all/asana) API.
-
-To run it, [configure an Asana integration](https://app.nango.dev/integration/create), using the Integration Unique Key `asana-dev` (cf. [Authorize APIs guide](/guides/oauth)).
-
-Required scopes:
-- default
-
-## `nango.yaml` config
-
-You can customize the data model as needed.
-
-```yaml nango.yaml
-integrations:
-    asana-dev:
-        asana-tasks:
-            runs: every 30min
-            returns:
-                - AsanaTask
-
-models:
-    AsanaTask:
-        id: string
-        project_id: string
-        name: string
-        completed: boolean
-        created_at: date
-        modified_at: date
-```
-
-## `asana-tasks.ts` sync script
-
-```ts
-import { NangoSync, AsanaTask } from './models';
-
-export default async function fetchData(nango: NangoSync): Promise<{AsanaTask: AsanaTask[]}> {
-
+export default async function fetchData(nango: NangoSync): Promise<{ AsanaTask: AsanaTask[] }> {
     // Get the user's workspaces & projects
     // For testing we just get the first project of the first workspace
     const workspaces = await paginate(nango, '/api/1.0/workspaces');
@@ -58,11 +13,10 @@ export default async function fetchData(nango: NangoSync): Promise<{AsanaTask: A
     const filters = {
         project: project.gid,
         opt_fields: 'name,completed,created_at,modified_at'
-    }
+    };
     const tasks = await paginate(nango, '/api/1.0/tasks', filters);
     let mappedTasks: AsanaTask[] = [];
     for (let task of tasks) {
-
         mappedTasks.push({
             id: task.gid,
             project_id: project.gid,
@@ -81,13 +35,12 @@ export default async function fetchData(nango: NangoSync): Promise<{AsanaTask: A
     return { AsanaTask: mappedTasks };
 }
 
-async function paginate(nango: NangoSync, endpoint: string, queryParams?: Record<string, string|string[]>) {
+async function paginate(nango: NangoSync, endpoint: string, queryParams?: Record<string, string | string[]>) {
     const MAX_PAGE = 100;
     let results: any[] = [];
     let page = null;
     let callParams = queryParams || {};
     while (true) {
-
         if (page) {
             callParams['offset'] = `${page}`;
         }
@@ -111,8 +64,3 @@ async function paginate(nango: NangoSync, endpoint: string, queryParams?: Record
 
     return results;
 }
-```
-
-## Need help with your _sync_?
-
-Please reach out on the [Slack community](https://nango.dev/slack), we are very active there and happy to help!

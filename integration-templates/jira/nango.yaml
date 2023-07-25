@@ -1,0 +1,19 @@
+integrations:
+    jira: # scopes: read:jira-work, offline_access
+        jira-issues:
+            runs: every 5mins
+            returns:
+                - JiraIssue
+
+models:
+    JiraIssue:
+        id: integer
+        key: string
+        summary: string
+        issueType: string
+        status: string
+        assignee: string
+        projectKey: string
+        projectName: string
+        createdAt: date
+        updatedAt: date
