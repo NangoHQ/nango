@@ -213,12 +213,6 @@ class ApiAuthController {
                 return;
             }
 
-            if (!req.body.password) {
-                errorManager.errRes(res, 'missing_basic_password');
-
-                return;
-            }
-
             const hmacEnabled = await hmacService.isEnabled(environmentId);
             if (hmacEnabled) {
                 const hmac = req.query['hmac'] as string | undefined;

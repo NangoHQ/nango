@@ -53,6 +53,24 @@ describe('Proxy Controller Construct Header Tests', () => {
         });
     });
 
+    it('Should correctly construct headers for Basic auth with no password', () => {
+        const config = {
+            template: {
+                auth_mode: AuthModes.Basic
+            },
+            token: {
+                username: 'testuser'
+            }
+        };
+
+        // @ts-ignore
+        const result = proxyController.constructHeaders(config);
+
+        expect(result).toEqual({
+            Authorization: 'Basic ' + Buffer.from('testuser:').toString('base64')
+        });
+    });
+
     it('Should correctly construct headers for Basic auth + any custom headers', () => {
         const config = {
             template: {

@@ -658,7 +658,7 @@ class ProxyController {
                 {
                     const token = config.token as BasicApiCredentials;
                     headers = {
-                        Authorization: `Basic ${Buffer.from(`${token.username}:${token.password}`).toString('base64')}`
+                        Authorization: `Basic ${Buffer.from(`${token.username}:${token.password ?? ''}`).toString('base64')}`
                     };
                 }
                 break;
