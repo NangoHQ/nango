@@ -179,7 +179,7 @@ export default function IntegrationCreate() {
     }
 
     return (
-        <DashboardLayout selectedItem={LeftNavBarItems.Integrations} hideEnvironmentSelect>
+        <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
             {deleteAlertState && (
                 <AlertOverLay
                     message={'Deleting an integration will also permanently delete all associated connections. Are you sure you want to delete it?'}

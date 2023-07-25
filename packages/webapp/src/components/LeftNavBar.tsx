@@ -14,7 +14,6 @@ export enum LeftNavBarItems {
 
 export interface LeftNavBarProps {
     selectedItem: LeftNavBarItems;
-    hideEnvironmentSelect?: boolean;
 }
 
 export default function LeftNavBar(props: LeftNavBarProps) {
@@ -31,24 +30,22 @@ export default function LeftNavBar(props: LeftNavBarProps) {
     return (
         <div>
             <div className="mt-14 border-r-2 border-t-2 border-border-gray flex flex-col h-full w-60 fixed bg-bg-black z-50">
-                {props.hideEnvironmentSelect ? null : (
-                    <div className="mt-10">
-                        <select
-                            id="environment"
-                            name="env"
-                            className="ml-8 border-border-gray bg-bg-black text-text-light-gray block h-11 w-24 appearance-none rounded-md border px-3 py-2 text-base shadow-sm active:outline-none focus:outline-none active:border-white focus:border-white"
-                            onChange={handleEnvChange}
-                            value={env}
-                        >
-                            <option key="dev" value="dev">
-                                Dev
-                            </option>
-                            <option key="prod" value="prod">
-                                Prod
-                            </option>
-                        </select>
-                    </div>
-                )}
+                <div className="mt-10">
+                    <select
+                        id="environment"
+                        name="env"
+                        className="ml-8 border-border-gray bg-bg-black text-text-light-gray block h-11 w-24 appearance-none rounded-md border px-3 py-2 text-base shadow-sm active:outline-none focus:outline-none active:border-white focus:border-white"
+                        onChange={handleEnvChange}
+                        value={env}
+                    >
+                        <option key="dev" value="dev">
+                            Dev
+                        </option>
+                        <option key="prod" value="prod">
+                            Prod
+                        </option>
+                    </select>
+                </div>
                 <div className="ml-4 mt-8 space-y-1">
                     <Link
                         to="/integrations"
