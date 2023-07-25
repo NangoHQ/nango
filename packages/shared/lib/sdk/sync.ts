@@ -236,7 +236,7 @@ export class NangoSync {
         return this.nango.getFieldMapping(optionalProviderConfigKey, optionalConnectionId);
     }
 
-    public async batchSend<T = any>(results: T[], model: string): Promise<boolean | null> {
+    public async batchSend<T = any>(results: T, model: string): Promise<boolean | null> {
         if (this.dryRun) {
             console.log('A batch send call would send the following data:');
             console.log(JSON.stringify(results, null, 2));
