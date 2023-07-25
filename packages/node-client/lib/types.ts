@@ -76,3 +76,22 @@ export interface Connection {
     field_mappings?: Record<string, string>;
     credentials: AuthCredentials;
 }
+
+export interface ConnectionList {
+    id: number;
+    connectionId: number;
+    providerConfigKey: string;
+    provider: string;
+    creationDate: string;
+}
+
+export interface IntegrationWithCreds extends Integration {
+    clientId: string;
+    clientSecret: string;
+    scopes: string;
+}
+
+export interface Integration {
+    uniqueKey: string;
+    provider: string;
+}

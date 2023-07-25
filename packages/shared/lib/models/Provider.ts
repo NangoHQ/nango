@@ -42,3 +42,14 @@ export interface TemplateAlias {
         base_url?: string;
     };
 }
+
+export interface IntegrationWithCreds extends Integration {
+    clientId: string;
+    clientSecret: string;
+    scopes: string;
+}
+
+export interface Integration {
+    uniqueKey: string;
+    provider: string;
+}
