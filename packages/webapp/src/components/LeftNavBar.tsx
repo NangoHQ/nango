@@ -25,6 +25,15 @@ export default function LeftNavBar(props: LeftNavBarProps) {
         const newEnv = e.target.value;
         Cookies.set('env', newEnv);
         setCookieValue(newEnv);
+        // if on certain subpages redirect to the parent page since the entity
+        // is environment specific
+        if (window.location.pathname.includes('integration') && window.location.pathname.split('/').length > 2) {
+            window.location.href = '/integrations';
+        }
+
+        if (window.location.pathname.includes('connections') && window.location.pathname.split('/').length > 2) {
+            window.location.href = '/connections';
+        }
     }
 
     return (
