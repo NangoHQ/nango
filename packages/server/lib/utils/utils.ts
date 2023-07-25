@@ -50,16 +50,6 @@ export function missesInterpolationParam(str: string, replacers: Record<string, 
 }
 
 /**
- * A helper function to extract the additional connection configuration options from the frontend Auth request.
- */
-export function getConnectionConfig(queryParams: any): Record<string, string> {
-    let arr = Object.entries(queryParams);
-    arr = arr.filter(([_, v]) => typeof v === 'string'); // Filter strings
-    arr = arr.map(([k, v]) => [`connectionConfig.params.${k}`, v]); // Format keys to 'connectionConfig.params.[key]'
-    return Object.fromEntries(arr) as Record<string, string>;
-}
-
-/**
  * A helper function to extract the additional authorization parameters from the frontend Auth request.
  */
 export function getAdditionalAuthorizationParams(params: any): Record<string, string> {
@@ -121,13 +111,20 @@ export function parseJsonDateAware(input: string) {
 }
 
 export function parseConnectionConfigParamsFromTemplate(template: ProviderTemplate): string[] {
-    if (!template.token_url || !template.authorization_url) {
-        return [];
+    if (template.proxy && template.proxy.base_url) {
+        const baseUrlMatches = template.proxy.base_url.match(/\${connectionConfig\.params\.([^{}]*)}/g);
+        const params = [...(baseUrlMatches || [])].filter((value, index, array) => array.indexOf(value) === index);
+        return params.map((param) => param.replace('${connectionConfig.params.', '').replace('}', '')); // Remove the ${connectionConfig.params.'} and return only the param name.
     }
-    const tokenUrlMatches = template.token_url.match(/\${connectionConfig\.params\.([^{}]*)}/g);
-    const authorizationUrlMatches = template.authorization_url.match(/\${connectionConfig\.params\.([^{}]*)}/g);
-    const params = [...(tokenUrlMatches || []), ...(authorizationUrlMatches || [])].filter((value, index, array) => array.indexOf(value) === index);
-    return params.map((param) => param.replace('${connectionConfig.params.', '').replace('}', '')); // Remove the ${connectionConfig.params.'} and return only the param name.
+
+    if (template.token_url || template.authorization_url) {
+        const tokenUrlMatches = template.token_url.match(/\${connectionConfig\.params\.([^{}]*)}/g);
+        const authorizationUrlMatches = template.authorization_url.match(/\${connectionConfig\.params\.([^{}]*)}/g);
+        const params = [...(tokenUrlMatches || []), ...(authorizationUrlMatches || [])].filter((value, index, array) => array.indexOf(value) === index);
+        return params.map((param) => param.replace('${connectionConfig.params.', '').replace('}', '')); // Remove the ${connectionConfig.params.'} and return only the param name.
+    }
+
+    return [];
 }
 
 /**

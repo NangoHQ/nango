@@ -154,10 +154,6 @@ export default class Nango {
                 throw new Error('You must specify a username.');
             }
 
-            if (!basicCredentials.password) {
-                throw new Error('You must specify a password.');
-            }
-
             const url = this.hostBaseUrl + `/api-auth/basic/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`;
 
             const res = await fetch(url, {

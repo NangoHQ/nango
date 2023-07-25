@@ -19,7 +19,7 @@ export const createSchedule = async (sync_id: string, frequency: string, offset:
 };
 
 export const getSchedule = async (sync_id: string): Promise<SyncSchedule | null> => {
-    const result = await schema().select('*').from<SyncSchedule>(TABLE).where({ sync_id }).first();
+    const result = await schema().select('*').from<SyncSchedule>(TABLE).where({ sync_id, deleted: false }).first();
 
     if (result) {
         return result;
@@ -29,7 +29,7 @@ export const getSchedule = async (sync_id: string): Promise<SyncSchedule | null>
 };
 
 export const getSyncSchedules = async (sync_id: string): Promise<SyncSchedule[]> => {
-    const result = await schema().select('*').from<SyncSchedule>(TABLE).where({ sync_id });
+    const result = await schema().select('*').from<SyncSchedule>(TABLE).where({ sync_id, deleted: false });
 
     if (Array.isArray(result) && result.length > 0) {
         return result;
@@ -78,7 +78,7 @@ export const markAllAsStopped = async (): Promise<void> => {
 
 export const updateScheduleStatus = async (schedule_id: string, status: SyncCommand, activityLogId: number): Promise<void> => {
     try {
-        await schema().update({ status: SyncCommandToScheduleStatus[status] }).from<SyncSchedule>(TABLE).where({ schedule_id });
+        await schema().update({ status: SyncCommandToScheduleStatus[status] }).from<SyncSchedule>(TABLE).where({ schedule_id, deleted: false });
     } catch (error: any) {
         await createActivityLogDatabaseErrorMessageAndEnd(
             `Failed to update schedule status to ${status} for schedule_id: ${schedule_id}.`,
@@ -97,7 +97,7 @@ export const updateSyncScheduleFrequency = async (sync_id: string, interval: str
     }
 
     if (existingSchedule.frequency !== frequency) {
-        await schema().update({ frequency }).from<SyncSchedule>(TABLE).where({ sync_id });
+        await schema().update({ frequency }).from<SyncSchedule>(TABLE).where({ sync_id, deleted: false });
         const syncClient = await SyncClient.getInstance();
         await syncClient?.updateSyncSchedule(existingSchedule.schedule_id, frequency, offset, syncName, activityLogId);
 
@@ -105,4 +105,8 @@ export const updateSyncScheduleFrequency = async (sync_id: string, interval: str
     }
 
     return false;
+};
+
+export const deleteSchedulesBySyncId = async (sync_id: string): Promise<void> => {
+    await schema().from<SyncSchedule>(TABLE).where({ sync_id, deleted: false }).update({ deleted: true, deleted_at: new Date() });
 };

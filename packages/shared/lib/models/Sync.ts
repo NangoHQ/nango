@@ -1,4 +1,5 @@
 import type { LogAction } from './Activity.js';
+import type { Timestamps, TimestampsAndDeleted } from './Generic.js';
 
 export enum SyncStatus {
     RUNNING = 'RUNNING',
@@ -12,11 +13,6 @@ export enum SyncType {
     INCREMENTAL = 'INCREMENTAL'
 }
 
-interface Timestamps {
-    created_at?: string;
-    updated_at?: string;
-}
-
 export interface SyncResult {
     added: number;
     updated: number;
@@ -27,7 +23,7 @@ export interface SyncResultByModel {
     [key: string]: SyncResult;
 }
 
-export interface Sync extends Timestamps {
+export interface Sync extends TimestampsAndDeleted {
     id?: string;
     nango_connection_id: number;
     name: string;
@@ -37,7 +33,7 @@ export interface Sync extends Timestamps {
     };
 }
 
-export interface Job extends Timestamps {
+export interface Job extends TimestampsAndDeleted {
     id?: number;
     status: SyncStatus;
     type: SyncType;
@@ -56,7 +52,7 @@ export interface SyncModelSchema {
     }[];
 }
 
-export interface SyncConfig extends Timestamps {
+export interface SyncConfig extends TimestampsAndDeleted {
     id?: number;
     environment_id: number;
     sync_name: string;
@@ -105,7 +101,7 @@ export enum ScheduleStatus {
     STOPPED = 'STOPPED'
 }
 
-export interface Schedule extends Timestamps {
+export interface Schedule extends TimestampsAndDeleted {
     id?: string;
     schedule_id: string;
     status: ScheduleStatus;

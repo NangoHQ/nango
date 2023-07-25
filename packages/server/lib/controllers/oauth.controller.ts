@@ -4,13 +4,13 @@ import * as uuid from 'uuid';
 import simpleOauth2 from 'simple-oauth2';
 import { OAuth1Client } from '../clients/oauth1.client.js';
 import {
-    getConnectionConfig,
     getAdditionalAuthorizationParams,
     getConnectionMetadataFromCallbackRequest,
     missesInterpolationParam,
     getConnectionMetadataFromTokenResponse
 } from '../utils/utils.js';
 import {
+    getConnectionConfig,
     SyncClient,
     getOauthCallbackUrl,
     createActivityLog,

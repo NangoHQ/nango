@@ -24,7 +24,8 @@ import {
     SyncCommand,
     CommandToActivityLog,
     environmentService,
-    errorManager
+    errorManager,
+    analytics
 } from '@nangohq/shared';
 
 class SyncController {
@@ -46,6 +47,8 @@ class SyncController {
             if (!reconcileSuccess) {
                 res.status(500).send({ message: 'There was an error deploying syncs, please check the activity tab and report this issue to support' });
             }
+
+            analytics.trackByEnvironmentId('sync:deploy_succeeded', environmentId);
 
             res.send(syncConfigDeployResult?.result);
         } catch (e) {
@@ -240,6 +243,15 @@ class SyncController {
                 content: `Sync was updated with command: "${action}" for sync: ${sync_id}`
             });
             await updateSuccessActivityLog(activityLogId as number, true);
+
+            analytics.trackByEnvironmentId(`sync:command_${command.toLowerCase()}`, environment.id, {
+                sync_id,
+                sync_name,
+                provider,
+                provider_config_key: connection?.provider_config_key as string,
+                connection_id: connection?.connection_id as string,
+                schedule_id
+            });
 
             res.sendStatus(200);
         } catch (e) {

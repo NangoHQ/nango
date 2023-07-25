@@ -459,7 +459,6 @@ nango.auth('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr}$
                                                     name="password"
                                                     optionalvalue={apiAuthPassword}
                                                     setoptionalvalue={setApiAuthPassword}
-                                                    required
                                                 />
                                             </div>
                                         </div>

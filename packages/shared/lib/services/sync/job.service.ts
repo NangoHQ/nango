@@ -38,13 +38,13 @@ export const createSyncJob = async (
 };
 
 export const updateJobActivityLogId = async (id: number, activity_log_id: number): Promise<void> => {
-    return schema().from<SyncJob>(SYNC_JOB_TABLE).where({ id }).update({
+    return schema().from<SyncJob>(SYNC_JOB_TABLE).where({ id, deleted: false }).update({
         activity_log_id
     });
 };
 
 export const getLatestSyncJob = async (sync_id: string): Promise<SyncJob | null> => {
-    const result = await schema().from<SyncJob>(SYNC_JOB_TABLE).where({ sync_id }).orderBy('created_at', 'desc').first();
+    const result = await schema().from<SyncJob>(SYNC_JOB_TABLE).where({ sync_id, deleted: false }).orderBy('created_at', 'desc').first();
 
     if (result) {
         return result;
@@ -54,8 +54,9 @@ export const getLatestSyncJob = async (sync_id: string): Promise<SyncJob | null>
 };
 
 export const updateSyncJobStatus = async (id: number, status: SyncStatus): Promise<void> => {
-    return schema().from<SyncJob>(SYNC_JOB_TABLE).where({ id }).update({
-        status
+    return schema().from<SyncJob>(SYNC_JOB_TABLE).where({ id, deleted: false }).update({
+        status,
+        updated_at: new Date()
     });
 };
 
@@ -69,7 +70,7 @@ export const updateSyncJobResult = async (id: number, result: SyncResultByModel,
     if (!existingResult || Object.keys(existingResult).length === 0) {
         const [updatedRow] = await schema()
             .from<SyncJob>(SYNC_JOB_TABLE)
-            .where({ id })
+            .where({ id, deleted: false })
             .update({
                 result
             })
@@ -90,7 +91,7 @@ export const updateSyncJobResult = async (id: number, result: SyncResultByModel,
 
         const [updatedRow] = await schema()
             .from<SyncJob>(SYNC_JOB_TABLE)
-            .where({ id })
+            .where({ id, deleted: false })
             .update({
                 result: finalResult
             })
@@ -101,7 +102,11 @@ export const updateSyncJobResult = async (id: number, result: SyncResultByModel,
 };
 
 export const addSyncConfigToJob = async (id: number, sync_config_id: number): Promise<void> => {
-    await schema().from<SyncJob>(SYNC_JOB_TABLE).where({ id }).update({
+    await schema().from<SyncJob>(SYNC_JOB_TABLE).where({ id, deleted: false }).update({
         sync_config_id
     });
+};
+
+export const deleteJobsBySyncId = async (sync_id: string): Promise<void> => {
+    await schema().from<SyncJob>(SYNC_JOB_TABLE).where({ sync_id, deleted: false }).update({ deleted: true, deleted_at: new Date() });
 };
