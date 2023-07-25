@@ -380,7 +380,8 @@ export async function getSyncConfigsWithConnectionsByEnvironmentId(environment_i
                     FROM nango._nango_connections
                     WHERE _nango_configs.environment_id = _nango_connections.environment_id
                     AND _nango_configs.unique_key = _nango_connections.provider_config_key
-                    AND nango._nango_connections.deleted = false
+                    AND _nango_configs.deleted = false
+                    AND _nango_connections.deleted = false
                 ) as connections
                 `
             )
