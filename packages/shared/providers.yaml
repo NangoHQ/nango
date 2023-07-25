@@ -58,6 +58,10 @@ asana:
     proxy:
         base_url: https://app.asana.com
     docs: https://developers.asana.com/reference
+ashby:
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.ashbyhq.com
 atlassian:
     auth_mode: OAUTH2
     authorization_url: https://auth.atlassian.com/authorize
@@ -284,6 +288,10 @@ gitlab:
     token_url: https://gitlab.com/oauth/token
     authorization_params:
         response_type: code
+gong:
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.gong.io
 google:
     auth_mode: OAUTH2
     authorization_url: https://accounts.google.com/o/oauth2/v2/auth
@@ -430,6 +438,10 @@ microsoft-teams:
     authorization_params:
         response_type: code
         response_mode: query
+mixpanel:
+    auth_mode: BASIC
+    proxy:
+        base_url: https://mixpanel.com
 miro:
     auth_mode: OAUTH2
     authorization_url: https://miro.com/oauth/authorize
@@ -801,6 +813,12 @@ wave-accounting:
     auth_mode: OAUTH2
     authorization_url: https://api.waveapps.com/oauth2/authorize
     token_url: https://api.waveapps.com/oauth2/token
+workable:
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            Authorization: Bearer ${apiKey}
+        base_url: https://${connectionConfig.params.subdomain}.workable.com
 xero:
     auth_mode: OAUTH2
     authorization_url: https://login.xero.com/identity/connect/authorize
@@ -850,6 +868,8 @@ zoho:
     authorization_params:
         prompt: consent
         access_type: offline
+    proxy:
+        base_url: https://www.zohoapis.${connectionConfig.params.extension}
 zoho-books:
     alias: zoho
 zoho-crm:
