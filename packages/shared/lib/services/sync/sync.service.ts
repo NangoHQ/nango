@@ -158,6 +158,7 @@ export const getSyncs = async (nangoConnection: Connection): Promise<Sync[]> => 
                     JOIN nango.${SYNC_CONFIG_TABLE} ON nango.${SYNC_CONFIG_TABLE}.id = nango.${SYNC_JOB_TABLE}.sync_config_id
                     WHERE nango.${SYNC_JOB_TABLE}.sync_id = nango.${TABLE}.id
                     AND nango.${SYNC_JOB_TABLE}.deleted = false
+                    AND nango.${SYNC_CONFIG_TABLE}.deleted = false
                     ORDER BY nango.${SYNC_JOB_TABLE}.updated_at DESC
                     LIMIT 1
                 ) as latest_sync
