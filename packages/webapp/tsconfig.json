@@ -19,5 +19,6 @@
         "noEmit": true,
         "jsx": "react-jsx"
     },
+    "references": [{ "path": "../frontend" }],
     "include": ["src"]
 }
