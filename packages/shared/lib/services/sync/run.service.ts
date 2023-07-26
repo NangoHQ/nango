@@ -263,19 +263,6 @@ export default class SyncRun {
                                 }
 
                                 if (!upsertResult.success) {
-                                    await errorManager.report(upsertResult?.error, {
-                                        environmentId: this.nangoConnection.environment_id as number,
-                                        source: 'customer',
-                                        operation: LogActionEnum.DATABASE,
-                                        metadata: {
-                                            syncName: this.syncName,
-                                            connectionDetails: this.nangoConnection,
-                                            syncId: this.syncId,
-                                            syncJobId: this.syncJobId,
-                                            model: model
-                                        }
-                                    });
-
                                     await this.reportFailureForResults(
                                         `There was a problem upserting the data for ${this.syncName} and the model ${model} with the error message: ${upsertResult?.error}`
                                     );
@@ -371,6 +358,19 @@ export default class SyncRun {
                 content
             });
         }
+
+        await errorManager.captureWithJustEnvironment('sync_success', content, this.nangoConnection.environment_id as number, LogActionEnum.SYNC, {
+            model,
+            responseResults,
+            numberOfModels,
+            version,
+            syncName: this.syncName,
+            connectionDetails: this.nangoConnection,
+            syncId: this.syncId,
+            syncJobId: this.syncJobId,
+            syncType: this.syncType,
+            debug: this.debug
+        });
     }
 
     async reportFailureForResults(content: string) {
@@ -389,6 +389,27 @@ export default class SyncRun {
             content
         });
 
-        await errorManager.captureWithJustEnvironment('sync_failure', content, this.nangoConnection.environment_id as number, LogActionEnum.SYNC);
+        await errorManager.report(content, {
+            environmentId: this.nangoConnection.environment_id as number,
+            source: 'customer',
+            operation: LogActionEnum.SYNC,
+            metadata: {
+                syncName: this.syncName,
+                connectionDetails: this.nangoConnection,
+                syncId: this.syncId,
+                syncJobId: this.syncJobId,
+                syncType: this.syncType,
+                debug: this.debug
+            }
+        });
+
+        await errorManager.captureWithJustEnvironment('sync_failure', content, this.nangoConnection.environment_id as number, LogActionEnum.SYNC, {
+            syncName: this.syncName,
+            connectionDetails: this.nangoConnection,
+            syncId: this.syncId,
+            syncJobId: this.syncJobId,
+            syncType: this.syncType,
+            debug: this.debug
+        });
     }
 }

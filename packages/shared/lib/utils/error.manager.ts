@@ -99,7 +99,7 @@ class ErrorManager {
         accountId: number,
         environmentId: number,
         operation: string,
-        contexts?: { [key: string]: unknown | undefined }
+        contexts?: Record<string, unknown>
     ) {
         const environmentName = await environmentService.getEnvironmentName(environmentId);
 
@@ -116,15 +116,21 @@ class ErrorManager {
                 environmentName,
                 operation
             },
-            contexts
+            contexts: { custom: { ...contexts } } || {}
         });
     }
 
-    public async captureWithJustEnvironment(event_id: string, message: string, environmentId: number, operation: LogAction) {
+    public async captureWithJustEnvironment(
+        event_id: string,
+        message: string,
+        environmentId: number,
+        operation: LogAction,
+        contexts?: Record<string, unknown>
+    ) {
         const accountId = await environmentService.getAccountIdFromEnvironment(environmentId);
         const user = await userService.getByAccountId(accountId as number);
         if (user) {
-            await this.capture(event_id, message, user, accountId as number, environmentId, operation);
+            await this.capture(event_id, message, user, accountId as number, environmentId, operation, contexts);
         }
     }
 
