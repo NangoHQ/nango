@@ -42,6 +42,17 @@ Get details about a specific command by running:
 nango [command] --help
 ```
 
+## Command Details
+
+### `init`
+The `init` command is the first optional command you run when setting up Nango. It creates a `nango-integrations` directory and adds files for the example Github integration. However, it does not create a `dist/*` folder. It should be used to initialize Nango.
+
+### `dev`
+The `dev` command is the fundamental and mandatory command for developing on Nango. It watches over `nango.yaml` to generate the `models.ts` file (both model interfaces + sync helper classes) and watches over sync scripts to build the `dist/*` folder. It should not generate nor edit sync script .ts files. It should be used during the development process.
+
+### `generate`
+The `generate` command is an optional helper command that generates initial scaffolds for sync scripts (once). To do so, it also needs to (redundantly with `dev`) generate the `models.ts` file. It should be used to generate initial scaffolds for sync scripts and the `models.ts` file.
+
 ## Flags & environment variables
 
 Global command flags:
@@ -67,5 +78,3 @@ NANGO_CLI_UPGRADE_MODE=prompt # Default value
 
 # Whether to prompt before deployments.
 NANGO_DEPLOY_AUTO_CONFIRM=false # Default value
-```
-
