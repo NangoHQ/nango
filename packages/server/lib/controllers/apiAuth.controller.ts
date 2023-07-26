@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import type { LogLevel, LogAction } from '@nangohq/shared';
+import type { LogLevel } from '@nangohq/shared';
 import {
     getAccount,
     getEnvironmentId,
@@ -30,7 +30,7 @@ class ApiAuthController {
         const log = {
             level: 'info' as LogLevel,
             success: false,
-            action: 'auth' as LogAction,
+            action: LogActionEnum.AUTH,
             start: Date.now(),
             end: Date.now(),
             timestamp: Date.now(),
@@ -187,7 +187,7 @@ class ApiAuthController {
         const log = {
             level: 'info' as LogLevel,
             success: false,
-            action: 'auth' as LogAction,
+            action: LogActionEnum.AUTH,
             start: Date.now(),
             end: Date.now(),
             timestamp: Date.now(),

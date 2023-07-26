@@ -19,6 +19,7 @@ import {
     LogLevel,
     BasicApiCredentials,
     LogAction,
+    LogActionEnum,
     configService,
     errorManager,
     connectionService,
@@ -58,7 +59,7 @@ class ProxyController {
             const environment_id = getEnvironmentId(res);
             const accountId = getAccount(res);
 
-            const logAction: LogAction = isSync ? 'sync' : ('proxy' as LogAction);
+            const logAction: LogAction = isSync ? LogActionEnum.SYNC : LogActionEnum.PROXY;
 
             const log = {
                 level: 'debug' as LogLevel,

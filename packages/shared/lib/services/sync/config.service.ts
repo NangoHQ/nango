@@ -12,7 +12,7 @@ import {
     createActivityLogDatabaseErrorMessageAndEnd
 } from '../activity/activity.service.js';
 import { getSyncsByProviderConfigAndSyncName } from './sync.service.js';
-import { LogActionEnum, LogLevel, LogAction } from '../../models/Activity.js';
+import { LogActionEnum, LogLevel } from '../../models/Activity.js';
 import type { SyncModelSchema, SyncConfigWithProvider, IncomingSyncConfig, SyncConfig, SlimSync, SyncConfigResult } from '../../models/Sync.js';
 import type { NangoConnection } from '../../models/Connection.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
@@ -35,7 +35,7 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
     const log = {
         level: 'info' as LogLevel,
         success: null,
-        action: 'sync deploy' as LogAction,
+        action: LogActionEnum.SYNC_DEPLOY,
         start: Date.now(),
         end: Date.now(),
         timestamp: Date.now(),

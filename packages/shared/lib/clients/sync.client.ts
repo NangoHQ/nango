@@ -5,7 +5,7 @@ import fs from 'fs-extra';
 import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { NangoIntegrationData, NangoConfig, NangoIntegration } from '../integrations/index.js';
 import { Sync, SyncStatus, SyncType, ScheduleStatus, SyncCommand, SyncWithSchedule } from '../models/Sync.js';
-import { LogActionEnum, LogLevel, LogAction } from '../models/Activity.js';
+import { LogActionEnum, LogLevel } from '../models/Activity.js';
 import { TASK_QUEUE } from '../constants.js';
 import { createActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../services/activity/activity.service.js';
 import { createSyncJob } from '../services/sync/job.service.js';
@@ -131,7 +131,7 @@ class SyncClient {
             const log = {
                 level: 'info' as LogLevel,
                 success: null,
-                action: 'sync' as LogAction,
+                action: LogActionEnum.SYNC,
                 start: Date.now(),
                 end: Date.now(),
                 timestamp: Date.now(),

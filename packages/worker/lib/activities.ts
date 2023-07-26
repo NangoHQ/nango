@@ -7,7 +7,7 @@ import {
     configService,
     createActivityLog,
     LogLevel,
-    LogAction,
+    LogActionEnum,
     syncRunService,
     updateJobActivityLogId,
     NangoConnection,
@@ -83,7 +83,7 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
         const log = {
             level: 'info' as LogLevel,
             success: false,
-            action: 'sync' as LogAction,
+            action: LogActionEnum.SYNC,
             start: Date.now(),
             end: Date.now(),
             timestamp: Date.now(),
@@ -127,7 +127,7 @@ export async function syncProvider(
             const log = {
                 level: 'info' as LogLevel,
                 success: null,
-                action: 'sync' as LogAction,
+                action: LogActionEnum.SYNC,
                 start: Date.now(),
                 end: Date.now(),
                 timestamp: Date.now(),
@@ -173,7 +173,7 @@ export async function syncProvider(
         const log = {
             level: 'info' as LogLevel,
             success: false,
-            action: 'sync' as LogAction,
+            action: LogActionEnum.SYNC,
             start: Date.now(),
             end: Date.now(),
             timestamp: Date.now(),

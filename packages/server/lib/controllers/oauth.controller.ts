@@ -23,7 +23,7 @@ import {
     updateSessionId as updateSessionIdActivityLog,
     addEndTime as addEndTimeActivityLog,
     LogLevel,
-    LogAction,
+    LogActionEnum,
     configService,
     connectionService,
     environmentService,
@@ -58,7 +58,7 @@ class OAuthController {
         const log = {
             level: 'info' as LogLevel,
             success: false,
-            action: 'auth' as LogAction,
+            action: LogActionEnum.AUTH,
             start: Date.now(),
             end: Date.now(),
             timestamp: Date.now(),
