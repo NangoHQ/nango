@@ -92,7 +92,15 @@ class ErrorManager {
         logger.error(`Exception caught: ${JSON.stringify(e, Object.getOwnPropertyNames(e))}`);
     }
 
-    public async capture(event_id: string, message: string, user: ErrorCaptureUser, accountId: number, environmentId: number, operation: string) {
+    public async capture(
+        event_id: string,
+        message: string,
+        user: ErrorCaptureUser,
+        accountId: number,
+        environmentId: number,
+        operation: string,
+        contexts?: { [key: string]: unknown | undefined }
+    ) {
         const environmentName = await environmentService.getEnvironmentName(environmentId);
 
         sentry.captureEvent({
@@ -107,7 +115,8 @@ class ErrorManager {
             tags: {
                 environmentName,
                 operation
-            }
+            },
+            contexts
         });
     }
 
@@ -115,7 +124,7 @@ class ErrorManager {
         const accountId = await environmentService.getAccountIdFromEnvironment(environmentId);
         const user = await userService.getByAccountId(accountId as number);
         if (user) {
-            this.capture(event_id, message, user, accountId as number, environmentId, operation);
+            await this.capture(event_id, message, user, accountId as number, environmentId, operation);
         }
     }
 

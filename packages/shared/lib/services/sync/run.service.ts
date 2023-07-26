@@ -265,7 +265,7 @@ export default class SyncRun {
                                 if (!upsertResult.success) {
                                     await errorManager.report(upsertResult?.error, {
                                         environmentId: this.nangoConnection.environment_id as number,
-                                        source: 'platform',
+                                        source: 'customer',
                                         operation: LogActionEnum.DATABASE,
                                         metadata: {
                                             syncName: this.syncName,
@@ -388,5 +388,7 @@ export default class SyncRun {
             timestamp: Date.now(),
             content
         });
+
+        await errorManager.captureWithJustEnvironment('sync_failure', content, this.nangoConnection.environment_id as number, LogActionEnum.SYNC);
     }
 }
