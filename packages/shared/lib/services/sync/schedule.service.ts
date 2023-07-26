@@ -1,7 +1,5 @@
 import db, { schema, dbNamespace } from '../../db/database.js';
-import type { Connection as NangoConnection } from '../../models/Connection.js';
 import { Schedule as SyncSchedule, ScheduleStatus, SyncCommandToScheduleStatus, SyncCommand } from '../../models/Sync.js';
-import { getSyncsByConnectionId, getSyncsByProviderConfigKey } from '../sync/sync.service.js';
 import { getInterval } from '../nango-config.service.js';
 import SyncClient from '../../clients/sync.client.js';
 import { createActivityLogDatabaseErrorMessageAndEnd } from '../activity/activity.service.js';
