@@ -25,7 +25,8 @@ import {
     CommandToActivityLog,
     environmentService,
     errorManager,
-    analytics
+    analytics,
+    LogAction
 } from '@nangohq/shared';
 
 class SyncController {
@@ -46,6 +47,8 @@ class SyncController {
 
             if (!reconcileSuccess) {
                 res.status(500).send({ message: 'There was an error deploying syncs, please check the activity tab and report this issue to support' });
+
+                return;
             }
 
             analytics.trackByEnvironmentId('sync:deploy_succeeded', environmentId);
@@ -81,12 +84,18 @@ class SyncController {
 
             if (!model) {
                 res.status(400).send({ message: 'Missing sync model' });
+
+                return;
             }
 
             const connectionId = req.get('Connection-Id') as string;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
 
-            const records = await syncDataService.getDataRecords(
+            const {
+                success,
+                error,
+                response: records
+            } = await syncDataService.getDataRecords(
                 connectionId,
                 providerConfigKey,
                 environmentId,
@@ -95,6 +104,12 @@ class SyncController {
                 offset as string,
                 limit as string
             );
+
+            if (!success) {
+                res.status(400).send(error);
+
+                return;
+            }
 
             res.send(records);
         } catch (e) {
@@ -109,16 +124,32 @@ class SyncController {
 
             if (!connection_id) {
                 res.status(400).send({ message: 'Missing connection id' });
+
+                return;
             }
 
             if (!provider_config_key) {
                 res.status(400).send({ message: 'Missing provider config key' });
+
+                return;
             }
 
-            const connection: Connection | null = await connectionService.getConnection(connection_id as string, provider_config_key as string, environment.id);
+            const {
+                success,
+                error,
+                response: connection
+            } = await connectionService.getConnection(connection_id as string, provider_config_key as string, environment.id, 'sync' as LogAction);
+
+            if (!success) {
+                res.status(400).send(error);
+
+                return;
+            }
 
             if (!connection) {
                 res.status(404).send({ message: 'Connection not found!' });
+
+                return;
             }
 
             const syncs = await getSyncs(connection as Connection);
@@ -161,13 +192,27 @@ class SyncController {
 
             if (!connectionId) {
                 res.status(400).send({ message: 'Missing connection id' });
+
+                return;
             }
 
             if (!providerConfigKey) {
                 res.status(400).send({ message: 'Missing provider config key' });
+
+                return;
             }
 
-            const connection: Connection | null = await connectionService.getConnection(connectionId as string, providerConfigKey as string, environmentId);
+            const {
+                success,
+                error,
+                response: connection
+            } = await connectionService.getConnection(connectionId as string, providerConfigKey as string, environmentId, 'trigger sync' as LogAction);
+
+            if (!success) {
+                res.status(400).send(error);
+
+                return;
+            }
 
             const syncs = await getSyncsFlat(connection as Connection);
 
@@ -188,6 +233,8 @@ class SyncController {
 
             if (!syncName) {
                 res.status(400).send({ message: 'Missing sync name!' });
+
+                return;
             }
 
             const providerConfigKey = await getProviderConfigBySyncAndAccount(syncName as string, environmentId as number);

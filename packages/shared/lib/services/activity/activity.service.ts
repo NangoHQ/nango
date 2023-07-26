@@ -26,6 +26,9 @@ export async function createActivityLog(log: ActivityLog): Promise<number | null
 }
 
 export async function updateProvider(id: number, provider: string): Promise<void> {
+    if (!id) {
+        return;
+    }
     await db.knex.withSchema(db.schema()).from<ActivityLog>(activityLogTableName).where({ id }).update({
         provider
     });
@@ -51,12 +54,18 @@ export async function updateSessionId(id: number, session_id: string): Promise<v
 }
 
 export async function updateSuccess(id: number, success: boolean): Promise<void> {
+    if (!id) {
+        return;
+    }
     await db.knex.withSchema(db.schema()).from<ActivityLog>(activityLogTableName).where({ id }).update({
         success
     });
 }
 
 export async function updateEndpoint(id: number, endpoint: string): Promise<void> {
+    if (!id) {
+        return;
+    }
     await db.knex.withSchema(db.schema()).from<ActivityLog>(activityLogTableName).where({ id }).update({
         endpoint
     });
@@ -84,6 +93,10 @@ export async function createActivityLogAndLogMessage(log: ActivityLog, logMessag
 
 export async function createActivityLogMessage(logMessage: ActivityLogMessage): Promise<boolean> {
     logger.log(logMessage.level as string, logMessage.content);
+
+    if (!logMessage.activity_log_id) {
+        return false;
+    }
 
     try {
         const result: void | Pick<ActivityLogMessage, 'id'> = await db.knex
@@ -120,6 +133,9 @@ export async function addEndTime(activity_log_id: number): Promise<void> {
 }
 
 export async function createActivityLogMessageAndEnd(logMessage: ActivityLogMessage): Promise<void> {
+    if (!logMessage.activity_log_id) {
+        return;
+    }
     await createActivityLogMessage(logMessage);
     if (logMessage.activity_log_id !== undefined) {
         await addEndTime(logMessage.activity_log_id);

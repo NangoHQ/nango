@@ -23,6 +23,7 @@ import {
     errorManager,
     connectionService,
     environmentService,
+    getAccount,
     getEnvironmentId,
     interpolateIfNeeded,
     AuthModes,
@@ -55,6 +56,7 @@ class ProxyController {
             const isDryRun = req.get('Nango-Is-Dry-Run') as string;
             const existingActivityLogId = req.get('Nango-Activity-Log-Id') as number | string;
             const environment_id = getEnvironmentId(res);
+            const accountId = getAccount(res);
 
             const logAction: LogAction = isSync ? 'sync' : ('proxy' as LogAction);
 
@@ -110,14 +112,25 @@ class ProxyController {
                 });
             }
 
-            const connection = await connectionService.getConnectionCredentials(
-                res,
+            const {
+                success,
+                error,
+                response: connection
+            } = await connectionService.getConnectionCredentials(
+                accountId,
+                environment_id,
                 connectionId,
                 providerConfigKey,
                 activityLogId as number,
                 logAction,
                 false
             );
+
+            if (!success) {
+                res.status(400).send(error);
+
+                return;
+            }
 
             if (!isSync) {
                 await createActivityLogMessage({
@@ -191,6 +204,8 @@ class ProxyController {
                 });
 
                 res.status(404).send();
+
+                return;
             }
 
             await updateProviderActivityLog(activityLogId as number, String(providerConfig?.provider));

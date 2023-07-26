@@ -1,4 +1,3 @@
-import type { Response } from 'express';
 import db from '../db/database.js';
 import analytics from '../utils/analytics.js';
 import providerClientManager from '../clients/provider.client.js';
@@ -25,10 +24,11 @@ import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import { NangoError } from '../utils/error.js';
 
 import type { Connection, StoredConnection, BaseConnection, NangoConnection } from '../models/Connection.js';
+import type { ServiceResponse } from '../models/Generic.js';
 import encryptionManager from '../utils/encryption.manager.js';
 import { AuthModes as ProviderAuthModes, OAuth2Credentials, ImportedCredentials, ApiKeyCredentials, BasicApiCredentials } from '../models/Auth.js';
 import { schema } from '../db/database.js';
-import { getEnvironmentId, getAccount, parseTokenExpirationDate, isTokenExpired } from '../utils/utils.js';
+import { parseTokenExpirationDate, isTokenExpired } from '../utils/utils.js';
 import SyncClient from '../clients/sync.client.js';
 import errorManager from '../utils/error.manager.js';
 
@@ -223,17 +223,31 @@ class ConnectionService {
         return result[0].id;
     }
 
-    public async getConnection(connectionId: string, providerConfigKey: string, environment_id: number): Promise<Connection | null> {
+    public async getConnection(
+        connectionId: string,
+        providerConfigKey: string,
+        environment_id: number,
+        action: LogAction
+    ): Promise<ServiceResponse<Connection>> {
         if (!connectionId) {
-            throw new NangoError('missing_connection');
+            const error = new NangoError('missing_connection');
+            errorManager.captureWithJustEnvironment(error.message, environment_id, action as LogAction);
+
+            return { success: false, error, response: null };
         }
 
         if (!providerConfigKey) {
-            throw new NangoError('missing_provider_config');
+            const error = new NangoError('missing_provider_config');
+            errorManager.captureWithJustEnvironment(error.message, environment_id, action as LogAction);
+
+            return { success: false, error, response: null };
         }
 
         if (!environment_id) {
-            throw new NangoError('missing_environment');
+            const error = new NangoError('missing_environment');
+            errorManager.captureWithJustEnvironment(error.message, environment_id, action as LogAction);
+
+            return { success: false, error, response: null };
         }
 
         const result: StoredConnection[] | null = (await schema()
@@ -263,7 +277,7 @@ class ConnectionService {
 
         await this.updateLastFetched(connection?.id as number);
 
-        return connection;
+        return { success: true, error: null, response: connection };
     }
 
     public async updateConnection(connection: Connection) {
@@ -346,38 +360,46 @@ class ConnectionService {
     }
 
     public async getConnectionCredentials(
-        res: Response,
+        accountId: number,
+        environmentId: number,
         connectionId: string,
         providerConfigKey: string,
         activityLogId?: number | null,
         action?: LogAction,
         instantRefresh = false
-    ) {
-        const accountId = getAccount(res);
-        const environmentId = getEnvironmentId(res);
-
+    ): Promise<ServiceResponse<Connection>> {
         if (connectionId === null) {
-            errorManager.errRes(res, 'missing_connection');
-            return;
+            const error = new NangoError('missing_connection');
+            errorManager.captureWithJustEnvironment(error.message, environmentId, action as LogAction);
+
+            return { success: false, error, response: null };
         }
 
         if (providerConfigKey === null) {
-            errorManager.errRes(res, 'missing_provider_config');
-            return;
+            const error = new NangoError('missing_provider_config');
+            errorManager.captureWithJustEnvironment(error.message, environmentId, action as LogAction);
+
+            return { success: false, error, response: null };
         }
 
-        const connection: Connection | null = await this.getConnection(connectionId, providerConfigKey, environmentId);
+        const { success, error, response: connection } = await this.getConnection(connectionId, providerConfigKey, environmentId, action as LogAction);
 
-        if (connection === null && activityLogId) {
-            await createActivityLogMessageAndEnd({
-                level: 'error',
-                activity_log_id: activityLogId,
-                content: `Connection not found using connectionId: ${connectionId} and providerConfigKey: ${providerConfigKey} and the environment: ${environmentId}`,
-                timestamp: Date.now()
-            });
+        if (!success) {
+            return { success, error, response: null };
+        }
 
-            errorManager.errRes(res, 'unknown_connection');
-            throw new Error(`Connection not found`);
+        if (connection === null) {
+            if (activityLogId) {
+                await createActivityLogMessageAndEnd({
+                    level: 'error',
+                    activity_log_id: activityLogId,
+                    content: `Connection not found using connectionId: ${connectionId} and providerConfigKey: ${providerConfigKey} and the environment: ${environmentId}`,
+                    timestamp: Date.now()
+                });
+            }
+            const error = new NangoError('unknown_connection');
+            errorManager.captureWithJustEnvironment(error.message, environmentId, action as LogAction);
+            return { success: false, error, response: null };
         }
 
         const config: ProviderConfig | null = await configService.getProviderConfig(connection?.provider_config_key as string, environmentId);
@@ -386,16 +408,19 @@ class ConnectionService {
             await updateProviderActivityLog(activityLogId, config?.provider as string);
         }
 
-        if (config === null && activityLogId) {
-            await createActivityLogMessageAndEnd({
-                level: 'error',
-                activity_log_id: activityLogId,
-                content: `Configuration not found using the providerConfigKey: ${providerConfigKey}, the account id: ${accountId} and the environment: ${environmentId}`,
-                timestamp: Date.now()
-            });
+        if (config === null) {
+            if (activityLogId) {
+                await createActivityLogMessageAndEnd({
+                    level: 'error',
+                    activity_log_id: activityLogId,
+                    content: `Configuration not found using the providerConfigKey: ${providerConfigKey}, the account id: ${accountId} and the environment: ${environmentId}`,
+                    timestamp: Date.now()
+                });
+            }
 
-            errorManager.errRes(res, 'unknown_provider_config');
-            throw new Error(`Provider config not found`);
+            const error = new NangoError('unknown_provider_config');
+            errorManager.captureWithJustEnvironment(error.message, environmentId, action as LogAction);
+            return { success: false, error, response: null };
         }
 
         const template: ProviderTemplate | undefined = configService.getTemplate(config?.provider as string);
@@ -413,7 +438,7 @@ class ConnectionService {
 
         analytics.track('server:connection_fetched', accountId, { provider: config?.provider });
 
-        return connection;
+        return { success: true, error: null, response: connection };
     }
 
     public async updateLastFetched(connectionId: number) {

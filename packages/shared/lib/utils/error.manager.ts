@@ -8,9 +8,11 @@ import type { Request } from 'express';
 import { isCloud, getAccount, dirname, isApiAuthenticated, isUserAuthenticated } from './utils.js';
 import type { User } from '../models/Admin.js';
 import type { LogAction } from '../models/Activity.js';
+import environmentService from '../services/environment.service.js';
+import userService from '../services/user.service.js';
 
 interface ErrorCaptureUser {
-    id: string;
+    id: number;
     email?: string;
     userId?: number;
 }
@@ -51,7 +53,9 @@ class ErrorManager {
         logger.error(`Exception caught: ${JSON.stringify(e, Object.getOwnPropertyNames(e))}`);
     }
 
-    public capture(message: string, user: ErrorCaptureUser, accountId: number, environment: string, operation: LogAction) {
+    public async capture(message: string, user: ErrorCaptureUser, accountId: number, environmentId: number, operation: LogAction) {
+        const environmentName = await environmentService.getEnvironmentName(environmentId);
+
         sentry.captureEvent({
             message,
             user: {
@@ -61,10 +65,18 @@ class ErrorManager {
                 userId: user.id
             },
             tags: {
-                environment,
+                environmentName,
                 operation
             }
         });
+    }
+
+    public async captureWithJustEnvironment(message: string, environmentId: number, operation: LogAction) {
+        const accountId = await environmentService.getAccountIdFromEnvironment(environmentId);
+        const user = await userService.getByAccountId(accountId as number);
+        if (user) {
+            this.capture(message, user, accountId as number, environmentId, operation);
+        }
     }
 
     public errResFromNangoErr(res: any, err: NangoError) {
