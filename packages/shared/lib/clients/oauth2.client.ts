@@ -84,6 +84,7 @@ export async function getFreshOAuth2Credentials(connection: Connection, config: 
 
         if (Boom.isBoom(e)) {
             const payload = { external_message: e.message, external_request_details: e.output, dataMessage: errorPayload };
+            // TODO KJG set tags and be more explicit here. set customer source
             nangoErr = new NangoError(`refresh_token_external_error`, payload);
         } else {
             nangoErr = new NangoError(`refresh_token_external_error`, { message: errorPayload });
