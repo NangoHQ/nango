@@ -22,10 +22,10 @@ import TagsInput from '../components/ui/input/TagsInput';
 import { AuthModes } from '../types';
 
 interface Integration {
-    uniqueKey: string;
+    unique_key: string;
     provider: string;
-    clientId: string;
-    clientSecret: string;
+    client_id: string;
+    client_secret: string;
     scopes: string;
 }
 
@@ -63,7 +63,7 @@ export default function IntegrationCreate() {
                     const data = await res.json();
                     setIntegration(data['config']);
                     const currentIntegration = data['config'];
-                    if (currentIntegration.clientId === null && currentIntegration.clientSecret === null && currentIntegration.scopes === '') {
+                    if (currentIntegration.client_id === null && currentIntegration.client_secret === null) {
                         // set to either api type to not have empty credentials fields
                         setAuthMode(AuthModes.Basic);
                     }
@@ -303,7 +303,7 @@ export default function IntegrationCreate() {
                                                 id="client_id"
                                                 name="client_id"
                                                 type="text"
-                                                defaultValue={integration ? integration.clientId : ''}
+                                                defaultValue={integration ? integration.client_id : ''}
                                                 required
                                                 minLength={1}
                                                 className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none"
@@ -333,7 +333,7 @@ export default function IntegrationCreate() {
                                                 copy={true}
                                                 id="client_secret"
                                                 name="client_secret"
-                                                defaultValue={integration ? integration.clientSecret : ''}
+                                                defaultValue={integration ? integration.client_secret : ''}
                                                 required
                                             />
                                         </div>

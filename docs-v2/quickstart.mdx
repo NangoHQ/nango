@@ -105,10 +105,11 @@ Fetch the always-fresh data from the _sync_ in your backend with the [backend SD
 
 ```ts
 import { Nango }  from '@nangohq/node';
+import type { GithubIssue } from '<path-to-nango-integrations>/models'
 
 const nango = new Nango({ secretKey: '<your-dev-secret-key>' });
 
-const result = await nango.getRecords({
+const result = await nango.getRecords<GithubIssue>({
     providerConfigKey: 'github-issue-example',
     connectionId: 'test-connection-id',
     model: 'GithubIssue'

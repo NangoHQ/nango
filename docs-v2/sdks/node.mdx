@@ -195,7 +195,9 @@ For the node SDK Nango returns an [Axios response object](https://axios-http.com
 To read synced data from Nango use `getRecords`:
 
 ```ts
-const records = await nango.getRecords({
+import type { ModelName } from '<path-to-nango-integrations>/models'
+
+const records = await nango.getRecords<ModelName>({
     providerConfigKey: '<integration-id>',  // Name of your integration, from nango.yaml. E.g. github
     connectionId: '<user-id>',              // The connection id you passed to nango.auth()
     model: '<model-name>',                  // The name of the data model, from nango.yaml. E.g. ticket
