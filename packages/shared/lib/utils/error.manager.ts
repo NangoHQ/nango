@@ -7,6 +7,13 @@ import { NangoError } from './error.js';
 import type { Request } from 'express';
 import { isCloud, getAccount, dirname, isApiAuthenticated, isUserAuthenticated } from './utils.js';
 import type { User } from '../models/Admin.js';
+import type { LogAction } from '../models/Activity.js';
+
+interface ErrorCaptureUser {
+    id: string;
+    email?: string;
+    userId?: number;
+}
 
 class ErrorManager {
     constructor() {
@@ -42,6 +49,22 @@ class ErrorManager {
         });
 
         logger.error(`Exception caught: ${JSON.stringify(e, Object.getOwnPropertyNames(e))}`);
+    }
+
+    public capture(message: string, user: ErrorCaptureUser, accountId: number, environment: string, operation: LogAction) {
+        sentry.captureEvent({
+            message,
+            user: {
+                // Note: using the account ID since not all operations have a user ID due to usage of secret/public keys
+                id: accountId.toString(),
+                email: user.email || '',
+                userId: user.id
+            },
+            tags: {
+                environment,
+                operation
+            }
+        });
     }
 
     public errResFromNangoErr(res: any, err: NangoError) {
