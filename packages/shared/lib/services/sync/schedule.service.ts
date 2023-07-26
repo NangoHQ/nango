@@ -48,18 +48,6 @@ export const deleteScheduleForSync = async (sync_id: string): Promise<void> => {
     }
 };
 
-export const deleteScheduleForProviderConfig = async (environmentId: number, providerConfigKey: string): Promise<void> => {
-    const syncs = await getSyncsByProviderConfigKey(environmentId, providerConfigKey);
-
-    if (!syncs) {
-        return;
-    }
-
-    for (const sync of syncs) {
-        await deleteScheduleForSync(sync.id as string);
-    }
-};
-
 export const markAllAsStopped = async (): Promise<void> => {
     await schema().update({ status: ScheduleStatus.STOPPED }).from<SyncSchedule>(TABLE);
 };
