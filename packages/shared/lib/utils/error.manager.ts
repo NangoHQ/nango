@@ -17,6 +17,15 @@ interface ErrorCaptureUser {
     userId?: number;
 }
 
+interface ErrorOptionalConfig {
+    source: 'platform' | 'customer';
+    accountId?: number;
+    userId?: number;
+    environmentId?: number;
+    metadata?: { [key: string]: unknown };
+    operation?: string;
+}
+
 class ErrorManager {
     constructor() {
         try {
@@ -35,12 +44,42 @@ class ErrorManager {
         }
     }
 
-    public report(e: any, config: { accountId?: number | undefined; userId?: number | undefined; metadata?: { [key: string]: unknown } } = {}) {
-        sentry.withScope(function (scope) {
-            if (config.accountId != null) {
-                scope.setUser({ id: `account-${config.accountId}` });
-            } else if (config.userId != null) {
-                scope.setUser({ id: `user-${config.userId}` });
+    public async report(e: any, config: ErrorOptionalConfig = { source: 'platform' }) {
+        sentry.withScope(async function (scope) {
+            if (config.environmentId) {
+                const environmentName = await environmentService.getEnvironmentName(config.environmentId);
+                const accountId = await environmentService.getAccountIdFromEnvironment(config.environmentId);
+                const user = await userService.getByAccountId(accountId as number);
+                sentry.setTag('environmentName', environmentName);
+                sentry.setUser({
+                    id: `account-${accountId}`,
+                    email: user?.email || '',
+                    userId: user?.id
+                });
+            }
+
+            if (config.accountId && !config.environmentId) {
+                const user = await userService.getByAccountId(config.accountId);
+                sentry.setUser({
+                    id: `account-${config.accountId}`,
+                    email: user?.email || '',
+                    userId: user?.id
+                });
+            }
+
+            if (config.userId && !config.environmentId) {
+                const user = await userService.getUserById(config.userId);
+                sentry.setUser({
+                    id: `user-${config.userId}`,
+                    email: user?.email || '',
+                    userId: user?.id
+                });
+            }
+
+            sentry.setTag('source', config.source);
+
+            if (config.operation) {
+                sentry.setTag('operation', config.operation);
             }
 
             if (config.metadata != null) {
@@ -53,10 +92,11 @@ class ErrorManager {
         logger.error(`Exception caught: ${JSON.stringify(e, Object.getOwnPropertyNames(e))}`);
     }
 
-    public async capture(message: string, user: ErrorCaptureUser, accountId: number, environmentId: number, operation: LogAction) {
+    public async capture(event_id: string, message: string, user: ErrorCaptureUser, accountId: number, environmentId: number, operation: string) {
         const environmentName = await environmentService.getEnvironmentName(environmentId);
 
         sentry.captureEvent({
+            event_id,
             message,
             user: {
                 // Note: using the account ID since not all operations have a user ID due to usage of secret/public keys
@@ -71,11 +111,11 @@ class ErrorManager {
         });
     }
 
-    public async captureWithJustEnvironment(message: string, environmentId: number, operation: LogAction) {
+    public async captureWithJustEnvironment(event_id: string, message: string, environmentId: number, operation: LogAction) {
         const accountId = await environmentService.getAccountIdFromEnvironment(environmentId);
         const user = await userService.getByAccountId(accountId as number);
         if (user) {
-            this.capture(message, user, accountId as number, environmentId, operation);
+            this.capture(event_id, message, user, accountId as number, environmentId, operation);
         }
     }
 
@@ -98,12 +138,12 @@ class ErrorManager {
         const nangoErr = err as NangoError;
 
         if (isApiAuthenticated(res)) {
-            this.report(nangoErr, { accountId: getAccount(res), metadata: err.payload });
+            this.report(nangoErr, { source: 'platform', accountId: getAccount(res), metadata: err.payload });
         } else if (isUserAuthenticated(req)) {
             const user = req.user as User;
-            this.report(nangoErr, { userId: user.id, metadata: err.payload });
+            this.report(nangoErr, { source: 'platform', userId: user.id, metadata: err.payload });
         } else {
-            this.report(nangoErr, { metadata: err.payload });
+            this.report(nangoErr, { source: 'platform', metadata: err.payload });
         }
 
         this.errResFromNangoErr(res, nangoErr);

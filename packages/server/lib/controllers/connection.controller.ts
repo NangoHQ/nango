@@ -12,7 +12,7 @@ import {
     TemplateOAuth2 as ProviderTemplateOAuth2,
     getEnvironmentAndAccountId,
     LogLevel,
-    LogAction,
+    LogActionEnum,
     HTTP_VERB,
     configService,
     connectionService,
@@ -38,7 +38,7 @@ class ConnectionController {
             const providerConfigKey = req.query['provider_config_key'] as string;
             const instantRefresh = req.query['force_refresh'] === 'true';
 
-            const action = 'token' as LogAction;
+            const action = LogActionEnum.TOKEN;
 
             const log = {
                 level: 'info' as LogLevel,
@@ -53,7 +53,7 @@ class ConnectionController {
                 environment_id: environment.id
             };
 
-            const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environment.id, action);
+            const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
 
             if (!success) {
                 res.status(400).send(error);
@@ -94,7 +94,7 @@ class ConnectionController {
                     template as ProviderTemplateOAuth2,
                     null,
                     false,
-                    'token' as LogAction
+                    LogActionEnum.TOKEN
                 );
             }
 
@@ -202,7 +202,7 @@ class ConnectionController {
 
             let activityLogId: number | null = null;
 
-            const action: LogAction = 'token';
+            const action = LogActionEnum.TOKEN;
             const log = {
                 level: 'debug' as LogLevel,
                 success: true,
@@ -321,11 +321,7 @@ class ConnectionController {
             const connectionId = req.params['connectionId'] as string;
             const providerConfigKey = req.query['provider_config_key'] as string;
 
-            const {
-                success,
-                error,
-                response: connection
-            } = await connectionService.getConnection(connectionId, providerConfigKey, environmentId, 'auth' as LogAction);
+            const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environmentId);
 
             if (!success) {
                 res.status(400).send(error);
@@ -370,11 +366,7 @@ class ConnectionController {
             const connectionId = (req.params['connectionId'] as string) || (req.get('Connection-Id') as string);
             const providerConfigKey = (req.params['provider_config_key'] as string) || (req.get('Provider-Config-Key') as string);
 
-            const {
-                success,
-                error,
-                response: connection
-            } = await connectionService.getConnection(connectionId, providerConfigKey, environmentId, 'auth' as LogAction);
+            const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environmentId);
 
             if (!success) {
                 res.status(400).send(error);

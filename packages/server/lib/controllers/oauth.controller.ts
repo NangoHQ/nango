@@ -234,7 +234,15 @@ class OAuthController {
                 timestamp: Date.now()
             });
 
-            errorManager.report(e, { accountId: accountId });
+            await errorManager.report(e, {
+                source: 'platform',
+                operation: 'auth',
+                environmentId,
+                metadata: {
+                    providerConfigKey,
+                    connectionId
+                }
+            });
 
             return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError(prettyError));
         }
@@ -440,8 +448,12 @@ class OAuthController {
             tokenResult = await oAuth1Client.getOAuthRequestToken();
         } catch (e) {
             const error = e as { statusCode: number; data?: any };
-            const accountId = (await environmentService.getAccountIdFromEnvironment(session.environmentId)) as number;
-            errorManager.report(new Error('token_retrieval_error'), { accountId, metadata: error });
+            await errorManager.report(new Error('token_retrieval_error'), {
+                source: 'platform',
+                operation: 'auth',
+                environmentId: session.environmentId,
+                metadata: error
+            });
 
             await createActivityLogMessage({
                 level: 'error',
@@ -485,7 +497,11 @@ class OAuthController {
             const errorMessage = 'No state found in callback';
             const e = new Error(errorMessage);
 
-            errorManager.report(e, { metadata: errorManager.getExpressRequestContext(req) });
+            errorManager.report(e, {
+                source: 'platform',
+                operation: 'auth',
+                metadata: errorManager.getExpressRequestContext(req)
+            });
             return;
         }
 
@@ -495,7 +511,11 @@ class OAuthController {
             const errorMessage = `No session found for state: ${state}`;
             const e = new Error(errorMessage);
 
-            errorManager.report(e, { metadata: errorManager.getExpressRequestContext(req) });
+            errorManager.report(e, {
+                source: 'platform',
+                operation: 'auth',
+                metadata: errorManager.getExpressRequestContext(req)
+            });
             return;
         } else {
             await oAuthSessionService.delete(state as string);
@@ -540,11 +560,12 @@ class OAuthController {
 
             return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownAuthMode(session.authMode));
         } catch (e) {
-            const accountId = (await environmentService.getAccountIdFromEnvironment(session.environmentId)) as number;
             const prettyError = JSON.stringify(e, ['message', 'name'], 2);
 
-            errorManager.report(e, {
-                accountId,
+            await errorManager.report(e, {
+                source: 'platform',
+                operation: 'auth',
+                environmentId: session.environmentId,
                 metadata: errorManager.getExpressRequestContext(req)
             });
 
@@ -713,9 +734,16 @@ class OAuthController {
 
             return wsClient.notifySuccess(res, wsClientId, providerConfigKey, connectionId);
         } catch (e) {
-            const accountId = (await environmentService.getAccountIdFromEnvironment(session.environmentId)) as number;
             const prettyError = JSON.stringify(e, ['message', 'name'], 2);
-            errorManager.report(e, { accountId });
+            await errorManager.report(e, {
+                source: 'platform',
+                operation: 'auth',
+                environmentId: session.environmentId,
+                metadata: {
+                    providerConfigKey: session.providerConfigKey,
+                    connectionId: session.connectionId
+                }
+            });
 
             await createActivityLogMessageAndEnd({
                 level: 'error',
@@ -788,7 +816,16 @@ class OAuthController {
                 return wsClient.notifySuccess(res, wsClientId, providerConfigKey, connectionId);
             })
             .catch(async (e) => {
-                errorManager.report(e, { accountId });
+                errorManager.report(e, {
+                    source: 'platform',
+                    operation: 'auth',
+                    environmentId: session.environmentId,
+                    metadata: {
+                        ...metadata,
+                        providerConfigKey: session.providerConfigKey,
+                        connectionId: session.connectionId
+                    }
+                });
                 const prettyError = JSON.stringify(e, ['message', 'name'], 2);
 
                 await createActivityLogMessageAndEnd({

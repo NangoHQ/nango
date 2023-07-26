@@ -8,6 +8,7 @@ import accountService from '../services/account.service.js';
 import environmentService from '../services/environment.service.js';
 import userService from '../services/user.service.js';
 import type { Account, User } from '../models/Admin.js';
+import { LogActionEnum } from '../models/Activity.js';
 
 class Analytics {
     client: PostHog | undefined;
@@ -21,7 +22,7 @@ class Analytics {
                 this.packageVersion = JSON.parse(readFileSync(path.resolve(dirname(), '../../../package.json'), 'utf8')).version;
             }
         } catch (e) {
-            errorManager.report(e);
+            errorManager.report(e, { source: 'platform', operation: LogActionEnum.ANALYTICS });
         }
     }
 
@@ -65,7 +66,7 @@ class Analytics {
                 properties: eventProperties
             });
         } catch (e) {
-            errorManager.report(e, { accountId: accountId });
+            errorManager.report(e, { source: 'platform', operation: LogActionEnum.ANALYTICS, accountId: accountId });
         }
     }
 

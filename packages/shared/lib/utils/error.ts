@@ -214,6 +214,11 @@ export class NangoError extends Error {
                 this.message = 'Invalid timestamp provided. The timestamp should be an ISO 8601 string, for example 2023-01-01T00:00:00.000Z.';
                 break;
 
+            case 'missing_model':
+                this.status = 400;
+                this.message = `Missing param 'model'.`;
+                break;
+
             case 'unknown_connection':
                 this.status = 400;
                 this.message = `No connection matching the provided params of 'connection_id' and 'provider_config_key'.`;

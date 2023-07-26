@@ -1,5 +1,6 @@
 import db from '../db/database.js';
 import type { Account } from '../models/Admin';
+import { LogActionEnum } from '../models/Activity.js';
 import errorManager from '../utils/error.manager.js';
 
 class AccountService {
@@ -14,6 +15,8 @@ class AccountService {
             return result[0];
         } catch (e) {
             errorManager.report(e, {
+                source: 'platform',
+                operation: LogActionEnum.DATABASE,
                 accountId: id
             });
 

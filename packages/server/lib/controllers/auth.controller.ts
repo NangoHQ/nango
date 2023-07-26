@@ -213,10 +213,10 @@ class AuthController {
                 `
                 })
                 .catch((e: Error) => {
-                    errorManager.report(e, { userId: user.id });
+                    errorManager.report(e, { source: 'platform', userId: user.id, operation: 'user' });
                 });
         } catch (e) {
-            errorManager.report(e, { userId: user.id });
+            errorManager.report(e, { userId: user.id, source: 'platform', operation: 'user' });
         }
     }
 }

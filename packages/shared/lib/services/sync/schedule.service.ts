@@ -38,17 +38,17 @@ export const getSyncSchedules = async (sync_id: string): Promise<SyncSchedule[]>
     return [];
 };
 
-export const deleteScheduleForSync = async (sync_id: string): Promise<void> => {
+export const deleteScheduleForSync = async (sync_id: string, environmentId: number): Promise<void> => {
     const syncClient = await SyncClient.getInstance();
 
     const schedule = await getSchedule(sync_id);
 
     if (schedule && syncClient) {
-        await syncClient.deleteSyncSchedule(schedule?.schedule_id as string);
+        await syncClient.deleteSyncSchedule(schedule?.schedule_id as string, environmentId);
     }
 };
 
-export const deleteScheduleForConnection = async (connection: NangoConnection): Promise<void> => {
+export const deleteScheduleForConnection = async (connection: NangoConnection, environmentId: number): Promise<void> => {
     const syncs = await getSyncsByConnectionId(connection.id as number);
 
     if (!syncs) {
@@ -56,7 +56,7 @@ export const deleteScheduleForConnection = async (connection: NangoConnection): 
     }
 
     for (const sync of syncs) {
-        await deleteScheduleForSync(sync.id as string);
+        await deleteScheduleForSync(sync.id as string, environmentId);
     }
 };
 
@@ -68,7 +68,7 @@ export const deleteScheduleForProviderConfig = async (environmentId: number, pro
     }
 
     for (const sync of syncs) {
-        await deleteScheduleForSync(sync.id as string);
+        await deleteScheduleForSync(sync.id as string, environmentId);
     }
 };
 
@@ -88,7 +88,13 @@ export const updateScheduleStatus = async (schedule_id: string, status: SyncComm
     }
 };
 
-export const updateSyncScheduleFrequency = async (sync_id: string, interval: string, syncName: string, activityLogId: number): Promise<boolean> => {
+export const updateSyncScheduleFrequency = async (
+    sync_id: string,
+    interval: string,
+    syncName: string,
+    activityLogId: number,
+    environmentId: number
+): Promise<boolean> => {
     const existingSchedule = await getSchedule(sync_id);
     const { interval: frequency, offset } = getInterval(interval, new Date());
 
@@ -99,7 +105,7 @@ export const updateSyncScheduleFrequency = async (sync_id: string, interval: str
     if (existingSchedule.frequency !== frequency) {
         await schema().update({ frequency }).from<SyncSchedule>(TABLE).where({ sync_id, deleted: false });
         const syncClient = await SyncClient.getInstance();
-        await syncClient?.updateSyncSchedule(existingSchedule.schedule_id, frequency, offset, syncName, activityLogId);
+        await syncClient?.updateSyncSchedule(existingSchedule.schedule_id, frequency, offset, syncName, activityLogId, environmentId);
 
         return true;
     }

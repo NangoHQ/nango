@@ -134,7 +134,7 @@ class ConfigService {
 
         if (isCloud()) {
             const config = await this.getProviderConfig(providerConfigKey, environment_id);
-            await deleteSyncFilesForConfig(config?.id as number);
+            await deleteSyncFilesForConfig(config?.id as number, environment_id);
         }
 
         await deleteSyncConfigByConfigId(id);

@@ -30,7 +30,6 @@ import { AuthModes as ProviderAuthModes, OAuth2Credentials, ImportedCredentials,
 import { schema } from '../db/database.js';
 import { parseTokenExpirationDate, isTokenExpired } from '../utils/utils.js';
 import SyncClient from '../clients/sync.client.js';
-import errorManager from '../utils/error.manager.js';
 
 class ConnectionService {
     private runningCredentialsRefreshes: CredentialsRefresh[] = [];
@@ -223,29 +222,21 @@ class ConnectionService {
         return result[0].id;
     }
 
-    public async getConnection(
-        connectionId: string,
-        providerConfigKey: string,
-        environment_id: number,
-        action: LogAction
-    ): Promise<ServiceResponse<Connection>> {
+    public async getConnection(connectionId: string, providerConfigKey: string, environment_id: number): Promise<ServiceResponse<Connection>> {
         if (!connectionId) {
             const error = new NangoError('missing_connection');
-            errorManager.captureWithJustEnvironment(error.message, environment_id, action as LogAction);
 
             return { success: false, error, response: null };
         }
 
         if (!providerConfigKey) {
             const error = new NangoError('missing_provider_config');
-            errorManager.captureWithJustEnvironment(error.message, environment_id, action as LogAction);
 
             return { success: false, error, response: null };
         }
 
         if (!environment_id) {
             const error = new NangoError('missing_environment');
-            errorManager.captureWithJustEnvironment(error.message, environment_id, action as LogAction);
 
             return { success: false, error, response: null };
         }
@@ -344,7 +335,7 @@ class ConnectionService {
 
     async deleteConnection(connection: Connection, providerConfigKey: string, environment_id: number): Promise<number> {
         if (connection) {
-            await deleteSyncScheduleForConnection(connection);
+            await deleteSyncScheduleForConnection(connection, environment_id);
         }
 
         return await db.knex
@@ -370,19 +361,17 @@ class ConnectionService {
     ): Promise<ServiceResponse<Connection>> {
         if (connectionId === null) {
             const error = new NangoError('missing_connection');
-            errorManager.captureWithJustEnvironment(error.message, environmentId, action as LogAction);
 
             return { success: false, error, response: null };
         }
 
         if (providerConfigKey === null) {
             const error = new NangoError('missing_provider_config');
-            errorManager.captureWithJustEnvironment(error.message, environmentId, action as LogAction);
 
             return { success: false, error, response: null };
         }
 
-        const { success, error, response: connection } = await this.getConnection(connectionId, providerConfigKey, environmentId, action as LogAction);
+        const { success, error, response: connection } = await this.getConnection(connectionId, providerConfigKey, environmentId);
 
         if (!success) {
             return { success, error, response: null };
@@ -398,7 +387,6 @@ class ConnectionService {
                 });
             }
             const error = new NangoError('unknown_connection');
-            errorManager.captureWithJustEnvironment(error.message, environmentId, action as LogAction);
             return { success: false, error, response: null };
         }
 
@@ -419,7 +407,6 @@ class ConnectionService {
             }
 
             const error = new NangoError('unknown_provider_config');
-            errorManager.captureWithJustEnvironment(error.message, environmentId, action as LogAction);
             return { success: false, error, response: null };
         }
 

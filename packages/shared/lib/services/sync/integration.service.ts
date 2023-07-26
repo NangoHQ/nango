@@ -12,12 +12,13 @@ class IntegrationService {
         activityLogId: number | undefined,
         nango: NangoSync,
         integrationData: NangoIntegrationData,
+        environmentId: number,
         optionalLoadLocation?: string
     ): Promise<any> {
         try {
             const script: string | null =
                 isCloud() && !optionalLoadLocation
-                    ? await fileService.getFile(integrationData.fileLocation as string)
+                    ? await fileService.getFile(integrationData.fileLocation as string, environmentId)
                     : getIntegrationFile(syncName, optionalLoadLocation);
 
             if (!script) {

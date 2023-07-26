@@ -15,7 +15,8 @@ import {
     createActivityLogMessageAndEnd,
     AuthModes,
     getConnectionConfig,
-    hmacService
+    hmacService,
+    LogActionEnum
 } from '@nangohq/shared';
 
 class ApiAuthController {
@@ -163,8 +164,10 @@ class ApiAuthController {
                 timestamp: Date.now()
             });
 
-            errorManager.report(err, {
-                accountId,
+            await errorManager.report(err, {
+                source: 'platform',
+                operation: LogActionEnum.AUTH,
+                environmentId,
                 metadata: {
                     providerConfigKey,
                     connectionId
@@ -318,8 +321,10 @@ class ApiAuthController {
                 timestamp: Date.now()
             });
 
-            errorManager.report(err, {
-                accountId,
+            await errorManager.report(err, {
+                source: 'platform',
+                operation: LogActionEnum.AUTH,
+                environmentId,
                 metadata: {
                     providerConfigKey,
                     connectionId

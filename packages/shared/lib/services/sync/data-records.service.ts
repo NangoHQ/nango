@@ -2,13 +2,11 @@ import md5 from 'md5';
 import * as uuid from 'uuid';
 import dayjs from 'dayjs';
 
-import type { LogAction } from '../../models/Activity.js';
 import type { DataRecord as SyncDataRecord } from '../../models/Sync.js';
 import type { DataResponse } from '../../models/Data.js';
 import type { ServiceResponse } from '../../models/Generic.js';
 import { schema } from '../../db/database.js';
 import connectionService from '../connection.service.js';
-import errorManager from '../../utils/error.manager.js';
 import { NangoError } from '../../utils/error.js';
 
 export const formatDataRecords = (
@@ -44,11 +42,13 @@ export async function getDataRecords(
     offset: number | string,
     limit: number | string
 ): Promise<ServiceResponse<Pick<SyncDataRecord, 'json'>[] | null>> {
-    const {
-        success,
-        error,
-        response: nangoConnection
-    } = await connectionService.getConnection(connectionId, providerConfigKey, environmentId, 'sync' as LogAction);
+    if (!model) {
+        const error = new NangoError('missing_model');
+
+        return { success: false, error, response: null };
+    }
+
+    const { success, error, response: nangoConnection } = await connectionService.getConnection(connectionId, providerConfigKey, environmentId);
 
     if (!success) {
         return { success, error, response: null };
@@ -65,7 +65,6 @@ export async function getDataRecords(
     if (offset) {
         if (isNaN(Number(offset))) {
             const error = new NangoError('invalid_offset');
-            errorManager.captureWithJustEnvironment(error.message, environmentId, 'sync' as LogAction);
 
             return { success: false, error, response: null };
         }
@@ -75,7 +74,6 @@ export async function getDataRecords(
     if (limit) {
         if (isNaN(Number(limit))) {
             const error = new NangoError('invalid_limit');
-            errorManager.captureWithJustEnvironment(error.message, environmentId, 'sync' as LogAction);
 
             return { success: false, error, response: null };
         }
@@ -87,7 +85,6 @@ export async function getDataRecords(
 
         if (!time.isValid()) {
             const error = new NangoError('invalid_timestamp');
-            errorManager.captureWithJustEnvironment(error.message, environmentId, 'sync' as LogAction);
 
             return { success: false, error, response: null };
         }

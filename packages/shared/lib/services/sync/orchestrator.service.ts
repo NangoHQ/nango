@@ -92,13 +92,13 @@ export class Orchestrator {
      * 1) sync config files
      * 2) sync config
      */
-    public async deleteConfig(syncConfigId: number) {
-        await deleteSyncFilesForConfig(syncConfigId);
+    public async deleteConfig(syncConfigId: number, environmentId: number) {
+        await deleteSyncFilesForConfig(syncConfigId, environmentId);
         await deleteSyncConfig(syncConfigId);
     }
 
-    public async deleteSync(syncId: string) {
-        await deleteScheduleForSync(syncId as string);
+    public async deleteSync(syncId: string, environmentId: number) {
+        await deleteScheduleForSync(syncId as string, environmentId);
         await deleteSync(syncId as string);
     }
 

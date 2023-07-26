@@ -16,6 +16,7 @@ import { isCloud, getApiUrl } from '../../utils/utils.js';
 import errorManager from '../../utils/error.manager.js';
 import type { NangoIntegrationData, NangoConfig, NangoIntegration } from '../../integrations/index.js';
 import type { UpsertResponse, UpsertSummary } from '../../models/Data.js';
+import { LogActionEnum } from '../../models/Activity.js';
 import type { Environment } from '../../models/Environment';
 
 interface SyncRunConfig {
@@ -196,7 +197,14 @@ export default class SyncRun {
             try {
                 result = true;
 
-                const userDefinedResults = await integationService.runScript(this.syncName, this.activityLogId as number, nango, syncData, this.loadLocation);
+                const userDefinedResults = await integationService.runScript(
+                    this.syncName,
+                    this.activityLogId as number,
+                    nango,
+                    syncData,
+                    this.nangoConnection.environment_id,
+                    this.loadLocation
+                );
 
                 if (userDefinedResults === null) {
                     await this.reportFailureForResults(
@@ -229,7 +237,7 @@ export default class SyncRun {
 
                         if (this.writeToDb && this.activityLogId) {
                             if (formattedResults.length === 0) {
-                                this.reportResults(
+                                await this.reportResults(
                                     model,
                                     { addedKeys: [], updatedKeys: [], affectedInternalIds: [], affectedExternalIds: [] },
                                     i,
@@ -251,13 +259,14 @@ export default class SyncRun {
                                 if (upsertResult.success) {
                                     const { summary } = upsertResult;
 
-                                    this.reportResults(model, summary as UpsertSummary, i, models.length, syncData.version);
+                                    await this.reportResults(model, summary as UpsertSummary, i, models.length, syncData.version);
                                 }
 
                                 if (!upsertResult.success) {
-                                    const accountId = (await environmentService.getAccountIdFromEnvironment(this.nangoConnection.environment_id)) as number;
-                                    errorManager.report(upsertResult?.error, {
-                                        accountId: accountId,
+                                    await errorManager.report(upsertResult?.error, {
+                                        environmentId: this.nangoConnection.environment_id as number,
+                                        source: 'platform',
+                                        operation: LogActionEnum.DATABASE,
                                         metadata: {
                                             syncName: this.syncName,
                                             connectionDetails: this.nangoConnection,

@@ -12,7 +12,7 @@ import {
     createActivityLogDatabaseErrorMessageAndEnd
 } from '../activity/activity.service.js';
 import { getSyncsByProviderConfigAndSyncName } from './sync.service.js';
-import type { LogLevel, LogAction } from '../../models/Activity.js';
+import { LogActionEnum, LogLevel, LogAction } from '../../models/Activity.js';
 import type { SyncModelSchema, SyncConfigWithProvider, IncomingSyncConfig, SyncConfig, SlimSync, SyncConfigResult } from '../../models/Sync.js';
 import type { NangoConnection } from '../../models/Connection.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
@@ -85,7 +85,7 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
 
             const syncs = await getSyncsByProviderConfigAndSyncName(environment_id, providerConfigKey, syncName);
             for (const sync of syncs) {
-                await updateSyncScheduleFrequency(sync.id as string, runs, syncName, activityLogId as number);
+                await updateSyncScheduleFrequency(sync.id as string, runs, syncName, activityLogId as number, environment_id);
             }
         }
 
@@ -94,7 +94,8 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
         const env = getEnv();
         const file_location = await fileService.upload(
             fileBody,
-            `${env}/account/${accountId}/environment/${environment_id}/config/${config.id}/${syncName}-v${version}.js`
+            `${env}/account/${accountId}/environment/${environment_id}/config/${config.id}/${syncName}-v${version}.js`,
+            environment_id
         );
 
         syncsWithVersions = syncsWithVersions.map((syncWithVersion) => {
@@ -269,7 +270,10 @@ export async function getSyncConfigsBySyncNameAndConfigId(environment_id: number
             return result;
         }
     } catch (error) {
-        errorManager.report(error, {
+        await errorManager.report(error, {
+            environmentId: environment_id,
+            source: 'platform',
+            operation: LogActionEnum.DATABASE,
             metadata: {
                 environment_id,
                 nango_config_id,
@@ -298,7 +302,10 @@ export async function getSyncConfigByParams(environment_id: number, sync_name: s
             return result;
         }
     } catch (error) {
-        errorManager.report(error, {
+        await errorManager.report(error, {
+            environmentId: environment_id,
+            source: 'platform',
+            operation: LogActionEnum.DATABASE,
             metadata: {
                 environment_id,
                 sync_name,
@@ -319,7 +326,7 @@ export async function deleteByConfigId(nango_config_id: number): Promise<void> {
     await schema().from<SyncConfig>(TABLE).where({ nango_config_id, deleted: false }).update({ deleted: true, deleted_at: new Date() });
 }
 
-export async function deleteSyncFilesForConfig(id: number): Promise<void> {
+export async function deleteSyncFilesForConfig(id: number, environmentId: number): Promise<void> {
     try {
         const files = await schema().from<SyncConfig>(TABLE).where({ nango_config_id: id, deleted: false }).select('file_location').pluck('file_location');
 
@@ -327,7 +334,10 @@ export async function deleteSyncFilesForConfig(id: number): Promise<void> {
             await fileService.deleteFiles(files);
         }
     } catch (error) {
-        errorManager.report(error, {
+        await errorManager.report(error, {
+            environmentId,
+            source: 'platform',
+            operation: LogActionEnum.DATABASE,
             metadata: {
                 id
             }
