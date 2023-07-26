@@ -48,18 +48,6 @@ export const deleteScheduleForSync = async (sync_id: string): Promise<void> => {
     }
 };
 
-export const deleteScheduleForConnection = async (connection: NangoConnection): Promise<void> => {
-    const syncs = await getSyncsByConnectionId(connection.id as number);
-
-    if (!syncs) {
-        return;
-    }
-
-    for (const sync of syncs) {
-        await deleteScheduleForSync(sync.id as string);
-    }
-};
-
 export const deleteScheduleForProviderConfig = async (environmentId: number, providerConfigKey: string): Promise<void> => {
     const syncs = await getSyncsByProviderConfigKey(environmentId, providerConfigKey);
 
