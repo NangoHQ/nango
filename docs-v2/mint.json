@@ -60,7 +60,23 @@
     "navigation": [
         {
             "group": "Getting Started",
-            "pages": ["introduction", "quickstart", "core-concepts"]
+            "pages": [
+                    "introduction",
+                    "quickstart",
+                    "core-concepts"
+                ]
+        },
+        {
+            "group": "📦 Integration Templates",
+            "pages": [
+                        "integration-templates/overview",
+                        {
+                            "group": "All Integration Templates",
+                            "pages": [
+                                "integration-templates/slack"
+                            ]
+                        }
+                    ]
         },
         {
             "group": "Guides",
