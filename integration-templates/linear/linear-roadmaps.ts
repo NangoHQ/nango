@@ -1,15 +1,17 @@
 import { NangoSync, LinearRoadmap } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<{LinearRoadmap: LinearRoadmap[]}> {
+export default async function fetchData(nango: NangoSync): Promise<{ LinearRoadmap: LinearRoadmap[] }> {
     const { lastSyncDate } = nango;
     const pageSize = 50;
     let after = '';
 
     while (true) {
-        const filterParam = lastSyncDate ? `
+        const filterParam = lastSyncDate
+            ? `
         , filter: { 
             updatedAt: { gte: "${lastSyncDate.toISOString()}" }
-        }` : '';
+        }`
+            : '';
 
         const afterParam = after ? `, after: "${after}"` : '';
 
@@ -49,7 +51,7 @@ export default async function fetchData(nango: NangoSync): Promise<{LinearRoadma
                 query: query
             }
         });
-        
+
         await nango.batchSend(mapRoadmaps(response.data.data.roadmaps.nodes), 'LinearRoadmap');
 
         if (!response.data.data.roadmaps.pageInfo.hasNextPage || !response.data.data.roadmaps.pageInfo.endCursor) {

@@ -1,7 +1,7 @@
 import { NangoSync } from 'nango';
 import { SalesforceAccount } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<{SalesforceAccount: SalesforceAccount[]}> {
+export default async function fetchData(nango: NangoSync): Promise<{ SalesforceAccount: SalesforceAccount[] }> {
     const { lastSyncDate } = nango;
 
     // Use nango.getFieldMapping once you set it in the backend:
@@ -59,7 +59,7 @@ export default async function fetchData(nango: NangoSync): Promise<{SalesforceAc
             const { records: nextRecords, done: nextDone, nextRecordsUrl: nextNextRecordsUrl } = nextResponse.data;
 
             const firstAccounts = mapAccounts(nextRecords, fieldMappings);
-            await nango.batchSend(firstAccounts, 'SalesforceAccount')
+            await nango.batchSend(firstAccounts, 'SalesforceAccount');
 
             if (nextDone) {
                 allResults = true;
@@ -73,7 +73,6 @@ export default async function fetchData(nango: NangoSync): Promise<{SalesforceAc
 }
 
 function mapAccounts(records: any[], fieldMappings: any): SalesforceAccount[] {
-
     const { slack_channel_id, primary_support_rep, secondary_support_rep } = fieldMappings;
 
     const accounts: SalesforceAccount[] = records.map((record: any) => {
@@ -86,7 +85,7 @@ function mapAccounts(records: any[], fieldMappings: any): SalesforceAccount[] {
             slack_channel_id: record[slack_channel_id] as string,
             primary_support_rep: record[primary_support_rep],
             secondary_support_rep: record[secondary_support_rep],
-            last_modified_date: record.LastModifiedDate,
+            last_modified_date: record.LastModifiedDate
         };
         return account;
     });

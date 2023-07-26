@@ -1,15 +1,17 @@
 import { NangoSync, LinearProject } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<{LinearProject: LinearProject[]}> {
+export default async function fetchData(nango: NangoSync): Promise<{ LinearProject: LinearProject[] }> {
     const { lastSyncDate } = nango;
     const pageSize = 50;
     let after = '';
 
     while (true) {
-        const filterParam = lastSyncDate ? `
+        const filterParam = lastSyncDate
+            ? `
         , filter: { 
             updatedAt: { gte: "${lastSyncDate.toISOString()}" }
-        }` : '';
+        }`
+            : '';
 
         const afterParam = after ? `, after: "${after}"` : '';
 
@@ -42,7 +44,7 @@ export default async function fetchData(nango: NangoSync): Promise<{LinearProjec
                 query: query
             }
         });
-        
+
         await nango.batchSend(mapProjects(response.data.data.projects.nodes), 'LinearProject');
 
         if (!response.data.data.projects.pageInfo.hasNextPage || !response.data.data.projects.pageInfo.endCursor) {

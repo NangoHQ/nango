@@ -1,15 +1,17 @@
 import { NangoSync, LinearIssue } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<{LinearIssue: LinearIssue[]}> {
+export default async function fetchData(nango: NangoSync): Promise<{ LinearIssue: LinearIssue[] }> {
     const { lastSyncDate } = nango;
     const pageSize = 50;
     let after = '';
 
     while (true) {
-        const filterParam = lastSyncDate ? `
+        const filterParam = lastSyncDate
+            ? `
         , filter: { 
             updatedAt: { gte: "${lastSyncDate.toISOString()}" }
-        }` : '';
+        }`
+            : '';
 
         const afterParam = after ? `, after: "${after}"` : '';
 

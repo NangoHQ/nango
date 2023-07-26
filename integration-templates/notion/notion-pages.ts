@@ -1,6 +1,6 @@
 import type { NangoSync, NotionPage } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<{NotionPage: NotionPage[]}> {
+export default async function fetchData(nango: NangoSync): Promise<{ NotionPage: NotionPage[] }> {
     const pages = (await paginate(nango, 'post', '/v1/search', 'Notion pages', 100, true)).filter((result: any) => result.object === 'page');
     const batchSize = 10;
     await nango.log(`Found ${pages.length} new/updated Notion pages to sync.`);
@@ -17,10 +17,12 @@ export default async function fetchData(nango: NangoSync): Promise<{NotionPage: 
 
 async function fetchPlainText(page: any, nango: NangoSync): Promise<string> {
     const blocks = await paginate(nango, 'get', `/v1/blocks/${page.id}/children`, 'Notion blocks', 100);
-    return findAllByKey(blocks, 'rich_text').map((richText: any) => richTextToPlainText(richText)).join('\n');
+    return findAllByKey(blocks, 'rich_text')
+        .map((richText: any) => richTextToPlainText(richText))
+        .join('\n');
 }
 
-async function paginate(nango: NangoSync, method: "get" | "post", endpoint: string, desc: string, pageSize = 100, incremental=false) {
+async function paginate(nango: NangoSync, method: 'get' | 'post', endpoint: string, desc: string, pageSize = 100, incremental = false) {
     let cursor: string | undefined;
     let pageCounter = 0;
     let results: any[] = [];
@@ -31,19 +33,24 @@ async function paginate(nango: NangoSync, method: "get" | "post", endpoint: stri
         const res = await nango.proxy({
             method: method,
             endpoint: endpoint,
-            headers: { 'Notion-Version': '2022-06-28' }, 
+            headers: { 'Notion-Version': '2022-06-28' },
             data: method === 'post' ? { page_size: pageSize, start_cursor: cursor } : {},
-            params: method === 'get' ? { page_size: `${pageSize}`, start_cursor: cursor } as any : {},
+            params: method === 'get' ? ({ page_size: `${pageSize}`, start_cursor: cursor } as any) : {},
             retries: 10 // Exponential backoff + long-running job = handles rate limits well.
         });
 
-        if (incremental && nango.lastSyncDate && res.data.results.length && new Date(res.data.results[res.data.results.length - 1].last_edited_time) < nango.lastSyncDate) {
+        if (
+            incremental &&
+            nango.lastSyncDate &&
+            res.data.results.length &&
+            new Date(res.data.results[res.data.results.length - 1].last_edited_time) < nango.lastSyncDate
+        ) {
             results = results.concat(res.data.results.filter((result: any) => new Date(result.last_edited_time) >= nango.lastSyncDate!));
             break;
         } else {
             results = results.concat(res.data.results);
         }
-        
+
         if (!res.data.has_more || !res.data.next_cursor) {
             break;
         } else {
@@ -55,16 +62,18 @@ async function paginate(nango: NangoSync, method: "get" | "post", endpoint: stri
 }
 
 function richTextToPlainText(richText: any): string {
-    return richText.filter((text: any) => text.plain_text).map((text: any) => text.plain_text).join('');
+    return richText
+        .filter((text: any) => text.plain_text)
+        .map((text: any) => text.plain_text)
+        .join('');
 }
 
 function findAllByKey(obj: any, keyToFind: string): string[] {
-    return Object.entries(obj).reduce((acc: any, [key, value]: any) => key === keyToFind
-        ? acc.concat([value])
-        : (typeof value === 'object' && value)
-        ? acc.concat(findAllByKey(value, keyToFind))
-        : acc
-    , [])
+    return Object.entries(obj).reduce(
+        (acc: any, [key, value]: any) =>
+            key === keyToFind ? acc.concat([value]) : typeof value === 'object' && value ? acc.concat(findAllByKey(value, keyToFind)) : acc,
+        []
+    );
 }
 
 function mapPage(page: any, plainText: string): NotionPage {

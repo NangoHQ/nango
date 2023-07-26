@@ -1,15 +1,17 @@
 import { NangoSync, LinearTeam } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<{LinearTeam: LinearTeam[]}> {
+export default async function fetchData(nango: NangoSync): Promise<{ LinearTeam: LinearTeam[] }> {
     const { lastSyncDate } = nango;
     const pageSize = 50;
     let after = '';
 
     while (true) {
-        const filterParam = lastSyncDate ? `
+        const filterParam = lastSyncDate
+            ? `
         , filter: { 
             updatedAt: { gte: "${lastSyncDate.toISOString()}" }
-        }` : '';
+        }`
+            : '';
 
         const afterParam = after ? `, after: "${after}"` : '';
 
@@ -37,7 +39,7 @@ export default async function fetchData(nango: NangoSync): Promise<{LinearTeam: 
                 query: query
             }
         });
-        
+
         await nango.batchSend(mapTeams(response.data.data.teams.nodes), 'LinearTeam');
 
         if (!response.data.data.teams.pageInfo.hasNextPage || !response.data.data.teams.pageInfo.endCursor) {
