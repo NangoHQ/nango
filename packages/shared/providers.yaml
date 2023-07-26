@@ -287,7 +287,6 @@ epic-games:
     authorization_method: header
     proxy:
         base_url: https://api.epicgames.dev
-<<<<<<< HEAD
 evaluagent:
     auth_mode: BASIC
     proxy:
@@ -302,8 +301,6 @@ eventbrite:
         grant_type: authorization_code
     proxy:
         base_url: https://www.eventbriteapi.com
-=======
->>>>>>> ef4190e7 (proxy-base-url-for-a-f-providers)
 exact-online:
     auth_mode: OAUTH2
     authorization_url: https://start.exactonline.${connectionConfig.extension}/api/oauth2/auth
@@ -365,10 +362,14 @@ front:
     token_url: https://app.frontapp.com/oauth/token
     proxy:
 <<<<<<< HEAD
+<<<<<<< HEAD
         base_url: https://api2.frontapp.com
 =======
         base_url:  https://api2.frontapp.com
 >>>>>>> ef4190e7 (proxy-base-url-for-a-f-providers)
+=======
+        base_url: https://api2.frontapp.com
+>>>>>>> 7660db6f (fix yaml)
 github:
     auth_mode: OAUTH2
     authorization_url: https://github.com/login/oauth/authorize
