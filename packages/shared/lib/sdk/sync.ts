@@ -228,7 +228,11 @@ export class NangoSync {
         return this.nango.getConnection(this.providerConfigKey as string, this.connectionId as string);
     }
 
-    public async setFieldMapping(fieldMapping: Record<string, string>, optionalProviderConfigKey?: string, optionalConnectionId?: string): Promise<void> {
+    public async setFieldMapping(
+        fieldMapping: Record<string, string>,
+        optionalProviderConfigKey?: string,
+        optionalConnectionId?: string
+    ): Promise<AxiosResponse<void>> {
         return this.nango.setFieldMapping(fieldMapping, optionalProviderConfigKey, optionalConnectionId);
     }
 
