@@ -323,7 +323,7 @@ front:
     authorization_url: https://app.frontapp.com/oauth/authorize
     token_url: https://app.frontapp.com/oauth/token
     proxy:
-        base_url:  https://api2.frontapp.com
+        base_url: https://api2.frontapp.com
 github:
     auth_mode: OAUTH2
     authorization_url: https://github.com/login/oauth/authorize
