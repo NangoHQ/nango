@@ -11,6 +11,7 @@ import {
     ImportedCredentials,
     TemplateOAuth2 as ProviderTemplateOAuth2,
     getEnvironmentAndAccountId,
+    ConnectionList,
     LogLevel,
     LogActionEnum,
     HTTP_VERB,
@@ -273,7 +274,8 @@ class ConnectionController {
     async listConnections(req: Request, res: Response, next: NextFunction) {
         try {
             const { accountId, environmentId, isWeb } = await getEnvironmentAndAccountId(res, req);
-            const connections = await connectionService.listConnections(environmentId);
+            const { connectionId } = req.query;
+            const connections = await connectionService.listConnections(environmentId, connectionId as string);
 
             if (!isWeb) {
                 analytics.track('server:connection_list_fetched', accountId);
@@ -295,12 +297,12 @@ class ConnectionController {
 
             providerConfigKeys.forEach((key: string, i: number) => (uniqueKeyToProvider[key] = configs[i]!.provider));
 
-            const result = connections.map((connection) => {
+            const result: ConnectionList[] = connections.map((connection) => {
                 return {
                     id: connection.id,
                     connectionId: connection.connection_id,
-                    providerConfigKey: connection.provider,
-                    provider: uniqueKeyToProvider[connection.provider],
+                    providerConfigKey: connection.provider as string,
+                    provider: uniqueKeyToProvider[connection.provider] as string,
                     creationDate: connection.created
                 };
             });

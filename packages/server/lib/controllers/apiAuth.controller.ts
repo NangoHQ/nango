@@ -153,7 +153,7 @@ class ApiAuthController {
                 await syncClient?.initiate(updatedConnection.id);
             }
 
-            res.status(200).send();
+            res.status(200).send({ providerConfigKey: providerConfigKey as string, connectionId: connectionId as string });
         } catch (err) {
             const prettyError = JSON.stringify(err, ['message', 'name'], 2);
 
@@ -310,7 +310,7 @@ class ApiAuthController {
                 await syncClient?.initiate(updatedConnection.id);
             }
 
-            res.status(200).send();
+            res.status(200).send({ providerConfigKey: providerConfigKey as string, connectionId: connectionId as string });
         } catch (err) {
             const prettyError = JSON.stringify(err, ['message', 'name'], 2);
 
