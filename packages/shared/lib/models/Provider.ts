@@ -44,12 +44,12 @@ export interface TemplateAlias {
 }
 
 export interface IntegrationWithCreds extends Integration {
-    clientId: string;
-    clientSecret: string;
+    client_id: string;
+    client_secret: string;
     scopes: string;
 }
 
 export interface Integration {
-    uniqueKey: string;
+    unique_key: string;
     provider: string;
 }

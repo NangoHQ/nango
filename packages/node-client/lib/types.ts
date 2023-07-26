@@ -79,19 +79,18 @@ export interface Connection {
 
 export interface ConnectionList {
     id: number;
-    connectionId: number;
-    providerConfigKey: string;
+    connection_id: number;
     provider: string;
-    creationDate: string;
+    created: string;
 }
 
 export interface IntegrationWithCreds extends Integration {
-    clientId: string;
-    clientSecret: string;
+    client_id: string;
+    client_secret: string;
     scopes: string;
 }
 
 export interface Integration {
-    uniqueKey: string;
+    unique_key: string;
     provider: string;
 }

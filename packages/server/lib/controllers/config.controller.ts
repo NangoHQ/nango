@@ -146,13 +146,13 @@ class ConfigController {
 
             const configRes: ProviderIntegration | IntegrationWithCreds = includeCreds
                 ? ({
-                      uniqueKey: config.unique_key,
+                      unique_key: config.unique_key,
                       provider: config.provider,
-                      clientId: config.oauth_client_id,
-                      clientSecret: config.oauth_client_secret,
+                      client_id: config.oauth_client_id,
+                      client_secret: config.oauth_client_secret,
                       scopes: config.oauth_scopes
                   } as IntegrationWithCreds)
-                : ({ uniqueKey: config.unique_key, provider: config.provider } as ProviderIntegration);
+                : ({ unique_key: config.unique_key, provider: config.provider } as ProviderIntegration);
 
             res.status(200).send({ config: configRes });
         } catch (err) {
