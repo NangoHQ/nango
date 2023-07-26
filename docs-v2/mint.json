@@ -73,7 +73,10 @@
                         {
                             "group": "All Integration Templates",
                             "pages": [
-                                "integration-templates/slack"
+                                "integration-templates/slack",
+                                "integration-templates/salesforce",
+                                "integration-templates/linear",
+                                "integration-templates/notion"
                             ]
                         }
                     ]

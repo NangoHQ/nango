@@ -1,11 +1,11 @@
 integrations:
 
-  slack: # scopes: channels:read,channels:history,channels:join,users:read
+  slack:  # scopes: channels:read,channels:history,channels:join,users:read
     slack-users:
       runs: every hour
       returns:
         - SlackUser
-    
+
     slack-channels:
       runs: every hour
       returns:
