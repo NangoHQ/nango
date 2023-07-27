@@ -52,7 +52,7 @@ export default async function fetchData(nango: NangoSync): Promise<{ LinearRoadm
             }
         });
 
-        await nango.batchSend(mapRoadmaps(response.data.data.roadmaps.nodes), 'LinearRoadmap');
+        await nango.batchSend<LinearRoadmap>(mapRoadmaps(response.data.data.roadmaps.nodes), 'LinearRoadmap');
 
         if (!response.data.data.roadmaps.pageInfo.hasNextPage || !response.data.data.roadmaps.pageInfo.endCursor) {
             break;

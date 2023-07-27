@@ -46,7 +46,7 @@ export default async function fetchData(nango: NangoSync): Promise<{ SalesforceA
     let nextRecordsUrl = response.data.nextRecordsUrl;
 
     const accounts = mapAccounts(records, fieldMappings);
-    await nango.batchSend(accounts, 'SalesforceAccount');
+    await nango.batchSend<SalesforceAccount>(accounts, 'SalesforceAccount');
 
     if (!done) {
         let allResults = false;
@@ -58,7 +58,7 @@ export default async function fetchData(nango: NangoSync): Promise<{ SalesforceA
             const { records: nextRecords, done: nextDone, nextRecordsUrl: nextNextRecordsUrl } = nextResponse.data;
 
             const firstAccounts = mapAccounts(nextRecords, fieldMappings);
-            await nango.batchSend(firstAccounts, 'SalesforceAccount');
+            await nango.batchSend<SalesforceAccount>(firstAccounts, 'SalesforceAccount');
 
             if (nextDone) {
                 allResults = true;

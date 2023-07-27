@@ -36,7 +36,7 @@ export default async function fetchData(nango: NangoSync): Promise<{ GmailEmail:
             emails.push(mapEmail(messageDetail, headers));
         }
 
-        await nango.batchSend(emails, 'GmailEmail');
+        await nango.batchSend<GmailEmail>(emails, 'GmailEmail');
 
         nextPageToken = response.data.nextPageToken;
     } while (nextPageToken);

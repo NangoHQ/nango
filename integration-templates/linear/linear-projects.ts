@@ -45,7 +45,7 @@ export default async function fetchData(nango: NangoSync): Promise<{ LinearProje
             }
         });
 
-        await nango.batchSend(mapProjects(response.data.data.projects.nodes), 'LinearProject');
+        await nango.batchSend<LinearProject>(mapProjects(response.data.data.projects.nodes), 'LinearProject');
 
         if (!response.data.data.projects.pageInfo.hasNextPage || !response.data.data.projects.pageInfo.endCursor) {
             break;

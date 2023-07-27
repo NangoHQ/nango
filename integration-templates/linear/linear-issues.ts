@@ -66,7 +66,7 @@ export default async function fetchData(nango: NangoSync): Promise<{ LinearIssue
             }
         });
 
-        await nango.batchSend(mapIssues(response.data.data.issues.nodes), 'LinearIssue');
+        await nango.batchSend<LinearIssue>(mapIssues(response.data.data.issues.nodes), 'LinearIssue');
 
         if (!response.data.data.issues.pageInfo.hasNextPage || !response.data.data.issues.pageInfo.endCursor) {
             break;

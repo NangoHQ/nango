@@ -27,7 +27,7 @@ export default async function fetchData(nango: NangoSync): Promise<{ AsanaTask: 
         });
 
         if (mappedTasks.length > 49) {
-            await nango.batchSend(mappedTasks, 'AsanaTask');
+            await nango.batchSend<AsanaTask>(mappedTasks, 'AsanaTask');
             mappedTasks = [];
         }
     }
