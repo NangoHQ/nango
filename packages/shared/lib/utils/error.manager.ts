@@ -1,3 +1,4 @@
+import * as uuid from 'uuid';
 import sentry, { EventHint } from '@sentry/node';
 import { readFileSync } from 'fs';
 import path from 'path';
@@ -5,8 +6,7 @@ import type { ErrorEvent } from '@sentry/types';
 import logger from '../logger/console.js';
 import { NangoError } from './error.js';
 import type { Response, Request } from 'express';
-import { isCloud, getAccount, dirname, isApiAuthenticated, isUserAuthenticated } from './utils.js';
-import type { User } from '../models/Admin.js';
+import { isCloud, getEnvironmentId, getAccountIdAndEnvironmentIdFromSession, dirname, isApiAuthenticated, isUserAuthenticated } from './utils.js';
 import type { LogAction } from '../models/Activity.js';
 import environmentService from '../services/environment.service.js';
 import userService from '../services/user.service.js';
@@ -145,25 +145,28 @@ class ErrorManager {
         this.errResFromNangoErr(res, err);
     }
 
-    public handleGenericError(err: any, req: Request, res: any) {
+    public async handleGenericError(err: any, req: Request, res: any) {
+        const errorId = uuid.v4();
         if (!(err instanceof Error)) {
-            err = new NangoError('generic_error_malformed');
+            err = new NangoError('generic_error_malformed', errorId);
         } else if (!(err instanceof NangoError)) {
-            err = new NangoError(err.message);
+            err = new NangoError(err.message, errorId);
         }
 
         const nangoErr = err as NangoError;
 
         if (isApiAuthenticated(res)) {
-            this.report(nangoErr, { source: 'platform', accountId: getAccount(res), metadata: err.payload });
+            const environmentId = getEnvironmentId(res);
+            await this.report(nangoErr, { source: 'platform', environmentId, metadata: err.payload });
         } else if (isUserAuthenticated(req)) {
-            const user = req.user as User;
-            this.report(nangoErr, { source: 'platform', userId: user.id, metadata: err.payload });
+            const { environmentId } = await getAccountIdAndEnvironmentIdFromSession(req);
+            await this.report(nangoErr, { source: 'platform', environmentId, metadata: err.payload });
         } else {
             this.report(nangoErr, { source: 'platform', metadata: err.payload });
         }
 
-        this.errResFromNangoErr(res, nangoErr);
+        const supportError = new NangoError('generic_error_support', errorId);
+        this.errResFromNangoErr(res, supportError);
     }
 
     public getExpressRequestContext(req: Request): { [key: string]: unknown } {

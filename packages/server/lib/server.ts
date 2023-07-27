@@ -130,8 +130,8 @@ if (!isCloud()) {
 }
 
 // Error handling.
-app.use((e: any, req: Request, res: Response, __: any) => {
-    errorManager.handleGenericError(e, req, res);
+app.use(async (e: any, req: Request, res: Response, __: any) => {
+    await errorManager.handleGenericError(e, req, res);
 });
 
 // Webapp assets, static files and build.

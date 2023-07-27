@@ -296,10 +296,15 @@ export class NangoError extends Error {
                 this.message = 'Error creating sync config from a deploy. Please contact support with the sync name and connection details';
                 break;
 
+            case 'generic_error_support':
+                this.status = 500;
+                this.message = 'An error occurred. Please contact support with this unique id: ' + this.payload;
+                break;
+
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;
-                this.message = `An unhandled error has occurred: ${type}`;
+                this.message = `An unhandled error ${this.payload} has occurred: ${type}`;
         }
     }
 
