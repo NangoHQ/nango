@@ -19,7 +19,7 @@ import {
 } from '../services/activity/activity.service.js';
 import providerClient from '../clients/provider.client.js';
 import configService from '../services/config.service.js';
-import { deleteScheduleForConnection as deleteSyncScheduleForConnection } from '../services/sync/schedule.service.js';
+import syncOrchestrator from './sync/orchestrator.service.js';
 import environmentService from '../services/environment.service.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import { NangoError } from '../utils/error.js';
@@ -330,7 +330,7 @@ class ConnectionService {
 
     async deleteConnection(connection: Connection, providerConfigKey: string, environment_id: number): Promise<number> {
         if (connection) {
-            await deleteSyncScheduleForConnection(connection);
+            await syncOrchestrator.deleteSyncsByConnection(connection);
         }
 
         return await db.knex
