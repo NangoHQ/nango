@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/nango-worker",
-    "version": "0.25.8",
+    "version": "0.25.9",
     "type": "module",
     "main": "dist/worker.js",
     "scripts": {
