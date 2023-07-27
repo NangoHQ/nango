@@ -1,7 +1,5 @@
 import db, { schema, dbNamespace } from '../../db/database.js';
-import type { Connection as NangoConnection } from '../../models/Connection.js';
 import { Schedule as SyncSchedule, ScheduleStatus, SyncCommandToScheduleStatus, SyncCommand } from '../../models/Sync.js';
-import { getSyncsByConnectionId, getSyncsByProviderConfigKey } from '../sync/sync.service.js';
 import { getInterval } from '../nango-config.service.js';
 import SyncClient from '../../clients/sync.client.js';
 import { createActivityLogDatabaseErrorMessageAndEnd } from '../activity/activity.service.js';
@@ -45,30 +43,6 @@ export const deleteScheduleForSync = async (sync_id: string, environmentId: numb
 
     if (schedule && syncClient) {
         await syncClient.deleteSyncSchedule(schedule?.schedule_id as string, environmentId);
-    }
-};
-
-export const deleteScheduleForConnection = async (connection: NangoConnection, environmentId: number): Promise<void> => {
-    const syncs = await getSyncsByConnectionId(connection.id as number);
-
-    if (!syncs) {
-        return;
-    }
-
-    for (const sync of syncs) {
-        await deleteScheduleForSync(sync.id as string, environmentId);
-    }
-};
-
-export const deleteScheduleForProviderConfig = async (environmentId: number, providerConfigKey: string): Promise<void> => {
-    const syncs = await getSyncsByProviderConfigKey(environmentId, providerConfigKey);
-
-    if (!syncs) {
-        return;
-    }
-
-    for (const sync of syncs) {
-        await deleteScheduleForSync(sync.id as string, environmentId);
     }
 };
 

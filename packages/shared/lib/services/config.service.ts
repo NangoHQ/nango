@@ -7,7 +7,7 @@ import path from 'path';
 import { isCloud, dirname } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
 import encryptionManager from '../utils/encryption.manager.js';
-import { deleteScheduleForProviderConfig as deleteSyncScheduleForProviderConfig } from '../services/sync/schedule.service.js';
+import syncOrchestrator from './sync/orchestrator.service.js';
 import { deleteSyncFilesForConfig, deleteByConfigId as deleteSyncConfigByConfigId } from '../services/sync/config.service.js';
 
 class ConfigService {
@@ -130,7 +130,7 @@ class ConfigService {
             throw new NangoError('unknown_provider_config');
         }
 
-        await deleteSyncScheduleForProviderConfig(environment_id, providerConfigKey);
+        await syncOrchestrator.deleteSyncsByProviderConfig(environment_id, providerConfigKey);
 
         if (isCloud()) {
             const config = await this.getProviderConfig(providerConfigKey, environment_id);

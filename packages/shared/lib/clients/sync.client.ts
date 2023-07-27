@@ -256,6 +256,25 @@ class SyncClient {
         }
     }
 
+    async describeSchedule(schedule_id: string) {
+        if (!this.client) {
+            return;
+        }
+
+        const workflowService = this.client?.workflowService;
+
+        try {
+            const schedule = await workflowService?.describeSchedule({
+                scheduleId: schedule_id,
+                namespace: this.namespace
+            });
+
+            return schedule;
+        } catch (e) {
+            return false;
+        }
+    }
+
     async listSchedules() {
         if (!this.client) {
             return;
