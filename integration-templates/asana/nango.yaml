@@ -1,0 +1,15 @@
+integrations:
+    asana: # scopes: default
+        asana-tasks:
+            runs: every 30min
+            returns:
+                - AsanaTask
+
+models:
+    AsanaTask:
+        id: string
+        project_id: string
+        name: string
+        completed: boolean
+        created_at: date
+        modified_at: date

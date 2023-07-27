@@ -73,8 +73,11 @@
                         {
                             "group": "All Integration Templates",
                             "pages": [
+                                "integration-templates/asana",
+                                "integration-templates/github",
                                 "integration-templates/google-workspace",
                                 "integration-templates/gmail",
+                                "integration-templates/jira",
                                 "integration-templates/linear",
                                 "integration-templates/notion",
                                 "integration-templates/slack",
