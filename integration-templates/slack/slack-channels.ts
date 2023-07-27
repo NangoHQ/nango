@@ -1,5 +1,4 @@
-import { NangoSync } from 'nango';
-import { SlackChannel } from './models';
+import { SlackChannel, NangoSync } from './models';
 
 export default async function fetchData(nango: NangoSync): Promise<{ SlackChannel: SlackChannel[] }> {
     const responses = await getAllPages(nango, 'conversations.list');

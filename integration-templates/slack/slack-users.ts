@@ -1,5 +1,4 @@
-import { NangoSync } from 'nango';
-import { SlackUser } from './models';
+import { SlackUser, NangoSync } from './models';
 
 export default async function fetchData(nango: NangoSync): Promise<{ SlackUser: SlackUser[] }> {
     // Fetch all users (paginated)

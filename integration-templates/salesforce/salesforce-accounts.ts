@@ -1,5 +1,4 @@
-import { NangoSync } from 'nango';
-import { SalesforceAccount } from './models';
+import { SalesforceAccount, NangoSync } from './models';
 
 export default async function fetchData(nango: NangoSync): Promise<{ SalesforceAccount: SalesforceAccount[] }> {
     const { lastSyncDate } = nango;
