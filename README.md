@@ -42,7 +42,7 @@ It is:
 -   as **flexible** as building integrations yourself
 -   as **fast** as buying a pre-built solution
 
-Build in hours, instead of weeks with our [production-ready infrastructure](https://docs.nango.dev) and pre-built [integration components for 100+ APIs](https://docs.nango.dev/integrations/overview):
+Build in hours, instead of weeks with our [production-ready infrastructure](https://docs.nango.dev) and [pre-built integration components and templates](https://docs.nango.dev/integration-templates/overview) [for 100+ APIs](https://docs.nango.dev/integrations/overview):
 
 -   🔐 Auth for 100+ APIs with 1 line of code
 -   🔁 Bi-directional data syncing
@@ -78,7 +78,7 @@ You can try Nango in 10 minutes with the [Quickstart 🚀](https://nango.dev/qui
 Or explore more:
 
 -   Understand Nango with the [core concepts](https://docs.nango.dev/core-concepts)
--   Learn more about data syncing and unified APIs with [Nango Sync](https://docs.nango.dev/nango-sync)
+-   Explore the [integration templates](https://docs.nango.dev/integration-templates/overview)
 -   Explore the [100+ supported APIs](https://nango.dev/integrations)
 
 ## 100+ pre-configured APIs, easily add your own
@@ -110,6 +110,7 @@ If your favorite API is missing
 ## 🚀 Quickstart
 
 Install nango globally
+
 ```
 npm install nango -g
 ```
