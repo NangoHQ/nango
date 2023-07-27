@@ -42,3 +42,11 @@ export interface NangoConnection {
     // TODO legacy while the migration is in progress
     account_id?: number;
 }
+
+export interface ConnectionList {
+    id: number;
+    connectionId: number;
+    providerConfigKey: string;
+    provider: string;
+    creationDate: string;
+}

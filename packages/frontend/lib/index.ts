@@ -11,6 +11,8 @@ const enum WSMessageType {
     Success = 'success'
 }
 
+type AuthError = { message: string; type: string };
+
 export default class Nango {
     private hostBaseUrl: string;
     private websocketsBaseUrl: string;
@@ -51,10 +53,11 @@ export default class Nango {
         providerConfigKey: string,
         connectionId: string,
         conectionConfigOrCredentials?: ConnectionConfig | BasicApiCredentials | ApiKeyCredentials
-    ): Promise<any> {
+    ): Promise<{ providerConfigKey: string; connectionId: string } | AuthError> {
         if (conectionConfigOrCredentials && 'credentials' in conectionConfigOrCredentials && Object.keys(conectionConfigOrCredentials.credentials).length > 0) {
             const credentials = conectionConfigOrCredentials.credentials as BasicApiCredentials | ApiKeyCredentials;
             const { credentials: _, ...connectionConfig } = conectionConfigOrCredentials as ConnectionConfig;
+
             return this.apiAuth(providerConfigKey, connectionId, this.convertCredentialsToConfig(credentials), connectionConfig);
         }
 
@@ -123,11 +126,11 @@ export default class Nango {
         connectionId: string,
         connectionConfigWithCredentials: ConnectionConfig,
         connectionConfig: ConnectionConfig
-    ): Promise<Response | void> {
+    ): Promise<{ providerConfigKey: string; connectionId: string } | AuthError> {
         const { params: credentials } = connectionConfigWithCredentials as ConnectionConfig;
 
         if (!credentials) {
-            return;
+            throw new Error('You must specify credentials.');
         }
 
         if ('apiKey' in credentials) {
@@ -146,6 +149,8 @@ export default class Nango {
                 const errorResponse = await res.json();
                 throw { ...errorResponse, message: errorResponse.error };
             }
+
+            return res.json();
         }
 
         if ('username' in credentials || 'password' in credentials) {
@@ -168,7 +173,11 @@ export default class Nango {
                 const errorResponse = await res.json();
                 throw { ...errorResponse, message: errorResponse.error };
             }
+
+            return res.json();
         }
+
+        return Promise.reject('Something went wrong with the API authorization');
     }
 
     private toQueryString(connectionId: string, connectionConfig?: ConnectionConfig): string {

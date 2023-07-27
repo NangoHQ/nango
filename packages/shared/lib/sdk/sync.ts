@@ -51,6 +51,11 @@ interface AxiosResponse<T = any, D = any> {
     request?: any;
 }
 
+interface DataResponse {
+    id?: string;
+    [index: string]: unknown | undefined | string | number | boolean | Record<string, string | boolean | number | unknown>;
+}
+
 interface ProxyConfiguration {
     endpoint: string;
     providerConfigKey?: string;
@@ -183,12 +188,40 @@ export class NangoSync {
         }
     }
 
-    public setLastSyncDate(date: Date) {
+    public setLastSyncDate(date: Date): void {
         this.lastSyncDate = date;
     }
 
-    public async proxy(config: ProxyConfiguration): Promise<AxiosResponse<any, any>> {
+    public async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
         return this.nango.proxy(config);
+    }
+
+    public async get<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
+        return this.proxy({
+            ...config,
+            method: 'GET'
+        });
+    }
+
+    public async post<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
+        return this.proxy({
+            ...config,
+            method: 'POST'
+        });
+    }
+
+    public async patch<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
+        return this.proxy({
+            ...config,
+            method: 'PATCH'
+        });
+    }
+
+    public async delete<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
+        return this.proxy({
+            ...config,
+            method: 'DELETE'
+        });
     }
 
     public async getConnection(): Promise<Connection> {
@@ -199,43 +232,15 @@ export class NangoSync {
         fieldMapping: Record<string, string>,
         optionalProviderConfigKey?: string,
         optionalConnectionId?: string
-    ): Promise<AxiosResponse<any, any>> {
+    ): Promise<AxiosResponse<void>> {
         return this.nango.setFieldMapping(fieldMapping, optionalProviderConfigKey, optionalConnectionId);
     }
 
-    public async getFieldMapping(optionalProviderConfigKey?: string, optionalConnectionId?: string): Promise<AxiosResponse<any, any>> {
+    public async getFieldMapping(optionalProviderConfigKey?: string, optionalConnectionId?: string): Promise<Record<string, string>> {
         return this.nango.getFieldMapping(optionalProviderConfigKey, optionalConnectionId);
     }
 
-    public async get(config: ProxyConfiguration): Promise<AxiosResponse<any, any>> {
-        return this.proxy({
-            ...config,
-            method: 'GET'
-        });
-    }
-
-    public async post(config: ProxyConfiguration): Promise<AxiosResponse<any, any>> {
-        return this.proxy({
-            ...config,
-            method: 'POST'
-        });
-    }
-
-    public async patch(config: ProxyConfiguration): Promise<AxiosResponse<any, any>> {
-        return this.proxy({
-            ...config,
-            method: 'PATCH'
-        });
-    }
-
-    public async delete(config: ProxyConfiguration): Promise<AxiosResponse<any, any>> {
-        return this.proxy({
-            ...config,
-            method: 'DELETE'
-        });
-    }
-
-    public async batchSend(results: any[], model: string): Promise<boolean | null> {
+    public async batchSend<T = any>(results: T[], model: string): Promise<boolean | null> {
         if (this.dryRun) {
             console.log('A batch send call would send the following data:');
             console.log(JSON.stringify(results, null, 2));
@@ -246,7 +251,13 @@ export class NangoSync {
             throw new Error('Nango Connection Id, Sync Id, Activity Log Id and Sync Job Id are all required');
         }
 
-        const formattedResults = formatDataRecords(results, this.nangoConnectionId as number, model, this.syncId as string, this.syncJobId);
+        const formattedResults = formatDataRecords(
+            results as unknown as DataResponse[],
+            this.nangoConnectionId as number,
+            model,
+            this.syncId as string,
+            this.syncJobId
+        );
 
         const syncConfig = await getSyncConfigByJobId(this.syncJobId as number);
 

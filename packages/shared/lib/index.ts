@@ -12,6 +12,7 @@ import userService from './services/user.service.js';
 import fileService from './services/file.service.js';
 import hmacService from './services/hmac.service.js';
 import syncRunService from './services/sync/run.service.js';
+import syncOrchestrator from './services/sync/orchestrator.service.js';
 import analytics from './utils/analytics.js';
 
 export * from './services/activity/activity.service.js';
@@ -51,6 +52,7 @@ export {
     webhookService,
     fileService,
     syncRunService,
+    syncOrchestrator,
     hmacService,
     analytics
 };

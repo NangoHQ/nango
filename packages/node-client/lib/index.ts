@@ -1,14 +1,18 @@
-import axios, { AxiosRequestConfig } from 'axios';
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 
 import {
     AuthModes,
+    CredentialsCommon,
     OAuth1Credentials,
     OAuth2Credentials,
     ProxyConfiguration,
     GetRecordsRequestConfig,
     BasicApiCredentials,
     ApiKeyCredentials,
-    Connection
+    Connection,
+    ConnectionList,
+    Integration,
+    IntegrationWithCreds
 } from './types.js';
 import { validateProxyConfiguration, validateSyncRecordConfiguration } from './utils.js';
 
@@ -146,9 +150,10 @@ export class Nango {
      * @param [forceRefresh] - When set, this is used to  obtain a new refresh token from the provider before the current token has expired,
      * you can set the forceRefresh argument to true.
      * */
-    public async getRawTokenResponse(providerConfigKey: string, connectionId: string, forceRefresh?: boolean) {
+    public async getRawTokenResponse<T = Record<string, any>>(providerConfigKey: string, connectionId: string, forceRefresh?: boolean): Promise<T> {
         const response = await this.getConnectionDetails(providerConfigKey, connectionId, forceRefresh);
-        return response.data.credentials.raw;
+        const credentials = response.data.credentials as CredentialsCommon;
+        return credentials.raw as T;
     }
 
     /**
@@ -165,7 +170,7 @@ export class Nango {
         return response.data;
     }
 
-    public async proxy(config: ProxyConfiguration) {
+    public async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
         if (!config.connectionId && this.connectionId) {
             config.connectionId = this.connectionId;
         }
@@ -231,35 +236,35 @@ export class Nango {
         }
     }
 
-    public async get(config: ProxyConfiguration) {
+    public async get<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
         return this.proxy({
             ...config,
             method: 'GET'
         });
     }
 
-    public async post(config: ProxyConfiguration) {
+    public async post<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
         return this.proxy({
             ...config,
             method: 'POST'
         });
     }
 
-    public async patch(config: ProxyConfiguration) {
+    public async patch<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
         return this.proxy({
             ...config,
             method: 'PATCH'
         });
     }
 
-    public async delete(config: ProxyConfiguration) {
+    public async delete<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
         return this.proxy({
             ...config,
             method: 'DELETE'
         });
     }
 
-    public async getRecords(config: GetRecordsRequestConfig) {
+    public async getRecords<T = any>(config: GetRecordsRequestConfig): Promise<T[]> {
         const { connectionId, providerConfigKey, model, delta, offset, limit } = config;
         validateSyncRecordConfiguration(config);
 
@@ -278,7 +283,13 @@ export class Nango {
         return response.data;
     }
 
-    private async getConnectionDetails(providerConfigKey: string, connectionId: string, forceRefresh = false, refreshToken = false, additionalHeader = {}) {
+    private async getConnectionDetails(
+        providerConfigKey: string,
+        connectionId: string,
+        forceRefresh = false,
+        refreshToken = false,
+        additionalHeader = {}
+    ): Promise<AxiosResponse<Connection>> {
         const url = `${this.serverUrl}/connection/${connectionId}`;
 
         const headers = {
@@ -302,18 +313,22 @@ export class Nango {
     /**
      * Get the list of Connections, which does not contain access credentials.
      */
-    public async listConnections(connectionId?: string) {
+    public async listConnections(connectionId?: string): Promise<{ connections: ConnectionList[] }> {
         const response = await this.listConnectionDetails(connectionId);
         return response.data;
     }
 
-    public async getIntegration(providerConfigKey: string, includeIntegrationCredetials = false) {
+    public async getIntegration(providerConfigKey: string, includeIntegrationCredetials = false): Promise<Integration | IntegrationWithCreds> {
         const url = `${this.serverUrl}/config/${providerConfigKey}`;
         const response = await axios.get(url, { headers: this.enrichHeaders({}), params: { include_creds: includeIntegrationCredetials } });
         return response.data;
     }
 
-    public async setFieldMapping(fieldMapping: Record<string, string>, optionalProviderConfigKey?: string, optionalConnectionId?: string) {
+    public async setFieldMapping(
+        fieldMapping: Record<string, string>,
+        optionalProviderConfigKey?: string,
+        optionalConnectionId?: string
+    ): Promise<AxiosResponse<void>> {
         const providerConfigKey = optionalProviderConfigKey || this.providerConfigKey;
         const connectionId = optionalConnectionId || this.connectionId;
         const url = `${this.serverUrl}/connection/${connectionId}/field-mapping?provider_config_key=${providerConfigKey}`;
@@ -325,7 +340,7 @@ export class Nango {
         return axios.post(url, fieldMapping, { headers: this.enrichHeaders(headers) });
     }
 
-    public async getFieldMapping(optionalProviderConfigKey?: string, optionalConnectionId?: string) {
+    public async getFieldMapping(optionalProviderConfigKey?: string, optionalConnectionId?: string): Promise<Record<string, string>> {
         const providerConfigKey = optionalProviderConfigKey || this.providerConfigKey;
         const connectionId = optionalConnectionId || this.connectionId;
 
@@ -342,10 +357,10 @@ export class Nango {
             'Nango-Is-Dry-Run': this.dryRun
         });
 
-        return response.data.field_mappings;
+        return response.data.field_mappings as Record<string, string>;
     }
 
-    public async triggerSync({ connectionId, providerConfigKey }: { connectionId: string; providerConfigKey: string }) {
+    public async triggerSync({ connectionId, providerConfigKey }: { connectionId: string; providerConfigKey: string }): Promise<void> {
         const url = `${this.serverUrl}/sync/trigger`;
 
         const headers = {
@@ -362,7 +377,7 @@ export class Nango {
         );
     }
 
-    private async listConnectionDetails(connectionId?: string) {
+    private async listConnectionDetails(connectionId?: string): Promise<AxiosResponse<{ connections: ConnectionList[] }>> {
         let url = `${this.serverUrl}/connection?`;
         if (connectionId) {
             url = url.concat(`connectionId=${connectionId}`);
@@ -376,7 +391,7 @@ export class Nango {
         return axios.get(url, { headers: this.enrichHeaders(headers) });
     }
 
-    private enrichHeaders(headers: Record<string, string | number | boolean> = {}) {
+    private enrichHeaders(headers: Record<string, string | number | boolean> = {}): Record<string, string | number | boolean> {
         headers['Authorization'] = 'Bearer ' + this.secretKey;
 
         return headers;

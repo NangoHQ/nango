@@ -8,6 +8,8 @@ import {
     analytics,
     configService,
     Config as ProviderConfig,
+    IntegrationWithCreds,
+    Integration as ProviderIntegration,
     connectionService
 } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession, parseConnectionConfigParamsFromTemplate } from '../utils/utils.js';
@@ -142,15 +144,15 @@ class ConfigController {
                 return;
             }
 
-            const configRes = includeCreds
-                ? {
-                      uniqueKey: config.unique_key,
+            const configRes: ProviderIntegration | IntegrationWithCreds = includeCreds
+                ? ({
+                      unique_key: config.unique_key,
                       provider: config.provider,
-                      clientId: config.oauth_client_id,
-                      clientSecret: config.oauth_client_secret,
+                      client_id: config.oauth_client_id,
+                      client_secret: config.oauth_client_secret,
                       scopes: config.oauth_scopes
-                  }
-                : { uniqueKey: config.unique_key, provider: config.provider };
+                  } as IntegrationWithCreds)
+                : ({ unique_key: config.unique_key, provider: config.provider } as ProviderIntegration);
 
             res.status(200).send({ config: configRes });
         } catch (err) {
