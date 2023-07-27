@@ -132,7 +132,7 @@ class ProxyController {
             );
 
             if (!success) {
-                res.status(400).send(error);
+                errorManager.errResFromNangoErr(res, error);
 
                 return;
             }

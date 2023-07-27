@@ -4,7 +4,7 @@ import path from 'path';
 import type { ErrorEvent } from '@sentry/types';
 import logger from '../logger/console.js';
 import { NangoError } from './error.js';
-import type { Request } from 'express';
+import type { Response, Request } from 'express';
 import { isCloud, getAccount, dirname, isApiAuthenticated, isUserAuthenticated } from './utils.js';
 import type { User } from '../models/Admin.js';
 import type { LogAction } from '../models/Activity.js';
@@ -134,8 +134,10 @@ class ErrorManager {
         }
     }
 
-    public errResFromNangoErr(res: any, err: NangoError) {
-        res.status(err.status).send({ error: err.message, type: err.type, payload: err.payload });
+    public errResFromNangoErr(res: Response, err: NangoError | null) {
+        if (err) {
+            res.status(err.status).send({ error: err.message, type: err.type, payload: err.payload });
+        }
     }
 
     public errRes(res: any, type: string) {

@@ -102,7 +102,7 @@ class SyncController {
             );
 
             if (!success) {
-                res.status(400).send(error);
+                errorManager.errResFromNangoErr(res, error);
 
                 return;
             }
@@ -125,7 +125,7 @@ class SyncController {
             } = await connectionService.getConnection(connection_id as string, provider_config_key as string, environment.id);
 
             if (!success) {
-                res.status(400).send(error);
+                errorManager.errResFromNangoErr(res, error);
 
                 return;
             }
@@ -193,7 +193,7 @@ class SyncController {
             } = await connectionService.getConnection(connectionId as string, providerConfigKey as string, environmentId);
 
             if (!success) {
-                res.status(400).send(error);
+                errorManager.errResFromNangoErr(res, error);
 
                 return;
             }

@@ -57,7 +57,7 @@ class ConnectionController {
             const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
 
             if (!success) {
-                res.status(400).send(error);
+                errorManager.errResFromNangoErr(res, error);
 
                 return;
             }
@@ -326,7 +326,7 @@ class ConnectionController {
             const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environmentId);
 
             if (!success) {
-                res.status(400).send(error);
+                errorManager.errResFromNangoErr(res, error);
 
                 return;
             }
@@ -371,7 +371,7 @@ class ConnectionController {
             const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environmentId);
 
             if (!success) {
-                res.status(400).send(error);
+                errorManager.errResFromNangoErr(res, error);
 
                 return;
             }
