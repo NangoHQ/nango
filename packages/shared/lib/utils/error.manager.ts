@@ -114,7 +114,8 @@ class ErrorManager {
             },
             tags: {
                 environmentName,
-                operation
+                operation,
+                source: 'customer'
             },
             contexts: { custom: { ...contexts } } || {}
         });
