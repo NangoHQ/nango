@@ -92,7 +92,11 @@ class ConnectionController {
             const template: ProviderTemplate | undefined = configService.getTemplate(config.provider);
 
             if (connection.credentials.type === ProviderAuthModes.OAuth2) {
-                connection.credentials = await connectionService.refreshOauth2CredentialsIfNeeded(
+                const {
+                    success,
+                    error,
+                    response: credentials
+                } = await connectionService.refreshOauth2CredentialsIfNeeded(
                     connection,
                     config,
                     template as ProviderTemplateOAuth2,
@@ -100,6 +104,13 @@ class ConnectionController {
                     false,
                     LogActionEnum.TOKEN
                 );
+
+                if (!success) {
+                    errorManager.errResFromNangoErr(res, error);
+                    return;
+                }
+
+                connection.credentials = credentials as OAuth2Credentials;
             }
 
             if (instantRefresh) {
