@@ -13,17 +13,18 @@ import {
 } from '../activity/activity.service.js';
 import { getSyncsByProviderConfigAndSyncName } from './sync.service.js';
 import { LogActionEnum, LogLevel } from '../../models/Activity.js';
+import type { ServiceResponse } from '../../models/Generic.js';
 import type { SyncModelSchema, SyncConfigWithProvider, IncomingSyncConfig, SyncConfig, SlimSync, SyncConfigResult } from '../../models/Sync.js';
 import type { NangoConnection } from '../../models/Connection.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
 import type { NangoConfig } from '../../integrations/index.js';
 import { NangoError } from '../../utils/error.js';
-import errorManager from '../../utils/error.manager.js';
+import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { getEnv } from '../../utils/utils.js';
 
 const TABLE = dbNamespace + 'sync_configs';
 
-export async function createSyncConfig(environment_id: number, syncs: IncomingSyncConfig[], debug = false): Promise<SyncConfigResult | null> {
+export async function createSyncConfig(environment_id: number, syncs: IncomingSyncConfig[], debug = false): Promise<ServiceResponse<SyncConfigResult | null>> {
     const insertData = [];
 
     const providers = syncs.map((sync) => sync.providerConfigKey);
@@ -59,13 +60,17 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
     for (const sync of syncs) {
         const { syncName, providerConfigKey, fileBody, models, runs, version: optionalVersion, model_schema } = sync;
         if (!syncName || !providerConfigKey || !fileBody || !models || !runs) {
-            throw new NangoError('missing_required_fields_on_deploy');
+            const error = new NangoError('missing_required_fields_on_deploy');
+
+            return { success: false, error, response: null };
         }
 
         const config = await configService.getProviderConfig(providerConfigKey, environment_id);
 
         if (!config) {
-            throw new NangoError('unknown_provider_config', { providerConfigKey });
+            const error = new NangoError('unknown_provider_config', { providerConfigKey });
+
+            return { success: false, error, response: null };
         }
 
         const previousSyncConfig = await getSyncConfigByParams(environment_id, syncName, providerConfigKey);
@@ -85,7 +90,11 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
 
             const syncs = await getSyncsByProviderConfigAndSyncName(environment_id, providerConfigKey, syncName);
             for (const sync of syncs) {
-                await updateSyncScheduleFrequency(sync.id as string, runs, syncName, activityLogId as number, environment_id);
+                const { success, error } = await updateSyncScheduleFrequency(sync.id as string, runs, syncName, activityLogId as number, environment_id);
+
+                if (!success) {
+                    return { success, error, response: null };
+                }
             }
         }
 
@@ -115,6 +124,7 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
                 content: `There was an error uploading the sync file ${syncName}-v${version}.js`
             });
 
+            // this is a platform error so throw this
             throw new NangoError('file_upload_error');
         }
 
@@ -158,7 +168,7 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
         }
         await updateSuccessActivityLog(activityLogId as number, true);
 
-        return { result: [], activityLogId };
+        return { success: true, error: null, response: { result: [], activityLogId } };
     }
 
     try {
@@ -177,7 +187,7 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
             content: `Successfully deployed the syncs (${JSON.stringify(syncsWithVersions, null, 2)}).`
         });
 
-        return { result, activityLogId };
+        return { success: true, error: null, response: { result, activityLogId } };
     } catch (e) {
         await updateSuccessActivityLog(activityLogId as number, false);
 
@@ -272,7 +282,7 @@ export async function getSyncConfigsBySyncNameAndConfigId(environment_id: number
     } catch (error) {
         await errorManager.report(error, {
             environmentId: environment_id,
-            source: 'platform',
+            source: ErrorSourceEnum.PLATFORM,
             operation: LogActionEnum.DATABASE,
             metadata: {
                 environment_id,
@@ -304,7 +314,7 @@ export async function getSyncConfigByParams(environment_id: number, sync_name: s
     } catch (error) {
         await errorManager.report(error, {
             environmentId: environment_id,
-            source: 'platform',
+            source: ErrorSourceEnum.PLATFORM,
             operation: LogActionEnum.DATABASE,
             metadata: {
                 environment_id,
@@ -336,7 +346,7 @@ export async function deleteSyncFilesForConfig(id: number, environmentId: number
     } catch (error) {
         await errorManager.report(error, {
             environmentId,
-            source: 'platform',
+            source: ErrorSourceEnum.PLATFORM,
             operation: LogActionEnum.DATABASE,
             metadata: {
                 id

@@ -11,6 +11,13 @@ import type { LogAction } from '../models/Activity.js';
 import environmentService from '../services/environment.service.js';
 import userService from '../services/user.service.js';
 
+export enum ErrorSourceEnum {
+    PLATFORM = 'platform',
+    CUSTOMER = 'customer'
+}
+
+export type ErrorSource = ErrorSourceEnum;
+
 interface ErrorCaptureUser {
     id: number;
     email?: string;
@@ -18,7 +25,7 @@ interface ErrorCaptureUser {
 }
 
 interface ErrorOptionalConfig {
-    source: 'platform' | 'customer';
+    source: ErrorSource;
     accountId?: number;
     userId?: number;
     environmentId?: number;
@@ -44,7 +51,7 @@ class ErrorManager {
         }
     }
 
-    public async report(e: any, config: ErrorOptionalConfig = { source: 'platform' }) {
+    public async report(e: any, config: ErrorOptionalConfig = { source: ErrorSourceEnum.PLATFORM }) {
         sentry.withScope(async function (scope) {
             if (config.environmentId) {
                 const environmentName = await environmentService.getEnvironmentName(config.environmentId);
@@ -115,7 +122,7 @@ class ErrorManager {
             tags: {
                 environmentName,
                 operation,
-                source: 'customer'
+                source: ErrorSourceEnum.CUSTOMER
             },
             contexts: { custom: { ...contexts } } || {}
         });
@@ -158,12 +165,12 @@ class ErrorManager {
 
         if (isApiAuthenticated(res)) {
             const environmentId = getEnvironmentId(res);
-            await this.report(nangoErr, { source: 'platform', environmentId, metadata: err.payload });
+            await this.report(nangoErr, { source: ErrorSourceEnum.PLATFORM, environmentId, metadata: err.payload });
         } else if (isUserAuthenticated(req)) {
             const { environmentId } = await getAccountIdAndEnvironmentIdFromSession(req);
-            await this.report(nangoErr, { source: 'platform', environmentId, metadata: err.payload });
+            await this.report(nangoErr, { source: ErrorSourceEnum.PLATFORM, environmentId, metadata: err.payload });
         } else {
-            this.report(nangoErr, { source: 'platform', metadata: err.payload });
+            this.report(nangoErr, { source: ErrorSourceEnum.PLATFORM, metadata: err.payload });
         }
 
         const supportError = new NangoError('generic_error_support', errorId);

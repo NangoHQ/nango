@@ -16,6 +16,7 @@ import {
     AuthModes,
     getConnectionConfig,
     hmacService,
+    ErrorSourceEnum,
     LogActionEnum
 } from '@nangohq/shared';
 
@@ -165,7 +166,7 @@ class ApiAuthController {
             });
 
             await errorManager.report(err, {
-                source: 'platform',
+                source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.AUTH,
                 environmentId,
                 metadata: {
@@ -322,7 +323,7 @@ class ApiAuthController {
             });
 
             await errorManager.report(err, {
-                source: 'platform',
+                source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.AUTH,
                 environmentId,
                 metadata: {

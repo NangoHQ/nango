@@ -1,6 +1,6 @@
 import db from '../../db/database.js';
 import { ActivityLog, ActivityLogMessage, LogAction, LogActionEnum } from '../../models/Activity.js';
-import errorManager from '../../utils/error.manager.js';
+import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 
 import logger from '../../logger/console.js';
 
@@ -16,7 +16,7 @@ export async function createActivityLog(log: ActivityLog): Promise<number | null
         }
     } catch (e) {
         await errorManager.report(e, {
-            source: 'platform',
+            source: ErrorSourceEnum.PLATFORM,
             environmentId: log.environment_id,
             operation: LogActionEnum.DATABASE,
             metadata: {
@@ -112,7 +112,7 @@ export async function createActivityLogMessage(logMessage: ActivityLogMessage): 
         }
     } catch (e) {
         errorManager.report(e, {
-            source: 'platform',
+            source: ErrorSourceEnum.PLATFORM,
             operation: LogActionEnum.DATABASE,
             metadata: {
                 logMessage
@@ -130,7 +130,7 @@ export async function addEndTime(activity_log_id: number): Promise<void> {
         });
     } catch (e) {
         errorManager.report(e, {
-            source: 'platform',
+            source: ErrorSourceEnum.PLATFORM,
             operation: LogActionEnum.DATABASE,
             metadata: {
                 activity_log_id

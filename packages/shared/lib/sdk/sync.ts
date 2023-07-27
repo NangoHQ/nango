@@ -128,6 +128,7 @@ interface NangoProps {
     host?: string;
     secretKey: string;
     connectionId?: string;
+    environmentId?: number;
     activityLogId?: number;
     providerConfigKey?: string;
     lastSyncDate?: Date;
@@ -147,6 +148,7 @@ export class NangoSync {
     lastSyncDate?: Date;
     syncId?: string;
     nangoConnectionId?: number;
+    environmentId?: number;
     syncJobId?: number;
     dryRun?: boolean;
 
@@ -185,6 +187,10 @@ export class NangoSync {
 
         if (config.providerConfigKey) {
             this.providerConfigKey = config.providerConfigKey;
+        }
+
+        if (config.environmentId) {
+            this.environmentId = config.environmentId;
         }
     }
 
@@ -241,6 +247,7 @@ export class NangoSync {
     }
 
     public async batchSend<T = any>(results: T[], model: string): Promise<boolean | null> {
+        // let this go through
         if (this.dryRun) {
             console.log('A batch send call would send the following data:');
             console.log(JSON.stringify(results, null, 2));
@@ -251,13 +258,24 @@ export class NangoSync {
             throw new Error('Nango Connection Id, Sync Id, Activity Log Id and Sync Job Id are all required');
         }
 
-        const formattedResults = formatDataRecords(
-            results as unknown as DataResponse[],
-            this.nangoConnectionId as number,
-            model,
-            this.syncId as string,
-            this.syncJobId
-        );
+        const {
+            success,
+            error,
+            response: formattedResults
+        } = formatDataRecords(results as unknown as DataResponse[], this.nangoConnectionId as number, model, this.syncId as string, this.syncJobId);
+
+        if (!success || formattedResults === null) {
+            if (!this.dryRun) {
+                await createActivityLogMessage({
+                    level: 'error',
+                    activity_log_id: this.activityLogId as number,
+                    content: `There was an issue with the batch send. ${error?.message}`,
+                    timestamp: Date.now()
+                });
+            }
+
+            throw error;
+        }
 
         const syncConfig = await getSyncConfigByJobId(this.syncJobId as number);
 

@@ -1,7 +1,7 @@
 import { PutObjectCommand, GetObjectCommand, GetObjectCommandOutput, S3Client, DeleteObjectsCommand } from '@aws-sdk/client-s3';
 import { Readable } from 'stream';
 import { isCloud } from '../utils/utils.js';
-import errorManager from '../utils/error.manager.js';
+import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { LogActionEnum } from '../models/Activity.js';
 
 const client = new S3Client({
@@ -32,7 +32,7 @@ class FileService {
             return fileName;
         } catch (e) {
             await errorManager.report(e, {
-                source: 'platform',
+                source: ErrorSourceEnum.PLATFORM,
                 environmentId,
                 operation: LogActionEnum.FILE,
                 metadata: {
@@ -68,7 +68,7 @@ class FileService {
                 })
                 .catch(async (err) => {
                     await errorManager.report(err, {
-                        source: 'platform',
+                        source: ErrorSourceEnum.PLATFORM,
                         environmentId,
                         operation: LogActionEnum.FILE,
                         metadata: {

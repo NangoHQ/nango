@@ -25,6 +25,7 @@ import {
     CommandToActivityLog,
     errorManager,
     analytics,
+    ErrorSourceEnum,
     LogActionEnum,
     NangoError
 } from '@nangohq/shared';
@@ -36,7 +37,13 @@ class SyncController {
             const environmentId = getEnvironmentId(res);
             let reconcileSuccess = true;
 
-            const syncConfigDeployResult = await createSyncConfig(environmentId, syncs, debug);
+            const { success, error, response: syncConfigDeployResult } = await createSyncConfig(environmentId, syncs, debug);
+
+            if (!success) {
+                errorManager.errResFromNangoErr(res, error);
+
+                return;
+            }
 
             if (reconcile) {
                 const success = await getAndReconcileSyncDifferences(environmentId, syncs, reconcile, syncConfigDeployResult?.activityLogId as number, debug);
@@ -58,7 +65,7 @@ class SyncController {
             const environmentId = getEnvironmentId(res);
 
             await errorManager.report(e, {
-                source: 'platform',
+                source: ErrorSourceEnum.PLATFORM,
                 environmentId,
                 operation: LogActionEnum.SYNC_DEPLOY
             });

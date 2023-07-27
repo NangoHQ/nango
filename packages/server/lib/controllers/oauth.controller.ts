@@ -40,7 +40,8 @@ import {
     providerClientManager,
     errorManager,
     analytics,
-    hmacService
+    hmacService,
+    ErrorSourceEnum
 } from '@nangohq/shared';
 import wsClient from '../clients/web-socket.client.js';
 import { WSErrBuilder } from '../utils/web-socket-error.js';
@@ -235,8 +236,8 @@ class OAuthController {
             });
 
             await errorManager.report(e, {
-                source: 'platform',
-                operation: 'auth',
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.AUTH,
                 environmentId,
                 metadata: {
                     providerConfigKey,
@@ -449,8 +450,8 @@ class OAuthController {
         } catch (e) {
             const error = e as { statusCode: number; data?: any };
             await errorManager.report(new Error('token_retrieval_error'), {
-                source: 'platform',
-                operation: 'auth',
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.AUTH,
                 environmentId: session.environmentId,
                 metadata: error
             });
@@ -498,8 +499,8 @@ class OAuthController {
             const e = new Error(errorMessage);
 
             errorManager.report(e, {
-                source: 'platform',
-                operation: 'auth',
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.AUTH,
                 metadata: errorManager.getExpressRequestContext(req)
             });
             return;
@@ -512,8 +513,8 @@ class OAuthController {
             const e = new Error(errorMessage);
 
             errorManager.report(e, {
-                source: 'platform',
-                operation: 'auth',
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.AUTH,
                 metadata: errorManager.getExpressRequestContext(req)
             });
             return;
@@ -563,8 +564,8 @@ class OAuthController {
             const prettyError = JSON.stringify(e, ['message', 'name'], 2);
 
             await errorManager.report(e, {
-                source: 'platform',
-                operation: 'auth',
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.AUTH,
                 environmentId: session.environmentId,
                 metadata: errorManager.getExpressRequestContext(req)
             });
@@ -736,8 +737,8 @@ class OAuthController {
         } catch (e) {
             const prettyError = JSON.stringify(e, ['message', 'name'], 2);
             await errorManager.report(e, {
-                source: 'platform',
-                operation: 'auth',
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.AUTH,
                 environmentId: session.environmentId,
                 metadata: {
                     providerConfigKey: session.providerConfigKey,
@@ -817,8 +818,8 @@ class OAuthController {
             })
             .catch(async (e) => {
                 errorManager.report(e, {
-                    source: 'platform',
-                    operation: 'auth',
+                    source: ErrorSourceEnum.PLATFORM,
+                    operation: LogActionEnum.AUTH,
                     environmentId: session.environmentId,
                     metadata: {
                         ...metadata,

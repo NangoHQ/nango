@@ -15,7 +15,7 @@ import { createSchedule as createSyncSchedule } from '../services/sync/schedule.
 import connectionService from '../services/connection.service.js';
 import configService from '../services/config.service.js';
 import { createSync } from '../services/sync/sync.service.js';
-import errorManager from '../utils/error.manager.js';
+import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { isProd } from '../utils/utils.js';
 
 const generateWorkflowId = (sync: Sync, syncName: string, connectionId: string) => `${TASK_QUEUE}.${syncName}.${connectionId}-${sync.id}`;
@@ -61,7 +61,7 @@ class SyncClient {
             return new SyncClient(client);
         } catch (e) {
             errorManager.report(e, {
-                source: 'platform',
+                source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.SYNC_CLIENT,
                 metadata: {
                     namespace,
@@ -217,7 +217,7 @@ class SyncClient {
             });
         } catch (e) {
             await errorManager.report(e, {
-                source: 'platform',
+                source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.SYNC_CLIENT,
                 environmentId: nangoConnection.environment_id,
                 metadata: {
@@ -245,7 +245,7 @@ class SyncClient {
             return true;
         } catch (e) {
             await errorManager.report(e, {
-                source: 'platform',
+                source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.SYNC,
                 environmentId,
                 metadata: {
@@ -326,7 +326,7 @@ class SyncClient {
                 await scheduleHandle?.trigger(OVERLAP_POLICY);
             } catch (e) {
                 await errorManager.report(e, {
-                    source: 'platform',
+                    source: ErrorSourceEnum.PLATFORM,
                     operation: LogActionEnum.SYNC_CLIENT,
                     environmentId,
                     metadata: {
@@ -363,7 +363,7 @@ class SyncClient {
             });
         } catch (e) {
             await errorManager.report(e, {
-                source: 'platform',
+                source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.SYNC_CLIENT,
                 environmentId,
                 metadata: {

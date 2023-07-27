@@ -30,6 +30,7 @@ import {
     OAuth2Credentials,
     connectionCopyWithParsedConnectionConfig,
     NangoError,
+    ErrorSourceEnum,
     mapProxyBaseUrlInterpolationFormat
 } from '@nangohq/shared';
 import type { ProxyBodyConfiguration } from '../models.js';
@@ -274,8 +275,8 @@ class ProxyController {
             const providerConfigKey = req.get('Provider-Config-Key') as string;
 
             await errorManager.report(error, {
-                source: 'platform',
-                operation: 'proxy',
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.PROXY,
                 environmentId,
                 metadata: {
                     connectionId,

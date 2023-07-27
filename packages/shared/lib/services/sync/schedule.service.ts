@@ -1,5 +1,6 @@
 import db, { schema, dbNamespace } from '../../db/database.js';
 import { Schedule as SyncSchedule, ScheduleStatus, SyncCommandToScheduleStatus, SyncCommand } from '../../models/Sync.js';
+import type { ServiceResponse } from '../../models/Generic.js';
 import { getInterval } from '../nango-config.service.js';
 import SyncClient from '../../clients/sync.client.js';
 import { createActivityLogDatabaseErrorMessageAndEnd } from '../activity/activity.service.js';
@@ -68,12 +69,12 @@ export const updateSyncScheduleFrequency = async (
     syncName: string,
     activityLogId: number,
     environmentId: number
-): Promise<boolean> => {
+): Promise<ServiceResponse<boolean>> => {
     const existingSchedule = await getSchedule(sync_id);
     const { interval: frequency, offset } = getInterval(interval, new Date());
 
     if (!existingSchedule) {
-        return false;
+        return { success: true, error: null, response: false };
     }
 
     if (existingSchedule.frequency !== frequency) {
@@ -81,10 +82,10 @@ export const updateSyncScheduleFrequency = async (
         const syncClient = await SyncClient.getInstance();
         await syncClient?.updateSyncSchedule(existingSchedule.schedule_id, frequency, offset, syncName, activityLogId, environmentId);
 
-        return true;
+        return { success: true, error: null, response: true };
     }
 
-    return false;
+    return { success: true, error: null, response: false };
 };
 
 export const deleteSchedulesBySyncId = async (sync_id: string): Promise<void> => {

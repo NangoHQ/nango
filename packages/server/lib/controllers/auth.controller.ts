@@ -10,6 +10,7 @@ import {
     userService,
     configService,
     errorManager,
+    ErrorSourceEnum,
     accountService,
     environmentService,
     analytics,
@@ -213,10 +214,10 @@ class AuthController {
                 `
                 })
                 .catch((e: Error) => {
-                    errorManager.report(e, { source: 'platform', userId: user.id, operation: 'user' });
+                    errorManager.report(e, { source: ErrorSourceEnum.PLATFORM, userId: user.id, operation: 'user' });
                 });
         } catch (e) {
-            errorManager.report(e, { userId: user.id, source: 'platform', operation: 'user' });
+            errorManager.report(e, { userId: user.id, source: ErrorSourceEnum.PLATFORM, operation: 'user' });
         }
     }
 }

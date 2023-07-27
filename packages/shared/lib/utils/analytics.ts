@@ -1,7 +1,7 @@
 import { PostHog } from 'posthog-node';
 import { getBaseUrl, localhostUrl, dirname, UserType, isCloud, isStaging } from '../utils/utils.js';
 import ip from 'ip';
-import errorManager from './error.manager.js';
+import errorManager, { ErrorSourceEnum } from './error.manager.js';
 import { readFileSync } from 'fs';
 import path from 'path';
 import accountService from '../services/account.service.js';
@@ -22,7 +22,10 @@ class Analytics {
                 this.packageVersion = JSON.parse(readFileSync(path.resolve(dirname(), '../../../package.json'), 'utf8')).version;
             }
         } catch (e) {
-            errorManager.report(e, { source: 'platform', operation: LogActionEnum.ANALYTICS });
+            errorManager.report(e, {
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.ANALYTICS
+            });
         }
     }
 
@@ -66,7 +69,11 @@ class Analytics {
                 properties: eventProperties
             });
         } catch (e) {
-            errorManager.report(e, { source: 'platform', operation: LogActionEnum.ANALYTICS, accountId: accountId });
+            errorManager.report(e, {
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.ANALYTICS,
+                accountId: accountId
+            });
         }
     }
 

@@ -1,6 +1,6 @@
 import { loadLocalNangoConfig, nangoConfigFile } from '../nango-config.service.js';
 import type { NangoConnection } from '../../models/Connection.js';
-import { SyncDataRecord, SyncResult, SyncType, SyncStatus, Job as SyncJob } from '../../models/Sync.js';
+import { SyncResult, SyncType, SyncStatus, Job as SyncJob } from '../../models/Sync.js';
 import { createActivityLogMessage, createActivityLogMessageAndEnd, updateSuccess as updateSuccessActivityLog } from '../activity/activity.service.js';
 import { addSyncConfigToJob, updateSyncJobResult, updateSyncJobStatus } from '../sync/job.service.js';
 import { getSyncConfig } from './config.service.js';
@@ -13,7 +13,7 @@ import integationService from './integration.service.js';
 import webhookService from '../webhook.service.js';
 import { NangoSync } from '../../sdk/sync.js';
 import { isCloud, getApiUrl } from '../../utils/utils.js';
-import errorManager from '../../utils/error.manager.js';
+import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import type { NangoIntegrationData, NangoConfig, NangoIntegration } from '../../integrations/index.js';
 import type { UpsertResponse, UpsertSummary } from '../../models/Data.js';
 import { LogActionEnum } from '../../models/Activity.js';
@@ -128,6 +128,7 @@ export default class SyncRun {
             const nango = new NangoSync({
                 host: optionalHost || getApiUrl(),
                 connectionId: String(this.nangoConnection?.connection_id),
+                environmentId: this.nangoConnection?.environment_id as number,
                 providerConfigKey: String(this.nangoConnection?.provider_config_key),
                 activityLogId: this.activityLogId as number,
                 secretKey,
@@ -227,22 +228,19 @@ export default class SyncRun {
                             continue;
                         }
 
-                        const { success, error, response } = formatDataRecords(
-                            userDefinedResults[model],
-                            this.nangoConnection.id as number,
-                            model,
-                            this.syncId,
-                            this.syncJobId as number
-                        );
+                        const {
+                            success,
+                            error,
+                            response: formattedResults
+                        } = formatDataRecords(userDefinedResults[model], this.nangoConnection.id as number, model, this.syncId, this.syncJobId as number);
 
-                        if (!success) {
+                        if (!success || formattedResults === null) {
                             await this.reportFailureForResults(error?.message as string);
 
                             return false;
                         }
 
                         if (this.writeToDb && this.activityLogId) {
-                            const formattedResults = response as SyncDataRecord[];
                             if (formattedResults.length === 0) {
                                 await this.reportResults(
                                     model,
@@ -283,7 +281,7 @@ export default class SyncRun {
                 }
             } catch (e) {
                 result = false;
-                const errorMessage = JSON.stringify(e, ['message', 'name', 'stack'], 2);
+                const errorMessage = JSON.stringify(e, ['message', 'name'], 2);
                 await this.reportFailureForResults(
                     `The ${this.syncType} "${this.syncName}"${
                         syncData?.version ? ` version: ${syncData?.version}` : ''
@@ -398,7 +396,7 @@ export default class SyncRun {
 
         await errorManager.report(content, {
             environmentId: this.nangoConnection.environment_id as number,
-            source: 'customer',
+            source: ErrorSourceEnum.CUSTOMER,
             operation: LogActionEnum.SYNC,
             metadata: {
                 syncName: this.syncName,

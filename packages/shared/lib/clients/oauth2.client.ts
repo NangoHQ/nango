@@ -19,7 +19,7 @@ import { LogActionEnum } from '../models/Activity.js';
 import { interpolateString } from '../utils/utils.js';
 import Boom from '@hapi/boom';
 import { NangoError } from '../utils/error.js';
-import errorManager from '../utils/error.manager.js';
+import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 
 // Simple OAuth 2 does what it says on the tin: A simple, no-frills client for OAuth 2 that implements the 3 most common grant_types.
 // Well maintained, I like :-)
@@ -98,7 +98,7 @@ export async function getFreshOAuth2Credentials(
 
         await errorManager.report(nangoErr.message, {
             environmentId: connection.environment_id as number,
-            source: 'customer',
+            source: ErrorSourceEnum.CUSTOMER,
             operation: LogActionEnum.AUTH,
             metadata: {
                 connection,
@@ -123,7 +123,7 @@ export async function getFreshOAuth2Credentials(
         const error = new NangoError(`refresh_token_parsing_error`);
         await errorManager.report(error.message, {
             environmentId: connection.environment_id as number,
-            source: 'customer',
+            source: ErrorSourceEnum.CUSTOMER,
             operation: LogActionEnum.AUTH,
             metadata: {
                 connection,

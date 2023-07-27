@@ -1,7 +1,7 @@
 import db from '../db/database.js';
 import type { Account } from '../models/Admin';
 import { LogActionEnum } from '../models/Activity.js';
-import errorManager from '../utils/error.manager.js';
+import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 
 class AccountService {
     async getAccountById(id: number): Promise<Account | null> {
@@ -15,7 +15,7 @@ class AccountService {
             return result[0];
         } catch (e) {
             errorManager.report(e, {
-                source: 'platform',
+                source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.DATABASE,
                 accountId: id
             });
