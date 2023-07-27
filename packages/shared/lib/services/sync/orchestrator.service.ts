@@ -115,7 +115,7 @@ export class Orchestrator {
             return;
         }
         for (const sync of syncs) {
-            await this.deleteSync(sync.id as string);
+            await this.deleteSync(sync.id as string, connection.environment_id as number);
         }
     }
 
@@ -127,7 +127,7 @@ export class Orchestrator {
         }
 
         for (const sync of syncs) {
-            await this.deleteSync(sync.id as string);
+            await this.deleteSync(sync.id as string, environmentId);
         }
     }
 }
