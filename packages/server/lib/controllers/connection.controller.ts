@@ -22,7 +22,8 @@ import {
     errorManager,
     analytics,
     NangoError,
-    createActivityLogAndLogMessage
+    createActivityLogAndLogMessage,
+    environmentService
 } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 
@@ -69,7 +70,9 @@ class ConnectionController {
                     content: 'Unknown connection'
                 });
 
-                errorManager.errRes(res, 'unknown_connection');
+                const error = new NangoError('unknown_connection', { connectionId, providerConfigKey, environmentName: environment.name });
+                errorManager.errResFromNangoErr(res, error);
+
                 return;
             }
 
@@ -332,7 +335,10 @@ class ConnectionController {
             }
 
             if (connection == null) {
-                errorManager.errRes(res, 'unknown_connection');
+                const environmentName = await environmentService.getEnvironmentName(environmentId);
+                const error = new NangoError('unknown_connection', { connectionId, providerConfigKey, environmentName });
+                errorManager.errResFromNangoErr(res, error);
+
                 return;
             }
 
@@ -377,7 +383,10 @@ class ConnectionController {
             }
 
             if (!connection) {
-                errorManager.errRes(res, 'unknown_connection');
+                const environmentName = await environmentService.getEnvironmentName(environmentId);
+                const error = new NangoError('unknown_connection', { connectionId, providerConfigKey, environmentName });
+                errorManager.errResFromNangoErr(res, error);
+
                 return;
             }
 
@@ -409,7 +418,12 @@ class ConnectionController {
             const provider = await configService.getProviderName(provider_config_key);
 
             if (!provider) {
-                throw new NangoError('unknown_provider_config');
+                const environmentName = await environmentService.getEnvironmentName(environmentId);
+                const error = new NangoError('unknown_provider_config', { providerConfigKey: provider_config_key, environmentName });
+
+                errorManager.errResFromNangoErr(res, error);
+
+                return;
             }
 
             const template = await configService.getTemplate(provider as string);

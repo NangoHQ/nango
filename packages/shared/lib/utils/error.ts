@@ -82,7 +82,7 @@ export class NangoError extends Error {
                 break;
 
             case 'duplicate_account':
-                this.status = 400;
+                this.status = 409;
                 this.message = 'Email already exists.';
                 break;
 
@@ -164,6 +164,11 @@ export class NangoError extends Error {
             case 'missing_callback_url':
                 this.status = 400;
                 this.message = `Missing param 'callback_url'.`;
+                break;
+
+            case 'provider_config_creation_failure':
+                this.status = 500;
+                this.message = `Failed to create the Provider Configuration. Please try again.`;
                 break;
 
             case 'unknown_provider_config':
@@ -262,7 +267,7 @@ export class NangoError extends Error {
                 break;
 
             case 'duplicate_provider_config':
-                this.status = 400;
+                this.status = 409;
                 this.message = `There is already a Provider Configuration matching the param 'provider_config_key'.`;
                 break;
 
@@ -282,7 +287,7 @@ export class NangoError extends Error {
                 break;
 
             case 'file_upload_error':
-                this.status = 400;
+                this.status = 500;
                 this.message = 'Error uploading file. Please contact support with the filename and connection details';
                 break;
 
@@ -292,7 +297,7 @@ export class NangoError extends Error {
                 break;
 
             case 'error_creating_sync_config':
-                this.status = 400;
+                this.status = 500;
                 this.message = 'Error creating sync config from a deploy. Please contact support with the sync name and connection details';
                 break;
 

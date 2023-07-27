@@ -25,7 +25,8 @@ import {
     CommandToActivityLog,
     errorManager,
     analytics,
-    LogActionEnum
+    LogActionEnum,
+    NangoError
 } from '@nangohq/shared';
 
 class SyncController {
@@ -131,7 +132,8 @@ class SyncController {
             }
 
             if (!connection) {
-                res.status(404).send({ message: 'Connection not found!' });
+                const error = new NangoError('unknown_connection', { connection_id, provider_config_key, environmentName: environment.name });
+                errorManager.errResFromNangoErr(res, error);
 
                 return;
             }

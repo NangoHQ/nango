@@ -251,7 +251,9 @@ class ConnectionService {
         if (!storedConnection) {
             const environmentName = await environmentService.getEnvironmentName(environment_id);
 
-            throw new NangoError('unknown_connection', { connectionId, providerConfigKey, environmentName });
+            const error = new NangoError('unknown_connection', { connectionId, providerConfigKey, environmentName });
+
+            return { success: false, error, response: null };
         }
 
         const connection = encryptionManager.decryptConnection(storedConnection);
@@ -386,7 +388,9 @@ class ConnectionService {
                     timestamp: Date.now()
                 });
             }
-            const error = new NangoError('unknown_connection');
+            const environmentName = await environmentService.getEnvironmentName(environmentId);
+            const error = new NangoError('unknown_connection', { connectionId, providerConfigKey, environmentName });
+
             return { success: false, error, response: null };
         }
 
