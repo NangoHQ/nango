@@ -306,6 +306,11 @@ export class NangoError extends Error {
                 this.message = 'An error occurred. Please contact support with this unique id: ' + this.payload;
                 break;
 
+            case 'missing_id_field':
+                this.status = 400;
+                this.message = 'Missing id field in the model. Make sure every single element in the array has an id property.';
+                break;
+
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;

@@ -1,6 +1,6 @@
 import { loadLocalNangoConfig, nangoConfigFile } from '../nango-config.service.js';
 import type { NangoConnection } from '../../models/Connection.js';
-import { SyncResult, SyncType, SyncStatus, Job as SyncJob } from '../../models/Sync.js';
+import { SyncDataRecord, SyncResult, SyncType, SyncStatus, Job as SyncJob } from '../../models/Sync.js';
 import { createActivityLogMessage, createActivityLogMessageAndEnd, updateSuccess as updateSuccessActivityLog } from '../activity/activity.service.js';
 import { addSyncConfigToJob, updateSyncJobResult, updateSyncJobStatus } from '../sync/job.service.js';
 import { getSyncConfig } from './config.service.js';
@@ -227,7 +227,7 @@ export default class SyncRun {
                             continue;
                         }
 
-                        const formattedResults = formatDataRecords(
+                        const { success, error, response } = formatDataRecords(
                             userDefinedResults[model],
                             this.nangoConnection.id as number,
                             model,
@@ -235,7 +235,14 @@ export default class SyncRun {
                             this.syncJobId as number
                         );
 
+                        if (!success) {
+                            await this.reportFailureForResults(error?.message as string);
+
+                            return false;
+                        }
+
                         if (this.writeToDb && this.activityLogId) {
+                            const formattedResults = response as SyncDataRecord[];
                             if (formattedResults.length === 0) {
                                 await this.reportResults(
                                     model,

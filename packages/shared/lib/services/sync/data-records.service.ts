@@ -15,12 +15,24 @@ export const formatDataRecords = (
     model: string,
     syncId: string,
     sync_job_id: number
-): SyncDataRecord[] => {
-    return records.map((record: DataResponse) => {
-        const data_hash = md5(JSON.stringify(record));
-        const external_id = record['id'] as string;
+): ServiceResponse<SyncDataRecord[]> => {
+    const formattedRecords: SyncDataRecord[] = [] as SyncDataRecord[];
 
-        return {
+    for (let i = 0; i < records.length; i++) {
+        const record = records[i];
+        const data_hash = md5(JSON.stringify(record));
+
+        if (!record) {
+            break;
+        }
+
+        if (!record['id'] || typeof record['id'] !== 'string') {
+            const error = new NangoError('missing_id_field');
+            return { success: false, error, response: null };
+        }
+
+        const external_id = record['id'] as string;
+        formattedRecords[i] = {
             id: uuid.v4(),
             json: record,
             external_id,
@@ -30,7 +42,8 @@ export const formatDataRecords = (
             sync_id: syncId,
             sync_job_id
         };
-    });
+    }
+    return { success: true, error: null, response: formattedRecords };
 };
 
 export async function getDataRecords(
