@@ -60,7 +60,31 @@
     "navigation": [
         {
             "group": "Getting Started",
-            "pages": ["introduction", "quickstart", "core-concepts"]
+            "pages": [
+                    "introduction",
+                    "quickstart",
+                    "core-concepts"
+                ]
+        },
+        {
+            "group": "📦 Integration Templates",
+            "pages": [
+                        "integration-templates/overview",
+                        {
+                            "group": "All Integration Templates",
+                            "pages": [
+                                "integration-templates/asana",
+                                "integration-templates/github",
+                                "integration-templates/google-workspace",
+                                "integration-templates/gmail",
+                                "integration-templates/jira",
+                                "integration-templates/linear",
+                                "integration-templates/notion",
+                                "integration-templates/slack",
+                                "integration-templates/salesforce"
+                            ]
+                        }
+                    ]
         },
         {
             "group": "Guides",

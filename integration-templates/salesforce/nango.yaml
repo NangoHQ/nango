@@ -1,0 +1,30 @@
+integrations:
+    salesforce: # scopes: offline_access,full
+        salesforce-accounts:
+            runs: every hour
+            returns:
+                - SalesforceAccount
+        salesforce-contacts:
+            runs: every hour
+            returns:
+                - SalesforceContact
+
+models:
+    SalesforceAccount:
+        id: string
+        name: string
+        website: string
+        description: string
+        no_employees: number
+        slack_channel_id: string
+        primary_support_rep: string | undefined
+        secondary_support_rep: string | undefined
+        last_modified_date: string
+
+    SalesforceContact:
+        id: string
+        first_name: string
+        last_name: string
+        email: string
+        account_id: string
+        last_modified_date: string
