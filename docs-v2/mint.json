@@ -91,10 +91,7 @@
             "pages": [{
                     "group": "Authorize APIs",
                     "pages": ["guides/oauth", "guides/api-key"]
-                }, "guides/sync", "guides/proxy", "guides/webhooks", {
-                    "group": "Sync Data - Examples",
-                    "pages": ["examples/overview", "examples/asana-tasks", "examples/slack-users"]
-                }
+                }, "guides/sync", "guides/proxy", "guides/webhooks"
             ]
         },
         {
