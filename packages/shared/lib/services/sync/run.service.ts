@@ -5,7 +5,7 @@ import { createActivityLogMessage, createActivityLogMessageAndEnd, updateSuccess
 import { addSyncConfigToJob, updateSyncJobResult, updateSyncJobStatus } from '../sync/job.service.js';
 import { getSyncConfig } from './config.service.js';
 import { checkForIntegrationFile } from '../nango-config.service.js';
-import { getLastSyncDate } from './sync.service.js';
+import { getLastSyncDate, setLastSyncDate } from './sync.service.js';
 import { formatDataRecords } from './data-records.service.js';
 import { upsert } from './data.service.js';
 import environmentService from '../environment.service.js';
@@ -198,6 +198,8 @@ export default class SyncRun {
             try {
                 result = true;
 
+                const syncStartDate = new Date();
+
                 const userDefinedResults = await integationService.runScript(
                     this.syncName,
                     this.activityLogId as number,
@@ -248,6 +250,7 @@ export default class SyncRun {
                                     { addedKeys: [], updatedKeys: [], affectedInternalIds: [], affectedExternalIds: [] },
                                     i,
                                     models.length,
+                                    syncStartDate,
                                     syncData.version
                                 );
                             }
@@ -265,7 +268,7 @@ export default class SyncRun {
                                 if (upsertResult.success) {
                                     const { summary } = upsertResult;
 
-                                    await this.reportResults(model, summary as UpsertSummary, i, models.length, syncData.version);
+                                    await this.reportResults(model, summary as UpsertSummary, i, models.length, syncStartDate, syncData.version);
                                 }
 
                                 if (!upsertResult.success) {
@@ -294,7 +297,14 @@ export default class SyncRun {
         return result;
     }
 
-    async reportResults(model: string, responseResults: UpsertSummary, index: number, numberOfModels: number, version?: string): Promise<void> {
+    async reportResults(
+        model: string,
+        responseResults: UpsertSummary,
+        index: number,
+        numberOfModels: number,
+        syncStartDate: Date,
+        version?: string
+    ): Promise<void> {
         if (!this.writeToDb || !this.activityLogId || !this.syncJobId) {
             return;
         }
@@ -302,6 +312,10 @@ export default class SyncRun {
         if (index === numberOfModels - 1) {
             await updateSyncJobStatus(this.syncJobId, SyncStatus.SUCCESS);
             await updateSuccessActivityLog(this.activityLogId, true);
+            // set the last sync date to when the sync started in case
+            // the sync is long running to make sure we wouldn't miss
+            // any changes while the sync is running
+            await setLastSyncDate(this.syncId as string, syncStartDate);
         }
 
         const updatedResults = {
@@ -339,15 +353,7 @@ export default class SyncRun {
 
         const content = `${successMessage} ${resultMessage}`;
 
-        await webhookService.sendUpdate(
-            this.nangoConnection,
-            this.syncName,
-            model,
-            { added, updated },
-            this.syncType,
-            syncResult.updated_at,
-            this.activityLogId
-        );
+        await webhookService.sendUpdate(this.nangoConnection, this.syncName, model, { added, updated }, this.syncType, syncStartDate, this.activityLogId);
 
         if (index === numberOfModels - 1) {
             await createActivityLogMessageAndEnd({

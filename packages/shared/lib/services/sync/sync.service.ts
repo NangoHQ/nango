@@ -69,6 +69,57 @@ export const getLastSyncDate = async (nangoConnectionId: number, syncName: strin
     }
 
     const result = await schema()
+        .select('last_sync_date')
+        .from<Sync>(TABLE)
+        .where({
+            id: sync.id as string,
+            deleted: false
+        });
+
+    if (!result || result.length == 0 || !result[0]) {
+        return null;
+    }
+
+    const { last_sync_date } = result[0];
+
+    return last_sync_date;
+};
+
+export const setLastSyncDate = async (id: string, date: Date): Promise<boolean> => {
+    if (!date) {
+        return false;
+    }
+
+    if (isNaN(date.getTime())) {
+        return false;
+    }
+
+    await schema()
+        .from<Sync>(TABLE)
+        .where({
+            id,
+            deleted: false
+        })
+        .update({
+            last_sync_date: date
+        });
+
+    return true;
+};
+
+/**
+ * Get Last Sync Date
+ * @desc this is the very end of the sync process so we know when the sync job
+ * is completely finished
+ */
+export const getJobLastSyncDate = async (nangoConnectionId: number, syncName: string): Promise<Date | null> => {
+    const sync = await getSyncByIdAndName(nangoConnectionId, syncName);
+
+    if (!sync) {
+        return null;
+    }
+
+    const result = await schema()
         .select('updated_at')
         .from<SyncJob>(SYNC_JOB_TABLE)
         .where({
