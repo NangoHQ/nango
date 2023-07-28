@@ -3,8 +3,6 @@ import { upsert } from '../services/sync/data.service.js';
 import { formatDataRecords } from '../services/sync/data-records.service.js';
 import { createActivityLogMessage } from '../services/activity/activity.service.js';
 import { updateSyncJobResult } from '../services/sync/job.service.js';
-import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
-import { LogActionEnum } from '../models/Activity.js';
 
 import { Nango } from '@nangohq/node';
 
@@ -313,31 +311,16 @@ export class NangoSync {
 
             return true;
         } else {
-            const content = `There was an issue with the batch send. ${responseResults?.error}`;
+            const content = `Batch send was an empty send: ${responseResults?.error}`;
 
-            if (!this.dryRun) {
-                await createActivityLogMessage({
-                    level: 'error',
-                    activity_log_id: this.activityLogId as number,
-                    content,
-                    timestamp: Date.now()
-                });
+            await createActivityLogMessage({
+                level: 'info',
+                activity_log_id: this.activityLogId as number,
+                content,
+                timestamp: Date.now()
+            });
 
-                await errorManager.report(content, {
-                    environmentId: this.environmentId as number,
-                    source: ErrorSourceEnum.CUSTOMER,
-                    operation: LogActionEnum.SYNC,
-                    metadata: {
-                        connectionId: this.connectionId,
-                        providerConfigKey: this.providerConfigKey,
-                        syncId: this.syncId,
-                        nanogConnectionId: this.nangoConnectionId,
-                        syncJobId: this.syncJobId
-                    }
-                });
-            }
-
-            throw new Error(responseResults?.error);
+            return false;
         }
     }
 
