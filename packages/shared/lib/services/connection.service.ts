@@ -16,6 +16,7 @@ import {
     createActivityLogMessageAndEnd,
     updateProvider as updateProviderActivityLog
 } from '../services/activity/activity.service.js';
+import { LogActionEnum } from '../models/Activity.js';
 import providerClient from '../clients/provider.client.js';
 import configService from '../services/config.service.js';
 import syncOrchestrator from './sync/orchestrator.service.js';
@@ -26,6 +27,7 @@ import { NangoError } from '../utils/error.js';
 import type { Connection, StoredConnection, BaseConnection, NangoConnection } from '../models/Connection.js';
 import type { ServiceResponse } from '../models/Generic.js';
 import encryptionManager from '../utils/encryption.manager.js';
+import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { AuthModes as ProviderAuthModes, OAuth2Credentials, ImportedCredentials, ApiKeyCredentials, BasicApiCredentials } from '../models/Auth.js';
 import { schema } from '../db/database.js';
 import { parseTokenExpirationDate, isTokenExpired } from '../utils/utils.js';
@@ -223,8 +225,19 @@ class ConnectionService {
     }
 
     public async getConnection(connectionId: string, providerConfigKey: string, environment_id: number): Promise<ServiceResponse<Connection>> {
+        if (!environment_id) {
+            const error = new NangoError('missing_environment');
+
+            return { success: false, error, response: null };
+        }
+
         if (!connectionId) {
             const error = new NangoError('missing_connection');
+
+            await errorManager.captureWithJustEnvironment('get_connection_failure', error.message, environment_id as number, LogActionEnum.AUTH, {
+                connectionId,
+                providerConfigKey
+            });
 
             return { success: false, error, response: null };
         }
@@ -232,11 +245,10 @@ class ConnectionService {
         if (!providerConfigKey) {
             const error = new NangoError('missing_provider_config');
 
-            return { success: false, error, response: null };
-        }
-
-        if (!environment_id) {
-            const error = new NangoError('missing_environment');
+            await errorManager.captureWithJustEnvironment('get_connection_failure', error.message, environment_id as number, LogActionEnum.AUTH, {
+                connectionId,
+                providerConfigKey
+            });
 
             return { success: false, error, response: null };
         }
@@ -252,6 +264,11 @@ class ConnectionService {
             const environmentName = await environmentService.getEnvironmentName(environment_id);
 
             const error = new NangoError('unknown_connection', { connectionId, providerConfigKey, environmentName });
+
+            await errorManager.captureWithJustEnvironment('get_connection_failure', error.message, environment_id as number, LogActionEnum.AUTH, {
+                connectionId,
+                providerConfigKey
+            });
 
             return { success: false, error, response: null };
         }
@@ -269,6 +286,12 @@ class ConnectionService {
         }
 
         await this.updateLastFetched(connection?.id as number);
+
+        const content = 'Connection fetched successfully';
+        await errorManager.captureWithJustEnvironment('get_connection_success', content, environment_id as number, LogActionEnum.AUTH, {
+            connectionId,
+            providerConfigKey
+        });
 
         return { success: true, error: null, response: connection };
     }
