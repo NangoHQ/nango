@@ -12,6 +12,12 @@ class UserService {
         return result[0];
     }
 
+    async getByAccountId(accountId: number): Promise<User | null> {
+        const result = await db.knex.withSchema(db.schema()).select('*').from<User>(`_nango_users`).where({ account_id: accountId }).first();
+
+        return result || null;
+    }
+
     async getUserByEmail(email: string): Promise<User | null> {
         const result = await db.knex.withSchema(db.schema()).select('*').from<User>(`_nango_users`).where({ email: email });
 

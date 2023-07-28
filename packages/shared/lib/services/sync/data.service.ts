@@ -16,15 +16,16 @@ export async function upsert(
     activityLogId: number
 ): Promise<UpsertResponse> {
     const responseWithoutDuplicates = await removeDuplicateKey(response, uniqueKey, activityLogId, model);
-    const addedKeys = await getAddedKeys(responseWithoutDuplicates, dbTable, uniqueKey, nangoConnectionId, model);
-    const updatedKeys = await getUpdatedKeys(responseWithoutDuplicates, dbTable, uniqueKey, nangoConnectionId, model);
 
-    if (responseWithoutDuplicates.length === 0) {
+    if (!responseWithoutDuplicates || responseWithoutDuplicates.length === 0) {
         return {
             success: false,
             error: 'There are no records to upsert because there were no records that were not duplicates to insert'
         };
     }
+
+    const addedKeys = await getAddedKeys(responseWithoutDuplicates, dbTable, uniqueKey, nangoConnectionId, model);
+    const updatedKeys = await getUpdatedKeys(responseWithoutDuplicates, dbTable, uniqueKey, nangoConnectionId, model);
 
     try {
         const results = await schema()

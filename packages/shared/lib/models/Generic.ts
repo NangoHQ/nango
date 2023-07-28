@@ -1,3 +1,5 @@
+import type { NangoError } from '../utils/error.js';
+
 export type HTTP_VERB = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
 
 export interface DBConfig {
@@ -16,3 +18,9 @@ export interface Deleted {
 }
 
 export interface TimestampsAndDeleted extends Timestamps, Deleted {}
+
+export interface ServiceResponse<T> {
+    success: boolean;
+    error: NangoError | null;
+    response: T | null;
+}

@@ -11,10 +11,9 @@ import {
     ImportedCredentials,
     TemplateOAuth2 as ProviderTemplateOAuth2,
     getEnvironmentAndAccountId,
-    Connection,
     ConnectionList,
     LogLevel,
-    LogAction,
+    LogActionEnum,
     HTTP_VERB,
     configService,
     connectionService,
@@ -23,10 +22,10 @@ import {
     errorManager,
     analytics,
     NangoError,
-    createActivityLogAndLogMessage
+    createActivityLogAndLogMessage,
+    environmentService
 } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
-import { WSErrBuilder } from '../utils/web-socket-error.js';
 
 class ConnectionController {
     /**
@@ -41,10 +40,12 @@ class ConnectionController {
             const providerConfigKey = req.query['provider_config_key'] as string;
             const instantRefresh = req.query['force_refresh'] === 'true';
 
+            const action = LogActionEnum.TOKEN;
+
             const log = {
                 level: 'info' as LogLevel,
                 success: false,
-                action: 'token' as LogAction,
+                action,
                 start: Date.now(),
                 end: Date.now(),
                 timestamp: Date.now(),
@@ -54,29 +55,13 @@ class ConnectionController {
                 environment_id: environment.id
             };
 
-            if (connectionId == null) {
-                await createActivityLogAndLogMessage(log, {
-                    level: 'error',
-                    timestamp: Date.now(),
-                    content: WSErrBuilder.MissingConnectionId().message
-                });
+            const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
 
-                errorManager.errRes(res, 'missing_connection');
+            if (!success) {
+                errorManager.errResFromNangoErr(res, error);
+
                 return;
             }
-
-            if (providerConfigKey == null) {
-                await createActivityLogAndLogMessage(log, {
-                    level: 'error',
-                    timestamp: Date.now(),
-                    content: WSErrBuilder.MissingProviderConfigKey().message
-                });
-
-                errorManager.errRes(res, 'missing_provider_config');
-                return;
-            }
-
-            const connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
 
             if (connection == null) {
                 await createActivityLogAndLogMessage(log, {
@@ -85,7 +70,9 @@ class ConnectionController {
                     content: 'Unknown connection'
                 });
 
-                errorManager.errRes(res, 'unknown_connection');
+                const error = new NangoError('unknown_connection', { connectionId, providerConfigKey, environmentName: environment.name });
+                errorManager.errResFromNangoErr(res, error);
+
                 return;
             }
 
@@ -105,14 +92,25 @@ class ConnectionController {
             const template: ProviderTemplate | undefined = configService.getTemplate(config.provider);
 
             if (connection.credentials.type === ProviderAuthModes.OAuth2) {
-                connection.credentials = await connectionService.refreshOauth2CredentialsIfNeeded(
+                const {
+                    success,
+                    error,
+                    response: credentials
+                } = await connectionService.refreshOauth2CredentialsIfNeeded(
                     connection,
                     config,
                     template as ProviderTemplateOAuth2,
                     null,
                     false,
-                    'token' as LogAction
+                    LogActionEnum.TOKEN
                 );
+
+                if (!success) {
+                    errorManager.errResFromNangoErr(res, error);
+                    return;
+                }
+
+                connection.credentials = credentials as OAuth2Credentials;
             }
 
             if (instantRefresh) {
@@ -173,6 +171,8 @@ class ConnectionController {
 
             if (configs == null) {
                 res.status(200).send({ connections: [] });
+
+                return;
             }
 
             const uniqueKeyToProvider: { [key: string]: string } = {};
@@ -207,6 +207,7 @@ class ConnectionController {
     async getConnectionCreds(req: Request, res: Response, next: NextFunction) {
         try {
             const environmentId = getEnvironmentId(res);
+            const accountId = getAccount(res);
             const connectionId = req.params['connectionId'] as string;
             const providerConfigKey = req.query['provider_config_key'] as string;
             const returnRefreshToken = req.query['refresh_token'] === 'true';
@@ -216,7 +217,7 @@ class ConnectionController {
 
             let activityLogId: number | null = null;
 
-            const action: LogAction = 'token';
+            const action = LogActionEnum.TOKEN;
             const log = {
                 level: 'debug' as LogLevel,
                 success: true,
@@ -234,7 +235,25 @@ class ConnectionController {
                 activityLogId = await createActivityLog(log);
             }
 
-            const connection = await connectionService.getConnectionCredentials(res, connectionId, providerConfigKey, activityLogId, action, instantRefresh);
+            const {
+                success,
+                error,
+                response: connection
+            } = await connectionService.getConnectionCredentials(
+                accountId,
+                environmentId,
+                connectionId,
+                providerConfigKey,
+                activityLogId,
+                action,
+                instantRefresh
+            );
+
+            if (!success) {
+                errorManager.errResFromNangoErr(res, error);
+
+                return;
+            }
 
             if (!isSync && !isDryRun) {
                 await createActivityLogMessageAndEnd({
@@ -283,6 +302,8 @@ class ConnectionController {
 
             if (configs == null) {
                 res.status(200).send({ connections: [] });
+
+                return;
             }
 
             const uniqueKeyToProvider: { [key: string]: string } = {};
@@ -316,20 +337,19 @@ class ConnectionController {
             const connectionId = req.params['connectionId'] as string;
             const providerConfigKey = req.query['provider_config_key'] as string;
 
-            if (connectionId == null) {
-                errorManager.errRes(res, 'missing_connection');
+            const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environmentId);
+
+            if (!success) {
+                errorManager.errResFromNangoErr(res, error);
+
                 return;
             }
-
-            if (providerConfigKey == null) {
-                errorManager.errRes(res, 'missing_provider_config');
-                return;
-            }
-
-            const connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, environmentId);
 
             if (connection == null) {
-                errorManager.errRes(res, 'unknown_connection');
+                const environmentName = await environmentService.getEnvironmentName(environmentId);
+                const error = new NangoError('unknown_connection', { connectionId, providerConfigKey, environmentName });
+                errorManager.errResFromNangoErr(res, error);
+
                 return;
             }
 
@@ -365,20 +385,19 @@ class ConnectionController {
             const connectionId = (req.params['connectionId'] as string) || (req.get('Connection-Id') as string);
             const providerConfigKey = (req.params['provider_config_key'] as string) || (req.get('Provider-Config-Key') as string);
 
-            if (!connectionId) {
-                errorManager.errRes(res, 'missing_connection');
+            const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environmentId);
+
+            if (!success) {
+                errorManager.errResFromNangoErr(res, error);
+
                 return;
             }
-
-            if (!providerConfigKey) {
-                errorManager.errRes(res, 'missing_provider_config');
-                return;
-            }
-
-            const connection: Connection | null = await connectionService.getConnection(connectionId, providerConfigKey, environmentId);
 
             if (!connection) {
-                errorManager.errRes(res, 'unknown_connection');
+                const environmentName = await environmentService.getEnvironmentName(environmentId);
+                const error = new NangoError('unknown_connection', { connectionId, providerConfigKey, environmentName });
+                errorManager.errResFromNangoErr(res, error);
+
                 return;
             }
 
@@ -410,7 +429,12 @@ class ConnectionController {
             const provider = await configService.getProviderName(provider_config_key);
 
             if (!provider) {
-                throw new NangoError('unknown_provider_config');
+                const environmentName = await environmentService.getEnvironmentName(environmentId);
+                const error = new NangoError('unknown_provider_config', { providerConfigKey: provider_config_key, environmentName });
+
+                errorManager.errResFromNangoErr(res, error);
+
+                return;
             }
 
             const template = await configService.getTemplate(provider as string);

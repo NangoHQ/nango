@@ -12,18 +12,19 @@ import {
     createActivityLogDatabaseErrorMessageAndEnd
 } from '../activity/activity.service.js';
 import { getSyncsByProviderConfigAndSyncName } from './sync.service.js';
-import type { LogLevel, LogAction } from '../../models/Activity.js';
+import { LogActionEnum, LogLevel } from '../../models/Activity.js';
+import type { ServiceResponse } from '../../models/Generic.js';
 import type { SyncModelSchema, SyncConfigWithProvider, IncomingSyncConfig, SyncConfig, SlimSync, SyncConfigResult } from '../../models/Sync.js';
 import type { NangoConnection } from '../../models/Connection.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
 import type { NangoConfig } from '../../integrations/index.js';
 import { NangoError } from '../../utils/error.js';
-import errorManager from '../../utils/error.manager.js';
+import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { getEnv } from '../../utils/utils.js';
 
 const TABLE = dbNamespace + 'sync_configs';
 
-export async function createSyncConfig(environment_id: number, syncs: IncomingSyncConfig[], debug = false): Promise<SyncConfigResult | null> {
+export async function createSyncConfig(environment_id: number, syncs: IncomingSyncConfig[], debug = false): Promise<ServiceResponse<SyncConfigResult | null>> {
     const insertData = [];
 
     const providers = syncs.map((sync) => sync.providerConfigKey);
@@ -35,7 +36,7 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
     const log = {
         level: 'info' as LogLevel,
         success: null,
-        action: 'sync deploy' as LogAction,
+        action: LogActionEnum.SYNC_DEPLOY,
         start: Date.now(),
         end: Date.now(),
         timestamp: Date.now(),
@@ -45,7 +46,7 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
             providerConfigKeys.length === 1 ? '' : 's'
         }`,
         environment_id: environment_id,
-        operation_name: 'sync.deploy'
+        operation_name: LogActionEnum.SYNC_DEPLOY
     };
 
     let syncsWithVersions: Omit<IncomingSyncConfig, 'fileBody'>[] = syncs.map((sync) => {
@@ -59,13 +60,17 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
     for (const sync of syncs) {
         const { syncName, providerConfigKey, fileBody, models, runs, version: optionalVersion, model_schema } = sync;
         if (!syncName || !providerConfigKey || !fileBody || !models || !runs) {
-            throw new NangoError('missing_required_fields_on_deploy');
+            const error = new NangoError('missing_required_fields_on_deploy');
+
+            return { success: false, error, response: null };
         }
 
         const config = await configService.getProviderConfig(providerConfigKey, environment_id);
 
         if (!config) {
-            throw new NangoError('unknown_provider_config', { providerConfigKey });
+            const error = new NangoError('unknown_provider_config', { providerConfigKey });
+
+            return { success: false, error, response: null };
         }
 
         const previousSyncConfig = await getSyncConfigByParams(environment_id, syncName, providerConfigKey);
@@ -85,7 +90,11 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
 
             const syncs = await getSyncsByProviderConfigAndSyncName(environment_id, providerConfigKey, syncName);
             for (const sync of syncs) {
-                await updateSyncScheduleFrequency(sync.id as string, runs, syncName, activityLogId as number);
+                const { success, error } = await updateSyncScheduleFrequency(sync.id as string, runs, syncName, activityLogId as number, environment_id);
+
+                if (!success) {
+                    return { success, error, response: null };
+                }
             }
         }
 
@@ -94,7 +103,8 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
         const env = getEnv();
         const file_location = await fileService.upload(
             fileBody,
-            `${env}/account/${accountId}/environment/${environment_id}/config/${config.id}/${syncName}-v${version}.js`
+            `${env}/account/${accountId}/environment/${environment_id}/config/${config.id}/${syncName}-v${version}.js`,
+            environment_id
         );
 
         syncsWithVersions = syncsWithVersions.map((syncWithVersion) => {
@@ -114,6 +124,7 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
                 content: `There was an error uploading the sync file ${syncName}-v${version}.js`
             });
 
+            // this is a platform error so throw this
             throw new NangoError('file_upload_error');
         }
 
@@ -157,7 +168,7 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
         }
         await updateSuccessActivityLog(activityLogId as number, true);
 
-        return { result: [], activityLogId };
+        return { success: true, error: null, response: { result: [], activityLogId } };
     }
 
     try {
@@ -176,7 +187,15 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
             content: `Successfully deployed the syncs (${JSON.stringify(syncsWithVersions, null, 2)}).`
         });
 
-        return { result, activityLogId };
+        const shortContent = `Successfully deployed the syncs (${syncsWithVersions.map((sync) => sync.syncName).join(', ')}).`;
+
+        await errorManager.captureWithJustEnvironment('sync_deploy_success', shortContent, environment_id as number, LogActionEnum.SYNC_DEPLOY, {
+            syncName: syncsWithVersions.map((sync) => sync.syncName).join(', '),
+            accountId: accountId as number,
+            providers
+        });
+
+        return { success: true, error: null, response: { result, activityLogId } };
     } catch (e) {
         await updateSuccessActivityLog(activityLogId as number, false);
 
@@ -185,6 +204,14 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
             e,
             activityLogId as number
         );
+
+        const shortContent = `Failure to deploy the syncs (${syncsWithVersions.map((sync) => sync.syncName).join(', ')}).`;
+
+        await errorManager.captureWithJustEnvironment('sync_deploy_failure', shortContent, environment_id as number, LogActionEnum.SYNC_DEPLOY, {
+            syncName: syncsWithVersions.map((sync) => sync.syncName).join(', '),
+            accountId: accountId as number,
+            providers
+        });
         throw new NangoError('error_creating_sync_config');
     }
 }
@@ -269,7 +296,10 @@ export async function getSyncConfigsBySyncNameAndConfigId(environment_id: number
             return result;
         }
     } catch (error) {
-        errorManager.report(error, {
+        await errorManager.report(error, {
+            environmentId: environment_id,
+            source: ErrorSourceEnum.PLATFORM,
+            operation: LogActionEnum.DATABASE,
             metadata: {
                 environment_id,
                 nango_config_id,
@@ -298,7 +328,10 @@ export async function getSyncConfigByParams(environment_id: number, sync_name: s
             return result;
         }
     } catch (error) {
-        errorManager.report(error, {
+        await errorManager.report(error, {
+            environmentId: environment_id,
+            source: ErrorSourceEnum.PLATFORM,
+            operation: LogActionEnum.DATABASE,
             metadata: {
                 environment_id,
                 sync_name,
@@ -319,7 +352,7 @@ export async function deleteByConfigId(nango_config_id: number): Promise<void> {
     await schema().from<SyncConfig>(TABLE).where({ nango_config_id, deleted: false }).update({ deleted: true, deleted_at: new Date() });
 }
 
-export async function deleteSyncFilesForConfig(id: number): Promise<void> {
+export async function deleteSyncFilesForConfig(id: number, environmentId: number): Promise<void> {
     try {
         const files = await schema().from<SyncConfig>(TABLE).where({ nango_config_id: id, deleted: false }).select('file_location').pluck('file_location');
 
@@ -327,7 +360,10 @@ export async function deleteSyncFilesForConfig(id: number): Promise<void> {
             await fileService.deleteFiles(files);
         }
     } catch (error) {
-        errorManager.report(error, {
+        await errorManager.report(error, {
+            environmentId,
+            source: ErrorSourceEnum.PLATFORM,
+            operation: LogActionEnum.DATABASE,
             metadata: {
                 id
             }

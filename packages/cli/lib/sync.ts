@@ -25,7 +25,17 @@ import type {
     NangoIntegrationData,
     SimplifiedNangoIntegration
 } from '@nangohq/shared';
-import { analytics, loadSimplifiedConfig, cloudHost, stagingHost, SyncType, syncRunService, nangoConfigFile, checkForIntegrationFile } from '@nangohq/shared';
+import {
+    getInterval,
+    analytics,
+    loadSimplifiedConfig,
+    cloudHost,
+    stagingHost,
+    SyncType,
+    syncRunService,
+    nangoConfigFile,
+    checkForIntegrationFile
+} from '@nangohq/shared';
 import {
     hostport,
     port,
@@ -388,6 +398,13 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
                 continue;
             }
 
+            const { success, error } = getInterval(runs, new Date());
+
+            if (!success) {
+                console.log(chalk.red(`The sync ${syncName} has an issue with the sync interval "${runs}": ${error?.message}`));
+                return;
+            }
+
             if (debug) {
                 printDebug(`Integration file found for ${syncName} at ${integrationFilePath}`);
             }
@@ -600,6 +617,9 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
     const syncRun = new syncRunService({
         writeToDb: false,
         nangoConnection,
+        syncId: 'abc',
+        activityLogId: -1,
+        syncJobId: -1,
         syncName,
         syncType: SyncType.INITIAL,
         loadLocation: './',
@@ -617,7 +637,9 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
             last_sync_date: lastSyncDate?.toISOString()
         });
 
-        console.log(JSON.stringify(results, null, 2));
+        if (results) {
+            console.log(JSON.stringify(results, null, 2));
+        }
         process.exit(0);
     } catch (e) {
         process.exit(1);

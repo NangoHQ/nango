@@ -1,3 +1,4 @@
+import type { ServiceResponse } from './Generic.js';
 import type { Template } from './Provider.js';
 import type { BaseConnection } from './Connection.js';
 
@@ -109,7 +110,7 @@ export interface OAuth1Credentials extends CredentialsCommon {
 export interface CredentialsRefresh {
     providerConfigKey: string;
     connectionId: string;
-    promise: Promise<OAuth2Credentials>;
+    promise: Promise<ServiceResponse<OAuth2Credentials>>;
 }
 
 export type RefreshTokenResponse = AuthorizationTokenResponse;

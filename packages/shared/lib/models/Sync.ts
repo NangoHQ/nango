@@ -1,4 +1,4 @@
-import type { LogAction } from './Activity.js';
+import { LogActionEnum } from './Activity.js';
 import type { Timestamps, TimestampsAndDeleted } from './Generic.js';
 
 export enum SyncStatus {
@@ -133,10 +133,10 @@ export enum SyncCommand {
 }
 
 export const CommandToActivityLog = {
-    PAUSE: 'pause sync' as LogAction,
-    UNPAUSE: 'restart sync' as LogAction,
-    RUN: 'trigger sync' as LogAction,
-    RUN_FULL: 'full sync' as LogAction
+    PAUSE: LogActionEnum.PAUSE_SYNC,
+    UNPAUSE: LogActionEnum.RESTART_SYNC,
+    RUN: LogActionEnum.TRIGGER_SYNC,
+    RUN_FULL: LogActionEnum.FULL_SYNC
 };
 
 export const SyncCommandToScheduleStatus = {

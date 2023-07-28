@@ -7,13 +7,15 @@ import {
     configService,
     createActivityLog,
     LogLevel,
-    LogAction,
+    LogActionEnum,
     syncRunService,
     updateJobActivityLogId,
     NangoConnection,
     environmentService,
     createActivityLogMessage,
-    createActivityLogAndLogMessage
+    createActivityLogAndLogMessage,
+    ErrorSourceEnum,
+    errorManager
 } from '@nangohq/shared';
 import type { ContinuousSyncArgs, InitialSyncArgs } from './models/Worker';
 
@@ -79,11 +81,11 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
             debug
         );
     } catch (err: any) {
-        const prettyError = JSON.stringify(err, ['message', 'name', 'stack'], 2);
+        const prettyError = JSON.stringify(err, ['message', 'name'], 2);
         const log = {
             level: 'info' as LogLevel,
             success: false,
-            action: 'sync' as LogAction,
+            action: LogActionEnum.SYNC,
             start: Date.now(),
             end: Date.now(),
             timestamp: Date.now(),
@@ -94,11 +96,31 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
             environment_id: environmentId,
             operation_name: syncName
         };
+        const content = `The continuous sync failed to run because of a failure to obtain the provider config for ${syncName} with the following error: ${prettyError}`;
         await createActivityLogAndLogMessage(log, {
             level: 'error',
             timestamp: Date.now(),
-            content: `The continuous sync failed to run because of a failure to obtain the provider config for ${syncName} with the following error: ${prettyError}`
+            content
         });
+
+        await errorManager.captureWithJustEnvironment('sync_failure', content, environmentId, LogActionEnum.SYNC, {
+            connectionId: nangoConnection?.connection_id as string,
+            providerConfigKey: nangoConnection?.provider_config_key as string,
+            syncName
+        });
+
+        await errorManager.report(content, {
+            environmentId,
+            source: ErrorSourceEnum.PLATFORM,
+            operation: LogActionEnum.SYNC,
+            metadata: {
+                syncType: SyncType.INCREMENTAL,
+                connectionId: nangoConnection?.connection_id as string,
+                providerConfigKey: nangoConnection?.provider_config_key as string,
+                syncName
+            }
+        });
+
         return false;
     }
 }
@@ -127,7 +149,7 @@ export async function syncProvider(
             const log = {
                 level: 'info' as LogLevel,
                 success: null,
-                action: 'sync' as LogAction,
+                action: LogActionEnum.SYNC,
                 start: Date.now(),
                 end: Date.now(),
                 timestamp: Date.now(),
@@ -169,11 +191,11 @@ export async function syncProvider(
 
         return result as boolean;
     } catch (err: any) {
-        const prettyError = JSON.stringify(err, ['message', 'name', 'stack'], 2);
+        const prettyError = JSON.stringify(err, ['message', 'name'], 2);
         const log = {
             level: 'info' as LogLevel,
             success: false,
-            action: 'sync' as LogAction,
+            action: LogActionEnum.SYNC,
             start: Date.now(),
             end: Date.now(),
             timestamp: Date.now(),
@@ -184,10 +206,30 @@ export async function syncProvider(
             environment_id: nangoConnection?.environment_id as number,
             operation_name: syncName
         };
+        const content = `The ${syncType} sync failed to run because of a failure to create the job and run the sync with the error: ${prettyError}`;
+
         await createActivityLogAndLogMessage(log, {
             level: 'error',
             timestamp: Date.now(),
-            content: `The ${syncType} sync failed to run because of a failure to create the job and run the sync with the error: ${prettyError}`
+            content
+        });
+
+        await errorManager.captureWithJustEnvironment('sync_failure', content, nangoConnection?.environment_id as number, LogActionEnum.SYNC, {
+            connectionId: nangoConnection?.connection_id as string,
+            providerConfigKey: nangoConnection?.provider_config_key as string,
+            syncName
+        });
+
+        await errorManager.report(content, {
+            environmentId: nangoConnection?.environment_id as number,
+            source: ErrorSourceEnum.PLATFORM,
+            operation: LogActionEnum.SYNC,
+            metadata: {
+                connectionId: nangoConnection?.connection_id as string,
+                providerConfigKey: nangoConnection?.provider_config_key as string,
+                syncType,
+                syncName
+            }
         });
 
         return false;

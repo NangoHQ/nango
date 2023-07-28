@@ -1,7 +1,37 @@
 import type { HTTP_VERB } from './Generic.js';
 
 export type LogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
-export type LogAction = 'auth' | 'proxy' | 'token' | 'sync' | 'sync deploy' | 'pause sync' | 'restart sync' | 'trigger sync' | 'full sync';
+export type LogAction =
+    | 'database'
+    | 'internal authorization'
+    | 'file'
+    | 'analytics'
+    | 'auth'
+    | 'proxy'
+    | 'token'
+    | 'sync'
+    | 'sync client'
+    | 'sync deploy'
+    | 'pause sync'
+    | 'restart sync'
+    | 'trigger sync'
+    | 'full sync';
+export enum LogActionEnum {
+    ANALYTICS = 'analytics',
+    INTERNAL_AUTHORIZATION = 'internal authorization',
+    FILE = 'file',
+    DATABASE = 'database',
+    AUTH = 'auth',
+    PROXY = 'proxy',
+    TOKEN = 'token',
+    SYNC = 'sync',
+    SYNC_CLIENT = 'sync client',
+    SYNC_DEPLOY = 'sync deploy',
+    PAUSE_SYNC = 'pause sync',
+    RESTART_SYNC = 'restart sync',
+    TRIGGER_SYNC = 'trigger sync',
+    FULL_SYNC = 'full sync'
+}
 interface Message {
     [index: string]: unknown | undefined | string | number | boolean | Record<string, string | boolean | number | unknown>;
 }

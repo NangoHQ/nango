@@ -5,18 +5,22 @@ import fs from 'fs-extra';
 import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { NangoIntegrationData, NangoConfig, NangoIntegration } from '../integrations/index.js';
 import { Sync, SyncStatus, SyncType, ScheduleStatus, SyncCommand, SyncWithSchedule } from '../models/Sync.js';
-import type { LogLevel, LogAction } from '../models/Activity.js';
+import { LogActionEnum, LogLevel } from '../models/Activity.js';
 import { TASK_QUEUE } from '../constants.js';
-import { createActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../services/activity/activity.service.js';
+import {
+    createActivityLog,
+    createActivityLogMessage,
+    createActivityLogMessageAndEnd,
+    updateSuccess as updateSuccessActivityLog
+} from '../services/activity/activity.service.js';
 import { createSyncJob } from '../services/sync/job.service.js';
 import { getInterval } from '../services/nango-config.service.js';
 import { getSyncConfig } from '../services/sync/config.service.js';
-import environmentService from '../services/environment.service.js';
 import { createSchedule as createSyncSchedule } from '../services/sync/schedule.service.js';
 import connectionService from '../services/connection.service.js';
 import configService from '../services/config.service.js';
 import { createSync } from '../services/sync/sync.service.js';
-import errorManager from '../utils/error.manager.js';
+import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { isProd } from '../utils/utils.js';
 
 const generateWorkflowId = (sync: Sync, syncName: string, connectionId: string) => `${TASK_QUEUE}.${syncName}.${connectionId}-${sync.id}`;
@@ -62,6 +66,8 @@ class SyncClient {
             return new SyncClient(client);
         } catch (e) {
             errorManager.report(e, {
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.SYNC_CLIENT,
                 metadata: {
                     namespace,
                     address: process.env['TEMPORAL_ADDRESS'] || 'localhost:7233'
@@ -130,7 +136,7 @@ class SyncClient {
             const log = {
                 level: 'info' as LogLevel,
                 success: null,
-                action: 'sync' as LogAction,
+                action: LogActionEnum.SYNC,
                 start: Date.now(),
                 end: Date.now(),
                 timestamp: Date.now(),
@@ -142,6 +148,35 @@ class SyncClient {
                 operation_name: syncName
             };
             const activityLogId = await createActivityLog(log);
+
+            const { success, error, response } = getInterval(syncData.runs, new Date());
+
+            if (!success || response === null) {
+                const content = `The sync was not created or started due to an error with the sync interval "${syncData.runs}": ${error?.message}`;
+                await createActivityLogMessageAndEnd({
+                    level: 'error',
+                    activity_log_id: activityLogId as number,
+                    timestamp: Date.now(),
+                    content
+                });
+
+                await errorManager.report(content, {
+                    source: ErrorSourceEnum.CUSTOMER,
+                    operation: LogActionEnum.SYNC_CLIENT,
+                    environmentId: nangoConnection.environment_id,
+                    metadata: {
+                        connectionDetails: nangoConnection,
+                        syncConfig,
+                        syncName,
+                        sync,
+                        syncData
+                    }
+                });
+
+                await updateSuccessActivityLog(activityLogId as number, false);
+
+                return;
+            }
 
             const jobId = generateWorkflowId(sync, syncName, nangoConnection?.connection_id as string);
 
@@ -174,7 +209,7 @@ class SyncClient {
                 ]
             });
 
-            const { interval, offset } = getInterval(syncData.runs, new Date());
+            const { interval, offset } = response;
             const scheduleId = generateScheduleId(sync, syncName, nangoConnection?.connection_id as string);
 
             await this.client?.schedule.create({
@@ -215,9 +250,10 @@ class SyncClient {
                 timestamp: Date.now()
             });
         } catch (e) {
-            const accountId = (await environmentService.getAccountIdFromEnvironment(nangoConnection.environment_id)) as number;
-            errorManager.report(e, {
-                accountId: accountId,
+            await errorManager.report(e, {
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.SYNC_CLIENT,
+                environmentId: nangoConnection.environment_id,
                 metadata: {
                     syncName,
                     connectionDetails: JSON.stringify(nangoConnection),
@@ -229,7 +265,7 @@ class SyncClient {
         }
     }
 
-    async deleteSyncSchedule(id: string): Promise<boolean> {
+    async deleteSyncSchedule(id: string, environmentId: number): Promise<boolean> {
         if (!this.client) {
             return false;
         }
@@ -242,7 +278,10 @@ class SyncClient {
             });
             return true;
         } catch (e) {
-            errorManager.report(e, {
+            await errorManager.report(e, {
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.SYNC,
+                environmentId,
                 metadata: {
                     id
                 }
@@ -314,13 +353,16 @@ class SyncClient {
         }
     }
 
-    async triggerSyncs(syncs: SyncWithSchedule[]) {
+    async triggerSyncs(syncs: SyncWithSchedule[], environmentId: number) {
         for (const sync of syncs) {
             try {
                 const scheduleHandle = this.client?.schedule.getHandle(sync.schedule_id);
                 await scheduleHandle?.trigger(OVERLAP_POLICY);
             } catch (e) {
-                errorManager.report(e, {
+                await errorManager.report(e, {
+                    source: ErrorSourceEnum.PLATFORM,
+                    operation: LogActionEnum.SYNC_CLIENT,
+                    environmentId,
                     metadata: {
                         syncs
                     }
@@ -329,7 +371,7 @@ class SyncClient {
         }
     }
 
-    async updateSyncSchedule(schedule_id: string, interval: string, offset: number, syncName: string, activityLogId: number) {
+    async updateSyncSchedule(schedule_id: string, interval: string, offset: number, syncName: string, activityLogId: number, environmentId: number) {
         function updateFunction(scheduleDescription: ScheduleDescription) {
             scheduleDescription.spec = {
                 intervals: [
@@ -354,7 +396,10 @@ class SyncClient {
                 timestamp: Date.now()
             });
         } catch (e) {
-            errorManager.report(e, {
+            await errorManager.report(e, {
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.SYNC_CLIENT,
+                environmentId,
                 metadata: {
                     syncName,
                     schedule_id,
