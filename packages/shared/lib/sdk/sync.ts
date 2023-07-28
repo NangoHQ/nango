@@ -249,6 +249,13 @@ export class NangoSync {
     }
 
     public async batchSend<T = any>(results: T[], model: string): Promise<boolean | null> {
+        if (!results || results.length === 0) {
+            if (this.dryRun) {
+                console.log('batchSend received an empty array. No records to send.');
+            }
+            return true;
+        }
+
         if (!this.nangoConnectionId || !this.syncId || !this.activityLogId || !this.syncJobId) {
             throw new Error('Nango Connection Id, Sync Id, Activity Log Id and Sync Job Id are all required');
         }

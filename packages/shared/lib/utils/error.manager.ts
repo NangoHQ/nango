@@ -43,6 +43,7 @@ class ErrorManager {
                     beforeSend(event: ErrorEvent, _: EventHint) {
                         return event.user?.id === 'account-78' ? null : event;
                     },
+                    environment: process.env['NODE_ENV'] as string,
                     release: 'nango@' + packageVersion
                 });
             }

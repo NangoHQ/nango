@@ -308,7 +308,7 @@ export class NangoError extends Error {
 
             case 'missing_id_field':
                 this.status = 400;
-                this.message = 'Missing id field in the model. Make sure every single element in the array has an id property.';
+                this.message = `Missing id field in the "${this.payload}" model. Make sure every single element in the array has an id property.`;
                 break;
 
             case 'sync_interval_too_short':
