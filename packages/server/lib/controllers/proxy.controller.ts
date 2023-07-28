@@ -90,7 +90,7 @@ class ProxyController {
                 });
 
                 const error = new NangoError('missing_connection_id');
-                res.status(400).send(error);
+                errorManager.errResFromNangoErr(res, error);
 
                 return;
             }
@@ -104,7 +104,7 @@ class ProxyController {
                 });
 
                 const error = new NangoError('missing_provider_config_key');
-                res.status(400).send(error);
+                errorManager.errResFromNangoErr(res, error);
 
                 return;
             }
@@ -163,7 +163,7 @@ class ProxyController {
                 });
 
                 const error = new NangoError('missing_endpoint');
-                res.status(400).send(error);
+                errorManager.errResFromNangoErr(res, error);
 
                 return;
             }
