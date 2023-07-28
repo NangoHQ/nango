@@ -27,7 +27,7 @@ import { NangoError } from '../utils/error.js';
 import type { Connection, StoredConnection, BaseConnection, NangoConnection } from '../models/Connection.js';
 import type { ServiceResponse } from '../models/Generic.js';
 import encryptionManager from '../utils/encryption.manager.js';
-import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
+import errorManager from '../utils/error.manager.js';
 import { AuthModes as ProviderAuthModes, OAuth2Credentials, ImportedCredentials, ApiKeyCredentials, BasicApiCredentials } from '../models/Auth.js';
 import { schema } from '../db/database.js';
 import { parseTokenExpirationDate, isTokenExpired } from '../utils/utils.js';
