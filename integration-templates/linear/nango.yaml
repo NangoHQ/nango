@@ -1,0 +1,58 @@
+integrations:
+    linear: # scopes: none (defaults to read)
+        linear-issues:
+            runs: every 5min
+            returns:
+                - LinearIssue
+
+        linear-projects:
+            runs: every 5min
+            returns:
+                - LinearProject
+
+        linear-teams:
+            runs: every 5min
+            returns:
+                - LinearTeam
+
+        linear-roadmaps:
+            runs: every 5min
+            returns:
+                - LinearRoadmap
+
+models:
+    LinearIssue:
+        id: string
+        assigneeId: string | null
+        creatorId: string | null
+        createdAt: date
+        description: string | null
+        dueDate: date | null
+        projectId: string | null
+        teamId: string
+        title: string
+        status: string
+
+    LinearTeam:
+        id: string
+        name: string
+        description: string | null
+        createdAt: date
+        updatedAt: date
+
+    LinearProject:
+        id: string
+        name: string
+        description: string | null
+        createdAt: date
+        updatedAt: date
+        teamId: string
+
+    LinearRoadmap:
+        id: string
+        name: string
+        description: string | null
+        createdAt: date
+        updatedAt: date
+        teamId: string
+        projectIds: string

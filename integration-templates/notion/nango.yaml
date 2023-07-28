@@ -1,0 +1,13 @@
+integrations:
+    notion:
+        notion-pages:
+            runs: every 6 hours
+            returns:
+                - NotionPage
+
+models:
+    NotionPage:
+        id: string
+        url: string
+        content: string
+        parent_page_id: string | undefined
