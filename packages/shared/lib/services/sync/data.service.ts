@@ -20,7 +20,7 @@ export async function upsert(
     if (!responseWithoutDuplicates || responseWithoutDuplicates.length === 0) {
         return {
             success: false,
-            error: 'There are no records to upsert because there were no records that were not duplicates to insert'
+            error: `There are no records to upsert because there were no records that were not duplicates to insert, but there were ${response.length} records received for the "${model}" model.`
         };
     }
 
