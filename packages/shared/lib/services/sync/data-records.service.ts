@@ -27,7 +27,7 @@ export const formatDataRecords = (
         }
 
         if (!record['id']) {
-            const error = new NangoError('missing_id_field');
+            const error = new NangoError('missing_id_field', model);
             return { success: false, error, response: null };
         }
 
