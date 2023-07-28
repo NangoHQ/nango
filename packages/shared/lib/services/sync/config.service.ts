@@ -46,7 +46,7 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
             providerConfigKeys.length === 1 ? '' : 's'
         }`,
         environment_id: environment_id,
-        operation_name: 'sync.deploy'
+        operation_name: LogActionEnum.SYNC_DEPLOY
     };
 
     let syncsWithVersions: Omit<IncomingSyncConfig, 'fileBody'>[] = syncs.map((sync) => {
@@ -187,6 +187,14 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
             content: `Successfully deployed the syncs (${JSON.stringify(syncsWithVersions, null, 2)}).`
         });
 
+        const shortContent = `Successfully deployed the syncs (${syncsWithVersions.map((sync) => sync.syncName).join(', ')}).`;
+
+        await errorManager.captureWithJustEnvironment('sync_deploy_success', shortContent, environment_id as number, LogActionEnum.SYNC_DEPLOY, {
+            syncName: syncsWithVersions.map((sync) => sync.syncName).join(', '),
+            accountId: accountId as number,
+            providers
+        });
+
         return { success: true, error: null, response: { result, activityLogId } };
     } catch (e) {
         await updateSuccessActivityLog(activityLogId as number, false);
@@ -196,6 +204,14 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
             e,
             activityLogId as number
         );
+
+        const shortContent = `Failure to deploy the syncs (${syncsWithVersions.map((sync) => sync.syncName).join(', ')}).`;
+
+        await errorManager.captureWithJustEnvironment('sync_deploy_failure', shortContent, environment_id as number, LogActionEnum.SYNC_DEPLOY, {
+            syncName: syncsWithVersions.map((sync) => sync.syncName).join(', '),
+            accountId: accountId as number,
+            providers
+        });
         throw new NangoError('error_creating_sync_config');
     }
 }

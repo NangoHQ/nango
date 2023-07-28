@@ -7,7 +7,12 @@ import type { NangoIntegrationData, NangoConfig, NangoIntegration } from '../int
 import { Sync, SyncStatus, SyncType, ScheduleStatus, SyncCommand, SyncWithSchedule } from '../models/Sync.js';
 import { LogActionEnum, LogLevel } from '../models/Activity.js';
 import { TASK_QUEUE } from '../constants.js';
-import { createActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../services/activity/activity.service.js';
+import {
+    createActivityLog,
+    createActivityLogMessage,
+    createActivityLogMessageAndEnd,
+    updateSuccess as updateSuccessActivityLog
+} from '../services/activity/activity.service.js';
 import { createSyncJob } from '../services/sync/job.service.js';
 import { getInterval } from '../services/nango-config.service.js';
 import { getSyncConfig } from '../services/sync/config.service.js';
@@ -144,6 +149,35 @@ class SyncClient {
             };
             const activityLogId = await createActivityLog(log);
 
+            const { success, error, response } = getInterval(syncData.runs, new Date());
+
+            if (!success || response === null) {
+                const content = `The sync was not created or started due to an error with the sync interval "${syncData.runs}": ${error?.message}`;
+                await createActivityLogMessageAndEnd({
+                    level: 'error',
+                    activity_log_id: activityLogId as number,
+                    timestamp: Date.now(),
+                    content
+                });
+
+                await errorManager.report(content, {
+                    source: ErrorSourceEnum.CUSTOMER,
+                    operation: LogActionEnum.SYNC_CLIENT,
+                    environmentId: nangoConnection.environment_id,
+                    metadata: {
+                        connectionDetails: nangoConnection,
+                        syncConfig,
+                        syncName,
+                        sync,
+                        syncData
+                    }
+                });
+
+                await updateSuccessActivityLog(activityLogId as number, false);
+
+                return;
+            }
+
             const jobId = generateWorkflowId(sync, syncName, nangoConnection?.connection_id as string);
 
             if (debug) {
@@ -175,7 +209,7 @@ class SyncClient {
                 ]
             });
 
-            const { interval, offset } = getInterval(syncData.runs, new Date());
+            const { interval, offset } = response;
             const scheduleId = generateScheduleId(sync, syncName, nangoConnection?.connection_id as string);
 
             await this.client?.schedule.create({

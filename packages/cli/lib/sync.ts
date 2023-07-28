@@ -25,7 +25,17 @@ import type {
     NangoIntegrationData,
     SimplifiedNangoIntegration
 } from '@nangohq/shared';
-import { analytics, loadSimplifiedConfig, cloudHost, stagingHost, SyncType, syncRunService, nangoConfigFile, checkForIntegrationFile } from '@nangohq/shared';
+import {
+    getInterval,
+    analytics,
+    loadSimplifiedConfig,
+    cloudHost,
+    stagingHost,
+    SyncType,
+    syncRunService,
+    nangoConfigFile,
+    checkForIntegrationFile
+} from '@nangohq/shared';
 import {
     hostport,
     port,
@@ -386,6 +396,13 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
             if (!integrationFileResult) {
                 console.log(chalk.red(`No integration file found for ${syncName} at ${integrationFilePath}. Skipping...`));
                 continue;
+            }
+
+            const { success, error } = getInterval(runs, new Date());
+
+            if (!success) {
+                console.log(chalk.red(`The sync ${syncName} has an issue with the sync interval "${runs}": ${error?.message}`));
+                return;
             }
 
             if (debug) {

@@ -71,11 +71,18 @@ export const updateSyncScheduleFrequency = async (
     environmentId: number
 ): Promise<ServiceResponse<boolean>> => {
     const existingSchedule = await getSchedule(sync_id);
-    const { interval: frequency, offset } = getInterval(interval, new Date());
 
     if (!existingSchedule) {
         return { success: true, error: null, response: false };
     }
+
+    const { success, error, response } = getInterval(interval, new Date());
+
+    if (!success || response === null) {
+        return { success: false, error, response: null };
+    }
+
+    const { interval: frequency, offset } = response;
 
     if (existingSchedule.frequency !== frequency) {
         await schema().update({ frequency }).from<SyncSchedule>(TABLE).where({ sync_id, deleted: false });
