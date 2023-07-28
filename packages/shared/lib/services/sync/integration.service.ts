@@ -13,6 +13,7 @@ class IntegrationService {
         nango: NangoSync,
         integrationData: NangoIntegrationData,
         environmentId: number,
+        writeToDb: boolean,
         optionalLoadLocation?: string
     ): Promise<any> {
         try {
@@ -24,7 +25,7 @@ class IntegrationService {
             if (!script) {
                 const content = `Unable to find integration file for ${syncName}`;
 
-                if (activityLogId) {
+                if (activityLogId && writeToDb) {
                     await createActivityLogMessage({
                         level: 'error',
                         activity_log_id: activityLogId,
@@ -36,7 +37,7 @@ class IntegrationService {
                 }
             }
 
-            if (!script && activityLogId) {
+            if (!script && activityLogId && writeToDb) {
                 await createActivityLogMessage({
                     level: 'error',
                     activity_log_id: activityLogId,
@@ -66,7 +67,7 @@ class IntegrationService {
                     return results;
                 } else {
                     const content = `There is no default export that is a function for ${syncName}`;
-                    if (activityLogId) {
+                    if (activityLogId && writeToDb) {
                         await createActivityLogMessage({
                             level: 'error',
                             activity_log_id: activityLogId,
@@ -91,7 +92,7 @@ class IntegrationService {
                     content = `The script failed to execute for ${syncName} with the following error: ${errorMessage}`;
                 }
 
-                if (activityLogId) {
+                if (activityLogId && writeToDb) {
                     await createActivityLogMessage({
                         level: 'error',
                         activity_log_id: activityLogId,
@@ -108,7 +109,7 @@ class IntegrationService {
             const errorMessage = JSON.stringify(err, ['message', 'name', 'stack'], 2);
             const content = `The script failed to load for ${syncName} with the following error: ${errorMessage}`;
 
-            if (activityLogId) {
+            if (activityLogId && writeToDb) {
                 await createActivityLogMessage({
                     level: 'error',
                     activity_log_id: activityLogId,

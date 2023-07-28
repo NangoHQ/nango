@@ -204,6 +204,7 @@ export default class SyncRun {
                     nango,
                     syncData,
                     this.nangoConnection.environment_id,
+                    this.writeToDb,
                     this.loadLocation
                 );
 

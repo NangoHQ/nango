@@ -617,6 +617,9 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
     const syncRun = new syncRunService({
         writeToDb: false,
         nangoConnection,
+        syncId: 'abc',
+        activityLogId: -1,
+        syncJobId: -1,
         syncName,
         syncType: SyncType.INITIAL,
         loadLocation: './',
@@ -634,7 +637,9 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
             last_sync_date: lastSyncDate?.toISOString()
         });
 
-        console.log(JSON.stringify(results, null, 2));
+        if (results) {
+            console.log(JSON.stringify(results, null, 2));
+        }
         process.exit(0);
     } catch (e) {
         process.exit(1);

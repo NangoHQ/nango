@@ -3,6 +3,8 @@ import { upsert } from '../services/sync/data.service.js';
 import { formatDataRecords } from '../services/sync/data-records.service.js';
 import { createActivityLogMessage } from '../services/activity/activity.service.js';
 import { updateSyncJobResult } from '../services/sync/job.service.js';
+import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
+import { LogActionEnum } from '../models/Activity.js';
 
 import { Nango } from '@nangohq/node';
 
@@ -247,13 +249,6 @@ export class NangoSync {
     }
 
     public async batchSend<T = any>(results: T[], model: string): Promise<boolean | null> {
-        // let this go through
-        if (this.dryRun) {
-            console.log('A batch send call would send the following data:');
-            console.log(JSON.stringify(results, null, 2));
-            return null;
-        }
-
         if (!this.nangoConnectionId || !this.syncId || !this.activityLogId || !this.syncJobId) {
             throw new Error('Nango Connection Id, Sync Id, Activity Log Id and Sync Job Id are all required');
         }
@@ -275,6 +270,12 @@ export class NangoSync {
             }
 
             throw error;
+        }
+
+        if (this.dryRun) {
+            console.log('A batch send call would send the following data:');
+            console.log(JSON.stringify(results, null, 2));
+            return null;
         }
 
         const syncConfig = await getSyncConfigByJobId(this.syncJobId as number);
@@ -312,14 +313,31 @@ export class NangoSync {
 
             return true;
         } else {
-            await createActivityLogMessage({
-                level: 'error',
-                activity_log_id: this.activityLogId as number,
-                content: `There was an issue with the batch send. ${responseResults?.error}`,
-                timestamp: Date.now()
-            });
+            const content = `There was an issue with the batch send. ${responseResults?.error}`;
 
-            return false;
+            if (!this.dryRun) {
+                await createActivityLogMessage({
+                    level: 'error',
+                    activity_log_id: this.activityLogId as number,
+                    content,
+                    timestamp: Date.now()
+                });
+
+                await errorManager.report(content, {
+                    environmentId: this.environmentId as number,
+                    source: ErrorSourceEnum.CUSTOMER,
+                    operation: LogActionEnum.SYNC,
+                    metadata: {
+                        connectionId: this.connectionId,
+                        providerConfigKey: this.providerConfigKey,
+                        syncId: this.syncId,
+                        nanogConnectionId: this.nangoConnectionId,
+                        syncJobId: this.syncJobId
+                    }
+                });
+            }
+
+            throw new Error(responseResults?.error);
         }
     }
 
