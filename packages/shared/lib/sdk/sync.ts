@@ -3,6 +3,8 @@ import { upsert } from '../services/sync/data.service.js';
 import { formatDataRecords } from '../services/sync/data-records.service.js';
 import { createActivityLogMessage } from '../services/activity/activity.service.js';
 import { updateSyncJobResult } from '../services/sync/job.service.js';
+import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
+import { LogActionEnum } from '../models/Activity.js';
 
 import { Nango } from '@nangohq/node';
 
@@ -247,6 +249,13 @@ export class NangoSync {
     }
 
     public async batchSend<T = any>(results: T[], model: string): Promise<boolean | null> {
+        if (!results || results.length === 0) {
+            if (this.dryRun) {
+                console.log('batchSend received an empty array. No records to send.');
+            }
+            return true;
+        }
+
         if (!this.nangoConnectionId || !this.syncId || !this.activityLogId || !this.syncJobId) {
             throw new Error('Nango Connection Id, Sync Id, Activity Log Id and Sync Job Id are all required');
         }
@@ -311,16 +320,31 @@ export class NangoSync {
 
             return true;
         } else {
-            const content = `Batch send was an empty send: ${responseResults?.error}`;
+            const content = `There was an issue with the batch send. ${responseResults?.error}`;
 
-            await createActivityLogMessage({
-                level: 'info',
-                activity_log_id: this.activityLogId as number,
-                content,
-                timestamp: Date.now()
-            });
+            if (!this.dryRun) {
+                await createActivityLogMessage({
+                    level: 'error',
+                    activity_log_id: this.activityLogId as number,
+                    content,
+                    timestamp: Date.now()
+                });
 
-            return false;
+                await errorManager.report(content, {
+                    environmentId: this.environmentId as number,
+                    source: ErrorSourceEnum.CUSTOMER,
+                    operation: LogActionEnum.SYNC,
+                    metadata: {
+                        connectionId: this.connectionId,
+                        providerConfigKey: this.providerConfigKey,
+                        syncId: this.syncId,
+                        nanogConnectionId: this.nangoConnectionId,
+                        syncJobId: this.syncJobId
+                    }
+                });
+            }
+
+            throw new Error(responseResults?.error);
         }
     }
 
