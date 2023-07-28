@@ -13,9 +13,10 @@ import integationService from './integration.service.js';
 import webhookService from '../webhook.service.js';
 import { NangoSync } from '../../sdk/sync.js';
 import { isCloud, getApiUrl } from '../../utils/utils.js';
-import errorManager from '../../utils/error.manager.js';
+import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import type { NangoIntegrationData, NangoConfig, NangoIntegration } from '../../integrations/index.js';
 import type { UpsertResponse, UpsertSummary } from '../../models/Data.js';
+import { LogActionEnum } from '../../models/Activity.js';
 import type { Environment } from '../../models/Environment';
 
 interface SyncRunConfig {
@@ -127,6 +128,7 @@ export default class SyncRun {
             const nango = new NangoSync({
                 host: optionalHost || getApiUrl(),
                 connectionId: String(this.nangoConnection?.connection_id),
+                environmentId: this.nangoConnection?.environment_id as number,
                 providerConfigKey: String(this.nangoConnection?.provider_config_key),
                 activityLogId: this.activityLogId as number,
                 secretKey,
@@ -196,7 +198,15 @@ export default class SyncRun {
             try {
                 result = true;
 
-                const userDefinedResults = await integationService.runScript(this.syncName, this.activityLogId as number, nango, syncData, this.loadLocation);
+                const userDefinedResults = await integationService.runScript(
+                    this.syncName,
+                    this.activityLogId as number,
+                    nango,
+                    syncData,
+                    this.nangoConnection.environment_id,
+                    this.writeToDb,
+                    this.loadLocation
+                );
 
                 if (userDefinedResults === null) {
                     await this.reportFailureForResults(
@@ -219,17 +229,21 @@ export default class SyncRun {
                             continue;
                         }
 
-                        const formattedResults = formatDataRecords(
-                            userDefinedResults[model],
-                            this.nangoConnection.id as number,
-                            model,
-                            this.syncId,
-                            this.syncJobId as number
-                        );
+                        const {
+                            success,
+                            error,
+                            response: formattedResults
+                        } = formatDataRecords(userDefinedResults[model], this.nangoConnection.id as number, model, this.syncId, this.syncJobId as number);
+
+                        if (!success || formattedResults === null) {
+                            await this.reportFailureForResults(error?.message as string);
+
+                            return false;
+                        }
 
                         if (this.writeToDb && this.activityLogId) {
                             if (formattedResults.length === 0) {
-                                this.reportResults(
+                                await this.reportResults(
                                     model,
                                     { addedKeys: [], updatedKeys: [], affectedInternalIds: [], affectedExternalIds: [] },
                                     i,
@@ -251,22 +265,10 @@ export default class SyncRun {
                                 if (upsertResult.success) {
                                     const { summary } = upsertResult;
 
-                                    this.reportResults(model, summary as UpsertSummary, i, models.length, syncData.version);
+                                    await this.reportResults(model, summary as UpsertSummary, i, models.length, syncData.version);
                                 }
 
                                 if (!upsertResult.success) {
-                                    const accountId = (await environmentService.getAccountIdFromEnvironment(this.nangoConnection.environment_id)) as number;
-                                    errorManager.report(upsertResult?.error, {
-                                        accountId: accountId,
-                                        metadata: {
-                                            syncName: this.syncName,
-                                            connectionDetails: this.nangoConnection,
-                                            syncId: this.syncId,
-                                            syncJobId: this.syncJobId,
-                                            model: model
-                                        }
-                                    });
-
                                     await this.reportFailureForResults(
                                         `There was a problem upserting the data for ${this.syncName} and the model ${model} with the error message: ${upsertResult?.error}`
                                     );
@@ -280,7 +282,7 @@ export default class SyncRun {
                 }
             } catch (e) {
                 result = false;
-                const errorMessage = JSON.stringify(e, ['message', 'name', 'stack'], 2);
+                const errorMessage = JSON.stringify(e, ['message', 'name'], 2);
                 await this.reportFailureForResults(
                     `The ${this.syncType} "${this.syncName}"${
                         syncData?.version ? ` version: ${syncData?.version}` : ''
@@ -362,6 +364,19 @@ export default class SyncRun {
                 content
             });
         }
+
+        await errorManager.captureWithJustEnvironment('sync_success', content, this.nangoConnection.environment_id as number, LogActionEnum.SYNC, {
+            model,
+            responseResults,
+            numberOfModels,
+            version,
+            syncName: this.syncName,
+            connectionDetails: this.nangoConnection,
+            syncId: this.syncId,
+            syncJobId: this.syncJobId,
+            syncType: this.syncType,
+            debug: this.debug
+        });
     }
 
     async reportFailureForResults(content: string) {
@@ -378,6 +393,29 @@ export default class SyncRun {
             activity_log_id: this.activityLogId,
             timestamp: Date.now(),
             content
+        });
+
+        await errorManager.report(content, {
+            environmentId: this.nangoConnection.environment_id as number,
+            source: ErrorSourceEnum.CUSTOMER,
+            operation: LogActionEnum.SYNC,
+            metadata: {
+                syncName: this.syncName,
+                connectionDetails: this.nangoConnection,
+                syncId: this.syncId,
+                syncJobId: this.syncJobId,
+                syncType: this.syncType,
+                debug: this.debug
+            }
+        });
+
+        await errorManager.captureWithJustEnvironment('sync_failure', content, this.nangoConnection.environment_id as number, LogActionEnum.SYNC, {
+            syncName: this.syncName,
+            connectionDetails: this.nangoConnection,
+            syncId: this.syncId,
+            syncJobId: this.syncJobId,
+            syncType: this.syncType,
+            debug: this.debug
         });
     }
 }

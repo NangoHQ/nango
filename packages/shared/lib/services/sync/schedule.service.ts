@@ -1,5 +1,6 @@
 import db, { schema, dbNamespace } from '../../db/database.js';
 import { Schedule as SyncSchedule, ScheduleStatus, SyncCommandToScheduleStatus, SyncCommand } from '../../models/Sync.js';
+import type { ServiceResponse } from '../../models/Generic.js';
 import { getInterval } from '../nango-config.service.js';
 import SyncClient from '../../clients/sync.client.js';
 import { createActivityLogDatabaseErrorMessageAndEnd } from '../activity/activity.service.js';
@@ -36,13 +37,13 @@ export const getSyncSchedules = async (sync_id: string): Promise<SyncSchedule[]>
     return [];
 };
 
-export const deleteScheduleForSync = async (sync_id: string): Promise<void> => {
+export const deleteScheduleForSync = async (sync_id: string, environmentId: number): Promise<void> => {
     const syncClient = await SyncClient.getInstance();
 
     const schedule = await getSchedule(sync_id);
 
     if (schedule && syncClient) {
-        await syncClient.deleteSyncSchedule(schedule?.schedule_id as string);
+        await syncClient.deleteSyncSchedule(schedule?.schedule_id as string, environmentId);
     }
 };
 
@@ -62,23 +63,36 @@ export const updateScheduleStatus = async (schedule_id: string, status: SyncComm
     }
 };
 
-export const updateSyncScheduleFrequency = async (sync_id: string, interval: string, syncName: string, activityLogId: number): Promise<boolean> => {
+export const updateSyncScheduleFrequency = async (
+    sync_id: string,
+    interval: string,
+    syncName: string,
+    activityLogId: number,
+    environmentId: number
+): Promise<ServiceResponse<boolean>> => {
     const existingSchedule = await getSchedule(sync_id);
-    const { interval: frequency, offset } = getInterval(interval, new Date());
 
     if (!existingSchedule) {
-        return false;
+        return { success: true, error: null, response: false };
     }
+
+    const { success, error, response } = getInterval(interval, new Date());
+
+    if (!success || response === null) {
+        return { success: false, error, response: null };
+    }
+
+    const { interval: frequency, offset } = response;
 
     if (existingSchedule.frequency !== frequency) {
         await schema().update({ frequency }).from<SyncSchedule>(TABLE).where({ sync_id, deleted: false });
         const syncClient = await SyncClient.getInstance();
-        await syncClient?.updateSyncSchedule(existingSchedule.schedule_id, frequency, offset, syncName, activityLogId);
+        await syncClient?.updateSyncSchedule(existingSchedule.schedule_id, frequency, offset, syncName, activityLogId, environmentId);
 
-        return true;
+        return { success: true, error: null, response: true };
     }
 
-    return false;
+    return { success: true, error: null, response: false };
 };
 
 export const deleteSchedulesBySyncId = async (sync_id: string): Promise<void> => {

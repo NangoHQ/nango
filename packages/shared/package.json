@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/shared",
-    "version": "0.25.9",
+    "version": "0.26.1",
     "description": "Nango's shared components.",
     "type": "module",
     "main": "dist/lib/index.js",
@@ -18,7 +18,7 @@
     "dependencies": {
         "@aws-sdk/client-s3": "^3.348.0",
         "@hapi/boom": "^10.0.1",
-        "@nangohq/node": "0.25.8",
+        "@nangohq/node": "0.26.1",
         "@sentry/node": "^7.37.2",
         "@temporalio/client": "^1.5.2",
         "@types/fs-extra": "^11.0.1",

@@ -4,7 +4,7 @@ import encryptionManager from './utils/encryption.manager.js';
 import connectionService from './services/connection.service.js';
 import providerClientManager from './clients/provider.client.js';
 import SyncClient from './clients/sync.client.js';
-import errorManager from './utils/error.manager.js';
+import errorManager, { ErrorSourceEnum } from './utils/error.manager.js';
 import accountService from './services/account.service.js';
 import environmentService from './services/environment.service.js';
 import webhookService from './services/webhook.service.js';
@@ -46,6 +46,7 @@ export {
     providerClientManager,
     SyncClient,
     errorManager,
+    ErrorSourceEnum,
     accountService,
     environmentService,
     userService,

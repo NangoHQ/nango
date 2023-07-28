@@ -1,7 +1,8 @@
 import { PutObjectCommand, GetObjectCommand, GetObjectCommandOutput, S3Client, DeleteObjectsCommand } from '@aws-sdk/client-s3';
 import { Readable } from 'stream';
 import { isCloud } from '../utils/utils.js';
-import errorManager from '../utils/error.manager.js';
+import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
+import { LogActionEnum } from '../models/Activity.js';
 
 const client = new S3Client({
     region: process.env['AWS_REGION'] as string,
@@ -14,7 +15,7 @@ const client = new S3Client({
 class FileService {
     bucket = process.env['AWS_BUCKET_NAME'] as string;
 
-    async upload(fileContents: string, fileName: string): Promise<string | null> {
+    async upload(fileContents: string, fileName: string, environmentId: number): Promise<string | null> {
         if (!isCloud()) {
             return '_LOCAL_FILE_';
         }
@@ -30,7 +31,10 @@ class FileService {
 
             return fileName;
         } catch (e) {
-            errorManager.report(e, {
+            await errorManager.report(e, {
+                source: ErrorSourceEnum.PLATFORM,
+                environmentId,
+                operation: LogActionEnum.FILE,
                 metadata: {
                     fileName
                 }
@@ -40,7 +44,7 @@ class FileService {
         }
     }
 
-    getFile(fileName: string): Promise<string> {
+    getFile(fileName: string, environmentId: number): Promise<string> {
         return new Promise((resolve, reject) => {
             const getObjectCommand = new GetObjectCommand({
                 Bucket: this.bucket,
@@ -62,8 +66,11 @@ class FileService {
                         reject(new Error('Response body is undefined or not a Readable stream'));
                     }
                 })
-                .catch((err) => {
-                    errorManager.report(err, {
+                .catch(async (err) => {
+                    await errorManager.report(err, {
+                        source: ErrorSourceEnum.PLATFORM,
+                        environmentId,
+                        operation: LogActionEnum.FILE,
                         metadata: {
                             fileName
                         }

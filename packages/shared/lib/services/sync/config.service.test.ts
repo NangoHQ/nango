@@ -4,6 +4,7 @@ import environmentService from '../environment.service.js';
 import * as SyncConfigService from './config.service';
 import configService from '../config.service.js';
 import { mockAddEndTime, mockCreateActivityLog, mockUpdateSuccess } from '../activity/mocks.js';
+import { mockErrorManagerReport } from '../../utils/error.manager.mocks.js';
 
 describe('Sync config create', () => {
     const environment_id = 1;
@@ -45,7 +46,8 @@ describe('Sync config create', () => {
             return Promise.resolve(null);
         });
 
-        await expect(SyncConfigService.createSyncConfig(environment_id, syncs, debug)).rejects.toThrowError(
+        const { error } = await SyncConfigService.createSyncConfig(environment_id, syncs, debug);
+        await expect(error?.message).toBe(
             `There is no Provider Configuration matching this key. Please make sure this value exists in the Nango dashboard {
   "providerConfigKey": "google-wrong"
 }`
@@ -64,6 +66,8 @@ describe('Sync config create', () => {
                 model_schema: '[{ "name": "model", "fields": [{ "name": "some", "type": "value" }] }]'
             }
         ];
+
+        mockErrorManagerReport();
 
         vi.spyOn(configService, 'getProviderConfig').mockImplementation(() => {
             return Promise.resolve({

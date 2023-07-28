@@ -28,7 +28,7 @@ import type { Response, Request } from 'express';
 import Logger from './utils/logger.js';
 import { getGlobalOAuthCallbackUrl, environmentService, getPort, isCloud, isBasicAuthEnabled, errorManager, getWebsocketsPath } from '@nangohq/shared';
 import oAuthSessionService from './services/oauth-session.service.js';
-import { deleteStaleSyncs, deleteOldActivityLogs } from './jobs/index.js';
+import { deleteOldActivityLogs } from './jobs/index.js';
 import migrate from './utils/migrate.js';
 
 const { NANGO_MIGRATE_AT_START = 'true' } = process.env;
@@ -130,8 +130,8 @@ if (!isCloud()) {
 }
 
 // Error handling.
-app.use((e: any, req: Request, res: Response, __: any) => {
-    errorManager.handleGenericError(e, req, res);
+app.use(async (e: any, req: Request, res: Response, __: any) => {
+    await errorManager.handleGenericError(e, req, res);
 });
 
 // Webapp assets, static files and build.
@@ -151,7 +151,6 @@ wsServer.on('connection', (ws: WebSocket) => {
 
 // kick off any job
 deleteOldActivityLogs();
-deleteStaleSyncs();
 
 const port = getPort();
 server.listen(port, () => {

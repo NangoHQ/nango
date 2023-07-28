@@ -6,6 +6,8 @@ import ms from 'ms';
 
 import type { NangoConfig, SimplifiedNangoIntegration, NangoSyncConfig, NangoSyncModel } from '../integrations/index.js';
 import { isCloud } from '../utils/utils.js';
+import type { ServiceResponse } from '../models/Generic.js';
+import { NangoError } from '../utils/error.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -196,34 +198,40 @@ export function getOffset(interval: string, date: Date): number {
  * and then 1636 etc. The offset should be based on the interval and should never be
  * greater than the interval
  */
-export function getInterval(runs: string, date: Date): { interval: string; offset: number } {
+export function getInterval(runs: string, date: Date): ServiceResponse<{ interval: string; offset: number }> {
     if (runs === 'every half day') {
-        return { interval: '12h', offset: getOffset('12h', date) };
+        const response = { interval: '12h', offset: getOffset('12h', date) };
+        return { success: true, error: null, response };
     }
 
     if (runs === 'every half hour') {
-        return { interval: '30m', offset: getOffset('30m', date) };
+        const response = { interval: '30m', offset: getOffset('30m', date) };
+        return { success: true, error: null, response };
     }
 
     if (runs === 'every quarter hour') {
-        return { interval: '15m', offset: getOffset('15m', date) };
+        const response = { interval: '15m', offset: getOffset('15m', date) };
+        return { success: true, error: null, response };
     }
 
     if (runs === 'every hour') {
-        return { interval: '1h', offset: getOffset('1h', date) };
+        const response = { interval: '1h', offset: getOffset('1h', date) };
+        return { success: true, error: null, response };
     }
 
     if (runs === 'every day') {
-        return { interval: '1d', offset: getOffset('1d', date) };
+        const response = { interval: '1d', offset: getOffset('1d', date) };
+        return { success: true, error: null, response };
     }
 
     const interval = runs.replace('every ', '');
 
     if (ms(interval) < ms('5m')) {
-        throw new Error('interval must be greater than 5 minutes');
+        const error = new NangoError('sync_interval_too_short');
+        return { success: false, error, response: null };
     }
 
     const offset = getOffset(interval, date);
 
-    return { interval, offset };
+    return { success: true, error: null, response: { interval, offset } };
 }

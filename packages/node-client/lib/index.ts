@@ -183,7 +183,7 @@ export class Nango {
 
         const { providerConfigKey, connectionId, method, retries, headers: customHeaders, baseUrlOverride } = config;
 
-        const url = `${this.serverUrl}/proxy/${config.endpoint}`;
+        const url = `${this.serverUrl}/proxy${config.endpoint[0] === '/' ? '' : '/'}${config.endpoint}`;
 
         const customPrefixedHeaders: CustomHeaders =
             customHeaders && Object.keys(customHeaders as CustomHeaders).length > 0

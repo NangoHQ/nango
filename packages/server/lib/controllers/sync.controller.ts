@@ -23,9 +23,11 @@ import {
     getProviderConfigBySyncAndAccount,
     SyncCommand,
     CommandToActivityLog,
-    environmentService,
     errorManager,
-    analytics
+    analytics,
+    ErrorSourceEnum,
+    LogActionEnum,
+    NangoError
 } from '@nangohq/shared';
 
 class SyncController {
@@ -35,7 +37,13 @@ class SyncController {
             const environmentId = getEnvironmentId(res);
             let reconcileSuccess = true;
 
-            const syncConfigDeployResult = await createSyncConfig(environmentId, syncs, debug);
+            const { success, error, response: syncConfigDeployResult } = await createSyncConfig(environmentId, syncs, debug);
+
+            if (!success) {
+                errorManager.errResFromNangoErr(res, error);
+
+                return;
+            }
 
             if (reconcile) {
                 const success = await getAndReconcileSyncDifferences(environmentId, syncs, reconcile, syncConfigDeployResult?.activityLogId as number, debug);
@@ -46,6 +54,8 @@ class SyncController {
 
             if (!reconcileSuccess) {
                 res.status(500).send({ message: 'There was an error deploying syncs, please check the activity tab and report this issue to support' });
+
+                return;
             }
 
             analytics.trackByEnvironmentId('sync:deploy_succeeded', environmentId);
@@ -53,10 +63,13 @@ class SyncController {
             res.send(syncConfigDeployResult?.result);
         } catch (e) {
             const environmentId = getEnvironmentId(res);
-            const accountId = (await environmentService.getAccountIdFromEnvironment(environmentId)) as number;
-            errorManager.report(e, {
-                accountId
+
+            await errorManager.report(e, {
+                source: ErrorSourceEnum.PLATFORM,
+                environmentId,
+                operation: LogActionEnum.SYNC_DEPLOY
             });
+
             next(e);
         }
     }
@@ -79,14 +92,14 @@ class SyncController {
             const { model, delta, offset, limit } = req.query;
             const environmentId = getEnvironmentId(res);
 
-            if (!model) {
-                res.status(400).send({ message: 'Missing sync model' });
-            }
-
             const connectionId = req.get('Connection-Id') as string;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
 
-            const records = await syncDataService.getDataRecords(
+            const {
+                success,
+                error,
+                response: records
+            } = await syncDataService.getDataRecords(
                 connectionId,
                 providerConfigKey,
                 environmentId,
@@ -95,6 +108,12 @@ class SyncController {
                 offset as string,
                 limit as string
             );
+
+            if (!success) {
+                errorManager.errResFromNangoErr(res, error);
+
+                return;
+            }
 
             res.send(records);
         } catch (e) {
@@ -107,18 +126,23 @@ class SyncController {
             const environment = (await getUserAccountAndEnvironmentFromSession(req)).environment;
             const { connection_id, provider_config_key } = req.query;
 
-            if (!connection_id) {
-                res.status(400).send({ message: 'Missing connection id' });
-            }
+            const {
+                success,
+                error,
+                response: connection
+            } = await connectionService.getConnection(connection_id as string, provider_config_key as string, environment.id);
 
-            if (!provider_config_key) {
-                res.status(400).send({ message: 'Missing provider config key' });
-            }
+            if (!success) {
+                errorManager.errResFromNangoErr(res, error);
 
-            const connection: Connection | null = await connectionService.getConnection(connection_id as string, provider_config_key as string, environment.id);
+                return;
+            }
 
             if (!connection) {
-                res.status(404).send({ message: 'Connection not found!' });
+                const error = new NangoError('unknown_connection', { connection_id, provider_config_key, environmentName: environment.name });
+                errorManager.errResFromNangoErr(res, error);
+
+                return;
             }
 
             const syncs = await getSyncs(connection as Connection);
@@ -161,19 +185,33 @@ class SyncController {
 
             if (!connectionId) {
                 res.status(400).send({ message: 'Missing connection id' });
+
+                return;
             }
 
             if (!providerConfigKey) {
                 res.status(400).send({ message: 'Missing provider config key' });
+
+                return;
             }
 
-            const connection: Connection | null = await connectionService.getConnection(connectionId as string, providerConfigKey as string, environmentId);
+            const {
+                success,
+                error,
+                response: connection
+            } = await connectionService.getConnection(connectionId as string, providerConfigKey as string, environmentId);
+
+            if (!success) {
+                errorManager.errResFromNangoErr(res, error);
+
+                return;
+            }
 
             const syncs = await getSyncsFlat(connection as Connection);
 
             const syncClient = await SyncClient.getInstance();
 
-            await syncClient?.triggerSyncs(syncs);
+            await syncClient?.triggerSyncs(syncs, environmentId);
 
             res.sendStatus(200);
         } catch (e) {
@@ -188,6 +226,8 @@ class SyncController {
 
             if (!syncName) {
                 res.status(400).send({ message: 'Missing sync name!' });
+
+                return;
             }
 
             const providerConfigKey = await getProviderConfigBySyncAndAccount(syncName as string, environmentId as number);
