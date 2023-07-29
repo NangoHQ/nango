@@ -27,8 +27,7 @@ import {
     analytics,
     ErrorSourceEnum,
     LogActionEnum,
-    NangoError,
-    setLastSyncDate
+    NangoError
 } from '@nangohq/shared';
 
 class SyncController {
