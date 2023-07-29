@@ -71,7 +71,11 @@ export const getLastSyncDate = async (id: string): Promise<Date | null> => {
         return null;
     }
 
-    const { last_sync_date } = result[0];
+    let { last_sync_date } = result[0];
+
+    if (last_sync_date === null) {
+        last_sync_date = await getJobLastSyncDate(id);
+    }
 
     return last_sync_date;
 };
@@ -136,18 +140,12 @@ export const setLastSyncDate = async (id: string, date: Date, override = true): 
  * @desc this is the very end of the sync process so we know when the sync job
  * is completely finished
  */
-export const getJobLastSyncDate = async (nangoConnectionId: number, syncName: string): Promise<Date | null> => {
-    const sync = await getSyncByIdAndName(nangoConnectionId, syncName);
-
-    if (!sync) {
-        return null;
-    }
-
+export const getJobLastSyncDate = async (sync_id: string): Promise<Date | null> => {
     const result = await schema()
         .select('updated_at')
         .from<SyncJob>(SYNC_JOB_TABLE)
         .where({
-            sync_id: sync.id as string,
+            sync_id,
             status: SyncStatus.SUCCESS,
             deleted: false
         })
