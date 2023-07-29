@@ -5,7 +5,7 @@ import { createActivityLogMessage, createActivityLogMessageAndEnd, updateSuccess
 import { addSyncConfigToJob, updateSyncJobResult, updateSyncJobStatus } from '../sync/job.service.js';
 import { getSyncConfig } from './config.service.js';
 import { checkForIntegrationFile } from '../nango-config.service.js';
-import { getLastSyncDate, setLastSyncDate } from './sync.service.js';
+import { getLastSyncDate, setLastSyncDate, clearLastSyncDate } from './sync.service.js';
 import { formatDataRecords } from './data-records.service.js';
 import { upsert } from './data.service.js';
 import environmentService from '../environment.service.js';
@@ -157,7 +157,8 @@ export default class SyncRun {
             if (!this.writeToDb) {
                 lastSyncDate = optionalLastSyncDate;
             } else {
-                lastSyncDate = await getLastSyncDate(this.nangoConnection?.id as number, this.syncName);
+                lastSyncDate = await getLastSyncDate(this.syncId as string);
+                await clearLastSyncDate(this.syncId as string);
             }
 
             if (this.debug) {
@@ -174,7 +175,7 @@ export default class SyncRun {
                 }
             }
 
-            nango.setLastSyncDate(lastSyncDate as Date);
+            nango.setCurrentRunSyncDate(lastSyncDate as Date);
             const syncData = syncObject[this.syncName] as unknown as NangoIntegrationData;
             const { returns: models } = syncData;
 
@@ -285,6 +286,8 @@ export default class SyncRun {
                 }
             } catch (e) {
                 result = false;
+                // if it fails then restore the sync date
+                await setLastSyncDate(this.syncId as string, lastSyncDate as Date, false);
                 const errorMessage = JSON.stringify(e, ['message', 'name'], 2);
                 await this.reportFailureForResults(
                     `The ${this.syncType} "${this.syncName}"${
@@ -315,7 +318,10 @@ export default class SyncRun {
             // set the last sync date to when the sync started in case
             // the sync is long running to make sure we wouldn't miss
             // any changes while the sync is running
-            await setLastSyncDate(this.syncId as string, syncStartDate);
+            // but if the sync date was set by the user in the integration script,
+            // then don't override it
+            const override = false;
+            await setLastSyncDate(this.syncId as string, syncStartDate, override);
         }
 
         const updatedResults = {

@@ -699,7 +699,19 @@ const nangoCallsAreAwaited = (filePath: string): boolean => {
     const message = (call: string, lineNumber: number) =>
         console.log(chalk.red(`nango.${call}() calls must be awaited in "${filePath}:${lineNumber}". Not awaiting can lead to unexpected results.`));
 
-    const nangoCalls = ['batchSend', 'log', 'getFieldMapping', 'setFieldMapping', 'get', 'post', 'put', 'patch', 'delete', 'getConnection'];
+    const nangoCalls = [
+        'batchSend',
+        'log',
+        'getFieldMapping',
+        'setFieldMapping',
+        'get',
+        'post',
+        'put',
+        'patch',
+        'delete',
+        'getConnection',
+        'setSyncLastSyncDate'
+    ];
 
     // @ts-ignore
     traverse.default(ast, {

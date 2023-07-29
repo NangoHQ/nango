@@ -2,6 +2,7 @@ import { getSyncConfigByJobId } from '../services/sync/config.service.js';
 import { upsert } from '../services/sync/data.service.js';
 import { formatDataRecords } from '../services/sync/data-records.service.js';
 import { createActivityLogMessage } from '../services/activity/activity.service.js';
+import { setLastSyncDate } from '../services/sync/sync.service.js';
 import { updateSyncJobResult } from '../services/sync/job.service.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { LogActionEnum } from '../models/Activity.js';
@@ -196,8 +197,27 @@ export class NangoSync {
         }
     }
 
-    public setLastSyncDate(date: Date): void {
+    /**
+     * Set Current Run Sync Date
+     * @desc set the last sync date to be used
+     * for the current run only
+     */
+    public setCurrentRunSyncDate(date: Date): void {
         this.lastSyncDate = date;
+    }
+
+    /**
+     * Set Sync Last Sync Date
+     * @desc permanently set the last sync date for the sync
+     * to be used for the next sync run
+     */
+    public async setSyncLastSyncDate(date: Date): Promise<boolean> {
+        if (date.toString() === 'Invalid Date') {
+            throw new Error('Invalid Date');
+        }
+        const result = await setLastSyncDate(this.syncId as string, date);
+
+        return result;
     }
 
     public async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
