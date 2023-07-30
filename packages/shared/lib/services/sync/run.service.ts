@@ -125,19 +125,6 @@ export default class SyncRun {
 
             const secretKey = optionalSecretKey || (environment ? (environment?.secret_key as string) : '');
 
-            const nango = new NangoSync({
-                host: optionalHost || getApiUrl(),
-                connectionId: String(this.nangoConnection?.connection_id),
-                environmentId: this.nangoConnection?.environment_id as number,
-                providerConfigKey: String(this.nangoConnection?.provider_config_key),
-                activityLogId: this.activityLogId as number,
-                secretKey,
-                nangoConnectionId: this.nangoConnection?.id as number,
-                syncId: this.syncId,
-                syncJobId: this.syncJobId,
-                dryRun: !this.writeToDb
-            });
-
             const providerConfigKey = this.nangoConnection.provider_config_key;
             const syncObject = integrations[providerConfigKey] as unknown as { [key: string]: NangoIntegration };
 
@@ -161,6 +148,20 @@ export default class SyncRun {
                 await clearLastSyncDate(this.syncId as string);
             }
 
+            const nango = new NangoSync({
+                host: optionalHost || getApiUrl(),
+                connectionId: String(this.nangoConnection?.connection_id),
+                environmentId: this.nangoConnection?.environment_id as number,
+                providerConfigKey: String(this.nangoConnection?.provider_config_key),
+                activityLogId: this.activityLogId as number,
+                secretKey,
+                nangoConnectionId: this.nangoConnection?.id as number,
+                syncId: this.syncId,
+                syncJobId: this.syncJobId,
+                lastSyncDate: lastSyncDate as Date,
+                dryRun: !this.writeToDb
+            });
+
             if (this.debug) {
                 const content = `Last sync date is ${lastSyncDate}`;
                 if (this.writeToDb) {
@@ -175,7 +176,6 @@ export default class SyncRun {
                 }
             }
 
-            nango.setCurrentRunSyncDate(lastSyncDate as Date);
             const syncData = syncObject[this.syncName] as unknown as NangoIntegrationData;
             const { returns: models } = syncData;
 

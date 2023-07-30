@@ -195,15 +195,10 @@ export class NangoSync {
         if (config.environmentId) {
             this.environmentId = config.environmentId;
         }
-    }
 
-    /**
-     * Set Current Run Sync Date
-     * @desc set the last sync date to be used
-     * for the current run only
-     */
-    public setCurrentRunSyncDate(date: Date): void {
-        this.lastSyncDate = date;
+        if (config.lastSyncDate) {
+            this.lastSyncDate = config.lastSyncDate;
+        }
     }
 
     /**
@@ -211,7 +206,7 @@ export class NangoSync {
      * @desc permanently set the last sync date for the sync
      * to be used for the next sync run
      */
-    public async setSyncLastSyncDate(date: Date): Promise<boolean> {
+    public async setLastSyncDate(date: Date): Promise<boolean> {
         if (date.toString() === 'Invalid Date') {
             throw new Error('Invalid Date');
         }

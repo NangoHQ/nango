@@ -61,7 +61,7 @@ export const createSync = async (nangoConnectionId: number, name: string): Promi
     return result[0];
 };
 
-export const getLastSyncDate = async (id: string): Promise<Date | null> => {
+export const getLastSyncDate = async (id: string, backup = true): Promise<Date | null> => {
     const result = await schema().select('last_sync_date').from<Sync>(TABLE).where({
         id,
         deleted: false
@@ -73,7 +73,7 @@ export const getLastSyncDate = async (id: string): Promise<Date | null> => {
 
     let { last_sync_date } = result[0];
 
-    if (last_sync_date === null) {
+    if (backup && last_sync_date === null) {
         last_sync_date = await getJobLastSyncDate(id);
     }
 
@@ -115,7 +115,7 @@ export const setLastSyncDate = async (id: string, date: Date, override = true): 
     // that we should update the last sync date
     // if it isn't null
     if (!override) {
-        const lastSyncDate = await getLastSyncDate(id);
+        const lastSyncDate = await getLastSyncDate(id, false);
 
         if (lastSyncDate !== null) {
             return false;
