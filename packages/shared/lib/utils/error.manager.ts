@@ -94,7 +94,11 @@ class ErrorManager {
                 scope.setContext('metadata', config.metadata);
             }
 
-            sentry.captureException(e);
+            if (typeof e === 'string') {
+                sentry.captureException(new Error(e));
+            } else {
+                sentry.captureException(e);
+            }
         });
 
         logger.error(`Exception caught: ${JSON.stringify(e, Object.getOwnPropertyNames(e))}`);
