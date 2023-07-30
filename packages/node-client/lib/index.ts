@@ -360,7 +360,7 @@ export class Nango {
         return response.data.field_mappings as Record<string, string>;
     }
 
-    public async triggerSync({ connectionId, providerConfigKey }: { connectionId: string; providerConfigKey: string }): Promise<void> {
+    public async triggerSync(providerConfigKey: string, connectionId: string): Promise<void> {
         const url = `${this.serverUrl}/sync/trigger`;
 
         const headers = {
@@ -375,6 +375,17 @@ export class Nango {
         throw new Error(
             'This method has been deprecated, please use the REST API to create a connection. See https://docs.nango.dev/api-reference/connection/post'
         );
+    }
+
+    public async deleteConnection(providerConfigKey: string, connectionId: string): Promise<void> {
+        const url = `${this.serverUrl}/connection/${connectionId}?provider_config_key=${providerConfigKey}`;
+
+        const headers = {
+            'Content-Type': 'application/json',
+            'Accept-Encoding': 'application/json'
+        };
+
+        return axios.delete(url, { headers: this.enrichHeaders(headers) });
     }
 
     private async listConnectionDetails(connectionId?: string): Promise<AxiosResponse<{ connections: ConnectionList[] }>> {

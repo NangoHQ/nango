@@ -355,7 +355,7 @@ class ConnectionController {
 
             await connectionService.deleteConnection(connection, providerConfigKey, environmentId);
 
-            res.status(200).send();
+            res.status(204).send();
         } catch (err) {
             next(err);
         }
