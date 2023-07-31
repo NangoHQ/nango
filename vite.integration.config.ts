@@ -6,6 +6,7 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
     test: {
-        include: ['**/*.unit.{test,spec}.?(c|m)[jt]s?(x)']
+        include: ['**/*.integration.{test,spec}.?(c|m)[jt]s?(x)'],
+        globalSetup: './tests/setup.ts'
     }
 });

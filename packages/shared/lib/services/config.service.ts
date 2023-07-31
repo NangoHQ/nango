@@ -69,7 +69,7 @@ class ConfigService {
         if (!providerConfigKey) {
             throw new NangoError('missing_provider_config');
         }
-        if (!environment_id) {
+        if (environment_id === null || environment_id === undefined) {
             throw new NangoError('missing_environment_id');
         }
 

@@ -210,6 +210,11 @@ class ConfigController {
             const oauth_client_secret = req.body['oauth_client_secret'] ?? null;
             const oauth_scopes = req.body['oauth_scopes'] ?? '';
 
+            if (oauth_scopes && Array.isArray(oauth_scopes)) {
+                errorManager.errRes(res, 'invalid_oauth_scopes');
+                return;
+            }
+
             const config: ProviderConfig = {
                 unique_key: uniqueConfigKey,
                 provider: provider,
@@ -308,7 +313,7 @@ class ConfigController {
 
             await configService.deleteProviderConfig(providerConfigKey, environmentId);
 
-            res.status(200).send();
+            res.status(204).send();
         } catch (err) {
             next(err);
         }
