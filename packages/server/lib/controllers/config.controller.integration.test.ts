@@ -64,7 +64,7 @@ describe('Should verify the config controller HTTP API calls', async () => {
         expect(sendMock).toHaveBeenCalledWith({ error: err.message, type: err.type, payload: err.payload });
     });
 
-    it('Create a provider config successfully', async () => {
+    it('CREATE a provider config successfully', async () => {
         const result = await db.knex.withSchema(db.schema()).select('*').from('_nango_environments');
         const req: any = {
             body: {
@@ -221,7 +221,7 @@ describe('Should verify the config controller HTTP API calls', async () => {
         expect(config).toBe(null);
     });
 
-    it('Creates a few more provider configs and then LIST', async () => {
+    it('LIST the created provider configs', async () => {
         const result = await db.knex.withSchema(db.schema()).select('*').from('_nango_environments');
         await configService.createProviderConfig({
             unique_key: 'test1',
