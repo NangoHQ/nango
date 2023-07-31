@@ -94,6 +94,50 @@ describe('Should verify the config controller HTTP API calls', async () => {
         const config = await configService.getProviderConfig('test', 1);
         expect(config).toBeDefined();
         expect(config?.unique_key).toBe('test');
+        expect(config?.oauth_scopes).toBe('abc,def');
+    });
+
+    // edit provider config
+    it('Edit a provider config successfully', async () => {
+        const result = await db.knex.withSchema(db.schema()).select('*').from('_nango_environments');
+        const req: any = {
+            body: {
+                provider_config_key: 'test',
+                provider: 'notion',
+                oauth_client_id: 'abc',
+                oauth_client_secret: 'def',
+                oauth_scopes: 'abc,def,efg'
+            },
+            headers: {
+                Authorization: `Bearer ${result[0].secret_key}`
+            }
+        };
+
+        const res = {
+            status: (_code: number) => {
+                return {
+                    send: (data: any) => {
+                        return data;
+                    }
+                };
+            },
+            locals: {
+                nangoAccountId: 0,
+                nangoEnvironmentId: 1
+            }
+        } as unknown as Response;
+
+        const statusSpy = vi.spyOn(res, 'status');
+
+        const next = () => {
+            return;
+        };
+
+        await configController.editProviderConfig(req as unknown as Request, res, next as NextFunction);
+        expect(statusSpy).toHaveBeenCalledWith(200);
+        const config = await configService.getProviderConfig('test', 1);
+        expect(config).toBeDefined();
+        expect(config?.oauth_scopes).toBe('abc,def,efg');
     });
 
     it('Delete a provider config successfully', async () => {
@@ -171,5 +215,9 @@ describe('Should verify the config controller HTTP API calls', async () => {
                 { unique_key: 'test3', provider: 'google' }
             ]
         });
+
+        await configService.deleteProviderConfig('test1', 1);
+        await configService.deleteProviderConfig('test2', 1);
+        await configService.deleteProviderConfig('test3', 1);
     });
 });
