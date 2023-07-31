@@ -61,18 +61,91 @@ export const createSync = async (nangoConnectionId: number, name: string): Promi
     return result[0];
 };
 
-export const getLastSyncDate = async (nangoConnectionId: number, syncName: string): Promise<Date | null> => {
-    const sync = await getSyncByIdAndName(nangoConnectionId, syncName);
+export const getLastSyncDate = async (id: string, backup = true): Promise<Date | null> => {
+    const result = await schema().select('last_sync_date').from<Sync>(TABLE).where({
+        id,
+        deleted: false
+    });
 
-    if (!sync) {
+    if (!result || result.length == 0 || !result[0]) {
         return null;
     }
 
+    let { last_sync_date } = result[0];
+
+    if (backup && last_sync_date === null) {
+        last_sync_date = await getJobLastSyncDate(id);
+    }
+
+    return last_sync_date;
+};
+
+export const clearLastSyncDate = async (id: string): Promise<void> => {
+    await schema()
+        .from<Sync>(TABLE)
+        .where({
+            id,
+            deleted: false
+        })
+        .update({
+            last_sync_date: null
+        });
+};
+
+/**
+ * Set Last Sync Date
+ * @desc if passed a valid date set the sync date, however if
+ * we don't want to override the sync make sure it is null
+ * before we set it
+ *
+ * This is due to the fact that users can set the last sync date
+ * during the integration script so we don't want to override what they
+ * set in the script
+ */
+export const setLastSyncDate = async (id: string, date: Date, override = true): Promise<boolean> => {
+    if (!date) {
+        return false;
+    }
+
+    if (isNaN(date.getTime())) {
+        return false;
+    }
+
+    // if override is false that means we need to verify
+    // that we should update the last sync date
+    // if it isn't null
+    if (!override) {
+        const lastSyncDate = await getLastSyncDate(id, false);
+
+        if (lastSyncDate !== null) {
+            return false;
+        }
+    }
+
+    await schema()
+        .from<Sync>(TABLE)
+        .where({
+            id,
+            deleted: false
+        })
+        .update({
+            last_sync_date: date
+        });
+
+    return true;
+};
+
+/**
+ * Get Last Sync Date
+ * @desc this is the very end of the sync process so we know when the sync job
+ * is completely finished
+ */
+export const getJobLastSyncDate = async (sync_id: string): Promise<Date | null> => {
     const result = await schema()
         .select('updated_at')
         .from<SyncJob>(SYNC_JOB_TABLE)
         .where({
-            sync_id: sync.id as string,
+            sync_id,
             status: SyncStatus.SUCCESS,
             deleted: false
         })

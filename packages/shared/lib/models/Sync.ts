@@ -27,6 +27,7 @@ export interface Sync extends TimestampsAndDeleted {
     id?: string;
     nango_connection_id: number;
     name: string;
+    last_sync_date?: Date | null;
     futureActionTimes?: {
         seconds?: number;
         nanos?: number;
