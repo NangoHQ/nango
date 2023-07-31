@@ -1,8 +1,15 @@
-import { expect, describe, it, beforeAll, vi } from 'vitest';
+import { expect, describe, it, beforeAll, vi, afterAll } from 'vitest';
 import type { Request, Response, NextFunction } from 'express';
 import { db, NangoError, configService, Config as ProviderConfig } from '@nangohq/shared';
 import configController from './config.controller';
 
+/**
+ * LIST: ✅
+ * GET: ✅
+ * CREATE: ✅
+ * UPDATE: ✅
+ * DELETE: ✅
+ */
 describe('Should verify the config controller HTTP API calls', async () => {
     beforeAll(async () => {
         await db.knex.raw(`CREATE SCHEMA IF NOT EXISTS ${db.schema()}`);
@@ -11,7 +18,7 @@ describe('Should verify the config controller HTTP API calls', async () => {
         console.log('Database is migrated and ready');
     });
 
-    it('Create provider config handles various missing attributes', async () => {
+    it('CREATE provider config handles various missing attributes', async () => {
         const result = await db.knex.withSchema(db.schema()).select('*').from('_nango_environments');
         const req: any = {
             body: null,
@@ -30,7 +37,7 @@ describe('Should verify the config controller HTTP API calls', async () => {
                 nangoAccountId: 1,
                 nangoEnvironmentId: 0
             }
-        } as unknown as Response;
+        } as any;
 
         const statusSpy = vi.spyOn(res, 'status');
 
@@ -46,7 +53,6 @@ describe('Should verify the config controller HTTP API calls', async () => {
         sendMock.mockReset();
 
         req.body = {};
-        // @ts-ignore
         res.status = (_code: number) => {
             return {
                 send: sendMock
@@ -97,8 +103,7 @@ describe('Should verify the config controller HTTP API calls', async () => {
         expect(config?.oauth_scopes).toBe('abc,def');
     });
 
-    // edit provider config
-    it('Edit a provider config successfully', async () => {
+    it('UPDATE and then GET a provider config successfully', async () => {
         const result = await db.knex.withSchema(db.schema()).select('*').from('_nango_environments');
         const req: any = {
             body: {
@@ -113,7 +118,7 @@ describe('Should verify the config controller HTTP API calls', async () => {
             }
         };
 
-        const res = {
+        const res: any = {
             status: (_code: number) => {
                 return {
                     send: (data: any) => {
@@ -125,7 +130,7 @@ describe('Should verify the config controller HTTP API calls', async () => {
                 nangoAccountId: 0,
                 nangoEnvironmentId: 1
             }
-        } as unknown as Response;
+        };
 
         const statusSpy = vi.spyOn(res, 'status');
 
@@ -138,9 +143,53 @@ describe('Should verify the config controller HTTP API calls', async () => {
         const config = await configService.getProviderConfig('test', 1);
         expect(config).toBeDefined();
         expect(config?.oauth_scopes).toBe('abc,def,efg');
+
+        // controller should also return this integration
+        req.query = {};
+        req.params = {
+            providerConfigKey: 'test'
+        };
+        const sendMock = vi.fn();
+        const getRes = {
+            status: (code: number) => {
+                expect(code).toBe(200);
+                return {
+                    send: sendMock
+                };
+            },
+            locals: {
+                nangoAccountId: 0,
+                nangoEnvironmentId: 1
+            }
+        } as unknown as Response;
+
+        await configController.getProviderConfig(req as unknown as Request, getRes, next as NextFunction);
+        expect(sendMock).toHaveBeenCalledWith({
+            config: {
+                provider: 'notion',
+                unique_key: 'test'
+            }
+        });
+
+        sendMock.mockReset();
+
+        req.query = {
+            include_creds: 'true'
+        };
+
+        await configController.getProviderConfig(req as unknown as Request, getRes, next as NextFunction);
+        expect(sendMock).toHaveBeenCalledWith({
+            config: {
+                provider: 'notion',
+                unique_key: 'test',
+                client_id: 'abc',
+                client_secret: 'def',
+                scopes: 'abc,def,efg'
+            }
+        });
     });
 
-    it('Delete a provider config successfully', async () => {
+    it('DELETE a provider config successfully', async () => {
         const result = await db.knex.withSchema(db.schema()).select('*').from('_nango_environments');
         const req: any = {
             params: {
@@ -172,7 +221,7 @@ describe('Should verify the config controller HTTP API calls', async () => {
         expect(config).toBe(null);
     });
 
-    it('Creates a few more provider configs and they are listed', async () => {
+    it('Creates a few more provider configs and then LIST', async () => {
         const result = await db.knex.withSchema(db.schema()).select('*').from('_nango_environments');
         await configService.createProviderConfig({
             unique_key: 'test1',
@@ -215,9 +264,9 @@ describe('Should verify the config controller HTTP API calls', async () => {
                 { unique_key: 'test3', provider: 'google' }
             ]
         });
+    });
 
-        await configService.deleteProviderConfig('test1', 1);
-        await configService.deleteProviderConfig('test2', 1);
-        await configService.deleteProviderConfig('test3', 1);
+    afterAll(async () => {
+        await db.knex.raw('TRUNCATE TABLE nango._nango_configs CASCADE');
     });
 });
