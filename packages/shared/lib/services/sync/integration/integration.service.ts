@@ -1,12 +1,46 @@
 import { NodeVM } from 'vm2';
-import type { NangoIntegrationData } from '../../integrations/index.js';
-import { getIntegrationFile, getRootDir } from '../nango-config.service.js';
-import { createActivityLogMessage } from '../activity/activity.service.js';
-import type { NangoSync } from '../../sdk/sync.js';
-import fileService from '../file.service.js';
-import { isCloud } from '../../utils/utils.js';
+import ivm from 'isolated-vm';
+import type { NangoIntegrationData } from '../../../integrations/index.js';
+import { getIntegrationFile, getRootDir } from '../../nango-config.service.js';
+import { createActivityLogMessage } from '../../activity/activity.service.js';
+import type { NangoSync } from '../../../sdk/sync.js';
+import fileService from '../../file.service.js';
+import { isCloud } from '../../../utils/utils.js';
+
+import fs from 'fs';
+import path from 'path';
 
 class IntegrationService {
+    async run(scriptName: string) {
+        const isolate = new ivm.Isolate({ memoryLimit: 128 });
+        const context = await isolate.createContext();
+
+        const jail = context.global;
+        jail.setSync('global', jail.derefInto());
+
+        // Read the script's content
+        const location = path.resolve(__dirname, `./${scriptName}.js`);
+        const scriptCode = fs.readFileSync(location, 'utf8');
+
+        // Compile the script in the isolate
+        const script = await isolate.compileScript(scriptCode);
+
+        // Run the script
+        await script.run(context);
+
+        // Access the exported 'add' function
+        const myModuleRef = await context.global.get('myModule');
+        const addFunctionRef = await myModuleRef.get('add');
+
+        // Create arguments with external copy (avoids direct memory access)
+        const arg1 = new ivm.ExternalCopy(5).copyInto();
+        const arg2 = new ivm.ExternalCopy(10).copyInto();
+
+        // Run the 'add' function with given arguments
+        const result = await addFunctionRef.apply(undefined, [arg1, arg2]);
+
+        return result;
+    }
     async runScript(
         syncName: string,
         activityLogId: number | undefined,
@@ -35,16 +69,6 @@ class IntegrationService {
                 } else {
                     console.error(content);
                 }
-            }
-
-            if (!script && activityLogId && writeToDb) {
-                await createActivityLogMessage({
-                    level: 'error',
-                    activity_log_id: activityLogId,
-                    content: `Unable to find integration file for ${syncName}`,
-                    timestamp: Date.now()
-                });
-
                 return null;
             }
 

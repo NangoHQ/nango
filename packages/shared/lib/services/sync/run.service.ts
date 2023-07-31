@@ -9,7 +9,7 @@ import { getLastSyncDate, setLastSyncDate, clearLastSyncDate } from './sync.serv
 import { formatDataRecords } from './data-records.service.js';
 import { upsert } from './data.service.js';
 import environmentService from '../environment.service.js';
-import integationService from './integration.service.js';
+import integationService from './integration/integration.service.js';
 import webhookService from '../webhook.service.js';
 import { NangoSync } from '../../sdk/sync.js';
 import { isCloud, getApiUrl } from '../../utils/utils.js';

@@ -3,7 +3,7 @@ import SyncRun from './run.service.js';
 import * as ConfigService from './config.service.js';
 import environmentService from '../environment.service.js';
 import * as NangoConfigService from '../nango-config.service.js';
-import integationService from './integration.service.js';
+import integationService from './integration/integration.service.js';
 import { SyncType } from '../../models/Sync.js';
 import type { Environment } from '../../models/Environment.js';
 
