@@ -73,7 +73,7 @@ describe('Should verify the config controller HTTP API calls', async () => {
             }
         };
         const res = {
-            status: (code: number) => {
+            status: (_code: number) => {
                 return {
                     send: (data: any) => {
                         return data;
