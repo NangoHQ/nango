@@ -41,7 +41,9 @@
         "dw": "npm run dev:watch",
         "dwa": "npm run dev:watch:apps",
         "i": "npm run install:all",
-        "test": "vitest"
+        "test": "concurrently --kill-others \"npm run test:unit\" \"npm run test:integration\"",
+        "test:unit": "vitest",
+        "test:integration": "vitest --config ./vite.integration.config.ts"
     },
     "devDependencies": {
         "@tsconfig/node18-strictest-esm": "^1.0.1",
@@ -55,6 +57,7 @@
         "husky": "^8.0.3",
         "onchange": "^7.1.0",
         "prettier": "^2.7.1",
+        "testcontainers": "^9.12.0",
         "typescript": "^4.7.4",
         "vitest": "^0.33.0"
     },

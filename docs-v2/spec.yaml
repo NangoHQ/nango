@@ -191,7 +191,7 @@ paths:
                       type: string
                   description: The integration ID that you created in Nango.
             responses:
-                '200':
+                '204':
                     description: Successfully deleled an integration
                 '400':
                     description: Invalid request
@@ -410,7 +410,7 @@ paths:
                   schema:
                       type: string
             responses:
-                '200':
+                '204':
                     description: Successfully deleled an connection
                 '400':
                     description: Invalid request
