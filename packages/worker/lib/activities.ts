@@ -64,6 +64,15 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
             );
         }
 
+        if (debug && activityLogId) {
+            await createActivityLogMessage({
+                level: 'info',
+                activity_log_id: activityLogId,
+                timestamp: Date.now(),
+                content: `Job id is ${syncJobId} || ${syncJobId?.id} and workflow id is ${context.info.workflowExecution.workflowId}`
+            });
+        }
+
         const syncConfig: ProviderConfig = (await configService.getProviderConfig(
             nangoConnection?.provider_config_key as string,
             environmentId
