@@ -113,11 +113,11 @@ export async function getDataRecords(
     return { success: true, error: null, response: result };
 }
 
-export function verifyUniqueKeysAreUnique(data: DataResponse[], optionalUniqueKey?: string | number): { isUnique: boolean; nonUniqueKey?: string | number } {
+export function verifyUniqueKeysAreUnique(data: DataResponse[], optionalUniqueKey?: string | number): { isUnique: boolean; nonUniqueKeys: string[] } {
     const uniqueKey = optionalUniqueKey ?? 'id';
     const idMap: { [key: string]: boolean } = {};
     let isUnique = true;
-    let nonUniqueKey: string | number = '';
+    const nonUniqueKeys: string[] = [];
 
     for (let i = 0; i < data.length; i++) {
         const item = data[i] as DataResponse;
@@ -125,14 +125,13 @@ export function verifyUniqueKeysAreUnique(data: DataResponse[], optionalUniqueKe
 
         if (idMap[id]) {
             isUnique = false;
-            nonUniqueKey = id;
-            break;
+            nonUniqueKeys.push(id.toString());
+        } else {
+            idMap[id] = true;
         }
-
-        idMap[id] = true;
     }
 
-    return { isUnique, nonUniqueKey };
+    return { isUnique, nonUniqueKeys };
 }
 
 export async function deleteRecordsBySyncId(sync_id: string): Promise<void> {

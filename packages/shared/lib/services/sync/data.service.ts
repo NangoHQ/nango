@@ -65,21 +65,20 @@ export async function upsert(
 }
 
 export async function removeDuplicateKey(response: DataRecord[], uniqueKey: string, activityLogId: number, model: string): Promise<DataRecord[]> {
-    const { isUnique, nonUniqueKey } = verifyUniqueKeysAreUnique(response, uniqueKey);
+    const { nonUniqueKeys } = verifyUniqueKeysAreUnique(response, uniqueKey);
 
-    if (!isUnique) {
+    for (const nonUniqueKey of nonUniqueKeys) {
         await createActivityLogMessage({
             level: 'error',
             activity_log_id: activityLogId,
             content: `There was a duplicate key found: ${nonUniqueKey}. This record will not be inserted to the model ${model}.`,
             timestamp: Date.now()
         });
-
-        const uniqueResponse = response.filter((item) => item[uniqueKey] !== nonUniqueKey);
-        return uniqueResponse;
     }
 
-    return response;
+    const uniqueResponse = response.filter((item, index, self) => index === self.findIndex((t) => t[uniqueKey] === item[uniqueKey]));
+
+    return uniqueResponse;
 }
 
 /**
