@@ -40,7 +40,6 @@ export interface Job extends TimestampsAndDeleted {
     type: SyncType;
     sync_id: string;
     job_id: string;
-    activity_log_id: number | null;
     result?: SyncResultByModel;
     sync_config_id?: number;
 }
