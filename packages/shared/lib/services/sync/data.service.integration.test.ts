@@ -46,6 +46,7 @@ describe('Data service integration tests', () => {
         ];
         const sync = await createSync();
         const job = await createSyncJob();
+        // TODO make this dynamic if tests are re-run
         const { response: formattedResults } = formatDataRecords(duplicateRecords, 1, 'test', sync.id as string, 1);
         const { error, success } = await DataService.upsert(
             formattedResults as unknown as DataRecord[],
