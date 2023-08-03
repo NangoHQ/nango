@@ -47,6 +47,8 @@ export interface GetRecordsRequestConfig {
     delta?: string;
     offset?: number;
     limit?: number;
+    sortBy?: 'updatedAt' | 'createdAt' | 'id';
+    order?: 'asc' | 'desc';
 }
 
 export interface BasicApiCredentials {

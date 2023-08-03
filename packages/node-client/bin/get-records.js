@@ -6,7 +6,9 @@ nango
     .getRecords({
         providerConfigKey: args[1],
         connectionId: args[2],
-        model: args[3]
+        model: args[3],
+        sortBy: args[4],
+        order: args[5]
     })
     .then((response) => {
         console.log(response);

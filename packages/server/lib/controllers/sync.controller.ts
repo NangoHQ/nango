@@ -89,7 +89,7 @@ class SyncController {
 
     public async getRecords(req: Request, res: Response, next: NextFunction) {
         try {
-            const { model, delta, offset, limit } = req.query;
+            const { model, delta, offset, limit, sortBy, order } = req.query;
             const environmentId = getEnvironmentId(res);
 
             const connectionId = req.get('Connection-Id') as string;
@@ -106,7 +106,9 @@ class SyncController {
                 model as string,
                 delta as string,
                 offset as string,
-                limit as string
+                limit as string,
+                sortBy as string,
+                order as 'asc' | 'desc'
             );
 
             if (!success) {

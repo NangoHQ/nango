@@ -268,7 +268,21 @@ export class Nango {
         const { connectionId, providerConfigKey, model, delta, offset, limit } = config;
         validateSyncRecordConfiguration(config);
 
-        const url = `${this.serverUrl}/sync/records/?model=${model}&delta=${delta || ''}&offset=${offset || ''}&limit=${limit || ''}`;
+        const order = config?.order === 'desc' ? 'desc' : 'asc';
+
+        let sortBy = 'id';
+        switch (config.sortBy) {
+            case 'createdAt':
+                sortBy = 'createdAt';
+                break;
+            case 'updatedAt':
+                sortBy = 'updatedAt';
+                break;
+        }
+
+        const url = `${this.serverUrl}/sync/records/?model=${model}&order=${order.toLowerCase()}&delta=${delta || ''}&offset=${offset || ''}&limit=${
+            limit || ''
+        }&sortBy=${sortBy || ''}`;
         const headers: Record<string, string | number | boolean> = {
             'Connection-Id': connectionId,
             'Provider-Config-Key': providerConfigKey
