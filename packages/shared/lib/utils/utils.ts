@@ -152,7 +152,7 @@ export function getApiUrl() {
 }
 
 export function getGlobalOAuthCallbackUrl() {
-    const baseUrl = isCloud() ? getBaseUrl() : getLocalOAuthCallbackUrlBaseUrl();
+    const baseUrl = process.env['NANGO_SERVER_URL'] || getLocalOAuthCallbackUrlBaseUrl();
     return baseUrl + '/oauth/callback';
 }
 
