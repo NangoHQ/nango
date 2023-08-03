@@ -125,7 +125,9 @@ export function verifyUniqueKeysAreUnique(data: DataResponse[], optionalUniqueKe
 
         if (idMap[id]) {
             isUnique = false;
-            nonUniqueKeys.push(id.toString());
+            if (!nonUniqueKeys.includes(id.toString())) {
+                nonUniqueKeys.push(id.toString());
+            }
         } else {
             idMap[id] = true;
         }

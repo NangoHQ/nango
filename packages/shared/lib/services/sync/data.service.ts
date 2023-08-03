@@ -76,7 +76,11 @@ export async function removeDuplicateKey(response: DataRecord[], uniqueKey: stri
         });
     }
 
-    const uniqueResponse = response.filter((item, index, self) => index === self.findIndex((t) => t[uniqueKey] === item[uniqueKey]));
+    const seen = new Set();
+    const uniqueResponse = response.filter((item) => {
+        const key = item[uniqueKey];
+        return seen.has(key) ? false : seen.add(key);
+    });
 
     return uniqueResponse;
 }
