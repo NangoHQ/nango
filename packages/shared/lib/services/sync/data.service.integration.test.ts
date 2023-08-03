@@ -45,7 +45,7 @@ describe('Data service integration tests', () => {
         const sync = await createSync();
         const job = await createSyncJob();
         const { response: formattedResults } = formatDataRecords(duplicateRecords, 1, 'test', sync.id as string, 1);
-        const { success } = await DataService.upsert(
+        const { error, success } = await DataService.upsert(
             formattedResults as unknown as DataRecord[],
             '_nango_sync_data_records',
             'external_id',
@@ -54,6 +54,7 @@ describe('Data service integration tests', () => {
             job.id as number
         );
         expect(success).toBe(true);
+        expect(error).toBe(undefined);
     });
 
     afterAll(async () => {
