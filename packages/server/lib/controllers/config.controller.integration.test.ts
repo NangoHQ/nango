@@ -1,6 +1,6 @@
-import { expect, describe, it, vi, afterAll } from 'vitest';
+import { expect, describe, it, vi, afterAll, beforeAll } from 'vitest';
 import type { Request, Response, NextFunction } from 'express';
-import { db, NangoError, configService, Config as ProviderConfig } from '@nangohq/shared';
+import { db, multipleMigrations, NangoError, configService, Config as ProviderConfig } from '@nangohq/shared';
 import configController from './config.controller';
 
 /**
@@ -11,6 +11,12 @@ import configController from './config.controller';
  * DELETE: ✅
  */
 describe('Should verify the config controller HTTP API calls', async () => {
+    beforeAll(async () => {
+        await multipleMigrations();
+
+        console.log('Database is migrated and ready');
+    });
+
     it('CREATE provider config handles various missing attributes', async () => {
         const result = await db.knex.withSchema(db.schema()).select('*').from('_nango_environments');
         const req: any = {

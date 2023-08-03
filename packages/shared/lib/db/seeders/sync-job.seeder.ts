@@ -9,5 +9,5 @@ export const create = async (): Promise<Job> => {
 };
 
 export const deleteAll = async (): Promise<void> => {
-    await db.knex.withSchema(db.schema()).from(`_nango_sync_jobs`).update({ deleted: true, deleted_at: new Date() });
+    await db.knex.raw('TRUNCATE TABLE nango._nango_sync_jobs CASCADE');
 };

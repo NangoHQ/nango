@@ -1,14 +1,16 @@
 import { expect, describe, it, beforeAll, afterAll } from 'vitest';
+import { multipleMigrations } from '../../db/database.js';
 import * as DataService from './data.service.js';
 import { formatDataRecords } from './data-records.service.js';
 import { create as createConfigs, deleteAll as deleteConfigs } from '../../db/seeders/config.seeder.js';
 import { create as createConnections, deleteAll as deleteConnections } from '../../db/seeders/connection.seeder.js';
-import { create as createSync } from '../../db/seeders/sync.seeder.js';
-import { create as createSyncJob } from '../../db/seeders/sync-job.seeder.js';
+import { create as createSync, deleteAll as deleteSyncs } from '../../db/seeders/sync.seeder.js';
+import { create as createSyncJob, deleteAll as deleteSyncJobs } from '../../db/seeders/sync-job.seeder.js';
 import type { DataRecord } from '../../models/Sync.js';
 
 describe('Data service integration tests', () => {
     beforeAll(async () => {
+        await multipleMigrations();
         await createConfigs();
         await createConnections();
     });
@@ -60,5 +62,7 @@ describe('Data service integration tests', () => {
     afterAll(async () => {
         await deleteConnections();
         await deleteConfigs();
+        await deleteSyncs();
+        await deleteSyncJobs();
     });
 });
