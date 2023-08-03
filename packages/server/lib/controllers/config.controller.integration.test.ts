@@ -1,6 +1,6 @@
-import { expect, describe, it, beforeAll, vi, afterAll } from 'vitest';
+import { expect, describe, it, vi, afterAll, beforeAll } from 'vitest';
 import type { Request, Response, NextFunction } from 'express';
-import { db, NangoError, configService, Config as ProviderConfig } from '@nangohq/shared';
+import { db, multipleMigrations, NangoError, configService, Config as ProviderConfig } from '@nangohq/shared';
 import configController from './config.controller';
 
 /**
@@ -12,8 +12,7 @@ import configController from './config.controller';
  */
 describe('Should verify the config controller HTTP API calls', async () => {
     beforeAll(async () => {
-        await db.knex.raw(`CREATE SCHEMA IF NOT EXISTS ${db.schema()}`);
-        await db.migrate(String(process.env['NANGO_DB_MIGRATION_FOLDER']));
+        await multipleMigrations();
 
         console.log('Database is migrated and ready');
     });
@@ -222,6 +221,7 @@ describe('Should verify the config controller HTTP API calls', async () => {
     });
 
     it('LIST the created provider configs', async () => {
+        await db.knex.withSchema(db.schema()).from(`_nango_configs`).update({ deleted: true, deleted_at: new Date() });
         const result = await db.knex.withSchema(db.schema()).select('*').from('_nango_environments');
         await configService.createProviderConfig({
             unique_key: 'test1',
@@ -267,6 +267,6 @@ describe('Should verify the config controller HTTP API calls', async () => {
     });
 
     afterAll(async () => {
-        await db.knex.raw('TRUNCATE TABLE nango._nango_configs CASCADE');
+        await db.knex.withSchema(db.schema()).from(`_nango_configs`).update({ deleted: true, deleted_at: new Date() });
     });
 });
