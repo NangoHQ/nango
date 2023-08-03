@@ -9,7 +9,6 @@ import {
     LogLevel,
     LogActionEnum,
     syncRunService,
-    updateJobActivityLogId,
     NangoConnection,
     environmentService,
     createActivityLogMessage,
@@ -53,24 +52,21 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
     try {
         if (!nangoConnection?.environment_id) {
             environmentId = (await environmentService.getEnvironmentIdForAccountAssumingProd(nangoConnection.account_id as number)) as number;
-            syncJobId = await createSyncJob(syncId as string, SyncType.INCREMENTAL, SyncStatus.RUNNING, context.info.workflowExecution.workflowId, null);
+            syncJobId = await createSyncJob(
+                syncId as string,
+                SyncType.INCREMENTAL,
+                SyncStatus.RUNNING,
+                context.info.workflowExecution.workflowId,
+                nangoConnection
+            );
         } else {
             syncJobId = await createSyncJob(
                 syncId as string,
                 SyncType.INCREMENTAL,
                 SyncStatus.RUNNING,
                 context.info.workflowExecution.workflowId,
-                activityLogId
+                nangoConnection
             );
-        }
-
-        if (debug && activityLogId) {
-            await createActivityLogMessage({
-                level: 'info',
-                activity_log_id: activityLogId,
-                timestamp: Date.now(),
-                content: `Job id is ${syncJobId} || ${syncJobId?.id} and workflow id is ${context.info.workflowExecution.workflowId}`
-            });
         }
 
         const syncConfig: ProviderConfig = (await configService.getProviderConfig(
@@ -170,10 +166,6 @@ export async function syncProvider(
                 operation_name: syncName
             };
             activityLogId = (await createActivityLog(log)) as number;
-
-            if (syncJobId && activityLogId) {
-                await updateJobActivityLogId(syncJobId, activityLogId);
-            }
         }
 
         if (debug) {

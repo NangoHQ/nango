@@ -1,5 +1,7 @@
 import { schema, dbNamespace } from '../../db/database.js';
-import { createActivityLogDatabaseErrorMessageAndEnd } from '../activity/activity.service.js';
+import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
+import { LogActionEnum } from '../../models/Activity.js';
+import type { NangoConnection } from '../../models/Connection.js';
 import type { Job as SyncJob, SyncStatus, SyncType, SyncResultByModel } from '../../models/Sync.js';
 
 const SYNC_JOB_TABLE = dbNamespace + 'sync_jobs';
@@ -9,14 +11,13 @@ export const createSyncJob = async (
     type: SyncType,
     status: SyncStatus,
     job_id: string,
-    activity_log_id: number | null
+    nangoConnection: NangoConnection | null
 ): Promise<Pick<SyncJob, 'id'> | null> => {
     const job: SyncJob = {
         sync_id,
         type,
         status,
-        job_id,
-        activity_log_id
+        job_id
     };
 
     try {
@@ -26,21 +27,23 @@ export const createSyncJob = async (
             return syncJob[0];
         }
     } catch (e) {
-        await createActivityLogDatabaseErrorMessageAndEnd(
-            `Failed to create a sync job for sync_id: ${sync_id} and job_id: ${job_id}`,
-            e,
-            activity_log_id as number
-        );
-        return null;
+        if (nangoConnection) {
+            await errorManager.report(e, {
+                environmentId: nangoConnection.environment_id as number,
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.DATABASE,
+                metadata: {
+                    sync_id,
+                    type,
+                    status,
+                    job_id,
+                    nangoConnection: JSON.stringify(nangoConnection)
+                }
+            });
+        }
     }
 
     return null;
-};
-
-export const updateJobActivityLogId = async (id: number, activity_log_id: number): Promise<void> => {
-    return schema().from<SyncJob>(SYNC_JOB_TABLE).where({ id, deleted: false }).update({
-        activity_log_id
-    });
 };
 
 export const getLatestSyncJob = async (sync_id: string): Promise<SyncJob | null> => {
