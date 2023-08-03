@@ -614,6 +614,8 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
         lastSyncDate = new Date(suppliedLastSyncDate as string);
     }
 
+    tsc(debug);
+
     const syncRun = new syncRunService({
         writeToDb: false,
         nangoConnection,
