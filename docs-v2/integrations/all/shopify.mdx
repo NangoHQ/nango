@@ -27,8 +27,20 @@ API configuration: [`shopify`](https://nango.dev/providers.yaml)
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
+## Connection configuration in Nango
+
+Shopify requires a user specific subdomain to run OAuth.
+
+You should request this from the user and pass it to Nango in the `nango.auth()` call:
+
+```js
+nango.auth('shopify', '<CONNECTION-ID>', {params: {subdomain: '<shopify-subdomain>'}});
+```
+
+For more details see the [docs here](/guides/oauth#connection-configuration).
+
 ## API gotchas
 
--   You need to set the correct shop subdomain when you call `nango.auth()` in the frontend. Use the `subdomain` parameter as [explained here](/guides/oauth#connection-configuration).
+_None yet, add yours!_
 
 <Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/shopify.mdx)</Note>

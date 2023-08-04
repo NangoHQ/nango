@@ -33,9 +33,21 @@ Nango currently only supports OAuth for the Helpdesk apps. If you need the CRM o
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
+
+## Connection configuration in Nango
+
+Zendesk requires a user specific subdomain to run OAuth.
+
+You should request this from the user and pass it to Nango in the `nango.auth()` call:
+
+```js
+nango.auth('zendesk', '<CONNECTION-ID>', {params: {subdomain: '<zendesk-subdomain>'}});
+```
+
+For more details see the [docs here](/guides/oauth#connection-configuration).
+
 ## API gotchas
 
--   Make sure you specify the subdomain in the [Connection Configuration](/guides/oauth#connection-configuration) before starting an OAuth flow for Zendesk.
 -   Make sure to create a Zendesk OAuth app (`https://<USER-SUBDOMAIN>.zendesk.com/admin/apps-integrations/apis/zendesk-api/settings`), _not_ a Zendesk Sales CRM OAuth app. 
 -   Zendesk oAuth apps [must be made "global"](https://developer.zendesk.com/documentation/marketplace/building-a-marketplace-app/set-up-a-global-oauth-client/) to connect to multiple `<USER-SUBDOMAIN>`s.
 

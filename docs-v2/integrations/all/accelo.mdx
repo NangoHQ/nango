@@ -24,8 +24,20 @@ API configuration: [`accelo`](https://nango.dev/providers.yaml)
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
+## Connection configuration in Nango
+
+Accelo [requires a user specific subdomain](https://api.accelo.com/docs/#oauth2-0-uri) to run OAuth.
+
+You should request this from the user and pass it to Nango in the `nango.auth()` call:
+
+```js
+nango.auth('accelo', '<CONNECTION-ID>', {params: {subdomain: '<accelo-subdomain>'}});
+```
+
+For more details see the [docs here](/guides/oauth#connection-configuration).
+
 ## API gotchas
 
--   You will have to provide your deployment name as a subdomain `nango.auth('accelo', '1', {params: {subdomain: 'accelo-subdomain'}})`
+_None yet, add yours!_
 
 <Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/accelo.mdx)</Note>

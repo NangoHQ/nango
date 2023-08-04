@@ -25,6 +25,18 @@ API configuration: [`netsuite`](https://nango.dev/providers.yaml)
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
+## Connection configuration in Nango
+
+Netsuite requires a user specific account id to run OAuth.
+
+You should request this from the user and pass it to Nango in the `nango.auth()` call:
+
+```js
+nango.auth('netsuite', '<CONNECTION-ID>', {params: {accountId: '<netsuite-account-id>'}});
+```
+
+For more details see the [docs here](/guides/oauth#connection-configuration).
+
 ## API gotchas
 - There doesn't seem to be a way to create a Netsuite account without scheduling a call.
 
