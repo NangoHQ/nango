@@ -280,9 +280,9 @@ export class Nango {
                 break;
         }
 
-        const url = `${this.serverUrl}/sync/records/?model=${model}&order=${order.toLowerCase()}&delta=${delta || ''}&offset=${offset || ''}&limit=${
-            limit || ''
-        }&sortBy=${sortBy || ''}`;
+        const url = `${this.serverUrl}/sync/records/?model=${model}&order=${order}&delta=${delta || ''}&offset=${offset || ''}&limit=${limit || ''}&sortBy=${
+            sortBy || ''
+        }`;
         const headers: Record<string, string | number | boolean> = {
             'Connection-Id': connectionId,
             'Provider-Config-Key': providerConfigKey
