@@ -255,30 +255,23 @@ export class NangoSync {
         return this.nango.getConnection(this.providerConfigKey as string, this.connectionId as string);
     }
 
-    public async setMetadata(
-        metadata: Record<string, string>,
-        optionalProviderConfigKey?: string,
-        optionalConnectionId?: string
-    ): Promise<AxiosResponse<void>> {
-        return this.nango.setMetadata(metadata, optionalProviderConfigKey, optionalConnectionId);
+    public async setMetadata(metadata: Record<string, string>): Promise<AxiosResponse<void>> {
+        return this.nango.setMetadata(this.providerConfigKey as string, this.connectionId as string, metadata);
     }
 
-    public async setFieldMapping(
-        fieldMapping: Record<string, string>,
-        optionalProviderConfigKey?: string,
-        optionalConnectionId?: string
-    ): Promise<AxiosResponse<void>> {
+    public async setFieldMapping(fieldMapping: Record<string, string>): Promise<AxiosResponse<void>> {
         console.warn('setFieldMapping is deprecated. Please use setMetadata instead.');
-        return this.nango.setMetadata(fieldMapping, optionalProviderConfigKey, optionalConnectionId);
+        return this.nango.setMetadata(this.providerConfigKey as string, this.connectionId as string, fieldMapping);
     }
 
-    public async getMetadata(optionalProviderConfigKey?: string, optionalConnectionId?: string): Promise<Metadata> {
-        return this.nango.getMetadata(optionalProviderConfigKey, optionalConnectionId);
+    public async getMetadata(): Promise<Metadata> {
+        return this.nango.getMetadata(this.providerConfigKey as string, this.connectionId as string);
     }
 
-    public async getFieldMapping(optionalProviderConfigKey?: string, optionalConnectionId?: string): Promise<Metadata> {
+    public async getFieldMapping(): Promise<Metadata> {
         console.warn('getFieldMapping is deprecated. Please use getMetadata instead.');
-        return this.nango.getMetadata(optionalProviderConfigKey, optionalConnectionId);
+        const metadata = await this.nango.getMetadata(this.providerConfigKey as string, this.connectionId as string);
+        return (metadata.fieldMapping as Metadata) || {};
     }
 
     public async batchSend<T = any>(results: T[], model: string): Promise<boolean | null> {
