@@ -164,7 +164,7 @@ export default function IntegrationCreate() {
 
         let res = await deleteIntegrationAPI(providerConfigKey);
 
-        if (res?.status === 200) {
+        if (res?.status === 204) {
             toast.success('Integration deleted!', { position: toast.POSITION.BOTTOM_CENTER });
             navigate('/integrations', { replace: true });
         }
