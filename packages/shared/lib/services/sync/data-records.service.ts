@@ -87,7 +87,7 @@ export async function getDataRecords(
     let query = schema()
         .from<SyncDataRecord>(`_nango_sync_data_records`)
         .where({ nango_connection_id: Number(nangoConnection.id), model })
-        .orderBy(sort, order.toLowerCase() === 'asc' ? 'asc' : 'desc');
+        .orderBy(sort, order?.toLowerCase() === 'asc' ? 'asc' : 'desc');
 
     if (offset) {
         if (isNaN(Number(offset))) {
