@@ -268,7 +268,7 @@ export class Nango {
         const { connectionId, providerConfigKey, model, delta, offset, limit } = config;
         validateSyncRecordConfiguration(config);
 
-        const order = config?.order === 'desc' ? 'desc' : 'asc';
+        const order = config?.order === 'asc' ? 'asc' : 'desc';
 
         let sortBy = 'id';
         switch (config.sortBy) {
