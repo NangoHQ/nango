@@ -596,7 +596,7 @@ salesforce:
     token_response_metadata:
         - instance_url
     proxy:
-        base_url: ${metadata.instance_url}
+        base_url: ${connectionConfig.instance_url}
     docs: https://developer.salesforce.com/docs/api
 salesloft:
     auth_mode: OAUTH2

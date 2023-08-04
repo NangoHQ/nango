@@ -379,7 +379,7 @@ class ConnectionController {
         }
     }
 
-    async setFieldMapping(req: Request, res: Response, next: NextFunction) {
+    async setMetadata(req: Request, res: Response, next: NextFunction) {
         try {
             const environmentId = getEnvironmentId(res);
             const connectionId = (req.params['connectionId'] as string) || (req.get('Connection-Id') as string);
@@ -401,7 +401,7 @@ class ConnectionController {
                 return;
             }
 
-            await connectionService.updateFieldMappings(connection, req.body);
+            await connectionService.updateMetadata(connection, req.body);
 
             res.status(201).send();
         } catch (err) {

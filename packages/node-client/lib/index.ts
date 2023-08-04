@@ -9,6 +9,7 @@ import {
     GetRecordsRequestConfig,
     BasicApiCredentials,
     ApiKeyCredentials,
+    Metadata,
     Connection,
     ConnectionList,
     Integration,
@@ -338,23 +339,31 @@ export class Nango {
         return response.data;
     }
 
-    public async setFieldMapping(
-        fieldMapping: Record<string, string>,
+    public async setMetadata(
+        metadata: Record<string, string>,
         optionalProviderConfigKey?: string,
         optionalConnectionId?: string
     ): Promise<AxiosResponse<void>> {
         const providerConfigKey = optionalProviderConfigKey || this.providerConfigKey;
         const connectionId = optionalConnectionId || this.connectionId;
-        const url = `${this.serverUrl}/connection/${connectionId}/field-mapping?provider_config_key=${providerConfigKey}`;
+        const url = `${this.serverUrl}/connection/${connectionId}/metadata?provider_config_key=${providerConfigKey}`;
 
         const headers: Record<string, string | number | boolean> = {
             'Provider-Config-Key': providerConfigKey as string
         };
 
-        return axios.post(url, fieldMapping, { headers: this.enrichHeaders(headers) });
+        return axios.post(url, metadata, { headers: this.enrichHeaders(headers) });
     }
 
-    public async getFieldMapping(optionalProviderConfigKey?: string, optionalConnectionId?: string): Promise<Record<string, string>> {
+    public async setFieldMapping(
+        _fieldMapping: Record<string, string>,
+        _optionalProviderConfigKey?: string,
+        _optionalConnectionId?: string
+    ): Promise<AxiosResponse<void>> {
+        throw new Error('setFieldMapping is deprecated. Please use setMetadata instead.');
+    }
+
+    public async getMetadata(optionalProviderConfigKey?: string, optionalConnectionId?: string): Promise<Metadata> {
         const providerConfigKey = optionalProviderConfigKey || this.providerConfigKey;
         const connectionId = optionalConnectionId || this.connectionId;
 
@@ -371,7 +380,10 @@ export class Nango {
             'Nango-Is-Dry-Run': this.dryRun
         });
 
-        return response.data.field_mappings as Record<string, string>;
+        return response.data.metadata as Record<string, string>;
+    }
+    public async getFieldMapping(_optionalProviderConfigKey?: string, _optionalConnectionId?: string): Promise<Record<string, string>> {
+        throw new Error('getFieldMapping is deprecated. Please use getMetadata instead.');
     }
 
     public async triggerSync(providerConfigKey: string, connectionId: string): Promise<void> {
