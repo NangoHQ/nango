@@ -53,7 +53,9 @@ export async function getDataRecords(
     model: string,
     delta: string,
     offset: number | string,
-    limit: number | string
+    limit: number | string,
+    sortBy: string,
+    order: 'asc' | 'desc'
 ): Promise<ServiceResponse<Pick<SyncDataRecord, 'json'>[] | null>> {
     if (!model) {
         const error = new NangoError('missing_model');
@@ -71,9 +73,21 @@ export async function getDataRecords(
         throw new Error(`No connection found for connectionId ${connectionId} and providerConfigKey ${providerConfigKey}`);
     }
 
+    let sort = 'external_id';
+
+    switch (sortBy) {
+        case 'updatedAt':
+            sort = 'updated_at';
+            break;
+        case 'createdAt':
+            sort = 'created_at';
+            break;
+    }
+
     let query = schema()
         .from<SyncDataRecord>(`_nango_sync_data_records`)
-        .where({ nango_connection_id: Number(nangoConnection.id), model });
+        .where({ nango_connection_id: Number(nangoConnection.id), model })
+        .orderBy(sort, order.toLowerCase() === 'asc' ? 'asc' : 'desc');
 
     if (offset) {
         if (isNaN(Number(offset))) {
