@@ -339,13 +339,19 @@ export class Nango {
         return response.data;
     }
 
-    public async setMetadata(
-        metadata: Record<string, string>,
-        optionalProviderConfigKey?: string,
-        optionalConnectionId?: string
-    ): Promise<AxiosResponse<void>> {
-        const providerConfigKey = optionalProviderConfigKey || this.providerConfigKey;
-        const connectionId = optionalConnectionId || this.connectionId;
+    public async setMetadata(providerConfigKey: string, connectionId: string, metadata: Record<string, string>): Promise<AxiosResponse<void>> {
+        if (!providerConfigKey) {
+            throw new Error('Provider Config Key is required');
+        }
+
+        if (!connectionId) {
+            throw new Error('Connection Id is required');
+        }
+
+        if (!metadata) {
+            throw new Error('Metadata is required');
+        }
+
         const url = `${this.serverUrl}/connection/${connectionId}/metadata?provider_config_key=${providerConfigKey}`;
 
         const headers: Record<string, string | number | boolean> = {
@@ -363,10 +369,7 @@ export class Nango {
         throw new Error('setFieldMapping is deprecated. Please use setMetadata instead.');
     }
 
-    public async getMetadata(optionalProviderConfigKey?: string, optionalConnectionId?: string): Promise<Metadata> {
-        const providerConfigKey = optionalProviderConfigKey || this.providerConfigKey;
-        const connectionId = optionalConnectionId || this.connectionId;
-
+    public async getMetadata(providerConfigKey: string, connectionId: string): Promise<Metadata> {
         if (!providerConfigKey) {
             throw new Error('Provider Config Key is required');
         }
