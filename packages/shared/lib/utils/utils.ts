@@ -210,7 +210,7 @@ export function connectionCopyWithParsedConnectionConfig(connection: Connection)
     const parsedConfig: Record<string, string> = {};
 
     Object.keys(rawConfig).forEach(function (key, _) {
-        const newKey = key.replace('connectionConfig.params.', '');
+        const newKey = key.replace('connectionConfig.', '');
         const value = rawConfig[key];
 
         if (newKey && value) {
@@ -224,7 +224,7 @@ export function connectionCopyWithParsedConnectionConfig(connection: Connection)
 
 export function mapProxyBaseUrlInterpolationFormat(baseUrl: string | undefined): string | undefined {
     // Maps the format that is used in providers.yaml (inherited from oauth), to the format of the Connection model.
-    return baseUrl ? baseUrl.replace('connectionConfig.params', 'connection_config') : baseUrl;
+    return baseUrl ? baseUrl.replace('connectionConfig', 'connection_config') : baseUrl;
 }
 
 export function interpolateIfNeeded(str: string, replacers: Record<string, any>) {
@@ -317,12 +317,7 @@ export function isUserAuthenticated(req: Request): boolean {
     return req.isAuthenticated() && user != null && user.id != null;
 }
 
-/**
- * A helper function to extract the additional connection configuration options from the frontend Auth request.
- */
 export function getConnectionConfig(queryParams: any): Record<string, string> {
-    let arr = Object.entries(queryParams);
-    arr = arr.filter(([_, v]) => typeof v === 'string'); // Filter strings
-    arr = arr.map(([k, v]) => [`connectionConfig.params.${k}`, v]); // Format keys to 'connectionConfig.params.[key]'
+    const arr = Object.entries(queryParams).filter(([_, v]) => typeof v === 'string'); // Filter strings
     return Object.fromEntries(arr) as Record<string, string>;
 }
