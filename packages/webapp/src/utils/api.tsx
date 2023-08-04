@@ -340,7 +340,7 @@ export function useDeleteIntegrationAPI() {
                 return signout();
             }
 
-            if (res.status !== 200) {
+            if (res.status !== 204) {
                 return serverErrorToast();
             }
 
@@ -434,7 +434,7 @@ export function useDeleteConnectionAPI() {
                 return signout();
             }
 
-            if (res.status !== 200) {
+            if (res.status !== 204) {
                 return serverErrorToast();
             }
 

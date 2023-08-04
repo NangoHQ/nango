@@ -82,9 +82,9 @@ We could not retrieve and/or refresh your access token due to the following erro
     const deleteButtonClicked = async () => {
         if (!connectionId || !providerConfigKey) return;
 
-        let res = await deleteConnectionAPI(connectionId, providerConfigKey);
+        const res = await deleteConnectionAPI(connectionId, providerConfigKey);
 
-        if (res?.status === 200) {
+        if (res?.status === 204) {
             toast.success('Connection deleted!', { position: toast.POSITION.BOTTOM_CENTER });
             navigate('/connections', { replace: true });
         }
