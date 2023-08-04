@@ -5,17 +5,17 @@ export default async function fetchData(nango: NangoSync): Promise<{ SalesforceA
 
     // Use nango.getMetadata once you set it in the backend:
     // const { fieldMapping } = await nango.getMetadata();
-    const metadata = {
+    const fieldMapping = {
         slack_channel_id: 'Slack_ID__c',
         primary_support_rep: 'Primary_Support_Rep__c',
         secondary_support_rep: 'Secondary_Support_Rep__c'
     };
 
-    if (Object.keys(metadata).length === 0) {
+    if (Object.keys(fieldMapping).length === 0) {
         throw new Error('No field mapping found, aborting the sync!');
     }
 
-    const { slack_channel_id, primary_support_rep, secondary_support_rep } = metadata;
+    const { slack_channel_id, primary_support_rep, secondary_support_rep } = fieldMapping;
 
     let query = `
         SELECT
@@ -45,7 +45,7 @@ export default async function fetchData(nango: NangoSync): Promise<{ SalesforceA
     const { records, done } = response.data;
     let nextRecordsUrl = response.data.nextRecordsUrl;
 
-    const accounts = mapAccounts(records, metadata);
+    const accounts = mapAccounts(records, fieldMapping);
     await nango.batchSend<SalesforceAccount>(accounts, 'SalesforceAccount');
 
     if (!done) {
@@ -57,7 +57,7 @@ export default async function fetchData(nango: NangoSync): Promise<{ SalesforceA
 
             const { records: nextRecords, done: nextDone, nextRecordsUrl: nextNextRecordsUrl } = nextResponse.data;
 
-            const firstAccounts = mapAccounts(nextRecords, metadata);
+            const firstAccounts = mapAccounts(nextRecords, fieldMapping);
             await nango.batchSend<SalesforceAccount>(firstAccounts, 'SalesforceAccount');
 
             if (nextDone) {
@@ -71,8 +71,8 @@ export default async function fetchData(nango: NangoSync): Promise<{ SalesforceA
     return { SalesforceAccount: [] };
 }
 
-function mapAccounts(records: any[], metadata: any): SalesforceAccount[] {
-    const { slack_channel_id, primary_support_rep, secondary_support_rep } = metadata;
+function mapAccounts(records: any[], fieldMapping: any): SalesforceAccount[] {
+    const { slack_channel_id, primary_support_rep, secondary_support_rep } = fieldMapping;
 
     const accounts: SalesforceAccount[] = records.map((record: any) => {
         const account: SalesforceAccount = {
