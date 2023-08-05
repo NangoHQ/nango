@@ -49,12 +49,12 @@ class Analytics {
 
             if (isCloud() && accountId != null) {
                 const account: Account | null = await accountService.getAccountById(accountId);
-                if (account != null && account.owner_id != null) {
-                    const user: User | null = await userService.getUserById(account.owner_id);
+                if (account !== null && account.id !== undefined) {
+                    const users: User[] | null = await userService.getUsersByAccountId(account.id);
 
-                    if (user != null) {
-                        userProperties['email'] = user.email;
-                        userProperties['name'] = user.name;
+                    if (users) {
+                        userProperties['email'] = users.map((user) => user.email).join(',');
+                        userProperties['name'] = users.map((user) => user.name).join(',');
                     }
                 }
             }

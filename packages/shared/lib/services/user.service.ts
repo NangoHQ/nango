@@ -3,7 +3,7 @@ import type { User } from '../models/Admin.js';
 
 class UserService {
     async getUserById(id: number): Promise<User | null> {
-        const result = await db.knex.withSchema(db.schema()).select('*').from<User>(`_nango_users`).where({ id: id });
+        const result = await db.knex.withSchema(db.schema()).select('*').from<User>(`_nango_users`).where({ id });
 
         if (result == null || result.length == 0 || result[0] == null) {
             return null;
@@ -12,10 +12,20 @@ class UserService {
         return result[0];
     }
 
-    async getByAccountId(accountId: number): Promise<User | null> {
-        const result = await db.knex.withSchema(db.schema()).select('*').from<User>(`_nango_users`).where({ account_id: accountId }).first();
+    async getUsersByAccountId(accountId: number): Promise<User[]> {
+        const result = await db.knex.withSchema(db.schema()).select('*').from<User>(`_nango_users`).where({ account_id: accountId });
 
-        return result || null;
+        if (result == null || result.length == 0 || result[0] == null) {
+            return [];
+        }
+
+        return result;
+    }
+
+    async getByAccountId(accountId: number): Promise<User[]> {
+        const result = await db.knex.withSchema(db.schema()).select('*').from<User>(`_nango_users`).where({ account_id: accountId });
+
+        return result || [];
     }
 
     async getUserByEmail(email: string): Promise<User | null> {

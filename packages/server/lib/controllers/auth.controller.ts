@@ -11,7 +11,6 @@ import {
     configService,
     errorManager,
     ErrorSourceEnum,
-    accountService,
     environmentService,
     analytics,
     isCloud,
@@ -100,7 +99,6 @@ class AuthController {
                 throw new NangoError('user_creation_failure');
             }
 
-            await accountService.editAccount(account!.id, account!.name, user.id);
             analytics.track('server:account_created', account.id, {}, isCloud() ? { email: email } : {});
 
             if (isCloud()) {

@@ -2,7 +2,6 @@ export interface Account {
     id: number;
     name: string;
     secret_key: string;
-    owner_id: number | undefined;
     host?: string | null;
     websockets_path?: string;
 }

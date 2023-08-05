@@ -23,10 +23,6 @@ class AccountService {
             return null;
         }
     }
-
-    async editAccount(accountId: number, name: string, ownerId: number): Promise<Account | null> {
-        return db.knex.withSchema(db.schema()).from<Account>(`_nango_accounts`).where({ id: accountId }).update({ name: name, owner_id: ownerId }, ['id']);
-    }
 }
 
 export default new AccountService();
