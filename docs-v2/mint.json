@@ -302,7 +302,13 @@
         },
         {
             "group": "Connections",
-            "pages": ["api-reference/connection/list", "api-reference/connection/get", "api-reference/connection/post", "api-reference/connection/delete"]
+            "pages": [
+                "api-reference/connection/list",
+                "api-reference/connection/get",
+                "api-reference/connection/post",
+                "api-reference/connection/set-metadata",
+                "api-reference/connection/delete"
+            ]
         },
         {
             "group": "Sync",
