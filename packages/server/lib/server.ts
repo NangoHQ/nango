@@ -120,6 +120,10 @@ app.route('/api/v1/connection').get(webAuth, connectionController.listConnection
 app.route('/api/v1/connection/:connectionId').get(webAuth, connectionController.getConnectionWeb.bind(connectionController));
 app.route('/api/v1/connection/:connectionId').delete(webAuth, connectionController.deleteConnection.bind(connectionController));
 app.route('/api/v1/user').get(webAuth, userController.getUser.bind(userController));
+app.route('/api/v1/user/name').put(webAuth, userController.editName.bind(userController));
+app.route('/api/v1/user/password').put(webAuth, userController.editPassword.bind(userController));
+app.route('/api/v1/users/:userId/suspend').post(webAuth, userController.suspend.bind(userController));
+app.route('/api/v1/users/invite').post(webAuth, userController.invite.bind(userController));
 app.route('/api/v1/activity').get(webAuth, activityController.retrieve.bind(activityController));
 app.route('/api/v1/sync').get(webAuth, syncController.getSyncsByParams.bind(syncController));
 app.route('/api/v1/sync/command').post(webAuth, syncController.syncCommand.bind(syncController));

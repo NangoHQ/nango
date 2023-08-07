@@ -1,3 +1,5 @@
+import type { Timestamps } from './Generic.js';
+
 export interface Account {
     id: number;
     name: string;
@@ -6,7 +8,7 @@ export interface Account {
     websockets_path?: string;
 }
 
-export interface User {
+export interface User extends Timestamps {
     id: number;
     email: string;
     name: string;
@@ -14,4 +16,16 @@ export interface User {
     salt: string;
     account_id: number;
     reset_password_token: string | undefined;
+    suspended: boolean;
+    suspended_at: Date;
+}
+
+export interface InviteUser extends Timestamps {
+    id: number;
+    email: string;
+    name: string;
+    invited_by: number;
+    account_id: number;
+    expires_at: Date;
+    token: string;
 }

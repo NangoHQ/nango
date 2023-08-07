@@ -593,3 +593,65 @@ export function useEditAccountNameAPI() {
         }
     };
 }
+
+export function useGetUserAPI() {
+    const signout = useSignout();
+
+    return async () => {
+        try {
+            const res = await fetch('/api/v1/user', { headers: getHeaders() });
+
+            if (res.status === 401) {
+                return signout();
+            }
+
+            return res;
+        } catch (e) {
+            requestErrorToast();
+        }
+    };
+}
+
+export function useEditUserNameAPI() {
+    const signout = useSignout();
+
+    return async (name: string) => {
+        try {
+            const res = await fetch('/api/v1/user/name', {
+                method: 'PUT',
+                headers: getHeaders(),
+                body: JSON.stringify({ name })
+            });
+
+            if (res.status === 401) {
+                return signout();
+            }
+
+            return res;
+        } catch (e) {
+            requestErrorToast();
+        }
+    };
+}
+
+export function useEditUserPasswordAPI() {
+    const signout = useSignout();
+
+    return async (oldPassword: string, newPassword: string) => {
+        try {
+            const res = await fetch('/api/v1/user/password', {
+                method: 'PUT',
+                headers: getHeaders(),
+                body: JSON.stringify({ oldPassword, newPassword })
+            });
+
+            if (res.status === 401) {
+                return signout();
+            }
+
+            return res;
+        } catch (e) {
+            requestErrorToast();
+        }
+    };
+}

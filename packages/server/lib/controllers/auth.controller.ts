@@ -144,7 +144,7 @@ class AuthController {
             const resetToken = jwt.sign({ user: email }, resetPasswordSecret(), { expiresIn: '10m' });
 
             user.reset_password_token = resetToken;
-            await userService.editUser(user);
+            await userService.editUserPassword(user);
 
             this.sendResetPasswordEmail(user, resetToken);
 
@@ -181,7 +181,7 @@ class AuthController {
 
                     user.hashed_password = hashedPassword;
                     user.reset_password_token = undefined;
-                    await userService.editUser(user);
+                    await userService.editUserPassword(user);
 
                     res.status(200).json();
                 });

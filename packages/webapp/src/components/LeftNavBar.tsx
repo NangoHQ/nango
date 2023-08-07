@@ -9,7 +9,9 @@ export enum LeftNavBarItems {
     Connections,
     ProjectSettings,
     Activity,
-    Syncs
+    Syncs,
+    AccountSettings,
+    UserSettings
 }
 
 export interface LeftNavBarProps {
@@ -107,13 +109,13 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                 <div className="w-60 border-t-2 border-border-gray">
                     <ul className="pt-8 mb-24 px-6 text-white space-y-4 text-sm">
                         <li>
-                            <Link to="/account-settings" className="flex">
+                            <Link to="/account-settings" className={`flex h-10 rounded-md ml-4 pl-2 pr-3 pt-2.5 text-sm text-white w-44 ${props.selectedItem === LeftNavBarItems.AccountSettings ? 'bg-gray-800' : 'hover:bg-gray-700'}`}>
                                 <Briefcase className="h-5 mr-3" />
                                 Account Settings
                             </Link>
                         </li>
                         <li>
-                            <Link to="/user-settings" className="flex">
+                            <Link to="/user-settings" className={`flex h-10 rounded-md ml-4 pl-2 pr-3 pt-2.5 text-sm text-white w-44 ${props.selectedItem === LeftNavBarItems.UserSettings ? 'bg-gray-800' : 'hover:bg-gray-700'}`}>
                                 <User className="h-5 mr-3" />
                                 User Settings
                             </Link>

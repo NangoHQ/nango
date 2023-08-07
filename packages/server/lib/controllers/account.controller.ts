@@ -1,13 +1,15 @@
 import type { Request, Response, NextFunction } from 'express';
-import { accountService } from '@nangohq/shared';
+import { accountService, userService } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 
 class AccountController {
     async getAccount(req: Request, res: Response, next: NextFunction) {
         try {
             const { account } = await getUserAccountAndEnvironmentFromSession(req);
+            const users = await userService.getUsersByAccountId(account.id);
+            const invitedUsers = await userService.getInvitedUsersByAccountId(account.id);
 
-            res.status(200).send({ account });
+            res.status(200).send({ account, users, invitedUsers });
         } catch (err) {
             next(err);
         }
