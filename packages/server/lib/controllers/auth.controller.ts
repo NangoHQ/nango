@@ -3,12 +3,12 @@ import crypto from 'crypto';
 import util from 'util';
 import { resetPasswordSecret, getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import jwt from 'jsonwebtoken';
-import Mailgun from 'mailgun.js';
-import formData from 'form-data';
+import EmailClient from '../clients/email.client.js';
 import {
     User,
     userService,
     configService,
+    accountService,
     errorManager,
     ErrorSourceEnum,
     environmentService,
@@ -85,7 +85,21 @@ class AuthController {
                 return;
             }
 
-            const account = await environmentService.createAccount(`${name}'s Organization`);
+            let account;
+            let joinedWithToken = false;
+
+            if (req.body['account_id'] != null) {
+                const token = req.body['token'];
+                const validToken = userService.getInvitedUserByToken(token);
+                if (!validToken) {
+                    errorManager.errRes(res, 'invalid_invite_token');
+                    return;
+                }
+                account = await accountService.getAccountById(Number(req.body['account_id']));
+                joinedWithToken = true;
+            } else {
+                account = await environmentService.createAccount(`${name}'s Organization`);
+            }
 
             if (account == null) {
                 throw new NangoError('account_creation_failure');
@@ -99,12 +113,17 @@ class AuthController {
                 throw new NangoError('user_creation_failure');
             }
 
-            analytics.track('server:account_created', account.id, {}, isCloud() ? { email: email } : {});
+            const event = joinedWithToken ? 'server:account_joined' : 'server:account_created';
+            analytics.track(event, account.id, {}, isCloud() ? { email: email } : {});
 
-            if (isCloud()) {
+            if (isCloud() && !joinedWithToken) {
                 // On Cloud version, create default provider config to simplify onboarding.
                 // Harder to do on the self-hosted version because we don't know what OAuth callback to use.
                 await configService.createDefaultProviderConfig(account.id);
+            }
+
+            if (joinedWithToken) {
+                await userService.markAcceptedInvite(req.body['token']);
             }
 
             req.login(user, function (err) {
@@ -193,29 +212,43 @@ class AuthController {
 
     async sendResetPasswordEmail(user: User, token: string) {
         try {
-            const mailgun = new Mailgun(formData);
-            const mg = mailgun.client({
-                username: 'api',
-                key: process.env['MAILGUN_API_KEY']!
-            });
-
-            mg.messages
-                .create('email.nango.dev', {
-                    from: 'Nango <support@nango.dev>',
-                    to: [user.email],
-                    subject: 'Nango password reset',
-                    html: `
-                <p><b>Reset your password</b></p>
+            const emailClient = EmailClient.getInstance();
+            emailClient
+                ?.send(
+                    user.email,
+                    'Nango password reset',
+                    `<p><b>Reset your password</b></p>
                 <p>Someone requested a password reset.</p>
                 <p><a href="${getBaseUrl()}/reset-password/${token}">Reset password</a></p>
-                <p>If you didn't initiate this request, please contact us immediately at support@nango.dev</p>
-                `
-                })
+                <p>If you didn't initiate this request, please contact us immediately at support@nango.dev</p>`
+                )
                 .catch((e: Error) => {
                     errorManager.report(e, { source: ErrorSourceEnum.PLATFORM, userId: user.id, operation: 'user' });
                 });
         } catch (e) {
             errorManager.report(e, { userId: user.id, source: ErrorSourceEnum.PLATFORM, operation: 'user' });
+        }
+    }
+
+    async invitation(req: Request, res: Response, next: NextFunction) {
+        try {
+            const token = req.query['token'] as string;
+
+            if (!token) {
+                res.status(400).send({ error: 'Token is missing' });
+                return;
+            }
+
+            const invitee = await userService.getInvitedUserByToken(token);
+
+            if (!invitee) {
+                errorManager.errRes(res, 'duplicate_account');
+                return;
+            }
+
+            res.status(200).send(invitee);
+        } catch (error) {
+            next(error);
         }
     }
 }

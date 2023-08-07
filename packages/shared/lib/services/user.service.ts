@@ -10,6 +10,10 @@ class UserService {
             return null;
         }
 
+        if (result[0].suspended) {
+            return null;
+        }
+
         return result[0];
     }
 
@@ -126,6 +130,29 @@ class UserService {
             .whereRaw('expires_at > ?', date);
 
         return result || [];
+    }
+
+    async getInvitedUserByToken(token: string): Promise<InviteUser | null> {
+        const date = new Date();
+
+        const result = await db.knex
+            .withSchema(db.schema())
+            .select('*')
+            .from<InviteUser>(`_nango_invited_users`)
+            .where({ token })
+            .whereRaw('expires_at > ?', date);
+
+        if (result == null || result.length == 0 || result[0] == null) {
+            return null;
+        }
+
+        return result[0];
+    }
+
+    async markAcceptedInvite(token: string) {
+        const result = await db.knex.withSchema(db.schema()).from<InviteUser>(`_nango_invited_users`).where({ token }).update({ accepted: true });
+
+        return result;
     }
 }
 

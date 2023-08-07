@@ -27,12 +27,12 @@ export function useLogoutAPI() {
 }
 
 export function useSignupAPI() {
-    return async (name: string, email: string, password: string) => {
+    return async (name: string, email: string, password: string, account_id?: number, token?: string) => {
         try {
             const options = {
                 method: 'POST',
                 headers: getHeaders(),
-                body: JSON.stringify({ name: name, email: email, password: password })
+                body: JSON.stringify({ name: name, email: email, password: password, account_id, token })
             };
 
             return fetch('/api/v1/signup', options);
@@ -643,6 +643,27 @@ export function useEditUserPasswordAPI() {
                 method: 'PUT',
                 headers: getHeaders(),
                 body: JSON.stringify({ oldPassword, newPassword })
+            });
+
+            if (res.status === 401) {
+                return signout();
+            }
+
+            return res;
+        } catch (e) {
+            requestErrorToast();
+        }
+    };
+}
+
+export function useInviteSignupAPI() {
+    const signout = useSignout();
+
+    return async (token: string) => {
+        try {
+            const res = await fetch(`/api/v1/signup/invite?token=${token}`, {
+                method: 'GET',
+                headers: getHeaders()
             });
 
             if (res.status === 401) {

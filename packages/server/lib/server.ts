@@ -95,6 +95,7 @@ app.route('/proxy/*').all(apiAuth, proxyController.routeCall.bind(proxyControlle
 // Webapp routes (no auth).
 if (isCloud()) {
     app.route('/api/v1/signup').post(authController.signup.bind(authController));
+    app.route('/api/v1/signup/invite').get(authController.invitation.bind(authController));
     app.route('/api/v1/logout').post(authController.logout.bind(authController));
     app.route('/api/v1/signin').post(passport.authenticate('local'), authController.signin.bind(authController));
     app.route('/api/v1/forgot-password').put(authController.forgotPassword.bind(authController));

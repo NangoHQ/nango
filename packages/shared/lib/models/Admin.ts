@@ -28,4 +28,5 @@ export interface InviteUser extends Timestamps {
     account_id: number;
     expires_at: Date;
     token: string;
+    accepted: boolean;
 }

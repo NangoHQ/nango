@@ -9,6 +9,7 @@ exports.up = async function (knex, _) {
         table.integer('invited_by').references('id').inTable('nango._nango_users').notNullable();
         table.string('token').notNullable();
         table.dateTime('expires_at').notNullable();
+        table.boolean('accepted').defaultTo(false);
         table.timestamps(true, true);
     });
 };

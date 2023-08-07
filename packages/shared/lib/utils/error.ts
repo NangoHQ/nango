@@ -116,6 +116,11 @@ export class NangoError extends Error {
                 this.message = `Missing param 'environment_id'.`;
                 break;
 
+            case 'invalid_invite_token':
+                this.status = 400;
+                this.message = 'The invite token is invalid.';
+                break;
+
             case 'missing_api_key':
                 this.status = 400;
                 this.message = `Missing param 'api_key'.`;
