@@ -80,7 +80,7 @@ app.route('/config/:providerConfigKey').delete(apiAuth, configController.deleteP
 app.route('/connection/:connectionId').get(apiAuth, connectionController.getConnectionCreds.bind(connectionController));
 app.route('/connection').get(apiAuth, connectionController.listConnections.bind(connectionController));
 app.route('/connection/:connectionId').delete(apiAuth, connectionController.deleteConnection.bind(connectionController));
-app.route('/connection/:connectionId/field-mapping').post(apiAuth, connectionController.setFieldMapping.bind(connectionController));
+app.route('/connection/:connectionId/metadata').post(apiAuth, connectionController.setMetadata.bind(connectionController));
 app.route('/connection').post(apiAuth, connectionController.createConnection.bind(connectionController));
 app.route('/sync/deploy').post(apiAuth, syncController.deploySync.bind(syncController));
 app.route('/sync/deploy/confirmation').post(apiAuth, syncController.confirmation.bind(syncController));

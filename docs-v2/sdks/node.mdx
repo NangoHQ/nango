@@ -115,7 +115,31 @@ Returns a list of minimalistic [Connection](/core-concepts#connections) objects.
 
 Please check the [REST API reference](/api-reference/connection/list) for an example response and the full list of returned fields.
 
-### Retrieve _integration_ details
+### Delete a connection
+```js
+await nango.deleteConnection('<INTEGRATION-ID>', '<CONNECTION-ID>');
+```
+This will throw an exception if the delete call is not successful.
+
+
+### Set and fetch custom Metadata
+
+Nango lets you store [custom metadata](/guides/oauth#storing-custom-metadata-per-connection) on the Connection.
+
+`setMetadata` overrides any existing Metadata for the connection!
+
+```js
+// Store custom metadata with the connection
+await nango.setMetadata('<INTEGRATION-ID>', '<CONNECTION-ID>', { filter: 'status=closed' });
+
+// Fetch custom metadata
+let myMetadata = await nango.getMetadata('<INTEGRATION-ID>', '<CONNECTION-ID>');
+
+console.log(JSON.stringify(myMetadata));
+// prints: { "filter": "status=closed" }
+```
+
+### Retrieve integration details
 
 Use this method to retrieve all the details Nango stores on a specific _integration_:
 
@@ -198,12 +222,14 @@ To read synced data from Nango use `getRecords`:
 import type { ModelName } from '<path-to-nango-integrations>/models'
 
 const records = await nango.getRecords<ModelName>({
-    providerConfigKey: '<integration-id>',  // Name of your integration, from nango.yaml. E.g. github
-    connectionId: '<user-id>',              // The connection id you passed to nango.auth()
-    model: '<model-name>',                  // The name of the data model, from nango.yaml. E.g. ticket
-    delta: '<timestamp>'                    // Optional. Only return records added or updated since this timestamp. E.g. 2023-05-31T11:46:13.390Z
-    limit: <number>,                        // For pagination: Maximum of records to return. If not passed, all records are returned.
-    offset: <number>                        // For pagination: The number of records to skip. If not passed, no records are skipped.
+    providerConfigKey: '<integration-id>',   // Name of your integration, from nango.yaml. E.g. github
+    connectionId: '<user-id>',               // The connection id you passed to nango.auth()
+    model: '<model-name>',                   // The name of the data model, from nango.yaml. E.g. ticket
+    delta: '<timestamp>'                     // Optional. Only return records added or updated since this timestamp. E.g. 2023-05-31T11:46:13.390Z
+    limit: <number>,                         // Optional: For pagination: Maximum of records to return. If not passed, all records are returned.
+    offset: <number>,                        // Optional: For pagination: The number of records to skip. If not passed, no records are skipped.
+    sortBy: 'id' | 'createdAt' | 'updatedAt' // Optional: Optional: Set how the records are sorted. The default is by 'id'
+    order: 'asc' | 'desc'                    // Optional: Set the order of results. The default is 'desc'
 });
 
 console.log(records);

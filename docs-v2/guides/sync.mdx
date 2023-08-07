@@ -339,10 +339,6 @@ That's it!
 
 Sometimes you need to have a field mapping that is specific to a customer. For instance, you want to let customers pick which field contains the email address of the contact.
 
-You can store field mapping data that is specific to a _connection_ in Nango. The object must be JSON serializable, but there are no other constraints. 
-
-For this, call:
-    - `nango.setFieldMapping(...)` in the node SDK to store the field mapping
-    - `nango.getFieldMapping()` in the _sync_ script to retrieve the field mapping of the current _connection_
+You can store field mapping data that is specific to a _connection_ in Nango with [custom connection metadata](/guides/oauth#storing-custom-metadata-per-connection).
 
 In the future we want to help you more with field mappings (metadata requests to get available objects & fields, UI components etc.). 

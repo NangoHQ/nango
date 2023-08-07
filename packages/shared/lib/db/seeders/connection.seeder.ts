@@ -7,10 +7,10 @@ export const create = async (): Promise<void> => {
 
     for (const row of result) {
         const { id: environment_id } = row;
-        await connectionService.upsertConnection('test1', 'test1', 'google', {} as AuthCredentials, {}, environment_id, 0, {});
-        await connectionService.upsertConnection('test2', 'test2', 'google', {} as AuthCredentials, {}, environment_id, 0, {});
-        await connectionService.upsertConnection('test3', 'test3', 'google', {} as AuthCredentials, {}, environment_id, 0, {});
-        await connectionService.upsertConnection('test4', 'test4', 'notion', {} as AuthCredentials, {}, environment_id, 0, {});
+        await connectionService.upsertConnection('test1', 'test1', 'google', {} as AuthCredentials, {}, environment_id, 0);
+        await connectionService.upsertConnection('test2', 'test2', 'google', {} as AuthCredentials, {}, environment_id, 0);
+        await connectionService.upsertConnection('test3', 'test3', 'google', {} as AuthCredentials, {}, environment_id, 0);
+        await connectionService.upsertConnection('test4', 'test4', 'notion', {} as AuthCredentials, {}, environment_id, 0);
     }
 };
 

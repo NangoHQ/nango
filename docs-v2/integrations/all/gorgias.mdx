@@ -25,6 +25,18 @@ API configuration: [`gorgias`](https://nango.dev/providers.yaml)
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
+## Connection configuration in Nango
+
+Gorgias requires a user specific subdomain to run OAuth.
+
+You should request this from the user and pass it to Nango in the `nango.auth()` call:
+
+```js
+nango.auth('gorgias', '<CONNECTION-ID>', {params: {subdomain: '<gorgias-subdomain>'}});
+```
+
+For more details see the [docs here](/guides/oauth#connection-configuration).
+
 ## API gotchas
 
 -   To refresh tokens, you will need to set the `offline` as part of the scopes when creating an integration.

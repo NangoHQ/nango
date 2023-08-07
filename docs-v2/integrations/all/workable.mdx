@@ -26,6 +26,18 @@ Workable offers API keys ("API access token"), partner tokens and OAuth for auth
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
+## Connection configuration in Nango
+
+Workable requires a user specific subdomain for the API base URL.
+
+You should request this from the user and pass it to Nango in the `nango.auth()` call:
+
+```js
+nango.auth('workable', '<CONNECTION-ID>', {params: {subdomain: '<workable-subdomain>'}});
+```
+
+For more details see the [docs here](/guides/oauth#connection-configuration).
+
 ## API gotchas
 
 - To authorize a Workable Connection in Nango you need to pass both the API key and the company's workable subdomain:

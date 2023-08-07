@@ -54,7 +54,6 @@ describe('Data service tests', () => {
         ];
 
         const actual = await DataService.removeDuplicateKey(duplicateRecords as unknown as DataRecord[], 'external_id', activityLogId, model);
-        console.log(actual);
 
         expect(actual).toEqual(expected);
     });

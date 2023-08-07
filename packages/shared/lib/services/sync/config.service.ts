@@ -410,7 +410,7 @@ export async function getSyncConfigsWithConnectionsByEnvironmentId(environment_i
                     SELECT json_agg(
                         json_build_object(
                             'connection_id', _nango_connections.connection_id,
-                            'field_mappings', _nango_connections.field_mappings
+                            'metadata', _nango_connections.metadata
                         )
                     )
                     FROM nango._nango_connections

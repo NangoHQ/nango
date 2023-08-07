@@ -703,10 +703,9 @@ class OAuthController {
                 providerConfigKey,
                 session.provider,
                 parsedRawCredentials,
-                session.connectionConfig,
+                { ...session.connectionConfig, ...tokenMetadata, ...callbackMetadata },
                 session.environmentId,
-                accountId,
-                { ...callbackMetadata, ...tokenMetadata }
+                accountId
             );
 
             await updateProviderActivityLog(activityLogId, session.provider);
@@ -797,10 +796,9 @@ class OAuthController {
                     providerConfigKey,
                     session.provider,
                     parsedAccessTokenResult,
-                    session.connectionConfig,
+                    { ...session.connectionConfig, ...metadata },
                     session.environmentId,
-                    accountId,
-                    metadata
+                    accountId
                 );
 
                 await updateSuccessActivityLog(activityLogId, true);

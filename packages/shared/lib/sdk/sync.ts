@@ -112,6 +112,11 @@ interface OAuth1Credentials extends CredentialsCommon {
 
 type AuthCredentials = OAuth2Credentials | OAuth1Credentials | BasicApiCredentials | ApiKeyCredentials;
 
+interface Metadata {
+    fieldMapping?: Record<string, string>;
+    [key: string]: string | Record<string, string>;
+}
+
 interface Connection {
     id?: number;
     created_at?: string;
@@ -120,10 +125,9 @@ interface Connection {
     connection_id: string;
     connection_config: Record<string, string>;
     environment_id: number;
-    metadata: Record<string, string> | null;
+    metadata: Metadata | null;
     credentials_iv?: string | null;
     credentials_tag?: string | null;
-    field_mappings?: Record<string, string>;
     credentials: AuthCredentials;
 }
 
@@ -251,16 +255,23 @@ export class NangoSync {
         return this.nango.getConnection(this.providerConfigKey as string, this.connectionId as string);
     }
 
-    public async setFieldMapping(
-        fieldMapping: Record<string, string>,
-        optionalProviderConfigKey?: string,
-        optionalConnectionId?: string
-    ): Promise<AxiosResponse<void>> {
-        return this.nango.setFieldMapping(fieldMapping, optionalProviderConfigKey, optionalConnectionId);
+    public async setMetadata(metadata: Record<string, string>): Promise<AxiosResponse<void>> {
+        return this.nango.setMetadata(this.providerConfigKey as string, this.connectionId as string, metadata);
     }
 
-    public async getFieldMapping(optionalProviderConfigKey?: string, optionalConnectionId?: string): Promise<Record<string, string>> {
-        return this.nango.getFieldMapping(optionalProviderConfigKey, optionalConnectionId);
+    public async setFieldMapping(fieldMapping: Record<string, string>): Promise<AxiosResponse<void>> {
+        console.warn('setFieldMapping is deprecated. Please use setMetadata instead.');
+        return this.nango.setMetadata(this.providerConfigKey as string, this.connectionId as string, fieldMapping);
+    }
+
+    public async getMetadata(): Promise<Metadata> {
+        return this.nango.getMetadata(this.providerConfigKey as string, this.connectionId as string);
+    }
+
+    public async getFieldMapping(): Promise<Metadata> {
+        console.warn('getFieldMapping is deprecated. Please use getMetadata instead.');
+        const metadata = await this.nango.getMetadata(this.providerConfigKey as string, this.connectionId as string);
+        return (metadata.fieldMapping as Metadata) || {};
     }
 
     public async batchSend<T = any>(results: T[], model: string): Promise<boolean | null> {

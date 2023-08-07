@@ -25,10 +25,20 @@ API configuration: [`battlenet`](https://nango.dev/providers.yaml)
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
+## Connection configuration in Nango
+
+Battlenet uses different domain extensions for different regions.
+
+You need to pass the domain extension to use to Nango in the `nango.auth()` call:
+
+```js
+nango.auth('battlenet', '<CONNECTION-ID>', {params: {extension: 'com.cn'}});
+```
+
+For more details see the [docs here](/guides/oauth#connection-configuration).
+
 ## API gotchas
 
--   Depending on the region you want to connect to, you have to provide the region as an extension in the config params.
-    You should use `nango.auth('amazon', '1', {params: {extension: 'com.cn'}})`. The provided extension here shows that the region is china.
 -   Tokens cannot be refreshed, hence when the token expires, resource owners will have to go through the authorize flow again.
 
 <Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/battlenet.mdx)</Note>

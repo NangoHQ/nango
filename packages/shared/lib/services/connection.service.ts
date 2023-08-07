@@ -24,7 +24,7 @@ import environmentService from '../services/environment.service.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import { NangoError } from '../utils/error.js';
 
-import type { Connection, StoredConnection, BaseConnection, NangoConnection } from '../models/Connection.js';
+import type { Metadata, Connection, StoredConnection, BaseConnection, NangoConnection } from '../models/Connection.js';
 import type { ServiceResponse } from '../models/Generic.js';
 import encryptionManager from '../utils/encryption.manager.js';
 import errorManager from '../utils/error.manager.js';
@@ -43,8 +43,7 @@ class ConnectionService {
         parsedRawCredentials: AuthCredentials,
         connectionConfig: Record<string, string>,
         environment_id: number,
-        accountId: number,
-        metadata: Record<string, string>
+        accountId: number
     ) {
         const storedConnectionId = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment_id);
 
@@ -54,8 +53,7 @@ class ConnectionService {
                 provider_config_key: providerConfigKey,
                 credentials: parsedRawCredentials,
                 connection_config: connectionConfig,
-                environment_id,
-                metadata: metadata
+                environment_id
             });
             encryptedConnection.updated_at = new Date();
             await db.knex
@@ -78,8 +76,7 @@ class ConnectionService {
                     provider_config_key: providerConfigKey,
                     credentials: parsedRawCredentials,
                     connection_config: connectionConfig,
-                    environment_id,
-                    metadata: metadata
+                    environment_id
                 }),
                 ['id']
             );
@@ -153,10 +150,9 @@ class ConnectionService {
             provider_config_key,
             provider,
             parsedRawCredentials,
-            connection_config as Record<string, string>,
+            { ...connection_config, ...metadata } as Record<string, string>,
             environmentId,
-            accountId,
-            metadata as Record<string, string>
+            accountId
         );
 
         if (importedConnection) {
@@ -193,12 +189,9 @@ class ConnectionService {
 
     public async getConnectionById(
         id: number
-    ): Promise<Pick<
-        Connection,
-        'id' | 'connection_id' | 'provider_config_key' | 'environment_id' | 'connection_config' | 'metadata' | 'field_mappings'
-    > | null> {
+    ): Promise<Pick<Connection, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id' | 'connection_config' | 'metadata'> | null> {
         const result = await schema()
-            .select('id', 'connection_id', 'provider_config_key', 'environment_id', 'connection_config', 'metadata', 'field_mappings')
+            .select('id', 'connection_id', 'provider_config_key', 'environment_id', 'connection_config', 'metadata')
             .from<StoredConnection>('_nango_connections')
             .where({ id: id, deleted: false });
 
@@ -309,8 +302,8 @@ class ConnectionService {
             .update(encryptionManager.encryptConnection(connection));
     }
 
-    public async getFieldMappings(connection: Connection): Promise<Record<string, string>> {
-        const result = await db.knex.withSchema(db.schema()).from<StoredConnection>(`_nango_connections`).select('field_mappings').where({
+    public async getMetadata(connection: Connection): Promise<Record<string, string>> {
+        const result = await db.knex.withSchema(db.schema()).from<StoredConnection>(`_nango_connections`).select('metadata').where({
             connection_id: connection.connection_id,
             provider_config_key: connection.provider_config_key,
             environment_id: connection.environment_id,
@@ -321,7 +314,7 @@ class ConnectionService {
             return {};
         }
 
-        return result[0].field_mappings;
+        return result[0].metadata;
     }
 
     public async getConnectionsByEnvironmentAndConfig(environment_id: number, providerConfigKey: string): Promise<NangoConnection[]> {
@@ -338,12 +331,12 @@ class ConnectionService {
         return result;
     }
 
-    public async updateFieldMappings(connection: Connection, fieldMappings: Record<string, string>) {
+    public async updateMetadata(connection: Connection, metadata: Metadata) {
         await db.knex
             .withSchema(db.schema())
             .from<StoredConnection>(`_nango_connections`)
             .where({ id: connection.id as number, deleted: false })
-            .update({ field_mappings: fieldMappings });
+            .update({ metadata });
     }
 
     async listConnections(environment_id: number, connectionId?: string): Promise<{ id: number; connection_id: number; provider: string; created: string }[]> {
