@@ -2,8 +2,8 @@ import type { Request, Response, NextFunction } from 'express';
 import { hmacService, environmentService, errorManager, getBaseUrl, isCloud, getWebsocketsPath, getOauthCallbackUrl } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 
-class AccountController {
-    async getAccount(req: Request, res: Response, next: NextFunction) {
+class EnvironmentController {
+    async getEnvironment(req: Request, res: Response, next: NextFunction) {
         try {
             const { environment } = await getUserAccountAndEnvironmentFromSession(req);
 
@@ -115,4 +115,4 @@ class AccountController {
     }
 }
 
-export default new AccountController();
+export default new EnvironmentController();

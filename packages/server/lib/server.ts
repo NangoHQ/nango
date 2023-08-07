@@ -23,7 +23,7 @@ import cors from 'cors';
 import webSocketClient from './clients/web-socket.client.js';
 import { AuthClient } from './clients/auth.client.js';
 import passport from 'passport';
-import accountController from './controllers/account.controller.js';
+import environmentController from './controllers/environment.controller.js';
 import type { Response, Request } from 'express';
 import Logger from './utils/logger.js';
 import { getGlobalOAuthCallbackUrl, environmentService, getPort, isCloud, isBasicAuthEnabled, errorManager, getWebsocketsPath } from '@nangohq/shared';
@@ -101,12 +101,12 @@ if (isCloud()) {
 }
 
 // Webapp routes (session auth).
-app.route('/api/v1/account').get(webAuth, accountController.getAccount.bind(accountController));
-app.route('/api/v1/account/callback').post(webAuth, accountController.updateCallback.bind(accountController));
-app.route('/api/v1/account/webhook').post(webAuth, accountController.updateWebhookURL.bind(accountController));
-app.route('/api/v1/account/hmac').get(webAuth, accountController.getHmacDigest.bind(accountController));
-app.route('/api/v1/account/hmac-enabled').post(webAuth, accountController.updateHmacEnabled.bind(accountController));
-app.route('/api/v1/account/hmac-key').post(webAuth, accountController.updateHmacKey.bind(accountController));
+app.route('/api/v1/environment').get(webAuth, environmentController.getEnvironment.bind(environmentController));
+app.route('/api/v1/environment/callback').post(webAuth, environmentController.updateCallback.bind(environmentController));
+app.route('/api/v1/environment/webhook').post(webAuth, environmentController.updateWebhookURL.bind(environmentController));
+app.route('/api/v1/environment/hmac').get(webAuth, environmentController.getHmacDigest.bind(environmentController));
+app.route('/api/v1/environment/hmac-enabled').post(webAuth, environmentController.updateHmacEnabled.bind(environmentController));
+app.route('/api/v1/environment/hmac-key').post(webAuth, environmentController.updateHmacKey.bind(environmentController));
 app.route('/api/v1/integration').get(webAuth, configController.listProviderConfigsWeb.bind(configController));
 app.route('/api/v1/integration/:providerConfigKey').get(webAuth, configController.getProviderConfig.bind(configController));
 app.route('/api/v1/integration').put(webAuth, configController.editProviderConfigWeb.bind(connectionController));
