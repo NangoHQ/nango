@@ -463,14 +463,14 @@ paths:
                   required: false
                   schema:
                       type: string
-                      enum: ['createdAt', 'updatedAt', 'id']
+                      enum: [createdAt, updatedAt, id]
                   description: Set how the records are sorted. The default is id. The options are 'createdAt', 'updatedAt', 'id'.
                 - name: order
                   in: query
                   required: false
                   schema:
                       type: string
-                      enum: ['desc', 'asc']
+                      enum: [desc, asc]
                   description: Set the order of results. The default is 'desc'. The options are 'desc' or 'asc'.
                 - name: Connection-Id
                   in: header
