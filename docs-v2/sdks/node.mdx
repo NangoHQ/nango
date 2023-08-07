@@ -119,8 +119,8 @@ Please check the [REST API reference](/api-reference/connection/list) for an exa
 ```js
 await nango.deleteConnection('<INTEGRATION-ID>', '<CONNECTION-ID>');
 ```
+This will throw an exception if the delete call is not successful.
 
-If successful returns a 204 response code.
 
 ### Set and fetch custom Metadata
 
