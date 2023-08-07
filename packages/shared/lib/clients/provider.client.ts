@@ -90,7 +90,7 @@ class ProviderClient {
                     credentials.access_token,
                     config.oauth_client_id,
                     config.oauth_client_secret,
-                    oauthConnection.metadata as Record<string, string>
+                    oauthConnection.connection_config as Record<string, string>
                 );
             default:
                 throw new NangoError('unknown_provider_client');
@@ -179,13 +179,13 @@ class ProviderClient {
         accessToken: string,
         clientId: string,
         clientSecret: string,
-        metadata: Record<string, string>
+        connectionConfig: Record<string, string>
     ): Promise<boolean> {
-        if (!metadata['instance_url']) {
+        if (!connectionConfig['instance_url']) {
             throw new NangoError('salesforce_instance_url_missing');
         }
 
-        const url = `${metadata['instance_url']}/services/oauth2/introspect`;
+        const url = `${connectionConfig['instance_url']}/services/oauth2/introspect`;
 
         const headers = {
             'Content-Type': 'application/x-www-form-urlencoded',
