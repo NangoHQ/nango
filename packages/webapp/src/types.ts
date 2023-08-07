@@ -40,7 +40,10 @@ export interface Sync {
     connections:
         | {
               connection_id: string;
-              field_mappings: Record<string, string>;
+              metadata?: {
+                  fieldMapping: Record<string, string>;
+                  [key: string]: string | Record<string, string>;
+              };
           }[]
         | null;
 }

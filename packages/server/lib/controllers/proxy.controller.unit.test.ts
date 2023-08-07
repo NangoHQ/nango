@@ -347,7 +347,7 @@ describe('Proxy Controller Construct URL Tests', () => {
             template: {
                 auth_mode: AuthModes.OAuth2,
                 proxy: {
-                    base_url: 'https://www.zohoapis.${connectionConfig.params.extension}'
+                    base_url: 'https://www.zohoapis.${connectionConfig.extension}'
                 }
             },
             token: { apiKey: 'sweet-secret-token' },
@@ -355,7 +355,7 @@ describe('Proxy Controller Construct URL Tests', () => {
         };
 
         const connection = {
-            connection_config: { 'connectionConfig.params.extension': 'eu' }
+            connection_config: { extension: 'eu' }
         };
 
         // @ts-ignore

@@ -96,21 +96,72 @@ If you are self-hosting Nango, follow the instructions [here](/self-host/instruc
 
 ### Connection Configuration
 
-Some API Providers require connection-specific configuration variables (e.g. Zendesk, Shopify, Qualtrics, Contentstack).
+Some APIs require additional parameters to run an OAuth flow or make API requests.
 
-For example, Zendesk has the following authorization URL, where the subdomain is specific to a user's Zendesk account:
+Some examples:
 
-```
-https://<USER-SUBDOMAIN>.zendesk.com/oauth/authorizations/new
-```
+- Zendesk OAuth has the following authorization URL, where the subdomain is specific to a user's Zendesk account:
+    ```
+    https://<USER-SUBDOMAIN>.zendesk.com/oauth/authorizations/new
+    ```
+- Qualtrics, Shopify and Gorgias have the same per-customer subdomains as Zendesk
+- Salesforce uses a different API base URL per customer, e.g. `https://mycustomer.api.salesforce.com`
+- Zoho uses different API base URLs for different data centers. E.g. US customer's data is at `https://accounts.zoho.com` and EU customer's at `https://accounts.zoho.eu`
 
-To specify the subdomain, pass in an additional configuration object to `nango.auth()`:
+#### Setting Connection Configuration
+
+For some APIs Nango requires additional details from the end user to run an OAuth flow or make API requests.
+
+This is documented in two places:
+- On the [API's Nango docs page](/integrations/overview)
+- On the dashboard page for [Adding a new Connection](https://app.nango.dev/connections/create) (Recommended)
+
+For instance, to specify the subdomain for Zendesk, pass in an additional configuration object to `nango.auth()`:
 
 ```typescript
-nango.auth('zendesk', '<CONNECTION-ID>', { params: { subdomain: '<ZENDESK-SUBDOMAIN>' } });
+nango.auth(
+        'zendesk',
+        '<CONNECTION-ID>',
+        {
+            params: {
+                subdomain: '<ZENDESK-SUBDOMAIN>' 
+            }
+        });
 ```
 
-You can find which configuration parameters are necessary for your [Connection](/core-concepts#connections) in the [providers.yaml](https://nango.dev/providers.yaml) file.
+#### Automatically retrieved Connection Configuration
+
+Some Connection Configurations, such as the base URL for the Salesforce API, are automatically retrieved by Nango. This is noted on the [API's Nango docs page](/integrations/overview).
+
+Nango will automatically use this information for the Proxy, but if needed you can also retrieve it (see next section).
+
+#### Fetching Connection Configuration data
+
+Nango stores all connection configuration data on the [Connection](/core-concepts#connections) objects. You can retrieve it with the [SDKs](/sdks) or [REST API](/api-reference).
+
+```json
+{
+    ...,
+    "connectionConfiguration": {
+        "subdomain": "myshop",
+        "instance_url": "https://mygreatcorp.api.salesforce.com"
+    },
+    ...
+}
+```
+
+### Storing custom metadata per Connection
+
+Nango lets you store arbitrary metadata on the Connection.
+
+This is useful for:
+- Storing custom field mappings per customer (e.g. map "name" from the external API to "firstname" in your data model)
+- Storing per-customer configuration (e.g. which filters for syncing objects, categories to skip etc.)
+- Any other per-connection data you want to have available in your sync scripts
+
+This metadata is available to you in [Sync scripts](/guides/sync) with `getMetadata()`.
+
+It can also be set and retrieved with the [SDKs](/sdk) and the [REST API](/api-reference). Check these pages for the methods to set and retrieve it.
 
 ### Connection-Specific Authorization Params
 
@@ -121,14 +172,6 @@ But sometimes, the additional authorization parameter is specific to a user or a
 ```typescript
 nango.auth('discord', '<CONNECTION-ID>', { authorization_params: { key: 'value' } });
 ```
-
-### Connection Metadata
-
-During the OAuth flow, certain APIs return important metadata in addition to credentials (e.g. a company ID, tenant ID, instance URL, etc).
-
-To see if Nango stores metadata for a specific API check the [providers.yaml](https://nango.dev/providers.yaml) and look for the `metadata` property.
-
-Nango stores this metadata in the [Connection](/core-concepts#connections) objects. You can retrieve it with the [SDKs](/sdks) or [REST API](/api-reference).
 
 ### Securing the Frontend SDK calls with HMAC
 

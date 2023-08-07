@@ -64,6 +64,11 @@ export interface ApiKeyCredentials {
 
 type AuthCredentials = OAuth2Credentials | OAuth1Credentials | BasicApiCredentials | ApiKeyCredentials;
 
+export interface Metadata {
+    fieldMapping?: Record<string, string>;
+    [key: string]: string | Record<string, string>;
+}
+
 export interface Connection {
     id?: number;
     created_at?: string;
@@ -72,10 +77,9 @@ export interface Connection {
     connection_id: string;
     connection_config: Record<string, string>;
     environment_id: number;
-    metadata: Record<string, string> | null;
+    metadata: Metadata | null;
     credentials_iv?: string | null;
     credentials_tag?: string | null;
-    field_mappings?: Record<string, string>;
     credentials: AuthCredentials;
 }
 

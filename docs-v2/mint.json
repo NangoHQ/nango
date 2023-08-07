@@ -1,4 +1,5 @@
 {
+    "$schema": "https://mintlify.com/schema.json",
     "name": "Nango Docs",
     "logo": {
         "light": "/logo/light.svg",
