@@ -59,8 +59,8 @@ const App = () => {
                 <Route path="/account-settings" element={<AccountSettings />} />
                 <Route path="/user-settings" element={<UserSettings />} />
                 {isCloud() && <Route path="/signin" element={<Signin />} />}
-                {isCloud() && <Route path="/signin/:token" element={<InviteSignup />} />}
                 {isCloud() && <Route path="/signup" element={<Signup />} />}
+                {isCloud() && <Route path="/signup/:token" element={<InviteSignup />} />}
                 {isCloud() && <Route path="/forgot-password" element={<ForgotPassword />} />}
                 {isCloud() && <Route path="/reset-password/:token" element={<ResetPassword />} />}
                 <Route path="*" element={<Navigate to="/" replace />} />

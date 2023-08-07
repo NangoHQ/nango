@@ -37,7 +37,7 @@ export default function InviteSignup() {
             setLoaded(true);
             getInvite();
         }
-    }, [getInvitee, token, loaded, setLoaded]);
+    }, [navigate, getInvitee, token, loaded, setLoaded]);
 
     const handleSubmit = async (e: React.SyntheticEvent) => {
         e.preventDefault();
