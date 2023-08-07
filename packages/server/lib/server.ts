@@ -24,6 +24,7 @@ import webSocketClient from './clients/web-socket.client.js';
 import { AuthClient } from './clients/auth.client.js';
 import passport from 'passport';
 import environmentController from './controllers/environment.controller.js';
+import accountController from './controllers/account.controller.js';
 import type { Response, Request } from 'express';
 import Logger from './utils/logger.js';
 import { getGlobalOAuthCallbackUrl, environmentService, getPort, isCloud, isBasicAuthEnabled, errorManager, getWebsocketsPath } from '@nangohq/shared';
@@ -101,6 +102,8 @@ if (isCloud()) {
 }
 
 // Webapp routes (session auth).
+app.route('/api/v1/account').get(webAuth, accountController.getAccount.bind(accountController));
+app.route('/api/v1/account').put(webAuth, accountController.editAccount.bind(accountController));
 app.route('/api/v1/environment').get(webAuth, environmentController.getEnvironment.bind(environmentController));
 app.route('/api/v1/environment/callback').post(webAuth, environmentController.updateCallback.bind(environmentController));
 app.route('/api/v1/environment/webhook').post(webAuth, environmentController.updateWebhookURL.bind(environmentController));

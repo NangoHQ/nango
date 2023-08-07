@@ -23,6 +23,18 @@ class AccountService {
             return null;
         }
     }
+
+    async editAccount(name: string, id: number): Promise<void> {
+        try {
+            await db.knex.withSchema(db.schema()).update({ name, updated_at: new Date() }).from<Account>(`_nango_accounts`).where({ id });
+        } catch (e) {
+            errorManager.report(e, {
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.DATABASE,
+                accountId: id
+            });
+        }
+    }
 }
 
 export default new AccountService();

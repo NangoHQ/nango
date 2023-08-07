@@ -554,3 +554,42 @@ export function useRunSyncAPI() {
     };
 }
 
+export function useGetAccountAPI() {
+    const signout = useSignout();
+
+    return async () => {
+        try {
+            const res = await fetch('/api/v1/account', { headers: getHeaders() });
+
+            if (res.status === 401) {
+                return signout();
+            }
+
+            return res;
+        } catch (e) {
+            requestErrorToast();
+        }
+    };
+}
+
+export function useEditAccountNameAPI() {
+    const signout = useSignout();
+
+    return async (name: string) => {
+        try {
+            const res = await fetch('/api/v1/account', {
+                method: 'PUT',
+                headers: getHeaders(),
+                body: JSON.stringify({ name })
+            });
+
+            if (res.status === 401) {
+                return signout();
+            }
+
+            return res;
+        } catch (e) {
+            requestErrorToast();
+        }
+    };
+}
