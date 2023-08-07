@@ -458,6 +458,18 @@ paths:
                   schema:
                       type: integer
                   description: The number of records to skip. If not passed, no records are skipped.
+                - name: sortBy
+                  in: query
+                  required: false
+                  schema:
+                      type: string
+                  description: Set how the records are sorted. The default is id. The options are 'createdAt', 'updatedAt', 'id'.
+                - name: order
+                  in: query
+                  required: false
+                  schema:
+                      type: string
+                  description: Set the order of results. The default is 'desc'. The options are 'desc' or 'asc'.
                 - name: Connection-Id
                   in: header
                   required: true
