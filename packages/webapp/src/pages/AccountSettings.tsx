@@ -221,7 +221,11 @@ export default function AccountSettings() {
                                                 <li key={member.id} className={`flex w-full py-2 ${members.filter((m) => !m.suspended).length > 1 ?'border-b border-border-gray': ''} justify-between items-center`}>
                                                     <div className="flex space-x-12">
                                                         <span className="w-28">{member['name']}</span>
-                                                        <span className="w-36">{member['email']}</span>
+                                                        <Tooltip text={member['email']} type="dark">
+                                                            <div className="w-48 overflow-hidden truncate">
+                                                                <span className="">{member['email']}</span>
+                                                            </div>
+                                                        </Tooltip>
                                                     </div>
                                                     {!member.suspended && !member.currentUser && (
                                                         <Tooltip text="Remove member" type="dark">
@@ -246,7 +250,11 @@ export default function AccountSettings() {
                                                         <li key={member.id} className="flex w-full py-2 border-b border-border-gray justify-between items-center">
                                                             <div className="flex space-x-12">
                                                                 <span className="w-28">{member['name']}</span>
-                                                                <span className="w-36">{member['email']}</span>
+                                                                <Tooltip text={member['email']} type="dark">
+                                                                    <div className="w-48 overflow-hidden truncate">
+                                                                        <span className="">{member['email']}</span>
+                                                                    </div>
+                                                                </Tooltip>
                                                                 <Tooltip text="The invite expires on this date" type="dark">
                                                                     <span>{formatDateToUSFormat(member['expires_at'])}</span>
                                                                 </Tooltip>
@@ -265,7 +273,11 @@ export default function AccountSettings() {
                                                         <li key={member.id} className="flex w-full py-2 border-b border-border-gray justify-between items-center">
                                                             <div className="flex space-x-12 text-gray-500">
                                                                 <span className="w-28">{member['name']}</span>
-                                                                <span className="w-36">{member['email']}</span>
+                                                                <Tooltip text={member['email']} type="dark">
+                                                                    <div className="w-48 overflow-hidden truncate">
+                                                                        <span className="">{member['email']}</span>
+                                                                    </div>
+                                                                </Tooltip>
                                                             </div>
                                                         </li>
                                                     ))}
