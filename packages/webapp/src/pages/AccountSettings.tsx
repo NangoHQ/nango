@@ -3,6 +3,7 @@ import { Prism } from '@mantine/prism';
 import { toast } from 'react-toastify';
 import { Tooltip, useModal, Modal } from '@geist-ui/core';
 
+import CopyButton from '../components/ui/button/CopyButton';
 import DashboardLayout from '../layout/DashboardLayout';
 import { LeftNavBarItems } from '../components/LeftNavBar';
 import { useEditAccountNameAPI, useGetAccountAPI } from '../utils/api';
@@ -247,6 +248,7 @@ export default function AccountSettings() {
                                                                     <span>{formatDateToUSFormat(member['expires_at'])}</span>
                                                                 </Tooltip>
                                                             </div>
+                                                            <CopyButton icontype="link" textPrompt="Copy Invite Link" dark text={`${window.location.host}/signup/${member.token}`} />
                                                         </li>
                                                     ))}
                                                 </ul>

@@ -1,7 +1,7 @@
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import type { Request, Response, NextFunction } from 'express';
 import EmailClient from '../clients/email.client.js';
-import { userService, getBaseUrl } from '@nangohq/shared';
+import { userService, getBaseUrl, isCloud } from '@nangohq/shared';
 
 class UserController {
     async getUser(req: Request, res: Response, next: NextFunction) {
@@ -71,11 +71,12 @@ class UserController {
             if (!invited) {
                 throw new Error('Failed to invite user.');
             }
-            const emailClient = EmailClient.getInstance();
-            emailClient.send(
-                invited.email,
-                `Join the "${account.name}" account on Nango`,
-                `
+            if (isCloud()) {
+                const emailClient = EmailClient.getInstance();
+                emailClient.send(
+                    invited.email,
+                    `Join the "${account.name}" account on Nango`,
+                    `
 <p>Hi,</p>
 
 <p>You are invited to join the ${account.name} account on Nango.</p>
@@ -87,7 +88,8 @@ class UserController {
 <p>Best,<br>
 Team Nango</p>
             `
-            );
+                );
+            }
             res.status(200).send(invited);
         } catch (err) {
             next(err);

@@ -103,4 +103,5 @@ export interface InvitedUser {
     email: string;
     name: string;
     expires_at: string;
+    token: string;
 }
