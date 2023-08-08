@@ -67,6 +67,13 @@ class UserController {
                 return;
             }
 
+            const existingUser = await userService.getUserByEmail(email);
+
+            if (existingUser) {
+                res.status(400).send({ error: 'User with this email already exists.' });
+                return;
+            }
+
             const invited = await userService.inviteUser(email, name, account.id, user.id);
             if (!invited) {
                 throw new Error('Failed to invite user.');

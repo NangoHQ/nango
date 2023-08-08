@@ -114,11 +114,14 @@ export default function AccountSettings() {
             }),
         });
 
-        setInviteVisible(false);
 
         if (res?.status === 200) {
             toast.success('Member invited!', { position: toast.POSITION.BOTTOM_CENTER });
             setInvitedMembers([...invitedMembers, await res.json()]);
+            setInviteVisible(false);
+        } else {
+            const errorResponse = await res.json();
+            toast.error(`Failed to invite member: ${errorResponse.error}`, { position: toast.POSITION.BOTTOM_CENTER });
         }
     };
 
