@@ -105,4 +105,5 @@ export interface InvitedUser {
     name: string;
     expires_at: string;
     token: string;
+    accepted: boolean;
 }
