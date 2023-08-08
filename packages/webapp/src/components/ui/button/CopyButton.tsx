@@ -30,7 +30,7 @@ export default function ClipboardButton({ text, icontype = 'clipboard', textProm
         return () => {
             clearTimeout(timer);
         };
-    }, [tooltipText]);
+    }, [tooltipText, textPrompt]);
 
     return (
         <Tooltip className="text-xs" text={tooltipText} type={`${dark ? 'dark': 'default'}`}>
