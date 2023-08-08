@@ -218,7 +218,7 @@ export default function AccountSettings() {
                                     <div className="flex flex-col mt-2">
                                         <ul className="flex flex-col w-full space-y-4 text-white text-sm">
                                             {members.filter((m) => !m.suspended).map((member) => (
-                                                <li key={member.id} className="flex w-full py-2 border-b border-border-gray justify-between items-center">
+                                                <li key={member.id} className={`flex w-full py-2 ${members.filter((m) => !m.suspended).length > 1 ?'border-b border-border-gray': ''} justify-between items-center`}>
                                                     <div className="flex space-x-12">
                                                         <span className="w-28">{member['name']}</span>
                                                         <span className="w-36">{member['email']}</span>
