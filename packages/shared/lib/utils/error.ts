@@ -61,6 +61,11 @@ export class NangoError extends Error {
                 this.message = 'The admin key is not configured on the server. Contact the API provider.';
                 break;
 
+            case 'user_not_found':
+                this.status = 401;
+                this.message = 'Authentication failed. The user could not be found.';
+                break;
+
             case 'missing_body':
                 this.status = 400;
                 this.message = 'Missing request body.';
@@ -114,6 +119,11 @@ export class NangoError extends Error {
             case 'missing_environment_id':
                 this.status = 400;
                 this.message = `Missing param 'environment_id'.`;
+                break;
+
+            case 'invalid_invite_token':
+                this.status = 400;
+                this.message = 'The invite token is invalid.';
                 break;
 
             case 'missing_api_key':

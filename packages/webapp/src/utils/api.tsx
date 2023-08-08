@@ -27,12 +27,12 @@ export function useLogoutAPI() {
 }
 
 export function useSignupAPI() {
-    return async (name: string, email: string, password: string) => {
+    return async (name: string, email: string, password: string, account_id?: number, token?: string) => {
         try {
             const options = {
                 method: 'POST',
                 headers: getHeaders(),
-                body: JSON.stringify({ name: name, email: email, password: password })
+                body: JSON.stringify({ name: name, email: email, password: password, account_id, token })
             };
 
             return fetch('/api/v1/signup', options);
@@ -85,7 +85,7 @@ export function useGetProjectInfoAPI() {
 
     return async () => {
         try {
-            let res = await fetch('/api/v1/account', { headers: getHeaders() });
+            let res = await fetch('/api/v1/environment', { headers: getHeaders() });
 
             if (res.status === 401) {
                 return signout();
@@ -113,7 +113,7 @@ export function useEditCallbackUrlAPI() {
                 body: JSON.stringify({ callback_url: callbackUrl })
             };
 
-            let res = await fetch('/api/v1/account/callback', options);
+            let res = await fetch('/api/v1/environment/callback', options);
 
             if (res.status === 401) {
                 return signout();
@@ -141,7 +141,7 @@ export function useEditHmacEnabledAPI() {
                 body: JSON.stringify({ hmac_enabled: hmacEnabled })
             };
 
-            let res = await fetch('/api/v1/account/hmac-enabled', options);
+            let res = await fetch('/api/v1/environment/hmac-enabled', options);
 
             if (res.status === 401) {
                 return signout();
@@ -169,7 +169,7 @@ export function useEditHmacKeyAPI() {
                 body: JSON.stringify({ hmac_key: hmacKey })
             };
 
-            let res = await fetch('/api/v1/account/hmac-key', options);
+            let res = await fetch('/api/v1/environment/hmac-key', options);
 
             if (res.status === 401) {
                 return signout();
@@ -197,7 +197,7 @@ export function useEditWebhookUrlAPI() {
                 body: JSON.stringify({ webhook_url: webhookUrl })
             };
 
-            let res = await fetch('/api/v1/account/webhook', options);
+            let res = await fetch('/api/v1/environment/webhook', options);
 
             if (res.status === 401) {
                 return signout();
@@ -510,7 +510,7 @@ export function useGetSyncAPI() {
 export function useGetHmacAPI() {
     return async (providerConfigKey: string, connectionId: string) => {
         try {
-            const res = await fetch(`/api/v1/account/hmac?connection_id=${connectionId}&provider_config_key=${providerConfigKey}`, {
+            const res = await fetch(`/api/v1/environment/hmac?connection_id=${connectionId}&provider_config_key=${providerConfigKey}`, {
                 method: 'GET',
                 headers: getHeaders(),
             });
@@ -554,3 +554,125 @@ export function useRunSyncAPI() {
     };
 }
 
+export function useGetAccountAPI() {
+    const signout = useSignout();
+
+    return async () => {
+        try {
+            const res = await fetch('/api/v1/account', { headers: getHeaders() });
+
+            if (res.status === 401) {
+                return signout();
+            }
+
+            return res;
+        } catch (e) {
+            requestErrorToast();
+        }
+    };
+}
+
+export function useEditAccountNameAPI() {
+    const signout = useSignout();
+
+    return async (name: string) => {
+        try {
+            const res = await fetch('/api/v1/account', {
+                method: 'PUT',
+                headers: getHeaders(),
+                body: JSON.stringify({ name })
+            });
+
+            if (res.status === 401) {
+                return signout();
+            }
+
+            return res;
+        } catch (e) {
+            requestErrorToast();
+        }
+    };
+}
+
+export function useGetUserAPI() {
+    const signout = useSignout();
+
+    return async () => {
+        try {
+            const res = await fetch('/api/v1/user', { headers: getHeaders() });
+
+            if (res.status === 401) {
+                return signout();
+            }
+
+            return res;
+        } catch (e) {
+            requestErrorToast();
+        }
+    };
+}
+
+export function useEditUserNameAPI() {
+    const signout = useSignout();
+
+    return async (name: string) => {
+        try {
+            const res = await fetch('/api/v1/user/name', {
+                method: 'PUT',
+                headers: getHeaders(),
+                body: JSON.stringify({ name })
+            });
+
+            if (res.status === 401) {
+                return signout();
+            }
+
+            return res;
+        } catch (e) {
+            requestErrorToast();
+        }
+    };
+}
+
+export function useEditUserPasswordAPI() {
+    const signout = useSignout();
+
+    return async (oldPassword: string, newPassword: string) => {
+        try {
+            const res = await fetch('/api/v1/user/password', {
+                method: 'PUT',
+                headers: getHeaders(),
+                body: JSON.stringify({ oldPassword, newPassword })
+            });
+
+            if (res.status === 401) {
+                return signout();
+            }
+
+            return res;
+        } catch (e) {
+            requestErrorToast();
+        }
+    };
+}
+
+export function useInviteSignupAPI() {
+    const signout = useSignout();
+
+    return async (token: string) => {
+        try {
+            const res = await fetch(`/api/v1/signup/invite?token=${token}`, {
+                method: 'GET',
+                headers: getHeaders()
+            });
+
+            if (res.status === 401) {
+                return signout();
+            }
+
+            return res;
+        } catch (e) {
+            requestErrorToast();
+        }
+    };
+}

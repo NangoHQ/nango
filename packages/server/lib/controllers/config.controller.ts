@@ -30,7 +30,12 @@ class ConfigController {
 
     async listProviderConfigsWeb(req: Request, res: Response, next: NextFunction) {
         try {
-            const environment = (await getUserAccountAndEnvironmentFromSession(req)).environment;
+            const { success, error, response } = await getUserAccountAndEnvironmentFromSession(req);
+            if (!success || response === null) {
+                errorManager.errResFromNangoErr(res, error);
+                return;
+            }
+            const { environment } = response;
 
             const configs = await configService.listProviderConfigs(environment.id);
 
@@ -63,7 +68,12 @@ class ConfigController {
 
     async editProviderConfigWeb(req: Request, res: Response, next: NextFunction) {
         try {
-            const environment = (await getUserAccountAndEnvironmentFromSession(req)).environment;
+            const { success, error, response } = await getUserAccountAndEnvironmentFromSession(req);
+            if (!success || response === null) {
+                errorManager.errResFromNangoErr(res, error);
+                return;
+            }
+            const { environment } = response;
 
             if (req.body == null) {
                 errorManager.errRes(res, 'missing_body');
@@ -128,7 +138,13 @@ class ConfigController {
 
     async getProviderConfig(req: Request, res: Response, next: NextFunction) {
         try {
-            const { environmentId } = await getEnvironmentAndAccountId(res, req);
+            const { success, error, response } = await getEnvironmentAndAccountId(res, req);
+            if (!success || response === null) {
+                errorManager.errResFromNangoErr(res, error);
+                return;
+            }
+            const { environmentId } = response;
+
             const providerConfigKey = req.params['providerConfigKey'] as string;
             const includeCreds = req.query['include_creds'] === 'true';
 
@@ -162,7 +178,12 @@ class ConfigController {
 
     async createProviderConfig(req: Request, res: Response, next: NextFunction) {
         try {
-            const { accountId, environmentId } = await getEnvironmentAndAccountId(res, req);
+            const { success, error, response } = await getEnvironmentAndAccountId(res, req);
+            if (!success || response === null) {
+                errorManager.errResFromNangoErr(res, error);
+                return;
+            }
+            const { accountId, environmentId } = response;
 
             if (req.body == null) {
                 errorManager.errRes(res, 'missing_body');
@@ -303,7 +324,12 @@ class ConfigController {
 
     async deleteProviderConfig(req: Request, res: Response, next: NextFunction) {
         try {
-            const { environmentId } = await getEnvironmentAndAccountId(res, req);
+            const { success, error, response } = await getEnvironmentAndAccountId(res, req);
+            if (!success || response === null) {
+                errorManager.errResFromNangoErr(res, error);
+                return;
+            }
+            const { environmentId } = response;
             const providerConfigKey = req.params['providerConfigKey'] as string;
 
             if (providerConfigKey == null) {

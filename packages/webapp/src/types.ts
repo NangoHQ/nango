@@ -90,3 +90,19 @@ export interface ApiKeyCredentials {
     [key: string]: string;
     apiKey: string;
 }
+
+export interface User {
+    id: number;
+    email: string;
+    name: string;
+    suspended: boolean;
+    currentUser?: boolean;
+}
+
+export interface InvitedUser {
+    id: number;
+    email: string;
+    name: string;
+    expires_at: string;
+    token: string;
+}

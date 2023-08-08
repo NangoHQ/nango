@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'url';
 import path, { resolve } from 'path';
 import type { Request } from 'express';
-import type { User, Environment, Account, Template as ProviderTemplate } from '@nangohq/shared';
+import type { User, Environment, Account, Template as ProviderTemplate, ServiceResponse } from '@nangohq/shared';
 import logger from './logger.js';
 import type { WSErr } from './web-socket-error.js';
 import { readFileSync } from 'fs';
@@ -11,29 +11,37 @@ type PackageJson = {
     version: string;
 };
 
-export async function getUserAccountAndEnvironmentFromSession(req: Request): Promise<{ user: User; account: Account; environment: Environment }> {
+export async function getUserAccountAndEnvironmentFromSession(
+    req: Request
+): Promise<ServiceResponse<{ user: User; account: Account; environment: Environment }>> {
     const sessionUser = req.user;
     const currentEnvironment = req.cookies['env'] || 'dev';
 
     if (sessionUser == null) {
-        throw new NangoError('user_not_found');
+        const error = new NangoError('user_not_found');
+
+        return { success: false, error, response: null };
     }
 
     const user = await userService.getUserById(sessionUser.id);
 
     if (user == null) {
-        throw new NangoError('user_not_found');
+        const error = new NangoError('user_not_found');
+        return { success: false, error, response: null };
     }
 
     const environmentAndAccount = await environmentService.getAccountAndEnvironmentById(user.account_id, currentEnvironment);
 
     if (environmentAndAccount == null) {
-        throw new NangoError('account_not_found');
+        const error = new NangoError('account_not_found');
+        return { success: false, error, response: null };
     }
 
     const { account, environment } = environmentAndAccount as { account: Account; environment: Environment };
 
-    return { user, account, environment };
+    const response = { user, account, environment };
+
+    return { success: true, error: null, response };
 }
 
 export function dirname() {

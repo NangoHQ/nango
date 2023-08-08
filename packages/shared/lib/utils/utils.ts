@@ -7,6 +7,7 @@ import type { Environment } from '../models/Environment.js';
 import environmentService from '../services/environment.service.js';
 import userService from '../services/user.service.js';
 import type { Connection } from '../models/Connection.js';
+import type { ServiceResponse } from '../models/Generic.js';
 
 const PORT = process.env['SERVER_PORT'] || 3003;
 export const localhostUrl = `http://localhost:${PORT}`;
@@ -271,41 +272,55 @@ export function getEnvironmentId(res: Response): number {
     }
 }
 
-export async function getEnvironmentAndAccountId(res: Response, req: Request): Promise<{ accountId: number; environmentId: number; isWeb: boolean }> {
+export async function getEnvironmentAndAccountId(
+    res: Response,
+    req: Request
+): Promise<ServiceResponse<{ accountId: number; environmentId: number; isWeb: boolean }>> {
     if (req.user) {
-        const accountIdAndEnvironmentId = await getAccountIdAndEnvironmentIdFromSession(req);
-        return { ...accountIdAndEnvironmentId, isWeb: true };
+        const { response: accountInfo, success, error } = await getAccountIdAndEnvironmentIdFromSession(req);
+        if (!success || accountInfo == null) {
+            return { response: null, error, success: false };
+        }
+        const response = { ...accountInfo, isWeb: true };
+
+        return { response, error: null, success: true };
     } else {
         const accountId = getAccount(res);
         const environmentId = getEnvironmentId(res);
 
-        return Promise.resolve({ accountId, environmentId, isWeb: false });
+        const response = { accountId, environmentId, isWeb: false };
+        return Promise.resolve({ response, error: null, success: true });
     }
 }
 
-export async function getAccountIdAndEnvironmentIdFromSession(req: Request): Promise<{ accountId: number; environmentId: number }> {
+export async function getAccountIdAndEnvironmentIdFromSession(req: Request): Promise<ServiceResponse<{ accountId: number; environmentId: number }>> {
     const sessionUser = req.user as User;
     const currentEnvironment = req.cookies['env'] || 'dev';
 
     if (sessionUser == null) {
-        throw new NangoError('user_not_found');
+        const error = new NangoError('user_not_found');
+        return { response: null, error, success: false };
     }
 
     const user = await userService.getUserById(sessionUser.id);
 
     if (user == null) {
-        throw new NangoError('user_not_found');
+        const error = new NangoError('user_not_found');
+        return { response: null, error, success: false };
     }
 
     const environmentAndAccount = await environmentService.getAccountAndEnvironmentById(user.account_id, currentEnvironment);
 
     if (environmentAndAccount == null) {
-        throw new NangoError('account_not_found');
+        const error = new NangoError('account_not_found');
+        return { response: null, error, success: false };
     }
 
     const { account, environment } = environmentAndAccount as { account: Account; environment: Environment };
 
-    return { accountId: account.id, environmentId: environment.id };
+    const response = { accountId: account.id, environmentId: environment.id };
+
+    return { response, error: null, success: true };
 }
 
 export function isApiAuthenticated(res: Response): boolean {

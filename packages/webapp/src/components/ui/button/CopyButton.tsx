@@ -5,10 +5,12 @@ import { Clipboard, Link } from '@geist-ui/icons';
 interface ClipboardButtonProps {
     text: string;
     icontype?: 'clipboard' | 'link';
+    textPrompt?: string;
+    dark?: boolean;
 }
 
-export default function ClipboardButton({ text, icontype = 'clipboard' }: ClipboardButtonProps) {
-    const [tooltipText, setTooltipText] = useState('Copy');
+export default function ClipboardButton({ text, icontype = 'clipboard', textPrompt = 'Copy', dark = false }: ClipboardButtonProps) {
+    const [tooltipText, setTooltipText] = useState(textPrompt);
 
     const copyToClipboard = async () => {
         try {
@@ -22,16 +24,16 @@ export default function ClipboardButton({ text, icontype = 'clipboard' }: Clipbo
 
     useEffect(() => {
         const timer = setTimeout(() => {
-            setTooltipText('Copy');
+            setTooltipText(textPrompt);
         }, 1000);
 
         return () => {
             clearTimeout(timer);
         };
-    }, [tooltipText]);
+    }, [tooltipText, textPrompt]);
 
     return (
-        <Tooltip className="text-xs" text={tooltipText}>
+        <Tooltip className="text-xs" text={tooltipText} type={`${dark ? 'dark': 'default'}`}>
             {icontype === 'link' ? (
                 <Link color="gray" className="h-4 ml-1 cursor-pointer" onClick={copyToClipboard} />
             ) : (

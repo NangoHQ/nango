@@ -125,7 +125,13 @@ class SyncController {
 
     public async getSyncsByParams(req: Request, res: Response, next: NextFunction) {
         try {
-            const environment = (await getUserAccountAndEnvironmentFromSession(req)).environment;
+            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
+            if (!sessionSuccess || response === null) {
+                errorManager.errResFromNangoErr(res, sessionError);
+                return;
+            }
+            const { environment } = response;
+
             const { connection_id, provider_config_key } = req.query;
 
             const {
@@ -157,7 +163,12 @@ class SyncController {
 
     public async getSyncs(req: Request, res: Response, next: NextFunction) {
         try {
-            const environment = (await getUserAccountAndEnvironmentFromSession(req)).environment;
+            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
+            if (!sessionSuccess || response === null) {
+                errorManager.errResFromNangoErr(res, sessionError);
+                return;
+            }
+            const { environment } = response;
 
             const syncs = await getSyncConfigsWithConnectionsByEnvironmentId(environment.id);
 
@@ -242,7 +253,13 @@ class SyncController {
 
     public async syncCommand(req: Request, res: Response, next: NextFunction) {
         try {
-            const environment = (await getUserAccountAndEnvironmentFromSession(req)).environment;
+            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
+            if (!sessionSuccess || response === null) {
+                errorManager.errResFromNangoErr(res, sessionError);
+                return;
+            }
+            const { environment } = response;
+
             const { schedule_id, command, nango_connection_id, sync_id, sync_name, provider } = req.body;
             const connection = await connectionService.getConnectionById(nango_connection_id);
 

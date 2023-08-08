@@ -9,6 +9,7 @@ import type { Response, Request } from 'express';
 import { isCloud, getEnvironmentId, getAccountIdAndEnvironmentIdFromSession, dirname, isApiAuthenticated, isUserAuthenticated } from './utils.js';
 import type { LogAction } from '../models/Activity.js';
 import environmentService from '../services/environment.service.js';
+import accountService from '../services/account.service.js';
 import userService from '../services/user.service.js';
 
 export enum ErrorSourceEnum {
@@ -54,28 +55,31 @@ class ErrorManager {
 
     public async report(e: any, config: ErrorOptionalConfig = { source: ErrorSourceEnum.PLATFORM }) {
         sentry.withScope(async function (scope) {
-            if (config.environmentId) {
-                const environmentName = await environmentService.getEnvironmentName(config.environmentId);
-                const accountId = await environmentService.getAccountIdFromEnvironment(config.environmentId);
-                const user = await userService.getByAccountId(accountId as number);
-                sentry.setTag('environmentName', environmentName);
-                sentry.setUser({
-                    id: `account-${accountId}`,
-                    email: user?.email || '',
-                    userId: user?.id
-                });
+            if (config.environmentId || config.accountId) {
+                let accountId: number | undefined;
+                if (config.environmentId) {
+                    const environmentName = await environmentService.getEnvironmentName(config.environmentId);
+                    accountId = (await environmentService.getAccountIdFromEnvironment(config.environmentId)) as number;
+                    sentry.setTag('environmentName', environmentName);
+                }
+
+                if (config.accountId && !config.environmentId) {
+                    accountId = config.accountId;
+                }
+                const account = await accountService.getAccountById(accountId as number);
+
+                if (!config.userId) {
+                    const users = await userService.getUsersByAccountId(accountId as number);
+                    sentry.setUser({
+                        id: `account-${accountId}`,
+                        organization: account?.name || '',
+                        emails: users.map((user) => user.email).join(','),
+                        userIds: users.map((user) => user.id).join(',')
+                    });
+                }
             }
 
-            if (config.accountId && !config.environmentId) {
-                const user = await userService.getByAccountId(config.accountId);
-                sentry.setUser({
-                    id: `account-${config.accountId}`,
-                    email: user?.email || '',
-                    userId: user?.id
-                });
-            }
-
-            if (config.userId && !config.environmentId) {
+            if (config.userId) {
                 const user = await userService.getUserById(config.userId);
                 sentry.setUser({
                     id: `user-${config.userId}`,
@@ -90,7 +94,7 @@ class ErrorManager {
                 sentry.setTag('operation', config.operation);
             }
 
-            if (config.metadata != null) {
+            if (config.metadata) {
                 scope.setContext('metadata', config.metadata);
             }
 
@@ -107,7 +111,7 @@ class ErrorManager {
     public async capture(
         event_id: string,
         message: string,
-        user: ErrorCaptureUser,
+        users: ErrorCaptureUser[],
         accountId: number,
         environmentId: number,
         operation: string,
@@ -121,8 +125,8 @@ class ErrorManager {
             user: {
                 // Note: using the account ID since not all operations have a user ID due to usage of secret/public keys
                 id: accountId.toString(),
-                email: user.email || '',
-                userId: user.id
+                email: users.map((user) => user.email).join(','),
+                userId: users.map((user) => user.userId).join(',')
             },
             tags: {
                 environmentName,
@@ -141,9 +145,9 @@ class ErrorManager {
         contexts?: Record<string, unknown>
     ) {
         const accountId = await environmentService.getAccountIdFromEnvironment(environmentId);
-        const user = await userService.getByAccountId(accountId as number);
-        if (user) {
-            await this.capture(event_id, message, user, accountId as number, environmentId, operation, contexts);
+        const users = await userService.getByAccountId(accountId as number);
+        if (users.length > 0) {
+            await this.capture(event_id, message, users as ErrorCaptureUser[], accountId as number, environmentId, operation, contexts);
         }
     }
 
@@ -172,7 +176,12 @@ class ErrorManager {
             const environmentId = getEnvironmentId(res);
             await this.report(nangoErr, { source: ErrorSourceEnum.PLATFORM, environmentId, metadata: err.payload });
         } else if (isUserAuthenticated(req)) {
-            const { environmentId } = await getAccountIdAndEnvironmentIdFromSession(req);
+            const { response, success, error } = await getAccountIdAndEnvironmentIdFromSession(req);
+            if (!success || response === null) {
+                this.report(error, { source: ErrorSourceEnum.PLATFORM, metadata: err.payload });
+                return;
+            }
+            const { environmentId } = response;
             await this.report(nangoErr, { source: ErrorSourceEnum.PLATFORM, environmentId, metadata: err.payload });
         } else {
             this.report(nangoErr, { source: ErrorSourceEnum.PLATFORM, metadata: err.payload });
