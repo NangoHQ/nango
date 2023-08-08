@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Activity, Briefcase, User } from '@geist-ui/icons';
 
 import { useStore } from '../store';
+import { isCloud } from '../utils/utils';
 
 export enum LeftNavBarItems {
     Integrations = 0,
@@ -106,22 +107,24 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                         </Link>
                     </div>
                 </div>
-                <div className="w-60 border-t-2 border-border-gray">
-                    <ul className="pt-8 mb-24 px-6 text-white space-y-4 text-sm">
-                        <li>
-                            <Link to="/account-settings" className={`flex h-10 rounded-md ml-4 pl-2 pr-3 pt-2.5 text-sm text-white w-44 ${props.selectedItem === LeftNavBarItems.AccountSettings ? 'bg-gray-800' : 'hover:bg-gray-700'}`}>
-                                <Briefcase className="h-5 mr-3" />
-                                Account Settings
-                            </Link>
-                        </li>
-                        <li>
-                            <Link to="/user-settings" className={`flex h-10 rounded-md ml-4 pl-2 pr-3 pt-2.5 text-sm text-white w-44 ${props.selectedItem === LeftNavBarItems.UserSettings ? 'bg-gray-800' : 'hover:bg-gray-700'}`}>
-                                <User className="h-5 mr-3" />
-                                User Settings
-                            </Link>
-                        </li>
-                    </ul>
-                </div>
+                {isCloud() && (
+                    <div className="w-60 border-t-2 border-border-gray">
+                        <ul className="pt-8 mb-24 px-6 text-white space-y-4 text-sm">
+                            <li>
+                                <Link to="/account-settings" className={`flex h-10 rounded-md ml-4 pl-2 pr-3 pt-2.5 text-sm text-white w-44 ${props.selectedItem === LeftNavBarItems.AccountSettings ? 'bg-gray-800' : 'hover:bg-gray-700'}`}>
+                                    <Briefcase className="h-5 mr-3" />
+                                    Account Settings
+                                </Link>
+                            </li>
+                            <li>
+                                <Link to="/user-settings" className={`flex h-10 rounded-md ml-4 pl-2 pr-3 pt-2.5 text-sm text-white w-44 ${props.selectedItem === LeftNavBarItems.UserSettings ? 'bg-gray-800' : 'hover:bg-gray-700'}`}>
+                                    <User className="h-5 mr-3" />
+                                    User Settings
+                                </Link>
+                            </li>
+                        </ul>
+                    </div>
+                )}
             </div>
         </div>
     );

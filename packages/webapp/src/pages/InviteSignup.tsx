@@ -101,7 +101,7 @@ export default function InviteSignup() {
                                         defaultValue={invitedEmail}
                                         required
                                         readOnly
-                                        className="border-border-gray bg-bg-black text-text-light-gray focus:ring-blue block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:border-blue-500 focus:outline-none"
+                                        className="cursor-not-allowed outline-none border-transparent focus:border-transparent focus:ring-0 border-none bg-bg-black text-text-light-gray block h-11 focus:outline-none w-full appearance-none rounded-md px-3 py-2 text-base shadow-sm"
                                     />
                                 </div>
                             </div>

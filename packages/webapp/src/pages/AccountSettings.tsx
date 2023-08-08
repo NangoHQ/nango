@@ -238,11 +238,11 @@ export default function AccountSettings() {
                                                 </li>
                                             ))}
                                         </ul>
-                                        {invitedMembers.length > 0 && (
+                                        {invitedMembers.filter((m) => !m.accepted).length > 0 && (
                                             <>
                                                 <h3 className="mt-8 text-text-light-gray text-sm font-semibold mt-4 mb-2">Invited Members</h3>
                                                 <ul className="flex flex-col w-full space-y-4 text-white text-sm">
-                                                    {invitedMembers.map((member) => (
+                                                    {invitedMembers.filter((m) => !m.accepted).map((member) => (
                                                         <li key={member.id} className="flex w-full py-2 border-b border-border-gray justify-between items-center">
                                                             <div className="flex space-x-12">
                                                                 <span className="w-28">{member['name']}</span>

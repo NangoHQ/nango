@@ -56,13 +56,17 @@ const App = () => {
                     <Route path="/project-settings" element={<ProjectSettings />} />
                 </Route>
                 <Route path="/auth-link" element={<AuthLink />} />
-                <Route path="/account-settings" element={<AccountSettings />} />
-                <Route path="/user-settings" element={<UserSettings />} />
-                {isCloud() && <Route path="/signin" element={<Signin />} />}
-                {isCloud() && <Route path="/signup" element={<Signup />} />}
-                {isCloud() && <Route path="/signup/:token" element={<InviteSignup />} />}
-                {isCloud() && <Route path="/forgot-password" element={<ForgotPassword />} />}
-                {isCloud() && <Route path="/reset-password/:token" element={<ResetPassword />} />}
+                {isCloud() && (
+                    <>
+                        <Route path="/account-settings" element={<AccountSettings />} />
+                        <Route path="/user-settings" element={<UserSettings />} />
+                        <Route path="/signin" element={<Signin />} />
+                        <Route path="/signup" element={<Signup />} />
+                        <Route path="/signup/:token" element={<InviteSignup />} />
+                        <Route path="/forgot-password" element={<ForgotPassword />} />
+                        <Route path="/reset-password/:token" element={<ResetPassword />} />
+                    </>
+                )}
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
             <ToastContainer />
