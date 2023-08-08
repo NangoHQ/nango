@@ -295,8 +295,10 @@ class ProxyController {
      * @param {attemptNumber} number
      */
     private retry = async (activityLogId: number, error: AxiosError, attemptNumber: number): Promise<boolean> => {
-        if (error?.response?.status.toString().startsWith('5') || error?.response?.status === 429) {
-            const content = `API received an ${error?.response?.status} error, retrying with exponential backoffs for a total of ${attemptNumber} times`;
+        if (error?.response?.status.toString().startsWith('5') || error?.response?.status === 429 || error?.code === 'ECONNRESET') {
+            const content = `API received an ${
+                error?.response?.status || error?.code
+            } error, retrying with exponential backoffs for a total of ${attemptNumber} times`;
 
             await createActivityLogMessage({
                 level: 'error',
