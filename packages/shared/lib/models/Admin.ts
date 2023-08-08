@@ -18,6 +18,7 @@ export interface User extends Timestamps {
     reset_password_token: string | undefined;
     suspended: boolean;
     suspended_at: Date;
+    currentUser?: boolean;
 }
 
 export interface InviteUser extends Timestamps {

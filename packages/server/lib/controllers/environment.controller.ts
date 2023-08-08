@@ -5,7 +5,12 @@ import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 class EnvironmentController {
     async getEnvironment(req: Request, res: Response, next: NextFunction) {
         try {
-            const { environment } = await getUserAccountAndEnvironmentFromSession(req);
+            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
+            if (!sessionSuccess || response === null) {
+                errorManager.errResFromNangoErr(res, sessionError);
+                return;
+            }
+            const { environment } = response;
 
             if (!isCloud()) {
                 environment.websockets_path = getWebsocketsPath();
@@ -21,7 +26,12 @@ class EnvironmentController {
 
     async getHmacDigest(req: Request, res: Response, next: NextFunction) {
         try {
-            const { environment } = await getUserAccountAndEnvironmentFromSession(req);
+            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
+            if (!sessionSuccess || response === null) {
+                errorManager.errResFromNangoErr(res, sessionError);
+                return;
+            }
+            const { environment } = response;
             const { provider_config_key: providerConfigKey, connection_id: connectionId } = req.query;
 
             if (!providerConfigKey) {
@@ -57,7 +67,12 @@ class EnvironmentController {
                 return;
             }
 
-            const environment = (await getUserAccountAndEnvironmentFromSession(req)).environment;
+            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
+            if (!sessionSuccess || response === null) {
+                errorManager.errResFromNangoErr(res, sessionError);
+                return;
+            }
+            const { environment } = response;
 
             await environmentService.editCallbackUrl(req.body['callback_url'], environment.id);
             res.status(200).send();
@@ -73,7 +88,12 @@ class EnvironmentController {
                 return;
             }
 
-            const environment = (await getUserAccountAndEnvironmentFromSession(req)).environment;
+            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
+            if (!sessionSuccess || response === null) {
+                errorManager.errResFromNangoErr(res, sessionError);
+                return;
+            }
+            const { environment } = response;
 
             await environmentService.editWebhookUrl(req.body['webhook_url'], environment.id);
             res.status(200).send();
@@ -89,7 +109,12 @@ class EnvironmentController {
                 return;
             }
 
-            const environment = (await getUserAccountAndEnvironmentFromSession(req)).environment;
+            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
+            if (!sessionSuccess || response === null) {
+                errorManager.errResFromNangoErr(res, sessionError);
+                return;
+            }
+            const { environment } = response;
 
             await environmentService.editHmacEnabled(req.body['hmac_enabled'], environment.id);
             res.status(200).send();
@@ -105,7 +130,12 @@ class EnvironmentController {
                 return;
             }
 
-            const environment = (await getUserAccountAndEnvironmentFromSession(req)).environment;
+            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
+            if (!sessionSuccess || response === null) {
+                errorManager.errResFromNangoErr(res, sessionError);
+                return;
+            }
+            const { environment } = response;
 
             await environmentService.editHmacKey(req.body['hmac_key'], environment.id);
             res.status(200).send();

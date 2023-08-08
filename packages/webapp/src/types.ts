@@ -96,6 +96,7 @@ export interface User {
     email: string;
     name: string;
     suspended: boolean;
+    currentUser?: boolean;
 }
 
 export interface InvitedUser {

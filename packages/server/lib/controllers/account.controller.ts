@@ -1,15 +1,28 @@
 import type { Request, Response, NextFunction } from 'express';
-import { accountService, userService } from '@nangohq/shared';
+import { accountService, userService, errorManager } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 
 class AccountController {
     async getAccount(req: Request, res: Response, next: NextFunction) {
         try {
-            const { account } = await getUserAccountAndEnvironmentFromSession(req);
+            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
+            if (!sessionSuccess || response === null) {
+                errorManager.errResFromNangoErr(res, sessionError);
+                return;
+            }
+            const { account, user } = response;
+
             const users = await userService.getUsersByAccountId(account.id);
             const invitedUsers = await userService.getInvitedUsersByAccountId(account.id);
 
-            res.status(200).send({ account, users, invitedUsers });
+            const usersWithCurrentUser = users.map((invitedUser) => {
+                if (invitedUser.email === user.email) {
+                    invitedUser.currentUser = true;
+                }
+                return invitedUser;
+            });
+
+            res.status(200).send({ account, users: usersWithCurrentUser, invitedUsers });
         } catch (err) {
             next(err);
         }
@@ -17,7 +30,12 @@ class AccountController {
 
     async editAccount(req: Request, res: Response, next: NextFunction) {
         try {
-            const { account } = await getUserAccountAndEnvironmentFromSession(req);
+            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
+            if (!sessionSuccess || response === null) {
+                errorManager.errResFromNangoErr(res, sessionError);
+                return;
+            }
+            const { account } = response;
 
             const name = req.body['name'];
 

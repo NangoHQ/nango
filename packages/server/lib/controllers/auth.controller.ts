@@ -28,7 +28,13 @@ export interface WebUser {
 class AuthController {
     async signin(req: Request, res: Response, next: NextFunction) {
         try {
-            const user = (await getUserAccountAndEnvironmentFromSession(req)).user;
+            const { success, error, response } = await getUserAccountAndEnvironmentFromSession(req);
+            if (!success || response === null) {
+                errorManager.errResFromNangoErr(res, error);
+                return;
+            }
+            const { user } = response;
+
             const webUser: WebUser = {
                 id: user.id,
                 accountId: user.account_id,

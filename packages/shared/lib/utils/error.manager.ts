@@ -176,7 +176,12 @@ class ErrorManager {
             const environmentId = getEnvironmentId(res);
             await this.report(nangoErr, { source: ErrorSourceEnum.PLATFORM, environmentId, metadata: err.payload });
         } else if (isUserAuthenticated(req)) {
-            const { environmentId } = await getAccountIdAndEnvironmentIdFromSession(req);
+            const { response, success, error } = await getAccountIdAndEnvironmentIdFromSession(req);
+            if (!success || response === null) {
+                this.report(error, { source: ErrorSourceEnum.PLATFORM, metadata: err.payload });
+                return;
+            }
+            const { environmentId } = response;
             await this.report(nangoErr, { source: ErrorSourceEnum.PLATFORM, environmentId, metadata: err.payload });
         } else {
             this.report(nangoErr, { source: ErrorSourceEnum.PLATFORM, metadata: err.payload });

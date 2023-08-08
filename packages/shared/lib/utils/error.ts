@@ -61,6 +61,11 @@ export class NangoError extends Error {
                 this.message = 'The admin key is not configured on the server. Contact the API provider.';
                 break;
 
+            case 'user_not_found':
+                this.status = 401;
+                this.message = 'Authentication failed. The user could not be found.';
+                break;
+
             case 'missing_body':
                 this.status = 400;
                 this.message = 'Missing request body.';

@@ -1,12 +1,17 @@
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import type { Request, Response, NextFunction } from 'express';
 import EmailClient from '../clients/email.client.js';
-import { userService, getBaseUrl, isCloud } from '@nangohq/shared';
+import { errorManager, userService, getBaseUrl, isCloud } from '@nangohq/shared';
 
 class UserController {
     async getUser(req: Request, res: Response, next: NextFunction) {
         try {
-            const user = (await getUserAccountAndEnvironmentFromSession(req)).user;
+            const { success, error, response } = await getUserAccountAndEnvironmentFromSession(req);
+            if (!success || response === null) {
+                errorManager.errResFromNangoErr(res, error);
+                return;
+            }
+            const { user } = response;
 
             res.status(200).send({
                 user: {
@@ -23,7 +28,12 @@ class UserController {
 
     async editName(req: Request, res: Response, next: NextFunction) {
         try {
-            const user = (await getUserAccountAndEnvironmentFromSession(req)).user;
+            const { success, error, response } = await getUserAccountAndEnvironmentFromSession(req);
+            if (!success || response === null) {
+                errorManager.errResFromNangoErr(res, error);
+                return;
+            }
+            const { user } = response;
             const name = req.body['name'];
 
             if (!name) {
@@ -40,7 +50,12 @@ class UserController {
 
     async editPassword(req: Request, res: Response, next: NextFunction) {
         try {
-            const user = (await getUserAccountAndEnvironmentFromSession(req)).user;
+            const { success, error, response } = await getUserAccountAndEnvironmentFromSession(req);
+            if (!success || response === null) {
+                errorManager.errResFromNangoErr(res, error);
+                return;
+            }
+            const { user } = response;
             const oldPassword = req.body['old_password'];
             const newPassword = req.body['new_password'];
 
@@ -58,7 +73,13 @@ class UserController {
 
     async invite(req: Request, res: Response, next: NextFunction) {
         try {
-            const { account, user } = await getUserAccountAndEnvironmentFromSession(req);
+            const { success, error, response } = await getUserAccountAndEnvironmentFromSession(req);
+            if (!success || response === null) {
+                errorManager.errResFromNangoErr(res, error);
+                return;
+            }
+            const { account, user } = response;
+
             const email = req.body['email'];
             const name = req.body['name'];
 

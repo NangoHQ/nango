@@ -223,7 +223,7 @@ export default function AccountSettings() {
                                                         <span className="w-28">{member['name']}</span>
                                                         <span className="w-36">{member['email']}</span>
                                                     </div>
-                                                    {!member.suspended && (
+                                                    {!member.suspended && !member.currentUser && (
                                                         <Tooltip text="Remove member" type="dark">
                                                             <span
                                                                 className="bg-red-500 cursor-pointer pb-0.5 text-white h-5 w-5 flex items-center justify-center rounded-full"
