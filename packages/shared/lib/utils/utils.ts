@@ -329,7 +329,7 @@ export function isApiAuthenticated(res: Response): boolean {
 
 export function isUserAuthenticated(req: Request): boolean {
     const user = req.user as User;
-    return req.isAuthenticated() && user != null && user.id != null;
+    return typeof req.isAuthenticated === 'function' && req.isAuthenticated() && user != null && user.id != null;
 }
 
 export function getConnectionConfig(queryParams: any): Record<string, string> {
