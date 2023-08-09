@@ -198,7 +198,7 @@ class SyncController {
             const connectionId = req.get('Connection-Id') as string;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
 
-            const syncs = req.body as string[];
+            const syncs = req.body.syncs as string[];
 
             if (typeof syncs === 'string') {
                 res.status(400).send({ message: 'Syncs must be an array' });
