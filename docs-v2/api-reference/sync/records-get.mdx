@@ -12,7 +12,7 @@ If you are using the [Nango webhooks](/guides/webhooks#from-nango) you can use t
 
 Returns an array of objects in the data model that you queried.
 
-For example:
+With include_nango_metadata = false:
 ```json
 [
     {
@@ -20,6 +20,33 @@ For example:
         // Fields as specified in the model you queried
         ...
     },
+    ...
+]
+```
+
+With include_nango_metadata = true:
+```json
+[
+    {
+        first_seen_at: '2023-07-24T17:23:08.788Z',
+        last_modified_at: '2023-07-24T17:23:08.788Z',
+        last_action: 'ADDED'
+        record: {
+            id: 123,
+            // Fields as specified in the model you queried
+            ...
+        },
+    },
+    {
+        first_seen_at: '2023-07-24T17:23:08.788Z',
+        last_modified_at: '2023-07-27T17:23:08.788Z',
+        last_action: 'UPDATED'
+        record: {
+            id: 456,
+            // Fields as specified in the model you queried
+            ...
+        },
+    }
     ...
 ]
 ```

@@ -129,8 +129,8 @@ export async function getDataRecords(
         result = await query.select(
             'created_at as first_seen_at',
             'updated_at as last_modified_at',
-            'json as record',
-            db.knex.raw(`CASE WHEN created_at = updated_at THEN 'ADDED' ELSE 'UPDATED' END as last_action`)
+            db.knex.raw(`CASE WHEN created_at = updated_at THEN 'ADDED' ELSE 'UPDATED' END as last_action`),
+            'json as record'
         );
     } else {
         result = (await query.pluck('json')) as Pick<SyncDataRecord, 'json'>[];
