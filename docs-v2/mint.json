@@ -78,6 +78,7 @@
                                 "integration-templates/github",
                                 "integration-templates/google-workspace",
                                 "integration-templates/gmail",
+                                "integration-templates/intercom",
                                 "integration-templates/jira",
                                 "integration-templates/linear",
                                 "integration-templates/notion",
