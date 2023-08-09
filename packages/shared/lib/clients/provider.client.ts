@@ -13,8 +13,6 @@ import { parseTokenExpirationDate, isTokenExpired } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
 
 class ProviderClient {
-    constructor() {}
-
     public shouldUseProviderClient(provider: string): boolean {
         switch (provider) {
             case 'braintree':
