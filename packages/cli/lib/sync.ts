@@ -614,7 +614,12 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
         lastSyncDate = new Date(suppliedLastSyncDate as string);
     }
 
-    tsc(debug, syncName);
+    const result = tsc(debug, syncName);
+
+    if (!result) {
+        console.log(chalk.red('The sync did not compile successfully. Exiting'));
+        return;
+    }
 
     const syncRun = new syncRunService({
         writeToDb: false,
@@ -648,7 +653,7 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
     }
 };
 
-export const tsc = (debug = false, syncName?: string) => {
+export const tsc = (debug = false, syncName?: string): boolean => {
     const tsconfig = fs.readFileSync(`${getNangoRootPath()}/tsconfig.dev.json`, 'utf8');
 
     const distDir = './dist';
@@ -678,18 +683,22 @@ export const tsc = (debug = false, syncName?: string) => {
     for (const filePath of integrationFiles) {
         try {
             if (!nangoCallsAreAwaited(filePath)) {
-                return;
+                return false;
             }
             const result = compiler.compile(fs.readFileSync(filePath, 'utf8'), filePath);
             const jsFilePath = filePath.replace(/\/[^\/]*$/, `/dist/${path.basename(filePath.replace('.ts', '.js'))}`);
 
             fs.writeFileSync(jsFilePath, result);
             console.log(chalk.green(`Compiled "${filePath}" successfully`));
+            return true;
         } catch (error) {
             console.error(`Error compiling "${filePath}":`);
             console.error(error);
+            return false;
         }
     }
+
+    return true;
 };
 
 const nangoCallsAreAwaited = (filePath: string): boolean => {
