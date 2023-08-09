@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 import type { DataRecord as SyncDataRecord } from '../../models/Sync.js';
 import type { DataResponse } from '../../models/Data.js';
 import type { ServiceResponse } from '../../models/Generic.js';
-import { schema } from '../../db/database.js';
+import db, { schema } from '../../db/database.js';
 import connectionService from '../connection.service.js';
 import { NangoError } from '../../utils/error.js';
 
@@ -55,7 +55,8 @@ export async function getDataRecords(
     offset: number | string,
     limit: number | string,
     sortBy: string,
-    order: 'asc' | 'desc'
+    order: 'asc' | 'desc',
+    includeMetaData = false
 ): Promise<ServiceResponse<Pick<SyncDataRecord, 'json'>[] | null>> {
     if (!model) {
         const error = new NangoError('missing_model');
@@ -76,10 +77,10 @@ export async function getDataRecords(
     let sort = 'external_id';
 
     switch (sortBy) {
-        case 'updatedAt':
+        case 'updated_at':
             sort = 'updated_at';
             break;
-        case 'createdAt':
+        case 'created_at':
             sort = 'created_at';
             break;
     }
@@ -122,7 +123,18 @@ export async function getDataRecords(
         query = query.andWhere('updated_at', '>=', utcString);
     }
 
-    const result = (await query.pluck('json')) as Pick<SyncDataRecord, 'json'>[];
+    let result;
+
+    if (includeMetaData) {
+        result = await query.select(
+            'created_at as first_seen_at',
+            'updated_at as last_modified_at',
+            'json as record',
+            db.knex.raw(`CASE WHEN created_at = updated_at THEN 'ADDED' ELSE 'UPDATED' END as last_action`)
+        );
+    } else {
+        result = (await query.pluck('json')) as Pick<SyncDataRecord, 'json'>[];
+    }
 
     return { success: true, error: null, response: result };
 }

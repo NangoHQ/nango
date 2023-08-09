@@ -494,13 +494,13 @@ paths:
                   schema:
                       type: integer
                   description: The number of records to skip. If not passed, no records are skipped.
-                - name: sortBy
+                - name: sort_by
                   in: query
                   required: false
                   schema:
                       type: string
-                      enum: [createdAt, updatedAt, id]
-                  description: Set how the records are sorted. The default is id. The options are 'createdAt', 'updatedAt', 'id'.
+                      enum: [created_at, updated_at, id]
+                  description: Set how the records are sorted. The default is id. The options are 'created_at', 'updated_at', 'id'.
                 - name: order
                   in: query
                   required: false
@@ -508,6 +508,12 @@ paths:
                       type: string
                       enum: [desc, asc]
                   description: Set the order of results. The default is 'desc'. The options are 'desc' or 'asc'.
+                - name: include_nango_metadata
+                  in: query
+                  required: false
+                  schema:
+                      type: boolean
+                  description: Include Nango metadata that wraps the response
                 - name: Connection-Id
                   in: header
                   required: true

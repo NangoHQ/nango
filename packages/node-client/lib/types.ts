@@ -49,6 +49,7 @@ export interface GetRecordsRequestConfig {
     limit?: number;
     sortBy?: 'updatedAt' | 'createdAt' | 'id';
     order?: 'asc' | 'desc';
+    includeNangoMetadata?: boolean;
 }
 
 export interface BasicApiCredentials {
