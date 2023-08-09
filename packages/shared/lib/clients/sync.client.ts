@@ -214,6 +214,9 @@ class SyncClient {
 
             await this.client?.schedule.create({
                 scheduleId,
+                policies: {
+                    overlap: OVERLAP_POLICY
+                },
                 spec: {
                     /**
                      * @see https://nodejs.temporal.io/api/interfaces/client.IntervalSpec
