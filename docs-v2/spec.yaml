@@ -542,6 +542,16 @@ paths:
                   description: The integration ID used to create the connection (aka Unique Key).
                   schema:
                       type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                syncs:
+                                    type: array
+                                    items:
+                                        type: string
     /proxy/{anyPath}:
         get:
             description: Make a GET request with the Proxy.

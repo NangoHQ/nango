@@ -391,7 +391,7 @@ export class Nango {
         throw new Error('getFieldMapping is deprecated. Please use getMetadata instead.');
     }
 
-    public async triggerSync(providerConfigKey: string, connectionId: string): Promise<void> {
+    public async triggerSync(providerConfigKey: string, connectionId: string, syncs?: string[]): Promise<void> {
         const url = `${this.serverUrl}/sync/trigger`;
 
         const headers = {
@@ -399,7 +399,15 @@ export class Nango {
             'Provider-Config-Key': providerConfigKey
         };
 
-        return axios.post(url, {}, { headers: this.enrichHeaders(headers) });
+        if (typeof syncs === 'string') {
+            throw new Error('Syncs must be an array of strings. If it is a single sync, please wrap it in an array.');
+        }
+
+        const body = {
+            syncs: syncs || []
+        };
+
+        return axios.post(url, body, { headers: this.enrichHeaders(headers) });
     }
 
     public async createConnection(_connectionArgs: CreateConnectionOAuth1 | (CreateConnectionOAuth2 & { metadata: string; connection_config: string })) {

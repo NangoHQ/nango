@@ -12,6 +12,7 @@ import {
     SyncClient,
     updateScheduleStatus,
     getSyncsFlat,
+    getSyncsFlatWithNames,
     updateSuccess as updateSuccessActivityLog,
     createActivityLogAndLogMessage,
     createActivityLogMessageAndEnd,
@@ -197,6 +198,14 @@ class SyncController {
             const connectionId = req.get('Connection-Id') as string;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
 
+            const syncs = req.body.syncs as string[];
+
+            if (typeof syncs === 'string') {
+                res.status(400).send({ message: 'Syncs must be an array' });
+
+                return;
+            }
+
             if (!connectionId) {
                 res.status(400).send({ message: 'Missing connection id' });
 
@@ -221,11 +230,16 @@ class SyncController {
                 return;
             }
 
-            const syncs = await getSyncsFlat(connection as Connection);
+            const syncsToTrigger =
+                syncs && syncs.length > 0 ? await getSyncsFlatWithNames(connection as Connection, syncs) : await getSyncsFlat(connection as Connection);
+
+            if (!syncsToTrigger || syncsToTrigger.length === 0) {
+                res.status(400).send({ message: 'No syncs to trigger' });
+            }
 
             const syncClient = await SyncClient.getInstance();
 
-            await syncClient?.triggerSyncs(syncs, environmentId);
+            await syncClient?.triggerSyncs(syncsToTrigger, environmentId);
 
             res.sendStatus(200);
         } catch (e) {
