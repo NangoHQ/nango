@@ -513,7 +513,7 @@ paths:
                   required: false
                   schema:
                       type: boolean
-                  description: Include Nango metadata that wraps the response
+                  description: If set to true, includes Nango metadata for each record in the response. Default is 'false'.
                 - name: Connection-Id
                   in: header
                   required: true
