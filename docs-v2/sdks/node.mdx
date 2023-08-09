@@ -222,17 +222,20 @@ To read synced data from Nango use `getRecords`:
 import type { ModelName } from '<path-to-nango-integrations>/models'
 
 const records = await nango.getRecords<ModelName>({
-    providerConfigKey: '<integration-id>',   // Name of your integration, from nango.yaml. E.g. github
-    connectionId: '<user-id>',               // The connection id you passed to nango.auth()
-    model: '<model-name>',                   // The name of the data model, from nango.yaml. E.g. ticket
-    delta: '<timestamp>'                     // Optional. Only return records added or updated since this timestamp. E.g. 2023-05-31T11:46:13.390Z
-    limit: <number>,                         // Optional: For pagination: Maximum of records to return. If not passed, all records are returned.
-    offset: <number>,                        // Optional: For pagination: The number of records to skip. If not passed, no records are skipped.
-    sortBy: 'id' | 'createdAt' | 'updatedAt' // Optional: Optional: Set how the records are sorted. The default is by 'id'
-    order: 'asc' | 'desc'                    // Optional: Set the order of results. The default is 'desc'
+    providerConfigKey: '<integration-id>',    // Name of your integration, from nango.yaml. E.g. github
+    connectionId: '<user-id>',                // The connection id you passed to nango.auth()
+    model: '<model-name>',                    // The name of the data model, from nango.yaml. E.g. ticket
+    delta: '<timestamp>'                      // Optional. Only return records added or updated since this timestamp. E.g. 2023-05-31T11:46:13.390Z
+    limit: <number>,                          // Optional: For pagination: Maximum of records to return. If not passed, all records are returned.
+    offset: <number>,                         // Optional: For pagination: The number of records to skip. If not passed, no records are skipped.
+    sortBy: 'id' | 'createdAt' | 'updatedAt', // Optional: Optional: Set how the records are sorted. The default is by 'id'
+    order: 'asc' | 'desc',                    // Optional: Set the order of results. The default is 'desc'
+    includeNangoMetadata: <boolean>           // Optional: Include Nango metadata for each record in the response. Default is false.
 });
 
 console.log(records);
 ```
+
+For details on `includeNangoMetadata` and the included metadata please check the [getRecords API reference](/api-reference/sync/records-get).
 
 If you are using the [Nango webhooks](/guides/webhooks#from-nango) you can use the timestamp you get from the webhook for the `delta` parameter.

@@ -8,7 +8,8 @@ nango
         connectionId: args[2],
         model: args[3],
         sortBy: args[4],
-        order: args[5]
+        order: args[5],
+        includeNangoMetadata: true
     })
     .then((response) => {
         console.log(response);

@@ -266,7 +266,7 @@ export class Nango {
     }
 
     public async getRecords<T = any>(config: GetRecordsRequestConfig): Promise<T[]> {
-        const { connectionId, providerConfigKey, model, delta, offset, limit } = config;
+        const { connectionId, providerConfigKey, model, delta, offset, limit, includeNangoMetadata } = config;
         validateSyncRecordConfiguration(config);
 
         const order = config?.order === 'asc' ? 'asc' : 'desc';
@@ -274,16 +274,18 @@ export class Nango {
         let sortBy = 'id';
         switch (config.sortBy) {
             case 'createdAt':
-                sortBy = 'createdAt';
+                sortBy = 'created_at';
                 break;
             case 'updatedAt':
-                sortBy = 'updatedAt';
+                sortBy = 'updated_at';
                 break;
         }
 
-        const url = `${this.serverUrl}/sync/records/?model=${model}&order=${order}&delta=${delta || ''}&offset=${offset || ''}&limit=${limit || ''}&sortBy=${
+        const includeMetadata = includeNangoMetadata || false;
+
+        const url = `${this.serverUrl}/sync/records/?model=${model}&order=${order}&delta=${delta || ''}&offset=${offset || ''}&limit=${limit || ''}&sort_by=${
             sortBy || ''
-        }`;
+        }&include_nango_metadata=${includeMetadata}`;
         const headers: Record<string, string | number | boolean> = {
             'Connection-Id': connectionId,
             'Provider-Config-Key': providerConfigKey
