@@ -614,7 +614,7 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
         lastSyncDate = new Date(suppliedLastSyncDate as string);
     }
 
-    tsc(debug);
+    tsc(debug, syncName);
 
     const syncRun = new syncRunService({
         writeToDb: false,
@@ -648,7 +648,7 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
     }
 };
 
-export const tsc = (debug = false) => {
+export const tsc = (debug = false, syncName?: string) => {
     const tsconfig = fs.readFileSync(`${getNangoRootPath()}/tsconfig.dev.json`, 'utf8');
 
     const distDir = './dist';
@@ -674,7 +674,7 @@ export const tsc = (debug = false) => {
         printDebug(`Compiler options: ${JSON.stringify(JSON.parse(tsconfig).compilerOptions, null, 2)}`);
     }
 
-    const integrationFiles = glob.sync(`./*.ts`);
+    const integrationFiles = syncName ? [`./${syncName}.ts`] : glob.sync(`./*.ts`);
     for (const filePath of integrationFiles) {
         try {
             if (!nangoCallsAreAwaited(filePath)) {
