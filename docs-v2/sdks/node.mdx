@@ -230,7 +230,7 @@ const records = await nango.getRecords<ModelName>({
     offset: <number>,                         // Optional: For pagination: The number of records to skip. If not passed, no records are skipped.
     sortBy: 'id' | 'createdAt' | 'updatedAt', // Optional: Optional: Set how the records are sorted. The default is by 'id'
     order: 'asc' | 'desc',                    // Optional: Set the order of results. The default is 'desc'
-    includeNangoMetadata: <boolean>           // Optional: Include Nango metadata that wraps the response
+    includeNangoMetadata: <boolean>           // Optional: Include Nango metadata that wraps the response, the default is false
 });
 
 console.log(records);
