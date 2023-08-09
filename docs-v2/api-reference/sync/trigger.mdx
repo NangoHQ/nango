@@ -6,5 +6,6 @@ openapi: 'POST /sync/trigger'
 ## Effect
 
 Triggers an additional, one-off sync run for all active sync scripts on the specified [Connection](/core-concepts#connections).
+You can optionally trigger for certain specified syncs for a connection.
 
 This is especially useful if you e.g. changed the custom field mapping for the connection and now want to re-import data.
