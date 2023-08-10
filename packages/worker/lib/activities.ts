@@ -14,7 +14,9 @@ import {
     createActivityLogMessage,
     createActivityLogAndLogMessage,
     ErrorSourceEnum,
-    errorManager
+    errorManager,
+    isInitialSyncStillRunning,
+    logger
 } from '@nangohq/shared';
 import type { ContinuousSyncArgs, InitialSyncArgs } from './models/Worker';
 
@@ -46,6 +48,23 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
     const { syncId, activityLogId, syncName, nangoConnection, debug } = args;
     let environmentId = nangoConnection?.environment_id;
     let syncJobId;
+
+    const initialSyncStillRunning = await isInitialSyncStillRunning(syncId as string);
+
+    if (initialSyncStillRunning) {
+        const content = `The continuous sync "${syncName}" with sync id ${syncId} did not run because the initial sync is still running. It will attempt to run at the next scheduled time.`;
+
+        logger.log('info', content);
+
+        await errorManager.captureWithJustEnvironment('sync_overlap', content, environmentId, LogActionEnum.SYNC, {
+            connectionId: nangoConnection?.connection_id as string,
+            providerConfigKey: nangoConnection?.provider_config_key as string,
+            syncName,
+            syncId
+        });
+
+        return true;
+    }
 
     // https://typescript.temporal.io/api/classes/activity.Context
     const context: Context = Context.current();
