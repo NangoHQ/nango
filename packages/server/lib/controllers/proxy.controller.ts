@@ -228,8 +228,8 @@ class ProxyController {
                     content: `${Date.now()} The proxy is not supported for this provider ${String(
                         providerConfig?.provider
                     )}. You can easily add support by following the instructions at https://docs.nango.dev/contribute/nango-auth.
-                        You can also use the baseUrlOverride to get started right away.
-                        See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
+You can also use the baseUrlOverride to get started right away.
+See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
                 });
 
                 errorManager.errRes(res, 'missing_base_api_url');

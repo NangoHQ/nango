@@ -438,6 +438,8 @@ microsoft-teams:
     authorization_params:
         response_type: code
         response_mode: query
+    proxy:
+        base_url: https://graph.microsoft.com
 mixpanel:
     auth_mode: BASIC
     proxy:

@@ -2,7 +2,7 @@ import { schema, dbNamespace } from '../../db/database.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { LogActionEnum } from '../../models/Activity.js';
 import type { NangoConnection } from '../../models/Connection.js';
-import type { Job as SyncJob, SyncStatus, SyncType, SyncResultByModel } from '../../models/Sync.js';
+import { Job as SyncJob, SyncStatus, SyncType, SyncResultByModel } from '../../models/Sync.js';
 
 const SYNC_JOB_TABLE = dbNamespace + 'sync_jobs';
 
@@ -112,4 +112,22 @@ export const addSyncConfigToJob = async (id: number, sync_config_id: number): Pr
 
 export const deleteJobsBySyncId = async (sync_id: string): Promise<void> => {
     await schema().from<SyncJob>(SYNC_JOB_TABLE).where({ sync_id, deleted: false }).update({ deleted: true, deleted_at: new Date() });
+};
+
+export const isInitialSyncStillRunning = async (sync_id: string): Promise<boolean> => {
+    const result = await schema()
+        .from<SyncJob>(SYNC_JOB_TABLE)
+        .where({
+            sync_id,
+            deleted: false,
+            type: SyncType.INITIAL,
+            status: SyncStatus.RUNNING
+        })
+        .first();
+
+    if (result) {
+        return true;
+    }
+
+    return false;
 };

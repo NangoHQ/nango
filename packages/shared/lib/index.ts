@@ -14,6 +14,7 @@ import hmacService from './services/hmac.service.js';
 import syncRunService from './services/sync/run.service.js';
 import syncOrchestrator from './services/sync/orchestrator.service.js';
 import analytics from './utils/analytics.js';
+import logger from './logger/console.js';
 
 export * from './services/activity/activity.service.js';
 export * from './services/sync/sync.service.js';
@@ -55,5 +56,6 @@ export {
     syncRunService,
     syncOrchestrator,
     hmacService,
-    analytics
+    analytics,
+    logger
 };
