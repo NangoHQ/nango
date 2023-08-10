@@ -264,7 +264,7 @@ export class NangoSync {
         return this.nango.setMetadata(this.providerConfigKey as string, this.connectionId as string, fieldMapping);
     }
 
-    public async getMetadata(): Promise<Metadata> {
+    public async getMetadata<T = Metadata>(): Promise<T> {
         return this.nango.getMetadata(this.providerConfigKey as string, this.connectionId as string);
     }
 

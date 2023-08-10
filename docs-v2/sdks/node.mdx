@@ -27,7 +27,7 @@ Instantiate the `Nango` class:
 ```js
 import { Nango } from '@nangohq/node';
 
-let nango = new Nango({ secretKey: '<SECRET-KEY>' });
+const nango = new Nango({ secretKey: '<SECRET-KEY>' });
 ```
 
 </Tab>
@@ -37,7 +37,7 @@ let nango = new Nango({ secretKey: '<SECRET-KEY>' });
 ```js
 import { Nango } from '@nangohq/node';
 
-let nango = new Nango({ host: 'http://localhost:3003', secretKey: '<SECRET-KEY>' });
+const nango = new Nango({ host: 'http://localhost:3003', secretKey: '<SECRET-KEY>' });
 ```
 
 </Tab>
@@ -47,7 +47,7 @@ let nango = new Nango({ host: 'http://localhost:3003', secretKey: '<SECRET-KEY>'
 ```js
 import { Nango } from '@nangohq/node';
 
-let nango = new Nango({ host: '<INSTANCE-URL>', secretKey: '<SECRET-KEY>' });
+const nango = new Nango({ host: '<INSTANCE-URL>', secretKey: '<SECRET-KEY>' });
 ```
 
 </Tab>
@@ -59,7 +59,7 @@ let nango = new Nango({ host: '<INSTANCE-URL>', secretKey: '<SECRET-KEY>' });
 Nango stores API credentials in _connections_ objects. Retrieve a _connection_ with:
 
 ```js
-let connection = await nango.getConnection(
+const connection = await nango.getConnection(
     '<INTEGRATION-ID>',
     '<CONNECTION-ID>',
     '<FORCE_REFRESH?: boolean>', // Optional: attempt to refresh the access access token regardless of its expiration status, defaults to false
@@ -87,7 +87,7 @@ For OAuth 2, always fetch the latest access token from Nango before you run an A
 ### List all connections for a user
 
 ```js
-let list = await nango.listConnections('<CONNECTION-ID>');
+const list = await nango.listConnections('<CONNECTION-ID>');
 ```
 
 This returns you all [Connections](/core-concepts#connections) of a specific user (i.e. Connection ID):
@@ -108,7 +108,7 @@ This returns you all [Connections](/core-concepts#connections) of a specific use
 ### List all connections
 
 ```js
-let list = await nango.listConnections();
+const list = await nango.listConnections();
 ```
 
 Returns a list of minimalistic [Connection](/core-concepts#connections) objects. This can be helpful if you need to check whether a user has setup a specific [Integration](/core-concepts#integrations). Note that the list does not contain any access credentials and fetching it also does not refresh the access tokens of any _connections_.
@@ -133,10 +133,24 @@ Nango lets you store [custom metadata](/guides/oauth#storing-custom-metadata-per
 await nango.setMetadata('<INTEGRATION-ID>', '<CONNECTION-ID>', { filter: 'status=closed' });
 
 // Fetch custom metadata
-let myMetadata = await nango.getMetadata('<INTEGRATION-ID>', '<CONNECTION-ID>');
+const myMetadata = await nango.getMetadata('<INTEGRATION-ID>', '<CONNECTION-ID>');
 
 console.log(JSON.stringify(myMetadata));
 // prints: { "filter": "status=closed" }
+```
+
+If you know the structure of the metadata you can specify a type for it when
+retrieving;
+
+```ts
+interface CustomMetadata {
+    fieldMapping: Record<string, string>;
+    idsToSkip: {
+        id: number;
+        path: string
+   };
+}
+const myTypedMetadata = await nango.getMetadata<CustomMetadata>('<INTEGRATION-ID>', '<CONNECTION-ID>')
 ```
 
 ### Retrieve integration details
@@ -144,7 +158,7 @@ console.log(JSON.stringify(myMetadata));
 Use this method to retrieve all the details Nango stores on a specific _integration_:
 
 ```js
-let integration = await nango.getIntegration(
+const integration = await nango.getIntegration(
     '<INTEGRATION-ID>',
     '<INCLUDE-INTEGRATION-CREDENTIALS?: boolean>', // Optional: if true, the response will contain the client ID, secret and scopes (false by default).
 );

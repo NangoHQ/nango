@@ -371,7 +371,7 @@ export class Nango {
         throw new Error('setFieldMapping is deprecated. Please use setMetadata instead.');
     }
 
-    public async getMetadata(providerConfigKey: string, connectionId: string): Promise<Metadata> {
+    public async getMetadata<T = Metadata>(providerConfigKey: string, connectionId: string): Promise<T> {
         if (!providerConfigKey) {
             throw new Error('Provider Config Key is required');
         }
@@ -385,7 +385,7 @@ export class Nango {
             'Nango-Is-Dry-Run': this.dryRun
         });
 
-        return response.data.metadata as Record<string, string>;
+        return response.data.metadata as T;
     }
     public async getFieldMapping(_optionalProviderConfigKey?: string, _optionalConnectionId?: string): Promise<Record<string, string>> {
         throw new Error('getFieldMapping is deprecated. Please use getMetadata instead.');
