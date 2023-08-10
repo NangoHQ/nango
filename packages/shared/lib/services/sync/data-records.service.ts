@@ -14,9 +14,12 @@ export const formatDataRecords = (
     nango_connection_id: number,
     model: string,
     syncId: string,
-    sync_job_id: number
+    sync_job_id: number,
+    softDelete = false
 ): ServiceResponse<SyncDataRecord[]> => {
     const formattedRecords: SyncDataRecord[] = [] as SyncDataRecord[];
+
+    const deletedAtKey = 'deletedAt';
 
     for (let i = 0; i < records.length; i++) {
         const record = records[i];
@@ -31,6 +34,16 @@ export const formatDataRecords = (
             return { success: false, error, response: null };
         }
 
+        let external_deleted_at = null;
+
+        if (softDelete) {
+            if (record[deletedAtKey]) {
+                external_deleted_at = dayjs(record[deletedAtKey] as string).toDate();
+            } else {
+                external_deleted_at = new Date();
+            }
+        }
+
         const external_id = record['id'] as string;
         formattedRecords[i] = {
             id: uuid.v4(),
@@ -40,7 +53,9 @@ export const formatDataRecords = (
             model,
             nango_connection_id,
             sync_id: syncId,
-            sync_job_id
+            sync_job_id,
+            external_is_deleted: softDelete,
+            external_deleted_at
         };
     }
     return { success: true, error: null, response: formattedRecords };
@@ -87,7 +102,10 @@ export async function getDataRecords(
 
     let query = schema()
         .from<SyncDataRecord>(`_nango_sync_data_records`)
-        .where({ nango_connection_id: Number(nangoConnection.id), model })
+        .where({
+            nango_connection_id: Number(nangoConnection.id),
+            model
+        })
         .orderBy(sort, order?.toLowerCase() === 'asc' ? 'asc' : 'desc');
 
     if (offset) {
@@ -129,7 +147,13 @@ export async function getDataRecords(
         result = await query.select(
             'created_at as first_seen_at',
             'updated_at as last_modified_at',
-            db.knex.raw(`CASE WHEN created_at = updated_at THEN 'ADDED' ELSE 'UPDATED' END as last_action`),
+            'external_deleted_at as deleted_at',
+            db.knex.raw(`
+                CASE
+                    WHEN external_deleted_at IS NOT NULL THEN 'DELETED'
+                    WHEN created_at = updated_at THEN 'ADDED'
+                    ELSE 'UPDATED'
+                END as last_action`),
             'json as record'
         );
     } else {

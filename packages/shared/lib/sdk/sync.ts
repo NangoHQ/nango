@@ -275,9 +275,14 @@ export class NangoSync {
     }
 
     public async batchSend<T = any>(results: T[], model: string): Promise<boolean | null> {
+        console.warn('batchSend will be deprecated in future versions. Please use batchSave instead.');
+        return this.batchSave(results, model);
+    }
+
+    public async batchSave<T = any>(results: T[], model: string): Promise<boolean | null> {
         if (!results || results.length === 0) {
             if (this.dryRun) {
-                console.log('batchSend received an empty array. No records to send.');
+                console.log('batchSave received an empty array. No records to send.');
             }
             return true;
         }
@@ -297,7 +302,7 @@ export class NangoSync {
                 await createActivityLogMessage({
                     level: 'error',
                     activity_log_id: this.activityLogId as number,
-                    content: `There was an issue with the batch send. ${error?.message}`,
+                    content: `There was an issue with the batch save. ${error?.message}`,
                     timestamp: Date.now()
                 });
             }
@@ -306,7 +311,7 @@ export class NangoSync {
         }
 
         if (this.dryRun) {
-            console.log('A batch send call would send the following data:');
+            console.log('A batch save call would save following data:');
             console.log(JSON.stringify(results, null, 2));
             return null;
         }
@@ -331,14 +336,15 @@ export class NangoSync {
             const updatedResults = {
                 [model]: {
                     added: summary?.addedKeys.length as number,
-                    updated: summary?.updatedKeys.length as number
+                    updated: summary?.updatedKeys.length as number,
+                    deleted: summary?.deletedKeys?.length as number
                 }
             };
 
             await createActivityLogMessage({
                 level: 'info',
                 activity_log_id: this.activityLogId as number,
-                content: `Batch send was a success and resulted in ${JSON.stringify(updatedResults, null, 2)}`,
+                content: `Batch save was a success and resulted in ${JSON.stringify(updatedResults, null, 2)}`,
                 timestamp: Date.now()
             });
 
@@ -346,7 +352,109 @@ export class NangoSync {
 
             return true;
         } else {
-            const content = `There was an issue with the batch send. ${responseResults?.error}`;
+            const content = `There was an issue with the batch save. ${responseResults?.error}`;
+
+            if (!this.dryRun) {
+                await createActivityLogMessage({
+                    level: 'error',
+                    activity_log_id: this.activityLogId as number,
+                    content,
+                    timestamp: Date.now()
+                });
+
+                await errorManager.report(content, {
+                    environmentId: this.environmentId as number,
+                    source: ErrorSourceEnum.CUSTOMER,
+                    operation: LogActionEnum.SYNC,
+                    metadata: {
+                        connectionId: this.connectionId,
+                        providerConfigKey: this.providerConfigKey,
+                        syncId: this.syncId,
+                        nanogConnectionId: this.nangoConnectionId,
+                        syncJobId: this.syncJobId
+                    }
+                });
+            }
+
+            throw new Error(responseResults?.error);
+        }
+    }
+
+    public async batchDelete<T = any>(results: T[], model: string): Promise<boolean | null> {
+        if (!results || results.length === 0) {
+            if (this.dryRun) {
+                console.log('batchDelete received an empty array. No records to delete.');
+            }
+            return true;
+        }
+
+        if (!this.nangoConnectionId || !this.syncId || !this.activityLogId || !this.syncJobId) {
+            throw new Error('Nango Connection Id, Sync Id, Activity Log Id and Sync Job Id are all required');
+        }
+
+        const {
+            success,
+            error,
+            response: formattedResults
+        } = formatDataRecords(results as unknown as DataResponse[], this.nangoConnectionId as number, model, this.syncId as string, this.syncJobId, true);
+
+        if (!success || formattedResults === null) {
+            if (!this.dryRun) {
+                await createActivityLogMessage({
+                    level: 'error',
+                    activity_log_id: this.activityLogId as number,
+                    content: `There was an issue with the batch delete. ${error?.message}`,
+                    timestamp: Date.now()
+                });
+            }
+
+            throw error;
+        }
+
+        if (this.dryRun) {
+            console.log('A batch delete call would delete the following data:');
+            console.log(JSON.stringify(results, null, 2));
+            return null;
+        }
+
+        const syncConfig = await getSyncConfigByJobId(this.syncJobId as number);
+
+        if (syncConfig && !syncConfig?.models.includes(model)) {
+            throw new Error(`The model: ${model} is not included in the declared sync models: ${syncConfig.models}.`);
+        }
+
+        const responseResults = await upsert(
+            formattedResults,
+            '_nango_sync_data_records',
+            'external_id',
+            this.nangoConnectionId as number,
+            model,
+            this.activityLogId as number,
+            true
+        );
+
+        if (responseResults.success) {
+            const { summary } = responseResults;
+            const updatedResults = {
+                [model]: {
+                    added: summary?.addedKeys.length as number,
+                    updated: summary?.updatedKeys.length as number,
+                    deleted: summary?.deletedKeys?.length as number
+                }
+            };
+
+            await createActivityLogMessage({
+                level: 'info',
+                activity_log_id: this.activityLogId as number,
+                content: `Batch delete was a success and resulted in ${JSON.stringify(updatedResults, null, 2)}`,
+                timestamp: Date.now()
+            });
+
+            await updateSyncJobResult(this.syncJobId as number, updatedResults, model);
+
+            return true;
+        } else {
+            const content = `There was an issue with the batch delete. ${responseResults?.error}`;
 
             if (!this.dryRun) {
                 await createActivityLogMessage({

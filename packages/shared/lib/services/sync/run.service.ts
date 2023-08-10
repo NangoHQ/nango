@@ -248,7 +248,7 @@ export default class SyncRun {
                             if (formattedResults.length === 0) {
                                 await this.reportResults(
                                     model,
-                                    { addedKeys: [], updatedKeys: [], affectedInternalIds: [], affectedExternalIds: [] },
+                                    { addedKeys: [], updatedKeys: [], deletedKeys: [], affectedInternalIds: [], affectedExternalIds: [] },
                                     i,
                                     models.length,
                                     syncStartDate,
@@ -257,6 +257,21 @@ export default class SyncRun {
                             }
 
                             if (formattedResults.length > 0) {
+                                await errorManager.captureWithJustEnvironment(
+                                    'sync_script_return_used',
+                                    'Data was sent at the end of the integration script instead of using batchSave',
+                                    this.nangoConnection.environment_id as number,
+                                    LogActionEnum.SYNC,
+                                    {
+                                        syncName: this.syncName,
+                                        connectionDetails: this.nangoConnection,
+                                        syncId: this.syncId,
+                                        syncJobId: this.syncJobId,
+                                        syncType: this.syncType,
+                                        debug: this.debug
+                                    }
+                                );
+
                                 const upsertResult: UpsertResponse = await upsert(
                                     formattedResults,
                                     '_nango_sync_data_records',
@@ -327,7 +342,8 @@ export default class SyncRun {
         const updatedResults = {
             [model]: {
                 added: responseResults.addedKeys.length,
-                updated: responseResults.updatedKeys.length
+                updated: responseResults.updatedKeys.length,
+                deleted: responseResults.deletedKeys?.length as number
             }
         };
 
@@ -342,15 +358,18 @@ export default class SyncRun {
 
         let added = 0;
         let updated = 0;
+        let deleted = 0;
 
         if (result && result[model]) {
             const modelResult = result[model] as SyncResult;
             added = modelResult.added;
             updated = modelResult.updated;
+            deleted = modelResult.deleted as number;
         } else {
             // legacy json structure
             added = (result?.['added'] as unknown as number) ?? 0;
             updated = (result?.['updated'] as unknown as number) ?? 0;
+            deleted = (result?.['deleted'] as unknown as number) ?? 0;
         }
 
         const successMessage =
@@ -358,13 +377,23 @@ export default class SyncRun {
             (version ? ` The version integration script version ran was ${version}.` : '');
 
         const resultMessage =
-            added > 0 || updated > 0
-                ? `The result was ${added} added record${added === 1 ? '' : 's'} and ${updated} updated record${updated === 1 ? '.' : 's.'}`
+            added > 0 || updated > 0 || deleted > 0
+                ? `The result was ${added} added record${added === 1 ? '' : 's'}, ${updated} updated record${
+                      updated === 1 ? '' : 's'
+                  } and ${deleted} deleted record${deleted === 1 ? '.' : 's.'}`
                 : 'The external API returned did not return any new or updated data so nothing was inserted or updated.';
 
         const content = `${successMessage} ${resultMessage}`;
 
-        await webhookService.sendUpdate(this.nangoConnection, this.syncName, model, { added, updated }, this.syncType, syncStartDate, this.activityLogId);
+        await webhookService.sendUpdate(
+            this.nangoConnection,
+            this.syncName,
+            model,
+            { added, updated, deleted },
+            this.syncType,
+            syncStartDate,
+            this.activityLogId
+        );
 
         if (index === numberOfModels - 1) {
             await createActivityLogMessageAndEnd({

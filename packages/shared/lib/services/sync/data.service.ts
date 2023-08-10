@@ -13,7 +13,8 @@ export async function upsert(
     uniqueKey: string,
     nangoConnectionId: number,
     model: string,
-    activityLogId: number
+    activityLogId: number,
+    softDelete = false
 ): Promise<UpsertResponse> {
     const responseWithoutDuplicates = await removeDuplicateKey(response, uniqueKey, activityLogId, model);
 
@@ -38,6 +39,19 @@ export async function upsert(
         const affectedInternalIds = results.map((tuple) => tuple.id) as string[];
         const affectedExternalIds = results.map((tuple) => tuple.external_id) as string[];
 
+        if (softDelete) {
+            return {
+                success: true,
+                summary: {
+                    deletedKeys: [...addedKeys, ...updatedKeys],
+                    addedKeys: [],
+                    updatedKeys: [],
+                    affectedInternalIds,
+                    affectedExternalIds
+                }
+            };
+        }
+
         return {
             success: true,
             summary: {
@@ -50,7 +64,7 @@ export async function upsert(
     } catch (error: any) {
         let errorMessage = `Failed to upsert records to table ${dbTable}.\n`;
         errorMessage += `Model: ${model}, Unique Key: ${uniqueKey}, Nango Connection ID: ${nangoConnectionId}.\n`;
-        errorMessage += `Attempted to insert/update: ${responseWithoutDuplicates.length} records\n`;
+        errorMessage += `Attempted to insert/update/delete: ${responseWithoutDuplicates.length} records\n`;
 
         if ('code' in error) errorMessage += `Error code: ${error.code}.\n`;
         if ('detail' in error) errorMessage += `Detail: ${error.detail}.\n`;
@@ -71,7 +85,7 @@ export async function removeDuplicateKey(response: DataRecord[], uniqueKey: stri
         await createActivityLogMessage({
             level: 'error',
             activity_log_id: activityLogId,
-            content: `There was a duplicate key found: ${nonUniqueKey}. This record will not be inserted to the model ${model}.`,
+            content: `There was a duplicate key found: ${nonUniqueKey}. This record will be ignore in relation to the model ${model}.`,
             timestamp: Date.now()
         });
     }

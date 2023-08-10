@@ -39,7 +39,8 @@ class WebhookService {
             model,
             responseResults: {
                 added: responseResults.added,
-                updated: responseResults.updated
+                updated: responseResults.updated,
+                deleted: responseResults.deleted as number
             },
             syncType,
             queryTimeStamp: now as unknown as string
