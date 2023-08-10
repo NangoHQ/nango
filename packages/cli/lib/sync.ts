@@ -96,7 +96,7 @@ export const generate = async (debug = false, inParentDirectory = false) => {
     const { integrations } = configData;
     const { models } = configData;
 
-    const interfaceDefinitions = buildInterfaces(models, debug);
+    const interfaceDefinitions = buildInterfaces(models, integrations, debug);
 
     fs.writeFileSync(`${dirPrefix}/${TYPES_FILE_NAME}`, interfaceDefinitions.join('\n'));
 
@@ -291,8 +291,8 @@ NANGO_DEPLOY_AUTO_CONFIRM=false # Default value`
 const createModelFile = (notify = false) => {
     const configContents = fs.readFileSync(`./${nangoConfigFile}`, 'utf8');
     const configData: NangoConfig = yaml.load(configContents) as unknown as NangoConfig;
-    const { models } = configData;
-    const interfaceDefinitions = buildInterfaces(models);
+    const { models, integrations } = configData;
+    const interfaceDefinitions = buildInterfaces(models, integrations);
     fs.writeFileSync(`./${TYPES_FILE_NAME}`, interfaceDefinitions.join('\n'));
 
     // insert NangoSync types to the bottom of the file
