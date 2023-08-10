@@ -690,7 +690,6 @@ export const tsc = (debug = false, syncName?: string): boolean => {
 
             fs.writeFileSync(jsFilePath, result);
             console.log(chalk.green(`Compiled "${filePath}" successfully`));
-            return true;
         } catch (error) {
             console.error(`Error compiling "${filePath}":`);
             console.error(error);
