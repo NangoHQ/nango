@@ -71,6 +71,7 @@ export async function getDataRecords(
     limit: number | string,
     sortBy: string,
     order: 'asc' | 'desc',
+    filter: 'added' | 'updated' | 'deleted',
     includeMetaData = false
 ): Promise<ServiceResponse<Pick<SyncDataRecord, 'json'>[] | null>> {
     if (!model) {
@@ -139,6 +140,20 @@ export async function getDataRecords(
 
         const utcString = timeToDate.toUTCString();
         query = query.andWhere('updated_at', '>=', utcString);
+    }
+
+    if (filter) {
+        switch (filter) {
+            case 'added':
+                query = query.andWhere('external_deleted_at', null).andWhere('created_at', '=', db.knex.raw('updated_at'));
+                break;
+            case 'updated':
+                query = query.andWhere('external_deleted_at', null).andWhere('created_at', '!=', db.knex.raw('updated_at'));
+                break;
+            case 'deleted':
+                query = query.andWhere({ external_is_deleted: true });
+                break;
+        }
     }
 
     let result;

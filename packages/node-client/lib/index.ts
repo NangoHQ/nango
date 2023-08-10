@@ -281,11 +281,25 @@ export class Nango {
                 break;
         }
 
+        let filter = '';
+
+        switch (config.filter) {
+            case 'deleted':
+                filter = 'deleted';
+                break;
+            case 'updated':
+                filter = 'updated';
+                break;
+            case 'added':
+                filter = 'added';
+                break;
+        }
+
         const includeMetadata = includeNangoMetadata || false;
 
         const url = `${this.serverUrl}/sync/records/?model=${model}&order=${order}&delta=${delta || ''}&offset=${offset || ''}&limit=${limit || ''}&sort_by=${
             sortBy || ''
-        }&include_nango_metadata=${includeMetadata}`;
+        }&include_nango_metadata=${includeMetadata}&filter=${filter}`;
         const headers: Record<string, string | number | boolean> = {
             'Connection-Id': connectionId,
             'Provider-Config-Key': providerConfigKey

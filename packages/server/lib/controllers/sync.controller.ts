@@ -90,7 +90,7 @@ class SyncController {
 
     public async getRecords(req: Request, res: Response, next: NextFunction) {
         try {
-            const { model, delta, offset, limit, sort_by, order, include_nango_metadata } = req.query;
+            const { model, delta, offset, limit, sort_by, order, filter, include_nango_metadata } = req.query;
             const environmentId = getEnvironmentId(res);
 
             const connectionId = req.get('Connection-Id') as string;
@@ -110,6 +110,7 @@ class SyncController {
                 limit as string,
                 sort_by as string,
                 order as 'asc' | 'desc',
+                filter as 'added' | 'updated' | 'deleted',
                 include_nango_metadata === 'true'
             );
 
