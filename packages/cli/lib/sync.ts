@@ -695,7 +695,7 @@ export const tsc = (debug = false, syncName?: string): boolean => {
         } catch (error) {
             console.error(`Error compiling "${filePath}":`);
             console.error(error);
-            success = true;
+            success = false;
         }
     }
 
