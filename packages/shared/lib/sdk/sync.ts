@@ -328,7 +328,8 @@ export class NangoSync {
             'external_id',
             this.nangoConnectionId as number,
             model,
-            this.activityLogId as number
+            this.activityLogId as number,
+            syncConfig
         );
 
         if (responseResults.success) {
@@ -430,6 +431,7 @@ export class NangoSync {
             this.nangoConnectionId as number,
             model,
             this.activityLogId as number,
+            syncConfig,
             true
         );
 

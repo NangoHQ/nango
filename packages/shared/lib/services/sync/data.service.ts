@@ -2,7 +2,7 @@ import { schema } from '../../db/database.js';
 import { verifyUniqueKeysAreUnique } from './data-records.service.js';
 import { createActivityLogMessage } from '../activity/activity.service.js';
 import type { UpsertResponse } from '../../models/Data.js';
-import type { DataRecord } from '../../models/Sync.js';
+import type { DataRecord, SyncConfig } from '../../models/Sync.js';
 
 /**
  * Upsert
@@ -14,8 +14,10 @@ export async function upsert(
     nangoConnectionId: number,
     model: string,
     activityLogId: number,
+    syncConfig: SyncConfig | null,
     softDelete = false
 ): Promise<UpsertResponse> {
+    console.log(syncConfig);
     const responseWithoutDuplicates = await removeDuplicateKey(response, uniqueKey, activityLogId, model);
 
     if (!responseWithoutDuplicates || responseWithoutDuplicates.length === 0) {

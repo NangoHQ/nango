@@ -221,7 +221,15 @@ export class Nango {
         }
 
         if (this.dryRun) {
-            console.log(`Nango Proxy Request: ${method?.toUpperCase()} ${url}`);
+            const stringifyParams = (params: Record<string, string>) => {
+                return Object.keys(params)
+                    .map((key: string) => `${encodeURIComponent(key)}=${encodeURIComponent(params[key] as string)}`)
+                    .join('&');
+            };
+
+            console.log(
+                `Nango Proxy Request: ${method?.toUpperCase()} ${url}${config.params ? `?${stringifyParams(config.params as Record<string, string>)}` : ''}`
+            );
         }
 
         if (method?.toUpperCase() === 'POST') {

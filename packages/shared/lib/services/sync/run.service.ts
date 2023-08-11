@@ -1,6 +1,6 @@
 import { loadLocalNangoConfig, nangoConfigFile } from '../nango-config.service.js';
 import type { NangoConnection } from '../../models/Connection.js';
-import { SyncResult, SyncType, SyncStatus, Job as SyncJob } from '../../models/Sync.js';
+import { SyncResult, SyncType, SyncStatus, Job as SyncJob, SyncConfig } from '../../models/Sync.js';
 import { createActivityLogMessage, createActivityLogMessageAndEnd, updateSuccess as updateSuccessActivityLog } from '../activity/activity.service.js';
 import { addSyncConfigToJob, updateSyncJobResult, updateSyncJobStatus } from '../sync/job.service.js';
 import { getSyncConfig } from './config.service.js';
@@ -14,7 +14,7 @@ import webhookService from '../webhook.service.js';
 import { NangoSync } from '../../sdk/sync.js';
 import { isCloud, getApiUrl } from '../../utils/utils.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
-import type { NangoIntegrationData, NangoConfig, NangoIntegration } from '../../integrations/index.js';
+import type { NangoIntegrationData, NangoIntegration } from '../../integrations/index.js';
 import type { UpsertResponse, UpsertSummary } from '../../models/Data.js';
 import { LogActionEnum } from '../../models/Activity.js';
 import type { Environment } from '../../models/Environment';
@@ -98,7 +98,7 @@ export default class SyncRun {
             return false;
         }
 
-        const { integrations } = nangoConfig as NangoConfig;
+        const { integrations } = nangoConfig;
         let result = true;
 
         if (!integrations[this.nangoConnection.provider_config_key] && !this.writeToDb) {
@@ -278,7 +278,8 @@ export default class SyncRun {
                                     'external_id',
                                     this.nangoConnection.id as number,
                                     model,
-                                    this.activityLogId
+                                    this.activityLogId,
+                                    nangoConfig
                                 );
 
                                 if (upsertResult.success) {
