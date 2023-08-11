@@ -295,7 +295,13 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
      * @param {attemptNumber} number
      */
     private retry = async (activityLogId: number, error: AxiosError, attemptNumber: number): Promise<boolean> => {
-        if (error?.response?.status.toString().startsWith('5') || error?.response?.status === 429 || error?.code === 'ECONNRESET') {
+        if (
+            error?.response?.status.toString().startsWith('5') ||
+            error?.response?.status === 429 ||
+            error?.code === 'ECONNRESET' ||
+            error?.code === 'ETIMEDOUT' ||
+            error?.code === 'ECONNABORTED'
+        ) {
             const content = `API received an ${
                 error?.response?.status || error?.code
             } error, retrying with exponential backoffs for a total of ${attemptNumber} times`;
