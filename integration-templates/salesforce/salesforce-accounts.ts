@@ -1,6 +1,6 @@
 import { SalesforceAccount, NangoSync } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<{ SalesforceAccount: SalesforceAccount[] }> {
+export default async function fetchData(nango: NangoSync): Promise<void> {
     const { lastSyncDate } = nango;
 
     // Use nango.getMetadata once you set it in the backend:
@@ -46,7 +46,7 @@ export default async function fetchData(nango: NangoSync): Promise<{ SalesforceA
     let nextRecordsUrl = response.data.nextRecordsUrl;
 
     const accounts = mapAccounts(records, fieldMapping);
-    await nango.batchSave<SalesforceAccount>(accounts, 'SalesforceAccount');
+    await nango.batchSave(accounts, 'SalesforceAccount');
 
     if (!done) {
         let allResults = false;
@@ -58,7 +58,7 @@ export default async function fetchData(nango: NangoSync): Promise<{ SalesforceA
             const { records: nextRecords, done: nextDone, nextRecordsUrl: nextNextRecordsUrl } = nextResponse.data;
 
             const firstAccounts = mapAccounts(nextRecords, fieldMapping);
-            await nango.batchSave<SalesforceAccount>(firstAccounts, 'SalesforceAccount');
+            await nango.batchSave(firstAccounts, 'SalesforceAccount');
 
             if (nextDone) {
                 allResults = true;
@@ -67,8 +67,6 @@ export default async function fetchData(nango: NangoSync): Promise<{ SalesforceA
             }
         }
     }
-
-    return { SalesforceAccount: [] };
 }
 
 function mapAccounts(records: any[], fieldMapping: any): SalesforceAccount[] {

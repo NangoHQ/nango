@@ -1,6 +1,6 @@
 import type { NangoSync, NotionPage } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<{ NotionPage: NotionPage[] }> {
+export default async function fetchData(nango: NangoSync): Promise<void> {
     const pages = (await paginate(nango, 'post', '/v1/search', 'Notion pages', 100, true)).filter((result: any) => result.object === 'page');
     const batchSize = 10;
     await nango.log(`Found ${pages.length} new/updated Notion pages to sync.`);
@@ -9,10 +9,8 @@ export default async function fetchData(nango: NangoSync): Promise<{ NotionPage:
         await nango.log(`Fetching plain text, in batch of ${batchSize} Notion pages, from page ${i + 1} (total pages: ${pages.length})`);
         let batchOfPages = pages.slice(i, Math.min(pages.length, i + batchSize));
         let pagesWithPlainText = await Promise.all(batchOfPages.map(async (page: any) => mapPage(page, await fetchPlainText(page, nango))));
-        await nango.batchSave<NotionPage>(pagesWithPlainText, 'NotionPage');
+        await nango.batchSave(pagesWithPlainText, 'NotionPage');
     }
-
-    return { NotionPage: [] };
 }
 
 async function fetchPlainText(page: any, nango: NangoSync): Promise<string> {

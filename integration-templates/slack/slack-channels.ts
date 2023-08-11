@@ -1,6 +1,6 @@
 import { SlackChannel, NangoSync } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<{ SlackChannel: SlackChannel[] }> {
+export default async function fetchData(nango: NangoSync): Promise<void> {
     const responses = await getAllPages(nango, 'conversations.list');
 
     const mappedChannels: SlackChannel[] = responses.map((record: any) => {
@@ -27,7 +27,8 @@ export default async function fetchData(nango: NangoSync): Promise<{ SlackChanne
     // Now let's also join all public channels where we are not yet a member
     await joinPublicChannels(nango, mappedChannels);
 
-    return { SlackChannel: mappedChannels };
+    // Save channels
+    await nango.batchSave(mappedChannels, 'SlackChannel');
 }
 
 // Checks for public channels where the bot is not a member yet and joins them

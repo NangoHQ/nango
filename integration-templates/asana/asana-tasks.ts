@@ -1,6 +1,6 @@
 import { AsanaTask, NangoSync } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<{ AsanaTask: AsanaTask[] }> {
+export default async function fetchData(nango: NangoSync): Promise<void> {
     // Get the user's workspaces & projects
     // For testing we just get the first project of the first workspace
     const workspaces = await paginate(nango, '/api/1.0/workspaces');
@@ -27,12 +27,10 @@ export default async function fetchData(nango: NangoSync): Promise<{ AsanaTask: 
         });
 
         if (mappedTasks.length > 49) {
-            await nango.batchSave<AsanaTask>(mappedTasks, 'AsanaTask');
+            await nango.batchSave(mappedTasks, 'AsanaTask');
             mappedTasks = [];
         }
     }
-
-    return { AsanaTask: mappedTasks };
 }
 
 async function paginate(nango: NangoSync, endpoint: string, queryParams?: Record<string, string | string[]>) {

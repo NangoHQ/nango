@@ -1,6 +1,6 @@
 import { SalesforceContact, NangoSync } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<{ SalesforceContact: SalesforceContact[] }> {
+export default async function fetchData(nango: NangoSync): Promise<void> {
     const { lastSyncDate } = nango;
 
     let query = `
@@ -29,7 +29,7 @@ export default async function fetchData(nango: NangoSync): Promise<{ SalesforceC
     let nextRecordsUrl = response.data.nextRecordsUrl;
 
     const accounts = mapContacts(records);
-    await nango.batchSave<SalesforceContact>(accounts, 'SalesforceContact');
+    await nango.batchSave(accounts, 'SalesforceContact');
 
     if (!done) {
         let allResults = false;
@@ -41,7 +41,7 @@ export default async function fetchData(nango: NangoSync): Promise<{ SalesforceC
             const { records: nextRecords, done: nextDone, nextRecordsUrl: nextNextRecordsUrl } = nextResponse.data;
 
             const firstAccounts = mapContacts(nextRecords);
-            await nango.batchSave<SalesforceContact>(firstAccounts, 'SalesforceContact');
+            await nango.batchSave(firstAccounts, 'SalesforceContact');
 
             if (nextDone) {
                 allResults = true;
@@ -50,8 +50,6 @@ export default async function fetchData(nango: NangoSync): Promise<{ SalesforceC
             }
         }
     }
-
-    return { SalesforceContact: [] };
 }
 
 function mapContacts(records: any[]): SalesforceContact[] {
