@@ -714,6 +714,7 @@ const nangoCallsAreAwaited = (filePath: string): boolean => {
     const nangoCalls = [
         'batchSend',
         'batchSave',
+        'batchDelete',
         'log',
         'getFieldMapping',
         'setFieldMapping',
