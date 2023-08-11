@@ -181,7 +181,7 @@ export default async function fetchData(nango: NangoSync): Promise<{AsanaTask: A
         });
 
         if (mappedTasks.length > 49) {
-            await nango.batchSend<AsanaTask>(mappedTasks, 'AsanaTask');
+            await nango.batchSave<AsanaTask>(mappedTasks, 'AsanaTask');
             mappedTasks = [];
         }
     }
@@ -222,7 +222,7 @@ async function paginate(nango: NangoSync, endpoint: string, queryParams?: Record
 ```
 _Sync_ scripts can return the created/update data to Nango in two different ways: 
 - all at once, at the end of the script, with `return { ModelName: data };` (for small datasets)
-- in batches, using `await nango.batchSend<ModelName>(data, 'ModelName');` (useful to break down large datasets)
+- in batches, using `await nango.batchSave<ModelName>(data, 'ModelName');` (useful to break down large datasets)
 
 <Tip>
 To make API requests, use the proxy exposed by the `nango` object ([Proxy guide](/guides/proxy)).
