@@ -127,6 +127,16 @@ export interface DataRecord extends Timestamps {
     external_deleted_at?: Date | null;
 }
 
+export type LastAction = 'added' | 'updated' | 'deleted';
+
+export interface DataRecordWithMetadata {
+    first_seen_at: Date;
+    last_seen_at: Date;
+    last_action: LastAction;
+    deleted_at: Date | null;
+    record: object;
+}
+
 export type SyncWithSchedule = Sync & Schedule;
 
 export enum SyncCommand {

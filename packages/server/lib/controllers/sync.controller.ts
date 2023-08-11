@@ -28,7 +28,8 @@ import {
     analytics,
     ErrorSourceEnum,
     LogActionEnum,
-    NangoError
+    NangoError,
+    LastAction
 } from '@nangohq/shared';
 
 class SyncController {
@@ -110,7 +111,7 @@ class SyncController {
                 limit as string,
                 sort_by as string,
                 order as 'asc' | 'desc',
-                filter as 'added' | 'updated' | 'deleted',
+                filter as LastAction,
                 include_nango_metadata === 'true'
             );
 
