@@ -172,7 +172,7 @@ export function convertConfigObject(config: NangoConfig): SimplifiedNangoIntegra
                 models.push({ name: model, fields: [modelFields] });
             });
 
-            syncs.push({ name: syncName, runs: sync.runs, returns: sync.returns, models });
+            syncs.push({ name: syncName, runs: sync.runs, track_deletes: sync.track_deletes || false, returns: sync.returns, models });
         }
         output.push({ providerConfigKey, syncs });
     }

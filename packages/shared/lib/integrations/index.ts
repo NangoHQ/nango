@@ -4,6 +4,7 @@ export * as GithubModels from './Github.js';
 export interface NangoIntegrationData {
     runs: string;
     returns: string[];
+    track_deletes?: boolean;
     fileLocation?: string;
     version?: string;
     sync_config_id?: number;
@@ -40,6 +41,7 @@ export interface NangoSyncModel {
 export interface NangoSyncConfig {
     name: string;
     runs: string;
+    track_deletes?: boolean;
     returns: string[];
     models: NangoSyncModel[];
 }

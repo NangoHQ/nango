@@ -1,6 +1,7 @@
 import { schema } from '../../db/database.js';
 import { verifyUniqueKeysAreUnique } from './data-records.service.js';
 import { createActivityLogMessage } from '../activity/activity.service.js';
+import { getDeletedKeys } from './data-delete.service.js';
 import type { UpsertResponse } from '../../models/Data.js';
 import type { DataRecord } from '../../models/Sync.js';
 
@@ -14,10 +15,9 @@ export async function upsert(
     nangoConnectionId: number,
     model: string,
     activityLogId: number,
-    trackDeletes = false,
+    track_deletes = false,
     softDelete = false
 ): Promise<UpsertResponse> {
-    console.log(trackDeletes);
     const responseWithoutDuplicates = await removeDuplicateKey(response, uniqueKey, activityLogId, model);
 
     if (!responseWithoutDuplicates || responseWithoutDuplicates.length === 0) {
@@ -54,11 +54,14 @@ export async function upsert(
             };
         }
 
+        const deletedKeys = track_deletes ? await getDeletedKeys(responseWithoutDuplicates, dbTable, uniqueKey, nangoConnectionId, model) : [];
+
         return {
             success: true,
             summary: {
                 addedKeys,
                 updatedKeys,
+                deletedKeys,
                 affectedInternalIds,
                 affectedExternalIds
             }

@@ -1,6 +1,6 @@
 import { loadLocalNangoConfig, nangoConfigFile } from '../nango-config.service.js';
 import type { NangoConnection } from '../../models/Connection.js';
-import { SyncResult, SyncType, SyncStatus, Job as SyncJob, SyncConfig } from '../../models/Sync.js';
+import { SyncResult, SyncType, SyncStatus, Job as SyncJob } from '../../models/Sync.js';
 import { createActivityLogMessage, createActivityLogMessageAndEnd, updateSuccess as updateSuccessActivityLog } from '../activity/activity.service.js';
 import { addSyncConfigToJob, updateSyncJobResult, updateSyncJobStatus } from '../sync/job.service.js';
 import { getSyncConfig } from './config.service.js';
@@ -177,7 +177,7 @@ export default class SyncRun {
             }
 
             const syncData = syncObject[this.syncName] as unknown as NangoIntegrationData;
-            const { returns: models } = syncData;
+            const { returns: models, track_deletes } = syncData;
 
             if (syncData.sync_config_id) {
                 if (this.debug) {
@@ -279,7 +279,7 @@ export default class SyncRun {
                                     this.nangoConnection.id as number,
                                     model,
                                     this.activityLogId,
-                                    nangoConfig
+                                    track_deletes
                                 );
 
                                 if (upsertResult.success) {

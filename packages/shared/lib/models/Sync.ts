@@ -62,6 +62,7 @@ export interface SyncConfig extends TimestampsAndDeleted {
     model_schema: SyncModelSchema[];
     active: boolean;
     runs: string;
+    track_deletes: boolean;
     version?: string;
 }
 
@@ -92,6 +93,7 @@ export interface IncomingSyncConfig {
     models: string[];
     runs: string;
     version?: string;
+    track_deletes?: boolean;
     model_schema: string;
 }
 

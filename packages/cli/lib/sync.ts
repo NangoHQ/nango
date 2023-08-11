@@ -415,6 +415,7 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
                 models,
                 version: version as string,
                 runs,
+                track_deletes: sync.track_deletes || false,
                 fileBody: fs.readFileSync(integrationFilePath, 'utf8'),
                 model_schema: JSON.stringify(model_schema)
             };
@@ -680,7 +681,7 @@ export const tsc = (debug = false, syncName?: string): boolean => {
     }
 
     const integrationFiles = syncName ? [`./${syncName}.ts`] : glob.sync(`./*.ts`);
-    let hadError = false;
+    let success = true;
 
     for (const filePath of integrationFiles) {
         try {
@@ -695,11 +696,11 @@ export const tsc = (debug = false, syncName?: string): boolean => {
         } catch (error) {
             console.error(`Error compiling "${filePath}":`);
             console.error(error);
-            hadError = true;
+            success = false;
         }
     }
 
-    return hadError;
+    return success;
 };
 
 const nangoCallsAreAwaited = (filePath: string): boolean => {
