@@ -333,13 +333,17 @@ export class NangoSync {
 
         if (responseResults.success) {
             const { summary } = responseResults;
-            const updatedResults = {
+            const updatedResults: Record<string, { added: number; updated: number; deleted?: number }> = {
                 [model]: {
                     added: summary?.addedKeys.length as number,
                     updated: summary?.updatedKeys.length as number,
                     deleted: summary?.deletedKeys?.length as number
                 }
             };
+
+            if (summary?.deletedKeys?.length === 0) {
+                delete updatedResults[model]?.deleted;
+            }
 
             await createActivityLogMessage({
                 level: 'info',

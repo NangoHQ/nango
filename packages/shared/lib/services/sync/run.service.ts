@@ -339,13 +339,17 @@ export default class SyncRun {
             await setLastSyncDate(this.syncId as string, syncStartDate, override);
         }
 
-        const updatedResults = {
+        const updatedResults: Record<string, SyncResult> = {
             [model]: {
                 added: responseResults.addedKeys.length,
                 updated: responseResults.updatedKeys.length,
                 deleted: responseResults.deletedKeys?.length as number
             }
         };
+
+        if (responseResults.deletedKeys?.length === 0) {
+            delete updatedResults[model]?.deleted;
+        }
 
         const syncResult: SyncJob = await updateSyncJobResult(this.syncJobId, updatedResults, model);
 
@@ -376,24 +380,27 @@ export default class SyncRun {
             `The ${this.syncType} "${this.syncName}" sync has been completed to the ${model} model.` +
             (version ? ` The version integration script version ran was ${version}.` : '');
 
-        const resultMessage =
-            added > 0 || updated > 0 || deleted > 0
-                ? `The result was ${added} added record${added === 1 ? '' : 's'}, ${updated} updated record${
-                      updated === 1 ? '' : 's'
-                  } and ${deleted} deleted record${deleted === 1 ? '.' : 's.'}`
-                : 'The external API returned did not return any new or updated data so nothing was inserted or updated.';
+        const addedMessage = added > 0 ? `${added} added record${added === 1 ? '' : 's'}` : '';
+        const updatedMessage = updated > 0 ? `${updated} updated record${updated === 1 ? '' : 's'}` : '';
+        const deletedMessage = deleted > 0 ? `${deleted} deleted record${deleted === 1 ? '' : 's'}` : '';
+
+        const resultMessageParts = [addedMessage, updatedMessage, deletedMessage].filter(Boolean);
+        const resultMessage = resultMessageParts.length
+            ? `The result was ${resultMessageParts.join(', ')}.`
+            : 'The external API returned did not return any new or updated data so nothing was inserted or updated.';
 
         const content = `${successMessage} ${resultMessage}`;
 
-        await webhookService.sendUpdate(
-            this.nangoConnection,
-            this.syncName,
-            model,
-            { added, updated, deleted },
-            this.syncType,
-            syncStartDate,
-            this.activityLogId
-        );
+        const results: SyncResult = {
+            added,
+            updated
+        };
+
+        if (deleted > 0) {
+            results['deleted'] = deleted;
+        }
+
+        await webhookService.sendUpdate(this.nangoConnection, this.syncName, model, results, this.syncType, syncStartDate, this.activityLogId);
 
         if (index === numberOfModels - 1) {
             await createActivityLogMessageAndEnd({
