@@ -124,7 +124,7 @@ This will generate the scaffold for your _sync_ script(s). Open any _sync_ scrip
 ```typescript asana-tasks.ts
 import { NangoSync, AsanaTask } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<{AsanaTask: AsanaTask[]}> {
+export default async function fetchData(nango: NangoSync): Promise<void> {
 	// Integration code goes here.
 }
 ```
@@ -220,9 +220,8 @@ async function paginate(nango: NangoSync, endpoint: string, queryParams?: Record
     return results;
 }
 ```
-_Sync_ scripts can return the created/update data to Nango in two different ways: 
-- all at once, at the end of the script, with `return { ModelName: data };` (for small datasets)
-- in batches, using `await nango.batchSave<ModelName>(data, 'ModelName');` (useful to break down large datasets)
+
+_Sync_ scripts return the created/update data to Nango with `await nango.batchSave(data, 'ModelName');`. You can split the data into as many batches as needed.
 
 <Tip>
 To make API requests, use the proxy exposed by the `nango` object ([Proxy guide](/guides/proxy)).
