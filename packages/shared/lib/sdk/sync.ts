@@ -329,7 +329,7 @@ export class NangoSync {
             this.nangoConnectionId as number,
             model,
             this.activityLogId as number,
-            false,
+            false
         );
 
         if (responseResults.success) {
