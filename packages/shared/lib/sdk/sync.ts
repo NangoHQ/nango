@@ -329,7 +329,7 @@ export class NangoSync {
             this.nangoConnectionId as number,
             model,
             this.activityLogId as number,
-            syncConfig
+            false,
         );
 
         if (responseResults.success) {
@@ -431,7 +431,113 @@ export class NangoSync {
             this.nangoConnectionId as number,
             model,
             this.activityLogId as number,
-            syncConfig,
+            false,
+            true
+        );
+
+        if (responseResults.success) {
+            const { summary } = responseResults;
+            const updatedResults: Record<string, { added: number; updated: number; deleted?: number }> = {
+                [model]: {
+                    added: summary?.addedKeys.length as number,
+                    updated: summary?.updatedKeys.length as number,
+                    deleted: summary?.deletedKeys?.length as number
+                }
+            };
+
+            if (summary?.deletedKeys?.length === 0) {
+                delete updatedResults[model]?.deleted;
+            }
+
+            await createActivityLogMessage({
+                level: 'info',
+                activity_log_id: this.activityLogId as number,
+                content: `Batch save was a success and resulted in ${JSON.stringify(updatedResults, null, 2)}`,
+                timestamp: Date.now()
+            });
+
+            await updateSyncJobResult(this.syncJobId as number, updatedResults, model);
+
+            return true;
+        } else {
+            const content = `There was an issue with the batch save. ${responseResults?.error}`;
+
+            if (!this.dryRun) {
+                await createActivityLogMessage({
+                    level: 'error',
+                    activity_log_id: this.activityLogId as number,
+                    content,
+                    timestamp: Date.now()
+                });
+
+                await errorManager.report(content, {
+                    environmentId: this.environmentId as number,
+                    source: ErrorSourceEnum.CUSTOMER,
+                    operation: LogActionEnum.SYNC,
+                    metadata: {
+                        connectionId: this.connectionId,
+                        providerConfigKey: this.providerConfigKey,
+                        syncId: this.syncId,
+                        nanogConnectionId: this.nangoConnectionId,
+                        syncJobId: this.syncJobId
+                    }
+                });
+            }
+
+            throw new Error(responseResults?.error);
+        }
+    }
+
+    public async batchDelete<T = any>(results: T[], model: string): Promise<boolean | null> {
+        if (!results || results.length === 0) {
+            if (this.dryRun) {
+                console.log('batchDelete received an empty array. No records to delete.');
+            }
+            return true;
+        }
+
+        if (!this.nangoConnectionId || !this.syncId || !this.activityLogId || !this.syncJobId) {
+            throw new Error('Nango Connection Id, Sync Id, Activity Log Id and Sync Job Id are all required');
+        }
+
+        const {
+            success,
+            error,
+            response: formattedResults
+        } = formatDataRecords(results as unknown as DataResponse[], this.nangoConnectionId as number, model, this.syncId as string, this.syncJobId, true);
+
+        if (!success || formattedResults === null) {
+            if (!this.dryRun) {
+                await createActivityLogMessage({
+                    level: 'error',
+                    activity_log_id: this.activityLogId as number,
+                    content: `There was an issue with the batch delete. ${error?.message}`,
+                    timestamp: Date.now()
+                });
+            }
+
+            throw error;
+        }
+
+        if (this.dryRun) {
+            console.log('A batch delete call would delete the following data:');
+            console.log(JSON.stringify(results, null, 2));
+            return null;
+        }
+
+        const syncConfig = await getSyncConfigByJobId(this.syncJobId as number);
+
+        if (syncConfig && !syncConfig?.models.includes(model)) {
+            throw new Error(`The model: ${model} is not included in the declared sync models: ${syncConfig.models}.`);
+        }
+
+        const responseResults = await upsert(
+            formattedResults,
+            '_nango_sync_data_records',
+            'external_id',
+            this.nangoConnectionId as number,
+            model,
+            this.activityLogId as number,
             true
         );
 

@@ -53,7 +53,8 @@ export function dirname() {
  * interpolateString('Hello ${name} of ${age} years", {name: 'Tester'}) -> returns false
  */
 export function missesInterpolationParam(str: string, replacers: Record<string, any>) {
-    const interpolatedStr = interpolateString(str, replacers);
+    const strWithoutConnectionConfig = str.replace(/connectionConfig\./g, '');
+    const interpolatedStr = interpolateString(strWithoutConnectionConfig, replacers);
     return /\${([^{}]*)}/g.test(interpolatedStr);
 }
 

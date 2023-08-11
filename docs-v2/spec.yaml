@@ -514,6 +514,13 @@ paths:
                   schema:
                       type: boolean
                   description: If set to true, includes Nango metadata for each record in the response. Default is 'false'.
+                - name: filter
+                  in: query
+                  required: false
+                  schema:
+                      type: string
+                      enum: [added, updated, deleted]
+                  description: Filter to only show results that have been added or updated or deleted. Helpful when used in conjuction with the delta parameter to retrieve a subset or records that were added, updated, or deleted with the latest sync.
                 - name: Connection-Id
                   in: header
                   required: true

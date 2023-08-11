@@ -136,8 +136,8 @@ export default async function fetchData(
         }
 
         // Store this page of conversations in Nango
-        await nango.batchSend(intercomConversationsPage, 'IntercomConversation');
-        await nango.batchSend(intercomMessagesPage, 'IntercomConversationMessage');
+        await nango.batchSave(intercomConversationsPage, 'IntercomConversation');
+        await nango.batchSave(intercomMessagesPage, 'IntercomConversationMessage');
 
         // Get the last conversation of the page
         // We use this to determine if we should keep on syncing further pages
