@@ -34,10 +34,10 @@ export default async function fetchData(
             scopes: token.scopes.join(',')
         }));
 
-        nango.batchSend<GoogleWorkspaceUserToken>(mappedTokens, 'GoogleWorkspaceUserToken');
+        nango.batchSave<GoogleWorkspaceUserToken>(mappedTokens, 'GoogleWorkspaceUserToken');
 
         if (mappedUsers.length > 49) {
-            nango.batchSend<GoogleWorkspaceUser>(mappedUsers, 'GoogleWorkspaceUser');
+            nango.batchSave<GoogleWorkspaceUser>(mappedUsers, 'GoogleWorkspaceUser');
             mappedUsers = [];
         }
     }

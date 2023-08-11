@@ -50,6 +50,7 @@ export interface GetRecordsRequestConfig {
     sortBy?: 'updatedAt' | 'createdAt' | 'id';
     order?: 'asc' | 'desc';
     includeNangoMetadata?: boolean;
+    filter?: 'added' | 'updated' | 'deleted';
 }
 
 export interface BasicApiCredentials {

@@ -40,7 +40,7 @@ export default async function fetchData(nango: NangoSync): Promise<{ LinearTeam:
             }
         });
 
-        await nango.batchSend<LinearTeam>(mapTeams(response.data.data.teams.nodes), 'LinearTeam');
+        await nango.batchSave<LinearTeam>(mapTeams(response.data.data.teams.nodes), 'LinearTeam');
 
         if (!response.data.data.teams.pageInfo.hasNextPage || !response.data.data.teams.pageInfo.endCursor) {
             break;

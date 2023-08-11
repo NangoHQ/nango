@@ -22,7 +22,7 @@ The webhook from Nango is a POST request with the following body:
     "providerConfigKey": "<integration-id>",  // The name of the integration in Nango, e.g. github
     "syncName": "<sync-name>",                // The name of the sync as defined in nango.yaml, e.g. github-tickets
     "model": "<data-model>",                  // The name of the data model, e.g. ticket
-    "responseResults": { "<DataModel>": { "added": 123, "updated": 123 } }, // The number of new/updated records, per object type
+    "responseResults": { "<DataModel>": { "added": 123, "updated": 123 } }, // The number of new/updated records, per object type. Only if records were delted will that property show.
     "syncType": "INITIAL" | "INCREMENTAL",   // "Initial" or "incremental" run
     "queryTimestamp": "2023-05-31T11:46:13.390Z", // Use this with "delta" in getRecords to fetch the data of this sync
 }

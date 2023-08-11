@@ -680,6 +680,8 @@ export const tsc = (debug = false, syncName?: string): boolean => {
     }
 
     const integrationFiles = syncName ? [`./${syncName}.ts`] : glob.sync(`./*.ts`);
+    let hadError = false;
+
     for (const filePath of integrationFiles) {
         try {
             if (!nangoCallsAreAwaited(filePath)) {
@@ -693,11 +695,11 @@ export const tsc = (debug = false, syncName?: string): boolean => {
         } catch (error) {
             console.error(`Error compiling "${filePath}":`);
             console.error(error);
-            return false;
+            hadError = true;
         }
     }
 
-    return true;
+    return hadError;
 };
 
 const nangoCallsAreAwaited = (filePath: string): boolean => {
@@ -709,7 +711,29 @@ const nangoCallsAreAwaited = (filePath: string): boolean => {
     const message = (call: string, lineNumber: number) =>
         console.log(chalk.red(`nango.${call}() calls must be awaited in "${filePath}:${lineNumber}". Not awaiting can lead to unexpected results.`));
 
-    const nangoCalls = ['batchSend', 'log', 'getFieldMapping', 'setFieldMapping', 'get', 'post', 'put', 'patch', 'delete', 'getConnection', 'setLastSyncDate'];
+    const nangoCalls = [
+        'batchSend',
+        'batchSave',
+        'batchDelete',
+        'log',
+        'getFieldMapping',
+        'setFieldMapping',
+        'getMetadata',
+        'setMetadata',
+        'get',
+        'post',
+        'put',
+        'patch',
+        'delete',
+        'getConnection',
+        'setLastSyncDate'
+    ];
+
+    const deprecatedCalls: Record<string, string> = {
+        batchSend: 'batchSave',
+        getFieldMapping: 'getMetadata',
+        setFieldMapping: 'setMetadata'
+    };
 
     // @ts-ignore
     traverse.default(ast, {
@@ -717,6 +741,15 @@ const nangoCallsAreAwaited = (filePath: string): boolean => {
             const lineNumber = path.node.loc?.start.line as number;
             const callee = path.node.callee as t.MemberExpression;
             if (callee.object?.type === 'Identifier' && callee.object.name === 'nango' && callee.property?.type === 'Identifier') {
+                if (deprecatedCalls[callee.property.name as string]) {
+                    console.warn(
+                        chalk.yellow(
+                            `nango.${callee.property.name}() used at line ${lineNumber} is deprecated. Use nango.${
+                                deprecatedCalls[callee.property.name]
+                            }() instead.`
+                        )
+                    );
+                }
                 if (path.parent.type !== 'AwaitExpression') {
                     if (nangoCalls.includes(callee.property.name)) {
                         message(callee.property.name, lineNumber);

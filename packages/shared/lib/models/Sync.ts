@@ -112,7 +112,7 @@ export interface Schedule extends TimestampsAndDeleted {
 }
 
 export interface DataRecord extends Timestamps {
-    [index: string]: number | string | Date | object | undefined;
+    [index: string]: number | string | Date | object | undefined | boolean | null;
     id?: string;
     external_id: string;
     json: object;
@@ -121,6 +121,8 @@ export interface DataRecord extends Timestamps {
     model: string;
     sync_id: string;
     sync_config_id?: number | undefined;
+    external_is_deleted?: boolean;
+    external_deleted_at?: Date | null;
 }
 
 export type SyncWithSchedule = Sync & Schedule;
