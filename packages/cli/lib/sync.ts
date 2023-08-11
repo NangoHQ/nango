@@ -680,7 +680,7 @@ export const tsc = (debug = false, syncName?: string): boolean => {
     }
 
     const integrationFiles = syncName ? [`./${syncName}.ts`] : glob.sync(`./*.ts`);
-    let hadError = false;
+    let success = true;
 
     for (const filePath of integrationFiles) {
         try {
@@ -695,11 +695,11 @@ export const tsc = (debug = false, syncName?: string): boolean => {
         } catch (error) {
             console.error(`Error compiling "${filePath}":`);
             console.error(error);
-            hadError = true;
+            success = true;
         }
     }
 
-    return hadError;
+    return success;
 };
 
 const nangoCallsAreAwaited = (filePath: string): boolean => {
