@@ -3,8 +3,8 @@ import * as jobService from '../../services/sync/job.service.js';
 import { create as createSync } from './sync.seeder.js';
 import { Job, SyncType, SyncStatus } from '../../models/Sync.js';
 
-export const create = async (): Promise<Job> => {
-    const sync = await createSync();
+export const create = async (connectionId = 1): Promise<Job> => {
+    const sync = await createSync(connectionId);
     return (await jobService.createSyncJob(sync.id as string, SyncType.INITIAL, SyncStatus.RUNNING, '', null)) as Job;
 };
 

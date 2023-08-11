@@ -44,7 +44,7 @@ class ConnectionService {
         connectionConfig: Record<string, string>,
         environment_id: number,
         accountId: number
-    ) {
+    ): Promise<{ id: number }[]> {
         const storedConnectionId = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment_id);
 
         if (storedConnectionId) {
@@ -157,7 +157,7 @@ class ConnectionService {
 
         if (importedConnection) {
             const syncClient = await SyncClient.getInstance();
-            syncClient?.initiate(importedConnection[0].id);
+            syncClient?.initiate(importedConnection[0]?.id as number);
         }
 
         return importedConnection;

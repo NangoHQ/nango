@@ -2,16 +2,39 @@ import db from '../database.js';
 import connectionService from '../../services/connection.service.js';
 import type { AuthCredentials } from '../../models/Auth.js';
 
-export const create = async (): Promise<void> => {
+export const create = async (): Promise<number[]> => {
     const result = await db.knex.withSchema(db.schema()).select('*').from('_nango_environments');
 
-    for (const row of result) {
-        const { id: environment_id } = row;
-        await connectionService.upsertConnection('test1', 'test1', 'google', {} as AuthCredentials, {}, environment_id, 0);
-        await connectionService.upsertConnection('test2', 'test2', 'google', {} as AuthCredentials, {}, environment_id, 0);
-        await connectionService.upsertConnection('test3', 'test3', 'google', {} as AuthCredentials, {}, environment_id, 0);
-        await connectionService.upsertConnection('test4', 'test4', 'notion', {} as AuthCredentials, {}, environment_id, 0);
+    const connections = [];
+
+    for (const { id: environment_id } of result) {
+        const connectionParams = [
+            ['test1', 'test1'],
+            ['test2', 'test2'],
+            ['test3', 'test3'],
+            ['test4', 'test4']
+        ];
+
+        const connectionIds = [];
+
+        for (const [name, description] of connectionParams) {
+            const [result] = (await connectionService.upsertConnection(
+                name as string,
+                description as string,
+                'google',
+                {} as AuthCredentials,
+                {},
+                environment_id,
+                0
+            )) as { id: number }[];
+            const { id: connection_id } = result as { id: number };
+            connectionIds.push(connection_id);
+        }
+
+        connections.push(...connectionIds);
     }
+
+    return connections;
 };
 
 export const deleteAll = async (): Promise<void> => {

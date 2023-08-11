@@ -1,6 +1,6 @@
 import { NangoSync, LinearTeam } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<{ LinearTeam: LinearTeam[] }> {
+export default async function fetchData(nango: NangoSync): Promise<void> {
     const { lastSyncDate } = nango;
     const pageSize = 50;
     let after = '';
@@ -40,7 +40,7 @@ export default async function fetchData(nango: NangoSync): Promise<{ LinearTeam:
             }
         });
 
-        await nango.batchSave<LinearTeam>(mapTeams(response.data.data.teams.nodes), 'LinearTeam');
+        await nango.batchSave(mapTeams(response.data.data.teams.nodes), 'LinearTeam');
 
         if (!response.data.data.teams.pageInfo.hasNextPage || !response.data.data.teams.pageInfo.endCursor) {
             break;
@@ -48,8 +48,6 @@ export default async function fetchData(nango: NangoSync): Promise<{ LinearTeam:
             after = response.data.data.teams.pageInfo.endCursor;
         }
     }
-
-    return { LinearTeam: [] };
 }
 
 function mapTeams(records: any[]): LinearTeam[] {
