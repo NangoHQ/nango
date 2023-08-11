@@ -24,7 +24,7 @@ export default async function fetchData(nango: NangoSync): Promise<{ JiraIssue: 
         });
 
         const issues = response.data.issues;
-        await nango.batchSend<JiraIssue>(mapIssues(issues), 'JiraIssue');
+        await nango.batchSave<JiraIssue>(mapIssues(issues), 'JiraIssue');
 
         if (issues.length < maxResults) {
             break;

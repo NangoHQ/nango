@@ -25,7 +25,7 @@ export default async function fetchData(nango: NangoSync): Promise<{<% for (let 
         }));
 
         if (mappedIssues.length > 0) {
-            await nango.batchSend<GithubIssue>(mappedIssues, 'GithubIssue');
+            await nango.batchSave<GithubIssue>(mappedIssues, 'GithubIssue');
             await nango.log(`Sent ${mappedIssues.length} issues from ${repo.owner.login}/${repo.name}`);
         }
     }

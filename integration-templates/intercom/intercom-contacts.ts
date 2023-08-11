@@ -44,7 +44,7 @@ export default async function fetchData(nango: NangoSync): Promise<{ IntercomCon
         }));
 
         // Store this page of conversations in Nango
-        await nango.batchSend(mappedContacts, 'IntercomContact');
+        await nango.batchSave(mappedContacts, 'IntercomContact');
 
         // Are there more pages?
         // If so, set nextPage to the cursor of the next page

@@ -44,7 +44,7 @@ export default async function fetchData(
             batchMessages.push(mappedMessage);
 
             if (batchMessages.length > 49) {
-                await nango.batchSend<SlackMessage>(batchMessages, 'SlackMessage');
+                await nango.batchSave<SlackMessage>(batchMessages, 'SlackMessage');
                 batchMessages = [];
             }
 
@@ -64,7 +64,7 @@ export default async function fetchData(
                         batchReactions.push(mappedReaction);
 
                         if (batchReactions.length > 49) {
-                            await nango.batchSend<SlackMessageReaction>(batchReactions, 'SlackMessageReaction');
+                            await nango.batchSave<SlackMessageReaction>(batchReactions, 'SlackMessageReaction');
                             batchReactions = [];
                         }
                     }
@@ -107,7 +107,7 @@ export default async function fetchData(
                     batchMessageReply.push(mappedReply);
 
                     if (batchMessageReply.length > 49) {
-                        await nango.batchSend<SlackMessageReply>(batchMessageReply, 'SlackMessageReply');
+                        await nango.batchSave<SlackMessageReply>(batchMessageReply, 'SlackMessageReply');
                         batchMessageReply = [];
                     }
 
@@ -127,7 +127,7 @@ export default async function fetchData(
                                 batchReactions.push(mappedReaction);
 
                                 if (batchReactions.length > 49) {
-                                    await nango.batchSend<SlackMessageReaction>(batchReactions, 'SlackMessageReaction');
+                                    await nango.batchSave<SlackMessageReaction>(batchReactions, 'SlackMessageReaction');
                                     batchReactions = [];
                                 }
                             }

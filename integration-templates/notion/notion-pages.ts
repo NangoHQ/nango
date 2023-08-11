@@ -9,7 +9,7 @@ export default async function fetchData(nango: NangoSync): Promise<{ NotionPage:
         await nango.log(`Fetching plain text, in batch of ${batchSize} Notion pages, from page ${i + 1} (total pages: ${pages.length})`);
         let batchOfPages = pages.slice(i, Math.min(pages.length, i + batchSize));
         let pagesWithPlainText = await Promise.all(batchOfPages.map(async (page: any) => mapPage(page, await fetchPlainText(page, nango))));
-        await nango.batchSend<NotionPage>(pagesWithPlainText, 'NotionPage');
+        await nango.batchSave<NotionPage>(pagesWithPlainText, 'NotionPage');
     }
 
     return { NotionPage: [] };
