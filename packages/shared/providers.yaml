@@ -44,7 +44,7 @@ amazon:
     refresh_params:
         grant_type: refresh_token
     proxy:
-        base_url:  https://api.amazon.com
+        base_url: https://api.amazon.com
 amplitude:
     auth_mode: BASIC
     proxy:
@@ -868,7 +868,7 @@ todoist:
     token_url: https://todoist.com/oauth/access_token
     scope_separator: ','
     proxy:
-        base_url:  https://api.todoist.com/rest
+        base_url: https://api.todoist.com/rest
 twitch:
     auth_mode: OAUTH2
     authorization_url: https://id.twitch.tv/oauth2/authorize
@@ -980,7 +980,7 @@ xero:
     default_scopes:
         - offline_access
     proxy:
-        base_url: 	https://api.xero.com/api.xro
+        base_url: https://api.xero.com/api.xro
 yahoo:
     auth_mode: OAUTH2
     authorization_url: https://api.login.yahoo.com/oauth2/request_auth
