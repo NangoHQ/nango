@@ -10,7 +10,7 @@ accelo:
     refresh_params:
         grant_type: refresh_token
     proxy:
-        base_url: https://${connectionConfig.params.subdomain}.api.accelo.com/api/v0
+        base_url: https://${connectionConfig.params.subdomain}.api.accelo.com/api
 adobe:
     auth_mode: OAUTH2
     authorization_url: https://ims-na1.adobelogin.com/ims/authorize/v2
@@ -44,7 +44,7 @@ amazon:
     refresh_params:
         grant_type: refresh_token
     proxy:
-        base_url: https://${connectionConfig.params.subdomain}.api.accelo.com/api/v0
+        base_url:  https://api.amazon.com
 amplitude:
     auth_mode: BASIC
     proxy:
@@ -377,10 +377,14 @@ gorgias:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.gorgias.com/api
 greenhouse:
     auth_mode: OAUTH2
     authorization_url: https://api.greenhouse.io/oauth/authorize
     token_url: https://api.greenhouse.io/oauth/token
+    proxy:
+        base_url: https://${connectionConfig.resource}.greenhouse.io
 gumroad:
     auth_mode: OAUTH2
     authorization_url: https://gumroad.com/oauth/authorize
@@ -391,6 +395,8 @@ gumroad:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        base_url: https://api.gumroad.com
 gusto:
     auth_mode: OAUTH2
     authorization_url: https://api.gusto.com/oauth/authorize
@@ -401,6 +407,8 @@ gusto:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        base_url: https://api.gusto.com
 health-gorilla:
     auth_mode: OAUTH2
     authorization_url: https://api.healthgorilla.com/oauth/authorize
@@ -411,6 +419,8 @@ health-gorilla:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        base_url: https://healthgorilla.com
 hubspot:
     auth_mode: OAUTH2
     authorization_url: https://app.hubspot.com/oauth/authorize
@@ -422,14 +432,20 @@ instagram:
     auth_mode: OAUTH2
     authorization_url: https://api.instagram.com/oauth/authorize
     token_url: https://api.instagram.com/oauth/access_token
+    proxy:
+        base_url: https://graph.instagram.com
 intercom:
     auth_mode: OAUTH2
     authorization_url: https://app.intercom.io/oauth
     token_url: https://api.intercom.io/auth/eagle/token
+    proxy:
+        base_url: https://api.intercom.io
 intuit:
     auth_mode: OAUTH2
     authorization_url: https://appcenter.intuit.com/connect/oauth2
     token_url: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+    proxy:
+        base_url: https://quickbooks.api.intuit.com
 jira:
     auth_mode: OAUTH2
     authorization_url: https://auth.atlassian.com/authorize
@@ -449,6 +465,8 @@ keap:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        base_url: https://api.infusionsoft.com/crm/rest
 lever:
     auth_mode: OAUTH2
     authorization_url: https://auth.lever.co/authorize
@@ -457,6 +475,8 @@ lever:
         response_type: code
         prompt: consent
         audience: https://api.lever.co/v1
+    proxy:
+        base_url: https://api.lever.co
 linear:
     auth_mode: OAUTH2
     authorization_url: https://linear.app/oauth/authorize
@@ -472,10 +492,14 @@ linkedin:
     authorization_url: https://www.linkedin.com/oauth/v2/authorization
     token_url: https://www.linkedin.com/oauth/v2/accessToken
     disable_pkce: true
+    proxy:
+        base_url: https://api.linkedin.com
 linkhut:
     auth_mode: OAUTH2
     authorization_url: https://ln.ht/_/oauth/authorize
     token_url: https://api.ln.ht/v1/oauth/token
+    proxy:
+        base_url: https://api.ln.ht
 mailchimp:
     auth_mode: OAUTH2
     authorization_url: https://login.mailchimp.com/oauth2/authorize
@@ -505,6 +529,8 @@ miro:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        base_url: https://api.miro.com
 monday:
     auth_mode: OAUTH2
     authorization_url: https://auth.monday.com/oauth2/authorize
@@ -519,6 +545,8 @@ mural:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        base_url: https://app.mural.co/api/public
 netsuite:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.accountId}.app.netsuite.com/app/login/oauth2/authorize.nl
@@ -552,6 +580,8 @@ one-drive:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        base_url: https://graph.microsoft.com
 osu:
     auth_mode: OAUTH2
     authorization_url: https://osu.ppy.sh/oauth/authorize
@@ -564,6 +594,8 @@ osu:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        base_url: https://osu.ppy.sh/api
 outreach:
     auth_mode: OAUTH2
     authorization_url: https://api.outreach.io/oauth/authorize
@@ -574,10 +606,14 @@ outreach:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        base_url: https://api.outreach.io/api
 pagerduty:
     auth_mode: OAUTH2
     authorization_url: https://app.pagerduty.com/oauth/authorize
     token_url: https://app.pagerduty.com/oauth/token
+    proxy:
+        base_url: https://api.pagerduty.com
 pandadoc:
     auth_mode: OAUTH2
     authorization_url: https://app.pandadoc.com/oauth2/authorize
@@ -588,6 +624,8 @@ pandadoc:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        base_url: https://api.pandadoc.com/public
 payfit:
     auth_mode: OAUTH2
     authorization_url: https://oauth.payfit.com/authorize
@@ -600,26 +638,36 @@ pipedrive:
     auth_mode: OAUTH2
     authorization_url: https://oauth.pipedrive.com/oauth/authorize
     token_url: https://oauth.pipedrive.com/oauth/token
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.pipedrive.com/api
 qualtrics:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.qualtrics.com/oauth2/auth
     token_url: https://${connectionConfig.subdomain}.qualtrics.com/oauth2/token
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.qualtrics.com/API
 quickbooks:
     auth_mode: OAUTH2
     authorization_url: https://appcenter.intuit.com/connect/oauth2
     token_url: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
     redirect_uri_metadata:
         - realmId
+    proxy:
+        base_url: https://quickbooks.api.intuit.com
 ramp:
     auth_mode: OAUTH2
     authorization_url: https://app.ramp.com/v1/authorize
     token_url: https://api.ramp.com/developer/v1/token
     authorization_method: header
+    proxy:
+        base_url: https://api.ramp.com
 ramp-sandbox:
     auth_mode: OAUTH2
     authorization_url: https://demo.ramp.com/v1/authorize
     token_url: https://demo-api.ramp.com/developer/v1/token
     authorization_method: header
+    proxy:
+        base_url: https://demo-api.ramp.com
 reddit:
     auth_mode: OAUTH2
     authorization_url: https://www.reddit.com/api/v1/authorize
@@ -627,11 +675,15 @@ reddit:
     authorization_method: header
     authorization_params:
         duration: permanent
+    proxy:
+        base_url: https://oauth.reddit.com
 segment:
     auth_mode: OAUTH2
     authorization_url: https://id.segmentapis.com/oauth2/auth
     token_url: https://id.segmentapis.com/oauth2/token
     token_request_auth_method: basic
+    proxy:
+        base_url: https://api.segment.io
 sage:
     auth_mode: OAUTH2
     authorization_url: https://www.sageone.com/oauth2/auth/central
@@ -649,16 +701,20 @@ salesforce:
     token_response_metadata:
         - instance_url
     proxy:
-        base_url: ${connectionConfig.instance_url}
+        base_url: https://${connectionConfig.instance_url}.my.salesforce.com/services/data
     docs: https://developer.salesforce.com/docs/api
 salesloft:
     auth_mode: OAUTH2
     authorization_url: https://accounts.salesloft.com/oauth/authorize
     token_url: https://accounts.salesloft.com/oauth/token
+    proxy:
+        base_url: https://${connectionConfig.instance_url}.my.salesforce.com/services/data
 shopify:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.myshopify.com/admin/oauth/authorize
     token_url: https://${connectionConfig.subdomain}.myshopify.com/admin/oauth/access_token
+    proxy:
+        base_url: https://help.salesloft.com
 shortcut:
     auth_mode: API_KEY
     proxy:
@@ -679,10 +735,15 @@ smugmug:
     token_url: https://api.smugmug.com/services/oauth/1.0a/getAccessToken
     scope_separator: ','
     signature_method: 'PLAINTEXT'
+    proxy:
+        base_url: https://www.smugmug.com/api
+        docs: https://api.smugmug.com/api/v2/doc
 splitwise:
     auth_mode: OAUTH2
     authorization_url: https://secure.splitwise.com/oauth/authorize
     token_url: https://secure.splitwise.com/oauth/token
+    proxy:
+        base_url: https://secure.splitwise.com/api
 spotify:
     auth_mode: OAUTH2
     authorization_url: https://accounts.spotify.com/authorize
@@ -710,6 +771,8 @@ squareup:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        base_url: https://connect.squareup.com
 squareup-sandbox:
     auth_mode: OAUTH2
     authorization_url: https://connect.squareupsandbox.com/oauth2/authorize
@@ -723,12 +786,16 @@ squareup-sandbox:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        base_url: https://connect.squareupsandbox.com
 stackexchange:
     auth_mode: OAUTH2
     authorization_url: https://stackoverflow.com/oauth
     token_url: https://stackoverflow.com/oauth/access_token/json
     default_scopes:
         - no_expiry
+    proxy:
+        base_url: https://api.stackexchange.com
 strava:
     auth_mode: OAUTH2
     authorization_url: https://www.strava.com/oauth/mobile/authorize
@@ -741,6 +808,8 @@ strava:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        base_url: https://www.strava.com/api
 stripe:
     auth_mode: OAUTH2
     authorization_url: https://connect.stripe.com/oauth/authorize
@@ -751,6 +820,8 @@ stripe-express:
     token_url: https://connect.stripe.com/oauth/token
     token_response_metadata:
         - stripe_user_id
+    proxy:
+        base_url: https://api.stripe.com
 survey-monkey:
     auth_mode: OAUTH2
     authorization_url: https://api.surveymonkey.com/oauth/authorize
@@ -760,10 +831,14 @@ survey-monkey:
         response_type: code
     token_params:
         grant_type: authorization_code
+    proxy:
+        base_url: https://api.surveymonkey.com
 teamwork:
     auth_mode: OAUTH2
     authorization_url: https://www.teamwork.com/launchpad/login
     token_url: https://www.teamwork.com/launchpad/v1/token.json
+    proxy:
+        base_url: https://api.surveymonkey.com
 timely:
     auth_mode: OAUTH2
     authorization_url: https://api.timelyapp.com/1.1/oauth/authorize
@@ -785,11 +860,15 @@ trello:
     scope_separator: ','
     authorization_params:
         expiration: never
+    proxy:
+        base_url: https://api.trello.com
 todoist:
     auth_mode: OAUTH2
     authorization_url: https://todoist.com/oauth/authorize
     token_url: https://todoist.com/oauth/access_token
     scope_separator: ','
+    proxy:
+        base_url:  https://api.todoist.com/rest
 twitch:
     auth_mode: OAUTH2
     authorization_url: https://id.twitch.tv/oauth2/authorize
@@ -801,6 +880,8 @@ twitch:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        base_url: https://api.twitch.tv/helix
 twitter:
     auth_mode: OAUTH1
     request_url: https://api.twitter.com/oauth/request_token
@@ -809,6 +890,8 @@ twitter:
     signature_method: 'HMAC-SHA1'
     request_params:
         x_auth_access_type: write
+    proxy:
+        base_url: https://api.twitter.com
 twitter-v2:
     auth_mode: OAUTH2
     authorization_url: https://twitter.com/i/oauth2/authorize
@@ -823,6 +906,8 @@ twitter-v2:
         grant_type: refresh_token
     default_scopes:
         - offline.access
+    proxy:
+        base_url: https://api.twitter.com/v2
 twinfield:
     auth_mode: OAUTH2
     authorization_url: https://login.twinfield.com/auth/authentication/connect/authorize
@@ -840,16 +925,6 @@ twinfield:
         - twf.organisationUser
         - offline_access
     disable_pkce: true
-uber:
-    auth_mode: OAUTH2
-    authorization_url: https://login.uber.com/oauth/v2/authorize
-    token_url: https://login.uber.com/oauth/v2/token
-    authorization_params:
-        response_type: code
-    token_params:
-        grant_type: authorization_code
-    refresh_params:
-        grant_type: refresh_token
 typeform:
     auth_mode: OAUTH2
     authorization_url: https://api.typeform.com/oauth/authorize
@@ -863,15 +938,33 @@ typeform:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        base_url: https://api.typeform.com
+uber:
+    auth_mode: OAUTH2
+    authorization_url: https://login.uber.com/oauth/v2/authorize
+    token_url: https://login.uber.com/oauth/v2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.uber.com
 wakatime:
     auth_mode: OAUTH2
     authorization_url: https://wakatime.com/oauth/authorize
     token_url: https://wakatime.com/oauth/token
     docs: https://wakatime.com/developers
+    proxy:
+        base_url: https://wakatime.com/api
 wave-accounting:
     auth_mode: OAUTH2
     authorization_url: https://api.waveapps.com/oauth2/authorize
     token_url: https://api.waveapps.com/oauth2/token
+    proxy:
+        base_url: https://gql.waveapps.com/graphql/public
 workable:
     auth_mode: API_KEY
     proxy:
@@ -886,6 +979,8 @@ xero:
         response_type: code
     default_scopes:
         - offline_access
+    proxy:
+        base_url: 	https://api.xero.com/api.xro
 yahoo:
     auth_mode: OAUTH2
     authorization_url: https://api.login.yahoo.com/oauth2/request_auth
@@ -900,16 +995,22 @@ yandex:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        base_url: https://translate.yandex.net/api
 youtube:
     alias: google
 zapier-nla:
     auth_mode: OAUTH2
     authorization_url: https://nla.zapier.com/oauth/authorize/
     token_url: https://nla.zapier.com/oauth/token/
+    proxy:
+        base_url: https://nla.zapier.com/api
 zendesk:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.zendesk.com/oauth/authorizations/new
     token_url: https://${connectionConfig.subdomain}.zendesk.com/oauth/tokens
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.zendesk.com/api
 zenefits:
     auth_mode: OAUTH2
     authorization_url: https://secure.zenefits.com/oauth2/platform-authorize
@@ -920,6 +1021,8 @@ zenefits:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+    proxy:
+        base_url: https://api.zenefits.com/platform
 zoho:
     auth_mode: OAUTH2
     authorization_url: https://accounts.zoho.${connectionConfig.extension}/oauth/v2/auth
@@ -945,3 +1048,5 @@ zoom:
     token_url: https://zoom.us/oauth/token
     authorization_params:
         response_type: code
+    proxy:
+        base_url: https://developer.zoom.us/
