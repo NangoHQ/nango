@@ -468,6 +468,18 @@ mural:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+nationbuilder:
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.accountId}.nationbuilder.com/oauth/authorize
+    token_url: https://${connectionConfig.accountId}.nationbuilder.com/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    default_scopes:
+        - default
 netsuite:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.accountId}.app.netsuite.com/app/login/oauth2/authorize.nl
