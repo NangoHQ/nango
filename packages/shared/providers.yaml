@@ -10,7 +10,7 @@ accelo:
     refresh_params:
         grant_type: refresh_token
     proxy:
-        base_url: https://${connectionConfig.params.subdomain}.api.accelo.com/api
+        base_url: https://${connectionConfig.subdomain}.api.accelo.com/api
 adobe:
     auth_mode: OAUTH2
     authorization_url: https://ims-na1.adobelogin.com/ims/authorize/v2
@@ -102,7 +102,7 @@ bamboohr:
         grant_type: authorization_code
         request: token
     proxy:
-        base_url: https://api.bamboohr.com/api/gateway.php/${connectionConfig.params.subdomain}/v1
+        base_url: https://api.bamboohr.com/api/gateway.php/${connectionConfig.subdomain}/v1
 battlenet:
     auth_mode: OAUTH2
     authorization_url: https://oauth.battle.${connectionConfig.extension}/authorize
@@ -793,7 +793,7 @@ salesforce:
     token_response_metadata:
         - instance_url
     proxy:
-        base_url: https://${connectionConfig.instance_url}.my.salesforce.com/services/data
+        base_url: https://${connectionConfig.instance_url}
     docs: https://developer.salesforce.com/docs/api
 salesforce-sandbox:
     auth_mode: OAUTH2
@@ -810,6 +810,8 @@ salesloft:
     auth_mode: OAUTH2
     authorization_url: https://accounts.salesloft.com/oauth/authorize
     token_url: https://accounts.salesloft.com/oauth/token
+    proxy:
+        base_url: https://api.salesloft.com
 servicem8:
     auth_mode: OAUTH2
     authorization_url: https://go.servicem8.com/oauth/authorize
@@ -829,7 +831,7 @@ shopify:
     authorization_url: https://${connectionConfig.subdomain}.myshopify.com/admin/oauth/authorize
     token_url: https://${connectionConfig.subdomain}.myshopify.com/admin/oauth/access_token
     proxy:
-        base_url: https://help.salesloft.com
+        base_url: https://{connectionConfig.subdomain}.myshopify.com
 shortcut:
     auth_mode: API_KEY
     proxy:
