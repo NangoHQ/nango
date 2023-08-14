@@ -228,8 +228,8 @@ class ProxyController {
                     content: `${Date.now()} The proxy is not supported for this provider ${String(
                         providerConfig?.provider
                     )}. You can easily add support by following the instructions at https://docs.nango.dev/contribute/nango-auth.
-                        You can also use the baseUrlOverride to get started right away.
-                        See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
+You can also use the baseUrlOverride to get started right away.
+See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
                 });
 
                 errorManager.errRes(res, 'missing_base_api_url');
@@ -295,8 +295,16 @@ class ProxyController {
      * @param {attemptNumber} number
      */
     private retry = async (activityLogId: number, error: AxiosError, attemptNumber: number): Promise<boolean> => {
-        if (error?.response?.status.toString().startsWith('5') || error?.response?.status === 429) {
-            const content = `API received an ${error?.response?.status} error, retrying with exponential backoffs for a total of ${attemptNumber} times`;
+        if (
+            error?.response?.status.toString().startsWith('5') ||
+            error?.response?.status === 429 ||
+            error?.code === 'ECONNRESET' ||
+            error?.code === 'ETIMEDOUT' ||
+            error?.code === 'ECONNABORTED'
+        ) {
+            const content = `API received an ${
+                error?.response?.status || error?.code
+            } error, retrying with exponential backoffs for a total of ${attemptNumber} times`;
 
             await createActivityLogMessage({
                 level: 'error',

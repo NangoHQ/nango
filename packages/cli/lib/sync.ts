@@ -96,7 +96,7 @@ export const generate = async (debug = false, inParentDirectory = false) => {
     const { integrations } = configData;
     const { models } = configData;
 
-    const interfaceDefinitions = buildInterfaces(models, debug);
+    const interfaceDefinitions = buildInterfaces(models, integrations, debug);
 
     fs.writeFileSync(`${dirPrefix}/${TYPES_FILE_NAME}`, interfaceDefinitions.join('\n'));
 
@@ -291,8 +291,8 @@ NANGO_DEPLOY_AUTO_CONFIRM=false # Default value`
 const createModelFile = (notify = false) => {
     const configContents = fs.readFileSync(`./${nangoConfigFile}`, 'utf8');
     const configData: NangoConfig = yaml.load(configContents) as unknown as NangoConfig;
-    const { models } = configData;
-    const interfaceDefinitions = buildInterfaces(models);
+    const { models, integrations } = configData;
+    const interfaceDefinitions = buildInterfaces(models, integrations);
     fs.writeFileSync(`./${TYPES_FILE_NAME}`, interfaceDefinitions.join('\n'));
 
     // insert NangoSync types to the bottom of the file
@@ -614,6 +614,13 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
         lastSyncDate = new Date(suppliedLastSyncDate as string);
     }
 
+    const result = tsc(debug, syncName);
+
+    if (!result) {
+        console.log(chalk.red('The sync did not compile successfully. Exiting'));
+        return;
+    }
+
     const syncRun = new syncRunService({
         writeToDb: false,
         nangoConnection,
@@ -646,7 +653,7 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
     }
 };
 
-export const tsc = (debug = false) => {
+export const tsc = (debug = false, syncName?: string): boolean => {
     const tsconfig = fs.readFileSync(`${getNangoRootPath()}/tsconfig.dev.json`, 'utf8');
 
     const distDir = './dist';
@@ -672,11 +679,13 @@ export const tsc = (debug = false) => {
         printDebug(`Compiler options: ${JSON.stringify(JSON.parse(tsconfig).compilerOptions, null, 2)}`);
     }
 
-    const integrationFiles = glob.sync(`./*.ts`);
+    const integrationFiles = syncName ? [`./${syncName}.ts`] : glob.sync(`./*.ts`);
+    let success = true;
+
     for (const filePath of integrationFiles) {
         try {
             if (!nangoCallsAreAwaited(filePath)) {
-                return;
+                return false;
             }
             const result = compiler.compile(fs.readFileSync(filePath, 'utf8'), filePath);
             const jsFilePath = filePath.replace(/\/[^\/]*$/, `/dist/${path.basename(filePath.replace('.ts', '.js'))}`);
@@ -686,8 +695,11 @@ export const tsc = (debug = false) => {
         } catch (error) {
             console.error(`Error compiling "${filePath}":`);
             console.error(error);
+            success = false;
         }
     }
+
+    return success;
 };
 
 const nangoCallsAreAwaited = (filePath: string): boolean => {
@@ -699,7 +711,29 @@ const nangoCallsAreAwaited = (filePath: string): boolean => {
     const message = (call: string, lineNumber: number) =>
         console.log(chalk.red(`nango.${call}() calls must be awaited in "${filePath}:${lineNumber}". Not awaiting can lead to unexpected results.`));
 
-    const nangoCalls = ['batchSend', 'log', 'getFieldMapping', 'setFieldMapping', 'get', 'post', 'put', 'patch', 'delete', 'getConnection', 'setLastSyncDate'];
+    const nangoCalls = [
+        'batchSend',
+        'batchSave',
+        'batchDelete',
+        'log',
+        'getFieldMapping',
+        'setFieldMapping',
+        'getMetadata',
+        'setMetadata',
+        'get',
+        'post',
+        'put',
+        'patch',
+        'delete',
+        'getConnection',
+        'setLastSyncDate'
+    ];
+
+    const deprecatedCalls: Record<string, string> = {
+        batchSend: 'batchSave',
+        getFieldMapping: 'getMetadata',
+        setFieldMapping: 'setMetadata'
+    };
 
     // @ts-ignore
     traverse.default(ast, {
@@ -707,6 +741,15 @@ const nangoCallsAreAwaited = (filePath: string): boolean => {
             const lineNumber = path.node.loc?.start.line as number;
             const callee = path.node.callee as t.MemberExpression;
             if (callee.object?.type === 'Identifier' && callee.object.name === 'nango' && callee.property?.type === 'Identifier') {
+                if (deprecatedCalls[callee.property.name as string]) {
+                    console.warn(
+                        chalk.yellow(
+                            `nango.${callee.property.name}() used at line ${lineNumber} is deprecated. Use nango.${
+                                deprecatedCalls[callee.property.name]
+                            }() instead.`
+                        )
+                    );
+                }
                 if (path.parent.type !== 'AwaitExpression') {
                     if (nangoCalls.includes(callee.property.name)) {
                         message(callee.property.name, lineNumber);

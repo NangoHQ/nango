@@ -1,0 +1,14 @@
+---
+title: 'Update Connection Metadata'
+openapi: 'POST /connection/{connectionId}/metadata'
+---
+
+## Update Connection Metadata
+
+Use this API endpoint to update your [custom metadata](/guides/oauth#storing-custom-metadata-per-connection) for a Connection.
+
+Nango uses the request body as the new metadata (it must be a JSON object). Note that this overrides any existing metadata.
+
+## Fetching Connection Metadata
+
+To read the existing metadata of a Connection simply [fetch it](/api-reference/connection/get). Your custom metadata is included as part of the returned Connection object.

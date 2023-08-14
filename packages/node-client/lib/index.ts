@@ -9,6 +9,7 @@ import {
     GetRecordsRequestConfig,
     BasicApiCredentials,
     ApiKeyCredentials,
+    Metadata,
     Connection,
     ConnectionList,
     Integration,
@@ -265,10 +266,40 @@ export class Nango {
     }
 
     public async getRecords<T = any>(config: GetRecordsRequestConfig): Promise<T[]> {
-        const { connectionId, providerConfigKey, model, delta, offset, limit } = config;
+        const { connectionId, providerConfigKey, model, delta, offset, limit, includeNangoMetadata } = config;
         validateSyncRecordConfiguration(config);
 
-        const url = `${this.serverUrl}/sync/records/?model=${model}&delta=${delta || ''}&offset=${offset || ''}&limit=${limit || ''}`;
+        const order = config?.order === 'asc' ? 'asc' : 'desc';
+
+        let sortBy = 'id';
+        switch (config.sortBy) {
+            case 'createdAt':
+                sortBy = 'created_at';
+                break;
+            case 'updatedAt':
+                sortBy = 'updated_at';
+                break;
+        }
+
+        let filter = '';
+
+        switch (config.filter) {
+            case 'deleted':
+                filter = 'deleted';
+                break;
+            case 'updated':
+                filter = 'updated';
+                break;
+            case 'added':
+                filter = 'added';
+                break;
+        }
+
+        const includeMetadata = includeNangoMetadata || false;
+
+        const url = `${this.serverUrl}/sync/records/?model=${model}&order=${order}&delta=${delta || ''}&offset=${offset || ''}&limit=${limit || ''}&sort_by=${
+            sortBy || ''
+        }&include_nango_metadata=${includeMetadata}&filter=${filter}`;
         const headers: Record<string, string | number | boolean> = {
             'Connection-Id': connectionId,
             'Provider-Config-Key': providerConfigKey
@@ -324,26 +355,37 @@ export class Nango {
         return response.data;
     }
 
-    public async setFieldMapping(
-        fieldMapping: Record<string, string>,
-        optionalProviderConfigKey?: string,
-        optionalConnectionId?: string
-    ): Promise<AxiosResponse<void>> {
-        const providerConfigKey = optionalProviderConfigKey || this.providerConfigKey;
-        const connectionId = optionalConnectionId || this.connectionId;
-        const url = `${this.serverUrl}/connection/${connectionId}/field-mapping?provider_config_key=${providerConfigKey}`;
+    public async setMetadata(providerConfigKey: string, connectionId: string, metadata: Record<string, string>): Promise<AxiosResponse<void>> {
+        if (!providerConfigKey) {
+            throw new Error('Provider Config Key is required');
+        }
+
+        if (!connectionId) {
+            throw new Error('Connection Id is required');
+        }
+
+        if (!metadata) {
+            throw new Error('Metadata is required');
+        }
+
+        const url = `${this.serverUrl}/connection/${connectionId}/metadata?provider_config_key=${providerConfigKey}`;
 
         const headers: Record<string, string | number | boolean> = {
             'Provider-Config-Key': providerConfigKey as string
         };
 
-        return axios.post(url, fieldMapping, { headers: this.enrichHeaders(headers) });
+        return axios.post(url, metadata, { headers: this.enrichHeaders(headers) });
     }
 
-    public async getFieldMapping(optionalProviderConfigKey?: string, optionalConnectionId?: string): Promise<Record<string, string>> {
-        const providerConfigKey = optionalProviderConfigKey || this.providerConfigKey;
-        const connectionId = optionalConnectionId || this.connectionId;
+    public async setFieldMapping(
+        _fieldMapping: Record<string, string>,
+        _optionalProviderConfigKey?: string,
+        _optionalConnectionId?: string
+    ): Promise<AxiosResponse<void>> {
+        throw new Error('setFieldMapping is deprecated. Please use setMetadata instead.');
+    }
 
+    public async getMetadata<T = Metadata>(providerConfigKey: string, connectionId: string): Promise<T> {
         if (!providerConfigKey) {
             throw new Error('Provider Config Key is required');
         }
@@ -357,10 +399,13 @@ export class Nango {
             'Nango-Is-Dry-Run': this.dryRun
         });
 
-        return response.data.field_mappings as Record<string, string>;
+        return response.data.metadata as T;
+    }
+    public async getFieldMapping(_optionalProviderConfigKey?: string, _optionalConnectionId?: string): Promise<Record<string, string>> {
+        throw new Error('getFieldMapping is deprecated. Please use getMetadata instead.');
     }
 
-    public async triggerSync(providerConfigKey: string, connectionId: string): Promise<void> {
+    public async triggerSync(providerConfigKey: string, connectionId: string, syncs?: string[]): Promise<void> {
         const url = `${this.serverUrl}/sync/trigger`;
 
         const headers = {
@@ -368,7 +413,15 @@ export class Nango {
             'Provider-Config-Key': providerConfigKey
         };
 
-        return axios.post(url, {}, { headers: this.enrichHeaders(headers) });
+        if (typeof syncs === 'string') {
+            throw new Error('Syncs must be an array of strings. If it is a single sync, please wrap it in an array.');
+        }
+
+        const body = {
+            syncs: syncs || []
+        };
+
+        return axios.post(url, body, { headers: this.enrichHeaders(headers) });
     }
 
     public async createConnection(_connectionArgs: CreateConnectionOAuth1 | (CreateConnectionOAuth2 & { metadata: string; connection_config: string })) {

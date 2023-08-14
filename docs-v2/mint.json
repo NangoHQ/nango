@@ -1,4 +1,5 @@
 {
+    "$schema": "https://mintlify.com/schema.json",
     "name": "Nango Docs",
     "logo": {
         "light": "/logo/light.svg",
@@ -77,6 +78,7 @@
                                 "integration-templates/github",
                                 "integration-templates/google-workspace",
                                 "integration-templates/gmail",
+                                "integration-templates/intercom",
                                 "integration-templates/jira",
                                 "integration-templates/linear",
                                 "integration-templates/notion",
@@ -240,7 +242,8 @@
                 "integrations/all/stackexchange",
                 "integrations/all/strava",
                 "integrations/all/stripe",
-		        "integrations/all/survey-monkey",
+	        "integrations/all/stripe-express",
+	        "integrations/all/survey-monkey",
                 "integrations/all/teamwork",
                 "integrations/all/todoist",
                 "integrations/all/timely",
@@ -300,7 +303,13 @@
         },
         {
             "group": "Connections",
-            "pages": ["api-reference/connection/list", "api-reference/connection/get", "api-reference/connection/post", "api-reference/connection/delete"]
+            "pages": [
+                "api-reference/connection/list",
+                "api-reference/connection/get",
+                "api-reference/connection/post",
+                "api-reference/connection/set-metadata",
+                "api-reference/connection/delete"
+            ]
         },
         {
             "group": "Sync",

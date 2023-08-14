@@ -23,6 +23,7 @@ import cors from 'cors';
 import webSocketClient from './clients/web-socket.client.js';
 import { AuthClient } from './clients/auth.client.js';
 import passport from 'passport';
+import environmentController from './controllers/environment.controller.js';
 import accountController from './controllers/account.controller.js';
 import type { Response, Request } from 'express';
 import Logger from './utils/logger.js';
@@ -79,7 +80,7 @@ app.route('/config/:providerConfigKey').delete(apiAuth, configController.deleteP
 app.route('/connection/:connectionId').get(apiAuth, connectionController.getConnectionCreds.bind(connectionController));
 app.route('/connection').get(apiAuth, connectionController.listConnections.bind(connectionController));
 app.route('/connection/:connectionId').delete(apiAuth, connectionController.deleteConnection.bind(connectionController));
-app.route('/connection/:connectionId/field-mapping').post(apiAuth, connectionController.setFieldMapping.bind(connectionController));
+app.route('/connection/:connectionId/metadata').post(apiAuth, connectionController.setMetadata.bind(connectionController));
 app.route('/connection').post(apiAuth, connectionController.createConnection.bind(connectionController));
 app.route('/sync/deploy').post(apiAuth, syncController.deploySync.bind(syncController));
 app.route('/sync/deploy/confirmation').post(apiAuth, syncController.confirmation.bind(syncController));
@@ -94,6 +95,7 @@ app.route('/proxy/*').all(apiAuth, proxyController.routeCall.bind(proxyControlle
 // Webapp routes (no auth).
 if (isCloud()) {
     app.route('/api/v1/signup').post(authController.signup.bind(authController));
+    app.route('/api/v1/signup/invite').get(authController.invitation.bind(authController));
     app.route('/api/v1/logout').post(authController.logout.bind(authController));
     app.route('/api/v1/signin').post(passport.authenticate('local'), authController.signin.bind(authController));
     app.route('/api/v1/forgot-password').put(authController.forgotPassword.bind(authController));
@@ -102,11 +104,13 @@ if (isCloud()) {
 
 // Webapp routes (session auth).
 app.route('/api/v1/account').get(webAuth, accountController.getAccount.bind(accountController));
-app.route('/api/v1/account/callback').post(webAuth, accountController.updateCallback.bind(accountController));
-app.route('/api/v1/account/webhook').post(webAuth, accountController.updateWebhookURL.bind(accountController));
-app.route('/api/v1/account/hmac').get(webAuth, accountController.getHmacDigest.bind(accountController));
-app.route('/api/v1/account/hmac-enabled').post(webAuth, accountController.updateHmacEnabled.bind(accountController));
-app.route('/api/v1/account/hmac-key').post(webAuth, accountController.updateHmacKey.bind(accountController));
+app.route('/api/v1/account').put(webAuth, accountController.editAccount.bind(accountController));
+app.route('/api/v1/environment').get(webAuth, environmentController.getEnvironment.bind(environmentController));
+app.route('/api/v1/environment/callback').post(webAuth, environmentController.updateCallback.bind(environmentController));
+app.route('/api/v1/environment/webhook').post(webAuth, environmentController.updateWebhookURL.bind(environmentController));
+app.route('/api/v1/environment/hmac').get(webAuth, environmentController.getHmacDigest.bind(environmentController));
+app.route('/api/v1/environment/hmac-enabled').post(webAuth, environmentController.updateHmacEnabled.bind(environmentController));
+app.route('/api/v1/environment/hmac-key').post(webAuth, environmentController.updateHmacKey.bind(environmentController));
 app.route('/api/v1/integration').get(webAuth, configController.listProviderConfigsWeb.bind(configController));
 app.route('/api/v1/integration/:providerConfigKey').get(webAuth, configController.getProviderConfig.bind(configController));
 app.route('/api/v1/integration').put(webAuth, configController.editProviderConfigWeb.bind(connectionController));
@@ -117,6 +121,10 @@ app.route('/api/v1/connection').get(webAuth, connectionController.listConnection
 app.route('/api/v1/connection/:connectionId').get(webAuth, connectionController.getConnectionWeb.bind(connectionController));
 app.route('/api/v1/connection/:connectionId').delete(webAuth, connectionController.deleteConnection.bind(connectionController));
 app.route('/api/v1/user').get(webAuth, userController.getUser.bind(userController));
+app.route('/api/v1/user/name').put(webAuth, userController.editName.bind(userController));
+app.route('/api/v1/user/password').put(webAuth, userController.editPassword.bind(userController));
+app.route('/api/v1/users/:userId/suspend').post(webAuth, userController.suspend.bind(userController));
+app.route('/api/v1/users/invite').post(webAuth, userController.invite.bind(userController));
 app.route('/api/v1/activity').get(webAuth, activityController.retrieve.bind(activityController));
 app.route('/api/v1/sync').get(webAuth, syncController.getSyncsByParams.bind(syncController));
 app.route('/api/v1/sync/command').post(webAuth, syncController.syncCommand.bind(syncController));

@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'url';
 import path, { resolve } from 'path';
 import type { Request } from 'express';
-import type { User, Environment, Account, Template as ProviderTemplate } from '@nangohq/shared';
+import type { User, Environment, Account, Template as ProviderTemplate, ServiceResponse } from '@nangohq/shared';
 import logger from './logger.js';
 import type { WSErr } from './web-socket-error.js';
 import { readFileSync } from 'fs';
@@ -11,29 +11,37 @@ type PackageJson = {
     version: string;
 };
 
-export async function getUserAccountAndEnvironmentFromSession(req: Request): Promise<{ user: User; account: Account; environment: Environment }> {
+export async function getUserAccountAndEnvironmentFromSession(
+    req: Request
+): Promise<ServiceResponse<{ user: User; account: Account; environment: Environment }>> {
     const sessionUser = req.user;
     const currentEnvironment = req.cookies['env'] || 'dev';
 
     if (sessionUser == null) {
-        throw new NangoError('user_not_found');
+        const error = new NangoError('user_not_found');
+
+        return { success: false, error, response: null };
     }
 
     const user = await userService.getUserById(sessionUser.id);
 
     if (user == null) {
-        throw new NangoError('user_not_found');
+        const error = new NangoError('user_not_found');
+        return { success: false, error, response: null };
     }
 
     const environmentAndAccount = await environmentService.getAccountAndEnvironmentById(user.account_id, currentEnvironment);
 
     if (environmentAndAccount == null) {
-        throw new NangoError('account_not_found');
+        const error = new NangoError('account_not_found');
+        return { success: false, error, response: null };
     }
 
     const { account, environment } = environmentAndAccount as { account: Account; environment: Environment };
 
-    return { user, account, environment };
+    const response = { user, account, environment };
+
+    return { success: true, error: null, response };
 }
 
 export function dirname() {
@@ -45,7 +53,8 @@ export function dirname() {
  * interpolateString('Hello ${name} of ${age} years", {name: 'Tester'}) -> returns false
  */
 export function missesInterpolationParam(str: string, replacers: Record<string, any>) {
-    const interpolatedStr = interpolateString(str, replacers);
+    const strWithoutConnectionConfig = str.replace(/connectionConfig\./g, '');
+    const interpolatedStr = interpolateString(strWithoutConnectionConfig, replacers);
     return /\${([^{}]*)}/g.test(interpolatedStr);
 }
 
@@ -112,16 +121,16 @@ export function parseJsonDateAware(input: string) {
 
 export function parseConnectionConfigParamsFromTemplate(template: ProviderTemplate): string[] {
     if (template.proxy && template.proxy.base_url) {
-        const baseUrlMatches = template.proxy.base_url.match(/\${connectionConfig\.params\.([^{}]*)}/g);
+        const baseUrlMatches = template.proxy.base_url.match(/\${connectionConfig\.([^{}]*)}/g);
         const params = [...(baseUrlMatches || [])].filter((value, index, array) => array.indexOf(value) === index);
-        return params.map((param) => param.replace('${connectionConfig.params.', '').replace('}', '')); // Remove the ${connectionConfig.params.'} and return only the param name.
+        return params.map((param) => param.replace('${connectionConfig.', '').replace('}', '')); // Remove the ${connectionConfig.'} and return only the param name.
     }
 
     if (template.token_url || template.authorization_url) {
-        const tokenUrlMatches = template.token_url.match(/\${connectionConfig\.params\.([^{}]*)}/g);
-        const authorizationUrlMatches = template.authorization_url.match(/\${connectionConfig\.params\.([^{}]*)}/g);
+        const tokenUrlMatches = template.token_url?.match(/\${connectionConfig\.([^{}]*)}/g);
+        const authorizationUrlMatches = template.authorization_url?.match(/\${connectionConfig\.([^{}]*)}/g);
         const params = [...(tokenUrlMatches || []), ...(authorizationUrlMatches || [])].filter((value, index, array) => array.indexOf(value) === index);
-        return params.map((param) => param.replace('${connectionConfig.params.', '').replace('}', '')); // Remove the ${connectionConfig.params.'} and return only the param name.
+        return params.map((param) => param.replace('${connectionConfig.', '').replace('}', '')); // Remove the ${connectionConfig.'} and return only the param name.
     }
 
     return [];

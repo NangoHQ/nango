@@ -12,6 +12,7 @@ import {
     SyncClient,
     updateScheduleStatus,
     getSyncsFlat,
+    getSyncsFlatWithNames,
     updateSuccess as updateSuccessActivityLog,
     createActivityLogAndLogMessage,
     createActivityLogMessageAndEnd,
@@ -89,7 +90,7 @@ class SyncController {
 
     public async getRecords(req: Request, res: Response, next: NextFunction) {
         try {
-            const { model, delta, offset, limit } = req.query;
+            const { model, delta, offset, limit, sort_by, order, filter, include_nango_metadata } = req.query;
             const environmentId = getEnvironmentId(res);
 
             const connectionId = req.get('Connection-Id') as string;
@@ -106,7 +107,11 @@ class SyncController {
                 model as string,
                 delta as string,
                 offset as string,
-                limit as string
+                limit as string,
+                sort_by as string,
+                order as 'asc' | 'desc',
+                filter as 'added' | 'updated' | 'deleted',
+                include_nango_metadata === 'true'
             );
 
             if (!success) {
@@ -123,7 +128,13 @@ class SyncController {
 
     public async getSyncsByParams(req: Request, res: Response, next: NextFunction) {
         try {
-            const environment = (await getUserAccountAndEnvironmentFromSession(req)).environment;
+            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
+            if (!sessionSuccess || response === null) {
+                errorManager.errResFromNangoErr(res, sessionError);
+                return;
+            }
+            const { environment } = response;
+
             const { connection_id, provider_config_key } = req.query;
 
             const {
@@ -155,7 +166,12 @@ class SyncController {
 
     public async getSyncs(req: Request, res: Response, next: NextFunction) {
         try {
-            const environment = (await getUserAccountAndEnvironmentFromSession(req)).environment;
+            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
+            if (!sessionSuccess || response === null) {
+                errorManager.errResFromNangoErr(res, sessionError);
+                return;
+            }
+            const { environment } = response;
 
             const syncs = await getSyncConfigsWithConnectionsByEnvironmentId(environment.id);
 
@@ -183,6 +199,14 @@ class SyncController {
             const connectionId = req.get('Connection-Id') as string;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
 
+            const syncs = req.body.syncs as string[];
+
+            if (typeof syncs === 'string') {
+                res.status(400).send({ message: 'Syncs must be an array' });
+
+                return;
+            }
+
             if (!connectionId) {
                 res.status(400).send({ message: 'Missing connection id' });
 
@@ -207,11 +231,16 @@ class SyncController {
                 return;
             }
 
-            const syncs = await getSyncsFlat(connection as Connection);
+            const syncsToTrigger =
+                syncs && syncs.length > 0 ? await getSyncsFlatWithNames(connection as Connection, syncs) : await getSyncsFlat(connection as Connection);
+
+            if (!syncsToTrigger || syncsToTrigger.length === 0) {
+                res.status(400).send({ message: 'No syncs to trigger' });
+            }
 
             const syncClient = await SyncClient.getInstance();
 
-            await syncClient?.triggerSyncs(syncs, environmentId);
+            await syncClient?.triggerSyncs(syncsToTrigger, environmentId);
 
             res.sendStatus(200);
         } catch (e) {
@@ -240,7 +269,13 @@ class SyncController {
 
     public async syncCommand(req: Request, res: Response, next: NextFunction) {
         try {
-            const environment = (await getUserAccountAndEnvironmentFromSession(req)).environment;
+            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
+            if (!sessionSuccess || response === null) {
+                errorManager.errResFromNangoErr(res, sessionError);
+                return;
+            }
+            const { environment } = response;
+
             const { schedule_id, command, nango_connection_id, sync_id, sync_name, provider } = req.body;
             const connection = await connectionService.getConnectionById(nango_connection_id);
 

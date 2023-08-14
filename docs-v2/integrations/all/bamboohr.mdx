@@ -25,6 +25,18 @@ API configuration: [`bambookhr`](https://nango.dev/providers.yaml)
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
+## Connection configuration in Nango
+
+BambooHR requires a user specific subdomain to run OAuth.
+
+You should request this from the user and pass it to Nango in the `nango.auth()` call:
+
+```js
+nango.auth('bamboohr', '<CONNECTION-ID>', {params: {subdomain: '<bamboohr-subdomain>'}});
+```
+
+For more details see the [docs here](/guides/oauth#connection-configuration).
+
 ## API gotchas
 
 -   When creating a connection you need to add the subdomain as a params argument, for example `nango.auth('bamhoo-hr', '1', {params: {subdomain: '<your-subdomain>'}})`

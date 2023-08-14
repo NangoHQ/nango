@@ -1,8 +1,6 @@
 import { GoogleWorkspaceUser, GoogleWorkspaceUserToken, NangoSync } from './models';
 
-export default async function fetchData(
-    nango: NangoSync
-): Promise<{ GoogleWorkspaceUser: GoogleWorkspaceUser[]; GoogleWorkspaceUserToken: GoogleWorkspaceUserToken[] }> {
+export default async function fetchData(nango: NangoSync): Promise<void> {
     // Get the users in the org
     const params = {
         customer: 'my_customer'
@@ -34,15 +32,15 @@ export default async function fetchData(
             scopes: token.scopes.join(',')
         }));
 
-        nango.batchSend<GoogleWorkspaceUserToken>(mappedTokens, 'GoogleWorkspaceUserToken');
+        await nango.batchSave(mappedTokens, 'GoogleWorkspaceUserToken');
 
         if (mappedUsers.length > 49) {
-            nango.batchSend<GoogleWorkspaceUser>(mappedUsers, 'GoogleWorkspaceUser');
+            await nango.batchSave(mappedUsers, 'GoogleWorkspaceUser');
             mappedUsers = [];
         }
     }
 
-    return { GoogleWorkspaceUser: mappedUsers, GoogleWorkspaceUserToken: [] };
+    await nango.batchSave(mappedUsers, 'GoogleWorkspaceUser');
 }
 
 async function paginate(nango: NangoSync, endpoint: string, resultsKey: string, queryParams?: Record<string, string | string[]>) {

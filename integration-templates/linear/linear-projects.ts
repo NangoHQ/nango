@@ -1,6 +1,6 @@
 import { NangoSync, LinearProject } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<{ LinearProject: LinearProject[] }> {
+export default async function fetchData(nango: NangoSync): Promise<void> {
     const { lastSyncDate } = nango;
     const pageSize = 50;
     let after = '';
@@ -45,7 +45,7 @@ export default async function fetchData(nango: NangoSync): Promise<{ LinearProje
             }
         });
 
-        await nango.batchSend<LinearProject>(mapProjects(response.data.data.projects.nodes), 'LinearProject');
+        await nango.batchSave(mapProjects(response.data.data.projects.nodes), 'LinearProject');
 
         if (!response.data.data.projects.pageInfo.hasNextPage || !response.data.data.projects.pageInfo.endCursor) {
             break;
@@ -53,8 +53,6 @@ export default async function fetchData(nango: NangoSync): Promise<{ LinearProje
             after = response.data.data.projects.pageInfo.endCursor;
         }
     }
-
-    return { LinearProject: [] };
 }
 
 function mapProjects(records: any[]): LinearProject[] {

@@ -9,13 +9,14 @@ import {
     LogLevel,
     LogActionEnum,
     syncRunService,
-    updateJobActivityLogId,
     NangoConnection,
     environmentService,
     createActivityLogMessage,
     createActivityLogAndLogMessage,
     ErrorSourceEnum,
-    errorManager
+    errorManager,
+    isInitialSyncStillRunning,
+    logger
 } from '@nangohq/shared';
 import type { ContinuousSyncArgs, InitialSyncArgs } from './models/Worker';
 
@@ -48,19 +49,42 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
     let environmentId = nangoConnection?.environment_id;
     let syncJobId;
 
+    const initialSyncStillRunning = await isInitialSyncStillRunning(syncId as string);
+
+    if (initialSyncStillRunning) {
+        const content = `The continuous sync "${syncName}" with sync id ${syncId} did not run because the initial sync is still running. It will attempt to run at the next scheduled time.`;
+
+        logger.log('info', content);
+
+        await errorManager.captureWithJustEnvironment('sync_overlap', content, environmentId, LogActionEnum.SYNC, {
+            connectionId: nangoConnection?.connection_id as string,
+            providerConfigKey: nangoConnection?.provider_config_key as string,
+            syncName,
+            syncId
+        });
+
+        return true;
+    }
+
     // https://typescript.temporal.io/api/classes/activity.Context
     const context: Context = Context.current();
     try {
         if (!nangoConnection?.environment_id) {
             environmentId = (await environmentService.getEnvironmentIdForAccountAssumingProd(nangoConnection.account_id as number)) as number;
-            syncJobId = await createSyncJob(syncId as string, SyncType.INCREMENTAL, SyncStatus.RUNNING, context.info.workflowExecution.workflowId, null);
+            syncJobId = await createSyncJob(
+                syncId as string,
+                SyncType.INCREMENTAL,
+                SyncStatus.RUNNING,
+                context.info.workflowExecution.workflowId,
+                nangoConnection
+            );
         } else {
             syncJobId = await createSyncJob(
                 syncId as string,
                 SyncType.INCREMENTAL,
                 SyncStatus.RUNNING,
                 context.info.workflowExecution.workflowId,
-                activityLogId
+                nangoConnection
             );
         }
 
@@ -161,10 +185,6 @@ export async function syncProvider(
                 operation_name: syncName
             };
             activityLogId = (await createActivityLog(log)) as number;
-
-            if (syncJobId && activityLogId) {
-                await updateJobActivityLogId(syncJobId, activityLogId);
-            }
         }
 
         if (debug) {

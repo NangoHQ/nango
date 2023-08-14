@@ -11,7 +11,7 @@ import util from 'util';
 import { exec, spawn } from 'child_process';
 import promptly from 'promptly';
 import chalk from 'chalk';
-import type { NangoModel } from '@nangohq/shared';
+import type { NangoModel, NangoIntegrationData, NangoIntegration } from '@nangohq/shared';
 import { cloudHost, stagingHost, nangoConfigFile } from '@nangohq/shared';
 import * as dotenv from 'dotenv';
 import { init, generate, tsc } from './sync.js';
@@ -399,11 +399,31 @@ export function getFieldType(rawField: string | NangoModel, debug = false): stri
     }
 }
 
-export function buildInterfaces(models: NangoModel, debug = false): (string | undefined)[] {
+export function buildInterfaces(models: NangoModel, integrations: NangoIntegration, debug = false): (string | undefined)[] {
+    const returnedModels = Object.keys(integrations).reduce((acc, providerConfigKey) => {
+        const syncObject = integrations[providerConfigKey] as unknown as { [key: string]: NangoIntegration };
+        const syncNames = Object.keys(syncObject);
+        for (let i = 0; i < syncNames.length; i++) {
+            const syncName = syncNames[i] as string;
+            const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
+            if (syncData.returns) {
+                syncData.returns.forEach((modelName) => {
+                    if (!acc.includes(modelName)) {
+                        acc.push(modelName);
+                    }
+                });
+            }
+        }
+        return acc;
+    }, [] as string[]);
+
     const interfaceDefinitions = Object.keys(models).map((modelName: string) => {
         const fields = models[modelName] as NangoModel;
 
-        if (!fields['id']) {
+        // we only care that models that are returned have an ID field
+        // if the model is not returned from a sync script then it must be a
+        // helper model that is used to build the returned models
+        if (returnedModels.includes(modelName) && !fields['id']) {
             throw new Error(`Model "${modelName}" doesn't have an id field. This is required to be able to uniquely identify the data record.`);
         }
 

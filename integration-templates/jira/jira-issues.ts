@@ -1,6 +1,6 @@
 import type { NangoSync, JiraIssue } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<{ JiraIssue: JiraIssue[] }> {
+export default async function fetchData(nango: NangoSync): Promise<void> {
     const jql = nango.lastSyncDate ? `updated >= "${nango.lastSyncDate?.toISOString().slice(0, -8).replace('T', ' ')}"` : '';
     let startAt: number = 0;
     const maxResults: number = 50;
@@ -24,7 +24,7 @@ export default async function fetchData(nango: NangoSync): Promise<{ JiraIssue: 
         });
 
         const issues = response.data.issues;
-        await nango.batchSend<JiraIssue>(mapIssues(issues), 'JiraIssue');
+        await nango.batchSave(mapIssues(issues), 'JiraIssue');
 
         if (issues.length < maxResults) {
             break;
@@ -32,8 +32,6 @@ export default async function fetchData(nango: NangoSync): Promise<{ JiraIssue: 
             startAt += maxResults;
         }
     }
-
-    return { JiraIssue: [] };
 }
 
 async function getCloudId(nango: NangoSync): Promise<string> {

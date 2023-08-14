@@ -45,6 +45,10 @@ class WebhookService {
             queryTimeStamp: now as unknown as string
         };
 
+        if (responseResults.deleted && responseResults.deleted > 0) {
+            body.responseResults.deleted = responseResults.deleted;
+        }
+
         try {
             const response = await axios.post(webhookUrl, body);
             if (response.status >= 200 && response.status < 300) {

@@ -1,9 +1,7 @@
 import { SlackMessage, SlackMessageReaction, SlackMessageReply, NangoSync } from './models';
 import { createHash } from 'crypto';
 
-export default async function fetchData(
-    nango: NangoSync
-): Promise<{ SlackMessage: SlackMessage[]; SlackMessageReply: SlackMessageReply[]; SlackMessageReaction: SlackMessageReaction[] }> {
+export default async function fetchData(nango: NangoSync): Promise<void> {
     // Get all channels we are part of
     let channels = await getAllPages(nango, 'users.conversations', {}, 'channels');
 
@@ -44,7 +42,7 @@ export default async function fetchData(
             batchMessages.push(mappedMessage);
 
             if (batchMessages.length > 49) {
-                await nango.batchSend<SlackMessage>(batchMessages, 'SlackMessage');
+                await nango.batchSave<SlackMessage>(batchMessages, 'SlackMessage');
                 batchMessages = [];
             }
 
@@ -64,7 +62,7 @@ export default async function fetchData(
                         batchReactions.push(mappedReaction);
 
                         if (batchReactions.length > 49) {
-                            await nango.batchSend<SlackMessageReaction>(batchReactions, 'SlackMessageReaction');
+                            await nango.batchSave<SlackMessageReaction>(batchReactions, 'SlackMessageReaction');
                             batchReactions = [];
                         }
                     }
@@ -107,7 +105,7 @@ export default async function fetchData(
                     batchMessageReply.push(mappedReply);
 
                     if (batchMessageReply.length > 49) {
-                        await nango.batchSend<SlackMessageReply>(batchMessageReply, 'SlackMessageReply');
+                        await nango.batchSave<SlackMessageReply>(batchMessageReply, 'SlackMessageReply');
                         batchMessageReply = [];
                     }
 
@@ -127,7 +125,7 @@ export default async function fetchData(
                                 batchReactions.push(mappedReaction);
 
                                 if (batchReactions.length > 49) {
-                                    await nango.batchSend<SlackMessageReaction>(batchReactions, 'SlackMessageReaction');
+                                    await nango.batchSave<SlackMessageReaction>(batchReactions, 'SlackMessageReaction');
                                     batchReactions = [];
                                 }
                             }
@@ -138,7 +136,9 @@ export default async function fetchData(
         }
     }
 
-    return { SlackMessage: batchMessages, SlackMessageReply: batchMessageReply, SlackMessageReaction: batchReactions };
+    await nango.batchSave(batchMessages, 'SlackMessage');
+    await nango.batchSave(batchMessageReply, 'SlackMessageReply');
+    await nango.batchSave(batchReactions, 'SlackMessageReaction');
 }
 
 async function getAllPages(nango: NangoSync, endpoint: string, params: Record<string, string>, resultsKey: string) {

@@ -40,7 +40,10 @@ export interface Sync {
     connections:
         | {
               connection_id: string;
-              field_mappings: Record<string, string>;
+              metadata?: {
+                  fieldMapping: Record<string, string>;
+                  [key: string]: string | Record<string, string>;
+              };
           }[]
         | null;
 }
@@ -86,4 +89,21 @@ export interface BasicApiCredentials {
 export interface ApiKeyCredentials {
     [key: string]: string;
     apiKey: string;
+}
+
+export interface User {
+    id: number;
+    email: string;
+    name: string;
+    suspended: boolean;
+    currentUser?: boolean;
+}
+
+export interface InvitedUser {
+    id: number;
+    email: string;
+    name: string;
+    expires_at: string;
+    token: string;
+    accepted: boolean;
 }

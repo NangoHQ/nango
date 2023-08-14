@@ -1,7 +1,7 @@
 accelo:
     auth_mode: OAUTH2
-    authorization_url: https://${connectionConfig.params.subdomain}.api.accelo.com/oauth2/v0/authorize
-    token_url: https://${connectionConfig.params.subdomain}.api.accelo.com/oauth2/v0/token
+    authorization_url: https://${connectionConfig.subdomain}.api.accelo.com/oauth2/v0/authorize
+    token_url: https://${connectionConfig.subdomain}.api.accelo.com/oauth2/v0/token
     scope_separator: ','
     authorization_params:
         response_type: code
@@ -34,7 +34,7 @@ airtable:
 amazon:
     auth_mode: OAUTH2
     authorization_url: https://www.amazon.com/ap/oa
-    token_url: https://api.amazon.${connectionConfig.params.extension}/auth/o2/token
+    token_url: https://api.amazon.${connectionConfig.extension}/auth/o2/token
     authorization_params:
         response_type: code
     token_params:
@@ -78,8 +78,8 @@ atlassian:
         grant_type: refresh_token
 bamboohr:
     auth_mode: OAUTH2
-    authorization_url: https://${connectionConfig.params.subdomain}.bamboohr.com/authorize.php
-    token_url: https://${connectionConfig.params.subdomain}.bamboohr.com/token.php
+    authorization_url: https://${connectionConfig.subdomain}.bamboohr.com/authorize.php
+    token_url: https://${connectionConfig.subdomain}.bamboohr.com/token.php
     authorization_params:
         response_type: code
         request: authorize
@@ -88,8 +88,8 @@ bamboohr:
         request: token
 battlenet:
     auth_mode: OAUTH2
-    authorization_url: https://oauth.battle.${connectionConfig.params.extension}/authorize
-    token_url: https://oauth.battle.${connectionConfig.params.extension}/token
+    authorization_url: https://oauth.battle.${connectionConfig.extension}/authorize
+    token_url: https://oauth.battle.${connectionConfig.extension}/token
     authorization_params:
         response_type: code
     token_params:
@@ -158,8 +158,8 @@ confluence:
     alias: jira
 contentstack:
     auth_mode: OAUTH2
-    authorization_url: https://${connectionConfig.params.subdomain}.contentstack.com/apps/${connectionConfig.params.appId}/authorize
-    token_url: https://${connectionConfig.params.subdomain}.contentstack.com/apps-api/apps/token
+    authorization_url: https://${connectionConfig.subdomain}.contentstack.com/apps/${connectionConfig.appId}/authorize
+    token_url: https://${connectionConfig.subdomain}.contentstack.com/apps-api/apps/token
 deel:
     auth_mode: OAUTH2
     authorization_url: https://auth.letsdeel.com/oauth2/authorize
@@ -233,8 +233,8 @@ epic-games:
     authorization_method: header
 exact-online:
     auth_mode: OAUTH2
-    authorization_url: https://start.exactonline.${connectionConfig.params.extension}/api/oauth2/auth
-    token_url: https://start.exactonline.${connectionConfig.params.extension}/api/oauth2/token
+    authorization_url: https://start.exactonline.${connectionConfig.extension}/api/oauth2/auth
+    token_url: https://start.exactonline.${connectionConfig.extension}/api/oauth2/token
     authorization_method: header
     authorization_params:
         response_type: code
@@ -317,8 +317,8 @@ google-sheet:
     docs: https://developers.google.com/sheets/api/reference/rest
 gorgias:
     auth_mode: OAUTH2
-    authorization_url: https://${connectionConfig.params.subdomain}.gorgias.com/oauth/authorize
-    token_url: https://${connectionConfig.params.subdomain}.gorgias.com/oauth/token
+    authorization_url: https://${connectionConfig.subdomain}.gorgias.com/oauth/authorize
+    token_url: https://${connectionConfig.subdomain}.gorgias.com/oauth/token
     token_request_auth_method: basic
     default_scopes:
         - offline
@@ -438,6 +438,8 @@ microsoft-teams:
     authorization_params:
         response_type: code
         response_mode: query
+    proxy:
+        base_url: https://graph.microsoft.com
 mixpanel:
     auth_mode: BASIC
     proxy:
@@ -468,8 +470,8 @@ mural:
         grant_type: refresh_token
 netsuite:
     auth_mode: OAUTH2
-    authorization_url: https://${connectionConfig.params.accountId}.app.netsuite.com/app/login/oauth2/authorize.nl
-    token_url: https://${connectionConfig.params.accountId}.suitetalk.api.netsuite.com/services/rest/auth/oauth2/v1/token
+    authorization_url: https://${connectionConfig.accountId}.app.netsuite.com/app/login/oauth2/authorize.nl
+    token_url: https://${connectionConfig.accountId}.suitetalk.api.netsuite.com/services/rest/auth/oauth2/v1/token
     default_scopes:
         - restlets
 notion:
@@ -549,8 +551,8 @@ pipedrive:
     token_url: https://oauth.pipedrive.com/oauth/token
 qualtrics:
     auth_mode: OAUTH2
-    authorization_url: https://${connectionConfig.params.subdomain}.qualtrics.com/oauth2/auth
-    token_url: https://${connectionConfig.params.subdomain}.qualtrics.com/oauth2/token
+    authorization_url: https://${connectionConfig.subdomain}.qualtrics.com/oauth2/auth
+    token_url: https://${connectionConfig.subdomain}.qualtrics.com/oauth2/token
 quickbooks:
     auth_mode: OAUTH2
     authorization_url: https://appcenter.intuit.com/connect/oauth2
@@ -596,7 +598,7 @@ salesforce:
     token_response_metadata:
         - instance_url
     proxy:
-        base_url: ${metadata.instance_url}
+        base_url: ${connectionConfig.instance_url}
     docs: https://developer.salesforce.com/docs/api
 salesloft:
     auth_mode: OAUTH2
@@ -604,8 +606,8 @@ salesloft:
     token_url: https://accounts.salesloft.com/oauth/token
 shopify:
     auth_mode: OAUTH2
-    authorization_url: https://${connectionConfig.params.subdomain}.myshopify.com/admin/oauth/authorize
-    token_url: https://${connectionConfig.params.subdomain}.myshopify.com/admin/oauth/access_token
+    authorization_url: https://${connectionConfig.subdomain}.myshopify.com/admin/oauth/authorize
+    token_url: https://${connectionConfig.subdomain}.myshopify.com/admin/oauth/access_token
 shortcut:
     auth_mode: API_KEY
     proxy:
@@ -692,6 +694,12 @@ stripe:
     auth_mode: OAUTH2
     authorization_url: https://connect.stripe.com/oauth/authorize
     token_url: https://connect.stripe.com/oauth/token
+stripe-express:
+    auth_mode: OAUTH2
+    authorization_url: https://connect.stripe.com/express/oauth/authorize
+    token_url: https://connect.stripe.com/oauth/token
+    token_response_metadata:
+        - stripe_user_id
 survey-monkey:
     auth_mode: OAUTH2
     authorization_url: https://api.surveymonkey.com/oauth/authorize
@@ -818,7 +826,7 @@ workable:
     proxy:
         headers:
             Authorization: Bearer ${apiKey}
-        base_url: https://${connectionConfig.params.subdomain}.workable.com
+        base_url: https://${connectionConfig.subdomain}.workable.com
 xero:
     auth_mode: OAUTH2
     authorization_url: https://login.xero.com/identity/connect/authorize
@@ -849,8 +857,8 @@ zapier-nla:
     token_url: https://nla.zapier.com/oauth/token/
 zendesk:
     auth_mode: OAUTH2
-    authorization_url: https://${connectionConfig.params.subdomain}.zendesk.com/oauth/authorizations/new
-    token_url: https://${connectionConfig.params.subdomain}.zendesk.com/oauth/tokens
+    authorization_url: https://${connectionConfig.subdomain}.zendesk.com/oauth/authorizations/new
+    token_url: https://${connectionConfig.subdomain}.zendesk.com/oauth/tokens
 zenefits:
     auth_mode: OAUTH2
     authorization_url: https://secure.zenefits.com/oauth2/platform-authorize
@@ -863,13 +871,13 @@ zenefits:
         grant_type: refresh_token
 zoho:
     auth_mode: OAUTH2
-    authorization_url: https://accounts.zoho.${connectionConfig.params.extension}/oauth/v2/auth
-    token_url: https://accounts.zoho.${connectionConfig.params.extension}/oauth/v2/token
+    authorization_url: https://accounts.zoho.${connectionConfig.extension}/oauth/v2/auth
+    token_url: https://accounts.zoho.${connectionConfig.extension}/oauth/v2/token
     authorization_params:
         prompt: consent
         access_type: offline
     proxy:
-        base_url: https://www.zohoapis.${connectionConfig.params.extension}
+        base_url: https://www.zohoapis.${connectionConfig.extension}
 zoho-books:
     alias: zoho
 zoho-crm:

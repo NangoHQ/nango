@@ -188,7 +188,7 @@ class SyncClient {
                     content: `Starting sync job ${jobId} for sync ${sync.id}`
                 });
             }
-            const syncJobId = await createSyncJob(sync.id as string, SyncType.INITIAL, SyncStatus.RUNNING, jobId, activityLogId as number);
+            const syncJobId = await createSyncJob(sync.id as string, SyncType.INITIAL, SyncStatus.RUNNING, jobId, nangoConnection);
 
             if (!syncJobId) {
                 return;
@@ -214,6 +214,9 @@ class SyncClient {
 
             await this.client?.schedule.create({
                 scheduleId,
+                policies: {
+                    overlap: OVERLAP_POLICY
+                },
                 spec: {
                     /**
                      * @see https://nodejs.temporal.io/api/interfaces/client.IntervalSpec

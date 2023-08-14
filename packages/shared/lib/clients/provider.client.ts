@@ -13,8 +13,6 @@ import { parseTokenExpirationDate, isTokenExpired } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
 
 class ProviderClient {
-    constructor() {}
-
     public shouldUseProviderClient(provider: string): boolean {
         switch (provider) {
             case 'braintree':
@@ -82,7 +80,7 @@ class ProviderClient {
         }
 
         const credentials = connection.credentials as OAuth2Credentials;
-        const oauthConnection = connection as Connection & { metadata: { token_expires_at?: string } };
+        const oauthConnection = connection as Connection;
 
         switch (config.provider) {
             case 'salesforce':
@@ -90,7 +88,7 @@ class ProviderClient {
                     credentials.access_token,
                     config.oauth_client_id,
                     config.oauth_client_secret,
-                    oauthConnection.metadata
+                    oauthConnection.connection_config as Record<string, string>
                 );
             default:
                 throw new NangoError('unknown_provider_client');
@@ -179,13 +177,13 @@ class ProviderClient {
         accessToken: string,
         clientId: string,
         clientSecret: string,
-        metadata: Record<string, string>
+        connectionConfig: Record<string, string>
     ): Promise<boolean> {
-        if (!metadata['instance_url']) {
+        if (!connectionConfig['instance_url']) {
             throw new NangoError('salesforce_instance_url_missing');
         }
 
-        const url = `${metadata['instance_url']}/services/oauth2/introspect`;
+        const url = `${connectionConfig['instance_url']}/services/oauth2/introspect`;
 
         const headers = {
             'Content-Type': 'application/x-www-form-urlencoded',

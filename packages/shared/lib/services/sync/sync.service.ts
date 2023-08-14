@@ -189,6 +189,25 @@ export const getSyncsFlat = async (nangoConnection: Connection): Promise<SyncWit
     return [];
 };
 
+export const getSyncsFlatWithNames = async (nangoConnection: Connection, syncNames: string[]): Promise<SyncWithSchedule[]> => {
+    const result = await schema()
+        .select('*')
+        .from<Sync>(TABLE)
+        .join(SYNC_SCHEDULE_TABLE, `${SYNC_SCHEDULE_TABLE}.sync_id`, `${TABLE}.id`)
+        .where({
+            nango_connection_id: nangoConnection.id,
+            [`${SYNC_SCHEDULE_TABLE}.deleted`]: false,
+            [`${TABLE}.deleted`]: false
+        })
+        .whereIn(`${TABLE}.name`, syncNames);
+
+    if (Array.isArray(result) && result.length > 0) {
+        return result;
+    }
+
+    return [];
+};
+
 /**
  * Get Syncs
  * @description get the sync related to the connection
@@ -222,7 +241,6 @@ export const getSyncs = async (nangoConnection: Connection): Promise<Sync[]> => 
                         'type', nango.${SYNC_JOB_TABLE}.type,
                         'result', nango.${SYNC_JOB_TABLE}.result,
                         'status', nango.${SYNC_JOB_TABLE}.status,
-                        'activity_log_id', nango.${SYNC_JOB_TABLE}.activity_log_id,
                         'sync_config_id', nango.${SYNC_JOB_TABLE}.sync_config_id,
                         'version', nango.${SYNC_CONFIG_TABLE}.version,
                         'models', nango.${SYNC_CONFIG_TABLE}.models

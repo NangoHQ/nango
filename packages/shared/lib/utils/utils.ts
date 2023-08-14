@@ -7,6 +7,7 @@ import type { Environment } from '../models/Environment.js';
 import environmentService from '../services/environment.service.js';
 import userService from '../services/user.service.js';
 import type { Connection } from '../models/Connection.js';
+import type { ServiceResponse } from '../models/Generic.js';
 
 const PORT = process.env['SERVER_PORT'] || 3003;
 export const localhostUrl = `http://localhost:${PORT}`;
@@ -152,7 +153,7 @@ export function getApiUrl() {
 }
 
 export function getGlobalOAuthCallbackUrl() {
-    const baseUrl = isCloud() ? getBaseUrl() : getLocalOAuthCallbackUrlBaseUrl();
+    const baseUrl = process.env['NANGO_SERVER_URL'] || getLocalOAuthCallbackUrlBaseUrl();
     return baseUrl + '/oauth/callback';
 }
 
@@ -210,7 +211,7 @@ export function connectionCopyWithParsedConnectionConfig(connection: Connection)
     const parsedConfig: Record<string, string> = {};
 
     Object.keys(rawConfig).forEach(function (key, _) {
-        const newKey = key.replace('connectionConfig.params.', '');
+        const newKey = key.replace('connectionConfig.', '');
         const value = rawConfig[key];
 
         if (newKey && value) {
@@ -224,7 +225,7 @@ export function connectionCopyWithParsedConnectionConfig(connection: Connection)
 
 export function mapProxyBaseUrlInterpolationFormat(baseUrl: string | undefined): string | undefined {
     // Maps the format that is used in providers.yaml (inherited from oauth), to the format of the Connection model.
-    return baseUrl ? baseUrl.replace('connectionConfig.params', 'connection_config') : baseUrl;
+    return baseUrl ? baseUrl.replace('connectionConfig', 'connection_config') : baseUrl;
 }
 
 export function interpolateIfNeeded(str: string, replacers: Record<string, any>) {
@@ -271,41 +272,55 @@ export function getEnvironmentId(res: Response): number {
     }
 }
 
-export async function getEnvironmentAndAccountId(res: Response, req: Request): Promise<{ accountId: number; environmentId: number; isWeb: boolean }> {
+export async function getEnvironmentAndAccountId(
+    res: Response,
+    req: Request
+): Promise<ServiceResponse<{ accountId: number; environmentId: number; isWeb: boolean }>> {
     if (req.user) {
-        const accountIdAndEnvironmentId = await getAccountIdAndEnvironmentIdFromSession(req);
-        return { ...accountIdAndEnvironmentId, isWeb: true };
+        const { response: accountInfo, success, error } = await getAccountIdAndEnvironmentIdFromSession(req);
+        if (!success || accountInfo == null) {
+            return { response: null, error, success: false };
+        }
+        const response = { ...accountInfo, isWeb: true };
+
+        return { response, error: null, success: true };
     } else {
         const accountId = getAccount(res);
         const environmentId = getEnvironmentId(res);
 
-        return Promise.resolve({ accountId, environmentId, isWeb: false });
+        const response = { accountId, environmentId, isWeb: false };
+        return Promise.resolve({ response, error: null, success: true });
     }
 }
 
-export async function getAccountIdAndEnvironmentIdFromSession(req: Request): Promise<{ accountId: number; environmentId: number }> {
+export async function getAccountIdAndEnvironmentIdFromSession(req: Request): Promise<ServiceResponse<{ accountId: number; environmentId: number }>> {
     const sessionUser = req.user as User;
     const currentEnvironment = req.cookies['env'] || 'dev';
 
     if (sessionUser == null) {
-        throw new NangoError('user_not_found');
+        const error = new NangoError('user_not_found');
+        return { response: null, error, success: false };
     }
 
     const user = await userService.getUserById(sessionUser.id);
 
     if (user == null) {
-        throw new NangoError('user_not_found');
+        const error = new NangoError('user_not_found');
+        return { response: null, error, success: false };
     }
 
     const environmentAndAccount = await environmentService.getAccountAndEnvironmentById(user.account_id, currentEnvironment);
 
     if (environmentAndAccount == null) {
-        throw new NangoError('account_not_found');
+        const error = new NangoError('account_not_found');
+        return { response: null, error, success: false };
     }
 
     const { account, environment } = environmentAndAccount as { account: Account; environment: Environment };
 
-    return { accountId: account.id, environmentId: environment.id };
+    const response = { accountId: account.id, environmentId: environment.id };
+
+    return { response, error: null, success: true };
 }
 
 export function isApiAuthenticated(res: Response): boolean {
@@ -314,15 +329,10 @@ export function isApiAuthenticated(res: Response): boolean {
 
 export function isUserAuthenticated(req: Request): boolean {
     const user = req.user as User;
-    return req.isAuthenticated() && user != null && user.id != null;
+    return typeof req.isAuthenticated === 'function' && req.isAuthenticated() && user != null && user.id != null;
 }
 
-/**
- * A helper function to extract the additional connection configuration options from the frontend Auth request.
- */
 export function getConnectionConfig(queryParams: any): Record<string, string> {
-    let arr = Object.entries(queryParams);
-    arr = arr.filter(([_, v]) => typeof v === 'string'); // Filter strings
-    arr = arr.map(([k, v]) => [`connectionConfig.params.${k}`, v]); // Format keys to 'connectionConfig.params.[key]'
+    const arr = Object.entries(queryParams).filter(([_, v]) => typeof v === 'string'); // Filter strings
     return Object.fromEntries(arr) as Record<string, string>;
 }

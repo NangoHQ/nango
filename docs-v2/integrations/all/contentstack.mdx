@@ -24,10 +24,29 @@ API configuration: [`contentstack`](https://nango.dev/providers.yaml)
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
+## Connection configuration in Nango
+
+Contentstack requires a [region specific subdomain extension](https://www.contentstack.com/docs/developers/developer-hub/contentstack-oauth/#construct-your-authorization-url) to run OAuth. The region depends on where your user's data is hosted with Contentstack.
+
+You also need your app's UID, wich you should get from Contentstack after registering.
+
+You should request this from the user and pass it to Nango in the `nango.auth()` call:
+
+```js
+nango.auth('contentstack', '<CONNECTION-ID>',
+            {
+                params: {
+                    subdomain: 'app',
+                    appId: '<app-uid>'
+                }
+            });
+```
+
+For more details see the [docs here](/guides/oauth#connection-configuration).
+
 ## API gotchas
 
--   Depending on the [region](https://www.contentstack.com/docs/developers/developer-hub/contentstack-oauth/#construct-your-authorization-url) you will want to connect to, you will have to provide the region as a extension in the config params. You should use `nango.auth('amazon', '1', {params: {subdomain: 'co.uk'}})`
--   Access tokens and app tokens are valid for 60 minutes only,
+_None yet, add yours!_
 
 <Note>
     Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/contentstack.mdx)

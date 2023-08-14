@@ -430,6 +430,42 @@ paths:
                                 properties:
                                     message:
                                         type: string
+    /connection/{connectionId}/metadata:
+        post:
+            description: Set custom metadata for the connection.
+            parameters:
+                - name: connectionId
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The connection ID used to create the connection.
+                - name: provider_config_key
+                  in: query
+                  required: true
+                  description: The integration ID used to create the connection (aka Unique Key).
+                  schema:
+                      type: string
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+
+            responses:
+                '201':
+                    description: Successfully created an integrations
+                '400':
+                    description: Invalid request
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    message:
+                                        type: string
+
     /sync/records:
         get:
             description: Returns data synced with Nango Sync
@@ -458,6 +494,33 @@ paths:
                   schema:
                       type: integer
                   description: The number of records to skip. If not passed, no records are skipped.
+                - name: sort_by
+                  in: query
+                  required: false
+                  schema:
+                      type: string
+                      enum: [created_at, updated_at, id]
+                  description: Set how the records are sorted. The default is id. The options are 'created_at', 'updated_at', 'id'.
+                - name: order
+                  in: query
+                  required: false
+                  schema:
+                      type: string
+                      enum: [desc, asc]
+                  description: Set the order of results. The default is 'desc'. The options are 'desc' or 'asc'.
+                - name: include_nango_metadata
+                  in: query
+                  required: false
+                  schema:
+                      type: boolean
+                  description: If set to true, includes Nango metadata for each record in the response. Default is 'false'.
+                - name: filter
+                  in: query
+                  required: false
+                  schema:
+                      type: string
+                      enum: [added, updated, deleted]
+                  description: Filter to only show results that have been added or updated or deleted. Helpful when used in conjuction with the delta parameter to retrieve a subset or records that were added, updated, or deleted with the latest sync.
                 - name: Connection-Id
                   in: header
                   required: true
@@ -486,6 +549,16 @@ paths:
                   description: The integration ID used to create the connection (aka Unique Key).
                   schema:
                       type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                syncs:
+                                    type: array
+                                    items:
+                                        type: string
     /proxy/{anyPath}:
         get:
             description: Make a GET request with the Proxy.

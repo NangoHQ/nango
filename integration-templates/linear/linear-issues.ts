@@ -1,6 +1,6 @@
 import { NangoSync, LinearIssue } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<{ LinearIssue: LinearIssue[] }> {
+export default async function fetchData(nango: NangoSync): Promise<void> {
     const { lastSyncDate } = nango;
     const pageSize = 50;
     let after = '';
@@ -66,7 +66,7 @@ export default async function fetchData(nango: NangoSync): Promise<{ LinearIssue
             }
         });
 
-        await nango.batchSend<LinearIssue>(mapIssues(response.data.data.issues.nodes), 'LinearIssue');
+        await nango.batchSave(mapIssues(response.data.data.issues.nodes), 'LinearIssue');
 
         if (!response.data.data.issues.pageInfo.hasNextPage || !response.data.data.issues.pageInfo.endCursor) {
             break;
@@ -74,8 +74,6 @@ export default async function fetchData(nango: NangoSync): Promise<{ LinearIssue
             after = response.data.data.issues.pageInfo.endCursor;
         }
     }
-
-    return { LinearIssue: [] };
 }
 
 function mapIssues(records: any[]): LinearIssue[] {

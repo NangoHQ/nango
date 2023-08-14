@@ -1,21 +1,21 @@
 import { SalesforceAccount, NangoSync } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<{ SalesforceAccount: SalesforceAccount[] }> {
+export default async function fetchData(nango: NangoSync): Promise<void> {
     const { lastSyncDate } = nango;
 
-    // Use nango.getFieldMapping once you set it in the backend:
-    // const fieldMappings = await nango.getFieldMapping();
-    const fieldMappings = {
+    // Use nango.getMetadata once you set it in the backend:
+    // const { fieldMapping } = await nango.getMetadata();
+    const fieldMapping = {
         slack_channel_id: 'Slack_ID__c',
         primary_support_rep: 'Primary_Support_Rep__c',
         secondary_support_rep: 'Secondary_Support_Rep__c'
     };
 
-    if (Object.keys(fieldMappings).length === 0) {
+    if (Object.keys(fieldMapping).length === 0) {
         throw new Error('No field mapping found, aborting the sync!');
     }
 
-    const { slack_channel_id, primary_support_rep, secondary_support_rep } = fieldMappings;
+    const { slack_channel_id, primary_support_rep, secondary_support_rep } = fieldMapping;
 
     let query = `
         SELECT
@@ -45,8 +45,8 @@ export default async function fetchData(nango: NangoSync): Promise<{ SalesforceA
     const { records, done } = response.data;
     let nextRecordsUrl = response.data.nextRecordsUrl;
 
-    const accounts = mapAccounts(records, fieldMappings);
-    await nango.batchSend<SalesforceAccount>(accounts, 'SalesforceAccount');
+    const accounts = mapAccounts(records, fieldMapping);
+    await nango.batchSave(accounts, 'SalesforceAccount');
 
     if (!done) {
         let allResults = false;
@@ -57,8 +57,8 @@ export default async function fetchData(nango: NangoSync): Promise<{ SalesforceA
 
             const { records: nextRecords, done: nextDone, nextRecordsUrl: nextNextRecordsUrl } = nextResponse.data;
 
-            const firstAccounts = mapAccounts(nextRecords, fieldMappings);
-            await nango.batchSend<SalesforceAccount>(firstAccounts, 'SalesforceAccount');
+            const firstAccounts = mapAccounts(nextRecords, fieldMapping);
+            await nango.batchSave(firstAccounts, 'SalesforceAccount');
 
             if (nextDone) {
                 allResults = true;
@@ -67,12 +67,10 @@ export default async function fetchData(nango: NangoSync): Promise<{ SalesforceA
             }
         }
     }
-
-    return { SalesforceAccount: [] };
 }
 
-function mapAccounts(records: any[], fieldMappings: any): SalesforceAccount[] {
-    const { slack_channel_id, primary_support_rep, secondary_support_rep } = fieldMappings;
+function mapAccounts(records: any[], fieldMapping: any): SalesforceAccount[] {
+    const { slack_channel_id, primary_support_rep, secondary_support_rep } = fieldMapping;
 
     const accounts: SalesforceAccount[] = records.map((record: any) => {
         const account: SalesforceAccount = {

@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Signup from './pages/Signup';
+import InviteSignup from './pages/InviteSignup';
 import Signin from './pages/Signin';
 import IntegrationList from './pages/IntegrationList';
 import IntegrationCreate from './pages/IntegrationCreate';
@@ -13,6 +14,8 @@ import ResetPassword from './pages/ResetPassword';
 import Activity from './pages/Activity';
 import Syncs from './pages/Syncs';
 import AuthLink from './pages/AuthLink';
+import AccountSettings from './pages/AccountSettings';
+import UserSettings from './pages/UserSettings';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { isCloud } from './utils/utils';
@@ -53,10 +56,17 @@ const App = () => {
                     <Route path="/project-settings" element={<ProjectSettings />} />
                 </Route>
                 <Route path="/auth-link" element={<AuthLink />} />
-                {isCloud() && <Route path="/signin" element={<Signin />} />}
-                {isCloud() && <Route path="/signup" element={<Signup />} />}
-                {isCloud() && <Route path="/forgot-password" element={<ForgotPassword />} />}
-                {isCloud() && <Route path="/reset-password/:token" element={<ResetPassword />} />}
+                {isCloud() && (
+                    <>
+                        <Route path="/account-settings" element={<AccountSettings />} />
+                        <Route path="/user-settings" element={<UserSettings />} />
+                        <Route path="/signin" element={<Signin />} />
+                        <Route path="/signup" element={<Signup />} />
+                        <Route path="/signup/:token" element={<InviteSignup />} />
+                        <Route path="/forgot-password" element={<ForgotPassword />} />
+                        <Route path="/reset-password/:token" element={<ResetPassword />} />
+                    </>
+                )}
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
             <ToastContainer />

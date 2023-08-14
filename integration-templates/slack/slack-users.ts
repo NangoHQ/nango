@@ -1,6 +1,6 @@
 import { SlackUser, NangoSync } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<{ SlackUser: SlackUser[] }> {
+export default async function fetchData(nango: NangoSync): Promise<void> {
     // Fetch all users (paginated)
     let nextCursor = 'x';
     let responses: any[] = [];
@@ -55,5 +55,5 @@ export default async function fetchData(nango: NangoSync): Promise<{ SlackUser: 
         };
     });
 
-    return { SlackUser: users };
+    await nango.batchSave(users, 'SlackUser');
 }

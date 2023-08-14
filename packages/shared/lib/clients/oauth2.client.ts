@@ -24,8 +24,10 @@ import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 // Simple OAuth 2 does what it says on the tin: A simple, no-frills client for OAuth 2 that implements the 3 most common grant_types.
 // Well maintained, I like :-)
 export function getSimpleOAuth2ClientConfig(providerConfig: ProviderConfig, template: ProviderTemplate, connectionConfig: Record<string, string>) {
-    const tokenUrl = new URL(interpolateString(template.token_url, connectionConfig));
-    const authorizeUrl = new URL(interpolateString(template.authorization_url, connectionConfig));
+    const strippedTokenUrl = template.token_url.replace(/connectionConfig\./g, '');
+    const tokenUrl = new URL(interpolateString(strippedTokenUrl, connectionConfig));
+    const strippedAuthorizeUrl = template.authorization_url.replace(/connectionConfig\./g, '');
+    const authorizeUrl = new URL(interpolateString(strippedAuthorizeUrl, connectionConfig));
     const headers = { 'User-Agent': 'Nango' };
 
     const authConfig = template as ProviderTemplateOAuth2;
