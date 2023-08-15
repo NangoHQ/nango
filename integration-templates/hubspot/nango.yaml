@@ -1,0 +1,12 @@
+integrations:
+  hubspot:
+    hubspot-deals:
+      runs: every 5min
+      returns:
+        - Sale
+models:
+  Sale:
+    id: integer
+    amount: integer
+    datetime: string
+    user_id: integer
