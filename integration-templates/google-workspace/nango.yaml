@@ -6,7 +6,7 @@ integrations:
             track_deletes: true
             returns:
                 - OrganizationalUnit
-        
+
         google-workspace-users:
             runs: every hour
             returns:
@@ -19,7 +19,6 @@ integrations:
                 - GoogleWorkspaceUserToken
 
 models:
-
     OrganizationalUnit:
         id: string
         name: string
@@ -29,7 +28,7 @@ models:
         path: string | null
         parentPath: string | null
         parentId: string | null
-    
+
     User:
         id: string
         email: string
@@ -41,8 +40,8 @@ models:
         createdAt: string | null
         deletedAt: string | null
         phone:
-        value: string | null | undefined
-        type: string | null | undefined
+            value: string | null | undefined
+            type: string | null | undefined
         organizationId: string | null | undefined
         organizationPath: string | null | undefined
         isAdmin: boolean | null
