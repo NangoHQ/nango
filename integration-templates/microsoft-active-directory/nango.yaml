@@ -1,0 +1,41 @@
+integrations:
+    # Supports both Microsoft 365 groups & users and Azure Active Directory
+    microsoft-teams: # scopes: GroupMember.Read.All, User.Read.All
+        microsoft-org-unit:
+            runs: every 6 hours
+            returns:
+                - OrganizationalUnit
+
+        microsoft-users:
+            runs: every hour
+            returns:
+                - User
+
+models:
+    OrganizationalUnit:
+        id: string
+        name: string
+        createdAt: string | null
+        deletedAt: string | null
+        description: string | null
+        path: string | null
+        parentPath: string | null
+        parentId: string | null
+
+    User:
+        id: string
+        email: string
+        displayName: string | null
+        givenName: string | null
+        familyName: string | null
+        picture: string | null | undefined
+        type: string
+        createdAt: string | null
+        deletedAt: string | null
+        phone:
+            value: string | null | undefined
+            type: string | null | undefined
+        organizationId: string | null | undefined
+        organizationPath: string | null | undefined
+        isAdmin: boolean | null
+        department: string | null
