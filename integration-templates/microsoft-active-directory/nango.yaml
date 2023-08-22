@@ -1,22 +1,15 @@
 integrations:
-    google:
-        # scopes: https://www.googleapis.com/auth/admin.directory.orgunit.readonly, https://www.googleapis.com/auth/admin.directory.user.readonly
-        google-workspace-org-unit:
+    # Supports both Microsoft 365 groups & users and Azure Active Directory
+    microsoft-teams: # scopes: GroupMember.Read.All, User.Read.All
+        microsoft-org-unit:
             runs: every 6 hours
-            track_deletes: true
             returns:
                 - OrganizationalUnit
 
-        google-workspace-users:
+        microsoft-users:
             runs: every hour
             returns:
                 - User
-
-        # scopes: https://www.googleapis.com/auth/admin.directory.user.readonly,https://www.googleapis.com/auth/admin.directory.user.security
-        google-workspace-user-access-tokens:
-            runs: every hour
-            returns:
-                - GoogleWorkspaceUserToken
 
 models:
     OrganizationalUnit:
@@ -46,10 +39,3 @@ models:
         organizationPath: string | null | undefined
         isAdmin: boolean | null
         department: string | null
-
-    GoogleWorkspaceUserToken:
-        id: string
-        user_id: string
-        app_name: string
-        anonymous_app: boolean
-        scopes: string
