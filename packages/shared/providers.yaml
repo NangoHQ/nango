@@ -271,6 +271,10 @@ freshbooks:
     token_url: https://api.freshbooks.com/auth/oauth/token
     authorization_params:
         response_type: code
+freshservice:
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.freshservice.com/api/
 front:
     auth_mode: OAUTH2
     authorization_url: https://app.frontapp.com/oauth/authorize
