@@ -1,0 +1,23 @@
+integrations:
+  hubspot:
+    hubspot-service-ticket:
+      runs: every half hour
+      returns:
+        - HubspotServiceTicket
+
+models:
+  HubspotServiceTicket:
+    id: integer
+    properties:
+      content: string
+      createdate: date
+      hs_lastmodifieddate: date
+      hs_object_id: integer
+      hs_pipeline: integer
+      hs_pipeline_stage: integer
+      hs_ticket_category: string | null
+      hs_ticket_priority: string
+      subject: string
+    createdAt: date
+    updatedAt: date
+    archived: boolean
