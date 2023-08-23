@@ -11,7 +11,7 @@ async function getCloudId(nango: NangoSync): Promise<string> {
 
 export default async function fetchData(nango: NangoSync) {
     let cloudId = await getCloudId(nango);
-    const results = (await paginate(nango, 'get', 'wiki/api/v2/pages', 'Confluence pages', 250, cloudId));
+    const results = (await paginate(nango, 'get', 'wiki/api/v2/pages', 'Confluence pages', 2, cloudId));
 
     let pages: ConfluencePage[] = results?.map((page: any) => {
         return ({
@@ -49,7 +49,7 @@ async function paginate(nango: NangoSync, method: 'get' | 'post', endpoint: stri
     let results: any[] = [];
 
     while (true) {
-        await nango.log(`Fetching ${desc}  - with pageCounter = ${pageCounter} & pageSize = ${pageSize}`);
+        await nango.log(`Fetching ${desc} - with pageCounter = ${pageCounter} & pageSize = ${pageSize}`);
         const res = await nango.get({
             baseUrlOverride: `https://api.atlassian.com`, // Optional
             endpoint: `ex/confluence/${cloudId}/${endpoint}`,
@@ -57,7 +57,7 @@ async function paginate(nango: NangoSync, method: 'get' | 'post', endpoint: stri
             params: { limit: `${pageSize}`, "body-format": "storage" }, // Page format storage or atlas_doc_format
             retries: 10 // Exponential backoff + long-running job = handles rate limits well.
         });
-        await nango.log(`Appending records of count ${res.data.results.length} to results`)
+        await nango.log(`Appending records of count ${res.data.results.length} to results of count ${results.length}`)
         if (res.data) {
             results = [ ...results, ...res.data.results]
         }
