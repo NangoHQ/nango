@@ -181,6 +181,7 @@
                 "integrations/all/dropbox",
                 "integrations/all/docusign",
                 "integrations/all/epic-games",
+                "integrations/all/eventbrite",
                 "integrations/all/exact-online",
                 "integrations/all/facebook",
                 "integrations/all/factorial",
