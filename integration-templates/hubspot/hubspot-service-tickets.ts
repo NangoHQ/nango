@@ -79,8 +79,6 @@ async function paginate(nango: NangoSync, endpoint: string) {
             payload.params['after'] = afterLink;
         }
 
-        console.log(JSON.stringify(payload));
-
         const response = await nango.post(payload);
 
         results = results.concat(response.data.results);
