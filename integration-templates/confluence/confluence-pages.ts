@@ -9,12 +9,73 @@ async function getCloudId(nango: NangoSync): Promise<string> {
     return response.data[0].id;
 }
 
+interface ResultPage {
+    pageNumber: number;
+    results: any[];
+    nextPageEndpoint: string;
+    totalResultCount: number;
+}
+
 export default async function fetchData(nango: NangoSync) {
     let cloudId = await getCloudId(nango);
-    const results = (await paginate(nango, 'get', 'wiki/api/v2/pages', 'Confluence pages', 2, cloudId));
 
-    let pages: ConfluencePage[] = results?.map((page: any) => {
-        return ({
+    let resultPage: ResultPage | null = null;
+    while (true) {
+        resultPage = await getNextPage(nango, 'get', 'wiki/api/v2/pages', resultPage, 2, cloudId);
+
+        if (!resultPage) {
+            break;
+        }
+
+        let confluencePages = mapConfluencePages(resultPage.results);
+
+        await nango.batchSave(confluencePages, 'ConfluencePage');
+    }
+
+    return { ConfluencePage: [] }; // Return statement is deprecated (will soon go away).
+}
+
+async function getNextPage(
+    nango: NangoSync,
+    method: 'get' | 'post',
+    endpoint: string,
+    prevResultPage: ResultPage | null,
+    pageSize = 250,
+    cloudId: string
+): Promise<ResultPage | null> {
+    if (prevResultPage && !prevResultPage.nextPageEndpoint) {
+        return null;
+    }
+
+    await nango.log(`Fetching Confluence Pages - with pageCounter = ${prevResultPage ? prevResultPage.pageNumber : 0} & pageSize = ${pageSize}`);
+
+    const res = await nango.get({
+        baseUrlOverride: `https://api.atlassian.com`, // Optional
+        endpoint: `ex/confluence/${cloudId}/${prevResultPage ? prevResultPage.nextPageEndpoint : endpoint}`,
+        method: method,
+        params: { limit: `${pageSize}`, 'body-format': 'storage' }, // Page format storage or atlas_doc_format
+        retries: 10 // Exponential backoff + long-running job = handles rate limits well.
+    });
+
+    if (!res.data) {
+        return null;
+    }
+
+    const resultPage = {
+        pageNumber: prevResultPage ? prevResultPage.pageNumber + 1 : 1,
+        results: res.data.results,
+        nextPageEndpoint: res.data['_links'].next ? res.data['_links'].next : '',
+        totalResultCount: prevResultPage ? prevResultPage.totalResultCount + res.data.results.length : res.data.results.length
+    };
+
+    await nango.log(`Saving page with ${resultPage.results.length} records (total records: ${resultPage.totalResultCount})`);
+
+    return resultPage;
+}
+
+function mapConfluencePages(results: any[]): ConfluencePage[] {
+    return results.map((page: any) => {
+        return {
             id: page.id,
             title: page.title,
             type: page.type,
@@ -34,38 +95,8 @@ export default async function fetchData(nango: NangoSync) {
             },
             body: {
                 storage: page.body.storage,
-                atlas_doc_format: page.body.atlas_doc_format,
+                atlas_doc_format: page.body.atlas_doc_format
             }
-        })
-    })
-
-    await nango.log(`Fetching ${pages.length}`);
-    await nango.batchSave(pages, 'ConfluencePage');
-    return { 'ConfluencePage': [...pages] };
-}
-
-async function paginate(nango: NangoSync, method: 'get' | 'post', endpoint: string, desc: string, pageSize = 250, cloudId: string) {
-    let pageCounter = 0;
-    let results: any[] = [];
-
-    while (true) {
-        await nango.log(`Fetching ${desc} - with pageCounter = ${pageCounter} & pageSize = ${pageSize}`);
-        const res = await nango.get({
-            baseUrlOverride: `https://api.atlassian.com`, // Optional
-            endpoint: `ex/confluence/${cloudId}/${endpoint}`,
-            method: method,
-            params: { limit: `${pageSize}`, "body-format": "storage" }, // Page format storage or atlas_doc_format
-            retries: 10 // Exponential backoff + long-running job = handles rate limits well.
-        });
-        await nango.log(`Appending records of count ${res.data.results.length} to results of count ${results.length}`)
-        if (res.data) {
-            results = [ ...results, ...res.data.results]
-        }
-        if (res.data["_links"].next) {
-            endpoint = res.data["_links"].next;
-            pageCounter += 1;
-        } else {
-            return results
-        }
-    }
+        };
+    });
 }
