@@ -1,6 +1,6 @@
 import { NangoSync, IntercomContact } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<void> {
+export default async function fetchData(nango: NangoSync): Promise<{ IntercomContact: IntercomContact[] }> {
     // Get the list of contacts
     // As of 2023-08-02 the "per_page" parameter is not documented but works
     // https://developers.intercom.com/intercom-api-reference/reference/listcontacts
@@ -54,4 +54,6 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
             finished = true;
         }
     }
+
+    return { IntercomContact: [] }; // Soon, will not longer need to return anything.
 }

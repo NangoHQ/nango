@@ -1,12 +1,12 @@
 import type { NangoSync, HubspotServiceTicket } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<{HubspotServiceTicket: HubspotServiceTicket[]}> {
+export default async function fetchData(nango: NangoSync): Promise<{ HubspotServiceTicket: HubspotServiceTicket[] }> {
     const MAX_PAGE = 100;
 
     let page = 1;
     let afterLink = null;
 
-    let lastSyncDate = nango.lastSyncDate?.toISOString().slice(0, -8).replace('T', ' ')
+    let lastSyncDate = nango.lastSyncDate?.toISOString().slice(0, -8).replace('T', ' ');
     let queryDate = Date.now() - 86400000;
 
     if (lastSyncDate) {
@@ -17,7 +17,7 @@ export default async function fetchData(nango: NangoSync): Promise<{HubspotServi
         let payload = {
             endpoint: '/crm/v3/objects/tickets/search',
             params: {
-                limit: `${MAX_PAGE}`,
+                limit: `${MAX_PAGE}`
             } as Params,
             data: {
                 sorts: [
@@ -26,14 +26,15 @@ export default async function fetchData(nango: NangoSync): Promise<{HubspotServi
                         direction: 'DESCENDING'
                     }
                 ],
-                properties: [ // Define a list of these properties otherwise Hubspot won't return the Owner ID.
+                properties: [
+                    // Define a list of these properties otherwise Hubspot won't return the Owner ID.
                     'hubspot_owner_id',
                     'hs_pipeline',
                     'hs_pipeline_stage',
                     'hs_ticket_priority',
                     'hs_ticket_category',
                     'subject',
-                    'content',
+                    'content'
                 ],
                 filterGroups: [
                     {
@@ -41,15 +42,15 @@ export default async function fetchData(nango: NangoSync): Promise<{HubspotServi
                             {
                                 propertyName: 'hs_lastmodifieddate',
                                 operator: 'GT',
-                                value: queryDate,
-                            },
-                        ],
-                    },
-                ],
-            },
+                                value: queryDate
+                            }
+                        ]
+                    }
+                ]
+            }
         };
 
-        if ( ! afterLink) {
+        if (!afterLink) {
             payload.params['after'] = afterLink;
         }
 
@@ -57,7 +58,7 @@ export default async function fetchData(nango: NangoSync): Promise<{HubspotServi
 
         let pageData = response.data.results;
 
-        const mappedTickets: HubspotServiceTicket[] = pageData.map(ticket => ({
+        const mappedTickets: HubspotServiceTicket[] = pageData.map((ticket) => ({
             id: ticket.id,
             createdAt: ticket.createdAt,
             updatedAt: ticket.properties.hs_lastmodifieddate,

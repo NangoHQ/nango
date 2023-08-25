@@ -11,10 +11,10 @@ async function getCloudId(nango: NangoSync): Promise<string> {
 
 export default async function fetchData(nango: NangoSync) {
     let cloudId = await getCloudId(nango);
-    const results = (await paginate(nango, 'get', 'wiki/api/v2/spaces', 'Confluence spaces', 250, cloudId));
+    const results = await paginate(nango, 'get', 'wiki/api/v2/spaces', 'Confluence spaces', 250, cloudId);
 
     let spaces: ConfluenceSpace[] = results?.map((space: any) => {
-        return ({
+        return {
             id: space.id,
             key: space.key,
             name: space.name,
@@ -23,13 +23,13 @@ export default async function fetchData(nango: NangoSync) {
             authorId: space.authorId,
             createdAt: space.createdAt,
             homepageId: space.homepageId,
-            description: space.description || "",
-        })
-    })
+            description: space.description || ''
+        };
+    });
 
     await nango.log(`Fetching ${spaces.length}`);
     await nango.batchSave(spaces, 'ConfluenceSpace');
-    return { 'ConfluenceSpace': [...spaces] };
+    return { ConfluenceSpace: [...spaces] };
 }
 
 async function paginate(nango: NangoSync, method: 'get' | 'post', endpoint: string, desc: string, pageSize = 250, cloudId: string) {
@@ -45,15 +45,15 @@ async function paginate(nango: NangoSync, method: 'get' | 'post', endpoint: stri
             params: { limit: `${pageSize}` },
             retries: 10 // Exponential backoff + long-running job = handles rate limits well.
         });
-        await nango.log(`Appending records of count ${res.data.results.length} to results of count ${results.length}`)
+        await nango.log(`Appending records of count ${res.data.results.length} to results of count ${results.length}`);
         if (res.data) {
-            results = [ ...results, ...res.data.results]
+            results = [...results, ...res.data.results];
         }
-        if (res.data["_links"].next) {
-            endpoint = res.data["_links"].next;
+        if (res.data['_links'].next) {
+            endpoint = res.data['_links'].next;
             pageCounter += 1;
         } else {
-            return results
+            return results;
         }
     }
 }
