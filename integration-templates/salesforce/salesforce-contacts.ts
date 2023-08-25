@@ -1,6 +1,6 @@
 import { SalesforceContact, NangoSync } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<void> {
+export default async function fetchData(nango: NangoSync): Promise<{ SalesforceContact: SalesforceContact[] }> {
     const { lastSyncDate } = nango;
 
     let query = `
@@ -50,6 +50,8 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
             }
         }
     }
+
+    return { SalesforceContact: [] }; // Soon, will no longer need to return anything.
 }
 
 function mapContacts(records: any[]): SalesforceContact[] {
