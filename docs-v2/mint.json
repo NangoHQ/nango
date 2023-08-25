@@ -75,16 +75,18 @@
                             "group": "All Integration Templates",
                             "pages": [
                                 "integration-templates/asana",
+                                "integration-templates/confluence",
                                 "integration-templates/github",
-                                "integration-templates/google-workspace",
                                 "integration-templates/gmail",
+                                "integration-templates/google-workspace",
+                                "integration-templates/hubspot",
                                 "integration-templates/intercom",
                                 "integration-templates/jira",
                                 "integration-templates/linear",
                                 "integration-templates/microsoft-active-directory",
                                 "integration-templates/notion",
-                                "integration-templates/slack",
-                                "integration-templates/salesforce"
+                                "integration-templates/salesforce",
+                                "integration-templates/slack"
                             ]
                         }
                     ]
