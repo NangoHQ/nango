@@ -231,6 +231,16 @@ epic-games:
     authorization_url: https://www.epicgames.com/id/authorize
     token_url: https://api.epicgames.dev/epic/oauth/v1/token
     authorization_method: header
+eventbrite:
+    auth_mode: OAUTH2
+    authorization_url: https://www.eventbrite.com/oauth/authorize
+    token_url: https://www.eventbrite.com/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    proxy:
+        base_url: https://www.eventbriteapi.com
 exact-online:
     auth_mode: OAUTH2
     authorization_url: https://start.exactonline.${connectionConfig.extension}/api/oauth2/auth
@@ -592,6 +602,34 @@ reddit:
     authorization_method: header
     authorization_params:
         duration: permanent
+ring-central:
+    auth_mode: OAUTH2
+    authorization_url: https://platform.ringcentral.com/restapi/oauth/authorize
+    token_url: https://platform.ringcentral.com/restapi/oauth/token
+    authorization_method: header
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://platform.ringcentral.com/restapi/v1.0
+    docs: https://developers.ringcentral.com/api-reference/
+ring-central-sandbox:
+    auth_mode: OAUTH2
+    authorization_url: https://platform.devtest.ringcentral.com/restapi/oauth/authorize
+    token_url: https://platform.devtest.ringcentral.com/restapi/oauth/token
+    authorization_method: header
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://platform.devtest.ringcentral.com/restapi/v1.0
+    docs: https://developers.ringcentral.com/api-reference/
 segment:
     auth_mode: OAUTH2
     authorization_url: https://id.segmentapis.com/oauth2/auth
