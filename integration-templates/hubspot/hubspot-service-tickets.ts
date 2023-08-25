@@ -1,43 +1,8 @@
 import type { NangoSync, HubspotServiceTicket } from './models';
 
 export default async function fetchData(nango: NangoSync): Promise<{HubspotServiceTicket: HubspotServiceTicket[]}> {
-    const tickets = await paginate(nango, '/crm/v3/objects/tickets/search');
-
-    const mappedTickets: HubspotServiceTicket[] = tickets.map(ticket => ({
-        id: ticket.id,
-        createdAt: ticket.createdAt,
-        updatedAt: ticket.updatedAt,
-        archived: ticket.archived,
-        properties: {
-            content: ticket.properties.content,
-            createdate: ticket.properties.createdate,
-            hs_lastmodifieddate: ticket.properties.hs_lastmodifieddate,
-            hs_object_id: ticket.properties.hs_object_id,
-            hs_pipeline: ticket.properties.hs_pipeline,
-            hs_pipeline_stage: ticket.properties.hs_pipeline_stage,
-            hs_ticket_category: ticket.properties.hs_ticket_category,
-            hs_ticket_priority: ticket.properties.hs_ticket_priority,
-            subject: ticket.properties.subject
-        }
-    }));
-
-    if (mappedTickets.length > 0) {
-        await nango.batchSave<HubspotServiceTicket>(mappedTickets, 'HubspotServiceTicket');
-        await nango.log(`Sent ${mappedTickets.length}`);
-    }
-
-    return { HubspotServiceTicket: [] };
-}
-
-interface Params {
-    limit: string;
-    [key: string]: any; // Allows additional properties
-}
-
-async function paginate(nango: NangoSync, endpoint: string) {
     const MAX_PAGE = 100;
 
-    let results: any[] = [];
     let page = 1;
     let afterLink = null;
 
@@ -50,7 +15,7 @@ async function paginate(nango: NangoSync, endpoint: string) {
 
     while (true) {
         let payload = {
-            endpoint: endpoint,
+            endpoint: '/crm/v3/objects/tickets/search',
             params: {
                 limit: `${MAX_PAGE}`,
             } as Params,
@@ -60,6 +25,15 @@ async function paginate(nango: NangoSync, endpoint: string) {
                         propertyName: 'hs_lastmodifieddate',
                         direction: 'DESCENDING'
                     }
+                ],
+                properties: [ // Define a list of these properties otherwise Hubspot won't return the Owner ID.
+                    'hubspot_owner_id',
+                    'hs_pipeline',
+                    'hs_pipeline_stage',
+                    'hs_ticket_priority',
+                    'hs_ticket_category',
+                    'subject',
+                    'content',
                 ],
                 filterGroups: [
                     {
@@ -81,7 +55,27 @@ async function paginate(nango: NangoSync, endpoint: string) {
 
         const response = await nango.post(payload);
 
-        results = results.concat(response.data.results);
+        let pageData = response.data.results;
+
+        const mappedTickets: HubspotServiceTicket[] = pageData.map(ticket => ({
+            id: ticket.id,
+            createdAt: ticket.createdAt,
+            updatedAt: ticket.properties.hs_lastmodifieddate,
+            archived: ticket.archived,
+            subject: ticket.properties.subject,
+            content: ticket.properties.content,
+            objectId: ticket.properties.hs_object_id,
+            ownerId: ticket.properties.hubspot_owner_id,
+            pipelineName: ticket.properties.hs_pipeline,
+            pipelineStage: ticket.properties.hs_pipeline_stage,
+            category: ticket.properties.hs_ticket_category,
+            priority: ticket.properties.hs_ticket_priority
+        }));
+
+        if (mappedTickets.length > 0) {
+            await nango.batchSave<HubspotServiceTicket>(mappedTickets, 'HubspotServiceTicket');
+            await nango.log(`Sent ${mappedTickets.length}`);
+        }
 
         if (response.data.length == MAX_PAGE) {
             page += 1;
@@ -91,5 +85,10 @@ async function paginate(nango: NangoSync, endpoint: string) {
         }
     }
 
-    return results;
+    return { HubspotServiceTicket: [] }; // This returns an empty array
+}
+
+interface Params {
+    limit: string;
+    [key: string]: any; // Allows additional properties
 }
