@@ -8,6 +8,7 @@ import { checkForIntegrationFile } from '../nango-config.service.js';
 import { getLastSyncDate, setLastSyncDate, clearLastSyncDate } from './sync.service.js';
 import { formatDataRecords } from './data-records.service.js';
 import { upsert } from './data.service.js';
+import { takeSnapshot } from './data-delete.service.js';
 import environmentService from '../environment.service.js';
 import integationService from './integration.service.js';
 import webhookService from '../webhook.service.js';
@@ -177,7 +178,7 @@ export default class SyncRun {
             }
 
             const syncData = syncObject[this.syncName] as unknown as NangoIntegrationData;
-            const { returns: models, track_deletes } = syncData;
+            const { returns: models, track_deletes: trackDeletes } = syncData;
 
             if (syncData.sync_config_id) {
                 if (this.debug) {
@@ -252,7 +253,8 @@ export default class SyncRun {
                                     i,
                                     models.length,
                                     syncStartDate,
-                                    syncData.version
+                                    syncData.version as string,
+                                    trackDeletes
                                 );
                             }
 
@@ -279,13 +281,21 @@ export default class SyncRun {
                                     this.nangoConnection.id as number,
                                     model,
                                     this.activityLogId,
-                                    track_deletes
+                                    trackDeletes
                                 );
 
                                 if (upsertResult.success) {
                                     const { summary } = upsertResult;
 
-                                    await this.reportResults(model, summary as UpsertSummary, i, models.length, syncStartDate, syncData.version);
+                                    await this.reportResults(
+                                        model,
+                                        summary as UpsertSummary,
+                                        i,
+                                        models.length,
+                                        syncStartDate,
+                                        syncData.version as string,
+                                        trackDeletes
+                                    );
                                 }
 
                                 if (!upsertResult.success) {
@@ -322,7 +332,8 @@ export default class SyncRun {
         index: number,
         numberOfModels: number,
         syncStartDate: Date,
-        version?: string
+        version: string,
+        trackDeletes?: boolean
     ): Promise<void> {
         if (!this.writeToDb || !this.activityLogId || !this.syncJobId) {
             return;
@@ -338,6 +349,10 @@ export default class SyncRun {
             // then don't override it
             const override = false;
             await setLastSyncDate(this.syncId as string, syncStartDate, override);
+        }
+
+        if (trackDeletes) {
+            await takeSnapshot(this.nangoConnection?.id as number, model);
         }
 
         const updatedResults: Record<string, SyncResult> = {
@@ -376,6 +391,8 @@ export default class SyncRun {
             updated = (result?.['updated'] as unknown as number) ?? 0;
             deleted = (result?.['deleted'] as unknown as number) ?? 0;
         }
+
+        // if tracking de
 
         const successMessage =
             `The ${this.syncType} "${this.syncName}" sync has been completed to the ${model} model.` +

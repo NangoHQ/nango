@@ -1,19 +1,56 @@
-import { schema } from '../../db/database.js';
+import db, { schema } from '../../db/database.js';
 import type { DataRecord } from '../../models/Sync.js';
 
 const RECORDS_TABLE = '_nango_sync_data_records';
 const DELETE_RECORDS_TABLE = '_nango_sync_data_records_deletes';
 
-export const getDeletedKeys = async (records: DataRecord[], dbTable: string, uniqueKey: string, nangoConnectionId: number, model: string) => {
-    console.log(records);
-    console.log(DELETE_RECORDS_TABLE);
-    console.log(schema);
-    console.log(dbTable);
-    console.log(uniqueKey);
-    console.log(nangoConnectionId);
-    console.log(model);
+const columns = [
+    'id',
+    'external_id',
+    'json',
+    'data_hash',
+    'nango_connection_id',
+    'model',
+    'created_at',
+    'updated_at',
+    'sync_id',
+    'sync_job_id',
+    'external_is_deleted',
+    'external_deleted_at'
+];
 
-    return [];
+export const getDeletedKeys = async (dbTable: string, _uniqueKey: string, nangoConnectionId: number, model: string) => {
+    const results = await schema()
+        .from<DataRecord>(DELETE_RECORDS_TABLE)
+        .leftJoin(dbTable, `${dbTable}.id`, `${DELETE_RECORDS_TABLE}.id`)
+        .whereNull(`${RECORDS_TABLE}.id`)
+        .where({
+            [`${DELETE_RECORDS_TABLE}.nango_connection_id`]: nangoConnectionId,
+            [`${DELETE_RECORDS_TABLE}.model`]: model
+        })
+        .select(`${DELETE_RECORDS_TABLE}.*`);
+
+    if (!results || results.length === 0) {
+        return [];
+    }
+
+    const deletedResults = results.map((result: DataRecord) => {
+        return {
+            ...result,
+            external_is_deleted: true,
+            external_deleted_at: new Date()
+        };
+    });
+
+    await schema()
+        .from<DataRecord>(RECORDS_TABLE)
+        .where({
+            nango_connection_id: nangoConnectionId,
+            model
+        })
+        .insert(deletedResults);
+
+    return results.map((result: DataRecord) => result.external_id);
 };
 
 export const getFullRecords = async (nangoConnectionId: number, model: string) => {
@@ -23,4 +60,83 @@ export const getFullRecords = async (nangoConnectionId: number, model: string) =
     });
 
     return results;
+};
+
+export const getFullSnapshotRecords = async (nangoConnectionId: number, model: string) => {
+    const results = await schema().from<DataRecord>(DELETE_RECORDS_TABLE).where({
+        nango_connection_id: nangoConnectionId,
+        model
+    });
+
+    return results;
+};
+
+/**
+ * Clear Old Records
+ * @desc get the job of the last set of records that were inserted and remove
+ * them if any records exist
+ */
+export const clearOldRecords = async (nangoConnectionId: number, model: string) => {
+    const exists = await schema()
+        .from<DataRecord>(RECORDS_TABLE)
+        .where({
+            nango_connection_id: nangoConnectionId,
+            model
+        })
+        .select('id')
+        .first();
+
+    if (!exists) {
+        return;
+    }
+
+    const { sync_job_id } = await schema()
+        .from<DataRecord>(DELETE_RECORDS_TABLE)
+        .where({
+            nango_connection_id: nangoConnectionId,
+            model
+        })
+        .select('sync_job_id')
+        .first();
+
+    await schema()
+        .from<DataRecord>(RECORDS_TABLE)
+        .where({
+            nango_connection_id: nangoConnectionId,
+            model,
+            sync_job_id
+        })
+        .del();
+};
+
+/**
+ * Take Snapshot
+ * @desc given a connection id and model, take a snapshot of the records
+ * so it can be used for later comparison to track deletes
+ *
+ */
+export const takeSnapshot = async (nangoConnectionId: number, model: string): Promise<boolean> => {
+    try {
+        await schema()
+            .from<DataRecord>(DELETE_RECORDS_TABLE)
+            .where({
+                nango_connection_id: nangoConnectionId,
+                model
+            })
+            .del();
+
+        const result = await db.knex.raw(
+            `
+INSERT INTO nango.${DELETE_RECORDS_TABLE} (${columns.join(', ')})
+SELECT ${columns.join(', ')}
+FROM nango.${RECORDS_TABLE}
+WHERE nango_connection_id = ? AND model = ?
+    `,
+            [nangoConnectionId, model]
+        );
+
+        return Boolean(result);
+    } catch (err) {
+        return false;
+    }
 };

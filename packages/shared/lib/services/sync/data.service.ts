@@ -1,7 +1,7 @@
 import { schema } from '../../db/database.js';
 import { verifyUniqueKeysAreUnique } from './data-records.service.js';
 import { createActivityLogMessage } from '../activity/activity.service.js';
-import { getDeletedKeys } from './data-delete.service.js';
+import { getDeletedKeys, clearOldRecords } from './data-delete.service.js';
 import type { UpsertResponse } from '../../models/Data.js';
 import type { DataRecord } from '../../models/Sync.js';
 
@@ -31,6 +31,10 @@ export async function upsert(
     const updatedKeys = await getUpdatedKeys(responseWithoutDuplicates, dbTable, uniqueKey, nangoConnectionId, model);
 
     try {
+        if (track_deletes) {
+            await clearOldRecords(nangoConnectionId, model);
+        }
+
         const results = await schema()
             .from(dbTable)
             .insert(responseWithoutDuplicates, ['id', 'external_id'])
@@ -54,7 +58,7 @@ export async function upsert(
             };
         }
 
-        const deletedKeys = track_deletes ? await getDeletedKeys(responseWithoutDuplicates, dbTable, uniqueKey, nangoConnectionId, model) : [];
+        const deletedKeys = track_deletes ? await getDeletedKeys(dbTable, uniqueKey, nangoConnectionId, model) : [];
 
         return {
             success: true,
