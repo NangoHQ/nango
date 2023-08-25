@@ -18,4 +18,4 @@ models:
     pipeline: integer
     pipelineStage: integer
     ticketCategory: string | null
-    ticketPriority : string
+    ticketPriority: string
