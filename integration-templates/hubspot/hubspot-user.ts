@@ -5,7 +5,7 @@ interface Params {
     [key: string]: any; // Allows additional properties such as the 'after' property
 }
 
-export default async function fetchData(nango: NangoSync): Promise<{HubspotUser: HubspotUser[]}> {
+export default async function fetchData(nango: NangoSync): Promise<{ HubspotUser: HubspotUser[] }> {
     const MAX_PAGE = 100;
 
     let page = 1;
@@ -15,11 +15,12 @@ export default async function fetchData(nango: NangoSync): Promise<{HubspotUser:
         let payload = {
             endpoint: '/settings/v3/users',
             params: {
-                limit: `${MAX_PAGE}`,
-            } as Params,
-        }
+                limit: `${MAX_PAGE}`
+            } as Params
+        };
 
-        if ( ! afterLink) { // If there is no afterLink, then we are on the first page.
+        if (!afterLink) {
+            // If there is no afterLink, then we are on the first page.
             payload.params['after'] = afterLink;
         }
 
@@ -32,7 +33,7 @@ export default async function fetchData(nango: NangoSync): Promise<{HubspotUser:
             email: owner.email,
             roleId: owner.roleId,
             primaryTeamId: owner.primaryTeamId,
-            superAdmin: owner.superAdmin,
+            superAdmin: owner.superAdmin
         }));
 
         if (mappedUsers.length > 0) {

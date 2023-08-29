@@ -5,7 +5,7 @@ interface Params {
     [key: string]: any; // Allows additional properties
 }
 
-export default async function fetchData(nango: NangoSync): Promise<{HubspotOwner: HubspotOwner[]}> {
+export default async function fetchData(nango: NangoSync): Promise<{ HubspotOwner: HubspotOwner[] }> {
     const MAX_PAGE = 100;
 
     let page = 1;
@@ -15,11 +15,12 @@ export default async function fetchData(nango: NangoSync): Promise<{HubspotOwner
         let payload = {
             endpoint: '/crm/v3/owners',
             params: {
-                limit: `${MAX_PAGE}`,
-            } as Params,
-        }
+                limit: `${MAX_PAGE}`
+            } as Params
+        };
 
-        if ( ! afterLink) { // If there is no afterLink, then we are on the first page.
+        if (!afterLink) {
+            // If there is no afterLink, then we are on the first page.
             payload.params['after'] = afterLink;
         }
 
@@ -35,7 +36,7 @@ export default async function fetchData(nango: NangoSync): Promise<{HubspotOwner
             userId: owner.userId,
             createdAt: owner.createdAt,
             updatedAt: owner.updatedAt,
-            archived: owner.archived,
+            archived: owner.archived
         }));
 
         if (mappedOwners.length > 0) {
