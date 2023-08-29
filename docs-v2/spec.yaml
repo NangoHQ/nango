@@ -440,8 +440,8 @@ paths:
                   schema:
                       type: string
                   description: The connection ID used to create the connection.
-                - name: provider_config_key
-                  in: query
+                - name: Provider-Config-Key
+                  in: header
                   required: true
                   description: The integration ID used to create the connection (aka Unique Key).
                   schema:
