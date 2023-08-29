@@ -1,0 +1,37 @@
+integrations:
+  evaluagent:
+    evaluagent-users:
+      runs: every day
+      returns:
+        - EvaluAgentUser
+    evaluagent-groups:
+      runs: every day
+      returns:
+        - EvaluAgentGroup
+    evaluagent-roles:
+      runs: every day
+      returns:
+        - EvaluAgentRole
+
+models:
+  EvaluAgentGroup:
+    id: string
+    name: string
+    level: string
+    active: boolean
+    parent: string
+    hasChildren: boolean
+    isCustomReportingGroup: boolean
+  EvaluAgentUser:
+    id: string
+    forename: string
+    surname: string
+    email: string
+    username: string
+    startDate: date
+    active: boolean
+    thirdPartyId: string | number
+  EvaluAgentRole:
+    id: string
+    title: string
+    name: string
