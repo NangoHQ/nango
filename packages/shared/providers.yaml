@@ -231,6 +231,10 @@ epic-games:
     authorization_url: https://www.epicgames.com/id/authorize
     token_url: https://api.epicgames.dev/epic/oauth/v1/token
     authorization_method: header
+evaluagent:
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.region}.evaluagent.com/
 eventbrite:
     auth_mode: OAUTH2
     authorization_url: https://www.eventbrite.com/oauth/authorize
