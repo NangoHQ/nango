@@ -575,6 +575,18 @@ payfit:
         response_type: code
     token_params:
         grant_type: authorization_code
+pennylane:
+    auth_mode: OAUTH2
+    authorization_url: https://app.pennylane.com/oauth/authorize
+    token_url: https://app.pennylane.com/oauth/token
+    proxy:
+        base_url: https://app.pennylane.com/api/external/v1
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 pipedrive:
     auth_mode: OAUTH2
     authorization_url: https://oauth.pipedrive.com/oauth/authorize

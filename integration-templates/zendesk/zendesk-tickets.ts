@@ -1,7 +1,7 @@
 import type { NangoSync, ZendeskTicket } from './models';
 
 async function getZendeskSubdomain(nango: NangoSync): Promise<string | undefined> {
-    const response = await nango.getConnection()
+    const response = await nango.getConnection();
     return response.connection_config['subdomain'];
 }
 
@@ -52,7 +52,7 @@ async function paginate(
         baseUrlOverride: `https://${subdomain}.zendesk.com`,
         endpoint: `${contentPage ? contentPage.nextPageEndpoint : endpoint}`,
         method: method,
-        params: { "page[size]": `${pageSize}`, },
+        params: { 'page[size]': `${pageSize}` },
         retries: 10 // Exponential backoff + long-running job = handles rate limits well.
     });
 
@@ -127,8 +127,7 @@ function mapZendeskTickets(tickets: any[]): ZendeskTicket[] {
             via: ticket.via,
             via_followup_source_id: ticket.via_followup_source_id,
             via_id: ticket.via_id,
-            voice_comment: ticket.voice_comment,
+            voice_comment: ticket.voice_comment
         };
     });
 }
-

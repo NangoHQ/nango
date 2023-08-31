@@ -231,6 +231,7 @@
                 "integrations/all/pagerduty",
                 "integrations/all/pandadoc",
                 "integrations/all/payfit",
+                "integrations/all/pennylane",
                 "integrations/all/pipedrive",
                 "integrations/all/qualtrics",
                 "integrations/all/quickbooks",
