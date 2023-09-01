@@ -78,7 +78,8 @@ class ConnectionService {
                     provider_config_key: providerConfigKey,
                     credentials: parsedRawCredentials,
                     connection_config: connectionConfig,
-                    environment_id
+                    environment_id: environment_id,
+                    metadata: metadata || null
                 }),
                 ['id']
             );
