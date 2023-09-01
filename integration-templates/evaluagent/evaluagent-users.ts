@@ -1,9 +1,9 @@
 import type { NangoSync, EvaluAgentUser } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<{EvaluAgentUser: EvaluAgentUser[]}> {
+export default async function fetchData(nango: NangoSync): Promise<{ EvaluAgentUser: EvaluAgentUser[] }> {
     let payload = {
         endpoint: '/v1/org/users'
-    }
+    };
 
     const response = await nango.get(payload);
 
@@ -17,7 +17,7 @@ export default async function fetchData(nango: NangoSync): Promise<{EvaluAgentUs
         username: user.attributes.username,
         startDate: user.attributes.start_date,
         active: user.attributes.active,
-        thirdPartyId: user.attributes.third_party_id,
+        thirdPartyId: user.attributes.third_party_id
     }));
 
     if (mappedUsers.length > 0) {
@@ -25,5 +25,5 @@ export default async function fetchData(nango: NangoSync): Promise<{EvaluAgentUs
         await nango.log(`Sent ${mappedUsers.length} users`);
     }
 
-    return {EvaluAgentUser: [] };
+    return { EvaluAgentUser: [] };
 }

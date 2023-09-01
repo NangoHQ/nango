@@ -1,9 +1,9 @@
 import type { NangoSync, EvaluAgentRole } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<{EvaluAgentRole: EvaluAgentRole[]}> {
+export default async function fetchData(nango: NangoSync): Promise<{ EvaluAgentRole: EvaluAgentRole[] }> {
     let payload = {
         endpoint: '/v1/org/roles'
-    }
+    };
 
     const response = await nango.get(payload);
 
@@ -12,7 +12,7 @@ export default async function fetchData(nango: NangoSync): Promise<{EvaluAgentRo
     const mappedRoles: EvaluAgentRole[] = returnedData.map((role: EvaluAgentRole) => ({
         id: role.id,
         title: role.attributes.title,
-        name: role.attributes.name,
+        name: role.attributes.name
     }));
 
     if (mappedRoles.length > 0) {
@@ -20,5 +20,5 @@ export default async function fetchData(nango: NangoSync): Promise<{EvaluAgentRo
         await nango.log(`Sent ${mappedRoles.length} roles`);
     }
 
-    return {EvaluAgentRole: [] };
+    return { EvaluAgentRole: [] };
 }

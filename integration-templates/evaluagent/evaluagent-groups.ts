@@ -1,9 +1,9 @@
 import type { NangoSync, EvaluAgentGroup } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<{EvaluAgentGroup: EvaluAgentGroup[]}> {
+export default async function fetchData(nango: NangoSync): Promise<{ EvaluAgentGroup: EvaluAgentGroup[] }> {
     let payload = {
         endpoint: '/v1/org/groups'
-    }
+    };
 
     const response = await nango.get(payload);
 
@@ -16,7 +16,7 @@ export default async function fetchData(nango: NangoSync): Promise<{EvaluAgentGr
         active: group.attributes.active,
         parent: group.attributes.parent,
         hasChildren: group.attributes.has_children,
-        isCustomReportingGroup: group.attributes.is_custom_reporting_group,
+        isCustomReportingGroup: group.attributes.is_custom_reporting_group
     }));
 
     if (mappedGroups.length > 0) {
@@ -24,5 +24,5 @@ export default async function fetchData(nango: NangoSync): Promise<{EvaluAgentGr
         await nango.log(`Sent ${mappedGroups.length} groups`);
     }
 
-    return {EvaluAgentGroup: [] };
+    return { EvaluAgentGroup: [] };
 }
