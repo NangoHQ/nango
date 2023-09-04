@@ -1,6 +1,6 @@
 import { SalesforceAccount, NangoSync } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<void> {
+export default async function fetchData(nango: NangoSync): Promise<{ SalesforceAccount: SalesforceAccount[] }> {
     const { lastSyncDate } = nango;
 
     // Use nango.getMetadata once you set it in the backend:
@@ -67,6 +67,8 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
             }
         }
     }
+
+    return { SalesforceAccount: [] }; // Soon, will no longer need to return anything.
 }
 
 function mapAccounts(records: any[], fieldMapping: any): SalesforceAccount[] {

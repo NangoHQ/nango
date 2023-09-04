@@ -1,6 +1,6 @@
 import { NangoSync, LinearTeam } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<void> {
+export default async function fetchData(nango: NangoSync): Promise<{ LinearTeam: LinearTeam[] }> {
     const { lastSyncDate } = nango;
     const pageSize = 50;
     let after = '';
@@ -48,6 +48,8 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
             after = response.data.data.teams.pageInfo.endCursor;
         }
     }
+
+    return { LinearTeam: [] }; // Soon, will no longer need to return anything.
 }
 
 function mapTeams(records: any[]): LinearTeam[] {

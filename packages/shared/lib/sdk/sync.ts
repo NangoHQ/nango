@@ -113,7 +113,6 @@ interface OAuth1Credentials extends CredentialsCommon {
 type AuthCredentials = OAuth2Credentials | OAuth1Credentials | BasicApiCredentials | ApiKeyCredentials;
 
 interface Metadata {
-    fieldMapping?: Record<string, string>;
     [key: string]: string | Record<string, string>;
 }
 
@@ -277,7 +276,7 @@ export class NangoSync {
     public async getFieldMapping(): Promise<Metadata> {
         console.warn('getFieldMapping is deprecated. Please use getMetadata instead.');
         const metadata = await this.nango.getMetadata(this.providerConfigKey as string, this.connectionId as string);
-        return (metadata.fieldMapping as Metadata) || {};
+        return (metadata['fieldMapping'] as Metadata) || {};
     }
 
     public async batchSend<T = any>(results: T[], model: string): Promise<boolean | null> {
