@@ -198,6 +198,8 @@ discord:
     token_url: https://discord.com/api/oauth2/token
     authorization_params:
         response_type: code
+    proxy:
+        retry_header: 'Retry-After'
 dropbox:
     auth_mode: OAUTH2
     authorization_url: https://www.dropbox.com/oauth2/authorize

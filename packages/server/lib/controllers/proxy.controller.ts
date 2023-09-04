@@ -294,13 +294,31 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
      * @param {AxiosError} error
      * @param {attemptNumber} number
      */
-    private retry = async (activityLogId: number, error: AxiosError, attemptNumber: number): Promise<boolean> => {
+    private retry = async (activityLogId: number, config: ProxyBodyConfiguration, error: AxiosError, attemptNumber: number): Promise<boolean> => {
+        if (config.template.proxy && config.template.proxy.retry_header) {
+            const retryHeader = config.template.proxy.retry_header;
+            const retryHeaderVal = error?.response?.headers[retryHeader] || error?.response?.headers[retryHeader.toLowerCase()];
+
+            if (retryHeaderVal) {
+                const retryAfter = Number(retryHeaderVal);
+                const content = `Retry header was parsed successfully, retrying after ${retryAfter} seconds`;
+
+                await createActivityLogMessage({
+                    level: 'error',
+                    activity_log_id: activityLogId,
+                    timestamp: Date.now(),
+                    content
+                });
+
+                await new Promise((resolve) => setTimeout(resolve, retryAfter * 1000));
+
+                return true;
+            }
+        }
         if (
             error?.response?.status.toString().startsWith('5') ||
             error?.response?.status === 429 ||
-            error?.code === 'ECONNRESET' ||
-            error?.code === 'ETIMEDOUT' ||
-            error?.code === 'ECONNABORTED'
+            ['ECONNRESET', 'ETIMEDOUT', 'ECONNABORTED'].includes(error?.code as string)
         ) {
             const content = `API received an ${
                 error?.response?.status || error?.code
@@ -469,7 +487,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
                         decompress: false
                     });
                 },
-                { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId) }
+                { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId, config) }
             );
 
             this.handleResponse(res, responseStream, config, activityLogId, url, isSync, isDryRun);
@@ -507,7 +525,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
                         decompress: false
                     });
                 },
-                { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId) }
+                { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId, config) }
             );
 
             this.handleResponse(res, responseStream, config, activityLogId, url, isSync, isDryRun);
@@ -545,7 +563,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
                         decompress: false
                     });
                 },
-                { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId) }
+                { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId, config) }
             );
 
             this.handleResponse(res, responseStream, config, activityLogId, url, isSync, isDryRun);
@@ -583,7 +601,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
                         decompress: false
                     });
                 },
-                { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId) }
+                { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId, config) }
             );
 
             this.handleResponse(res, responseStream, config, activityLogId, url, isSync, isDryRun);
@@ -620,7 +638,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
                         decompress: false
                     });
                 },
-                { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId) }
+                { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId, config) }
             );
             this.handleResponse(res, responseStream, config, activityLogId, url, isSync, isDryRun);
         } catch (e) {
@@ -639,7 +657,8 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
                     providerResponse: errorMessage.toString()
                 }),
                 params: {
-                    headers: JSON.stringify(config.headers)
+                    requestHeaders: JSON.stringify(config.headers),
+                    responseHeaders: JSON.stringify(error?.response?.headers)
                 }
             });
         } else {

@@ -21,6 +21,7 @@ export interface Template {
         query?: {
             api_key: string;
         };
+        retry_header?: string;
     };
     authorization_url: string;
     authorization_params?: Record<string, string>;
