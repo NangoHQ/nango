@@ -46,27 +46,29 @@ class ConnectionService {
         accountId: number,
         metadata?: Metadata
     ) {
-        const storedConnectionId = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment_id);
+        const storedConnection = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment_id);
 
-        if (storedConnectionId) {
+        if (storedConnection) {
             const encryptedConnection = encryptionManager.encryptConnection({
                 connection_id: connectionId,
                 provider_config_key: providerConfigKey,
                 credentials: parsedRawCredentials,
                 connection_config: connectionConfig,
                 environment_id: environment_id,
-                metadata: metadata || null
+                metadata: metadata || storedConnection.metadata || null
             });
+
             encryptedConnection.updated_at = new Date();
+
             await db.knex
                 .withSchema(db.schema())
                 .from<StoredConnection>(`_nango_connections`)
-                .where({ id: storedConnectionId, deleted: false })
+                .where({ id: storedConnection.id, deleted: false })
                 .update(encryptedConnection);
 
             analytics.track('server:connection_updated', accountId, { provider });
 
-            return [{ id: storedConnectionId }];
+            return [{ id: storedConnection.id }];
         }
 
         const id = await db.knex
@@ -98,9 +100,9 @@ class ConnectionService {
         environment_id: number,
         accountId: number
     ) {
-        const storedConnectionId = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment_id);
+        const storedConnection = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment_id);
 
-        if (storedConnectionId) {
+        if (storedConnection) {
             const encryptedConnection = encryptionManager.encryptConnection({
                 connection_id: connectionId,
                 provider_config_key: providerConfigKey,
@@ -112,12 +114,12 @@ class ConnectionService {
             await db.knex
                 .withSchema(db.schema())
                 .from<StoredConnection>(`_nango_connections`)
-                .where({ id: storedConnectionId, deleted: false })
+                .where({ id: storedConnection.id, deleted: false })
                 .update(encryptedConnection);
 
             analytics.track('server:api_key_connection_updated', accountId, { provider });
 
-            return [{ id: storedConnectionId }];
+            return [{ id: storedConnection.id }];
         }
         const id = await db.knex
             .withSchema(db.schema())
@@ -206,8 +208,12 @@ class ConnectionService {
         return result[0];
     }
 
-    public async checkIfConnectionExists(connection_id: string, provider_config_key: string, environment_id: number): Promise<null | number> {
-        const result = await schema().select('id').from<StoredConnection>('_nango_connections').where({
+    public async checkIfConnectionExists(
+        connection_id: string,
+        provider_config_key: string,
+        environment_id: number
+    ): Promise<null | { id: number; metadata: Metadata }> {
+        const result = await schema().select('id', 'metadata').from<StoredConnection>('_nango_connections').where({
             connection_id,
             provider_config_key,
             environment_id,
@@ -218,7 +224,7 @@ class ConnectionService {
             return null;
         }
 
-        return result[0].id;
+        return result[0];
     }
 
     public async getConnection(connectionId: string, providerConfigKey: string, environment_id: number): Promise<ServiceResponse<Connection>> {

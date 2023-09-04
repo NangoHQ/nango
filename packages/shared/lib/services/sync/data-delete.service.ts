@@ -90,7 +90,7 @@ export const clearOldRecords = async (nangoConnectionId: number, model: string) 
         return;
     }
 
-    const { sync_job_id } = await schema()
+    const oldDeleteRecord = await schema()
         .from<DataRecord>(DELETE_RECORDS_TABLE)
         .where({
             nango_connection_id: nangoConnectionId,
@@ -99,14 +99,18 @@ export const clearOldRecords = async (nangoConnectionId: number, model: string) 
         .select('sync_job_id')
         .first();
 
-    await schema()
-        .from<DataRecord>(RECORDS_TABLE)
-        .where({
-            nango_connection_id: nangoConnectionId,
-            model,
-            sync_job_id
-        })
-        .del();
+    if (oldDeleteRecord) {
+        const { sync_job_id } = oldDeleteRecord;
+
+        await schema()
+            .from<DataRecord>(RECORDS_TABLE)
+            .where({
+                nango_connection_id: nangoConnectionId,
+                model,
+                sync_job_id
+            })
+            .del();
+    }
 };
 
 /**
