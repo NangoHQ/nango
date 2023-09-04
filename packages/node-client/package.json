@@ -4,6 +4,14 @@
     "description": "Nango's Node client.",
     "type": "module",
     "main": "dist/index.js",
+    "module": "./dist/index.mjs",
+    "exports": {
+        ".": {
+            "require": "./dist/index.cjs",
+            "import": "./dist/index.mjs",
+            "types": "./dist/index.d.ts"
+        }
+    },
     "typings": "dist/index.d.ts",
     "keywords": [],
     "repository": {
