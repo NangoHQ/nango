@@ -19,7 +19,7 @@ export interface ContinuousSyncArgs {
 }
 
 export interface ActionArgs {
-    input: any;
+    input: object;
     actionName: string;
     nangoConnection: NangoConnection;
     activityLogId: number;

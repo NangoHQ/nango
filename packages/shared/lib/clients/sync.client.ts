@@ -375,7 +375,7 @@ class SyncClient {
         }
     }
 
-    async triggerAction(connection: NangoConnection, actionName: string, input: any, activityLogId: number) {
+    async triggerAction(connection: NangoConnection, actionName: string, input: object, activityLogId: number) {
         const workflowId = generateActionWorkflowId(actionName, connection.connection_id as string);
 
         try {

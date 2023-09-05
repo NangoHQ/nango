@@ -75,6 +75,10 @@ export default class SyncRun {
         if (config.debug) {
             this.debug = config.debug;
         }
+
+        if (config.input) {
+            this.input = config.input;
+        }
     }
 
     async run(optionalLastSyncDate?: Date | null, bypassEnvironment?: boolean, optionalSecretKey?: string, optionalHost?: string): Promise<boolean | object> {

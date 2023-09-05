@@ -58,7 +58,7 @@ export async function runAction(args: ActionArgs): Promise<object> {
         debug: false
     });
 
-    const actionResults = await syncRun.run(input);
+    const actionResults = await syncRun.run();
 
     return actionResults as object;
 }
