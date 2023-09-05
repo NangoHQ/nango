@@ -7,6 +7,7 @@ import ms from 'ms';
 import type { NangoConfig, SimplifiedNangoIntegration, NangoSyncConfig, NangoSyncModel } from '../integrations/index.js';
 import { isCloud } from '../utils/utils.js';
 import type { ServiceResponse } from '../models/Generic.js';
+import type { SyncConfigType } from '../models/Sync.js';
 import { NangoError } from '../utils/error.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -172,7 +173,7 @@ export function convertConfigObject(config: NangoConfig): SimplifiedNangoIntegra
                 models.push({ name: model, fields: [modelFields] });
             });
 
-            syncs.push({ name: syncName, runs: sync.runs, returns: sync.returns, models });
+            syncs.push({ name: syncName, type: sync.type as SyncConfigType, runs: sync.runs, returns: sync.returns, models });
         }
         output.push({ providerConfigKey, syncs });
     }

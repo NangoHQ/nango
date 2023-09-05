@@ -1,7 +1,10 @@
+import type { SyncConfigType } from '../models/Sync.js';
+
 export * as HubspotModels from './Hubspot.js';
 export * as GithubModels from './Github.js';
 
 export interface NangoIntegrationData {
+    type?: SyncConfigType;
     runs: string;
     returns: string[];
     fileLocation?: string;
@@ -39,6 +42,7 @@ export interface NangoSyncModel {
 
 export interface NangoSyncConfig {
     name: string;
+    type?: SyncConfigType;
     runs: string;
     returns: string[];
     models: NangoSyncModel[];

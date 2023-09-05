@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import db, { schema, dbNamespace } from '../../db/database.js';
-import { IncomingSyncConfig, SyncDifferences, Sync, Job as SyncJob, SyncStatus, SyncWithSchedule, SlimSync } from '../../models/Sync.js';
+import { SyncConfigType, IncomingSyncConfig, SyncDifferences, Sync, Job as SyncJob, SyncStatus, SyncWithSchedule, SlimSync } from '../../models/Sync.js';
 import type { Connection, NangoConnection } from '../../models/Connection.js';
 import SyncClient from '../../clients/sync.client.js';
 import { updateSuccess as updateSuccessActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../activity/activity.service.js';
@@ -162,7 +162,11 @@ export const getJobLastSyncDate = async (sync_id: string): Promise<Date | null> 
 };
 
 export const getSyncByIdAndName = async (nangoConnectionId: number, name: string): Promise<Sync | null> => {
-    const result = await db.knex.withSchema(db.schema()).select('*').from<Sync>(TABLE).where({ nango_connection_id: nangoConnectionId, name, deleted: false });
+    const result = await db.knex.withSchema(db.schema()).select('*').from<Sync>(TABLE).where({
+        nango_connection_id: nangoConnectionId,
+        name,
+        deleted: false
+    });
 
     if (Array.isArray(result) && result.length > 0) {
         return result[0] as Sync;
@@ -399,7 +403,11 @@ export const getAndReconcileSyncDifferences = async (
     const existingConnectionsByProviderConfig: { [key: string]: NangoConnection[] } = {};
 
     for (const sync of syncs) {
-        const { syncName, providerConfigKey } = sync;
+        const { syncName, providerConfigKey, type } = sync;
+        if (type === SyncConfigType.ACTION) {
+            // TODO should notify the user if the action is new or not, can tell from the sync config
+            continue;
+        }
         if (!existingSyncsByProviderConfig[providerConfigKey]) {
             // this gets syncs that have a sync config and are active OR just have a sync config
             existingSyncsByProviderConfig[providerConfigKey] = await getSyncConfigsByProviderConfigKey(environmentId, providerConfigKey);
