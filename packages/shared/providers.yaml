@@ -199,7 +199,8 @@ discord:
     authorization_params:
         response_type: code
     proxy:
-        retry_header: 'Retry-After'
+        retry:
+            after: 'Retry-After'
 dropbox:
     auth_mode: OAUTH2
     authorization_url: https://www.dropbox.com/oauth2/authorize
@@ -301,6 +302,8 @@ github:
     token_url: https://github.com/login/oauth/access_token
     proxy:
         base_url: https://api.github.com
+        retry:
+            at: 'x-ratelimit-reset'
     docs: https://docs.github.com/en/rest
 gitlab:
     auth_mode: OAUTH2

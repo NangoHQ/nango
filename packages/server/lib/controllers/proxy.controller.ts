@@ -287,16 +287,34 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         }
     }
 
-    /**
-     * Retry
-     * @desc if retries are set the retry function to determine if retries are
-     * actually kicked off or not
-     * @param {AxiosError} error
-     * @param {attemptNumber} number
-     */
-    private retry = async (activityLogId: number, config: ProxyBodyConfiguration, error: AxiosError, attemptNumber: number): Promise<boolean> => {
-        if (config.template.proxy && config.template.proxy.retry_header) {
-            const retryHeader = config.template.proxy.retry_header;
+    private retryHandler = async (activityLogId: number, error: AxiosError, type: 'at' | 'after', retryHeader: string): Promise<boolean> => {
+        if (type === 'at') {
+            const resetTimeEpoch = error?.response?.headers[retryHeader] || error?.response?.headers[retryHeader.toLowerCase()];
+
+            if (resetTimeEpoch) {
+                const currentEpochTime = Math.floor(Date.now() / 1000);
+                const retryAtEpoch = Number(resetTimeEpoch);
+
+                if (retryAtEpoch > currentEpochTime) {
+                    const waitDuration = retryAtEpoch - currentEpochTime;
+
+                    const content = `Rate limit reset time was parsed successfully, retrying after ${waitDuration} seconds`;
+
+                    await createActivityLogMessage({
+                        level: 'error',
+                        activity_log_id: activityLogId,
+                        timestamp: Date.now(),
+                        content
+                    });
+
+                    await new Promise((resolve) => setTimeout(resolve, waitDuration * 1000));
+
+                    return true;
+                }
+            }
+        }
+
+        if (type === 'after') {
             const retryHeaderVal = error?.response?.headers[retryHeader] || error?.response?.headers[retryHeader.toLowerCase()];
 
             if (retryHeaderVal) {
@@ -315,6 +333,25 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
                 return true;
             }
         }
+
+        return true;
+    };
+
+    /**
+     * Retry
+     * @desc if retries are set the retry function to determine if retries are
+     * actually kicked off or not
+     * @param {AxiosError} error
+     * @param {attemptNumber} number
+     */
+    private retry = async (activityLogId: number, config: ProxyBodyConfiguration, error: AxiosError, attemptNumber: number): Promise<boolean> => {
+        if (config.template.proxy && config.template.proxy.retry && (config.template.proxy?.retry?.at || config.template.proxy?.retry?.after)) {
+            const type = config.template.proxy.retry.at ? 'at' : 'after';
+            const retryHeader = config.template.proxy.retry.at ? config.template.proxy.retry.at : config.template.proxy.retry.after;
+
+            return this.retryHandler(activityLogId, error, type, retryHeader as string);
+        }
+
         if (
             error?.response?.status.toString().startsWith('5') ||
             error?.response?.status === 403 ||
