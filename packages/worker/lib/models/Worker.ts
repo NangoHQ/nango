@@ -17,3 +17,10 @@ export interface ContinuousSyncArgs {
     nangoConnection: NangoConnection;
     debug?: boolean;
 }
+
+export interface ActionArgs {
+    input: any;
+    actionName: string;
+    nangoConnection: NangoConnection;
+    activityLogId: number;
+}

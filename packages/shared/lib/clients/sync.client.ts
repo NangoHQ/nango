@@ -23,6 +23,7 @@ import { createSync } from '../services/sync/sync.service.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { isProd } from '../utils/utils.js';
 
+const generateActionWorkflowId = (actionName: string, connectionId: string) => `${TASK_QUEUE}.ACTION:${actionName}.${connectionId}`;
 const generateWorkflowId = (sync: Sync, syncName: string, connectionId: string) => `${TASK_QUEUE}.${syncName}.${connectionId}-${sync.id}`;
 const generateScheduleId = (sync: Sync, syncName: string, connectionId: string) => `${TASK_QUEUE}.${syncName}.${connectionId}-schedule-${sync.id}`;
 
@@ -371,6 +372,47 @@ class SyncClient {
                     }
                 });
             }
+        }
+    }
+
+    async triggerAction(connection: NangoConnection, actionName: string, input: any, activityLogId: number) {
+        const workflowId = generateActionWorkflowId(actionName, connection.connection_id as string);
+
+        try {
+            await createActivityLogMessage({
+                level: 'info',
+                activity_log_id: activityLogId as number,
+                content: `Starting action workflow ${workflowId} in the task queue: ${TASK_QUEUE}`,
+                timestamp: Date.now()
+            });
+
+            const actionHandler = await this.client?.workflow.execute('action', {
+                taskQueue: TASK_QUEUE,
+                workflowId,
+                args: [
+                    {
+                        actionName,
+                        nangoConnection: connection,
+                        input,
+                        activityLogId
+                    }
+                ]
+            });
+
+            return actionHandler;
+        } catch (e) {
+            await errorManager.report(e, {
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.SYNC_CLIENT,
+                environmentId: connection.environment_id,
+                metadata: {
+                    actionName,
+                    connectionDetails: JSON.stringify(connection),
+                    input
+                }
+            });
+
+            return null;
         }
     }
 

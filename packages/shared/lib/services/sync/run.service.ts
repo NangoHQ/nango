@@ -21,6 +21,7 @@ import type { Environment } from '../../models/Environment';
 
 interface SyncRunConfig {
     writeToDb: boolean;
+    isAction?: boolean;
     nangoConnection: NangoConnection;
     syncName: string;
     syncType: SyncType;
@@ -31,10 +32,12 @@ interface SyncRunConfig {
 
     loadLocation?: string;
     debug?: boolean;
+    input?: object;
 }
 
 export default class SyncRun {
     writeToDb: boolean;
+    isAction: boolean;
     nangoConnection: NangoConnection;
     syncName: string;
     syncType: SyncType;
@@ -44,9 +47,11 @@ export default class SyncRun {
     activityLogId?: number;
     loadLocation?: string;
     debug?: boolean;
+    input?: object;
 
     constructor(config: SyncRunConfig) {
         this.writeToDb = config.writeToDb;
+        this.isAction = config.isAction || false;
         this.nangoConnection = config.nangoConnection;
         this.syncName = config.syncName;
         this.syncType = config.syncType;
@@ -86,7 +91,9 @@ export default class SyncRun {
                 console.log(content);
             }
         }
-        const nangoConfig = this.loadLocation ? await loadLocalNangoConfig(this.loadLocation) : await getSyncConfig(this.nangoConnection, this.syncName);
+        const nangoConfig = this.loadLocation
+            ? await loadLocalNangoConfig(this.loadLocation)
+            : await getSyncConfig(this.nangoConnection, this.syncName, this.isAction);
 
         if (!nangoConfig) {
             const message = `No sync configuration was found for ${this.syncName}.`;
@@ -141,11 +148,13 @@ export default class SyncRun {
 
             let lastSyncDate: Date | null | undefined = null;
 
-            if (!this.writeToDb) {
-                lastSyncDate = optionalLastSyncDate;
-            } else {
-                lastSyncDate = await getLastSyncDate(this.syncId as string);
-                await clearLastSyncDate(this.syncId as string);
+            if (!this.isAction) {
+                if (!this.writeToDb) {
+                    lastSyncDate = optionalLastSyncDate;
+                } else {
+                    lastSyncDate = await getLastSyncDate(this.syncId as string);
+                    await clearLastSyncDate(this.syncId as string);
+                }
             }
 
             const nango = new NangoSync({
@@ -193,7 +202,10 @@ export default class SyncRun {
                         console.log(content);
                     }
                 }
-                await addSyncConfigToJob(this.syncJobId as number, syncData.sync_config_id);
+
+                if (this.syncJobId) {
+                    await addSyncConfigToJob(this.syncJobId as number, syncData.sync_config_id);
+                }
             }
 
             try {
@@ -208,7 +220,9 @@ export default class SyncRun {
                     syncData,
                     this.nangoConnection.environment_id,
                     this.writeToDb,
-                    this.loadLocation
+                    this.isAction,
+                    this.loadLocation,
+                    this.input
                 );
 
                 if (userDefinedResults === null) {
@@ -222,6 +236,21 @@ export default class SyncRun {
                 }
 
                 if (!this.writeToDb) {
+                    return userDefinedResults;
+                }
+
+                if (this.isAction) {
+                    const content = `${this.syncName} action was run successfully and results are being sent synchronously.`;
+
+                    await updateSuccessActivityLog(this.activityLogId as number, true);
+
+                    await createActivityLogMessageAndEnd({
+                        level: 'info',
+                        activity_log_id: this.activityLogId as number,
+                        timestamp: Date.now(),
+                        content
+                    });
+
                     return userDefinedResults;
                 }
 

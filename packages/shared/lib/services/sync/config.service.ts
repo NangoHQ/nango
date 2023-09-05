@@ -59,7 +59,13 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
 
     for (const sync of syncs) {
         const { syncName, providerConfigKey, fileBody, models, runs, version: optionalVersion, model_schema, type = SyncConfigType.SYNC } = sync;
-        if (!syncName || !providerConfigKey || !fileBody || !models || !runs) {
+        if (type === SyncConfigType.SYNC && !runs) {
+            const error = new NangoError('missing_required_fields_on_deploy');
+
+            return { success: false, error, response: null };
+        }
+
+        if (!syncName || !providerConfigKey || !fileBody || !models) {
             const error = new NangoError('missing_required_fields_on_deploy');
 
             return { success: false, error, response: null };
@@ -217,17 +223,17 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
     }
 }
 
-export async function getSyncConfig(nangoConnection: NangoConnection, syncName?: string): Promise<NangoConfig | null> {
+export async function getSyncConfig(nangoConnection: NangoConnection, syncName?: string, isAction?: boolean): Promise<NangoConfig | null> {
     let syncConfigs;
 
     if (!syncName) {
-        syncConfigs = await getSyncConfigsByParams(nangoConnection.environment_id, nangoConnection.provider_config_key);
+        syncConfigs = await getSyncConfigsByParams(nangoConnection.environment_id, nangoConnection.provider_config_key, isAction);
 
         if (!syncConfigs || syncConfigs.length === 0) {
             return null;
         }
     } else {
-        syncConfigs = await getSyncConfigByParams(nangoConnection.environment_id as number, syncName, nangoConnection.provider_config_key as string);
+        syncConfigs = await getSyncConfigByParams(nangoConnection.environment_id as number, syncName, nangoConnection.provider_config_key as string, isAction);
         if (!syncConfigs) {
             return null;
         }
@@ -266,7 +272,7 @@ export async function getSyncConfig(nangoConnection: NangoConnection, syncName?:
     return nangoConfig;
 }
 
-export async function getSyncConfigsByParams(environment_id: number, providerConfigKey: string): Promise<SyncConfig[] | null> {
+export async function getSyncConfigsByParams(environment_id: number, providerConfigKey: string, isAction?: boolean): Promise<SyncConfig[] | null> {
     const config = await configService.getProviderConfig(providerConfigKey, environment_id);
 
     if (!config) {
@@ -279,7 +285,7 @@ export async function getSyncConfigsByParams(environment_id: number, providerCon
             environment_id,
             nango_config_id: config.id as number,
             active: true,
-            type: SyncConfigType.SYNC,
+            type: isAction ? SyncConfigType.ACTION : SyncConfigType.SYNC,
             deleted: false
         });
 
@@ -319,7 +325,12 @@ export async function getSyncConfigsBySyncNameAndConfigId(environment_id: number
     return [];
 }
 
-export async function getSyncConfigByParams(environment_id: number, sync_name: string, providerConfigKey: string): Promise<SyncConfig | null> {
+export async function getSyncConfigByParams(
+    environment_id: number,
+    sync_name: string,
+    providerConfigKey: string,
+    isAction?: boolean
+): Promise<SyncConfig | null> {
     const config = await configService.getProviderConfig(providerConfigKey, environment_id);
 
     if (!config) {
@@ -334,7 +345,7 @@ export async function getSyncConfigByParams(environment_id: number, sync_name: s
                 sync_name,
                 nango_config_id: config.id as number,
                 active: true,
-                type: SyncConfigType.SYNC,
+                type: isAction ? SyncConfigType.ACTION : SyncConfigType.SYNC,
                 deleted: false
             })
             .orderBy('created_at', 'desc')
@@ -415,6 +426,7 @@ export async function getSyncConfigsWithConnectionsByEnvironmentId(environment_i
         .select(
             `${TABLE}.id`,
             `${TABLE}.sync_name`,
+            `${TABLE}.type`,
             `${TABLE}.runs`,
             `${TABLE}.models`,
             `${TABLE}.version`,

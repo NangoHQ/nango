@@ -424,9 +424,8 @@ export class Nango {
         return axios.post(url, body, { headers: this.enrichHeaders(headers) });
     }
 
-    // TODO
-    public async triggerAction(providerConfigKey: string, connectionId: string, actionName: string, input: Record<string, unknown>): Promise<unknown> {
-        const url = `${this.serverUrl}/sync/action/trigger`;
+    public async triggerAction(providerConfigKey: string, connectionId: string, actionName: string, input: Record<string, unknown>): Promise<object> {
+        const url = `${this.serverUrl}/action/trigger`;
 
         const headers = {
             'Connection-Id': connectionId,

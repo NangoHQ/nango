@@ -10,7 +10,8 @@ export enum SyncStatus {
 
 export enum SyncType {
     INITIAL = 'INITIAL',
-    INCREMENTAL = 'INCREMENTAL'
+    INCREMENTAL = 'INCREMENTAL',
+    ACTION = 'ACTION'
 }
 
 export interface SyncResult {
