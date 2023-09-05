@@ -117,7 +117,7 @@ program
             configWatch(debug);
         }
 
-        tscWatch(debug);
+        await tscWatch(debug);
     });
 
 program
