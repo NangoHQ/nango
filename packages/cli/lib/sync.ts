@@ -64,6 +64,7 @@ interface RunArgs extends GlobalOptions {
     connectionId: string;
     lastSyncDate?: string;
     useServerLastSyncDate?: boolean;
+    actionInput?: object;
 }
 
 const exampleSyncName = 'github-issue-example';
@@ -557,7 +558,7 @@ async function deploySyncs(url: string, body: { syncs: IncomingSyncConfig[]; rec
 
 export const dryRun = async (options: RunArgs, environment: string, debug = false) => {
     let syncName = '';
-    let connectionId, suppliedLastSyncDate;
+    let connectionId, suppliedLastSyncDate, actionInput;
 
     await parseSecretKey(environment, debug);
 
@@ -573,7 +574,7 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
     }
 
     if (Object.keys(options).length > 0) {
-        ({ sync: syncName, connectionId, lastSyncDate: suppliedLastSyncDate } = options);
+        ({ sync: syncName, connectionId, lastSyncDate: suppliedLastSyncDate, actionInput } = options);
     }
 
     if (!syncName) {
@@ -594,6 +595,8 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
         console.log(chalk.red(`Provider config key not found, please check that the provider exists for this sync name: ${syncName}`));
         return;
     }
+
+    const syncInfo = config.find((config) => config.syncs.find((sync) => sync.name === syncName))?.syncs.find((sync) => sync.name === syncName);
 
     if (debug) {
         printDebug(`Provider config key found to be ${providerConfigKey}`);
@@ -638,9 +641,18 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
         return;
     }
 
+    let normalizedInput;
+    try {
+        normalizedInput = JSON.parse(actionInput as unknown as string);
+    } catch (e) {
+        normalizedInput = { data: actionInput };
+    }
+
     const syncRun = new syncRunService({
         writeToDb: false,
         nangoConnection,
+        input: normalizedInput as object,
+        isAction: syncInfo?.type === SyncConfigType.ACTION,
         syncId: 'abc',
         activityLogId: -1,
         syncJobId: -1,
