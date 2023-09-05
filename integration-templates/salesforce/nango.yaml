@@ -12,6 +12,10 @@ integrations:
             runs: every hour
             returns:
                 - SalesforceDeal
+        salesforce-articles:
+            runs: every day
+            returns:
+                - SalesforceArticle
 models:
     SalesforceAccount:
         id: string
@@ -35,4 +39,10 @@ models:
         amount: number
         stage: string
         account_id: string
+        last_modified_date: string
+
+    SalesforceArticle:
+        id: string
+        title: string
+        content: string
         last_modified_date: string
