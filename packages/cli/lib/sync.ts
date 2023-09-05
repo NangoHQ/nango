@@ -34,7 +34,8 @@ import {
     SyncType,
     syncRunService,
     nangoConfigFile,
-    checkForIntegrationFile
+    checkForIntegrationFile,
+    SyncConfigType
 } from '@nangohq/shared';
 import {
     hostport,
@@ -63,6 +64,7 @@ interface RunArgs extends GlobalOptions {
     connectionId: string;
     lastSyncDate?: string;
     useServerLastSyncDate?: boolean;
+    actionInput?: object;
 }
 
 const exampleSyncName = 'github-issue-example';
@@ -193,6 +195,7 @@ export const init = async (debug = false) => {
         integrations: {
             'demo-github-integration': {
                 [exampleSyncName]: {
+                    type: SyncConfigType.SYNC,
                     runs: 'every half hour',
                     returns: ['GithubIssue']
                 }
@@ -374,7 +377,7 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
         printDebug(`Environment is set to ${environment}`);
     }
 
-    tsc(debug);
+    await tsc(debug);
 
     const config = await getConfig(debug);
 
@@ -389,7 +392,7 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
         }
 
         for (const sync of syncs) {
-            const { name: syncName, runs, returns: models, models: model_schema } = sync;
+            const { name: syncName, runs = '', returns: models, models: model_schema, type = SyncConfigType.SYNC } = sync;
 
             const { path: integrationFilePath, result: integrationFileResult } = checkForIntegrationFile(syncName, './');
 
@@ -398,11 +401,25 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
                 continue;
             }
 
-            const { success, error } = getInterval(runs, new Date());
+            if (type !== SyncConfigType.SYNC && type !== SyncConfigType.ACTION) {
+                console.log(
+                    chalk.red(
+                        `The sync ${syncName} has an invalid type "${type}". The type must be either ${SyncConfigType.SYNC} or${SyncConfigType.ACTION}. Skipping...`
+                    )
+                );
+            }
+            if (type === SyncConfigType.SYNC && !runs) {
+                console.log(chalk.red(`The sync ${syncName} is missing the "runs" property. Skipping...`));
+                continue;
+            }
 
-            if (!success) {
-                console.log(chalk.red(`The sync ${syncName} has an issue with the sync interval "${runs}": ${error?.message}`));
-                return;
+            if (runs && type === SyncConfigType.SYNC) {
+                const { success, error } = getInterval(runs, new Date());
+
+                if (!success) {
+                    console.log(chalk.red(`The sync ${syncName} has an issue with the sync interval "${runs}": ${error?.message}`));
+                    return;
+                }
             }
 
             if (debug) {
@@ -416,6 +433,7 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
                 version: version as string,
                 runs,
                 track_deletes: sync.track_deletes || false,
+                type,
                 fileBody: fs.readFileSync(integrationFilePath, 'utf8'),
                 model_schema: JSON.stringify(model_schema)
             };
@@ -541,7 +559,7 @@ async function deploySyncs(url: string, body: { syncs: IncomingSyncConfig[]; rec
 
 export const dryRun = async (options: RunArgs, environment: string, debug = false) => {
     let syncName = '';
-    let connectionId, suppliedLastSyncDate;
+    let connectionId, suppliedLastSyncDate, actionInput;
 
     await parseSecretKey(environment, debug);
 
@@ -557,7 +575,7 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
     }
 
     if (Object.keys(options).length > 0) {
-        ({ sync: syncName, connectionId, lastSyncDate: suppliedLastSyncDate } = options);
+        ({ sync: syncName, connectionId, lastSyncDate: suppliedLastSyncDate, actionInput } = options);
     }
 
     if (!syncName) {
@@ -578,6 +596,8 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
         console.log(chalk.red(`Provider config key not found, please check that the provider exists for this sync name: ${syncName}`));
         return;
     }
+
+    const syncInfo = config.find((config) => config.syncs.find((sync) => sync.name === syncName))?.syncs.find((sync) => sync.name === syncName);
 
     if (debug) {
         printDebug(`Provider config key found to be ${providerConfigKey}`);
@@ -615,16 +635,25 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
         lastSyncDate = new Date(suppliedLastSyncDate as string);
     }
 
-    const result = tsc(debug, syncName);
+    const result = await tsc(debug, syncName);
 
     if (!result) {
         console.log(chalk.red('The sync did not compile successfully. Exiting'));
         return;
     }
 
+    let normalizedInput;
+    try {
+        normalizedInput = JSON.parse(actionInput as unknown as string);
+    } catch (e) {
+        normalizedInput = actionInput;
+    }
+
     const syncRun = new syncRunService({
         writeToDb: false,
         nangoConnection,
+        input: normalizedInput as object,
+        isAction: syncInfo?.type === SyncConfigType.ACTION,
         syncId: 'abc',
         activityLogId: -1,
         syncJobId: -1,
@@ -654,7 +683,7 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
     }
 };
 
-export const tsc = (debug = false, syncName?: string): boolean => {
+export const tsc = async (debug = false, syncName?: string): Promise<boolean> => {
     const tsconfig = fs.readFileSync(`${getNangoRootPath()}/tsconfig.dev.json`, 'utf8');
 
     const distDir = './dist';
@@ -683,9 +712,15 @@ export const tsc = (debug = false, syncName?: string): boolean => {
     const integrationFiles = syncName ? [`./${syncName}.ts`] : glob.sync(`./*.ts`);
     let success = true;
 
+    const config = await getConfig();
+
     for (const filePath of integrationFiles) {
         try {
-            if (!nangoCallsAreAwaited(filePath)) {
+            const providerConfiguration = config.find((config) => config.syncs.find((sync) => sync.name === path.basename(filePath, '.ts')));
+            const syncConfig = providerConfiguration?.syncs.find((sync) => sync.name === path.basename(filePath, '.ts'));
+            const type = syncConfig?.type || SyncConfigType.SYNC;
+
+            if (!nangoCallsAreUsedCorrectly(filePath, type)) {
                 return false;
             }
             const result = compiler.compile(fs.readFileSync(filePath, 'utf8'), filePath);
@@ -703,14 +738,18 @@ export const tsc = (debug = false, syncName?: string): boolean => {
     return success;
 };
 
-const nangoCallsAreAwaited = (filePath: string): boolean => {
+const nangoCallsAreUsedCorrectly = (filePath: string, type = SyncConfigType.SYNC): boolean => {
     const code = fs.readFileSync(filePath, 'utf-8');
     let areAwaited = true;
+    let usedCorrectly = true;
 
     const ast = parser.parse(code, { sourceType: 'module', plugins: ['typescript'] });
 
-    const message = (call: string, lineNumber: number) =>
+    const awaitMessage = (call: string, lineNumber: number) =>
         console.log(chalk.red(`nango.${call}() calls must be awaited in "${filePath}:${lineNumber}". Not awaiting can lead to unexpected results.`));
+
+    const disallowedMessage = (call: string, lineNumber: number) =>
+        console.log(chalk.red(`nango.${call}() calls are not allowed in an action script. Please remove it at "${filePath}:${lineNumber}".`));
 
     const nangoCalls = [
         'batchSend',
@@ -729,6 +768,8 @@ const nangoCallsAreAwaited = (filePath: string): boolean => {
         'getConnection',
         'setLastSyncDate'
     ];
+
+    const disallowedActionCalls = ['batchSend', 'batchSave', 'batchDelete', 'setLastSyncDate'];
 
     const deprecatedCalls: Record<string, string> = {
         batchSend: 'batchSave',
@@ -751,9 +792,16 @@ const nangoCallsAreAwaited = (filePath: string): boolean => {
                         )
                     );
                 }
+                if (type === SyncConfigType.ACTION) {
+                    if (disallowedActionCalls.includes(callee.property.name)) {
+                        disallowedMessage(callee.property.name, lineNumber);
+                        usedCorrectly = false;
+                    }
+                }
+
                 if (path.parent.type !== 'AwaitExpression') {
                     if (nangoCalls.includes(callee.property.name)) {
-                        message(callee.property.name, lineNumber);
+                        awaitMessage(callee.property.name, lineNumber);
                         areAwaited = false;
                     }
                 }
@@ -761,11 +809,12 @@ const nangoCallsAreAwaited = (filePath: string): boolean => {
         }
     });
 
-    return areAwaited;
+    return areAwaited && usedCorrectly;
 };
 
-export const tscWatch = (debug = false) => {
+export const tscWatch = async (debug = false) => {
     const tsconfig = fs.readFileSync(`${getNangoRootPath()}/tsconfig.dev.json`, 'utf8');
+    const config = await getConfig();
 
     const watchPath = [`./*.ts`, `./${nangoConfigFile}`];
 
@@ -832,7 +881,11 @@ export const tscWatch = (debug = false) => {
         });
 
         try {
-            if (!nangoCallsAreAwaited(filePath)) {
+            const providerConfiguration = config.find((config) => config.syncs.find((sync) => sync.name === path.basename(filePath, '.ts')));
+            const syncConfig = providerConfiguration?.syncs.find((sync) => sync.name === path.basename(filePath, '.ts'));
+            const type = syncConfig?.type || SyncConfigType.SYNC;
+
+            if (!nangoCallsAreUsedCorrectly(filePath, type)) {
                 return;
             }
             const result = compiler.compile(fs.readFileSync(filePath, 'utf8'), filePath);

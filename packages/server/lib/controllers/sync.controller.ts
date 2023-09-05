@@ -29,7 +29,8 @@ import {
     ErrorSourceEnum,
     LogActionEnum,
     NangoError,
-    LastAction
+    LastAction,
+    configService
 } from '@nangohq/shared';
 
 class SyncController {
@@ -244,6 +245,72 @@ class SyncController {
             await syncClient?.triggerSyncs(syncsToTrigger, environmentId);
 
             res.sendStatus(200);
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    public async triggerAction(req: Request, res: Response, next: NextFunction) {
+        try {
+            const environmentId = getEnvironmentId(res);
+            const connectionId = req.get('Connection-Id') as string;
+            const providerConfigKey = req.get('Provider-Config-Key') as string;
+
+            const { action_name, input } = req.body;
+
+            if (!action_name) {
+                res.status(400).send({ message: 'Missing action name' });
+
+                return;
+            }
+
+            if (!connectionId) {
+                res.status(400).send({ message: 'Missing connection id' });
+
+                return;
+            }
+
+            if (!providerConfigKey) {
+                res.status(400).send({ message: 'Missing provider config key' });
+
+                return;
+            }
+
+            const {
+                success,
+                error,
+                response: connection
+            } = await connectionService.getConnection(connectionId as string, providerConfigKey as string, environmentId);
+
+            if (!success) {
+                errorManager.errResFromNangoErr(res, error);
+
+                return;
+            }
+
+            const provider = await configService.getProviderName(providerConfigKey as string);
+
+            const log = {
+                level: 'info' as LogLevel,
+                success: false,
+                action: LogActionEnum.ACTION,
+                start: Date.now(),
+                end: Date.now(),
+                timestamp: Date.now(),
+                connection_id: connection?.connection_id as string,
+                provider,
+                provider_config_key: connection?.provider_config_key as string,
+                environment_id: environmentId,
+                operation_name: action_name
+            };
+
+            const activityLogId = await createActivityLog(log);
+
+            const syncClient = await SyncClient.getInstance();
+
+            const result = await syncClient?.triggerAction(connection as Connection, action_name as string, input, activityLogId as number);
+
+            res.send(result);
         } catch (e) {
             next(e);
         }

@@ -1,23 +1,23 @@
-import { NangoSync, SalesforceAccount } from './models';
+import { NangoSync, SalesforceDeal } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<{ SalesforceAccount: SalesforceAccount[] }> {
+export default async function fetchData(nango: NangoSync): Promise<{ SalesforceDeal: SalesforceDeal[] }> {
     const query = buildQuery(nango.lastSyncDate);
 
     await fetchAndSaveRecords(nango, query);
 
-    return { SalesforceAccount: [] };
+    return { SalesforceDeal: [] };
 }
 
 function buildQuery(lastSyncDate?: Date): string {
     let baseQuery = `
-    SELECT
+        SELECT
         Id,
         Name,
-        Website,
-        Description,
-        NumberOfEmployees,
+        Amount,
+        StageName,
+        AccountId,
         LastModifiedDate
-        FROM Account
+        FROM Opportunity
     `;
 
     if (lastSyncDate) {
@@ -36,9 +36,9 @@ async function fetchAndSaveRecords(nango: NangoSync, query: string) {
             params: endpoint === '/services/data/v53.0/query' ? { q: query } : {}
         });
 
-        const mappedRecords = mapAccounts(response.data.records);
+        const mappedRecords = mapDeals(response.data.records);
 
-        await nango.batchSave(mappedRecords, 'SalesforceContact');
+        await nango.batchSave(mappedRecords, 'SalesforceDeal');
 
         if (response.data.done) {
             break;
@@ -50,18 +50,18 @@ async function fetchAndSaveRecords(nango: NangoSync, query: string) {
     return { SalesforceDeal: [] };
 }
 
-function mapAccounts(records: any[]): SalesforceAccount[] {
-    const accounts: SalesforceAccount[] = records.map((record: any) => {
-        const account: SalesforceAccount = {
+function mapDeals(records: any[]): SalesforceDeal[] {
+    const deals: SalesforceDeal[] = records.map((record: any) => {
+        const deal: SalesforceDeal = {
             id: record.Id as string,
             name: record.Name,
-            website: record.Website,
-            description: record.Description,
-            no_employees: record.NumberOfEmployees,
+            amount: record.Amount,
+            stage: record.StageName,
+            account_id: record.AccountId,
             last_modified_date: record.LastModifiedDate
         };
-        return account;
+        return deal;
     });
 
-    return accounts;
+    return deals;
 }

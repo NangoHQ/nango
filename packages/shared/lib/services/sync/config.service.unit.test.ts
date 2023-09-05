@@ -1,5 +1,5 @@
 import { expect, describe, it, vi } from 'vitest';
-import type { IncomingSyncConfig } from '../../models/Sync.js';
+import { IncomingSyncConfig, SyncConfigType } from '../../models/Sync.js';
 import environmentService from '../environment.service.js';
 import * as SyncConfigService from './config.service';
 import configService from '../config.service.js';
@@ -33,6 +33,7 @@ describe('Sync config create', () => {
         const syncs = [
             {
                 syncName: 'test-sync',
+                type: SyncConfigType.SYNC,
                 providerConfigKey: 'google-wrong',
                 fileBody: 'integrations',
                 models: ['Model_1', 'Model_2'],
@@ -58,6 +59,7 @@ describe('Sync config create', () => {
         const syncs = [
             {
                 syncName: 'test-sync',
+                type: SyncConfigType.SYNC,
                 providerConfigKey: 'google',
                 fileBody: 'integrations',
                 models: ['Model_1', 'Model_2'],
@@ -85,6 +87,7 @@ describe('Sync config create', () => {
                 id: 1,
                 environment_id: 1,
                 sync_name: 'test-sync',
+                type: SyncConfigType.SYNC,
                 file_location: '/tmp/test-sync',
                 nango_config_id: 1,
                 models: ['Model_1', 'Model_2'],
