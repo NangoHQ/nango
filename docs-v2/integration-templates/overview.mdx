@@ -15,15 +15,20 @@ Anybody can [contribute](/contribute) new integration templates to Nango (just l
 
 As the community and Nango grows, we expect to have hundreds of templates and use-cases for hundreds of APIs available for you.
 
-## How to use Integration templates
+## How to use integration templates
 
-1. Pull the template with the CLI: `nango pull slack`
+<Info>
+Pre-requisite: set up the Nango CLI & `nango-integration` folder (cf. [Sync Data Guide - Step 1](/guides/sync#step-1-setup-the-nango-cli-and-nango-integrations-folder))
+</Info>
 
-2. Modify, extend and customize the template to your needs. Or skip this step.
 
-3. Deploy your new integration to Nango: `nango deploy dev`
+1. Copy/paste the template's `nango.yaml` content in your own `nango.yaml`, and the template's scripts ending in `.ts` in your `nango-integration` folder.
 
-4. Nango and the community maintain the templates if the APIs change. If there are changes, just pull them in: `nango pull slack --upgrade`
+2. Optionally, extend and customize the template to your needs (cf. [Sync Data Guide](/guide/sync)).
+
+3. Test the sync with `nango dryrun -h` ([docs](/guides/sync#dry-run-your-sync)) 
+
+4. Deploy you integration with `nango deploy [dev|prod]` ([docs](/guides/sync#step-3-deploy-a-sync))
 
 ## Available integration templates
 
