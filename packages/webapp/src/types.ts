@@ -1,7 +1,7 @@
 export interface ActivityResponse {
     id: number;
     level: 'info' | 'debug' | 'error' | 'warn';
-    action: 'oauth' | 'auth' | 'proxy' | 'token' | 'sync' | 'sync deploy' | 'pause sync' | 'restart sync' | 'trigger sync';
+    action: 'oauth' | 'auth' | 'proxy' | 'token' | 'sync' | 'sync deploy' | 'pause sync' | 'restart sync' | 'trigger sync' | 'action';
     success: boolean;
     timestamp: number;
     start: number;
@@ -31,6 +31,7 @@ export interface Result {
 export interface Sync {
     id: string;
     sync_name: string;
+    type: string;
     provider: string;
     runs: string;
     unique_key: string;
