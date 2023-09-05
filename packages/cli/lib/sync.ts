@@ -645,7 +645,7 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
     try {
         normalizedInput = JSON.parse(actionInput as unknown as string);
     } catch (e) {
-        normalizedInput = { data: actionInput };
+        normalizedInput = actionInput;
     }
 
     const syncRun = new syncRunService({
