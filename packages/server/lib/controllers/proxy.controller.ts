@@ -317,6 +317,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         }
         if (
             error?.response?.status.toString().startsWith('5') ||
+            error?.response?.status === 403 ||
             error?.response?.status === 429 ||
             ['ECONNRESET', 'ETIMEDOUT', 'ECONNABORTED'].includes(error?.code as string)
         ) {
