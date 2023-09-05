@@ -96,6 +96,9 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
 
             const syncs = await getSyncsByProviderConfigAndSyncName(environment_id, providerConfigKey, syncName);
             for (const sync of syncs) {
+                if (!runs) {
+                    continue;
+                }
                 const { success, error } = await updateSyncScheduleFrequency(sync.id as string, runs, syncName, activityLogId as number, environment_id);
 
                 if (!success) {
