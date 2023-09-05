@@ -34,7 +34,8 @@ import {
     SyncType,
     syncRunService,
     nangoConfigFile,
-    checkForIntegrationFile
+    checkForIntegrationFile,
+    SyncConfigType
 } from '@nangohq/shared';
 import {
     hostport,
@@ -193,7 +194,7 @@ export const init = async (debug = false) => {
         integrations: {
             'demo-github-integration': {
                 [exampleSyncName]: {
-                    type: 'sync',
+                    type: SyncConfigType.SYNC,
                     runs: 'every half hour',
                     returns: ['GithubIssue']
                 }
@@ -390,7 +391,7 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
         }
 
         for (const sync of syncs) {
-            const { name: syncName, runs, returns: models, models: model_schema, type = 'sync' } = sync;
+            const { name: syncName, runs, returns: models, models: model_schema, type = SyncConfigType.SYNC } = sync;
 
             const { path: integrationFilePath, result: integrationFileResult } = checkForIntegrationFile(syncName, './');
 

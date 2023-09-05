@@ -93,6 +93,7 @@ export interface SyncDifferences {
 
 export interface IncomingSyncConfig {
     syncName: string;
+    type: SyncConfigType;
     providerConfigKey: string;
     fileBody: string;
     models: string[];

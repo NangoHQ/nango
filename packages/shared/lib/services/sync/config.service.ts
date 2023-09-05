@@ -58,7 +58,7 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
     const activityLogId = await createActivityLog(log);
 
     for (const sync of syncs) {
-        const { syncName, providerConfigKey, fileBody, models, runs, version: optionalVersion, model_schema, type = 'sync' } = sync;
+        const { syncName, providerConfigKey, fileBody, models, runs, version: optionalVersion, model_schema, type = SyncConfigType.SYNC } = sync;
         if (!syncName || !providerConfigKey || !fileBody || !models || !runs) {
             const error = new NangoError('missing_required_fields_on_deploy');
 
