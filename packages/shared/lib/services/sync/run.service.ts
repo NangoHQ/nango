@@ -259,6 +259,12 @@ export default class SyncRun {
                     return userDefinedResults;
                 }
 
+                if (userDefinedResults === undefined) {
+                    await this.finishSync(models, syncStartDate, syncData.version as string, trackDeletes);
+
+                    return true;
+                }
+
                 let i = 0;
                 for (const model of models) {
                     if (userDefinedResults[model]) {
@@ -359,6 +365,22 @@ export default class SyncRun {
         return result;
     }
 
+    async finishSync(models: string[], syncStartDate: Date, version: string, trackDeletes?: boolean): Promise<void> {
+        let i = 0;
+        for (const model of models) {
+            await this.reportResults(
+                model,
+                { addedKeys: [], updatedKeys: [], deletedKeys: [], affectedInternalIds: [], affectedExternalIds: [] },
+                i,
+                models.length,
+                syncStartDate,
+                version,
+                trackDeletes
+            );
+            i++;
+        }
+    }
+
     async reportResults(
         model: string,
         responseResults: UpsertSummary,
@@ -424,8 +446,6 @@ export default class SyncRun {
             updated = (result?.['updated'] as unknown as number) ?? 0;
             deleted = (result?.['deleted'] as unknown as number) ?? 0;
         }
-
-        // if tracking de
 
         const successMessage =
             `The ${this.syncType} "${this.syncName}" sync has been completed to the ${model} model.` +
