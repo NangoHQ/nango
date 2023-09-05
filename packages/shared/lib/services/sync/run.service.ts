@@ -8,7 +8,7 @@ import { checkForIntegrationFile } from '../nango-config.service.js';
 import { getLastSyncDate, setLastSyncDate, clearLastSyncDate } from './sync.service.js';
 import { formatDataRecords } from './data-records.service.js';
 import { upsert } from './data.service.js';
-import { takeSnapshot } from './data-delete.service.js';
+import { getDeletedKeys, takeSnapshot } from './data-delete.service.js';
 import environmentService from '../environment.service.js';
 import integationService from './integration.service.js';
 import webhookService from '../webhook.service.js';
@@ -319,22 +319,13 @@ export default class SyncRun {
                                     'external_id',
                                     this.nangoConnection.id as number,
                                     model,
-                                    this.activityLogId,
-                                    trackDeletes
+                                    this.activityLogId
                                 );
 
                                 if (upsertResult.success) {
                                     const { summary } = upsertResult;
 
-                                    await this.reportResults(
-                                        model,
-                                        summary as UpsertSummary,
-                                        i,
-                                        models.length,
-                                        syncStartDate,
-                                        syncData.version as string,
-                                        trackDeletes
-                                    );
+                                    await this.reportResults(model, summary as UpsertSummary, i, models.length, syncStartDate, syncData.version as string);
                                 }
 
                                 if (!upsertResult.success) {
@@ -368,9 +359,11 @@ export default class SyncRun {
     async finishSync(models: string[], syncStartDate: Date, version: string, trackDeletes?: boolean): Promise<void> {
         let i = 0;
         for (const model of models) {
+            const deletedKeys = trackDeletes ? await getDeletedKeys('_nango_sync_data_records', 'external_id', this.nangoConnection.id as number, model) : [];
+
             await this.reportResults(
                 model,
-                { addedKeys: [], updatedKeys: [], deletedKeys: [], affectedInternalIds: [], affectedExternalIds: [] },
+                { addedKeys: [], updatedKeys: [], deletedKeys, affectedInternalIds: [], affectedExternalIds: [] },
                 i,
                 models.length,
                 syncStartDate,
