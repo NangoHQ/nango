@@ -193,6 +193,7 @@ export const init = async (debug = false) => {
         integrations: {
             'demo-github-integration': {
                 [exampleSyncName]: {
+                    type: 'sync',
                     runs: 'every half hour',
                     returns: ['GithubIssue']
                 }
@@ -389,7 +390,7 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
         }
 
         for (const sync of syncs) {
-            const { name: syncName, runs, returns: models, models: model_schema } = sync;
+            const { name: syncName, runs, returns: models, models: model_schema, type = 'sync' } = sync;
 
             const { path: integrationFilePath, result: integrationFileResult } = checkForIntegrationFile(syncName, './');
 
@@ -415,6 +416,7 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
                 models,
                 version: version as string,
                 runs,
+                type,
                 fileBody: fs.readFileSync(integrationFilePath, 'utf8'),
                 model_schema: JSON.stringify(model_schema)
             };

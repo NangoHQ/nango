@@ -424,6 +424,25 @@ export class Nango {
         return axios.post(url, body, { headers: this.enrichHeaders(headers) });
     }
 
+    // TODO
+    public async triggerAction(providerConfigKey: string, connectionId: string, actionName: string, input: Record<string, unknown>): Promise<unknown> {
+        const url = `${this.serverUrl}/sync/action/trigger`;
+
+        const headers = {
+            'Connection-Id': connectionId,
+            'Provider-Config-Key': providerConfigKey
+        };
+
+        const body = {
+            action_name: actionName,
+            input
+        };
+
+        const response = await axios.post(url, body, { headers: this.enrichHeaders(headers) });
+
+        return response.data;
+    }
+
     public async createConnection(_connectionArgs: CreateConnectionOAuth1 | (CreateConnectionOAuth2 & { metadata: string; connection_config: string })) {
         throw new Error(
             'This method has been deprecated, please use the REST API to create a connection. See https://docs.nango.dev/api-reference/connection/post'

@@ -52,10 +52,16 @@ export interface SyncModelSchema {
     }[];
 }
 
+export enum SyncConfigType {
+    SYNC = 'sync',
+    ACTION = 'action'
+}
+
 export interface SyncConfig extends TimestampsAndDeleted {
     id?: number;
     environment_id: number;
     sync_name: string;
+    type: SyncConfigType;
     file_location: string;
     nango_config_id: number;
     models: string[];

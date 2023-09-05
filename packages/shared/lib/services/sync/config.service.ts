@@ -14,7 +14,7 @@ import {
 import { getSyncsByProviderConfigAndSyncName } from './sync.service.js';
 import { LogActionEnum, LogLevel } from '../../models/Activity.js';
 import type { ServiceResponse } from '../../models/Generic.js';
-import type { SyncModelSchema, SyncConfigWithProvider, IncomingSyncConfig, SyncConfig, SlimSync, SyncConfigResult } from '../../models/Sync.js';
+import { SyncModelSchema, SyncConfigWithProvider, IncomingSyncConfig, SyncConfig, SlimSync, SyncConfigResult, SyncConfigType } from '../../models/Sync.js';
 import type { NangoConnection } from '../../models/Connection.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
 import type { NangoConfig } from '../../integrations/index.js';
@@ -58,7 +58,7 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
     const activityLogId = await createActivityLog(log);
 
     for (const sync of syncs) {
-        const { syncName, providerConfigKey, fileBody, models, runs, version: optionalVersion, model_schema } = sync;
+        const { syncName, providerConfigKey, fileBody, models, runs, version: optionalVersion, model_schema, type = 'sync' } = sync;
         if (!syncName || !providerConfigKey || !fileBody || !models || !runs) {
             const error = new NangoError('missing_required_fields_on_deploy');
 
@@ -148,6 +148,7 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
             environment_id,
             nango_config_id: config?.id as number,
             sync_name: syncName,
+            type,
             models,
             version,
             file_location,
@@ -252,6 +253,7 @@ export async function getSyncConfig(nangoConnection: NangoConnection, syncName?:
             providerConfig[syncConfig.sync_name] = {
                 sync_config_id: syncConfig.id as number,
                 runs: syncConfig.runs,
+                type: syncConfig.type,
                 returns: syncConfig.models,
                 fileLocation: syncConfig.file_location,
                 version: syncConfig.version as string
@@ -273,7 +275,13 @@ export async function getSyncConfigsByParams(environment_id: number, providerCon
 
     const result = await schema()
         .from<SyncConfig>(TABLE)
-        .where({ environment_id, nango_config_id: config.id as number, active: true, deleted: false });
+        .where({
+            environment_id,
+            nango_config_id: config.id as number,
+            active: true,
+            type: SyncConfigType.SYNC,
+            deleted: false
+        });
 
     if (result) {
         return result;
@@ -289,6 +297,7 @@ export async function getSyncConfigsBySyncNameAndConfigId(environment_id: number
             nango_config_id,
             sync_name,
             active: true,
+            type: SyncConfigType.SYNC,
             deleted: false
         });
 
@@ -320,7 +329,14 @@ export async function getSyncConfigByParams(environment_id: number, sync_name: s
     try {
         const result = await schema()
             .from<SyncConfig>(TABLE)
-            .where({ environment_id, sync_name, nango_config_id: config.id as number, active: true, deleted: false })
+            .where({
+                environment_id,
+                sync_name,
+                nango_config_id: config.id as number,
+                active: true,
+                type: SyncConfigType.SYNC,
+                deleted: false
+            })
             .orderBy('created_at', 'desc')
             .first();
 
