@@ -99,6 +99,7 @@ program
     .arguments('sync connection_id')
     .option('-e [environment]', 'The environment to dry run the sync in, defaults to dev.', 'dev')
     .option('-l, --lastSyncDate [lastSyncDate]', 'Optional: last sync date to retrieve records greater than this date')
+    .option('-i, --actionInput [actionInput]', 'Optional: input to pass to the action script')
     .action(async function (this: Command, sync: string, connectionId: string) {
         const { autoConfirm, debug, e: environment } = this.opts();
         await verifyNecessaryFiles(autoConfirm, debug);
@@ -117,7 +118,7 @@ program
             configWatch(debug);
         }
 
-        tscWatch(debug);
+        await tscWatch(debug);
     });
 
 program

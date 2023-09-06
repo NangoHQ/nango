@@ -48,7 +48,9 @@ class IntegrationService {
         integrationData: NangoIntegrationData,
         environmentId: number,
         writeToDb: boolean,
-        optionalLoadLocation?: string
+        isAction: boolean,
+        optionalLoadLocation?: string,
+        input?: object
     ): Promise<any> {
         try {
             const script: string | null =
@@ -86,7 +88,7 @@ class IntegrationService {
                 const scriptExports = vm.run(script as string, `${rootDir}/*.js`);
 
                 if (typeof scriptExports.default === 'function') {
-                    const results = await scriptExports.default(nango);
+                    const results = isAction ? await scriptExports.default(nango, input) : await scriptExports.default(nango);
 
                     return results;
                 } else {

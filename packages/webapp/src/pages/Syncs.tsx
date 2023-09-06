@@ -92,7 +92,9 @@ export default function Syncs() {
                                                 )}
                                             </Link>
                                         </li>
-                                        <li className="w-28">{sync.runs}</li>
+                                        <Tooltip text={sync.type === 'action' ? 'Sync actions are intended to run by a specific trigger instead of on a schedule.' : 'Scheduled:'} type="dark">
+                                            <li className="w-28">{sync.runs || '-'}</li>
+                                        </Tooltip>
                                         <Tooltip text={sync.models.join(', ')} type="dark">
                                             <li className="w-12 ml-4 mr-2">{sync.models.length}</li>
                                         </Tooltip>

@@ -440,8 +440,8 @@ paths:
                   schema:
                       type: string
                   description: The connection ID used to create the connection.
-                - name: provider_config_key
-                  in: query
+                - name: Provider-Config-Key
+                  in: header
                   required: true
                   description: The integration ID used to create the connection (aka Unique Key).
                   schema:
@@ -568,7 +568,7 @@ paths:
                   required: true
                   schema:
                       type: string
-                - name: any_query_params
+                - name: $ANY_QUERY_PARAMS
                   in: query
                   required: true
                   schema:
@@ -596,7 +596,7 @@ paths:
                       type: string
                   description: Provide an API base URL when the base API is not listed in the providers.yaml or it needs to be overridden. Optional
                 - in: header
-                  name: Any-Header
+                  name: nango-proxy-$ANY_HEADER
                   schema:
                       type: string
                   description: Any other headers you send are passed on to the external API
@@ -631,7 +631,7 @@ paths:
                       type: string
                   description: Provide an API base URL when the base API is not listed in the providers.yaml or it needs to be overridden. Optional
                 - in: header
-                  name: Any-Header
+                  name: nango-proxy-$ANY_HEADER
                   schema:
                       type: string
                   description: Any other headers you send are passed on to the external API
@@ -641,7 +641,7 @@ paths:
                         schema:
                             type: object
                             properties:
-                                any_body_param:
+                                $ANY_BODY_PARAMS:
                                     type: string
         put:
             description: Make a PUT request with the Proxy.
@@ -674,7 +674,7 @@ paths:
                       type: string
                   description: Provide an API base URL when the base API is not listed in the providers.yaml or it needs to be overridden. Optional
                 - in: header
-                  name: Any-Header
+                  name: nango-proxy-$ANY_HEADER
                   schema:
                       type: string
                   description: Any other headers you send are passed on to the external API
@@ -684,7 +684,7 @@ paths:
                         schema:
                             type: object
                             properties:
-                                any_body_param:
+                                $ANY_BODY_PARAMS:
                                     type: string
         patch:
             description: Make a PATCH request with the Proxy.
@@ -717,7 +717,7 @@ paths:
                       type: string
                   description: Provide an API base URL when the base API is not listed in the providers.yaml or it needs to be overridden. Optional
                 - in: header
-                  name: Any-Header
+                  name: nango-proxy-$ANY_HEADER
                   schema:
                       type: string
                   description: Any other headers you send are passed on to the external API
@@ -727,7 +727,7 @@ paths:
                         schema:
                             type: object
                             properties:
-                                any_body_param:
+                                $ANY_BODY_PARAMS:
                                     type: string
         delete:
             description: Make a DELETE request with the Proxy.
@@ -737,7 +737,7 @@ paths:
                   required: true
                   schema:
                       type: string
-                - name: any_query_params
+                - name: $ANY_QUERY_PARAMS
                   in: query
                   required: true
                   schema:
@@ -765,7 +765,7 @@ paths:
                       type: string
                   description: Provide an API base URL when the base API is not listed in the providers.yaml or it needs to be overridden. Optional
                 - in: header
-                  name: Any-Header
+                  name: nango-proxy-$ANY_HEADER
                   schema:
                       type: string
                   description: Any other headers you send are passed on to the external API

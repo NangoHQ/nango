@@ -198,6 +198,9 @@ discord:
     token_url: https://discord.com/api/oauth2/token
     authorization_params:
         response_type: code
+    proxy:
+        retry:
+            after: 'Retry-After'
 dropbox:
     auth_mode: OAUTH2
     authorization_url: https://www.dropbox.com/oauth2/authorize
@@ -231,6 +234,20 @@ epic-games:
     authorization_url: https://www.epicgames.com/id/authorize
     token_url: https://api.epicgames.dev/epic/oauth/v1/token
     authorization_method: header
+evaluagent:
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.region}.evaluagent.com/
+eventbrite:
+    auth_mode: OAUTH2
+    authorization_url: https://www.eventbrite.com/oauth/authorize
+    token_url: https://www.eventbrite.com/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    proxy:
+        base_url: https://www.eventbriteapi.com
 exact-online:
     auth_mode: OAUTH2
     authorization_url: https://start.exactonline.${connectionConfig.extension}/api/oauth2/auth
@@ -271,6 +288,10 @@ freshbooks:
     token_url: https://api.freshbooks.com/auth/oauth/token
     authorization_params:
         response_type: code
+freshservice:
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.freshservice.com/api/
 front:
     auth_mode: OAUTH2
     authorization_url: https://app.frontapp.com/oauth/authorize
@@ -281,6 +302,8 @@ github:
     token_url: https://github.com/login/oauth/access_token
     proxy:
         base_url: https://api.github.com
+        retry:
+            at: 'x-ratelimit-reset'
     docs: https://docs.github.com/en/rest
 gitlab:
     auth_mode: OAUTH2
@@ -435,11 +458,19 @@ microsoft-teams:
     auth_mode: OAUTH2
     authorization_url: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
     token_url: https://login.microsoftonline.com/common/oauth2/v2.0/token
+    disable_pkce: true
+    default_scopes:
+        - offline_access
     authorization_params:
         response_type: code
         response_mode: query
+        prompt: consent
     proxy:
         base_url: https://graph.microsoft.com
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 mixpanel:
     auth_mode: BASIC
     proxy:
@@ -468,6 +499,18 @@ mural:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+nationbuilder:
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.accountId}.nationbuilder.com/oauth/authorize
+    token_url: https://${connectionConfig.accountId}.nationbuilder.com/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    default_scopes:
+        - default
 netsuite:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.accountId}.app.netsuite.com/app/login/oauth2/authorize.nl
@@ -489,18 +532,7 @@ notion:
             'Notion-Version': '2022-06-28'
     docs: https://developers.notion.com/reference
 one-drive:
-    auth_mode: OAUTH2
-    authorization_url: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
-    token_url: https://login.microsoftonline.com/common/oauth2/v2.0/token
-    disable_pkce: true
-    default_scopes:
-        - offline_access
-    authorization_params:
-        response_type: code
-    token_params:
-        grant_type: authorization_code
-    refresh_params:
-        grant_type: refresh_token
+    alias: microsoft-teams
 osu:
     auth_mode: OAUTH2
     authorization_url: https://osu.ppy.sh/oauth/authorize
@@ -545,6 +577,18 @@ payfit:
         response_type: code
     token_params:
         grant_type: authorization_code
+pennylane:
+    auth_mode: OAUTH2
+    authorization_url: https://app.pennylane.com/oauth/authorize
+    token_url: https://app.pennylane.com/oauth/token
+    proxy:
+        base_url: https://app.pennylane.com/api/external/v1
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 pipedrive:
     auth_mode: OAUTH2
     authorization_url: https://oauth.pipedrive.com/oauth/authorize
@@ -576,6 +620,34 @@ reddit:
     authorization_method: header
     authorization_params:
         duration: permanent
+ring-central:
+    auth_mode: OAUTH2
+    authorization_url: https://platform.ringcentral.com/restapi/oauth/authorize
+    token_url: https://platform.ringcentral.com/restapi/oauth/token
+    authorization_method: header
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://platform.ringcentral.com/restapi/v1.0
+    docs: https://developers.ringcentral.com/api-reference/
+ring-central-sandbox:
+    auth_mode: OAUTH2
+    authorization_url: https://platform.devtest.ringcentral.com/restapi/oauth/authorize
+    token_url: https://platform.devtest.ringcentral.com/restapi/oauth/token
+    authorization_method: header
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://platform.devtest.ringcentral.com/restapi/v1.0
+    docs: https://developers.ringcentral.com/api-reference/
 segment:
     auth_mode: OAUTH2
     authorization_url: https://id.segmentapis.com/oauth2/auth
@@ -593,6 +665,17 @@ salesforce:
     auth_mode: OAUTH2
     authorization_url: https://login.salesforce.com/services/oauth2/authorize
     token_url: https://login.salesforce.com/services/oauth2/token
+    default_scopes:
+        - offline_access
+    token_response_metadata:
+        - instance_url
+    proxy:
+        base_url: ${connectionConfig.instance_url}
+    docs: https://developer.salesforce.com/docs/api
+salesforce-sandbox:
+    auth_mode: OAUTH2
+    authorization_url: https://test.salesforce.com/services/oauth2/authorize
+    token_url: https://test.salesforce.com/services/oauth2/token
     default_scopes:
         - offline_access
     token_response_metadata:

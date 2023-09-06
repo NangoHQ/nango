@@ -1,0 +1,44 @@
+integrations:
+  hubspot:
+    hubspot-service-ticket:
+      runs: every half hour
+      returns:
+        - HubspotServiceTicket
+    hubspot-owner:
+      runs: every day
+      returns:
+        - HubspotOwner
+    hubspot-user:
+      runs: every day
+      returns:
+        - HubspotUser
+
+models:
+  HubspotServiceTicket:
+    id: integer
+    createdAt: date
+    updatedAt: date
+    isArchived: boolean
+    subject: string
+    content: string
+    objectId: integer
+    ownerId: integer
+    pipeline: integer
+    pipelineStage: integer
+    ticketCategory: string | null
+    ticketPriority: string
+  HubspotOwner:
+    id: integer
+    email: string
+    firstName: string
+    lastName: string
+    userId: integer
+    createdAt: date
+    updatedAt: date
+    archived: boolean
+  HubspotUser:
+    id: integer
+    email: string
+    roleId: integer
+    primaryTeamId: integer
+    superAdmin: boolean

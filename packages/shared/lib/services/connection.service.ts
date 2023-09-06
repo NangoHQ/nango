@@ -43,7 +43,8 @@ class ConnectionService {
         parsedRawCredentials: AuthCredentials,
         connectionConfig: Record<string, string>,
         environment_id: number,
-        accountId: number
+        accountId: number,
+        metadata?: Metadata
     ) {
         const storedConnectionId = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment_id);
 
@@ -53,7 +54,8 @@ class ConnectionService {
                 provider_config_key: providerConfigKey,
                 credentials: parsedRawCredentials,
                 connection_config: connectionConfig,
-                environment_id
+                environment_id: environment_id,
+                metadata: metadata || null
             });
             encryptedConnection.updated_at = new Date();
             await db.knex
@@ -76,7 +78,8 @@ class ConnectionService {
                     provider_config_key: providerConfigKey,
                     credentials: parsedRawCredentials,
                     connection_config: connectionConfig,
-                    environment_id
+                    environment_id: environment_id,
+                    metadata: metadata || null
                 }),
                 ['id']
             );
@@ -150,9 +153,10 @@ class ConnectionService {
             provider_config_key,
             provider,
             parsedRawCredentials,
-            { ...connection_config, ...metadata } as Record<string, string>,
+            connection_config || {},
             environmentId,
-            accountId
+            accountId,
+            metadata || undefined
         );
 
         if (importedConnection) {

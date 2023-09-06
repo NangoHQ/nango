@@ -10,7 +10,8 @@ export enum SyncStatus {
 
 export enum SyncType {
     INITIAL = 'INITIAL',
-    INCREMENTAL = 'INCREMENTAL'
+    INCREMENTAL = 'INCREMENTAL',
+    ACTION = 'ACTION'
 }
 
 export interface SyncResult {
@@ -52,10 +53,16 @@ export interface SyncModelSchema {
     }[];
 }
 
+export enum SyncConfigType {
+    SYNC = 'sync',
+    ACTION = 'action'
+}
+
 export interface SyncConfig extends TimestampsAndDeleted {
     id?: number;
     environment_id: number;
     sync_name: string;
+    type: SyncConfigType;
     file_location: string;
     nango_config_id: number;
     models: string[];
@@ -87,6 +94,7 @@ export interface SyncDifferences {
 
 export interface IncomingSyncConfig {
     syncName: string;
+    type: SyncConfigType;
     providerConfigKey: string;
     fileBody: string;
     models: string[];
