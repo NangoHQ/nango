@@ -4,7 +4,7 @@ interface Metadata {
     customFields: string[];
 }
 
-export default async function fetchData(nango: NangoSync): Promise<{SalesforceDeal: SalesforceArticle[]}> {
+export default async function fetchData(nango: NangoSync): Promise<{ SalesforceDeal: SalesforceArticle[] }> {
     const customFields = (await nango.getMetadata<Metadata>()).customFields;
 
     const query = buildQuery(customFields, nango.lastSyncDate);
@@ -38,8 +38,8 @@ async function fetchAndSaveRecords(nango: NangoSync, query: string, customFields
         });
 
         const mappedRecords = mapRecords(response.data.records, customFields);
-        
-        await nango.batchSave(mappedRecords, "SalesforceArticle");
+
+        await nango.batchSave(mappedRecords, 'SalesforceArticle');
 
         if (response.data.done) {
             break;
@@ -48,7 +48,7 @@ async function fetchAndSaveRecords(nango: NangoSync, query: string, customFields
         endpoint = response.data.nextRecordsUrl;
     }
 
-    return {SalesforceDeal: []};
+    return { SalesforceDeal: [] };
 }
 
 function mapRecords(records: any[], customFields: string[]): SalesforceArticle[] {
@@ -57,7 +57,7 @@ function mapRecords(records: any[], customFields: string[]): SalesforceArticle[]
             id: record.Id as string,
             title: record.Name,
             content: customFields.map((field: string) => `Field: ${field}\n${record[field]}`).join('\n'),
-            last_modified_date: record.LastModifiedDate,
+            last_modified_date: record.LastModifiedDate
         };
     });
 }
