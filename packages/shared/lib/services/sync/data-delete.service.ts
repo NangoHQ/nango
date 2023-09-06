@@ -22,8 +22,12 @@ const columns = [
 export const getDeletedKeys = async (dbTable: string, uniqueKey: string, nangoConnectionId: number, model: string) => {
     const results = await schema()
         .from<DataRecord>(DELETE_RECORDS_TABLE)
-        .leftJoin(dbTable, `${dbTable}.${uniqueKey}`, `${DELETE_RECORDS_TABLE}.${uniqueKey}`)
-        .whereNull(`${RECORDS_TABLE}.${uniqueKey}`)
+        .leftJoin(dbTable, function () {
+            this.on(`${dbTable}.${uniqueKey}`, '=', `${DELETE_RECORDS_TABLE}.${uniqueKey}`)
+                .andOn(`${dbTable}.nango_connection_id`, '=', db.knex.raw('?', [nangoConnectionId]))
+                .andOn(`${dbTable}.model`, '=', db.knex.raw('?', [model]));
+        })
+        .whereNull(`${dbTable}.${uniqueKey}`)
         .where({
             [`${DELETE_RECORDS_TABLE}.nango_connection_id`]: nangoConnectionId,
             [`${DELETE_RECORDS_TABLE}.model`]: model

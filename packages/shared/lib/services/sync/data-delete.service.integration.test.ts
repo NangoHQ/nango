@@ -135,7 +135,7 @@ describe('Data delete service integration tests', () => {
         expect(slimSuccess).toBe(true);
         expect(slimError).toBe(undefined);
 
-        const deletedKeys = await getDeletedKeys('_nango_sync_data_records', 'id', nangoConnectionId as number, modelName);
+        const deletedKeys = await getDeletedKeys('_nango_sync_data_records', 'external_id', nangoConnectionId as number, modelName);
         expect(deletedKeys?.length).toEqual(20);
 
         const connection = await connectionService.getConnectionById(nangoConnectionId as number);
