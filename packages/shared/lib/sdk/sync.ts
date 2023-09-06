@@ -457,7 +457,7 @@ export class NangoSync {
             await createActivityLogMessage({
                 level: 'info',
                 activity_log_id: this.activityLogId as number,
-                content: `Batch save was a success and resulted in ${JSON.stringify(updatedResults, null, 2)}`,
+                content: `Batch delete was a success and resulted in ${JSON.stringify(updatedResults, null, 2)}`,
                 timestamp: Date.now()
             });
 
@@ -465,7 +465,7 @@ export class NangoSync {
 
             return true;
         } else {
-            const content = `There was an issue with the batch save. ${responseResults?.error}`;
+            const content = `There was an issue with the batch delete. ${responseResults?.error}`;
 
             if (!this.dryRun) {
                 await createActivityLogMessage({
