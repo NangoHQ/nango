@@ -7,6 +7,7 @@ export interface NangoIntegrationData {
     type?: SyncConfigType;
     runs: string;
     returns: string[];
+    track_deletes?: boolean;
     fileLocation?: string;
     version?: string;
     sync_config_id?: number;
@@ -44,6 +45,7 @@ export interface NangoSyncConfig {
     name: string;
     type?: SyncConfigType;
     runs: string;
+    track_deletes?: boolean;
     returns: string[];
     models: NangoSyncModel[];
 }

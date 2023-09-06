@@ -1,6 +1,7 @@
 import { schema } from '../../db/database.js';
 import { verifyUniqueKeysAreUnique } from './data-records.service.js';
 import { createActivityLogMessage } from '../activity/activity.service.js';
+import { clearOldRecords } from './data-delete.service.js';
 import type { UpsertResponse } from '../../models/Data.js';
 import type { DataRecord } from '../../models/Sync.js';
 
@@ -14,6 +15,7 @@ export async function upsert(
     nangoConnectionId: number,
     model: string,
     activityLogId: number,
+    track_deletes = false,
     softDelete = false
 ): Promise<UpsertResponse> {
     const responseWithoutDuplicates = await removeDuplicateKey(response, uniqueKey, activityLogId, model);
@@ -25,10 +27,15 @@ export async function upsert(
         };
     }
 
-    const addedKeys = await getAddedKeys(responseWithoutDuplicates, dbTable, uniqueKey, nangoConnectionId, model);
-    const updatedKeys = await getUpdatedKeys(responseWithoutDuplicates, dbTable, uniqueKey, nangoConnectionId, model);
+    const comparisonTable = track_deletes ? '_nango_sync_data_records_deletes' : dbTable;
+    const addedKeys = await getAddedKeys(responseWithoutDuplicates, comparisonTable, uniqueKey, nangoConnectionId, model);
+    const updatedKeys = await getUpdatedKeys(responseWithoutDuplicates, comparisonTable, uniqueKey, nangoConnectionId, model);
 
     try {
+        if (track_deletes) {
+            await clearOldRecords(nangoConnectionId, model);
+        }
+
         const results = await schema()
             .from(dbTable)
             .insert(responseWithoutDuplicates, ['id', 'external_id'])
@@ -57,6 +64,7 @@ export async function upsert(
             summary: {
                 addedKeys,
                 updatedKeys,
+                deletedKeys: [],
                 affectedInternalIds,
                 affectedExternalIds
             }

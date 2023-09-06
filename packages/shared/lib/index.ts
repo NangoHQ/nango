@@ -1,4 +1,5 @@
 import db from './db/database.js';
+import * as seeders from './db/seeders/index.js';
 import configService from './services/config.service.js';
 import encryptionManager from './utils/encryption.manager.js';
 import connectionService from './services/connection.service.js';
@@ -41,6 +42,7 @@ export * from './sdk/sync.js';
 
 export {
     db,
+    seeders,
     configService,
     connectionService,
     encryptionManager,

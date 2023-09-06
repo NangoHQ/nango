@@ -8,13 +8,14 @@ import { checkForIntegrationFile } from '../nango-config.service.js';
 import { getLastSyncDate, setLastSyncDate, clearLastSyncDate } from './sync.service.js';
 import { formatDataRecords } from './data-records.service.js';
 import { upsert } from './data.service.js';
+import { getDeletedKeys, takeSnapshot } from './data-delete.service.js';
 import environmentService from '../environment.service.js';
 import integationService from './integration.service.js';
 import webhookService from '../webhook.service.js';
 import { NangoSync } from '../../sdk/sync.js';
 import { isCloud, getApiUrl } from '../../utils/utils.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
-import type { NangoIntegrationData, NangoConfig, NangoIntegration } from '../../integrations/index.js';
+import type { NangoIntegrationData, NangoIntegration } from '../../integrations/index.js';
 import type { UpsertResponse, UpsertSummary } from '../../models/Data.js';
 import { LogActionEnum } from '../../models/Activity.js';
 import type { Environment } from '../../models/Environment';
@@ -109,7 +110,7 @@ export default class SyncRun {
             return false;
         }
 
-        const { integrations } = nangoConfig as NangoConfig;
+        const { integrations } = nangoConfig;
         let result = true;
 
         if (!integrations[this.nangoConnection.provider_config_key] && !this.writeToDb) {
@@ -190,7 +191,7 @@ export default class SyncRun {
             }
 
             const syncData = syncObject[this.syncName] as unknown as NangoIntegrationData;
-            const { returns: models } = syncData;
+            const { returns: models, track_deletes: trackDeletes } = syncData;
 
             if (syncData.sync_config_id) {
                 if (this.debug) {
@@ -258,6 +259,12 @@ export default class SyncRun {
                     return userDefinedResults;
                 }
 
+                if (userDefinedResults === undefined) {
+                    await this.finishSync(models, syncStartDate, syncData.version as string, trackDeletes);
+
+                    return true;
+                }
+
                 let i = 0;
                 for (const model of models) {
                     if (userDefinedResults[model]) {
@@ -285,7 +292,8 @@ export default class SyncRun {
                                     i,
                                     models.length,
                                     syncStartDate,
-                                    syncData.version
+                                    syncData.version as string,
+                                    trackDeletes
                                 );
                             }
 
@@ -317,7 +325,7 @@ export default class SyncRun {
                                 if (upsertResult.success) {
                                     const { summary } = upsertResult;
 
-                                    await this.reportResults(model, summary as UpsertSummary, i, models.length, syncStartDate, syncData.version);
+                                    await this.reportResults(model, summary as UpsertSummary, i, models.length, syncStartDate, syncData.version as string);
                                 }
 
                                 if (!upsertResult.success) {
@@ -348,13 +356,32 @@ export default class SyncRun {
         return result;
     }
 
+    async finishSync(models: string[], syncStartDate: Date, version: string, trackDeletes?: boolean): Promise<void> {
+        let i = 0;
+        for (const model of models) {
+            const deletedKeys = trackDeletes ? await getDeletedKeys('_nango_sync_data_records', 'external_id', this.nangoConnection.id as number, model) : [];
+
+            await this.reportResults(
+                model,
+                { addedKeys: [], updatedKeys: [], deletedKeys, affectedInternalIds: [], affectedExternalIds: [] },
+                i,
+                models.length,
+                syncStartDate,
+                version,
+                trackDeletes
+            );
+            i++;
+        }
+    }
+
     async reportResults(
         model: string,
         responseResults: UpsertSummary,
         index: number,
         numberOfModels: number,
         syncStartDate: Date,
-        version?: string
+        version: string,
+        trackDeletes?: boolean
     ): Promise<void> {
         if (!this.writeToDb || !this.activityLogId || !this.syncJobId) {
             return;
@@ -370,6 +397,10 @@ export default class SyncRun {
             // then don't override it
             const override = false;
             await setLastSyncDate(this.syncId as string, syncStartDate, override);
+        }
+
+        if (trackDeletes) {
+            await takeSnapshot(this.nangoConnection?.id as number, model);
         }
 
         const updatedResults: Record<string, SyncResult> = {

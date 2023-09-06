@@ -432,6 +432,7 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
                 models,
                 version: version as string,
                 runs,
+                track_deletes: sync.track_deletes || false,
                 type,
                 fileBody: fs.readFileSync(integrationFilePath, 'utf8'),
                 model_schema: JSON.stringify(model_schema)

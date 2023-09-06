@@ -69,6 +69,7 @@ export interface SyncConfig extends TimestampsAndDeleted {
     model_schema: SyncModelSchema[];
     active: boolean;
     runs: string;
+    track_deletes: boolean;
     version?: string;
 }
 
@@ -100,6 +101,7 @@ export interface IncomingSyncConfig {
     models: string[];
     runs: string;
     version?: string;
+    track_deletes?: boolean;
     model_schema: string;
 }
 
@@ -131,6 +133,16 @@ export interface DataRecord extends Timestamps {
     sync_config_id?: number | undefined;
     external_is_deleted?: boolean;
     external_deleted_at?: Date | null;
+}
+
+export type LastAction = 'added' | 'updated' | 'deleted';
+
+export interface DataRecordWithMetadata {
+    first_seen_at: Date;
+    last_seen_at: Date;
+    last_action: LastAction;
+    deleted_at: Date | null;
+    record: object;
 }
 
 export type SyncWithSchedule = Sync & Schedule;
