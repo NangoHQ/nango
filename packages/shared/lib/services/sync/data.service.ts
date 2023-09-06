@@ -64,6 +64,7 @@ export async function upsert(
             summary: {
                 addedKeys,
                 updatedKeys,
+                deletedKeys: [],
                 affectedInternalIds,
                 affectedExternalIds
             }

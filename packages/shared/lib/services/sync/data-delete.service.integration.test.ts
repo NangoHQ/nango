@@ -2,7 +2,7 @@ import { expect, describe, it, beforeAll } from 'vitest';
 import { multipleMigrations } from '../../db/database.js';
 import * as DataService from './data.service.js';
 import connectionService from '../connection.service.js';
-import { getFullRecords, getFullSnapshotRecords, takeSnapshot } from './data-delete.service.js';
+import { getFullRecords, getFullSnapshotRecords, takeSnapshot, getDeletedKeys } from './data-delete.service.js';
 import { getDataRecords } from './data-records.service.js';
 import { createConfigSeeds } from '../../db/seeders/config.seeder.js';
 import type { DataRecord } from '../../models/Sync.js';
@@ -119,15 +119,11 @@ describe('Data delete service integration tests', () => {
         );
         expect(success).toBe(true);
         expect(error).toBe(undefined);
-        await takeSnapshot(nangoConnectionId as number, meta.modelName);
+        await takeSnapshot(nangoConnectionId as number, modelName);
 
         const slimmerResults = formattedResults?.slice(0, 80);
 
-        const {
-            error: slimError,
-            success: slimSuccess,
-            summary
-        } = await DataService.upsert(
+        const { error: slimError, success: slimSuccess } = await DataService.upsert(
             slimmerResults as DataRecord[],
             '_nango_sync_data_records',
             'external_id',
@@ -139,7 +135,8 @@ describe('Data delete service integration tests', () => {
         expect(slimSuccess).toBe(true);
         expect(slimError).toBe(undefined);
 
-        expect(summary?.deletedKeys?.length).toEqual(20);
+        const deletedKeys = await getDeletedKeys('_nango_sync_data_records', 'id', nangoConnectionId as number, modelName);
+        expect(deletedKeys?.length).toEqual(20);
 
         const connection = await connectionService.getConnectionById(nangoConnectionId as number);
 

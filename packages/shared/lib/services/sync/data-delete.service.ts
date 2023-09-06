@@ -134,7 +134,8 @@ export const takeSnapshot = async (nangoConnectionId: number, model: string): Pr
 INSERT INTO nango.${DELETE_RECORDS_TABLE} (${columns.join(', ')})
 SELECT ${columns.join(', ')}
 FROM nango.${RECORDS_TABLE}
-WHERE nango_connection_id = ? AND model = ?
+WHERE external_is_deleted = false AND
+nango_connection_id = ? AND model = ?
     `,
             [nangoConnectionId, model]
         );
