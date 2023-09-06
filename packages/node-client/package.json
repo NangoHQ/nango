@@ -22,5 +22,8 @@
         "dist/**/*",
         "!**/*.json",
         "README.md"
-    ]
+    ],
+    "devDependencies": {
+        "tsup": "^7.2.0"
+    }
 }
