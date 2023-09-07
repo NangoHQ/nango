@@ -1,6 +1,5 @@
 import { getQuickJS, QuickJSContext, QuickJSHandle } from 'quickjs-emscripten';
 import { types } from 'util';
-import type { Context } from 'vm';
 import type { NangoIntegrationData } from '../../../integrations/index.js';
 import { getIntegrationFile } from '../../nango-config.service.js';
 import { createActivityLogMessage } from '../../activity/activity.service.js';
@@ -134,25 +133,11 @@ function hostToQuickJSHandle(vm: QuickJSContext, val: unknown, isDataProperty = 
 }
 
 class IntegrationService {
-    async compile(code: string, sandbox: Context): Promise<any> {
+    async compile(code: string): Promise<any> {
         const quickJs = await getQuickJS();
         const vm = quickJs.newContext();
 
         createConsoleLog(vm);
-
-        if (sandbox) {
-            for (const [name, value] of Object.entries(sandbox)) {
-                const fnHandle = vm.newFunction(name, (...args: any[]) => {
-                    const result = value(...args.map((arg) => quickJSHandleToHost(vm, arg)));
-
-                    vm.runtime.executePendingJobs();
-
-                    return hostToQuickJSHandle(vm, result);
-                });
-
-                fnHandle.consume((handle: any) => vm.setProp(vm.global, name, handle));
-            }
-        }
 
         const wrappedScript = `
 (function() {
@@ -234,7 +219,7 @@ class IntegrationService {
             }
 
             try {
-                const fn = await this.compile(script, { nango });
+                const fn = await this.compile(script);
                 const nangoObject = classToObject(nango);
                 const results = isAction ? await fn(nangoObject, input) : await fn(nangoObject);
 
