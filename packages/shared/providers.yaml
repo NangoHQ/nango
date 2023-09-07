@@ -687,6 +687,20 @@ salesloft:
     auth_mode: OAUTH2
     authorization_url: https://accounts.salesloft.com/oauth/authorize
     token_url: https://accounts.salesloft.com/oauth/token
+servicem8:
+    auth_mode: OAUTH2
+    authorization_url: https://go.servicem8.com/oauth/authorize
+    token_url: https://go.servicem8.com/oauth/access_token
+    proxy:
+        base_url: https://api.servicem8.com
+    docs: https://developer.servicem8.com/docs
+    scope_seprator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 shopify:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.myshopify.com/admin/oauth/authorize
