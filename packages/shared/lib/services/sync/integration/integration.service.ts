@@ -1,5 +1,6 @@
 import { getQuickJS, QuickJSContext, QuickJSHandle } from 'quickjs-emscripten';
 import { types } from 'util';
+import type { Context } from 'vm';
 import type { NangoIntegrationData } from '../../../integrations/index.js';
 import { getIntegrationFile } from '../../nango-config.service.js';
 import { createActivityLogMessage } from '../../activity/activity.service.js';
@@ -7,7 +8,29 @@ import type { NangoSync } from '../../../sdk/sync.js';
 import fileService from '../../file.service.js';
 import { isCloud } from '../../../utils/utils.js';
 
+function isClassInstance(obj: object) {
+    // Ensure obj is truthy and its type is 'object'
+    if (!obj || typeof obj !== 'object') {
+        return false;
+    }
+
+    // Get the prototype of the object
+    const proto = Object.getPrototypeOf(obj);
+
+    // If the prototype is null or Object.prototype, it's not a class instance
+    if (proto === null || proto === Object.prototype) {
+        return false;
+    }
+
+    // Check if the prototype's constructor is a class
+    return typeof proto.constructor === 'function' && /^class\s/.test(proto.constructor.toString());
+}
+
 function classToObject(instance: any): any {
+    if (!isClassInstance(instance)) {
+        return instance;
+    }
+
     const obj: any = {};
 
     // Copy methods and properties from the instance to the new object
@@ -133,11 +156,25 @@ function hostToQuickJSHandle(vm: QuickJSContext, val: unknown, isDataProperty = 
 }
 
 class IntegrationService {
-    async compile(code: string): Promise<any> {
+    async compile(code: string, sandbox: Context): Promise<any> {
         const quickJs = await getQuickJS();
         const vm = quickJs.newContext();
 
         createConsoleLog(vm);
+
+        if (sandbox) {
+            for (const [name, value] of Object.entries(sandbox)) {
+                const fnHandle = vm.newFunction(name, (...args: any[]) => {
+                    const result = value(...args.map((arg) => quickJSHandleToHost(vm, arg)));
+
+                    vm.runtime.executePendingJobs();
+
+                    return hostToQuickJSHandle(vm, result);
+                });
+
+                fnHandle.consume((handle: any) => vm.setProp(vm.global, name, handle));
+            }
+        }
 
         const wrappedScript = `
 (function() {
@@ -219,7 +256,7 @@ class IntegrationService {
             }
 
             try {
-                const fn = await this.compile(script);
+                const fn = await this.compile(script, { nango });
                 const nangoObject = classToObject(nango);
                 const results = isAction ? await fn(nangoObject, input) : await fn(nangoObject);
 
