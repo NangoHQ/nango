@@ -142,6 +142,7 @@ interface NangoProps {
     nangoConnectionId?: number;
     syncJobId?: number | undefined;
     dryRun?: boolean;
+    track_deletes?: boolean;
 }
 
 interface UserLogParameters {
@@ -157,6 +158,7 @@ export class NangoSync {
     environmentId?: number;
     syncJobId?: number;
     dryRun?: boolean;
+    track_deletes = false;
 
     public connectionId?: string;
     public providerConfigKey?: string;
@@ -201,6 +203,10 @@ export class NangoSync {
 
         if (config.lastSyncDate) {
             this.lastSyncDate = config.lastSyncDate;
+        }
+
+        if (config.track_deletes) {
+            this.track_deletes = config.track_deletes;
         }
     }
 
@@ -327,12 +333,13 @@ export class NangoSync {
             'external_id',
             this.nangoConnectionId as number,
             model,
-            this.activityLogId as number
+            this.activityLogId as number,
+            syncConfig?.track_deletes
         );
 
         if (responseResults.success) {
             const { summary } = responseResults;
-            const updatedResults: Record<string, { added: number; updated: number; deleted?: number }> = {
+            const updatedResults = {
                 [model]: {
                     added: summary?.addedKeys.length as number,
                     updated: summary?.updatedKeys.length as number,
@@ -341,7 +348,7 @@ export class NangoSync {
             };
 
             if (summary?.deletedKeys?.length === 0) {
-                delete updatedResults[model]?.deleted;
+                delete (updatedResults[model] as any)?.deleted;
             }
 
             await createActivityLogMessage({
@@ -433,12 +440,13 @@ export class NangoSync {
             this.nangoConnectionId as number,
             model,
             this.activityLogId as number,
+            syncConfig?.track_deletes,
             true
         );
 
         if (responseResults.success) {
             const { summary } = responseResults;
-            const updatedResults = {
+            const updatedResults: Record<string, { added: number; updated: number; deleted?: number }> = {
                 [model]: {
                     added: summary?.addedKeys.length as number,
                     updated: summary?.updatedKeys.length as number,

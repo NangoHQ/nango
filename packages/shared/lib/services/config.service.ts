@@ -118,17 +118,19 @@ class ConfigService {
     }
 
     async deleteProviderConfig(providerConfigKey: string, environment_id: number): Promise<number> {
-        const id = (
+        const idResult = (
             await db.knex
                 .withSchema(db.schema())
                 .select('id')
                 .from<ProviderConfig>(`_nango_configs`)
                 .where({ unique_key: providerConfigKey, environment_id, deleted: false })
-        )[0].id;
+        )[0];
 
-        if (!id) {
+        if (!idResult) {
             throw new NangoError('unknown_provider_config');
         }
+
+        const { id } = idResult;
 
         await syncOrchestrator.deleteSyncsByProviderConfig(environment_id, providerConfigKey);
 

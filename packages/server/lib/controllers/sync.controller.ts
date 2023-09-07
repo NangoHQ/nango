@@ -29,6 +29,7 @@ import {
     ErrorSourceEnum,
     LogActionEnum,
     NangoError,
+    LastAction,
     configService
 } from '@nangohq/shared';
 
@@ -111,7 +112,7 @@ class SyncController {
                 limit as string,
                 sort_by as string,
                 order as 'asc' | 'desc',
-                filter as 'added' | 'updated' | 'deleted',
+                filter as LastAction,
                 include_nango_metadata === 'true'
             );
 

@@ -88,10 +88,16 @@ export const updateSyncJobResult = async (id: number, result: SyncResultByModel,
             ...existingResult,
             [model]: {
                 added: Number(added) + Number(incomingResult?.added),
-                updated: Number(updated) + Number(incomingResult?.updated),
-                deleted: Number(deleted) + Number(incomingResult?.deleted)
+                updated: Number(updated) + Number(incomingResult?.updated)
             }
         };
+
+        const deletedValue = Number(deleted) || 0;
+        const incomingDeletedValue = Number(incomingResult?.deleted) || 0;
+
+        if (deletedValue !== 0 || incomingDeletedValue !== 0) {
+            finalResult[model].deleted = deletedValue + incomingDeletedValue;
+        }
 
         const [updatedRow] = await schema()
             .from<SyncJob>(SYNC_JOB_TABLE)
