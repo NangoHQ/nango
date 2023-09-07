@@ -31,7 +31,6 @@
         "fs-extra": "^11.1.1",
         "human-to-cron": "^0.3.1",
         "ip": "^1.1.8",
-        "isolated-vm": "^4.6.0",
         "js-yaml": "^4.1.0",
         "knex": "^2.3.0",
         "lodash": "^4.17.21",
@@ -44,7 +43,6 @@
         "simple-oauth2": "^5.0.0",
         "ts-node": "^10.9.1",
         "uuid": "^9.0.0",
-        "vm2": "^3.9.19",
         "winston": "^3.8.2",
         "winston-daily-rotate-file": "^4.7.1"
     },

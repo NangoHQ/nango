@@ -1,6 +1,7 @@
 import { expect, describe, it } from 'vitest';
 import integrationService from './integration.service.js';
 import { mockCreateActivityLogMessage } from '../../activity/mocks.js';
+import path from 'path';
 
 describe('Should run an integration script', () => {
     it('Returns null if the proper arguments are not passed', async () => {
@@ -13,20 +14,42 @@ describe('Should run an integration script', () => {
             {},
             1,
             false,
+            false,
             'test'
         );
         expect(result).toEqual(null);
     });
 
-    it('Should run a simple integration script', async () => {
+    it('Runs a simple javascript function that returns an expected object', async () => {
         mockCreateActivityLogMessage();
-        const result = await integrationService.run('add-bundle');
-        expect(result).toEqual(15);
+        const loadLocation = path.join(__dirname, '.');
+        const mockNango: any = {
+            get: () => {
+                return {
+                    data: {
+                        sync: {
+                            id: 1
+                        }
+                    }
+                };
+            }
+        };
+
+        const result = await integrationService.runScript('simple', 1, mockNango, {} as any, 1, false, false, loadLocation);
+        expect(result).toEqual(mockNango.get());
     });
 
-    it('Should run a simple integration script', async () => {
+    it('Runs an action with an argument that returns the argument', async () => {
         mockCreateActivityLogMessage();
-        const result = await integrationService.run('github-issues-bundle');
-        console.log(result);
+        const loadLocation = path.join(__dirname, '.');
+        const param = { test: 'test' };
+        const mockNango: any = {
+            get: () => {
+                return null;
+            }
+        };
+
+        const result = await integrationService.runScript('action', 1, mockNango, {} as any, 1, false, true, loadLocation, param);
+        expect(result).toEqual(param);
     });
 });
