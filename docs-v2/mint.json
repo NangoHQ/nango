@@ -161,6 +161,7 @@
             "pages": [
                 "integrations/all/accelo",
                 "integrations/all/adobe",
+                "integrations/all/aircall",
                 "integrations/all/airtable",
                 "integrations/all/amazon",
                 "integrations/all/amplitude",
@@ -241,6 +242,7 @@
                 "integrations/all/sage",
                 "integrations/all/salesforce",
                 "integrations/all/salesloft",
+                "integrations/all/servicem8",
                 "integrations/all/segment",
                 "integrations/all/shopify",
                 "integrations/all/shortcut",
