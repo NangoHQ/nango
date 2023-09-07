@@ -28,7 +28,7 @@ describe('Should run an integration script', () => {
                 return {
                     data: {
                         sync: {
-                            id: 1
+                            id: 'get'
                         }
                     }
                 };
@@ -37,6 +37,47 @@ describe('Should run an integration script', () => {
 
         const result = await integrationService.runScript('simple', 1, mockNango, {} as any, 1, false, false, loadLocation);
         expect(result).toEqual(mockNango.get());
+    });
+
+    it('Runs a simple javascript function that returns an expected object with a Nango class', async () => {
+        mockCreateActivityLogMessage();
+        const loadLocation = path.join(__dirname, '.');
+
+        const nangoClass = class Nango {
+            public get() {
+                return {
+                    data: {
+                        classTest: {
+                            id: 'get'
+                        }
+                    }
+                };
+            }
+        };
+        const nango = new nangoClass();
+
+        console.log(nango.get());
+        const result = await integrationService.runScript('simple', 1, nango as any, {} as any, 1, false, false, loadLocation);
+        expect(result).toEqual(nango.get());
+    });
+
+    it('Runs a compiled javascript function that returns an expected object', async () => {
+        mockCreateActivityLogMessage();
+        const loadLocation = path.join(__dirname, '.');
+        const mockNango: any = {
+            post: () => {
+                return {
+                    data: {
+                        sync: {
+                            id: 'post'
+                        }
+                    }
+                };
+            }
+        };
+
+        const result = await integrationService.runScript('compiled', 1, mockNango, {} as any, 1, false, false, loadLocation);
+        expect(result).toEqual(mockNango.post());
     });
 
     it('Runs an action with an argument that returns the argument', async () => {
