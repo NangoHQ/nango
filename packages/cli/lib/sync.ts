@@ -64,7 +64,7 @@ interface RunArgs extends GlobalOptions {
     connectionId: string;
     lastSyncDate?: string;
     useServerLastSyncDate?: boolean;
-    actionInput?: object;
+    input?: object;
 }
 
 const exampleSyncName = 'github-issue-example';
@@ -575,7 +575,7 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
     }
 
     if (Object.keys(options).length > 0) {
-        ({ sync: syncName, connectionId, lastSyncDate: suppliedLastSyncDate, actionInput } = options);
+        ({ sync: syncName, connectionId, lastSyncDate: suppliedLastSyncDate, input: actionInput } = options);
     }
 
     if (!syncName) {
