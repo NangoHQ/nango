@@ -1,0 +1,5 @@
+import type { NangoSync, <%= interfaceNames.join(', ') %> } from './<%= interfaceFileName %>';
+
+export default async function fetchData(nango: NangoSync): Promise<void> {
+    // Integration code goes here, use nango.batchSave to save data
+}

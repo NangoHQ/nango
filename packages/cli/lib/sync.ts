@@ -90,8 +90,9 @@ export const version = (debug: boolean) => {
 
 export const generate = async (debug = false, inParentDirectory = false) => {
     const dirPrefix = inParentDirectory ? `./${NANGO_INTEGRATIONS_NAME}` : '.';
-    const templateContents = fs.readFileSync(path.resolve(__dirname, './integration.ejs'), 'utf8');
-    const githubExampleTemplateContents = fs.readFileSync(path.resolve(__dirname, './integration.github.ejs'), 'utf8');
+    // TODO if action use action template
+    const templateContents = fs.readFileSync(path.resolve(__dirname, './sync.ejs'), 'utf8');
+    const githubExampleTemplateContents = fs.readFileSync(path.resolve(__dirname, './github.sync.ejs'), 'utf8');
 
     const configContents = fs.readFileSync(`${dirPrefix}/${nangoConfigFile}`, 'utf8');
     const configData: NangoConfig = yaml.load(configContents) as unknown as NangoConfig;

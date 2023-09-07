@@ -1,6 +1,6 @@
 import type { NangoSync, <%= interfaceNames.join(', ') %> } from './<%= interfaceFileName %>';
 
-export default async function fetchData(nango: NangoSync): Promise<{<% for (let i = 0; i < mappings.length; i++) { %><%= mappings[i].name %>: <%= mappings[i].type %>[]<% if (i !== mappings.length - 1) { %>, <% } %><% } %>}> {
+export default async function fetchData(nango: NangoSync): Promise<<void> {
 
     const repos = await paginate(nango, '/user/repos');
 
@@ -29,9 +29,6 @@ export default async function fetchData(nango: NangoSync): Promise<{<% for (let 
             await nango.log(`Sent ${mappedIssues.length} issues from ${repo.owner.login}/${repo.name}`);
         }
     }
-
-    // Return empty array with the model key to indicate success
-    return { GithubIssue: [] };
 }
 
 async function paginate(nango: NangoSync, endpoint: string) {
