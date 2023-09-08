@@ -21,7 +21,7 @@ class WebhookService {
             return;
         }
 
-        if (responseResults.added === 0 && responseResults.updated === 0) {
+        if (responseResults.added === 0 && responseResults.updated === 0 && responseResults.deleted === 0) {
             await createActivityLogMessage({
                 level: 'info',
                 activity_log_id: activityLogId,

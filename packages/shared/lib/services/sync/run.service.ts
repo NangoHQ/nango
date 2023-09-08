@@ -411,10 +411,6 @@ export default class SyncRun {
             }
         };
 
-        if (responseResults.deletedKeys?.length === 0) {
-            delete updatedResults[model]?.deleted;
-        }
-
         const syncResult: SyncJob = await updateSyncJobResult(this.syncJobId, updatedResults, model);
 
         if (!syncResult) {
@@ -457,12 +453,9 @@ export default class SyncRun {
 
         const results: SyncResult = {
             added,
-            updated
+            updated,
+            deleted
         };
-
-        if (deleted > 0) {
-            results['deleted'] = deleted;
-        }
 
         await webhookService.sendUpdate(this.nangoConnection, this.syncName, model, results, this.syncType, syncStartDate, this.activityLogId);
 
