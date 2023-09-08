@@ -8,7 +8,6 @@ import {
     CheckInCircle,
     AlertCircle,
     Link as LinkIcon,
-    RefreshCw,
     Pause,
     Play,
     FastForward
@@ -183,9 +182,6 @@ export default function Activity() {
                     <div className="flex flex-col text-left">
                         <span className="flex items-center mb-3">
                             <h2 className="text-3xl font-semibold tracking-tight text-white mr-4">Activity</h2>
-                            <Tooltip text="Refresh logs" type="dark">
-                                <RefreshCw className="flex stroke-white cursor-pointer" size="24" onClick={() => setLoaded(false)} />
-                            </Tooltip>
                         </span>
                         <span>
                             <p className="text-white text-left">Note that logs older than 15 days are cleared</p>

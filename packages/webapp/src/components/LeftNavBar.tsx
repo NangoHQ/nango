@@ -85,7 +85,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                             }`}
                         >
                             <img className="h-5 mr-3 stroke-white fill-white" src="/images/sync-code-icon.svg" alt="" />
-                            <p>Syncs</p>
+                            <p>Syncs & Actions</p>
                         </Link>
                         <Link
                             to="/activity"

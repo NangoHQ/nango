@@ -79,18 +79,18 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
             return { success: false, error, response: null };
         }
 
-        const previousSyncConfig = await getSyncConfigByParams(environment_id, syncName, providerConfigKey);
+        const previousSyncAndActionConfig = await getSyncAndActionConfigByParams(environment_id, syncName, providerConfigKey);
         let bumpedVersion = '';
 
-        if (previousSyncConfig) {
-            bumpedVersion = increment(previousSyncConfig.version as string | number).toString();
+        if (previousSyncAndActionConfig) {
+            bumpedVersion = increment(previousSyncAndActionConfig.version as string | number).toString();
 
             if (debug) {
                 await createActivityLogMessage({
                     level: 'debug',
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
-                    content: `A previous sync config was found for ${syncName} with version ${previousSyncConfig.version}`
+                    content: `A previous sync config was found for ${syncName} with version ${previousSyncAndActionConfig.version}`
                 });
             }
 
@@ -137,7 +137,7 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
             throw new NangoError('file_upload_error');
         }
 
-        const oldConfigs = await getSyncConfigsBySyncNameAndConfigId(environment_id, config.id as number, syncName);
+        const oldConfigs = await getSyncAndActionConfigsBySyncNameAndConfigId(environment_id, config.id as number, syncName);
 
         if (oldConfigs.length > 0) {
             const ids = oldConfigs.map((oldConfig: SyncConfig) => oldConfig.id as number);
@@ -301,14 +301,13 @@ export async function getSyncConfigsByParams(environment_id: number, providerCon
     return null;
 }
 
-export async function getSyncConfigsBySyncNameAndConfigId(environment_id: number, nango_config_id: number, sync_name: string): Promise<SyncConfig[]> {
+export async function getSyncAndActionConfigsBySyncNameAndConfigId(environment_id: number, nango_config_id: number, sync_name: string): Promise<SyncConfig[]> {
     try {
         const result = await schema().from<SyncConfig>(TABLE).where({
             environment_id,
             nango_config_id,
             sync_name,
             active: true,
-            type: SyncConfigType.SYNC,
             deleted: false
         });
 
@@ -355,11 +354,16 @@ export async function getActionConfigByNameAndProviderConfigKey(environment_id: 
     return false;
 }
 
+export async function getSyncAndActionConfigByParams(environment_id: number, sync_name: string, providerConfigKey: string): Promise<SyncConfig | null> {
+    return getSyncConfigByParams(environment_id, sync_name, providerConfigKey, undefined, true);
+}
+
 export async function getSyncConfigByParams(
     environment_id: number,
     sync_name: string,
     providerConfigKey: string,
-    isAction?: boolean
+    isAction?: boolean,
+    bothTypes = false
 ): Promise<SyncConfig | null> {
     const config = await configService.getProviderConfig(providerConfigKey, environment_id);
 
@@ -368,18 +372,24 @@ export async function getSyncConfigByParams(
     }
 
     try {
-        const result = await schema()
+        let query = schema()
             .from<SyncConfig>(TABLE)
             .where({
                 environment_id,
                 sync_name,
                 nango_config_id: config.id as number,
                 active: true,
-                type: isAction ? SyncConfigType.ACTION : SyncConfigType.SYNC,
                 deleted: false
             })
-            .orderBy('created_at', 'desc')
-            .first();
+            .orderBy('created_at', 'desc');
+
+        if (!bothTypes) {
+            query = query.andWhere({
+                type: isAction ? SyncConfigType.ACTION : SyncConfigType.SYNC
+            });
+        }
+
+        const result = query.first();
 
         if (result) {
             return result;
