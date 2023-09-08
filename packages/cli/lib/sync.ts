@@ -489,19 +489,19 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
                     .then((response: AxiosResponse) => {
                         const results: SyncDeploymentResult[] = response.data;
                         if (results.length === 0) {
-                            console.log(chalk.green(`Successfully removed the syncs.`));
+                            console.log(chalk.green(`Successfully removed the syncs/actions.`));
                         } else {
                             const nameAndVersions = results.map((result) => `${result.sync_name}@v${result.version}`);
-                            console.log(chalk.green(`Successfully deployed the syncs: ${nameAndVersions.join(', ')}!`));
+                            console.log(chalk.green(`Successfully deployed the syncs/actions: ${nameAndVersions.join(', ')}!`));
                         }
                     })
                     .catch((err) => {
                         const errorMessage = JSON.stringify(err.response.data, null, 2);
-                        console.log(chalk.red(`Error deploying the syncs with the following error: ${errorMessage}`));
+                        console.log(chalk.red(`Error deploying the syncs/actions with the following error: ${errorMessage}`));
                         process.exit(1);
                     });
             } else {
-                console.log(chalk.red('Syncs were not deployed. Exiting'));
+                console.log(chalk.red('Syncs/Actions were not deployed. Exiting'));
                 process.exit(0);
             }
         } catch (err: any) {
@@ -520,7 +520,7 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
             } else {
                 errorMessage = JSON.stringify(err.response.data, null, 2);
             }
-            console.log(chalk.red(`Error deploying the syncs with the following error: ${errorMessage}`));
+            console.log(chalk.red(`Error deploying the syncs/actions with the following error: ${errorMessage}`));
             process.exit(1);
         }
     } else {
@@ -537,10 +537,10 @@ async function deploySyncs(url: string, body: { syncs: IncomingSyncConfig[]; rec
         .then((response: AxiosResponse) => {
             const results: SyncDeploymentResult[] = response.data;
             if (results.length === 0) {
-                console.log(chalk.green(`Successfully removed the syncs.`));
+                console.log(chalk.green(`Successfully removed the syncs/actions.`));
             } else {
                 const nameAndVersions = results.map((result) => `${result.sync_name}@v${result.version}`);
-                console.log(chalk.green(`Successfully deployed the syncs: ${nameAndVersions.join(', ')}!`));
+                console.log(chalk.green(`Successfully deployed the syncs/actions: ${nameAndVersions.join(', ')}!`));
             }
         })
         .catch((err: any) => {
@@ -559,7 +559,7 @@ async function deploySyncs(url: string, body: { syncs: IncomingSyncConfig[]; rec
             } else {
                 errorMessage = JSON.stringify(err.response.data, null, 2);
             }
-            console.log(chalk.red(`Error deploying the syncs with the following error: ${errorMessage}`));
+            console.log(chalk.red(`Error deploying the syncs/actions with the following error: ${errorMessage}`));
             process.exit(1);
         });
 }
@@ -645,7 +645,7 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
     const result = await tsc(debug, syncName);
 
     if (!result) {
-        console.log(chalk.red('The sync did not compile successfully. Exiting'));
+        console.log(chalk.red('The sync/action did not compile successfully. Exiting'));
         return;
     }
 
