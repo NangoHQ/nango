@@ -255,9 +255,9 @@ export default function Activity() {
                                                     )}
                                                     {activity?.action === 'action' && (
                                                         <span className="flex items-center">
-                                                            <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-green-500 bg-opacity-20">
-                                                                <SyncIcon className="h-4 -ml-3 -mr-1 stroke-green-500" />
-                                                                <p className="inline-block text-green-500">action</p>
+                                                            <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-red-500 bg-opacity-20">
+                                                                <SyncIcon className="h-4 -ml-3 -mr-1 stroke-red-500" />
+                                                                <p className="inline-block text-red-500">action</p>
                                                             </div>
                                                             {activity.operation_name && (
                                                                 <p className="text-gray-500 ml-2 text-sm">({activity?.operation_name})</p>
