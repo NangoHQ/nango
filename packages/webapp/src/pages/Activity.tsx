@@ -8,7 +8,6 @@ import {
     CheckInCircle,
     AlertCircle,
     Link as LinkIcon,
-    RefreshCw,
     Pause,
     Play,
     FastForward
@@ -183,9 +182,6 @@ export default function Activity() {
                     <div className="flex flex-col text-left">
                         <span className="flex items-center mb-3">
                             <h2 className="text-3xl font-semibold tracking-tight text-white mr-4">Activity</h2>
-                            <Tooltip text="Refresh logs" type="dark">
-                                <RefreshCw className="flex stroke-white cursor-pointer" size="24" onClick={() => setLoaded(false)} />
-                            </Tooltip>
                         </span>
                         <span>
                             <p className="text-white text-left">Note that logs older than 15 days are cleared</p>
@@ -259,9 +255,9 @@ export default function Activity() {
                                                     )}
                                                     {activity?.action === 'action' && (
                                                         <span className="flex items-center">
-                                                            <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-green-500 bg-opacity-20">
-                                                                <SyncIcon className="h-4 -ml-3 -mr-1 stroke-green-500" />
-                                                                <p className="inline-block text-green-500">action</p>
+                                                            <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-red-500 bg-opacity-20">
+                                                                <SyncIcon className="h-4 -ml-3 -mr-1 stroke-red-500" />
+                                                                <p className="inline-block text-red-500">action</p>
                                                             </div>
                                                             {activity.operation_name && (
                                                                 <p className="text-gray-500 ml-2 text-sm">({activity?.operation_name})</p>

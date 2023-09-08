@@ -64,7 +64,7 @@ interface RunArgs extends GlobalOptions {
     connectionId: string;
     lastSyncDate?: string;
     useServerLastSyncDate?: boolean;
-    actionInput?: object;
+    input?: object;
 }
 
 const exampleSyncName = 'github-issue-example';
@@ -90,8 +90,9 @@ export const version = (debug: boolean) => {
 
 export const generate = async (debug = false, inParentDirectory = false) => {
     const dirPrefix = inParentDirectory ? `./${NANGO_INTEGRATIONS_NAME}` : '.';
-    const templateContents = fs.readFileSync(path.resolve(__dirname, './integration.ejs'), 'utf8');
-    const githubExampleTemplateContents = fs.readFileSync(path.resolve(__dirname, './integration.github.ejs'), 'utf8');
+    const syncTemplateContents = fs.readFileSync(path.resolve(__dirname, './sync.ejs'), 'utf8');
+    const actionTemplateContents = fs.readFileSync(path.resolve(__dirname, './action.ejs'), 'utf8');
+    const githubExampleTemplateContents = fs.readFileSync(path.resolve(__dirname, './github.sync.ejs'), 'utf8');
 
     const configContents = fs.readFileSync(`${dirPrefix}/${nangoConfigFile}`, 'utf8');
     const configData: NangoConfig = yaml.load(configContents) as unknown as NangoConfig;
@@ -147,12 +148,18 @@ export const generate = async (debug = false, inParentDirectory = false) => {
                 process.exit(1);
             }
 
-            const { returns: models } = syncData;
+            const { returns: models, type = SyncConfigType.SYNC } = syncData;
             const syncNameCamel = syncName
                 .split('-')
                 .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
                 .join('');
-            const ejsTeamplateContents = syncName === exampleSyncName ? githubExampleTemplateContents : templateContents;
+
+            let ejsTeamplateContents = '';
+            if (syncName === exampleSyncName) {
+                ejsTeamplateContents = githubExampleTemplateContents;
+            } else {
+                ejsTeamplateContents = type === SyncConfigType.SYNC ? syncTemplateContents : actionTemplateContents;
+            }
             const rendered = ejs.render(ejsTeamplateContents, {
                 syncName: syncNameCamel,
                 interfaceFileName: TYPES_FILE_NAME.replace('.ts', ''),
@@ -482,19 +489,19 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
                     .then((response: AxiosResponse) => {
                         const results: SyncDeploymentResult[] = response.data;
                         if (results.length === 0) {
-                            console.log(chalk.green(`Successfully removed the syncs.`));
+                            console.log(chalk.green(`Successfully removed the syncs/actions.`));
                         } else {
                             const nameAndVersions = results.map((result) => `${result.sync_name}@v${result.version}`);
-                            console.log(chalk.green(`Successfully deployed the syncs: ${nameAndVersions.join(', ')}!`));
+                            console.log(chalk.green(`Successfully deployed the syncs/actions: ${nameAndVersions.join(', ')}!`));
                         }
                     })
                     .catch((err) => {
                         const errorMessage = JSON.stringify(err.response.data, null, 2);
-                        console.log(chalk.red(`Error deploying the syncs with the following error: ${errorMessage}`));
+                        console.log(chalk.red(`Error deploying the syncs/actions with the following error: ${errorMessage}`));
                         process.exit(1);
                     });
             } else {
-                console.log(chalk.red('Syncs were not deployed. Exiting'));
+                console.log(chalk.red('Syncs/Actions were not deployed. Exiting'));
                 process.exit(0);
             }
         } catch (err: any) {
@@ -513,7 +520,7 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
             } else {
                 errorMessage = JSON.stringify(err.response.data, null, 2);
             }
-            console.log(chalk.red(`Error deploying the syncs with the following error: ${errorMessage}`));
+            console.log(chalk.red(`Error deploying the syncs/actions with the following error: ${errorMessage}`));
             process.exit(1);
         }
     } else {
@@ -530,10 +537,10 @@ async function deploySyncs(url: string, body: { syncs: IncomingSyncConfig[]; rec
         .then((response: AxiosResponse) => {
             const results: SyncDeploymentResult[] = response.data;
             if (results.length === 0) {
-                console.log(chalk.green(`Successfully removed the syncs.`));
+                console.log(chalk.green(`Successfully removed the syncs/actions.`));
             } else {
                 const nameAndVersions = results.map((result) => `${result.sync_name}@v${result.version}`);
-                console.log(chalk.green(`Successfully deployed the syncs: ${nameAndVersions.join(', ')}!`));
+                console.log(chalk.green(`Successfully deployed the syncs/actions: ${nameAndVersions.join(', ')}!`));
             }
         })
         .catch((err: any) => {
@@ -552,7 +559,7 @@ async function deploySyncs(url: string, body: { syncs: IncomingSyncConfig[]; rec
             } else {
                 errorMessage = JSON.stringify(err.response.data, null, 2);
             }
-            console.log(chalk.red(`Error deploying the syncs with the following error: ${errorMessage}`));
+            console.log(chalk.red(`Error deploying the syncs/actions with the following error: ${errorMessage}`));
             process.exit(1);
         });
 }
@@ -575,7 +582,7 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
     }
 
     if (Object.keys(options).length > 0) {
-        ({ sync: syncName, connectionId, lastSyncDate: suppliedLastSyncDate, actionInput } = options);
+        ({ sync: syncName, connectionId, lastSyncDate: suppliedLastSyncDate, input: actionInput } = options);
     }
 
     if (!syncName) {
@@ -638,7 +645,7 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
     const result = await tsc(debug, syncName);
 
     if (!result) {
-        console.log(chalk.red('The sync did not compile successfully. Exiting'));
+        console.log(chalk.red('The sync/action did not compile successfully. Exiting'));
         return;
     }
 
