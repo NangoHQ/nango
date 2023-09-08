@@ -82,7 +82,43 @@ describe('Sync config create', () => {
             });
         });
 
+        vi.spyOn(SyncConfigService, 'getSyncAndActionConfigsBySyncNameAndConfigId').mockImplementation(() => {
+            return Promise.resolve([
+                {
+                    id: 1,
+                    environment_id: 1,
+                    sync_name: 'test-sync',
+                    type: SyncConfigType.SYNC,
+                    file_location: '/tmp/test-sync',
+                    nango_config_id: 1,
+                    models: ['Model_1', 'Model_2'],
+                    model_schema: [{ name: 'model', fields: [{ name: 'some', type: 'value' }] }],
+                    active: true,
+                    runs: 'every 6h',
+                    track_deletes: false,
+                    version: '1'
+                }
+            ]);
+        });
+
         vi.spyOn(SyncConfigService, 'getSyncConfigByParams').mockImplementation(() => {
+            return Promise.resolve({
+                id: 1,
+                environment_id: 1,
+                sync_name: 'test-sync',
+                type: SyncConfigType.SYNC,
+                file_location: '/tmp/test-sync',
+                nango_config_id: 1,
+                models: ['Model_1', 'Model_2'],
+                model_schema: [{ name: 'model', fields: [{ name: 'some', type: 'value' }] }],
+                active: true,
+                runs: 'every 6h',
+                track_deletes: false,
+                version: '1'
+            });
+        });
+
+        vi.spyOn(SyncConfigService, 'getSyncAndActionConfigByParams').mockImplementation(() => {
             return Promise.resolve({
                 id: 1,
                 environment_id: 1,

@@ -355,16 +355,6 @@ export async function getActionConfigByNameAndProviderConfigKey(environment_id: 
 }
 
 export async function getSyncAndActionConfigByParams(environment_id: number, sync_name: string, providerConfigKey: string): Promise<SyncConfig | null> {
-    return getSyncConfigByParams(environment_id, sync_name, providerConfigKey, undefined, true);
-}
-
-export async function getSyncConfigByParams(
-    environment_id: number,
-    sync_name: string,
-    providerConfigKey: string,
-    isAction?: boolean,
-    bothTypes = false
-): Promise<SyncConfig | null> {
     const config = await configService.getProviderConfig(providerConfigKey, environment_id);
 
     if (!config) {
@@ -372,7 +362,7 @@ export async function getSyncConfigByParams(
     }
 
     try {
-        let query = schema()
+        const result = await schema()
             .from<SyncConfig>(TABLE)
             .where({
                 environment_id,
@@ -381,15 +371,54 @@ export async function getSyncConfigByParams(
                 active: true,
                 deleted: false
             })
-            .orderBy('created_at', 'desc');
+            .orderBy('created_at', 'desc')
+            .first();
 
-        if (!bothTypes) {
-            query = query.andWhere({
-                type: isAction ? SyncConfigType.ACTION : SyncConfigType.SYNC
-            });
+        if (result) {
+            return result;
         }
+    } catch (error) {
+        await errorManager.report(error, {
+            environmentId: environment_id,
+            source: ErrorSourceEnum.PLATFORM,
+            operation: LogActionEnum.DATABASE,
+            metadata: {
+                environment_id,
+                sync_name,
+                providerConfigKey
+            }
+        });
+        return null;
+    }
 
-        const result = query.first();
+    return null;
+}
+
+export async function getSyncConfigByParams(
+    environment_id: number,
+    sync_name: string,
+    providerConfigKey: string,
+    isAction?: boolean
+): Promise<SyncConfig | null> {
+    const config = await configService.getProviderConfig(providerConfigKey, environment_id);
+
+    if (!config) {
+        throw new Error('Provider config not found');
+    }
+
+    try {
+        const result = await schema()
+            .from<SyncConfig>(TABLE)
+            .where({
+                environment_id,
+                sync_name,
+                nango_config_id: config.id as number,
+                active: true,
+                type: isAction ? SyncConfigType.ACTION : SyncConfigType.SYNC,
+                deleted: false
+            })
+            .orderBy('created_at', 'desc')
+            .first();
 
         if (result) {
             return result;
