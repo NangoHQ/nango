@@ -17,7 +17,7 @@ import {
     createActivityLogAndLogMessage,
     createActivityLogMessageAndEnd,
     createActivityLog,
-    getAndReconcileSyncDifferences,
+    getAndReconcileDifferences,
     getSyncConfigsWithConnectionsByEnvironmentId,
     getActiveSyncConfigsByEnvironmentId,
     IncomingSyncConfig,
@@ -49,7 +49,7 @@ class SyncController {
             }
 
             if (reconcile) {
-                const success = await getAndReconcileSyncDifferences(environmentId, syncs, reconcile, syncConfigDeployResult?.activityLogId as number, debug);
+                const success = await getAndReconcileDifferences(environmentId, syncs, reconcile, syncConfigDeployResult?.activityLogId as number, debug);
                 if (!success) {
                     reconcileSuccess = false;
                 }
@@ -82,7 +82,7 @@ class SyncController {
             const { syncs, debug }: { syncs: IncomingSyncConfig[]; reconcile: boolean; debug: boolean } = req.body;
             const environmentId = getEnvironmentId(res);
 
-            const result = await getAndReconcileSyncDifferences(environmentId, syncs, false, null, debug);
+            const result = await getAndReconcileDifferences(environmentId, syncs, false, null, debug);
 
             res.send(result);
         } catch (e) {

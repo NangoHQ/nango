@@ -1,11 +1,21 @@
 import { v4 as uuidv4 } from 'uuid';
 import db, { schema, dbNamespace } from '../../db/database.js';
-import { SyncConfigType, IncomingSyncConfig, SyncDifferences, Sync, Job as SyncJob, SyncStatus, SyncWithSchedule, SlimSync } from '../../models/Sync.js';
+import {
+    SyncConfigType,
+    IncomingSyncConfig,
+    SyncAndActionDifferences,
+    Sync,
+    Job as SyncJob,
+    SyncStatus,
+    SyncWithSchedule,
+    SlimSync,
+    SlimAction
+} from '../../models/Sync.js';
 import type { Connection, NangoConnection } from '../../models/Connection.js';
 import SyncClient from '../../clients/sync.client.js';
 import { updateSuccess as updateSuccessActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../activity/activity.service.js';
 import { markAllAsStopped } from './schedule.service.js';
-import { getActiveSyncConfigsByEnvironmentId, getSyncConfigsByProviderConfigKey } from './config.service.js';
+import { getActiveSyncConfigsByEnvironmentId, getSyncConfigsByProviderConfigKey, getActionConfigByNameAndProviderConfigKey } from './config.service.js';
 import syncOrchestrator from './orchestrator.service.js';
 import connectionService from '../connection.service.js';
 
@@ -389,14 +399,15 @@ export const findSyncByConnections = async (connectionIds: number[], sync_name: 
     return [];
 };
 
-export const getAndReconcileSyncDifferences = async (
+export const getAndReconcileDifferences = async (
     environmentId: number,
     syncs: IncomingSyncConfig[],
     performAction: boolean,
     activityLogId: number | null,
     debug = false
-): Promise<SyncDifferences | null> => {
+): Promise<SyncAndActionDifferences | null> => {
     const newSyncs: SlimSync[] = [];
+    const newActions: SlimAction[] = [];
     const syncsToCreate = [];
 
     const existingSyncsByProviderConfig: { [key: string]: SlimSync[] } = {};
@@ -405,7 +416,13 @@ export const getAndReconcileSyncDifferences = async (
     for (const sync of syncs) {
         const { syncName, providerConfigKey, type } = sync;
         if (type === SyncConfigType.ACTION) {
-            // TODO should notify the user if the action is new or not, can tell from the sync config
+            const actionExists = await getActionConfigByNameAndProviderConfigKey(environmentId, syncName, providerConfigKey);
+            if (!actionExists) {
+                newActions.push({
+                    name: syncName,
+                    providerConfigKey
+                });
+            }
             continue;
         }
         if (!existingSyncsByProviderConfig[providerConfigKey]) {
@@ -470,18 +487,27 @@ export const getAndReconcileSyncDifferences = async (
     }
 
     const existingSyncs = await getActiveSyncConfigsByEnvironmentId(environmentId);
-    const deletedSyncs = [];
+
+    const deletedSyncs: SlimSync[] = [];
+    const deletedActions: SlimAction[] = [];
 
     for (const existingSync of existingSyncs) {
         const exists = syncs.find((sync) => sync.syncName === existingSync.sync_name && sync.providerConfigKey === existingSync.unique_key);
 
         if (!exists) {
             const connections = await connectionService.getConnectionsByEnvironmentAndConfig(environmentId, existingSync.unique_key);
-            deletedSyncs.push({
-                name: existingSync.sync_name,
-                providerConfigKey: existingSync.unique_key,
-                connections: connections?.length as number
-            });
+            if (existingSync.type === SyncConfigType.SYNC) {
+                deletedSyncs.push({
+                    name: existingSync.sync_name,
+                    providerConfigKey: existingSync.unique_key,
+                    connections: connections?.length as number
+                });
+            } else {
+                deletedActions.push({
+                    name: existingSync.sync_name,
+                    providerConfigKey: existingSync.unique_key
+                });
+            }
 
             if (performAction) {
                 if (debug && activityLogId) {
@@ -493,21 +519,26 @@ export const getAndReconcileSyncDifferences = async (
                     });
                 }
                 await syncOrchestrator.deleteConfig(existingSync.id as number, environmentId);
-                for (const connection of connections) {
-                    const syncId = await getSyncByIdAndName(connection.id as number, existingSync.sync_name);
-                    if (syncId) {
-                        await syncOrchestrator.deleteSync(syncId.id as string, environmentId);
+
+                if (existingSync.type === SyncConfigType.SYNC) {
+                    for (const connection of connections) {
+                        const syncId = await getSyncByIdAndName(connection.id as number, existingSync.sync_name);
+                        if (syncId) {
+                            await syncOrchestrator.deleteSync(syncId.id as string, environmentId);
+                        }
                     }
                 }
 
                 if (activityLogId) {
+                    const connectionDescription =
+                        existingSync.type === SyncConfigType.SYNC ? ` with ${connections.length} connection${connections.length > 1 ? 's' : ''}.` : '.';
+                    const content = `Successfully deleted ${existingSync.type} ${existingSync.sync_name} for ${existingSync.unique_key}${connectionDescription}`;
+
                     await createActivityLogMessage({
                         level: 'debug',
                         activity_log_id: activityLogId as number,
                         timestamp: Date.now(),
-                        content: `Successfully deleted sync ${existingSync.sync_name} for ${existingSync.unique_key} with ${connections.length} connection${
-                            connections.length > 1 ? 's' : ''
-                        }.`
+                        content
                     });
                 }
             }
@@ -525,6 +556,8 @@ export const getAndReconcileSyncDifferences = async (
 
     return {
         newSyncs,
-        deletedSyncs
+        newActions,
+        deletedSyncs,
+        deletedActions
     };
 };

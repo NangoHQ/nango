@@ -330,6 +330,31 @@ export async function getSyncConfigsBySyncNameAndConfigId(environment_id: number
     return [];
 }
 
+export async function getActionConfigByNameAndProviderConfigKey(environment_id: number, name: string, unique_key: string): Promise<boolean> {
+    const nango_config_id = await configService.getIdByProviderConfigKey(environment_id, unique_key);
+
+    if (!nango_config_id) {
+        return false;
+    }
+
+    const result = await schema()
+        .from<SyncConfig>(TABLE)
+        .where({
+            environment_id,
+            nango_config_id,
+            sync_name: name,
+            deleted: false,
+            type: SyncConfigType.ACTION
+        })
+        .first();
+
+    if (result) {
+        return true;
+    }
+
+    return false;
+}
+
 export async function getSyncConfigByParams(
     environment_id: number,
     sync_name: string,
@@ -411,6 +436,7 @@ export async function getActiveSyncConfigsByEnvironmentId(environment_id: number
             `${TABLE}.runs`,
             `${TABLE}.models`,
             `${TABLE}.updated_at`,
+            `${TABLE}.type`,
             '_nango_configs.provider',
             '_nango_configs.unique_key'
         )
