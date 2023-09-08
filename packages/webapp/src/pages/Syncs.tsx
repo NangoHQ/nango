@@ -55,7 +55,7 @@ export default function Syncs() {
                         onClick={() => setCurrentTab('sync')}
                     >
                         <RefreshCw className="flex stroke-white mr-2 mb-0.5" size="14" />
-                        Sync
+                        Syncs
                     </span>
                     <span
                         className={`flex items-center justify-center cursor-pointer py-1 px-3 ${currentTab === 'action' ? 'bg-gray-800' : ''}`}
