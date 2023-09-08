@@ -90,8 +90,8 @@ export const version = (debug: boolean) => {
 
 export const generate = async (debug = false, inParentDirectory = false) => {
     const dirPrefix = inParentDirectory ? `./${NANGO_INTEGRATIONS_NAME}` : '.';
-    // TODO if action use action template
-    const templateContents = fs.readFileSync(path.resolve(__dirname, './sync.ejs'), 'utf8');
+    const syncTemplateContents = fs.readFileSync(path.resolve(__dirname, './sync.ejs'), 'utf8');
+    const actionTemplateContents = fs.readFileSync(path.resolve(__dirname, './action.ejs'), 'utf8');
     const githubExampleTemplateContents = fs.readFileSync(path.resolve(__dirname, './github.sync.ejs'), 'utf8');
 
     const configContents = fs.readFileSync(`${dirPrefix}/${nangoConfigFile}`, 'utf8');
@@ -148,12 +148,18 @@ export const generate = async (debug = false, inParentDirectory = false) => {
                 process.exit(1);
             }
 
-            const { returns: models } = syncData;
+            const { returns: models, type = SyncConfigType.SYNC } = syncData;
             const syncNameCamel = syncName
                 .split('-')
                 .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
                 .join('');
-            const ejsTeamplateContents = syncName === exampleSyncName ? githubExampleTemplateContents : templateContents;
+
+            let ejsTeamplateContents = '';
+            if (syncName === exampleSyncName) {
+                ejsTeamplateContents = githubExampleTemplateContents;
+            } else {
+                ejsTeamplateContents = type === SyncConfigType.SYNC ? syncTemplateContents : actionTemplateContents;
+            }
             const rendered = ejs.render(ejsTeamplateContents, {
                 syncName: syncNameCamel,
                 interfaceFileName: TYPES_FILE_NAME.replace('.ts', ''),
