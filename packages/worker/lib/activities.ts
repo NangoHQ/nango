@@ -15,6 +15,7 @@ import {
     createActivityLogAndLogMessage,
     ErrorSourceEnum,
     errorManager,
+    metricsManager,
     isInitialSyncStillRunning,
     logger
 } from '@nangohq/shared';
@@ -75,7 +76,8 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
 
         logger.log('info', content);
 
-        await errorManager.captureWithJustEnvironment('sync_overlap', content, environmentId, LogActionEnum.SYNC, {
+        await metricsManager.capture('sync_overlap', content, LogActionEnum.SYNC, {
+            environmentId: String(nangoConnection?.environment_id),
             connectionId: nangoConnection?.connection_id as string,
             providerConfigKey: nangoConnection?.provider_config_key as string,
             syncName,
@@ -146,9 +148,11 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
             content
         });
 
-        await errorManager.captureWithJustEnvironment('sync_failure', content, environmentId, LogActionEnum.SYNC, {
+        await metricsManager.capture('sync_failure', content, LogActionEnum.SYNC, {
+            environmentId: String(environmentId),
             connectionId: nangoConnection?.connection_id as string,
             providerConfigKey: nangoConnection?.provider_config_key as string,
+            syncId,
             syncName
         });
 
@@ -253,7 +257,9 @@ export async function syncProvider(
             content
         });
 
-        await errorManager.captureWithJustEnvironment('sync_failure', content, nangoConnection?.environment_id as number, LogActionEnum.SYNC, {
+        await metricsManager.capture('sync_overlap', content, LogActionEnum.SYNC, {
+            environmentId: String(nangoConnection?.environment_id),
+            syncId,
             connectionId: nangoConnection?.connection_id as string,
             providerConfigKey: nangoConnection?.provider_config_key as string,
             syncName

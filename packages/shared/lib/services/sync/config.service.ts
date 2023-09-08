@@ -20,6 +20,7 @@ import type { Config as ProviderConfig } from '../../models/Provider.js';
 import type { NangoConfig } from '../../integrations/index.js';
 import { NangoError } from '../../utils/error.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
+import metricsManager from '../../utils/metrics.manager.js';
 import { getEnv } from '../../utils/utils.js';
 
 const TABLE = dbNamespace + 'sync_configs';
@@ -200,10 +201,11 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
 
         const shortContent = `Successfully deployed the syncs (${syncsWithVersions.map((sync) => sync.syncName).join(', ')}).`;
 
-        await errorManager.captureWithJustEnvironment('sync_deploy_success', shortContent, environment_id as number, LogActionEnum.SYNC_DEPLOY, {
+        await metricsManager.capture('sync_deploy_success', shortContent, LogActionEnum.SYNC_DEPLOY, {
+            environmentId: String(environment_id),
             syncName: syncsWithVersions.map((sync) => sync.syncName).join(', '),
-            accountId: accountId as number,
-            providers
+            accountId: String(accountId),
+            providers: providers.join(', ')
         });
 
         return { success: true, error: null, response: { result, activityLogId } };
@@ -218,11 +220,13 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
 
         const shortContent = `Failure to deploy the syncs (${syncsWithVersions.map((sync) => sync.syncName).join(', ')}).`;
 
-        await errorManager.captureWithJustEnvironment('sync_deploy_failure', shortContent, environment_id as number, LogActionEnum.SYNC_DEPLOY, {
+        await metricsManager.capture('sync_deploy_failure', shortContent, LogActionEnum.SYNC_DEPLOY, {
+            environmentId: String(environment_id),
             syncName: syncsWithVersions.map((sync) => sync.syncName).join(', '),
-            accountId: accountId as number,
-            providers
+            accountId: String(accountId),
+            providers: providers.join(', ')
         });
+
         throw new NangoError('error_creating_sync_config');
     }
 }

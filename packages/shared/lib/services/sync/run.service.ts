@@ -15,6 +15,7 @@ import webhookService from '../webhook.service.js';
 import { NangoSync } from '../../sdk/sync.js';
 import { isCloud, getApiUrl } from '../../utils/utils.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
+import metricsManager from '../../utils/metrics.manager.js';
 import type { NangoIntegrationData, NangoIntegration } from '../../integrations/index.js';
 import type { UpsertResponse, UpsertSummary } from '../../models/Data.js';
 import { LogActionEnum } from '../../models/Activity.js';
@@ -298,18 +299,18 @@ export default class SyncRun {
                             }
 
                             if (formattedResults.length > 0) {
-                                await errorManager.captureWithJustEnvironment(
+                                await metricsManager.capture(
                                     'sync_script_return_used',
                                     'Data was sent at the end of the integration script instead of using batchSave',
-                                    this.nangoConnection.environment_id as number,
                                     LogActionEnum.SYNC,
                                     {
+                                        environmentId: String(this.nangoConnection.environment_id),
                                         syncName: this.syncName,
-                                        connectionDetails: this.nangoConnection,
+                                        connectionDetails: JSON.stringify(this.nangoConnection),
                                         syncId: this.syncId,
-                                        syncJobId: this.syncJobId,
+                                        syncJobId: String(this.syncJobId),
                                         syncType: this.syncType,
-                                        debug: this.debug
+                                        debug: String(this.debug)
                                     }
                                 );
 
@@ -475,17 +476,18 @@ export default class SyncRun {
             });
         }
 
-        await errorManager.captureWithJustEnvironment('sync_success', content, this.nangoConnection.environment_id as number, LogActionEnum.SYNC, {
+        await metricsManager.capture('sync_success', content, LogActionEnum.SYNC, {
             model,
-            responseResults,
-            numberOfModels,
+            environmentId: String(this.nangoConnection.environment_id),
+            responseResults: JSON.stringify(responseResults),
+            numberOfModels: String(numberOfModels),
             version,
             syncName: this.syncName,
-            connectionDetails: this.nangoConnection,
-            syncId: this.syncId,
-            syncJobId: this.syncJobId,
+            connectionDetails: JSON.stringify(this.nangoConnection),
+            syncId: this.syncId as string,
+            syncJobId: String(this.syncJobId),
             syncType: this.syncType,
-            debug: this.debug
+            debug: String(this.debug)
         });
     }
 
@@ -519,13 +521,14 @@ export default class SyncRun {
             }
         });
 
-        await errorManager.captureWithJustEnvironment('sync_failure', content, this.nangoConnection.environment_id as number, LogActionEnum.SYNC, {
+        await metricsManager.capture('sync_failure', content, LogActionEnum.SYNC, {
+            environmentId: String(this.nangoConnection.environment_id),
             syncName: this.syncName,
-            connectionDetails: this.nangoConnection,
-            syncId: this.syncId,
-            syncJobId: this.syncJobId,
+            connectionDetails: JSON.stringify(this.nangoConnection),
+            syncId: this.syncId as string,
+            syncJobId: String(this.syncJobId),
             syncType: this.syncType,
-            debug: this.debug
+            debug: String(this.debug)
         });
     }
 }

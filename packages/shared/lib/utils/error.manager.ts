@@ -7,7 +7,6 @@ import logger from '../logger/console.js';
 import { NangoError } from './error.js';
 import type { Response, Request } from 'express';
 import { isCloud, getEnvironmentId, getAccountIdAndEnvironmentIdFromSession, dirname, isApiAuthenticated, isUserAuthenticated } from './utils.js';
-import type { LogAction } from '../models/Activity.js';
 import environmentService from '../services/environment.service.js';
 import accountService from '../services/account.service.js';
 import userService from '../services/user.service.js';
@@ -18,12 +17,6 @@ export enum ErrorSourceEnum {
 }
 
 export type ErrorSource = ErrorSourceEnum;
-
-interface ErrorCaptureUser {
-    id: number;
-    email?: string;
-    userId?: number;
-}
 
 interface ErrorOptionalConfig {
     source: ErrorSource;
@@ -114,49 +107,6 @@ class ErrorManager {
         });
 
         logger.error(`Exception caught: ${JSON.stringify(e, Object.getOwnPropertyNames(e))}`);
-    }
-
-    public async capture(
-        event_id: string,
-        message: string,
-        users: ErrorCaptureUser[],
-        accountId: number,
-        environmentId: number,
-        operation: string,
-        contexts?: Record<string, unknown>
-    ) {
-        const environmentName = await environmentService.getEnvironmentName(environmentId);
-
-        sentry.captureEvent({
-            event_id,
-            message,
-            user: {
-                // Note: using the account ID since not all operations have a user ID due to usage of secret/public keys
-                id: accountId.toString(),
-                email: users.map((user) => user.email).join(','),
-                userId: users.map((user) => user.userId).join(',')
-            },
-            tags: {
-                environmentName,
-                operation,
-                source: ErrorSourceEnum.CUSTOMER
-            },
-            contexts: { custom: { ...contexts } } || {}
-        });
-    }
-
-    public async captureWithJustEnvironment(
-        event_id: string,
-        message: string,
-        environmentId: number,
-        operation: LogAction,
-        contexts?: Record<string, unknown>
-    ) {
-        const accountId = await environmentService.getAccountIdFromEnvironment(environmentId);
-        const users = await userService.getByAccountId(accountId as number);
-        if (users.length > 0) {
-            await this.capture(event_id, message, users as ErrorCaptureUser[], accountId as number, environmentId, operation, contexts);
-        }
     }
 
     public errResFromNangoErr(res: Response, err: NangoError | null) {
