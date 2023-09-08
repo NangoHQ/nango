@@ -5,7 +5,7 @@ interface Params {
     [key: string]: any; // Allows additional properties
 }
 
-export default async function fetchData(nango: NangoSync): Promise<{ HubspotOwner: HubspotOwner[] }> {
+export default async function fetchData(nango: NangoSync) {
     const MAX_PAGE = 100;
 
     let page = 1;
@@ -51,6 +51,4 @@ export default async function fetchData(nango: NangoSync): Promise<{ HubspotOwne
             break;
         }
     }
-
-    return { HubspotOwner: [] }; // This returns an empty array
 }

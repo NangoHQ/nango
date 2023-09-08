@@ -1,9 +1,7 @@
 import { SlackMessage, SlackMessageReaction, SlackMessageReply, NangoSync } from './models';
 import { createHash } from 'crypto';
 
-export default async function fetchData(
-    nango: NangoSync
-): Promise<{ SlackMessage: SlackMessage[]; SlackMessageReaction: SlackMessageReaction[]; SlackMessageReply: SlackMessageReply[] }> {
+export default async function fetchData(nango: NangoSync) {
     // Get all channels we are part of
     let channels = await getAllPages(nango, 'users.conversations', {}, 'channels');
 
@@ -141,8 +139,6 @@ export default async function fetchData(
     await nango.batchSave(batchMessages, 'SlackMessage');
     await nango.batchSave(batchMessageReply, 'SlackMessageReply');
     await nango.batchSave(batchReactions, 'SlackMessageReaction');
-
-    return { SlackMessage: [], SlackMessageReaction: [], SlackMessageReply: [] }; // Soon will no longer need to return anything.
 }
 
 async function getAllPages(nango: NangoSync, endpoint: string, params: Record<string, string>, resultsKey: string) {

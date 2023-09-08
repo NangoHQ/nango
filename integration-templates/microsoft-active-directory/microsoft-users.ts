@@ -30,7 +30,7 @@ interface Metadata {
     orgsToSync: string[];
 }
 
-export default async function fetchData(nango: NangoSync): Promise<{ User: User[] }> {
+export default async function fetchData(nango: NangoSync) {
     const metadata = await nango.getMetadata<Metadata>();
     const { orgsToSync } = metadata;
 
@@ -54,10 +54,6 @@ export default async function fetchData(nango: NangoSync): Promise<{ User: User[
     const endpoint = 'v1.0/directory/deletedItems/microsoft.graph.user?$top=100';
     await nango.log(`Detecting deleted users`);
     await fetchAndUpdateUsers(nango, endpoint, true);
-
-    return {
-        User: []
-    };
 }
 async function fetchAndUpdateUsers(nango: NangoSync, endpoint: string, runDelete = false): Promise<void> {
     const selects = [

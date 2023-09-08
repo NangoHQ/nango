@@ -21,11 +21,11 @@ class WebhookService {
             return;
         }
 
-        if (responseResults.added === 0 && responseResults.updated === 0) {
+        if (responseResults.added === 0 && responseResults.updated === 0 && responseResults.deleted === 0) {
             await createActivityLogMessage({
                 level: 'info',
                 activity_log_id: activityLogId,
-                content: `There were no added or updated results so a webhook with changes was not sent.`,
+                content: `There were no added, updated, or deleted results so a webhook with changes was not sent.`,
                 timestamp: Date.now()
             });
 
@@ -39,7 +39,8 @@ class WebhookService {
             model,
             responseResults: {
                 added: responseResults.added,
-                updated: responseResults.updated
+                updated: responseResults.updated,
+                deleted: 0
             },
             syncType,
             queryTimeStamp: now as unknown as string

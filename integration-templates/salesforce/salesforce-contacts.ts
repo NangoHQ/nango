@@ -1,11 +1,9 @@
 import { NangoSync, SalesforceContact } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<{ SalesforceContact: SalesforceContact[] }> {
+export default async function fetchData(nango: NangoSync) {
     const query = buildQuery(nango.lastSyncDate);
 
     await fetchAndSaveRecords(nango, query);
-
-    return { SalesforceContact: [] };
 }
 
 function buildQuery(lastSyncDate?: Date): string {
@@ -46,13 +44,11 @@ async function fetchAndSaveRecords(nango: NangoSync, query: string) {
 
         endpoint = response.data.nextRecordsUrl;
     }
-
-    return { SalesforceDeal: [] };
 }
 
 function mapContacts(records: any[]): SalesforceContact[] {
-    const contacts: SalesforceContact[] = records.map((record: any) => {
-        const contact: SalesforceContact = {
+    return records.map((record: any) => {
+        return {
             id: record.Id as string,
             first_name: record.FirstName,
             last_name: record.LastName,
@@ -60,8 +56,5 @@ function mapContacts(records: any[]): SalesforceContact[] {
             account_id: record.AccountId,
             last_modified_date: record.LastModifiedDate
         };
-        return contact;
     });
-
-    return contacts;
 }

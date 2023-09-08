@@ -29,7 +29,6 @@ export default async function fetchData(nango: NangoSync) {
 
     await nango.log(`Fetching ${spaces.length}`);
     await nango.batchSave(spaces, 'ConfluenceSpace');
-    return { ConfluenceSpace: [...spaces] };
 }
 
 async function paginate(nango: NangoSync, method: 'get' | 'post', endpoint: string, desc: string, pageSize = 250, cloudId: string) {

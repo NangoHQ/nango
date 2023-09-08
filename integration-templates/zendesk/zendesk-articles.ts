@@ -30,8 +30,6 @@ export default async function fetchData(nango: NangoSync) {
             break;
         }
     }
-
-    return { ZendeskArticle: [] }; // Return statement is deprecated (will soon go away).
 }
 
 async function paginate(

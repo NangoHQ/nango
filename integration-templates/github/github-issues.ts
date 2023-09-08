@@ -1,6 +1,6 @@
 import type { NangoSync, GithubIssue } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<{ GithubIssue: GithubIssue[] }> {
+export default async function fetchData(nango: NangoSync) {
     const repos = await paginate(nango, '/user/repos');
 
     for (let repo of repos) {
@@ -28,8 +28,6 @@ export default async function fetchData(nango: NangoSync): Promise<{ GithubIssue
             await nango.log(`Sent ${mappedIssues.length} issues from ${repo.owner.login}/${repo.name}`);
         }
     }
-
-    return { GithubIssue: [] }; // Soon, will not longer need to return anything.
 }
 
 async function paginate(nango: NangoSync, endpoint: string) {

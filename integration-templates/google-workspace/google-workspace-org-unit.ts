@@ -16,7 +16,7 @@ interface OrganizationUnitResponse {
     organizationUnits: OrganizationUnit[];
 }
 
-export default async function fetchData(nango: NangoSync): Promise<{ OrganizationalUnit: OrganizationalUnit[] }> {
+export default async function fetchData(nango: NangoSync) {
     const endpoint = '/admin/directory/v1/customer/my_customer/orgunits';
     let pageToken: string | undefined;
 
@@ -80,8 +80,4 @@ export default async function fetchData(nango: NangoSync): Promise<{ Organizatio
 
         pageToken = response.data.nextPageToken;
     } while (pageToken);
-
-    return {
-        OrganizationalUnit: []
-    };
 }

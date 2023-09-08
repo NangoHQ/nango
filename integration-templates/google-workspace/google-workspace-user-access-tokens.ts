@@ -1,6 +1,6 @@
 import { GoogleWorkspaceUserToken, NangoSync } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<{ GoogleWorkspaceUserToken: GoogleWorkspaceUserToken[] }> {
+export default async function fetchData(nango: NangoSync) {
     // Get the users in the org
     const params = {
         customer: 'my_customer'
@@ -20,8 +20,6 @@ export default async function fetchData(nango: NangoSync): Promise<{ GoogleWorks
 
         await nango.batchSave(mappedTokens, 'GoogleWorkspaceUserToken');
     }
-
-    return { GoogleWorkspaceUserToken: [] }; // Soon, will not longer need to return anything.
 }
 
 async function paginate(nango: NangoSync, endpoint: string, resultsKey: string, queryParams?: Record<string, string | string[]>) {

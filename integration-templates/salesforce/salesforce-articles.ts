@@ -4,14 +4,12 @@ interface Metadata {
     customFields: string[];
 }
 
-export default async function fetchData(nango: NangoSync): Promise<{ SalesforceDeal: SalesforceArticle[] }> {
+export default async function fetchData(nango: NangoSync) {
     const customFields = (await nango.getMetadata<Metadata>()).customFields;
 
     const query = buildQuery(customFields, nango.lastSyncDate);
 
     await fetchAndSaveRecords(nango, query, customFields);
-
-    return { SalesforceDeal: [] };
 }
 
 function buildQuery(customFields: string[], lastSyncDate?: Date): string {
@@ -47,8 +45,6 @@ async function fetchAndSaveRecords(nango: NangoSync, query: string, customFields
 
         endpoint = response.data.nextRecordsUrl;
     }
-
-    return { SalesforceDeal: [] };
 }
 
 function mapRecords(records: any[], customFields: string[]): SalesforceArticle[] {
