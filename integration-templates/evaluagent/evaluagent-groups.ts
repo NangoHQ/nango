@@ -1,6 +1,6 @@
 import type { NangoSync, EvaluAgentGroup } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<{ EvaluAgentGroup: EvaluAgentGroup[] }> {
+export default async function fetchData(nango: NangoSync) {
     let payload = {
         endpoint: '/v1/org/groups'
     };
@@ -23,6 +23,4 @@ export default async function fetchData(nango: NangoSync): Promise<{ EvaluAgentG
         await nango.batchSave<EvaluAgentGroup>(mappedGroups, 'EvaluAgentGroup');
         await nango.log(`Sent ${mappedGroups.length} groups`);
     }
-
-    return { EvaluAgentGroup: [] };
 }

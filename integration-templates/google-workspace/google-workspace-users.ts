@@ -71,7 +71,7 @@ interface Metadata {
     orgsToSync: OrgToSync[];
 }
 
-export default async function fetchData(nango: NangoSync): Promise<{ User: User[] }> {
+export default async function fetchData(nango: NangoSync) {
     const metadata = await nango.getMetadata<Metadata>();
     const { orgsToSync } = metadata;
 
@@ -90,10 +90,6 @@ export default async function fetchData(nango: NangoSync): Promise<{ User: User[
 
     await nango.log('Detecting deleted users');
     await fetchAndUpdateUsers(nango, null, true);
-
-    return {
-        User: []
-    };
 }
 
 async function fetchAndUpdateUsers(nango: NangoSync, orgUnit: OrgToSync | null, runDelete = false): Promise<void> {

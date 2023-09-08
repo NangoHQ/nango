@@ -1,6 +1,6 @@
 import type { NangoSync, NotionPage } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<{ NotionPage: NotionPage[] }> {
+export default async function fetchData(nango: NangoSync) {
     const pages = (await paginate(nango, 'post', '/v1/search', 'Notion pages', 100, true)).filter((result: any) => result.object === 'page');
     const batchSize = 10;
     await nango.log(`Found ${pages.length} new/updated Notion pages to sync.`);
@@ -11,8 +11,6 @@ export default async function fetchData(nango: NangoSync): Promise<{ NotionPage:
         let pagesWithPlainText = await Promise.all(batchOfPages.map(async (page: any) => mapPage(page, await fetchPlainText(page, nango))));
         await nango.batchSave(pagesWithPlainText, 'NotionPage');
     }
-
-    return { NotionPage: [] }; // Soon, will not longer need to return anything.
 }
 
 async function fetchPlainText(page: any, nango: NangoSync): Promise<string> {

@@ -5,7 +5,7 @@ interface Params {
     [key: string]: any; // Allows additional properties such as the 'after' property
 }
 
-export default async function fetchData(nango: NangoSync): Promise<{ HubspotUser: HubspotUser[] }> {
+export default async function fetchData(nango: NangoSync) {
     const MAX_PAGE = 100;
 
     let page = 1;
@@ -48,6 +48,4 @@ export default async function fetchData(nango: NangoSync): Promise<{ HubspotUser
             break;
         }
     }
-
-    return { HubspotUser: [] };
 }

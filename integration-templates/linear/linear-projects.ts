@@ -1,6 +1,6 @@
 import { NangoSync, LinearProject } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<{ LinearProject: LinearProject[] }> {
+export default async function fetchData(nango: NangoSync) {
     const { lastSyncDate } = nango;
     const pageSize = 50;
     let after = '';
@@ -53,8 +53,6 @@ export default async function fetchData(nango: NangoSync): Promise<{ LinearProje
             after = response.data.data.projects.pageInfo.endCursor;
         }
     }
-
-    return { LinearProject: [] }; // Soon, will no longer need to return anything.
 }
 
 function mapProjects(records: any[]): LinearProject[] {

@@ -31,8 +31,6 @@ export default async function fetchData(nango: NangoSync) {
 
         await nango.batchSave(confluencePages, 'ConfluencePage');
     }
-
-    return { ConfluencePage: [] }; // Return statement is deprecated (will soon go away).
 }
 
 async function getNextPage(

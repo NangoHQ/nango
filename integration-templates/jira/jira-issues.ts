@@ -1,6 +1,6 @@
 import type { NangoSync, JiraIssue } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<{ JiraIssue: JiraIssue[] }> {
+export default async function fetchData(nango: NangoSync) {
     const jql = nango.lastSyncDate ? `updated >= "${nango.lastSyncDate?.toISOString().slice(0, -8).replace('T', ' ')}"` : '';
     let startAt: number = 0;
     const maxResults: number = 50;
@@ -32,8 +32,6 @@ export default async function fetchData(nango: NangoSync): Promise<{ JiraIssue: 
             startAt += maxResults;
         }
     }
-
-    return { JiraIssue: [] }; // Soon, will no longer need to return anything.
 }
 
 async function getCloudId(nango: NangoSync): Promise<string> {

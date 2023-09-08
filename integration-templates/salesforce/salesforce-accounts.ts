@@ -1,11 +1,9 @@
 import { NangoSync, SalesforceAccount } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<{ SalesforceAccount: SalesforceAccount[] }> {
+export default async function fetchData(nango: NangoSync) {
     const query = buildQuery(nango.lastSyncDate);
 
     await fetchAndSaveRecords(nango, query);
-
-    return { SalesforceAccount: [] };
 }
 
 function buildQuery(lastSyncDate?: Date): string {
@@ -38,7 +36,7 @@ async function fetchAndSaveRecords(nango: NangoSync, query: string) {
 
         const mappedRecords = mapAccounts(response.data.records);
 
-        await nango.batchSave(mappedRecords, 'SalesforceContact');
+        await nango.batchSave(mappedRecords, 'SalesforceAccount');
 
         if (response.data.done) {
             break;
@@ -46,13 +44,11 @@ async function fetchAndSaveRecords(nango: NangoSync, query: string) {
 
         endpoint = response.data.nextRecordsUrl;
     }
-
-    return { SalesforceDeal: [] };
 }
 
 function mapAccounts(records: any[]): SalesforceAccount[] {
-    const accounts: SalesforceAccount[] = records.map((record: any) => {
-        const account: SalesforceAccount = {
+    return records.map((record: any) => {
+        return {
             id: record.Id as string,
             name: record.Name,
             website: record.Website,
@@ -60,8 +56,5 @@ function mapAccounts(records: any[]): SalesforceAccount[] {
             no_employees: record.NumberOfEmployees,
             last_modified_date: record.LastModifiedDate
         };
-        return account;
     });
-
-    return accounts;
 }

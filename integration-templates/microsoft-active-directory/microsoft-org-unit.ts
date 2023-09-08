@@ -51,14 +51,10 @@ interface OrganizationUnitResponse {
     '@odata.nextLink'?: string;
 }
 
-export default async function fetchData(nango: NangoSync): Promise<{ OrganizationalUnit: OrganizationalUnit[] }> {
+export default async function fetchData(nango: NangoSync) {
     // https://learn.microsoft.com/en-us/graph/api/group-list-memberof?view=graph-rest-1.0&source=recommendations&tabs=http
     await fetchAndUpdateOrgs(nango, 'v1.0/groups');
     await fetchAndUpdateOrgs(nango, 'v1.0/directory/deletedItems/microsoft.graph.group', true);
-
-    return {
-        OrganizationalUnit: []
-    };
 }
 
 async function fetchAndUpdateOrgs(nango: NangoSync, initialEndpoint: string, runDelete = false): Promise<void> {
