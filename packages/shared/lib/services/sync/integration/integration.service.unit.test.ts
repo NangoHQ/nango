@@ -3,6 +3,8 @@ import integrationService from './integration.service.js';
 import { mockCreateActivityLogMessage } from '../../activity/mocks.js';
 import path from 'path';
 
+const loadLocation = path.join(__dirname, 'mocks/nango-integrations');
+
 describe('Should run an integration script', () => {
     it('Returns null if the proper arguments are not passed', async () => {
         mockCreateActivityLogMessage();
@@ -22,7 +24,6 @@ describe('Should run an integration script', () => {
 
     it('Runs a simple javascript function that returns an expected object', async () => {
         mockCreateActivityLogMessage();
-        const loadLocation = path.join(__dirname, '.');
         const mockNango: any = {
             get: () => {
                 return {
@@ -41,7 +42,6 @@ describe('Should run an integration script', () => {
 
     it('Runs a simple javascript function that returns an expected object with a Nango class', async () => {
         mockCreateActivityLogMessage();
-        const loadLocation = path.join(__dirname, '.');
 
         const nangoClass = class Nango {
             public get() {
@@ -62,7 +62,6 @@ describe('Should run an integration script', () => {
 
     it('Runs a compiled javascript function that returns an expected object', async () => {
         mockCreateActivityLogMessage();
-        const loadLocation = path.join(__dirname, '.');
         const mockNango: any = {
             post: () => {
                 return {
@@ -81,7 +80,6 @@ describe('Should run an integration script', () => {
 
     it('Runs an action with an argument that returns the argument', async () => {
         mockCreateActivityLogMessage();
-        const loadLocation = path.join(__dirname, '.');
         const param = { test: 'test' };
         const mockNango: any = {
             get: () => {
@@ -91,5 +89,25 @@ describe('Should run an integration script', () => {
 
         const result = await integrationService.runScript('action', 1, mockNango, {} as any, 1, false, true, loadLocation, param);
         expect(result).toEqual(param);
+    });
+
+    it('Runs a sync with an internal node.js dependency', async () => {
+        mockCreateActivityLogMessage();
+
+        const nangoClass = class Nango {
+            public get() {
+                return {
+                    data: {
+                        classTest: {
+                            id: 'dep'
+                        }
+                    }
+                };
+            }
+        };
+        const nango = new nangoClass();
+
+        const result = await integrationService.runScript('dependency', 1, nango as any, {} as any, 1, false, true, loadLocation);
+        expect(result).toEqual(nango.get());
     });
 });

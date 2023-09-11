@@ -1,0 +1,20 @@
+integrations:
+  google:
+    simple:
+      type: sync
+      runs: every 12 hours
+      returns:
+        - Test
+    compiled:
+      type: sync
+      runs: every 12 hours
+      returns:
+        - Test
+    dependency:
+      type: sync
+      runs: every 12 hours
+      returns:
+        - Test
+models:
+  Test:
+    id: string
