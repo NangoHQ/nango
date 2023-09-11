@@ -56,7 +56,6 @@ describe('Should run an integration script', () => {
         };
         const nango = new nangoClass();
 
-        console.log(nango.get());
         const result = await integrationService.runScript('simple', 1, nango as any, {} as any, 1, false, false, loadLocation);
         expect(result).toEqual(nango.get());
     });
