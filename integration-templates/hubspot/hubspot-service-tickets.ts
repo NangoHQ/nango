@@ -1,6 +1,6 @@
 import type { NangoSync, HubspotServiceTicket } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<{ HubspotServiceTicket: HubspotServiceTicket[] }> {
+export default async function fetchData(nango: NangoSync) {
     const MAX_PAGE = 100;
 
     let page = 1;
@@ -85,8 +85,6 @@ export default async function fetchData(nango: NangoSync): Promise<{ HubspotServ
             break;
         }
     }
-
-    return { HubspotServiceTicket: [] }; // This returns an empty array
 }
 
 interface Params {

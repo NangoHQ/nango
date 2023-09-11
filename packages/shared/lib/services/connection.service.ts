@@ -27,7 +27,7 @@ import { NangoError } from '../utils/error.js';
 import type { Metadata, Connection, StoredConnection, BaseConnection, NangoConnection } from '../models/Connection.js';
 import type { ServiceResponse } from '../models/Generic.js';
 import encryptionManager from '../utils/encryption.manager.js';
-import errorManager from '../utils/error.manager.js';
+import metricsManager from '../utils/metrics.manager.js';
 import { AuthModes as ProviderAuthModes, OAuth2Credentials, ImportedCredentials, ApiKeyCredentials, BasicApiCredentials } from '../models/Auth.js';
 import { schema } from '../db/database.js';
 import { parseTokenExpirationDate, isTokenExpired } from '../utils/utils.js';
@@ -237,7 +237,8 @@ class ConnectionService {
         if (!connectionId) {
             const error = new NangoError('missing_connection');
 
-            await errorManager.captureWithJustEnvironment('get_connection_failure', error.message, environment_id as number, LogActionEnum.AUTH, {
+            await metricsManager.capture('get_connection_failure', error.message, LogActionEnum.AUTH, {
+                environmentId: String(environment_id),
                 connectionId,
                 providerConfigKey
             });
@@ -248,7 +249,8 @@ class ConnectionService {
         if (!providerConfigKey) {
             const error = new NangoError('missing_provider_config');
 
-            await errorManager.captureWithJustEnvironment('get_connection_failure', error.message, environment_id as number, LogActionEnum.AUTH, {
+            await metricsManager.capture('get_connection_failure', error.message, LogActionEnum.AUTH, {
+                environmentId: String(environment_id),
                 connectionId,
                 providerConfigKey
             });
@@ -268,7 +270,8 @@ class ConnectionService {
 
             const error = new NangoError('unknown_connection', { connectionId, providerConfigKey, environmentName });
 
-            await errorManager.captureWithJustEnvironment('get_connection_failure', error.message, environment_id as number, LogActionEnum.AUTH, {
+            await metricsManager.capture('get_connection_failure', error.message, LogActionEnum.AUTH, {
+                environmentId: String(environment_id),
                 connectionId,
                 providerConfigKey
             });
@@ -291,7 +294,9 @@ class ConnectionService {
         await this.updateLastFetched(connection?.id as number);
 
         const content = 'Connection fetched successfully';
-        await errorManager.captureWithJustEnvironment('get_connection_success', content, environment_id as number, LogActionEnum.AUTH, {
+
+        await metricsManager.capture('get_connection_success', content, LogActionEnum.AUTH, {
+            environmentId: String(environment_id),
             connectionId,
             providerConfigKey
         });

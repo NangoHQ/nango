@@ -1,6 +1,6 @@
 import { AsanaTask, NangoSync } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<{ AsanaTask: AsanaTask[] }> {
+export default async function fetchData(nango: NangoSync) {
     // Get the user's workspaces & projects
     // For testing we just get the first project of the first workspace
     const workspaces = await paginate(nango, '/api/1.0/workspaces');
@@ -31,8 +31,6 @@ export default async function fetchData(nango: NangoSync): Promise<{ AsanaTask: 
             mappedTasks = [];
         }
     }
-
-    return { AsanaTask: [] }; // Soon, will not longer need to return anything.
 }
 
 async function paginate(nango: NangoSync, endpoint: string, queryParams?: Record<string, string | string[]>) {

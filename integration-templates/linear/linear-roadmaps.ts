@@ -1,6 +1,6 @@
 import { NangoSync, LinearRoadmap } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<{ LinearRoadmap: LinearRoadmap[] }> {
+export default async function fetchData(nango: NangoSync) {
     const { lastSyncDate } = nango;
     const pageSize = 50;
     let after = '';
@@ -60,8 +60,6 @@ export default async function fetchData(nango: NangoSync): Promise<{ LinearRoadm
             after = response.data.data.roadmaps.pageInfo.endCursor;
         }
     }
-
-    return { LinearRoadmap: [] }; // Soon, will no longer need to return anything.
 }
 
 function mapRoadmaps(records: any[]): LinearRoadmap[] {

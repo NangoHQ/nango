@@ -81,6 +81,12 @@ export interface SlimSync {
     connections?: number;
 }
 
+export interface SlimAction {
+    id?: number;
+    providerConfigKey?: string;
+    name: string;
+}
+
 export type SyncDeploymentResult = Pick<SyncConfig, 'id' | 'version' | 'sync_name'>;
 
 export interface SyncConfigResult {
@@ -88,9 +94,11 @@ export interface SyncConfigResult {
     activityLogId: number | null;
 }
 
-export interface SyncDifferences {
+export interface SyncAndActionDifferences {
     newSyncs: SlimSync[];
     deletedSyncs: SlimSync[];
+    newActions: SlimAction[];
+    deletedActions: SlimAction[];
 }
 
 export interface IncomingSyncConfig {
@@ -186,4 +194,5 @@ export interface SyncConfigWithProvider {
     updated_at: string;
     provider_config_key: string;
     unique_key: string;
+    type: SyncConfigType;
 }

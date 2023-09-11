@@ -347,10 +347,6 @@ export class NangoSync {
                 }
             };
 
-            if (summary?.deletedKeys?.length === 0) {
-                delete (updatedResults[model] as any)?.deleted;
-            }
-
             await createActivityLogMessage({
                 level: 'info',
                 activity_log_id: this.activityLogId as number,

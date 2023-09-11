@@ -1,5 +1,0 @@
-import type { NangoSync, <%= interfaceNames.join(', ') %> } from './<%= interfaceFileName %>';
-
-export default async function fetchData(nango: NangoSync): Promise<{<% for (let i = 0; i < mappings.length; i++) { %><%= mappings[i].name %>: <%= mappings[i].type %>[]<% if (i !== mappings.length - 1) { %>, <% } %><% } %>}> {
-    // Integration code goes here, be sure to follow the return signature type
-}

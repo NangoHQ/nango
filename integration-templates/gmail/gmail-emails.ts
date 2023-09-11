@@ -1,6 +1,6 @@
 import { NangoSync, GmailEmail } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<{ GmailEmail: GmailEmail[] }> {
+export default async function fetchData(nango: NangoSync) {
     const backfillPeriod = new Date(Date.now() - 24 * 60 * 60 * 1000); // 24 hours ago.
     const { lastSyncDate } = nango;
     const syncDate = lastSyncDate || backfillPeriod;
@@ -40,8 +40,6 @@ export default async function fetchData(nango: NangoSync): Promise<{ GmailEmail:
 
         nextPageToken = response.data.nextPageToken;
     } while (nextPageToken);
-
-    return { GmailEmail: [] }; // Soon, will not longer need to return anything.
 }
 
 function mapEmail(messageDetail: any, headers: any): GmailEmail {

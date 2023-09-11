@@ -1,6 +1,6 @@
 import type { NangoSync, EvaluAgentRole } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<{ EvaluAgentRole: EvaluAgentRole[] }> {
+export default async function fetchData(nango: NangoSync) {
     let payload = {
         endpoint: '/v1/org/roles'
     };
@@ -19,6 +19,4 @@ export default async function fetchData(nango: NangoSync): Promise<{ EvaluAgentR
         await nango.batchSave<EvaluAgentRole>(mappedRoles, 'EvaluAgentRole');
         await nango.log(`Sent ${mappedRoles.length} roles`);
     }
-
-    return { EvaluAgentRole: [] };
 }
