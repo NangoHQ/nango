@@ -6,14 +6,20 @@ import { createActivityLogMessage } from '../../activity/activity.service.js';
 import type { NangoSync } from '../../../sdk/sync.js';
 import fileService from '../../file.service.js';
 import { isCloud } from '../../../utils/utils.js';
-import { classToObject, createConsoleLog, hostToQuickJSHandle, quickJSHandleToHost } from './utils.js';
+import { classToObject, createConsoleLog, createRequireMethod, hostToQuickJSHandle, quickJSHandleToHost } from './utils.js';
+
+const memoryLimit = 500;
 
 class IntegrationService {
     async compile(code: string, sandbox: Context): Promise<any> {
         const quickJs = await getQuickJS();
-        const vm = quickJs.newContext();
+        const runtime = quickJs.newRuntime();
+        runtime.setMemoryLimit(1024 * 1024 * 500);
+
+        const vm = runtime.newContext();
 
         createConsoleLog(vm);
+        createRequireMethod(vm);
 
         if (sandbox) {
             for (const [name, value] of Object.entries(sandbox)) {
@@ -74,7 +80,7 @@ class IntegrationService {
             }
         };
 
-        return returnFunction;
+        return { fn: returnFunction };
     }
 
     async runScript(
@@ -111,13 +117,19 @@ class IntegrationService {
             }
 
             try {
-                const fn = await this.compile(script, { nango });
+                const { fn } = await this.compile(script, { nango });
                 const nangoObject = classToObject(nango);
                 const results = isAction ? await fn(nangoObject, input) : await fn(nangoObject);
 
                 return results;
             } catch (err: any) {
                 let content;
+                let isMemoryLimitError = false;
+
+                if (err.toString().includes('Aborted()')) {
+                    isMemoryLimitError = true;
+                }
+
                 if ('response' in err && 'data' in err.response) {
                     const message = JSON.stringify(err.response.data, null, 2);
                     content = `The script failed to execute for ${syncName} with the following error: ${message}`;
@@ -126,6 +138,10 @@ class IntegrationService {
 
                     const errorMessage = typeof err === 'object' && Object.keys(err as object).length > 0 ? prettyError : String(err);
                     content = `The script failed to execute for ${syncName} with the following error: ${errorMessage}`;
+                }
+
+                if (isMemoryLimitError) {
+                    content += `\n\nThe script has exceeded the memory limit of ${memoryLimit}mb. Please reduce the amount of data being processed.`;
                 }
 
                 if (activityLogId && writeToDb) {

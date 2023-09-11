@@ -1,10 +1,15 @@
 import type { QuickJSContext, QuickJSHandle } from 'quickjs-emscripten';
+import crypto from 'crypto';
 import { types } from 'util';
 
 type GenericFunction = (...args: unknown[]) => unknown;
 
 export function hostConsoleLog(...args: unknown[]): void {
     console.log(...args);
+}
+
+export function hostRequire(moduleName: string): unknown {
+    return require(moduleName);
 }
 
 export function isClassInstance(obj: unknown): boolean {
@@ -60,7 +65,68 @@ export function createConsoleLog(vm: QuickJSContext): void {
     globalObject.dispose();
 }
 
+export function createRequireMethod(vm: QuickJSContext): void {
+    const globalObject = vm.global;
+
+    const requireFn = vm.newFunction('require', (moduleName: QuickJSHandle) => {
+        const hostModuleName = quickJSHandleToHost(vm, moduleName);
+        const moduleExports = hostRequire(hostModuleName);
+        return hostToQuickJSHandle(vm, moduleExports);
+    });
+
+    vm.setProp(globalObject, 'require', requireFn);
+
+    requireFn.dispose();
+    globalObject.dispose();
+}
+
+export function createHashBridge(algorithm: string, data: string): string {
+    const hash = crypto.createHash(algorithm);
+    hash.update(data);
+    return hash.digest('hex');
+}
+
+export function createCryptoHash(vm: QuickJSContext): void {
+    const globalObject = vm.global;
+
+    const createHashFn = vm.newFunction('createHash', (algorithm: QuickJSHandle) => {
+        const hostAlgorithm = quickJSHandleToHost(vm, algorithm);
+        const hash = crypto.createHash(hostAlgorithm);
+
+        const hashObject = vm.newObject();
+
+        const updateFn = vm.newFunction('update', (data: QuickJSHandle) => {
+            const hostData = quickJSHandleToHost(vm, data);
+            hash.update(hostData);
+            return vm.undefined;
+        });
+
+        const digestFn = vm.newFunction('digest', (encoding: QuickJSHandle) => {
+            const hostEncoding = quickJSHandleToHost(vm, encoding);
+            const result = hash.digest(hostEncoding);
+            return hostToQuickJSHandle(vm, result);
+        });
+
+        vm.setProp(hashObject, 'update', updateFn);
+        vm.setProp(hashObject, 'digest', digestFn);
+
+        updateFn.dispose();
+        digestFn.dispose();
+
+        return hashObject;
+    });
+
+    vm.setProp(globalObject, 'createHash', createHashFn);
+
+    createHashFn.dispose();
+    globalObject.dispose();
+}
+
 export function quickJSHandleToHost(vm: QuickJSContext, val: QuickJSHandle) {
+    // @ts-ignore
+    if (val.error) {
+        throw new Error(vm.dump(val));
+    }
     return vm.dump(val);
 }
 
@@ -84,6 +150,60 @@ export function handlePropertyOrMethod(vm: QuickJSContext, key: string, obj: Rec
 export function hostToQuickJSHandle(vm: QuickJSContext, val: unknown, isDataProperty = false): QuickJSHandle {
     if (typeof val === 'object' && val !== null && 'data' in val && !isDataProperty) {
         return hostToQuickJSHandle(vm, { data: (val as any).data }, true);
+    }
+
+    const hashObjects: { [id: string]: crypto.Hash } = {};
+
+    if (val === crypto) {
+        const cryptoObjHandle = vm.newObject();
+
+        const createHashFn = vm.newFunction('createHash', (algorithmHandle: QuickJSHandle) => {
+            const algorithm = quickJSHandleToHost(vm, algorithmHandle);
+
+            const hashObjHandle = vm.newObject();
+
+            const hash = crypto.createHash(algorithm);
+            const hashId = `${Date.now()}-${Math.random()}`;
+            hashObjects[hashId] = hash;
+
+            vm.setProp(hashObjHandle, '_hashId', vm.newString(hashId));
+
+            const updateFn = vm.newFunction('update', function (this: QuickJSHandle, dataHandle: QuickJSHandle) {
+                const data = quickJSHandleToHost(vm, dataHandle);
+                const hashIdHandle = vm.getProp(this, '_hashId');
+                const hashId = quickJSHandleToHost(vm, hashIdHandle);
+                const hash = hashObjects[hashId];
+
+                hash?.update(data);
+                hashIdHandle.dispose();
+
+                return this;
+            });
+            vm.setProp(hashObjHandle, 'update', updateFn);
+            updateFn.dispose();
+
+            const digestFn = vm.newFunction('digest', function (this: QuickJSHandle, encodingHandle?: QuickJSHandle) {
+                const encoding = encodingHandle ? quickJSHandleToHost(vm, encodingHandle) : 'hex';
+                const hashIdHandle = vm.getProp(this, '_hashId');
+                const hashId = quickJSHandleToHost(vm, hashIdHandle);
+                const hash = hashObjects[hashId];
+                const result = hash?.digest(encoding);
+
+                delete hashObjects[hashId];
+                hashIdHandle.dispose();
+
+                return vm.newString(result as string);
+            });
+            vm.setProp(hashObjHandle, 'digest', digestFn);
+            digestFn.dispose();
+
+            return hashObjHandle;
+        });
+
+        vm.setProp(cryptoObjHandle, 'createHash', createHashFn);
+        createHashFn.dispose();
+
+        return cryptoObjHandle;
     }
 
     if (typeof val === 'undefined') {
