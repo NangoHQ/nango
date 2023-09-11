@@ -94,10 +94,14 @@
         },
         {
             "group": "Guides",
-            "pages": [{
+            "pages": [
+                {
                     "group": "Authorize APIs",
                     "pages": ["guides/oauth", "guides/api-key"]
-                }, "guides/sync", "guides/proxy", "guides/webhooks"
+                }, {
+                    "group": "Consume APIs",
+                    "pages": ["guides/sync", "guides/actions", "guides/proxy", "guides/webhooks"]
+                }, "contribute"
             ]
         },
         {
@@ -115,10 +119,6 @@
                 "self-host/render",
                 "self-host/heroku"
             ]
-        },
-        {
-            "group": "Contribute",
-            "pages": ["contribute"]
         },
         {
             "group": "Overview",
