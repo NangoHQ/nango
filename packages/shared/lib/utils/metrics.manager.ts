@@ -7,6 +7,9 @@ class MetricsManager {
         try {
             if (isCloud() && process.env['DD_API_KEY'] && process.env['DD_APP_KEY']) {
                 const configuration = client.createConfiguration();
+                configuration.setServerVariables({
+                    site: 'us3.datadoghq.com'
+                });
                 this.logInstance = new v2.LogsApi(configuration);
             }
         } catch (_) {
@@ -19,7 +22,7 @@ class MetricsManager {
             body: [
                 {
                     ddsource: 'web',
-                    ddtags: `${eventId}, environment: ${process.env['NODE_ENV']}`,
+                    ddtags: `${eventId}, environment:${process.env['NODE_ENV']}`,
                     message,
                     service: operation,
                     additionalProperties: context
