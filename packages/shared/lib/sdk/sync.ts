@@ -4,6 +4,7 @@ import { formatDataRecords } from '../services/sync/data-records.service.js';
 import { createActivityLogMessage } from '../services/activity/activity.service.js';
 import { setLastSyncDate } from '../services/sync/sync.service.js';
 import { updateSyncJobResult } from '../services/sync/job.service.js';
+import environmentService from '../services/environment.service.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { LogActionEnum } from '../models/Activity.js';
 
@@ -147,6 +148,11 @@ interface NangoProps {
 
 interface UserLogParameters {
     level?: LogLevel;
+}
+
+interface EnvironmentVariable {
+    name: string;
+    value: string;
 }
 
 export class NangoSync {
@@ -504,6 +510,25 @@ export class NangoSync {
             activity_log_id: this.activityLogId as number,
             content,
             timestamp: Date.now()
+        });
+    }
+
+    public async getEnvironmentVariables(): Promise<EnvironmentVariable[] | null> {
+        if (!this.environmentId) {
+            throw new Error('There is no current environment to get variables from');
+        }
+
+        const environmentVariables = await environmentService.getEnvironmentVariables(this.environmentId as number);
+
+        if (!environmentVariables) {
+            return [];
+        }
+
+        return environmentVariables.map((variable) => {
+            return {
+                name: variable.name,
+                value: variable.value
+            };
         });
     }
 }
