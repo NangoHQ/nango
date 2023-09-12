@@ -1,4 +1,4 @@
-import { QuickJSContext, QuickJSHandle } from 'quickjs-emscripten';
+import type { QuickJSContext, QuickJSHandle } from 'quickjs-emscripten';
 import crypto from 'crypto';
 import { types } from 'util';
 
