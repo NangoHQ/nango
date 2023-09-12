@@ -324,8 +324,12 @@
             ]
         },
         {
-            "group": "Sync",
+            "group": "Syncs",
             "pages": ["api-reference/sync/records-get", "api-reference/sync/trigger"]
+        },
+        {
+            "group": "Actions",
+            "pages": ["api-reference/action/trigger"]
         },
         {
             "group": "Proxy",
