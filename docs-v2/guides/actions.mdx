@@ -1,0 +1,259 @@
+---
+title: 'Actions'
+sidebarTitle: 'Actions'
+description: 'Perform one-off synchronous actions to encapsulate complex workflows.'
+---
+
+<Tip>
+    Before using actions you need to setup auth by following the [Authorize APIs guide](/guides/oauth).
+</Tip>
+
+## When to use _actions_? 
+
+_Actions_ encapsulate one-off synchronous workflows that involve external APIs: 
+- write back information to an external API (e.g. update CRM contact field, ticket status)
+- trigger external events in an external API (e.g. send email, Slack notification)
+- fetch data synchronously from an external API (e.g. show a one-off list of user)
+
+_Actions_ let you benefit from the advantages of the [Proxy](/guides/proxy), but allowing to encapsulate more complex logic (e.g. chained calls) in Nango scripts instead of in your code-base. With _actions_, you get:
+- Credential-injection in requests
+- Logging & monitoring
+- Rate-limit handling
+- Automated retries
+- Pagination helpers
+- Actions API
+
+Actions can take in parameters and return data. They run synchronously, so you can use them for building your UI. 
+
+<Tip>
+Actions are also useful to handle the external API requests precending the establishment a [continuous background sync](/guides/sync), e.g. showing a field mapping UI to the user before storing the mapping in the [connection metadata](/guides/oauth#storing-custom-metadata-per-connection). 
+</Tip>
+
+# Step 1: Setup the Nango CLI & nango-integrations folder
+
+Install the Nango CLI globally: 
+```bash
+npm install -g nango
+```
+
+Your Nango _actions_ live in your repo in a folder called `nango-integrations`. You can place this folder anywhere in your file tree, but we recommend you place it at the root level of your project.
+
+In the folder where you want your integrations folder (e.g. root of your project), run:
+```bash
+nango init # Creates `./nango-integrations` with initial config
+```
+
+<Tip>
+**Understanding the `nango-integrations` folder**
+
+_Actions_ have two parts:
+- A global config file called `nango.yaml` with _action_ names, return values, etc.
+- A small typescript file per _action_, which defines the logic of the _action_
+
+They all live in a folder called `nango-integrations` in your own code repository.
+
+```txt nango-integrations structure
+<YOUR-REPO>
+    |
+    nango-integrations
+            |
+            +- nango.yaml
+            +- slack-notification-send.ts
+            +- sendgrid-email-send.ts
+            ...
+```
+
+Our CLI helps you manage this directory, create scaffolds, validates the configuration, etc.
+</Tip>
+
+Next, we need to authenticate the CLI. Add the following env vars (e.g. in an `.env` file in `./nango-integrations`):
+```bash
+NANGO_SECRET_KEY_PROD='<prod-secret-key>'
+NANGO_SECRET_KEY_DEV='<dev-secret-key>'
+```
+
+Get your `prod` and `dev` secret keys from the [Project Settings tab](https://app.nango.dev/project-settings) (toggle between the `prod` and `dev` environment in the left nav bar).
+
+# Step 2: Create an _action_
+
+### Configure your _action_ in `nango.yaml`
+
+Open the `nango.yaml` file inside the `nango-integrations` folder and inspect its field:
+```yaml nango.yaml
+integrations:
+	slack-dev: # Integration name (must match an integration name in the Integrations tab of your Nango dashboard).
+		slack-alert: # Arbitrary (unique) action name
+            type: action
+			returns:
+				- SlackAlertResponse # Data model (defined below) as returned by your action script
+
+models: 
+	SlackAlertResponse: # Data model referenced above
+        ok: boolean
+```
+
+<Tip>
+	Possible model types include `string`, `boolean`, `number`, `date`, `null` as well as arrays & nested objects. Union types can be used with `|`.
+    Model names must be singular as they are a single entity.
+
+    A more complex example:
+    ```yaml
+    ExampleUser:
+        project_id: string
+        names: string[] # An array of strings
+        number_of_cats: number
+        completed: boolean
+        emails:
+            personal_email: string
+            business_email: string | null
+            other_emails: string[] | null
+        created_at: date # Date is a full timestamp with both date & time
+        modified_at: date
+    ```
+</Tip>
+
+Nango uses the models you define in `nango.yaml` to provide type safety when:
+- you write _action_ scripts
+- you trigger _action_ scripts, passing in parameters and getting back a response
+
+Multiple _actions_ can take in the same parameters and return the same responses, which lets you easily **create your own unified API** with standard data models tailored to your needs.
+
+### Write your _action_
+
+Modify the configuration of `nango.yaml` as you need and run (in `./nango-integrations`): 
+```
+nango generate
+```
+
+This will generate the scaffold for your _action_ script(s). Open any _action_ script (named `[action-name].ts`) which contains the following template (for the Slack example above): 
+
+```typescript slack-alert.ts
+import { NangoSync, SlackAlertResponse } from './models';
+
+export default async function runAction(nango: NangoSync, input: any): Promise<SlackAlertResponse> {
+	// Integration code goes here.
+}
+```
+_Action_ scripts let you arbitrarly interact with external APIs. This logic is defined by you so that you can build arbitrarily custom and complex integrations.
+
+<Tip>
+Your _action_ scripts are deployed to Nango and automatically run on a schedule. Nango offers you multiple environments (dev & prod) to test & deploy your _actions_.
+
+Because your scripts run in Nango's cloud, you cannot import additional modules (external or relative) in the _action_ scripts at the moment (we plan to resolve this limitation in the near future).
+</Tip>
+
+To develop _actions_ locally and test them run the following within `./nango-integrations`:
+```bash
+nango dev # Continuously watches integration files for changes.
+```
+Nango now watches your `nango-integrations` folder for changes and compiles the _action_ scripts & data models as needed. If there are any compilation errors (e.g. due to type issues) you can see them in the terminal where `nango dev` runs. 
+
+Fill in the `runAction` method with your integration code:
+
+```ts slack-alert.ts
+import { NangoSync, SlackAlertResponse } from './models';
+
+interface SlackAlertParams {
+    channel: string
+}
+
+export default async function runAction(nango: NangoSync, input: SlackAlertParams): Promise<SlackAlertResponse> {
+    const res = await nango.post({
+        endpoint: '/api/chat.postMessage',
+        params: {
+            channel: input.channel,
+            text: "Hello world :tada"
+        }
+    });
+
+    return { ok: res.data.ok }
+}
+```
+
+_Action_ scripts are called programmatically from your codebase, run synchronously and return the data specified in the `runAction` function.
+
+<Tip>
+To make API requests, use the proxy exposed by the `nango` object ([Proxy guide](/guides/proxy)).
+    - `nango.get({})`
+    - `nango.post({})`
+    - etc
+
+You do not need to specify the `providerConfigKey` and `connectionId` fields in the call to the Proxy. They are automatically injected (as well as credentials).
+</Tip>
+
+<Tip>
+Use `await nango.log()` to log data from within integration scripts.
+</Tip>
+
+### Dry run your _action_
+
+Before you deploy your _action_ to your cloud account you can test it locally to make sure it works as expected. You will probably use this a lot whilst developing your _action_.
+
+Use the `dryrun` function of the CLI:
+
+```bash
+nango dryrun slack-alert test-connection-id --input '{"channel": "C02MPPQC8FK"}'
+```
+
+`dryrun ` will print the data as returned.
+
+<Tip>
+By default, the _connection_ ID is fetched from your `Dev` environment. You can fetch _connections_ from your `Prod` environment with the `-e prod` flag.
+</Tip>
+
+# Step 3: Deploy an _action_
+
+**1. Deploy to the `Dev` environment**
+    
+    When your _action_ script is ready, you can deploy it to your `Dev` environment in Nango:
+
+    ```bash
+    nango deploy dev
+    ```
+
+    Inspect the [Syncs & Actions tab](https://app.nango.dev/syncs) to verify the deployment succeeded.
+
+**2. Deploy to the `Prod` environment**
+    
+    Once you are ready to deploy to production, run:
+
+    ```bash
+    nango deploy prod
+    ```
+
+# Step 4: Trigger an action
+
+_Actions_ are triggered explicitly and run synchronously, with the [backend SDK](/sdks) or the [REST API](/api-reference):
+
+<Tabs>
+
+<Tab title="Node SDK">
+
+```ts
+import { Nango }  from '@nangohq/node';
+import type { SlackAlertResponse } from '<path-to-nango-integrations>/models'
+
+const nango = new Nango({ secretKey: '<your-dev-secret-key>' });
+
+const result: SlackAlertResponse = await nango.triggerAction({
+    providerConfigKey: 'slack-dev',
+    connectionId: 'test-connection-id',
+    model: 'slack-alert',
+    input: { channel: 'C02MPPQC8FK' }
+});
+```
+</Tab>
+
+<Tab title="cURL">
+
+```bash
+curl --request POST \
+  --url https://api.nango.dev/action/trigger \
+  --header 'Authorization: Bearer <your-dev-secret-key>' \
+  --header 'Connection-Id: test-connection-id' \
+  --header 'Provider-Config-Key: test-connection-id' \
+  --data '{ "action_name": "slack-alert", "input": { "channel": "C02MPPQC8FK" } }'
+```
+</Tab>
+
+</Tabs>
