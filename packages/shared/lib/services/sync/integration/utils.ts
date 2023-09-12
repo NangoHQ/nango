@@ -1,4 +1,4 @@
-import type { QuickJSContext, QuickJSHandle } from 'quickjs-emscripten';
+import { QuickJSContext, QuickJSHandle } from 'quickjs-emscripten';
 import crypto from 'crypto';
 import { types } from 'util';
 
@@ -123,33 +123,29 @@ export function createCryptoHash(vm: QuickJSContext): void {
 }
 
 export function quickJSHandleToHost(vm: QuickJSContext, val: QuickJSHandle) {
-    // @ts-ignore
-    if (val.error) {
-        throw new Error(vm.dump(val));
-    }
     return vm.dump(val);
 }
 
-export function handlePropertyOrMethod(vm: QuickJSContext, key: string, obj: Record<string, unknown>, objHandle: QuickJSHandle) {
+export function handlePropertyOrMethod(vm: QuickJSContext, key: string, obj: Record<string, unknown>, objHandle: QuickJSHandle, depth: number) {
     const value = obj[key];
     if (typeof value === 'function') {
         const fnHandle = vm.newFunction(key, (...args: QuickJSHandle[]) => {
             const hostArgs = args.map((arg) => quickJSHandleToHost(vm, arg));
             const result = (value as GenericFunction)(...hostArgs);
-            return hostToQuickJSHandle(vm, result);
+            return hostToQuickJSHandle(vm, result, depth + 1);
         });
         vm.setProp(objHandle, key, fnHandle);
         fnHandle.dispose();
     } else {
-        const propHandle = hostToQuickJSHandle(vm, value);
+        const propHandle = hostToQuickJSHandle(vm, value, depth + 1);
         vm.setProp(objHandle, key, propHandle);
         propHandle.dispose();
     }
 }
 
-export function hostToQuickJSHandle(vm: QuickJSContext, val: unknown, isDataProperty = false): QuickJSHandle {
-    if (typeof val === 'object' && val !== null && 'data' in val && !isDataProperty) {
-        return hostToQuickJSHandle(vm, { data: (val as any).data }, true);
+export function hostToQuickJSHandle(vm: QuickJSContext, val: unknown, depth = 0): QuickJSHandle {
+    if (depth >= 10) {
+        return vm.undefined;
     }
 
     const hashObjects: { [id: string]: crypto.Hash } = {};
@@ -206,6 +202,16 @@ export function hostToQuickJSHandle(vm: QuickJSContext, val: unknown, isDataProp
         return cryptoObjHandle;
     }
 
+    if (val instanceof Error) {
+        const errorObjHandle = vm.newObject();
+        vm.setProp(errorObjHandle, 'message', vm.newString(val.message));
+        vm.setProp(errorObjHandle, 'name', vm.newString(val.name));
+        if (val.stack) {
+            vm.setProp(errorObjHandle, 'stack', vm.newString(val.stack));
+        }
+        return errorObjHandle;
+    }
+
     if (typeof val === 'undefined') {
         return vm.undefined;
     } else if (val === null) {
@@ -221,7 +227,7 @@ export function hostToQuickJSHandle(vm: QuickJSContext, val: unknown, isDataProp
     } else if (Array.isArray(val)) {
         const arrHandle = vm.newArray();
         val.forEach((item, index) => {
-            const itemHandle = hostToQuickJSHandle(vm, item);
+            const itemHandle = hostToQuickJSHandle(vm, item, depth + 1);
             vm.setProp(arrHandle, index.toString(), itemHandle);
             itemHandle.dispose();
         });
@@ -231,10 +237,10 @@ export function hostToQuickJSHandle(vm: QuickJSContext, val: unknown, isDataProp
         promise.settled.then(vm.runtime.executePendingJobs);
         val.then(
             (r: unknown) => {
-                promise.resolve(hostToQuickJSHandle(vm, r));
+                promise.resolve(hostToQuickJSHandle(vm, r, depth + 1));
             },
             (err: unknown) => {
-                promise.reject(hostToQuickJSHandle(vm, err));
+                promise.reject(hostToQuickJSHandle(vm, err, depth + 1));
             }
         );
         return promise.handle;
@@ -242,7 +248,7 @@ export function hostToQuickJSHandle(vm: QuickJSContext, val: unknown, isDataProp
         const fnHandle = vm.newFunction(val.name || 'anonymous', (...args: any[]) => {
             const hostArgs = args.map((arg) => quickJSHandleToHost(vm, arg));
             const result = val(...hostArgs);
-            return hostToQuickJSHandle(vm, result);
+            return hostToQuickJSHandle(vm, result, depth + 1);
         });
         return fnHandle;
     } else if (types.isNativeError(val)) {
@@ -252,14 +258,14 @@ export function hostToQuickJSHandle(vm: QuickJSContext, val: unknown, isDataProp
 
         for (const key in val) {
             if (Object.prototype.hasOwnProperty.call(val, key)) {
-                handlePropertyOrMethod(vm, key, val as Record<string, unknown>, objHandle);
+                handlePropertyOrMethod(vm, key, val as Record<string, unknown>, objHandle, depth);
             }
         }
 
         const proto = Object.getPrototypeOf(val);
         for (const key in proto) {
             if (Object.prototype.hasOwnProperty.call(proto, key) && typeof proto[key] === 'function') {
-                handlePropertyOrMethod(vm, key, proto, objHandle);
+                handlePropertyOrMethod(vm, key, proto, objHandle, depth);
             }
         }
 
