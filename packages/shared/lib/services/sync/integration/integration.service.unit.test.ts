@@ -22,7 +22,7 @@ describe('Should run an integration script', () => {
         expect(result).toEqual(null);
     });
 
-    it('Runs a simple javascript function that returns an expected object', async () => {
+    it('Runs a simple integration script that returns an expected object', async () => {
         mockCreateActivityLogMessage();
         const mockNango: any = {
             get: () => {
@@ -40,7 +40,7 @@ describe('Should run an integration script', () => {
         expect(result).toEqual(mockNango.get());
     });
 
-    it('Runs a simple javascript function that returns an expected object with a Nango class', async () => {
+    it('Runs a simple integration script that returns an expected object with a Nango class', async () => {
         mockCreateActivityLogMessage();
 
         const nangoClass = class Nango {
@@ -60,7 +60,9 @@ describe('Should run an integration script', () => {
         expect(result).toEqual(nango.get());
     });
 
-    it('Runs a compiled javascript function that returns an expected object', async () => {
+    it('Runs a importer integration script that returns an expected object', async () => {
+        process.env['NANGO_INTEGRATIONS_FULL_PATH'] = path.join(__dirname, 'mocks/nango-integrations/dist');
+
         mockCreateActivityLogMessage();
         const mockNango: any = {
             post: () => {
@@ -74,7 +76,7 @@ describe('Should run an integration script', () => {
             }
         };
 
-        const result = await integrationService.runScript('compiled', 1, mockNango, {} as any, 1, false, false, loadLocation);
+        const result = await integrationService.runScript('importer', 1, mockNango, {} as any, 1, false, false, loadLocation);
         expect(result).toEqual(mockNango.post());
     });
 

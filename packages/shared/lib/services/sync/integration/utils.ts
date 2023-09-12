@@ -1,4 +1,5 @@
 import type { QuickJSContext, QuickJSHandle } from 'quickjs-emscripten';
+import path from 'path';
 import crypto from 'crypto';
 import { types } from 'util';
 
@@ -9,6 +10,12 @@ export function hostConsoleLog(...args: unknown[]): void {
 }
 
 export function hostRequire(moduleName: string): unknown {
+    if (moduleName.startsWith('.')) {
+        const fileName = moduleName.replace(/\.[^/.]+$/, '');
+        const fullPath = process.env['NANGO_INTEGRATIONS_FULL_PATH'] as string;
+        return require(path.resolve(fullPath, fileName + '.cjs'));
+    }
+
     return require(moduleName);
 }
 
@@ -65,7 +72,7 @@ export function createConsoleLog(vm: QuickJSContext): void {
     globalObject.dispose();
 }
 
-export function createRequireMethod(vm: QuickJSContext): void {
+export async function createRequireMethod(vm: QuickJSContext): Promise<void> {
     const globalObject = vm.global;
 
     const requireFn = vm.newFunction('require', (moduleName: QuickJSHandle) => {
@@ -271,6 +278,5 @@ export function hostToQuickJSHandle(vm: QuickJSContext, val: unknown, depth = 0)
 
         return objHandle;
     }
-
     throw new Error(`Unsupported value: ${val}`);
 }

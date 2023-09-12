@@ -5,7 +5,7 @@ integrations:
       runs: every 12 hours
       returns:
         - Test
-    compiled:
+    importer:
       type: sync
       runs: every 12 hours
       returns:
