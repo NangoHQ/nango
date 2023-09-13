@@ -25,7 +25,7 @@ export interface SyncResult {
 export interface Result {
     added: number;
     updated: number;
-    deleted?: number;
+    deleted: number;
 }
 
 export interface Sync {

@@ -448,7 +448,7 @@ export class NangoSync {
 
         if (responseResults.success) {
             const { summary } = responseResults;
-            const updatedResults: Record<string, { added: number; updated: number; deleted?: number }> = {
+            const updatedResults: Record<string, { added: number; updated: number; deleted: number }> = {
                 [model]: {
                     added: summary?.addedKeys.length as number,
                     updated: summary?.updatedKeys.length as number,

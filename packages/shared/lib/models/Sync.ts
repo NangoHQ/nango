@@ -17,7 +17,7 @@ export enum SyncType {
 export interface SyncResult {
     added: number;
     updated: number;
-    deleted?: number;
+    deleted: number;
 }
 
 export interface SyncResultByModel {
