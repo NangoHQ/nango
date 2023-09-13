@@ -167,6 +167,10 @@ class EncryptionManager {
 
         const encryptedConfig: ProviderConfig = Object.assign({}, config);
 
+        if (!config.oauth_client_secret) {
+            return config;
+        }
+
         const [encryptedClientSecret, iv, authTag] = this.encrypt(config.oauth_client_secret);
         encryptedConfig.oauth_client_secret = encryptedClientSecret;
         encryptedConfig.oauth_client_secret_iv = iv;
