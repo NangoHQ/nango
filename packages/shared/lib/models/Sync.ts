@@ -129,7 +129,7 @@ export interface Schedule extends TimestampsAndDeleted {
     offset: number;
 }
 
-type JsonRecord = {
+export type CustomerFacingDataRecord = {
     _nango_metadata: RecordMetadata;
 } & Record<string, any>;
 
@@ -147,10 +147,6 @@ export interface DataRecord extends Timestamps {
     external_deleted_at?: Date | null;
     json_iv?: string | null;
     json_tag?: string | null;
-}
-
-export interface CustomerFacingDataRecord {
-    record: JsonRecord;
 }
 
 export type LastAction = 'added' | 'updated' | 'deleted';

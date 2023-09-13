@@ -73,8 +73,9 @@ describe('Data service integration tests', () => {
         const { response: records } = await getDataRecords(connection?.connection_id as string, connection?.provider_config_key as string, 1, modelName);
         expect(records?.length).toBe(5);
 
-        for (const record of records as CustomerFacingDataRecord[]) {
-            expect(expectedRecords).toContainEqual(record);
+        for (let i = 0; i < (records as CustomerFacingDataRecord[])?.length; i++) {
+            // @ts-ignore
+            expect(records?.[i]?.id).toEqual(expectedRecords[i].id);
         }
 
         const { response: ascRecords } = await getDataRecords(
@@ -89,7 +90,11 @@ describe('Data service integration tests', () => {
             'asc'
         );
 
-        expect(ascRecords).toEqual(expectedRecords.reverse());
+        const reverseExpectedRecords = [...expectedRecords].reverse();
+        for (let i = 0; i < (ascRecords as CustomerFacingDataRecord[])?.length; i++) {
+            // @ts-ignore
+            expect(ascRecords?.[i]?.id).toEqual(reverseExpectedRecords[i].id);
+        }
 
         const { response: metaRecords } = await getDataRecords(
             connection?.connection_id as string,

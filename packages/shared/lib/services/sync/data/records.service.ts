@@ -191,6 +191,8 @@ export async function getDataRecords(
                 ) as record
             `)
         );
+
+        result = result.map((item: { record: CustomerFacingDataRecord[] }) => item.record);
     }
 
     return { success: true, error: null, response: result };
