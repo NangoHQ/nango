@@ -3,9 +3,16 @@ import logger from '../logger/console.js';
 import type { Config as ProviderConfig } from '../models/Provider';
 import type { DBConfig } from '../models/Generic.js';
 import type { Environment } from '../models/Environment.js';
+import type { EnvironmentVariable } from '../models/EnvironmentVariable.js';
 import type { Connection, ApiConnection, StoredConnection } from '../models/Connection.js';
+import type { DataRecord } from '../models/Sync.js';
 import db from '../db/database.js';
 import util from 'util';
+
+interface DataRecordJson {
+    encryptedValue: string;
+    [key: string]: any;
+}
 
 class EncryptionManager {
     private key: string | undefined;
@@ -118,12 +125,51 @@ class EncryptionManager {
         return decryptedConnection as Connection;
     }
 
+    public encryptEnvironmentVariables(environmentVariables: EnvironmentVariable[]): EnvironmentVariable[] {
+        if (!this.shouldEncrypt()) {
+            return environmentVariables;
+        }
+
+        const encryptedEnvironmentVariables: EnvironmentVariable[] = Object.assign([], environmentVariables);
+
+        for (const environmentVariable of encryptedEnvironmentVariables) {
+            const [encryptedValue, iv, authTag] = this.encrypt(environmentVariable.value);
+            environmentVariable.value = encryptedValue;
+            environmentVariable.value_iv = iv;
+            environmentVariable.value_tag = authTag;
+        }
+
+        return encryptedEnvironmentVariables;
+    }
+
+    public decryptEnvironmentVariables(environmentVariables: EnvironmentVariable[] | null): EnvironmentVariable[] | null {
+        if (environmentVariables === null) {
+            return environmentVariables;
+        }
+
+        const decryptedEnvironmentVariables: EnvironmentVariable[] = Object.assign([], environmentVariables);
+
+        for (const environmentVariable of decryptedEnvironmentVariables) {
+            if (environmentVariable.value_iv == null || environmentVariable.value_tag == null) {
+                continue;
+            }
+
+            environmentVariable.value = this.decrypt(environmentVariable.value, environmentVariable.value_iv, environmentVariable.value_tag);
+        }
+
+        return decryptedEnvironmentVariables;
+    }
+
     public encryptProviderConfig(config: ProviderConfig): ProviderConfig {
         if (!this.shouldEncrypt()) {
             return config;
         }
 
         const encryptedConfig: ProviderConfig = Object.assign({}, config);
+
+        if (!config.oauth_client_secret) {
+            return config;
+        }
 
         const [encryptedClientSecret, iv, authTag] = this.encrypt(config.oauth_client_secret);
         encryptedConfig.oauth_client_secret = encryptedClientSecret;
@@ -143,6 +189,41 @@ class EncryptionManager {
 
         decryptedConfig.oauth_client_secret = this.decrypt(config.oauth_client_secret, config.oauth_client_secret_iv, config.oauth_client_secret_tag);
         return decryptedConfig;
+    }
+
+    public encryptDataRecords(dataRecords: DataRecord[]): DataRecord[] {
+        if (!this.shouldEncrypt()) {
+            return dataRecords;
+        }
+
+        const encryptedDataRecords: DataRecord[] = Object.assign([], dataRecords);
+
+        for (const dataRecord of encryptedDataRecords) {
+            const [encryptedValue, iv, authTag] = this.encrypt(JSON.stringify(dataRecord.json));
+            dataRecord.json = { encryptedValue };
+            dataRecord.json_iv = iv;
+            dataRecord.json_tag = authTag;
+        }
+
+        return encryptedDataRecords;
+    }
+
+    public decryptDataRecords(dataRecords: DataRecord[] | null): DataRecord[] | null {
+        if (dataRecords === null) {
+            return dataRecords;
+        }
+
+        const decryptedDataRecords: DataRecord[] = Object.assign([], dataRecords);
+
+        for (const dataRecord of decryptedDataRecords) {
+            if (dataRecord.json_iv == null || dataRecord.json_tag == null) {
+                continue;
+            }
+
+            dataRecord.json = JSON.parse(this.decrypt((dataRecord.json as DataRecordJson).encryptedValue, dataRecord.json_iv, dataRecord.json_tag));
+        }
+
+        return decryptedDataRecords;
     }
 
     private async saveDbConfig(dbConfig: DBConfig) {
@@ -216,6 +297,28 @@ class EncryptionManager {
 
             providerConfig = this.encryptProviderConfig(providerConfig);
             await db.knex.withSchema(db.schema()).from<ProviderConfig>(`_nango_configs`).where({ id: providerConfig.id! }).update(providerConfig);
+        }
+
+        const environmentVariables: EnvironmentVariable[] = await db.knex
+            .withSchema(db.schema())
+            .select('*')
+            .from<EnvironmentVariable>(`_nango_environment_variables`);
+
+        for (const environmentVariable of environmentVariables) {
+            if (environmentVariable.value_iv && environmentVariable.value_tag) {
+                continue;
+            }
+
+            const [encryptedValue, iv, authTag] = this.encrypt(environmentVariable.value);
+            environmentVariable.value = encryptedValue;
+            environmentVariable.value_iv = iv;
+            environmentVariable.value_tag = authTag;
+
+            await db.knex
+                .withSchema(db.schema())
+                .from<EnvironmentVariable>(`_nango_environment_variables`)
+                .where({ id: environmentVariable.id as number })
+                .update(environmentVariable);
         }
 
         logger.info('🔐✅ Encryption of database complete!');

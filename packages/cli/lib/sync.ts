@@ -773,7 +773,8 @@ const nangoCallsAreUsedCorrectly = (filePath: string, type = SyncConfigType.SYNC
         'patch',
         'delete',
         'getConnection',
-        'setLastSyncDate'
+        'setLastSyncDate',
+        'getEnvironmentVariables'
     ];
 
     const disallowedActionCalls = ['batchSend', 'batchSave', 'batchDelete', 'setLastSyncDate'];

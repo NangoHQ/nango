@@ -18,7 +18,9 @@ class EnvironmentController {
 
             environment.callback_url = await getOauthCallbackUrl(environment.id);
 
-            res.status(200).send({ account: { ...environment, host: getBaseUrl() } });
+            const environmentVariables = await environmentService.getEnvironmentVariables(environment.id);
+
+            res.status(200).send({ account: { ...environment, env_variables: environmentVariables, host: getBaseUrl() } });
         } catch (err) {
             next(err);
         }
@@ -138,6 +140,27 @@ class EnvironmentController {
             const { environment } = response;
 
             await environmentService.editHmacKey(req.body['hmac_key'], environment.id);
+            res.status(200).send();
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async updateEnvironmentVariables(req: Request, res: Response, next: NextFunction) {
+        try {
+            if (!req.body) {
+                errorManager.errRes(res, 'missing_body');
+                return;
+            }
+
+            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
+            if (!sessionSuccess || response === null) {
+                errorManager.errResFromNangoErr(res, sessionError);
+                return;
+            }
+            const { environment } = response;
+
+            await environmentService.editEnvironmentVariable(environment.id, req.body);
             res.status(200).send();
         } catch (err) {
             next(err);
