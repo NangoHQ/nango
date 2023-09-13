@@ -1,4 +1,27 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -37,11 +60,13 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var helper_1 = require("./helper");
+var helper = __importStar(require("./helper"));
 function fetchData(nango) {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
+                    helper.log('fetching data...');
                     (0, helper_1.log)('fetching data...');
                     (0, helper_1.add)(1);
                     return [4 /*yield*/, nango.post()];
@@ -51,4 +76,4 @@ function fetchData(nango) {
     });
 }
 exports.default = fetchData;
-//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9pbXBvcnRlci50cyIsInNvdXJjZXMiOlsiLi9pbXBvcnRlci50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztBQUFBLG1DQUFvQztBQUVwQyxTQUE4QixTQUFTLENBQUMsS0FBVTs7Ozs7b0JBQzlDLElBQUEsWUFBRyxFQUFDLGtCQUFrQixDQUFDLENBQUM7b0JBQ3hCLElBQUEsWUFBRyxFQUFDLENBQUMsQ0FBQyxDQUFDO29CQUNBLHFCQUFNLEtBQUssQ0FBQyxJQUFJLEVBQUUsRUFBQTt3QkFBekIsc0JBQU8sU0FBa0IsRUFBQzs7OztDQUM3QjtBQUpELDRCQUlDIiwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHsgbG9nLCBhZGQgfSBmcm9tICcuL2hlbHBlcic7XG5cbmV4cG9ydCBkZWZhdWx0IGFzeW5jIGZ1bmN0aW9uIGZldGNoRGF0YShuYW5nbzogYW55KSB7XG4gICAgbG9nKCdmZXRjaGluZyBkYXRhLi4uJyk7XG4gICAgYWRkKDEpO1xuICAgIHJldHVybiBhd2FpdCBuYW5nby5wb3N0KCk7XG59XG4iXX0=
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiLi9pbXBvcnRlci50cyIsInNvdXJjZXMiOlsiLi9pbXBvcnRlci50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O0FBQUEsbUNBQW9DO0FBQ3BDLCtDQUFtQztBQUVuQyxTQUE4QixTQUFTLENBQUMsS0FBVTs7Ozs7b0JBQzlDLE1BQU0sQ0FBQyxHQUFHLENBQUMsa0JBQWtCLENBQUMsQ0FBQztvQkFDL0IsSUFBQSxZQUFHLEVBQUMsa0JBQWtCLENBQUMsQ0FBQztvQkFDeEIsSUFBQSxZQUFHLEVBQUMsQ0FBQyxDQUFDLENBQUM7b0JBQ0EscUJBQU0sS0FBSyxDQUFDLElBQUksRUFBRSxFQUFBO3dCQUF6QixzQkFBTyxTQUFrQixFQUFDOzs7O0NBQzdCO0FBTEQsNEJBS0MiLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgeyBsb2csIGFkZCB9IGZyb20gJy4vaGVscGVyJztcbmltcG9ydCAqIGFzIGhlbHBlciBmcm9tICcuL2hlbHBlcic7XG5cbmV4cG9ydCBkZWZhdWx0IGFzeW5jIGZ1bmN0aW9uIGZldGNoRGF0YShuYW5nbzogYW55KSB7XG4gICAgaGVscGVyLmxvZygnZmV0Y2hpbmcgZGF0YS4uLicpO1xuICAgIGxvZygnZmV0Y2hpbmcgZGF0YS4uLicpO1xuICAgIGFkZCgxKTtcbiAgICByZXR1cm4gYXdhaXQgbmFuZ28ucG9zdCgpO1xufVxuIl19
