@@ -172,7 +172,19 @@ export async function getDataRecords(
             'json as record'
         );
     } else {
-        result = (await query.pluck('json')) as Pick<SyncDataRecord, 'json'>[];
+        result = await query.select(
+            db.knex.raw(`
+                jsonb_set(
+                    json::jsonb,
+                    '{_nango_metadata}',
+                    json_build_object(
+                        'created_at', created_at,
+                        'updated_at', updated_at,
+                        'deleted_at', external_deleted_at
+                    )::jsonb
+                ) as record
+            `)
+        );
     }
 
     return { success: true, error: null, response: result };
