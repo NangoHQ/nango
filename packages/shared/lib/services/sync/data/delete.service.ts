@@ -1,5 +1,5 @@
-import db, { schema } from '../../db/database.js';
-import type { DataRecord } from '../../models/Sync.js';
+import db, { schema } from '../../../db/database.js';
+import type { DataRecord } from '../../../models/Sync.js';
 
 const RECORDS_TABLE = '_nango_sync_data_records';
 const DELETE_RECORDS_TABLE = '_nango_sync_data_records_deletes';

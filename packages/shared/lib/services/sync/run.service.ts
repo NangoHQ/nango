@@ -6,9 +6,9 @@ import { addSyncConfigToJob, updateSyncJobResult, updateSyncJobStatus } from '..
 import { getSyncConfig } from './config.service.js';
 import { checkForIntegrationFile } from '../nango-config.service.js';
 import { getLastSyncDate, setLastSyncDate, clearLastSyncDate } from './sync.service.js';
-import { formatDataRecords } from './data-records.service.js';
-import { upsert } from './data.service.js';
-import { getDeletedKeys, takeSnapshot } from './data-delete.service.js';
+import { formatDataRecords } from './data/records.service.js';
+import { upsert } from './data/data.service.js';
+import { getDeletedKeys, takeSnapshot } from './data/delete.service.js';
 import environmentService from '../environment.service.js';
 import integationService from './integration.service.js';
 import webhookService from '../webhook.service.js';

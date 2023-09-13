@@ -1,7 +1,7 @@
 import { expect, describe, it } from 'vitest';
 import * as DataService from './data.service.js';
-import type { DataRecord } from '../../models/Sync.js';
-import { mockCreateActivityLogMessage } from '../activity/mocks.js';
+import type { DataRecord } from '../../../models/Sync.js';
+import { mockCreateActivityLogMessage } from '../../activity/mocks.js';
 
 describe('Data service tests', () => {
     it('Should remove multiple duplicates using the removeDuplicateKey function', async () => {

@@ -1,13 +1,13 @@
 import { expect, describe, it, beforeAll } from 'vitest';
-import { multipleMigrations } from '../../db/database.js';
+import { multipleMigrations } from '../../../db/database.js';
 import * as DataService from './data.service.js';
-import { formatDataRecords, getDataRecords } from './data-records.service.js';
-import connectionService from '../connection.service.js';
-import { createConfigSeeds } from '../../db/seeders/config.seeder.js';
-import { createConnectionSeeds } from '../../db/seeders/connection.seeder.js';
-import { createSyncSeeds } from '../../db/seeders/sync.seeder.js';
-import { createSyncJobSeeds } from '../../db/seeders/sync-job.seeder.js';
-import type { DataRecord, DataRecordWithMetadata } from '../../models/Sync.js';
+import { formatDataRecords, getDataRecords } from './records.service.js';
+import connectionService from '../../connection.service.js';
+import { createConfigSeeds } from '../../../db/seeders/config.seeder.js';
+import { createConnectionSeeds } from '../../../db/seeders/connection.seeder.js';
+import { createSyncSeeds } from '../../../db/seeders/sync.seeder.js';
+import { createSyncJobSeeds } from '../../../db/seeders/sync-job.seeder.js';
+import type { DataRecord, DataRecordWithMetadata } from '../../../models/Sync.js';
 
 describe('Data service integration tests', () => {
     beforeAll(async () => {

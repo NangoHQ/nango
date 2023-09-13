@@ -2,12 +2,12 @@ import md5 from 'md5';
 import * as uuid from 'uuid';
 import dayjs from 'dayjs';
 
-import type { DataRecord as SyncDataRecord, DataRecordWithMetadata } from '../../models/Sync.js';
-import type { DataResponse } from '../../models/Data.js';
-import type { ServiceResponse } from '../../models/Generic.js';
-import db, { schema } from '../../db/database.js';
-import connectionService from '../connection.service.js';
-import { NangoError } from '../../utils/error.js';
+import type { DataRecord as SyncDataRecord, DataRecordWithMetadata } from '../../../models/Sync.js';
+import type { DataResponse } from '../../../models/Data.js';
+import type { ServiceResponse } from '../../../models/Generic.js';
+import db, { schema } from '../../../db/database.js';
+import connectionService from '../../connection.service.js';
+import { NangoError } from '../../../utils/error.js';
 
 export const formatDataRecords = (
     records: DataResponse[],
