@@ -295,6 +295,28 @@ class EncryptionManager {
             await db.knex.withSchema(db.schema()).from<ProviderConfig>(`_nango_configs`).where({ id: providerConfig.id! }).update(providerConfig);
         }
 
+        const environmentVariables: EnvironmentVariable[] = await db.knex
+            .withSchema(db.schema())
+            .select('*')
+            .from<EnvironmentVariable>(`_nango_environment_variables`);
+
+        for (const environmentVariable of environmentVariables) {
+            if (environmentVariable.value_iv && environmentVariable.value_tag) {
+                continue;
+            }
+
+            const [encryptedValue, iv, authTag] = this.encrypt(environmentVariable.value);
+            environmentVariable.value = encryptedValue;
+            environmentVariable.value_iv = iv;
+            environmentVariable.value_tag = authTag;
+
+            await db.knex
+                .withSchema(db.schema())
+                .from<EnvironmentVariable>(`_nango_environment_variables`)
+                .where({ id: environmentVariable.id as number })
+                .update(environmentVariable);
+        }
+
         logger.info('🔐✅ Encryption of database complete!');
     }
 }
