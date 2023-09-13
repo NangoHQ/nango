@@ -186,6 +186,34 @@ export function useEditHmacKeyAPI() {
     };
 }
 
+export function useEditEnvVariablesAPI() {
+    const signout = useSignout();
+
+    return async (envVariables: Array<Record<string, string>>) => {
+        try {
+            const options = {
+                method: 'POST',
+                headers: getHeaders(),
+                body: JSON.stringify(envVariables)
+            };
+
+            let res = await fetch('/api/v1/environment/environment-variables', options);
+
+            if (res.status === 401) {
+                return signout();
+            }
+
+            if (res.status !== 200) {
+                return serverErrorToast();
+            }
+
+            return res;
+        } catch (e) {
+            requestErrorToast();
+        }
+    };
+}
+
 export function useEditWebhookUrlAPI() {
     const signout = useSignout();
 
