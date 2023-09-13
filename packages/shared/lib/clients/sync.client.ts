@@ -327,8 +327,8 @@ class SyncClient {
         return schedules;
     }
 
-    async runSyncCommand(syncId: string, command: SyncCommand, activityLogId: number) {
-        const scheduleHandle = this.client?.schedule.getHandle(syncId);
+    async runSyncCommand(scheduleId: string, command: SyncCommand, activityLogId: number) {
+        const scheduleHandle = this.client?.schedule.getHandle(scheduleId);
 
         try {
             switch (command) {

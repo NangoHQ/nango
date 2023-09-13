@@ -432,6 +432,42 @@ export class Nango {
         return axios.post(url, body, { headers: this.enrichHeaders(headers) });
     }
 
+    public async pauseSync(providerConfigKey: string, connectionId: string, sync: string): Promise<void> {
+        if (!providerConfigKey) {
+            throw new Error('Provider Config Key is required');
+        }
+
+        if (!connectionId) {
+            throw new Error('Connection Id is required');
+        }
+
+        if (!sync) {
+            throw new Error('Sync is required');
+        }
+
+        const url = `${this.serverUrl}/sync/pause?provider_config_key=${providerConfigKey}&connection_id=${connectionId}`;
+
+        return axios.post(url, { sync }, { headers: this.enrichHeaders() });
+    }
+
+    public async restartSync(providerConfigKey: string, connectionId: string, sync: string): Promise<void> {
+        if (!providerConfigKey) {
+            throw new Error('Provider Config Key is required');
+        }
+
+        if (!connectionId) {
+            throw new Error('Connection Id is required');
+        }
+
+        if (!sync) {
+            throw new Error('Sync is required');
+        }
+
+        const url = `${this.serverUrl}/sync/restart?provider_config_key=${providerConfigKey}&connection_id=${connectionId}`;
+
+        return axios.post(url, { sync }, { headers: this.enrichHeaders() });
+    }
+
     public async triggerAction(providerConfigKey: string, connectionId: string, actionName: string, input: Record<string, unknown>): Promise<object> {
         const url = `${this.serverUrl}/action/trigger`;
 
