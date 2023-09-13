@@ -2,7 +2,7 @@ import md5 from 'md5';
 import * as uuid from 'uuid';
 import dayjs from 'dayjs';
 
-import type { DataRecord as SyncDataRecord, DataRecordWithMetadata } from '../../../models/Sync.js';
+import type { DataRecord as SyncDataRecord, CustomerFacingDataRecord, DataRecordWithMetadata } from '../../../models/Sync.js';
 import type { DataResponse } from '../../../models/Data.js';
 import type { ServiceResponse } from '../../../models/Generic.js';
 import db, { schema } from '../../../db/database.js';
@@ -73,7 +73,7 @@ export async function getDataRecords(
     order?: 'asc' | 'desc',
     filter?: 'added' | 'updated' | 'deleted',
     includeMetaData = false
-): Promise<ServiceResponse<Pick<SyncDataRecord, 'json'>[] | DataRecordWithMetadata[] | null>> {
+): Promise<ServiceResponse<CustomerFacingDataRecord[] | DataRecordWithMetadata[] | null>> {
     if (!model) {
         const error = new NangoError('missing_model');
 

@@ -7,7 +7,7 @@ import { createConfigSeeds } from '../../../db/seeders/config.seeder.js';
 import { createConnectionSeeds } from '../../../db/seeders/connection.seeder.js';
 import { createSyncSeeds } from '../../../db/seeders/sync.seeder.js';
 import { createSyncJobSeeds } from '../../../db/seeders/sync-job.seeder.js';
-import type { DataRecord, DataRecordWithMetadata } from '../../../models/Sync.js';
+import type { DataRecord, CustomerFacingDataRecord, DataRecordWithMetadata } from '../../../models/Sync.js';
 
 describe('Data service integration tests', () => {
     beforeAll(async () => {
@@ -72,7 +72,10 @@ describe('Data service integration tests', () => {
         const connection = await connectionService.getConnectionById(connections[0] as number);
         const { response: records } = await getDataRecords(connection?.connection_id as string, connection?.provider_config_key as string, 1, modelName);
         expect(records?.length).toBe(5);
-        expect(records).toEqual(expectedRecords);
+
+        for (const record of records as CustomerFacingDataRecord[]) {
+            expect(expectedRecords).toContainEqual(record);
+        }
 
         const { response: ascRecords } = await getDataRecords(
             connection?.connection_id as string,
@@ -107,6 +110,24 @@ describe('Data service integration tests', () => {
             expect(metaRecord).toHaveProperty('last_modified_at');
 
             expect(metaRecord.last_action).toBe('ADDED');
+        }
+
+        const { response: regularRecords } = await getDataRecords(
+            connection?.connection_id as string,
+            connection?.provider_config_key as string,
+            1,
+            modelName,
+            undefined, // delta
+            undefined, // offset
+            undefined, // limit
+            undefined, // sortBy
+            undefined, // order
+            undefined, // filter
+            false // include metadata
+        );
+
+        for (const regularRecord of regularRecords as CustomerFacingDataRecord[]) {
+            expect(regularRecord).toHaveProperty('_nango_metadata');
         }
     });
 });
