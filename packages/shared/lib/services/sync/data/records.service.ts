@@ -177,11 +177,17 @@ export async function getDataRecords(
                 jsonb_set(
                     json::jsonb,
                     '{_nango_metadata}',
-                    json_build_object(
-                        'created_at', created_at,
-                        'updated_at', updated_at,
-                        'deleted_at', external_deleted_at
-                    )::jsonb
+                    jsonb_build_object(
+                        'first_seen_at', created_at,
+                        'last_modified_at', updated_at,
+                        'deleted_at', external_deleted_at,
+                        'last_action',
+                        CASE
+                            WHEN external_deleted_at IS NOT NULL THEN 'DELETED'
+                            WHEN created_at = updated_at THEN 'ADDED'
+                            ELSE 'UPDATED'
+                        END
+                    )
                 ) as record
             `)
         );
