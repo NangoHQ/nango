@@ -111,13 +111,17 @@
         {
             "group": "Self-Host Nango",
             "pages": [
+                "self-host/overview",
                 "self-host/instructions",
-                "self-host/local",
+                {
+                    "group": "Platforms",
+                    "pages": ["self-host/local",
                 "self-host/aws",
                 "self-host/gcp",
                 "self-host/digital-ocean",
                 "self-host/render",
-                "self-host/heroku"
+                "self-host/heroku"]
+                }
             ]
         },
         {
