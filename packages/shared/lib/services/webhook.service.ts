@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { SyncType } from '../models/Sync';
+import { SyncType } from '../models/Sync.js';
 import type { NangoConnection } from '../models/Connection';
 import type { SyncResult, NangoSyncWebhookBody } from '../models/Sync';
 import environmentService from './environment.service.js';
@@ -45,6 +45,10 @@ class WebhookService {
             syncType,
             queryTimeStamp: now as unknown as string
         };
+
+        if (syncType === SyncType.INITIAL) {
+            delete body.queryTimeStamp;
+        }
 
         if (responseResults.deleted && responseResults.deleted > 0) {
             body.responseResults.deleted = responseResults.deleted;
