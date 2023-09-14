@@ -179,41 +179,46 @@ class SyncClient {
                 return;
             }
 
+            let handle = null;
             const jobId = generateWorkflowId(sync, syncName, nangoConnection?.connection_id as string);
 
-            if (debug) {
-                await createActivityLogMessage({
-                    level: 'debug',
-                    activity_log_id: activityLogId as number,
-                    timestamp: Date.now(),
-                    content: `Starting sync job ${jobId} for sync ${sync.id}`
+            if (syncData.auto_start) {
+                if (debug) {
+                    await createActivityLogMessage({
+                        level: 'debug',
+                        activity_log_id: activityLogId as number,
+                        timestamp: Date.now(),
+                        content: `Starting sync job ${jobId} for sync ${sync.id}`
+                    });
+                }
+                const syncJobId = await createSyncJob(sync.id as string, SyncType.INITIAL, SyncStatus.RUNNING, jobId, nangoConnection);
+
+                if (!syncJobId) {
+                    return;
+                }
+
+                handle = await this.client?.workflow.start('initialSync', {
+                    taskQueue: TASK_QUEUE,
+                    workflowId: jobId,
+                    args: [
+                        {
+                            syncId: sync.id,
+                            syncJobId: syncJobId?.id as number,
+                            nangoConnection,
+                            syncName,
+                            activityLogId,
+                            debug
+                        }
+                    ]
                 });
+            } else {
+                await createSyncJob(sync.id as string, SyncType.INITIAL, SyncStatus.PAUSED, jobId, nangoConnection);
             }
-            const syncJobId = await createSyncJob(sync.id as string, SyncType.INITIAL, SyncStatus.RUNNING, jobId, nangoConnection);
-
-            if (!syncJobId) {
-                return;
-            }
-
-            const handle = await this.client?.workflow.start('initialSync', {
-                taskQueue: TASK_QUEUE,
-                workflowId: jobId,
-                args: [
-                    {
-                        syncId: sync.id,
-                        syncJobId: syncJobId?.id as number,
-                        nangoConnection,
-                        syncName,
-                        activityLogId,
-                        debug
-                    }
-                ]
-            });
 
             const { interval, offset } = response;
             const scheduleId = generateScheduleId(sync, syncName, nangoConnection?.connection_id as string);
 
-            await this.client?.schedule.create({
+            const scheduleHandle = await this.client?.schedule.create({
                 scheduleId,
                 policies: {
                     overlap: OVERLAP_POLICY
@@ -245,14 +250,26 @@ class SyncClient {
                 }
             });
 
-            await createSyncSchedule(sync.id as string, interval, offset, ScheduleStatus.RUNNING, scheduleId);
+            if (!syncData.auto_start) {
+                await scheduleHandle?.pause();
+            }
 
-            await createActivityLogMessage({
-                level: 'info',
-                activity_log_id: activityLogId as number,
-                content: `Started initial background sync ${handle?.workflowId} and data updated on a schedule ${scheduleId} at ${syncData.runs} in the task queue: ${TASK_QUEUE}`,
-                timestamp: Date.now()
-            });
+            await createSyncSchedule(
+                sync.id as string,
+                interval,
+                offset,
+                syncData.auto_start === false ? ScheduleStatus.PAUSED : ScheduleStatus.RUNNING,
+                scheduleId
+            );
+
+            if (syncData.auto_start && handle) {
+                await createActivityLogMessage({
+                    level: 'info',
+                    activity_log_id: activityLogId as number,
+                    content: `Started initial background sync ${handle?.workflowId} and data updated on a schedule ${scheduleId} at ${syncData.runs} in the task queue: ${TASK_QUEUE}`,
+                    timestamp: Date.now()
+                });
+            }
         } catch (e) {
             await errorManager.report(e, {
                 source: ErrorSourceEnum.PLATFORM,

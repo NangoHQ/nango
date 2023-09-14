@@ -70,12 +70,14 @@ export interface SyncConfig extends TimestampsAndDeleted {
     active: boolean;
     runs: string;
     track_deletes: boolean;
+    auto_start: boolean;
     version?: string;
 }
 
 export interface SlimSync {
     id?: number;
     name: string;
+    auto_start: boolean;
     sync_id?: string | null;
     providerConfigKey?: string;
     connections?: number;
@@ -110,6 +112,7 @@ export interface IncomingSyncConfig {
     runs: string;
     version?: string;
     track_deletes?: boolean;
+    auto_start?: boolean;
     model_schema: string;
 }
 
