@@ -13,7 +13,7 @@ import {
     createActivityLogMessageAndEnd,
     updateSuccess as updateSuccessActivityLog
 } from '../services/activity/activity.service.js';
-import { createSyncJob, updateRunId, isSyncJobRunning } from '../services/sync/job.service.js';
+import { createSyncJob, updateRunId } from '../services/sync/job.service.js';
 import { getInterval } from '../services/nango-config.service.js';
 import { getSyncConfig } from '../services/sync/config.service.js';
 import { createSchedule as createSyncSchedule } from '../services/sync/schedule.service.js';
