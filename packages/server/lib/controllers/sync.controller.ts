@@ -398,6 +398,8 @@ class SyncController {
             const syncClient = await SyncClient.getInstance();
             await syncClient?.runSyncCommand(schedule?.schedule_id as string, sync?.id as string, SyncCommand.PAUSE, activityLogId as number);
             await updateScheduleStatus(schedule?.schedule_id as string, SyncCommand.PAUSE, activityLogId as number);
+
+            res.sendStatus(200);
         } catch (e) {
             next(e);
         }
@@ -463,6 +465,8 @@ class SyncController {
             const syncClient = await SyncClient.getInstance();
             await syncClient?.runSyncCommand(schedule?.schedule_id as string, sync?.id as string, SyncCommand.UNPAUSE, activityLogId as number);
             await updateScheduleStatus(schedule?.schedule_id as string, SyncCommand.UNPAUSE, activityLogId as number);
+
+            res.sendStatus(200);
         } catch (e) {
             next(e);
         }
