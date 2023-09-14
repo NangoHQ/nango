@@ -24,8 +24,8 @@ export * from './services/sync/job.service.js';
 export * from './services/sync/schedule.service.js';
 export * from './services/sync/config.service.js';
 
-export * as dataService from './services/sync/data.service.js';
-export * as syncDataService from './services/sync/data-records.service.js';
+export * as dataService from './services/sync/data/data.service.js';
+export * as syncDataService from './services/sync/data/records.service.js';
 
 export * as oauth2Client from './clients/oauth2.client.js';
 export * from './integrations/index.js';

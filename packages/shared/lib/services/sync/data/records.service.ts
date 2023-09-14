@@ -2,12 +2,12 @@ import md5 from 'md5';
 import * as uuid from 'uuid';
 import dayjs from 'dayjs';
 
-import type { DataRecord as SyncDataRecord, DataRecordWithMetadata } from '../../models/Sync.js';
-import type { DataResponse } from '../../models/Data.js';
-import type { ServiceResponse } from '../../models/Generic.js';
-import db, { schema } from '../../db/database.js';
-import connectionService from '../connection.service.js';
-import { NangoError } from '../../utils/error.js';
+import type { DataRecord as SyncDataRecord, CustomerFacingDataRecord, DataRecordWithMetadata } from '../../../models/Sync.js';
+import type { DataResponse } from '../../../models/Data.js';
+import type { ServiceResponse } from '../../../models/Generic.js';
+import db, { schema } from '../../../db/database.js';
+import connectionService from '../../connection.service.js';
+import { NangoError } from '../../../utils/error.js';
 
 export const formatDataRecords = (
     records: DataResponse[],
@@ -73,7 +73,7 @@ export async function getDataRecords(
     order?: 'asc' | 'desc',
     filter?: 'added' | 'updated' | 'deleted',
     includeMetaData = false
-): Promise<ServiceResponse<Pick<SyncDataRecord, 'json'>[] | DataRecordWithMetadata[] | null>> {
+): Promise<ServiceResponse<CustomerFacingDataRecord[] | DataRecordWithMetadata[] | null>> {
     if (!model) {
         const error = new NangoError('missing_model');
 
@@ -172,7 +172,27 @@ export async function getDataRecords(
             'json as record'
         );
     } else {
-        result = (await query.pluck('json')) as Pick<SyncDataRecord, 'json'>[];
+        result = await query.select(
+            db.knex.raw(`
+                jsonb_set(
+                    json::jsonb,
+                    '{_nango_metadata}',
+                    jsonb_build_object(
+                        'first_seen_at', created_at,
+                        'last_modified_at', updated_at,
+                        'deleted_at', external_deleted_at,
+                        'last_action',
+                        CASE
+                            WHEN external_deleted_at IS NOT NULL THEN 'DELETED'
+                            WHEN created_at = updated_at THEN 'ADDED'
+                            ELSE 'UPDATED'
+                        END
+                    )
+                ) as record
+            `)
+        );
+
+        result = result.map((item: { record: CustomerFacingDataRecord[] }) => item.record);
     }
 
     return { success: true, error: null, response: result };

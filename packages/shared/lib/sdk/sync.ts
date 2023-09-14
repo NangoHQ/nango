@@ -1,6 +1,6 @@
 import { getSyncConfigByJobId } from '../services/sync/config.service.js';
-import { upsert } from '../services/sync/data.service.js';
-import { formatDataRecords } from '../services/sync/data-records.service.js';
+import { upsert } from '../services/sync/data/data.service.js';
+import { formatDataRecords } from '../services/sync/data/records.service.js';
 import { createActivityLogMessage } from '../services/activity/activity.service.js';
 import { setLastSyncDate } from '../services/sync/sync.service.js';
 import { updateSyncJobResult } from '../services/sync/job.service.js';
@@ -448,7 +448,7 @@ export class NangoSync {
 
         if (responseResults.success) {
             const { summary } = responseResults;
-            const updatedResults: Record<string, { added: number; updated: number; deleted?: number }> = {
+            const updatedResults: Record<string, { added: number; updated: number; deleted: number }> = {
                 [model]: {
                     added: summary?.addedKeys.length as number,
                     updated: summary?.updatedKeys.length as number,

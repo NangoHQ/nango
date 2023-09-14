@@ -1,13 +1,13 @@
 import { expect, describe, it, beforeAll } from 'vitest';
-import { multipleMigrations } from '../../db/database.js';
+import { multipleMigrations } from '../../../db/database.js';
 import * as DataService from './data.service.js';
-import { formatDataRecords, getDataRecords } from './data-records.service.js';
-import connectionService from '../connection.service.js';
-import { createConfigSeeds } from '../../db/seeders/config.seeder.js';
-import { createConnectionSeeds } from '../../db/seeders/connection.seeder.js';
-import { createSyncSeeds } from '../../db/seeders/sync.seeder.js';
-import { createSyncJobSeeds } from '../../db/seeders/sync-job.seeder.js';
-import type { DataRecord, DataRecordWithMetadata } from '../../models/Sync.js';
+import { formatDataRecords, getDataRecords } from './records.service.js';
+import connectionService from '../../connection.service.js';
+import { createConfigSeeds } from '../../../db/seeders/config.seeder.js';
+import { createConnectionSeeds } from '../../../db/seeders/connection.seeder.js';
+import { createSyncSeeds } from '../../../db/seeders/sync.seeder.js';
+import { createSyncJobSeeds } from '../../../db/seeders/sync-job.seeder.js';
+import type { DataRecord, CustomerFacingDataRecord, DataRecordWithMetadata } from '../../../models/Sync.js';
 
 describe('Data service integration tests', () => {
     beforeAll(async () => {
@@ -72,7 +72,11 @@ describe('Data service integration tests', () => {
         const connection = await connectionService.getConnectionById(connections[0] as number);
         const { response: records } = await getDataRecords(connection?.connection_id as string, connection?.provider_config_key as string, 1, modelName);
         expect(records?.length).toBe(5);
-        expect(records).toEqual(expectedRecords);
+
+        for (let i = 0; i < (records as CustomerFacingDataRecord[])?.length; i++) {
+            // @ts-ignore
+            expect(records?.[i]?.id).toEqual(expectedRecords[i].id);
+        }
 
         const { response: ascRecords } = await getDataRecords(
             connection?.connection_id as string,
@@ -86,7 +90,11 @@ describe('Data service integration tests', () => {
             'asc'
         );
 
-        expect(ascRecords).toEqual(expectedRecords.reverse());
+        const reverseExpectedRecords = [...expectedRecords].reverse();
+        for (let i = 0; i < (ascRecords as CustomerFacingDataRecord[])?.length; i++) {
+            // @ts-ignore
+            expect(ascRecords?.[i]?.id).toEqual(reverseExpectedRecords[i].id);
+        }
 
         const { response: metaRecords } = await getDataRecords(
             connection?.connection_id as string,
@@ -107,6 +115,24 @@ describe('Data service integration tests', () => {
             expect(metaRecord).toHaveProperty('last_modified_at');
 
             expect(metaRecord.last_action).toBe('ADDED');
+        }
+
+        const { response: regularRecords } = await getDataRecords(
+            connection?.connection_id as string,
+            connection?.provider_config_key as string,
+            1,
+            modelName,
+            undefined, // delta
+            undefined, // offset
+            undefined, // limit
+            undefined, // sortBy
+            undefined, // order
+            undefined, // filter
+            false // include metadata
+        );
+
+        for (const regularRecord of regularRecords as CustomerFacingDataRecord[]) {
+            expect(regularRecord).toHaveProperty('_nango_metadata');
         }
     });
 });

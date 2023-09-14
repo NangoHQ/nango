@@ -1,12 +1,12 @@
 import { expect, describe, it, beforeAll } from 'vitest';
-import { multipleMigrations } from '../../db/database.js';
+import { multipleMigrations } from '../../../db/database.js';
 import * as DataService from './data.service.js';
-import connectionService from '../connection.service.js';
-import { getFullRecords, getFullSnapshotRecords, takeSnapshot, getDeletedKeys } from './data-delete.service.js';
-import { getDataRecords } from './data-records.service.js';
-import { createConfigSeeds } from '../../db/seeders/config.seeder.js';
-import type { DataRecord } from '../../models/Sync.js';
-import { generateInsertableJson, createRecords } from './data/mocks.js';
+import connectionService from '../../connection.service.js';
+import { getFullRecords, getFullSnapshotRecords, takeSnapshot, getDeletedKeys } from './delete.service.js';
+import { getDataRecords } from './records.service.js';
+import { createConfigSeeds } from '../../../db/seeders/config.seeder.js';
+import type { DataRecord } from '../../../models/Sync.js';
+import { generateInsertableJson, createRecords } from './mocks.js';
 
 const environmentName = 'delete-service';
 

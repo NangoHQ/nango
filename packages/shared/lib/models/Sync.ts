@@ -17,7 +17,7 @@ export enum SyncType {
 export interface SyncResult {
     added: number;
     updated: number;
-    deleted?: number;
+    deleted: number;
 }
 
 export interface SyncResultByModel {
@@ -129,6 +129,10 @@ export interface Schedule extends TimestampsAndDeleted {
     offset: number;
 }
 
+export type CustomerFacingDataRecord = {
+    _nango_metadata: RecordMetadata;
+} & Record<string, any>;
+
 export interface DataRecord extends Timestamps {
     [index: string]: number | string | Date | object | undefined | boolean | null;
     id?: string;
@@ -147,11 +151,14 @@ export interface DataRecord extends Timestamps {
 
 export type LastAction = 'added' | 'updated' | 'deleted';
 
-export interface DataRecordWithMetadata {
+interface RecordMetadata {
     first_seen_at: Date;
     last_seen_at: Date;
     last_action: LastAction;
     deleted_at: Date | null;
+}
+
+export interface DataRecordWithMetadata extends RecordMetadata {
     record: object;
 }
 
@@ -185,7 +192,7 @@ export interface NangoSyncWebhookBody {
     model: string;
     responseResults: SyncResult;
     syncType: SyncType;
-    queryTimeStamp: string;
+    queryTimeStamp: string | null;
 }
 
 export interface SyncConfigWithProvider {
