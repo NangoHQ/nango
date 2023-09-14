@@ -30,7 +30,9 @@ import {
     LogActionEnum,
     NangoError,
     LastAction,
-    configService
+    configService,
+    getSyncByIdAndName,
+    getSchedule
 } from '@nangohq/shared';
 
 class SyncController {
@@ -335,6 +337,141 @@ class SyncController {
         }
     }
 
+    public async pause(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { sync: syncName, provider_config_key, connection_id } = req.body;
+
+            if (!provider_config_key) {
+                res.status(400).send({ message: 'Missing provider config key' });
+
+                return;
+            }
+
+            if (!connection_id) {
+                res.status(400).send({ message: 'Missing connection id' });
+
+                return;
+            }
+
+            if (!syncName) {
+                res.status(400).send({ message: 'Missing sync name' });
+
+                return;
+            }
+
+            const environmentId = getEnvironmentId(res);
+
+            const {
+                success,
+                error,
+                response: connection
+            } = await connectionService.getConnection(connection_id as string, provider_config_key as string, environmentId);
+
+            if (!success) {
+                errorManager.errResFromNangoErr(res, error);
+
+                return;
+            }
+
+            const provider = await configService.getProviderName(provider_config_key as string);
+            const action = CommandToActivityLog[SyncCommand.PAUSE];
+
+            const log = {
+                level: 'info' as LogLevel,
+                success: false,
+                action,
+                start: Date.now(),
+                end: Date.now(),
+                timestamp: Date.now(),
+                connection_id: connection_id as string,
+                provider,
+                provider_config_key: provider_config_key as string,
+                environment_id: environmentId,
+                operation_name: syncName
+            };
+
+            const activityLogId = await createActivityLog(log);
+
+            const sync = await getSyncByIdAndName(connection?.id as number, syncName);
+            const schedule = await getSchedule(sync?.id as string);
+
+            const syncClient = await SyncClient.getInstance();
+            await syncClient?.runSyncCommand(schedule?.schedule_id as string, sync?.id as string, SyncCommand.PAUSE, activityLogId as number);
+            await updateScheduleStatus(schedule?.schedule_id as string, SyncCommand.PAUSE, activityLogId as number);
+
+            res.sendStatus(200);
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    public async restart(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { sync: syncName, provider_config_key, connection_id } = req.body;
+
+            if (!provider_config_key) {
+                res.status(400).send({ message: 'Missing provider config key' });
+
+                return;
+            }
+
+            if (!connection_id) {
+                res.status(400).send({ message: 'Missing connection id' });
+
+                return;
+            }
+
+            if (!syncName) {
+                res.status(400).send({ message: 'Missing sync name' });
+
+                return;
+            }
+
+            const environmentId = getEnvironmentId(res);
+
+            const {
+                success,
+                error,
+                response: connection
+            } = await connectionService.getConnection(connection_id as string, provider_config_key as string, environmentId);
+
+            if (!success) {
+                errorManager.errResFromNangoErr(res, error);
+
+                return;
+            }
+            const provider = await configService.getProviderName(provider_config_key as string);
+            const action = CommandToActivityLog[SyncCommand.UNPAUSE];
+
+            const log = {
+                level: 'info' as LogLevel,
+                success: false,
+                action,
+                start: Date.now(),
+                end: Date.now(),
+                timestamp: Date.now(),
+                connection_id: connection_id as string,
+                provider,
+                provider_config_key: provider_config_key as string,
+                environment_id: environmentId,
+                operation_name: syncName
+            };
+
+            const activityLogId = await createActivityLog(log);
+
+            const sync = await getSyncByIdAndName(connection?.id as number, syncName);
+            const schedule = await getSchedule(sync?.id as string);
+
+            const syncClient = await SyncClient.getInstance();
+            await syncClient?.runSyncCommand(schedule?.schedule_id as string, sync?.id as string, SyncCommand.UNPAUSE, activityLogId as number);
+            await updateScheduleStatus(schedule?.schedule_id as string, SyncCommand.UNPAUSE, activityLogId as number);
+
+            res.sendStatus(200);
+        } catch (e) {
+            next(e);
+        }
+    }
+
     public async syncCommand(req: Request, res: Response, next: NextFunction) {
         try {
             const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
@@ -376,7 +513,7 @@ class SyncController {
             const activityLogId = await createActivityLog(log);
 
             const syncClient = await SyncClient.getInstance();
-            await syncClient?.runSyncCommand(schedule_id, command, activityLogId as number);
+            await syncClient?.runSyncCommand(schedule_id, sync_id, command, activityLogId as number);
             await updateScheduleStatus(schedule_id, command, activityLogId as number);
 
             await createActivityLogMessageAndEnd({
