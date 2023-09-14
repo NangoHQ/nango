@@ -106,7 +106,7 @@ class ConnectionController {
                     config,
                     template as ProviderTemplateOAuth2,
                     null,
-                    false,
+                    instantRefresh,
                     LogActionEnum.TOKEN
                 );
 
