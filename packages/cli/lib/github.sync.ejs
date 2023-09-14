@@ -1,6 +1,6 @@
 import type { NangoSync, <%= interfaceNames.join(', ') %> } from './<%= interfaceFileName %>';
 
-export default async function fetchData(nango: NangoSync): Promise<<void> {
+export default async function fetchData(nango: NangoSync): Promise<void> {
 
     const repos = await paginate(nango, '/user/repos');
 
