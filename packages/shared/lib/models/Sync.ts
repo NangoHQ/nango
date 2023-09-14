@@ -77,7 +77,7 @@ export interface SyncConfig extends TimestampsAndDeleted {
 export interface SlimSync {
     id?: number;
     name: string;
-    auto_start: boolean;
+    auto_start?: boolean;
     sync_id?: string | null;
     providerConfigKey?: string;
     connections?: number;
