@@ -69,7 +69,7 @@ export interface NangoSyncWebhookBody {
     model: string;
     responseResults: SyncResult;
     syncType: SyncType;
-    queryTimeStamp?: string;
+    queryTimeStamp: string | null;
 }
 
 export type LastAction = 'added' | 'updated' | 'deleted';

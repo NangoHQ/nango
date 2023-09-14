@@ -47,7 +47,7 @@ class WebhookService {
         };
 
         if (syncType === SyncType.INITIAL) {
-            delete body.queryTimeStamp;
+            body.queryTimeStamp = null;
         }
 
         if (responseResults.deleted && responseResults.deleted > 0) {

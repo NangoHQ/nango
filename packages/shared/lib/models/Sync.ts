@@ -192,7 +192,7 @@ export interface NangoSyncWebhookBody {
     model: string;
     responseResults: SyncResult;
     syncType: SyncType;
-    queryTimeStamp?: string;
+    queryTimeStamp: string | null;
 }
 
 export interface SyncConfigWithProvider {
