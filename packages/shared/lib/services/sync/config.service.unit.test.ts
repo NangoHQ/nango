@@ -95,6 +95,7 @@ describe('Sync config create', () => {
                     model_schema: [{ name: 'model', fields: [{ name: 'some', type: 'value' }] }],
                     active: true,
                     runs: 'every 6h',
+                    auto_start: true,
                     track_deletes: false,
                     version: '1'
                 }
@@ -113,6 +114,7 @@ describe('Sync config create', () => {
                 model_schema: [{ name: 'model', fields: [{ name: 'some', type: 'value' }] }],
                 active: true,
                 runs: 'every 6h',
+                auto_start: true,
                 track_deletes: false,
                 version: '1'
             });
@@ -130,6 +132,7 @@ describe('Sync config create', () => {
                 model_schema: [{ name: 'model', fields: [{ name: 'some', type: 'value' }] }],
                 active: true,
                 runs: 'every 6h',
+                auto_start: true,
                 track_deletes: false,
                 version: '1'
             });
