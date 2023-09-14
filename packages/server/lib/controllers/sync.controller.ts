@@ -339,7 +339,7 @@ class SyncController {
 
     public async pause(req: Request, res: Response, next: NextFunction) {
         try {
-            const { provider_config_key, connection_id } = req.query;
+            const { sync: syncName, provider_config_key, connection_id } = req.body;
 
             if (!provider_config_key) {
                 res.status(400).send({ message: 'Missing provider config key' });
@@ -349,6 +349,12 @@ class SyncController {
 
             if (!connection_id) {
                 res.status(400).send({ message: 'Missing connection id' });
+
+                return;
+            }
+
+            if (!syncName) {
+                res.status(400).send({ message: 'Missing sync name' });
 
                 return;
             }
@@ -365,11 +371,6 @@ class SyncController {
                 errorManager.errResFromNangoErr(res, error);
 
                 return;
-            }
-            const syncName = req.body.sync as string;
-
-            if (!syncName) {
-                res.status(400).send({ message: 'Missing sync name' });
             }
 
             const provider = await configService.getProviderName(provider_config_key as string);
@@ -404,7 +405,7 @@ class SyncController {
 
     public async restart(req: Request, res: Response, next: NextFunction) {
         try {
-            const { provider_config_key, connection_id } = req.query;
+            const { sync: syncName, provider_config_key, connection_id } = req.body;
 
             if (!provider_config_key) {
                 res.status(400).send({ message: 'Missing provider config key' });
@@ -414,6 +415,12 @@ class SyncController {
 
             if (!connection_id) {
                 res.status(400).send({ message: 'Missing connection id' });
+
+                return;
+            }
+
+            if (!syncName) {
+                res.status(400).send({ message: 'Missing sync name' });
 
                 return;
             }
@@ -431,12 +438,6 @@ class SyncController {
 
                 return;
             }
-            const syncName = req.body.sync as string;
-
-            if (!syncName) {
-                res.status(400).send({ message: 'Missing sync name' });
-            }
-
             const provider = await configService.getProviderName(provider_config_key as string);
             const action = CommandToActivityLog[SyncCommand.UNPAUSE];
 

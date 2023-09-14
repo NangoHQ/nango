@@ -445,9 +445,9 @@ export class Nango {
             throw new Error('Sync is required');
         }
 
-        const url = `${this.serverUrl}/sync/pause?provider_config_key=${providerConfigKey}&connection_id=${connectionId}`;
+        const url = `${this.serverUrl}/sync/pause`;
 
-        return axios.post(url, { sync }, { headers: this.enrichHeaders() });
+        return axios.post(url, { sync, provider_config_key: providerConfigKey, connection_id: connectionId }, { headers: this.enrichHeaders() });
     }
 
     public async restartSync(providerConfigKey: string, connectionId: string, sync: string): Promise<void> {
@@ -463,9 +463,9 @@ export class Nango {
             throw new Error('Sync is required');
         }
 
-        const url = `${this.serverUrl}/sync/restart?provider_config_key=${providerConfigKey}&connection_id=${connectionId}`;
+        const url = `${this.serverUrl}/sync/restart`;
 
-        return axios.post(url, { sync }, { headers: this.enrichHeaders() });
+        return axios.post(url, { sync, provider_config_key: providerConfigKey, connection_id: connectionId }, { headers: this.enrichHeaders() });
     }
 
     public async triggerAction(providerConfigKey: string, connectionId: string, actionName: string, input: Record<string, unknown>): Promise<object> {
