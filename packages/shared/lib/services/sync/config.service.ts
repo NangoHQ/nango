@@ -173,7 +173,7 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
             models,
             version,
             track_deletes: track_deletes || false,
-            auto_start: auto_start || true,
+            auto_start: auto_start === false ? false : true,
             file_location,
             runs,
             active: true,
