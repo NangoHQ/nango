@@ -211,11 +211,10 @@ class SyncClient {
                         }
                     ]
                 });
+                await updateRunId(syncJobId?.id as number, handle?.firstExecutionRunId as string);
             } else {
                 await createSyncJob(sync.id as string, SyncType.INITIAL, SyncStatus.PAUSED, jobId, nangoConnection);
             }
-
-            await updateRunId(syncJobId?.id as number, handle?.firstExecutionRunId as string);
 
             const { interval, offset } = response;
             const scheduleId = generateScheduleId(sync, syncName, nangoConnection?.connection_id as string);
