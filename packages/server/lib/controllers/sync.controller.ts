@@ -392,11 +392,11 @@ class SyncController {
 
             const activityLogId = await createActivityLog(log);
 
-            const syncId = await getSyncByIdAndName(connection?.id as number, syncName);
-            const schedule = await getSchedule(syncId?.id as string);
+            const sync = await getSyncByIdAndName(connection?.id as number, syncName);
+            const schedule = await getSchedule(sync?.id as string);
 
             const syncClient = await SyncClient.getInstance();
-            await syncClient?.runSyncCommand(schedule?.schedule_id as string, SyncCommand.PAUSE, activityLogId as number);
+            await syncClient?.runSyncCommand(schedule?.schedule_id as string, sync?.id as string, SyncCommand.PAUSE, activityLogId as number);
             await updateScheduleStatus(schedule?.schedule_id as string, SyncCommand.PAUSE, activityLogId as number);
         } catch (e) {
             next(e);
@@ -457,11 +457,11 @@ class SyncController {
 
             const activityLogId = await createActivityLog(log);
 
-            const syncId = await getSyncByIdAndName(connection?.id as number, syncName);
-            const schedule = await getSchedule(syncId?.id as string);
+            const sync = await getSyncByIdAndName(connection?.id as number, syncName);
+            const schedule = await getSchedule(sync?.id as string);
 
             const syncClient = await SyncClient.getInstance();
-            await syncClient?.runSyncCommand(schedule?.schedule_id as string, SyncCommand.UNPAUSE, activityLogId as number);
+            await syncClient?.runSyncCommand(schedule?.schedule_id as string, sync?.id as string, SyncCommand.UNPAUSE, activityLogId as number);
             await updateScheduleStatus(schedule?.schedule_id as string, SyncCommand.UNPAUSE, activityLogId as number);
         } catch (e) {
             next(e);
@@ -509,7 +509,7 @@ class SyncController {
             const activityLogId = await createActivityLog(log);
 
             const syncClient = await SyncClient.getInstance();
-            await syncClient?.runSyncCommand(schedule_id, command, activityLogId as number);
+            await syncClient?.runSyncCommand(schedule_id, sync_id, command, activityLogId as number);
             await updateScheduleStatus(schedule_id, command, activityLogId as number);
 
             await createActivityLogMessageAndEnd({

@@ -97,7 +97,8 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
                 SyncType.INCREMENTAL,
                 SyncStatus.RUNNING,
                 context.info.workflowExecution.workflowId,
-                nangoConnection
+                nangoConnection,
+                context.info.workflowExecution.runId
             );
         } else {
             syncJobId = await createSyncJob(
@@ -105,7 +106,8 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
                 SyncType.INCREMENTAL,
                 SyncStatus.RUNNING,
                 context.info.workflowExecution.workflowId,
-                nangoConnection
+                nangoConnection,
+                context.info.workflowExecution.runId
             );
         }
 

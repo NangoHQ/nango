@@ -13,7 +13,7 @@ import {
     createActivityLogMessageAndEnd,
     updateSuccess as updateSuccessActivityLog
 } from '../services/activity/activity.service.js';
-import { createSyncJob } from '../services/sync/job.service.js';
+import { createSyncJob, updateRunId, isSyncJobRunning } from '../services/sync/job.service.js';
 import { getInterval } from '../services/nango-config.service.js';
 import { getSyncConfig } from '../services/sync/config.service.js';
 import { createSchedule as createSyncSchedule } from '../services/sync/schedule.service.js';
@@ -210,6 +210,8 @@ class SyncClient {
                 ]
             });
 
+            await updateRunId(syncJobId?.id as number, handle?.firstExecutionRunId as string);
+
             const { interval, offset } = response;
             const scheduleId = generateScheduleId(sync, syncName, nangoConnection?.connection_id as string);
 
@@ -327,13 +329,24 @@ class SyncClient {
         return schedules;
     }
 
-    async runSyncCommand(scheduleId: string, command: SyncCommand, activityLogId: number) {
+    async runSyncCommand(scheduleId: string, syncId: string, command: SyncCommand, activityLogId: number) {
         const scheduleHandle = this.client?.schedule.getHandle(scheduleId);
 
         try {
             switch (command) {
                 case SyncCommand.PAUSE:
-                    await scheduleHandle?.pause();
+                    {
+                        const jobIsRunning = await isSyncJobRunning(syncId);
+                        if (jobIsRunning) {
+                            const { job_id, run_id } = jobIsRunning;
+                            if (run_id) {
+                                const workflowHandle = this.client?.workflow.getHandle(job_id, run_id);
+                                workflowHandle?.cancel();
+                            }
+                        }
+
+                        await scheduleHandle?.pause();
+                    }
                     break;
                 case SyncCommand.UNPAUSE:
                     await scheduleHandle?.unpause();
