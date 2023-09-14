@@ -1,9 +1,9 @@
-import { schema } from '../../db/database.js';
-import { verifyUniqueKeysAreUnique } from './data-records.service.js';
-import { createActivityLogMessage } from '../activity/activity.service.js';
-import { clearOldRecords } from './data-delete.service.js';
-import type { UpsertResponse } from '../../models/Data.js';
-import type { DataRecord } from '../../models/Sync.js';
+import { schema } from '../../../db/database.js';
+import { verifyUniqueKeysAreUnique } from './records.service.js';
+import { createActivityLogMessage } from '../../activity/activity.service.js';
+import { clearOldRecords } from './delete.service.js';
+import type { UpsertResponse } from '../../../models/Data.js';
+import type { DataRecord } from '../../../models/Sync.js';
 
 /**
  * Upsert

@@ -1,12 +1,26 @@
 ---
-title: 'Sync Data'
-sidebarTitle: 'Sync Data'
+title: 'Syncs'
+sidebarTitle: 'Syncs'
 description: 'Continuously sync data from external APIs'
 ---
 
 <Tip>
     Before using sync you need to setup auth by following the [Authorize APIs guide](/guides/oauth).
 </Tip>
+
+## When to use _syncs_? 
+
+_Sync_ enable to continuously sync data between your app and external APIs. This is useful when you need to: 
+- keep a list of records in sync between your app and an external system
+- take action when records from an external system are created, updated and/or deleted 
+
+_Syncs_ handles the critical infrastructure & logic necessary to continuously & reliably sync data:
+- API requests & data transformation
+- Unification of schemas across external APIs
+- Logging & monitoring
+- Rate-limit handling
+- Automated retries
+- _Syncs_ API
 
 # Step 1: Setup the Nango CLI & nango-integrations folder
 
@@ -251,7 +265,7 @@ nango dryrun asana-tasks <connection-id>
 Because this is a dry run, the fetched data will not be stored in Nango. Instead dryrun will print the data as returned.
 
 <Tip>
-By default, the Connection ID is fetched from your `Dev` environment. You can fetch _connections_ from your `Prod` environment with the `-e prod` flag.
+By default, the _connection_ ID is fetched from your `Dev` environment. You can fetch _connections_ from your `Prod` environment with the `-e prod` flag.
 
 To test incremental _sync_ runs, add the `-l` flag (which will populate the `nango.lastSyncDate` value in your script): 
 ```bash
@@ -263,13 +277,13 @@ nango dryrun asana-tasks <connection-id> -l "2023-06-20T10:00:00.000Z"
 
 **1. Deploy to the `Dev` environment**
     
-    When your _sync_ script is ready, youcan deploy it to your `Dev` environment in Nango:
+    When your _sync_ script is ready, you can deploy it to your `Dev` environment in Nango:
 
     ```bash
     nango deploy dev
     ```
 
-    Inspect the [Sync tab](https://app.nango.dev/syncs) to verify the deployment succeeded.
+    Inspect the [Syncs & Actions tab](https://app.nango.dev/syncs) to verify the deployment succeeded.
 
     <Tip>
         When you deploy your _sync_ Nango automatically adds it to all the existing _connections_ of the _integration_, and starts syncing their data.
@@ -330,10 +344,67 @@ That's it!
 
 ## Advanced Configuration
 
-### Per customer/connections Field Mapping
+### Per customer/connections field mapping
 
 Sometimes you need to have a field mapping that is specific to a customer. For instance, you want to let customers pick which field contains the email address of the contact.
 
 You can store field mapping data that is specific to a _connection_ in Nango with [custom connection metadata](/guides/oauth#storing-custom-metadata-per-connection).
 
 In the future we want to help you more with field mappings (metadata requests to get available objects & fields, UI components etc.). 
+
+### Handling API rate-limits
+
+Nango has currently two approaches to handle rate limits, a generic/naive one and an API-specific one. 
+
+The **generic & naive approach** is based on retries & exponential-backoff. When you make network requests with the _proxy_ in a _sync_ with a high number of retries, exponential back-off will increase the delay between retries, augmenting the chances to go back under the rate-limit. But this "blind" approach is inefficient both in terms of optimising the time between requests and avoiding complex rate-limits.
+
+The **API-specific approach** is based on reading the rate-limit headers returned by the external APIs. Nango observes these headers and pauses the _sync_ job until the rate-limit is passed. This approach has the benefit of being more efficient both for minimizing _sync_ durations and avoid failures due to rate-limiting. 
+
+This second approach requires to edit Nango's [providers.yaml](https://nango.dev/providers.yaml) file to indicate the rate-limit header name for a specific API (in the `retry` entry, under `at` or `after` fields):
+
+Github example: 
+```yaml
+github:
+    auth_mode: OAUTH2
+    authorization_url: https://github.com/login/oauth/authorize
+    token_url: https://github.com/login/oauth/access_token
+    proxy:
+        base_url: https://api.github.com
+        retry:
+            at: 'x-ratelimit-reset'
+    docs: https://docs.github.com/en/rest
+```
+
+Discord example: 
+```yaml
+discord:
+    auth_mode: OAUTH2
+    authorization_url: https://discord.com/api/oauth2/authorize
+    token_url: https://discord.com/api/oauth2/token
+    authorization_params:
+        response_type: code
+    proxy:
+        retry:
+            after: 'Retry-After'
+```
+
+### Handling deletes
+
+_Syncs_ have the capability of detecting deletions. Deleted records are preserved in Nango but marked as deleted in the record metadata (i.e. _soft deletes_). You can include the metadata in fetched record using the [API](/api-reference/sync/records-get)'s `include_nango_metadata` query param or the [SDK](/sdks/node#read-synced-data)'s `includeNangoMetadata` param.
+
+There are two different ways to detect deletes based on wether a _sync_ script works incrementally (i.e. each _sync_ job only fetches the changes since the last _sync_ job from the external API) or with full refresh (i.e. each _sync_ job fetches all the data from the external API).
+
+**Incremental _syncs_**
+
+For incremental _syncs_, you can use the `batchDelete` method in your _sync_ scripts to flag records as deleted:
+```ts
+await nango.batchDelete<User>(users, 'User');
+```
+
+The objects marked as deleted (here `users`) only need to contain the unique `id` field. 
+
+**Full refresh _syncs_**
+
+For full refresh _syncs_, you simply need to add a `track_deletes: true` field for your _sync_ in your `nango.yaml` configuration. With this configuration, when an previously returned by the _sync_ script is no longer returned, it will be marked as deleted.
+
+

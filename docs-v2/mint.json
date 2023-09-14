@@ -94,10 +94,14 @@
         },
         {
             "group": "Guides",
-            "pages": [{
+            "pages": [
+                {
                     "group": "Authorize APIs",
                     "pages": ["guides/oauth", "guides/api-key"]
-                }, "guides/sync", "guides/proxy", "guides/webhooks"
+                }, {
+                    "group": "Consume APIs",
+                    "pages": ["guides/sync", "guides/actions", "guides/proxy", "guides/webhooks"]
+                }, "contribute"
             ]
         },
         {
@@ -107,18 +111,18 @@
         {
             "group": "Self-Host Nango",
             "pages": [
+                "self-host/overview",
                 "self-host/instructions",
-                "self-host/local",
+                {
+                    "group": "Platforms",
+                    "pages": ["self-host/local",
                 "self-host/aws",
                 "self-host/gcp",
                 "self-host/digital-ocean",
                 "self-host/render",
-                "self-host/heroku"
+                "self-host/heroku"]
+                }
             ]
-        },
-        {
-            "group": "Contribute",
-            "pages": ["contribute"]
         },
         {
             "group": "Overview",
@@ -324,8 +328,12 @@
             ]
         },
         {
-            "group": "Sync",
+            "group": "Syncs",
             "pages": ["api-reference/sync/records-get", "api-reference/sync/trigger"]
+        },
+        {
+            "group": "Actions",
+            "pages": ["api-reference/action/trigger"]
         },
         {
             "group": "Proxy",

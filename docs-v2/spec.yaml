@@ -559,6 +559,37 @@ paths:
                                     type: array
                                     items:
                                         type: string
+    /action/trigger:
+        post:
+            description: Triggers an action for a connection
+            parameters:
+                - name: Connection-Id
+                  in: header
+                  required: true
+                  description: The connection ID used to create the connection.
+                  schema:
+                      type: string
+                - name: Provider-Config-Key
+                  in: header
+                  required: true
+                  description: The integration ID used to create the connection (aka Unique Key).
+                  schema:
+                      type: string
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - action_name
+                            properties:
+                                action_name:
+                                    type: string
+                                    description: The name of the action to trigger.
+                                input:
+                                    type: object
+                                    description: The necessary input for your action's 'runAction' function.
     /proxy/{anyPath}:
         get:
             description: Make a GET request with the Proxy.

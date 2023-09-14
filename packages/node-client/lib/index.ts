@@ -59,7 +59,7 @@ export enum SyncType {
 export interface SyncResult {
     added: number;
     updated: number;
-    deleted?: number;
+    deleted: number;
 }
 
 export interface NangoSyncWebhookBody {
@@ -69,7 +69,16 @@ export interface NangoSyncWebhookBody {
     model: string;
     responseResults: SyncResult;
     syncType: SyncType;
-    queryTimeStamp: string;
+    queryTimeStamp: string | null;
+}
+
+export type LastAction = 'added' | 'updated' | 'deleted';
+
+interface RecordMetadata {
+    first_seen_at: Date;
+    last_seen_at: Date;
+    last_action: LastAction;
+    deleted_at: Date | null;
 }
 
 export class Nango {
@@ -273,7 +282,7 @@ export class Nango {
         });
     }
 
-    public async getRecords<T = any>(config: GetRecordsRequestConfig): Promise<T[]> {
+    public async getRecords<T = any>(config: GetRecordsRequestConfig): Promise<T & { _nango_metadata: RecordMetadata }[]> {
         const { connectionId, providerConfigKey, model, delta, offset, limit, includeNangoMetadata } = config;
         validateSyncRecordConfiguration(config);
 
@@ -303,6 +312,11 @@ export class Nango {
                 break;
         }
 
+        if (includeNangoMetadata) {
+            console.warn(
+                `The includeNangoMetadata option will be deprecated soon and will be removed in a future release. Each record now has a _nango_metadata property which includes the same properties.`
+            );
+        }
         const includeMetadata = includeNangoMetadata || false;
 
         const url = `${this.serverUrl}/sync/records/?model=${model}&order=${order}&delta=${delta || ''}&offset=${offset || ''}&limit=${limit || ''}&sort_by=${

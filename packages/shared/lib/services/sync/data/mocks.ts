@@ -1,7 +1,7 @@
 import { createConnectionSeeds } from '../../../db/seeders/connection.seeder.js';
 import { createSyncSeeds } from '../../../db/seeders/sync.seeder.js';
 import { createSyncJobSeeds } from '../../../db/seeders/sync-job.seeder.js';
-import { formatDataRecords } from '../data-records.service.js';
+import { formatDataRecords } from './records.service.js';
 import type { DataResponse } from '../../../models/Data.js';
 
 export async function createRecords(records: DataResponse[], environmentName = '') {

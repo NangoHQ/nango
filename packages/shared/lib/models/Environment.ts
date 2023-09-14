@@ -1,4 +1,6 @@
-export interface Environment {
+import type { Timestamps } from './Generic.js';
+
+export interface Environment extends Timestamps {
     id: number;
     name: string;
     account_id: number;
@@ -12,6 +14,4 @@ export interface Environment {
     hmac_enabled: boolean;
     hmac_key: string | null;
     hmac_digest?: string | null;
-    created_at: string;
-    updated_at: string;
 }
