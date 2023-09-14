@@ -329,21 +329,24 @@ class SyncClient {
         return schedules;
     }
 
-    async runSyncCommand(scheduleId: string, syncId: string, command: SyncCommand, activityLogId: number) {
+    async runSyncCommand(scheduleId: string, _syncId: string, command: SyncCommand, activityLogId: number) {
         const scheduleHandle = this.client?.schedule.getHandle(scheduleId);
 
         try {
             switch (command) {
                 case SyncCommand.PAUSE:
                     {
+                        /*
+                        // TODO
                         const jobIsRunning = await isSyncJobRunning(syncId);
                         if (jobIsRunning) {
                             const { job_id, run_id } = jobIsRunning;
                             if (run_id) {
                                 const workflowHandle = this.client?.workflow.getHandle(job_id, run_id);
-                                workflowHandle?.cancel();
+                                await workflowHandle?.cancel();
                             }
                         }
+                        */
 
                         await scheduleHandle?.pause();
                     }
