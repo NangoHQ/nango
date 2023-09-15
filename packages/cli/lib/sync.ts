@@ -440,6 +440,7 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
                 version: version as string,
                 runs,
                 track_deletes: sync.track_deletes || false,
+                auto_start: sync.auto_start === false ? false : true,
                 type,
                 fileBody: fs.readFileSync(integrationFilePath, 'utf8'),
                 model_schema: JSON.stringify(model_schema)
@@ -464,7 +465,7 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
 
             for (const sync of newSyncs) {
                 const actionMessage =
-                    sync.connections === 0
+                    sync.connections === 0 || sync.auto_start === false
                         ? 'The sync will be added to your Nango instance if you deploy.'
                         : `Nango will start syncing the corresponding data for ${sync.connections} existing connections.`;
                 console.log(chalk.yellow(`Sync "${sync.name}" is new. ${actionMessage}`));

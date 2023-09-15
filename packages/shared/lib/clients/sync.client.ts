@@ -13,7 +13,7 @@ import {
     createActivityLogMessageAndEnd,
     updateSuccess as updateSuccessActivityLog
 } from '../services/activity/activity.service.js';
-import { createSyncJob } from '../services/sync/job.service.js';
+import { createSyncJob, updateRunId } from '../services/sync/job.service.js';
 import { getInterval } from '../services/nango-config.service.js';
 import { getSyncConfig } from '../services/sync/config.service.js';
 import { createSchedule as createSyncSchedule } from '../services/sync/schedule.service.js';
@@ -179,41 +179,47 @@ class SyncClient {
                 return;
             }
 
+            let handle = null;
             const jobId = generateWorkflowId(sync, syncName, nangoConnection?.connection_id as string);
 
-            if (debug) {
-                await createActivityLogMessage({
-                    level: 'debug',
-                    activity_log_id: activityLogId as number,
-                    timestamp: Date.now(),
-                    content: `Starting sync job ${jobId} for sync ${sync.id}`
+            if (syncData.auto_start) {
+                if (debug) {
+                    await createActivityLogMessage({
+                        level: 'debug',
+                        activity_log_id: activityLogId as number,
+                        timestamp: Date.now(),
+                        content: `Starting sync job ${jobId} for sync ${sync.id}`
+                    });
+                }
+                const syncJobId = await createSyncJob(sync.id as string, SyncType.INITIAL, SyncStatus.RUNNING, jobId, nangoConnection);
+
+                if (!syncJobId) {
+                    return;
+                }
+
+                handle = await this.client?.workflow.start('initialSync', {
+                    taskQueue: TASK_QUEUE,
+                    workflowId: jobId,
+                    args: [
+                        {
+                            syncId: sync.id,
+                            syncJobId: syncJobId?.id as number,
+                            nangoConnection,
+                            syncName,
+                            activityLogId,
+                            debug
+                        }
+                    ]
                 });
+                await updateRunId(syncJobId?.id as number, handle?.firstExecutionRunId as string);
+            } else {
+                await createSyncJob(sync.id as string, SyncType.INITIAL, SyncStatus.PAUSED, jobId, nangoConnection);
             }
-            const syncJobId = await createSyncJob(sync.id as string, SyncType.INITIAL, SyncStatus.RUNNING, jobId, nangoConnection);
-
-            if (!syncJobId) {
-                return;
-            }
-
-            const handle = await this.client?.workflow.start('initialSync', {
-                taskQueue: TASK_QUEUE,
-                workflowId: jobId,
-                args: [
-                    {
-                        syncId: sync.id,
-                        syncJobId: syncJobId?.id as number,
-                        nangoConnection,
-                        syncName,
-                        activityLogId,
-                        debug
-                    }
-                ]
-            });
 
             const { interval, offset } = response;
             const scheduleId = generateScheduleId(sync, syncName, nangoConnection?.connection_id as string);
 
-            await this.client?.schedule.create({
+            const scheduleHandle = await this.client?.schedule.create({
                 scheduleId,
                 policies: {
                     overlap: OVERLAP_POLICY
@@ -245,14 +251,26 @@ class SyncClient {
                 }
             });
 
-            await createSyncSchedule(sync.id as string, interval, offset, ScheduleStatus.RUNNING, scheduleId);
+            if (!syncData.auto_start) {
+                await scheduleHandle?.pause();
+            }
 
-            await createActivityLogMessage({
-                level: 'info',
-                activity_log_id: activityLogId as number,
-                content: `Started initial background sync ${handle?.workflowId} and data updated on a schedule ${scheduleId} at ${syncData.runs} in the task queue: ${TASK_QUEUE}`,
-                timestamp: Date.now()
-            });
+            await createSyncSchedule(
+                sync.id as string,
+                interval,
+                offset,
+                syncData.auto_start === false ? ScheduleStatus.PAUSED : ScheduleStatus.RUNNING,
+                scheduleId
+            );
+
+            if (syncData.auto_start && handle) {
+                await createActivityLogMessage({
+                    level: 'info',
+                    activity_log_id: activityLogId as number,
+                    content: `Started initial background sync ${handle?.workflowId} and data updated on a schedule ${scheduleId} at ${syncData.runs} in the task queue: ${TASK_QUEUE}`,
+                    timestamp: Date.now()
+                });
+            }
         } catch (e) {
             await errorManager.report(e, {
                 source: ErrorSourceEnum.PLATFORM,
@@ -327,13 +345,27 @@ class SyncClient {
         return schedules;
     }
 
-    async runSyncCommand(syncId: string, command: SyncCommand, activityLogId: number) {
-        const scheduleHandle = this.client?.schedule.getHandle(syncId);
+    async runSyncCommand(scheduleId: string, _syncId: string, command: SyncCommand, activityLogId: number) {
+        const scheduleHandle = this.client?.schedule.getHandle(scheduleId);
 
         try {
             switch (command) {
                 case SyncCommand.PAUSE:
-                    await scheduleHandle?.pause();
+                    {
+                        /*
+                        // TODO
+                        const jobIsRunning = await isSyncJobRunning(syncId);
+                        if (jobIsRunning) {
+                            const { job_id, run_id } = jobIsRunning;
+                            if (run_id) {
+                                const workflowHandle = this.client?.workflow.getHandle(job_id, run_id);
+                                await workflowHandle?.cancel();
+                            }
+                        }
+                        */
+
+                        await scheduleHandle?.pause();
+                    }
                     break;
                 case SyncCommand.UNPAUSE:
                     await scheduleHandle?.unpause();

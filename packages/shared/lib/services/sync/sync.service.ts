@@ -450,7 +450,12 @@ export const getAndReconcileDifferences = async (
         }
 
         if (!exists || isNew) {
-            newSyncs.push({ name: syncName, providerConfigKey, connections: existingConnectionsByProviderConfig[providerConfigKey]?.length as number });
+            newSyncs.push({
+                name: syncName,
+                providerConfigKey,
+                connections: existingConnectionsByProviderConfig[providerConfigKey]?.length as number,
+                auto_start: sync.auto_start === false ? false : true
+            });
             if (performAction) {
                 if (debug && activityLogId) {
                     await createActivityLogMessage({
