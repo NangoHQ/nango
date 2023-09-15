@@ -286,7 +286,7 @@ export default function ProjectSettings() {
                                         </div>
                                     </div>
                                     {callbackEditMode && (
-                                        <form className="mt-2" onSubmit={handleCallbackSave}>
+                                        <form className="mt-2" onSubmit={handleCallbackSave} autoComplete="off">
                                             <div className="flex">
                                                 <input
                                                     id="callback_url"
@@ -361,7 +361,7 @@ export default function ProjectSettings() {
                                         </Tooltip>
                                     </div>
                                     {webhookEditMode && (
-                                        <form className="mt-2" onSubmit={handleWebhookbackSave}>
+                                        <form className="mt-2" onSubmit={handleWebhookbackSave} autoComplete="off">
                                             <div className="flex">
                                                 <input
                                                     id="webhook_url"
@@ -438,7 +438,7 @@ export default function ProjectSettings() {
                                         </div>
                                     )}
                                     {hmacEditMode && (
-                                        <form className="mt-2" onSubmit={handleHmacSave}>
+                                        <form className="mt-2" onSubmit={handleHmacSave} autoComplete="off">
                                             <div className="flex">
                                                 <input
                                                     id="hmac_key"
@@ -492,6 +492,7 @@ export default function ProjectSettings() {
                                     <form
                                         className="mt-2"
                                         onSubmit={handleEnvVariablesSave}
+                                        autoComplete="off"
                                     >
                                         {envVariables.map((envVar, index) => (
                                             <div key={index} className="flex items-center mt-2">

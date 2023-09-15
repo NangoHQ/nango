@@ -196,7 +196,7 @@ export default function IntegrationCreate() {
                         : 'Add New Integration'}
                     </h2>
                     <div className="mx-20 h-fit border border-border-gray rounded-md text-white text-sm py-14 px-8">
-                        <form className="space-y-6" onSubmit={handleSave}>
+                        <form className="space-y-6" onSubmit={handleSave} autoComplete="off">
                             {!providerConfigKey && providers && (
                                 <div>
                                     <div>
