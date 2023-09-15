@@ -1,7 +1,9 @@
 import type { QuickJSContext, QuickJSHandle } from 'quickjs-emscripten';
 import path from 'path';
 import crypto from 'crypto';
+import * as tslib from 'tslib';
 import { types } from 'util';
+import { createRequire } from 'module';
 
 type GenericFunction = (...args: unknown[]) => unknown;
 
@@ -10,13 +12,15 @@ export function hostConsoleLog(...args: unknown[]): void {
 }
 
 export function hostRequire(moduleName: string): unknown {
+    const metaRequire = createRequire(import.meta.url);
+
     if (moduleName.startsWith('.')) {
         const fileName = moduleName.replace(/\.[^/.]+$/, '');
         const fullPath = process.env['NANGO_INTEGRATIONS_FULL_PATH'] as string;
-        return require(path.resolve(fullPath, fileName + '.cjs'));
+        return metaRequire(path.resolve(fullPath, fileName + '.cjs'));
     }
 
-    return require(moduleName);
+    return metaRequire(moduleName);
 }
 
 export function isClassInstance(obj: unknown): boolean {
