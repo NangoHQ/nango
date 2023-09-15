@@ -1,4 +1,5 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
+import { backOff } from 'exponential-backoff';
 import { SyncType } from '../models/Sync.js';
 import type { NangoConnection } from '../models/Connection';
 import type { SyncResult, NangoSyncWebhookBody } from '../models/Sync';
@@ -6,6 +7,25 @@ import environmentService from './environment.service.js';
 import { createActivityLogMessage } from './activity/activity.service.js';
 
 class WebhookService {
+    private retry = async (activityLogId: number, error: AxiosError, attemptNumber: number): Promise<boolean> => {
+        if (error?.response && (error?.response?.status < 200 || error?.response?.status > 300)) {
+            const content = `Webhook response received an ${
+                error?.response?.status || error?.code
+            } error, retrying with exponential backoffs for a total of ${attemptNumber} times`;
+
+            await createActivityLogMessage({
+                level: 'error',
+                activity_log_id: activityLogId,
+                timestamp: Date.now(),
+                content
+            });
+
+            return true;
+        }
+
+        return false;
+    };
+
     async sendUpdate(
         nangoConnection: NangoConnection,
         syncName: string,
@@ -55,7 +75,13 @@ class WebhookService {
         }
 
         try {
-            const response = await axios.post(webhookUrl, body);
+            const response = await backOff(
+                () => {
+                    return axios.post(webhookUrl, body);
+                },
+                { numOfAttempts: 5, retry: this.retry.bind(this, activityLogId) }
+            );
+
             if (response.status >= 200 && response.status < 300) {
                 await createActivityLogMessage({
                     level: 'info',
