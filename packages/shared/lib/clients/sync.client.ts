@@ -433,6 +433,13 @@ class SyncClient {
 
             return actionHandler;
         } catch (e) {
+            await createActivityLogMessageAndEnd({
+                level: 'error',
+                activity_log_id: activityLogId as number,
+                timestamp: Date.now(),
+                content: `The action workflow ${workflowId} failed with error: ${e}`
+            });
+
             await errorManager.report(e, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.SYNC_CLIENT,
