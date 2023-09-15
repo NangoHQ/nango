@@ -1,7 +1,6 @@
 import type { QuickJSContext, QuickJSHandle } from 'quickjs-emscripten';
 import path from 'path';
 import crypto from 'crypto';
-import * as tslib from 'tslib';
 import { types } from 'util';
 import { createRequire } from 'module';
 
