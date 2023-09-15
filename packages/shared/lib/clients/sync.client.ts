@@ -182,7 +182,7 @@ class SyncClient {
             let handle = null;
             const jobId = generateWorkflowId(sync, syncName, nangoConnection?.connection_id as string);
 
-            if (syncData.auto_start) {
+            if (syncData.auto_start !== false) {
                 if (debug) {
                     await createActivityLogMessage({
                         level: 'debug',
