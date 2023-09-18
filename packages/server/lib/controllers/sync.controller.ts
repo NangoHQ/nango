@@ -197,7 +197,16 @@ class SyncController {
 
     public async trigger(req: Request, res: Response, next: NextFunction) {
         try {
-            const { syncs: syncNames, provider_config_key, connection_id } = req.body;
+            const { syncs: syncNames } = req.body;
+            let { provider_config_key, connection_id } = req.body;
+
+            if (!provider_config_key) {
+                provider_config_key = req.get('Provider-Config-Key') as string;
+            }
+
+            if (!connection_id) {
+                connection_id = req.get('Connection-Id') as string;
+            }
 
             if (!provider_config_key) {
                 res.status(400).send({ message: 'Missing provider config key' });
@@ -344,7 +353,7 @@ class SyncController {
         }
     }
 
-    public async restart(req: Request, res: Response, next: NextFunction) {
+    public async start(req: Request, res: Response, next: NextFunction) {
         try {
             const { syncs: syncNames, provider_config_key, connection_id } = req.body;
 
