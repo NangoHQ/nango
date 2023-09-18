@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { hmacService, environmentService, errorManager, getBaseUrl, isCloud, getWebsocketsPath, getOauthCallbackUrl } from '@nangohq/shared';
+import { hmacService, environmentService, errorManager, getBaseUrl, isCloud, getWebsocketsPath, getOauthCallbackUrl, getEnvironmentId } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 
 class EnvironmentController {
@@ -141,6 +141,16 @@ class EnvironmentController {
 
             await environmentService.editHmacKey(req.body['hmac_key'], environment.id);
             res.status(200).send();
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async getEnvironmentVariables(_req: Request, res: Response, next: NextFunction) {
+        try {
+            const environmentId = getEnvironmentId(res);
+            const environmentVariables = await environmentService.getEnvironmentVariables(environmentId);
+            res.status(200).send(environmentVariables);
         } catch (err) {
             next(err);
         }

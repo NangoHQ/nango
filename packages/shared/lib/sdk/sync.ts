@@ -4,7 +4,6 @@ import { formatDataRecords } from '../services/sync/data/records.service.js';
 import { createActivityLogMessage } from '../services/activity/activity.service.js';
 import { setLastSyncDate } from '../services/sync/sync.service.js';
 import { updateSyncJobResult } from '../services/sync/job.service.js';
-import environmentService from '../services/environment.service.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { LogActionEnum } from '../models/Activity.js';
 
@@ -518,17 +517,6 @@ export class NangoSync {
             throw new Error('There is no current environment to get variables from');
         }
 
-        const environmentVariables = await environmentService.getEnvironmentVariables(this.environmentId as number);
-
-        if (!environmentVariables) {
-            return [];
-        }
-
-        return environmentVariables.map((variable) => {
-            return {
-                name: variable.name,
-                value: variable.value
-            };
-        });
+        return await this.nango.getEnvironmentVariables();
     }
 }
