@@ -427,7 +427,7 @@ export class Nango {
         throw new Error('getFieldMapping is deprecated. Please use getMetadata instead.');
     }
 
-    public async triggerSyncs(providerConfigKey: string, connectionId: string, syncs?: string[]): Promise<void> {
+    public async triggerSync(providerConfigKey: string, connectionId: string, syncs?: string[]): Promise<void> {
         const url = `${this.serverUrl}/sync/trigger`;
 
         const headers = {
@@ -448,7 +448,7 @@ export class Nango {
         return axios.post(url, body, { headers: this.enrichHeaders(headers) });
     }
 
-    public async pauseSyncs(providerConfigKey: string, connectionId: string, syncs: string[]): Promise<void> {
+    public async pauseSync(providerConfigKey: string, connectionId: string, syncs: string[]): Promise<void> {
         if (!providerConfigKey) {
             throw new Error('Provider Config Key is required');
         }
@@ -476,7 +476,7 @@ export class Nango {
         return axios.post(url, body, { headers: this.enrichHeaders() });
     }
 
-    public async startSyncs(providerConfigKey: string, connectionId: string, syncs: string[]): Promise<void> {
+    public async startSync(providerConfigKey: string, connectionId: string, syncs: string[]): Promise<void> {
         if (!providerConfigKey) {
             throw new Error('Provider Config Key is required');
         }
