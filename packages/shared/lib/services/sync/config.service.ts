@@ -605,7 +605,7 @@ export async function getAttributes(provider_config_key: string, sync_name: stri
             [`${TABLE}.active`]: true
         })
         .first()
-        .orderBy('created_at', 'desc');
+        .orderBy(`${TABLE}.created_at`, 'desc');
 
     if (!result) {
         return null;

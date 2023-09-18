@@ -443,7 +443,7 @@ class SyncController {
         }
     }
 
-    public async getSyncAttributes(req: Request, res: Response, next: NextFunction) {
+    public async getFlowAttributes(req: Request, res: Response, next: NextFunction) {
         try {
             const { sync_name, provider_config_key } = req.query;
 
