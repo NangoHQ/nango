@@ -583,7 +583,7 @@ export async function getSyncConfigByJobId(job_id: number): Promise<SyncConfig |
             [`${TABLE}.deleted`]: false
         })
         .first()
-        .orderBy('created_at', 'desc');
+        .orderBy(`${TABLE}.created_at`, 'desc');
 
     if (!result) {
         return null;
