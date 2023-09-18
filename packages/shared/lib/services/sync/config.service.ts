@@ -69,7 +69,8 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
             model_schema,
             type = SyncConfigType.SYNC,
             track_deletes,
-            auto_start
+            auto_start,
+            attributes = {}
         } = sync;
         if (type === SyncConfigType.SYNC && !runs) {
             const error = new NangoError('missing_required_fields_on_deploy');
@@ -174,6 +175,7 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
             version,
             track_deletes: track_deletes || false,
             auto_start: auto_start === false ? false : true,
+            attributes,
             file_location,
             runs,
             active: true,
@@ -283,6 +285,7 @@ export async function getSyncConfig(nangoConnection: NangoConnection, syncName?:
                 returns: syncConfig.models,
                 track_deletes: syncConfig.track_deletes,
                 auto_start: syncConfig.auto_start,
+                attributes: syncConfig.attributes || {},
                 fileLocation: syncConfig.file_location,
                 version: syncConfig.version as string
             };
@@ -587,6 +590,28 @@ export async function getSyncConfigByJobId(job_id: number): Promise<SyncConfig |
     }
 
     return result;
+}
+
+export async function getAttributes(provider_config_key: string, sync_name: string): Promise<object | null> {
+    const result = await schema()
+        .from<SyncConfig>(TABLE)
+        .select(`${TABLE}.attributes`)
+        .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')
+        .where({
+            '_nango_configs.unique_key': provider_config_key,
+            '_nango_configs.deleted': false,
+            [`${TABLE}.deleted`]: false,
+            [`${TABLE}.sync_name`]: sync_name,
+            [`${TABLE}.active`]: true
+        })
+        .first()
+        .orderBy('created_at', 'desc');
+
+    if (!result) {
+        return null;
+    }
+
+    return result.attributes;
 }
 
 export async function getProviderConfigBySyncAndAccount(sync_name: string, environment_id: number): Promise<string | null> {

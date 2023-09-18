@@ -143,6 +143,7 @@ interface NangoProps {
     syncJobId?: number | undefined;
     dryRun?: boolean;
     track_deletes?: boolean;
+    attributes?: object | undefined;
 }
 
 interface UserLogParameters {
@@ -156,6 +157,7 @@ interface EnvironmentVariable {
 
 export class NangoSync {
     private nango: Nango;
+    private attributes = {};
     activityLogId?: number;
     lastSyncDate?: Date;
     syncId?: string;
@@ -212,6 +214,10 @@ export class NangoSync {
 
         if (config.track_deletes) {
             this.track_deletes = config.track_deletes;
+        }
+
+        if (config.attributes) {
+            this.attributes = config.attributes;
         }
     }
 
@@ -518,5 +524,13 @@ export class NangoSync {
         }
 
         return await this.nango.getEnvironmentVariables();
+    }
+
+    public getFlowAttributes<A = object>(): A | null {
+        if (!this.syncJobId) {
+            throw new Error('There is no current sync to get attributes from');
+        }
+
+        return this.attributes as A;
     }
 }

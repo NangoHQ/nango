@@ -91,6 +91,7 @@ app.route('/sync/pause').post(apiAuth, syncController.pause.bind(syncController)
 app.route('/sync/restart').post(apiAuth, syncController.restart.bind(syncController));
 app.route('/sync/names').get(apiAuth, syncController.getSyncNames.bind(syncController));
 app.route('/sync/provider').get(apiAuth, syncController.getSyncProvider.bind(syncController));
+app.route('/sync/attributes').get(apiAuth, syncController.getSyncAttributes.bind(syncController));
 app.route('/action/trigger').post(apiAuth, syncController.triggerAction.bind(syncController));
 
 // Proxy Route

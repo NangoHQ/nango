@@ -526,7 +526,6 @@ export class Nango {
         };
 
         const response = await axios.get(url, { headers: this.enrichHeaders(headers) });
-        console.log(response);
 
         if (!response.data) {
             return [];

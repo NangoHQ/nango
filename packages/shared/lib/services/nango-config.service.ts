@@ -179,6 +179,7 @@ export function convertConfigObject(config: NangoConfig): SimplifiedNangoIntegra
                 runs: sync.runs,
                 track_deletes: sync.track_deletes || false,
                 auto_start: sync.auto_start === false ? false : true,
+                attributes: sync.attributes || {},
                 returns: sync.returns,
                 models
             });

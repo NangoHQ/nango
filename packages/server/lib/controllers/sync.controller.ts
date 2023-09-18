@@ -348,11 +348,6 @@ class SyncController {
             }
 
             if (!connection_id) {
-                res.status(400).send({ message: 'Missing connection id' });
-
-                return;
-            }
-
             if (!syncName) {
                 res.status(400).send({ message: 'Missing sync name' });
 
@@ -360,6 +355,9 @@ class SyncController {
             }
 
             const environmentId = getEnvironmentId(res);
+
+            console.log(syncOrchestrator);
+            //await syncOrchestrator.runSyncCommand(environmentId, provider_config_key as string, syncName as string, SyncCommand.PAUSE, connection_id);
 
             const {
                 success,
@@ -534,6 +532,30 @@ class SyncController {
             });
 
             res.sendStatus(200);
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    public async getSyncAttributes(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { sync_name, provider_config_key } = req.query;
+
+            if (!provider_config_key) {
+                res.status(400).send({ message: 'Missing provider config key' });
+
+                return;
+            }
+
+            if (!sync_name) {
+                res.status(400).send({ message: 'Missing sync name' });
+
+                return;
+            }
+
+            const attributes = await getAttributes(provider_config_key as string, sync_name as string);
+
+            res.status(200).send(attributes);
         } catch (e) {
             next(e);
         }
