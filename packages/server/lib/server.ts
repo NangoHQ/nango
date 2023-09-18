@@ -82,14 +82,16 @@ app.route('/connection').get(apiAuth, connectionController.listConnections.bind(
 app.route('/connection/:connectionId').delete(apiAuth, connectionController.deleteConnection.bind(connectionController));
 app.route('/connection/:connectionId/metadata').post(apiAuth, connectionController.setMetadata.bind(connectionController));
 app.route('/connection').post(apiAuth, connectionController.createConnection.bind(connectionController));
+app.route('/environment-variables').get(apiAuth, environmentController.getEnvironmentVariables.bind(connectionController));
 app.route('/sync/deploy').post(apiAuth, syncController.deploySync.bind(syncController));
 app.route('/sync/deploy/confirmation').post(apiAuth, syncController.confirmation.bind(syncController));
 app.route('/sync/records').get(apiAuth, syncController.getRecords.bind(syncController));
 app.route('/sync/trigger').post(apiAuth, syncController.trigger.bind(syncController));
 app.route('/sync/pause').post(apiAuth, syncController.pause.bind(syncController));
-app.route('/sync/restart').post(apiAuth, syncController.restart.bind(syncController));
+app.route('/sync/start').post(apiAuth, syncController.start.bind(syncController));
 app.route('/sync/names').get(apiAuth, syncController.getSyncNames.bind(syncController));
 app.route('/sync/provider').get(apiAuth, syncController.getSyncProvider.bind(syncController));
+app.route('/flow/attributes').get(apiAuth, syncController.getFlowAttributes.bind(syncController));
 app.route('/action/trigger').post(apiAuth, syncController.triggerAction.bind(syncController));
 
 // Proxy Route

@@ -182,7 +182,7 @@ class SyncClient {
             let handle = null;
             const jobId = generateWorkflowId(sync, syncName, nangoConnection?.connection_id as string);
 
-            if (syncData.auto_start) {
+            if (syncData.auto_start !== false) {
                 if (debug) {
                     await createActivityLogMessage({
                         level: 'debug',
@@ -251,7 +251,7 @@ class SyncClient {
                 }
             });
 
-            if (!syncData.auto_start) {
+            if (syncData.auto_start === false) {
                 await scheduleHandle?.pause();
             }
 
@@ -263,7 +263,7 @@ class SyncClient {
                 scheduleId
             );
 
-            if (syncData.auto_start && handle) {
+            if (syncData.auto_start !== false && handle) {
                 await createActivityLogMessage({
                     level: 'info',
                     activity_log_id: activityLogId as number,
@@ -433,6 +433,13 @@ class SyncClient {
 
             return actionHandler;
         } catch (e) {
+            await createActivityLogMessageAndEnd({
+                level: 'error',
+                activity_log_id: activityLogId as number,
+                timestamp: Date.now(),
+                content: `The action workflow ${workflowId} failed with error: ${e}`
+            });
+
             await errorManager.report(e, {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.SYNC_CLIENT,

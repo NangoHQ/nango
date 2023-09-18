@@ -345,19 +345,22 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
      * @param {attemptNumber} number
      */
     private retry = async (activityLogId: number, config: ProxyBodyConfiguration, error: AxiosError, attemptNumber: number): Promise<boolean> => {
-        if (config.template.proxy && config.template.proxy.retry && (config.template.proxy?.retry?.at || config.template.proxy?.retry?.after)) {
-            const type = config.template.proxy.retry.at ? 'at' : 'after';
-            const retryHeader = config.template.proxy.retry.at ? config.template.proxy.retry.at : config.template.proxy.retry.after;
-
-            return this.retryHandler(activityLogId, error, type, retryHeader as string);
-        }
-
         if (
             error?.response?.status.toString().startsWith('5') ||
-            error?.response?.status === 403 ||
+            // Note that Github issues a 403 for both rate limits and improper scopes
+            (error?.response?.status === 403 &&
+                error?.response?.headers['x-ratelimit-remaining'] &&
+                error?.response?.headers['x-ratelimit-remaining'] === '0') ||
             error?.response?.status === 429 ||
             ['ECONNRESET', 'ETIMEDOUT', 'ECONNABORTED'].includes(error?.code as string)
         ) {
+            if (config.template.proxy && config.template.proxy.retry && (config.template.proxy?.retry?.at || config.template.proxy?.retry?.after)) {
+                const type = config.template.proxy.retry.at ? 'at' : 'after';
+                const retryHeader = config.template.proxy.retry.at ? config.template.proxy.retry.at : config.template.proxy.retry.after;
+
+                return this.retryHandler(activityLogId, error, type, retryHeader as string);
+            }
+
             const content = `API received an ${
                 error?.response?.status || error?.code
             } error, retrying with exponential backoffs for a total of ${attemptNumber} times`;

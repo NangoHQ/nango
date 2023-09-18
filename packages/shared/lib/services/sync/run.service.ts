@@ -163,6 +163,9 @@ export default class SyncRun {
                 }
             }
 
+            const syncData = syncObject[this.syncName] as unknown as NangoIntegrationData;
+            const { returns: models, track_deletes: trackDeletes } = syncData;
+
             const nango = new NangoSync({
                 host: optionalHost || getApiUrl(),
                 connectionId: String(this.nangoConnection?.connection_id),
@@ -174,7 +177,8 @@ export default class SyncRun {
                 syncId: this.syncId,
                 syncJobId: this.syncJobId,
                 lastSyncDate: lastSyncDate as Date,
-                dryRun: !this.writeToDb
+                dryRun: !this.writeToDb,
+                attributes: syncData.attributes
             });
 
             if (this.debug) {
@@ -190,9 +194,6 @@ export default class SyncRun {
                     console.log(content);
                 }
             }
-
-            const syncData = syncObject[this.syncName] as unknown as NangoIntegrationData;
-            const { returns: models, track_deletes: trackDeletes } = syncData;
 
             if (syncData.sync_config_id) {
                 if (this.debug) {

@@ -440,13 +440,15 @@ export class Nango {
         }
 
         const body = {
-            syncs: syncs || []
+            syncs: syncs || [],
+            provider_config_key: providerConfigKey,
+            connection_id: connectionId
         };
 
         return axios.post(url, body, { headers: this.enrichHeaders(headers) });
     }
 
-    public async pauseSync(providerConfigKey: string, connectionId: string, sync: string): Promise<void> {
+    public async pauseSync(providerConfigKey: string, connectionId: string, syncs: string[]): Promise<void> {
         if (!providerConfigKey) {
             throw new Error('Provider Config Key is required');
         }
@@ -455,16 +457,26 @@ export class Nango {
             throw new Error('Connection Id is required');
         }
 
-        if (!sync) {
+        if (!syncs) {
             throw new Error('Sync is required');
+        }
+
+        if (typeof syncs === 'string') {
+            throw new Error('Syncs must be an array of strings. If it is a single sync, please wrap it in an array.');
         }
 
         const url = `${this.serverUrl}/sync/pause`;
 
-        return axios.post(url, { sync, provider_config_key: providerConfigKey, connection_id: connectionId }, { headers: this.enrichHeaders() });
+        const body = {
+            syncs: syncs || [],
+            provider_config_key: providerConfigKey,
+            connection_id: connectionId
+        };
+
+        return axios.post(url, body, { headers: this.enrichHeaders() });
     }
 
-    public async restartSync(providerConfigKey: string, connectionId: string, sync: string): Promise<void> {
+    public async startSync(providerConfigKey: string, connectionId: string, syncs: string[]): Promise<void> {
         if (!providerConfigKey) {
             throw new Error('Provider Config Key is required');
         }
@@ -473,13 +485,23 @@ export class Nango {
             throw new Error('Connection Id is required');
         }
 
-        if (!sync) {
+        if (!syncs) {
             throw new Error('Sync is required');
         }
 
-        const url = `${this.serverUrl}/sync/restart`;
+        if (typeof syncs === 'string') {
+            throw new Error('Syncs must be an array of strings. If it is a single sync, please wrap it in an array.');
+        }
 
-        return axios.post(url, { sync, provider_config_key: providerConfigKey, connection_id: connectionId }, { headers: this.enrichHeaders() });
+        const body = {
+            syncs: syncs || [],
+            provider_config_key: providerConfigKey,
+            connection_id: connectionId
+        };
+
+        const url = `${this.serverUrl}/sync/start`;
+
+        return axios.post(url, body, { headers: this.enrichHeaders() });
     }
 
     public async triggerAction(providerConfigKey: string, connectionId: string, actionName: string, input: Record<string, unknown>): Promise<object> {
@@ -515,6 +537,28 @@ export class Nango {
         };
 
         return axios.delete(url, { headers: this.enrichHeaders(headers) });
+    }
+
+    public async getEnvironmentVariables(): Promise<{ name: string; value: string }[]> {
+        const url = `${this.serverUrl}/environment-variables`;
+
+        const headers = {
+            'Content-Type': 'application/json',
+            'Accept-Encoding': 'application/json'
+        };
+
+        const response = await axios.get(url, { headers: this.enrichHeaders(headers) });
+
+        if (!response.data) {
+            return [];
+        }
+
+        return response.data.map((variable: Record<string, string>) => {
+            return {
+                name: variable['name'],
+                value: variable['value']
+            };
+        });
     }
 
     private async listConnectionDetails(connectionId?: string): Promise<AxiosResponse<{ connections: ConnectionList[] }>> {

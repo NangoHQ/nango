@@ -4,7 +4,6 @@ import { formatDataRecords } from '../services/sync/data/records.service.js';
 import { createActivityLogMessage } from '../services/activity/activity.service.js';
 import { setLastSyncDate } from '../services/sync/sync.service.js';
 import { updateSyncJobResult } from '../services/sync/job.service.js';
-import environmentService from '../services/environment.service.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { LogActionEnum } from '../models/Activity.js';
 
@@ -144,6 +143,7 @@ interface NangoProps {
     syncJobId?: number | undefined;
     dryRun?: boolean;
     track_deletes?: boolean;
+    attributes?: object | undefined;
 }
 
 interface UserLogParameters {
@@ -157,6 +157,7 @@ interface EnvironmentVariable {
 
 export class NangoSync {
     private nango: Nango;
+    private attributes = {};
     activityLogId?: number;
     lastSyncDate?: Date;
     syncId?: string;
@@ -213,6 +214,10 @@ export class NangoSync {
 
         if (config.track_deletes) {
             this.track_deletes = config.track_deletes;
+        }
+
+        if (config.attributes) {
+            this.attributes = config.attributes;
         }
     }
 
@@ -518,17 +523,14 @@ export class NangoSync {
             throw new Error('There is no current environment to get variables from');
         }
 
-        const environmentVariables = await environmentService.getEnvironmentVariables(this.environmentId as number);
+        return await this.nango.getEnvironmentVariables();
+    }
 
-        if (!environmentVariables) {
-            return [];
+    public getFlowAttributes<A = object>(): A | null {
+        if (!this.syncJobId) {
+            throw new Error('There is no current sync to get attributes from');
         }
 
-        return environmentVariables.map((variable) => {
-            return {
-                name: variable.name,
-                value: variable.value
-            };
-        });
+        return this.attributes as A;
     }
 }
