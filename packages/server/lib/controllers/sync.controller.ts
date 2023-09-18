@@ -11,8 +11,6 @@ import {
     verifyOwnership,
     SyncClient,
     updateScheduleStatus,
-    getSyncsFlat,
-    getSyncsFlatWithNames,
     updateSuccess as updateSuccessActivityLog,
     createActivityLogAndLogMessage,
     createActivityLogMessageAndEnd,
@@ -31,8 +29,8 @@ import {
     NangoError,
     LastAction,
     configService,
-    getSyncByIdAndName,
-    getSchedule
+    syncOrchestrator,
+    getAttributes
 } from '@nangohq/shared';
 
 class SyncController {
@@ -199,52 +197,29 @@ class SyncController {
 
     public async trigger(req: Request, res: Response, next: NextFunction) {
         try {
-            const environmentId = getEnvironmentId(res);
-            const connectionId = req.get('Connection-Id') as string;
-            const providerConfigKey = req.get('Provider-Config-Key') as string;
+            const { syncs: syncNames, provider_config_key, connection_id } = req.body;
 
-            const syncs = req.body.syncs as string[];
-
-            if (typeof syncs === 'string') {
-                res.status(400).send({ message: 'Syncs must be an array' });
-
-                return;
-            }
-
-            if (!connectionId) {
-                res.status(400).send({ message: 'Missing connection id' });
-
-                return;
-            }
-
-            if (!providerConfigKey) {
+            if (!provider_config_key) {
                 res.status(400).send({ message: 'Missing provider config key' });
 
                 return;
             }
 
-            const {
-                success,
-                error,
-                response: connection
-            } = await connectionService.getConnection(connectionId as string, providerConfigKey as string, environmentId);
-
-            if (!success) {
-                errorManager.errResFromNangoErr(res, error);
+            if (typeof syncNames === 'string') {
+                res.status(400).send({ message: 'Syncs must be an array' });
 
                 return;
             }
 
-            const syncsToTrigger =
-                syncs && syncs.length > 0 ? await getSyncsFlatWithNames(connection as Connection, syncs) : await getSyncsFlat(connection as Connection);
+            if (!syncNames) {
+                res.status(400).send({ message: 'Missing sync names' });
 
-            if (!syncsToTrigger || syncsToTrigger.length === 0) {
-                res.status(400).send({ message: 'No syncs to trigger' });
+                return;
             }
 
-            const syncClient = await SyncClient.getInstance();
+            const environmentId = getEnvironmentId(res);
 
-            await syncClient?.triggerSyncs(syncsToTrigger, environmentId);
+            await syncOrchestrator.runSyncCommand(environmentId, provider_config_key as string, syncNames as string[], SyncCommand.RUN, connection_id);
 
             res.sendStatus(200);
         } catch (e) {
@@ -339,7 +314,7 @@ class SyncController {
 
     public async pause(req: Request, res: Response, next: NextFunction) {
         try {
-            const { sync: syncName, provider_config_key, connection_id } = req.body;
+            const { syncs: syncNames, provider_config_key, connection_id } = req.body;
 
             if (!provider_config_key) {
                 res.status(400).send({ message: 'Missing provider config key' });
@@ -347,55 +322,21 @@ class SyncController {
                 return;
             }
 
-            if (!connection_id) {
-            if (!syncName) {
-                res.status(400).send({ message: 'Missing sync name' });
+            if (typeof syncNames === 'string') {
+                res.status(400).send({ message: 'Syncs must be an array' });
+
+                return;
+            }
+
+            if (!syncNames) {
+                res.status(400).send({ message: 'Missing sync names' });
 
                 return;
             }
 
             const environmentId = getEnvironmentId(res);
 
-            console.log(syncOrchestrator);
-            //await syncOrchestrator.runSyncCommand(environmentId, provider_config_key as string, syncName as string, SyncCommand.PAUSE, connection_id);
-
-            const {
-                success,
-                error,
-                response: connection
-            } = await connectionService.getConnection(connection_id as string, provider_config_key as string, environmentId);
-
-            if (!success) {
-                errorManager.errResFromNangoErr(res, error);
-
-                return;
-            }
-
-            const provider = await configService.getProviderName(provider_config_key as string);
-            const action = CommandToActivityLog[SyncCommand.PAUSE];
-
-            const log = {
-                level: 'info' as LogLevel,
-                success: false,
-                action,
-                start: Date.now(),
-                end: Date.now(),
-                timestamp: Date.now(),
-                connection_id: connection_id as string,
-                provider,
-                provider_config_key: provider_config_key as string,
-                environment_id: environmentId,
-                operation_name: syncName
-            };
-
-            const activityLogId = await createActivityLog(log);
-
-            const sync = await getSyncByIdAndName(connection?.id as number, syncName);
-            const schedule = await getSchedule(sync?.id as string);
-
-            const syncClient = await SyncClient.getInstance();
-            await syncClient?.runSyncCommand(schedule?.schedule_id as string, sync?.id as string, SyncCommand.PAUSE, activityLogId as number);
-            await updateScheduleStatus(schedule?.schedule_id as string, SyncCommand.PAUSE, activityLogId as number);
+            await syncOrchestrator.runSyncCommand(environmentId, provider_config_key as string, syncNames as string[], SyncCommand.PAUSE, connection_id);
 
             res.sendStatus(200);
         } catch (e) {
@@ -405,7 +346,7 @@ class SyncController {
 
     public async restart(req: Request, res: Response, next: NextFunction) {
         try {
-            const { sync: syncName, provider_config_key, connection_id } = req.body;
+            const { syncs: syncNames, provider_config_key, connection_id } = req.body;
 
             if (!provider_config_key) {
                 res.status(400).send({ message: 'Missing provider config key' });
@@ -413,56 +354,21 @@ class SyncController {
                 return;
             }
 
-            if (!connection_id) {
-                res.status(400).send({ message: 'Missing connection id' });
+            if (typeof syncNames === 'string') {
+                res.status(400).send({ message: 'Syncs must be an array' });
 
                 return;
             }
 
-            if (!syncName) {
-                res.status(400).send({ message: 'Missing sync name' });
+            if (!syncNames) {
+                res.status(400).send({ message: 'Missing sync names' });
 
                 return;
             }
 
             const environmentId = getEnvironmentId(res);
 
-            const {
-                success,
-                error,
-                response: connection
-            } = await connectionService.getConnection(connection_id as string, provider_config_key as string, environmentId);
-
-            if (!success) {
-                errorManager.errResFromNangoErr(res, error);
-
-                return;
-            }
-            const provider = await configService.getProviderName(provider_config_key as string);
-            const action = CommandToActivityLog[SyncCommand.UNPAUSE];
-
-            const log = {
-                level: 'info' as LogLevel,
-                success: false,
-                action,
-                start: Date.now(),
-                end: Date.now(),
-                timestamp: Date.now(),
-                connection_id: connection_id as string,
-                provider,
-                provider_config_key: provider_config_key as string,
-                environment_id: environmentId,
-                operation_name: syncName
-            };
-
-            const activityLogId = await createActivityLog(log);
-
-            const sync = await getSyncByIdAndName(connection?.id as number, syncName);
-            const schedule = await getSchedule(sync?.id as string);
-
-            const syncClient = await SyncClient.getInstance();
-            await syncClient?.runSyncCommand(schedule?.schedule_id as string, sync?.id as string, SyncCommand.UNPAUSE, activityLogId as number);
-            await updateScheduleStatus(schedule?.schedule_id as string, SyncCommand.UNPAUSE, activityLogId as number);
+            await syncOrchestrator.runSyncCommand(environmentId, provider_config_key as string, syncNames as string[], SyncCommand.UNPAUSE, connection_id);
 
             res.sendStatus(200);
         } catch (e) {
