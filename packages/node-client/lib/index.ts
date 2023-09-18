@@ -517,6 +517,29 @@ export class Nango {
         return axios.delete(url, { headers: this.enrichHeaders(headers) });
     }
 
+    public async getEnvironmentVariables(): Promise<{ name: string; value: string }[]> {
+        const url = `${this.serverUrl}/environment-variables`;
+
+        const headers = {
+            'Content-Type': 'application/json',
+            'Accept-Encoding': 'application/json'
+        };
+
+        const response = await axios.get(url, { headers: this.enrichHeaders(headers) });
+        console.log(response);
+
+        if (!response.data) {
+            return [];
+        }
+
+        return response.data.map((variable: Record<string, string>) => {
+            return {
+                name: variable['name'],
+                value: variable['value']
+            };
+        });
+    }
+
     private async listConnectionDetails(connectionId?: string): Promise<AxiosResponse<{ connections: ConnectionList[] }>> {
         let url = `${this.serverUrl}/connection?`;
         if (connectionId) {
