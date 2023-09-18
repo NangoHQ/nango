@@ -251,7 +251,7 @@ class SyncClient {
                 }
             });
 
-            if (!syncData.auto_start) {
+            if (syncData.auto_start === false) {
                 await scheduleHandle?.pause();
             }
 
@@ -263,7 +263,7 @@ class SyncClient {
                 scheduleId
             );
 
-            if (syncData.auto_start && handle) {
+            if (syncData.auto_start !== false && handle) {
                 await createActivityLogMessage({
                     level: 'info',
                     activity_log_id: activityLogId as number,
