@@ -348,6 +348,23 @@ export const getSyncsByProviderConfigAndSyncName = async (environment_id: number
     return results;
 };
 
+export const getSyncsByProviderConfigAndSyncNames = async (environment_id: number, providerConfigKey: string, syncNames: string[]): Promise<Sync[]> => {
+    const results = await db.knex
+        .withSchema(db.schema())
+        .select(`${TABLE}.*`)
+        .from<Sync>(TABLE)
+        .join('_nango_connections', '_nango_connections.id', `${TABLE}.nango_connection_id`)
+        .where({
+            environment_id,
+            provider_config_key: providerConfigKey,
+            [`_nango_connections.deleted`]: false,
+            [`${TABLE}.deleted`]: false
+        })
+        .whereIn('name', syncNames);
+
+    return results;
+};
+
 /**
  * Verify Ownership
  * @desc verify that the incoming account id matches with the provided nango connection id
