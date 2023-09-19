@@ -100,27 +100,25 @@
                     "pages": ["guides/oauth", "guides/api-key"]
                 }, {
                     "group": "Consume APIs",
-                    "pages": ["guides/sync", "guides/actions", "guides/proxy", "guides/webhooks"]
+                    "pages": ["guides/sync", "guides/actions", "guides/proxy", "guides/webhooks", "guides/field-mapping", "guides/env-vars"]
                 }, "contribute"
             ]
         },
         {
-            "group": "Nango Cloud",
-            "pages": ["cloud"]
-        },
-        {
-            "group": "Self-Host Nango",
+            "group": "Hosting Nango",
             "pages": [
-                "self-host/overview",
-                "self-host/instructions",
+                "cloud",
+                "use/self-hosting-instructions",
                 {
-                    "group": "Platforms",
-                    "pages": ["self-host/local",
-                "self-host/aws",
-                "self-host/gcp",
-                "self-host/digital-ocean",
-                "self-host/render",
-                "self-host/heroku"]
+                    "group": "Self-Hosting Platforms",
+                    "pages": [
+                        "use/local",
+                        "use/aws",
+                        "use/gcp",
+                        "use/digital-ocean",
+                        "use/render",
+                        "use/heroku"
+                    ]
                 }
             ]
         },
@@ -329,7 +327,7 @@
         },
         {
             "group": "Syncs",
-            "pages": ["api-reference/sync/records-get", "api-reference/sync/trigger"]
+            "pages": ["api-reference/sync/records-get", "api-reference/sync/trigger", "api-reference/sync/start", "api-reference/sync/pause"]
         },
         {
             "group": "Actions",

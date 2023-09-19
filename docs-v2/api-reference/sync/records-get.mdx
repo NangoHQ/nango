@@ -10,49 +10,21 @@ If you are using the [Nango webhooks](/guides/webhooks#from-nango) you can use t
 
 ## Response
 
-### Default behaviour (`include_nango_metadata = false`)
-By default this returns an array of objects in the data model that you queried.
+### Default behaviour 
+By default this returns an array of objects in the data model that you queried with some metadata about each record.
 
 ```json
 [
     {
         id: 123,
-        // Fields as specified in the model you queried
-        ...
+        ..., // Fields as specified in the model you queried
+        _nango_metadata: {
+            deleted_at: null,
+            last_action: 'ADDED',
+            first_seen_at: '2023-09-18T15:20:35.941305+00:00',
+            last_modified_at: '2023-09-18T15:20:35.941305+00:00'
+        }
     },
-    ...
-]
-```
-
-### With Nango metadata included (`include_nango_metadata = true`)
-
-Optionally you can request Nango metadata, which tells you additional details about each record:
-- `first_seen_at`: Timestamp when Nango first saw this record
-- `last_modified_at`: Timestamp when Nango last fetched changes for this record
-- `last_actions`: Either `ADDED` (new record discovered on sync) or `UPDATED` (detected change in record on sync)
-
-```json
-[
-    {
-        first_seen_at: '2023-07-24T17:23:08.788Z',
-        last_modified_at: '2023-07-24T17:23:08.788Z',
-        last_action: 'ADDED'
-        record: {
-            id: 123,
-            // Fields as specified in the model you queried
-            ...
-        },
-    },
-    {
-        first_seen_at: '2023-07-24T17:23:08.788Z',
-        last_modified_at: '2023-07-27T17:23:08.788Z',
-        last_action: 'UPDATED'
-        record: {
-            id: 456,
-            // Fields as specified in the model you queried
-            ...
-        },
-    }
     ...
 ]
 ```
