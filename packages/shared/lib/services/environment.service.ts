@@ -243,10 +243,11 @@ class EnvironmentService {
     }
 
     async editEnvironmentVariable(environment_id: number, values: Array<{ name: string; value: string }>): Promise<number[] | null> {
+        await db.knex.withSchema(db.schema()).from<EnvironmentVariable>(`_nango_environment_variables`).where({ environment_id }).del();
+
         if (values.length === 0) {
             return null;
         }
-        await db.knex.withSchema(db.schema()).from<EnvironmentVariable>(`_nango_environment_variables`).where({ environment_id }).del();
 
         const mappedValues: EnvironmentVariable[] = values.map((value) => {
             return {
