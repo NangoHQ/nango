@@ -58,7 +58,7 @@ export default function FlowCreate() {
             setLoaded(true);
             getAvailableFlows();
         }
-    }, [getFlows]);
+    }, [getFlows, loaded]);
 
     const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
