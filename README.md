@@ -39,7 +39,7 @@ Nango simplifies integrating your product with any external API. It's as flexibl
 
 With Nango, you can construct integrations in hours, not weeks, while retaining complete control over the integration's logic and access to all external APIs.
 
-Nango merges production-ready infrastructure with [pre-build integration templates]([/integration-templates/overview](https://docs.nango.dev/integration-templates/overview)) for [over 100 APIs](https://docs.nango.dev/integrations/overview):
+Nango merges production-ready infrastructure with [pre-build integration templates](https://docs.nango.dev/integration-templates/overview) for [over 100 APIs](https://docs.nango.dev/integrations/overview):
 
 *   🔐 Authenticate 100+ APIs with just one line of code
 *   🔁 Enable bi-directional data synchronization
