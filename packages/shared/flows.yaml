@@ -119,7 +119,19 @@ integrations:
         subject: string
         body: string
         threadId: string
-  google-workspace:
+  google:
+    google-workspace-org-unit:
+      runs: every 6 hours
+      returns:
+        - OrganizationalUnit
+    google-workspace-users:
+      runs: every hour
+      returns:
+        - User
+    google-workspace-user-access-tokens:
+      runs: every hour
+      returns:
+        - GoogleWorkspaceUserToken
     models:
       OrganizationalUnit:
         id: string

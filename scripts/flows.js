@@ -10,7 +10,8 @@ let output = {
 
 // Mapping for directory names to integration names
 const directoryToIntegrationMapping = {
-    'microsoft-active-directory': 'microsoft-teams'
+    'microsoft-active-directory': 'microsoft-teams',
+    'google-workspace': 'google'
 };
 
 fs.readdirSync(rootDir).forEach((serviceDir) => {

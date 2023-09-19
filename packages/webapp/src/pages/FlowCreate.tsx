@@ -22,8 +22,6 @@ interface Integration {
     [key: string]: Flow;
 }
 
-
-
 export default function FlowCreate() {
     const [loaded, setLoaded] = useState(false);
     const [integration, setIntegration] = useState<string>('');
@@ -64,7 +62,33 @@ export default function FlowCreate() {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
         const data = Object.fromEntries(formData.entries());
-        console.log(data);
+
+        const models = showModels(flow?.returns as string[]) as any;
+        const integrationPayload = {
+            integration: data['integration'],
+            type: flow?.type === 'action' ? 'action' : 'sync',
+            name: data['flow-name'], // should they be able to change this
+            runs: `every ${data['frequency']} ${data['frequency-unit']}`,
+            auto_start: data['auto-start'] === 'on',
+            track_deletes: data['track-deletes'] === 'true',
+            models: flow?.returns,
+            model_schema: Object.keys(models).map(model => ({
+                name: model,
+                fields: Object.keys(models[model]).map(field => ({
+                    name: field,
+                    type: models[model][field]
+                }))
+            }))
+        }
+        // send this to a different endpoint to automatically pull in the built file
+        // already set in s3
+        console.log(integrationPayload);
+        // 1) integration templates need to be built and stored in s3
+        // that can happen as part of the build, on a template change
+        // 2) Need a marker that this is a prebuilt template
+        // 3) Files in are version controlled and if there is an update you
+        // can upgrade to the latet version
+        // version stored in the nango.yaml?
     }
 
     const handleIntegrationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -109,9 +133,7 @@ export default function FlowCreate() {
             builtModels[returnedModel] = models[returnedModel];
         });
 
-        return (
-            JSON.stringify(builtModels, null, 2)
-        );
+        return builtModels;
     }
 
     return (
@@ -182,48 +204,83 @@ export default function FlowCreate() {
                                     <div>
                                         <div className="flex">
                                             <label htmlFor="flow-name" className="text-text-light-gray block text-sm font-semibold">
+                                                Auto Start
+                                            </label>
+                                        </div>
+                                        <div className="mt-1">
+                                            <input
+                                                id="auto-start"
+                                                type="checkbox"
+                                                name="auto-start"
+                                                defaultChecked={flow?.auto_start !== false}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                            {flow?.track_deletes && (
+                                <div>
+                                    <div>
+                                        <div className="flex">
+                                            <label htmlFor="flow-name" className="text-text-light-gray block text-sm font-semibold">
+                                                Track Deletes
+                                            </label>
+                                        </div>
+                                        <div className="mt-1">
+                                            <input
+                                                id="track-deletes"
+                                                type="checkbox"
+                                                name="track-deletes"
+                                                defaultChecked={flow?.track_deletes}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                            {flow?.type !== 'action' && (
+                                <div>
+                                    <div>
+                                        <div className="flex">
+                                            <label htmlFor="flow-name" className="text-text-light-gray block text-sm font-semibold">
                                                 Frequency
                                             </label>
                                         </div>
                                         <div className="flex mt-1">
-                                            {frequencyEditMode ? (
-                                                <div className="flex">
-                                                    <input
-                                                        id="frequency"
-                                                        name="frequency"
-                                                        type="number"
-                                                        className="border-border-gray bg-bg-black text-text-light-gray block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base shadow-sm active:outline-none focus:outline-none active:border-white focus:border-white"
-                                                        defaultValue={flow?.runs?.match(/\d+/g)?.map(Number)[0]}
-                                                    />
-                                                    <select
-                                                        id="frequency-unit"
-                                                        name="frequency-unit"
-                                                        className="ml-4 border-border-gray bg-bg-black text-text-light-gray block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base shadow-sm active:outline-none focus:outline-none active:border-white focus:border-white"
-                                                        defaultValue={flow?.runs?.match(/[a-zA-Z]+/g)?.map(String)[0]}
-                                                    >
-                                                        <option value="minutes">Minutes</option>
-                                                        <option value="hours">Hours</option>
-                                                        <option value="days">Days</option>
-                                                    </select>
-                                                    <button
-                                                        type="button"
-                                                        className="hover:bg-gray-700 bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
-                                                        onClick={handleUpdateFrequency}
-                                                    >
-                                                        Update
-                                                    </button>
-                                                </div>
-                                            ) : (
-                                                <>
-                                                    <span className="border-border-gray bg-bg-black text-text-light-gray block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base shadow-sm active:outline-none focus:outline-none active:border-white focus:border-white">{flow?.runs}</span>
-                                                    <button
-                                                        onClick={() => setFrequencyEditMode(true)}
-                                                        className="hover:bg-gray-700 bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
-                                                    >
-                                                        Edit
-                                                    </button>
-                                                </>
-                                            )}
+                                            <div className={`${frequencyEditMode ? 'flex' : 'hidden'}`}>
+                                                <input
+                                                    id="frequency"
+                                                    name="frequency"
+                                                    type="number"
+                                                    className="border-border-gray bg-bg-black text-text-light-gray block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base shadow-sm active:outline-none focus:outline-none active:border-white focus:border-white"
+                                                    defaultValue={flow?.runs?.match(/\d+/g)?.map(Number)[0]}
+                                                />
+                                                <select
+                                                    id="frequency-unit"
+                                                    name="frequency-unit"
+                                                    className="ml-4 border-border-gray bg-bg-black text-text-light-gray block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base shadow-sm active:outline-none focus:outline-none active:border-white focus:border-white"
+                                                    defaultValue={flow?.runs?.match(/[a-zA-Z]+/g)?.map(String)[0]}
+                                                >
+                                                    <option value="minutes">Minutes</option>
+                                                    <option value="hours">Hours</option>
+                                                    <option value="days">Days</option>
+                                                </select>
+                                                <button
+                                                    type="button"
+                                                    className="hover:bg-gray-700 bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
+                                                    onClick={handleUpdateFrequency}
+                                                >
+                                                    Update
+                                                </button>
+                                            </div>
+                                            <div className={`${frequencyEditMode ? 'hidden' : 'flex w-1/3'}`}>
+                                                <span className="border-border-gray bg-bg-black text-text-light-gray block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base shadow-sm active:outline-none focus:outline-none active:border-white focus:border-white">{flow?.runs}</span>
+                                                <button
+                                                    onClick={() => setFrequencyEditMode(true)}
+                                                    className="hover:bg-gray-700 bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
+                                                >
+                                                    Edit
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -233,15 +290,22 @@ export default function FlowCreate() {
                                     <div>
                                         <div className="flex">
                                             <label htmlFor="flow-name" className="text-text-light-gray block text-sm font-semibold">
-                                                Returns
+                                                Model{flow?.returns?.length > 1 ? 's' : ''}
                                             </label>
                                         </div>
                                         <Prism language="json" colorScheme="dark">
-                                            {showModels(flow.returns)}
+                                            {JSON.stringify(showModels(flow.returns), null, 2)}
                                         </Prism>
                                     </div>
                                 </div>
                             )}
+                            <div>
+                                <div className="flex justify-between">
+                                    <button type="submit" className="bg-white mt-4 h-8 rounded-md hover:bg-gray-300 border px-3 pt-0.5 text-sm text-black">
+                                        Add {flow?.type === 'action' ? 'Action' : 'Sync'}
+                                    </button>
+                                </div>
+                            </div>
                         </form>
                     </div>
                 </div>
