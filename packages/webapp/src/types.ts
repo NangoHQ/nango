@@ -34,6 +34,7 @@ export interface Sync {
     type: string;
     provider: string;
     runs: string;
+    auto_start: boolean;
     unique_key: string;
     models: string[];
     updated_at: string;

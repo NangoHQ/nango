@@ -16,6 +16,7 @@ export default function Syncs() {
     const [loaded, setLoaded] = useState(false);
     const [syncs, setSyncs] = useState<Sync[]>([]);
     const [currentTab, setCurrentTab] = useState<'action' | 'sync'>('sync');
+    const [hasFlows, setFlows] = useState(false);
     const getSyncsAPI = useGetAllSyncsAPI();
 
     const env = useStore(state => state.cookieValue);
@@ -30,7 +31,8 @@ export default function Syncs() {
 
             if (res?.status === 200) {
                 let data = await res.json();
-                setSyncs(data);
+                setSyncs(data.syncs);
+                setFlows(data.flows && Object.keys(data.flows).length > 0)
             }
         };
 
@@ -49,21 +51,31 @@ export default function Syncs() {
                     </span>
                     <span className="flex flex-col text-white mb-4">An overview of all your active sync and action scripts in Nango.</span>
                 </div>
-                <div className="flex inline-flex text-white mb-12 border border-border-gray rounded-md">
-                    <span
-                        className={`flex items-center justify-center cursor-pointer py-1 px-3 ${currentTab === 'sync' ? 'bg-gray-800' : ''}`}
-                        onClick={() => setCurrentTab('sync')}
-                    >
-                        <RefreshCw className="flex stroke-white mr-2 mb-0.5" size="14" />
-                        Syncs
-                    </span>
-                    <span
-                        className={`flex items-center justify-center cursor-pointer py-1 px-3 ${currentTab === 'action' ? 'bg-gray-800' : ''}`}
-                        onClick={() => setCurrentTab('action')}
-                    >
-                        <BoltIcon className="flex h-5 w-4 text-white mr-2 mb-0.5" />
-                        Actions
-                    </span>
+
+                <div className="flex items-center justify-between">
+                    <div className="flex inline-flex text-white mb-12 border border-border-gray rounded-md">
+                        <span
+                            className={`flex items-center justify-center cursor-pointer py-1 px-3 ${currentTab === 'sync' ? 'bg-gray-800' : ''}`}
+                            onClick={() => setCurrentTab('sync')}
+                        >
+                            <RefreshCw className="flex stroke-white mr-2 mb-0.5" size="14" />
+                            Syncs
+                        </span>
+                        <span
+                            className={`flex items-center justify-center cursor-pointer py-1 px-3 ${currentTab === 'action' ? 'bg-gray-800' : ''}`}
+                            onClick={() => setCurrentTab('action')}
+                        >
+                            <BoltIcon className="flex h-5 w-4 text-white mr-2 mb-0.5" />
+                            Actions
+                        </span>
+                    </div>
+                    {hasFlows && (
+                        <div className="flex">
+                            <Link to="/flow/create" className="mt-auto mb-4 pt-2.5 px-4 h-10 rounded-md text-sm text-black bg-white hover:bg-gray-300">
+                                Add New
+                            </Link>
+                        </div>
+                    )}
                 </div>
 
                 <div className="border border-border-gray rounded-md h-fit min-w-max pt-6 text-white text-sm">
@@ -71,25 +83,25 @@ export default function Syncs() {
                         <div className="flex pb-4 items-center text-lg border-b border-border-gray">
                             <span className="w-60">Name</span>
                             <span className="w-48 ml-2">Integration</span>
-                            {currentTab === 'sync' && <span className="w-24">Frequency</span>}
+                            {currentTab === 'sync' && <span className="w-28">Frequency</span>}
+                            {currentTab === 'sync' && <span className="w-24">Auto Start</span>}
                             <span className="w-24 ml-8">Models</span>
                             {currentTab === 'sync' && <span className="w-36">Connections</span>}
                             <span className="w-36">Last Deployed</span>
                         </div>
                     </div>
-                    {syncs.length === 0 && (
+                    {syncs.filter(sync => sync.type === currentTab).length === 0 && (
                         <div className="flex items-center px-5 pt-8 pb-7">
                             <Slash className="stroke-red-500" />
                             <div className="text-white ml-3">
-                                No Syncs yet! Interested in syncing data with Nango? Request access on the{' '}
-                                <a href="https://nango.dev/slack" className="text-blue-500" target="_blank" rel="noreferrer">
-                                    community
-                                </a>
-                                .
+                                No {currentTab}s yet. See the{' '}
+                                <a href={`https://docs.nango.dev/guides/${currentTab === 'sync' ? 'sync' : 'actions'}`} className="text-blue-500" target="_blank" rel="noreferrer">
+                                    guide
+                                </a> to get started!
                             </div>
                         </div>
                     )}
-                    {syncs.length > 0 && (
+                    {syncs.filter(sync => sync.type === currentTab).length > 0 && (
                         <>
                             {syncs.filter(sync => sync.type === currentTab).map((sync, index) => (
                                 <div key={index} className="text-white px-5">
@@ -110,6 +122,7 @@ export default function Syncs() {
                                             </Link>
                                         </span>
                                         {currentTab === 'sync' && <span className="w-36">{sync.runs || '-'}</span>}
+                                        {currentTab === 'sync' && <span className="w-28">{sync.auto_start === true ? 'Y' : 'N'}</span>}
                                         <Tooltip text={sync.models.join(', ')} type="dark">
                                             <span className="block w-16 ml-4 mr-2">{sync.models.length}</span>
                                         </Tooltip>

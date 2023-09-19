@@ -521,6 +521,7 @@ export async function getSyncConfigsWithConnectionsByEnvironmentId(environment_i
             `${TABLE}.models`,
             `${TABLE}.version`,
             `${TABLE}.updated_at`,
+            `${TABLE}.auto_start`,
             '_nango_configs.provider',
             '_nango_configs.unique_key',
             db.knex.raw(

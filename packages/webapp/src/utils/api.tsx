@@ -704,3 +704,18 @@ export function useInviteSignupAPI() {
         }
     };
 }
+
+export function useGetFlows() {
+    return async () => {
+        try {
+            const res = await fetch(`/api/v1/flows`, {
+                method: 'GET',
+                headers: getHeaders()
+            });
+
+            return res;
+        } catch (e) {
+            requestErrorToast();
+        }
+    };
+}

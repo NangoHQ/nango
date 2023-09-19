@@ -13,6 +13,7 @@ import userController from './controllers/user.controller.js';
 import proxyController from './controllers/proxy.controller.js';
 import activityController from './controllers/activity.controller.js';
 import syncController from './controllers/sync.controller.js';
+import flowController from './controllers/flow.controller.js';
 import apiAuthController from './controllers/apiAuth.controller.js';
 import path from 'path';
 import { packageJsonFile, dirname } from './utils/utils.js';
@@ -135,6 +136,7 @@ app.route('/api/v1/activity').get(webAuth, activityController.retrieve.bind(acti
 app.route('/api/v1/sync').get(webAuth, syncController.getSyncsByParams.bind(syncController));
 app.route('/api/v1/sync/command').post(webAuth, syncController.syncCommand.bind(syncController));
 app.route('/api/v1/syncs').get(webAuth, syncController.getSyncs.bind(syncController));
+app.route('/api/v1/flows').get(webAuth, flowController.getFlows.bind(syncController));
 
 // Hosted signin
 if (!isCloud()) {

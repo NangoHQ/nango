@@ -30,7 +30,8 @@ import {
     LastAction,
     configService,
     syncOrchestrator,
-    getAttributes
+    getAttributes,
+    flowService
 } from '@nangohq/shared';
 
 class SyncController {
@@ -176,8 +177,9 @@ class SyncController {
             const { environment } = response;
 
             const syncs = await getSyncConfigsWithConnectionsByEnvironmentId(environment.id);
+            const flows = flowService.getAllAvailableFlows();
 
-            res.send(syncs);
+            res.send({ syncs, flows });
         } catch (e) {
             next(e);
         }
