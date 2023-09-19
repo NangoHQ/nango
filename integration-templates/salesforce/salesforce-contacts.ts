@@ -1,60 +1,54 @@
-import { SalesforceContact, NangoSync } from './models';
+import { NangoSync, SalesforceContact } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<void> {
-    const { lastSyncDate } = nango;
+export default async function fetchData(nango: NangoSync) {
+    const query = buildQuery(nango.lastSyncDate);
 
-    let query = `
-        SELECT
-        Id,
-        FirstName,
-        LastName,
-        Email,
-        AccountId,
-        LastModifiedDate
-        FROM Contact
-        `;
+    await fetchAndSaveRecords(nango, query);
+}
+
+function buildQuery(lastSyncDate?: Date): string {
+    let baseQuery = `
+    SELECT
+    Id,
+    FirstName,
+    LastName,
+    Email,
+    AccountId,
+    LastModifiedDate
+    FROM Contact
+    `;
 
     if (lastSyncDate) {
-        query += ` WHERE LastModifiedDate > ${lastSyncDate?.toISOString()}`;
+        baseQuery += ` WHERE LastModifiedDate > ${lastSyncDate.toISOString()}`;
     }
 
-    const response = await nango.get({
-        endpoint: '/services/data/v53.0/query',
-        params: {
-            q: query
+    return baseQuery;
+}
+
+async function fetchAndSaveRecords(nango: NangoSync, query: string) {
+    let endpoint = '/services/data/v53.0/query';
+
+    while (true) {
+        const response = await nango.get({
+            endpoint: endpoint,
+            params: endpoint === '/services/data/v53.0/query' ? { q: query } : {}
+        });
+
+        const mappedRecords = mapContacts(response.data.records);
+
+        await nango.batchSave(mappedRecords, 'SalesforceContact');
+
+        if (response.data.done) {
+            break;
         }
-    });
 
-    const { records, done } = response.data;
-    let nextRecordsUrl = response.data.nextRecordsUrl;
-
-    const accounts = mapContacts(records);
-    await nango.batchSave(accounts, 'SalesforceContact');
-
-    if (!done) {
-        let allResults = false;
-        while (!allResults) {
-            const nextResponse = await nango.get({
-                endpoint: nextRecordsUrl
-            });
-
-            const { records: nextRecords, done: nextDone, nextRecordsUrl: nextNextRecordsUrl } = nextResponse.data;
-
-            const firstAccounts = mapContacts(nextRecords);
-            await nango.batchSave(firstAccounts, 'SalesforceContact');
-
-            if (nextDone) {
-                allResults = true;
-            } else {
-                nextRecordsUrl = nextNextRecordsUrl;
-            }
-        }
+        endpoint = response.data.nextRecordsUrl;
     }
 }
 
 function mapContacts(records: any[]): SalesforceContact[] {
-    const accounts: SalesforceContact[] = records.map((record: any) => {
-        const account: SalesforceContact = {
+    return records.map((record: any) => {
+        return {
             id: record.Id as string,
             first_name: record.FirstName,
             last_name: record.LastName,
@@ -62,8 +56,5 @@ function mapContacts(records: any[]): SalesforceContact[] {
             account_id: record.AccountId,
             last_modified_date: record.LastModifiedDate
         };
-        return account;
     });
-
-    return accounts;
 }

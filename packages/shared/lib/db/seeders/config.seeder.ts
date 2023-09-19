@@ -1,35 +1,41 @@
 import db from '../database.js';
 import configService from '../../services/config.service.js';
+import environmentService from '../../services/environment.service.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
 
-export const create = async (): Promise<void> => {
-    const result = await db.knex.withSchema(db.schema()).select('*').from('_nango_environments');
+export const createConfigSeeds = async (environmentName = ''): Promise<void> => {
+    let result;
+    if (environmentName) {
+        result = [await environmentService.createEnvironment(0, environmentName)];
+    } else {
+        result = await db.knex.withSchema(db.schema()).select('*').from('_nango_environments');
+    }
 
     for (const row of result) {
         const { id: environment_id } = row;
         await configService.createProviderConfig({
-            unique_key: 'test1seed',
+            unique_key: Math.random().toString(36).substring(7),
             provider: 'google',
             environment_id
         } as ProviderConfig);
         await configService.createProviderConfig({
-            unique_key: 'test2seed',
+            unique_key: Math.random().toString(36).substring(7),
             provider: 'google',
             environment_id
         } as ProviderConfig);
         await configService.createProviderConfig({
-            unique_key: 'test3seed',
+            unique_key: Math.random().toString(36).substring(7),
             provider: 'google',
             environment_id
         } as ProviderConfig);
         await configService.createProviderConfig({
-            unique_key: 'test4seed',
+            unique_key: Math.random().toString(36).substring(7),
             provider: 'notion',
             environment_id
         } as ProviderConfig);
     }
 };
 
-export const deleteAll = async (): Promise<void> => {
+export const deleteAllConfigSeeds = async (): Promise<void> => {
     await db.knex.raw('TRUNCATE TABLE nango._nango_configs CASCADE');
 };

@@ -59,7 +59,7 @@ export enum SyncType {
 export interface SyncResult {
     added: number;
     updated: number;
-    deleted?: number;
+    deleted: number;
 }
 
 export interface NangoSyncWebhookBody {
@@ -69,7 +69,16 @@ export interface NangoSyncWebhookBody {
     model: string;
     responseResults: SyncResult;
     syncType: SyncType;
-    queryTimeStamp: string;
+    queryTimeStamp: string | null;
+}
+
+export type LastAction = 'added' | 'updated' | 'deleted';
+
+interface RecordMetadata {
+    first_seen_at: Date;
+    last_seen_at: Date;
+    last_action: LastAction;
+    deleted_at: Date | null;
 }
 
 export class Nango {
@@ -221,7 +230,15 @@ export class Nango {
         }
 
         if (this.dryRun) {
-            console.log(`Nango Proxy Request: ${method?.toUpperCase()} ${url}`);
+            const stringifyParams = (params: Record<string, string>) => {
+                return Object.keys(params)
+                    .map((key: string) => `${encodeURIComponent(key)}=${encodeURIComponent(params[key] as string)}`)
+                    .join('&');
+            };
+
+            console.log(
+                `Nango Proxy Request: ${method?.toUpperCase()} ${url}${config.params ? `?${stringifyParams(config.params as Record<string, string>)}` : ''}`
+            );
         }
 
         if (method?.toUpperCase() === 'POST') {
@@ -265,7 +282,7 @@ export class Nango {
         });
     }
 
-    public async getRecords<T = any>(config: GetRecordsRequestConfig): Promise<T[]> {
+    public async getRecords<T = any>(config: GetRecordsRequestConfig): Promise<T & { _nango_metadata: RecordMetadata }[]> {
         const { connectionId, providerConfigKey, model, delta, offset, limit, includeNangoMetadata } = config;
         validateSyncRecordConfiguration(config);
 
@@ -295,6 +312,11 @@ export class Nango {
                 break;
         }
 
+        if (includeNangoMetadata) {
+            console.warn(
+                `The includeNangoMetadata option will be deprecated soon and will be removed in a future release. Each record now has a _nango_metadata property which includes the same properties.`
+            );
+        }
         const includeMetadata = includeNangoMetadata || false;
 
         const url = `${this.serverUrl}/sync/records/?model=${model}&order=${order}&delta=${delta || ''}&offset=${offset || ''}&limit=${limit || ''}&sort_by=${
@@ -418,10 +440,86 @@ export class Nango {
         }
 
         const body = {
-            syncs: syncs || []
+            syncs: syncs || [],
+            provider_config_key: providerConfigKey,
+            connection_id: connectionId
         };
 
         return axios.post(url, body, { headers: this.enrichHeaders(headers) });
+    }
+
+    public async pauseSync(providerConfigKey: string, connectionId: string, syncs: string[]): Promise<void> {
+        if (!providerConfigKey) {
+            throw new Error('Provider Config Key is required');
+        }
+
+        if (!connectionId) {
+            throw new Error('Connection Id is required');
+        }
+
+        if (!syncs) {
+            throw new Error('Sync is required');
+        }
+
+        if (typeof syncs === 'string') {
+            throw new Error('Syncs must be an array of strings. If it is a single sync, please wrap it in an array.');
+        }
+
+        const url = `${this.serverUrl}/sync/pause`;
+
+        const body = {
+            syncs: syncs || [],
+            provider_config_key: providerConfigKey,
+            connection_id: connectionId
+        };
+
+        return axios.post(url, body, { headers: this.enrichHeaders() });
+    }
+
+    public async startSync(providerConfigKey: string, connectionId: string, syncs: string[]): Promise<void> {
+        if (!providerConfigKey) {
+            throw new Error('Provider Config Key is required');
+        }
+
+        if (!connectionId) {
+            throw new Error('Connection Id is required');
+        }
+
+        if (!syncs) {
+            throw new Error('Sync is required');
+        }
+
+        if (typeof syncs === 'string') {
+            throw new Error('Syncs must be an array of strings. If it is a single sync, please wrap it in an array.');
+        }
+
+        const body = {
+            syncs: syncs || [],
+            provider_config_key: providerConfigKey,
+            connection_id: connectionId
+        };
+
+        const url = `${this.serverUrl}/sync/start`;
+
+        return axios.post(url, body, { headers: this.enrichHeaders() });
+    }
+
+    public async triggerAction(providerConfigKey: string, connectionId: string, actionName: string, input: Record<string, unknown>): Promise<object> {
+        const url = `${this.serverUrl}/action/trigger`;
+
+        const headers = {
+            'Connection-Id': connectionId,
+            'Provider-Config-Key': providerConfigKey
+        };
+
+        const body = {
+            action_name: actionName,
+            input
+        };
+
+        const response = await axios.post(url, body, { headers: this.enrichHeaders(headers) });
+
+        return response.data;
     }
 
     public async createConnection(_connectionArgs: CreateConnectionOAuth1 | (CreateConnectionOAuth2 & { metadata: string; connection_config: string })) {
@@ -439,6 +537,28 @@ export class Nango {
         };
 
         return axios.delete(url, { headers: this.enrichHeaders(headers) });
+    }
+
+    public async getEnvironmentVariables(): Promise<{ name: string; value: string }[]> {
+        const url = `${this.serverUrl}/environment-variables`;
+
+        const headers = {
+            'Content-Type': 'application/json',
+            'Accept-Encoding': 'application/json'
+        };
+
+        const response = await axios.get(url, { headers: this.enrichHeaders(headers) });
+
+        if (!response.data) {
+            return [];
+        }
+
+        return response.data.map((variable: Record<string, string>) => {
+            return {
+                name: variable['name'],
+                value: variable['value']
+            };
+        });
     }
 
     private async listConnectionDetails(connectionId?: string): Promise<AxiosResponse<{ connections: ConnectionList[] }>> {

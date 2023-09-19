@@ -1,11 +1,33 @@
-import axios from 'axios';
-import type { SyncType } from '../models/Sync';
+import axios, { AxiosError } from 'axios';
+import { backOff } from 'exponential-backoff';
+import { SyncType } from '../models/Sync.js';
 import type { NangoConnection } from '../models/Connection';
 import type { SyncResult, NangoSyncWebhookBody } from '../models/Sync';
 import environmentService from './environment.service.js';
 import { createActivityLogMessage } from './activity/activity.service.js';
 
+const RETRY_ATTEMPTS = 10;
+
 class WebhookService {
+    private retry = async (activityLogId: number, error: AxiosError, attemptNumber: number): Promise<boolean> => {
+        if (error?.response && (error?.response?.status < 200 || error?.response?.status >= 300)) {
+            const content = `Webhook response received an ${
+                error?.response?.status || error?.code
+            } error, retrying with exponential backoffs for ${attemptNumber} out of ${RETRY_ATTEMPTS} times`;
+
+            await createActivityLogMessage({
+                level: 'error',
+                activity_log_id: activityLogId,
+                timestamp: Date.now(),
+                content
+            });
+
+            return true;
+        }
+
+        return false;
+    };
+
     async sendUpdate(
         nangoConnection: NangoConnection,
         syncName: string,
@@ -21,11 +43,11 @@ class WebhookService {
             return;
         }
 
-        if (responseResults.added === 0 && responseResults.updated === 0) {
+        if (responseResults.added === 0 && responseResults.updated === 0 && responseResults.deleted === 0) {
             await createActivityLogMessage({
                 level: 'info',
                 activity_log_id: activityLogId,
-                content: `There were no added or updated results so a webhook with changes was not sent.`,
+                content: `There were no added, updated, or deleted results so a webhook with changes was not sent.`,
                 timestamp: Date.now()
             });
 
@@ -39,18 +61,29 @@ class WebhookService {
             model,
             responseResults: {
                 added: responseResults.added,
-                updated: responseResults.updated
+                updated: responseResults.updated,
+                deleted: 0
             },
             syncType,
             queryTimeStamp: now as unknown as string
         };
+
+        if (syncType === SyncType.INITIAL) {
+            body.queryTimeStamp = null;
+        }
 
         if (responseResults.deleted && responseResults.deleted > 0) {
             body.responseResults.deleted = responseResults.deleted;
         }
 
         try {
-            const response = await axios.post(webhookUrl, body);
+            const response = await backOff(
+                () => {
+                    return axios.post(webhookUrl, body);
+                },
+                { numOfAttempts: RETRY_ATTEMPTS, retry: this.retry.bind(this, activityLogId) }
+            );
+
             if (response.status >= 200 && response.status < 300) {
                 await createActivityLogMessage({
                     level: 'info',

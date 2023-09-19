@@ -1,6 +1,6 @@
 import { NangoSync, GmailEmail } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<void> {
+export default async function fetchData(nango: NangoSync) {
     const backfillPeriod = new Date(Date.now() - 24 * 60 * 60 * 1000); // 24 hours ago.
     const { lastSyncDate } = nango;
     const syncDate = lastSyncDate || backfillPeriod;

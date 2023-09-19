@@ -27,7 +27,7 @@ import { NangoError } from '../utils/error.js';
 import type { Metadata, Connection, StoredConnection, BaseConnection, NangoConnection } from '../models/Connection.js';
 import type { ServiceResponse } from '../models/Generic.js';
 import encryptionManager from '../utils/encryption.manager.js';
-import errorManager from '../utils/error.manager.js';
+import metricsManager from '../utils/metrics.manager.js';
 import { AuthModes as ProviderAuthModes, OAuth2Credentials, ImportedCredentials, ApiKeyCredentials, BasicApiCredentials } from '../models/Auth.js';
 import { schema } from '../db/database.js';
 import { parseTokenExpirationDate, isTokenExpired } from '../utils/utils.js';
@@ -43,28 +43,32 @@ class ConnectionService {
         parsedRawCredentials: AuthCredentials,
         connectionConfig: Record<string, string>,
         environment_id: number,
-        accountId: number
+        accountId: number,
+        metadata?: Metadata
     ) {
-        const storedConnectionId = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment_id);
+        const storedConnection = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment_id);
 
-        if (storedConnectionId) {
+        if (storedConnection) {
             const encryptedConnection = encryptionManager.encryptConnection({
                 connection_id: connectionId,
                 provider_config_key: providerConfigKey,
                 credentials: parsedRawCredentials,
                 connection_config: connectionConfig,
-                environment_id
+                environment_id: environment_id,
+                metadata: metadata || storedConnection.metadata || null
             });
+
             encryptedConnection.updated_at = new Date();
+
             await db.knex
                 .withSchema(db.schema())
                 .from<StoredConnection>(`_nango_connections`)
-                .where({ id: storedConnectionId, deleted: false })
+                .where({ id: storedConnection.id, deleted: false })
                 .update(encryptedConnection);
 
             analytics.track('server:connection_updated', accountId, { provider });
 
-            return [{ id: storedConnectionId }];
+            return [{ id: storedConnection.id }];
         }
 
         const id = await db.knex
@@ -76,7 +80,8 @@ class ConnectionService {
                     provider_config_key: providerConfigKey,
                     credentials: parsedRawCredentials,
                     connection_config: connectionConfig,
-                    environment_id
+                    environment_id: environment_id,
+                    metadata: metadata || null
                 }),
                 ['id']
             );
@@ -95,9 +100,9 @@ class ConnectionService {
         environment_id: number,
         accountId: number
     ) {
-        const storedConnectionId = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment_id);
+        const storedConnection = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment_id);
 
-        if (storedConnectionId) {
+        if (storedConnection) {
             const encryptedConnection = encryptionManager.encryptConnection({
                 connection_id: connectionId,
                 provider_config_key: providerConfigKey,
@@ -109,12 +114,12 @@ class ConnectionService {
             await db.knex
                 .withSchema(db.schema())
                 .from<StoredConnection>(`_nango_connections`)
-                .where({ id: storedConnectionId, deleted: false })
+                .where({ id: storedConnection.id, deleted: false })
                 .update(encryptedConnection);
 
             analytics.track('server:api_key_connection_updated', accountId, { provider });
 
-            return [{ id: storedConnectionId }];
+            return [{ id: storedConnection.id }];
         }
         const id = await db.knex
             .withSchema(db.schema())
@@ -150,14 +155,15 @@ class ConnectionService {
             provider_config_key,
             provider,
             parsedRawCredentials,
-            { ...connection_config, ...metadata } as Record<string, string>,
+            connection_config || {},
             environmentId,
-            accountId
+            accountId,
+            metadata || undefined
         );
 
         if (importedConnection) {
             const syncClient = await SyncClient.getInstance();
-            syncClient?.initiate(importedConnection[0].id);
+            syncClient?.initiate(importedConnection[0]?.id as number);
         }
 
         return importedConnection;
@@ -202,8 +208,12 @@ class ConnectionService {
         return result[0];
     }
 
-    public async checkIfConnectionExists(connection_id: string, provider_config_key: string, environment_id: number): Promise<null | number> {
-        const result = await schema().select('id').from<StoredConnection>('_nango_connections').where({
+    public async checkIfConnectionExists(
+        connection_id: string,
+        provider_config_key: string,
+        environment_id: number
+    ): Promise<null | { id: number; metadata: Metadata }> {
+        const result = await schema().select('id', 'metadata').from<StoredConnection>('_nango_connections').where({
             connection_id,
             provider_config_key,
             environment_id,
@@ -214,7 +224,7 @@ class ConnectionService {
             return null;
         }
 
-        return result[0].id;
+        return result[0];
     }
 
     public async getConnection(connectionId: string, providerConfigKey: string, environment_id: number): Promise<ServiceResponse<Connection>> {
@@ -227,7 +237,8 @@ class ConnectionService {
         if (!connectionId) {
             const error = new NangoError('missing_connection');
 
-            await errorManager.captureWithJustEnvironment('get_connection_failure', error.message, environment_id as number, LogActionEnum.AUTH, {
+            await metricsManager.capture('get_connection_failure', error.message, LogActionEnum.AUTH, {
+                environmentId: String(environment_id),
                 connectionId,
                 providerConfigKey
             });
@@ -238,7 +249,8 @@ class ConnectionService {
         if (!providerConfigKey) {
             const error = new NangoError('missing_provider_config');
 
-            await errorManager.captureWithJustEnvironment('get_connection_failure', error.message, environment_id as number, LogActionEnum.AUTH, {
+            await metricsManager.capture('get_connection_failure', error.message, LogActionEnum.AUTH, {
+                environmentId: String(environment_id),
                 connectionId,
                 providerConfigKey
             });
@@ -258,7 +270,8 @@ class ConnectionService {
 
             const error = new NangoError('unknown_connection', { connectionId, providerConfigKey, environmentName });
 
-            await errorManager.captureWithJustEnvironment('get_connection_failure', error.message, environment_id as number, LogActionEnum.AUTH, {
+            await metricsManager.capture('get_connection_failure', error.message, LogActionEnum.AUTH, {
+                environmentId: String(environment_id),
                 connectionId,
                 providerConfigKey
             });
@@ -281,7 +294,9 @@ class ConnectionService {
         await this.updateLastFetched(connection?.id as number);
 
         const content = 'Connection fetched successfully';
-        await errorManager.captureWithJustEnvironment('get_connection_success', content, environment_id as number, LogActionEnum.AUTH, {
+
+        await metricsManager.capture('get_connection_success', content, LogActionEnum.AUTH, {
+            environmentId: String(environment_id),
             connectionId,
             providerConfigKey
         });

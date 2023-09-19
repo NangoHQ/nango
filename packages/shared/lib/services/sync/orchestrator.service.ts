@@ -1,14 +1,23 @@
 import { deleteSyncConfig, deleteSyncFilesForConfig } from './config.service.js';
-import { deleteScheduleForSync, deleteSchedulesBySyncId as deleteSyncSchedulesBySyncId } from './schedule.service.js';
+import connectionService from '../connection.service.js';
+import { deleteScheduleForSync, deleteSchedulesBySyncId as deleteSyncSchedulesBySyncId, getSchedule, updateScheduleStatus } from './schedule.service.js';
 import { deleteJobsBySyncId as deleteSyncJobsBySyncId } from './job.service.js';
-import { deleteRecordsBySyncId as deleteSyncResultsBySyncId } from './data-records.service.js';
-import { createSync, deleteSync, getSyncsByConnectionId, getSyncsByProviderConfigKey } from './sync.service.js';
-import { createActivityLogMessage } from '../activity/activity.service.js';
+import { deleteRecordsBySyncId as deleteSyncResultsBySyncId } from './data/records.service.js';
+import {
+    createSync,
+    deleteSync,
+    getSyncsByConnectionId,
+    getSyncsByProviderConfigKey,
+    getSyncsByProviderConfigAndSyncNames,
+    getSyncByIdAndName
+} from './sync.service.js';
+import { createActivityLog, createActivityLogMessage } from '../activity/activity.service.js';
 import SyncClient from '../../clients/sync.client.js';
 import configService from '../config.service.js';
+import type { LogLevel } from '../../models/Activity.js';
 import type { Connection } from '../../models/Connection.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
-import type { IncomingSyncConfig, Sync } from '../../models/Sync.js';
+import { IncomingSyncConfig, Sync, SyncCommand, CommandToActivityLog } from '../../models/Sync.js';
 
 interface CreateSyncArgs {
     connections: Connection[];
@@ -128,6 +137,62 @@ export class Orchestrator {
 
         for (const sync of syncs) {
             await this.deleteSync(sync.id as string, environmentId);
+        }
+    }
+
+    public async runSyncCommand(environmentId: number, providerConfigKey: string, syncNames: string[], command: SyncCommand, connectionId?: string) {
+        const action = CommandToActivityLog[command];
+        const provider = await configService.getProviderName(providerConfigKey as string);
+
+        const log = {
+            level: 'info' as LogLevel,
+            success: false,
+            action,
+            start: Date.now(),
+            end: Date.now(),
+            timestamp: Date.now(),
+            connection_id: connectionId || '',
+            provider,
+            provider_config_key: providerConfigKey as string,
+            environment_id: environmentId
+        };
+        const activityLogId = await createActivityLog(log);
+
+        if (connectionId) {
+            const {
+                success,
+                error,
+                response: connection
+            } = await connectionService.getConnection(connectionId as string, providerConfigKey as string, environmentId);
+
+            if (!success) {
+                throw error;
+            }
+
+            for (const syncName of syncNames) {
+                const sync = await getSyncByIdAndName(connection?.id as number, syncName);
+                const schedule = await getSchedule(sync?.id as string);
+
+                const syncClient = await SyncClient.getInstance();
+                await syncClient?.runSyncCommand(schedule?.schedule_id as string, sync?.id as string, command, activityLogId as number);
+                await updateScheduleStatus(schedule?.schedule_id as string, command, activityLogId as number);
+            }
+        } else {
+            const syncs =
+                syncNames.length > 0
+                    ? await getSyncsByProviderConfigAndSyncNames(environmentId, providerConfigKey, syncNames)
+                    : await getSyncsByProviderConfigKey(environmentId, providerConfigKey);
+
+            if (!syncs) {
+                return;
+            }
+
+            for (const sync of syncs) {
+                const schedule = await getSchedule(sync?.id as string);
+                const syncClient = await SyncClient.getInstance();
+                await syncClient?.runSyncCommand(schedule?.schedule_id as string, sync?.id as string, command, activityLogId as number);
+                await updateScheduleStatus(schedule?.schedule_id as string, command, activityLogId as number);
+            }
         }
     }
 }

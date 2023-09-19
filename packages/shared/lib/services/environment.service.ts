@@ -1,6 +1,7 @@
 import db from '../db/database.js';
 import encryptionManager from '../utils/encryption.manager.js';
 import type { Environment } from '../models/Environment.js';
+import type { EnvironmentVariable } from '../models/EnvironmentVariable.js';
 import type { Account } from '../models/Admin.js';
 import { LogActionEnum } from '../models/Activity.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
@@ -229,6 +230,45 @@ class EnvironmentService {
 
     async editHmacKey(hmacKey: string, id: number): Promise<Environment | null> {
         return db.knex.withSchema(db.schema()).from<Environment>(TABLE).where({ id }).update({ hmac_key: hmacKey }, ['id']);
+    }
+
+    async getEnvironmentVariables(environment_id: number): Promise<EnvironmentVariable[] | null> {
+        const result = await db.knex.withSchema(db.schema()).select('*').from<EnvironmentVariable>(`_nango_environment_variables`).where({ environment_id });
+
+        if (result === null || result.length === 0) {
+            return [];
+        }
+
+        return encryptionManager.decryptEnvironmentVariables(result);
+    }
+
+    async editEnvironmentVariable(environment_id: number, values: Array<{ name: string; value: string }>): Promise<number[] | null> {
+        await db.knex.withSchema(db.schema()).from<EnvironmentVariable>(`_nango_environment_variables`).where({ environment_id }).del();
+
+        if (values.length === 0) {
+            return null;
+        }
+
+        const mappedValues: EnvironmentVariable[] = values.map((value) => {
+            return {
+                ...value,
+                environment_id
+            };
+        });
+
+        const encryptedValues = encryptionManager.encryptEnvironmentVariables(mappedValues);
+
+        const results = await db.knex
+            .withSchema(db.schema())
+            .from<EnvironmentVariable>(`_nango_environment_variables`)
+            .where({ environment_id })
+            .insert(encryptedValues);
+
+        if (results === null || results.length === 0) {
+            return null;
+        }
+
+        return results;
     }
 }
 

@@ -14,12 +14,13 @@ import {
 import { getSyncsByProviderConfigAndSyncName } from './sync.service.js';
 import { LogActionEnum, LogLevel } from '../../models/Activity.js';
 import type { ServiceResponse } from '../../models/Generic.js';
-import type { SyncModelSchema, SyncConfigWithProvider, IncomingSyncConfig, SyncConfig, SlimSync, SyncConfigResult } from '../../models/Sync.js';
+import { SyncModelSchema, SyncConfigWithProvider, IncomingSyncConfig, SyncConfig, SlimSync, SyncConfigResult, SyncConfigType } from '../../models/Sync.js';
 import type { NangoConnection } from '../../models/Connection.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
 import type { NangoConfig } from '../../integrations/index.js';
 import { NangoError } from '../../utils/error.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
+import metricsManager from '../../utils/metrics.manager.js';
 import { getEnv } from '../../utils/utils.js';
 
 const TABLE = dbNamespace + 'sync_configs';
@@ -58,8 +59,26 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
     const activityLogId = await createActivityLog(log);
 
     for (const sync of syncs) {
-        const { syncName, providerConfigKey, fileBody, models, runs, version: optionalVersion, model_schema } = sync;
-        if (!syncName || !providerConfigKey || !fileBody || !models || !runs) {
+        const {
+            syncName,
+            providerConfigKey,
+            fileBody,
+            models,
+            runs,
+            version: optionalVersion,
+            model_schema,
+            type = SyncConfigType.SYNC,
+            track_deletes,
+            auto_start,
+            attributes = {}
+        } = sync;
+        if (type === SyncConfigType.SYNC && !runs) {
+            const error = new NangoError('missing_required_fields_on_deploy');
+
+            return { success: false, error, response: null };
+        }
+
+        if (!syncName || !providerConfigKey || !fileBody || !models) {
             const error = new NangoError('missing_required_fields_on_deploy');
 
             return { success: false, error, response: null };
@@ -73,23 +92,26 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
             return { success: false, error, response: null };
         }
 
-        const previousSyncConfig = await getSyncConfigByParams(environment_id, syncName, providerConfigKey);
+        const previousSyncAndActionConfig = await getSyncAndActionConfigByParams(environment_id, syncName, providerConfigKey);
         let bumpedVersion = '';
 
-        if (previousSyncConfig) {
-            bumpedVersion = increment(previousSyncConfig.version as string | number).toString();
+        if (previousSyncAndActionConfig) {
+            bumpedVersion = increment(previousSyncAndActionConfig.version as string | number).toString();
 
             if (debug) {
                 await createActivityLogMessage({
                     level: 'debug',
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
-                    content: `A previous sync config was found for ${syncName} with version ${previousSyncConfig.version}`
+                    content: `A previous sync config was found for ${syncName} with version ${previousSyncAndActionConfig.version}`
                 });
             }
 
             const syncs = await getSyncsByProviderConfigAndSyncName(environment_id, providerConfigKey, syncName);
             for (const sync of syncs) {
+                if (!runs) {
+                    continue;
+                }
                 const { success, error } = await updateSyncScheduleFrequency(sync.id as string, runs, syncName, activityLogId as number, environment_id);
 
                 if (!success) {
@@ -128,7 +150,7 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
             throw new NangoError('file_upload_error');
         }
 
-        const oldConfigs = await getSyncConfigsBySyncNameAndConfigId(environment_id, config.id as number, syncName);
+        const oldConfigs = await getSyncAndActionConfigsBySyncNameAndConfigId(environment_id, config.id as number, syncName);
 
         if (oldConfigs.length > 0) {
             const ids = oldConfigs.map((oldConfig: SyncConfig) => oldConfig.id as number);
@@ -148,8 +170,12 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
             environment_id,
             nango_config_id: config?.id as number,
             sync_name: syncName,
+            type,
             models,
             version,
+            track_deletes: track_deletes || false,
+            auto_start: auto_start === false ? false : true,
+            attributes,
             file_location,
             runs,
             active: true,
@@ -189,10 +215,11 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
 
         const shortContent = `Successfully deployed the syncs (${syncsWithVersions.map((sync) => sync.syncName).join(', ')}).`;
 
-        await errorManager.captureWithJustEnvironment('sync_deploy_success', shortContent, environment_id as number, LogActionEnum.SYNC_DEPLOY, {
+        await metricsManager.capture('sync_deploy_success', shortContent, LogActionEnum.SYNC_DEPLOY, {
+            environmentId: String(environment_id),
             syncName: syncsWithVersions.map((sync) => sync.syncName).join(', '),
-            accountId: accountId as number,
-            providers
+            accountId: String(accountId),
+            providers: providers.join(', ')
         });
 
         return { success: true, error: null, response: { result, activityLogId } };
@@ -207,26 +234,28 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
 
         const shortContent = `Failure to deploy the syncs (${syncsWithVersions.map((sync) => sync.syncName).join(', ')}).`;
 
-        await errorManager.captureWithJustEnvironment('sync_deploy_failure', shortContent, environment_id as number, LogActionEnum.SYNC_DEPLOY, {
+        await metricsManager.capture('sync_deploy_failure', shortContent, LogActionEnum.SYNC_DEPLOY, {
+            environmentId: String(environment_id),
             syncName: syncsWithVersions.map((sync) => sync.syncName).join(', '),
-            accountId: accountId as number,
-            providers
+            accountId: String(accountId),
+            providers: providers.join(', ')
         });
+
         throw new NangoError('error_creating_sync_config');
     }
 }
 
-export async function getSyncConfig(nangoConnection: NangoConnection, syncName?: string): Promise<NangoConfig | null> {
+export async function getSyncConfig(nangoConnection: NangoConnection, syncName?: string, isAction?: boolean): Promise<NangoConfig | null> {
     let syncConfigs;
 
     if (!syncName) {
-        syncConfigs = await getSyncConfigsByParams(nangoConnection.environment_id, nangoConnection.provider_config_key);
+        syncConfigs = await getSyncConfigsByParams(nangoConnection.environment_id, nangoConnection.provider_config_key, isAction);
 
         if (!syncConfigs || syncConfigs.length === 0) {
             return null;
         }
     } else {
-        syncConfigs = await getSyncConfigByParams(nangoConnection.environment_id as number, syncName, nangoConnection.provider_config_key as string);
+        syncConfigs = await getSyncConfigByParams(nangoConnection.environment_id as number, syncName, nangoConnection.provider_config_key as string, isAction);
         if (!syncConfigs) {
             return null;
         }
@@ -252,7 +281,11 @@ export async function getSyncConfig(nangoConnection: NangoConnection, syncName?:
             providerConfig[syncConfig.sync_name] = {
                 sync_config_id: syncConfig.id as number,
                 runs: syncConfig.runs,
+                type: syncConfig.type,
                 returns: syncConfig.models,
+                track_deletes: syncConfig.track_deletes,
+                auto_start: syncConfig.auto_start,
+                attributes: syncConfig.attributes || {},
                 fileLocation: syncConfig.file_location,
                 version: syncConfig.version as string
             };
@@ -264,7 +297,7 @@ export async function getSyncConfig(nangoConnection: NangoConnection, syncName?:
     return nangoConfig;
 }
 
-export async function getSyncConfigsByParams(environment_id: number, providerConfigKey: string): Promise<SyncConfig[] | null> {
+export async function getSyncConfigsByParams(environment_id: number, providerConfigKey: string, isAction?: boolean): Promise<SyncConfig[] | null> {
     const config = await configService.getProviderConfig(providerConfigKey, environment_id);
 
     if (!config) {
@@ -273,7 +306,13 @@ export async function getSyncConfigsByParams(environment_id: number, providerCon
 
     const result = await schema()
         .from<SyncConfig>(TABLE)
-        .where({ environment_id, nango_config_id: config.id as number, active: true, deleted: false });
+        .where({
+            environment_id,
+            nango_config_id: config.id as number,
+            active: true,
+            type: isAction ? SyncConfigType.ACTION : SyncConfigType.SYNC,
+            deleted: false
+        });
 
     if (result) {
         return result;
@@ -282,7 +321,7 @@ export async function getSyncConfigsByParams(environment_id: number, providerCon
     return null;
 }
 
-export async function getSyncConfigsBySyncNameAndConfigId(environment_id: number, nango_config_id: number, sync_name: string): Promise<SyncConfig[]> {
+export async function getSyncAndActionConfigsBySyncNameAndConfigId(environment_id: number, nango_config_id: number, sync_name: string): Promise<SyncConfig[]> {
     try {
         const result = await schema().from<SyncConfig>(TABLE).where({
             environment_id,
@@ -310,7 +349,32 @@ export async function getSyncConfigsBySyncNameAndConfigId(environment_id: number
     return [];
 }
 
-export async function getSyncConfigByParams(environment_id: number, sync_name: string, providerConfigKey: string): Promise<SyncConfig | null> {
+export async function getActionConfigByNameAndProviderConfigKey(environment_id: number, name: string, unique_key: string): Promise<boolean> {
+    const nango_config_id = await configService.getIdByProviderConfigKey(environment_id, unique_key);
+
+    if (!nango_config_id) {
+        return false;
+    }
+
+    const result = await schema()
+        .from<SyncConfig>(TABLE)
+        .where({
+            environment_id,
+            nango_config_id,
+            sync_name: name,
+            deleted: false,
+            type: SyncConfigType.ACTION
+        })
+        .first();
+
+    if (result) {
+        return true;
+    }
+
+    return false;
+}
+
+export async function getSyncAndActionConfigByParams(environment_id: number, sync_name: string, providerConfigKey: string): Promise<SyncConfig | null> {
     const config = await configService.getProviderConfig(providerConfigKey, environment_id);
 
     if (!config) {
@@ -320,7 +384,59 @@ export async function getSyncConfigByParams(environment_id: number, sync_name: s
     try {
         const result = await schema()
             .from<SyncConfig>(TABLE)
-            .where({ environment_id, sync_name, nango_config_id: config.id as number, active: true, deleted: false })
+            .where({
+                environment_id,
+                sync_name,
+                nango_config_id: config.id as number,
+                active: true,
+                deleted: false
+            })
+            .orderBy('created_at', 'desc')
+            .first();
+
+        if (result) {
+            return result;
+        }
+    } catch (error) {
+        await errorManager.report(error, {
+            environmentId: environment_id,
+            source: ErrorSourceEnum.PLATFORM,
+            operation: LogActionEnum.DATABASE,
+            metadata: {
+                environment_id,
+                sync_name,
+                providerConfigKey
+            }
+        });
+        return null;
+    }
+
+    return null;
+}
+
+export async function getSyncConfigByParams(
+    environment_id: number,
+    sync_name: string,
+    providerConfigKey: string,
+    isAction?: boolean
+): Promise<SyncConfig | null> {
+    const config = await configService.getProviderConfig(providerConfigKey, environment_id);
+
+    if (!config) {
+        throw new Error('Provider config not found');
+    }
+
+    try {
+        const result = await schema()
+            .from<SyncConfig>(TABLE)
+            .where({
+                environment_id,
+                sync_name,
+                nango_config_id: config.id as number,
+                active: true,
+                type: isAction ? SyncConfigType.ACTION : SyncConfigType.SYNC,
+                deleted: false
+            })
             .orderBy('created_at', 'desc')
             .first();
 
@@ -379,6 +495,7 @@ export async function getActiveSyncConfigsByEnvironmentId(environment_id: number
             `${TABLE}.runs`,
             `${TABLE}.models`,
             `${TABLE}.updated_at`,
+            `${TABLE}.type`,
             '_nango_configs.provider',
             '_nango_configs.unique_key'
         )
@@ -399,6 +516,7 @@ export async function getSyncConfigsWithConnectionsByEnvironmentId(environment_i
         .select(
             `${TABLE}.id`,
             `${TABLE}.sync_name`,
+            `${TABLE}.type`,
             `${TABLE}.runs`,
             `${TABLE}.models`,
             `${TABLE}.version`,
@@ -465,13 +583,35 @@ export async function getSyncConfigByJobId(job_id: number): Promise<SyncConfig |
             [`${TABLE}.deleted`]: false
         })
         .first()
-        .orderBy('created_at', 'desc');
+        .orderBy(`${TABLE}.created_at`, 'desc');
 
     if (!result) {
         return null;
     }
 
     return result;
+}
+
+export async function getAttributes(provider_config_key: string, sync_name: string): Promise<object | null> {
+    const result = await schema()
+        .from<SyncConfig>(TABLE)
+        .select(`${TABLE}.attributes`)
+        .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')
+        .where({
+            '_nango_configs.unique_key': provider_config_key,
+            '_nango_configs.deleted': false,
+            [`${TABLE}.deleted`]: false,
+            [`${TABLE}.sync_name`]: sync_name,
+            [`${TABLE}.active`]: true
+        })
+        .first()
+        .orderBy(`${TABLE}.created_at`, 'desc');
+
+    if (!result) {
+        return null;
+    }
+
+    return result.attributes;
 }
 
 export async function getProviderConfigBySyncAndAccount(sync_name: string, environment_id: number): Promise<string | null> {

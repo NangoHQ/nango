@@ -1,75 +1,171 @@
-import { GoogleWorkspaceUser, GoogleWorkspaceUserToken, NangoSync } from './models';
+import type { NangoSync, User } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<void> {
-    // Get the users in the org
-    const params = {
-        customer: 'my_customer'
-    };
-    const users = await paginate(nango, '/admin/directory/v1/users', 'users', params);
-
-    let mappedUsers: GoogleWorkspaceUser[] = [];
-    for (let user of users) {
-        mappedUsers.push({
-            id: user.id,
-            name: user.name.fullName,
-            email: user.primaryEmail,
-            suspended: user.suspended,
-            archived: user.archived,
-            last_login_time: user.lastLoginTime,
-            customer_id: user.customer_id,
-            thumbnail_url: user.thumbnailPhotoUrl,
-            two_fa_enabled: user.isEnrolledIn2Sv,
-            org_unit_path: user.orgUnitPath
-        });
-
-        // Get the access tokens
-        const tokens = await paginate(nango, `/admin/directory/v1/users/${user.id}/tokens`, 'items');
-        const mappedTokens: GoogleWorkspaceUserToken[] = tokens.map((token) => ({
-            id: token.clientId,
-            user_id: user.id,
-            app_name: token.displayText,
-            anonymous_app: token.anonymous,
-            scopes: token.scopes.join(',')
-        }));
-
-        await nango.batchSave(mappedTokens, 'GoogleWorkspaceUserToken');
-
-        if (mappedUsers.length > 49) {
-            await nango.batchSave(mappedUsers, 'GoogleWorkspaceUser');
-            mappedUsers = [];
-        }
-    }
-
-    await nango.batchSave(mappedUsers, 'GoogleWorkspaceUser');
+interface DirectoryUsersResponse {
+    kind: string;
+    etag: string;
+    users: DirectoryUser[];
 }
 
-async function paginate(nango: NangoSync, endpoint: string, resultsKey: string, queryParams?: Record<string, string | string[]>) {
-    const MAX_PAGE = 100;
-    let results: any[] = [];
-    let page = null;
-    let callParams = queryParams || {};
-    while (true) {
-        if (page) {
-            callParams['pageToken'] = `${page}`;
-        }
+interface DirectoryUser {
+    kind: string;
+    id: string;
+    etag: string;
+    primaryEmail: string;
+    name: Name;
+    isAdmin: boolean;
+    isDelegatedAdmin: boolean;
+    lastLoginTime: string;
+    creationTime: string;
+    deletionTime?: string;
+    agreedToTerms: boolean;
+    suspended: boolean;
+    archived: boolean;
+    changePasswordAtNextLogin: boolean;
+    ipWhitelisted: boolean;
+    emails: Email[];
+    languages: Language[];
+    aliases?: string[];
+    nonEditableAliases?: string[];
+    customerId: string;
+    orgUnitPath: string;
+    isMailboxSetup: boolean;
+    isEnrolledIn2Sv: boolean;
+    isEnforcedIn2Sv: boolean;
+    includeInGlobalAddressList: boolean;
+    thumbnailPhotoUrl?: string;
+    thumbnailPhotoEtag?: string;
+    recoveryEmail?: string;
+    recoveryPhone?: string;
+    phones?: Phone[];
+}
 
-        const resp = await nango.get({
-            baseUrlOverride: 'https://admin.googleapis.com',
-            endpoint: endpoint,
-            params: {
-                maxResults: `${MAX_PAGE}`,
-                ...callParams
-            }
-        });
+interface Name {
+    givenName: string;
+    familyName: string;
+    fullName: string;
+}
 
-        results = results.concat(resp.data[resultsKey]);
+interface Email {
+    address: string;
+    type: string;
+    primary?: boolean;
+}
 
-        if (resp.data.nextPageToken) {
-            page = resp.data.nextPageToken;
-        } else {
-            break;
-        }
+interface Language {
+    languageCode: string;
+    preference: string;
+}
+
+interface Phone {
+    value: string;
+    type: string;
+    customType?: string;
+}
+
+interface OrgToSync {
+    id: string;
+    path: string;
+}
+
+interface Metadata {
+    orgsToSync: OrgToSync[];
+}
+
+export default async function fetchData(nango: NangoSync) {
+    const metadata = await nango.getMetadata<Metadata>();
+    const { orgsToSync } = metadata;
+
+    if (!metadata) {
+        throw new Error('No metadata');
     }
 
-    return results;
+    if (!orgsToSync || !orgsToSync.length) {
+        throw new Error('No orgs to sync');
+    }
+
+    for (const orgUnit of orgsToSync) {
+        await nango.log(`Fetching users for org unit ID: ${orgUnit.id} at the path: ${orgUnit.path}`);
+        await fetchAndUpdateUsers(nango, orgUnit);
+    }
+
+    await nango.log('Detecting deleted users');
+    await fetchAndUpdateUsers(nango, null, true);
+}
+
+async function fetchAndUpdateUsers(nango: NangoSync, orgUnit: OrgToSync | null, runDelete = false): Promise<void> {
+    const baseUrlOverride = 'https://admin.googleapis.com';
+    const endpoint = '/admin/directory/v1/users';
+
+    let pageToken: string = '';
+    do {
+        const suspendedUsers: User[] = [] as User[];
+
+        const params = {
+            customer: 'my_customer',
+            orderBy: 'email',
+            query: orgUnit ? `orgUnitPath='${orgUnit.path}'` : '',
+            maxResults: '500',
+            showDeleted: runDelete ? 'true' : 'false',
+            pageToken
+        };
+
+        const response = await nango.get<DirectoryUsersResponse & { nextPageToken?: string }>({
+            baseUrlOverride,
+            endpoint,
+            params
+        });
+
+        if (!response) {
+            await nango.log(`No response from the Google API${orgUnit ? `for organizational unit ID: ${orgUnit.id}` : '.'}`);
+            break;
+        }
+
+        const { data } = response;
+
+        if (!data.users) {
+            await nango.log(`No users to ${runDelete ? 'delete.' : `save for organizational unit ID: ${orgUnit?.id}`}`);
+            break;
+        }
+
+        const users: User[] = [];
+
+        for (const u of data.users) {
+            const user: User = {
+                id: u.id,
+                email: u.primaryEmail,
+                displayName: u.name.fullName,
+                familyName: u.name.familyName,
+                givenName: u.name.givenName,
+                picture: u.thumbnailPhotoUrl,
+                type: u.kind,
+                isAdmin: u.isAdmin,
+                createdAt: u.creationTime,
+                deletedAt: u.deletionTime || null,
+                phone: {
+                    value: u.phones?.[0]?.value,
+                    type: u.phones?.[0]?.type
+                },
+                organizationId: runDelete ? null : orgUnit?.id,
+                organizationPath: runDelete ? null : u.orgUnitPath,
+                department: null
+            };
+
+            if (u.suspended || u.archived) {
+                suspendedUsers.push(user);
+                continue;
+            }
+            users.push(user);
+        }
+
+        if (runDelete) {
+            await nango.batchDelete<User>(users, 'User');
+        } else {
+            await nango.batchSave<User>(users, 'User');
+
+            if (suspendedUsers.length) {
+                await nango.batchDelete<User>(suspendedUsers, 'User');
+            }
+        }
+        pageToken = data.nextPageToken as string;
+    } while (pageToken);
 }

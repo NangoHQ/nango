@@ -65,6 +65,20 @@ class ConfigService {
         return result[0].provider;
     }
 
+    async getIdByProviderConfigKey(environment_id: number, providerConfigKey: string): Promise<number | null> {
+        const result = await db.knex
+            .withSchema(db.schema())
+            .select('id')
+            .from<ProviderConfig>(`_nango_configs`)
+            .where({ unique_key: providerConfigKey, environment_id, deleted: false });
+
+        if (result == null || result.length == 0 || result[0] == null) {
+            return null;
+        }
+
+        return result[0].id;
+    }
+
     async getProviderConfig(providerConfigKey: string, environment_id: number): Promise<ProviderConfig | null> {
         if (!providerConfigKey) {
             throw new NangoError('missing_provider_config');
@@ -118,17 +132,19 @@ class ConfigService {
     }
 
     async deleteProviderConfig(providerConfigKey: string, environment_id: number): Promise<number> {
-        const id = (
+        const idResult = (
             await db.knex
                 .withSchema(db.schema())
                 .select('id')
                 .from<ProviderConfig>(`_nango_configs`)
                 .where({ unique_key: providerConfigKey, environment_id, deleted: false })
-        )[0].id;
+        )[0];
 
-        if (!id) {
+        if (!idResult) {
             throw new NangoError('unknown_provider_config');
         }
+
+        const { id } = idResult;
 
         await syncOrchestrator.deleteSyncsByProviderConfig(environment_id, providerConfigKey);
 

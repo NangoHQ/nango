@@ -75,25 +75,33 @@
                             "group": "All Integration Templates",
                             "pages": [
                                 "integration-templates/asana",
+                                "integration-templates/confluence",
                                 "integration-templates/github",
-                                "integration-templates/google-workspace",
                                 "integration-templates/gmail",
+                                "integration-templates/google-workspace",
+                                "integration-templates/hubspot",
                                 "integration-templates/intercom",
                                 "integration-templates/jira",
                                 "integration-templates/linear",
+                                "integration-templates/microsoft-active-directory",
                                 "integration-templates/notion",
+                                "integration-templates/salesforce",
                                 "integration-templates/slack",
-                                "integration-templates/salesforce"
+                                "integration-templates/zendesk"
                             ]
                         }
                     ]
         },
         {
             "group": "Guides",
-            "pages": [{
+            "pages": [
+                {
                     "group": "Authorize APIs",
                     "pages": ["guides/oauth", "guides/api-key"]
-                }, "guides/sync", "guides/proxy", "guides/webhooks"
+                }, {
+                    "group": "Consume APIs",
+                    "pages": ["guides/sync", "guides/actions", "guides/proxy", "guides/webhooks"]
+                }, "contribute"
             ]
         },
         {
@@ -103,18 +111,18 @@
         {
             "group": "Self-Host Nango",
             "pages": [
+                "self-host/overview",
                 "self-host/instructions",
-                "self-host/local",
+                {
+                    "group": "Platforms",
+                    "pages": ["self-host/local",
                 "self-host/aws",
                 "self-host/gcp",
                 "self-host/digital-ocean",
                 "self-host/render",
-                "self-host/heroku"
+                "self-host/heroku"]
+                }
             ]
-        },
-        {
-            "group": "Contribute",
-            "pages": ["contribute"]
         },
         {
             "group": "Overview",
@@ -157,6 +165,7 @@
             "pages": [
                 "integrations/all/accelo",
                 "integrations/all/adobe",
+                "integrations/all/aircall",
                 "integrations/all/airtable",
                 "integrations/all/amazon",
                 "integrations/all/amplitude",
@@ -180,6 +189,8 @@
                 "integrations/all/dropbox",
                 "integrations/all/docusign",
                 "integrations/all/epic-games",
+                "integrations/all/evaluagent",
+                "integrations/all/eventbrite",
                 "integrations/all/exact-online",
                 "integrations/all/facebook",
                 "integrations/all/factorial",
@@ -187,6 +198,7 @@
                 "integrations/all/figma",
                 "integrations/all/fitbit",
                 "integrations/all/freshbooks",
+                "integrations/all/freshservice",
                 "integrations/all/front",
                 "integrations/all/github",
                 "integrations/all/gitlab",
@@ -215,6 +227,7 @@
                 "integrations/all/mixpanel",
                 "integrations/all/monday",
                 "integrations/all/mural",
+                "integrations/all/nationbuilder",
                 "integrations/all/netsuite",
                 "integrations/all/notion",
                 "integrations/all/one-drive",
@@ -223,14 +236,17 @@
                 "integrations/all/pagerduty",
                 "integrations/all/pandadoc",
                 "integrations/all/payfit",
+                "integrations/all/pennylane",
                 "integrations/all/pipedrive",
                 "integrations/all/qualtrics",
                 "integrations/all/quickbooks",
                 "integrations/all/ramp",
                 "integrations/all/reddit",
+                "integrations/all/ring-central",
                 "integrations/all/sage",
                 "integrations/all/salesforce",
                 "integrations/all/salesloft",
+                "integrations/all/servicem8",
                 "integrations/all/segment",
                 "integrations/all/shopify",
                 "integrations/all/shortcut",
@@ -242,8 +258,8 @@
                 "integrations/all/stackexchange",
                 "integrations/all/strava",
                 "integrations/all/stripe",
-	        "integrations/all/stripe-express",
-	        "integrations/all/survey-monkey",
+	            "integrations/all/stripe-express",
+	            "integrations/all/survey-monkey",
                 "integrations/all/teamwork",
                 "integrations/all/todoist",
                 "integrations/all/timely",
@@ -312,8 +328,12 @@
             ]
         },
         {
-            "group": "Sync",
+            "group": "Syncs",
             "pages": ["api-reference/sync/records-get", "api-reference/sync/trigger"]
+        },
+        {
+            "group": "Actions",
+            "pages": ["api-reference/action/trigger"]
         },
         {
             "group": "Proxy",

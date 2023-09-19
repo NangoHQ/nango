@@ -1,6 +1,6 @@
-import { expect, describe, it, vi, afterAll, beforeAll } from 'vitest';
+import { expect, describe, it, vi, beforeAll } from 'vitest';
 import type { Request, Response, NextFunction } from 'express';
-import { db, multipleMigrations, NangoError, configService, Config as ProviderConfig } from '@nangohq/shared';
+import { db, multipleMigrations, NangoError, configService } from '@nangohq/shared';
 import configController from './config.controller';
 
 /**
@@ -63,7 +63,7 @@ describe('Should verify the config controller HTTP API calls', async () => {
         expect(sendMock).toHaveBeenCalledWith({ error: err.message, type: err.type, payload: err.payload });
     });
 
-    it('CREATE a provider config successfully', async () => {
+    it('CREATE a provider config successfully and then LIST', async () => {
         const result = await db.knex.withSchema(db.schema()).select('*').from('_nango_environments');
         const req: any = {
             body: {
@@ -100,6 +100,36 @@ describe('Should verify the config controller HTTP API calls', async () => {
         expect(config).toBeDefined();
         expect(config?.unique_key).toBe('test');
         expect(config?.oauth_scopes).toBe('abc,def');
+
+        const sendMock = vi.fn();
+        const listRes = {
+            status: (code: number) => {
+                expect(code).toBe(200);
+                return {
+                    send: sendMock
+                };
+            },
+            locals: {
+                nangoAccountId: 0,
+                nangoEnvironmentId: 1
+            }
+        };
+        const listNext = () => {
+            return;
+        };
+
+        await configController.listProviderConfigs({} as Request, listRes as unknown as Response, listNext as NextFunction);
+
+        const existingConfigs = await db.knex.withSchema(db.schema()).select('*').from('_nango_configs').where({ environment_id: 1, deleted: false });
+
+        const configs = existingConfigs.map((config) => {
+            return {
+                unique_key: config.unique_key,
+                provider: config.provider
+            };
+        });
+
+        expect(sendMock).toHaveBeenCalledWith({ configs });
     });
 
     it('UPDATE and then GET a provider config successfully', async () => {
@@ -218,55 +248,5 @@ describe('Should verify the config controller HTTP API calls', async () => {
         const config = await configService.getProviderConfig('test', 1);
         expect(statusSpy).toHaveBeenCalledWith(204);
         expect(config).toBe(null);
-    });
-
-    it('LIST the created provider configs', async () => {
-        await db.knex.withSchema(db.schema()).from(`_nango_configs`).update({ deleted: true, deleted_at: new Date() });
-        const result = await db.knex.withSchema(db.schema()).select('*').from('_nango_environments');
-        await configService.createProviderConfig({
-            unique_key: 'test1',
-            provider: 'google',
-            environment_id: result[0].id
-        } as ProviderConfig);
-        await configService.createProviderConfig({
-            unique_key: 'test2',
-            provider: 'google',
-            environment_id: result[0].id
-        } as ProviderConfig);
-        await configService.createProviderConfig({
-            unique_key: 'test3',
-            provider: 'google',
-            environment_id: result[0].id
-        } as ProviderConfig);
-
-        const sendMock = vi.fn();
-        const res = {
-            status: (code: number) => {
-                expect(code).toBe(200);
-                return {
-                    send: sendMock
-                };
-            },
-            locals: {
-                nangoAccountId: 0,
-                nangoEnvironmentId: 1
-            }
-        };
-        const next = () => {
-            return;
-        };
-
-        await configController.listProviderConfigs({} as Request, res as unknown as Response, next as NextFunction);
-        expect(sendMock).toHaveBeenCalledWith({
-            configs: [
-                { unique_key: 'test1', provider: 'google' },
-                { unique_key: 'test2', provider: 'google' },
-                { unique_key: 'test3', provider: 'google' }
-            ]
-        });
-    });
-
-    afterAll(async () => {
-        await db.knex.withSchema(db.schema()).from(`_nango_configs`).update({ deleted: true, deleted_at: new Date() });
     });
 });

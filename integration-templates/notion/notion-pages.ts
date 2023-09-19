@@ -1,6 +1,6 @@
 import type { NangoSync, NotionPage } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<void> {
+export default async function fetchData(nango: NangoSync) {
     const pages = (await paginate(nango, 'post', '/v1/search', 'Notion pages', 100, true)).filter((result: any) => result.object === 'page');
     const batchSize = 10;
     await nango.log(`Found ${pages.length} new/updated Notion pages to sync.`);

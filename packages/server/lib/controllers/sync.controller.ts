@@ -11,13 +11,11 @@ import {
     verifyOwnership,
     SyncClient,
     updateScheduleStatus,
-    getSyncsFlat,
-    getSyncsFlatWithNames,
     updateSuccess as updateSuccessActivityLog,
     createActivityLogAndLogMessage,
     createActivityLogMessageAndEnd,
     createActivityLog,
-    getAndReconcileSyncDifferences,
+    getAndReconcileDifferences,
     getSyncConfigsWithConnectionsByEnvironmentId,
     getActiveSyncConfigsByEnvironmentId,
     IncomingSyncConfig,
@@ -28,7 +26,11 @@ import {
     analytics,
     ErrorSourceEnum,
     LogActionEnum,
-    NangoError
+    NangoError,
+    LastAction,
+    configService,
+    syncOrchestrator,
+    getAttributes
 } from '@nangohq/shared';
 
 class SyncController {
@@ -47,7 +49,7 @@ class SyncController {
             }
 
             if (reconcile) {
-                const success = await getAndReconcileSyncDifferences(environmentId, syncs, reconcile, syncConfigDeployResult?.activityLogId as number, debug);
+                const success = await getAndReconcileDifferences(environmentId, syncs, reconcile, syncConfigDeployResult?.activityLogId as number, debug);
                 if (!success) {
                     reconcileSuccess = false;
                 }
@@ -80,7 +82,7 @@ class SyncController {
             const { syncs, debug }: { syncs: IncomingSyncConfig[]; reconcile: boolean; debug: boolean } = req.body;
             const environmentId = getEnvironmentId(res);
 
-            const result = await getAndReconcileSyncDifferences(environmentId, syncs, false, null, debug);
+            const result = await getAndReconcileDifferences(environmentId, syncs, false, null, debug);
 
             res.send(result);
         } catch (e) {
@@ -110,7 +112,7 @@ class SyncController {
                 limit as string,
                 sort_by as string,
                 order as 'asc' | 'desc',
-                filter as 'added' | 'updated' | 'deleted',
+                filter as LastAction,
                 include_nango_metadata === 'true'
             );
 
@@ -195,14 +197,55 @@ class SyncController {
 
     public async trigger(req: Request, res: Response, next: NextFunction) {
         try {
+            const { syncs: syncNames } = req.body;
+            let { provider_config_key, connection_id } = req.body;
+
+            if (!provider_config_key) {
+                provider_config_key = req.get('Provider-Config-Key') as string;
+            }
+
+            if (!connection_id) {
+                connection_id = req.get('Connection-Id') as string;
+            }
+
+            if (!provider_config_key) {
+                res.status(400).send({ message: 'Missing provider config key' });
+
+                return;
+            }
+
+            if (typeof syncNames === 'string') {
+                res.status(400).send({ message: 'Syncs must be an array' });
+
+                return;
+            }
+
+            if (!syncNames) {
+                res.status(400).send({ message: 'Missing sync names' });
+
+                return;
+            }
+
+            const environmentId = getEnvironmentId(res);
+
+            await syncOrchestrator.runSyncCommand(environmentId, provider_config_key as string, syncNames as string[], SyncCommand.RUN, connection_id);
+
+            res.sendStatus(200);
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    public async triggerAction(req: Request, res: Response, next: NextFunction) {
+        try {
             const environmentId = getEnvironmentId(res);
             const connectionId = req.get('Connection-Id') as string;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
 
-            const syncs = req.body.syncs as string[];
+            const { action_name, input } = req.body;
 
-            if (typeof syncs === 'string') {
-                res.status(400).send({ message: 'Syncs must be an array' });
+            if (!action_name) {
+                res.status(400).send({ message: 'Missing action name' });
 
                 return;
             }
@@ -231,18 +274,29 @@ class SyncController {
                 return;
             }
 
-            const syncsToTrigger =
-                syncs && syncs.length > 0 ? await getSyncsFlatWithNames(connection as Connection, syncs) : await getSyncsFlat(connection as Connection);
+            const provider = await configService.getProviderName(providerConfigKey as string);
 
-            if (!syncsToTrigger || syncsToTrigger.length === 0) {
-                res.status(400).send({ message: 'No syncs to trigger' });
-            }
+            const log = {
+                level: 'info' as LogLevel,
+                success: false,
+                action: LogActionEnum.ACTION,
+                start: Date.now(),
+                end: Date.now(),
+                timestamp: Date.now(),
+                connection_id: connection?.connection_id as string,
+                provider,
+                provider_config_key: connection?.provider_config_key as string,
+                environment_id: environmentId,
+                operation_name: action_name
+            };
+
+            const activityLogId = await createActivityLog(log);
 
             const syncClient = await SyncClient.getInstance();
 
-            await syncClient?.triggerSyncs(syncsToTrigger, environmentId);
+            const result = await syncClient?.triggerAction(connection as Connection, action_name as string, input, activityLogId as number);
 
-            res.sendStatus(200);
+            res.send(result);
         } catch (e) {
             next(e);
         }
@@ -262,6 +316,70 @@ class SyncController {
             const providerConfigKey = await getProviderConfigBySyncAndAccount(syncName as string, environmentId as number);
 
             res.send(providerConfigKey);
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    public async pause(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { syncs: syncNames, provider_config_key, connection_id } = req.body;
+
+            if (!provider_config_key) {
+                res.status(400).send({ message: 'Missing provider config key' });
+
+                return;
+            }
+
+            if (typeof syncNames === 'string') {
+                res.status(400).send({ message: 'Syncs must be an array' });
+
+                return;
+            }
+
+            if (!syncNames) {
+                res.status(400).send({ message: 'Missing sync names' });
+
+                return;
+            }
+
+            const environmentId = getEnvironmentId(res);
+
+            await syncOrchestrator.runSyncCommand(environmentId, provider_config_key as string, syncNames as string[], SyncCommand.PAUSE, connection_id);
+
+            res.sendStatus(200);
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    public async start(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { syncs: syncNames, provider_config_key, connection_id } = req.body;
+
+            if (!provider_config_key) {
+                res.status(400).send({ message: 'Missing provider config key' });
+
+                return;
+            }
+
+            if (typeof syncNames === 'string') {
+                res.status(400).send({ message: 'Syncs must be an array' });
+
+                return;
+            }
+
+            if (!syncNames) {
+                res.status(400).send({ message: 'Missing sync names' });
+
+                return;
+            }
+
+            const environmentId = getEnvironmentId(res);
+
+            await syncOrchestrator.runSyncCommand(environmentId, provider_config_key as string, syncNames as string[], SyncCommand.UNPAUSE, connection_id);
+
+            res.sendStatus(200);
         } catch (e) {
             next(e);
         }
@@ -308,7 +426,7 @@ class SyncController {
             const activityLogId = await createActivityLog(log);
 
             const syncClient = await SyncClient.getInstance();
-            await syncClient?.runSyncCommand(schedule_id, command, activityLogId as number);
+            await syncClient?.runSyncCommand(schedule_id, sync_id, command, activityLogId as number);
             await updateScheduleStatus(schedule_id, command, activityLogId as number);
 
             await createActivityLogMessageAndEnd({
@@ -329,6 +447,30 @@ class SyncController {
             });
 
             res.sendStatus(200);
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    public async getFlowAttributes(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { sync_name, provider_config_key } = req.query;
+
+            if (!provider_config_key) {
+                res.status(400).send({ message: 'Missing provider config key' });
+
+                return;
+            }
+
+            if (!sync_name) {
+                res.status(400).send({ message: 'Missing sync name' });
+
+                return;
+            }
+
+            const attributes = await getAttributes(provider_config_key as string, sync_name as string);
+
+            res.status(200).send(attributes);
         } catch (e) {
             next(e);
         }

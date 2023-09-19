@@ -1,6 +1,6 @@
 import { NangoSync, LinearTeam } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<void> {
+export default async function fetchData(nango: NangoSync) {
     const { lastSyncDate } = nango;
     const pageSize = 50;
     let after = '';

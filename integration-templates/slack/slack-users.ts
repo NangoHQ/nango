@@ -1,6 +1,6 @@
 import { SlackUser, NangoSync } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<void> {
+export default async function fetchData(nango: NangoSync) {
     // Fetch all users (paginated)
     let nextCursor = 'x';
     let responses: any[] = [];

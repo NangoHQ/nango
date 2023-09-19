@@ -10,13 +10,14 @@ export enum SyncStatus {
 
 export enum SyncType {
     INITIAL = 'INITIAL',
-    INCREMENTAL = 'INCREMENTAL'
+    INCREMENTAL = 'INCREMENTAL',
+    ACTION = 'ACTION'
 }
 
 export interface SyncResult {
     added: number;
     updated: number;
-    deleted?: number;
+    deleted: number;
 }
 
 export interface SyncResultByModel {
@@ -40,6 +41,7 @@ export interface Job extends TimestampsAndDeleted {
     type: SyncType;
     sync_id: string;
     job_id: string;
+    run_id?: string | null;
     result?: SyncResultByModel;
     sync_config_id?: number;
 }
@@ -52,25 +54,41 @@ export interface SyncModelSchema {
     }[];
 }
 
+export enum SyncConfigType {
+    SYNC = 'sync',
+    ACTION = 'action'
+}
+
 export interface SyncConfig extends TimestampsAndDeleted {
     id?: number;
     environment_id: number;
     sync_name: string;
+    type: SyncConfigType;
     file_location: string;
     nango_config_id: number;
     models: string[];
     model_schema: SyncModelSchema[];
     active: boolean;
     runs: string;
+    track_deletes: boolean;
+    auto_start: boolean;
+    attributes?: object;
     version?: string;
 }
 
 export interface SlimSync {
     id?: number;
     name: string;
+    auto_start?: boolean;
     sync_id?: string | null;
     providerConfigKey?: string;
     connections?: number;
+}
+
+export interface SlimAction {
+    id?: number;
+    providerConfigKey?: string;
+    name: string;
 }
 
 export type SyncDeploymentResult = Pick<SyncConfig, 'id' | 'version' | 'sync_name'>;
@@ -80,18 +98,24 @@ export interface SyncConfigResult {
     activityLogId: number | null;
 }
 
-export interface SyncDifferences {
+export interface SyncAndActionDifferences {
     newSyncs: SlimSync[];
     deletedSyncs: SlimSync[];
+    newActions: SlimAction[];
+    deletedActions: SlimAction[];
 }
 
 export interface IncomingSyncConfig {
     syncName: string;
+    type: SyncConfigType;
     providerConfigKey: string;
     fileBody: string;
     models: string[];
     runs: string;
     version?: string;
+    track_deletes?: boolean;
+    auto_start?: boolean;
+    attributes?: object;
     model_schema: string;
 }
 
@@ -111,6 +135,10 @@ export interface Schedule extends TimestampsAndDeleted {
     offset: number;
 }
 
+export type CustomerFacingDataRecord = {
+    _nango_metadata: RecordMetadata;
+} & Record<string, any>;
+
 export interface DataRecord extends Timestamps {
     [index: string]: number | string | Date | object | undefined | boolean | null;
     id?: string;
@@ -123,6 +151,21 @@ export interface DataRecord extends Timestamps {
     sync_config_id?: number | undefined;
     external_is_deleted?: boolean;
     external_deleted_at?: Date | null;
+    json_iv?: string | null;
+    json_tag?: string | null;
+}
+
+export type LastAction = 'added' | 'updated' | 'deleted';
+
+interface RecordMetadata {
+    first_seen_at: Date;
+    last_seen_at: Date;
+    last_action: LastAction;
+    deleted_at: Date | null;
+}
+
+export interface DataRecordWithMetadata extends RecordMetadata {
+    record: object;
 }
 
 export type SyncWithSchedule = Sync & Schedule;
@@ -155,7 +198,7 @@ export interface NangoSyncWebhookBody {
     model: string;
     responseResults: SyncResult;
     syncType: SyncType;
-    queryTimeStamp: string;
+    queryTimeStamp: string | null;
 }
 
 export interface SyncConfigWithProvider {
@@ -166,4 +209,5 @@ export interface SyncConfigWithProvider {
     updated_at: string;
     provider_config_key: string;
     unique_key: string;
+    type: SyncConfigType;
 }

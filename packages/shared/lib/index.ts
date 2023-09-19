@@ -1,10 +1,12 @@
 import db from './db/database.js';
+import * as seeders from './db/seeders/index.js';
 import configService from './services/config.service.js';
 import encryptionManager from './utils/encryption.manager.js';
 import connectionService from './services/connection.service.js';
 import providerClientManager from './clients/provider.client.js';
 import SyncClient from './clients/sync.client.js';
 import errorManager, { ErrorSourceEnum } from './utils/error.manager.js';
+import metricsManager from './utils/metrics.manager.js';
 import accountService from './services/account.service.js';
 import environmentService from './services/environment.service.js';
 import webhookService from './services/webhook.service.js';
@@ -22,8 +24,8 @@ export * from './services/sync/job.service.js';
 export * from './services/sync/schedule.service.js';
 export * from './services/sync/config.service.js';
 
-export * as dataService from './services/sync/data.service.js';
-export * as syncDataService from './services/sync/data-records.service.js';
+export * as dataService from './services/sync/data/data.service.js';
+export * as syncDataService from './services/sync/data/records.service.js';
 
 export * as oauth2Client from './clients/oauth2.client.js';
 export * from './integrations/index.js';
@@ -41,12 +43,14 @@ export * from './sdk/sync.js';
 
 export {
     db,
+    seeders,
     configService,
     connectionService,
     encryptionManager,
     providerClientManager,
     SyncClient,
     errorManager,
+    metricsManager,
     ErrorSourceEnum,
     accountService,
     environmentService,

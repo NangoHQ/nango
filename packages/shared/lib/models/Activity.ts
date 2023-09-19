@@ -2,36 +2,40 @@ import type { HTTP_VERB } from './Generic.js';
 
 export type LogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
 export type LogAction =
-    | 'database'
-    | 'internal authorization'
-    | 'file'
+    | 'action'
     | 'analytics'
     | 'auth'
+    | 'database'
+    | 'file'
+    | 'full sync'
+    | 'internal authorization'
+    | 'pause sync'
     | 'proxy'
-    | 'token'
+    | 'restart sync'
     | 'sync'
     | 'sync client'
     | 'sync deploy'
-    | 'pause sync'
-    | 'restart sync'
-    | 'trigger sync'
-    | 'full sync';
+    | 'token'
+    | 'trigger sync';
+
 export enum LogActionEnum {
+    ACTION = 'action',
     ANALYTICS = 'analytics',
-    INTERNAL_AUTHORIZATION = 'internal authorization',
-    FILE = 'file',
-    DATABASE = 'database',
     AUTH = 'auth',
+    DATABASE = 'database',
+    FILE = 'file',
+    FULL_SYNC = 'full sync',
+    INTERNAL_AUTHORIZATION = 'internal authorization',
+    PAUSE_SYNC = 'pause sync',
     PROXY = 'proxy',
-    TOKEN = 'token',
+    RESTART_SYNC = 'restart sync',
     SYNC = 'sync',
     SYNC_CLIENT = 'sync client',
     SYNC_DEPLOY = 'sync deploy',
-    PAUSE_SYNC = 'pause sync',
-    RESTART_SYNC = 'restart sync',
-    TRIGGER_SYNC = 'trigger sync',
-    FULL_SYNC = 'full sync'
+    TOKEN = 'token',
+    TRIGGER_SYNC = 'trigger sync'
 }
+
 interface Message {
     [index: string]: unknown | undefined | string | number | boolean | Record<string, string | boolean | number | unknown>;
 }

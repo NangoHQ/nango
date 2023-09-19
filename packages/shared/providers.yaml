@@ -23,6 +23,15 @@ adobe:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+aircall:
+    auth_mode: OAUTH2
+    authorization_url: https://dashboard.aircall.io/oauth/authorize
+    token_url: https://api.aircall.io/v1/oauth/token
+    authorization_params:
+        response_type: code
+        scope: public_api
+    token_params:
+        grant_type: authorization_code
 airtable:
     auth_mode: OAUTH2
     authorization_url: https://airtable.com/oauth2/v1/authorize
@@ -229,6 +238,14 @@ discord:
         response_type: code
     proxy:
         base_url: https://discord.com/api/10
+        retry:
+            after: 'Retry-After'
+dropbox:
+    auth_mode: OAUTH2
+    authorization_url: https://www.dropbox.com/oauth2/authorize
+    token_url: https://api.dropboxapi.com/oauth2/token
+    authorization_params:
+        token_access_type: offline
 docusign:
     auth_mode: OAUTH2
     authorization_url: https://account.docusign.com/oauth/auth
@@ -270,6 +287,20 @@ epic-games:
     authorization_method: header
     proxy:
         base_url: https://api.epicgames.dev
+evaluagent:
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.region}.evaluagent.com/
+eventbrite:
+    auth_mode: OAUTH2
+    authorization_url: https://www.eventbrite.com/oauth/authorize
+    token_url: https://www.eventbrite.com/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    proxy:
+        base_url: https://www.eventbriteapi.com
 exact-online:
     auth_mode: OAUTH2
     authorization_url: https://start.exactonline.${connectionConfig.extension}/api/oauth2/auth
@@ -318,6 +349,10 @@ freshbooks:
         response_type: code
     proxy:
         base_url: https://api.freshbooks.com
+freshservice:
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.freshservice.com/api/
 front:
     auth_mode: OAUTH2
     authorization_url: https://app.frontapp.com/oauth/authorize
@@ -330,6 +365,8 @@ github:
     token_url: https://github.com/login/oauth/access_token
     proxy:
         base_url: https://api.github.com
+        retry:
+            at: 'x-ratelimit-reset'
     docs: https://docs.github.com/en/rest
 gitlab:
     auth_mode: OAUTH2
@@ -510,11 +547,19 @@ microsoft-teams:
     auth_mode: OAUTH2
     authorization_url: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
     token_url: https://login.microsoftonline.com/common/oauth2/v2.0/token
+    disable_pkce: true
+    default_scopes:
+        - offline_access
     authorization_params:
         response_type: code
         response_mode: query
+        prompt: consent
     proxy:
         base_url: https://graph.microsoft.com
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 mixpanel:
     auth_mode: BASIC
     proxy:
@@ -547,6 +592,18 @@ mural:
         grant_type: refresh_token
     proxy:
         base_url: https://app.mural.co/api/public
+nationbuilder:
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.accountId}.nationbuilder.com/oauth/authorize
+    token_url: https://${connectionConfig.accountId}.nationbuilder.com/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    default_scopes:
+        - default
 netsuite:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.accountId}.app.netsuite.com/app/login/oauth2/authorize.nl
@@ -568,20 +625,7 @@ notion:
             'Notion-Version': '2022-06-28'
     docs: https://developers.notion.com/reference
 one-drive:
-    auth_mode: OAUTH2
-    authorization_url: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
-    token_url: https://login.microsoftonline.com/common/oauth2/v2.0/token
-    disable_pkce: true
-    default_scopes:
-        - offline_access
-    authorization_params:
-        response_type: code
-    token_params:
-        grant_type: authorization_code
-    refresh_params:
-        grant_type: refresh_token
-    proxy:
-        base_url: https://graph.microsoft.com
+    alias: microsoft-teams
 osu:
     auth_mode: OAUTH2
     authorization_url: https://osu.ppy.sh/oauth/authorize
@@ -634,6 +678,18 @@ payfit:
         response_type: code
     token_params:
         grant_type: authorization_code
+pennylane:
+    auth_mode: OAUTH2
+    authorization_url: https://app.pennylane.com/oauth/authorize
+    token_url: https://app.pennylane.com/oauth/token
+    proxy:
+        base_url: https://app.pennylane.com/api/external/v1
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 pipedrive:
     auth_mode: OAUTH2
     authorization_url: https://oauth.pipedrive.com/oauth/authorize
@@ -677,6 +733,34 @@ reddit:
         duration: permanent
     proxy:
         base_url: https://oauth.reddit.com
+ring-central:
+    auth_mode: OAUTH2
+    authorization_url: https://platform.ringcentral.com/restapi/oauth/authorize
+    token_url: https://platform.ringcentral.com/restapi/oauth/token
+    authorization_method: header
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://platform.ringcentral.com/restapi/v1.0
+    docs: https://developers.ringcentral.com/api-reference/
+ring-central-sandbox:
+    auth_mode: OAUTH2
+    authorization_url: https://platform.devtest.ringcentral.com/restapi/oauth/authorize
+    token_url: https://platform.devtest.ringcentral.com/restapi/oauth/token
+    authorization_method: header
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://platform.devtest.ringcentral.com/restapi/v1.0
+    docs: https://developers.ringcentral.com/api-reference/
 segment:
     auth_mode: OAUTH2
     authorization_url: https://id.segmentapis.com/oauth2/auth
@@ -703,12 +787,37 @@ salesforce:
     proxy:
         base_url: https://${connectionConfig.instance_url}
     docs: https://developer.salesforce.com/docs/api
+salesforce-sandbox:
+    auth_mode: OAUTH2
+    authorization_url: https://test.salesforce.com/services/oauth2/authorize
+    token_url: https://test.salesforce.com/services/oauth2/token
+    default_scopes:
+        - offline_access
+    token_response_metadata:
+        - instance_url
+    proxy:
+        base_url: ${connectionConfig.instance_url}
+    docs: https://developer.salesforce.com/docs/api
 salesloft:
     auth_mode: OAUTH2
     authorization_url: https://accounts.salesloft.com/oauth/authorize
     token_url: https://accounts.salesloft.com/oauth/token
     proxy:
         base_url: https://api.salesloft.com
+servicem8:
+    auth_mode: OAUTH2
+    authorization_url: https://go.servicem8.com/oauth/authorize
+    token_url: https://go.servicem8.com/oauth/access_token
+    proxy:
+        base_url: https://api.servicem8.com
+    docs: https://developer.servicem8.com/docs
+    scope_seprator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 shopify:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.myshopify.com/admin/oauth/authorize

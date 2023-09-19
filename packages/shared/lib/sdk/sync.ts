@@ -1,6 +1,6 @@
 import { getSyncConfigByJobId } from '../services/sync/config.service.js';
-import { upsert } from '../services/sync/data.service.js';
-import { formatDataRecords } from '../services/sync/data-records.service.js';
+import { upsert } from '../services/sync/data/data.service.js';
+import { formatDataRecords } from '../services/sync/data/records.service.js';
 import { createActivityLogMessage } from '../services/activity/activity.service.js';
 import { setLastSyncDate } from '../services/sync/sync.service.js';
 import { updateSyncJobResult } from '../services/sync/job.service.js';
@@ -113,7 +113,6 @@ interface OAuth1Credentials extends CredentialsCommon {
 type AuthCredentials = OAuth2Credentials | OAuth1Credentials | BasicApiCredentials | ApiKeyCredentials;
 
 interface Metadata {
-    fieldMapping?: Record<string, string>;
     [key: string]: string | Record<string, string>;
 }
 
@@ -143,14 +142,22 @@ interface NangoProps {
     nangoConnectionId?: number;
     syncJobId?: number | undefined;
     dryRun?: boolean;
+    track_deletes?: boolean;
+    attributes?: object | undefined;
 }
 
 interface UserLogParameters {
     level?: LogLevel;
 }
 
+interface EnvironmentVariable {
+    name: string;
+    value: string;
+}
+
 export class NangoSync {
     private nango: Nango;
+    private attributes = {};
     activityLogId?: number;
     lastSyncDate?: Date;
     syncId?: string;
@@ -158,6 +165,7 @@ export class NangoSync {
     environmentId?: number;
     syncJobId?: number;
     dryRun?: boolean;
+    track_deletes = false;
 
     public connectionId?: string;
     public providerConfigKey?: string;
@@ -202,6 +210,14 @@ export class NangoSync {
 
         if (config.lastSyncDate) {
             this.lastSyncDate = config.lastSyncDate;
+        }
+
+        if (config.track_deletes) {
+            this.track_deletes = config.track_deletes;
+        }
+
+        if (config.attributes) {
+            this.attributes = config.attributes;
         }
     }
 
@@ -271,7 +287,7 @@ export class NangoSync {
     public async getFieldMapping(): Promise<Metadata> {
         console.warn('getFieldMapping is deprecated. Please use getMetadata instead.');
         const metadata = await this.nango.getMetadata(this.providerConfigKey as string, this.connectionId as string);
-        return (metadata.fieldMapping as Metadata) || {};
+        return (metadata['fieldMapping'] as Metadata) || {};
     }
 
     public async batchSend<T = any>(results: T[], model: string): Promise<boolean | null> {
@@ -328,22 +344,19 @@ export class NangoSync {
             'external_id',
             this.nangoConnectionId as number,
             model,
-            this.activityLogId as number
+            this.activityLogId as number,
+            syncConfig?.track_deletes
         );
 
         if (responseResults.success) {
             const { summary } = responseResults;
-            const updatedResults: Record<string, { added: number; updated: number; deleted?: number }> = {
+            const updatedResults = {
                 [model]: {
                     added: summary?.addedKeys.length as number,
                     updated: summary?.updatedKeys.length as number,
                     deleted: summary?.deletedKeys?.length as number
                 }
             };
-
-            if (summary?.deletedKeys?.length === 0) {
-                delete updatedResults[model]?.deleted;
-            }
 
             await createActivityLogMessage({
                 level: 'info',
@@ -434,12 +447,13 @@ export class NangoSync {
             this.nangoConnectionId as number,
             model,
             this.activityLogId as number,
+            syncConfig?.track_deletes,
             true
         );
 
         if (responseResults.success) {
             const { summary } = responseResults;
-            const updatedResults = {
+            const updatedResults: Record<string, { added: number; updated: number; deleted: number }> = {
                 [model]: {
                     added: summary?.addedKeys.length as number,
                     updated: summary?.updatedKeys.length as number,
@@ -502,5 +516,21 @@ export class NangoSync {
             content,
             timestamp: Date.now()
         });
+    }
+
+    public async getEnvironmentVariables(): Promise<EnvironmentVariable[] | null> {
+        if (!this.environmentId) {
+            throw new Error('There is no current environment to get variables from');
+        }
+
+        return await this.nango.getEnvironmentVariables();
+    }
+
+    public getFlowAttributes<A = object>(): A | null {
+        if (!this.syncJobId) {
+            throw new Error('There is no current sync to get attributes from');
+        }
+
+        return this.attributes as A;
     }
 }

@@ -7,6 +7,7 @@ import ms from 'ms';
 import type { NangoConfig, SimplifiedNangoIntegration, NangoSyncConfig, NangoSyncModel } from '../integrations/index.js';
 import { isCloud } from '../utils/utils.js';
 import type { ServiceResponse } from '../models/Generic.js';
+import type { SyncConfigType } from '../models/Sync.js';
 import { NangoError } from '../utils/error.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -155,24 +156,35 @@ export function convertConfigObject(config: NangoConfig): SimplifiedNangoIntegra
         for (const syncName in integration) {
             const sync: NangoSyncConfig = integration[syncName] as NangoSyncConfig;
             const models: NangoSyncModel[] = [];
-            sync.returns.forEach((model) => {
-                const modelFields = [];
-                const modelData = config.models[model] || config.models[`${model.slice(0, -1)}`];
-                for (const fieldName in modelData) {
-                    const fieldType = modelData[fieldName];
-                    if (typeof fieldType === 'object') {
-                        for (const subFieldName in fieldType) {
-                            const subFieldType = fieldType[subFieldName];
-                            modelFields.push({ name: `${fieldName}.${subFieldName}`, type: subFieldType as string });
+            if (sync.returns) {
+                sync.returns.forEach((model) => {
+                    const modelFields = [];
+                    const modelData = config.models[model] || config.models[`${model.slice(0, -1)}`];
+                    for (const fieldName in modelData) {
+                        const fieldType = modelData[fieldName];
+                        if (typeof fieldType === 'object') {
+                            for (const subFieldName in fieldType) {
+                                const subFieldType = fieldType[subFieldName];
+                                modelFields.push({ name: `${fieldName}.${subFieldName}`, type: subFieldType as string });
+                            }
+                        } else {
+                            modelFields.push({ name: fieldName, type: fieldType as string });
                         }
-                    } else {
-                        modelFields.push({ name: fieldName, type: fieldType as string });
                     }
-                }
-                models.push({ name: model, fields: [modelFields] });
-            });
+                    models.push({ name: model, fields: [modelFields] });
+                });
+            }
 
-            syncs.push({ name: syncName, runs: sync.runs, returns: sync.returns, models });
+            syncs.push({
+                name: syncName,
+                type: sync.type as SyncConfigType,
+                runs: sync.runs,
+                track_deletes: sync.track_deletes || false,
+                auto_start: sync.auto_start === false ? false : true,
+                attributes: sync.attributes || {},
+                returns: sync.returns,
+                models: models || []
+            });
         }
         output.push({ providerConfigKey, syncs });
     }

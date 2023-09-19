@@ -1,6 +1,6 @@
 import { AsanaTask, NangoSync } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<void> {
+export default async function fetchData(nango: NangoSync) {
     // Get the user's workspaces & projects
     // For testing we just get the first project of the first workspace
     const workspaces = await paginate(nango, '/api/1.0/workspaces');

@@ -1,7 +1,7 @@
 import { SlackMessage, SlackMessageReaction, SlackMessageReply, NangoSync } from './models';
 import { createHash } from 'crypto';
 
-export default async function fetchData(nango: NangoSync): Promise<void> {
+export default async function fetchData(nango: NangoSync) {
     // Get all channels we are part of
     let channels = await getAllPages(nango, 'users.conversations', {}, 'channels');
 

@@ -11,7 +11,8 @@ export const createSyncJob = async (
     type: SyncType,
     status: SyncStatus,
     job_id: string,
-    nangoConnection: NangoConnection | null
+    nangoConnection: NangoConnection | null,
+    run_id?: string
 ): Promise<Pick<SyncJob, 'id'> | null> => {
     const job: SyncJob = {
         sync_id,
@@ -19,6 +20,10 @@ export const createSyncJob = async (
         status,
         job_id
     };
+
+    if (run_id) {
+        job.run_id = run_id;
+    }
 
     try {
         const syncJob = await schema().from<SyncJob>(SYNC_JOB_TABLE).insert(job).returning('id');
@@ -37,6 +42,7 @@ export const createSyncJob = async (
                     type,
                     status,
                     job_id,
+                    run_id,
                     nangoConnection: JSON.stringify(nangoConnection)
                 }
             });
@@ -44,6 +50,12 @@ export const createSyncJob = async (
     }
 
     return null;
+};
+
+export const updateRunId = async (id: number, run_id: string): Promise<void> => {
+    await schema().from<SyncJob>(SYNC_JOB_TABLE).where({ id, deleted: false }).update({
+        run_id
+    });
 };
 
 export const getLatestSyncJob = async (sync_id: string): Promise<SyncJob | null> => {
@@ -88,10 +100,16 @@ export const updateSyncJobResult = async (id: number, result: SyncResultByModel,
             ...existingResult,
             [model]: {
                 added: Number(added) + Number(incomingResult?.added),
-                updated: Number(updated) + Number(incomingResult?.updated),
-                deleted: Number(deleted) + Number(incomingResult?.deleted)
+                updated: Number(updated) + Number(incomingResult?.updated)
             }
         };
+
+        const deletedValue = Number(deleted) || 0;
+        const incomingDeletedValue = Number(incomingResult?.deleted) || 0;
+
+        if (deletedValue !== 0 || incomingDeletedValue !== 0) {
+            finalResult[model].deleted = deletedValue + incomingDeletedValue;
+        }
 
         const [updatedRow] = await schema()
             .from<SyncJob>(SYNC_JOB_TABLE)
@@ -113,6 +131,23 @@ export const addSyncConfigToJob = async (id: number, sync_config_id: number): Pr
 
 export const deleteJobsBySyncId = async (sync_id: string): Promise<void> => {
     await schema().from<SyncJob>(SYNC_JOB_TABLE).where({ sync_id, deleted: false }).update({ deleted: true, deleted_at: new Date() });
+};
+
+export const isSyncJobRunning = async (sync_id: string): Promise<Pick<SyncJob, 'id' | 'job_id' | 'run_id'> | null> => {
+    const result = await schema()
+        .from<SyncJob>(SYNC_JOB_TABLE)
+        .where({
+            sync_id,
+            deleted: false,
+            status: SyncStatus.RUNNING
+        })
+        .first('id', 'job_id', 'run_id');
+
+    if (result) {
+        return result;
+    }
+
+    return null;
 };
 
 export const isInitialSyncStillRunning = async (sync_id: string): Promise<boolean> => {

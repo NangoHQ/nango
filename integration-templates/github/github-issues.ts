@@ -1,6 +1,6 @@
 import type { NangoSync, GithubIssue } from './models';
 
-export default async function fetchData(nango: NangoSync): Promise<void> {
+export default async function fetchData(nango: NangoSync) {
     const repos = await paginate(nango, '/user/repos');
 
     for (let repo of repos) {

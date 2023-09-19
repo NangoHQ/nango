@@ -1,26 +1,28 @@
 ---
-title: 'Proxy Requests'
-sidebarTitle: 'Proxy Requests'
-description: 'Call APIs directly, with the full power of the Nango infrastructure.'
+title: 'Proxy'
+sidebarTitle: 'Proxy'
+description: 'Perform external API requests, with the full power of the Nango infrastructure.'
 ---
 
-<Note>
-This feature is currently in private beta. Please reach out on the [Slack community](https://nango.dev/slack) to get access!
-</Note>
+This guide shows how to perform authenticated API requests through Nango.
+
+<Tip>
+    This feature is free & unlimited on Nango Cloud.
+</Tip>
 
 ## When to use the Proxy
 
 The **Proxy** makes it faster for you to query external APIs by handling:
-* Authentication
+* Credential-injection in requests
 * Automatically sets the correct base URL
-* Automatic logging & monitoring
+* Logging & monitoring
 * Rate-limit handling (with automatic & configurable retries)
 
 It is especially useful for:
 * One-off requests to fetch e.g. metadata from the API
 * Writing data back to the API on demand
 
-If you want to continuously sync data from the external API, check out the [Sync Data guide](/guides/sync).
+If you want to continuously sync data from the external API, check out [syncs](/guides/sync). If you find yourself to many Proxy requests for a single workflow, checkout [actions](/guides/actions).
 
 ## Using the Proxy
 

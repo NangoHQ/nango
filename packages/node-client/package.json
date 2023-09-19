@@ -1,9 +1,20 @@
 {
     "name": "@nangohq/node",
-    "version": "0.28.2",
+    "version": "0.32.9",
     "description": "Nango's Node client.",
     "type": "module",
     "main": "dist/index.js",
+    "module": "./dist/index.js",
+    "scripts": {
+        "build": "tsup lib/index.ts --format cjs"
+    },
+    "exports": {
+        ".": {
+            "require": "./dist/index.cjs",
+            "import": "./dist/index.js",
+            "types": "./dist/index.d.ts"
+        }
+    },
     "typings": "dist/index.d.ts",
     "keywords": [],
     "repository": {
@@ -22,5 +33,8 @@
         "dist/**/*",
         "!**/*.json",
         "README.md"
-    ]
+    ],
+    "devDependencies": {
+        "tsup": "^7.2.0"
+    }
 }

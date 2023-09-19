@@ -13,7 +13,7 @@ import { NangoSync, IntercomConversation, IntercomConversationMessage } from './
  * Incremential sync: Fetches the conversations that have been updates since the last sync (updated_at date from Intercom, seems to be reliable)
  */
 
-export default async function fetchData(nango: NangoSync): Promise<void> {
+export default async function fetchData(nango: NangoSync) {
     // Intercom uses unix timestamp for datetimes.
     // Convert the last sync run date into a unix timestamp for easier comparison.
     const lastSyncDateTimestamp = nango.lastSyncDate ? nango.lastSyncDate.getTime() / 1000 : 0;

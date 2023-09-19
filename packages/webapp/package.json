@@ -1,14 +1,14 @@
 {
     "name": "webapp",
-    "version": "0.28.2",
+    "version": "0.32.9",
     "private": true,
     "dependencies": {
         "@geist-ui/core": "^2.3.8",
         "@geist-ui/icons": "^1.0.2",
         "@headlessui/react": "^1.7.12",
-        "@heroicons/react": "^2.0.16",
+        "@heroicons/react": "^2.0.18",
         "@mantine/prism": "^5.10.5",
-        "@nangohq/frontend": "0.28.2",
+        "@nangohq/frontend": "0.32.9",
         "@testing-library/jest-dom": "^5.16.5",
         "@testing-library/react": "^13.4.0",
         "@testing-library/user-event": "^13.5.0",

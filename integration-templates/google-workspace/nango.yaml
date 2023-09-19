@@ -1,23 +1,51 @@
 integrations:
-    google: # scopes: https://www.googleapis.com/auth/admin.directory.user.readonly,https://www.googleapis.com/auth/admin.directory.user.security
-        google-workspace-users:
-            runs: every 10min
+    google:
+        # scopes: https://www.googleapis.com/auth/admin.directory.orgunit.readonly, https://www.googleapis.com/auth/admin.directory.user.readonly
+        google-workspace-org-unit:
+            runs: every 6 hours
+            track_deletes: true
             returns:
-                - GoogleWorkspaceUser
+                - OrganizationalUnit
+
+        google-workspace-users:
+            runs: every hour
+            returns:
+                - User
+
+        # scopes: https://www.googleapis.com/auth/admin.directory.user.readonly,https://www.googleapis.com/auth/admin.directory.user.security
+        google-workspace-user-access-tokens:
+            runs: every hour
+            returns:
                 - GoogleWorkspaceUserToken
 
 models:
-    GoogleWorkspaceUser:
+    OrganizationalUnit:
         id: string
         name: string
+        createdAt: string | null
+        deletedAt: string | null
+        description: string | null
+        path: string | null
+        parentPath: string | null
+        parentId: string | null
+
+    User:
+        id: string
         email: string
-        suspended: boolean
-        archived: boolean
-        last_login_time: date
-        customer_id: string
-        thumbnail_url: string
-        two_fa_enabled: boolean
-        org_unit_path: string
+        displayName: string | null
+        givenName: string | null
+        familyName: string | null
+        picture: string | null | undefined
+        type: string
+        createdAt: string | null
+        deletedAt: string | null
+        phone:
+            value: string | null | undefined
+            type: string | null | undefined
+        organizationId: string | null | undefined
+        organizationPath: string | null | undefined
+        isAdmin: boolean | null
+        department: string | null
 
     GoogleWorkspaceUserToken:
         id: string
