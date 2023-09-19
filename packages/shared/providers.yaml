@@ -102,7 +102,7 @@ bamboohr:
         grant_type: authorization_code
         request: token
     proxy:
-        base_url: https://api.bamboohr.com/api/gateway.php/${connectionConfig.subdomain}/v1
+        base_url: https://api.bamboohr.com/api/gateway.php/${connectionConfig.subdomain}
 battlenet:
     auth_mode: OAUTH2
     authorization_url: https://oauth.battle.${connectionConfig.extension}/authorize
@@ -116,7 +116,7 @@ bitbucket:
     authorization_url: https://bitbucket.org/site/oauth2/authorize
     token_url: https://bitbucket.org/site/oauth2/access_token
     proxy:
-        base_url: https://api.bitbucket.org/2.0
+        base_url: https://api.bitbucket.org
 boldsign:
     auth_mode: OAUTH2
     authorization_url: https://account.boldsign.com/connect/authorize
@@ -128,13 +128,13 @@ boldsign:
     refresh_params:
         grant_type: refresh_token
     proxy:
-        base_url: https://api.boldsign.com/v1
+        base_url: https://api.boldsign.com
 box:
     auth_mode: OAUTH2
     authorization_url: https://account.box.com/api/oauth2/authorize
     token_url: https://api.box.com/oauth2/token
     proxy:
-        base_url: https://api.box.com/2.0
+        base_url: https://api.box.com
 braintree:
     auth_mode: OAUTH2
     authorization_url: https://api.braintreegateway.com/oauth/connect
@@ -165,13 +165,13 @@ brex:
         - openid
         - offline_access
     proxy:
-        base_url: https://platform.brexapis.com/v1
+        base_url: https://platform.brexapis.com
 brex-staging:
     auth_mode: OAUTH2
     authorization_url: https://accounts-api.staging.brexapps.com/oauth2/default/v1/authorize
     token_url: https://accounts-api.staging.brexapps.com/oauth2/default/v1/token
     proxy:
-        base_url: https://platform.staging.brexapis.com/v1
+        base_url: https://platform.staging.brexapis.com
 calendly:
     auth_mode: OAUTH2
     authorization_url: https://auth.calendly.com/oauth/authorize
@@ -185,7 +185,7 @@ clickup:
     authorization_url: https://app.clickup.com/api
     token_url: https://api.clickup.com/api/v2/oauth/token
     proxy:
-        base_url: https://api.clickup.com/api/v2
+        base_url: https://api.clickup.com/api
 confluence:
     alias: jira
 contentstack:
@@ -204,7 +204,7 @@ deel:
     refresh_params:
         grant_type: refresh_token
     proxy:
-        base_url: https://api.letsdeel.com/rest/v1
+        base_url: https://api.letsdeel.com/rest
 deel-sandbox:
     auth_mode: OAUTH2
     authorization_url: https://auth-demo.letsdeel.com/oauth2/authorize
@@ -217,7 +217,7 @@ deel-sandbox:
     refresh_params:
         grant_type: refresh_token
     proxy:
-        base_url: https://api-staging.letsdeel.com/rest/v1
+        base_url: https://api-staging.letsdeel.com/rest
 digitalocean:
     auth_mode: OAUTH2
     authorization_url: https://cloud.digitalocean.com/v1/oauth/authorize
@@ -229,7 +229,7 @@ digitalocean:
     refresh_params:
         grant_type: refresh_token
     proxy:
-        base_url: https://api.digitalocean.com/v2
+        base_url: https://api.digitalocean.com
 discord:
     auth_mode: OAUTH2
     authorization_url: https://discord.com/api/oauth2/authorize
@@ -237,15 +237,9 @@ discord:
     authorization_params:
         response_type: code
     proxy:
-        base_url: https://discord.com/api/10
+        base_url: https://discord.com/api
         retry:
             after: 'Retry-After'
-dropbox:
-    auth_mode: OAUTH2
-    authorization_url: https://www.dropbox.com/oauth2/authorize
-    token_url: https://api.dropboxapi.com/oauth2/token
-    authorization_params:
-        token_access_type: offline
 docusign:
     auth_mode: OAUTH2
     authorization_url: https://account.docusign.com/oauth/auth
@@ -279,7 +273,7 @@ dropbox:
     authorization_params:
         token_access_type: offline
     proxy:
-        base_url: https://api.dropboxapi.com/2
+        base_url: https://api.dropboxapi.com
 epic-games:
     auth_mode: OAUTH2
     authorization_url: https://www.epicgames.com/id/authorize
@@ -290,7 +284,7 @@ epic-games:
 evaluagent:
     auth_mode: BASIC
     proxy:
-        base_url: https://${connectionConfig.region}.evaluagent.com/
+        base_url: https://${connectionConfig.region}.evaluagent.com
 eventbrite:
     auth_mode: OAUTH2
     authorization_url: https://www.eventbrite.com/oauth/authorize
@@ -340,7 +334,7 @@ fitbit:
     token_url: https://api.fitbit.com/oauth2/token
     authorization_method: header
     proxy:
-        base_url: https://api.fitbit.com/1
+        base_url: https://api.fitbit.com
 freshbooks:
     auth_mode: OAUTH2
     authorization_url: https://auth.freshbooks.com/oauth/authorize
@@ -352,7 +346,7 @@ freshbooks:
 freshservice:
     auth_mode: BASIC
     proxy:
-        base_url: https://${connectionConfig.subdomain}.freshservice.com/api/
+        base_url: https://${connectionConfig.subdomain}.freshservice.com/api
 front:
     auth_mode: OAUTH2
     authorization_url: https://app.frontapp.com/oauth/authorize
