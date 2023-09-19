@@ -1,20 +1,22 @@
 ---
-title: 'Deploy Nango with Digital Ocean (Droplet)'
-sidebarTitle: 'Digital Ocean'
+title: 'Deploy Nango with GCP (Compute Engine)'
+sidebarTitle: 'GCP'
 ---
 
-<Note>Your should read the [self-hosting instructions](/self-host/instructions) before deploying to production.</Note>
+<Note>Your should read the [self-hosting instructions](/use/self-hosting-instructions) before deploying to production.</Note>
 
 ## Create a VM[](#create-vm 'Direct link to Create a VM')
 
-Go to [DigitalOcean](https://cloud.digitalocean.com/) and click _CREATE >
-Droplets_. Create a default VM instance with options:
+Go to the
+[Compute Engine service](https://console.cloud.google.com/compute/instances) and
+click _CREATE INSTANCE_. Create an instance with default settings except:
 
--   $20/month for testing, $40/month for production
+-   `e2-medium` for testing, `e2-standard-2` for production
+-   Enable _Allow HTTP traffic_ and _Allow HTTPS traffic_
 
 ## Install Docker[](#install-docker 'Direct link to Install Docker')
 
-Go to your Droplet instance page and click _Console_.
+Go to your Compute Engine instance page and click _SSH_.
 
 Install Docker & Docker Compose with the following commands:
 

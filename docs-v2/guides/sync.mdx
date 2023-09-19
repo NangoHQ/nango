@@ -344,14 +344,6 @@ That's it!
 
 ## Advanced Configuration
 
-### Per customer/connections field mapping
-
-Sometimes you need to have a field mapping that is specific to a customer. For instance, you want to let customers pick which field contains the email address of the contact.
-
-You can store field mapping data that is specific to a _connection_ in Nango with [custom connection metadata](/guides/oauth#storing-custom-metadata-per-connection).
-
-In the future we want to help you more with field mappings (metadata requests to get available objects & fields, UI components etc.). 
-
 ### Handling API rate-limits
 
 Nango has currently two approaches to handle rate limits, a generic/naive one and an API-specific one. 
@@ -388,23 +380,33 @@ discord:
             after: 'Retry-After'
 ```
 
-### Handling deletes
+### Handling record deletion
 
-_Syncs_ have the capability of detecting deletions. Deleted records are preserved in Nango but marked as deleted in the record metadata (i.e. _soft deletes_). You can include the metadata in fetched record using the [API](/api-reference/sync/records-get)'s `include_nango_metadata` query param or the [SDK](/sdks/node#read-synced-data)'s `includeNangoMetadata` param.
+In Nango, _syncs_ can detect record deletions. These deleted records are not removed but are flagged as "soft deleted" using metadata. This ensures that you can still view the records in Nango, but recognize them as deleted entities.
 
-There are two different ways to detect deletes based on wether a _sync_ script works incrementally (i.e. each _sync_ job only fetches the changes since the last _sync_ job from the external API) or with full refresh (i.e. each _sync_ job fetches all the data from the external API).
+Each record has a `_nango_metadata` field that carries metadata, including deletion information:
+```yaml
+_nango_metadata: {
+    deleted_at: null,
+    last_action: 'ADDED',
+    first_seen_at: '2023-09-18T15:20:35.941305+00:00',
+    last_modified_at: '2023-09-18T15:20:35.941305+00:00'
+},
+```
+
+Deletion handling differs depending on the mode of the _sync_ – whether it's incremental (fetches only changes since the last _sync_ run) or full refresh (fetches all data every time).
 
 **Incremental _syncs_**
 
-For incremental _syncs_, you can use the `batchDelete` method in your _sync_ scripts to flag records as deleted:
+In incremental _syncs_, utilize the `batchDelete` method in your script to flag records as deleted:
 ```ts
 await nango.batchDelete<User>(users, 'User');
 ```
 
-The objects marked as deleted (here `users`) only need to contain the unique `id` field. 
+Note: The deleted entities (in this case, `users`) need to provide just the unique `id` field.
 
 **Full refresh _syncs_**
 
-For full refresh _syncs_, you simply need to add a `track_deletes: true` field for your _sync_ in your `nango.yaml` configuration. With this configuration, when an previously returned by the _sync_ script is no longer returned, it will be marked as deleted.
+For _syncs_ that operate in full refresh mode, add the `track_deletes: true` field to your `nango.yaml` configuration for the particular _sync_. This ensures that when a record previously returned by the sync script isn't returned in the latest run, Nango will flag it as deleted.
 
 
