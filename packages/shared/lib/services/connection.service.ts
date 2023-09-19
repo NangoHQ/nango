@@ -528,14 +528,11 @@ class ConnectionService {
         }
     }
 
-    // Checks if the OAuth2 credentials need to be refreshed and refreshes them if neccessary.
-    // If credentials get refreshed it also updates the user's connection object.
-    // Once the refresh or check is complete the new/old credentials are returned, always use these moving forward
     public async refreshOauth2CredentialsIfNeeded(
         connection: Connection,
         providerConfig: ProviderConfig,
         template: ProviderTemplateOAuth2,
-        activityLogId = null as number | null,
+        activityLogId: number | null = null,
         instantRefresh = false,
         logAction: LogAction = 'token'
     ): Promise<ServiceResponse<OAuth2Credentials>> {
@@ -543,104 +540,107 @@ class ConnectionService {
         const credentials = connection.credentials as OAuth2Credentials;
         const providerConfigKey = connection.provider_config_key;
 
-        // Check if a refresh is already running for this user & provider configuration
-        // If it is wait for that to complete
-        let runningRefresh: CredentialsRefresh | undefined = undefined;
-        for (const refresh of this.runningCredentialsRefreshes) {
-            if (refresh.connectionId === connectionId && refresh.providerConfigKey === providerConfigKey) {
-                runningRefresh = refresh;
-            }
-        }
-
+        const runningRefresh = this.findRunningRefresh(connectionId, providerConfigKey);
         if (runningRefresh) {
             return runningRefresh.promise;
         }
 
-        const refresh =
+        const shouldRefresh = await this.shouldRefreshCredentials(connection, credentials, providerConfig, template, instantRefresh);
+        if (shouldRefresh) {
+            try {
+                const { success, error, response: newCredentials } = await this.getNewCredentials(connection, providerConfig, template);
+                if (!success || !newCredentials) {
+                    this.removeFromRunningRefreshes(connectionId, providerConfigKey);
+                    return { success, error, response: null };
+                }
+                connection.credentials = newCredentials;
+                await this.updateConnection(connection);
+                this.removeFromRunningRefreshes(connectionId, providerConfigKey);
+
+                if (activityLogId && logAction === 'token') {
+                    await this.logActivity(activityLogId, `Token was refreshed for ${providerConfigKey} and connection ${connectionId}`);
+                }
+
+                return { success: true, error: null, response: newCredentials };
+            } catch (e) {
+                this.removeFromRunningRefreshes(connectionId, providerConfigKey);
+
+                if (activityLogId && logAction === 'token') {
+                    await this.logErrorActivity(activityLogId, `Refresh oauth2 token call failed`);
+                }
+
+                const error = new NangoError('refresh_token_external_error', e as Error);
+
+                return { success: false, error, response: null };
+            }
+        }
+
+        return { success: true, error: null, response: credentials };
+    }
+
+    private findRunningRefresh(connectionId: string, providerConfigKey: string): CredentialsRefresh | undefined {
+        return this.runningCredentialsRefreshes.find((refresh) => refresh.connectionId === connectionId && refresh.providerConfigKey === providerConfigKey);
+    }
+
+    private async shouldRefreshCredentials(
+        connection: Connection,
+        credentials: OAuth2Credentials,
+        providerConfig: ProviderConfig,
+        template: ProviderTemplateOAuth2,
+        instantRefresh: boolean
+    ): Promise<boolean> {
+        const refreshCondition =
             instantRefresh ||
             (providerClient.shouldIntrospectToken(providerConfig.provider) && (await providerClient.introspectedTokenExpired(providerConfig, connection)));
 
-        // If not expiration date is set, e.g. Github, we assume the token doesn't expire (unless introspection is enabled like Salesforce).
-        if (
+        const tokenExpirationCondition =
             credentials.refresh_token &&
-            (refresh || (credentials.expires_at && isTokenExpired(credentials.expires_at, template.token_expiration_buffer || 15 * 60)))
-        ) {
-            const promise = new Promise<ServiceResponse<OAuth2Credentials>>((resolve, reject) => {
-                (async () => {
-                    try {
-                        let newCredentials: OAuth2Credentials;
+            (refreshCondition || (credentials.expires_at && isTokenExpired(credentials.expires_at, template.token_expiration_buffer || 15 * 60)));
 
-                        if (providerClientManager.shouldUseProviderClient(providerConfig.provider)) {
-                            const rawCreds = await providerClientManager.refreshToken(template, providerConfig, connection);
-                            newCredentials = this.parseRawCredentials(rawCreds, ProviderAuthModes.OAuth2) as OAuth2Credentials;
-                        } else {
-                            const {
-                                success,
-                                error,
-                                response: creds
-                            } = await getFreshOAuth2Credentials(connection, providerConfig, template as ProviderTemplateOAuth2);
+        return Boolean(tokenExpirationCondition);
+    }
 
-                            if (!success) {
-                                return resolve({ success, error, response: null });
-                            }
+    private async getNewCredentials(
+        connection: Connection,
+        providerConfig: ProviderConfig,
+        template: ProviderTemplateOAuth2
+    ): Promise<ServiceResponse<OAuth2Credentials>> {
+        if (providerClientManager.shouldUseProviderClient(providerConfig.provider)) {
+            const rawCreds = await providerClientManager.refreshToken(template, providerConfig, connection);
+            const parsedCreds = this.parseRawCredentials(rawCreds, ProviderAuthModes.OAuth2) as OAuth2Credentials;
 
-                            newCredentials = creds as OAuth2Credentials;
-                        }
+            return { success: true, error: null, response: parsedCreds };
+        } else {
+            const { success, error, response: creds } = await getFreshOAuth2Credentials(connection, providerConfig, template);
 
-                        connection.credentials = newCredentials;
-
-                        await this.updateConnection(connection);
-
-                        // Remove ourselves from the array of running refreshes
-                        this.runningCredentialsRefreshes = this.runningCredentialsRefreshes.filter((value) => {
-                            return !(value.providerConfigKey === providerConfigKey && value.connectionId === connectionId);
-                        });
-
-                        resolve({ success: true, error: null, response: newCredentials });
-                    } catch (e) {
-                        // Remove ourselves from the array of running refreshes
-                        this.runningCredentialsRefreshes = this.runningCredentialsRefreshes.filter((value) => {
-                            return !(value.providerConfigKey === providerConfigKey && value.connectionId === connectionId);
-                        });
-
-                        if (activityLogId && logAction === 'token') {
-                            await updateActivityLogAction(activityLogId as unknown as number, 'token');
-
-                            await createActivityLogMessage({
-                                level: 'error',
-                                activity_log_id: activityLogId as number,
-                                content: `Refresh oauth2 token call failed`,
-                                timestamp: Date.now()
-                            });
-                        }
-                        reject(e);
-                    }
-                })();
-            });
-
-            const refresh = {
-                connectionId: connectionId,
-                providerConfigKey: providerConfigKey,
-                promise: promise
-            } as CredentialsRefresh;
-
-            if (activityLogId && logAction === 'token') {
-                await updateActivityLogAction(activityLogId as unknown as number, 'token');
-
-                await createActivityLogMessage({
-                    level: 'info',
-                    activity_log_id: activityLogId as number,
-                    content: `Token was refreshed for ${providerConfigKey} and connection ${connectionId}`,
-                    timestamp: Date.now()
-                });
-            }
-            this.runningCredentialsRefreshes.push(refresh);
-
-            return promise;
+            return { success, error, response: success ? (creds as OAuth2Credentials) : null };
         }
+    }
 
-        // All good, no refresh needed
-        return { success: true, error: null, response: credentials };
+    private removeFromRunningRefreshes(connectionId: string, providerConfigKey: string): void {
+        this.runningCredentialsRefreshes = this.runningCredentialsRefreshes.filter(
+            (refresh) => !(refresh.connectionId === connectionId && refresh.providerConfigKey === providerConfigKey)
+        );
+    }
+
+    private async logActivity(activityLogId: number, message: string): Promise<void> {
+        await updateActivityLogAction(activityLogId, 'token');
+        await createActivityLogMessage({
+            level: 'info',
+            activity_log_id: activityLogId,
+            content: message,
+            timestamp: Date.now()
+        });
+    }
+
+    private async logErrorActivity(activityLogId: number, message: string): Promise<void> {
+        await updateActivityLogAction(activityLogId, 'token');
+        await createActivityLogMessage({
+            level: 'error',
+            activity_log_id: activityLogId,
+            content: message,
+            timestamp: Date.now()
+        });
     }
 }
 
