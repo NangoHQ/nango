@@ -3,109 +3,94 @@ title: 'Introduction'
 sidebarTitle: 'Introduction'
 ---
 
-Nango makes it easy to integrate your product with any external API.
+Nango simplifies integrating your product with any external API. It's as flexible as building integrations yourself and as quick as choosing a pre-existing solution. This means you can:
 
-It is:
+* Build the integrations your customers need
+* Clean up your codebase
+* And get a good night's sleep!
 
--   as **flexible** as building integrations yourself
--   as **fast** as buying a pre-built solution
+## 👀 An Overview of Nango
 
-The result:
+With Nango, you can construct integrations in hours, not weeks, while retaining complete control over the integration's logic and access to all external APIs.
 
--   Build the integrations your customers need
--   Simplify your codebase
--   Sleep at night
+Nango merges production-ready infrastructure with [pre-build integration templates](/integration-templates/overview) for [over 100 APIs](/integrations/overview):
 
-## 👀 Nango at a glance
+*   🔐 Authenticate 100+ APIs with just one line of code
+*   🔁 Enable bi-directional data synchronization
+*   ⏩️ Easily access unified APIs for any category
+*   🚫 Automate API-specific rate limits, retries & pagination
+*   🧠 Apply strong typing with your custom data models
+*   🪝 Utilize webhooks & real-time data syncs
+*   👀 Take advantage of built-in monitoring
+*   📺 Access your admin dashboard
 
-With Nango you build integrations in hours, instead of weeks. You maintain **full control over the integration's logic and access to all of the external APIs**.
+You'll have full control over the integrations without the headache of maintenance and ops.
 
-Nango combines [production-ready infrastructure](/core-concepts#nango-infrastructure) with [pre-built integration components and templates](/integration-templates/overview) for [100+ APIs](/integrations/overview):
+## 👩‍💻 Sample Code with Nango
 
--   🔐 Auth for 100+ APIs with 1 line of code
--   🔁 Bi-directional data syncing
--   ⏩️ Easy unified APIs for any category
--   🚫 Automatic, API specific rate-limits, retries & pagination
--   🧠 Strong typing with your custom data models
--   🪝 Webhooks & realtime data syncs
--   👀 Built-in monitoring
--   📺 Admin dashboard
-
-You get full control over the integrations with none of the maintenance and ops hassle.
-
-## 👩‍💻 How it looks in my code
-
--   1-liner to start a new OAuth flow & connect an integration:
+*   A single line to initiate a new OAuth flow & connect an integration:
 
 ```js
 nango.auth('github', '<user-id>');
 ```
 
--   1-liner to fetch structured objects from any external API:
+*   A single line to fetch structured objects from any external API:
 
 ```ts
 nango.getRecords<GithubIssue>({
     providerConfigKey: 'github',
     connectionId: '<user-id>',
-    model: 'GithubIssue', // Or anything else you want to sync
+    model: 'GithubIssue', // Or any other data you want to sync
 });
 ```
 
-## 🚀 Get started with Nango 
+## 🚀 Get Up and Running with Nango
 
-You can try Nango in 10 minutes with the [Quickstart 🚀](/quickstart).
+You can get Nango up and running in just 10 minutes with the [Quickstart 🚀](/quickstart).
 
-Or explore more:
-- Understand [how Nango works](/core-concepts)
-- Explore the [integration templates](/integration-templates/overview)
-- Explore the [100+ supported APIs](https://nango.dev/integrations)
+For more detail:
 
-## ✅ 100+ pre-configured APIs, easily add your own
+*   Learn [how Nango works](/core-concepts)
+*   Explore the [integration templates](/integration-templates/overview)
+*   Check out the [100+ supported APIs](https://nango.dev/integrations)
 
-Nango works with **any** API and use-case. Adding an [API Integration](/core-concepts#integration-templates) is easy and we already have many APIs covered.
+## ✅ Over 100 Pre-configured APIs, Easy to Add Your Own
 
-[100+ APIs are pre-configured](https://nango.dev/integrations) to work out-of-the-box, including:
+Nango works with any API and use-case. Adding an [API Integration](/core-concepts#integration-templates) is simple, and we already have many APIs covered.
 
--   **CRM**: Front, Hubspot, Salesforce, etc.
--   **Accounting**: Xero, Sellsy, Zoho Books, etc.
--   **Fintech:** Brex, Stripe, Braintree, Ramp etc.
--   **Developer tools**: GitHub, GitLab, Linear, Jira etc.
--   **Communication**: Gmail, Microsoft Teams, Slack, Discord, Zoom etc.
--   **Productivity**: Asana, Airtable, Google Drive, Google Calendar, Trello,
-    GSheet, ClickUp etc.
--   **Social**: Twitter, LinkedIn, Reddit, Facebook etc.
--   [and more...](/integrations)
+[Over 100 APIs are pre-configured](https://nango.dev/integrations) to work right out of the box, including:
 
-If your favorite API is missing
-[open a GitHub issue](https://github.com/NangoHQ/nango/issues/new) or
-[contribute it](/contribute).
+*   **CRM**: Front, Hubspot, Salesforce, and more
+*   **Accounting**: Xero, Sellsy, Zoho Books, and more
+*   **Fintech:** Brex, Stripe, Braintree, Ramp, and more
+*   **Developer tools**: GitHub, GitLab, Linear, Jira, and more
+*   **Communication**: Gmail, Microsoft Teams, Slack, Discord, Zoom, and more
+*   **Productivity**: Asana, Airtable, Google Drive, Google Calendar, Trello,
+    GSheet, ClickUp, and more
+*   **Social**: Twitter, LinkedIn, Reddit, Facebook, and more
+*   [and many others...](/integrations)
 
-## 🕐 When should I use Nango?
+If your favorite API is not listed, you can [open a GitHub issue](https://github.com/NangoHQ/nango/issues/new) or [contribute it](/contribute).
 
-Nango is a good fit for you if:
+## 🕐 When is Nango the Right Choice?
 
--   You want to build integrations fast
--   Pre-built solutions such as embedded iPaaS or unified APIs are too limiting for you
--   You want to minimize maintenance overhead in production
+Consider Nango if:
 
-Nango was primarily built for SaaS products where integrations are core to the product experience: If your product (deeply) integrates with other SaaS products Nango is probably a good fit for you.
+*   You need to build integrations quickly
+*   Pre-packaged solutions such as embedded iPaaS or unified APIs are too restrictive
+*   You want to minimize maintenance overhead in production
 
-Nango has not been built for:
+Nango is primarily for SaaS products where integrations are at the heart of the user experience. If your product deeply integrates with other SaaS products, Nango is likely your best bet.
 
--   Automating internal workflows
--   Adding single sign-on login options
+However, Nango is not designed for automating internal workflows or adding single sign-on login options.
 
-## 🙋‍♀️ Why is Nango open-source?
+## 🙋‍♀️ Why is Nango Open-Source?
 
-We believe every software should seamlessly integrate with the other softwares of its users. _integrations_ are core features in software products and as such are built by engineers.
+At Nango, we believe all software should integrate seamlessly with the other software its users utilize. Integrations are core features in software products and as such should be built by engineers.
 
-Our mission at Nango is to make it easy for engineers to build these integrations into their products.
+Our mission is to simplify the process for engineers to incorporate these integrations into their products with an open platform.
 
-We do this with an open platform for product integrations.
+With our open-source approach, every engineer can contribute improvements to the platform for everyone:
 
-Thanks to our open-source approach every engineer can contribute improvements to the platform for everyone:
-
-- Contribute new [API configurations](/core-concepts#api-configurations) for OAuth flows & data syncs
-- Share [API specific quirks](/integrations/all/salesforce#api-gotchas) with other developers
-- [Report bugs on GitHub](https://nango.dev/repo) or directly contribute a fix as a pull request
-- Request features and chat with the Nango team on the [Slack community](https://www.nango.dev/slack)
+*   Contribute new [API configurations](/core-concepts#api-configurations) for OAuth flows & data syncs
+*   Share [API specific quirks](/integrations/all/salesforce#api-gotchas) with other developers
