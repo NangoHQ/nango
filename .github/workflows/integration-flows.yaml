@@ -29,7 +29,8 @@ jobs:
             cd "$dir"
             mkdir -p nango-integrations
             mv * nango-integrations
+            cd nango-integrations
             nango compile
-            cd ../
+            cd ../../
           fi
         done
