@@ -35,8 +35,11 @@ jobs:
               mkdir -p nango-integrations
               find . -maxdepth 1 ! -name '.' ! -name 'nango-integrations' -exec mv -t nango-integrations {} +
               cd nango-integrations
-              ls
               nango compile
+              if [ $? -ne 0 ]; then
+                echo "nango compile failed for directory $dir"
+                exit 1
+              fi
               cd ../../
           fi
         done

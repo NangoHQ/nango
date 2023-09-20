@@ -43,7 +43,7 @@ models:
         attribute_value_ids: number[]
         brand_id: number
         collaborator_ids: number[]
-        collaborators: array
+        collaborators: any[]
         comment: object
         created_at: string
         custom_fields: any[]
