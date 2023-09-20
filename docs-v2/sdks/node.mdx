@@ -262,16 +262,25 @@ The response from the external API is passed back to you exactly as Nango gets i
 For the node SDK Nango returns an [Axios response object](https://axios-http.com/docs/res_schema).
 
 ### Trigger syncs
-Triggers an additional, one-off sync run for all active sync scripts on the specified [Connection](/core-concepts#connections).
+Triggers an additional, one-off sync run for all active sync scripts on the specified _connection_.
 
 ```ts
 await nango.triggerSync('<INTEGRATION-ID>', '<CONNECTION-ID>');
 ```
 
-You can optionally trigger for certain specified sync(s) for a connection:
+You can optionally trigger for certain specified sync(s) for a _connection_:
 
 ```ts
 await nango.triggerSync('<INTEGRATION-ID>', '<CONNECTION-ID>', ['github-sync', 'hubspot-sync']);
+```
+
+### Start/pause syncs
+Starts or pauses the continuous execution of specified sync(s) for a given _connection_.
+
+
+```ts
+await nango.pauseSync('<INTEGRATION-ID>', '<CONNECTION-ID>', ['github-sync', 'hubspot-sync']);
+await nango.startSync('<INTEGRATION-ID>', '<CONNECTION-ID>', ['github-sync', 'hubspot-sync']);
 ```
 
 ### Read synced data
