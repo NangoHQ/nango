@@ -24,13 +24,12 @@ jobs:
 
     - name: Compile with Nango
       run: |
-        for dir in $(find integration-templates -maxdepth 1 -type d); do
-          if [ "$dir" != "." ]; then
-            cd $dir
-            mkdir nango-integrations
-            mv * nango-integrations/ || true
-            cd nango-integrations
+        for dir in */; do
+          if [[ "$dir" != "." && "$dir" != "integration-templates/" ]]; then
+            cd "$dir"
+            mkdir -p nango-integrations
+            mv * nango-integrations
             nango compile
-            cd ../../
+            cd ../
           fi
         done
