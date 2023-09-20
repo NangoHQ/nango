@@ -566,6 +566,10 @@ async function deploySyncs(url: string, body: { syncs: IncomingSyncConfig[]; rec
         });
 }
 
+export const adminDeploy = async (accountName: string, environmentName: string, debug = false) => {
+    console.log(accountName, environmentName, debug);
+};
+
 export const dryRun = async (options: RunArgs, environment: string, debug = false) => {
     let syncName = '';
     let connectionId, suppliedLastSyncDate, actionInput;

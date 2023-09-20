@@ -331,6 +331,11 @@ export class NangoError extends Error {
                 this.message = 'Sync interval is too short. The minimum interval is 5 minutes.';
                 break;
 
+            case 'provider_not_on_account':
+                this.status = 400;
+                this.message = 'This provider is not on your account. Please add the provider to your account first.';
+                break;
+
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;

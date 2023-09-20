@@ -39,6 +39,8 @@ export interface Sync {
     models: string[];
     updated_at: string;
     version: string;
+    pre_built: boolean;
+    is_public: boolean;
     connections:
         | {
               connection_id: string;
@@ -107,4 +109,15 @@ export interface InvitedUser {
     expires_at: string;
     token: string;
     accepted: boolean;
+}
+
+export interface PreBuiltFlow {
+    integration: string;
+    type: string;
+    name: string;
+    runs: string;
+    auto_start: boolean;
+    models: string[];
+    model_schema: string;
+    is_public: boolean;
 }

@@ -14,7 +14,16 @@ import {
 import { getSyncsByProviderConfigAndSyncName } from './sync.service.js';
 import { LogActionEnum, LogLevel } from '../../models/Activity.js';
 import type { ServiceResponse } from '../../models/Generic.js';
-import { SyncModelSchema, SyncConfigWithProvider, IncomingSyncConfig, SyncConfig, SlimSync, SyncConfigResult, SyncConfigType } from '../../models/Sync.js';
+import {
+    SyncModelSchema,
+    SyncConfigWithProvider,
+    IncomingSyncConfig,
+    SyncConfig,
+    SlimSync,
+    SyncConfigResult,
+    SyncConfigType,
+    IncomingPreBuiltFlowConfig
+} from '../../models/Sync.js';
 import type { NangoConnection } from '../../models/Connection.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
 import type { NangoConfig } from '../../integrations/index.js';
@@ -239,6 +248,99 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
             syncName: syncsWithVersions.map((sync) => sync.syncName).join(', '),
             accountId: String(accountId),
             providers: providers.join(', ')
+        });
+
+        throw new NangoError('error_creating_sync_config');
+    }
+}
+
+export async function createPreBuiltSyncConfig(
+    environment_id: number,
+    provider_config_key: string,
+    config: IncomingPreBuiltFlowConfig
+): Promise<ServiceResponse<SyncConfigResult | null>> {
+    const log = {
+        level: 'info' as LogLevel,
+        success: null,
+        action: LogActionEnum.SYNC_DEPLOY,
+        start: Date.now(),
+        end: Date.now(),
+        timestamp: Date.now(),
+        connection_id: null,
+        provider: config.integration,
+        provider_config_key,
+        environment_id: environment_id,
+        operation_name: LogActionEnum.SYNC_DEPLOY
+    };
+
+    const accountId = (await environmentService.getAccountIdFromEnvironment(environment_id)) as number;
+    const activityLogId = await createActivityLog(log);
+    const version = '0.0.1';
+
+    const { nango_config_id, name: sync_name, type, models, auto_start, runs, model_schema, is_public } = config;
+
+    if (!sync_name || !nango_config_id || !runs || !models) {
+        const error = new NangoError('missing_required_fields_on_deploy');
+
+        return { success: false, error, response: null };
+    }
+
+    // TODO handle File logic
+
+    try {
+        const result = await schema()
+            .from<SyncConfig>(TABLE)
+            .insert({
+                sync_name,
+                nango_config_id,
+                file_location: '__LOCAL_FILE__',
+                version,
+                models,
+                active: true,
+                runs,
+                model_schema: model_schema as unknown as SyncModelSchema[],
+                environment_id,
+                deleted: false,
+                track_deletes: false,
+                type,
+                auto_start: auto_start === false ? false : true,
+                pre_built: true,
+                is_public
+            })
+            .returning(['id', 'version', 'sync_name']);
+
+        await updateSuccessActivityLog(activityLogId as number, true);
+
+        const content = `Successfully added the ${type} ${sync_name}.`;
+
+        await createActivityLogMessageAndEnd({
+            level: 'info',
+            activity_log_id: activityLogId as number,
+            timestamp: Date.now(),
+            content
+        });
+
+        await metricsManager.capture('sync_deploy_success', content, LogActionEnum.SYNC_DEPLOY, {
+            environmentId: String(environment_id),
+            syncName: sync_name,
+            accountId: String(accountId),
+            integration: config.integration,
+            preBuilt: 'true',
+            is_public: String(is_public)
+        });
+
+        return { success: true, error: null, response: { result, activityLogId } };
+    } catch (e) {
+        await updateSuccessActivityLog(activityLogId as number, false);
+
+        await createActivityLogDatabaseErrorMessageAndEnd(`Failed to add the ${type} ${sync_name}.`, e, activityLogId as number);
+
+        await metricsManager.capture('sync_deploy_failure', `Failed to add the ${type} ${sync_name}.`, LogActionEnum.SYNC_DEPLOY, {
+            environmentId: String(environment_id),
+            syncName: sync_name,
+            accountId: String(accountId),
+            integration: config.integration,
+            preBuilt: 'true'
         });
 
         throw new NangoError('error_creating_sync_config');
@@ -522,6 +624,8 @@ export async function getSyncConfigsWithConnectionsByEnvironmentId(environment_i
             `${TABLE}.version`,
             `${TABLE}.updated_at`,
             `${TABLE}.auto_start`,
+            `${TABLE}.pre_built`,
+            `${TABLE}.is_public`,
             '_nango_configs.provider',
             '_nango_configs.unique_key',
             db.knex.raw(

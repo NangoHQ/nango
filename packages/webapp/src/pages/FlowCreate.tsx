@@ -1,6 +1,8 @@
+import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
 import { Prism } from '@mantine/prism';
-import { useGetFlows } from '../utils/api';
+import { useGetFlows, useCreateFlow } from '../utils/api';
 import { LeftNavBarItems } from '../components/LeftNavBar';
 import DashboardLayout from '../layout/DashboardLayout';
 import { useStore } from '../store';
@@ -33,7 +35,10 @@ export default function FlowCreate() {
 
     const [frequencyEditMode, setFrequencyEditMode] = useState(false);
     const getFlows = useGetFlows();
+    const createFlow = useCreateFlow();
     const env = useStore(state => state.cookieValue);
+
+    const navigate = useNavigate();
 
     useEffect(() => {
         setLoaded(false);
@@ -64,25 +69,37 @@ export default function FlowCreate() {
         const data = Object.fromEntries(formData.entries());
 
         const models = showModels(flow?.returns as string[]) as any;
-        const integrationPayload = {
-            integration: data['integration'],
+        const flowPayload = {
+            integration: data['integration'].toString(),
             type: flow?.type === 'action' ? 'action' : 'sync',
-            name: data['flow-name'], // should they be able to change this
+            name: data['flow-name'].toString(),
             runs: `every ${data['frequency']} ${data['frequency-unit']}`,
             auto_start: data['auto-start'] === 'on',
-            track_deletes: data['track-deletes'] === 'true',
-            models: flow?.returns,
-            model_schema: Object.keys(models).map(model => ({
+            models: flow?.returns as string[],
+            model_schema: JSON.stringify(Object.keys(models).map(model => ({
                 name: model,
                 fields: Object.keys(models[model]).map(field => ({
                     name: field,
                     type: models[model][field]
                 }))
-            }))
+            }))),
+            is_public: true
+        };
+
+        const res = await createFlow(flowPayload);
+
+        if (res?.status === 201) {
+            toast.success(`${flowPayload.type} created successfully!`, { position: toast.POSITION.BOTTOM_CENTER });
+            navigate('/syncs', { replace: true });
+        } else if (res != null) {
+            const payload = await res.json();
+            toast.error(payload.error, {
+                position: toast.POSITION.BOTTOM_CENTER
+            });
         }
+
         // send this to a different endpoint to automatically pull in the built file
         // already set in s3
-        console.log(integrationPayload);
         // 1) integration templates need to be built and stored in s3
         // that can happen as part of the build, on a template change
         // 2) Need a marker that this is a prebuilt template

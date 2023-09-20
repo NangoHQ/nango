@@ -106,9 +106,22 @@ export default function Syncs() {
                             {syncs.filter(sync => sync.type === currentTab).map((sync, index) => (
                                 <div key={index} className="text-white px-5">
                                     <div className="flex pb-4 text-base py-6 items-center border-b border-border-gray">
-                                        <span className="w-60">
-                                            {sync.sync_name}@v{sync.version}
-                                        </span>
+                                        <div className="flex flex-col w-60">
+                                            <span>
+                                                {sync.sync_name}@v{sync.version}
+                                            </span>
+                                            <span className="text-xs text-gray-400">
+                                                    {!sync.pre_built && (
+                                                        <>Custom</>
+                                                    )}
+                                                    {sync.pre_built && sync.is_public && (
+                                                        <>Template</>
+                                                    )}
+                                                    {sync.pre_built && !sync.is_public && (
+                                                        <>Template (private)</>
+                                                    )}
+                                            </span>
+                                        </div>
                                         <span className={`${sync.type === 'sync' ? 'w-48' : 'w-60'}`}>
                                             <Link to={`/integration/${sync.unique_key}`}>
                                                 {sync?.provider ? (

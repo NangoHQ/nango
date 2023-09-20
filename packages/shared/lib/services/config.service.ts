@@ -202,6 +202,21 @@ class ConfigService {
         }
         return this.templates;
     }
+
+    async getConfigIdByProvider(provider: string, environment_id: number): Promise<{ id: number; unique_key: string } | null> {
+        const result = await db.knex
+            .withSchema(db.schema())
+            .select('id', 'unique_key')
+            .from<ProviderConfig>(`_nango_configs`)
+            .where({ provider, environment_id, deleted: false })
+            .first();
+
+        if (!result) {
+            return null;
+        }
+
+        return result;
+    }
 }
 
 export default new ConfigService();

@@ -74,6 +74,8 @@ export interface SyncConfig extends TimestampsAndDeleted {
     auto_start: boolean;
     attributes?: object;
     version?: string;
+    pre_built?: boolean;
+    is_public?: boolean;
 }
 
 export interface SlimSync {
@@ -105,18 +107,28 @@ export interface SyncAndActionDifferences {
     deletedActions: SlimAction[];
 }
 
-export interface IncomingSyncConfig {
-    syncName: string;
+interface InternalIncomingPreBuiltFlowConfig {
     type: SyncConfigType;
-    providerConfigKey: string;
-    fileBody: string;
     models: string[];
     runs: string;
-    version?: string;
-    track_deletes?: boolean;
     auto_start?: boolean;
     attributes?: object;
     model_schema: string;
+}
+
+export interface IncomingPreBuiltFlowConfig extends InternalIncomingPreBuiltFlowConfig {
+    integration: string;
+    is_public: boolean;
+    name: string;
+    nango_config_id?: number;
+}
+
+export interface IncomingSyncConfig extends InternalIncomingPreBuiltFlowConfig {
+    syncName: string;
+    providerConfigKey: string;
+    fileBody: string;
+    version?: string;
+    track_deletes?: boolean;
 }
 
 export enum ScheduleStatus {

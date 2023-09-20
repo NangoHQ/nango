@@ -94,6 +94,7 @@ app.route('/sync/names').get(apiAuth, syncController.getSyncNames.bind(syncContr
 app.route('/sync/provider').get(apiAuth, syncController.getSyncProvider.bind(syncController));
 app.route('/flow/attributes').get(apiAuth, syncController.getFlowAttributes.bind(syncController));
 app.route('/action/trigger').post(apiAuth, syncController.triggerAction.bind(syncController));
+app.route('/flow/deploy/pre-built').post(apiAuth, flowController.deployPreBuiltFlow.bind(flowController));
 
 // Proxy Route
 app.route('/proxy/*').all(apiAuth, proxyController.routeCall.bind(proxyController));
@@ -137,6 +138,7 @@ app.route('/api/v1/sync').get(webAuth, syncController.getSyncsByParams.bind(sync
 app.route('/api/v1/sync/command').post(webAuth, syncController.syncCommand.bind(syncController));
 app.route('/api/v1/syncs').get(webAuth, syncController.getSyncs.bind(syncController));
 app.route('/api/v1/flows').get(webAuth, flowController.getFlows.bind(syncController));
+app.route('/api/v1/flow/deploy/pre-built').post(webAuth, flowController.deployPreBuiltFlow.bind(flowController));
 
 // Hosted signin
 if (!isCloud()) {
