@@ -28,8 +28,7 @@ jobs:
           if [[ "$dir" != "." && "$dir" != "integration-templates/" ]]; then
               cd "$dir"
               mkdir -p nango-integrations
-              # Move everything except the nango-integrations directory
-              find . -maxdepth 1 ! -name 'nango-integrations' -exec mv -t nango-integrations {} +
+              find . -maxdepth 1 ! -name '.' ! -name 'nango-integrations' -exec mv -t nango-integrations {} +
               cd nango-integrations
               nango compile
               cd ../../
