@@ -30,6 +30,7 @@ jobs:
               mkdir -p nango-integrations
               find . -maxdepth 1 ! -name '.' ! -name 'nango-integrations' -exec mv -t nango-integrations {} +
               cd nango-integrations
+              ls
               nango compile
               cd ../../
           fi
