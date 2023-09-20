@@ -31,6 +31,6 @@ jobs:
             mv * nango-integrations/ || true
             cd nango-integrations
             nango compile
-            cd ..
+            cd ../../
           fi
         done
