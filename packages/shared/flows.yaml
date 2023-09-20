@@ -122,6 +122,7 @@ integrations:
   google:
     google-workspace-org-unit:
       runs: every 6 hours
+      track_deletes: true
       returns:
         - OrganizationalUnit
     google-workspace-users:
@@ -558,7 +559,7 @@ integrations:
         attribute_value_ids: number[]
         brand_id: number
         collaborator_ids: number[]
-        collaborators: array
+        collaborators: any[]
         comment: object
         created_at: string
         custom_fields: any[]
@@ -593,7 +594,7 @@ integrations:
         status: string
         subject: string
         submitter_id: number
-        tags: Array<string>
+        tags: string[]
         ticket_form_id: number
         type: string
         updated_at: string

@@ -218,25 +218,6 @@ export default function FlowCreate() {
                                     </div>
                                 </div>
                             )}
-                            {flow?.track_deletes && (
-                                <div>
-                                    <div>
-                                        <div className="flex">
-                                            <label htmlFor="flow-name" className="text-text-light-gray block text-sm font-semibold">
-                                                Track Deletes
-                                            </label>
-                                        </div>
-                                        <div className="mt-1">
-                                            <input
-                                                id="track-deletes"
-                                                type="checkbox"
-                                                name="track-deletes"
-                                                defaultChecked={flow?.track_deletes}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
                             {flow?.type !== 'action' && (
                                 <div>
                                     <div>
