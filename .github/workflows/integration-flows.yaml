@@ -26,11 +26,12 @@ jobs:
       run: |
         for dir in */; do
           if [[ "$dir" != "." && "$dir" != "integration-templates/" ]]; then
-            cd "$dir"
-            mkdir -p nango-integrations
-            mv * nango-integrations
-            cd nango-integrations
-            nango compile
-            cd ../../
+              cd "$dir"
+              mkdir -p nango-integrations
+              # Move everything except the nango-integrations directory
+              find . -maxdepth 1 ! -name 'nango-integrations' -exec mv -t nango-integrations {} +
+              cd nango-integrations
+              nango compile
+              cd ../../
           fi
         done
