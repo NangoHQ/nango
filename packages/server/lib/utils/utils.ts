@@ -85,8 +85,9 @@ export function getConnectionMetadataFromCallbackRequest(queryParams: any, templ
 
 /**
  * A helper function to extract the additional connection metadata returned from the Provider in the token response.
+ * It can parse booleans or strings only
  */
-export function getConnectionMetadataFromTokenResponse(params: any, template: ProviderTemplate): Record<string, string> {
+export function getConnectionMetadataFromTokenResponse(params: any, template: ProviderTemplate): Record<string, any> {
     if (!params || !template.token_response_metadata) {
         return {};
     }
@@ -97,27 +98,29 @@ export function getConnectionMetadataFromTokenResponse(params: any, template: Pr
         return key.split('.').reduce((o, k) => (o && o[k] !== undefined ? o[k] : undefined), obj);
     };
 
-    // Filter out non-strings & non-whitelisted keys.
+    // Filter out non-strings, non-booleans & non-whitelisted keys.
     const arr = Object.entries(params).filter(([k, v]) => {
-        if (typeof v === 'string' && whitelistedKeys.includes(k)) {
+        const isStringValueOrBoolean = typeof v === 'string' || typeof v === 'boolean';
+        if (isStringValueOrBoolean && whitelistedKeys.includes(k)) {
             return true;
         }
         // Check for dot notation keys
         const dotNotationValue = getValueFromDotNotation(params, k);
-        return typeof dotNotationValue === 'string' && whitelistedKeys.includes(k);
+        return isStringValueOrBoolean && whitelistedKeys.includes(dotNotationValue);
     });
 
     // Add support for dot notation keys
     const dotNotationArr = whitelistedKeys
         .map((key) => {
             const value = getValueFromDotNotation(params, key);
-            return typeof value === 'string' ? [key, value] : null;
+            const isStringValueOrBoolean = typeof value === 'string' || typeof value === 'boolean';
+            return isStringValueOrBoolean ? [key, value] : null;
         })
         .filter(Boolean);
 
-    const combinedArr: [string, string][] = [...arr, ...dotNotationArr].filter((item) => item !== null) as [string, string][];
+    const combinedArr: [string, any][] = [...arr, ...dotNotationArr].filter((item) => item !== null) as [string, any][];
 
-    return combinedArr.length > 0 ? (Object.fromEntries(combinedArr) as Record<string, string>) : {};
+    return combinedArr.length > 0 ? (Object.fromEntries(combinedArr) as Record<string, any>) : {};
 }
 
 /**
