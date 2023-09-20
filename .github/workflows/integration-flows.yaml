@@ -1,0 +1,33 @@
+name: Nango Integration Flows Compile
+
+on: [push, pull_request]
+
+concurrency:
+    group: flows-compile--${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
+
+jobs:
+  flow-compilaion:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Install Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install nango CLI
+      run: npm install -g nango
+
+    - name: Compile with Nango
+      run: |
+        for dir in $(find integration-templates -maxdepth 1 -type d); do
+          if [ "$dir" != "." ]; then
+            cd $dir
+            nango compile
+            cd ..
+          fi
+        done
