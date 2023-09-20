@@ -32,7 +32,8 @@ jobs:
               find . -maxdepth 1 ! -name '.' ! -name 'nango-integrations' -exec mv -t nango-integrations {} +
               cd nango-integrations
               ls
-              nango compile
+              nango version --debug
+              nango compile --debug
               cd ../../
           fi
         done
