@@ -93,10 +93,31 @@ export function getConnectionMetadataFromTokenResponse(params: any, template: Pr
 
     const whitelistedKeys = template.token_response_metadata;
 
-    // Filter out non-strings & non-whitelisted keys.
-    const arr = Object.entries(params).filter(([k, v]) => typeof v === 'string' && whitelistedKeys.includes(k));
+    const getValueFromDotNotation = (obj: any, key: string): any => {
+        return key.split('.').reduce((o, k) => (o && o[k] !== undefined ? o[k] : undefined), obj);
+    };
 
-    return arr != null && arr.length > 0 ? (Object.fromEntries(arr) as Record<string, string>) : {};
+    // Filter out non-strings & non-whitelisted keys.
+    const arr = Object.entries(params).filter(([k, v]) => {
+        if (typeof v === 'string' && whitelistedKeys.includes(k)) {
+            return true;
+        }
+        // Check for dot notation keys
+        const dotNotationValue = getValueFromDotNotation(params, k);
+        return typeof dotNotationValue === 'string' && whitelistedKeys.includes(k);
+    });
+
+    // Add support for dot notation keys
+    const dotNotationArr = whitelistedKeys
+        .map((key) => {
+            const value = getValueFromDotNotation(params, key);
+            return typeof value === 'string' ? [key, value] : null;
+        })
+        .filter(Boolean);
+
+    const combinedArr: [string, string][] = [...arr, ...dotNotationArr].filter((item) => item !== null) as [string, string][];
+
+    return combinedArr.length > 0 ? (Object.fromEntries(combinedArr) as Record<string, string>) : {};
 }
 
 /**
