@@ -22,6 +22,7 @@ jobs:
     - name: Install nango CLI
       run: |
         npm install -g nango
+        # TODO this shouldn't be needed
         npm install @tsconfig/node18-strictest-esm --save-dev
 
     - name: Compile with Nango
@@ -34,8 +35,7 @@ jobs:
               find . -maxdepth 1 ! -name '.' ! -name 'nango-integrations' -exec mv -t nango-integrations {} +
               cd nango-integrations
               ls
-              nango version --debug
-              nango compile --debug
+              nango compile
               cd ../../
           fi
         done

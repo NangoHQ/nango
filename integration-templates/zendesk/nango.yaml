@@ -78,7 +78,7 @@ models:
         status: string
         subject: string
         submitter_id: number
-        tags: Array<string>
+        tags: string[]
         ticket_form_id: number
         type: string
         updated_at: string

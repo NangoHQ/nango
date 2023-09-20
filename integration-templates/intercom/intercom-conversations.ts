@@ -1,4 +1,4 @@
-import { NangoSync, IntercomConversation, IntercomConversationMessage } from './models';
+import type { NangoSync, IntercomConversation, IntercomConversationMessage } from './models';
 
 /**
  * Fetches Intercom conversations with all their associated messages and notes.

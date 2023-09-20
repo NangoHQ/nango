@@ -8,7 +8,6 @@ interface Params {
 export default async function fetchData(nango: NangoSync) {
     const MAX_PAGE = 100;
 
-    let page = 1;
     let afterLink = null;
 
     while (true) {
@@ -45,7 +44,6 @@ export default async function fetchData(nango: NangoSync) {
         }
 
         if (response.data.length == MAX_PAGE) {
-            page += 1;
             afterLink = response.data.paging.next.after;
         } else {
             break;
