@@ -78,7 +78,7 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
             return { success: false, error, response: null };
         }
 
-        if (!syncName || !providerConfigKey || !fileBody || !models) {
+        if (!syncName || !providerConfigKey || !fileBody) {
             const error = new NangoError('missing_required_fields_on_deploy');
 
             return { success: false, error, response: null };
