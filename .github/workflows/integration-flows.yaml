@@ -24,6 +24,7 @@ jobs:
 
     - name: Compile with Nango
       run: |
+        cd integration-templates
         for dir in */; do
           if [[ "$dir" != "." && "$dir" != "integration-templates/" ]]; then
               cd "$dir"
