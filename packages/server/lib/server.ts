@@ -112,6 +112,7 @@ if (isCloud()) {
 // Webapp routes (session auth).
 app.route('/api/v1/account').get(webAuth, accountController.getAccount.bind(accountController));
 app.route('/api/v1/account').put(webAuth, accountController.editAccount.bind(accountController));
+app.route('/api/v1/account/admin/switch').post(webAuth, accountController.switchAccount.bind(accountController));
 app.route('/api/v1/environment').get(webAuth, environmentController.getEnvironment.bind(environmentController));
 app.route('/api/v1/environment/callback').post(webAuth, environmentController.updateCallback.bind(environmentController));
 app.route('/api/v1/environment/webhook').post(webAuth, environmentController.updateWebhookURL.bind(environmentController));
