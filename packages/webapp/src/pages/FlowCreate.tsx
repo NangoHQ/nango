@@ -166,6 +166,11 @@ export default function FlowCreate() {
     const matchDefaultFrequencyValue = (frequency: string): void => {
         const frequencyValue = frequency.match(/\d+/g)?.[0];
 
+        if (!frequencyValue) {
+            setFrequencyValue(1);
+            return;
+        };
+
         setFrequencyValue(Number(frequencyValue));
     }
 
