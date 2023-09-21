@@ -724,6 +724,8 @@ slack:
     auth_mode: OAUTH2
     authorization_url: https://slack.com/oauth/v2/authorize
     token_url: https://slack.com/api/oauth.v2.access
+    token_response_metadata:
+        - incoming_webhook.url
     proxy:
         base_url: https://slack.com/api
     docs: https://api.slack.com/apis
