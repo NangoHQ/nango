@@ -222,10 +222,12 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
             level: 'info',
             activity_log_id: activityLogId as number,
             timestamp: Date.now(),
-            content: `Successfully deployed the syncs (${JSON.stringify(syncsWithVersions, null, 2)}).`
+            content: `Successfully deployed the ${nameOfType}${syncsWithVersions.length > 1 ? 's' : ''} (${JSON.stringify(syncsWithVersions, null, 2)}).`
         });
 
-        const shortContent = `Successfully deployed the syncs (${syncsWithVersions.map((sync) => sync.syncName).join(', ')}).`;
+        const shortContent = `Successfully deployed the ${nameOfType}${syncsWithVersions.length > 1 ? 's' : ''} (${syncsWithVersions
+            .map((sync) => sync.syncName)
+            .join(', ')}).`;
 
         await metricsManager.capture('sync_deploy_success', shortContent, LogActionEnum.SYNC_DEPLOY, {
             environmentId: String(environment_id),
@@ -694,7 +696,7 @@ export async function deleteSyncFilesForConfig(id: number, environmentId: number
     }
 }
 
-export async function getActiveSyncConfigsByEnvironmentId(environment_id: number): Promise<SyncConfigWithProvider[]> {
+export async function getActiveCustomSyncConfigsByEnvironmentId(environment_id: number): Promise<SyncConfigWithProvider[]> {
     const result = await schema()
         .select(
             `${TABLE}.id`,
@@ -712,6 +714,7 @@ export async function getActiveSyncConfigsByEnvironmentId(environment_id: number
             active: true,
             '_nango_configs.environment_id': environment_id,
             '_nango_configs.deleted': false,
+            pre_built: false,
             [`${TABLE}.deleted`]: false
         });
 

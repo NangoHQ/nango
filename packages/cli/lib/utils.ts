@@ -280,22 +280,6 @@ export async function getConnection(providerConfigKey: string, connectionId: str
         });
 }
 
-export async function getSyncNamesWithProvider(debug = false) {
-    const url = process.env['NANGO_HOSTPORT'] + `/sync/names`;
-    const headers = enrichHeaders();
-    if (debug) {
-        printDebug(`getConnection endpoint to the URL: ${url} with headers: ${JSON.stringify(headers, null, 2)}`);
-    }
-    return await axios
-        .get(url, { headers, httpsAgent: httpsAgent() })
-        .then((res) => {
-            return res.data;
-        })
-        .catch((err) => {
-            console.log(`❌ ${err.response?.data.error || JSON.stringify(err)}`);
-        });
-}
-
 export async function getProviderBySyncName(params: Record<string, string>, debug = false) {
     const url = process.env['NANGO_HOSTPORT'] + `/sync/provider`;
     const headers = enrichHeaders();

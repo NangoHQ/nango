@@ -17,7 +17,6 @@ import {
     createActivityLog,
     getAndReconcileDifferences,
     getSyncConfigsWithConnectionsByEnvironmentId,
-    getActiveSyncConfigsByEnvironmentId,
     IncomingSyncConfig,
     getProviderConfigBySyncAndAccount,
     SyncCommand,
@@ -180,18 +179,6 @@ class SyncController {
             const flows = flowService.getAllAvailableFlows();
 
             res.send({ syncs, flows });
-        } catch (e) {
-            next(e);
-        }
-    }
-
-    public async getSyncNames(_req: Request, res: Response, next: NextFunction) {
-        try {
-            const environmentId = getEnvironmentId(res);
-
-            const syncs = await getActiveSyncConfigsByEnvironmentId(environmentId);
-
-            res.send(syncs);
         } catch (e) {
             next(e);
         }

@@ -437,7 +437,9 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
                             console.log(chalk.green(`Successfully removed the syncs/actions.`));
                         } else {
                             const nameAndVersions = results.map((result) => `${result.sync_name}@v${result.version}`);
-                            console.log(chalk.green(`Successfully deployed the syncs/actions: ${nameAndVersions.join(', ')}!`));
+                            console.log(
+                                chalk.green(`Successfully deployed the syncs/action${nameAndVersions.length > 1 ? 's' : ''}: ${nameAndVersions.join(', ')}!`)
+                            );
                         }
                     })
                     .catch((err) => {
