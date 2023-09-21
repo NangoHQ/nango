@@ -1,5 +1,5 @@
 import { expect, describe, it } from 'vitest';
-import { getConnectionMetadataFromTokenResponse, parseConnectionConfigParamsFromTemplate } from './utils.js';
+import { getConnectionMetadataFromTokenResponse, parseConnectionConfigParamsFromTemplate, getAdditionalAuthorizationParams } from './utils.js';
 import type { Template as ProviderTemplate } from '@nangohq/shared';
 
 describe('Utils unit tests', () => {
@@ -89,6 +89,54 @@ describe('Utils unit tests', () => {
         const params = {};
 
         const result = getConnectionMetadataFromTokenResponse(params, template);
+        expect(result).toEqual({});
+    });
+
+    it('Should return additional authorization params with string values only and preserve undefined values', () => {
+        const params = {
+            key1: 'value1',
+            key2: 123,
+            key3: true,
+            key4: 'undefined',
+            key5: 'value5'
+        };
+
+        const result = getAdditionalAuthorizationParams(params);
+        expect(result).toEqual({
+            key1: 'value1',
+            key4: undefined,
+            key5: 'value5'
+        });
+    });
+
+    it('Should return an empty object when no string values are present', () => {
+        const params = {
+            key1: 123,
+            key2: true
+        };
+
+        const result = getAdditionalAuthorizationParams(params);
+        expect(result).toEqual({});
+    });
+
+    it('Should handle an empty params object', () => {
+        const params = {};
+
+        const result = getAdditionalAuthorizationParams(params);
+        expect(result).toEqual({});
+    });
+
+    it('Should handle an non-object param', () => {
+        const params = "I'm not an object";
+
+        const result = getAdditionalAuthorizationParams(params);
+        expect(result).toEqual({});
+    });
+
+    it('Should handle a null & undefined param', () => {
+        let result = getAdditionalAuthorizationParams(null);
+        expect(result).toEqual({});
+        result = getAdditionalAuthorizationParams(undefined);
         expect(result).toEqual({});
     });
 });
