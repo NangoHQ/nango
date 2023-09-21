@@ -120,6 +120,7 @@ export interface IncomingPreBuiltFlowConfig extends InternalIncomingPreBuiltFlow
     integration: string;
     is_public: boolean;
     name: string;
+    syncName?: string; // legacy
     nango_config_id?: number;
 
     // cli only values

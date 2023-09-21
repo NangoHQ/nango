@@ -535,28 +535,71 @@ paths:
                       type: string
     /sync/trigger:
         post:
-            description: Triggers an additional, one-off sync run for all syncs of a connection
-            parameters:
-                - name: Connection-Id
-                  in: header
-                  required: true
-                  description: The connection ID used to create the connection.
-                  schema:
-                      type: string
-                - name: Provider-Config-Key
-                  in: header
-                  required: true
-                  description: The integration ID used to create the connection (aka Unique Key).
-                  schema:
-                      type: string
+            description: Triggers an additional, one-off execution of specified sync(s) (for a given connection or all applicable connections if no connection is specified).
             requestBody:
                 content:
                     application/json:
                         schema:
                             type: object
+                            required:
+                                - provider_config_key
+                                - syncs
                             properties:
+                                provider_config_key:
+                                    type: string
+                                    description: The ID of the integration that you established within Nango.
+                                connection_id:
+                                    type: string
+                                    description: The ID of the connection. If omitted, the syncs will be triggered for all relevant connections.
                                 syncs:
                                     type: array
+                                    descriptions: A list of sync names that you wish to trigger.
+                                    items:
+                                        type: string
+    /sync/start:
+        post:
+            description: Starts the continuous execution of specified sync(s) (for a given connection or all applicable connections if no connection is specified).
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - provider_config_key
+                                - syncs
+                            properties:
+                                provider_config_key:
+                                    type: string
+                                    description: The ID of the integration that you established within Nango.
+                                connection_id:
+                                    type: string
+                                    description: The ID of the connection. If omitted, the syncs will be started for all relevant connections.
+                                syncs:
+                                    type: array
+                                    descriptions: A list of sync names that you wish to start.
+                                    items:
+                                        type: string
+    /sync/pause:
+        post:
+            description: Pauses the continuous execution of specified sync(s) (for a given connection or all applicable connections if no connection is specified).
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - provider_config_key
+                                - syncs
+                            properties:
+                                provider_config_key:
+                                    type: string
+                                    description: The ID of the integration that you established within Nango.
+                                connection_id:
+                                    type: string
+                                    description: The ID of the connection. If omitted, the syncs will be paused for all relevant connections.
+                                syncs:
+                                    type: array
+                                    descriptions: A list of sync names that you wish to pause.
                                     items:
                                         type: string
     /action/trigger:

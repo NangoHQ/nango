@@ -69,7 +69,8 @@ export default function FlowCreate() {
             setLoaded(true);
             getAvailableFlows();
         }
-    }, [getFlows, loaded, updateFrequency]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [getFlows, loaded]);
 
     const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();

@@ -4,41 +4,43 @@ sidebarTitle: 'How Nango Works'
 description: 'A high-level overview of how Nango works.'
 ---
 
-## Writing integrations with Nango?
+## Crafting Integrations with Nango
 
-When you write integrations with Nango, 95% of it is already built for you. Nango provides all the hard infrastructure that is common across integrations ([list of features](/introduction#nango-at-a-glance)).
+Working on integrations with Nango? You're in luck! A whopping 95% of the work is already done for you. Nango provides all the intricate infrastructure required for integrations ([feature list](/introduction#nango-at-a-glance)).
 
-You just have to write the remaining 5% of code that is specific to your integration:
+All that's left for you is to code the remaining 5% that is unique to your integration:
+*   What data do you want to sync?
+*   How should this data be transformed? What should be the final data model?
+*   What data do you need to write back and when?
 
--   Which data would you like to sync? 
--   How should it be transformed? What is the resulting data model?
--   Which data would you like to write back and when?
 
-Based on this, Nango generates a fully-typed SDK and runs your integrations reliably in production.
+With this, Nango creates a fully-typed SDK and ensures your integrations run seamlessly in production.
 
-## Architecture
+
+## Understanding the Architecture
+
+
 
 ### API Authorization
 
-Your users authorize integrations inside your app, with an OAuth popup. All it takes is a call to the [frontend SDK](/sdks/frontend). 
+Users can authorize integrations within your app via an OAuth popup. This is as simple as making a call to the [frontend SDK](/sdks/frontend).
 
-Nango takes care of obtaining, storing and refreshing API credentials. 
+Nango handles the acquisition, storage, and refreshing of API credentials.
 
-You can then retrieve API access tokens, always fresh, with the [backend SDKs](sdks) or [API](api-reference).
+You can then retrieve always fresh API access tokens via the [backend SDKs](sdks) or [API](api-reference).
 
 <Frame caption="OAuth Architecture">
   <img src="/images/nango-auth-architecture.png" />
 </Frame>
 
-### Continuous _syncs_
+### Continuous Syncs
 
-Nango lets you define how data is synced with external APIs, e.g. fetch Salesforce contacts, GitHub issues, Slack messages, Google Calendar events etc.
-_Syncs_ are defined by you and live in your own repository: They are version-controlled with the rest of your codebase.
+Nango enables you to specify how data syncs with external APIs, for instance, fetching Salesforce contacts or Google Calendar events. You define these _syncs_, and they live in your repository, version-controlled along with the rest of your codebase.
 
-We have [Integration templates](/integration-templates/overview) for many popular use cases to help you get started and we have tooling to help you write and test _syncs_ locally (see the [syncs guide](guides/sync)).
 
-When your _syncs_ are ready, you deploy them with a CLI command to Nango: Nango then runs them for you in production and handles scaling, scheduling, retries, data caching, de-duplication etc.
+We offer [Integration templates](/integration-templates/overview) for common use cases and tools to assist you in writing and testing _syncs_ locally (consult the [syncs guide](guides/sync)).
 
+Once your _syncs_ are ready, you deploy them to Nango via a CLI command. Nango then takes over, running them in production, handling scaling, scheduling, retries, data caching, de-duplication, and more.
 
 <Frame caption="Continuous Sync Architecture">
   <img src="/images/nango-sync-architecture.png" />
@@ -46,55 +48,56 @@ When your _syncs_ are ready, you deploy them with a CLI command to Nango: Nango 
 
 ### Proxy Requests
 
-Sometimes you want to make one-off API requests, e.g.
-- Write data back on demand
-- Fetch data that doesn't need to be continuously synced (e.g. for onboarding)
+There might be times when you want to make one-off API requests, for instance:
 
-The Proxy makes this easy and lets you benefit from authorization, retries, rate-limit handling, monitoring, etc.
+*   Writing data back on an as-needed basis
+*   Fetching data that doesn't need continuous syncing (e.g., for onboarding)
 
-Take a look at the [Proxy guide](/guides/proxy) for examples & more details.
+The Proxy simplifies this process, offering benefits such as authorization, retries, rate-limit handling, and monitoring.
+
+For examples and more details, check out the [Proxy guide](/guides/proxy).
 
 <Frame caption="Proxy Architecture">
   <img src="/images/nango-proxy-architecture.png" />
 </Frame>
-
 ### Webhooks
 
 Nango supports two kinds of webhooks:
-- External webhooks: from the external API to Nango, to notify of data changes in real-time
-- Nango webhooks: from Nango to your app, to notify your app that new data is available (on sync job completion or external webhook reception)
+
+*   External webhooks: these go from the external API to Nango, notifying of data changes in real-time
+*   Nango webhooks: these go from Nango to your app, notifying your app that new data is available (upon sync job completion or external webhook reception)
 
 <Frame caption="Webhooks Architecture">
   <img src="/images/nango-webhooks-architecture.png" />
 </Frame>
 
-Learn more in the [Webhooks guide](/guides/webhooks)
+To learn more, refer to the [Webhooks guide](/guides/webhooks)
 
-## Dashboard: Monitoring & management of _syncs_
+## Dashboard: Sync Monitoring & Management
 
-The [Nango Dashboard](https://app.nango.dev) shows you a detailed activity log of every sync and proxy request.  
-You can view detailed logs of every sync run and also log your own messages from _sync_ scripts.
+The [Nango Dashboard](https://app.nango.dev) provides a detailed activity log for every sync and proxy request. Here, you can view comprehensive logs of every sync run and even log your messages from _sync_ scripts.
+
 
 ![Activity overview of syncs](/images/nango-sync/nango-sync-activity.png)
 
-You can also see and manage the _syncs_ for each [connection](/core-concepts#connections) (integration setup by a user).
+Furthermore, you can view and manage the _syncs_ for each [connection](/core-concepts#connections) (integration setup by a user).
 
 ![Syncs for a connection](/images/nango-sync/nango-connection-sync.png)
 
 ## Glossary
 
-Terms we frequently use:
+Frequently used terms:
 
-### API configurations[](#api-configurations)
+### API Configurations[](#api-configurations)
 
-An _API configuration_ (e.g. the `hubspot` configuration) contains the configuration in Nango that is specific to an external API. In particular:
+An _API configuration_ (like the `hubspot` configuration) holds the specific Nango configuration for an external API. This includes:
 
--   Auth-related configuration (auth type, OAuth URLs, auth quirks, etc.)
--   Sync-related configuration (rate-limits, pagination strategy, etc.)
+*   Auth-related configuration (auth type, OAuth URLs, auth quirks, etc.)
+*   Sync-related configuration (rate-limits, pagination strategy, etc.)
 
-These configuration are contributed and regularly improved by Nango and its community. Configurations allow to rapidly adapt Nango to work with any API, by editing a `.yaml` configuration file.
+These configurations, contributed and regularly improved by Nango and its community, enable rapid adaptation of Nango to work with any API via editing a `.yaml` configuration file.
 
-You can find more information and contribute _API configurations_ [here](/contribute).
+For more information and to contribute _API configurations_, click [here](/contribute).
 
 ### Integrations[](#integrations)
 
@@ -113,16 +116,3 @@ _Syncs_ are responsible to continuously synchronize data between an external API
 - an entry in the `nango.yaml` configuration file in the `nango-integrations` folder
 - a _sync_ file (typescript script) in the `nango-integrations` folder
 _Syncs_ have 'runs' or 'jobs' that are executed periodically. They can be managed (stopped, paused, resync, etc.) from the Dashboard or your code (with the SDK/REST API).
-
-### Nango Infrastructure[](#nango-infrastructure)
-
-Nango's infrastructure consists of the following components, that we see companies re-build over and over again:
-
--   (O)Auth server
--   Orchestrator to schedule sync jobs (Temporal)
--   Background workers & ETL-like pipelines to sync data with external APIs
--   Postgres database to store auth/sync-related configuration + cached data
--   Tooling to write & deploy developer-supplied integration code
--   SDKs, REST API & webhooks to access the data sync from external APIs
--   Admin console to manage & observe integrations
--   REST API to manage integrations programmatically

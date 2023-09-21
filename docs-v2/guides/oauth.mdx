@@ -98,7 +98,7 @@ Before saving the custom callback URL in Nango, ensure that:
 
 </Warning>
 
-If you are self-hosting Nango, follow the instructions [here](/self-host/instructions) to change your callback URL.
+If you are self-hosting Nango, follow the instructions [here](/use/self-hosting-instructions) to change your callback URL.
 
 ### Connection Configuration
 
@@ -165,9 +165,22 @@ This is useful for:
 - Storing per-customer configuration (e.g. which filters for syncing objects, categories to skip etc.)
 - Any other per-connection data you want to have available in your sync scripts
 
-This metadata is available to you in [syncs](/guides/sync) & [actions](/guide/actions) with `getMetadata()`.
+This metadata is available to you in [syncs](/guides/sync) & [actions](/guides/actions) with `getMetadata()`:
 
-It can also be set and retrieved with the [SDKs](/sdks) and the [REST API](/api-reference). Check these pages for the methods to set and retrieve it.
+```ts
+interface Metadata {
+    owner: string;
+    repo: string;
+    branch: string;
+}
+
+export default async function fetchData(nango: NangoSync) {
+    const { owner, repo, branch } = await nango.getMetadata<Metadata>();
+    ...
+}
+```
+
+It can also be set and retrieved with the [SDKs](/sdks/node#set-and-fetch-custom-metadata) and the [REST API](https://docs.nango.dev/api-reference/connection/set-metadata). Check these pages for the methods to set and retrieve it.
 
 ### Connection-Specific Authorization Params
 

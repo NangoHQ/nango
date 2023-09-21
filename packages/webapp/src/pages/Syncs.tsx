@@ -136,9 +136,13 @@ export default function Syncs() {
                                         </span>
                                         {currentTab === 'sync' && <span className="w-36">{sync.runs || '-'}</span>}
                                         {currentTab === 'sync' && <span className="w-28">{sync.auto_start === true ? 'Y' : 'N'}</span>}
-                                        <Tooltip text={sync.models.join(', ')} type="dark">
-                                            <span className="block w-16 ml-4 mr-2">{sync.models.length}</span>
-                                        </Tooltip>
+                                        {sync.models ? (
+                                            <Tooltip text={sync.models.join(', ')} type="dark">
+                                                <span className="block w-16 ml-4 mr-2">{sync.models.length}</span>
+                                            </Tooltip>
+                                        ) : (
+                                            <span className="w-24 ml-4 mr-2">-</span>
+                                        )}
                                         {currentTab === 'sync' && (
                                             <Tooltip
                                                 text={

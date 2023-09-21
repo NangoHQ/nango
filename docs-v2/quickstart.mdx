@@ -4,21 +4,22 @@ sidebarTitle: '🚀 Quickstart'
 description: 'See Nango in action in 5 minutes'
 ---
 
-Exprience Nango by syncing GitHub issues from your public repos.
+Experience Nango by syncing GitHub issues from your public repositories.
 
-In the next 5 minutes, we will: 
-1. Authorize an example API with Nango's builtin OAuth flow (GitHub)
-2. Setup a continuous data sync for this API (for GitHub issues)
-3. Show you how you can use the synced data in your app
+In the next 5 minutes, we will:
+
+1.  Authorize an example API using Nango's built-in OAuth flow (GitHub)
+2.  Set up a continuous data sync for this API (for GitHub issues)
+3.  Demonstrate how to use the synced data in your app
 
 ## Authorize an API (Github)
 
 First, create a free Nango account (no credit card required):
 <a href="https://app.nango.dev/signup" target="_blank">
-   <img alt="Try Nango Cloud" src="/images/nango-deploy-button.svg" noZoom />
+  <img alt="Try Nango Cloud" src="/images/nango-deploy-button.svg" noZoom />
 </a>
 
-On the [Integrations tab](https://app.nango.dev), with the left bar environment toggle set to `Dev`, click `OAuth` next to the example Github integration:
+On the [Integrations tab](https://app.nango.dev), with the left bar environment toggle set to `Dev`, click `OAuth` next to the GitHub example integration:
 
 <Frame>
   <img src="/images/quickstart/nango-oauth-button.png" />
@@ -26,78 +27,78 @@ On the [Integrations tab](https://app.nango.dev), with the left bar environment 
 
 On the `Add New Connection` page, keep the default values and click `Start OAuth Flow`.
 
-Authorize Github and retrieve your credentials from the [Connections tab](https://app.nango.dev/connections) 🎉
+Authorize GitHub and retrieve your credentials from the [Connections tab](https://app.nango.dev/connections) 🎉
 
 <Tip>
-If you are using Nango to authorize APIs, that's it 🙌 Check the [API Authorization guide](/guides/oauth) to authorize users from your frontend and get credentials from your backend.
+  If you are using Nango to authorize APIs, you're all set 🙌 Check out the [API Authorization guide](/guides/oauth) to authorize users from your frontend and obtain credentials from your backend.
 </Tip>
 
 <Info>
-If you get an error, check the [Activity tab](https://app.nango.dev/activity): The logs there can show you helpful information to debug the issue.
+  If you encounter an error, visit the [Activity tab](https://app.nango.dev/activity). The logs there can provide useful information to debug the issue.
 </Info>
 
 ## Sync data from an API (Github issues)
 
-### Install the Nango CLI
-
-Install the Nango CLI globally: 
 ```bash
 npm install -g nango
 ```
 
-In the root of your project run:
+In the root of your project, run:
+
 ```bash
 nango init # Creates `./nango-integrations` with initial config
 ```
 
-Next, we need to authenticate the CLI. Add the following env vars (e.g. in an `.env` file in `./nango-integrations`):
+Next, we need to authenticate the CLI. Add the following environment variables (e.g., in an `.env` file in `./nango-integrations`):
+
 ```bash
 NANGO_SECRET_KEY_PROD='<prod-secret-key>'
 NANGO_SECRET_KEY_DEV='<dev-secret-key>'
 ```
 
-Get your `prod` and `dev` secret keys from the [Project Settings tab](https://app.nango.dev/project-settings) (toggle between the `prod` and `dev` environment in the left nav bar).
+Retrieve your `prod` and `dev` secret keys from the [Project Settings tab](https://app.nango.dev/project-settings) (toggle between the `prod` and `dev` environment in the left navigation bar).
 
 ### Configure a _sync_
 
 `./nango-integrations` initially contains two files:
-- `nango.yaml`: the **configuration** to sync Github issues
-- `github-issue-example.ts`: the **code** to sync Github issues
+
+*   `nango.yaml`: the **configuration** to sync GitHub issues
+*   `github-issue-example.ts`: the **code** to sync GitHub issues
 
 Within `./nango-integrations`, run:
+
 ```bash
 nango dev # Continuously watches integration files for changes.
 ```
 
-The rest of the files (`models.ts`, `dist/*`) are automatically generated thanks to this `dev` command.
+The remaining files (`models.ts`, `dist/*`) are automatically generated thanks to this `dev` command.
 
 ### Dry run the _sync_
 
-Before you deploy your _sync_ to your cloud account you can test it locally.
+Before deploying your _sync_ to your cloud account, you can test it locally.
 
-Open a new terminal tab, go to `./nango-integrations`. Dry run your _sync_ by running:
+Open a new terminal tab, navigate to `./nango-integrations`. Dry run your _sync_ by executing:
 
 ```bash
 nango dryrun github-issue-example test-connection-id
 ```
 
-This will use the _connection_ you created in the [Authorize an API section](#authorize-an-api-github) to run your _sync_ script. Because this is a dry run, the fetched data will not be stored in Nango.
+This will use the _connection_ you created in the [Authorize an API section](#authorize-an-api-github) to run your _sync_ script. Since this is a dry run, the fetched data will not be stored in Nango.
 
 ### Deploy the _sync_
 
 Finally, deploy your new sync to Nango Cloud:
-
 ```bash
 nango deploy dev # Deploys to your cloud "dev" environment.
 ```
 
-Nango automatically adds your _sync_ to all Github connections and starts syncing data for them. 🎉
+Nango automatically adds your _sync_ to all GitHub connections and starts syncing data for them. 🎉
 
-Take a look at your new _sync_ in the [Syncs tab](https://app.nango.dev/syncs) and check the [Activity tab](https://app.nango.dev/activity) to see every sync run live as Nango is fetching the data.
+Take a look at your new _sync_ in the [Syncs tab](https://app.nango.dev/syncs) and check the [Activity tab](https://app.nango.dev/activity) to see every sync run live as Nango fetches the data.
 
 ## Retrieve the synced data
 
-Fetch the always-fresh data from the _sync_ in your backend with the [backend SDK](/sdks) or the [REST API](/api-reference):
+Fetch the always-up-to-date data from the _sync_ in your backend with the [backend SDK](/sdks) or the [REST API](/api-reference):
 
 <Tabs>
 
@@ -142,6 +143,3 @@ Check out the [Guides section](/guides) to:
 ## Questions, problems, feedback?
 
 We are happy to help! Please reach out on the [Slack community](https://nango.dev/slack), we are very active there.
-
-
-

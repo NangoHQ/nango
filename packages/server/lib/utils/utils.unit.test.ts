@@ -1,5 +1,5 @@
 import { expect, describe, it } from 'vitest';
-import { parseConnectionConfigParamsFromTemplate } from './utils.js';
+import { getConnectionMetadataFromTokenResponse, parseConnectionConfigParamsFromTemplate } from './utils.js';
 import type { Template as ProviderTemplate } from '@nangohq/shared';
 
 describe('Utils unit tests', () => {
@@ -32,5 +32,63 @@ describe('Utils unit tests', () => {
 
         const connectionConfigToken = parseConnectionConfigParamsFromTemplate(tokenTemplate as unknown as ProviderTemplate);
         expect(connectionConfigToken).toEqual(['token']);
+    });
+
+    it('Should extract metadata from token response based on template', () => {
+        const template: ProviderTemplate = {
+            token_response_metadata: ['incoming_webhook.url', 'ok', 'bot_user_id', 'scope']
+        } as ProviderTemplate;
+
+        const params = {
+            ok: true,
+            scope: 'chat:write,channels:read,team.billing:read,users:read,channels:history,channels:join,incoming-webhook',
+            token_type: 'bot',
+            bot_user_id: 'abcd',
+            enterprise: null,
+            is_enterprise_install: false,
+            incoming_webhook: {
+                channel_id: 'foo',
+                configuration_url: 'https://nangohq.slack.com',
+                url: 'https://hooks.slack.com'
+            }
+        };
+
+        const result = getConnectionMetadataFromTokenResponse(params, template);
+        expect(result).toEqual({
+            'incoming_webhook.url': 'https://hooks.slack.com',
+            ok: true,
+            bot_user_id: 'abcd',
+            scope: 'chat:write,channels:read,team.billing:read,users:read,channels:history,channels:join,incoming-webhook'
+        });
+    });
+
+    it('Should extract metadata from token response based on template and if it does not exist not fail', () => {
+        const template: ProviderTemplate = {
+            token_response_metadata: ['incoming_webhook.url', 'ok']
+        } as ProviderTemplate;
+
+        const params = {
+            scope: 'chat:write,channels:read,team.billing:read,users:read,channels:history,channels:join,incoming-webhook',
+            token_type: 'bot',
+            enterprise: null,
+            is_enterprise_install: false,
+            incoming_webhook: {
+                configuration_url: 'foo.bar'
+            }
+        };
+
+        const result = getConnectionMetadataFromTokenResponse(params, template);
+        expect(result).toEqual({});
+    });
+
+    it('Should not extract metadata from an empty token response', () => {
+        const template: ProviderTemplate = {
+            token_response_metadata: ['incoming_webhook.url', 'ok']
+        } as ProviderTemplate;
+
+        const params = {};
+
+        const result = getConnectionMetadataFromTokenResponse(params, template);
+        expect(result).toEqual({});
     });
 });
