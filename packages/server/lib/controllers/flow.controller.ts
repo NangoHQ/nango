@@ -47,7 +47,23 @@ class FlowController {
             }
 
             const { targetAccountUUID, targetEnvironment, config } = req.body;
-            console.log(targetAccountUUID, targetEnvironment, config);
+
+            const environmentId = await accountService.getEnvironmentIdByUUID(targetAccountUUID, targetEnvironment);
+
+            if (!environmentId) {
+                res.status(400).send('Invalid environment');
+                return;
+            }
+
+            const { success: preBuiltSuccess, error: preBuiltError, response: preBuiltResponse } = await createPreBuiltSyncConfig(environmentId, config);
+
+            if (!preBuiltSuccess || preBuiltResponse === null) {
+                errorManager.errResFromNangoErr(res, preBuiltError);
+                return;
+            }
+
+            console.log(preBuiltResponse);
+            res.send(200);
         } catch (e) {
             next(e);
         }

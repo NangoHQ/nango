@@ -124,6 +124,7 @@ export interface IncomingPreBuiltFlowConfig extends InternalIncomingPreBuiltFlow
     nango_config_id?: number;
 
     // cli only values
+    provider?: string;
     providerConfigKey?: string;
     fileBody?: string;
 }

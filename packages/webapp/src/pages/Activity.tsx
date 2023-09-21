@@ -367,7 +367,7 @@ export default function Activity() {
                                                 </Tooltip>
                                                 <Link
                                                     to={activity.provider === null ? '/syncs' : `/integration/${activity.provider_config_key}`}
-                                                    className={`block w-36 mr-12 ${activity.provider === null && activity.action !== 'sync deploy' ? 'cursor-default' : ''}`}
+                                                    className={`block w-48 mr-12 ${activity.provider === null && activity.action !== 'sync deploy' ? 'cursor-default' : ''}`}
                                                     onClick={(e) => {
                                                         if (activity.provider === null && activity.action !== 'sync deploy') {
                                                             e.preventDefault();

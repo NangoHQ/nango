@@ -90,7 +90,7 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
             return { success: false, error, response: null };
         }
 
-        if (!syncName || !providerConfigKey || !fileBody || !models) {
+        if (!syncName || !providerConfigKey || !fileBody) {
             const error = new NangoError('missing_required_fields_on_deploy');
 
             return { success: false, error, response: null };
@@ -261,8 +261,7 @@ export async function createPreBuiltSyncConfig(
     environment_id: number,
     configs: IncomingPreBuiltFlowConfig[]
 ): Promise<ServiceResponse<SyncConfigResult | null>> {
-    const providers = configs.map((config) => config.integration);
-    const uniqueProviders = [...new Set(providers)];
+    const [firstConfig] = configs;
 
     const log = {
         level: 'info' as LogLevel,
@@ -272,7 +271,7 @@ export async function createPreBuiltSyncConfig(
         end: Date.now(),
         timestamp: Date.now(),
         connection_id: null,
-        provider: uniqueProviders.join(','),
+        provider: configs.length === 1 && firstConfig?.integration ? firstConfig?.integration : null,
         provider_config_key: '',
         environment_id: environment_id,
         operation_name: LogActionEnum.SYNC_DEPLOY
@@ -283,6 +282,7 @@ export async function createPreBuiltSyncConfig(
 
     const activityLogId = await createActivityLog(log);
 
+    const idsToMarkAsInvactive = [];
     const insertData: SyncConfig[] = [];
     let nango_config_id: number;
     let provider_config_key: string;
@@ -310,9 +310,16 @@ export async function createPreBuiltSyncConfig(
 
         providerConfigKeys.push(provider_config_key);
 
-        const { name: sync_name, type, models, auto_start, runs, model_schema, is_public } = config;
+        const { type, models, auto_start, runs, model_schema, is_public } = config;
+        const sync_name = config.name || config.syncName;
 
-        if (!sync_name || !nango_config_id || !runs || !models) {
+        if (type === SyncConfigType.SYNC && !runs) {
+            const error = new NangoError('missing_required_fields_on_deploy');
+
+            return { success: false, error, response: null };
+        }
+
+        if (!sync_name || !nango_config_id) {
             const error = new NangoError('missing_required_fields_on_deploy');
 
             return { success: false, error, response: null };
@@ -348,6 +355,14 @@ export async function createPreBuiltSyncConfig(
                 environment_id
             )) as string;
         }
+
+        const oldConfigs = await getSyncAndActionConfigsBySyncNameAndConfigId(environment_id, nango_config_id as number, sync_name);
+
+        if (oldConfigs.length > 0) {
+            const ids = oldConfigs.map((oldConfig: SyncConfig) => oldConfig.id as number);
+            idsToMarkAsInvactive.push(...ids);
+        }
+
         insertData.push({
             sync_name,
             nango_config_id,
@@ -368,6 +383,7 @@ export async function createPreBuiltSyncConfig(
     }
 
     const uniqueProviderConfigKeys = [...new Set(providerConfigKeys)];
+
     let providerConfigKeyLog = '';
     if (configs.length === 1) {
         providerConfigKeyLog = uniqueProviderConfigKeys[0] as string;
@@ -382,17 +398,22 @@ export async function createPreBuiltSyncConfig(
     try {
         const result = await schema().from<SyncConfig>(TABLE).insert(insertData).returning(['id', 'version', 'sync_name']);
 
+        if (idsToMarkAsInvactive.length > 0) {
+            await schema().from<SyncConfig>(TABLE).update({ active: false }).whereIn('id', idsToMarkAsInvactive);
+        }
+
         await updateSuccessActivityLog(activityLogId as number, true);
 
         let content;
+        const names = configs.map((config) => config.name || config.syncName);
         if (isPublic) {
-            content = `Successfully deployed the ${nameOfType}${configs.length === 1 ? '' : 's'} template${configs.length === 1 ? '' : 's'} (${configs
-                .map((config) => config.name)
-                .join(', ')}).`;
+            content = `Successfully deployed the ${nameOfType}${configs.length === 1 ? '' : 's'} template${configs.length === 1 ? '' : 's'} (${names.join(
+                ', '
+            )}).`;
         } else {
             content = `There ${configs.length === 1 ? 'was' : 'were'} ${configs.length} ${nameOfType}${configs.length === 1 ? '' : 's'} private template${
                 configs.length === 1 ? '' : 's'
-            } (${configs.map((config) => config.name).join(', ')}) deployed to your account.`;
+            } (${names.join(', ')}) deployed to your account by a Nango admin.`;
         }
 
         await createActivityLogMessageAndEnd({

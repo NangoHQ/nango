@@ -215,10 +215,10 @@ program
 program
     .command('admin:deploy', { hidden: true })
     .description('Deploy a Nango integration to an account')
-    .arguments('accountName environmentName')
-    .action(async function (this: Command, accountName: string, environmentName: string) {
+    .arguments('environmentName')
+    .action(async function (this: Command, environmentName: string) {
         const { debug } = this.opts();
-        await adminDeploy(accountName, environmentName, debug);
+        await adminDeploy(environmentName, debug);
     });
 
 program.parse();

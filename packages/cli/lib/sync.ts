@@ -388,67 +388,10 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
 
     const config = await getConfig(debug);
 
-    const postData: IncomingSyncConfig[] = [];
+    const postData: IncomingSyncConfig[] | null = packageIntegrationData(config, debug, optionalSyncName, version);
 
-    for (const integration of config) {
-        const { providerConfigKey } = integration;
-        let { syncs } = integration;
-
-        if (optionalSyncName) {
-            syncs = syncs.filter((sync) => sync.name === optionalSyncName);
-        }
-
-        for (const sync of syncs) {
-            const { name: syncName, runs = '', returns: models, models: model_schema, type = SyncConfigType.SYNC } = sync;
-
-            const { path: integrationFilePath, result: integrationFileResult } = checkForIntegrationFile(syncName, './');
-
-            if (!integrationFileResult) {
-                console.log(chalk.red(`No integration file found for ${syncName} at ${integrationFilePath}. Skipping...`));
-                continue;
-            }
-
-            if (type !== SyncConfigType.SYNC && type !== SyncConfigType.ACTION) {
-                console.log(
-                    chalk.red(
-                        `The sync ${syncName} has an invalid type "${type}". The type must be either ${SyncConfigType.SYNC} or${SyncConfigType.ACTION}. Skipping...`
-                    )
-                );
-            }
-            if (type === SyncConfigType.SYNC && !runs) {
-                console.log(chalk.red(`The sync ${syncName} is missing the "runs" property. Skipping...`));
-                continue;
-            }
-
-            if (runs && type === SyncConfigType.SYNC) {
-                const { success, error } = getInterval(runs, new Date());
-
-                if (!success) {
-                    console.log(chalk.red(`The sync ${syncName} has an issue with the sync interval "${runs}": ${error?.message}`));
-                    return;
-                }
-            }
-
-            if (debug) {
-                printDebug(`Integration file found for ${syncName} at ${integrationFilePath}`);
-            }
-
-            const body = {
-                syncName,
-                providerConfigKey,
-                models,
-                version: version as string,
-                runs,
-                track_deletes: sync.track_deletes || false,
-                auto_start: sync.auto_start === false ? false : true,
-                attributes: sync.attributes || {},
-                type,
-                fileBody: fs.readFileSync(integrationFilePath, 'utf8'),
-                model_schema: JSON.stringify(model_schema)
-            };
-
-            postData.push(body);
-        }
+    if (!postData) {
+        return;
     }
 
     const url = process.env['NANGO_HOSTPORT'] + `/sync/deploy`;
@@ -566,8 +509,63 @@ async function deploySyncs(url: string, body: { syncs: IncomingSyncConfig[]; rec
         });
 }
 
-export const adminDeploy = async (accountName: string, environmentName: string, debug = false) => {
-    console.log(accountName, environmentName, debug);
+export const adminDeploy = async (environmentName: string, debug = false) => {
+    await verifyNecessaryFiles(false);
+
+    await parseSecretKey(environmentName, debug);
+
+    if (!process.env['NANGO_HOSTPORT']) {
+        switch (environmentName) {
+            case 'local':
+                process.env['NANGO_HOSTPORT'] = `http://localhost:${port}`;
+                break;
+            case 'staging':
+                process.env['NANGO_HOSTPORT'] = stagingHost;
+                break;
+            default:
+                process.env['NANGO_HOSTPORT'] = cloudHost;
+                break;
+        }
+    }
+
+    if (debug) {
+        printDebug(`NANGO_HOSTPORT is set to ${process.env['NANGO_HOSTPORT']}.`);
+        printDebug(`Environment is set to ${environmentName}`);
+    }
+
+    await tsc(debug);
+
+    const config = await getConfig(debug);
+
+    const flowData = packageIntegrationData(config, debug);
+
+    if (!flowData) {
+        return;
+    }
+
+    const targetAccountUUID = await promptly.prompt('Input the account uuid to deploy to: ');
+
+    if (!targetAccountUUID) {
+        console.log(chalk.red('Account uuid is required. Exiting'));
+        return;
+    }
+
+    const url = process.env['NANGO_HOSTPORT'] + `/admin/flow/deploy/pre-built`;
+
+    try {
+        await axios
+            .post(url, { targetAccountUUID, targetEnvironment: environmentName, config: flowData }, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
+            .then(() => {
+                console.log(chalk.green(`Successfully deployed the syncs/actions to the users account.`));
+            })
+            .catch((err: any) => {
+                const errorMessage = JSON.stringify(err.response.data, null, 2);
+                console.log(chalk.red(`Error deploying the syncs/actions with the following error: ${errorMessage}`));
+                process.exit(1);
+            });
+    } catch (e) {
+        console.log(e);
+    }
 };
 
 export const dryRun = async (options: RunArgs, environment: string, debug = false) => {
@@ -973,3 +971,71 @@ export const dockerRun = async (debug = false) => {
         child?.on('error', reject);
     });
 };
+
+function packageIntegrationData(config: SimplifiedNangoIntegration[], debug: boolean, version = '', optionalSyncName = ''): IncomingSyncConfig[] | null {
+    const postData: IncomingSyncConfig[] = [];
+
+    for (const integration of config) {
+        const { providerConfigKey } = integration;
+        let { syncs } = integration;
+
+        if (optionalSyncName) {
+            syncs = syncs.filter((sync) => sync.name === optionalSyncName);
+        }
+
+        for (const sync of syncs) {
+            const { name: syncName, runs = '', returns: models, models: model_schema, type = SyncConfigType.SYNC } = sync;
+
+            const { path: integrationFilePath, result: integrationFileResult } = checkForIntegrationFile(syncName, './');
+
+            if (!integrationFileResult) {
+                console.log(chalk.red(`No integration file found for ${syncName} at ${integrationFilePath}. Skipping...`));
+                continue;
+            }
+
+            if (type !== SyncConfigType.SYNC && type !== SyncConfigType.ACTION) {
+                console.log(
+                    chalk.red(
+                        `The sync ${syncName} has an invalid type "${type}". The type must be either ${SyncConfigType.SYNC} or${SyncConfigType.ACTION}. Skipping...`
+                    )
+                );
+            }
+            if (type === SyncConfigType.SYNC && !runs) {
+                console.log(chalk.red(`The sync ${syncName} is missing the "runs" property. Skipping...`));
+                continue;
+            }
+
+            if (runs && type === SyncConfigType.SYNC) {
+                const { success, error } = getInterval(runs, new Date());
+
+                if (!success) {
+                    console.log(chalk.red(`The sync ${syncName} has an issue with the sync interval "${runs}": ${error?.message}`));
+
+                    return null;
+                }
+            }
+
+            if (debug) {
+                printDebug(`Integration file found for ${syncName} at ${integrationFilePath}`);
+            }
+
+            const body = {
+                syncName,
+                providerConfigKey,
+                models,
+                version: version as string,
+                runs,
+                track_deletes: sync.track_deletes || false,
+                auto_start: sync.auto_start === false ? false : true,
+                attributes: sync.attributes || {},
+                type,
+                fileBody: fs.readFileSync(integrationFilePath, 'utf8'),
+                model_schema: JSON.stringify(model_schema)
+            };
+
+            postData.push(body);
+        }
+    }
+
+    return postData;
+}
