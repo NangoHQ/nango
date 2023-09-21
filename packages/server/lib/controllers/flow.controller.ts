@@ -1,7 +1,15 @@
 import type { Request, Response } from 'express';
 import type { NextFunction } from 'express';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
-import { flowService, getEnvironmentAndAccountId, errorManager, IncomingPreBuiltFlowConfig, configService, createPreBuiltSyncConfig } from '@nangohq/shared';
+import {
+    flowService,
+    accountService,
+    getEnvironmentAndAccountId,
+    errorManager,
+    IncomingPreBuiltFlowConfig,
+    configService,
+    createPreBuiltSyncConfig
+} from '@nangohq/shared';
 
 class FlowController {
     public async getFlows(req: Request, res: Response, next: NextFunction) {
@@ -16,6 +24,30 @@ class FlowController {
             const addedFlows = await flowService.getAddedPublicFlows(response.environment.id);
 
             res.send({ addedFlows, availableFlows });
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    public async adminDeployPrivateFlow(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { success, error, response } = await getEnvironmentAndAccountId(res, req);
+
+            if (!success || response === null) {
+                errorManager.errResFromNangoErr(res, error);
+                return;
+            }
+
+            const { accountId } = response;
+            const fullAccount = await accountService.getAccountById(accountId);
+
+            if (fullAccount?.uuid !== process.env['NANGO_ADMIN_UUID']) {
+                res.status(401).send('Unauthorized');
+                return;
+            }
+
+            const { targetAccountUUID, targetEnvironment, config } = req.body;
+            console.log(targetAccountUUID, targetEnvironment, config);
         } catch (e) {
             next(e);
         }

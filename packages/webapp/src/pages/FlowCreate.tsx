@@ -69,7 +69,7 @@ export default function FlowCreate() {
             setLoaded(true);
             getAvailableFlows();
         }
-    }, [getFlows, loaded]);
+    }, [getFlows, loaded, updateFrequency]);
 
     const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -199,7 +199,7 @@ export default function FlowCreate() {
         setFrequencyUnit(unit);
     }
 
-    const updateFrequency = (frequency: string): void => {
+    function updateFrequency(frequency: string) {
         matchDefaultFrequencyValue(frequency);
         matchDefaultFrequencyUnit(frequency);
     }

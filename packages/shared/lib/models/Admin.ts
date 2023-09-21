@@ -6,6 +6,7 @@ export interface Account {
     secret_key: string;
     host?: string | null;
     websockets_path?: string;
+    uuid?: string;
 }
 
 export interface User extends Timestamps {

@@ -8,6 +8,7 @@ import {
     createActivityLog,
     createActivityLogMessage,
     updateSuccess as updateSuccessActivityLog,
+    updateProviderConfigKey,
     createActivityLogMessageAndEnd,
     createActivityLogDatabaseErrorMessageAndEnd
 } from '../activity/activity.service.js';
@@ -33,6 +34,8 @@ import metricsManager from '../../utils/metrics.manager.js';
 import { getEnv } from '../../utils/utils.js';
 
 const TABLE = dbNamespace + 'sync_configs';
+
+const nameOfType = 'sync/action';
 
 export async function createSyncConfig(environment_id: number, syncs: IncomingSyncConfig[], debug = false): Promise<ServiceResponse<SyncConfigResult | null>> {
     const insertData = [];
@@ -276,18 +279,34 @@ export async function createPreBuiltSyncConfig(
     };
 
     const accountId = (await environmentService.getAccountIdFromEnvironment(environment_id)) as number;
-    const version = '0.0.1';
     const providerConfigKeys = [];
 
-    const insertData: SyncConfig[] = [];
-    for (const config of configs) {
-        const providerLookup = await configService.getConfigIdByProvider(config?.integration, environment_id);
-        if (!providerLookup) {
-            const error = new NangoError('provider_not_on_account');
+    const activityLogId = await createActivityLog(log);
 
-            return { success: false, error, response: null };
+    const insertData: SyncConfig[] = [];
+    let nango_config_id: number;
+    let provider_config_key: string;
+
+    for (const config of configs) {
+        if (!config.providerConfigKey) {
+            const providerLookup = await configService.getConfigIdByProvider(config?.integration, environment_id);
+            if (!providerLookup) {
+                const error = new NangoError('provider_not_on_account');
+
+                return { success: false, error, response: null };
+            }
+            ({ id: nango_config_id, unique_key: provider_config_key } = providerLookup);
+        } else {
+            const providerConfig = await configService.getProviderConfig(config.providerConfigKey, environment_id);
+
+            if (!providerConfig) {
+                const error = new NangoError('unknown_provider_config', { providerConfigKey: config.providerConfigKey });
+
+                return { success: false, error, response: null };
+            }
+            provider_config_key = config.providerConfigKey;
+            nango_config_id = providerConfig.id as number;
         }
-        const { id: nango_config_id, unique_key: provider_config_key } = providerLookup;
 
         providerConfigKeys.push(provider_config_key);
 
@@ -298,10 +317,41 @@ export async function createPreBuiltSyncConfig(
 
             return { success: false, error, response: null };
         }
+
+        const previousSyncAndActionConfig = await getSyncAndActionConfigByParams(environment_id, sync_name, provider_config_key);
+        let bumpedVersion = '';
+
+        if (previousSyncAndActionConfig) {
+            bumpedVersion = increment(previousSyncAndActionConfig.version as string | number).toString();
+
+            const syncs = await getSyncsByProviderConfigAndSyncName(environment_id, provider_config_key, sync_name);
+            for (const sync of syncs) {
+                if (!runs) {
+                    continue;
+                }
+                const { success, error } = await updateSyncScheduleFrequency(sync.id as string, runs, sync_name, activityLogId as number, environment_id);
+
+                if (!success) {
+                    return { success, error, response: null };
+                }
+            }
+        }
+
+        const version = bumpedVersion || '0.0.1';
+        let file_location = '';
+
+        if (config.fileBody) {
+            const env = getEnv();
+            file_location = (await fileService.upload(
+                config.fileBody,
+                `${env}/account/${accountId}/environment/${environment_id}/config/${nango_config_id}/${sync_name}-v${version}.js`,
+                environment_id
+            )) as string;
+        }
         insertData.push({
             sync_name,
             nango_config_id,
-            file_location: '__LOCAL_FILE__', // TODO
+            file_location: file_location ?? '__LOCAL_FILE__', // TODO
             version,
             models,
             active: true,
@@ -318,14 +368,15 @@ export async function createPreBuiltSyncConfig(
     }
 
     const uniqueProviderConfigKeys = [...new Set(providerConfigKeys)];
+    let providerConfigKeyLog = '';
     if (configs.length === 1) {
-        log.provider_config_key = uniqueProviderConfigKeys[0] as string;
+        providerConfigKeyLog = uniqueProviderConfigKeys[0] as string;
     } else {
-        log.provider_config_key = `${configs.length} flow${configs.length === 1 ? '' : 's'} from ${uniqueProviderConfigKeys.length} integration${
+        providerConfigKeyLog = `${configs.length} ${nameOfType}${configs.length === 1 ? '' : 's'} from ${uniqueProviderConfigKeys.length} integration${
             providerConfigKeys.length === 1 ? '' : 's'
         }`;
     }
-    const activityLogId = await createActivityLog(log);
+    await updateProviderConfigKey(activityLogId as number, providerConfigKeyLog);
     const isPublic = configs.every((config) => config.is_public);
 
     try {
@@ -335,11 +386,11 @@ export async function createPreBuiltSyncConfig(
 
         let content;
         if (isPublic) {
-            content = `Successfully deployed the flow${configs.length === 1 ? '' : 's'} template${configs.length === 1 ? '' : 's'} (${configs
+            content = `Successfully deployed the ${nameOfType}${configs.length === 1 ? '' : 's'} template${configs.length === 1 ? '' : 's'} (${configs
                 .map((config) => config.name)
                 .join(', ')}).`;
         } else {
-            content = `There ${configs.length === 1 ? 'was' : 'were'} ${configs.length} flow${configs.length === 1 ? '' : 's'} private template${
+            content = `There ${configs.length === 1 ? 'was' : 'were'} ${configs.length} ${nameOfType}${configs.length === 1 ? '' : 's'} private template${
                 configs.length === 1 ? '' : 's'
             } (${configs.map((config) => config.name).join(', ')}) deployed to your account.`;
         }
@@ -364,7 +415,7 @@ export async function createPreBuiltSyncConfig(
     } catch (e) {
         await updateSuccessActivityLog(activityLogId as number, false);
 
-        const content = `Failed to deploy the flows (${configs.map((config) => config.name).join(', ')}).`;
+        const content = `Failed to deploy the ${nameOfType}${configs.length === 1 ? '' : 's'} (${configs.map((config) => config.name).join(', ')}).`;
         await createActivityLogDatabaseErrorMessageAndEnd(content, e, activityLogId as number);
 
         await metricsManager.capture('sync_deploy_failure', content, LogActionEnum.SYNC_DEPLOY, {

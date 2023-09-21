@@ -121,6 +121,10 @@ export interface IncomingPreBuiltFlowConfig extends InternalIncomingPreBuiltFlow
     is_public: boolean;
     name: string;
     nango_config_id?: number;
+
+    // cli only values
+    providerConfigKey?: string;
+    fileBody?: string;
 }
 
 export interface IncomingSyncConfig extends InternalIncomingPreBuiltFlowConfig {

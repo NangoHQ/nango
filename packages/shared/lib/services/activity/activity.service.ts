@@ -37,6 +37,15 @@ export async function updateProvider(id: number, provider: string): Promise<void
     });
 }
 
+export async function updateProviderConfigKey(id: number, provider_config_key: string): Promise<void> {
+    if (!id) {
+        return;
+    }
+    await db.knex.withSchema(db.schema()).from<ActivityLog>(activityLogTableName).where({ id }).update({
+        provider_config_key
+    });
+}
+
 export async function updateConnectionId(id: number, connection_id: string): Promise<void> {
     await db.knex.withSchema(db.schema()).from<ActivityLog>(activityLogTableName).where({ id }).update({
         connection_id
