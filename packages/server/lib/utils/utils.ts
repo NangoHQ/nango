@@ -62,8 +62,11 @@ export function missesInterpolationParam(str: string, replacers: Record<string, 
  * A helper function to extract the additional authorization parameters from the frontend Auth request.
  */
 export function getAdditionalAuthorizationParams(params: any): Record<string, string | undefined> {
-    let arr = Object.entries(params);
-    arr = arr.filter(([_, v]) => typeof v === 'string'); // Filter strings.
+    if (!params || typeof params !== 'object') {
+        return {};
+    }
+
+    let arr = Object.entries(params).filter(([_, v]) => typeof v === 'string'); // Filter strings
     let obj = Object.fromEntries(arr) as Record<string, string | undefined>;
     Object.keys(obj).forEach((key) => (obj[key] = obj[key] === 'undefined' ? undefined : obj[key])); // Detect undefined values to override template auth params.
     return obj;
