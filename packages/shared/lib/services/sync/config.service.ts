@@ -256,9 +256,11 @@ export async function createSyncConfig(environment_id: number, syncs: IncomingSy
 
 export async function createPreBuiltSyncConfig(
     environment_id: number,
-    provider_config_key: string,
-    config: IncomingPreBuiltFlowConfig
+    configs: IncomingPreBuiltFlowConfig[]
 ): Promise<ServiceResponse<SyncConfigResult | null>> {
+    const providers = configs.map((config) => config.integration);
+    const uniqueProviders = [...new Set(providers)];
+
     const log = {
         level: 'info' as LogLevel,
         success: null,
@@ -267,51 +269,80 @@ export async function createPreBuiltSyncConfig(
         end: Date.now(),
         timestamp: Date.now(),
         connection_id: null,
-        provider: config.integration,
-        provider_config_key,
+        provider: uniqueProviders.join(','),
+        provider_config_key: '',
         environment_id: environment_id,
         operation_name: LogActionEnum.SYNC_DEPLOY
     };
 
     const accountId = (await environmentService.getAccountIdFromEnvironment(environment_id)) as number;
-    const activityLogId = await createActivityLog(log);
     const version = '0.0.1';
+    const providerConfigKeys = [];
 
-    const { nango_config_id, name: sync_name, type, models, auto_start, runs, model_schema, is_public } = config;
+    const insertData: SyncConfig[] = [];
+    for (const config of configs) {
+        const providerLookup = await configService.getConfigIdByProvider(config?.integration, environment_id);
+        if (!providerLookup) {
+            const error = new NangoError('provider_not_on_account');
 
-    if (!sync_name || !nango_config_id || !runs || !models) {
-        const error = new NangoError('missing_required_fields_on_deploy');
+            return { success: false, error, response: null };
+        }
+        const { id: nango_config_id, unique_key: provider_config_key } = providerLookup;
 
-        return { success: false, error, response: null };
+        providerConfigKeys.push(provider_config_key);
+
+        const { name: sync_name, type, models, auto_start, runs, model_schema, is_public } = config;
+
+        if (!sync_name || !nango_config_id || !runs || !models) {
+            const error = new NangoError('missing_required_fields_on_deploy');
+
+            return { success: false, error, response: null };
+        }
+        insertData.push({
+            sync_name,
+            nango_config_id,
+            file_location: '__LOCAL_FILE__', // TODO
+            version,
+            models,
+            active: true,
+            runs,
+            model_schema: model_schema as unknown as SyncModelSchema[],
+            environment_id,
+            deleted: false,
+            track_deletes: false,
+            type,
+            auto_start: auto_start === false ? false : true,
+            pre_built: true,
+            is_public
+        });
     }
 
-    // TODO handle File logic
+    const uniqueProviderConfigKeys = [...new Set(providerConfigKeys)];
+    if (configs.length === 1) {
+        log.provider_config_key = uniqueProviderConfigKeys[0] as string;
+    } else {
+        log.provider_config_key = `${configs.length} flow${configs.length === 1 ? '' : 's'} from ${uniqueProviderConfigKeys.length} integration${
+            providerConfigKeys.length === 1 ? '' : 's'
+        }`;
+    }
+    const activityLogId = await createActivityLog(log);
+    const isPublic = configs.every((config) => config.is_public);
 
     try {
-        const result = await schema()
-            .from<SyncConfig>(TABLE)
-            .insert({
-                sync_name,
-                nango_config_id,
-                file_location: '__LOCAL_FILE__',
-                version,
-                models,
-                active: true,
-                runs,
-                model_schema: model_schema as unknown as SyncModelSchema[],
-                environment_id,
-                deleted: false,
-                track_deletes: false,
-                type,
-                auto_start: auto_start === false ? false : true,
-                pre_built: true,
-                is_public
-            })
-            .returning(['id', 'version', 'sync_name']);
+        const result = await schema().from<SyncConfig>(TABLE).insert(insertData).returning(['id', 'version', 'sync_name']);
 
         await updateSuccessActivityLog(activityLogId as number, true);
 
-        const content = `Successfully added the ${type} ${sync_name}.`;
+        let content;
+        if (isPublic) {
+            content = `Successfully deployed the flow${configs.length === 1 ? '' : 's'} template${configs.length === 1 ? '' : 's'} (${configs
+                .map((config) => config.name)
+                .join(', ')}).`;
+        } else {
+            content = `There ${configs.length === 1 ? 'was' : 'were'} ${configs.length} flow${configs.length === 1 ? '' : 's'} private template${
+                configs.length === 1 ? '' : 's'
+            } (${configs.map((config) => config.name).join(', ')}) deployed to your account.`;
+        }
 
         await createActivityLogMessageAndEnd({
             level: 'info',
@@ -322,25 +353,27 @@ export async function createPreBuiltSyncConfig(
 
         await metricsManager.capture('sync_deploy_success', content, LogActionEnum.SYNC_DEPLOY, {
             environmentId: String(environment_id),
-            syncName: sync_name,
+            syncName: configs.map((config) => config.name).join(', '),
             accountId: String(accountId),
-            integration: config.integration,
+            integrations: configs.map((config) => config.integration).join(', '),
             preBuilt: 'true',
-            is_public: String(is_public)
+            is_public: isPublic ? 'true' : 'false'
         });
 
         return { success: true, error: null, response: { result, activityLogId } };
     } catch (e) {
         await updateSuccessActivityLog(activityLogId as number, false);
 
-        await createActivityLogDatabaseErrorMessageAndEnd(`Failed to add the ${type} ${sync_name}.`, e, activityLogId as number);
+        const content = `Failed to deploy the flows (${configs.map((config) => config.name).join(', ')}).`;
+        await createActivityLogDatabaseErrorMessageAndEnd(content, e, activityLogId as number);
 
-        await metricsManager.capture('sync_deploy_failure', `Failed to add the ${type} ${sync_name}.`, LogActionEnum.SYNC_DEPLOY, {
+        await metricsManager.capture('sync_deploy_failure', content, LogActionEnum.SYNC_DEPLOY, {
             environmentId: String(environment_id),
-            syncName: sync_name,
+            syncName: configs.map((config) => config.name).join(', '),
             accountId: String(accountId),
-            integration: config.integration,
-            preBuilt: 'true'
+            integration: configs.map((config) => config.integration).join(', '),
+            preBuilt: 'true',
+            is_public: isPublic ? 'true' : 'false'
         });
 
         throw new NangoError('error_creating_sync_config');
@@ -760,4 +793,19 @@ export function increment(input: number | string): number | string {
     } else {
         throw new Error(`Invalid version input: ${input}`);
     }
+}
+
+export async function getPublicConfig(environment_id: number): Promise<SyncConfig[]> {
+    return schema()
+        .from<SyncConfig>(TABLE)
+        .select(`${TABLE}.*`, '_nango_configs.provider', '_nango_configs.unique_key')
+        .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')
+        .where({
+            active: true,
+            pre_built: true,
+            is_public: true,
+            '_nango_configs.environment_id': environment_id,
+            '_nango_configs.deleted': false,
+            [`${TABLE}.deleted`]: false
+        });
 }

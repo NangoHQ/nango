@@ -125,9 +125,9 @@ export default function Syncs() {
                                         <span className={`${sync.type === 'sync' ? 'w-48' : 'w-60'}`}>
                                             <Link to={`/integration/${sync.unique_key}`}>
                                                 {sync?.provider ? (
-                                                    <div className="flex ml-2">
+                                                    <div className="flex ml-2 items-center">
                                                         <img src={`images/template-logos/${sync.provider}.svg`} alt="" className="h-7 mt-0.5" />
-                                                        <p className="mt-1.5 ml-2 w-44">{sync.unique_key}</p>
+                                                        <p className="ml-2 w-44">{sync.unique_key}</p>
                                                     </div>
                                                 ) : (
                                                     <div className="">{sync.unique_key}</div>

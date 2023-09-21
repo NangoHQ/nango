@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { Prism } from '@mantine/prism';
 import { useGetFlows, useCreateFlow } from '../utils/api';
+import { Sync } from '../types';
 import { LeftNavBarItems } from '../components/LeftNavBar';
 import DashboardLayout from '../layout/DashboardLayout';
 import { useStore } from '../store';
@@ -32,7 +33,11 @@ export default function FlowCreate() {
     const [flow, setFlow] = useState<FlowDetails>();
     const [models, setModels] = useState<Flow['models']>({});
     const [selectedFlowName, setSelectedFlowName] = useState<string>('');
+    const [alreadyAddedFlows, setAlreadyAddedFlows] = useState<Sync[]>([]);
+    const [canAdd, setCanAdd] = useState<boolean>(true);
 
+    const [frequencyValue, setFrequencyValue] = useState<number>();
+    const [frequencyUnit, setFrequencyUnit] = useState<string>();
     const [frequencyEditMode, setFrequencyEditMode] = useState(false);
     const getFlows = useGetFlows();
     const createFlow = useCreateFlow();
@@ -49,11 +54,14 @@ export default function FlowCreate() {
             const res = await getFlows();
 
             if (res?.status === 200) {
-                const flows = await res.json();
+                const { availableFlows: flows, addedFlows } = await res.json();
+                setAlreadyAddedFlows(addedFlows);
                 setFlows(flows.integrations);
                 setIntegration(Object.keys(flows.integrations)[0]);
                 setFlowNames(Object.keys(flows.integrations[Object.keys(flows.integrations)[0]]).filter(name => name !== 'models'));
-                setFlow(flows.integrations[Object.keys(flows.integrations)[0]][Object.keys(flows.integrations[Object.keys(flows.integrations)[0]])[0]] as FlowDetails);
+                const flow = flows.integrations[Object.keys(flows.integrations)[0]][Object.keys(flows.integrations[Object.keys(flows.integrations)[0]])[0]] as FlowDetails;
+                setFlow(flow);
+                updateFrequency(flow.runs);
                 setModels(flows.integrations[Object.keys(flows.integrations)[0]]['models']);
             }
         }
@@ -86,7 +94,7 @@ export default function FlowCreate() {
             is_public: true
         };
 
-        const res = await createFlow(flowPayload);
+        const res = await createFlow([flowPayload]);
 
         if (res?.status === 201) {
             toast.success(`${flowPayload.type} created successfully!`, { position: toast.POSITION.BOTTOM_CENTER });
@@ -97,32 +105,33 @@ export default function FlowCreate() {
                 position: toast.POSITION.BOTTOM_CENTER
             });
         }
-
-        // send this to a different endpoint to automatically pull in the built file
-        // already set in s3
-        // 1) integration templates need to be built and stored in s3
-        // that can happen as part of the build, on a template change
-        // 2) Need a marker that this is a prebuilt template
-        // 3) Files in are version controlled and if there is an update you
-        // can upgrade to the latet version
-        // version stored in the nango.yaml?
     }
 
     const handleIntegrationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setFrequencyEditMode(false);
         setIntegration(e.target.value);
         const flowNamesWithModels = Object.keys(flows[e.target.value]);
         const flowNames = flowNamesWithModels.filter(name => name !== 'models');
         setFlowNames(flowNames);
         setSelectedFlowName(flowNames[0]);
-        setFlow(flows[e.target.value][flowNames[0]] as FlowDetails);
+        const alreadyAdded = alreadyAddedFlows.find((flow: Sync) => flow.unique_key === e.target.value && flow.sync_name === flowNames[0]);
+        setCanAdd(alreadyAdded === undefined);
+        const flow = flows[e.target.value][flowNames[0]] as FlowDetails;
+        setFlow(flow);
+        updateFrequency(flow.runs);
         setModels(flows[e.target.value]['models']);
     }
 
     const handleFlowNameChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setFrequencyEditMode(false);
         const flow = flows[integration][e.target.value] as FlowDetails;
         setSelectedFlowName(e.target.value);
         setFlow(flow);
+        updateFrequency(flow.runs);
         setModels(flows[integration]['models']);
+
+        const alreadyAdded = alreadyAddedFlows.find((flow: Sync) => flow.unique_key === integration && flow.sync_name === e.target.value);
+        setCanAdd(alreadyAdded === undefined);
     }
 
     const handleUpdateFrequency = async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -151,6 +160,48 @@ export default function FlowCreate() {
         });
 
         return builtModels;
+    }
+
+    const matchDefaultFrequencyValue = (frequency: string): void => {
+        const frequencyValue = frequency.match(/\d+/g)?.[0];
+
+        setFrequencyValue(Number(frequencyValue));
+    }
+
+    const matchDefaultFrequencyUnit = (frequency: string): void => {
+        const frequencyWithoutEvery = frequency.replace('every ', '');
+        const frequencyWithoutNumber = frequencyWithoutEvery.replace(/\d+/g, '');
+        const frequencyUnit = frequencyWithoutNumber.replace(/\s/g, '');
+
+        let unit = '';
+
+        switch (frequencyUnit) {
+            case 'minutes':
+            case 'minute':
+            case 'min':
+            case 'mins':
+                unit = 'minutes';
+            break;
+            case 'hours':
+            case 'hour':
+            case 'hr':
+            case 'hrs':
+            case 'h':
+                unit = 'hours';
+            break;
+            case 'days':
+            case 'day':
+            case 'd':
+                unit ='days';
+            break;
+        }
+
+        setFrequencyUnit(unit);
+    }
+
+    const updateFrequency = (frequency: string): void => {
+        matchDefaultFrequencyValue(frequency);
+        matchDefaultFrequencyUnit(frequency);
     }
 
     return (
@@ -250,13 +301,15 @@ export default function FlowCreate() {
                                                     name="frequency"
                                                     type="number"
                                                     className="border-border-gray bg-bg-black text-text-light-gray block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base shadow-sm active:outline-none focus:outline-none active:border-white focus:border-white"
-                                                    defaultValue={flow?.runs?.match(/\d+/g)?.map(Number)[0]}
+                                                    value={frequencyValue}
+                                                    onChange={(e) => setFrequencyValue(Number(e.target.value))}
                                                 />
                                                 <select
                                                     id="frequency-unit"
                                                     name="frequency-unit"
                                                     className="ml-4 border-border-gray bg-bg-black text-text-light-gray block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base shadow-sm active:outline-none focus:outline-none active:border-white focus:border-white"
-                                                    defaultValue={flow?.runs?.match(/[a-zA-Z]+/g)?.map(String)[0]}
+                                                    value={frequencyUnit}
+                                                    onChange={(e) => setFrequencyUnit(e.target.value)}
                                                 >
                                                     <option value="minutes">Minutes</option>
                                                     <option value="hours">Hours</option>
@@ -273,7 +326,11 @@ export default function FlowCreate() {
                                             <div className={`${frequencyEditMode ? 'hidden' : 'flex w-1/3'}`}>
                                                 <span className="border-border-gray bg-bg-black text-text-light-gray block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base shadow-sm active:outline-none focus:outline-none active:border-white focus:border-white">{flow?.runs}</span>
                                                 <button
-                                                    onClick={() => setFrequencyEditMode(true)}
+                                                    type="button"
+                                                    onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                                                        e.preventDefault();
+                                                        setFrequencyEditMode(true);
+                                                    }}
                                                     className="hover:bg-gray-700 bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
                                                 >
                                                     Edit
@@ -297,13 +354,17 @@ export default function FlowCreate() {
                                     </div>
                                 </div>
                             )}
-                            <div>
-                                <div className="flex justify-between">
-                                    <button type="submit" className="bg-white mt-4 h-8 rounded-md hover:bg-gray-300 border px-3 pt-0.5 text-sm text-black">
-                                        Add {flow?.type === 'action' ? 'Action' : 'Sync'}
-                                    </button>
+                            {canAdd !== false ? (
+                                <div>
+                                    <div className="flex justify-between">
+                                        <button type="submit" className="bg-white mt-4 h-8 rounded-md hover:bg-gray-300 border px-3 pt-0.5 text-sm text-black">
+                                            Add {flow?.type === 'action' ? 'Action' : 'Sync'}
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
+                            ) : (
+                                <span className="flex mt-2 text-red-500">This flow has already been added!</span>
+                            )}
                         </form>
                     </div>
                 </div>

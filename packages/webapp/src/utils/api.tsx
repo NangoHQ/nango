@@ -721,7 +721,7 @@ export function useGetFlows() {
 }
 
 export function useCreateFlow() {
-    return async (flow: PreBuiltFlow) => {
+    return async (flow: PreBuiltFlow[]) => {
         try {
             const res = await fetch(`/api/v1/flow/deploy/pre-built`, {
                 method: 'POST',

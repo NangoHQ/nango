@@ -1,13 +1,21 @@
 import type { Request, Response } from 'express';
 import type { NextFunction } from 'express';
+import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import { flowService, getEnvironmentAndAccountId, errorManager, IncomingPreBuiltFlowConfig, configService, createPreBuiltSyncConfig } from '@nangohq/shared';
 
 class FlowController {
-    public async getFlows(_req: Request, res: Response, next: NextFunction) {
+    public async getFlows(req: Request, res: Response, next: NextFunction) {
         try {
-            const flows = flowService.getAllAvailableFlows();
+            const { success, error, response } = await getUserAccountAndEnvironmentFromSession(req);
 
-            res.send(flows);
+            if (!success || response === null) {
+                errorManager.errResFromNangoErr(res, error);
+                return;
+            }
+            const availableFlows = flowService.getAllAvailableFlows();
+            const addedFlows = await flowService.getAddedPublicFlows(response.environment.id);
+
+            res.send({ addedFlows, availableFlows });
         } catch (e) {
             next(e);
         }
@@ -22,29 +30,40 @@ class FlowController {
                 return;
             }
 
-            const config: IncomingPreBuiltFlowConfig = req.body;
+            const config: IncomingPreBuiltFlowConfig[] = req.body;
 
-            if (!config.integration) {
+            if (!config) {
+                res.status(400).send('Missing config');
+                return;
+            }
+
+            if (config.some((c) => !c.integration)) {
                 res.status(400).send('Missing integration');
                 return;
             }
 
             const { environmentId } = response;
 
-            const providerLookup = await configService.getConfigIdByProvider(config.integration, environmentId);
+            if (config && config.length === 1) {
+                const [firstConfig] = config;
+                const providerLookup = await configService.getConfigIdByProvider(firstConfig?.integration as string, environmentId);
 
-            if (!providerLookup) {
-                errorManager.errRes(res, 'provider_not_on_account');
+                if (!providerLookup) {
+                    errorManager.errRes(res, 'provider_not_on_account');
+                    return;
+                }
+            }
+
+            const { success: preBuiltSuccess, error: preBuiltError, response: preBuiltResponse } = await createPreBuiltSyncConfig(environmentId, config);
+
+            if (!preBuiltSuccess || preBuiltResponse === null) {
+                errorManager.errResFromNangoErr(res, preBuiltError);
                 return;
             }
 
-            const { id: nango_config_id, unique_key: provider_config_key } = providerLookup;
-
-            const result = await createPreBuiltSyncConfig(environmentId, provider_config_key, { ...config, nango_config_id });
-
             // TODO start the sync if connection(s) exist
 
-            console.log(result);
+            console.log(preBuiltResponse);
 
             res.send(201);
         } catch (e) {

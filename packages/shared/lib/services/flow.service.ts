@@ -2,6 +2,7 @@ import yaml from 'js-yaml';
 import path from 'path';
 import fs from 'fs';
 import { dirname } from '../utils/utils.js';
+import { getPublicConfig } from './sync/config.service.js';
 
 class FlowService {
     public getAllAvailableFlows() {
@@ -13,6 +14,10 @@ class FlowService {
         } catch (_e) {
             return {};
         }
+    }
+
+    public async getAddedPublicFlows(environmentId: number) {
+        return getPublicConfig(environmentId);
     }
 }
 
