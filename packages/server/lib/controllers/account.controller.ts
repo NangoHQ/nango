@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { isCloud, User, accountService, userService, errorManager } from '@nangohq/shared';
+import { isCloud, User, accountService, userService, errorManager, LogLevel, LogActionEnum, createActivityLogAndLogMessage } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 
 class AccountController {
@@ -58,10 +58,12 @@ class AccountController {
     }
 
     async switchAccount(req: Request, res: Response, next: NextFunction) {
-        console.log(isCloud());
-        //if (!isCloud()) {
-        //res.status(400).send('Cannot switch account in self-hosted mode');
-        //}
+        if (!isCloud()) {
+            res.status(400).send('Account switching only allowed in cloud');
+
+            return;
+        }
+
         try {
             const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
             if (!sessionSuccess || response === null) {
@@ -93,37 +95,54 @@ class AccountController {
                 return;
             }
 
-            const accountId = await accountService.getAccountIdByUuid(account_uuid);
-            if (!accountId) {
+            const currentEnvironment = req.cookies['env'] || 'dev';
+
+            const result = await accountService.getAccountAndEnvironmentIdByUUID(account_uuid, currentEnvironment);
+
+            if (!result) {
                 res.status(400).send('Invalid account_uuid');
                 return;
             }
-            const users = await userService.getUsersByAccountId(accountId);
 
-            if (users.length === 0) {
+            const user = await userService.getAnUserByAccountId(result.accountId);
+
+            if (!user) {
                 res.status(400).send('Cannot switch to account with no users');
                 return;
             }
 
-            const [firstUser] = users;
+            if (isCloud()) {
+                req.session.destroy((err) => {
+                    if (err) {
+                        next(err);
+                    }
+                });
+            }
 
-            // TODO write to this users activity log
-
-            //if (isCloud()) {
-            //req.session.destroy((err) => {
-            //if (err) {
-            //next(err);
-            //}
-            //res.clearCookie('nango_session');
-            //});
-            //}
-            console.log(firstUser);
-
-            req.login(firstUser as User, (err) => {
+            req.login(user as User, (err) => {
                 if (err) {
                     next(err);
                     return;
                 }
+            });
+
+            const log = {
+                level: 'info' as LogLevel,
+                success: true,
+                action: LogActionEnum.ACCOUNT,
+                start: Date.now(),
+                end: Date.now(),
+                timestamp: Date.now(),
+                connection_id: 'n/a',
+                provider: null,
+                provider_config_key: '',
+                environment_id: result.environmentId
+            };
+
+            await createActivityLogAndLogMessage(log, {
+                level: 'info',
+                timestamp: Date.now(),
+                content: `A Nango admin logged into your account for the following reason: "${login_reason}"`
             });
 
             res.status(200).send({ success: true });

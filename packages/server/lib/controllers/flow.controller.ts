@@ -48,12 +48,14 @@ class FlowController {
 
             const { targetAccountUUID, targetEnvironment, config } = req.body;
 
-            const environmentId = await accountService.getEnvironmentIdByUUID(targetAccountUUID, targetEnvironment);
+            const result = await accountService.getAccountAndEnvironmentIdByUUID(targetAccountUUID, targetEnvironment);
 
-            if (!environmentId) {
+            if (!result) {
                 res.status(400).send('Invalid environment');
                 return;
             }
+
+            const { environmentId } = result;
 
             const { success: preBuiltSuccess, error: preBuiltError, response: preBuiltResponse } = await createPreBuiltSyncConfig(environmentId, config);
 

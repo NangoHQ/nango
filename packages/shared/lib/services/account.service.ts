@@ -37,7 +37,7 @@ class AccountService {
         }
     }
 
-    async getEnvironmentIdByUUID(targetAccountUUID: string, targetEnvironment: string): Promise<number | null> {
+    async getAccountAndEnvironmentIdByUUID(targetAccountUUID: string, targetEnvironment: string): Promise<{ accountId: number; environmentId: number } | null> {
         const account = await db.knex.withSchema(db.schema()).select('id').from<Account>(`_nango_accounts`).where({ uuid: targetAccountUUID });
 
         if (account == null || account.length == 0 || account[0] == null) {
@@ -55,17 +55,7 @@ class AccountService {
             return null;
         }
 
-        return environment[0].id;
-    }
-
-    async getAccountIdByUuid(uuid: string): Promise<number | null> {
-        const account = await db.knex.withSchema(db.schema()).select('id').from<Account>(`_nango_accounts`).where({ uuid });
-
-        if (account == null || account.length == 0 || account[0] == null) {
-            return null;
-        }
-
-        return account[0].id;
+        return { accountId, environmentId: environment[0].id };
     }
 }
 
