@@ -9,7 +9,10 @@ import {
     IncomingPreBuiltFlowConfig,
     configService,
     deployPreBuilt as deployPreBuiltSyncConfig,
-    syncOrchestrator
+    syncOrchestrator,
+    FlowDownloadBody,
+    remoteFileService,
+    getNangoConfigIdFromId
 } from '@nangohq/shared';
 
 class FlowController {
@@ -119,6 +122,56 @@ class FlowController {
             await syncOrchestrator.triggerIfConnectionsExist(preBuiltResponse.result, environmentId);
 
             res.sendStatus(201);
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    public async downloadFlow(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { success, error, response } = await getEnvironmentAndAccountId(res, req);
+
+            if (!success || response === null) {
+                errorManager.errResFromNangoErr(res, error);
+                return;
+            }
+
+            const { environmentId, accountId } = response;
+
+            const body: FlowDownloadBody = req.body as FlowDownloadBody;
+
+            if (!body) {
+                res.status(400).send('Missing body');
+                return;
+            }
+
+            const { id, name, provider, is_public } = body;
+
+            if (!name || !provider || !is_public) {
+                res.status(400).send('Missing required fields');
+                return;
+            }
+
+            // this is a public template that isn't active yet
+            if (!id && is_public) {
+                // TODO fetch from s3 in the public integration directory
+
+                return;
+            } else {
+                // it has an id, so it's either a public template that is active, or a private template
+                // either way, we need to fetch it from the users directory in s3
+                // res: Response, integrationName: string, accountId: number, environmentId: number, nangoConfigId: number
+                const nangoConfigId = await getNangoConfigIdFromId(id as number);
+
+                if (!nangoConfigId) {
+                    res.status(400).send('Invalid id');
+                    return;
+                }
+
+                await remoteFileService.zipAndSendFiles(res, name, accountId, environmentId, nangoConfigId);
+
+                return;
+            }
         } catch (e) {
             next(e);
         }

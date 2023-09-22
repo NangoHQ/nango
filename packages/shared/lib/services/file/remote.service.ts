@@ -1,8 +1,12 @@
+import type { Response } from 'express';
 import { PutObjectCommand, GetObjectCommand, GetObjectCommandOutput, S3Client, DeleteObjectsCommand } from '@aws-sdk/client-s3';
 import { Readable } from 'stream';
-import { isCloud } from '../utils/utils.js';
-import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
-import { LogActionEnum } from '../models/Activity.js';
+import archiver from 'archiver';
+import { isCloud } from '../../utils/utils.js';
+import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
+import { LogActionEnum } from '../../models/Activity.js';
+import { nangoConfigFile } from '../nango-config.service.js';
+import { getEnv } from '../../utils/utils.js';
 
 const client = new S3Client({
     region: process.env['AWS_REGION'] as string,
@@ -12,7 +16,7 @@ const client = new S3Client({
     }
 });
 
-class FileService {
+class RemoteFileService {
     bucket = process.env['AWS_BUCKET_NAME'] as string;
 
     async upload(fileContents: string, fileName: string, environmentId: number): Promise<string | null> {
@@ -80,6 +84,21 @@ class FileService {
         });
     }
 
+    async getStream(fileName: string): Promise<Readable | null> {
+        const getObjectCommand = new GetObjectCommand({
+            Bucket: this.bucket,
+            Key: fileName
+        });
+
+        const response = await client.send(getObjectCommand);
+
+        if (response.Body && response.Body instanceof Readable) {
+            return response.Body;
+        } else {
+            return null;
+        }
+    }
+
     async deleteFiles(fileNames: string[]): Promise<void> {
         if (!isCloud()) {
             return;
@@ -94,6 +113,38 @@ class FileService {
 
         await client.send(deleteObjectsCommand);
     }
+
+    async zipAndSendFiles(res: Response, integrationName: string, accountId: number, environmentId: number, nangoConfigId: number): Promise<void> {
+        if (!isCloud()) {
+            return;
+        } else {
+            const zipFileName = 'nango-integrations.zip';
+
+            res.attachment(zipFileName);
+            res.setHeader('Content-Type', 'application/zip');
+
+            const archive = archiver('zip');
+
+            archive.pipe(res);
+
+            const env = getEnv();
+            const nangoYaml = await this.getStream(`${env}/account/${accountId}/environment/${environmentId}/${nangoConfigFile}`);
+
+            if (!nangoYaml) {
+                // TODO: handle error
+            }
+            const tsFile = await this.getStream(`${env}/account/${accountId}/environment/${environmentId}/config/${nangoConfigId}/${integrationName}.ts`);
+
+            if (!tsFile) {
+                // TODO: handle error
+            }
+
+            archive.append(nangoYaml as Readable, { name: nangoConfigFile });
+            archive.append(tsFile as Readable, { name: `${integrationName}.ts` });
+
+            archive.finalize();
+        }
+    }
 }
 
-export default new FileService();
+export default new RemoteFileService();

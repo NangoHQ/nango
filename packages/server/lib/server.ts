@@ -140,6 +140,7 @@ app.route('/api/v1/sync/command').post(webAuth, syncController.syncCommand.bind(
 app.route('/api/v1/syncs').get(webAuth, syncController.getSyncs.bind(syncController));
 app.route('/api/v1/flows').get(webAuth, flowController.getFlows.bind(syncController));
 app.route('/api/v1/flow/deploy/pre-built').post(webAuth, flowController.deployPreBuiltFlow.bind(flowController));
+app.route('/api/v1/flow/download').post(webAuth, flowController.downloadFlow.bind(flowController));
 
 // Hosted signin
 if (!isCloud()) {

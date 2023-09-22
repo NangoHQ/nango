@@ -10,6 +10,7 @@ import { Sync } from '../types';
 import { formatDateToUSFormat } from '../utils/utils';
 import Info from '../components/ui/Info'
 import { isLocal, isCloud } from '../utils/utils';
+import Button from '../components/ui/button/Button';
 
 import { useStore } from '../store';
 
@@ -43,6 +44,34 @@ export default function Syncs() {
             getSyncs();
         }
     }, [getSyncsAPI, loaded, setLoaded]);
+
+    const downloadFlow = async (sync: Sync) => {
+        console.log(sync);
+        /*
+        const flowInfo = {
+            name: selectedFlowName,
+            provider: integration,
+            is_public: true
+        };
+
+        const response = await fetch('/api/v1/flow/download', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(flowInfo)
+        });
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'nango-integrations.zip';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+         */
+    }
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Syncs}>
@@ -168,7 +197,8 @@ export default function Syncs() {
                                                         <span className="w-12 ml-6 mr-28">{sync.connections === null ? 0 : sync.connections.length}</span>
                                                     </Tooltip>
                                                 )}
-                                                <span className="text-gray-500">{formatDateToUSFormat(sync.updated_at)}</span>
+                                                <span className="text-gray-500 mr-4">{formatDateToUSFormat(sync.updated_at)}</span>
+                                                <Button type="button" variant="secondary" onClick={() => downloadFlow(sync)}>Download</Button>
                                             </div>
                                         </div>
                                     ))}

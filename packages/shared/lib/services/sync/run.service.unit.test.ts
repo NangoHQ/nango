@@ -2,7 +2,7 @@ import { expect, describe, it, vi } from 'vitest';
 import SyncRun from './run.service.js';
 import * as ConfigService from './config/config.service.js';
 import environmentService from '../environment.service.js';
-import * as NangoConfigService from '../nango-config.service.js';
+import LocalFileService from '../file/local.service.js';
 import integationService from './integration.service.js';
 import { SyncType } from '../../models/Sync.js';
 import type { Environment } from '../../models/Environment.js';
@@ -84,7 +84,7 @@ describe('SyncRun', () => {
             });
         });
 
-        vi.spyOn(NangoConfigService, 'checkForIntegrationFile').mockImplementation(() => {
+        vi.spyOn(LocalFileService, 'checkForIntegrationFile').mockImplementation(() => {
             return {
                 result: true,
                 path: '/tmp'
@@ -102,7 +102,7 @@ describe('SyncRun', () => {
         expect(run).toEqual({ some: 'data' });
 
         // if integration file not found it should return false
-        vi.spyOn(NangoConfigService, 'checkForIntegrationFile').mockImplementation(() => {
+        vi.spyOn(LocalFileService, 'checkForIntegrationFile').mockImplementation(() => {
             return {
                 result: false,
                 path: '/tmp'

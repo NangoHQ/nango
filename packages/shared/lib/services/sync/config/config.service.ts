@@ -1,7 +1,7 @@
 import semver from 'semver';
 import db, { schema, dbNamespace } from '../../../db/database.js';
 import configService from '../../config.service.js';
-import fileService from '../../file.service.js';
+import remoteFileService from '../../file/remote.service.js';
 import { LogActionEnum } from '../../../models/Activity.js';
 import { SyncConfigWithProvider, SyncConfig, SlimSync, SyncConfigType } from '../../../models/Sync.js';
 import type { NangoConnection } from '../../../models/Connection.js';
@@ -239,7 +239,7 @@ export async function deleteSyncFilesForConfig(id: number, environmentId: number
         const files = await schema().from<SyncConfig>(TABLE).where({ nango_config_id: id, deleted: false }).select('file_location').pluck('file_location');
 
         if (files.length > 0) {
-            await fileService.deleteFiles(files);
+            await remoteFileService.deleteFiles(files);
         }
     } catch (error) {
         await errorManager.report(error, {
@@ -440,4 +440,21 @@ export async function getPublicConfig(environment_id: number): Promise<SyncConfi
             '_nango_configs.deleted': false,
             [`${TABLE}.deleted`]: false
         });
+}
+
+export async function getNangoConfigIdFromId(id: number): Promise<number | null> {
+    const result = await schema()
+        .from<SyncConfig>(TABLE)
+        .select(`${TABLE}.nango_config_id`)
+        .where({
+            [`${TABLE}.id`]: id,
+            [`${TABLE}.deleted`]: false
+        })
+        .first();
+
+    if (!result) {
+        return null;
+    }
+
+    return result.nango_config_id;
 }

@@ -1,6 +1,6 @@
 import { schema, dbNamespace } from '../../../db/database.js';
 import configService from '../../config.service.js';
-import fileService from '../../file.service.js';
+import remoteFileService from '../../file/remote.service.js';
 import environmentService from '../../environment.service.js';
 import { updateSyncScheduleFrequency } from '../schedule.service.js';
 import {
@@ -73,7 +73,7 @@ export async function deploy(
     const env = getEnv();
 
     if (nangoYamlBody) {
-        await fileService.upload(nangoYamlBody, `${env}/account/${accountId}/environment/${environment_id}/${nangoConfigFile}`, environment_id);
+        await remoteFileService.upload(nangoYamlBody, `${env}/account/${accountId}/environment/${environment_id}/${nangoConfigFile}`, environment_id);
     }
 
     const flowReturnData: SyncDeploymentResult[] = [];
@@ -143,14 +143,14 @@ export async function deploy(
         const version = optionalVersion || bumpedVersion || '1';
 
         const jsFile = typeof fileBody === 'string' ? fileBody : fileBody?.js;
-        const file_location = (await fileService.upload(
+        const file_location = (await remoteFileService.upload(
             jsFile as string,
             `${env}/account/${accountId}/environment/${environment_id}/config/${config.id}/${syncName}-v${version}.js`,
             environment_id
         )) as string;
 
         if (typeof fileBody === 'object' && fileBody?.ts) {
-            await fileService.upload(
+            await remoteFileService.upload(
                 fileBody.ts,
                 `${env}/account/${accountId}/environment/${environment_id}/config/${config.id}/${syncName}.ts`,
                 environment_id
@@ -315,7 +315,7 @@ export async function deployPreBuilt(
     const env = getEnv();
 
     if (nangoYamlBody) {
-        await fileService.upload(nangoYamlBody, `${env}/account/${accountId}/environment/${environment_id}/${nangoConfigFile}`, environment_id);
+        await remoteFileService.upload(nangoYamlBody, `${env}/account/${accountId}/environment/${environment_id}/${nangoConfigFile}`, environment_id);
     }
 
     const flowReturnData: SyncDeploymentResult[] = [];
@@ -380,14 +380,14 @@ export async function deployPreBuilt(
         const version = bumpedVersion || '0.0.1';
 
         const jsFile = typeof config.fileBody === 'string' ? config.fileBody : config.fileBody?.js;
-        const file_location = (await fileService.upload(
+        const file_location = (await remoteFileService.upload(
             jsFile as string,
             `${env}/account/${accountId}/environment/${environment_id}/config/${nango_config_id}/${sync_name}-v${version}.js`,
             environment_id
         )) as string;
 
         if (typeof config.fileBody === 'object' && config.fileBody?.ts) {
-            await fileService.upload(
+            await remoteFileService.upload(
                 config.fileBody.ts,
                 `${env}/account/${accountId}/environment/${environment_id}/config/${nango_config_id}/${sync_name}.ts`,
                 environment_id

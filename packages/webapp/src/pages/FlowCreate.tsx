@@ -8,6 +8,7 @@ import { LeftNavBarItems } from '../components/LeftNavBar';
 import DashboardLayout from '../layout/DashboardLayout';
 import { useStore } from '../store';
 import Info from '../components/ui/Info'
+import Button from '../components/ui/button/Button';
 
 interface FlowDetails {
     type?: 'sync' | 'action';
@@ -59,8 +60,10 @@ export default function FlowCreate() {
                 setAlreadyAddedFlows(addedFlows);
                 setFlows(flows.integrations);
                 setIntegration(Object.keys(flows.integrations)[0]);
+                setSelectedFlowName(Object.keys(flows.integrations[Object.keys(flows.integrations)[0]])[0]);
                 setFlowNames(Object.keys(flows.integrations[Object.keys(flows.integrations)[0]]).filter(name => name !== 'models'));
                 const flow = flows.integrations[Object.keys(flows.integrations)[0]][Object.keys(flows.integrations[Object.keys(flows.integrations)[0]])[0]] as FlowDetails;
+                flow.type = flow.type || 'sync';
                 setFlow(flow);
                 updateFrequency(flow.runs);
                 setModels(flows.integrations[Object.keys(flows.integrations)[0]]['models']);
@@ -202,6 +205,32 @@ export default function FlowCreate() {
         matchDefaultFrequencyUnit(frequency);
     }
 
+    const downloadFlow = async () => {
+
+        const flowInfo = {
+            name: selectedFlowName,
+            provider: integration,
+            is_public: true
+        };
+
+        const response = await fetch('/api/v1/flow/download', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(flowInfo)
+        });
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'nango-integrations.zip';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Syncs}>
             {flows && Object.keys(flows).length > 0 && (
@@ -210,7 +239,7 @@ export default function FlowCreate() {
                     <div className="mx-20 h-fit text-white text-sm">
                         <div className="mb-8">
                             <Info>
-                                If none of the available templates fit your specific needs, you can create your own <a href="https://docs.nango.dev/guides/sync" className="text-[#4E80EE]" rel="noreferrer" target="_blank">custom syncs & actions</a>,
+                                If none of the available templates fit your specific needs, you can create your own <a href={`https://docs.nango.dev/guides/${flow?.type === 'sync' ? 'sync' : 'actions'}`} className="text-[#4E80EE]" rel="noreferrer" target="_blank">custom {flow?.type}s</a>,
                                 or request that we build them for you by reaching out on our <a href="https://nango.dev/slack" className="text-[#4E80EE]" rel="noreferrer" target="_blank">community</a>.
                             </Info>
                         </div>
@@ -324,17 +353,19 @@ export default function FlowCreate() {
                                     </div>
                                 </div>
                             )}
-                            {canAdd !== false ? (
+                            <div className="flex flex-col">
                                 <div>
-                                    <div className="flex justify-between">
-                                        <button type="submit" className="bg-white mt-4 h-8 rounded-md hover:bg-gray-300 border px-3 pt-0.5 text-sm text-black">
-                                            Add {flow?.type === 'action' ? 'Action' : 'Sync'}
-                                        </button>
-                                    </div>
+                                {canAdd !== false && (
+                                    <button type="submit" className="bg-white mt-4 h-8 rounded-md hover:bg-gray-300 border px-3 pt-0.5 text-sm text-black mr-4">
+                                        Add {flow?.type === 'action' ? 'Action' : 'Sync'}
+                                    </button>
+                                )}
+                                <Button type="button" variant="secondary" onClick={downloadFlow}>Download</Button>
                                 </div>
-                            ) : (
-                                <span className="flex mt-2 text-red-500">This flow has already been added!</span>
-                            )}
+                                {!canAdd && (
+                                    <span className="flex mt-2 text-red-500">This flow has already been added!</span>
+                                )}
+                            </div>
                         </form>
                     </div>
                 </div>
