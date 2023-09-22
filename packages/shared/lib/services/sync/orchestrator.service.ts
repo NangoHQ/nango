@@ -48,6 +48,12 @@ export class Orchestrator {
                 });
             }
             for (const connection of connections) {
+                const syncExists = await getSyncByIdAndName(connection.id as number, syncName);
+
+                if (syncExists) {
+                    continue;
+                }
+
                 const createdSync = await createSync(connection.id as number, syncName);
                 const syncClient = await SyncClient.getInstance();
                 await syncClient?.startContinuous(
@@ -212,8 +218,17 @@ export class Orchestrator {
                 continue;
             }
 
-            const { providerConfigKey, name } = flow;
-            await this.create(existingConnections as Connection[], name, providerConfigKey, environmentId, flow as unknown as IncomingSyncConfig, false);
+            const { providerConfigKey } = flow;
+            const name = flow.name || flow.syncName;
+
+            await this.create(
+                existingConnections as Connection[],
+                name as string,
+                providerConfigKey,
+                environmentId,
+                flow as unknown as IncomingSyncConfig,
+                false
+            );
         }
     }
 }

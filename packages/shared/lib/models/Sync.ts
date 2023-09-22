@@ -101,6 +101,7 @@ export interface SyncDeploymentResult {
 
     // legacy
     sync_name?: string;
+    syncName?: string;
 }
 
 export interface SyncConfigResult {
