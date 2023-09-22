@@ -117,22 +117,26 @@ interface InternalIncomingPreBuiltFlowConfig {
 }
 
 export interface IncomingPreBuiltFlowConfig extends InternalIncomingPreBuiltFlowConfig {
-    integration: string;
+    provider: string;
     is_public: boolean;
     name: string;
     syncName?: string; // legacy
     nango_config_id?: number;
 
-    // cli only values
-    provider?: string;
     providerConfigKey?: string;
-    fileBody?: string;
+    fileBody?: {
+        js: string;
+        ts: string;
+    };
 }
 
 export interface IncomingSyncConfig extends InternalIncomingPreBuiltFlowConfig {
     syncName: string;
     providerConfigKey: string;
-    fileBody: string;
+    fileBody?: {
+        js: string;
+        ts: string;
+    };
     version?: string;
     track_deletes?: boolean;
 }

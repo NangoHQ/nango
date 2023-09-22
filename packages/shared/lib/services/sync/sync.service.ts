@@ -15,7 +15,11 @@ import type { Connection, NangoConnection } from '../../models/Connection.js';
 import SyncClient from '../../clients/sync.client.js';
 import { updateSuccess as updateSuccessActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../activity/activity.service.js';
 import { markAllAsStopped } from './schedule.service.js';
-import { getActiveCustomSyncConfigsByEnvironmentId, getSyncConfigsByProviderConfigKey, getActionConfigByNameAndProviderConfigKey } from './config.service.js';
+import {
+    getActiveCustomSyncConfigsByEnvironmentId,
+    getSyncConfigsByProviderConfigKey,
+    getActionConfigByNameAndProviderConfigKey
+} from './config/config.service.js';
 import syncOrchestrator from './orchestrator.service.js';
 import connectionService from '../connection.service.js';
 

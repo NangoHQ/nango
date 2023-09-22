@@ -111,13 +111,11 @@ class AccountController {
                 return;
             }
 
-            if (isCloud()) {
-                req.session.destroy((err) => {
-                    if (err) {
-                        next(err);
-                    }
-                });
-            }
+            req.session.destroy((err) => {
+                if (err) {
+                    next(err);
+                }
+            });
 
             req.login(user as User, (err) => {
                 if (err) {

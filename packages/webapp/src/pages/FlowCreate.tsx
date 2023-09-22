@@ -38,7 +38,7 @@ export default function FlowCreate() {
 
     const [frequencyValue, setFrequencyValue] = useState<number>();
     const [frequencyUnit, setFrequencyUnit] = useState<string>();
-    const [frequencyEditMode, setFrequencyEditMode] = useState(false);
+    const [showFrequencyError, setShowFrequencyError] = useState(false);
     const getFlows = useGetFlows();
     const createFlow = useCreateFlow();
     const env = useStore(state => state.cookieValue);
@@ -76,13 +76,22 @@ export default function FlowCreate() {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
         const data = Object.fromEntries(formData.entries());
+        const frequencyValue = Number(data['frequency']);
+        const frequencyUnit = data['frequency-unit'];
+
+        if (frequencyValue && frequencyValue < 5 && frequencyUnit === 'minutes') {
+            setShowFrequencyError(true);
+            return;
+        } else {
+            setShowFrequencyError(false);
+        }
 
         const models = showModels(flow?.returns as string[]) as any;
         const flowPayload = {
-            integration: data['integration'].toString(),
+            provider: data['integration'].toString(),
             type: flow?.type === 'action' ? 'action' : 'sync',
             name: data['flow-name'].toString(),
-            runs: `every ${data['frequency']} ${data['frequency-unit']}`,
+            runs: `every ${frequencyValue} ${frequencyUnit}`,
             auto_start: data['auto-start'] === 'on',
             models: flow?.returns as string[],
             model_schema: JSON.stringify(Object.keys(models).map(model => ({
@@ -109,8 +118,8 @@ export default function FlowCreate() {
     }
 
     const handleIntegrationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setFrequencyEditMode(false);
         setIntegration(e.target.value);
+        setShowFrequencyError(false);
         const flowNamesWithModels = Object.keys(flows[e.target.value]);
         const flowNames = flowNamesWithModels.filter(name => name !== 'models');
         setFlowNames(flowNames);
@@ -124,33 +133,15 @@ export default function FlowCreate() {
     }
 
     const handleFlowNameChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setFrequencyEditMode(false);
         const flow = flows[integration][e.target.value] as FlowDetails;
         setSelectedFlowName(e.target.value);
+        setShowFrequencyError(false);
         setFlow(flow);
         updateFrequency(flow.runs);
         setModels(flows[integration]['models']);
 
         const alreadyAdded = alreadyAddedFlows.find((flow: Sync) => flow.unique_key === integration && flow.sync_name === e.target.value);
         setCanAdd(alreadyAdded === undefined);
-    }
-
-    const handleUpdateFrequency = async (e: React.MouseEvent<HTMLButtonElement>) => {
-        e.preventDefault();
-        const formElement = e.currentTarget.closest('form');
-        if (!formElement) return;
-
-        const formData = new FormData(formElement);
-        const data = Object.fromEntries(formData.entries());
-        const frequency = data['frequency'];
-        const frequencyUnit = data['frequency-unit'];
-
-        setFlow({
-            ...flow,
-            runs: `every ${frequency} ${frequencyUnit}`
-        } as FlowDetails);
-
-        setFrequencyEditMode(false);
     }
 
     const showModels = (returns: string[]) => {
@@ -301,7 +292,7 @@ export default function FlowCreate() {
                                             </label>
                                         </div>
                                         <div className="flex mt-1">
-                                            <div className={`${frequencyEditMode ? 'flex' : 'hidden'}`}>
+                                            <div className="flex">
                                                 <input
                                                     id="frequency"
                                                     name="frequency"
@@ -321,28 +312,11 @@ export default function FlowCreate() {
                                                     <option value="hours">Hours</option>
                                                     <option value="days">Days</option>
                                                 </select>
-                                                <button
-                                                    type="button"
-                                                    className="hover:bg-gray-700 bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
-                                                    onClick={handleUpdateFrequency}
-                                                >
-                                                    Update
-                                                </button>
-                                            </div>
-                                            <div className={`${frequencyEditMode ? 'hidden' : 'flex w-1/3'}`}>
-                                                <span className="border-border-gray bg-bg-black text-text-light-gray block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base shadow-sm active:outline-none focus:outline-none active:border-white focus:border-white">{flow?.runs}</span>
-                                                <button
-                                                    type="button"
-                                                    onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-                                                        e.preventDefault();
-                                                        setFrequencyEditMode(true);
-                                                    }}
-                                                    className="hover:bg-gray-700 bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
-                                                >
-                                                    Edit
-                                                </button>
                                             </div>
                                         </div>
+                                        {showFrequencyError && (
+                                            <span className="block text-red-500">Frequency cannot be less than 5 minutes</span>
+                                        )}
                                     </div>
                                 </div>
                             )}

@@ -4,7 +4,7 @@ import type { LogLevel, Connection } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import {
     getEnvironmentId,
-    createSyncConfig,
+    deploySyncConfig,
     syncDataService,
     connectionService,
     getSyncs,
@@ -40,7 +40,7 @@ class SyncController {
             const environmentId = getEnvironmentId(res);
             let reconcileSuccess = true;
 
-            const { success, error, response: syncConfigDeployResult } = await createSyncConfig(environmentId, syncs, debug);
+            const { success, error, response: syncConfigDeployResult } = await deploySyncConfig(environmentId, syncs, req.body.nangoYamlBody || '', debug);
 
             if (!success) {
                 errorManager.errResFromNangoErr(res, error);

@@ -1,4 +1,4 @@
-import { deleteSyncConfig, deleteSyncFilesForConfig } from './config.service.js';
+import { deleteSyncConfig, deleteSyncFilesForConfig } from './config/config.service.js';
 import connectionService from '../connection.service.js';
 import { deleteScheduleForSync, deleteSchedulesBySyncId as deleteSyncSchedulesBySyncId, getSchedule, updateScheduleStatus } from './schedule.service.js';
 import { deleteJobsBySyncId as deleteSyncJobsBySyncId } from './job.service.js';

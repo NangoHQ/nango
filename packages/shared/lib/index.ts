@@ -23,7 +23,8 @@ export * from './services/activity/activity.service.js';
 export * from './services/sync/sync.service.js';
 export * from './services/sync/job.service.js';
 export * from './services/sync/schedule.service.js';
-export * from './services/sync/config.service.js';
+export * from './services/sync/config/config.service.js';
+export * from './services/sync/config/deploy.service.js';
 
 export * as dataService from './services/sync/data/data.service.js';
 export * as syncDataService from './services/sync/data/records.service.js';

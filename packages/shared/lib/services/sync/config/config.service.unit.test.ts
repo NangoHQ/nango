@@ -1,10 +1,11 @@
 import { expect, describe, it, vi } from 'vitest';
-import { IncomingSyncConfig, SyncConfigType } from '../../models/Sync.js';
-import environmentService from '../environment.service.js';
-import * as SyncConfigService from './config.service';
-import configService from '../config.service.js';
-import { mockAddEndTime, mockCreateActivityLog, mockUpdateSuccess } from '../activity/mocks.js';
-import { mockErrorManagerReport } from '../../utils/error.manager.mocks.js';
+import { IncomingSyncConfig, SyncConfigType } from '../../../models/Sync.js';
+import environmentService from '../../environment.service.js';
+import * as SyncConfigService from './config.service.js';
+import * as DeployConfigService from './deploy.service.js';
+import configService from '../../config.service.js';
+import { mockAddEndTime, mockCreateActivityLog, mockUpdateSuccess } from '../../activity/mocks.js';
+import { mockErrorManagerReport } from '../../../utils/error.manager.mocks.js';
 
 describe('Sync config create', () => {
     const environment_id = 1;
@@ -24,7 +25,7 @@ describe('Sync config create', () => {
         mockAddEndTime();
 
         // empty sync config should return back an empty array
-        const emptyConfig = await SyncConfigService.createSyncConfig(environment_id, syncs, debug);
+        const emptyConfig = await DeployConfigService.deploySyncConfig(environment_id, syncs, '', debug);
 
         expect(emptyConfig).not.toBe([]);
     });
@@ -35,7 +36,10 @@ describe('Sync config create', () => {
                 syncName: 'test-sync',
                 type: SyncConfigType.SYNC,
                 providerConfigKey: 'google-wrong',
-                fileBody: 'integrations',
+                fileBody: {
+                    js: 'integrations.js',
+                    ts: 'integrations.ts'
+                },
                 models: ['Model_1', 'Model_2'],
                 runs: 'every 6h',
                 version: '1',
@@ -47,7 +51,7 @@ describe('Sync config create', () => {
             return Promise.resolve(null);
         });
 
-        const { error } = await SyncConfigService.createSyncConfig(environment_id, syncs, debug);
+        const { error } = await DeployConfigService.deploySyncConfig(environment_id, syncs, '', debug);
         await expect(error?.message).toBe(
             `There is no Provider Configuration matching this key. Please make sure this value exists in the Nango dashboard {
   "providerConfigKey": "google-wrong"
@@ -61,7 +65,10 @@ describe('Sync config create', () => {
                 syncName: 'test-sync',
                 type: SyncConfigType.SYNC,
                 providerConfigKey: 'google',
-                fileBody: 'integrations',
+                fileBody: {
+                    js: 'integrations.js',
+                    ts: 'integrations.ts'
+                },
                 models: ['Model_1', 'Model_2'],
                 runs: 'every 6h',
                 version: '1',
@@ -138,7 +145,7 @@ describe('Sync config create', () => {
             });
         });
 
-        await expect(SyncConfigService.createSyncConfig(environment_id, syncs, debug)).rejects.toThrowError(
+        await expect(DeployConfigService.deploySyncConfig(environment_id, syncs, '', debug)).rejects.toThrowError(
             'Error creating sync config from a deploy. Please contact support with the sync name and connection details'
         );
     });

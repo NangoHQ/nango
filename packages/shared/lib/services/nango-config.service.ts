@@ -118,6 +118,32 @@ export function getIntegrationFile(syncName: string, setIntegrationPath?: string
     }
 }
 
+export function getIntegrationTsFile(syncName: string, setIntegrationPath?: string | null) {
+    try {
+        const filePath = setIntegrationPath ? `${setIntegrationPath}/${syncName}.ts` : resolveIntegrationFile(syncName);
+        const realPath = fs.realpathSync(filePath);
+        const tsIntegrationFileContents = fs.readFileSync(realPath, 'utf8');
+
+        return tsIntegrationFileContents;
+    } catch (error) {
+        console.log(error);
+        return null;
+    }
+}
+
+export function getNangoYamlFileContents(setIntegrationPath?: string | null) {
+    try {
+        const filePath = setIntegrationPath ? `${setIntegrationPath}/${nangoConfigFile}` : path.resolve(__dirname, `../nango-integrations/${nangoConfigFile}`);
+        const realPath = fs.realpathSync(filePath);
+        const nangoYamlFileContents = fs.readFileSync(realPath, 'utf8');
+
+        return nangoYamlFileContents;
+    } catch (error) {
+        console.log(error);
+        return null;
+    }
+}
+
 export function getRootDir(optionalLoadLocation?: string) {
     if (isCloud()) {
         return './';

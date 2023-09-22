@@ -8,7 +8,7 @@ import {
     errorManager,
     IncomingPreBuiltFlowConfig,
     configService,
-    createPreBuiltSyncConfig
+    deployPreBuiltSyncConfig
 } from '@nangohq/shared';
 
 class FlowController {
@@ -57,7 +57,11 @@ class FlowController {
 
             const { environmentId } = result;
 
-            const { success: preBuiltSuccess, error: preBuiltError, response: preBuiltResponse } = await createPreBuiltSyncConfig(environmentId, config);
+            const {
+                success: preBuiltSuccess,
+                error: preBuiltError,
+                response: preBuiltResponse
+            } = await deployPreBuiltSyncConfig(environmentId, config, req.body.nangoYamlBody || '');
 
             if (!preBuiltSuccess || preBuiltResponse === null) {
                 errorManager.errResFromNangoErr(res, preBuiltError);
@@ -65,7 +69,7 @@ class FlowController {
             }
 
             console.log(preBuiltResponse);
-            res.send(200);
+            res.sendStatus(200);
         } catch (e) {
             next(e);
         }
@@ -87,35 +91,32 @@ class FlowController {
                 return;
             }
 
-            if (config.some((c) => !c.integration)) {
+            if (config.some((c) => !c.provider)) {
                 res.status(400).send('Missing integration');
                 return;
             }
 
             const { environmentId } = response;
 
-            if (config && config.length === 1) {
-                const [firstConfig] = config;
-                const providerLookup = await configService.getConfigIdByProvider(firstConfig?.integration as string, environmentId);
+            // config is an array for compatibility purposes, it will only ever have one item
+            const [firstConfig] = config;
+            const providerLookup = await configService.getConfigIdByProvider(firstConfig?.provider as string, environmentId);
 
-                if (!providerLookup) {
-                    errorManager.errRes(res, 'provider_not_on_account');
-                    return;
-                }
+            if (!providerLookup) {
+                errorManager.errRes(res, 'provider_not_on_account');
+                return;
             }
 
-            const { success: preBuiltSuccess, error: preBuiltError, response: preBuiltResponse } = await createPreBuiltSyncConfig(environmentId, config);
+            const { success: preBuiltSuccess, error: preBuiltError, response: preBuiltResponse } = await deployPreBuiltSyncConfig(environmentId, config, '');
 
             if (!preBuiltSuccess || preBuiltResponse === null) {
                 errorManager.errResFromNangoErr(res, preBuiltError);
                 return;
             }
 
-            // TODO start the sync if connection(s) exist
-
             console.log(preBuiltResponse);
 
-            res.send(201);
+            res.sendStatus(201);
         } catch (e) {
             next(e);
         }

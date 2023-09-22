@@ -2,7 +2,7 @@ import yaml from 'js-yaml';
 import path from 'path';
 import fs from 'fs';
 import { dirname } from '../utils/utils.js';
-import { getPublicConfig } from './sync/config.service.js';
+import { getPublicConfig } from './sync/config/config.service.js';
 
 class FlowService {
     public getAllAvailableFlows() {

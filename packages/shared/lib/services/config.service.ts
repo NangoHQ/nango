@@ -8,7 +8,7 @@ import { isCloud, dirname } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
 import encryptionManager from '../utils/encryption.manager.js';
 import syncOrchestrator from './sync/orchestrator.service.js';
-import { deleteSyncFilesForConfig, deleteByConfigId as deleteSyncConfigByConfigId } from '../services/sync/config.service.js';
+import { deleteSyncFilesForConfig, deleteByConfigId as deleteSyncConfigByConfigId } from '../services/sync/config/config.service.js';
 
 class ConfigService {
     templates: { [key: string]: ProviderTemplate } | null;

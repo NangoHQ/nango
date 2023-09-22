@@ -112,7 +112,7 @@ export interface InvitedUser {
 }
 
 export interface PreBuiltFlow {
-    integration: string;
+    provider: string;
     type: string;
     name: string;
     runs: string;

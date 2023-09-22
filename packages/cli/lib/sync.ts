@@ -35,6 +35,9 @@ import {
     syncRunService,
     nangoConfigFile,
     checkForIntegrationFile,
+    getIntegrationFile,
+    getIntegrationTsFile,
+    getNangoYamlFileContents,
     SyncConfigType
 } from '@nangohq/shared';
 import {
@@ -395,6 +398,7 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
     }
 
     const url = process.env['NANGO_HOSTPORT'] + `/sync/deploy`;
+    const nangoYamlBody = getNangoYamlFileContents('./');
 
     if (process.env['NANGO_DEPLOY_AUTO_CONFIRM'] !== 'true' && !autoConfirm) {
         const confirmationUrl = process.env['NANGO_HOSTPORT'] + `/sync/deploy/confirmation`;
@@ -425,28 +429,7 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
 
             const confirmation = await promptly.confirm('Do you want to continue y/n?');
             if (confirmation) {
-                await axios
-                    .post(
-                        process.env['NANGO_HOSTPORT'] + `/sync/deploy`,
-                        { syncs: postData, reconcile: true, debug },
-                        { headers: enrichHeaders(), httpsAgent: httpsAgent() }
-                    )
-                    .then((response: AxiosResponse) => {
-                        const results: SyncDeploymentResult[] = response.data;
-                        if (results.length === 0) {
-                            console.log(chalk.green(`Successfully removed the syncs/actions.`));
-                        } else {
-                            const nameAndVersions = results.map((result) => `${result.sync_name}@v${result.version}`);
-                            console.log(
-                                chalk.green(`Successfully deployed the syncs/action${nameAndVersions.length > 1 ? 's' : ''}: ${nameAndVersions.join(', ')}!`)
-                            );
-                        }
-                    })
-                    .catch((err) => {
-                        const errorMessage = JSON.stringify(err.response.data, null, 2);
-                        console.log(chalk.red(`Error deploying the syncs/actions with the following error: ${errorMessage}`));
-                        process.exit(1);
-                    });
+                await deploySyncs(url, { syncs: postData, nangoYamlBody, reconcile: true, debug });
             } else {
                 console.log(chalk.red('Syncs/Actions were not deployed. Exiting'));
                 process.exit(0);
@@ -474,11 +457,11 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
         if (debug) {
             printDebug(`Auto confirm is set so deploy will start without confirmation`);
         }
-        await deploySyncs(url, { syncs: postData, reconcile: true, debug });
+        await deploySyncs(url, { syncs: postData, nangoYamlBody, reconcile: true, debug });
     }
 };
 
-async function deploySyncs(url: string, body: { syncs: IncomingSyncConfig[]; reconcile: boolean; debug: boolean }) {
+async function deploySyncs(url: string, body: { syncs: IncomingSyncConfig[]; nangoYamlBody: string | null; reconcile: boolean; debug: boolean }) {
     await axios
         .post(url, body, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
         .then((response: AxiosResponse) => {
@@ -491,21 +474,7 @@ async function deploySyncs(url: string, body: { syncs: IncomingSyncConfig[]; rec
             }
         })
         .catch((err: any) => {
-            let errorMessage;
-            if (!err?.response?.data) {
-                const {
-                    message,
-                    stack,
-                    config: { method },
-                    code,
-                    status
-                } = err?.toJSON() as any;
-
-                const errorObject = { message, stack, code, status, url, method };
-                errorMessage = JSON.stringify(errorObject, null, 2);
-            } else {
-                errorMessage = JSON.stringify(err.response.data, null, 2);
-            }
+            const errorMessage = JSON.stringify(err.response.data, null, 2);
             console.log(chalk.red(`Error deploying the syncs/actions with the following error: ${errorMessage}`));
             process.exit(1);
         });
@@ -554,9 +523,15 @@ export const adminDeploy = async (environmentName: string, debug = false) => {
 
     const url = process.env['NANGO_HOSTPORT'] + `/admin/flow/deploy/pre-built`;
 
+    const nangoYamlBody = getNangoYamlFileContents('./');
+
     try {
         await axios
-            .post(url, { targetAccountUUID, targetEnvironment: environmentName, config: flowData }, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
+            .post(
+                url,
+                { targetAccountUUID, targetEnvironment: environmentName, config: flowData, nangoYamlBody },
+                { headers: enrichHeaders(), httpsAgent: httpsAgent() }
+            )
             .then(() => {
                 console.log(chalk.green(`Successfully deployed the syncs/actions to the users account.`));
             })
@@ -1031,7 +1006,10 @@ function packageIntegrationData(config: SimplifiedNangoIntegration[], debug: boo
                 auto_start: sync.auto_start === false ? false : true,
                 attributes: sync.attributes || {},
                 type,
-                fileBody: fs.readFileSync(integrationFilePath, 'utf8'),
+                fileBody: {
+                    js: getIntegrationFile(syncName, './') as string,
+                    ts: getIntegrationTsFile(syncName, './') as string
+                },
                 model_schema: JSON.stringify(model_schema)
             };
 
