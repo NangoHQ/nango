@@ -7,6 +7,7 @@ import { Sync } from '../types';
 import { LeftNavBarItems } from '../components/LeftNavBar';
 import DashboardLayout from '../layout/DashboardLayout';
 import { useStore } from '../store';
+import Info from '../components/ui/Info'
 
 interface FlowDetails {
     type?: 'sync' | 'action';
@@ -204,15 +205,21 @@ export default function FlowCreate() {
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Syncs}>
             {flows && Object.keys(flows).length > 0 && (
-                <div className="mx-auto w-largebox pb-40">
-                    <h2 className="mx-20 mt-16 text-left text-3xl font-semibold tracking-tight text-white mb-12">Add New Flow</h2>
-                    <div className="mx-20 h-fit border border-border-gray rounded-md text-white text-sm py-14 px-8">
+                <div className="mx-auto pb-40">
+                    <h2 className="mx-20 mt-16 text-left text-3xl font-semibold tracking-tight text-white mb-12">Add New {flow?.type === 'action' ? 'Action' : 'Sync'}</h2>
+                    <div className="mx-20 h-fit text-white text-sm">
+                        <div className="mb-8">
+                            <Info>
+                                If none of the available templates fit your specific needs, you can create your own <a href="https://docs.nango.dev/guides/sync" className="text-[#4E80EE]" rel="noreferrer" target="_blank">custom syncs & actions</a>,
+                                or request that we build them for you by reaching out on our <a href="https://nango.dev/slack" className="text-[#4E80EE]" rel="noreferrer" target="_blank">community</a>.
+                            </Info>
+                        </div>
                         <form className="space-y-6" onSubmit={handleSave} autoComplete="off">
                             <div>
                                 <div>
                                     <div className="flex">
                                         <label htmlFor="integration" className="text-text-light-gray block text-sm font-semibold">
-                                            Integration
+                                            Provider
                                         </label>
                                     </div>
                                     <div className="mt-1">
@@ -234,7 +241,7 @@ export default function FlowCreate() {
                                 <div>
                                     <div className="flex">
                                         <label htmlFor="flow-name" className="text-text-light-gray block text-sm font-semibold">
-                                            Flow Name
+                                            Template
                                         </label>
                                     </div>
                                     <div className="mt-1">
@@ -246,43 +253,12 @@ export default function FlowCreate() {
                                             value={selectedFlowName}
                                         >
                                             {flowNames.map((flowName, index) => (
-                                                <option key={index} value={flowName}>{flowName}</option>
+                                                <option key={index} value={flowName}>{flowName} ({flow?.type === 'action' ? 'action' : 'sync'})</option>
                                             ))}
                                         </select>
                                     </div>
                                 </div>
                             </div>
-                            <div>
-                                <div>
-                                    <div className="flex">
-                                        <label htmlFor="flow-name" className="text-text-light-gray block text-sm font-semibold">
-                                            Type
-                                        </label>
-                                    </div>
-                                    <div className="mt-1">
-                                        <span className="border-border-gray bg-bg-black text-text-light-gray block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base shadow-sm active:outline-none focus:outline-none active:border-white focus:border-white">{flow?.type === 'action' ? 'action' : 'sync'}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            {flow?.type !== 'action' && (
-                                <div>
-                                    <div>
-                                        <div className="flex">
-                                            <label htmlFor="flow-name" className="text-text-light-gray block text-sm font-semibold">
-                                                Auto Start
-                                            </label>
-                                        </div>
-                                        <div className="mt-1">
-                                            <input
-                                                id="auto-start"
-                                                type="checkbox"
-                                                name="auto-start"
-                                                defaultChecked={flow?.auto_start !== false}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
                             {flow?.type !== 'action' && (
                                 <div>
                                     <div>
@@ -317,6 +293,20 @@ export default function FlowCreate() {
                                         {showFrequencyError && (
                                             <span className="block text-red-500">Frequency cannot be less than 5 minutes</span>
                                         )}
+                                    </div>
+                                </div>
+                            )}
+                            {flow?.type !== 'action' && (
+                                <div>
+                                    <div>
+                                        <div className="flex">
+                                            <label htmlFor="flow-name" className="text-text-light-gray block text-sm font-semibold">
+                                                Auto Starts
+                                            </label>
+                                        </div>
+                                        <div className="mt-1">
+                                            <span className="text-white">{flow?.auto_start === false ? 'No' : 'Yes'}</span>
+                                        </div>
                                     </div>
                                 </div>
                             )}
