@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
 import { RefreshCw } from '@geist-ui/icons';
 import { BoltIcon } from '@heroicons/react/24/outline';
@@ -46,12 +47,11 @@ export default function Syncs() {
     }, [getSyncsAPI, loaded, setLoaded]);
 
     const downloadFlow = async (sync: Sync) => {
-        console.log(sync);
-        /*
         const flowInfo = {
-            name: selectedFlowName,
-            provider: integration,
-            is_public: true
+            id: sync.id,
+            name: sync.sync_name,
+            provider: sync.provider,
+            is_public: sync.is_public
         };
 
         const response = await fetch('/api/v1/flow/download', {
@@ -62,6 +62,13 @@ export default function Syncs() {
             body: JSON.stringify(flowInfo)
         });
 
+        if (response.status !== 200) {
+            toast.error('There was an error downloading the files.', {
+                position: toast.POSITION.BOTTOM_CENTER
+            });
+            return;
+        }
+
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -70,7 +77,6 @@ export default function Syncs() {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-         */
     }
 
     return (

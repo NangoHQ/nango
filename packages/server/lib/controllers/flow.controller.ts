@@ -147,7 +147,7 @@ class FlowController {
 
             const { id, name, provider, is_public } = body;
 
-            if (!name || !provider || !is_public) {
+            if (!name || !provider || typeof is_public === 'undefined') {
                 res.status(400).send('Missing required fields');
                 return;
             }
@@ -160,17 +160,14 @@ class FlowController {
             } else {
                 // it has an id, so it's either a public template that is active, or a private template
                 // either way, we need to fetch it from the users directory in s3
-                // res: Response, integrationName: string, accountId: number, environmentId: number, nangoConfigId: number
                 const nangoConfigId = await getNangoConfigIdFromId(id as number);
 
                 if (!nangoConfigId) {
-                    res.status(400).send('Invalid id');
+                    res.status(400).send('Invalid file reference');
                     return;
                 }
 
                 await remoteFileService.zipAndSendFiles(res, name, accountId, environmentId, nangoConfigId);
-
-                return;
             }
         } catch (e) {
             next(e);
