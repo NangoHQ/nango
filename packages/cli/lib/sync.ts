@@ -469,7 +469,7 @@ async function deploySyncs(url: string, body: { syncs: IncomingSyncConfig[]; nan
             if (results.length === 0) {
                 console.log(chalk.green(`Successfully removed the syncs/actions.`));
             } else {
-                const nameAndVersions = results.map((result) => `${result.sync_name}@v${result.version}`);
+                const nameAndVersions = results.map((result) => `${result.sync_name || result.name}@v${result.version}`);
                 console.log(chalk.green(`Successfully deployed the syncs/actions: ${nameAndVersions.join(', ')}!`));
             }
         })

@@ -14,7 +14,15 @@ import {
 import { getSyncsByProviderConfigAndSyncName } from '../sync.service.js';
 import { LogActionEnum, LogLevel } from '../../../models/Activity.js';
 import type { ServiceResponse } from '../../../models/Generic.js';
-import { SyncModelSchema, IncomingSyncConfig, SyncConfig, SyncConfigResult, SyncConfigType, IncomingPreBuiltFlowConfig } from '../../../models/Sync.js';
+import {
+    SyncModelSchema,
+    IncomingSyncConfig,
+    SyncConfig,
+    SyncDeploymentResult,
+    SyncConfigResult,
+    SyncConfigType,
+    IncomingPreBuiltFlowConfig
+} from '../../../models/Sync.js';
 import { NangoError } from '../../../utils/error.js';
 import metricsManager from '../../../utils/metrics.manager.js';
 import { getEnv } from '../../../utils/utils.js';
@@ -25,7 +33,7 @@ const TABLE = dbNamespace + 'sync_configs';
 
 const nameOfType = 'sync/action';
 
-export async function deploySyncConfig(
+export async function deploy(
     environment_id: number,
     syncs: IncomingSyncConfig[],
     nangoYamlBody: string,
@@ -67,6 +75,8 @@ export async function deploySyncConfig(
     if (nangoYamlBody) {
         await fileService.upload(nangoYamlBody, `${env}/account/${accountId}/environment/${environment_id}/${nangoConfigFile}`, environment_id);
     }
+
+    const flowReturnData: SyncDeploymentResult[] = [];
 
     for (const sync of syncs) {
         const {
@@ -199,6 +209,12 @@ export async function deploySyncConfig(
             active: true,
             model_schema: model_schema as unknown as SyncModelSchema[]
         });
+
+        flowReturnData.push({
+            ...sync,
+            name: syncName,
+            version
+        });
     }
 
     if (insertData.length === 0) {
@@ -216,7 +232,7 @@ export async function deploySyncConfig(
     }
 
     try {
-        const result = await schema().from<SyncConfig>(TABLE).insert(insertData).returning(['id', 'version', 'sync_name']);
+        await schema().from<SyncConfig>(TABLE).insert(insertData);
 
         if (idsToMarkAsInvactive.length > 0) {
             await schema().from<SyncConfig>(TABLE).update({ active: false }).whereIn('id', idsToMarkAsInvactive);
@@ -242,7 +258,7 @@ export async function deploySyncConfig(
             providers: providers.join(', ')
         });
 
-        return { success: true, error: null, response: { result, activityLogId } };
+        return { success: true, error: null, response: { result: flowReturnData, activityLogId } };
     } catch (e) {
         await updateSuccessActivityLog(activityLogId as number, false);
 
@@ -265,7 +281,7 @@ export async function deploySyncConfig(
     }
 }
 
-export async function deployPreBuiltSyncConfig(
+export async function deployPreBuilt(
     environment_id: number,
     configs: IncomingPreBuiltFlowConfig[],
     nangoYamlBody: string
@@ -301,6 +317,8 @@ export async function deployPreBuiltSyncConfig(
     if (nangoYamlBody) {
         await fileService.upload(nangoYamlBody, `${env}/account/${accountId}/environment/${environment_id}/${nangoConfigFile}`, environment_id);
     }
+
+    const flowReturnData: SyncDeploymentResult[] = [];
 
     for (const config of configs) {
         if (!config.providerConfigKey) {
@@ -400,6 +418,12 @@ export async function deployPreBuiltSyncConfig(
             pre_built: true,
             is_public
         });
+
+        flowReturnData.push({
+            ...config,
+            providerConfigKey: provider_config_key,
+            version
+        });
     }
 
     const uniqueProviderConfigKeys = [...new Set(providerConfigKeys)];
@@ -416,7 +440,7 @@ export async function deployPreBuiltSyncConfig(
     const isPublic = configs.every((config) => config.is_public);
 
     try {
-        const result = await schema().from<SyncConfig>(TABLE).insert(insertData).returning(['id', 'version', 'sync_name']);
+        await schema().from<SyncConfig>(TABLE).insert(insertData);
 
         if (idsToMarkAsInvactive.length > 0) {
             await schema().from<SyncConfig>(TABLE).update({ active: false }).whereIn('id', idsToMarkAsInvactive);
@@ -452,7 +476,7 @@ export async function deployPreBuiltSyncConfig(
             is_public: isPublic ? 'true' : 'false'
         });
 
-        return { success: true, error: null, response: { result, activityLogId } };
+        return { success: true, error: null, response: { result: flowReturnData, activityLogId } };
     } catch (e) {
         await updateSuccessActivityLog(activityLogId as number, false);
 

@@ -25,7 +25,7 @@ describe('Sync config create', () => {
         mockAddEndTime();
 
         // empty sync config should return back an empty array
-        const emptyConfig = await DeployConfigService.deploySyncConfig(environment_id, syncs, '', debug);
+        const emptyConfig = await DeployConfigService.deploy(environment_id, syncs, '', debug);
 
         expect(emptyConfig).not.toBe([]);
     });
@@ -51,7 +51,7 @@ describe('Sync config create', () => {
             return Promise.resolve(null);
         });
 
-        const { error } = await DeployConfigService.deploySyncConfig(environment_id, syncs, '', debug);
+        const { error } = await DeployConfigService.deploy(environment_id, syncs, '', debug);
         await expect(error?.message).toBe(
             `There is no Provider Configuration matching this key. Please make sure this value exists in the Nango dashboard {
   "providerConfigKey": "google-wrong"
@@ -145,7 +145,7 @@ describe('Sync config create', () => {
             });
         });
 
-        await expect(DeployConfigService.deploySyncConfig(environment_id, syncs, '', debug)).rejects.toThrowError(
+        await expect(DeployConfigService.deploy(environment_id, syncs, '', debug)).rejects.toThrowError(
             'Error creating sync config from a deploy. Please contact support with the sync name and connection details'
         );
     });

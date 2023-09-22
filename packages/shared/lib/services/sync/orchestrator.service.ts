@@ -17,7 +17,7 @@ import configService from '../config.service.js';
 import type { LogLevel } from '../../models/Activity.js';
 import type { Connection } from '../../models/Connection.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
-import { IncomingSyncConfig, Sync, SyncCommand, CommandToActivityLog } from '../../models/Sync.js';
+import { SyncConfigType, SyncDeploymentResult, IncomingSyncConfig, Sync, SyncCommand, CommandToActivityLog } from '../../models/Sync.js';
 
 interface CreateSyncArgs {
     connections: Connection[];
@@ -193,6 +193,27 @@ export class Orchestrator {
                 await syncClient?.runSyncCommand(schedule?.schedule_id as string, sync?.id as string, command, activityLogId as number);
                 await updateScheduleStatus(schedule?.schedule_id as string, command, activityLogId as number);
             }
+        }
+    }
+
+    /**
+     * Trigger If Connections Exist
+     * @desc for the recently deploy flows, create the sync and trigger it if there are connections
+     */
+    public async triggerIfConnectionsExist(flows: SyncDeploymentResult[], environmentId: number) {
+        for (const flow of flows) {
+            if (flow.type === SyncConfigType.ACTION) {
+                continue;
+            }
+
+            const existingConnections = await connectionService.getConnectionsByEnvironmentAndConfig(environmentId, flow.providerConfigKey);
+
+            if (existingConnections.length === 0) {
+                continue;
+            }
+
+            const { providerConfigKey, name } = flow;
+            await this.create(existingConnections as Connection[], name, providerConfigKey, environmentId, flow as unknown as IncomingSyncConfig, false);
         }
     }
 }

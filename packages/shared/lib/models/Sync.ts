@@ -93,7 +93,15 @@ export interface SlimAction {
     name: string;
 }
 
-export type SyncDeploymentResult = Pick<SyncConfig, 'id' | 'version' | 'sync_name'>;
+export interface SyncDeploymentResult {
+    name: string;
+    version: string;
+    providerConfigKey: string;
+    type: SyncConfigType;
+
+    // legacy
+    sync_name?: string;
+}
 
 export interface SyncConfigResult {
     result: SyncDeploymentResult[];

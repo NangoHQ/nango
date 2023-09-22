@@ -4,7 +4,7 @@ import type { LogLevel, Connection } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import {
     getEnvironmentId,
-    deploySyncConfig,
+    deploy as deploySyncConfig,
     syncDataService,
     connectionService,
     getSyncs,

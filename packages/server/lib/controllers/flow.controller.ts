@@ -8,7 +8,8 @@ import {
     errorManager,
     IncomingPreBuiltFlowConfig,
     configService,
-    deployPreBuiltSyncConfig
+    deployPreBuilt as deployPreBuiltSyncConfig,
+    syncOrchestrator
 } from '@nangohq/shared';
 
 class FlowController {
@@ -68,7 +69,8 @@ class FlowController {
                 return;
             }
 
-            console.log(preBuiltResponse);
+            await syncOrchestrator.triggerIfConnectionsExist(preBuiltResponse.result, environmentId);
+
             res.sendStatus(200);
         } catch (e) {
             next(e);
@@ -114,7 +116,7 @@ class FlowController {
                 return;
             }
 
-            console.log(preBuiltResponse);
+            await syncOrchestrator.triggerIfConnectionsExist(preBuiltResponse.result, environmentId);
 
             res.sendStatus(201);
         } catch (e) {
