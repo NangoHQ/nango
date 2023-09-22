@@ -142,7 +142,10 @@ export default class SyncRun {
             const syncObject = integrations[providerConfigKey] as unknown as { [key: string]: NangoIntegration };
 
             if (!isCloud()) {
-                const { path: integrationFilePath, result: integrationFileResult } = localFileService.checkForIntegrationFile(this.syncName, this.loadLocation);
+                const { path: integrationFilePath, result: integrationFileResult } = localFileService.checkForIntegrationDistFile(
+                    this.syncName,
+                    this.loadLocation
+                );
                 if (!integrationFileResult) {
                     await this.reportFailureForResults(
                         `Integration was attempted to run for ${this.syncName} but no integration file was found at ${integrationFilePath}.`

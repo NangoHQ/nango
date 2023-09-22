@@ -960,7 +960,7 @@ function packageIntegrationData(config: SimplifiedNangoIntegration[], debug: boo
         for (const sync of syncs) {
             const { name: syncName, runs = '', returns: models, models: model_schema, type = SyncConfigType.SYNC } = sync;
 
-            const { path: integrationFilePath, result: integrationFileResult } = localFileService.checkForIntegrationFile(syncName, './');
+            const { path: integrationFilePath, result: integrationFileResult } = localFileService.checkForIntegrationDistFile(syncName, './');
 
             if (!integrationFileResult) {
                 console.log(chalk.red(`No integration file found for ${syncName} at ${integrationFilePath}. Skipping...`));

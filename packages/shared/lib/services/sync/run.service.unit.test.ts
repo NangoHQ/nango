@@ -84,7 +84,7 @@ describe('SyncRun', () => {
             });
         });
 
-        vi.spyOn(LocalFileService, 'checkForIntegrationFile').mockImplementation(() => {
+        vi.spyOn(LocalFileService, 'checkForIntegrationDistFile').mockImplementation(() => {
             return {
                 result: true,
                 path: '/tmp'
@@ -102,7 +102,7 @@ describe('SyncRun', () => {
         expect(run).toEqual({ some: 'data' });
 
         // if integration file not found it should return false
-        vi.spyOn(LocalFileService, 'checkForIntegrationFile').mockImplementation(() => {
+        vi.spyOn(LocalFileService, 'checkForIntegrationDistFile').mockImplementation(() => {
             return {
                 result: false,
                 path: '/tmp'

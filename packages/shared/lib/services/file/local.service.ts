@@ -24,7 +24,7 @@ class LocalFileService {
         }
     }
 
-    public checkForIntegrationFile(syncName: string, optionalNangoIntegrationsDirPath?: string) {
+    public checkForIntegrationDistFile(syncName: string, optionalNangoIntegrationsDirPath?: string) {
         let nangoIntegrationsDirPath = '';
 
         if (optionalNangoIntegrationsDirPath) {
@@ -63,7 +63,7 @@ class LocalFileService {
         };
     }
 
-    public checkForIntegrationFile(fileName: string, optionalNangoIntegrationsDirPath?: string) {
+    public checkForIntegrationSourceFile(fileName: string, optionalNangoIntegrationsDirPath?: string) {
         let nangoIntegrationsDirPath = '';
 
         if (optionalNangoIntegrationsDirPath) {
@@ -140,8 +140,8 @@ class LocalFileService {
         const tsFilePath = path.resolve(integrationPath, `${integrationName}.ts`);
         const nangoConfigFilePath = path.resolve(integrationPath, nangoConfigFile);
 
-        const tsFileExists = this.checkForIntegrationFile(`${integrationName}.ts`, integrationPath);
-        const nangoConfigFileExists = this.checkForIntegrationFile(nangoConfigFile, integrationPath);
+        const tsFileExists = this.checkForIntegrationSourceFile(`${integrationName}.ts`, integrationPath);
+        const nangoConfigFileExists = this.checkForIntegrationSourceFile(nangoConfigFile, integrationPath);
 
         if (!tsFileExists.result || !nangoConfigFileExists.result) {
             res.status(404).send('Integration file not found');
