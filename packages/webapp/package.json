@@ -1,6 +1,6 @@
 {
     "name": "webapp",
-    "version": "0.32.9",
+    "version": "0.32.10",
     "private": true,
     "dependencies": {
         "@geist-ui/core": "^2.3.8",
@@ -8,7 +8,7 @@
         "@headlessui/react": "^1.7.12",
         "@heroicons/react": "^2.0.18",
         "@mantine/prism": "^5.10.5",
-        "@nangohq/frontend": "0.32.9",
+        "@nangohq/frontend": "0.32.10",
         "@testing-library/jest-dom": "^5.16.5",
         "@testing-library/react": "^13.4.0",
         "@testing-library/user-event": "^13.5.0",
