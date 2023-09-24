@@ -255,7 +255,7 @@ class OAuthController {
         session: OAuthSession,
         res: Response,
         connectionConfig: Record<string, string>,
-        authorizationParams: Record<string, string>,
+        authorizationParams: Record<string, string | undefined>,
         callbackUrl: string,
         activityLogId: number,
         userScope?: string
@@ -315,11 +315,7 @@ class OAuthController {
                 oauth2Template.token_params.grant_type == undefined ||
                 oauth2Template.token_params.grant_type == 'authorization_code'
             ) {
-                let additionalAuthParams: Record<string, string> = authorizationParams;
-
-                if (oauth2Template.authorization_params) {
-                    additionalAuthParams = { ...authorizationParams, ...oauth2Template.authorization_params };
-                }
+                let allAuthParams: Record<string, string | undefined> = oauth2Template.authorization_params || {};
 
                 // We always implement PKCE, no matter whether the server requires it or not,
                 // unless it has been explicitly turned off for this template
@@ -331,13 +327,16 @@ class OAuthController {
                         .replace(/\+/g, '-')
                         .replace(/\//g, '_')
                         .replace(/=+$/, '');
-                    additionalAuthParams['code_challenge'] = h;
-                    additionalAuthParams['code_challenge_method'] = 'S256';
+                    allAuthParams['code_challenge'] = h;
+                    allAuthParams['code_challenge_method'] = 'S256';
                 }
 
                 if (providerConfig.provider === 'slack' && userScope) {
-                    additionalAuthParams['user_scope'] = userScope;
+                    allAuthParams['user_scope'] = userScope;
                 }
+
+                allAuthParams = { ...allAuthParams, ...authorizationParams }; // Auth params submitted in the request take precedence over the ones defined in the template (including if they are undefined).
+                Object.keys(allAuthParams).forEach((key) => (allAuthParams[key] === undefined ? delete allAuthParams[key] : {})); // Remove undefined values.
 
                 await oAuthSessionService.create(session);
 
@@ -349,7 +348,7 @@ class OAuthController {
                     redirect_uri: callbackUrl,
                     scope: providerConfig.oauth_scopes ? providerConfig.oauth_scopes.split(',').join(oauth2Template.scope_separator || ' ') : '',
                     state: session.id,
-                    ...additionalAuthParams
+                    ...allAuthParams
                 });
 
                 await createActivityLogMessage({
@@ -360,7 +359,7 @@ class OAuthController {
                     url: callbackUrl,
                     auth_mode: template.auth_mode,
                     params: {
-                        ...additionalAuthParams,
+                        ...allAuthParams,
                         ...connectionConfig,
                         grant_type: oauth2Template.token_params?.grant_type as string,
                         scopes: providerConfig.oauth_scopes ? providerConfig.oauth_scopes.split(',').join(oauth2Template.scope_separator || ' ') : '',

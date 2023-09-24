@@ -209,6 +209,8 @@ export default class Nango {
                 const val = connectionConfig.authorization_params[param];
                 if (typeof val === 'string') {
                     query.push(`authorization_params[${param}]=${val}`);
+                } else if (val === undefined) {
+                    query.push(`authorization_params[${param}]=undefined`);
                 }
             }
         }
@@ -221,7 +223,7 @@ interface ConnectionConfig {
     params: Record<string, string>;
     hmac?: string;
     user_scope?: string[];
-    authorization_params?: Record<string, string>;
+    authorization_params?: Record<string, string | undefined>;
     credentials?: BasicApiCredentials | ApiKeyCredentials;
 }
 
