@@ -7,6 +7,7 @@ import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { LogActionEnum } from '../../models/Activity.js';
 import { nangoConfigFile } from '../nango-config.service.js';
 import { getEnv } from '../../utils/utils.js';
+import localFileService from './local.service.js';
 
 const client = new S3Client({
     region: process.env['AWS_REGION'] as string,
@@ -116,22 +117,14 @@ class RemoteFileService {
 
     async zipAndSendFiles(res: Response, integrationName: string, accountId: number, environmentId: number, nangoConfigId: number): Promise<void> {
         if (!isCloud()) {
-            return;
+            return localFileService.zipAndSendFiles(res, integrationName, accountId, environmentId, nangoConfigId);
         } else {
-            const zipFileName = 'nango-integrations.zip';
-
-            res.attachment(zipFileName);
-            res.setHeader('Content-Type', 'application/zip');
-
-            const archive = archiver('zip');
-
-            archive.pipe(res);
-
             const env = getEnv();
             const nangoYaml = await this.getStream(`${env}/account/${accountId}/environment/${environmentId}/${nangoConfigFile}`);
 
             if (!nangoYaml) {
                 // TODO: handle error
+                // use the error class
             }
             const tsFile = await this.getStream(`${env}/account/${accountId}/environment/${environmentId}/config/${nangoConfigId}/${integrationName}.ts`);
 
@@ -139,10 +132,34 @@ class RemoteFileService {
                 // TODO: handle error
             }
 
+            const archive = archiver('zip');
+
+            archive.on('error', async (err) => {
+                await errorManager.report(err, {
+                    source: ErrorSourceEnum.PLATFORM,
+                    environmentId,
+                    operation: LogActionEnum.FILE,
+                    metadata: {
+                        integrationName,
+                        accountId,
+                        nangoConfigId
+                    }
+                });
+
+                res.status(500).send('There was an error sending the integration files');
+            });
+
+            res.setHeader('Content-Type', 'application/zip');
+            res.setHeader('Content-Disposition', `attachment; filename=nango-integrations.zip`);
+
+            archive.pipe(res);
+
             archive.append(nangoYaml as Readable, { name: nangoConfigFile });
             archive.append(tsFile as Readable, { name: `${integrationName}.ts` });
 
-            archive.finalize();
+            await archive.finalize();
+
+            res.sendStatus(200);
         }
     }
 }

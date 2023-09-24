@@ -12,6 +12,7 @@ import environmentService from './services/environment.service.js';
 import webhookService from './services/webhook.service.js';
 import userService from './services/user.service.js';
 import remoteFileService from './services/file/remote.service.js';
+import localFileService from './services/file/local.service.js';
 import hmacService from './services/hmac.service.js';
 import syncRunService from './services/sync/run.service.js';
 import syncOrchestrator from './services/sync/orchestrator.service.js';
@@ -59,6 +60,7 @@ export {
     userService,
     webhookService,
     remoteFileService,
+    localFileService,
     syncRunService,
     syncOrchestrator,
     hmacService,

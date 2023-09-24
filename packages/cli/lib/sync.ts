@@ -34,10 +34,7 @@ import {
     SyncType,
     syncRunService,
     nangoConfigFile,
-    checkForIntegrationFile,
-    getIntegrationFile,
-    getIntegrationTsFile,
-    getNangoYamlFileContents,
+    localFileService,
     SyncConfigType
 } from '@nangohq/shared';
 import {
@@ -398,7 +395,7 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
     }
 
     const url = process.env['NANGO_HOSTPORT'] + `/sync/deploy`;
-    const nangoYamlBody = getNangoYamlFileContents('./');
+    const nangoYamlBody = localFileService.getNangoYamlFileContents('./');
 
     if (process.env['NANGO_DEPLOY_AUTO_CONFIRM'] !== 'true' && !autoConfirm) {
         const confirmationUrl = process.env['NANGO_HOSTPORT'] + `/sync/deploy/confirmation`;
@@ -523,7 +520,7 @@ export const adminDeploy = async (environmentName: string, debug = false) => {
 
     const url = process.env['NANGO_HOSTPORT'] + `/admin/flow/deploy/pre-built`;
 
-    const nangoYamlBody = getNangoYamlFileContents('./');
+    const nangoYamlBody = localFileService.getNangoYamlFileContents('./');
 
     try {
         await axios
@@ -963,7 +960,7 @@ function packageIntegrationData(config: SimplifiedNangoIntegration[], debug: boo
         for (const sync of syncs) {
             const { name: syncName, runs = '', returns: models, models: model_schema, type = SyncConfigType.SYNC } = sync;
 
-            const { path: integrationFilePath, result: integrationFileResult } = checkForIntegrationFile(syncName, './');
+            const { path: integrationFilePath, result: integrationFileResult } = localFileService.checkForIntegrationDistFile(syncName, './');
 
             if (!integrationFileResult) {
                 console.log(chalk.red(`No integration file found for ${syncName} at ${integrationFilePath}. Skipping...`));
@@ -1007,8 +1004,8 @@ function packageIntegrationData(config: SimplifiedNangoIntegration[], debug: boo
                 attributes: sync.attributes || {},
                 type,
                 fileBody: {
-                    js: getIntegrationFile(syncName, './') as string,
-                    ts: getIntegrationTsFile(syncName, './') as string
+                    js: localFileService.getIntegrationFile(syncName, './') as string,
+                    ts: localFileService.getIntegrationTsFile(syncName, './') as string
                 },
                 model_schema: JSON.stringify(model_schema)
             };
