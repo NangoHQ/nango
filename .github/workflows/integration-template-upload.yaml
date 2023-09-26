@@ -41,7 +41,7 @@ jobs:
                     nango compile
 
                     # Copy the resulting dist directory back to the current directory
-                    cp -r dist/ $dir/
+                    cp -r dist/ ./integration-templates/$(basename $dir)/
 
                     # Navigate back and remove the entire temp directory
                     cd -
