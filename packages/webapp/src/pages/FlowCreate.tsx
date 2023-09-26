@@ -34,6 +34,7 @@ export default function FlowCreate() {
     const [isDownloading, setIsDownloading] = useState(false);
     const [integration, setIntegration] = useState<string>('');
     const [flows, setFlows] = useState<Integration>({});
+    const [possibleFlowsFromSelection, setPossibleFlowsFromSelection] = useState<Flow[]>([]);
     const [flowNames, setFlowNames] = useState<string[]>([]);
     const [flow, setFlow] = useState<FlowDetails>();
     const [models, setModels] = useState<Flow['models']>({});
@@ -59,17 +60,20 @@ export default function FlowCreate() {
             const res = await getFlows();
 
             if (res?.status === 200) {
-                const { availableFlows: flows, addedFlows } = await res.json();
+                const { availableFlows, addedFlows } = await res.json();
                 setAlreadyAddedFlows(addedFlows);
-                setFlows(flows.integrations);
-                setIntegration(Object.keys(flows.integrations)[0]);
-                setSelectedFlowName(Object.keys(flows.integrations[Object.keys(flows.integrations)[0]])[0]);
-                setFlowNames(Object.keys(flows.integrations[Object.keys(flows.integrations)[0]]).filter(name => name !== 'models'));
-                const flow = flows.integrations[Object.keys(flows.integrations)[0]][Object.keys(flows.integrations[Object.keys(flows.integrations)[0]])[0]] as FlowDetails;
+                setFlows(availableFlows.integrations);
+                const integration = Object.keys(availableFlows.integrations)[0];
+                setIntegration(integration);
+                setSelectedFlowName(Object.keys(availableFlows.integrations[Object.keys(availableFlows.integrations)[0]])[0]);
+                const flowNames = Object.keys(availableFlows.integrations[Object.keys(availableFlows.integrations)[0]]).filter(name => name !== 'models' && name !== 'rawName')
+                setFlowNames(flowNames);
+                setPossibleFlowsFromSelection(flowNames.map(name => availableFlows.integrations[integration][name]) as Flow[]);
+                const flow = availableFlows.integrations[Object.keys(availableFlows.integrations)[0]][Object.keys(availableFlows.integrations[Object.keys(availableFlows.integrations)[0]])[0]] as FlowDetails;
                 flow.type = flow.type || 'sync';
                 setFlow(flow);
                 updateFrequency(flow.runs);
-                setModels(flows.integrations[Object.keys(flows.integrations)[0]]['models']);
+                setModels(availableFlows.integrations[Object.keys(availableFlows.integrations)[0]]['models']);
             }
         }
         if (!loaded) {
@@ -131,7 +135,8 @@ export default function FlowCreate() {
         setIntegration(e.target.value);
         setShowFrequencyError(false);
         const flowNamesWithModels = Object.keys(flows[e.target.value]);
-        const flowNames = flowNamesWithModels.filter(name => name !== 'models');
+        const flowNames = flowNamesWithModels.filter(name => name !== 'models' && name !== 'rawName');
+        setPossibleFlowsFromSelection(flowNames.map(name => flows[e.target.value][name]) as Flow[]);
         setFlowNames(flowNames);
         setSelectedFlowName(flowNames[0]);
         const alreadyAdded = alreadyAddedFlows.find((flow: Sync) => flow.unique_key === e.target.value && flow.sync_name === flowNames[0]);
@@ -147,7 +152,9 @@ export default function FlowCreate() {
         setSelectedFlowName(e.target.value);
         setShowFrequencyError(false);
         setFlow(flow);
-        updateFrequency(flow.runs);
+        if (flow.type !== 'action') {
+            updateFrequency(flow.runs);
+        }
         setModels(flows[integration]['models']);
 
         const alreadyAdded = alreadyAddedFlows.find((flow: Sync) => flow.unique_key === integration && flow.sync_name === e.target.value);
@@ -235,6 +242,7 @@ export default function FlowCreate() {
             toast.error(error.error, {
                 position: toast.POSITION.BOTTOM_CENTER
             });
+            setIsDownloading(true);
             return;
         } else {
             toast.success('Integration files downloaded successfully', {
@@ -252,6 +260,8 @@ export default function FlowCreate() {
         document.body.removeChild(link);
         setIsDownloading(false);
     }
+
+    console.log(possibleFlowsFromSelection);
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Syncs}>
@@ -303,8 +313,8 @@ export default function FlowCreate() {
                                             onChange={handleFlowNameChange}
                                             value={selectedFlowName}
                                         >
-                                            {flowNames.filter(flowName => flowName !== 'rawName').map((flowName, index) => (
-                                                <option key={index} value={flowName}>{flowName} ({flow?.type === 'action' ? 'action' : 'sync'})</option>
+                                            {flowNames.map((flowName, index) => (
+                                                <option key={index} value={flowName}>{flowName} ({(possibleFlowsFromSelection[index]?.type) as unknown as string === 'action' ? 'action' : 'sync'})</option>
                                             ))}
                                         </select>
                                     </div>
