@@ -174,6 +174,11 @@ export default function FlowCreate() {
     const matchDefaultFrequencyValue = (frequency: string): void => {
         const frequencyValue = frequency.match(/\d+/g)?.[0];
 
+        if (frequency.includes('half')) {
+            setFrequencyValue(30);
+            return;
+        }
+
         if (!frequencyValue) {
             setFrequencyValue(1);
             return;
@@ -260,8 +265,6 @@ export default function FlowCreate() {
         document.body.removeChild(link);
         setIsDownloading(false);
     }
-
-    console.log(possibleFlowsFromSelection);
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Syncs}>

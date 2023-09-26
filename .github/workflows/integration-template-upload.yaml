@@ -7,8 +7,8 @@ on:
   pull_request:
     branches:
       - master
-    types:
-      - closed
+    #types:
+      #- closed
 
 concurrency:
     group: templates-${{ github.event.pull_request.number || github.ref }}
@@ -37,7 +37,7 @@ jobs:
                   integration-templates/**/*
 
             - name: Process and Upload changed directories to S3
-              if: steps.changed-files-specific.outputs.any_changed == 'true'
+              #if: steps.changed-files-specific.outputs.any_changed == 'true'
               run: |
                 wd=$(pwd)
                 for file in ${{ steps.changed-files-specific.outputs.all_changed_files }}; do
