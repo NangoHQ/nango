@@ -28,6 +28,7 @@ jobs:
 
             - name: Process and Upload directories within integration-templates to S3 under templates subdirectory
               run: |
+                wd=$(pwd)
                 for dir in integration-templates/*; do
                   if [ -d "$dir" ]; then
                     # Create a temp directory and a nango-integrations directory inside it
@@ -40,10 +41,9 @@ jobs:
                     cd /tmp/nango-temp/nango-integrations
                     nango compile
 
-                    echo "$dir"
-
+                    echo "$wd/$dir"
                     # Copy the resulting dist directory back to the current directory
-                    cp -r dist/ integration-templates/$(basename $dir)/
+                    cp -r dist/ $wd/$dir/
 
                     # Navigate back and remove the entire temp directory
                     cd -
