@@ -91,9 +91,7 @@ export default function FlowCreate() {
             setShowFrequencyError(false);
         }
 
-        console.log(flows);
         const flowObject = flows[data['integration'] as string] as Flow;
-        console.log(flowObject);
 
         const models = showModels(flow?.returns as string[]) as any;
         const flowPayload = {
