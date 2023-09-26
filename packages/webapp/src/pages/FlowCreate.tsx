@@ -104,7 +104,7 @@ export default function FlowCreate() {
             provider: data['integration'].toString(),
             type: flow?.type === 'action' ? 'action' : 'sync',
             name: data['flow-name'].toString(),
-            runs: `every ${frequencyValue} ${frequencyUnit}`,
+            runs: flow?.type === 'action' ? null : `every ${frequencyValue} ${frequencyUnit}`,
             auto_start: flow?.auto_start !== false,
             models: flow?.returns as string[],
             model_schema: JSON.stringify(Object.keys(models).map(model => ({

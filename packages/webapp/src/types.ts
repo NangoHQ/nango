@@ -115,7 +115,7 @@ export interface PreBuiltFlow {
     provider: string;
     type: string;
     name: string;
-    runs: string;
+    runs: string | null;
     auto_start: boolean;
     models: string[];
     model_schema: string;
