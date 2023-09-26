@@ -21,6 +21,13 @@ jobs:
         steps:
             - name: Checkout repository
               uses: actions/checkout@v3
+            - name: Upload integration-templates directory to S3 under templates subdirectory
+              run: |
+                aws s3 sync templates/ s3://${{ secrets.AWS_S3_BUCKET }}/templates/
+              env:
+                AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                AWS_DEFAULT_REGION: ${{ env.AWS_REGION }}
 
             - name: Get specific changed files
               id: changed-files-specific
@@ -34,8 +41,7 @@ jobs:
               run: |
                 for file in ${{ steps.changed-files-specific.outputs.all_changed_files }}; do
                   dir=$(dirname $file)
-                  #aws s3 sync $dir s3://${{ secrets.AWS_S3_BUCKET }}/templates/$dir/
-                  echo "templates/$dir"
+                  aws s3 sync $dir s3://${{ secrets.AWS_S3_BUCKET }}/templates/$dir/
                 done
               env:
                 AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
