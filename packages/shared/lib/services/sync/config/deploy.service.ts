@@ -251,12 +251,18 @@ export async function deploy(
             .map((sync) => sync.syncName)
             .join(', ')}).`;
 
-        await metricsManager.capture('sync_deploy_success', shortContent, LogActionEnum.SYNC_DEPLOY, {
-            environmentId: String(environment_id),
-            syncName: syncsWithVersions.map((sync) => sync.syncName).join(', '),
-            accountId: String(accountId),
-            providers: providers.join(', ')
-        });
+        await metricsManager.capture(
+            'sync_deploy_success',
+            shortContent,
+            LogActionEnum.SYNC_DEPLOY,
+            {
+                environmentId: String(environment_id),
+                syncName: syncsWithVersions.map((sync) => sync.syncName).join(', '),
+                accountId: String(accountId),
+                providers: providers.join(', ')
+            },
+            'deploy_type:custom'
+        );
 
         return { success: true, error: null, response: { result: flowReturnData, activityLogId } };
     } catch (e) {
@@ -270,12 +276,18 @@ export async function deploy(
 
         const shortContent = `Failure to deploy the syncs (${syncsWithVersions.map((sync) => sync.syncName).join(', ')}).`;
 
-        await metricsManager.capture('sync_deploy_failure', shortContent, LogActionEnum.SYNC_DEPLOY, {
-            environmentId: String(environment_id),
-            syncName: syncsWithVersions.map((sync) => sync.syncName).join(', '),
-            accountId: String(accountId),
-            providers: providers.join(', ')
-        });
+        await metricsManager.capture(
+            'sync_deploy_failure',
+            shortContent,
+            LogActionEnum.SYNC_DEPLOY,
+            {
+                environmentId: String(environment_id),
+                syncName: syncsWithVersions.map((sync) => sync.syncName).join(', '),
+                accountId: String(accountId),
+                providers: providers.join(', ')
+            },
+            'deploy_type:custom'
+        );
 
         throw new NangoError('error_creating_sync_config');
     }
@@ -467,14 +479,20 @@ export async function deployPreBuilt(
             content
         });
 
-        await metricsManager.capture('sync_deploy_success', content, LogActionEnum.SYNC_DEPLOY, {
-            environmentId: String(environment_id),
-            syncName: configs.map((config) => config.name).join(', '),
-            accountId: String(accountId),
-            integrations: configs.map((config) => config.provider).join(', '),
-            preBuilt: 'true',
-            is_public: isPublic ? 'true' : 'false'
-        });
+        await metricsManager.capture(
+            'sync_deploy_success',
+            content,
+            LogActionEnum.SYNC_DEPLOY,
+            {
+                environmentId: String(environment_id),
+                syncName: configs.map((config) => config.name).join(', '),
+                accountId: String(accountId),
+                integrations: configs.map((config) => config.provider).join(', '),
+                preBuilt: 'true',
+                is_public: isPublic ? 'true' : 'false'
+            },
+            `deploy_type:${isPublic ? 'public.' : 'private.'}template`
+        );
 
         return { success: true, error: null, response: { result: flowReturnData, activityLogId } };
     } catch (e) {
@@ -483,14 +501,20 @@ export async function deployPreBuilt(
         const content = `Failed to deploy the ${nameOfType}${configs.length === 1 ? '' : 's'} (${configs.map((config) => config.name).join(', ')}).`;
         await createActivityLogDatabaseErrorMessageAndEnd(content, e, activityLogId as number);
 
-        await metricsManager.capture('sync_deploy_failure', content, LogActionEnum.SYNC_DEPLOY, {
-            environmentId: String(environment_id),
-            syncName: configs.map((config) => config.name).join(', '),
-            accountId: String(accountId),
-            integration: configs.map((config) => config.provider).join(', '),
-            preBuilt: 'true',
-            is_public: isPublic ? 'true' : 'false'
-        });
+        await metricsManager.capture(
+            'sync_deploy_failure',
+            content,
+            LogActionEnum.SYNC_DEPLOY,
+            {
+                environmentId: String(environment_id),
+                syncName: configs.map((config) => config.name).join(', '),
+                accountId: String(accountId),
+                integration: configs.map((config) => config.provider).join(', '),
+                preBuilt: 'true',
+                is_public: isPublic ? 'true' : 'false'
+            },
+            `deploy_type:${isPublic ? 'public.' : 'private.'}template`
+        );
 
         throw new NangoError('error_creating_sync_config');
     }
