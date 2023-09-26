@@ -8,7 +8,6 @@ on:
     branches:
       - master
 
-
 concurrency:
     group: templates-${{ github.event.pull_request.number || github.ref }}
     cancel-in-progress: true
@@ -35,6 +34,7 @@ jobs:
                   integration-templates/**/*
 
             - name: Process and Upload changed directories to S3
+              if: steps.changed-files-specific.outputs.any_changed == 'true'
               run: |
                 wd=$(pwd)
                 for file in ${{ steps.changed-files-specific.outputs.all_changed_files }}; do
@@ -52,7 +52,7 @@ jobs:
                   cd -
                   rm -rf /tmp/nango-temp
 
-                  aws s3 sync $dir s3://${{ secrets.AWS_BUCKET_NAME }}/templates/$dir/
+                  aws s3 sync $dir s3://${{ secrets.AWS_BUCKET_NAME }}/$dir/
                 done
               env:
                 AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
