@@ -23,7 +23,7 @@ jobs:
               uses: actions/checkout@v3
             - name: Upload integration-templates directory to S3 under templates subdirectory
               run: |
-                aws s3 sync templates/ s3://${{ secrets.AWS_BUCKET_NAME }}/templates/
+                aws s3 sync integration-templates/ s3://${{ secrets.AWS_BUCKET_NAME }}/templates/
               env:
                 AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
                 AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
