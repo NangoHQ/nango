@@ -4,6 +4,18 @@ integrations:
             runs: every half hour
             returns:
                 - GithubIssue
+        github-list-files-sync:
+            type: sync
+            runs: every hour
+            auto_start: false # Set metadata first, then start it programmatically.
+            returns:
+                - GithubRepoFile
+        github-list-repos-action: # scopes: read:org
+            type: action
+            returns:
+                - GithubRepo
+        github-write-file-action: # scopes: repo
+            type: action
 models:
     GithubIssue:
         id: integer
@@ -17,3 +29,17 @@ models:
         date_created: date
         date_last_modified: date
         body: string
+    GithubRepo:
+        id: integer
+        owner: string
+        name: string
+        full_name: string
+        description: string
+        url: string
+        date_created: date
+        date_last_modified: date=
+    GithubRepoFile:
+        id: string
+        name: string
+        url: string
+        last_modified_date: date
