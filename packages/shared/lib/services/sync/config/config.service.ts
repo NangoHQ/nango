@@ -442,10 +442,10 @@ export async function getPublicConfig(environment_id: number): Promise<SyncConfi
         });
 }
 
-export async function getNangoConfigIdFromId(id: number): Promise<number | null> {
+export async function getNangoConfigIdAndLocationFromId(id: number): Promise<{ nango_config_id: number; file_location: string } | null> {
     const result = await schema()
         .from<SyncConfig>(TABLE)
-        .select(`${TABLE}.nango_config_id`)
+        .select(`${TABLE}.nango_config_id`, `${TABLE}.file_location`)
         .where({
             [`${TABLE}.id`]: id,
             [`${TABLE}.deleted`]: false
@@ -456,5 +456,5 @@ export async function getNangoConfigIdFromId(id: number): Promise<number | null>
         return null;
     }
 
-    return result.nango_config_id;
+    return result;
 }

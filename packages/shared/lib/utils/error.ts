@@ -336,6 +336,16 @@ export class NangoError extends Error {
                 this.message = 'This provider is not on your account. Please add the provider to your account first.';
                 break;
 
+            case 'integration_file_not_found':
+                this.status = 404;
+                this.message = 'The integration file was not found. Please make sure you have recently deployed the integration file(s).';
+                break;
+
+            case 'error_creating_zip_file':
+                this.status = 500;
+                this.message = 'Error creating a zip of the integration file(s). Make sure you have recently deployed the integration file(s).';
+                break;
+
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;

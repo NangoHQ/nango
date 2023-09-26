@@ -12,7 +12,7 @@ import {
     syncOrchestrator,
     FlowDownloadBody,
     remoteFileService,
-    getNangoConfigIdFromId
+    getNangoConfigIdAndLocationFromId
 } from '@nangohq/shared';
 
 class FlowController {
@@ -160,14 +160,16 @@ class FlowController {
             } else {
                 // it has an id, so it's either a public template that is active, or a private template
                 // either way, we need to fetch it from the users directory in s3
-                const nangoConfigId = await getNangoConfigIdFromId(id as number);
+                const configLookupResult = await getNangoConfigIdAndLocationFromId(id as number);
 
-                if (!nangoConfigId) {
+                if (!configLookupResult) {
                     res.status(400).send('Invalid file reference');
                     return;
                 }
 
-                await remoteFileService.zipAndSendFiles(res, name, accountId, environmentId, nangoConfigId);
+                const { nango_config_id, file_location } = configLookupResult;
+                await remoteFileService.zipAndSendFiles(res, name, accountId, environmentId, nango_config_id, file_location);
+                return;
             }
         } catch (e) {
             next(e);

@@ -63,7 +63,8 @@ export default function Syncs() {
         });
 
         if (response.status !== 200) {
-            toast.error('There was an error downloading the files.', {
+            const error = await response.json();
+            toast.error(error.error, {
                 position: toast.POSITION.BOTTOM_CENTER
             });
             return;

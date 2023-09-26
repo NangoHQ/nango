@@ -3,10 +3,11 @@ import { PutObjectCommand, GetObjectCommand, GetObjectCommandOutput, S3Client, D
 import { Readable } from 'stream';
 import archiver from 'archiver';
 import { isCloud } from '../../utils/utils.js';
+import { NangoError } from '../../utils/error.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { LogActionEnum } from '../../models/Activity.js';
+import type { ServiceResponse } from '../../models/Generic.js';
 import { nangoConfigFile } from '../nango-config.service.js';
-import { getEnv } from '../../utils/utils.js';
 import localFileService from './local.service.js';
 
 const client = new S3Client({
@@ -85,18 +86,23 @@ class RemoteFileService {
         });
     }
 
-    async getStream(fileName: string): Promise<Readable | null> {
-        const getObjectCommand = new GetObjectCommand({
-            Bucket: this.bucket,
-            Key: fileName
-        });
+    async getStream(fileName: string): Promise<ServiceResponse<Readable | null>> {
+        try {
+            const getObjectCommand = new GetObjectCommand({
+                Bucket: this.bucket,
+                Key: fileName
+            });
 
-        const response = await client.send(getObjectCommand);
+            const response = await client.send(getObjectCommand);
 
-        if (response.Body && response.Body instanceof Readable) {
-            return response.Body;
-        } else {
-            return null;
+            if (response.Body && response.Body instanceof Readable) {
+                return { success: true, error: null, response: response.Body };
+            } else {
+                return { success: false, error: null, response: null };
+            }
+        } catch (e) {
+            const error = new NangoError('integration_file_not_found');
+            return { success: false, error, response: null };
         }
     }
 
@@ -115,21 +121,30 @@ class RemoteFileService {
         await client.send(deleteObjectsCommand);
     }
 
-    async zipAndSendFiles(res: Response, integrationName: string, accountId: number, environmentId: number, nangoConfigId: number): Promise<void> {
+    async zipAndSendFiles(
+        res: Response,
+        integrationName: string,
+        accountId: number,
+        environmentId: number,
+        nangoConfigId: number,
+        file_location: string
+    ): Promise<void> {
         if (!isCloud()) {
             return localFileService.zipAndSendFiles(res, integrationName, accountId, environmentId, nangoConfigId);
         } else {
-            const env = getEnv();
-            const nangoYaml = await this.getStream(`${env}/account/${accountId}/environment/${environmentId}/${nangoConfigFile}`);
+            const nangoConfigLocation = file_location.split('/').slice(0, -2).join('/');
+            const { success, error, response: nangoYaml } = await this.getStream(`${nangoConfigLocation}/${nangoConfigFile}`);
 
-            if (!nangoYaml) {
-                // TODO: handle error
-                // use the error class
+            if (!success || nangoYaml === null) {
+                errorManager.errResFromNangoErr(res, error);
+                return;
             }
-            const tsFile = await this.getStream(`${env}/account/${accountId}/environment/${environmentId}/config/${nangoConfigId}/${integrationName}.ts`);
+            const integrationFileLocation = file_location.split('/').slice(0, -1).join('/');
+            const { success: tsSuccess, error: tsError, response: tsFile } = await this.getStream(`${integrationFileLocation}/${integrationName}.ts`);
 
-            if (!tsFile) {
-                // TODO: handle error
+            if (!tsSuccess || tsFile === null) {
+                errorManager.errResFromNangoErr(res, tsError);
+                return;
             }
 
             const archive = archiver('zip');
@@ -146,7 +161,8 @@ class RemoteFileService {
                     }
                 });
 
-                res.status(500).send('There was an error sending the integration files');
+                errorManager.errResFromNangoErr(res, new NangoError('error_creating_zip_file'));
+                return;
             });
 
             res.setHeader('Content-Type', 'application/zip');
@@ -158,8 +174,6 @@ class RemoteFileService {
             archive.append(tsFile as Readable, { name: `${integrationName}.ts` });
 
             await archive.finalize();
-
-            res.sendStatus(200);
         }
     }
 }

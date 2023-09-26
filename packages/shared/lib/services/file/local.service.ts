@@ -4,6 +4,7 @@ import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import archiver from 'archiver';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
+import { NangoError } from '../../utils/error.js';
 import { LogActionEnum } from '../../models/Activity.js';
 import { nangoConfigFile, SYNC_FILE_EXTENSION } from '../nango-config.service.js';
 
@@ -144,7 +145,7 @@ class LocalFileService {
         const nangoConfigFileExists = this.checkForIntegrationSourceFile(nangoConfigFile, integrationPath);
 
         if (!tsFileExists.result || !nangoConfigFileExists.result) {
-            res.status(404).send('Integration file not found');
+            errorManager.errResFromNangoErr(res, new NangoError('integration_file_not_found'));
             return;
         }
 
@@ -162,7 +163,7 @@ class LocalFileService {
                 }
             });
 
-            res.status(500).send('There was an error sending the integration files');
+            errorManager.errResFromNangoErr(res, new NangoError('error_creating_zip_file'));
             return;
         });
 
@@ -175,8 +176,6 @@ class LocalFileService {
         archive.append(fs.createReadStream(tsFilePath), { name: `${integrationName}.ts` });
 
         await archive.finalize();
-
-        res.sendStatus(200);
     }
 
     private resolveIntegrationFile(syncName: string): string {
