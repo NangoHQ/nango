@@ -152,10 +152,8 @@ class FlowController {
                 return;
             }
 
-            // this is a public template that isn't active yet
             if (!id && is_public) {
-                // TODO fetch from s3 in the public integration directory
-
+                await remoteFileService.zipAndSendPublicFiles(res, name, accountId, environmentId, body.public_route as string);
                 return;
             } else {
                 // it has an id, so it's either a public template that is active, or a private template

@@ -20,6 +20,7 @@ const client = new S3Client({
 
 class RemoteFileService {
     bucket = process.env['AWS_BUCKET_NAME'] as string;
+    publicRoute = 'integration-templates';
 
     async upload(fileContents: string, fileName: string, environmentId: number): Promise<string | null> {
         if (!isCloud()) {
@@ -50,24 +51,32 @@ class RemoteFileService {
         }
     }
 
+    /**
+     * Copy
+     * @desc copy an existing public integration file to user's location in s3,
+     * on local copy to the set local destination
+     */
     async copy(integrationName: string, fileName: string, destinationPath: string, environmentId: number): Promise<string | null> {
-        if (isCloud()) {
-            return '_LOCAL_FILE_';
-        }
-
         try {
-            const s3FilePath = `integration-templates/${integrationName}/${fileName}`;
-            console.log(s3FilePath);
+            const s3FilePath = `${this.publicRoute}/${integrationName}/${fileName}`;
 
-            await client.send(
-                new CopyObjectCommand({
-                    Bucket: this.bucket,
-                    Key: destinationPath,
-                    CopySource: `${this.bucket}/${s3FilePath}`
-                })
-            );
+            if (isCloud()) {
+                await client.send(
+                    new CopyObjectCommand({
+                        Bucket: this.bucket,
+                        Key: destinationPath,
+                        CopySource: `${this.bucket}/${s3FilePath}`
+                    })
+                );
 
-            return s3FilePath;
+                return destinationPath;
+            } else {
+                const fileContents = await this.getFile(s3FilePath, environmentId);
+                if (fileContents) {
+                    localFileService.putIntegrationFile(fileName, fileContents, integrationName.includes('dist'));
+                }
+                return '_LOCAL_FILE_';
+            }
         } catch (e) {
             await errorManager.report(e, {
                 source: ErrorSourceEnum.PLATFORM,
@@ -153,6 +162,20 @@ class RemoteFileService {
         await client.send(deleteObjectsCommand);
     }
 
+    async zipAndSendPublicFiles(res: Response, integrationName: string, accountId: number, environmentId: number, providerPath: string): Promise<void> {
+        const { success, error, response: nangoYaml } = await this.getStream(`${this.publicRoute}/${providerPath}/${nangoConfigFile}`);
+        if (!success || nangoYaml === null) {
+            errorManager.errResFromNangoErr(res, error);
+            return;
+        }
+        const { success: tsSuccess, error: tsError, response: tsFile } = await this.getStream(`${this.publicRoute}/${providerPath}/${integrationName}.ts`);
+        if (!tsSuccess || tsFile === null) {
+            errorManager.errResFromNangoErr(res, tsError);
+            return;
+        }
+        await this.zipAndSend(res, integrationName, nangoYaml, tsFile, environmentId, accountId);
+    }
+
     async zipAndSendFiles(
         res: Response,
         integrationName: string,
@@ -179,34 +202,54 @@ class RemoteFileService {
                 return;
             }
 
-            const archive = archiver('zip');
+            await this.zipAndSend(res, integrationName, nangoYaml, tsFile, environmentId, accountId, nangoConfigId);
+        }
+    }
 
-            archive.on('error', async (err) => {
-                await errorManager.report(err, {
-                    source: ErrorSourceEnum.PLATFORM,
-                    environmentId,
-                    operation: LogActionEnum.FILE,
-                    metadata: {
-                        integrationName,
-                        accountId,
-                        nangoConfigId
-                    }
-                });
+    async zipAndSend(
+        res: Response,
+        integrationName: string,
+        nangoYaml: Readable,
+        tsFile: Readable,
+        environmentId: number,
+        accountId: number,
+        nangoConfigId?: number
+    ) {
+        const archive = archiver('zip');
 
-                errorManager.errResFromNangoErr(res, new NangoError('error_creating_zip_file'));
-                return;
+        archive.on('error', async (err) => {
+            const metadata: Record<string, string | number> = {
+                integrationName,
+                accountId
+            };
+
+            if (nangoConfigId) {
+                metadata['nangoConfigId'] = nangoConfigId;
+            }
+            await errorManager.report(err, {
+                source: ErrorSourceEnum.PLATFORM,
+                environmentId,
+                operation: LogActionEnum.FILE,
+                metadata: {
+                    integrationName,
+                    accountId,
+                    nangoConfigId: nangoConfigId || null
+                }
             });
 
-            res.setHeader('Content-Type', 'application/zip');
-            res.setHeader('Content-Disposition', `attachment; filename=nango-integrations.zip`);
+            errorManager.errResFromNangoErr(res, new NangoError('error_creating_zip_file'));
+            return;
+        });
 
-            archive.pipe(res);
+        res.setHeader('Content-Type', 'application/zip');
+        res.setHeader('Content-Disposition', `attachment; filename=nango-integrations.zip`);
 
-            archive.append(nangoYaml as Readable, { name: nangoConfigFile });
-            archive.append(tsFile as Readable, { name: `${integrationName}.ts` });
+        archive.pipe(res);
 
-            await archive.finalize();
-        }
+        archive.append(nangoYaml as Readable, { name: nangoConfigFile });
+        archive.append(tsFile as Readable, { name: `${integrationName}.ts` });
+
+        await archive.finalize();
     }
 }
 

@@ -37,6 +37,10 @@ fs.readdirSync(rootDir).forEach((serviceDir) => {
                 }
                 output.integrations[integrationName].models = nangoData.models;
             }
+
+            if (directoryToIntegrationMapping[serviceDir]) {
+                output.integrations[integrationName].rawName = serviceDir;
+            }
         }
     }
 });

@@ -3,4 +3,5 @@ export interface FlowDownloadBody {
     name: string;
     provider: string;
     is_public: boolean;
+    public_route?: string;
 }

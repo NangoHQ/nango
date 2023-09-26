@@ -53,7 +53,9 @@ export async function getSyncConfig(nangoConnection: NangoConnection, syncName?:
                 auto_start: syncConfig.auto_start,
                 attributes: syncConfig.attributes || {},
                 fileLocation: syncConfig.file_location,
-                version: syncConfig.version as string
+                version: syncConfig.version as string,
+                pre_built: syncConfig.pre_built as boolean,
+                is_public: syncConfig.is_public as boolean
             };
 
             nangoConfig.integrations[key] = providerConfig;

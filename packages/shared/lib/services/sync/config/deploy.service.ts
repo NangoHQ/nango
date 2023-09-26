@@ -427,15 +427,15 @@ export async function deployPreBuilt(
             throw new NangoError('file_upload_error');
         }
 
-        if (typeof config.fileBody === 'object' && config.fileBody?.ts) {
-            if (is_public) {
-                await remoteFileService.copy(
-                    config?.public_route as string,
-                    `${sync_name}.ts`,
-                    `${env}/account/${accountId}/environment/${environment_id}/config/${nango_config_id}/${sync_name}.ts`,
-                    environment_id
-                );
-            } else {
+        if (is_public) {
+            await remoteFileService.copy(
+                config?.public_route as string,
+                `${sync_name}.ts`,
+                `${env}/account/${accountId}/environment/${environment_id}/config/${nango_config_id}/${sync_name}.ts`,
+                environment_id
+            );
+        } else {
+            if (typeof config.fileBody === 'object' && config.fileBody?.ts) {
                 await remoteFileService.upload(
                     config.fileBody.ts,
                     `${env}/account/${accountId}/environment/${environment_id}/config/${nango_config_id}/${sync_name}.ts`,
@@ -454,7 +454,7 @@ export async function deployPreBuilt(
         insertData.push({
             sync_name,
             nango_config_id,
-            file_location: file_location,
+            file_location,
             version,
             models,
             active: true,

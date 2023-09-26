@@ -9,6 +9,7 @@ import DashboardLayout from '../layout/DashboardLayout';
 import { useStore } from '../store';
 import Info from '../components/ui/Info'
 import Button from '../components/ui/button/Button';
+import Spinner from '../components/ui/Spinner';
 
 interface FlowDetails {
     type?: 'sync' | 'action';
@@ -30,6 +31,7 @@ interface Integration {
 
 export default function FlowCreate() {
     const [loaded, setLoaded] = useState(false);
+    const [isDownloading, setIsDownloading] = useState(false);
     const [integration, setIntegration] = useState<string>('');
     const [flows, setFlows] = useState<Integration>({});
     const [flowNames, setFlowNames] = useState<string[]>([]);
@@ -99,7 +101,7 @@ export default function FlowCreate() {
             type: flow?.type === 'action' ? 'action' : 'sync',
             name: data['flow-name'].toString(),
             runs: `every ${frequencyValue} ${frequencyUnit}`,
-            auto_start: data['auto-start'] === 'on',
+            auto_start: flow?.auto_start !== false,
             models: flow?.returns as string[],
             model_schema: JSON.stringify(Object.keys(models).map(model => ({
                 name: model,
@@ -210,11 +212,14 @@ export default function FlowCreate() {
     }
 
     const downloadFlow = async () => {
+        setIsDownloading(true);
+        const flowObject = flows[integration] as Flow;
 
         const flowInfo = {
             name: selectedFlowName,
             provider: integration,
-            is_public: true
+            is_public: true,
+            public_route: flowObject.rawName || integration
         };
 
         const response = await fetch('/api/v1/flow/download', {
@@ -233,6 +238,7 @@ export default function FlowCreate() {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        setIsDownloading(false);
     }
 
     return (
@@ -358,16 +364,19 @@ export default function FlowCreate() {
                                 </div>
                             )}
                             <div className="flex flex-col">
-                                <div>
+                                <div className="flex flex-row items-center">
                                 {canAdd !== false && (
-                                    <button type="submit" className="bg-white mt-4 h-8 rounded-md hover:bg-gray-300 border px-3 pt-0.5 text-sm text-black mr-4">
+                                    <button type="submit" className="bg-white h-8 rounded-md hover:bg-gray-300 border px-3 pt-0.5 text-sm text-black mr-4">
                                         Add {flow?.type === 'action' ? 'Action' : 'Sync'}
                                     </button>
                                 )}
                                 <Button type="button" variant="secondary" onClick={downloadFlow}>Download</Button>
+                                {isDownloading && (
+                                    <span className="ml-4"><Spinner /></span>
+                                )}
                                 </div>
                                 {!canAdd && (
-                                    <span className="flex mt-2 text-red-500">This flow has already been added!</span>
+                                    <span className="flex flex-col mt-2 text-red-500">This flow has already been added!</span>
                                 )}
                             </div>
                         </form>

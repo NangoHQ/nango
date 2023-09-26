@@ -25,6 +25,20 @@ class LocalFileService {
         }
     }
 
+    public putIntegrationFile(syncName: string, fileContents: string, distPrefix: boolean) {
+        try {
+            const realPath = fs.realpathSync(process.env['NANGO_INTEGRATIONS_FULL_PATH'] as string);
+            if (!fs.existsSync(`${realPath}${distPrefix ? '/dist' : ''}/${syncName}`)) {
+                fs.writeFileSync(`${realPath}${distPrefix ? '/dist' : ''}/${syncName}`, fileContents, 'utf8');
+            }
+
+            return true;
+        } catch (error) {
+            console.log(error);
+            return false;
+        }
+    }
+
     public checkForIntegrationDistFile(syncName: string, optionalNangoIntegrationsDirPath?: string) {
         let nangoIntegrationsDirPath = '';
 

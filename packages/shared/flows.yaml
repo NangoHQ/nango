@@ -166,6 +166,7 @@ integrations:
         app_name: string
         anonymous_app: boolean
         scopes: string
+    rawName: google-workspace
   hubspot:
     hubspot-service-ticket:
       runs: every half hour
@@ -358,6 +359,7 @@ integrations:
         organizationPath: string | null | undefined
         isAdmin: boolean | null
         department: string | null
+    rawName: microsoft-active-directory
   notion:
     notion-pages:
       runs: every 6 hours
