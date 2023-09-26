@@ -91,6 +91,10 @@ export default function FlowCreate() {
             setShowFrequencyError(false);
         }
 
+        console.log(flows);
+        const flowObject = flows[data['integration'] as string] as Flow;
+        console.log(flowObject);
+
         const models = showModels(flow?.returns as string[]) as any;
         const flowPayload = {
             provider: data['integration'].toString(),
@@ -107,7 +111,7 @@ export default function FlowCreate() {
                 }))
             }))),
             is_public: true,
-            public_route: flow?.rawName || data['integration'].toString()
+            public_route: flowObject.rawName || data['integration'].toString()
         };
 
         const res = await createFlow([flowPayload]);
