@@ -421,7 +421,7 @@ export async function deployPreBuilt(
                 level: 'error',
                 activity_log_id: activityLogId as number,
                 timestamp: Date.now(),
-                content: `There was an error uploading the ${is_public ? 'public template' : ''} file ${syncName}-v${version}.js`
+                content: `There was an error uploading the ${is_public ? 'public template' : ''} file ${sync_name}-v${version}.js`
             });
 
             throw new NangoError('file_upload_error');

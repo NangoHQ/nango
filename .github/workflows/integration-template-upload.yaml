@@ -7,8 +7,8 @@ on:
   pull_request:
     branches:
       - master
-    types:
-      - closed
+    #types:
+      #- closed
 
 concurrency:
     group: templates-${{ github.event.pull_request.number || github.ref }}
