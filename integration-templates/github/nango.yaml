@@ -37,7 +37,7 @@ models:
         description: string
         url: string
         date_created: date
-        date_last_modified: date=
+        date_last_modified: date
     GithubRepoFile:
         id: string
         name: string
