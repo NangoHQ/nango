@@ -328,6 +328,14 @@ export async function deployPreBuilt(
 
     if (nangoYamlBody) {
         await remoteFileService.upload(nangoYamlBody, `${env}/account/${accountId}/environment/${environment_id}/${nangoConfigFile}`, environment_id);
+    } else {
+        // this is a public template so copy it from the public location
+        await remoteFileService.copy(
+            firstConfig?.public_route as string,
+            nangoConfigFile,
+            `${env}/account/${accountId}/environment/${environment_id}/${nangoConfigFile}`,
+            environment_id
+        );
     }
 
     const flowReturnData: SyncDeploymentResult[] = [];
@@ -392,18 +400,37 @@ export async function deployPreBuilt(
         const version = bumpedVersion || '0.0.1';
 
         const jsFile = typeof config.fileBody === 'string' ? config.fileBody : config.fileBody?.js;
-        const file_location = (await remoteFileService.upload(
-            jsFile as string,
-            `${env}/account/${accountId}/environment/${environment_id}/config/${nango_config_id}/${sync_name}-v${version}.js`,
-            environment_id
-        )) as string;
+        let file_location = '';
+        if (is_public) {
+            file_location = (await remoteFileService.copy(
+                `${config?.public_route}/dist`,
+                `${sync_name}.js`,
+                `${env}/account/${accountId}/environment/${environment_id}/config/${nango_config_id}/${sync_name}-v${version}.js`,
+                environment_id
+            )) as string;
+        } else {
+            file_location = (await remoteFileService.upload(
+                jsFile as string,
+                `${env}/account/${accountId}/environment/${environment_id}/config/${nango_config_id}/${sync_name}-v${version}.js`,
+                environment_id
+            )) as string;
+        }
 
         if (typeof config.fileBody === 'object' && config.fileBody?.ts) {
-            await remoteFileService.upload(
-                config.fileBody.ts,
-                `${env}/account/${accountId}/environment/${environment_id}/config/${nango_config_id}/${sync_name}.ts`,
-                environment_id
-            );
+            if (is_public) {
+                await remoteFileService.copy(
+                    config?.public_route as string,
+                    `${sync_name}.ts`,
+                    `${env}/account/${accountId}/environment/${environment_id}/config/${nango_config_id}/${sync_name}.ts`,
+                    environment_id
+                );
+            } else {
+                await remoteFileService.upload(
+                    config.fileBody.ts,
+                    `${env}/account/${accountId}/environment/${environment_id}/config/${nango_config_id}/${sync_name}.ts`,
+                    environment_id
+                );
+            }
         }
 
         const oldConfigs = await getSyncAndActionConfigsBySyncNameAndConfigId(environment_id, nango_config_id as number, sync_name);
@@ -416,7 +443,7 @@ export async function deployPreBuilt(
         insertData.push({
             sync_name,
             nango_config_id,
-            file_location: file_location ?? '__LOCAL_FILE__', // TODO
+            file_location: file_location,
             version,
             models,
             active: true,

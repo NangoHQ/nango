@@ -16,6 +16,7 @@ interface FlowDetails {
     track_deletes?: boolean;
     returns: string[];
     runs: string;
+    rawName?: string
 }
 
 interface Flow {
@@ -105,7 +106,8 @@ export default function FlowCreate() {
                     type: models[model][field]
                 }))
             }))),
-            is_public: true
+            is_public: true,
+            public_route: flow?.rawName || data['integration'].toString()
         };
 
         const res = await createFlow([flowPayload]);
@@ -281,7 +283,7 @@ export default function FlowCreate() {
                                             onChange={handleFlowNameChange}
                                             value={selectedFlowName}
                                         >
-                                            {flowNames.map((flowName, index) => (
+                                            {flowNames.filter(flowName => flowName !== 'rawName').map((flowName, index) => (
                                                 <option key={index} value={flowName}>{flowName} ({flow?.type === 'action' ? 'action' : 'sync'})</option>
                                             ))}
                                         </select>

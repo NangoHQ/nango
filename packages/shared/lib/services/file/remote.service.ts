@@ -1,5 +1,5 @@
 import type { Response } from 'express';
-import { PutObjectCommand, GetObjectCommand, GetObjectCommandOutput, S3Client, DeleteObjectsCommand } from '@aws-sdk/client-s3';
+import { CopyObjectCommand, PutObjectCommand, GetObjectCommand, GetObjectCommandOutput, S3Client, DeleteObjectsCommand } from '@aws-sdk/client-s3';
 import { Readable } from 'stream';
 import archiver from 'archiver';
 import { isCloud } from '../../utils/utils.js';
@@ -36,6 +36,38 @@ class RemoteFileService {
             );
 
             return fileName;
+        } catch (e) {
+            await errorManager.report(e, {
+                source: ErrorSourceEnum.PLATFORM,
+                environmentId,
+                operation: LogActionEnum.FILE,
+                metadata: {
+                    fileName
+                }
+            });
+
+            return null;
+        }
+    }
+
+    async copy(integrationName: string, fileName: string, destinationPath: string, environmentId: number): Promise<string | null> {
+        if (isCloud()) {
+            return '_LOCAL_FILE_';
+        }
+
+        try {
+            const s3FilePath = `integration-templates/${integrationName}/${fileName}`;
+            console.log(s3FilePath);
+
+            await client.send(
+                new CopyObjectCommand({
+                    Bucket: this.bucket,
+                    Key: destinationPath,
+                    CopySource: `${this.bucket}/${s3FilePath}`
+                })
+            );
+
+            return s3FilePath;
         } catch (e) {
             await errorManager.report(e, {
                 source: ErrorSourceEnum.PLATFORM,
