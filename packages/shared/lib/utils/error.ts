@@ -333,7 +333,7 @@ export class NangoError extends Error {
 
             case 'provider_not_on_account':
                 this.status = 400;
-                this.message = 'This provider is not on your account. Please add the provider to your account first.';
+                this.message = 'This provider is not on your account. Please add the provider to your account first via the integrations tab.';
                 break;
 
             case 'integration_file_not_found':

@@ -68,6 +68,10 @@ export default function Syncs() {
                 position: toast.POSITION.BOTTOM_CENTER
             });
             return;
+        } else {
+            toast.success('Integration files downloaded successfully', {
+                position: toast.POSITION.BOTTOM_CENTER
+            });
         }
 
         const blob = await response.blob();

@@ -230,6 +230,18 @@ export default function FlowCreate() {
             body: JSON.stringify(flowInfo)
         });
 
+        if (response.status !== 200) {
+            const error = await response.json();
+            toast.error(error.error, {
+                position: toast.POSITION.BOTTOM_CENTER
+            });
+            return;
+        } else {
+            toast.success('Integration files downloaded successfully', {
+                position: toast.POSITION.BOTTOM_CENTER
+            });
+        }
+
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
