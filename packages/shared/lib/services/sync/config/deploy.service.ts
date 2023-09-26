@@ -416,6 +416,17 @@ export async function deployPreBuilt(
             )) as string;
         }
 
+        if (!file_location) {
+            await createActivityLogMessageAndEnd({
+                level: 'error',
+                activity_log_id: activityLogId as number,
+                timestamp: Date.now(),
+                content: `There was an error uploading the ${is_public ? 'public template' : ''} file ${syncName}-v${version}.js`
+            });
+
+            throw new NangoError('file_upload_error');
+        }
+
         if (typeof config.fileBody === 'object' && config.fileBody?.ts) {
             if (is_public) {
                 await remoteFileService.copy(

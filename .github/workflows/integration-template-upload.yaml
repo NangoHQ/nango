@@ -32,6 +32,7 @@ jobs:
               run: |
                 wd=$(pwd)
                 for dir in integration-templates/*; do
+                  echo $dir
                   if [ -d "$dir" ]; then
                     # Create a temp directory and a nango-integrations directory inside it
                     mkdir -p /tmp/nango-temp/nango-integrations
