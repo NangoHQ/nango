@@ -53,7 +53,11 @@ jobs:
                 done
 
                 # Sync the updated integration-templates directory to S3
-                aws s3 sync integration-templates/ s3://${{ secrets.AWS_BUCKET_NAME }}
+                aws s3 sync integration-templates/ s3://${{ secrets.AWS_BUCKET_NAME }}/integration-templates
+              env:
+                AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
 
             - name: Get specific changed files
               id: changed-files-specific
