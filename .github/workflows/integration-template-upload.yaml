@@ -15,7 +15,7 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
-    flow-compilation:
+    template-upload:
         runs-on: ubuntu-latest
 
         steps:
