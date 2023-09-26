@@ -21,6 +21,42 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@v3
 
+            - name: Install nango CLI
+              run: |
+                npm install -g nango
+                npm install @tsconfig/node18-strictest-esm --save-dev
+
+            - name: Process and Upload directories within integration-templates to S3 under templates subdirectory
+              run: |
+                for dir in integration-templates/*; do
+                  if [ -d "$dir" ]; then
+                    # Create a temp directory and a nango-integrations directory inside it
+                    mkdir -p /tmp/nango-temp/nango-integrations
+
+                    # Copy all contents of the current directory to nango-integrations
+                    cp -r $dir/* /tmp/nango-temp/nango-integrations/
+
+                    # Navigate to nango-integrations and run nango compile
+                    cd /tmp/nango-temp/nango-integrations
+                    nango compile
+
+                    # Copy the resulting dist directory back to the current directory
+                    cp -r dist/ $dir/
+
+                    # Navigate back and remove the entire temp directory
+                    cd -
+                    rm -rf /tmp/nango-temp
+                  fi
+                done
+
+                # Sync the updated integration-templates directory to S3
+                aws s3 sync integration-templates/ s3://${{ secrets.AWS_BUCKET_NAME }}/templates/
+              env:
+                AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+
+
             - name: Get specific changed files
               id: changed-files-specific
               uses: tj-actions/changed-files@v39
@@ -29,13 +65,27 @@ jobs:
                   integration-templates/*
                   integration-templates/**/*
 
-            - name: Upload changed directories to S3
+            - name: Process and Upload changed directories to S3
               run: |
                 for file in ${{ steps.changed-files-specific.outputs.all_changed_files }}; do
                   dir=$(dirname $file)
+
+                  mkdir -p /tmp/nango-temp/nango-integrations
+
+                  cp -r $dir/* /tmp/nango-temp/nango-integrations/
+
+                  cd /tmp/nango-temp/nango-integrations
+                  nango compile
+
+                  cp -r dist/ $dir/
+
+                  cd -
+                  rm -rf /tmp/nango-temp
+
                   aws s3 sync $dir s3://${{ secrets.AWS_BUCKET_NAME }}/templates/$dir/
                 done
               env:
                 AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
                 AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
                 AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+
