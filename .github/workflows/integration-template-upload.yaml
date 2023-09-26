@@ -1,0 +1,43 @@
+name: Upload integration templates to S3
+
+on: [push]
+#on:
+  #push:
+    #branches:
+      #- master
+  #pull_request:
+    #branches:
+      #- master
+
+
+concurrency:
+    group: templates-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    flow-compilation:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v3
+
+            - name: Get specific changed files
+              id: changed-files-specific
+              uses: tj-actions/changed-files@v39
+              with:
+                files: |
+                  integration-templates/*
+                  integration-templates/**/*
+
+            - name: Upload changed directories to S3
+              run: |
+                for file in ${{ steps.changed-files-specific.outputs.all_changed_files }}; do
+                  dir=$(dirname $file)
+                  #aws s3 sync $dir s3://${{ secrets.AWS_S3_BUCKET }}/templates/$dir/
+                  echo "templates/$dir"
+                done
+              env:
+                AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                AWS_DEFAULT_REGION: ${{ env.AWS_REGION }}
