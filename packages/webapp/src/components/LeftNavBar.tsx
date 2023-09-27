@@ -122,7 +122,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                             <img className="h-5 mr-3" src="/images/settings-icon.svg" alt="" />
                             <p>Project Settings</p>
                         </Link>
-                        <span className="flex pt-4 border-t-2 border-border-gray items-center text-center text-gray-500 justify-center text-sm">v{version}</span>
+                        {version && (<span className="flex pt-4 border-t-2 border-border-gray items-center text-center text-gray-500 justify-center text-sm">v{version}</span>)}
                     </div>
                 </div>
                 {isCloud() && (
