@@ -8,6 +8,10 @@ const activityLogTableName = '_nango_activity_logs';
 const activityLogMessageTableName = '_nango_activity_log_messages';
 
 export async function createActivityLog(log: ActivityLog): Promise<number | null> {
+    if (!log.environment_id) {
+        return null;
+    }
+
     try {
         const result: void | Pick<ActivityLog, 'id'> = await db.knex.withSchema(db.schema()).from<ActivityLog>(activityLogTableName).insert(log, ['id']);
 
