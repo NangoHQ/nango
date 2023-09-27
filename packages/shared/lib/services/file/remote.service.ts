@@ -187,7 +187,7 @@ class RemoteFileService {
         if (!isCloud()) {
             return localFileService.zipAndSendFiles(res, integrationName, accountId, environmentId, nangoConfigId);
         } else {
-            const nangoConfigLocation = file_location.split('/').slice(0, -2).join('/');
+            const nangoConfigLocation = file_location.split('/').slice(0, -3).join('/');
             const { success, error, response: nangoYaml } = await this.getStream(`${nangoConfigLocation}/${nangoConfigFile}`);
 
             if (!success || nangoYaml === null) {
