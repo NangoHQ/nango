@@ -730,7 +730,7 @@ export const checkYamlMatchesTsFiles = async (): Promise<boolean> => {
 
     const tsFiles = glob.sync(`./*.ts`);
 
-    const tsFileNames = tsFiles.map((file) => path.basename(file, '.ts'));
+    const tsFileNames = tsFiles.filter((file) => !file.includes('models.ts')).map((file) => path.basename(file, '.ts'));
 
     const missingSyncs = syncNames.filter((syncName) => !tsFileNames.includes(syncName));
 
