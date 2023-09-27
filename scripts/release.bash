@@ -72,7 +72,7 @@ function update_package_json_version() {
 # to ensure all dependencies are updated
 
 # build out the available flows from the existing integration templates
-node flows.js
+node scripts/flows.js
 
 # clean up any old dist folders
 npm run i
