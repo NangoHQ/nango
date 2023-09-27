@@ -111,12 +111,6 @@ class AccountController {
                 return;
             }
 
-            req.session.destroy((err) => {
-                if (err) {
-                    next(err);
-                }
-            });
-
             req.login(user as User, (err) => {
                 if (err) {
                     next(err);
