@@ -247,7 +247,7 @@ export default function FlowCreate() {
             toast.error(error.error, {
                 position: toast.POSITION.BOTTOM_CENTER
             });
-            setIsDownloading(true);
+            setIsDownloading(false);
             return;
         } else {
             toast.success('Integration files downloaded successfully', {

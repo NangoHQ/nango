@@ -194,7 +194,7 @@ integrations:
         scopes: string
     rawName: google-workspace
   hubspot:
-    hubspot-service-ticket:
+    hubspot-service-tickets:
       runs: every half hour
       returns:
         - HubspotServiceTicket
