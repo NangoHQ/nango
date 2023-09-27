@@ -12,7 +12,7 @@ import path from 'path';
 import * as dotenv from 'dotenv';
 
 import { nangoConfigFile, loadSimplifiedConfig } from '@nangohq/shared';
-import { init, dryRun, generate, tsc, tscWatch, configWatch, dockerRun, version, deploy, adminDeploy } from './sync.js';
+import { init, dryRun, generate, tsc, tscWatch, configWatch, dockerRun, version, deploy, adminDeploy, checkYamlMatchesTsFiles } from './sync.js';
 import { upgradeAction, NANGO_INTEGRATIONS_LOCATION, verifyNecessaryFiles, printDebug } from './utils.js';
 import type { ENV, DeployOptions } from './types.js';
 
@@ -172,6 +172,7 @@ program
     .action(async function (this: Command) {
         const { autoConfirm, debug } = this.opts();
         await verifyNecessaryFiles(autoConfirm, debug);
+        await checkYamlMatchesTsFiles();
         tsc(debug);
     });
 

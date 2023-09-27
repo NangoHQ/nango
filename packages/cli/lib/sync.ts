@@ -723,6 +723,32 @@ export const tsc = async (debug = false, syncName?: string): Promise<boolean> =>
     return success;
 };
 
+export const checkYamlMatchesTsFiles = async (): Promise<boolean> => {
+    const config = await getConfig();
+
+    const syncNames = config.map((provider) => provider.syncs.map((sync) => sync.name)).flat();
+
+    const tsFiles = glob.sync(`./*.ts`);
+
+    const tsFileNames = tsFiles.map((file) => path.basename(file, '.ts'));
+
+    const missingSyncs = syncNames.filter((syncName) => !tsFileNames.includes(syncName));
+
+    if (missingSyncs.length > 0) {
+        console.log(chalk.red(`The following syncs are missing a corresponding .ts file: ${missingSyncs.join(', ')}`));
+        throw new Error('Syncs missing .ts files');
+    }
+
+    const extraSyncs = tsFileNames.filter((syncName) => !syncNames.includes(syncName));
+
+    if (extraSyncs.length > 0) {
+        console.log(chalk.red(`The following .ts files do not have a corresponding sync in the config: ${extraSyncs.join(', ')}`));
+        throw new Error('Extra .ts files');
+    }
+
+    return true;
+};
+
 const nangoCallsAreUsedCorrectly = (filePath: string, type = SyncConfigType.SYNC): boolean => {
     const code = fs.readFileSync(filePath, 'utf-8');
     let areAwaited = true;
