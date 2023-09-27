@@ -14,6 +14,13 @@ class EnvironmentController {
 
             if (!isCloud()) {
                 environment.websockets_path = getWebsocketsPath();
+                if (process.env[`NANGO_SECRET_KEY_${environment.name.toUpperCase()}`]) {
+                    environment.secret_key = process.env[`NANGO_SECRET_KEY_${environment.name.toUpperCase()}`] as string;
+                }
+
+                if (process.env[`NANGO_PUBLIC_KEY_${environment.name.toUpperCase()}`]) {
+                    environment.public_key = process.env[`NANGO_PUBLIC_KEY_${environment.name.toUpperCase()}`] as string;
+                }
             }
 
             environment.callback_url = await getOauthCallbackUrl(environment.id);

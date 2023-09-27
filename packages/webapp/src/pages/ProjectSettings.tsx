@@ -254,9 +254,11 @@ export default function ProjectSettings() {
                                         >
                                             <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
                                         </Tooltip>
-                                        <Tooltip text="Rotate key">
-                                            <RefreshCw size="16" onClick={handleRefreshPublicKey} className="cursor-pointer mt-0.5 ml-2 stroke-red-500" />
-                                        </Tooltip>
+                                        {isCloud() && (
+                                            <Tooltip text="Rotate key">
+                                                <RefreshCw size="16" onClick={handleRefreshPublicKey} className="cursor-pointer mt-0.5 ml-2 stroke-red-500" />
+                                            </Tooltip>
+                                        )}
                                     </div>
                                     <Prism language="bash" colorScheme="dark">
                                         {publicKey}
@@ -307,9 +309,11 @@ export default function ProjectSettings() {
                                         >
                                             <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
                                         </Tooltip>
-                                        <Tooltip text="Rotate key">
-                                            <RefreshCw size="16" onClick={handleRefreshPrivateKey} className="cursor-pointer mt-0.5 ml-2 stroke-red-500" />
-                                        </Tooltip>
+                                        {isCloud() && (
+                                            <Tooltip text="Rotate key">
+                                                <RefreshCw size="16" onClick={handleRefreshPrivateKey} className="cursor-pointer mt-0.5 ml-2 stroke-red-500" />
+                                            </Tooltip>
+                                        )}
                                     </div>
                                     <SecretInput disabled copy={true} optionalvalue={secretKey} setoptionalvalue={setSecretKey} />
                                 </div>

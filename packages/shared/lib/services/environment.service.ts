@@ -6,6 +6,7 @@ import type { EnvironmentVariable } from '../models/EnvironmentVariable.js';
 import type { Account } from '../models/Admin.js';
 import { LogActionEnum } from '../models/Activity.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
+import { isCloud } from '../utils/utils.js';
 
 const TABLE = '_nango_environments';
 
@@ -53,6 +54,26 @@ class EnvironmentService {
     }
 
     async getAccountIdAndEnvironmentIdBySecretKey(secretKey: string): Promise<{ accountId: number; environmentId: number } | null> {
+        if (!isCloud()) {
+            const environmentVariables = Object.keys(process.env).filter((key) => key.startsWith('NANGO_SECRET_KEY_')) || [];
+            if (environmentVariables.length > 0) {
+                for (const environmentVariable of environmentVariables) {
+                    const envSecretKey = process.env[environmentVariable] as string;
+
+                    if (envSecretKey === secretKey) {
+                        const env = environmentVariable.replace('NANGO_SECRET_KEY_', '').toLowerCase();
+                        const environment = await this.getByEnvironmentName(env);
+
+                        if (environment === null) {
+                            return null;
+                        }
+
+                        return { accountId: environment.account_id, environmentId: environment.id };
+                    }
+                }
+            }
+        }
+
         if (!this.environmentAccountSecrets[secretKey]) {
             return null;
         }
@@ -73,6 +94,25 @@ class EnvironmentService {
     }
 
     async getAccountIdAndEnvironmentIdByPublicKey(publicKey: string): Promise<{ accountId: number; environmentId: number } | null> {
+        if (!isCloud()) {
+            const environmentVariables = Object.keys(process.env).filter((key) => key.startsWith('NANGO_PUBLIC_KEY_')) || [];
+            if (environmentVariables.length > 0) {
+                for (const environmentVariable of environmentVariables) {
+                    const envPublicKey = process.env[environmentVariable] as string;
+
+                    if (envPublicKey === publicKey) {
+                        const env = environmentVariable.replace('NANGO_PUBLIC_KEY_', '').toLowerCase();
+                        const environment = await this.getByEnvironmentName(env);
+
+                        if (environment === null) {
+                            return null;
+                        }
+
+                        return { accountId: environment.account_id, environmentId: environment.id };
+                    }
+                }
+            }
+        }
         const result = await db.knex.withSchema(db.schema()).select('*').from<Environment>(TABLE).where({ public_key: publicKey });
 
         if (result == null || result.length == 0 || result[0] == null) {
@@ -141,6 +181,16 @@ class EnvironmentService {
             });
             return null;
         }
+    }
+
+    async getByEnvironmentName(name: string): Promise<Environment | null> {
+        const result = await db.knex.withSchema(db.schema()).select('*').from<Environment>(TABLE).where({ name });
+
+        if (result == null || result.length == 0 || result[0] == null) {
+            return null;
+        }
+
+        return encryptionManager.decryptEnvironment(result[0]);
     }
 
     async createEnvironment(accountId: number, environment: string): Promise<Environment | null> {
