@@ -19,7 +19,7 @@ export default async function fetchData(nango: NangoSync) {
             } as Params
         };
 
-        if (!afterLink) {
+        if (afterLink) {
             // If there is no afterLink, then we are on the first page.
             payload.params['after'] = afterLink;
         }
@@ -44,7 +44,7 @@ export default async function fetchData(nango: NangoSync) {
             await nango.log(`Sent ${mappedOwners.length} owners`);
         }
 
-        if (response.data.length == MAX_PAGE) {
+        if (response.data.paging?.next?.after) {
             page += 1;
             afterLink = response.data.paging.next.after;
         } else {
