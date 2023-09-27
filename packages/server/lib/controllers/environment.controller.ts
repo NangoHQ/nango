@@ -176,6 +176,27 @@ class EnvironmentController {
             next(err);
         }
     }
+
+    async rotateKey(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
+            if (!sessionSuccess || response === null) {
+                errorManager.errResFromNangoErr(res, sessionError);
+                return;
+            }
+
+            if (!req.body.type) {
+                res.status(400).send({ error: 'The type of key to rotate is required' });
+                return;
+            }
+            const { environment } = response;
+
+            const newKey = await environmentService.rotateKey(environment.id, req.body.type);
+            res.status(200).send({ key: newKey });
+        } catch (err) {
+            next(err);
+        }
+    }
 }
 
 export default new EnvironmentController();

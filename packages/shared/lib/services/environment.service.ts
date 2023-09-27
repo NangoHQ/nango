@@ -1,3 +1,4 @@
+import * as uuid from 'uuid';
 import db from '../db/database.js';
 import encryptionManager from '../utils/encryption.manager.js';
 import type { Environment } from '../models/Environment.js';
@@ -269,6 +270,54 @@ class EnvironmentService {
         }
 
         return results;
+    }
+
+    async rotateKey(id: number, type: string): Promise<string | null> {
+        if (type === 'private') {
+            return this.rotatePrivateKey(id);
+        }
+
+        if (type === 'public') {
+            return this.rotatePublicKey(id);
+        }
+
+        return null;
+    }
+
+    async rotatePrivateKey(id: number): Promise<string | null> {
+        const environment = await this.getById(id);
+
+        if (!environment) {
+            return null;
+        }
+
+        const secret_key = uuid.v4();
+
+        await db.knex.withSchema(db.schema()).from<Environment>(TABLE).where({ id }).update({ secret_key });
+
+        if (this.environmentAccountSecrets[environment.secret_key]) {
+            delete this.environmentAccountSecrets[environment.secret_key];
+        }
+
+        const updatedEnvironment = await this.getById(id);
+
+        if (!updatedEnvironment) {
+            return null;
+        }
+
+        const encryptedEnvironment = encryptionManager.encryptEnvironment(updatedEnvironment);
+        await db.knex.withSchema(db.schema()).from<Environment>(TABLE).where({ id }).update(encryptedEnvironment);
+        this.addToEnvironmentSecretCache(updatedEnvironment);
+
+        return secret_key;
+    }
+
+    async rotatePublicKey(id: number): Promise<string | null> {
+        const public_key = uuid.v4();
+
+        await db.knex.withSchema(db.schema()).from<Environment>(TABLE).where({ id }).update({ public_key });
+
+        return public_key;
     }
 }
 

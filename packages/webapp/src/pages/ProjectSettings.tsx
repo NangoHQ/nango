@@ -1,9 +1,9 @@
 import { toast } from 'react-toastify';
 import { Prism } from '@mantine/prism';
 import { useState, useEffect } from 'react';
-import { HelpCircle } from '@geist-ui/icons';
+import { HelpCircle, RefreshCw } from '@geist-ui/icons';
 import { TrashIcon } from '@heroicons/react/24/outline';
-import { Tooltip } from '@geist-ui/core';
+import { Tooltip, useModal, Modal } from '@geist-ui/core';
 
 import { useGetProjectInfoAPI, useEditCallbackUrlAPI, useEditWebhookUrlAPI, useEditHmacEnabledAPI, useEditHmacKeyAPI, useEditEnvVariablesAPI } from '../utils/api';
 import { isCloud, defaultCallback } from '../utils/utils';
@@ -30,6 +30,9 @@ export default function ProjectSettings() {
     const editHmacEnabled = useEditHmacEnabledAPI();
     const editHmacKey = useEditHmacKeyAPI();
     const editEnvVariables = useEditEnvVariablesAPI();
+
+    const { setVisible, bindings } = useModal()
+    const { setVisible: setPrivateVisible, bindings: privateBindings } = useModal()
 
     const env = useStore((state) => state.cookieValue);
 
@@ -169,8 +172,57 @@ export default function ProjectSettings() {
         }
     };
 
+    const handleRefreshPublicKey = async () => {
+        setVisible(true);
+    };
+
+    const handleRefreshPrivateKey = async () => {
+        setPrivateVisible(true);
+    };
+
+    const onRefreshKey = async (publicKey = true) => {
+        const res = await fetch('/api/v1/environment/rotate-key', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                type: publicKey ? 'public' : 'private'
+            })
+        });
+
+        if (res?.status === 200) {
+            const key = (await res.json())['key'];
+            if (publicKey) {
+                setPublicKey(key);
+                toast.success('Public key rotated', { position: toast.POSITION.BOTTOM_CENTER });
+                setVisible(false);
+            } else {
+                setSecretKey(key);
+                toast.success('Private key rotated', { position: toast.POSITION.BOTTOM_CENTER });
+                setPrivateVisible(false);
+            }
+        }
+    };
+
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.ProjectSettings}>
+            <Modal {...bindings}>
+                <Modal.Title>Rotate Public Key</Modal.Title>
+                <Modal.Content>
+                  <p>This action cannot be undone, and will invalidate the current key, are you sure?</p>
+                </Modal.Content>
+                <Modal.Action passive onClick={() => setVisible(false)}>Cancel</Modal.Action>
+                <Modal.Action onClick={() => onRefreshKey()}>Rotate</Modal.Action>
+            </Modal>
+            <Modal {...privateBindings}>
+                <Modal.Title>Rotate Private Key</Modal.Title>
+                <Modal.Content>
+                  <p>This action cannot be undone, and will invalidate the current key, are you sure?</p>
+                </Modal.Content>
+                <Modal.Action passive onClick={() => setVisible(false)}>Cancel</Modal.Action>
+                <Modal.Action onClick={() => onRefreshKey(false)}>Rotate</Modal.Action>
+            </Modal>
             {secretKey && (
                 <div className="mx-auto w-largebox">
                     <div className="mx-20 h-full mb-20">
@@ -201,6 +253,9 @@ export default function ProjectSettings() {
                                             }
                                         >
                                             <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                        </Tooltip>
+                                        <Tooltip text="Rotate key">
+                                            <RefreshCw size="16" onClick={handleRefreshPublicKey} className="cursor-pointer mt-0.5 ml-2 stroke-red-500" />
                                         </Tooltip>
                                     </div>
                                     <Prism language="bash" colorScheme="dark">
@@ -251,6 +306,9 @@ export default function ProjectSettings() {
                                             }
                                         >
                                             <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                        </Tooltip>
+                                        <Tooltip text="Rotate key">
+                                            <RefreshCw size="16" onClick={handleRefreshPrivateKey} className="cursor-pointer mt-0.5 ml-2 stroke-red-500" />
                                         </Tooltip>
                                     </div>
                                     <SecretInput disabled copy={true} optionalvalue={secretKey} setoptionalvalue={setSecretKey} />
