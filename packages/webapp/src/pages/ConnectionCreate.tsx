@@ -301,7 +301,7 @@ nango.auth('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr})
                 <div className="mx-auto w-largebox pb-40">
                     <h2 className="mx-20 mt-16 text-left text-3xl font-semibold tracking-tight text-white mb-12">Add New Connection</h2>
                     <div className="mx-20 h-fit border border-border-gray rounded-md text-white text-sm py-14 px-8">
-                        <form className="space-y-6" onSubmit={handleCreate} autoComplete="off">
+                        <form className="space-y-6" onSubmit={handleCreate}>
                             <div>
                                 <div>
                                     <div className="flex">
@@ -346,6 +346,7 @@ nango.auth('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr})
                                             name="connection_id"
                                             type="text"
                                             defaultValue={connectionId}
+                                            autoComplete="new-password"
                                             required
                                             className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none"
                                             onChange={handleConnectionIdChange}
@@ -409,6 +410,7 @@ nango.auth('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr})
                                             name={`connection-config-${paramName}`}
                                             type="text"
                                             required
+                                            autoComplete="new-password"
                                             className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none"
                                             onChange={handleConnectionConfigParamsChange}
                                         />
@@ -518,6 +520,7 @@ nango.auth('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr})
                                             id="authorization_params"
                                             name="authorization_params"
                                             type="text"
+                                            autoComplete="new-password"
                                             defaultValue="{ }"
                                             className={`${authorizationParamsError ? 'border-red-700' : 'border-border-gray'}  ${
                                                 authorizationParamsError ? 'text-red-700' : 'text-text-light-gray'
