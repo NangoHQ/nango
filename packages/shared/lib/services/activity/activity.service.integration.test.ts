@@ -32,16 +32,14 @@ describe('Activity service integration tests', () => {
         const log: ActivityLog = {
             environment_id: result[0].id
         } as ActivityLog;
-        await ActivityService.createActivityLog(log);
-        const logs = await ActivityService.getLogsByEnvironment(result[0].id);
-        const [firstLog] = logs;
+        const createdLog = await ActivityService.createActivityLog(log);
         const provider = 'newProvider';
-        await ActivityService.updateProvider(firstLog?.id as number, provider);
+        await ActivityService.updateProvider(createdLog as number, provider);
 
         const updatedLog = await db.knex
             .withSchema(db.schema())
             .from<ActivityLog>('_nango_activity_logs')
-            .where({ id: firstLog?.id as number })
+            .where({ id: createdLog as number })
             .first();
         expect(updatedLog.provider).toEqual(provider);
     });
