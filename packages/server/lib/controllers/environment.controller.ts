@@ -1,9 +1,9 @@
 import type { Request, Response, NextFunction } from 'express';
 import { hmacService, environmentService, errorManager, getBaseUrl, isCloud, getWebsocketsPath, getOauthCallbackUrl, getEnvironmentId } from '@nangohq/shared';
-import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
+import { packageJsonFile, getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 
 class EnvironmentController {
-    async listEnvironments(req: Request, res: Response, next: NextFunction) {
+    async meta(req: Request, res: Response, next: NextFunction) {
         try {
             const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
             if (!sessionSuccess || response === null) {
@@ -13,7 +13,8 @@ class EnvironmentController {
             const { account } = response;
 
             const environments = await environmentService.getEnvironmentsByAccountId(account.id);
-            res.status(200).send({ environments });
+            const version = packageJsonFile().version;
+            res.status(200).send({ environments, version });
         } catch (err) {
             next(err);
         }
