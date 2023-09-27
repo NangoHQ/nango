@@ -1,0 +1,43 @@
+---
+title: Wildix PBX
+sidebarTitle: Wildix PBX
+---
+
+API configuration: [`wildix`](https://nango.dev/providers.yaml)
+
+## Features
+
+| Feature                                                                          | Status                          |
+| -------------------------------------------------------------------------------- | ------------------------------- |
+| [Auth (OAuth)](/guides/oauth)                                                      | ✅                              |
+| [Syncs](/guides/sync) & [Actions](/guides/actions)                                                              | ✅                              |
+| [Nango Proxy](/guides/proxy)                          | ✅   |
+| Auto-pagination                     | 🚫 (time to contribute: &lt;1h) |
+| API-specific rate limits | 🚫 (time to contribute: &lt;1h) |
+
+<Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+## Getting started
+
+-   [How to register an Application](https://api.accelo.com/docs/#registering-your-application)
+-   [OAuth-related docs](https://api.accelo.com/docs/#authentication)
+-   [List of OAuth scopes](https://api.accelo.com/docs/#scope)
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+## Connection configuration in Nango
+
+Accelo [requires a user specific subdomain](https://api.accelo.com/docs/#oauth2-0-uri) to run OAuth.
+
+You should request this from the user and pass it to Nango in the `nango.auth()` call:
+
+```js
+nango.auth('wildix-pbx', '<CONNECTION-ID>', {params: {subdomain: '<pbx-subdomain>'}});
+```
+
+For more details see the [docs here](/guides/oauth#connection-configuration).
+
+## API gotchas
+
+_None yet, add yours!_
+
+<Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/wildix.mdx)</Note>
