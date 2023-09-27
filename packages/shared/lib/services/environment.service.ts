@@ -53,6 +53,26 @@ class EnvironmentService {
         };
     }
 
+    async getEnvironmentsByAccountId(account_id: number): Promise<Environment[]> {
+        try {
+            const result = await db.knex.withSchema(db.schema()).select('name').from<Environment>(TABLE).where({ account_id });
+
+            if (result == null || result.length == 0) {
+                return [];
+            }
+
+            return result;
+        } catch (e) {
+            errorManager.report(e, {
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.DATABASE,
+                accountId: account_id
+            });
+
+            return [];
+        }
+    }
+
     async getAccountIdAndEnvironmentIdBySecretKey(secretKey: string): Promise<{ accountId: number; environmentId: number } | null> {
         if (!isCloud()) {
             const environmentVariables = Object.keys(process.env).filter((key) => key.startsWith('NANGO_SECRET_KEY_')) || [];

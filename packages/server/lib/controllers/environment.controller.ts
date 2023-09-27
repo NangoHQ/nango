@@ -3,6 +3,22 @@ import { hmacService, environmentService, errorManager, getBaseUrl, isCloud, get
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 
 class EnvironmentController {
+    async listEnvironments(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
+            if (!sessionSuccess || response === null) {
+                errorManager.errResFromNangoErr(res, sessionError);
+                return;
+            }
+            const { account } = response;
+
+            const environments = await environmentService.getEnvironmentsByAccountId(account.id);
+            res.status(200).send({ environments });
+        } catch (err) {
+            next(err);
+        }
+    }
+
     async getEnvironment(req: Request, res: Response, next: NextFunction) {
         try {
             const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
