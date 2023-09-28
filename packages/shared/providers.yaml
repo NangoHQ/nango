@@ -787,7 +787,7 @@ salesforce:
     token_response_metadata:
         - instance_url
     proxy:
-        base_url: https://${connectionConfig.instance_url}
+        base_url: ${connectionConfig.instance_url}
     docs: https://developer.salesforce.com/docs/api
 salesforce-sandbox:
     auth_mode: OAUTH2
@@ -839,7 +839,7 @@ slack:
     token_response_metadata:
         - incoming_webhook.url
     proxy:
-        base_url: https://slack.com
+        base_url: https://slack.com/api
     docs: https://api.slack.com/apis
 smugmug:
     auth_mode: OAUTH1
