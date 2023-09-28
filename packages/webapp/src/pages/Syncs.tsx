@@ -86,7 +86,7 @@ export default function Syncs() {
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Syncs}>
-            <div className="px-16 w-fit mx-auto min-w-[1000px]">
+            <div className="px-16 w-fit mx-auto min-w-[1000px] text-sm">
                 <div className="flex flex-col text-left">
                     <span className="flex items-center mb-3">
                         <h2 className="flex mt-16 text-left text-3xl font-semibold tracking-tight text-white">{currentTab === 'sync' ? 'Syncs' : 'Actions'}</h2>
@@ -130,7 +130,7 @@ export default function Syncs() {
                     <>
                         {syncs.filter(sync => sync.type === currentTab).length === 0 && (
                             <div className="flex pt-8">
-                                <Info>
+                                <Info size={24}>
                                     No {currentTab}s yet. Add a new one using <a href="https://docs.nango.dev/integration-templates/overview" className="text-[#4E80EE]" rel="noreferrer" target="_blank">templates</a> or <a href={`https://docs.nango.dev/guides/${currentTab === 'sync' ? 'sync' : 'actions'}`} className="text-[#4E80EE]" rel="noreferrer" target="_blank">build your own</a>.
                                 </Info>
                             </div>
@@ -139,20 +139,20 @@ export default function Syncs() {
                         {syncs.filter(sync => sync.type === currentTab).length > 0 && (
                             <div className="border border-border-gray rounded-md h-fit min-w-max pt-6 text-white text-sm">
                                 <div className="text-white px-5">
-                                    <div className="flex pb-4 items-center text-lg border-b border-border-gray">
-                                        <span className="w-60">Name</span>
-                                        <span className="w-48 ml-2">Integration</span>
-                                        {currentTab === 'sync' && <span className="w-28">Frequency</span>}
-                                        {currentTab === 'sync' && <span className="w-24">Auto Start</span>}
-                                        <span className="w-24 ml-8">Models</span>
-                                        {currentTab === 'sync' && <span className="w-36">Connections</span>}
+                                    <div className="flex pb-4 items-center border-b border-border-gray">
+                                        <span className="w-48">Name</span>
+                                        <span className="w-40 ml-2">Integration</span>
+                                        {currentTab === 'sync' && <span className="w-28 ml-1">Frequency</span>}
+                                        {currentTab === 'sync' && <span className="w-16">Auto Start</span>}
+                                        <span className={`w-16 ${currentTab === 'sync' ? 'ml-6' : ''}`}>Models</span>
+                                        {currentTab === 'sync' && <span className="w-24">Connections</span>}
                                         <span className="w-36">Last Deployed</span>
                                     </div>
                                 </div>
                                     {syncs.filter(sync => sync.type === currentTab).map((sync, index) => (
-                                        <div key={index} className="text-white px-5">
-                                            <div className="flex pb-4 text-base py-6 items-center border-b border-border-gray">
-                                                <div className="flex flex-col w-60">
+                                        <div key={index} className="text-white px-5 text-sm">
+                                            <div className="flex pb-4 py-6 items-center border-b border-border-gray">
+                                                <div className="flex flex-col w-48">
                                                     <span>
                                                         {sync.sync_name}@v{sync.version}
                                                     </span>
@@ -168,7 +168,7 @@ export default function Syncs() {
                                                             )}
                                                     </span>
                                                 </div>
-                                                <span className={`${sync.type === 'sync' ? 'w-48' : 'w-60'}`}>
+                                                <span className={`w-44`}>
                                                     <Link to={`/integration/${sync.unique_key}`}>
                                                         {sync?.provider ? (
                                                             <div className="flex ml-2 items-center">
@@ -180,11 +180,11 @@ export default function Syncs() {
                                                         )}
                                                     </Link>
                                                 </span>
-                                                {currentTab === 'sync' && <span className="w-36">{sync.runs || '-'}</span>}
-                                                {currentTab === 'sync' && <span className="w-28">{sync.auto_start === true ? 'Y' : 'N'}</span>}
+                                                {currentTab === 'sync' && <span className="w-32">{sync.runs || '-'}</span>}
+                                                {currentTab === 'sync' && <span className="w-16">{sync.auto_start === true ? 'Y' : 'N'}</span>}
                                                 {sync.models ? (
                                                     <Tooltip text={sync.models.join(', ')} type="dark">
-                                                        <span className="block w-16 ml-4 mr-2">{sync.models.length}</span>
+                                                        <span className={`block ${currentTab === 'sync' ? 'w-12 ml-4' : 'w-12'} mr-2`}>{sync.models.length}</span>
                                                     </Tooltip>
                                                 ) : (
                                                     <span className="w-24 ml-4 mr-2">-</span>
@@ -205,7 +205,7 @@ export default function Syncs() {
                                                         }
                                                         type="dark"
                                                     >
-                                                        <span className="w-12 ml-6 mr-28">{sync.connections === null ? 0 : sync.connections.length}</span>
+                                                        <span className="w-12 ml-6 mr-16">{sync.connections === null ? 0 : sync.connections.length}</span>
                                                     </Tooltip>
                                                 )}
                                                 <span className="text-gray-500 mr-4">{formatDateToUSFormat(sync.updated_at)}</span>
