@@ -128,13 +128,15 @@ class AccountController {
                 connection_id: 'n/a',
                 provider: null,
                 provider_config_key: '',
-                environment_id: result.environmentId
+                //environment_id: result.environmentId
+                environment_id: response.environment.id
             };
 
             await createActivityLogAndLogMessage(log, {
                 level: 'info',
                 timestamp: Date.now(),
-                content: `A Nango admin logged into your account for the following reason: "${login_reason}"`
+                //content: `A Nango admin logged into your account for the following reason: "${login_reason}"`
+                content: `A Nango admin logged into another account for the following reason: "${login_reason}"`
             });
 
             res.status(200).send({ success: true });

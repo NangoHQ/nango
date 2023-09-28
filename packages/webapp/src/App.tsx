@@ -60,6 +60,7 @@ const App = () => {
                 <Route path="/flow/create" element={<PrivateRoute />}>
                     <Route path="/flow/create" element={<FlowCreate />} />
                 </Route>
+                        <Route path="/account-settings" element={<AccountSettings />} />
                 {isCloud() && (
                     <>
                         <Route path="/account-settings" element={<AccountSettings />} />
