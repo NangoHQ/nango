@@ -23,6 +23,7 @@ const TABLE = dbNamespace + 'syncs';
 const SYNC_JOB_TABLE = dbNamespace + 'sync_jobs';
 const SYNC_SCHEDULE_TABLE = dbNamespace + 'sync_schedules';
 const SYNC_CONFIG_TABLE = dbNamespace + 'sync_configs';
+const ACTIVITY_LOG_TABLE = dbNamespace + 'activity_logs';
 
 /**
  * Sync Service
@@ -257,10 +258,12 @@ export const getSyncs = async (nangoConnection: Connection): Promise<Sync[]> => 
                         'status', nango.${SYNC_JOB_TABLE}.status,
                         'sync_config_id', nango.${SYNC_JOB_TABLE}.sync_config_id,
                         'version', nango.${SYNC_CONFIG_TABLE}.version,
-                        'models', nango.${SYNC_CONFIG_TABLE}.models
+                        'models', nango.${SYNC_CONFIG_TABLE}.models,
+                        'activity_log_id', nango.${ACTIVITY_LOG_TABLE}.id
                     )
                     FROM nango.${SYNC_JOB_TABLE}
                     JOIN nango.${SYNC_CONFIG_TABLE} ON nango.${SYNC_CONFIG_TABLE}.id = nango.${SYNC_JOB_TABLE}.sync_config_id
+                    LEFT JOIN nango.${ACTIVITY_LOG_TABLE} ON nango.${ACTIVITY_LOG_TABLE}.session_id = nango.${SYNC_JOB_TABLE}.id::text
                     WHERE nango.${SYNC_JOB_TABLE}.sync_id = nango.${TABLE}.id
                     AND nango.${SYNC_JOB_TABLE}.deleted = false
                     AND nango.${SYNC_CONFIG_TABLE}.deleted = false
