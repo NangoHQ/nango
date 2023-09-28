@@ -20,7 +20,7 @@ function buildQuery(customFields: string[], lastSyncDate?: Date): string {
     `;
 
     if (lastSyncDate) {
-        baseQuery += ` WHERE LastModifiedDate > ${lastSyncDate.toISOString()}`;
+        baseQuery += ` AND LastModifiedDate > ${lastSyncDate.toISOString()}`;
     }
 
     return baseQuery;
