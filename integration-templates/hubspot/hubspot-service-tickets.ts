@@ -50,7 +50,7 @@ export default async function fetchData(nango: NangoSync) {
             }
         };
 
-        if (!afterLink) {
+        if (afterLink) {
             payload.params['after'] = afterLink;
         }
 
@@ -78,7 +78,7 @@ export default async function fetchData(nango: NangoSync) {
             await nango.log(`Sent ${mappedTickets.length}`);
         }
 
-        if (response.data.length == MAX_PAGE) {
+        if (response.data.paging?.next?.after) {
             page += 1;
             afterLink = response.data.paging.next.after;
         } else {

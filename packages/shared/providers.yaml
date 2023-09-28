@@ -592,6 +592,7 @@ pennylane:
     token_url: https://app.pennylane.com/oauth/token
     proxy:
         base_url: https://app.pennylane.com/api/external/v1
+    scope_separator: '+'
     authorization_params:
         response_type: code
     token_params:
