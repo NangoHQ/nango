@@ -343,8 +343,8 @@ class EnvironmentService {
     }
 
     async rotateKey(id: number, type: string): Promise<string | null> {
-        if (type === 'private') {
-            return this.rotatePrivateKey(id);
+        if (type === 'secret') {
+            return this.rotateSecretKey(id);
         }
 
         if (type === 'public') {
@@ -354,20 +354,40 @@ class EnvironmentService {
         return null;
     }
 
-    async rotatePrivateKey(id: number): Promise<string | null> {
+    async revertKey(id: number, type: string): Promise<string | null> {
+        if (type === 'secret') {
+            return this.revertSecretKey(id);
+        }
+
+        if (type === 'public') {
+            return this.revertPublicKey(id);
+        }
+
+        return null;
+    }
+
+    async activateKey(id: number, type: string): Promise<boolean> {
+        if (type === 'secret') {
+            return this.activateSecretKey(id);
+        }
+
+        if (type === 'public') {
+            return this.activatePublicKey(id);
+        }
+
+        return false;
+    }
+
+    async rotateSecretKey(id: number): Promise<string | null> {
         const environment = await this.getById(id);
 
         if (!environment) {
             return null;
         }
 
-        const secret_key = uuid.v4();
+        const pending_secret_key = uuid.v4();
 
-        await db.knex.withSchema(db.schema()).from<Environment>(TABLE).where({ id }).update({ secret_key });
-
-        if (this.environmentAccountSecrets[environment.secret_key]) {
-            delete this.environmentAccountSecrets[environment.secret_key];
-        }
+        await db.knex.withSchema(db.schema()).from<Environment>(TABLE).where({ id }).update({ pending_secret_key });
 
         const updatedEnvironment = await this.getById(id);
 
@@ -377,17 +397,98 @@ class EnvironmentService {
 
         const encryptedEnvironment = encryptionManager.encryptEnvironment(updatedEnvironment);
         await db.knex.withSchema(db.schema()).from<Environment>(TABLE).where({ id }).update(encryptedEnvironment);
-        this.addToEnvironmentSecretCache(updatedEnvironment);
 
-        return secret_key;
+        return pending_secret_key;
     }
 
     async rotatePublicKey(id: number): Promise<string | null> {
-        const public_key = uuid.v4();
+        const pending_public_key = uuid.v4();
 
-        await db.knex.withSchema(db.schema()).from<Environment>(TABLE).where({ id }).update({ public_key });
+        await db.knex.withSchema(db.schema()).from<Environment>(TABLE).where({ id }).update({ pending_public_key });
 
-        return public_key;
+        return pending_public_key;
+    }
+
+    async revertSecretKey(id: number): Promise<string | null> {
+        const environment = await this.getById(id);
+
+        if (!environment) {
+            return null;
+        }
+
+        await db.knex.withSchema(db.schema()).from<Environment>(TABLE).where({ id }).update({
+            pending_secret_key: null,
+            pending_secret_key_iv: null,
+            pending_secret_key_tag: null
+        });
+
+        return environment.secret_key;
+    }
+
+    async revertPublicKey(id: number): Promise<string | null> {
+        const environment = await this.getById(id);
+
+        if (!environment) {
+            return null;
+        }
+
+        await db.knex.withSchema(db.schema()).from<Environment>(TABLE).where({ id }).update({ pending_public_key: null });
+
+        return environment.public_key;
+    }
+
+    async activateSecretKey(id: number): Promise<boolean> {
+        const environment = await this.getById(id);
+
+        if (!environment) {
+            return false;
+        }
+
+        await db.knex
+            .withSchema(db.schema())
+            .from<Environment>(TABLE)
+            .where({ id })
+            .update({
+                secret_key: environment.pending_secret_key as string,
+                secret_key_iv: environment.pending_secret_key_iv as string,
+                secret_key_tag: environment.pending_secret_key_tag as string,
+                pending_secret_key: null,
+                pending_secret_key_iv: null,
+                pending_secret_key_tag: null
+            });
+
+        if (this.environmentAccountSecrets[environment.secret_key]) {
+            delete this.environmentAccountSecrets[environment.secret_key];
+        }
+
+        const updatedEnvironment = await this.getById(id);
+
+        if (!updatedEnvironment) {
+            return false;
+        }
+
+        this.addToEnvironmentSecretCache(updatedEnvironment);
+
+        return true;
+    }
+
+    async activatePublicKey(id: number): Promise<boolean> {
+        const environment = await this.getById(id);
+
+        if (!environment) {
+            return false;
+        }
+
+        await db.knex
+            .withSchema(db.schema())
+            .from<Environment>(TABLE)
+            .where({ id })
+            .update({
+                public_key: environment.pending_public_key as string,
+                pending_public_key: null
+            });
+
+        return true;
     }
 }
 

@@ -119,6 +119,8 @@ app.route('/api/v1/environment/hmac-enabled').post(webAuth, environmentControlle
 app.route('/api/v1/environment/hmac-key').post(webAuth, environmentController.updateHmacKey.bind(environmentController));
 app.route('/api/v1/environment/environment-variables').post(webAuth, environmentController.updateEnvironmentVariables.bind(environmentController));
 app.route('/api/v1/environment/rotate-key').post(webAuth, environmentController.rotateKey.bind(accountController));
+app.route('/api/v1/environment/revert-key').post(webAuth, environmentController.revertKey.bind(accountController));
+app.route('/api/v1/environment/activate-key').post(webAuth, environmentController.activateKey.bind(accountController));
 app.route('/api/v1/integration').get(webAuth, configController.listProviderConfigsWeb.bind(configController));
 app.route('/api/v1/integration/:providerConfigKey').get(webAuth, configController.getProviderConfig.bind(configController));
 app.route('/api/v1/integration').put(webAuth, configController.editProviderConfigWeb.bind(connectionController));
