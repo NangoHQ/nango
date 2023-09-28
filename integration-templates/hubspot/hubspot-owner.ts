@@ -8,6 +8,7 @@ interface Params {
 export default async function fetchData(nango: NangoSync) {
     const MAX_PAGE = 100;
 
+    let page = 1;
     let afterLink = null;
 
     while (true) {
@@ -18,7 +19,7 @@ export default async function fetchData(nango: NangoSync) {
             } as Params
         };
 
-        if (!afterLink) {
+        if (afterLink) {
             // If there is no afterLink, then we are on the first page.
             payload.params['after'] = afterLink;
         }
@@ -43,7 +44,8 @@ export default async function fetchData(nango: NangoSync) {
             await nango.log(`Sent ${mappedOwners.length} owners`);
         }
 
-        if (response.data.length == MAX_PAGE) {
+        if (response.data.paging?.next?.after) {
+            page += 1;
             afterLink = response.data.paging.next.after;
         } else {
             break;

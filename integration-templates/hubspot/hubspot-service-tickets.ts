@@ -3,6 +3,7 @@ import type { NangoSync, HubspotServiceTicket } from './models';
 export default async function fetchData(nango: NangoSync) {
     const MAX_PAGE = 100;
 
+    let page = 1;
     let afterLink = null;
 
     let lastSyncDate = nango.lastSyncDate?.toISOString().slice(0, -8).replace('T', ' ');
@@ -49,7 +50,7 @@ export default async function fetchData(nango: NangoSync) {
             }
         };
 
-        if (!afterLink) {
+        if (afterLink) {
             payload.params['after'] = afterLink;
         }
 
@@ -57,7 +58,7 @@ export default async function fetchData(nango: NangoSync) {
 
         let pageData = response.data.results;
 
-        const mappedTickets: HubspotServiceTicket[] = pageData.map((ticket: any) => ({
+        const mappedTickets: HubspotServiceTicket[] = pageData.map((ticket) => ({
             id: ticket.id,
             createdAt: ticket.createdAt,
             updatedAt: ticket.properties.hs_lastmodifieddate,
@@ -77,7 +78,8 @@ export default async function fetchData(nango: NangoSync) {
             await nango.log(`Sent ${mappedTickets.length}`);
         }
 
-        if (response.data.length == MAX_PAGE) {
+        if (response.data.paging?.next?.after) {
+            page += 1;
             afterLink = response.data.paging.next.after;
         } else {
             break;
