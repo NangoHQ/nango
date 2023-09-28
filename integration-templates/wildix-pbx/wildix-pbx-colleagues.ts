@@ -22,12 +22,12 @@ export default async function fetchData(nango: NangoSync) {
             endpoint: '/api/v1/Colleagues/',
             params: <Params>{
                 start,
-                count: MAX_IN_PAGE,
+                count: MAX_IN_PAGE
             }
         };
 
-        const {data} = await nango.get(payload);
-        const {records, total} = data.result;
+        const { data } = await nango.get(payload);
+        const { records, total } = data.result;
 
         allPages = Math.ceil(total / MAX_IN_PAGE);
 
@@ -38,7 +38,7 @@ export default async function fetchData(nango: NangoSync) {
             email: colleague.email,
             mobilePhone: colleague.mobilePhone,
             licenseType: colleague.licenseType,
-            language: colleague.language,
+            language: colleague.language
         }));
 
         if (mappedUsers.length > 0) {
