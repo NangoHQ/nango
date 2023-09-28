@@ -283,7 +283,7 @@ export default function ProjectSettings() {
                     <div>
                         <Modal.Title className="text-lg">Activate new public key?</Modal.Title>
                         <Modal.Content>
-                          <p>Make sure your code uses the new public key before activating. All requests made with the previous public key will fail as soon as the new key is activated.</p>
+                          <p>Make sure your code uses the new public key before activating. All authorization attempts with the previous public key will fail when the new key is activated.</p>
                         </Modal.Content>
                     </div>
                 </div>
