@@ -362,7 +362,7 @@ export default function ProjectSettings() {
                                         </Tooltip>
                                     </div>
                                     {webhookEditMode && (
-                                        <form className="mt-2" onSubmit={handleWebhookbackSave} autoComplete="off">
+                                        <form className="mt-2" onSubmit={handleWebhookbackSave}>
                                             <div className="flex">
                                                 <input
                                                     id="webhook_url"
@@ -440,7 +440,7 @@ export default function ProjectSettings() {
                                         </div>
                                     )}
                                     {hmacEditMode && (
-                                        <form className="mt-2" onSubmit={handleHmacSave} autoComplete="off">
+                                        <form className="mt-2" onSubmit={handleHmacSave}>
                                             <div className="flex">
                                                 <input
                                                     id="hmac_key"
@@ -495,7 +495,6 @@ export default function ProjectSettings() {
                                     <form
                                         className="mt-2"
                                         onSubmit={handleEnvVariablesSave}
-                                        autoComplete="off"
                                     >
                                         {envVariables.map((envVar, index) => (
                                             <div key={index} className="flex items-center mt-2">
