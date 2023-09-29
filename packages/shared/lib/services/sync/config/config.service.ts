@@ -1,249 +1,15 @@
 import semver from 'semver';
-import db, { schema, dbNamespace } from '../../db/database.js';
-import configService from '../config.service.js';
-import fileService from '../file.service.js';
-import environmentService from '../environment.service.js';
-import { updateSyncScheduleFrequency } from './schedule.service.js';
-import {
-    createActivityLog,
-    createActivityLogMessage,
-    updateSuccess as updateSuccessActivityLog,
-    createActivityLogMessageAndEnd,
-    createActivityLogDatabaseErrorMessageAndEnd
-} from '../activity/activity.service.js';
-import { getSyncsByProviderConfigAndSyncName } from './sync.service.js';
-import { LogActionEnum, LogLevel } from '../../models/Activity.js';
-import type { ServiceResponse } from '../../models/Generic.js';
-import { SyncModelSchema, SyncConfigWithProvider, IncomingSyncConfig, SyncConfig, SlimSync, SyncConfigResult, SyncConfigType } from '../../models/Sync.js';
-import type { NangoConnection } from '../../models/Connection.js';
-import type { Config as ProviderConfig } from '../../models/Provider.js';
-import type { NangoConfig } from '../../integrations/index.js';
-import { NangoError } from '../../utils/error.js';
-import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
-import metricsManager from '../../utils/metrics.manager.js';
-import { getEnv } from '../../utils/utils.js';
+import db, { schema, dbNamespace } from '../../../db/database.js';
+import configService from '../../config.service.js';
+import remoteFileService from '../../file/remote.service.js';
+import { LogActionEnum } from '../../../models/Activity.js';
+import { SyncConfigWithProvider, SyncConfig, SlimSync, SyncConfigType } from '../../../models/Sync.js';
+import type { NangoConnection } from '../../../models/Connection.js';
+import type { Config as ProviderConfig } from '../../../models/Provider.js';
+import type { NangoConfig } from '../../../integrations/index.js';
+import errorManager, { ErrorSourceEnum } from '../../../utils/error.manager.js';
 
 const TABLE = dbNamespace + 'sync_configs';
-
-export async function createSyncConfig(environment_id: number, syncs: IncomingSyncConfig[], debug = false): Promise<ServiceResponse<SyncConfigResult | null>> {
-    const insertData = [];
-
-    const providers = syncs.map((sync) => sync.providerConfigKey);
-    const providerConfigKeys = [...new Set(providers)];
-
-    const idsToMarkAsInvactive = [];
-    const accountId = (await environmentService.getAccountIdFromEnvironment(environment_id)) as number;
-
-    const log = {
-        level: 'info' as LogLevel,
-        success: null,
-        action: LogActionEnum.SYNC_DEPLOY,
-        start: Date.now(),
-        end: Date.now(),
-        timestamp: Date.now(),
-        connection_id: null,
-        provider: null,
-        provider_config_key: `${syncs.length} sync${syncs.length === 1 ? '' : 's'} from ${providerConfigKeys.length} integration${
-            providerConfigKeys.length === 1 ? '' : 's'
-        }`,
-        environment_id: environment_id,
-        operation_name: LogActionEnum.SYNC_DEPLOY
-    };
-
-    let syncsWithVersions: Omit<IncomingSyncConfig, 'fileBody'>[] = syncs.map((sync) => {
-        const { fileBody: _fileBody, model_schema, ...rest } = sync;
-        const modelSchema = JSON.parse(model_schema);
-        return { ...rest, model_schema: modelSchema };
-    });
-
-    const activityLogId = await createActivityLog(log);
-
-    for (const sync of syncs) {
-        const {
-            syncName,
-            providerConfigKey,
-            fileBody,
-            models,
-            runs,
-            version: optionalVersion,
-            model_schema,
-            type = SyncConfigType.SYNC,
-            track_deletes,
-            auto_start,
-            attributes = {}
-        } = sync;
-        if (type === SyncConfigType.SYNC && !runs) {
-            const error = new NangoError('missing_required_fields_on_deploy');
-
-            return { success: false, error, response: null };
-        }
-
-        if (!syncName || !providerConfigKey || !fileBody) {
-            const error = new NangoError('missing_required_fields_on_deploy');
-
-            return { success: false, error, response: null };
-        }
-
-        const config = await configService.getProviderConfig(providerConfigKey, environment_id);
-
-        if (!config) {
-            const error = new NangoError('unknown_provider_config', { providerConfigKey });
-
-            return { success: false, error, response: null };
-        }
-
-        const previousSyncAndActionConfig = await getSyncAndActionConfigByParams(environment_id, syncName, providerConfigKey);
-        let bumpedVersion = '';
-
-        if (previousSyncAndActionConfig) {
-            bumpedVersion = increment(previousSyncAndActionConfig.version as string | number).toString();
-
-            if (debug) {
-                await createActivityLogMessage({
-                    level: 'debug',
-                    activity_log_id: activityLogId as number,
-                    timestamp: Date.now(),
-                    content: `A previous sync config was found for ${syncName} with version ${previousSyncAndActionConfig.version}`
-                });
-            }
-
-            const syncs = await getSyncsByProviderConfigAndSyncName(environment_id, providerConfigKey, syncName);
-            for (const sync of syncs) {
-                if (!runs) {
-                    continue;
-                }
-                const { success, error } = await updateSyncScheduleFrequency(sync.id as string, runs, syncName, activityLogId as number, environment_id);
-
-                if (!success) {
-                    return { success, error, response: null };
-                }
-            }
-        }
-
-        const version = optionalVersion || bumpedVersion || '1';
-
-        const env = getEnv();
-        const file_location = await fileService.upload(
-            fileBody,
-            `${env}/account/${accountId}/environment/${environment_id}/config/${config.id}/${syncName}-v${version}.js`,
-            environment_id
-        );
-
-        syncsWithVersions = syncsWithVersions.map((syncWithVersion) => {
-            if (syncWithVersion.syncName === syncName) {
-                return { ...syncWithVersion, version };
-            }
-            return syncWithVersion;
-        });
-
-        if (!file_location) {
-            await updateSuccessActivityLog(activityLogId as number, false);
-
-            await createActivityLogMessageAndEnd({
-                level: 'error',
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: `There was an error uploading the sync file ${syncName}-v${version}.js`
-            });
-
-            // this is a platform error so throw this
-            throw new NangoError('file_upload_error');
-        }
-
-        const oldConfigs = await getSyncAndActionConfigsBySyncNameAndConfigId(environment_id, config.id as number, syncName);
-
-        if (oldConfigs.length > 0) {
-            const ids = oldConfigs.map((oldConfig: SyncConfig) => oldConfig.id as number);
-            idsToMarkAsInvactive.push(...ids);
-
-            if (debug) {
-                await createActivityLogMessage({
-                    level: 'debug',
-                    activity_log_id: activityLogId as number,
-                    timestamp: Date.now(),
-                    content: `Marking ${ids.length} old sync configs as inactive for ${syncName} with version ${version} as the active sync config`
-                });
-            }
-        }
-
-        insertData.push({
-            environment_id,
-            nango_config_id: config?.id as number,
-            sync_name: syncName,
-            type,
-            models,
-            version,
-            track_deletes: track_deletes || false,
-            auto_start: auto_start === false ? false : true,
-            attributes,
-            file_location,
-            runs,
-            active: true,
-            model_schema: model_schema as unknown as SyncModelSchema[]
-        });
-    }
-
-    if (insertData.length === 0) {
-        if (debug) {
-            await createActivityLogMessage({
-                level: 'debug',
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: `All syncs were deleted.`
-            });
-        }
-        await updateSuccessActivityLog(activityLogId as number, true);
-
-        return { success: true, error: null, response: { result: [], activityLogId } };
-    }
-
-    try {
-        const result = await schema().from<SyncConfig>(TABLE).insert(insertData).returning(['id', 'version', 'sync_name']);
-
-        if (idsToMarkAsInvactive.length > 0) {
-            await schema().from<SyncConfig>(TABLE).update({ active: false }).whereIn('id', idsToMarkAsInvactive);
-        }
-
-        await updateSuccessActivityLog(activityLogId as number, true);
-
-        await createActivityLogMessageAndEnd({
-            level: 'info',
-            activity_log_id: activityLogId as number,
-            timestamp: Date.now(),
-            content: `Successfully deployed the syncs (${JSON.stringify(syncsWithVersions, null, 2)}).`
-        });
-
-        const shortContent = `Successfully deployed the syncs (${syncsWithVersions.map((sync) => sync.syncName).join(', ')}).`;
-
-        await metricsManager.capture('sync_deploy_success', shortContent, LogActionEnum.SYNC_DEPLOY, {
-            environmentId: String(environment_id),
-            syncName: syncsWithVersions.map((sync) => sync.syncName).join(', '),
-            accountId: String(accountId),
-            providers: providers.join(', ')
-        });
-
-        return { success: true, error: null, response: { result, activityLogId } };
-    } catch (e) {
-        await updateSuccessActivityLog(activityLogId as number, false);
-
-        await createActivityLogDatabaseErrorMessageAndEnd(
-            `Failed to deploy the syncs (${JSON.stringify(syncsWithVersions, null, 2)}).`,
-            e,
-            activityLogId as number
-        );
-
-        const shortContent = `Failure to deploy the syncs (${syncsWithVersions.map((sync) => sync.syncName).join(', ')}).`;
-
-        await metricsManager.capture('sync_deploy_failure', shortContent, LogActionEnum.SYNC_DEPLOY, {
-            environmentId: String(environment_id),
-            syncName: syncsWithVersions.map((sync) => sync.syncName).join(', '),
-            accountId: String(accountId),
-            providers: providers.join(', ')
-        });
-
-        throw new NangoError('error_creating_sync_config');
-    }
-}
 
 export async function getSyncConfig(nangoConnection: NangoConnection, syncName?: string, isAction?: boolean): Promise<NangoConfig | null> {
     let syncConfigs;
@@ -287,7 +53,9 @@ export async function getSyncConfig(nangoConnection: NangoConnection, syncName?:
                 auto_start: syncConfig.auto_start,
                 attributes: syncConfig.attributes || {},
                 fileLocation: syncConfig.file_location,
-                version: syncConfig.version as string
+                version: syncConfig.version as string,
+                pre_built: syncConfig.pre_built as boolean,
+                is_public: syncConfig.is_public as boolean
             };
 
             nangoConfig.integrations[key] = providerConfig;
@@ -473,7 +241,7 @@ export async function deleteSyncFilesForConfig(id: number, environmentId: number
         const files = await schema().from<SyncConfig>(TABLE).where({ nango_config_id: id, deleted: false }).select('file_location').pluck('file_location');
 
         if (files.length > 0) {
-            await fileService.deleteFiles(files);
+            await remoteFileService.deleteFiles(files);
         }
     } catch (error) {
         await errorManager.report(error, {
@@ -487,7 +255,7 @@ export async function deleteSyncFilesForConfig(id: number, environmentId: number
     }
 }
 
-export async function getActiveSyncConfigsByEnvironmentId(environment_id: number): Promise<SyncConfigWithProvider[]> {
+export async function getActiveCustomSyncConfigsByEnvironmentId(environment_id: number): Promise<SyncConfigWithProvider[]> {
     const result = await schema()
         .select(
             `${TABLE}.id`,
@@ -505,6 +273,7 @@ export async function getActiveSyncConfigsByEnvironmentId(environment_id: number
             active: true,
             '_nango_configs.environment_id': environment_id,
             '_nango_configs.deleted': false,
+            pre_built: false,
             [`${TABLE}.deleted`]: false
         });
 
@@ -521,6 +290,9 @@ export async function getSyncConfigsWithConnectionsByEnvironmentId(environment_i
             `${TABLE}.models`,
             `${TABLE}.version`,
             `${TABLE}.updated_at`,
+            `${TABLE}.auto_start`,
+            `${TABLE}.pre_built`,
+            `${TABLE}.is_public`,
             '_nango_configs.provider',
             '_nango_configs.unique_key',
             db.knex.raw(
@@ -655,4 +427,36 @@ export function increment(input: number | string): number | string {
     } else {
         throw new Error(`Invalid version input: ${input}`);
     }
+}
+
+export async function getPublicConfig(environment_id: number): Promise<SyncConfig[]> {
+    return schema()
+        .from<SyncConfig>(TABLE)
+        .select(`${TABLE}.*`, '_nango_configs.provider', '_nango_configs.unique_key')
+        .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')
+        .where({
+            active: true,
+            pre_built: true,
+            is_public: true,
+            '_nango_configs.environment_id': environment_id,
+            '_nango_configs.deleted': false,
+            [`${TABLE}.deleted`]: false
+        });
+}
+
+export async function getNangoConfigIdAndLocationFromId(id: number): Promise<{ nango_config_id: number; file_location: string } | null> {
+    const result = await schema()
+        .from<SyncConfig>(TABLE)
+        .select(`${TABLE}.nango_config_id`, `${TABLE}.file_location`)
+        .where({
+            [`${TABLE}.id`]: id,
+            [`${TABLE}.deleted`]: false
+        })
+        .first();
+
+    if (!result) {
+        return null;
+    }
+
+    return result;
 }

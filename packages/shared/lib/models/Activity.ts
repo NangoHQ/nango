@@ -2,6 +2,7 @@ import type { HTTP_VERB } from './Generic.js';
 
 export type LogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
 export type LogAction =
+    | 'account'
     | 'action'
     | 'analytics'
     | 'auth'
@@ -19,6 +20,7 @@ export type LogAction =
     | 'trigger sync';
 
 export enum LogActionEnum {
+    ACCOUNT = 'account',
     ACTION = 'action',
     ANALYTICS = 'analytics',
     AUTH = 'auth',

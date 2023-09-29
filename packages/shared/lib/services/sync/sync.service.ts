@@ -15,7 +15,11 @@ import type { Connection, NangoConnection } from '../../models/Connection.js';
 import SyncClient from '../../clients/sync.client.js';
 import { updateSuccess as updateSuccessActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../activity/activity.service.js';
 import { markAllAsStopped } from './schedule.service.js';
-import { getActiveSyncConfigsByEnvironmentId, getSyncConfigsByProviderConfigKey, getActionConfigByNameAndProviderConfigKey } from './config.service.js';
+import {
+    getActiveCustomSyncConfigsByEnvironmentId,
+    getSyncConfigsByProviderConfigKey,
+    getActionConfigByNameAndProviderConfigKey
+} from './config/config.service.js';
 import syncOrchestrator from './orchestrator.service.js';
 import connectionService from '../connection.service.js';
 
@@ -23,6 +27,7 @@ const TABLE = dbNamespace + 'syncs';
 const SYNC_JOB_TABLE = dbNamespace + 'sync_jobs';
 const SYNC_SCHEDULE_TABLE = dbNamespace + 'sync_schedules';
 const SYNC_CONFIG_TABLE = dbNamespace + 'sync_configs';
+const ACTIVITY_LOG_TABLE = dbNamespace + 'activity_logs';
 
 /**
  * Sync Service
@@ -257,10 +262,12 @@ export const getSyncs = async (nangoConnection: Connection): Promise<Sync[]> => 
                         'status', nango.${SYNC_JOB_TABLE}.status,
                         'sync_config_id', nango.${SYNC_JOB_TABLE}.sync_config_id,
                         'version', nango.${SYNC_CONFIG_TABLE}.version,
-                        'models', nango.${SYNC_CONFIG_TABLE}.models
+                        'models', nango.${SYNC_CONFIG_TABLE}.models,
+                        'activity_log_id', nango.${ACTIVITY_LOG_TABLE}.id
                     )
                     FROM nango.${SYNC_JOB_TABLE}
                     JOIN nango.${SYNC_CONFIG_TABLE} ON nango.${SYNC_CONFIG_TABLE}.id = nango.${SYNC_JOB_TABLE}.sync_config_id
+                    LEFT JOIN nango.${ACTIVITY_LOG_TABLE} ON nango.${ACTIVITY_LOG_TABLE}.session_id = nango.${SYNC_JOB_TABLE}.id::text
                     WHERE nango.${SYNC_JOB_TABLE}.sync_id = nango.${TABLE}.id
                     AND nango.${SYNC_JOB_TABLE}.deleted = false
                     AND nango.${SYNC_CONFIG_TABLE}.deleted = false
@@ -442,6 +449,7 @@ export const getAndReconcileDifferences = async (
             }
             continue;
         }
+
         if (!existingSyncsByProviderConfig[providerConfigKey]) {
             // this gets syncs that have a sync config and are active OR just have a sync config
             existingSyncsByProviderConfig[providerConfigKey] = await getSyncConfigsByProviderConfigKey(environmentId, providerConfigKey);
@@ -457,7 +465,13 @@ export const getAndReconcileDifferences = async (
 
         let isNew = false;
 
-        // if it has connections but doesn't have an active sync then it is considered a new sync
+        /*
+         * The possible scenarios are as follows:
+         * 1. There are connections for the provider but doesn't have an active sync -- it is a new sync, isNew = true
+         * 2. It doesn't exist yet, so exists = false, which means we're in the reconciliation step so performAction = false so we don't create the sync
+         * When we come back here and performAction is true, the sync would have been created so exists will be true and we'll only create
+         * the sync if there are connections
+         */
         if (exists && connections.length > 0) {
             const syncsByConnection = await findSyncByConnections(
                 connections.map((connection) => connection.id as number),
@@ -508,7 +522,9 @@ export const getAndReconcileDifferences = async (
         }
     }
 
-    const existingSyncs = await getActiveSyncConfigsByEnvironmentId(environmentId);
+    // we don't want to include pre built syncs as they are handled differently hence
+    // the "custom" sync configs
+    const existingSyncs = await getActiveCustomSyncConfigsByEnvironmentId(environmentId);
 
     const deletedSyncs: SlimSync[] = [];
     const deletedActions: SlimAction[] = [];

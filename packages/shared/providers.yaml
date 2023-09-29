@@ -394,6 +394,13 @@ health-gorilla:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+highlevel:
+    auth_mode: OAUTH2
+    authorization_url: https://marketplace.gohighlevel.com/oauth/chooselocation
+    token_url: https://services.leadconnectorhq.com/oauth/token
+    proxy:
+        base_url: https://services.leadconnectorhq.com
+    docs: https://highlevel.stoplight.io/docs/integrations/0443d7d1a4bd0-overview
 hubspot:
     auth_mode: OAUTH2
     authorization_url: https://app.hubspot.com/oauth/authorize

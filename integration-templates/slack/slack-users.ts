@@ -1,4 +1,4 @@
-import { SlackUser, NangoSync } from './models';
+import type { SlackUser, NangoSync } from './models';
 
 export default async function fetchData(nango: NangoSync) {
     // Fetch all users (paginated)

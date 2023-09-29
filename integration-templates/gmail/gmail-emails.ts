@@ -1,4 +1,4 @@
-import { NangoSync, GmailEmail } from './models';
+import type { NangoSync, GmailEmail } from './models';
 
 export default async function fetchData(nango: NangoSync) {
     const backfillPeriod = new Date(Date.now() - 24 * 60 * 60 * 1000); // 24 hours ago.
@@ -9,7 +9,7 @@ export default async function fetchData(nango: NangoSync) {
     let nextPageToken: string | undefined = '';
 
     do {
-        const response = await nango.proxy({
+        const response: any = await nango.proxy({
             method: 'GET',
             endpoint: '/gmail/v1/users/me/messages',
             params: {

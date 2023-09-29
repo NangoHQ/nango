@@ -8,7 +8,7 @@ import { isCloud, dirname } from '../utils/utils.js';
 import { NangoError } from '../utils/error.js';
 import encryptionManager from '../utils/encryption.manager.js';
 import syncOrchestrator from './sync/orchestrator.service.js';
-import { deleteSyncFilesForConfig, deleteByConfigId as deleteSyncConfigByConfigId } from '../services/sync/config.service.js';
+import { deleteSyncFilesForConfig, deleteByConfigId as deleteSyncConfigByConfigId } from '../services/sync/config/config.service.js';
 
 class ConfigService {
     templates: { [key: string]: ProviderTemplate } | null;
@@ -201,6 +201,21 @@ class ConfigService {
             throw new NangoError('provider_template_loading_failed');
         }
         return this.templates;
+    }
+
+    async getConfigIdByProvider(provider: string, environment_id: number): Promise<{ id: number; unique_key: string } | null> {
+        const result = await db.knex
+            .withSchema(db.schema())
+            .select('id', 'unique_key')
+            .from<ProviderConfig>(`_nango_configs`)
+            .where({ provider, environment_id, deleted: false })
+            .first();
+
+        if (!result) {
+            return null;
+        }
+
+        return result;
     }
 }
 
