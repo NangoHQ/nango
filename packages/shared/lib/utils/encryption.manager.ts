@@ -61,6 +61,13 @@ class EncryptionManager {
         encryptedEnvironment.secret_key_iv = iv;
         encryptedEnvironment.secret_key_tag = authTag;
 
+        if (encryptedEnvironment.pending_secret_key) {
+            const [encryptedPendingClientSecret, pendingIv, pendingAuthTag] = this.encrypt(encryptedEnvironment.pending_secret_key);
+            encryptedEnvironment.pending_secret_key = encryptedPendingClientSecret;
+            encryptedEnvironment.pending_secret_key_iv = pendingIv;
+            encryptedEnvironment.pending_secret_key_tag = pendingAuthTag;
+        }
+
         return encryptedEnvironment;
     }
 
@@ -73,6 +80,15 @@ class EncryptionManager {
         const decryptedEnvironment: Environment = Object.assign({}, environment);
 
         decryptedEnvironment.secret_key = this.decrypt(environment.secret_key, environment.secret_key_iv, environment.secret_key_tag);
+
+        if (decryptedEnvironment.pending_secret_key) {
+            decryptedEnvironment.pending_secret_key = this.decrypt(
+                environment.pending_secret_key as string,
+                environment.pending_secret_key_iv as string,
+                environment.pending_secret_key_tag as string
+            );
+        }
+
         return decryptedEnvironment;
     }
 

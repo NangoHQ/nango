@@ -110,6 +110,7 @@ if (isCloud()) {
 }
 
 // Webapp routes (session auth).
+app.route('/api/v1/meta').get(webAuth, environmentController.meta.bind(environmentController));
 app.route('/api/v1/account').get(webAuth, accountController.getAccount.bind(accountController));
 app.route('/api/v1/account').put(webAuth, accountController.editAccount.bind(accountController));
 app.route('/api/v1/account/admin/switch').post(webAuth, accountController.switchAccount.bind(accountController));
@@ -120,6 +121,9 @@ app.route('/api/v1/environment/hmac').get(webAuth, environmentController.getHmac
 app.route('/api/v1/environment/hmac-enabled').post(webAuth, environmentController.updateHmacEnabled.bind(environmentController));
 app.route('/api/v1/environment/hmac-key').post(webAuth, environmentController.updateHmacKey.bind(environmentController));
 app.route('/api/v1/environment/environment-variables').post(webAuth, environmentController.updateEnvironmentVariables.bind(environmentController));
+app.route('/api/v1/environment/rotate-key').post(webAuth, environmentController.rotateKey.bind(accountController));
+app.route('/api/v1/environment/revert-key').post(webAuth, environmentController.revertKey.bind(accountController));
+app.route('/api/v1/environment/activate-key').post(webAuth, environmentController.activateKey.bind(accountController));
 app.route('/api/v1/integration').get(webAuth, configController.listProviderConfigsWeb.bind(configController));
 app.route('/api/v1/integration/:providerConfigKey').get(webAuth, configController.getProviderConfig.bind(configController));
 app.route('/api/v1/integration').put(webAuth, configController.editProviderConfigWeb.bind(connectionController));

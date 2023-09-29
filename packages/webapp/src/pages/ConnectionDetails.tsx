@@ -179,6 +179,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                 <div className="mx-16 pb-40">
                     <div className="flex mt-16 mb-6 justify-between">
                         <Typography
+                            className="max-w-3xl"
                             tooltipProps={{
                                 text: (
                                     <>

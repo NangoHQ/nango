@@ -1,8 +1,25 @@
 import type { Request, Response, NextFunction } from 'express';
 import { hmacService, environmentService, errorManager, getBaseUrl, isCloud, getWebsocketsPath, getOauthCallbackUrl, getEnvironmentId } from '@nangohq/shared';
-import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
+import { packageJsonFile, getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 
 class EnvironmentController {
+    async meta(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
+            if (!sessionSuccess || response === null) {
+                errorManager.errResFromNangoErr(res, sessionError);
+                return;
+            }
+            const { account } = response;
+
+            const environments = await environmentService.getEnvironmentsByAccountId(account.id);
+            const version = packageJsonFile().version;
+            res.status(200).send({ environments, version });
+        } catch (err) {
+            next(err);
+        }
+    }
+
     async getEnvironment(req: Request, res: Response, next: NextFunction) {
         try {
             const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
@@ -14,6 +31,15 @@ class EnvironmentController {
 
             if (!isCloud()) {
                 environment.websockets_path = getWebsocketsPath();
+                if (process.env[`NANGO_SECRET_KEY_${environment.name.toUpperCase()}`]) {
+                    environment.secret_key = process.env[`NANGO_SECRET_KEY_${environment.name.toUpperCase()}`] as string;
+                    environment.secret_key_rotatable = false;
+                }
+
+                if (process.env[`NANGO_PUBLIC_KEY_${environment.name.toUpperCase()}`]) {
+                    environment.public_key = process.env[`NANGO_PUBLIC_KEY_${environment.name.toUpperCase()}`] as string;
+                    environment.public_key_rotatable = false;
+                }
             }
 
             environment.callback_url = await getOauthCallbackUrl(environment.id);
@@ -171,6 +197,69 @@ class EnvironmentController {
             const { environment } = response;
 
             await environmentService.editEnvironmentVariable(environment.id, req.body);
+            res.status(200).send();
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async rotateKey(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
+            if (!sessionSuccess || response === null) {
+                errorManager.errResFromNangoErr(res, sessionError);
+                return;
+            }
+
+            if (!req.body.type) {
+                res.status(400).send({ error: 'The type of key to rotate is required' });
+                return;
+            }
+            const { environment } = response;
+
+            const newKey = await environmentService.rotateKey(environment.id, req.body.type);
+            res.status(200).send({ key: newKey });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async revertKey(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
+            if (!sessionSuccess || response === null) {
+                errorManager.errResFromNangoErr(res, sessionError);
+                return;
+            }
+
+            if (!req.body.type) {
+                res.status(400).send({ error: 'The type of key to rotate is required' });
+                return;
+            }
+            const { environment } = response;
+
+            const newKey = await environmentService.revertKey(environment.id, req.body.type);
+            res.status(200).send({ key: newKey });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async activateKey(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
+            if (!sessionSuccess || response === null) {
+                errorManager.errResFromNangoErr(res, sessionError);
+                return;
+            }
+
+            if (!req.body.type) {
+                res.status(400).send({ error: 'The type of key to activate is required' });
+                return;
+            }
+            const { environment } = response;
+
+            await environmentService.activateKey(environment.id, req.body.type);
             res.status(200).send();
         } catch (err) {
             next(err);

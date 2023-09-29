@@ -296,7 +296,7 @@ nango.auth('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr})
     };
 
     return (
-        <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
+        <DashboardLayout selectedItem={LeftNavBarItems.Connections}>
             {integrations && !!integrations.length && publicKey && hostUrl && (
                 <div className="mx-auto w-largebox pb-40">
                     <h2 className="mx-20 mt-16 text-left text-3xl font-semibold tracking-tight text-white mb-12">Add New Connection</h2>
