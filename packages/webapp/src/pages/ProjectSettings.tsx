@@ -409,7 +409,7 @@ export default function ProjectSettings() {
                                         </Tooltip>
                                     </div>
                                     <div className="flex">
-                                        <SecretInput additionalClass="w-full" disabled copy={true} optionalvalue={secretKey} setoptionalvalue={setSecretKey} />
+                                        <SecretInput additionalclass="w-full" disabled copy={true} optionalvalue={secretKey} setoptionalvalue={setSecretKey} />
                                         {secretKeyRotatable && (
                                             <>
                                                 <button
@@ -602,7 +602,7 @@ export default function ProjectSettings() {
                                     </div>
                                     {!hmacEditMode && (
                                         <div className="flex">
-                                            <SecretInput disabled copy={true} defaultValue={hmacKey} additionalClass="w-full" />
+                                            <SecretInput disabled copy={true} defaultValue={hmacKey} additionalclass="w-full" />
                                             <button
                                                 onClick={() => setHmacEditMode(!hmacEditMode)}
                                                 className="hover:bg-gray-700 bg-gray-800 text-white flex h-11 rounded-md ml-4 px-4 pt-3 text-sm"
