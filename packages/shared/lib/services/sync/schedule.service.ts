@@ -17,6 +17,12 @@ export const createSchedule = async (sync_id: string, frequency: string, offset:
     });
 };
 
+export const getScheduleById = async (schedule_id: string): Promise<SyncSchedule | null> => {
+    const result = await schema().select('*').from<SyncSchedule>(TABLE).where({ schedule_id, deleted: false }).first();
+
+    return result || null;
+};
+
 export const getSchedule = async (sync_id: string): Promise<SyncSchedule | null> => {
     const result = await schema().select('*').from<SyncSchedule>(TABLE).where({ sync_id, deleted: false }).first();
 
@@ -87,12 +93,16 @@ export const updateSyncScheduleFrequency = async (
     if (existingSchedule.frequency !== frequency) {
         await schema().update({ frequency }).from<SyncSchedule>(TABLE).where({ sync_id, deleted: false });
         const syncClient = await SyncClient.getInstance();
-        await syncClient?.updateSyncSchedule(existingSchedule.schedule_id, frequency, offset, syncName, activityLogId, environmentId);
+        await syncClient?.updateSyncSchedule(existingSchedule.schedule_id, frequency, offset, environmentId, syncName, activityLogId);
 
         return { success: true, error: null, response: true };
     }
 
     return { success: true, error: null, response: false };
+};
+
+export const updateOffset = async (schedule_id: string, offset: number): Promise<void> => {
+    await schema().update({ offset }).from<SyncSchedule>(TABLE).where({ schedule_id, deleted: false });
 };
 
 export const deleteSchedulesBySyncId = async (sync_id: string): Promise<void> => {

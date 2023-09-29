@@ -1,4 +1,4 @@
-import { AsanaTask, NangoSync } from './models';
+import type { AsanaTask, NangoSync } from './models';
 
 export default async function fetchData(nango: NangoSync) {
     // Get the user's workspaces & projects

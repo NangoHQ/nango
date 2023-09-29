@@ -1,3 +1,4 @@
+import * as uuid from 'uuid';
 import db from '../db/database.js';
 import encryptionManager from '../utils/encryption.manager.js';
 import type { Environment } from '../models/Environment.js';
@@ -5,6 +6,7 @@ import type { EnvironmentVariable } from '../models/EnvironmentVariable.js';
 import type { Account } from '../models/Admin.js';
 import { LogActionEnum } from '../models/Activity.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
+import { isCloud } from '../utils/utils.js';
 
 const TABLE = '_nango_environments';
 
@@ -51,7 +53,47 @@ class EnvironmentService {
         };
     }
 
+    async getEnvironmentsByAccountId(account_id: number): Promise<Environment[]> {
+        try {
+            const result = await db.knex.withSchema(db.schema()).select('name').from<Environment>(TABLE).where({ account_id });
+
+            if (result == null || result.length == 0) {
+                return [];
+            }
+
+            return result;
+        } catch (e) {
+            errorManager.report(e, {
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.DATABASE,
+                accountId: account_id
+            });
+
+            return [];
+        }
+    }
+
     async getAccountIdAndEnvironmentIdBySecretKey(secretKey: string): Promise<{ accountId: number; environmentId: number } | null> {
+        if (!isCloud()) {
+            const environmentVariables = Object.keys(process.env).filter((key) => key.startsWith('NANGO_SECRET_KEY_')) || [];
+            if (environmentVariables.length > 0) {
+                for (const environmentVariable of environmentVariables) {
+                    const envSecretKey = process.env[environmentVariable] as string;
+
+                    if (envSecretKey === secretKey) {
+                        const env = environmentVariable.replace('NANGO_SECRET_KEY_', '').toLowerCase();
+                        const environment = await this.getByEnvironmentName(env);
+
+                        if (environment === null) {
+                            return null;
+                        }
+
+                        return { accountId: environment.account_id, environmentId: environment.id };
+                    }
+                }
+            }
+        }
+
         if (!this.environmentAccountSecrets[secretKey]) {
             return null;
         }
@@ -72,6 +114,25 @@ class EnvironmentService {
     }
 
     async getAccountIdAndEnvironmentIdByPublicKey(publicKey: string): Promise<{ accountId: number; environmentId: number } | null> {
+        if (!isCloud()) {
+            const environmentVariables = Object.keys(process.env).filter((key) => key.startsWith('NANGO_PUBLIC_KEY_')) || [];
+            if (environmentVariables.length > 0) {
+                for (const environmentVariable of environmentVariables) {
+                    const envPublicKey = process.env[environmentVariable] as string;
+
+                    if (envPublicKey === publicKey) {
+                        const env = environmentVariable.replace('NANGO_PUBLIC_KEY_', '').toLowerCase();
+                        const environment = await this.getByEnvironmentName(env);
+
+                        if (environment === null) {
+                            return null;
+                        }
+
+                        return { accountId: environment.account_id, environmentId: environment.id };
+                    }
+                }
+            }
+        }
         const result = await db.knex.withSchema(db.schema()).select('*').from<Environment>(TABLE).where({ public_key: publicKey });
 
         if (result == null || result.length == 0 || result[0] == null) {
@@ -140,6 +201,38 @@ class EnvironmentService {
             });
             return null;
         }
+    }
+
+    async getRawById(id: number): Promise<Environment | null> {
+        try {
+            const result = await db.knex.withSchema(db.schema()).select('*').from<Environment>(TABLE).where({ id });
+
+            if (result == null || result.length == 0 || result[0] == null) {
+                return null;
+            }
+
+            return result[0];
+        } catch (e) {
+            await errorManager.report(e, {
+                environmentId: id,
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.DATABASE,
+                metadata: {
+                    id
+                }
+            });
+            return null;
+        }
+    }
+
+    async getByEnvironmentName(name: string): Promise<Environment | null> {
+        const result = await db.knex.withSchema(db.schema()).select('*').from<Environment>(TABLE).where({ name });
+
+        if (result == null || result.length == 0 || result[0] == null) {
+            return null;
+        }
+
+        return encryptionManager.decryptEnvironment(result[0]);
     }
 
     async createEnvironment(accountId: number, environment: string): Promise<Environment | null> {
@@ -269,6 +362,151 @@ class EnvironmentService {
         }
 
         return results;
+    }
+
+    async rotateKey(id: number, type: string): Promise<string | null> {
+        if (type === 'secret') {
+            return this.rotateSecretKey(id);
+        }
+
+        if (type === 'public') {
+            return this.rotatePublicKey(id);
+        }
+
+        return null;
+    }
+
+    async revertKey(id: number, type: string): Promise<string | null> {
+        if (type === 'secret') {
+            return this.revertSecretKey(id);
+        }
+
+        if (type === 'public') {
+            return this.revertPublicKey(id);
+        }
+
+        return null;
+    }
+
+    async activateKey(id: number, type: string): Promise<boolean> {
+        if (type === 'secret') {
+            return this.activateSecretKey(id);
+        }
+
+        if (type === 'public') {
+            return this.activatePublicKey(id);
+        }
+
+        return false;
+    }
+
+    async rotateSecretKey(id: number): Promise<string | null> {
+        const environment = await this.getById(id);
+
+        if (!environment) {
+            return null;
+        }
+
+        const pending_secret_key = uuid.v4();
+
+        await db.knex.withSchema(db.schema()).from<Environment>(TABLE).where({ id }).update({ pending_secret_key });
+
+        environment.pending_secret_key = pending_secret_key;
+
+        const encryptedEnvironment = encryptionManager.encryptEnvironment(environment);
+        await db.knex.withSchema(db.schema()).from<Environment>(TABLE).where({ id }).update(encryptedEnvironment);
+
+        return pending_secret_key;
+    }
+
+    async rotatePublicKey(id: number): Promise<string | null> {
+        const pending_public_key = uuid.v4();
+
+        await db.knex.withSchema(db.schema()).from<Environment>(TABLE).where({ id }).update({ pending_public_key });
+
+        return pending_public_key;
+    }
+
+    async revertSecretKey(id: number): Promise<string | null> {
+        const environment = await this.getById(id);
+
+        if (!environment) {
+            return null;
+        }
+
+        await db.knex.withSchema(db.schema()).from<Environment>(TABLE).where({ id }).update({
+            pending_secret_key: null,
+            pending_secret_key_iv: null,
+            pending_secret_key_tag: null
+        });
+
+        return environment.secret_key;
+    }
+
+    async revertPublicKey(id: number): Promise<string | null> {
+        const environment = await this.getById(id);
+
+        if (!environment) {
+            return null;
+        }
+
+        await db.knex.withSchema(db.schema()).from<Environment>(TABLE).where({ id }).update({ pending_public_key: null });
+
+        return environment.public_key;
+    }
+
+    async activateSecretKey(id: number): Promise<boolean> {
+        const environment = await this.getRawById(id);
+
+        if (!environment) {
+            return false;
+        }
+
+        await db.knex
+            .withSchema(db.schema())
+            .from<Environment>(TABLE)
+            .where({ id })
+            .update({
+                secret_key: environment.pending_secret_key as string,
+                secret_key_iv: environment.pending_secret_key_iv as string,
+                secret_key_tag: environment.pending_secret_key_tag as string,
+                pending_secret_key: null,
+                pending_secret_key_iv: null,
+                pending_secret_key_tag: null
+            });
+
+        if (this.environmentAccountSecrets[environment.secret_key]) {
+            delete this.environmentAccountSecrets[environment.secret_key];
+        }
+
+        const updatedEnvironment = await this.getById(id);
+
+        if (!updatedEnvironment) {
+            return false;
+        }
+
+        this.addToEnvironmentSecretCache(updatedEnvironment);
+
+        return true;
+    }
+
+    async activatePublicKey(id: number): Promise<boolean> {
+        const environment = await this.getById(id);
+
+        if (!environment) {
+            return false;
+        }
+
+        await db.knex
+            .withSchema(db.schema())
+            .from<Environment>(TABLE)
+            .where({ id })
+            .update({
+                public_key: environment.pending_public_key as string,
+                pending_public_key: null
+            });
+
+        return true;
     }
 }
 

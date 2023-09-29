@@ -13,6 +13,7 @@ import userController from './controllers/user.controller.js';
 import proxyController from './controllers/proxy.controller.js';
 import activityController from './controllers/activity.controller.js';
 import syncController from './controllers/sync.controller.js';
+import flowController from './controllers/flow.controller.js';
 import apiAuthController from './controllers/apiAuth.controller.js';
 import path from 'path';
 import { packageJsonFile, dirname } from './utils/utils.js';
@@ -46,7 +47,7 @@ const webAuth = isCloud()
     ? [passport.authenticate('basic', { session: false }), authMiddleware.basicAuth.bind(authMiddleware)]
     : [authMiddleware.noAuth.bind(authMiddleware)];
 
-app.use(express.json({ limit: '50mb' }));
+app.use(express.json({ limit: '75mb' }));
 app.use(cors());
 
 // Set to 'false' to disable migration at startup. Appropriate when you
@@ -89,10 +90,11 @@ app.route('/sync/records').get(apiAuth, syncController.getRecords.bind(syncContr
 app.route('/sync/trigger').post(apiAuth, syncController.trigger.bind(syncController));
 app.route('/sync/pause').post(apiAuth, syncController.pause.bind(syncController));
 app.route('/sync/start').post(apiAuth, syncController.start.bind(syncController));
-app.route('/sync/names').get(apiAuth, syncController.getSyncNames.bind(syncController));
 app.route('/sync/provider').get(apiAuth, syncController.getSyncProvider.bind(syncController));
 app.route('/flow/attributes').get(apiAuth, syncController.getFlowAttributes.bind(syncController));
 app.route('/action/trigger').post(apiAuth, syncController.triggerAction.bind(syncController));
+
+app.route('/admin/flow/deploy/pre-built').post(apiAuth, flowController.adminDeployPrivateFlow.bind(flowController));
 
 // Proxy Route
 app.route('/proxy/*').all(apiAuth, proxyController.routeCall.bind(proxyController));
@@ -108,8 +110,10 @@ if (isCloud()) {
 }
 
 // Webapp routes (session auth).
+app.route('/api/v1/meta').get(webAuth, environmentController.meta.bind(environmentController));
 app.route('/api/v1/account').get(webAuth, accountController.getAccount.bind(accountController));
 app.route('/api/v1/account').put(webAuth, accountController.editAccount.bind(accountController));
+app.route('/api/v1/account/admin/switch').post(webAuth, accountController.switchAccount.bind(accountController));
 app.route('/api/v1/environment').get(webAuth, environmentController.getEnvironment.bind(environmentController));
 app.route('/api/v1/environment/callback').post(webAuth, environmentController.updateCallback.bind(environmentController));
 app.route('/api/v1/environment/webhook').post(webAuth, environmentController.updateWebhookURL.bind(environmentController));
@@ -117,6 +121,9 @@ app.route('/api/v1/environment/hmac').get(webAuth, environmentController.getHmac
 app.route('/api/v1/environment/hmac-enabled').post(webAuth, environmentController.updateHmacEnabled.bind(environmentController));
 app.route('/api/v1/environment/hmac-key').post(webAuth, environmentController.updateHmacKey.bind(environmentController));
 app.route('/api/v1/environment/environment-variables').post(webAuth, environmentController.updateEnvironmentVariables.bind(environmentController));
+app.route('/api/v1/environment/rotate-key').post(webAuth, environmentController.rotateKey.bind(accountController));
+app.route('/api/v1/environment/revert-key').post(webAuth, environmentController.revertKey.bind(accountController));
+app.route('/api/v1/environment/activate-key').post(webAuth, environmentController.activateKey.bind(accountController));
 app.route('/api/v1/integration').get(webAuth, configController.listProviderConfigsWeb.bind(configController));
 app.route('/api/v1/integration/:providerConfigKey').get(webAuth, configController.getProviderConfig.bind(configController));
 app.route('/api/v1/integration').put(webAuth, configController.editProviderConfigWeb.bind(connectionController));
@@ -135,6 +142,9 @@ app.route('/api/v1/activity').get(webAuth, activityController.retrieve.bind(acti
 app.route('/api/v1/sync').get(webAuth, syncController.getSyncsByParams.bind(syncController));
 app.route('/api/v1/sync/command').post(webAuth, syncController.syncCommand.bind(syncController));
 app.route('/api/v1/syncs').get(webAuth, syncController.getSyncs.bind(syncController));
+app.route('/api/v1/flows').get(webAuth, flowController.getFlows.bind(syncController));
+app.route('/api/v1/flow/deploy/pre-built').post(webAuth, flowController.deployPreBuiltFlow.bind(flowController));
+app.route('/api/v1/flow/download').post(webAuth, flowController.downloadFlow.bind(flowController));
 
 // Hosted signin
 if (!isCloud()) {

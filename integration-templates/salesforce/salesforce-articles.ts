@@ -1,4 +1,4 @@
-import { NangoSync, SalesforceArticle } from './models';
+import type { NangoSync, SalesforceArticle } from './models';
 
 interface Metadata {
     customFields: string[];

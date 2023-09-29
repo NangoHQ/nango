@@ -16,7 +16,7 @@ interface OrganizationUnitResponse {
     organizationUnits: OrganizationUnit[];
 }
 
-export default async function fetchData(nango: NangoSync) {
+export default async function fetchData(nango: NangoSync): Promise<void> {
     const endpoint = '/admin/directory/v1/customer/my_customer/orgunits';
     let pageToken: string | undefined;
 
@@ -43,7 +43,7 @@ export default async function fetchData(nango: NangoSync) {
 
         if (!response) {
             await nango.log('No response from the Google API');
-            return { OrganizationalUnit: [] };
+            return;
         }
 
         const { data } = response;

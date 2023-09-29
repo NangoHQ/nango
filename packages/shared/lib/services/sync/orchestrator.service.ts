@@ -1,4 +1,4 @@
-import { deleteSyncConfig, deleteSyncFilesForConfig } from './config.service.js';
+import { deleteSyncConfig, deleteSyncFilesForConfig } from './config/config.service.js';
 import connectionService from '../connection.service.js';
 import { deleteScheduleForSync, deleteSchedulesBySyncId as deleteSyncSchedulesBySyncId, getSchedule, updateScheduleStatus } from './schedule.service.js';
 import { deleteJobsBySyncId as deleteSyncJobsBySyncId } from './job.service.js';
@@ -17,7 +17,7 @@ import configService from '../config.service.js';
 import type { LogLevel } from '../../models/Activity.js';
 import type { Connection } from '../../models/Connection.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
-import { IncomingSyncConfig, Sync, SyncCommand, CommandToActivityLog } from '../../models/Sync.js';
+import { SyncConfigType, SyncDeploymentResult, IncomingSyncConfig, Sync, SyncCommand, CommandToActivityLog } from '../../models/Sync.js';
 
 interface CreateSyncArgs {
     connections: Connection[];
@@ -48,6 +48,12 @@ export class Orchestrator {
                 });
             }
             for (const connection of connections) {
+                const syncExists = await getSyncByIdAndName(connection.id as number, syncName);
+
+                if (syncExists) {
+                    continue;
+                }
+
                 const createdSync = await createSync(connection.id as number, syncName);
                 const syncClient = await SyncClient.getInstance();
                 await syncClient?.startContinuous(
@@ -174,7 +180,7 @@ export class Orchestrator {
                 const schedule = await getSchedule(sync?.id as string);
 
                 const syncClient = await SyncClient.getInstance();
-                await syncClient?.runSyncCommand(schedule?.schedule_id as string, sync?.id as string, command, activityLogId as number);
+                await syncClient?.runSyncCommand(schedule?.schedule_id as string, sync?.id as string, command, activityLogId as number, environmentId);
                 await updateScheduleStatus(schedule?.schedule_id as string, command, activityLogId as number);
             }
         } else {
@@ -190,9 +196,39 @@ export class Orchestrator {
             for (const sync of syncs) {
                 const schedule = await getSchedule(sync?.id as string);
                 const syncClient = await SyncClient.getInstance();
-                await syncClient?.runSyncCommand(schedule?.schedule_id as string, sync?.id as string, command, activityLogId as number);
+                await syncClient?.runSyncCommand(schedule?.schedule_id as string, sync?.id as string, command, activityLogId as number, environmentId);
                 await updateScheduleStatus(schedule?.schedule_id as string, command, activityLogId as number);
             }
+        }
+    }
+
+    /**
+     * Trigger If Connections Exist
+     * @desc for the recently deploy flows, create the sync and trigger it if there are connections
+     */
+    public async triggerIfConnectionsExist(flows: SyncDeploymentResult[], environmentId: number) {
+        for (const flow of flows) {
+            if (flow.type === SyncConfigType.ACTION) {
+                continue;
+            }
+
+            const existingConnections = await connectionService.getConnectionsByEnvironmentAndConfig(environmentId, flow.providerConfigKey);
+
+            if (existingConnections.length === 0) {
+                continue;
+            }
+
+            const { providerConfigKey } = flow;
+            const name = flow.name || flow.syncName;
+
+            await this.create(
+                existingConnections as Connection[],
+                name as string,
+                providerConfigKey,
+                environmentId,
+                flow as unknown as IncomingSyncConfig,
+                false
+            );
         }
     }
 }

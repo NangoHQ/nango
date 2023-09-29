@@ -56,68 +56,6 @@ export async function loadSimplifiedConfig(loadLocation?: string): Promise<Simpl
     return null;
 }
 
-export function checkForIntegrationFile(syncName: string, optionalNangoIntegrationsDirPath?: string) {
-    let nangoIntegrationsDirPath;
-
-    if (optionalNangoIntegrationsDirPath) {
-        nangoIntegrationsDirPath = optionalNangoIntegrationsDirPath;
-    } else if (process.env['NANGO_INTEGRATIONS_FULL_PATH']) {
-        nangoIntegrationsDirPath = process.env['NANGO_INTEGRATIONS_FULL_PATH'];
-    } else {
-        nangoIntegrationsDirPath = path.resolve(__dirname, '../nango-integrations');
-    }
-
-    const distDirPath = path.resolve(nangoIntegrationsDirPath, 'dist');
-
-    if (!fs.existsSync(nangoIntegrationsDirPath)) {
-        return {
-            result: false,
-            path: nangoIntegrationsDirPath
-        };
-    }
-
-    if (!fs.existsSync(distDirPath)) {
-        return {
-            result: false,
-            path: distDirPath
-        };
-    }
-
-    const filePath = path.resolve(distDirPath, `${syncName}.${SYNC_FILE_EXTENSION}`);
-    let realPath;
-    try {
-        realPath = fs.realpathSync(filePath);
-    } catch (err) {
-        realPath = filePath;
-    }
-
-    return {
-        result: fs.existsSync(realPath),
-        path: realPath
-    };
-}
-
-const resolveIntegrationFile = (syncName: string): string => {
-    if (process.env['NANGO_INTEGRATIONS_FULL_PATH']) {
-        return path.resolve(process.env['NANGO_INTEGRATIONS_FULL_PATH'], `dist/${syncName}.${SYNC_FILE_EXTENSION}`);
-    } else {
-        return path.resolve(__dirname, `../nango-integrations/dist/${syncName}.${SYNC_FILE_EXTENSION}`);
-    }
-};
-
-export function getIntegrationFile(syncName: string, setIntegrationPath?: string | null) {
-    try {
-        const filePath = setIntegrationPath ? `${setIntegrationPath}/dist/${syncName}.${SYNC_FILE_EXTENSION}` : resolveIntegrationFile(syncName);
-        const realPath = fs.realpathSync(filePath);
-        const integrationFileContents = fs.readFileSync(realPath, 'utf8');
-
-        return integrationFileContents;
-    } catch (error) {
-        console.log(error);
-        return null;
-    }
-}
-
 export function getRootDir(optionalLoadLocation?: string) {
     if (isCloud()) {
         return './';
@@ -130,21 +68,6 @@ export function getRootDir(optionalLoadLocation?: string) {
     } else {
         return path.resolve(__dirname, '../nango-integrations/dist');
     }
-}
-
-export async function getIntegrationClass(syncName: string, setIntegrationPath?: string) {
-    try {
-        const filePath = setIntegrationPath || resolveIntegrationFile(syncName);
-        const realPath = fs.realpathSync(filePath) + `?v=${Math.random().toString(36).substring(3)}`;
-        const { default: integrationCode } = await import(realPath);
-        const integrationClass = new integrationCode();
-
-        return integrationClass;
-    } catch (error) {
-        console.error(error);
-    }
-
-    return null;
 }
 
 export function convertConfigObject(config: NangoConfig): SimplifiedNangoIntegration[] {
@@ -199,6 +122,10 @@ export function getOffset(interval: string, date: Date): number {
 
     const offset = nowMilliseconds % intervalMilliseconds;
 
+    if (isNaN(offset)) {
+        return 0;
+    }
+
     return offset;
 }
 
@@ -236,10 +163,25 @@ export function getInterval(runs: string, date: Date): ServiceResponse<{ interva
         return { success: true, error: null, response };
     }
 
+    if (runs === 'every month') {
+        const response = { interval: '30d', offset: getOffset('30d', date) };
+        return { success: true, error: null, response };
+    }
+
+    if (runs === 'every week') {
+        const response = { interval: '1w', offset: getOffset('1w', date) };
+        return { success: true, error: null, response };
+    }
+
     const interval = runs.replace('every ', '');
 
     if (ms(interval) < ms('5m')) {
         const error = new NangoError('sync_interval_too_short');
+        return { success: false, error, response: null };
+    }
+
+    if (!ms(interval)) {
+        const error = new NangoError('sync_interval_invalid');
         return { success: false, error, response: null };
     }
 

@@ -13,6 +13,7 @@ import { formatDateToUSFormat } from '../utils/utils';
 export default function AccountSettings() {
     const [loaded, setLoaded] = useState(false);
     const [accountName, setAccountName] = useState('');
+    const [isAdmin, setIsAdmin] = useState(false);
     const [members, setMembers] = useState<User[]>([]);
     const [invitedMembers, setInvitedMembers] = useState<InvitedUser[]>([]);
     const [pendingSuspendMember, setPendingSuspendMember] = useState<User | null>(null);
@@ -33,6 +34,7 @@ export default function AccountSettings() {
             if (res?.status === 200) {
                 const { account, users, invitedUsers } = await res.json();
                 setAccountName(account['name']);
+                setIsAdmin(account['is_admin']);
                 setMembers(users);
                 setInvitedMembers(invitedUsers);
             }
@@ -134,6 +136,32 @@ export default function AccountSettings() {
         }
     };
 
+    const redirectToAccount = async (e: React.SyntheticEvent) => {
+        e.preventDefault();
+
+        const target = e.target as typeof e.target & {
+            account_uuid: { value: string };
+            login_reason: { value: string };
+        };
+        const payload = {
+            account_uuid: target.account_uuid.value,
+            login_reason: target.login_reason.value
+        };
+
+        const res = await fetch('/api/v1/account/admin/switch', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload),
+        });
+
+        if (res?.status === 200) {
+            window.location.reload();
+        }
+    };
+
+
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.AccountSettings}>
             <Modal {...bindings}>
@@ -149,7 +177,7 @@ export default function AccountSettings() {
                 <Modal.Content>
                     <form ref={formRef} className="flex flex-col text-sm" onSubmit={onAddMember}>
                         <input name="name" className="border border-border-gray p-3" required placeholder="Name" />
-                        <input name="email" className="border border-border-gray p-3 mt-2" required type="email" placeholder="Email" />
+                        <input name="email" className="border border-border-gray p-3 mt-2 text-sm" required type="email" placeholder="Email" />
                         <button type="submit" className="hidden" />
                     </form>
                 </Modal.Content>
@@ -289,6 +317,36 @@ export default function AccountSettings() {
                             </div>
                         </div>
                     </div>
+                    {isAdmin && (
+                        <div className="border border-border-gray rounded-md h-fit mt-4 pt-6 pb-14 text-white">
+                            <div className="px-8">
+                                <div className="mt-4">
+                                    <span>Login as a different user</span>
+                                    <div className="flex flex-col mt-2">
+                                        <form onSubmit={redirectToAccount}>
+                                        <input
+                                            type="text"
+                                            placeholder="Account UUID"
+                                            name="account_uuid"
+                                        className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-1/2 mb-3 appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none"
+                                        />
+                                        <input
+                                            type="text"
+                                            placeholder="Login reason"
+                                            name="login_reason"
+                                            className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none"
+                                        />
+                                        <button
+                                            className="border-border-blue bg-bg-dark-blue text-black active:ring-border-blue flex h-11 rounded-md border mt-4 px-4 pt-3 text-sm font-semibold text-blue-500 shadow-sm hover:border-2 active:ring-2 active:ring-offset-2"
+                                        >
+                                            Login To Account
+                                        </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </DashboardLayout>

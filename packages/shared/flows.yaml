@@ -1,0 +1,638 @@
+integrations:
+  asana:
+    asana-tasks:
+      runs: every 30min
+      returns:
+        - AsanaTask
+    models:
+      AsanaTask:
+        id: string
+        project_id: string
+        name: string
+        completed: boolean
+        created_at: date
+        modified_at: date
+  confluence:
+    confluence-spaces:
+      runs: every 4 hours
+      returns:
+        - ConfluenceSpace
+    confluence-pages:
+      runs: every 4 hours
+      returns:
+        - ConfluencePage
+    models:
+      ConfluenceSpace:
+        id: string
+        key: string
+        name: string
+        type: string
+        status: string
+        authorId: string
+        createdAt: string
+        homepageId: string
+        description: string
+      ConfluencePage:
+        id: string
+        title: string
+        type: string
+        status: string
+        authorId: string
+        createdAt: string
+        spaceId: string
+        parentId: string
+        parentType: string
+        position: number
+        version:
+          createdAt: string
+          message: string
+          number: number
+          minorEdit: boolean
+          authorId: string
+        body:
+          storage: object
+          atlas_doc_format: object
+  evaluagent:
+    evaluagent-users:
+      runs: every day
+      returns:
+        - EvaluAgentUser
+    evaluagent-groups:
+      runs: every day
+      returns:
+        - EvaluAgentGroup
+    evaluagent-roles:
+      runs: every day
+      returns:
+        - EvaluAgentRole
+    models:
+      EvaluAgentGroup:
+        id: string
+        name: string
+        level: string
+        active: boolean
+        parent: string
+        hasChildren: boolean
+        isCustomReportingGroup: boolean
+      EvaluAgentUser:
+        id: string
+        forename: string
+        surname: string
+        email: string
+        username: string
+        startDate: date
+        active: boolean
+        thirdPartyId: string | number
+      EvaluAgentRole:
+        id: string
+        title: string
+        name: string
+  github:
+    github-issues:
+      runs: every half hour
+      returns:
+        - GithubIssue
+    github-list-files-sync:
+      type: sync
+      runs: every hour
+      auto_start: false
+      returns:
+        - GithubRepoFile
+    github-list-repos-action:
+      type: action
+      returns:
+        - GithubRepo
+    github-write-file-action:
+      type: action
+    models:
+      GithubIssue:
+        id: integer
+        owner: string
+        repo: string
+        issue_number: number
+        title: string
+        author: string
+        author_id: string
+        state: string
+        date_created: date
+        date_last_modified: date
+        body: string
+      GithubRepo:
+        id: integer
+        owner: string
+        name: string
+        full_name: string
+        description: string
+        url: string
+        date_created: date
+        date_last_modified: date
+      GithubRepoFile:
+        id: string
+        name: string
+        url: string
+        last_modified_date: date
+  gmail:
+    gmail-emails:
+      runs: every hour
+      returns:
+        - GmailEmail
+    models:
+      GmailEmail:
+        id: string
+        sender: string
+        recipients: string
+        date: date
+        subject: string
+        body: string
+        threadId: string
+  google:
+    google-workspace-org-unit:
+      runs: every 6 hours
+      track_deletes: true
+      returns:
+        - OrganizationalUnit
+    google-workspace-users:
+      runs: every hour
+      returns:
+        - User
+    google-workspace-user-access-tokens:
+      runs: every hour
+      returns:
+        - GoogleWorkspaceUserToken
+    models:
+      OrganizationalUnit:
+        id: string
+        name: string
+        createdAt: string | null
+        deletedAt: string | null
+        description: string | null
+        path: string | null
+        parentPath: string | null
+        parentId: string | null
+      User:
+        id: string
+        email: string
+        displayName: string | null
+        givenName: string | null
+        familyName: string | null
+        picture: string | null | undefined
+        type: string
+        createdAt: string | null
+        deletedAt: string | null
+        phone:
+          value: string | null | undefined
+          type: string | null | undefined
+        organizationId: string | null | undefined
+        organizationPath: string | null | undefined
+        isAdmin: boolean | null
+        department: string | null
+      GoogleWorkspaceUserToken:
+        id: string
+        user_id: string
+        app_name: string
+        anonymous_app: boolean
+        scopes: string
+    rawName: google-workspace
+  hubspot:
+    hubspot-service-tickets:
+      runs: every half hour
+      returns:
+        - HubspotServiceTicket
+    hubspot-owner:
+      runs: every day
+      returns:
+        - HubspotOwner
+    hubspot-user:
+      runs: every day
+      returns:
+        - HubspotUser
+    models:
+      HubspotServiceTicket:
+        id: integer
+        createdAt: date
+        updatedAt: date
+        isArchived: boolean
+        subject: string
+        content: string
+        objectId: integer
+        ownerId: integer
+        pipeline: integer
+        pipelineStage: integer
+        ticketCategory: string | null
+        ticketPriority: string
+      HubspotOwner:
+        id: integer
+        email: string
+        firstName: string
+        lastName: string
+        userId: integer
+        createdAt: date
+        updatedAt: date
+        archived: boolean
+      HubspotUser:
+        id: integer
+        email: string
+        roleId: integer
+        primaryTeamId: integer
+        superAdmin: boolean
+  intercom:
+    intercom-conversations:
+      runs: every 6 hours
+      returns:
+        - IntercomConversation
+        - IntercomConversationMessage
+    intercom-contacts:
+      runs: every 6 hours
+      returns:
+        - IntercomContact
+    models:
+      IntercomContact:
+        id: string
+        workspace_id: string
+        external_id: string
+        type: string
+        email: string | null
+        phone: string | null
+        name: string | null
+        created_at: date
+        updated_at: date
+        last_seen_at: date | null
+        last_replied_at: date | null
+      IntercomConversation:
+        id: string
+        created_at: date
+        updated_at: date
+        waiting_since: date | null
+        snoozed_until: date | null
+        title: string
+        contacts:
+          - contact_id: string
+        state: string
+        open: boolean
+        read: boolean
+        priority: string
+      IntercomConversationMessage:
+        id: string
+        conversation_id: string
+        body: string
+        type: string
+        created_at: date
+        updated_at: date | null
+        author:
+          type: string
+          name: string
+          id: string
+  jira:
+    jira-issues:
+      runs: every 5mins
+      returns:
+        - JiraIssue
+    models:
+      JiraIssue:
+        id: integer
+        key: string
+        summary: string
+        issueType: string
+        status: string
+        assignee: string
+        projectKey: string
+        projectName: string
+        createdAt: date
+        updatedAt: date
+  linear:
+    linear-issues:
+      runs: every 5min
+      returns:
+        - LinearIssue
+    linear-projects:
+      runs: every 5min
+      returns:
+        - LinearProject
+    linear-teams:
+      runs: every 5min
+      returns:
+        - LinearTeam
+    linear-roadmaps:
+      runs: every 5min
+      returns:
+        - LinearRoadmap
+    models:
+      LinearIssue:
+        id: string
+        assigneeId: string | null
+        creatorId: string | null
+        createdAt: date
+        description: string | null
+        dueDate: date | null
+        projectId: string | null
+        teamId: string
+        title: string
+        status: string
+      LinearTeam:
+        id: string
+        name: string
+        description: string | null
+        createdAt: date
+        updatedAt: date
+      LinearProject:
+        id: string
+        name: string
+        description: string | null
+        createdAt: date
+        updatedAt: date
+        teamId: string
+      LinearRoadmap:
+        id: string
+        name: string
+        description: string | null
+        createdAt: date
+        updatedAt: date
+        teamId: string
+        projectIds: string
+  microsoft-teams:
+    microsoft-org-unit:
+      runs: every 6 hours
+      returns:
+        - OrganizationalUnit
+    microsoft-users:
+      runs: every hour
+      returns:
+        - User
+    models:
+      OrganizationalUnit:
+        id: string
+        name: string
+        createdAt: string | null
+        deletedAt: string | null
+        description: string | null
+        path: string | null
+        parentPath: string | null
+        parentId: string | null
+      User:
+        id: string
+        email: string
+        displayName: string | null
+        givenName: string | null
+        familyName: string | null
+        picture: string | null | undefined
+        type: string
+        createdAt: string | null
+        deletedAt: string | null
+        phone:
+          value: string | null | undefined
+          type: string | null | undefined
+        organizationId: string | null | undefined
+        organizationPath: string | null | undefined
+        isAdmin: boolean | null
+        department: string | null
+    rawName: microsoft-active-directory
+  notion:
+    notion-pages:
+      runs: every 6 hours
+      returns:
+        - NotionPage
+    models:
+      NotionPage:
+        id: string
+        url: string
+        content: string
+        parent_page_id: string | undefined
+  salesforce:
+    salesforce-accounts:
+      runs: every hour
+      returns:
+        - SalesforceAccount
+    salesforce-contacts:
+      runs: every hour
+      returns:
+        - SalesforceContact
+    salesforce-deals:
+      runs: every hour
+      returns:
+        - SalesforceDeal
+    salesforce-articles:
+      runs: every day
+      returns:
+        - SalesforceArticle
+    models:
+      SalesforceAccount:
+        id: string
+        name: string
+        website: string
+        description: string
+        no_employees: number
+        last_modified_date: string
+      SalesforceContact:
+        id: string
+        first_name: string
+        last_name: string
+        email: string
+        account_id: string
+        last_modified_date: string
+      SalesforceDeal:
+        id: string
+        name: string
+        amount: number
+        stage: string
+        account_id: string
+        last_modified_date: string
+      SalesforceArticle:
+        id: string
+        title: string
+        content: string
+        last_modified_date: string
+  slack:
+    slack-users:
+      runs: every hour
+      returns:
+        - SlackUser
+    slack-channels:
+      runs: every hour
+      returns:
+        - SlackChannel
+    slack-messages:
+      runs: every hour
+      returns:
+        - SlackMessage
+        - SlackMessageReply
+        - SlackMessageReaction
+    models:
+      SlackUser:
+        id: string
+        team_id: string
+        name: string
+        deleted: boolean
+        tz: string
+        tz_label: string
+        tz_offset: number
+        profile:
+          avatar_hash: string
+          real_name: string | null
+          display_name: string | null
+          real_name_normalized: string | null
+          display_name_normalized: string | null
+          email: string | null
+          image_original: string | null
+        is_admin: boolean
+        is_owner: boolean
+        is_primary_owner: boolean
+        is_restricted: boolean
+        is_ultra_restricted: boolean
+        is_bot: boolean
+        updated: number
+        is_app_user: boolean
+        raw_json: string
+      SlackChannel:
+        id: string
+        name: string
+        is_channel: boolean
+        is_group: boolean
+        is_im: boolean
+        created: number
+        creator: string
+        is_archived: boolean
+        is_general: boolean
+        name_normalized: string
+        is_shared: boolean
+        is_private: boolean
+        is_mpim: boolean
+        updated: number
+        num_members: number
+        raw_json: string
+      SlackMessage:
+        id: string
+        ts: string
+        channel_id: string
+        thread_ts: string | null
+        app_id: string | null
+        bot_id: string | null
+        display_as_bot: boolean | null
+        is_locked: boolean | null
+        metadata:
+          event_type: string
+        parent_user_id: string | null
+        subtype: string | null
+        text: string | null
+        topic: string | null
+        user_id: string | null
+        raw_json: string
+      SlackMessageReply:
+        id: string
+        ts: string
+        channel_id: string
+        thread_ts: string | null
+        app_id: string | null
+        bot_id: string | null
+        display_as_bot: boolean | null
+        is_locked: boolean | null
+        metadata:
+          event_type: string
+        parent_user_id: string | null
+        subtype: string | null
+        text: string | null
+        topic: string | null
+        user_id: string | null
+        root:
+          message_id: string | null
+          ts: string
+        raw_json: string
+      SlackMessageReaction:
+        id: string
+        message_ts: string
+        thread_ts: string
+        channel_id: string
+        user_id: string
+        reaction_name: string
+  zendesk:
+    zendesk-tickets:
+      runs: every 1 hour
+      returns:
+        - ZendeskTicket
+    zendesk-articles:
+      runs: every 6 hours
+      returns:
+        - ZendeskArticle
+    models:
+      ZendeskArticle:
+        title: string
+        locale: string
+        user_segment_id: number
+        permission_group_id: number
+        author_id: number
+        body: string
+        comments_disabled: boolean
+        content_tag_ids: []
+        created_at: string
+        draft: boolean
+        edited_at: string
+        html_url: string
+        id: number
+        label_names: []
+        outdated: boolean
+        outdated_locales: []
+        position: number
+        promoted: boolean
+        section_id: number
+        source_locale: string
+        updated_at: string
+        url: string
+        vote_count: number
+        vote_sum: number
+      ZendeskTicket:
+        requester_id: number
+        allow_attachments: boolean
+        allow_channelback: boolean
+        assignee_email: string
+        assignee_id: number
+        attribute_value_ids: number[]
+        brand_id: number
+        collaborator_ids: number[]
+        collaborators: any[]
+        comment: object
+        created_at: string
+        custom_fields: any[]
+        custom_status_id: number
+        description: string
+        due_at: string
+        email_cc_ids: number[]
+        email_ccs: object
+        external_id: string
+        follower_ids: number[]
+        followers: object
+        followup_ids: number[]
+        forum_topic_id: number
+        from_messaging_channel: boolean
+        group_id: number
+        has_incidents: boolean
+        id: number
+        is_public: boolean
+        macro_id: number
+        macro_ids: number[]
+        metadata: object
+        organization_id: number
+        priority: string
+        problem_id: number
+        raw_subject: string
+        recipient: string
+        requester: object
+        safe_update: boolean
+        satisfaction_rating:
+          aliqua38: number
+        sharing_agreement_ids: number[]
+        status: string
+        subject: string
+        submitter_id: number
+        tags: string[]
+        ticket_form_id: number
+        type: string
+        updated_at: string
+        updated_stamp: string
+        url: string
+        via:
+          channel: string
+          source:
+            eu__4: number
+            id__8f: string
+        via_followup_source_id: number
+        via_id: number
+        voice_comment: object
