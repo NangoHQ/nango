@@ -1,4 +1,4 @@
-import { NangoSync, GithubRepoFile } from './models';
+import type { NangoSync, GithubRepoFile } from './models';
 
 enum PaginationType {
     RepoFile,

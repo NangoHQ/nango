@@ -31,10 +31,20 @@ class UserService {
         return result;
     }
 
-    async getByAccountId(accountId: number): Promise<User[]> {
-        const result = await db.knex.withSchema(db.schema()).select('*').from<User>(`_nango_users`).where({ account_id: accountId });
+    async getAnUserByAccountId(accountId: number): Promise<User | null> {
+        const result = await db.knex
+            .withSchema(db.schema())
+            .select('*')
+            .from<User>(`_nango_users`)
+            .where({ account_id: accountId })
+            .orderBy('id', 'asc')
+            .limit(1);
 
-        return result || [];
+        if (result == null || result.length == 0 || result[0] == null) {
+            return null;
+        }
+
+        return result[0];
     }
 
     async getUserByEmail(email: string): Promise<User | null> {

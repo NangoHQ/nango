@@ -6,6 +6,7 @@ import IntegrationList from './pages/IntegrationList';
 import IntegrationCreate from './pages/IntegrationCreate';
 import ConnectionList from './pages/ConnectionList';
 import ConnectionCreate from './pages/ConnectionCreate';
+import FlowCreate from './pages/FlowCreate';
 import ConnectionDetails from './pages/ConnectionDetails';
 import ProjectSettings from './pages/ProjectSettings';
 import PrivateRoute from './components/PrivateRoute';
@@ -56,6 +57,10 @@ const App = () => {
                     <Route path="/project-settings" element={<ProjectSettings />} />
                 </Route>
                 <Route path="/auth-link" element={<AuthLink />} />
+                <Route path="/flow/create" element={<PrivateRoute />}>
+                    <Route path="/flow/create" element={<FlowCreate />} />
+                </Route>
+                        <Route path="/account-settings" element={<AccountSettings />} />
                 {isCloud() && (
                     <>
                         <Route path="/account-settings" element={<AccountSettings />} />

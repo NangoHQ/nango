@@ -4,7 +4,7 @@ import type { LogLevel, Connection } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import {
     getEnvironmentId,
-    createSyncConfig,
+    deploy as deploySyncConfig,
     syncDataService,
     connectionService,
     getSyncs,
@@ -17,7 +17,6 @@ import {
     createActivityLog,
     getAndReconcileDifferences,
     getSyncConfigsWithConnectionsByEnvironmentId,
-    getActiveSyncConfigsByEnvironmentId,
     IncomingSyncConfig,
     getProviderConfigBySyncAndAccount,
     SyncCommand,
@@ -30,7 +29,8 @@ import {
     LastAction,
     configService,
     syncOrchestrator,
-    getAttributes
+    getAttributes,
+    flowService
 } from '@nangohq/shared';
 
 class SyncController {
@@ -40,7 +40,7 @@ class SyncController {
             const environmentId = getEnvironmentId(res);
             let reconcileSuccess = true;
 
-            const { success, error, response: syncConfigDeployResult } = await createSyncConfig(environmentId, syncs, debug);
+            const { success, error, response: syncConfigDeployResult } = await deploySyncConfig(environmentId, syncs, req.body.nangoYamlBody || '', debug);
 
             if (!success) {
                 errorManager.errResFromNangoErr(res, error);
@@ -176,20 +176,9 @@ class SyncController {
             const { environment } = response;
 
             const syncs = await getSyncConfigsWithConnectionsByEnvironmentId(environment.id);
+            const flows = flowService.getAllAvailableFlows();
 
-            res.send(syncs);
-        } catch (e) {
-            next(e);
-        }
-    }
-
-    public async getSyncNames(_req: Request, res: Response, next: NextFunction) {
-        try {
-            const environmentId = getEnvironmentId(res);
-
-            const syncs = await getActiveSyncConfigsByEnvironmentId(environmentId);
-
-            res.send(syncs);
+            res.send({ syncs, flows });
         } catch (e) {
             next(e);
         }

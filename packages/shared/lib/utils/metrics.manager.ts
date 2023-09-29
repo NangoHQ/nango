@@ -17,12 +17,12 @@ class MetricsManager {
         }
     }
 
-    public async capture(eventId: string, message: string, operation: string, context: Record<string, string> = {}) {
+    public async capture(eventId: string, message: string, operation: string, context: Record<string, string> = {}, additionalTags = '') {
         const params: v2.LogsApiSubmitLogRequest = {
             body: [
                 {
                     ddsource: 'web',
-                    ddtags: `${eventId}, environment:${process.env['NODE_ENV']}`,
+                    ddtags: `${eventId}, environment:${process.env['NODE_ENV']}, ${additionalTags}}`,
                     message,
                     service: operation,
                     additionalProperties: context

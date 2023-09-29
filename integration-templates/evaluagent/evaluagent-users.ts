@@ -1,5 +1,14 @@
 import type { NangoSync, EvaluAgentUser } from './models';
 
+interface EvaluAgentUserResponseCustom {
+    third_party_id: string;
+    start_date: string;
+}
+interface EvaluAgentUserResponse {
+    id: string;
+    attributes: EvaluAgentUser & EvaluAgentUserResponseCustom;
+}
+
 export default async function fetchData(nango: NangoSync) {
     let payload = {
         endpoint: '/v1/org/users'
@@ -9,7 +18,7 @@ export default async function fetchData(nango: NangoSync) {
 
     let returnedData = response.data.data;
 
-    const mappedUsers: EvaluAgentUser[] = returnedData.map((user: EvaluAgentUser) => ({
+    const mappedUsers: EvaluAgentUser[] = returnedData.map((user: EvaluAgentUserResponse) => ({
         id: user.id,
         forename: user.attributes.forename,
         surname: user.attributes.surname,

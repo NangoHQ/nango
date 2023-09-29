@@ -15,7 +15,11 @@ import type { Connection, NangoConnection } from '../../models/Connection.js';
 import SyncClient from '../../clients/sync.client.js';
 import { updateSuccess as updateSuccessActivityLog, createActivityLogMessage, createActivityLogMessageAndEnd } from '../activity/activity.service.js';
 import { markAllAsStopped } from './schedule.service.js';
-import { getActiveSyncConfigsByEnvironmentId, getSyncConfigsByProviderConfigKey, getActionConfigByNameAndProviderConfigKey } from './config.service.js';
+import {
+    getActiveCustomSyncConfigsByEnvironmentId,
+    getSyncConfigsByProviderConfigKey,
+    getActionConfigByNameAndProviderConfigKey
+} from './config/config.service.js';
 import syncOrchestrator from './orchestrator.service.js';
 import connectionService from '../connection.service.js';
 
@@ -445,6 +449,7 @@ export const getAndReconcileDifferences = async (
             }
             continue;
         }
+
         if (!existingSyncsByProviderConfig[providerConfigKey]) {
             // this gets syncs that have a sync config and are active OR just have a sync config
             existingSyncsByProviderConfig[providerConfigKey] = await getSyncConfigsByProviderConfigKey(environmentId, providerConfigKey);
@@ -460,7 +465,13 @@ export const getAndReconcileDifferences = async (
 
         let isNew = false;
 
-        // if it has connections but doesn't have an active sync then it is considered a new sync
+        /*
+         * The possible scenarios are as follows:
+         * 1. There are connections for the provider but doesn't have an active sync -- it is a new sync, isNew = true
+         * 2. It doesn't exist yet, so exists = false, which means we're in the reconciliation step so performAction = false so we don't create the sync
+         * When we come back here and performAction is true, the sync would have been created so exists will be true and we'll only create
+         * the sync if there are connections
+         */
         if (exists && connections.length > 0) {
             const syncsByConnection = await findSyncByConnections(
                 connections.map((connection) => connection.id as number),
@@ -511,7 +522,9 @@ export const getAndReconcileDifferences = async (
         }
     }
 
-    const existingSyncs = await getActiveSyncConfigsByEnvironmentId(environmentId);
+    // we don't want to include pre built syncs as they are handled differently hence
+    // the "custom" sync configs
+    const existingSyncs = await getActiveCustomSyncConfigsByEnvironmentId(environmentId);
 
     const deletedSyncs: SlimSync[] = [];
     const deletedActions: SlimAction[] = [];

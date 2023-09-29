@@ -1,15 +1,20 @@
 import type { NangoSync, EvaluAgentRole } from './models';
 
+interface EvaluAgentRoleResponse {
+    id: string;
+    attributes: EvaluAgentRole;
+}
+
 export default async function fetchData(nango: NangoSync) {
-    let payload = {
+    const payload = {
         endpoint: '/v1/org/roles'
     };
 
     const response = await nango.get(payload);
 
-    let returnedData = response.data.data;
+    const returnedData = response.data.data;
 
-    const mappedRoles: EvaluAgentRole[] = returnedData.map((role: EvaluAgentRole) => ({
+    const mappedRoles: EvaluAgentRole[] = returnedData.map((role: EvaluAgentRoleResponse) => ({
         id: role.id,
         title: role.attributes.title,
         name: role.attributes.name

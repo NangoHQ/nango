@@ -3,8 +3,8 @@ import type { NangoConnection } from '../../models/Connection.js';
 import { SyncResult, SyncType, SyncStatus, Job as SyncJob } from '../../models/Sync.js';
 import { createActivityLogMessage, createActivityLogMessageAndEnd, updateSuccess as updateSuccessActivityLog } from '../activity/activity.service.js';
 import { addSyncConfigToJob, updateSyncJobResult, updateSyncJobStatus } from '../sync/job.service.js';
-import { getSyncConfig } from './config.service.js';
-import { checkForIntegrationFile } from '../nango-config.service.js';
+import { getSyncConfig } from './config/config.service.js';
+import localFileService from '../file/local.service.js';
 import { getLastSyncDate, setLastSyncDate, clearLastSyncDate } from './sync.service.js';
 import { formatDataRecords } from './data/records.service.js';
 import { upsert } from './data/data.service.js';
@@ -165,7 +165,10 @@ export default class SyncRun {
             }
 
             if (!isCloud()) {
-                const { path: integrationFilePath, result: integrationFileResult } = checkForIntegrationFile(this.syncName, this.loadLocation);
+                const { path: integrationFilePath, result: integrationFileResult } = localFileService.checkForIntegrationDistFile(
+                    this.syncName,
+                    this.loadLocation
+                );
                 if (!integrationFileResult) {
                     await this.reportFailureForResults(
                         `Integration was attempted to run for ${this.syncName} but no integration file was found at ${integrationFilePath}.`
