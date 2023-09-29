@@ -460,11 +460,12 @@ export default function ProjectSettings() {
                                         </div>
                                     </div>
                                     {callbackEditMode && (
-                                        <form className="mt-2" onSubmit={handleCallbackSave} autoComplete="off">
+                                        <form className="mt-2" onSubmit={handleCallbackSave}>
                                             <div className="flex">
                                                 <input
                                                     id="callback_url"
                                                     name="callback_url"
+                                                    autoComplete="new-password"
                                                     type="url"
                                                     defaultValue={callbackUrl}
                                                     className="border-border-gray bg-bg-black text-text-light-gray focus:ring-blue block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-600 shadow-sm focus:border-blue-500 focus:outline-none"
@@ -535,11 +536,12 @@ export default function ProjectSettings() {
                                         </Tooltip>
                                     </div>
                                     {webhookEditMode && (
-                                        <form className="mt-2" onSubmit={handleWebhookbackSave} autoComplete="off">
+                                        <form className="mt-2" onSubmit={handleWebhookbackSave}>
                                             <div className="flex">
                                                 <input
                                                     id="webhook_url"
                                                     name="webhook_url"
+                                                    autoComplete="new-password"
                                                     type="url"
                                                     defaultValue={webhookUrl}
                                                     className="border-border-gray bg-bg-black text-text-light-gray focus:ring-blue block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-600 shadow-sm focus:border-blue-500 focus:outline-none"
@@ -612,11 +614,12 @@ export default function ProjectSettings() {
                                         </div>
                                     )}
                                     {hmacEditMode && (
-                                        <form className="mt-2" onSubmit={handleHmacSave} autoComplete="off">
+                                        <form className="mt-2" onSubmit={handleHmacSave}>
                                             <div className="flex">
                                                 <input
                                                     id="hmac_key"
                                                     name="hmac_key"
+                                                    autoComplete="new-password"
                                                     type="text"
                                                     defaultValue={hmacKey}
                                                     className="border-border-gray bg-bg-black text-text-light-gray focus:ring-blue block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-600 shadow-sm focus:border-blue-500 focus:outline-none"
@@ -666,7 +669,6 @@ export default function ProjectSettings() {
                                     <form
                                         className="mt-2"
                                         onSubmit={handleEnvVariablesSave}
-                                        autoComplete="off"
                                     >
                                         {envVariables.map((envVar, index) => (
                                             <div key={index} className="flex items-center mt-2">
@@ -674,6 +676,7 @@ export default function ProjectSettings() {
                                                     id={`env_var_name_${index}`}
                                                     name={`env_var_name_${index}`}
                                                     defaultValue={envVar.name}
+                                                    autoComplete="new-password"
                                                     required
                                                     type="text"
                                                     className="border-border-gray bg-bg-black text-text-light-gray focus:ring-blue block h-11 w-full appearance-none rounded-md border text-base placeholder-gray-600 shadow-sm focus:border-blue-500 focus:outline-none mr-3"
@@ -683,6 +686,7 @@ export default function ProjectSettings() {
                                                     name={`env_var_value_${index}`}
                                                     defaultValue={envVar.value}
                                                     required
+                                                    autoComplete="new-password"
                                                     type="password"
                                                     onMouseEnter={(e) => e.currentTarget.type = 'text'}
                                                     onMouseLeave={(e) => {
