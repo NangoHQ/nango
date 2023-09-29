@@ -1,15 +1,25 @@
 import type { NangoSync, EvaluAgentGroup } from './models';
 
+interface EvaluAgentGroupResponseCustom {
+    is_custom_reporting_group: boolean;
+    has_children: boolean;
+}
+
+interface EvaluAgentGroupResponse {
+    id: string;
+    attributes: EvaluAgentGroup & EvaluAgentGroupResponseCustom;
+}
+
 export default async function fetchData(nango: NangoSync) {
-    let payload = {
+    const payload = {
         endpoint: '/v1/org/groups'
     };
 
     const response = await nango.get(payload);
 
-    let returnedData = response.data.data;
+    const returnedData = response.data.data;
 
-    const mappedGroups: EvaluAgentGroup[] = returnedData.map((group: EvaluAgentGroup) => ({
+    const mappedGroups: EvaluAgentGroup[] = returnedData.map((group: EvaluAgentGroupResponse) => ({
         id: group.id,
         name: group.attributes.name,
         level: group.attributes.level,

@@ -11,10 +11,6 @@ export function mockErrorManagerReport() {
         return Promise.resolve(1);
     });
 
-    vi.spyOn(userService, 'getByAccountId').mockImplementation(() => {
-        return Promise.resolve([]);
-    });
-
     vi.spyOn(userService, 'getUsersByAccountId').mockImplementation(() => {
         return Promise.resolve([]);
     });

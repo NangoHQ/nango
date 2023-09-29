@@ -71,6 +71,9 @@ function update_package_json_version() {
 # for integration scripts. Publish the package and then npm install at the root
 # to ensure all dependencies are updated
 
+# build out the available flows from the existing integration templates
+node scripts/flows.js
+
 # clean up any old dist folders
 npm run i
 npm run ts-build
