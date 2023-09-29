@@ -32,24 +32,28 @@ interface Props {
 
 const JsonPrettyPrint: React.FC<Props> = ({ data }): ReactElement<any, any> => {
   let prettyJson = '';
+  let message = '';
 
   try {
-      if (typeof data === 'string') {
-        const jsonRegex = /({.*})/g;
-        const match = data.match(jsonRegex);
-        if (match) {
-          const json = JSON.parse(match[0]);
-          prettyJson = JSON.stringify(json, null, 2);
-        } else {
-          prettyJson = data;
-        }
-      }
+    const jsonRegex = /(\[.*\])/s;
+    const match = (data as string)?.match(jsonRegex);
 
-      return (
-          <pre className="max-w-5xl overflow-auto whitespace-pre-wrap break-all">{prettyJson}</pre>
-      );
-  } catch(e) {
-      return <span className="whitespace-normal break-all overflow-wrap">{data}</span>;
+    if (match) {
+      const json = JSON.parse(match[0]);
+      prettyJson = JSON.stringify(json, null, 2);
+      message = (data as string)?.replace(jsonRegex, '').trim(); // Extract the message part
+    } else {
+      prettyJson = data as string;
+    }
+
+    return (
+      <div>
+        {message && <p>{message}</p>}
+        <pre className="max-w-5xl overflow-auto whitespace-pre-wrap break-all">{prettyJson}</pre>
+      </div>
+    );
+  } catch (e) {
+    return <span className="whitespace-normal break-all overflow-wrap">{data}</span>;
   }
 };
 
