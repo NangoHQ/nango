@@ -139,7 +139,7 @@ export const generate = async (debug = false, inParentDirectory = false) => {
             }
             const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
 
-            if (!syncData.returns) {
+            if (syncData.type !== SyncConfigType.ACTION && !syncData.returns) {
                 console.log(
                     chalk.red(
                         `The ${syncName} integration is missing a returns property for what models the sync returns. Make sure you have "returns" instead of "return"`
@@ -155,7 +155,7 @@ export const generate = async (debug = false, inParentDirectory = false) => {
                 .join('');
 
             let ejsTeamplateContents = '';
-            if (syncName === exampleSyncName) {
+            if (syncName === exampleSyncName && type === SyncConfigType.SYNC) {
                 ejsTeamplateContents = githubExampleTemplateContents;
             } else {
                 ejsTeamplateContents = type === SyncConfigType.SYNC ? syncTemplateContents : actionTemplateContents;
@@ -163,17 +163,21 @@ export const generate = async (debug = false, inParentDirectory = false) => {
             const rendered = ejs.render(ejsTeamplateContents, {
                 syncName: syncNameCamel,
                 interfaceFileName: TYPES_FILE_NAME.replace('.ts', ''),
-                interfaceNames: models.map((model) => {
-                    const singularModel = model?.charAt(model.length - 1) === 's' ? model.slice(0, -1) : model;
-                    return `${singularModel.charAt(0).toUpperCase()}${singularModel.slice(1)}`;
-                }),
-                mappings: models.map((model) => {
-                    const singularModel = model.charAt(model.length - 1) === 's' ? model.slice(0, -1) : model;
-                    return {
-                        name: model,
-                        type: `${singularModel.charAt(0).toUpperCase()}${singularModel.slice(1)}`
-                    };
-                })
+                interfaceNames: models
+                    ? models?.map((model) => {
+                          const singularModel = model?.charAt(model.length - 1) === 's' ? model.slice(0, -1) : model;
+                          return `${singularModel.charAt(0).toUpperCase()}${singularModel.slice(1)}`;
+                      })
+                    : [],
+                mappings: models
+                    ? models?.map((model) => {
+                          const singularModel = model.charAt(model.length - 1) === 's' ? model.slice(0, -1) : model;
+                          return {
+                              name: model,
+                              type: `${singularModel.charAt(0).toUpperCase()}${singularModel.slice(1)}`
+                          };
+                      })
+                    : []
             });
 
             if (!fs.existsSync(`${dirPrefix}/${syncName}.ts`)) {
