@@ -346,6 +346,11 @@ export class NangoError extends Error {
                 this.message = 'Error creating a zip of the integration file(s). Make sure you have recently deployed the integration file(s).';
                 break;
 
+            case 'sync_interval_invalid':
+                this.status = 400;
+                this.message = 'Sync interval is invalid. The interval should be a time unit.';
+                break;
+
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;

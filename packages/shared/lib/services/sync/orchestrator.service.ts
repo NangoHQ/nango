@@ -180,7 +180,7 @@ export class Orchestrator {
                 const schedule = await getSchedule(sync?.id as string);
 
                 const syncClient = await SyncClient.getInstance();
-                await syncClient?.runSyncCommand(schedule?.schedule_id as string, sync?.id as string, command, activityLogId as number);
+                await syncClient?.runSyncCommand(schedule?.schedule_id as string, sync?.id as string, command, activityLogId as number, environmentId);
                 await updateScheduleStatus(schedule?.schedule_id as string, command, activityLogId as number);
             }
         } else {
@@ -196,7 +196,7 @@ export class Orchestrator {
             for (const sync of syncs) {
                 const schedule = await getSchedule(sync?.id as string);
                 const syncClient = await SyncClient.getInstance();
-                await syncClient?.runSyncCommand(schedule?.schedule_id as string, sync?.id as string, command, activityLogId as number);
+                await syncClient?.runSyncCommand(schedule?.schedule_id as string, sync?.id as string, command, activityLogId as number, environmentId);
                 await updateScheduleStatus(schedule?.schedule_id as string, command, activityLogId as number);
             }
         }

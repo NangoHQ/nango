@@ -141,6 +141,29 @@ export default class SyncRun {
             const providerConfigKey = this.nangoConnection.provider_config_key;
             const syncObject = integrations[providerConfigKey] as unknown as { [key: string]: NangoIntegration };
 
+            const syncData = syncObject[this.syncName] as unknown as NangoIntegrationData;
+            const { returns: models, track_deletes: trackDeletes } = syncData;
+
+            if (syncData.sync_config_id) {
+                if (this.debug) {
+                    const content = `Sync config id is ${syncData.sync_config_id}`;
+                    if (this.writeToDb) {
+                        await createActivityLogMessage({
+                            level: 'debug',
+                            activity_log_id: this.activityLogId as number,
+                            timestamp: Date.now(),
+                            content
+                        });
+                    } else {
+                        console.log(content);
+                    }
+                }
+
+                if (this.syncJobId) {
+                    await addSyncConfigToJob(this.syncJobId as number, syncData.sync_config_id);
+                }
+            }
+
             if (!isCloud()) {
                 const { path: integrationFilePath, result: integrationFileResult } = localFileService.checkForIntegrationDistFile(
                     this.syncName,
@@ -165,9 +188,6 @@ export default class SyncRun {
                     await clearLastSyncDate(this.syncId as string);
                 }
             }
-
-            const syncData = syncObject[this.syncName] as unknown as NangoIntegrationData;
-            const { returns: models, track_deletes: trackDeletes } = syncData;
 
             const nango = new NangoSync({
                 host: optionalHost || getApiUrl(),
@@ -195,26 +215,6 @@ export default class SyncRun {
                     });
                 } else {
                     console.log(content);
-                }
-            }
-
-            if (syncData.sync_config_id) {
-                if (this.debug) {
-                    const content = `Sync config id is ${syncData.sync_config_id}`;
-                    if (this.writeToDb) {
-                        await createActivityLogMessage({
-                            level: 'debug',
-                            activity_log_id: this.activityLogId as number,
-                            timestamp: Date.now(),
-                            content
-                        });
-                    } else {
-                        console.log(content);
-                    }
-                }
-
-                if (this.syncJobId) {
-                    await addSyncConfigToJob(this.syncJobId as number, syncData.sync_config_id);
                 }
             }
 

@@ -7,6 +7,22 @@ import logger from '../../logger/console.js';
 const activityLogTableName = '_nango_activity_logs';
 const activityLogMessageTableName = '_nango_activity_log_messages';
 
+/**
+ * _nango_activity_logs
+ * _nango_activity_log_messages
+ * @desc Store activity logs for all user facing operations
+ *
+ * _nango_activity_logs:
+ *      index:
+ *          - environment_id
+ *          - session_id
+ *
+ * _nango_activity_log_messages:
+ *     index:
+ *          - activity_log_id: activity_log_id_index
+ *          - created_at: created_at_index
+ */
+
 export async function createActivityLog(log: ActivityLog): Promise<number | null> {
     if (!log.environment_id) {
         return null;

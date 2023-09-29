@@ -16,7 +16,7 @@ import {
 import { createSyncJob, updateRunId } from '../services/sync/job.service.js';
 import { getInterval } from '../services/nango-config.service.js';
 import { getSyncConfig } from '../services/sync/config/config.service.js';
-import { createSchedule as createSyncSchedule } from '../services/sync/schedule.service.js';
+import { updateOffset, createSchedule as createSyncSchedule, getScheduleById } from '../services/sync/schedule.service.js';
 import connectionService from '../services/connection.service.js';
 import configService from '../services/config.service.js';
 import { createSync } from '../services/sync/sync.service.js';
@@ -345,7 +345,7 @@ class SyncClient {
         return schedules;
     }
 
-    async runSyncCommand(scheduleId: string, _syncId: string, command: SyncCommand, activityLogId: number) {
+    async runSyncCommand(scheduleId: string, _syncId: string, command: SyncCommand, activityLogId: number, environmentId: number) {
         const scheduleHandle = this.client?.schedule.getHandle(scheduleId);
 
         try {
@@ -368,7 +368,20 @@ class SyncClient {
                     }
                     break;
                 case SyncCommand.UNPAUSE:
-                    await scheduleHandle?.unpause();
+                    {
+                        await scheduleHandle?.unpause();
+                        await scheduleHandle?.trigger(OVERLAP_POLICY);
+                        const schedule = await getScheduleById(scheduleId);
+                        if (schedule) {
+                            const { frequency } = schedule;
+                            const { success, response } = getInterval(frequency, new Date());
+                            if (success && response) {
+                                const { offset } = response;
+                                await this.updateSyncSchedule(scheduleId, frequency, offset, environmentId);
+                                await updateOffset(scheduleId, offset);
+                            }
+                        }
+                    }
                     break;
                 case SyncCommand.RUN:
                     await scheduleHandle?.trigger(OVERLAP_POLICY);
@@ -455,7 +468,7 @@ class SyncClient {
         }
     }
 
-    async updateSyncSchedule(schedule_id: string, interval: string, offset: number, syncName: string, activityLogId: number, environmentId: number) {
+    async updateSyncSchedule(schedule_id: string, interval: string, offset: number, environmentId: number, syncName?: string, activityLogId?: number) {
         function updateFunction(scheduleDescription: ScheduleDescription) {
             scheduleDescription.spec = {
                 intervals: [
@@ -473,12 +486,14 @@ class SyncClient {
 
             await scheduleHandle?.update(updateFunction);
 
-            await createActivityLogMessage({
-                level: 'info',
-                activity_log_id: activityLogId as number,
-                content: `Updated sync "${syncName}" schedule "${schedule_id}" with interval ${interval} and offset ${offset}.`,
-                timestamp: Date.now()
-            });
+            if (activityLogId && syncName) {
+                await createActivityLogMessage({
+                    level: 'info',
+                    activity_log_id: activityLogId as number,
+                    content: `Updated sync "${syncName}" schedule "${schedule_id}" with interval ${interval} and offset ${offset}.`,
+                    timestamp: Date.now()
+                });
+            }
         } catch (e) {
             await errorManager.report(e, {
                 source: ErrorSourceEnum.PLATFORM,
