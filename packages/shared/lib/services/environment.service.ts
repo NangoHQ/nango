@@ -203,6 +203,28 @@ class EnvironmentService {
         }
     }
 
+    async getRawById(id: number): Promise<Environment | null> {
+        try {
+            const result = await db.knex.withSchema(db.schema()).select('*').from<Environment>(TABLE).where({ id });
+
+            if (result == null || result.length == 0 || result[0] == null) {
+                return null;
+            }
+
+            return result[0];
+        } catch (e) {
+            await errorManager.report(e, {
+                environmentId: id,
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.DATABASE,
+                metadata: {
+                    id
+                }
+            });
+            return null;
+        }
+    }
+
     async getByEnvironmentName(name: string): Promise<Environment | null> {
         const result = await db.knex.withSchema(db.schema()).select('*').from<Environment>(TABLE).where({ name });
 
@@ -389,13 +411,9 @@ class EnvironmentService {
 
         await db.knex.withSchema(db.schema()).from<Environment>(TABLE).where({ id }).update({ pending_secret_key });
 
-        const updatedEnvironment = await this.getById(id);
+        environment.pending_secret_key = pending_secret_key;
 
-        if (!updatedEnvironment) {
-            return null;
-        }
-
-        const encryptedEnvironment = encryptionManager.encryptEnvironment(updatedEnvironment);
+        const encryptedEnvironment = encryptionManager.encryptEnvironment(environment);
         await db.knex.withSchema(db.schema()).from<Environment>(TABLE).where({ id }).update(encryptedEnvironment);
 
         return pending_secret_key;
@@ -438,7 +456,7 @@ class EnvironmentService {
     }
 
     async activateSecretKey(id: number): Promise<boolean> {
-        const environment = await this.getById(id);
+        const environment = await this.getRawById(id);
 
         if (!environment) {
             return false;
