@@ -331,6 +331,11 @@ export class NangoError extends Error {
                 this.message = 'Sync interval is too short. The minimum interval is 5 minutes.';
                 break;
 
+            case 'sync_interval_invalid':
+                this.status = 400;
+                this.message = 'Sync interval is invalid. The interval should be a time unit.';
+                break;
+
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;

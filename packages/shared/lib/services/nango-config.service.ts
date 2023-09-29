@@ -199,6 +199,10 @@ export function getOffset(interval: string, date: Date): number {
 
     const offset = nowMilliseconds % intervalMilliseconds;
 
+    if (isNaN(offset)) {
+        return 0;
+    }
+
     return offset;
 }
 
@@ -236,10 +240,25 @@ export function getInterval(runs: string, date: Date): ServiceResponse<{ interva
         return { success: true, error: null, response };
     }
 
+    if (runs === 'every month') {
+        const response = { interval: '30d', offset: getOffset('30d', date) };
+        return { success: true, error: null, response };
+    }
+
+    if (runs === 'every week') {
+        const response = { interval: '1w', offset: getOffset('1w', date) };
+        return { success: true, error: null, response };
+    }
+
     const interval = runs.replace('every ', '');
 
     if (ms(interval) < ms('5m')) {
         const error = new NangoError('sync_interval_too_short');
+        return { success: false, error, response: null };
+    }
+
+    if (!ms(interval)) {
+        const error = new NangoError('sync_interval_invalid');
         return { success: false, error, response: null };
     }
 
