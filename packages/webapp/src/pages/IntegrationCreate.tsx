@@ -11,7 +11,7 @@ import {
     useDeleteIntegrationAPI
 } from '../utils/api';
 import AlertOverLay from '../components/AlertOverLay';
-import { Info, HelpCircle } from '@geist-ui/icons';
+import { HelpCircle } from '@geist-ui/icons';
 import { Tooltip } from '@geist-ui/core';
 import { defaultCallback } from '../utils/utils';
 import { Prism } from '@mantine/prism';
@@ -19,6 +19,7 @@ import { LeftNavBarItems } from '../components/LeftNavBar';
 import DashboardLayout from '../layout/DashboardLayout';
 import SecretInput from '../components/ui/input/SecretInput';
 import TagsInput from '../components/ui/input/TagsInput';
+import Info from '../components/ui/Info'
 import { AuthModes } from '../types';
 
 interface Integration {
@@ -274,10 +275,9 @@ export default function IntegrationCreate() {
                             )}
 
                             {(authMode === AuthModes.Basic || authMode === AuthModes.ApiKey) && !providerConfigKey && (
-                                <div className="flex items-center p-2 bg-gray-800 outline outline-blue-900 rounded">
-                                    <Info className="h-8 mr-3 stroke-blue-900"></Info>
-                                    <span>The "{selectedProvider}" integration provider uses {authMode === AuthModes.Basic ? 'basic auth' : 'API Keys'} for authentication (<a href="https://docs.nango.dev/guides/oauth#connection-configuration" className="text-text-blue hover:text-text-light-blue" rel="noreferrer" target="_blank">docs</a>).</span>
-                                </div>
+                                <Info>
+                                    The "{selectedProvider}" integration provider uses {authMode === AuthModes.Basic ? 'basic auth' : 'API Keys'} for authentication (<a href="https://docs.nango.dev/guides/oauth#connection-configuration" className="text-white underline hover:text-text-light-blue" rel="noreferrer" target="_blank">docs</a>).
+                                </Info>
                             )}
 
                             {(authMode === AuthModes.OAuth1 || authMode === AuthModes.OAuth2) && (

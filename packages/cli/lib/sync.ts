@@ -34,7 +34,7 @@ import {
     SyncType,
     syncRunService,
     nangoConfigFile,
-    checkForIntegrationFile,
+    localFileService,
     SyncConfigType
 } from '@nangohq/shared';
 import {
@@ -139,7 +139,7 @@ export const generate = async (debug = false, inParentDirectory = false) => {
             }
             const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
 
-            if (!syncData.returns) {
+            if (syncData.type !== SyncConfigType.ACTION && !syncData.returns) {
                 console.log(
                     chalk.red(
                         `The ${syncName} integration is missing a returns property for what models the sync returns. Make sure you have "returns" instead of "return"`
@@ -155,7 +155,7 @@ export const generate = async (debug = false, inParentDirectory = false) => {
                 .join('');
 
             let ejsTeamplateContents = '';
-            if (syncName === exampleSyncName) {
+            if (syncName === exampleSyncName && type === SyncConfigType.SYNC) {
                 ejsTeamplateContents = githubExampleTemplateContents;
             } else {
                 ejsTeamplateContents = type === SyncConfigType.SYNC ? syncTemplateContents : actionTemplateContents;
@@ -163,17 +163,21 @@ export const generate = async (debug = false, inParentDirectory = false) => {
             const rendered = ejs.render(ejsTeamplateContents, {
                 syncName: syncNameCamel,
                 interfaceFileName: TYPES_FILE_NAME.replace('.ts', ''),
-                interfaceNames: models.map((model) => {
-                    const singularModel = model?.charAt(model.length - 1) === 's' ? model.slice(0, -1) : model;
-                    return `${singularModel.charAt(0).toUpperCase()}${singularModel.slice(1)}`;
-                }),
-                mappings: models.map((model) => {
-                    const singularModel = model.charAt(model.length - 1) === 's' ? model.slice(0, -1) : model;
-                    return {
-                        name: model,
-                        type: `${singularModel.charAt(0).toUpperCase()}${singularModel.slice(1)}`
-                    };
-                })
+                interfaceNames: models
+                    ? models?.map((model) => {
+                          const singularModel = model?.charAt(model.length - 1) === 's' ? model.slice(0, -1) : model;
+                          return `${singularModel.charAt(0).toUpperCase()}${singularModel.slice(1)}`;
+                      })
+                    : [],
+                mappings: models
+                    ? models?.map((model) => {
+                          const singularModel = model.charAt(model.length - 1) === 's' ? model.slice(0, -1) : model;
+                          return {
+                              name: model,
+                              type: `${singularModel.charAt(0).toUpperCase()}${singularModel.slice(1)}`
+                          };
+                      })
+                    : []
             });
 
             if (!fs.existsSync(`${dirPrefix}/${syncName}.ts`)) {
@@ -388,70 +392,14 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
 
     const config = await getConfig(debug);
 
-    const postData: IncomingSyncConfig[] = [];
+    const postData: IncomingSyncConfig[] | null = packageIntegrationData(config, debug, optionalSyncName, version);
 
-    for (const integration of config) {
-        const { providerConfigKey } = integration;
-        let { syncs } = integration;
-
-        if (optionalSyncName) {
-            syncs = syncs.filter((sync) => sync.name === optionalSyncName);
-        }
-
-        for (const sync of syncs) {
-            const { name: syncName, runs = '', returns: models, models: model_schema, type = SyncConfigType.SYNC } = sync;
-
-            const { path: integrationFilePath, result: integrationFileResult } = checkForIntegrationFile(syncName, './');
-
-            if (!integrationFileResult) {
-                console.log(chalk.red(`No integration file found for ${syncName} at ${integrationFilePath}. Skipping...`));
-                continue;
-            }
-
-            if (type !== SyncConfigType.SYNC && type !== SyncConfigType.ACTION) {
-                console.log(
-                    chalk.red(
-                        `The sync ${syncName} has an invalid type "${type}". The type must be either ${SyncConfigType.SYNC} or${SyncConfigType.ACTION}. Skipping...`
-                    )
-                );
-            }
-            if (type === SyncConfigType.SYNC && !runs) {
-                console.log(chalk.red(`The sync ${syncName} is missing the "runs" property. Skipping...`));
-                continue;
-            }
-
-            if (runs && type === SyncConfigType.SYNC) {
-                const { success, error } = getInterval(runs, new Date());
-
-                if (!success) {
-                    console.log(chalk.red(`The sync ${syncName} has an issue with the sync interval "${runs}": ${error?.message}`));
-                    return;
-                }
-            }
-
-            if (debug) {
-                printDebug(`Integration file found for ${syncName} at ${integrationFilePath}`);
-            }
-
-            const body = {
-                syncName,
-                providerConfigKey,
-                models,
-                version: version as string,
-                runs,
-                track_deletes: sync.track_deletes || false,
-                auto_start: sync.auto_start === false ? false : true,
-                attributes: sync.attributes || {},
-                type,
-                fileBody: fs.readFileSync(integrationFilePath, 'utf8'),
-                model_schema: JSON.stringify(model_schema)
-            };
-
-            postData.push(body);
-        }
+    if (!postData) {
+        return;
     }
 
     const url = process.env['NANGO_HOSTPORT'] + `/sync/deploy`;
+    const nangoYamlBody = localFileService.getNangoYamlFileContents('./');
 
     if (process.env['NANGO_DEPLOY_AUTO_CONFIRM'] !== 'true' && !autoConfirm) {
         const confirmationUrl = process.env['NANGO_HOSTPORT'] + `/sync/deploy/confirmation`;
@@ -482,26 +430,7 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
 
             const confirmation = await promptly.confirm('Do you want to continue y/n?');
             if (confirmation) {
-                await axios
-                    .post(
-                        process.env['NANGO_HOSTPORT'] + `/sync/deploy`,
-                        { syncs: postData, reconcile: true, debug },
-                        { headers: enrichHeaders(), httpsAgent: httpsAgent() }
-                    )
-                    .then((response: AxiosResponse) => {
-                        const results: SyncDeploymentResult[] = response.data;
-                        if (results.length === 0) {
-                            console.log(chalk.green(`Successfully removed the syncs/actions.`));
-                        } else {
-                            const nameAndVersions = results.map((result) => `${result.sync_name}@v${result.version}`);
-                            console.log(chalk.green(`Successfully deployed the syncs/actions: ${nameAndVersions.join(', ')}!`));
-                        }
-                    })
-                    .catch((err) => {
-                        const errorMessage = JSON.stringify(err.response.data, null, 2);
-                        console.log(chalk.red(`Error deploying the syncs/actions with the following error: ${errorMessage}`));
-                        process.exit(1);
-                    });
+                await deploySyncs(url, { syncs: postData, nangoYamlBody, reconcile: true, debug });
             } else {
                 console.log(chalk.red('Syncs/Actions were not deployed. Exiting'));
                 process.exit(0);
@@ -529,11 +458,11 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
         if (debug) {
             printDebug(`Auto confirm is set so deploy will start without confirmation`);
         }
-        await deploySyncs(url, { syncs: postData, reconcile: true, debug });
+        await deploySyncs(url, { syncs: postData, nangoYamlBody, reconcile: true, debug });
     }
 };
 
-async function deploySyncs(url: string, body: { syncs: IncomingSyncConfig[]; reconcile: boolean; debug: boolean }) {
+async function deploySyncs(url: string, body: { syncs: IncomingSyncConfig[]; nangoYamlBody: string | null; reconcile: boolean; debug: boolean }) {
     await axios
         .post(url, body, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
         .then((response: AxiosResponse) => {
@@ -541,30 +470,81 @@ async function deploySyncs(url: string, body: { syncs: IncomingSyncConfig[]; rec
             if (results.length === 0) {
                 console.log(chalk.green(`Successfully removed the syncs/actions.`));
             } else {
-                const nameAndVersions = results.map((result) => `${result.sync_name}@v${result.version}`);
+                const nameAndVersions = results.map((result) => `${result.sync_name || result.name}@v${result.version}`);
                 console.log(chalk.green(`Successfully deployed the syncs/actions: ${nameAndVersions.join(', ')}!`));
             }
         })
         .catch((err: any) => {
-            let errorMessage;
-            if (!err?.response?.data) {
-                const {
-                    message,
-                    stack,
-                    config: { method },
-                    code,
-                    status
-                } = err?.toJSON() as any;
-
-                const errorObject = { message, stack, code, status, url, method };
-                errorMessage = JSON.stringify(errorObject, null, 2);
-            } else {
-                errorMessage = JSON.stringify(err.response.data, null, 2);
-            }
+            const errorMessage = JSON.stringify(err.response.data, null, 2);
             console.log(chalk.red(`Error deploying the syncs/actions with the following error: ${errorMessage}`));
             process.exit(1);
         });
 }
+
+export const adminDeploy = async (environmentName: string, debug = false) => {
+    await verifyNecessaryFiles(false);
+
+    await parseSecretKey(environmentName, debug);
+
+    if (!process.env['NANGO_HOSTPORT']) {
+        switch (environmentName) {
+            case 'local':
+                process.env['NANGO_HOSTPORT'] = `http://localhost:${port}`;
+                break;
+            case 'staging':
+                process.env['NANGO_HOSTPORT'] = stagingHost;
+                break;
+            default:
+                process.env['NANGO_HOSTPORT'] = cloudHost;
+                break;
+        }
+    }
+
+    if (debug) {
+        printDebug(`NANGO_HOSTPORT is set to ${process.env['NANGO_HOSTPORT']}.`);
+        printDebug(`Environment is set to ${environmentName}`);
+    }
+
+    await tsc(debug);
+
+    const config = await getConfig(debug);
+
+    const flowData = packageIntegrationData(config, debug);
+
+    if (!flowData) {
+        return;
+    }
+
+    const targetAccountUUID = await promptly.prompt('Input the account uuid to deploy to: ');
+
+    if (!targetAccountUUID) {
+        console.log(chalk.red('Account uuid is required. Exiting'));
+        return;
+    }
+
+    const url = process.env['NANGO_HOSTPORT'] + `/admin/flow/deploy/pre-built`;
+
+    const nangoYamlBody = localFileService.getNangoYamlFileContents('./');
+
+    try {
+        await axios
+            .post(
+                url,
+                { targetAccountUUID, targetEnvironment: environmentName, config: flowData, nangoYamlBody },
+                { headers: enrichHeaders(), httpsAgent: httpsAgent() }
+            )
+            .then(() => {
+                console.log(chalk.green(`Successfully deployed the syncs/actions to the users account.`));
+            })
+            .catch((err: any) => {
+                const errorMessage = JSON.stringify(err.response.data, null, 2);
+                console.log(chalk.red(`Error deploying the syncs/actions with the following error: ${errorMessage}`));
+                process.exit(1);
+            });
+    } catch (e) {
+        console.log(e);
+    }
+};
 
 export const dryRun = async (options: RunArgs, environment: string, debug = false) => {
     let syncName = '';
@@ -745,6 +725,32 @@ export const tsc = async (debug = false, syncName?: string): Promise<boolean> =>
     }
 
     return success;
+};
+
+export const checkYamlMatchesTsFiles = async (): Promise<boolean> => {
+    const config = await getConfig();
+
+    const syncNames = config.map((provider) => provider.syncs.map((sync) => sync.name)).flat();
+
+    const tsFiles = glob.sync(`./*.ts`);
+
+    const tsFileNames = tsFiles.filter((file) => !file.includes('models.ts')).map((file) => path.basename(file, '.ts'));
+
+    const missingSyncs = syncNames.filter((syncName) => !tsFileNames.includes(syncName));
+
+    if (missingSyncs.length > 0) {
+        console.log(chalk.red(`The following syncs are missing a corresponding .ts file: ${missingSyncs.join(', ')}`));
+        throw new Error('Syncs missing .ts files');
+    }
+
+    const extraSyncs = tsFileNames.filter((syncName) => !syncNames.includes(syncName));
+
+    if (extraSyncs.length > 0) {
+        console.log(chalk.red(`The following .ts files do not have a corresponding sync in the config: ${extraSyncs.join(', ')}`));
+        throw new Error('Extra .ts files');
+    }
+
+    return true;
 };
 
 const nangoCallsAreUsedCorrectly = (filePath: string, type = SyncConfigType.SYNC): boolean => {
@@ -969,3 +975,74 @@ export const dockerRun = async (debug = false) => {
         child?.on('error', reject);
     });
 };
+
+function packageIntegrationData(config: SimplifiedNangoIntegration[], debug: boolean, version = '', optionalSyncName = ''): IncomingSyncConfig[] | null {
+    const postData: IncomingSyncConfig[] = [];
+
+    for (const integration of config) {
+        const { providerConfigKey } = integration;
+        let { syncs } = integration;
+
+        if (optionalSyncName) {
+            syncs = syncs.filter((sync) => sync.name === optionalSyncName);
+        }
+
+        for (const sync of syncs) {
+            const { name: syncName, runs = '', returns: models, models: model_schema, type = SyncConfigType.SYNC } = sync;
+
+            const { path: integrationFilePath, result: integrationFileResult } = localFileService.checkForIntegrationDistFile(syncName, './');
+
+            if (!integrationFileResult) {
+                console.log(chalk.red(`No integration file found for ${syncName} at ${integrationFilePath}. Skipping...`));
+                continue;
+            }
+
+            if (type !== SyncConfigType.SYNC && type !== SyncConfigType.ACTION) {
+                console.log(
+                    chalk.red(
+                        `The sync ${syncName} has an invalid type "${type}". The type must be either ${SyncConfigType.SYNC} or${SyncConfigType.ACTION}. Skipping...`
+                    )
+                );
+            }
+            if (type === SyncConfigType.SYNC && !runs) {
+                console.log(chalk.red(`The sync ${syncName} is missing the "runs" property. Skipping...`));
+                continue;
+            }
+
+            if (runs && type === SyncConfigType.SYNC) {
+                const { success, error } = getInterval(runs, new Date());
+
+                if (!success) {
+                    console.log(chalk.red(`The sync ${syncName} has an issue with the sync interval "${runs}": ${error?.message}`));
+
+                    return null;
+                }
+            }
+
+            if (debug) {
+                printDebug(`Integration file found for ${syncName} at ${integrationFilePath}`);
+            }
+
+            const body = {
+                syncName,
+                providerConfigKey,
+                models,
+                version: version as string,
+                runs,
+                track_deletes: sync.track_deletes || false,
+                auto_start: sync.auto_start === false ? false : true,
+                attributes: sync.attributes || {},
+                type,
+                fileBody: {
+                    js: localFileService.getIntegrationFile(syncName, './') as string,
+                    ts: localFileService.getIntegrationTsFile(syncName, './') as string
+                },
+                model_schema: JSON.stringify(model_schema)
+            };
+
+            postData.push(body);
+        }
+    }
+
+    return postData;
+}

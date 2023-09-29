@@ -1,4 +1,4 @@
-import { GoogleWorkspaceUserToken, NangoSync } from './models';
+import type { GoogleWorkspaceUserToken, NangoSync } from './models';
 
 export default async function fetchData(nango: NangoSync) {
     // Get the users in the org

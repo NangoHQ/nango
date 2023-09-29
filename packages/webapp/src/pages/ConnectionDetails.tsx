@@ -179,6 +179,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                 <div className="mx-16 pb-40">
                     <div className="flex mt-16 mb-6 justify-between">
                         <Typography
+                            className="max-w-3xl"
                             tooltipProps={{
                                 text: (
                                     <>
@@ -479,34 +480,39 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                             <p className="inline-block text-red-500 text-sm">stopped</p>
                                                         </div>
                                                     )}
+                                                    {sync?.schedule_status === 'RUNNING' && sync?.latest_sync === null && (
+                                                        <div className={errorBubbleStyles}>
+                                                            <ErrorBubble />
+                                                        </div>
+                                                    )}
                                                     {sync?.latest_sync?.status === 'STOPPED' &&
                                                         sync.schedule_status !== 'PAUSED' &&
-                                                        (sync.latest_sync.activity_log_id !== null ? (
+                                                        (sync.latest_sync.activity_log_id && sync.latest_sync.activity_log_id !== null ? (
                                                             <Link
                                                                 to={`/activity?activity_log_id=${sync.latest_sync?.activity_log_id}`}
                                                                 className={errorBubbleStyles}
                                                             >
                                                                 <ErrorBubble />
                                                             </Link>
-                                                        ) : (
-                                                            <div className={errorBubbleStyles}>
-                                                                <ErrorBubble />
-                                                            </div>
-                                                        ))}
+                                                    ) : (
+                                                        <div className={errorBubbleStyles}>
+                                                            <ErrorBubble />
+                                                        </div>
+                                                    ))}
                                                     {sync.latest_sync?.status === 'RUNNING' &&
                                                         sync.schedule_status !== 'PAUSED' &&
-                                                        (sync.latest_sync?.activity_log_id !== null ? (
+                                                        (sync.latest_sync.activity_log_id && sync.latest_sync?.activity_log_id !== null ? (
                                                             <Link
                                                                 to={`/activity?activity_log_id=${sync.latest_sync?.activity_log_id}`}
                                                                 className={runningBubbleStyles}
                                                             >
                                                                 <RunningBubble />
                                                             </Link>
-                                                        ) : (
-                                                            <div className={runningBubbleStyles}>
-                                                                <RunningBubble />
-                                                            </div>
-                                                        ))}
+                                                    ) : (
+                                                        <div className={runningBubbleStyles}>
+                                                            <RunningBubble />
+                                                        </div>
+                                                    ))}
                                                     {sync.latest_sync?.status === 'SUCCESS' &&
                                                         sync.schedule_status !== 'PAUSED' &&
                                                         (sync.latest_sync?.activity_log_id !== null ? (
@@ -516,11 +522,11 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                             >
                                                                 <SuccessBubble />
                                                             </Link>
-                                                        ) : (
-                                                            <div className={successBubbleStyles}>
-                                                                <SuccessBubble />
-                                                            </div>
-                                                        ))}
+                                                    ) : (
+                                                        <div className={successBubbleStyles}>
+                                                            <SuccessBubble />
+                                                        </div>
+                                                    ))}
                                                 </li>
                                                 {sync.latest_sync?.result && Object.keys(sync.latest_sync?.result).length > 0 ? (
                                                     <Tooltip text={<pre>{parseLatestSyncResult(sync.latest_sync.result, sync.latest_sync.models)}</pre>} type="dark">

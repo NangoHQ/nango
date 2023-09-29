@@ -13,6 +13,8 @@ export interface NangoIntegrationData {
     fileLocation?: string;
     version?: string;
     sync_config_id?: number;
+    pre_built?: boolean;
+    is_public?: boolean;
 }
 export interface NangoIntegration {
     [key: string]: {

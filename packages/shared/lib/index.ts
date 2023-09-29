@@ -11,10 +11,12 @@ import accountService from './services/account.service.js';
 import environmentService from './services/environment.service.js';
 import webhookService from './services/webhook.service.js';
 import userService from './services/user.service.js';
-import fileService from './services/file.service.js';
+import remoteFileService from './services/file/remote.service.js';
+import localFileService from './services/file/local.service.js';
 import hmacService from './services/hmac.service.js';
 import syncRunService from './services/sync/run.service.js';
 import syncOrchestrator from './services/sync/orchestrator.service.js';
+import flowService from './services/flow.service.js';
 import analytics from './utils/analytics.js';
 import logger from './logger/console.js';
 
@@ -22,7 +24,8 @@ export * from './services/activity/activity.service.js';
 export * from './services/sync/sync.service.js';
 export * from './services/sync/job.service.js';
 export * from './services/sync/schedule.service.js';
-export * from './services/sync/config.service.js';
+export * from './services/sync/config/config.service.js';
+export * from './services/sync/config/deploy.service.js';
 
 export * as dataService from './services/sync/data/data.service.js';
 export * as syncDataService from './services/sync/data/records.service.js';
@@ -56,10 +59,12 @@ export {
     environmentService,
     userService,
     webhookService,
-    fileService,
+    remoteFileService,
+    localFileService,
     syncRunService,
     syncOrchestrator,
     hmacService,
+    flowService,
     analytics,
     logger
 };

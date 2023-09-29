@@ -1,4 +1,4 @@
-import { NangoSync, LinearProject } from './models';
+import type { NangoSync, LinearProject } from './models';
 
 export default async function fetchData(nango: NangoSync) {
     const { lastSyncDate } = nango;
@@ -8,7 +8,7 @@ export default async function fetchData(nango: NangoSync) {
     while (true) {
         const filterParam = lastSyncDate
             ? `
-        , filter: { 
+        , filter: {
             updatedAt: { gte: "${lastSyncDate.toISOString()}" }
         }`
             : '';

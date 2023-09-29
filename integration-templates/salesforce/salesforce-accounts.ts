@@ -1,4 +1,4 @@
-import { NangoSync, SalesforceAccount } from './models';
+import type { NangoSync, SalesforceAccount } from './models';
 
 export default async function fetchData(nango: NangoSync) {
     const query = buildQuery(nango.lastSyncDate);

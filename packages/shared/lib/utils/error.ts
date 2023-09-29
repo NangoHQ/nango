@@ -331,6 +331,26 @@ export class NangoError extends Error {
                 this.message = 'Sync interval is too short. The minimum interval is 5 minutes.';
                 break;
 
+            case 'provider_not_on_account':
+                this.status = 400;
+                this.message = 'This provider is not on your account. Please add the provider to your account first via the integrations tab.';
+                break;
+
+            case 'integration_file_not_found':
+                this.status = 404;
+                this.message = 'The integration file was not found. Please make sure you have recently deployed the integration file(s).';
+                break;
+
+            case 'error_creating_zip_file':
+                this.status = 500;
+                this.message = 'Error creating a zip of the integration file(s). Make sure you have recently deployed the integration file(s).';
+                break;
+
+            case 'sync_interval_invalid':
+                this.status = 400;
+                this.message = 'Sync interval is invalid. The interval should be a time unit.';
+                break;
+
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;

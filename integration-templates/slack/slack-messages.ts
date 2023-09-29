@@ -1,4 +1,4 @@
-import { SlackMessage, SlackMessageReaction, SlackMessageReply, NangoSync } from './models';
+import type { SlackMessage, SlackMessageReaction, SlackMessageReply, NangoSync } from './models';
 import { createHash } from 'crypto';
 
 export default async function fetchData(nango: NangoSync) {

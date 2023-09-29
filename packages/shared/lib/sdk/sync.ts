@@ -1,4 +1,4 @@
-import { getSyncConfigByJobId } from '../services/sync/config.service.js';
+import { getSyncConfigByJobId } from '../services/sync/config/config.service.js';
 import { upsert } from '../services/sync/data/data.service.js';
 import { formatDataRecords } from '../services/sync/data/records.service.js';
 import { createActivityLogMessage } from '../services/activity/activity.service.js';
@@ -155,17 +155,15 @@ interface EnvironmentVariable {
     value: string;
 }
 
-export class NangoSync {
+export class NangoAction {
     private nango: Nango;
     private attributes = {};
     activityLogId?: number;
-    lastSyncDate?: Date;
     syncId?: string;
     nangoConnectionId?: number;
     environmentId?: number;
     syncJobId?: number;
     dryRun?: boolean;
-    track_deletes = false;
 
     public connectionId?: string;
     public providerConfigKey?: string;
@@ -208,31 +206,9 @@ export class NangoSync {
             this.environmentId = config.environmentId;
         }
 
-        if (config.lastSyncDate) {
-            this.lastSyncDate = config.lastSyncDate;
-        }
-
-        if (config.track_deletes) {
-            this.track_deletes = config.track_deletes;
-        }
-
         if (config.attributes) {
             this.attributes = config.attributes;
         }
-    }
-
-    /**
-     * Set Sync Last Sync Date
-     * @desc permanently set the last sync date for the sync
-     * to be used for the next sync run
-     */
-    public async setLastSyncDate(date: Date): Promise<boolean> {
-        if (date.toString() === 'Invalid Date') {
-            throw new Error('Invalid Date');
-        }
-        const result = await setLastSyncDate(this.syncId as string, date);
-
-        return result;
     }
 
     public async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
@@ -290,6 +266,74 @@ export class NangoSync {
         return (metadata['fieldMapping'] as Metadata) || {};
     }
 
+    public async log(content: string, userDefinedLevel?: UserLogParameters): Promise<void> {
+        if (this.dryRun) {
+            console.log(content);
+            return;
+        }
+
+        if (!this.activityLogId) {
+            throw new Error('There is no current activity log stream to log to');
+        }
+
+        await createActivityLogMessage({
+            level: userDefinedLevel?.level ?? 'info',
+            activity_log_id: this.activityLogId as number,
+            content,
+            timestamp: Date.now()
+        });
+    }
+
+    public async getEnvironmentVariables(): Promise<EnvironmentVariable[] | null> {
+        if (!this.environmentId) {
+            throw new Error('There is no current environment to get variables from');
+        }
+
+        return await this.nango.getEnvironmentVariables();
+    }
+
+    public getFlowAttributes<A = object>(): A | null {
+        if (!this.syncJobId) {
+            throw new Error('There is no current sync to get attributes from');
+        }
+
+        return this.attributes as A;
+    }
+}
+
+export class NangoSync extends NangoAction {
+    lastSyncDate?: Date;
+    track_deletes = false;
+
+    constructor(config: NangoProps) {
+        super(config);
+
+        if (config.lastSyncDate) {
+            this.lastSyncDate = config.lastSyncDate;
+        }
+
+        if (config.track_deletes) {
+            this.track_deletes = config.track_deletes;
+        }
+    }
+
+    /**
+     * Set Sync Last Sync Date
+     * @desc permanently set the last sync date for the sync
+     * to be used for the next sync run
+     */
+    public async setLastSyncDate(date: Date): Promise<boolean> {
+        if (date.toString() === 'Invalid Date') {
+            throw new Error('Invalid Date');
+        }
+        const result = await setLastSyncDate(this.syncId as string, date);
+
+        return result;
+    }
+
+    /**
+     * Deprecated, please use batchSave
+     */
     public async batchSend<T = any>(results: T[], model: string): Promise<boolean | null> {
         console.warn('batchSend will be deprecated in future versions. Please use batchSave instead.');
         return this.batchSave(results, model);
@@ -498,39 +542,5 @@ export class NangoSync {
 
             throw new Error(responseResults?.error);
         }
-    }
-
-    public async log(content: string, userDefinedLevel?: UserLogParameters): Promise<void> {
-        if (this.dryRun) {
-            console.log(content);
-            return;
-        }
-
-        if (!this.activityLogId) {
-            throw new Error('There is no current activity log stream to log to');
-        }
-
-        await createActivityLogMessage({
-            level: userDefinedLevel?.level ?? 'info',
-            activity_log_id: this.activityLogId as number,
-            content,
-            timestamp: Date.now()
-        });
-    }
-
-    public async getEnvironmentVariables(): Promise<EnvironmentVariable[] | null> {
-        if (!this.environmentId) {
-            throw new Error('There is no current environment to get variables from');
-        }
-
-        return await this.nango.getEnvironmentVariables();
-    }
-
-    public getFlowAttributes<A = object>(): A | null {
-        if (!this.syncJobId) {
-            throw new Error('There is no current sync to get attributes from');
-        }
-
-        return this.attributes as A;
     }
 }
