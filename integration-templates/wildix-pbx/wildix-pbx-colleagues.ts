@@ -1,4 +1,4 @@
-import { NangoSync, WildixPbxColleague } from './models';
+import type { NangoSync, WildixPbxColleague } from './models';
 
 interface Params {
     start?: number;
