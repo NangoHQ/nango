@@ -1078,6 +1078,17 @@ wave-accounting:
     token_url: https://api.waveapps.com/oauth2/token
     proxy:
         base_url: https://gql.waveapps.com
+wildix-pbx:
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.subdomain}.wildixin.com/authorization/oauth2
+    token_url: https://${connectionConfig.subdomain}.wildixin.com/authorization/oauth2Token
+    authorization_params:
+        response_type: code
+    redirect_uri_metadata:
+        - subdomain
+    docs: https://docs.wildix.com/wms/index.html
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.wildixin.com
 workable:
     auth_mode: API_KEY
     proxy:
