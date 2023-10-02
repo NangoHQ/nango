@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Nango, all rights reserved.
+ * Copyright (c) 2023 Nango, all rights reserved.
  */
 
 const prodHost = 'https://api.nango.dev';
