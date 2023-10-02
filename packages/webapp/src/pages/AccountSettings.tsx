@@ -177,7 +177,7 @@ export default function AccountSettings() {
                 <Modal.Content>
                     <form ref={formRef} className="flex flex-col text-sm" onSubmit={onAddMember}>
                         <input name="name" className="border border-border-gray p-3" required placeholder="Name" />
-                        <input name="email" className="border border-border-gray p-3 mt-2" required type="email" placeholder="Email" />
+                        <input name="email" className="border border-border-gray p-3 mt-2 text-sm" required type="email" placeholder="Email" />
                         <button type="submit" className="hidden" />
                     </form>
                 </Modal.Content>

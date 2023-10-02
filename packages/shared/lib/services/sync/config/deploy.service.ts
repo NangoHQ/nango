@@ -244,7 +244,7 @@ export async function deploy(
             level: 'info',
             activity_log_id: activityLogId as number,
             timestamp: Date.now(),
-            content: `Successfully deployed the ${nameOfType}${syncsWithVersions.length > 1 ? 's' : ''} (${JSON.stringify(syncsWithVersions, null, 2)}).`
+            content: `Successfully deployed the ${nameOfType}${syncsWithVersions.length > 1 ? 's' : ''} ${JSON.stringify(syncsWithVersions, null, 2)}`
         });
 
         const shortContent = `Successfully deployed the ${nameOfType}${syncsWithVersions.length > 1 ? 's' : ''} (${syncsWithVersions
