@@ -30,6 +30,7 @@ class ProviderClient {
     public shouldIntrospectToken(provider: string): boolean {
         switch (provider) {
             case 'salesforce':
+            case 'salesforce-sandbox':
                 return true;
             default:
                 return false;
@@ -84,6 +85,7 @@ class ProviderClient {
 
         switch (config.provider) {
             case 'salesforce':
+            case 'salesforce-sandbox':
                 return this.introspectedSalesforceTokenExpired(
                     credentials.access_token,
                     config.oauth_client_id,
