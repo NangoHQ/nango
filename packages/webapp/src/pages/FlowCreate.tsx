@@ -348,9 +348,9 @@ export default function FlowCreate() {
                                                     value={frequencyUnit}
                                                     onChange={(e) => setFrequencyUnit(e.target.value)}
                                                 >
-                                                    <option value="minutes">Minutes</option>
-                                                    <option value="hours">Hours</option>
-                                                    <option value="days">Days</option>
+                                                    <option value="minutes">{frequencyValue === 1 ? 'Minute' : 'Minutes'}</option>
+                                                    <option value="hours">{frequencyValue === 1 ? 'Hour' : 'Hours'}</option>
+                                                    <option value="days">{frequencyValue === 1 ? 'Day' : 'Days'}</option>
                                                 </select>
                                             </div>
                                         </div>
