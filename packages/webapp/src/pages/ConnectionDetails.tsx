@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { Prism } from '@mantine/prism';
 import { toast } from 'react-toastify';
-import { Clock, RefreshCw, Lock, Slash, Check, X } from '@geist-ui/icons';
+import { Clock, RefreshCw, Lock, Check, X } from '@geist-ui/icons';
+import Info from '../components/ui/Info'
 import { Tooltip } from '@geist-ui/core';
 
 import { useGetConnectionDetailsAPI, useDeleteConnectionAPI, useGetSyncAPI, useRunSyncAPI } from '../utils/api';
@@ -13,7 +14,7 @@ import Button from '../components/ui/button/Button';
 import Typography from '../components/ui/typography/Typography';
 import SecretInput from '../components/ui/input/SecretInput';
 import { SyncResponse, RunSyncCommand, AuthModes, ApiKeyCredentials, BasicApiCredentials } from '../types';
-import { syncDocs, parseLatestSyncResult, formatDateToUSFormat, interpretNextRun } from '../utils/utils';
+import { parseLatestSyncResult, formatDateToUSFormat, interpretNextRun } from '../utils/utils';
 
 interface Connection {
     id: number;
@@ -225,7 +226,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                             </Tooltip>
                         )}
                     </div>
-                    <div className="flex inline-flex text-white mb-12 border border-border-gray rounded-md">
+                    <div className={`flex inline-flex text-white ${currentTab === 'auth' || (currentTab === 'sync' && syncs.length > 0) ? 'mb-12' : ''} border border-border-gray rounded-md`}>
                         <span
                             className={`flex items-center justify-center cursor-pointer py-1 px-3 ${currentTab === 'auth' ? 'bg-gray-800' : ''}`}
                             onClick={() => setCurrentTab('auth')}
@@ -241,7 +242,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                             Sync
                         </span>
                     </div>
-                    <div className={`border border-border-gray rounded-md h-fit ${currentTab === 'auth' ? 'py-14' : 'pt-6'} text-white text-sm`}>
+                    <div className={`${currentTab === 'auth' || (currentTab === 'sync' && syncs.length > 0) ? 'border border-border-gray' : ''} rounded-md h-fit ${currentTab === 'auth' ? 'py-14' : 'pt-6'} text-white text-sm`}>
                         {currentTab === 'auth' && (
                             <>
                                 <div>
@@ -425,24 +426,22 @@ We could not retrieve and/or refresh your access token due to the following erro
                         )}
                         {currentTab === 'sync' && (
                             <>
-                                <div className="text-white px-5">
-                                    <ul className="flex space-x-20 pb-4 items-center text-lg border-b border-border-gray">
-                                        <li>Integration Script</li>
-                                        <li className="w-[7.5rem]">Models</li>
-                                        <li>Status</li>
-                                        <li>Last Sync</li>
-                                        <li>Next Sync</li>
-                                    </ul>
-                                </div>
+                                {syncs.length > 0 && (
+                                    <div className="text-white px-5">
+                                        <ul className="flex space-x-20 pb-4 items-center text-lg border-b border-border-gray">
+                                            <li>Integration Script</li>
+                                            <li className="w-[7.5rem]">Models</li>
+                                            <li>Status</li>
+                                            <li>Last Sync</li>
+                                            <li>Next Sync</li>
+                                        </ul>
+                                    </div>
+                                )}
                                 {syncs.length === 0 && (
-                                    <div className="flex items-center px-5 pt-8 pb-7">
-                                        <Slash className="stroke-red-500" />
-                                        <div className="text-white ml-3">
-                                            No syncs yet - use Nango Sync to exchange data with the external API. See the{' '}
-                                            <a href={syncDocs} className="text-blue-500" target="_blank" rel="noreferrer">
-                                                docs
-                                            </a>. If you have a sync please make sure you have deployed it!
-                                        </div>
+                                    <div className="flex pt-8">
+                                        <Info size={24}>
+                                            No syncs have been created for this connection. Navigage to the <a href="/syncs" className="text-[#4E80EE]" rel="noreferrer">sync tab</a> to create one.
+                                        </Info>
                                     </div>
                                 )}
                                 {syncs.length > 0 && (

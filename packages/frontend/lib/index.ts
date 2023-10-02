@@ -49,6 +49,28 @@ export default class Nango {
         }
     }
 
+    public async create(
+        providerConfigKey: string,
+        connectionId: string,
+        connectionConfig: ConnectionConfig
+    ): Promise<{ providerConfigKey: string; connectionId: string } | AuthError> {
+        const url = this.hostBaseUrl + `/unauth/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig)}`;
+
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!res.ok) {
+            const errorResponse = await res.json();
+            throw { ...errorResponse, message: errorResponse.error };
+        }
+
+        return res.json();
+    }
+
     public auth(
         providerConfigKey: string,
         connectionId: string,
