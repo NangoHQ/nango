@@ -210,12 +210,12 @@ class ConfigController {
             const providerTemplate = configService.getTemplate(provider);
             const authMode = providerTemplate.auth_mode;
 
-            if (authMode !== AuthModes.ApiKey && authMode !== AuthModes.Basic && req.body['oauth_client_id'] == null) {
+            if (authMode !== AuthModes.ApiKey && authMode !== AuthModes.Basic && authMode !== AuthModes.None && req.body['oauth_client_id'] == null) {
                 errorManager.errRes(res, 'missing_client_id');
                 return;
             }
 
-            if (authMode !== AuthModes.ApiKey && authMode !== AuthModes.Basic && req.body['oauth_client_secret'] == null) {
+            if (authMode !== AuthModes.ApiKey && authMode !== AuthModes.Basic && authMode !== AuthModes.None && req.body['oauth_client_secret'] == null) {
                 errorManager.errRes(res, 'missing_client_secret');
                 return;
             }
