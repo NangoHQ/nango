@@ -1,7 +1,7 @@
 integrations:
   wildix-pbx:
     wildix-pbx-colleagues:
-      runs: every 30min
+      runs: every 1 hour
       returns:
         - WildixPbxColleague
 
