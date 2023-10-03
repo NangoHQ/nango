@@ -15,7 +15,7 @@ interface HubspotKnowledgeBaseResponse {
     fields: any;
 }
 
-async function* fetchPaginatedData(nango: NangoSync, portalId: number, limit = 10) {
+async function* fetchPaginatedData(nango: NangoSync, portalId: number, limit = 50) {
     let offset = 0;
 
     while (true) {
