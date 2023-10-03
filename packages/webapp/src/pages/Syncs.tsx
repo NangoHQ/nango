@@ -122,7 +122,7 @@ export default function Syncs() {
 
                 {!isCloud() && !isLocal() ? (
                     <div className="flex pt-8">
-                        <Info>
+                        <Info size={24}>
                             {currentTab === 'action' ? 'Action' : 'Sync'}s are only available for <a href="https://docs.nango.dev/cloud" rel="noreferrer" target="_blank" className="text-[#4E80EE]">Cloud & Enterprise self-hosting</a>.
                         </Info>
                     </div>

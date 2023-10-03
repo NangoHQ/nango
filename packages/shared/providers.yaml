@@ -1065,6 +1065,8 @@ uber:
         grant_type: refresh_token
     proxy:
         base_url: https://api.uber.com
+unauthenticated:
+    auth_mode: NONE
 wakatime:
     auth_mode: OAUTH2
     authorization_url: https://wakatime.com/oauth/authorize

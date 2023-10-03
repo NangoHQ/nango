@@ -140,6 +140,36 @@ class ConnectionService {
         return id;
     }
 
+    public async upsertUnauthConnection(connectionId: string, providerConfigKey: string, provider: string, environment_id: number, accountId: number) {
+        const storedConnection = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment_id);
+
+        if (storedConnection) {
+            await db.knex.withSchema(db.schema()).from<StoredConnection>(`_nango_connections`).where({ id: storedConnection.id, deleted: false }).update({
+                connection_id: connectionId,
+                provider_config_key: providerConfigKey,
+                updated_at: new Date()
+            });
+
+            analytics.track('server:unauth_connection_updated', accountId, { provider });
+
+            return [{ id: storedConnection.id }];
+        }
+        const id = await db.knex.withSchema(db.schema()).from<StoredConnection>(`_nango_connections`).insert(
+            {
+                connection_id: connectionId,
+                provider_config_key: providerConfigKey,
+                credentials: {},
+                connection_config: {},
+                environment_id
+            },
+            ['id']
+        );
+
+        analytics.track('server:unauth_connection_inserted', accountId, { provider });
+
+        return id;
+    }
+
     public async importOAuthConnection(
         connection_id: string,
         provider_config_key: string,
