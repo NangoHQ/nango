@@ -47,7 +47,7 @@ models:
     primaryTeamId: integer
     superAdmin: boolean
   HubspotKnowledgeBase:
-    id: integer
+    id: string
     title: string
     description: string
     category: string

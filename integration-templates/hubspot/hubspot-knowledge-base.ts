@@ -70,7 +70,7 @@ export default async function fetchData(nango: NangoSync): Promise<void> {
             const { data } = response;
 
             kbs.push({
-                id: data?.id,
+                id: data?.id.toString(),
                 publishDate: data.fields.publishedDate.value,
                 title: data.fields['title_nested.en'].value,
                 content: data.fields['html_other_nested.en'].value,
