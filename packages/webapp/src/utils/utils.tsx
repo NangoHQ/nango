@@ -23,6 +23,10 @@ export function isCloud() {
     return isProd() || isStaging();
 }
 
+export function isLocal() {
+    return window.location.href.includes('localhost');
+}
+
 export function baseUrl() {
     switch (process.env.REACT_APP_ENV) {
         case 'hosted':

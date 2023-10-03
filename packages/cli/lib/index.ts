@@ -12,7 +12,7 @@ import path from 'path';
 import * as dotenv from 'dotenv';
 
 import { nangoConfigFile, loadSimplifiedConfig } from '@nangohq/shared';
-import { init, dryRun, generate, tsc, tscWatch, configWatch, dockerRun, version, deploy } from './sync.js';
+import { init, dryRun, generate, tsc, tscWatch, configWatch, dockerRun, version, deploy, adminDeploy, checkYamlMatchesTsFiles } from './sync.js';
 import { upgradeAction, NANGO_INTEGRATIONS_LOCATION, verifyNecessaryFiles, printDebug } from './utils.js';
 import type { ENV, DeployOptions } from './types.js';
 
@@ -172,6 +172,7 @@ program
     .action(async function (this: Command) {
         const { autoConfirm, debug } = this.opts();
         await verifyNecessaryFiles(autoConfirm, debug);
+        await checkYamlMatchesTsFiles();
         tsc(debug);
     });
 
@@ -209,6 +210,16 @@ program
         const config = await loadSimplifiedConfig(path.resolve(cwd, NANGO_INTEGRATIONS_LOCATION));
 
         console.log(chalk.green(JSON.stringify(config, null, 2)));
+    });
+
+// admin only commands
+program
+    .command('admin:deploy', { hidden: true })
+    .description('Deploy a Nango integration to an account')
+    .arguments('environmentName')
+    .action(async function (this: Command, environmentName: string) {
+        const { debug } = this.opts();
+        await adminDeploy(environmentName, debug);
     });
 
 program.parse();

@@ -1,23 +1,49 @@
 ---
-title: 'Nango Cloud'
-sidebarTitle: 'Overview'
+title: 'Cloud vs. Self-Hosting'
+sidebarTitle: 'Cloud vs. Self-Hosting'
+description: 'Overview of cloud & self-hosting options.'
 ---
+
+| Features | Free Self-Hosting | Cloud | Enterprise Self-Hosting |
+|-|-|-|-|
+| OAuth w/ custom callback URL | ✅ | ✅ (free) | ✅ | 
+| API Key auth | ✅| ✅ (free) | ✅ | 
+| Basic auth | ✅ | ✅ (free) | ✅ | 
+| Request proxying | ✅ | ✅ (free) | ✅ | 
+| Secure dashboard access | ✅  | ✅ (free) | ✅ | 
+| Logs & monitoring | ✅  | ✅ (free) | ✅ | 
+| Encryption at rest | ✅  | ✅ (free) | ✅ | 
+| Programmatic API & SDKs | ✅  | ✅ (free) | ✅ | 
+| Syncs (deletes, rate-limits, templates) | ❌ | ✅ | ✅ | 
+| Actions | ❌ | ✅ | ✅ | 
+| Webhooks | ❌ | ✅ | ✅ | 
+| Field mappings | ❌ | ✅ | ✅ | 
+| Auto-scaling | ❌ | ✅ | ✅ | 
+| Auto-upgrades | ❌ | ✅ | ✅ | 
+| Multi-user & team management | ❌ | ✅ | ✅ | 
+| Production-grade support | ❌ | ✅ | ✅ | 
+| Custom integrations | ❌ | ✅ | ✅ | 
+
+## Nango Cloud
+
+Nango Cloud is free to use for features related to authorization and request proxying, without limitations. 
+
+Other features around consuming & syncing data with APIs are paid, with a free tier (cf. [pricing](https://nango.dev/pricing)).
 
 Sign up for a free Cloud account:
 
 [![Try Nango Cloud](/images/nango-deploy-button.svg)](https://app.nango.dev/signup)
+## Free Self-Hosting
 
-Cloud features include:
+Free self-hosting features have been designed with easy self-hostability in mind, ensuring that you can deploy them independently in your own environment.
 
--   Authorize APIs for free forever ([OAuth](/guides/oauth), [API key, Basic Auth](/guides/api-key)) 
--   [Proxy](/guides/proxy) API requests for free forever
--   Consume APIs with [syncs](/guides/sync), [actions](/guides/actions) and [webhooks](/guides/webhooks)
--   Auto-scaling: We make sure Nango scales, no matter the load you throw at it
--   Auto-updates: always enjoy the latest features & APIs
--   Encryption at rest & SSL
--   Admin panel & programmatic API
--   Monitoring & alerting
--   Production-grade support & 24h turnaround to implement new integrations
--   Multi users & team management
+These features are widely adopted by many companies in production. They simplify the process of obtaining, storing, and refreshing credentials to access any API. The same features are available for free without limitations on Nango Cloud.
 
-[Try Nango Cloud](https://app.nango.dev/signup) for free and [view the pricing](https://nango.dev/pricing).
+## Enterprise Self-Hosting
+
+The following features can be self-hosted but require our direct intervention, typically catered to Enterprise customers:
+- [Syncs](/guides/sync)
+- [Actions](/guides/actions)
+- [Webhooks](/guides/webhooks)
+
+Given their intricate nature and reliance on complex external dependencies, these features are readily available on our [Cloud](/cloud) or with Enterprise Self-Hosting. For those interested in a self-hosted solution with these features, please reach out on the [Slack community](https://nango.dev/slack) to discuss our Enterprise offerings.

@@ -10,6 +10,7 @@ import {
     Link as LinkIcon,
     Pause,
     Play,
+    User,
     FastForward
 } from '@geist-ui/icons'
 import { Tooltip } from '@geist-ui/core';
@@ -31,24 +32,28 @@ interface Props {
 
 const JsonPrettyPrint: React.FC<Props> = ({ data }): ReactElement<any, any> => {
   let prettyJson = '';
+  let message = '';
 
   try {
-      if (typeof data === 'string') {
-        const jsonRegex = /({.*})/g;
-        const match = data.match(jsonRegex);
-        if (match) {
-          const json = JSON.parse(match[0]);
-          prettyJson = JSON.stringify(json, null, 2);
-        } else {
-          prettyJson = data;
-        }
-      }
+    const jsonRegex = /(\[.*\])/s;
+    const match = (data as string)?.match(jsonRegex);
 
-      return (
-          <pre className="max-w-5xl overflow-auto whitespace-pre-wrap break-all">{prettyJson}</pre>
-      );
-  } catch(e) {
-      return <span className="whitespace-normal break-all overflow-wrap">{data}</span>;
+    if (match) {
+      const json = JSON.parse(match[0]);
+      prettyJson = JSON.stringify(json, null, 2);
+      message = (data as string)?.replace(jsonRegex, '').trim(); // Extract the message part
+    } else {
+      prettyJson = data as string;
+    }
+
+    return (
+      <div>
+        {message && <p>{message}</p>}
+        <pre className="max-w-5xl overflow-auto whitespace-pre-wrap break-all">{prettyJson}</pre>
+      </div>
+    );
+  } catch (e) {
+    return <span className="whitespace-normal break-all overflow-wrap">{data}</span>;
   }
 };
 
@@ -241,6 +246,12 @@ export default function Activity() {
                                                     </Link>
                                                 )}
                                                 <div className="ml-10 w-60 mr-4 truncate overflow-hidden">
+                                                    {(activity?.action === 'account') && (
+                                                        <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-yellow-500 bg-opacity-20">
+                                                            <User className="stroke-yellow-500 mr-2" size="16" />
+                                                            <p className="inline-block text-yellow-500">account</p>
+                                                        </div>
+                                                    )}
                                                     {(activity?.action === 'oauth' || activity?.action === 'auth') && (
                                                         <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-pink-500 bg-opacity-20">
                                                             <LinkIcon className="stroke-pink-500 mr-2" size="16" />
@@ -373,7 +384,7 @@ export default function Activity() {
                                                 </Tooltip>
                                                 <Link
                                                     to={activity.provider === null ? '/syncs' : `/integration/${activity.provider_config_key}`}
-                                                    className={`block w-36 mr-12 ${activity.provider === null && activity.action !== 'sync deploy' ? 'cursor-default' : ''}`}
+                                                    className={`block w-48 mr-12 ${activity.provider === null && activity.action !== 'sync deploy' ? 'cursor-default' : ''}`}
                                                     onClick={(e) => {
                                                         if (activity.provider === null && activity.action !== 'sync deploy') {
                                                             e.preventDefault();

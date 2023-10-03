@@ -1,6 +1,6 @@
 import { toast } from 'react-toastify';
 import { useSignout } from './user';
-import { AuthModes, RunSyncCommand } from '../types';
+import { AuthModes, RunSyncCommand, PreBuiltFlow } from '../types';
 
 
 function requestErrorToast() {
@@ -697,6 +697,37 @@ export function useInviteSignupAPI() {
             if (res.status === 401) {
                 return signout();
             }
+
+            return res;
+        } catch (e) {
+            requestErrorToast();
+        }
+    };
+}
+
+export function useGetFlows() {
+    return async () => {
+        try {
+            const res = await fetch(`/api/v1/flows`, {
+                method: 'GET',
+                headers: getHeaders()
+            });
+
+            return res;
+        } catch (e) {
+            requestErrorToast();
+        }
+    };
+}
+
+export function useCreateFlow() {
+    return async (flow: PreBuiltFlow[]) => {
+        try {
+            const res = await fetch(`/api/v1/flow/deploy/pre-built`, {
+                method: 'POST',
+                headers: getHeaders(),
+                body: JSON.stringify(flow)
+            });
 
             return res;
         } catch (e) {

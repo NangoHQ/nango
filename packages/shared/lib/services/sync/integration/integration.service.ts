@@ -1,10 +1,10 @@
 import { getQuickJS, QuickJSHandle } from 'quickjs-emscripten';
 import type { Context } from 'vm';
 import type { NangoIntegrationData } from '../../../integrations/index.js';
-import { getIntegrationFile } from '../../nango-config.service.js';
 import { createActivityLogMessage } from '../../activity/activity.service.js';
 import type { NangoSync } from '../../../sdk/sync.js';
-import fileService from '../../file.service.js';
+import localFileService from '../../file/local.service.js';
+import remoteFileService from '../../file/remote.service.js';
 import { isCloud } from '../../../utils/utils.js';
 import { classToObject, createConsoleLog, createRequireMethod, hostToQuickJSHandle, quickJSHandleToHost } from './utils.js';
 
@@ -97,8 +97,8 @@ class IntegrationService {
         try {
             const script: string | null =
                 isCloud() && !optionalLoadLocation
-                    ? await fileService.getFile(integrationData.fileLocation as string, environmentId)
-                    : getIntegrationFile(syncName, optionalLoadLocation);
+                    ? await remoteFileService.getFile(integrationData.fileLocation as string, environmentId)
+                    : localFileService.getIntegrationFile(syncName, optionalLoadLocation);
 
             if (!script) {
                 const content = `Unable to find integration file for ${syncName}`;

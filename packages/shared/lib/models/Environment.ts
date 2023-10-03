@@ -14,4 +14,12 @@ export interface Environment extends Timestamps {
     hmac_enabled: boolean;
     hmac_key: string | null;
     hmac_digest?: string | null;
+
+    secret_key_rotatable?: boolean;
+    public_key_rotatable?: boolean;
+
+    pending_secret_key?: string | null;
+    pending_secret_key_iv?: string | null;
+    pending_secret_key_tag?: string | null;
+    pending_public_key?: string | null;
 }
