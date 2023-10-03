@@ -206,6 +206,10 @@ integrations:
       runs: every day
       returns:
         - HubspotUser
+    hubspot-knowledge-base:
+      runs: every day
+      returns:
+        - HubspotKnowledgeBase
     models:
       HubspotServiceTicket:
         id: integer
@@ -235,6 +239,13 @@ integrations:
         roleId: integer
         primaryTeamId: integer
         superAdmin: boolean
+      HubspotKnowledgeBase:
+        id: string
+        title: string
+        description: string
+        category: string
+        content: string
+        publishDate: number
   intercom:
     intercom-conversations:
       runs: every 6 hours
