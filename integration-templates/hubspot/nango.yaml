@@ -12,6 +12,10 @@ integrations:
       runs: every day
       returns:
         - HubspotUser
+    hubspot-knowledge-base:
+      runs: every day
+      returns:
+        - HubspotKnowledgeBase
 
 models:
   HubspotServiceTicket:
@@ -42,3 +46,10 @@ models:
     roleId: integer
     primaryTeamId: integer
     superAdmin: boolean
+  HubspotKnowledgeBase:
+    id: integer
+    title: string
+    description: string
+    category: string
+    content: string
+    publishDate: number
