@@ -271,7 +271,8 @@ paths:
                                     type: string
                                     description: (OAuth 2, optional) Pass the refresh token if you have it.
                                 expires_at:
-                                    type: Date
+                                    type: string
+                                    format: date
                                     description: (OAuth 2, optional) Safer and preferred.
                                 expires_in:
                                     type: integer
