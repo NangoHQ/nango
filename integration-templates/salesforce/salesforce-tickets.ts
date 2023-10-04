@@ -13,8 +13,11 @@ function buildQuery(lastSyncDate?: Date): string {
         CaseNumber,
         Subject,
         AccountId,
+        Account.Name,
         ContactId,
+        Contact.Name,
         OwnerId,
+        Owner.Name,
         Priority,
         Status,
         Description,
@@ -24,7 +27,8 @@ function buildQuery(lastSyncDate?: Date): string {
         Origin,
         IsClosed,
         IsEscalated,
-        LastModifiedDate
+        LastModifiedDate,
+        (SELECT Id, CommentBody, CreatedDate, CreatedBy.Name FROM CaseComments)
         FROM Case
     `;
 
@@ -63,8 +67,11 @@ function mapDeals(records: any[]): SalesforceTicket[] {
             case_number: record.CaseNumber,
             subject: record.Subject,
             account_id: record.AccountId,
+            account_name: record.Account?.Name || null,
             contact_id: record.ContactId,
+            contact_name: record.Contact?.Name || null,
             owner_id: record.OwnerId,
+            owner_name: record.Owner?.Name || null,
             priority: record.Priority,
             status: record.Status,
             description: record.Description,
@@ -74,6 +81,13 @@ function mapDeals(records: any[]): SalesforceTicket[] {
             origin: record.Origin,
             is_closed: record.IsClosed,
             is_escalated: record.IsEscalated,
+            conversation:
+                record.CaseComments?.records.map((comment: any) => ({
+                    id: comment.Id,
+                    body: comment.CommentBody,
+                    created_date: comment.CreatedDate,
+                    created_by: comment.CreatedBy.Name
+                })) || [],
             last_modified_date: record.LastModifiedDate
         };
 
