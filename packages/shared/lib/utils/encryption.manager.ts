@@ -262,28 +262,59 @@ class EncryptionManager {
     }
 
     public async encryptAllDataRecords(): Promise<void> {
-        const dataRecords: DataRecord[] = await db.knex.withSchema(db.schema()).select('*').from<DataRecord>(`_nango_sync_data_records`);
+        const chunkSize = 1000;
+        let offset = 0;
 
-        for (const dataRecord of dataRecords) {
-            if ((dataRecord.json as Record<string, string>)['encryptedValue']) {
-                continue;
+        while (true) {
+            const dataRecords: DataRecord[] = await db.knex
+                .withSchema(db.schema())
+                .select('*')
+                .from<DataRecord>(`_nango_sync_data_records`)
+                .limit(chunkSize)
+                .offset(offset);
+
+            if (dataRecords.length === 0) {
+                break;
             }
-            const [encryptedValue, iv, authTag] = this.encrypt(JSON.stringify(dataRecord.json));
-            dataRecord.json = { encryptedValue, iv, authTag };
 
-            await db.knex.withSchema(db.schema()).from<DataRecord>(`_nango_sync_data_records`).where('id', dataRecord.id).update(dataRecord);
+            for (const dataRecord of dataRecords) {
+                if ((dataRecord.json as Record<string, string>)['encryptedValue']) {
+                    continue;
+                }
+                const [encryptedValue, iv, authTag] = this.encrypt(JSON.stringify(dataRecord.json));
+                dataRecord.json = { encryptedValue, iv, authTag };
+
+                await db.knex.withSchema(db.schema()).from<DataRecord>(`_nango_sync_data_records`).where('id', dataRecord.id).update(dataRecord);
+            }
+
+            offset += chunkSize;
         }
 
-        const deleteDataRecords: DataRecord[] = await db.knex.withSchema(db.schema()).select('*').from<DataRecord>(`_nango_sync_data_records_deletes`);
+        let deleteOffset = 0;
 
-        for (const dataRecord of deleteDataRecords) {
-            if ((dataRecord.json as Record<string, string>)['encryptedValue']) {
-                continue;
+        while (true) {
+            const deleteDataRecords: DataRecord[] = await db.knex
+                .withSchema(db.schema())
+                .select('*')
+                .from<DataRecord>(`_nango_sync_data_records_deletes`)
+                .limit(chunkSize)
+                .offset(deleteOffset);
+
+            if (deleteDataRecords.length === 0) {
+                break;
             }
-            const [encryptedValue, iv, authTag] = this.encrypt(JSON.stringify(dataRecord.json));
-            dataRecord.json = { encryptedValue, iv, authTag };
 
-            await db.knex.withSchema(db.schema()).from<DataRecord>(`_nango_sync_data_records_deletes`).where('id', dataRecord.id).update(dataRecord);
+            for (const dataRecord of deleteDataRecords) {
+                if ((dataRecord.json as Record<string, string>)['encryptedValue']) {
+                    continue;
+                }
+                const [encryptedValue, iv, authTag] = this.encrypt(JSON.stringify(dataRecord.json));
+                dataRecord.json = { encryptedValue, iv, authTag };
+
+                await db.knex.withSchema(db.schema()).from<DataRecord>(`_nango_sync_data_records_deletes`).where('id', dataRecord.id).update(dataRecord);
+            }
+
+            deleteOffset += chunkSize;
         }
     }
 
