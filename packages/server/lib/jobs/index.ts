@@ -1,6 +1,6 @@
 import * as cron from 'node-cron';
 import type { ActivityLog } from '@nangohq/shared';
-import { db, encryptionManager } from '@nangohq/shared';
+import { isCloud, db, encryptionManager } from '@nangohq/shared';
 
 export async function deleteOldActivityLogs(): Promise<void> {
     /**
@@ -13,5 +13,7 @@ export async function deleteOldActivityLogs(): Promise<void> {
 }
 
 export async function encryptDataRecords(): Promise<void> {
-    await encryptionManager.encryptAllDataRecords();
+    if (isCloud()) {
+        await encryptionManager.encryptAllDataRecords();
+    }
 }
