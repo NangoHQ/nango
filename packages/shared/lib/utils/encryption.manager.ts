@@ -233,6 +233,7 @@ class EncryptionManager {
             const record = dataRecord[field] as DataRecordJson;
 
             if (!record.encryptedValue) {
+                decryptedDataRecords.push(dataRecord);
                 continue;
             }
 
