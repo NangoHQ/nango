@@ -185,8 +185,6 @@ export interface DataRecord extends Timestamps {
     sync_config_id?: number | undefined;
     external_is_deleted?: boolean;
     external_deleted_at?: Date | null;
-    json_iv?: string | null;
-    json_tag?: string | null;
 }
 
 export type LastAction = 'added' | 'updated' | 'deleted';
