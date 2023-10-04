@@ -171,6 +171,8 @@ export type CustomerFacingDataRecord = {
     _nango_metadata: RecordMetadata;
 } & Record<string, any>;
 
+export type RecordWrapCustomerFacingDataRecord = { record: CustomerFacingDataRecord }[];
+
 export interface DataRecord extends Timestamps {
     [index: string]: number | string | Date | object | undefined | boolean | null;
     id?: string;

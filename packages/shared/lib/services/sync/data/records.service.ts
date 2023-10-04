@@ -2,12 +2,18 @@ import md5 from 'md5';
 import * as uuid from 'uuid';
 import dayjs from 'dayjs';
 
-import type { DataRecord as SyncDataRecord, CustomerFacingDataRecord, DataRecordWithMetadata } from '../../../models/Sync.js';
+import type {
+    DataRecord as SyncDataRecord,
+    RecordWrapCustomerFacingDataRecord,
+    CustomerFacingDataRecord,
+    DataRecordWithMetadata
+} from '../../../models/Sync.js';
 import type { DataResponse } from '../../../models/Data.js';
 import type { ServiceResponse } from '../../../models/Generic.js';
 import db, { schema } from '../../../db/database.js';
 import connectionService from '../../connection.service.js';
 import { NangoError } from '../../../utils/error.js';
+import encryptionManager from '../../../utils/encryption.manager.js';
 
 export const formatDataRecords = (
     records: DataResponse[],
@@ -171,6 +177,7 @@ export async function getDataRecords(
                 END as last_action`),
             'json as record'
         );
+        result = encryptionManager.decryptDataRecords(result, 'record') as unknown as DataRecordWithMetadata[];
     } else {
         result = await query.select(
             db.knex.raw(`
@@ -192,7 +199,9 @@ export async function getDataRecords(
             `)
         );
 
-        result = result.map((item: { record: CustomerFacingDataRecord[] }) => item.record);
+        result = encryptionManager.decryptDataRecords(result, 'record') as unknown as RecordWrapCustomerFacingDataRecord;
+
+        result = result.map((item: { record: CustomerFacingDataRecord }) => item.record);
     }
 
     return { success: true, error: null, response: result };

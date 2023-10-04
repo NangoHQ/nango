@@ -5,7 +5,7 @@ import type { DBConfig } from '../models/Generic.js';
 import type { Environment } from '../models/Environment.js';
 import type { EnvironmentVariable } from '../models/EnvironmentVariable.js';
 import type { Connection, ApiConnection, StoredConnection } from '../models/Connection.js';
-import type { DataRecord } from '../models/Sync.js';
+import type { DataRecord, DataRecordWithMetadata, RecordWrapCustomerFacingDataRecord } from '../models/Sync.js';
 import db from '../db/database.js';
 import util from 'util';
 
@@ -216,30 +216,74 @@ class EncryptionManager {
 
         for (const dataRecord of encryptedDataRecords) {
             const [encryptedValue, iv, authTag] = this.encrypt(JSON.stringify(dataRecord.json));
-            dataRecord.json = { encryptedValue };
-            dataRecord.json_iv = iv;
-            dataRecord.json_tag = authTag;
+            dataRecord.json = { encryptedValue, iv, authTag };
         }
 
         return encryptedDataRecords;
     }
 
-    public decryptDataRecords(dataRecords: DataRecord[] | null): DataRecord[] | null {
+    public decryptDataRecords(dataRecords: DataRecord[] | null, field = 'json'): DataRecordWithMetadata[] | RecordWrapCustomerFacingDataRecord | null {
         if (dataRecords === null) {
             return dataRecords;
         }
 
-        const decryptedDataRecords: DataRecord[] = Object.assign([], dataRecords);
+        const decryptedDataRecords: DataRecord[] = [];
 
-        for (const dataRecord of decryptedDataRecords) {
-            if (dataRecord.json_iv == null || dataRecord.json_tag == null) {
+        for (const dataRecord of dataRecords) {
+            const record = dataRecord[field] as DataRecordJson;
+
+            if (!record.encryptedValue) {
                 continue;
             }
 
-            dataRecord.json = JSON.parse(this.decrypt((dataRecord.json as DataRecordJson).encryptedValue, dataRecord.json_iv, dataRecord.json_tag));
+            const { encryptedValue, iv, authTag } = record;
+
+            const decryptedString = this.decrypt(encryptedValue, iv, authTag);
+
+            let updatedRecord = {
+                ...JSON.parse(decryptedString)
+            };
+
+            if (record['_nango_metadata']) {
+                updatedRecord['_nango_metadata'] = record['_nango_metadata'];
+                decryptedDataRecords.push({ [field]: updatedRecord } as DataRecord);
+            } else {
+                const { record: _record, ...rest } = dataRecord;
+                updatedRecord = {
+                    ...rest,
+                    record: updatedRecord
+                };
+                decryptedDataRecords.push(updatedRecord as DataRecord);
+            }
         }
 
-        return decryptedDataRecords;
+        return decryptedDataRecords as unknown as DataRecordWithMetadata[] | RecordWrapCustomerFacingDataRecord;
+    }
+
+    public async encryptAllDataRecords(): Promise<void> {
+        const dataRecords: DataRecord[] = await db.knex.withSchema(db.schema()).select('*').from<DataRecord>(`_nango_sync_data_records`);
+
+        for (const dataRecord of dataRecords) {
+            if ((dataRecord.json as Record<string, string>)['encryptedValue']) {
+                continue;
+            }
+            const [encryptedValue, iv, authTag] = this.encrypt(JSON.stringify(dataRecord.json));
+            dataRecord.json = { encryptedValue, iv, authTag };
+
+            await db.knex.withSchema(db.schema()).from<DataRecord>(`_nango_sync_data_records`).where('id', dataRecord.id).update(dataRecord);
+        }
+
+        const deleteDataRecords: DataRecord[] = await db.knex.withSchema(db.schema()).select('*').from<DataRecord>(`_nango_sync_data_records_deletes`);
+
+        for (const dataRecord of deleteDataRecords) {
+            if ((dataRecord.json as Record<string, string>)['encryptedValue']) {
+                continue;
+            }
+            const [encryptedValue, iv, authTag] = this.encrypt(JSON.stringify(dataRecord.json));
+            dataRecord.json = { encryptedValue, iv, authTag };
+
+            await db.knex.withSchema(db.schema()).from<DataRecord>(`_nango_sync_data_records_deletes`).where('id', dataRecord.id).update(dataRecord);
+        }
     }
 
     private async saveDbConfig(dbConfig: DBConfig) {
@@ -336,6 +380,8 @@ class EncryptionManager {
                 .where({ id: environmentVariable.id as number })
                 .update(environmentVariable);
         }
+
+        await this.encryptAllDataRecords();
 
         logger.info('🔐✅ Encryption of database complete!');
     }
