@@ -16,6 +16,10 @@ integrations:
             runs: every day
             returns:
                 - SalesforceArticle
+        salesforce-tickets:
+            runs: every day
+            returns:
+                - SalesforceTicket
 models:
     SalesforceAccount:
         id: string
@@ -45,4 +49,22 @@ models:
         id: string
         title: string
         content: string
+        last_modified_date: string
+
+    SalesforceTicket:
+        id: string
+        case_number: string
+        subject: string
+        account_id: string
+        contact_id: string
+        owner_id: string
+        priority: string
+        status: string
+        description: string
+        type: string
+        created_date: string
+        closed_date: string
+        origin: string
+        is_closed: boolean
+        is_escalated: boolean
         last_modified_date: string
