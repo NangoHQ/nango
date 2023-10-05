@@ -137,8 +137,8 @@ export default class Nango {
             // Open authorization modal
             this.win = new AuthorizationModal(this.websocketsBaseUrl, url, successHandler, errorHandler, this.debug);
             this.tm = setInterval(() => {
-                if (!this.win?.modal?.window) {
-                    this.tm = null;
+                if (!this.win?.modal?.window || this.win?.modal?.window.closed) {
+                    clearTimeout(this.tm);
                     this.win = null;
                     this.status = AuthorizationStatus.CANCELED;
                     reject({
