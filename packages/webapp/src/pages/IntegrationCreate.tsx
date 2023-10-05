@@ -27,6 +27,7 @@ interface Integration {
     provider: string;
     client_id: string;
     client_secret: string;
+    app_link?: string;
     scopes: string;
 }
 
@@ -64,9 +65,13 @@ export default function IntegrationCreate() {
                     const data = await res.json();
                     setIntegration(data['config']);
                     const currentIntegration = data['config'];
-                    if (currentIntegration.client_id === null && currentIntegration.client_secret === null) {
-                        // set to either api type to not have empty credentials fields
-                        setAuthMode(AuthModes.Basic);
+                    if (currentIntegration['auth_mode']) {
+                        setAuthMode(currentIntegration['auth_mode']);
+                    } else {
+                        if (currentIntegration.client_id === null && currentIntegration.client_secret === null) {
+                            // set to either api type to not have empty credentials fields
+                            setAuthMode(AuthModes.Basic);
+                        }
                     }
                 }
             } else {
@@ -118,6 +123,7 @@ export default function IntegrationCreate() {
                 client_id: { value: string };
                 client_secret: { value: string };
                 scopes: { value: string };
+                app_link: { value: string };
             };
 
             let res = await editIntegrationAPI(
@@ -126,7 +132,8 @@ export default function IntegrationCreate() {
                 providerConfigKey,
                 target.client_id.value,
                 target.client_secret.value,
-                target.scopes.value
+                target.scopes.value,
+                target.app_link.value
             );
 
             if (res?.status === 200) {
@@ -140,9 +147,10 @@ export default function IntegrationCreate() {
                 client_id: { value: string };
                 client_secret: { value: string };
                 scopes: { value: string };
+                app_link: { value: string };
             };
             const [provider] = target.provider.value.split('|');
-            let res = await createIntegrationAPI(provider, authMode, target.unique_key?.value, target.client_id?.value, target.client_secret?.value, target.scopes?.value);
+            const res = await createIntegrationAPI(provider, authMode, target.unique_key?.value, target.client_id?.value, target.client_secret?.value, target.scopes?.value, target.app_link?.value);
 
             if (res?.status === 200) {
                 toast.success('Integration created!', { position: toast.POSITION.BOTTOM_CENTER });
@@ -280,6 +288,99 @@ export default function IntegrationCreate() {
                                 </Info>
                             )}
 
+                            {authMode === AuthModes.App && (
+                                <>
+                                    <div>
+                                        <div className="flex">
+                                            <label htmlFor="client_id" className="text-text-light-gray block text-sm font-semibold">
+                                                App ID
+                                            </label>
+                                            <Tooltip
+                                                text={
+                                                    <>
+                                                        <div className="flex text-black text-sm">
+                                                            <p>{`Obtain the app id from the from the app page.`}</p>
+                                                        </div>
+                                                    </>
+                                                }
+                                            >
+                                                <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                            </Tooltip>
+                                        </div>
+                                        <div className="mt-1">
+                                            <input
+                                                id="app_id"
+                                                name="client_id"
+                                                type="text"
+                                                defaultValue={integration ? integration.client_id : ''}
+                                                autoComplete="new-password"
+                                                required
+                                                minLength={1}
+                                                className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <div className="flex">
+                                            <label htmlFor="app_public_link" className="text-text-light-gray block text-sm font-semibold">
+                                                App Public Link
+                                            </label>
+                                            <Tooltip
+                                                text={
+                                                    <>
+                                                        <div className="flex text-black text-sm">
+                                                            <p>{`Obtain the app public link from the app page.`}</p>
+                                                        </div>
+                                                    </>
+                                                }
+                                            >
+                                                <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                            </Tooltip>
+                                        </div>
+                                        <div className="mt-1">
+                                            <input
+                                                id="app_link"
+                                                name="app_link"
+                                                type="text"
+                                                defaultValue={integration ? integration.app_link : ''}
+                                                autoComplete="new-password"
+                                                required
+                                                minLength={1}
+                                                className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <div className="flex">
+                                            <label htmlFor="client_secret" className="text-text-light-gray block text-sm font-semibold">
+                                                App Secret
+                                            </label>
+                                            <Tooltip
+                                                text={
+                                                    <>
+                                                        <div className="flex text-black text-sm">
+                                                            <p>{`Obtain the app id from the from the app page.`}</p>
+                                                        </div>
+                                                    </>
+                                                }
+                                            >
+                                                <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                            </Tooltip>
+                                        </div>
+                                        <div className="mt-1">
+                                            <SecretInput
+                                                copy={true}
+                                                id="client_secret"
+                                                name="client_secret"
+                                                defaultValue={integration ? integration.client_secret : ''}
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+                                </>
+                            )}
                             {(authMode === AuthModes.OAuth1 || authMode === AuthModes.OAuth2) && (
                                 <>
                                     <div>

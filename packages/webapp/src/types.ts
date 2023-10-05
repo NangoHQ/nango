@@ -81,6 +81,7 @@ export enum AuthModes {
     OAuth2 = 'OAUTH2',
     Basic = 'BASIC',
     ApiKey = 'API_KEY',
+    App = 'APP',
     None = 'NONE'
 }
 

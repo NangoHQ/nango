@@ -138,7 +138,7 @@ paths:
                 - name: include_creds
                   in: query
                   required: false
-                  description: If true, the response will contain the client ID, secret and scopes (false by default).
+                  description: If true, the response will contain the client ID, secret, scopes, auth_mode and app link - if applicable. include_creds is false by default.
                   schema:
                       type: boolean
             responses:
