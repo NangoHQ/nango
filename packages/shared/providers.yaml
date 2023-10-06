@@ -470,6 +470,7 @@ hubspot:
     token_url: https://api.hubapi.com/oauth/v1/token
     proxy:
         base_url: https://api.hubapi.com
+        decompress: true
     docs: https://developers.hubspot.com/docs/api/overview
 instagram:
     auth_mode: OAUTH2
@@ -703,6 +704,7 @@ pipedrive:
     token_url: https://oauth.pipedrive.com/oauth/token
     proxy:
         base_url: https://${connectionConfig.subdomain}.pipedrive.com
+        decompress: true
 qualtrics:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.qualtrics.com/oauth2/auth

@@ -38,6 +38,7 @@ export interface ProxyConfiguration {
     data?: unknown;
     retries?: number;
     baseUrlOverride?: string;
+    decompress?: boolean;
 }
 
 export interface GetRecordsRequestConfig {
