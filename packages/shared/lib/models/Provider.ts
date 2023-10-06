@@ -25,6 +25,7 @@ export interface Template {
             at?: string;
             after?: string;
         };
+        decompress?: boolean;
     };
     authorization_url: string;
     authorization_params?: Record<string, string>;

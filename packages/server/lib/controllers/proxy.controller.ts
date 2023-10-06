@@ -54,6 +54,7 @@ class ProxyController {
             const providerConfigKey = req.get('Provider-Config-Key') as string;
             const retries = req.get('Retries') as string;
             const baseUrlOverride = req.get('Base-Url-Override') as string;
+            const decompress = req.get('Decompress') as string;
             const isSync = req.get('Nango-Is-Sync') as string;
             const isDryRun = req.get('Nango-Is-Dry-Run') as string;
             const existingActivityLogId = req.get('Nango-Activity-Log-Id') as number | string;
@@ -256,7 +257,8 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
                 headers,
                 data: req.body,
                 retries: retries ? Number(retries) : 0,
-                baseUrlOverride
+                baseUrlOverride,
+                decompress: decompress === 'true'
             };
 
             if (!isSync) {
@@ -518,6 +520,12 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
     ) {
         try {
             const headers = this.constructHeaders(config);
+            let decompress = false;
+
+            if (config.decompress === true || config.template.proxy.decompress === true) {
+                decompress = true;
+            }
+
             const responseStream: AxiosResponse = await backOff(
                 () => {
                     return axios({
@@ -525,7 +533,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
                         url,
                         responseType: 'stream',
                         headers,
-                        decompress: false
+                        decompress
                     });
                 },
                 { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId, config) }
