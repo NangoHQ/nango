@@ -522,7 +522,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
             const headers = this.constructHeaders(config);
             let decompress = false;
 
-            if (config.decompress === true || config.template.proxy.decompress === true) {
+            if (config.decompress === true || config.template?.proxy?.decompress === true) {
                 decompress = true;
             }
 
