@@ -21,4 +21,5 @@ export interface ProxyBodyConfiguration {
     params?: string | Record<string, string>;
     paramsSerializer?: ParamsSerializerOptions;
     baseUrlOverride?: string;
+    decompress?: boolean;
 }

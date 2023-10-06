@@ -671,6 +671,11 @@ paths:
                       type: string
                   description: Provide an API base URL when the base API is not listed in the providers.yaml or it needs to be overridden. Optional
                 - in: header
+                  name: Decompress
+                  schema:
+                      type: string
+                  description: Override the decompress option when making requests. Optional, defaults to false
+                - in: header
                   name: nango-proxy-$ANY_HEADER
                   schema:
                       type: string
@@ -705,6 +710,11 @@ paths:
                   schema:
                       type: string
                   description: Provide an API base URL when the base API is not listed in the providers.yaml or it needs to be overridden. Optional
+                - in: header
+                  name: Decompress
+                  schema:
+                      type: string
+                  description: Override the decompress option when making requests. Optional, defaults to false
                 - in: header
                   name: nango-proxy-$ANY_HEADER
                   schema:
@@ -749,6 +759,11 @@ paths:
                       type: string
                   description: Provide an API base URL when the base API is not listed in the providers.yaml or it needs to be overridden. Optional
                 - in: header
+                  name: Decompress
+                  schema:
+                      type: string
+                  description: Override the decompress option when making requests. Optional, defaults to false
+                - in: header
                   name: nango-proxy-$ANY_HEADER
                   schema:
                       type: string
@@ -791,6 +806,11 @@ paths:
                   schema:
                       type: string
                   description: Provide an API base URL when the base API is not listed in the providers.yaml or it needs to be overridden. Optional
+                - in: header
+                  name: Decompress
+                  schema:
+                      type: string
+                  description: Override the decompress option when making requests. Optional, defaults to false
                 - in: header
                   name: nango-proxy-$ANY_HEADER
                   schema:
@@ -839,6 +859,11 @@ paths:
                   schema:
                       type: string
                   description: Provide an API base URL when the base API is not listed in the providers.yaml or it needs to be overridden. Optional
+                - in: header
+                  name: Decompress
+                  schema:
+                      type: string
+                  description: Override the decompress option when making requests. Optional, defaults to false
                 - in: header
                   name: nango-proxy-$ANY_HEADER
                   schema:
