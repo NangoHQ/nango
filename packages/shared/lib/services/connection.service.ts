@@ -28,7 +28,14 @@ import type { Metadata, Connection, StoredConnection, BaseConnection, NangoConne
 import type { ServiceResponse } from '../models/Generic.js';
 import encryptionManager from '../utils/encryption.manager.js';
 import metricsManager from '../utils/metrics.manager.js';
-import { AuthModes as ProviderAuthModes, OAuth2Credentials, ImportedCredentials, ApiKeyCredentials, BasicApiCredentials } from '../models/Auth.js';
+import {
+    AppCredentials,
+    AuthModes as ProviderAuthModes,
+    OAuth2Credentials,
+    ImportedCredentials,
+    ApiKeyCredentials,
+    BasicApiCredentials
+} from '../models/Auth.js';
 import { schema } from '../db/database.js';
 import { parseTokenExpirationDate, isTokenExpired } from '../utils/utils.js';
 import SyncClient from '../clients/sync.client.js';
@@ -313,9 +320,15 @@ class ConnectionService {
 
         // Parse the token expiration date.
         if (connection != null) {
-            const credentials = connection.credentials as OAuth1Credentials | OAuth2Credentials;
+            const credentials = connection.credentials as OAuth1Credentials | OAuth2Credentials | AppCredentials;
             if (credentials.type && credentials.type === ProviderAuthModes.OAuth2) {
                 const creds = credentials as OAuth2Credentials;
+                creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
+                connection.credentials = creds;
+            }
+
+            if (credentials.type && credentials.type === ProviderAuthModes.App) {
+                const creds = credentials as AppCredentials;
                 creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
                 connection.credentials = creds;
             }

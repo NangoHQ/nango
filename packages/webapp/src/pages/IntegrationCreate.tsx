@@ -18,6 +18,7 @@ import { Prism } from '@mantine/prism';
 import { LeftNavBarItems } from '../components/LeftNavBar';
 import DashboardLayout from '../layout/DashboardLayout';
 import SecretInput from '../components/ui/input/SecretInput';
+import SecretTextArea from '../components/ui/input/SecretTextArea';
 import TagsInput from '../components/ui/input/TagsInput';
 import Info from '../components/ui/Info'
 import { AuthModes } from '../types';
@@ -67,11 +68,6 @@ export default function IntegrationCreate() {
                     const currentIntegration = data['config'];
                     if (currentIntegration['auth_mode']) {
                         setAuthMode(currentIntegration['auth_mode']);
-                    } else {
-                        if (currentIntegration.client_id === null && currentIntegration.client_secret === null) {
-                            // set to either api type to not have empty credentials fields
-                            setAuthMode(AuthModes.Basic);
-                        }
                     }
                 }
             } else {
@@ -130,10 +126,10 @@ export default function IntegrationCreate() {
                 integration.provider,
                 authMode,
                 providerConfigKey,
-                target.client_id.value,
-                target.client_secret.value,
-                target.scopes.value,
-                target.app_link.value
+                target.client_id?.value,
+                target.client_secret?.value,
+                target.scopes?.value,
+                target.app_link?.value
             );
 
             if (res?.status === 200) {
@@ -355,13 +351,13 @@ export default function IntegrationCreate() {
                                     <div>
                                         <div className="flex">
                                             <label htmlFor="client_secret" className="text-text-light-gray block text-sm font-semibold">
-                                                App Secret
+                                                App Secret Key
                                             </label>
                                             <Tooltip
                                                 text={
                                                     <>
                                                         <div className="flex text-black text-sm">
-                                                            <p>{`Obtain the app id from the from the app page.`}</p>
+                                                            <p>{`Obtain the app secret key from the from the app page.`}</p>
                                                         </div>
                                                     </>
                                                 }
@@ -370,13 +366,37 @@ export default function IntegrationCreate() {
                                             </Tooltip>
                                         </div>
                                         <div className="mt-1">
-                                            <SecretInput
+                                            <SecretTextArea
                                                 copy={true}
                                                 id="client_secret"
                                                 name="client_secret"
                                                 defaultValue={integration ? integration.client_secret : ''}
                                                 required
                                             />
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <div>
+                                            <div className="flex">
+                                                <label htmlFor="client_id" className="text-text-light-gray block text-sm font-semibold">
+                                                    Webhook URL
+                                                </label>
+                                                <Tooltip
+                                                    text={
+                                                        <>
+                                                            <div className="flex text-black text-sm">
+                                                                <p>{`Register this webhook URL on the app settings page.`}</p>
+                                                            </div>
+                                                        </>
+                                                    }
+                                                >
+                                                    <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                                </Tooltip>
+                                            </div>
+                                            <Prism language="bash" colorScheme="dark">
+                                                {callbackUrl.replace('oauth/callback', 'app-auth/webhook')}
+                                            </Prism>
                                         </div>
                                     </div>
                                 </>

@@ -13,6 +13,11 @@ class OAuthSessionService {
         return convertJsonKeysToCamelCase<OAuthSession>(session as Record<string, any>);
     }
 
+    async findByConnectionId(connection_id: string): Promise<OAuthSession | null> {
+        const session = await this.queryBuilder().where({ connection_id }).first();
+        return convertJsonKeysToCamelCase<OAuthSession>(session as Record<string, any>);
+    }
+
     async delete(id: string) {
         const session = await this.findById(id);
         if (!session) {

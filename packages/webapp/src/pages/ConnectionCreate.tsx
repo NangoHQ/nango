@@ -141,7 +141,16 @@ export default function IntegrationCreate() {
             };
         }
 
-        nango[authMode === AuthModes.None ? 'create' : 'auth'](target.integration_unique_key.value, target.connection_id.value, {
+        let nangoCall = 'auth';
+
+        if (authMode === AuthModes.None) {
+            nangoCall = 'create';
+        } else if (authMode === AuthModes.App) {
+            nangoCall = 'appCreate';
+        }
+
+        // @ts-ignore
+        nango[nangoCall](target.integration_unique_key.value, target.connection_id.value, {
                 user_scope: selectedScopes || [],
                 params: connectionConfigParams || {},
                 authorization_params: authorizationParams || {},
@@ -152,7 +161,11 @@ export default function IntegrationCreate() {
             .then(() => {
                 toast.success('Connection created!', { position: toast.POSITION.BOTTOM_CENTER });
                 analyticsTrack('web:connection_created', { provider: integration?.provider || 'unknown' });
-                navigate('/connections', { replace: true });
+                console.log(authMode);
+                if (authMode !== AuthModes.App) {
+                    console.log(navigate);
+                    //navigate('/connections', { replace: true });
+                }
             })
             .catch((err: { message: string; type: string }) => {
                 setServerErrorMessage(`${err.type} error: ${err.message}`);
@@ -278,6 +291,14 @@ credentials: {
 }`;
         }
 
+        let nangoCall = 'auth';
+
+        if (authMode === AuthModes.None) {
+            nangoCall = 'create';
+        } else if (authMode === AuthModes.App) {
+            nangoCall = 'appCreate';
+        }
+
         const connectionConfigStr =
             !connectionConfigParamsStr && !authorizationParamsStr && !userScopesStr && !hmacKeyStr
                 ? ''
@@ -287,7 +308,7 @@ credentials: {
 
 const nango = new Nango(${argsStr});
 
-nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr}).then((result: { providerConfigKey: string; connectionId: string }) => {
+nango.${nangoCall}('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr}).then((result: { providerConfigKey: string; connectionId: string }) => {
     // do something
 }).catch((err: { message: string; type: string }) => {
     // handle error

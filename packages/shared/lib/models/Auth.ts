@@ -24,6 +24,7 @@ export enum OAuthBodyFormat {
 export interface OAuthSession {
     providerConfigKey: string;
     provider: string;
+    connection_id?: string;
     connectionId: string;
     callbackUrl: string;
     authMode: AuthModes;
@@ -94,6 +95,13 @@ export interface ApiKeyCredentials {
 }
 
 export type AuthCredentials = OAuth2Credentials | OAuth1Credentials;
+
+export interface AppCredentials {
+    type?: AuthModes.App;
+    access_token: string;
+    expires_at?: Date | undefined;
+    raw: Record<string, any>;
+}
 
 export interface OAuth2Credentials extends CredentialsCommon {
     type: AuthModes.OAuth2;

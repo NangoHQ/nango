@@ -35,7 +35,7 @@
         "form-data": "^4.0.0",
         "ip": "^1.1.8",
         "js-yaml": "^4.1.0",
-        "jsonwebtoken": "^9.0.0",
+        "jsonwebtoken": "^9.0.2",
         "knex": "^2.3.0",
         "mailgun.js": "^8.2.1",
         "node-cron": "^3.0.2",

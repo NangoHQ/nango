@@ -16,6 +16,7 @@ import activityController from './controllers/activity.controller.js';
 import syncController from './controllers/sync.controller.js';
 import flowController from './controllers/flow.controller.js';
 import apiAuthController from './controllers/apiAuth.controller.js';
+import appAuthController from './controllers/appAuth.controller.js';
 import path from 'path';
 import { packageJsonFile, dirname } from './utils/utils.js';
 import { WebSocketServer, WebSocket } from 'ws';
@@ -73,6 +74,9 @@ app.route('/oauth/connect/:providerConfigKey').get(apiPublicAuth, oauthControlle
 app.route('/api-auth/api-key/:providerConfigKey').post(apiPublicAuth, apiAuthController.apiKey.bind(authController));
 app.route('/api-auth/basic/:providerConfigKey').post(apiPublicAuth, apiAuthController.basic.bind(authController));
 app.route('/unauth/:providerConfigKey').post(apiPublicAuth, unAuthController.create.bind(unAuthController));
+app.route('/app-auth/webhook').post(appAuthController.webhook.bind(oauthController));
+app.route('/app-auth/reconcile').post(apiPublicAuth, appAuthController.reconcile.bind(oauthController));
+app.route('/app-auth/:providerConfigKey').post(apiPublicAuth, appAuthController.create.bind(appAuthController));
 
 // API routes (API key auth).
 app.route('/config').get(apiAuth, configController.listProviderConfigs.bind(configController));

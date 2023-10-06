@@ -15,6 +15,7 @@ import ResetPassword from './pages/ResetPassword';
 import Activity from './pages/Activity';
 import Syncs from './pages/Syncs';
 import AuthLink from './pages/AuthLink';
+import ConnectionAppSetup from './pages/ConnectionAppSetup';
 import AccountSettings from './pages/AccountSettings';
 import UserSettings from './pages/UserSettings';
 import { ToastContainer } from 'react-toastify';
@@ -60,7 +61,9 @@ const App = () => {
                 <Route path="/flow/create" element={<PrivateRoute />}>
                     <Route path="/flow/create" element={<FlowCreate />} />
                 </Route>
-                        <Route path="/account-settings" element={<AccountSettings />} />
+                <Route path="/app-auth/complete" element={<PrivateRoute />}>
+                    <Route path="/app-auth/complete" element={<ConnectionAppSetup />} />
+                </Route>
                 {isCloud() && (
                     <>
                         <Route path="/account-settings" element={<AccountSettings />} />
