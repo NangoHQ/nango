@@ -563,6 +563,7 @@ microsoft-teams:
         prompt: consent
     proxy:
         base_url: https://graph.microsoft.com
+        decompress: true
     token_params:
         grant_type: authorization_code
     refresh_params:
