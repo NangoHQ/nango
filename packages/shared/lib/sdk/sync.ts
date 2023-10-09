@@ -8,6 +8,8 @@ import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { LogActionEnum } from '../models/Activity.js';
 
 import { Nango } from '@nangohq/node';
+import configService from '../services/config.service.js';
+import type { Template } from '../models/index.js';
 
 type LogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
 
@@ -59,6 +61,24 @@ interface DataResponse {
     [index: string]: unknown | undefined | string | number | boolean | Record<string, string | boolean | number | unknown>;
 }
 
+export enum PaginationType {
+    CURSOR = 'cursor',
+    OFFSET = 'offset'
+}
+
+interface Pagination {
+    type: PaginationType;
+    limit?: number;
+}
+
+export interface CursorPagination extends Pagination {
+    nextCursorParameterPath: string;
+    cursorParameterName: string;
+}
+
+export interface OffsetPagination extends Pagination {
+}
+
 interface ProxyConfiguration {
     endpoint: string;
     providerConfigKey?: string;
@@ -71,6 +91,7 @@ interface ProxyConfiguration {
     data?: unknown;
     retries?: number;
     baseUrlOverride?: string;
+    pagination?: Record<string, any>; // Supported only by Syncs and Actions ATM
 }
 
 enum AuthModes {
@@ -243,11 +264,67 @@ export class NangoAction {
         });
     }
 
-    public paginate<T = any>(
+    public async *paginate<T = any>(
         config: ProxyConfiguration,
         nangoProxyFunction: (config: ProxyConfiguration) => Promise<AxiosResponse<T>>
     ): AsyncGenerator<T, undefined, void> {
-        return this.nango.paginate(config, nangoProxyFunction);
+        if (!this.providerConfigKey) {
+            throw Error(`Please, specify provider config key`);
+        }
+
+        const providerConfigKey: string = this.providerConfigKey;
+        const template: Template = configService.getTemplate(providerConfigKey);
+        let paginationConfig: OffsetPagination | CursorPagination | undefined = template.proxy?.paginate ?? {
+            type: PaginationType.OFFSET // Add UNKNOWN type
+        };
+        const paginationConfigOverride: Record<string, any> | boolean = config.pagination ?? false;
+
+        if (paginationConfigOverride) {
+            paginationConfig = { ...paginationConfig, ...paginationConfigOverride};
+        }
+
+        console.log(`Pagination config: ${JSON.stringify(paginationConfig)}`);
+        console.log(`Template: ${JSON.stringify(template)}`);
+
+        if (!paginationConfig) {
+            const template: Template = configService.getTemplate(providerConfigKey);
+            paginationConfig = template.proxy?.paginate;
+        }
+
+        if (!paginationConfig) {
+            // TODO: We should check that the valid Pagination object is passed as an override and do not throw error if so
+            throw Error(`Pagination config is not specififed for '${config.providerConfigKey}' nor it's passed as an override to 'paginate' method`);
+        }
+
+        switch (paginationConfig.type) {
+            case PaginationType.OFFSET:
+                const offsetPaginationConfig: OffsetPagination = paginationConfig as OffsetPagination;
+                let page = 1;
+                const defaultMaxValuePerPage: number = 100;
+                const limit: number = offsetPaginationConfig.limit ?? defaultMaxValuePerPage;
+                const endpoint: string = config.endpoint;
+
+                while (true) {
+                    console.log('llllllllllll')
+                    const resp: AxiosResponse<T> = await nangoProxyFunction.call(this, {
+                        endpoint: endpoint + (endpoint.includes('?') ? '&' : '?') + `limit=${limit}&page=${page}`
+                    });
+
+                    if (!(resp.data as any).length) {
+                        return;
+                    }
+
+                    yield resp.data;
+
+                    if ((resp.data as any).length < limit) {
+                        return;
+                    }
+
+                    page += 1;
+                }
+            default:
+                throw Error(`${paginationConfig.type} pagination is not supported`);
+        }
     }
 
     public async getConnection(): Promise<Connection> {

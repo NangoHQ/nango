@@ -26,25 +26,6 @@ export interface OAuth2Credentials extends CredentialsCommon {
     expires_at?: Date | undefined;
 }
 
-export enum PaginationType {
-    CURSOR = 'cursor',
-    OFFSET = 'offset'
-}
-
-interface Pagination {
-    type: PaginationType;
-    limit?: number;
-}
-
-export interface CursorPagination extends Pagination {
-    nextCursorParameterPath: string;
-    cursorParameterName: string;
-}
-
-export interface OffsetPagination extends Pagination {
-    offset: string;
-}
-
 export interface ProxyConfiguration {
     endpoint: string;
     providerConfigKey?: string;
@@ -57,7 +38,6 @@ export interface ProxyConfiguration {
     data?: unknown;
     retries?: number;
     baseUrlOverride?: string;
-    pagination?: OffsetPagination;
 }
 
 export interface GetRecordsRequestConfig {
