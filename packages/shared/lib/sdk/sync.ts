@@ -76,7 +76,7 @@ export interface CursorPagination extends Pagination {
     cursorParameterName: string;
 }
 
-export interface OffsetPagination extends Pagination { }
+export interface OffsetPagination extends Pagination {}
 
 interface ProxyConfiguration {
     endpoint: string;
@@ -247,9 +247,7 @@ export class NangoAction {
 
             let paginationConfig: OffsetPagination | CursorPagination = templatePaginationConfig;
             if (typeof config.paginate === 'boolean') {
-                if (!templatePaginationConfig) {
-                    throw Error(`Pagination is not supported for ${this.providerConfigKey} provider. Please, specify pagination config in 'providers.yaml' file or in proxy configuration while calling this API.`);
-                }
+                console.debug(`Paginating using the default config from providers.yaml`);
             } else if (typeof config.paginate === 'object') {
                 const paginationConfigOverride: Record<string, any> = config.paginate as Record<string, any>;
 
@@ -291,8 +289,6 @@ export class NangoAction {
             method: 'DELETE'
         });
     }
-
-
 
     public async getConnection(): Promise<Connection> {
         return this.nango.getConnection(this.providerConfigKey as string, this.connectionId as string);
@@ -370,7 +366,8 @@ export class NangoAction {
 
                 while (true) {
                     const resp: AxiosResponse<T> = await nangoProxyFunction.call(this.nango, {
-                        ...config, ...{
+                        ...config,
+                        ...{
                             endpoint: endpoint + (endpoint.includes('?') ? '&' : '?') + `limit=${limit}&page=${page}`
                         }
                     });
