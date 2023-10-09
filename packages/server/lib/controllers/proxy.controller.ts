@@ -400,17 +400,22 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         isDryRun?: string
     ) {
         const url = this.constructUrl(configBody, connection);
+        let decompress = false;
+
+        if (configBody.decompress === true || configBody.template?.proxy?.decompress === true) {
+            decompress = true;
+        }
 
         if (method === 'POST') {
-            return this.post(res, next, url, configBody, activityLogId, isSync, isDryRun);
+            return this.post(res, next, url, configBody, activityLogId, decompress, isSync, isDryRun);
         } else if (method === 'PATCH') {
-            return this.patch(res, next, url, configBody, activityLogId, isSync, isDryRun);
+            return this.patch(res, next, url, configBody, activityLogId, decompress, isSync, isDryRun);
         } else if (method === 'PUT') {
-            return this.put(res, next, url, configBody, activityLogId, isSync, isDryRun);
+            return this.put(res, next, url, configBody, activityLogId, decompress, isSync, isDryRun);
         } else if (method === 'DELETE') {
-            return this.delete(res, next, url, configBody, activityLogId, isSync, isDryRun);
+            return this.delete(res, next, url, configBody, activityLogId, decompress, isSync, isDryRun);
         } else {
-            return this.get(res, next, url, configBody, activityLogId, isSync, isDryRun);
+            return this.get(res, next, url, configBody, activityLogId, decompress, isSync, isDryRun);
         }
     }
 
@@ -515,16 +520,12 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         url: string,
         config: ProxyBodyConfiguration,
         activityLogId: number,
+        decompress: boolean,
         isSync?: string,
         isDryRun?: string
     ) {
         try {
             const headers = this.constructHeaders(config);
-            let decompress = false;
-
-            if (config.decompress === true || config.template?.proxy?.decompress === true) {
-                decompress = true;
-            }
 
             const responseStream: AxiosResponse = await backOff(
                 () => {
@@ -558,6 +559,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         url: string,
         config: ProxyBodyConfiguration,
         activityLogId: number,
+        decompress: boolean,
         isSync?: string,
         isDryRun?: string
     ) {
@@ -571,7 +573,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
                         data: config.data ?? {},
                         responseType: 'stream',
                         headers,
-                        decompress: false
+                        decompress
                     });
                 },
                 { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId, config) }
@@ -596,6 +598,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         url: string,
         config: ProxyBodyConfiguration,
         activityLogId: number,
+        decompress: boolean,
         isSync?: string,
         isDryRun?: string
     ) {
@@ -609,7 +612,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
                         data: config.data ?? {},
                         responseType: 'stream',
                         headers,
-                        decompress: false
+                        decompress
                     });
                 },
                 { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId, config) }
@@ -634,6 +637,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         url: string,
         config: ProxyBodyConfiguration,
         activityLogId: number,
+        decompress: boolean,
         isSync?: string,
         isDryRun?: string
     ) {
@@ -647,7 +651,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
                         data: config.data ?? {},
                         responseType: 'stream',
                         headers,
-                        decompress: false
+                        decompress
                     });
                 },
                 { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId, config) }
@@ -672,6 +676,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         url: string,
         config: ProxyBodyConfiguration,
         activityLogId: number,
+        decompress: boolean,
         isSync?: string,
         isDryRun?: string
     ) {
@@ -684,7 +689,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
                         url,
                         responseType: 'stream',
                         headers,
-                        decompress: false
+                        decompress
                     });
                 },
                 { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId, config) }
