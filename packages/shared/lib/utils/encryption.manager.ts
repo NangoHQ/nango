@@ -263,6 +263,7 @@ class EncryptionManager {
 
     public async encryptAllDataRecords(): Promise<void> {
         const chunkSize = 1000;
+        const concurrencyLimit = 5;
 
         const encryptAndSave = async (tableName: string, offset: number) => {
             const dataRecords: DataRecord[] = await db.knex.withSchema(db.schema()).select('*').from<DataRecord>(tableName).limit(chunkSize).offset(offset);
@@ -271,20 +272,22 @@ class EncryptionManager {
                 return false;
             }
 
-            console.log('Encrypting data records', offset, dataRecords.length);
+            const updatePromises = dataRecords.map((dataRecord) =>
+                db.knex.transaction(async (trx) => {
+                    if ((dataRecord.json as Record<string, string>)['encryptedValue']) {
+                        return;
+                    }
 
-            const updatePromises = dataRecords.map(async (dataRecord) => {
-                if ((dataRecord.json as Record<string, string>)['encryptedValue']) {
-                    return;
-                }
+                    const [encryptedValue, iv, authTag] = this.encrypt(JSON.stringify(dataRecord.json));
+                    dataRecord.json = { encryptedValue, iv, authTag };
 
-                const [encryptedValue, iv, authTag] = this.encrypt(JSON.stringify(dataRecord.json));
-                dataRecord.json = { encryptedValue, iv, authTag };
+                    await db.knex.withSchema(db.schema()).from<DataRecord>(tableName).where('id', dataRecord.id).update(dataRecord).transacting(trx);
 
-                return db.knex.withSchema(db.schema()).from<DataRecord>(tableName).where('id', dataRecord.id).update(dataRecord);
-            });
+                    await trx.commit();
+                })
+            );
 
-            await Promise.all(updatePromises);
+            await Promise.all(updatePromises.slice(0, concurrencyLimit));
             return true;
         };
 
