@@ -28,7 +28,7 @@ export interface OAuth2Credentials extends CredentialsCommon {
 
 export enum PaginationType {
     CURSOR = 'cursor',
-    OFFSET = 'offset',
+    OFFSET = 'offset'
 }
 
 interface Pagination {
@@ -42,7 +42,7 @@ export interface CursorPagination extends Pagination {
 }
 
 export interface OffsetPagination extends Pagination {
-    offset: number;
+    offset: string;
 }
 
 export interface ProxyConfiguration {
