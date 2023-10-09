@@ -24,7 +24,6 @@ export enum OAuthBodyFormat {
 export interface OAuthSession {
     providerConfigKey: string;
     provider: string;
-    connection_id?: string;
     connectionId: string;
     callbackUrl: string;
     authMode: AuthModes;

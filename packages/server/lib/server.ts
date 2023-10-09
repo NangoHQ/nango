@@ -70,13 +70,11 @@ app.get('/health', (_, res) => {
     res.status(200).send({ result: 'ok' });
 });
 app.route('/oauth/callback').get(oauthController.oauthCallback.bind(oauthController));
+app.route('/app-auth/connect').get(appAuthController.connect.bind(appAuthController));
 app.route('/oauth/connect/:providerConfigKey').get(apiPublicAuth, oauthController.oauthRequest.bind(oauthController));
 app.route('/api-auth/api-key/:providerConfigKey').post(apiPublicAuth, apiAuthController.apiKey.bind(authController));
 app.route('/api-auth/basic/:providerConfigKey').post(apiPublicAuth, apiAuthController.basic.bind(authController));
 app.route('/unauth/:providerConfigKey').post(apiPublicAuth, unAuthController.create.bind(unAuthController));
-app.route('/app-auth/webhook').post(appAuthController.webhook.bind(oauthController));
-app.route('/app-auth/reconcile').post(apiPublicAuth, appAuthController.reconcile.bind(oauthController));
-app.route('/app-auth/:providerConfigKey').post(apiPublicAuth, appAuthController.create.bind(appAuthController));
 
 // API routes (API key auth).
 app.route('/config').get(apiAuth, configController.listProviderConfigs.bind(configController));

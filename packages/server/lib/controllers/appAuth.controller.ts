@@ -5,13 +5,11 @@ import * as uuid from 'uuid';
 import * as crypto from 'node:crypto';
 import type { LogLevel } from '@nangohq/shared';
 import {
-    getAccount,
-    getEnvironmentId,
     environmentService,
     AuthCredentials,
     AppCredentials,
     SyncClient,
-    createActivityLog,
+    findActivityLogBySession,
     errorManager,
     analytics,
     interpolateStringFromObject,
@@ -19,41 +17,44 @@ import {
     createActivityLogMessage,
     updateSuccess as updateSuccessActivityLog,
     AuthModes as ProviderAuthModes,
-    updateProvider as updateProviderActivityLog,
     configService,
     connectionService,
     createActivityLogMessageAndEnd,
     AuthModes,
-    hmacService,
     ErrorSourceEnum,
     LogActionEnum
 } from '@nangohq/shared';
+import { missesInterpolationParam } from '../utils/utils.js';
+import { WSErrBuilder } from '../utils/web-socket-error.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
+import wsClient from '../clients/web-socket.client.js';
 
 class AppAuthController {
-    async create(req: Request, res: Response, next: NextFunction) {
-        const accountId = getAccount(res);
-        const environmentId = getEnvironmentId(res);
-        const { providerConfigKey } = req.params;
-        const connectionId = req.query['connection_id'] as string | undefined;
+    async connect(req: Request, res: Response, _next: NextFunction) {
+        const installation_id = req.query['installation_id'] as string | undefined;
+        const state = req.query['state'] as string;
 
-        const log = {
-            level: 'info' as LogLevel,
-            success: false,
-            action: LogActionEnum.AUTH,
-            start: Date.now(),
-            end: Date.now(),
-            timestamp: Date.now(),
-            connection_id: connectionId as string,
-            provider_config_key: providerConfigKey as string,
-            environment_id: environmentId
-        };
+        if (!state || !installation_id) {
+            res.sendStatus(400);
+            return;
+        }
 
-        const activityLogId = await createActivityLog(log);
+        const session = await oAuthSessionService.findById(state);
+
+        if (!session) {
+            res.sendStatus(404);
+            return;
+        } else {
+            await oAuthSessionService.delete(session.id);
+        }
+        const accountId = (await environmentService.getAccountIdFromEnvironment(session.environmentId)) as number;
+
+        analytics.track('server:pre_appauth', accountId);
+
+        const { providerConfigKey, connectionId, webSocketClientId: wsClientId, environmentId } = session;
+        const activityLogId = await findActivityLogBySession(session.id);
 
         try {
-            analytics.track('server:pre_appauth', accountId);
-
             if (!providerConfigKey) {
                 errorManager.errRes(res, 'missing_connection');
 
@@ -64,36 +65,6 @@ class AppAuthController {
                 errorManager.errRes(res, 'missing_connection_id');
 
                 return;
-            }
-
-            const hmacEnabled = await hmacService.isEnabled(environmentId);
-            if (hmacEnabled) {
-                const hmac = req.query['hmac'] as string | undefined;
-                if (!hmac) {
-                    await createActivityLogMessageAndEnd({
-                        level: 'error',
-                        activity_log_id: activityLogId as number,
-                        timestamp: Date.now(),
-                        content: 'Missing HMAC in query params'
-                    });
-
-                    errorManager.errRes(res, 'missing_hmac');
-
-                    return;
-                }
-                const verified = await hmacService.verify(hmac as string, environmentId, providerConfigKey as string, connectionId as string);
-                if (!verified) {
-                    await createActivityLogMessageAndEnd({
-                        level: 'error',
-                        activity_log_id: activityLogId as number,
-                        timestamp: Date.now(),
-                        content: 'Invalid HMAC'
-                    });
-
-                    errorManager.errRes(res, 'invalid_hmac');
-
-                    return;
-                }
             }
 
             const config = await configService.getProviderConfig(providerConfigKey as string, environmentId);
@@ -126,110 +97,133 @@ class AppAuthController {
                 return;
             }
 
-            await updateProviderActivityLog(activityLogId as number, String(config?.provider));
+            const connectionConfig = {
+                installation_id: installation_id,
+                app_id: config?.oauth_client_id
+            };
 
-            await createActivityLogMessage({
-                level: 'info',
-                activity_log_id: activityLogId as number,
-                content: `App connection creation was successful`,
-                timestamp: Date.now()
-            });
+            if (missesInterpolationParam(template.token_url, connectionConfig)) {
+                await createActivityLogMessage({
+                    level: 'error',
+                    activity_log_id: activityLogId as number,
+                    content: WSErrBuilder.InvalidConnectionConfig(template.token_url, JSON.stringify(connectionConfig)).message,
+                    timestamp: Date.now(),
+                    auth_mode: template.auth_mode,
+                    url: req.originalUrl,
+                    params: {
+                        ...connectionConfig
+                    }
+                });
 
-            await updateSuccessActivityLog(activityLogId as number, true);
+                return wsClient.notifyErr(
+                    res,
+                    wsClientId,
+                    providerConfigKey,
+                    connectionId,
+                    WSErrBuilder.InvalidConnectionConfig(template.token_url, JSON.stringify(connectionConfig))
+                );
+            }
 
-            await connectionService.upsertUnauthConnection(
-                connectionId as string,
-                providerConfigKey as string,
-                config?.provider as string,
-                environmentId,
-                accountId
-            );
+            const tokenUrl = interpolateStringFromObject(template.token_url, { connectionConfig });
 
-            const appUrl = interpolateStringFromObject(template.authorization_url, {
-                connectionConfig: {
-                    appPublicLink: config.app_link
+            const privateKeyBase64 = config.oauth_client_secret;
+
+            let privateKey = Buffer.from(privateKeyBase64, 'base64').toString('utf8');
+            privateKey = privateKey.replace('-----BEGIN RSA PRIVATE KEY-----', '-----BEGIN RSA PRIVATE KEY-----\n');
+            privateKey = privateKey.replace('-----END RSA PRIVATE KEY-----', '\n-----END RSA PRIVATE KEY-----');
+            privateKey = privateKey.replace(/(.{64})/g, '$1\n');
+
+            const now = Math.floor(Date.now() / 1000);
+            const expiration = now + 10 * 60;
+
+            const payload = {
+                iat: now,
+                exp: expiration,
+                iss: config.oauth_client_id
+            };
+
+            const token = jwt.sign(payload, privateKey, { algorithm: 'RS256' });
+
+            try {
+                const tokenResponse = await axios.post(
+                    tokenUrl,
+                    {},
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            Accept: 'application/vnd.github.v3+json'
+                        }
+                    }
+                );
+
+                const rawCredentials = tokenResponse.data;
+
+                const credentials: AppCredentials = {
+                    type: AuthModes.App,
+                    access_token: (rawCredentials as any)?.token,
+                    expires_at: (rawCredentials as any)?.expires_at,
+                    raw: rawCredentials as unknown as Record<string, unknown>
+                };
+
+                await updateSuccessActivityLog(activityLogId as number, true);
+
+                const [updatedConnection] = await connectionService.upsertConnection(
+                    connectionId,
+                    providerConfigKey,
+                    session.provider,
+                    credentials as unknown as AuthCredentials,
+                    connectionConfig,
+                    environmentId,
+                    accountId
+                );
+
+                if (updatedConnection) {
+                    const syncClient = await SyncClient.getInstance();
+                    await syncClient?.initiate(updatedConnection.id);
                 }
-            });
 
-            res.status(200).send({
-                redirectUrl: appUrl,
-                providerConfigKey: providerConfigKey as string,
-                connectionId: connectionId as string
-            });
+                await createActivityLogMessageAndEnd({
+                    level: 'info',
+                    activity_log_id: activityLogId as number,
+                    content: 'App connection was successful and credentials were saved',
+                    timestamp: Date.now()
+                });
+
+                return wsClient.notifySuccess(res, wsClientId, providerConfigKey, connectionId);
+            } catch (e) {
+                const errorMessage = JSON.stringify(e, ['message', 'name'], 2);
+
+                await createActivityLogMessage({
+                    level: 'error',
+                    activity_log_id: activityLogId as number,
+                    content: `Error during app token retrieval call: ${errorMessage}`,
+                    timestamp: Date.now()
+                });
+
+                return wsClient.notifyErr(
+                    res,
+                    wsClientId,
+                    providerConfigKey,
+                    connectionId,
+                    WSErrBuilder.InvalidConnectionConfig(template.token_url, JSON.stringify(connectionConfig))
+                );
+            }
         } catch (err) {
             const prettyError = JSON.stringify(err, ['message', 'name'], 2);
+
+            const content = WSErrBuilder.UnkownError().message + '\n' + prettyError;
 
             await createActivityLogMessage({
                 level: 'error',
                 activity_log_id: activityLogId as number,
-                content: `Error during Unauth create: ${prettyError}`,
-                timestamp: Date.now()
+                content,
+                timestamp: Date.now(),
+                auth_mode: AuthModes.App,
+                url: req.originalUrl
             });
 
-            await errorManager.report(err, {
-                source: ErrorSourceEnum.PLATFORM,
-                operation: LogActionEnum.AUTH,
-                environmentId,
-                metadata: {
-                    providerConfigKey,
-                    connectionId
-                }
-            });
-            next(err);
+            return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError(prettyError));
         }
-    }
-    public async reconcile(req: Request, res: Response, _: NextFunction) {
-        if (!req.body) {
-            res.sendStatus(400);
-        }
-
-        const { installationId, connectionId } = req.body;
-
-        if (!installationId || !connectionId) {
-            res.sendStatus(400);
-        }
-
-        const session = await oAuthSessionService.findByConnectionId(installationId);
-
-        if (!session) {
-            res.sendStatus(404);
-            return;
-        }
-
-        const { credentials: rawCredentials, app_id, access_tokens_url } = session.connectionConfig;
-
-        const credentials: AppCredentials = {
-            type: AuthModes.App,
-            access_token: (rawCredentials as any)?.token,
-            expires_at: (rawCredentials as any)?.expires_at,
-            raw: rawCredentials as unknown as Record<string, unknown>
-        };
-
-        const connectionConfig = {
-            app_id: app_id as string,
-            access_tokens_url: access_tokens_url as string
-        };
-
-        const accountId = (await environmentService.getAccountIdFromEnvironment(session.environmentId)) as number;
-
-        const [updatedConnection] = await connectionService.upsertConnection(
-            connectionId,
-            session.providerConfigKey,
-            session.provider,
-            credentials as unknown as AuthCredentials,
-            connectionConfig,
-            session.environmentId,
-            accountId
-        );
-
-        if (updatedConnection) {
-            const syncClient = await SyncClient.getInstance();
-            await syncClient?.initiate(updatedConnection.id);
-        }
-
-        //await oAuthSessionService.delete(session.id as string);
-
-        res.sendStatus(200);
     }
 
     /**
@@ -238,15 +232,13 @@ class AppAuthController {
      * the information to be able to obtain an access token to make requests
      */
     public async webhook(req: Request, res: Response, _: NextFunction) {
-        console.log('webhook');
-        console.log(req.body);
         if (!req.body) {
             return res.sendStatus(400);
         }
 
         if (req.body.action === 'created') {
             const { installation } = req.body;
-            const { id, account } = installation;
+            const { id: installationId, account } = installation;
             const { access_tokens_url, app_id } = installation;
             const { sender } = req.body;
             const { id: senderId, login: senderLogin } = sender;
@@ -285,7 +277,7 @@ class AppAuthController {
                 url: req.originalUrl,
                 params: {
                     installation: JSON.stringify(installation),
-                    id,
+                    installationId,
                     account: JSON.stringify(account),
                     senderId,
                     senderLogin
@@ -335,8 +327,8 @@ class AppAuthController {
                         access_tokens_url,
                         app_id
                     },
-                    connectionId: id,
-                    webSocketClientId: ''
+                    connectionId: '',
+                    webSocketClientId: installationId
                 });
             } catch (e) {
                 console.log(e);

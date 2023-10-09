@@ -380,13 +380,13 @@ export default function IntegrationCreate() {
                                         <div>
                                             <div className="flex">
                                                 <label htmlFor="client_id" className="text-text-light-gray block text-sm font-semibold">
-                                                    Webhook URL
+                                                    Setup URL
                                                 </label>
                                                 <Tooltip
                                                     text={
                                                         <>
                                                             <div className="flex text-black text-sm">
-                                                                <p>{`Register this webhook URL on the app settings page.`}</p>
+                                                                <p>{`Register this setup URL on the app settings page in the "Post Installation section". Check "Redirect on update" as well.`}</p>
                                                             </div>
                                                         </>
                                                     }
@@ -395,7 +395,7 @@ export default function IntegrationCreate() {
                                                 </Tooltip>
                                             </div>
                                             <Prism language="bash" colorScheme="dark">
-                                                {callbackUrl.replace('oauth/callback', 'app-auth/webhook')}
+                                                {callbackUrl.replace('oauth/callback', 'app-auth/connect')}
                                             </Prism>
                                         </div>
                                     </div>

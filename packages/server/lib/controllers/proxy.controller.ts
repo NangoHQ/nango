@@ -188,6 +188,12 @@ class ProxyController {
                 case AuthModes.ApiKey:
                     token = connection?.credentials;
                     break;
+                case AuthModes.App:
+                    {
+                        const credentials = connection?.credentials;
+                        token = credentials?.access_token;
+                    }
+                    break;
                 default:
                     throw new Error(`Unrecognized Auth type '${connection?.credentials?.type}' in stored credentials.`);
             }

@@ -71,54 +71,6 @@ export default class Nango {
         return res.json();
     }
 
-    public async appCreate(providerConfigKey: string, connectionId: string, connectionConfig: ConnectionConfig): Promise<void> {
-        const url = this.hostBaseUrl + `/app-auth/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig)}`;
-
-        localStorage.setItem('connectionId', connectionId);
-
-        const res = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (!res.ok) {
-            const errorResponse = await res.json();
-            throw { ...errorResponse, message: errorResponse.error };
-        }
-
-        const response = await res.json();
-
-        window.location.href = response.redirectUrl;
-    }
-
-    public async appGithubReconcile(installationId: string, redirectUrl = '/connections'): Promise<void> {
-        const storedConnectionId = localStorage.getItem('connectionId');
-
-        const url = this.hostBaseUrl + `/app-auth/reconcile${this.toQueryString('')}`;
-
-        const res = await fetch(url, {
-            method: 'POST',
-            body: JSON.stringify({
-                connectionId: storedConnectionId,
-                installationId
-            }),
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (!res.ok) {
-            const errorResponse = await res.json();
-            throw { ...errorResponse, message: errorResponse.error };
-        }
-
-        localStorage.removeItem('connectionId');
-
-        window.location.href = redirectUrl;
-    }
-
     public auth(
         providerConfigKey: string,
         connectionId: string,

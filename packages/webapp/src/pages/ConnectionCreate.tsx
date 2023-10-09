@@ -141,16 +141,7 @@ export default function IntegrationCreate() {
             };
         }
 
-        let nangoCall = 'auth';
-
-        if (authMode === AuthModes.None) {
-            nangoCall = 'create';
-        } else if (authMode === AuthModes.App) {
-            nangoCall = 'appCreate';
-        }
-
-        // @ts-ignore
-        nango[nangoCall](target.integration_unique_key.value, target.connection_id.value, {
+        nango[authMode === AuthModes.None ? 'create' : 'auth'](target.integration_unique_key.value, target.connection_id.value, {
                 user_scope: selectedScopes || [],
                 params: connectionConfigParams || {},
                 authorization_params: authorizationParams || {},
@@ -161,11 +152,7 @@ export default function IntegrationCreate() {
             .then(() => {
                 toast.success('Connection created!', { position: toast.POSITION.BOTTOM_CENTER });
                 analyticsTrack('web:connection_created', { provider: integration?.provider || 'unknown' });
-                console.log(authMode);
-                if (authMode !== AuthModes.App) {
-                    console.log(navigate);
-                    //navigate('/connections', { replace: true });
-                }
+                navigate('/connections', { replace: true });
             })
             .catch((err: { message: string; type: string }) => {
                 setServerErrorMessage(`${err.type} error: ${err.message}`);
