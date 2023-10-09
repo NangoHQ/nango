@@ -1,6 +1,6 @@
 integrations:
     github:
-        github-issues:
+        github-issues: # scopes: repo or public_repo
             runs: every half hour
             returns:
                 - GithubIssue
