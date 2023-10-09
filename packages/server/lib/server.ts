@@ -8,6 +8,7 @@ import oauthController from './controllers/oauth.controller.js';
 import configController from './controllers/config.controller.js';
 import connectionController from './controllers/connection.controller.js';
 import authController from './controllers/auth.controller.js';
+import unAuthController from './controllers/unauth.controller.js';
 import authMiddleware from './controllers/access.middleware.js';
 import userController from './controllers/user.controller.js';
 import proxyController from './controllers/proxy.controller.js';
@@ -71,6 +72,7 @@ app.route('/oauth/callback').get(oauthController.oauthCallback.bind(oauthControl
 app.route('/oauth/connect/:providerConfigKey').get(apiPublicAuth, oauthController.oauthRequest.bind(oauthController));
 app.route('/api-auth/api-key/:providerConfigKey').post(apiPublicAuth, apiAuthController.apiKey.bind(authController));
 app.route('/api-auth/basic/:providerConfigKey').post(apiPublicAuth, apiAuthController.basic.bind(authController));
+app.route('/unauth/:providerConfigKey').post(apiPublicAuth, unAuthController.create.bind(unAuthController));
 
 // API routes (API key auth).
 app.route('/config').get(apiAuth, configController.listProviderConfigs.bind(configController));

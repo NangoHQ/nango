@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Nango, all rights reserved.
+ * Copyright (c) 2023 Nango, all rights reserved.
  */
 
 const prodHost = 'https://api.nango.dev';
@@ -47,6 +47,28 @@ export default class Nango {
         } catch (err) {
             throw new Error(`Invalid URL provided for the Nango host: ${this.hostBaseUrl}`);
         }
+    }
+
+    public async create(
+        providerConfigKey: string,
+        connectionId: string,
+        connectionConfig: ConnectionConfig
+    ): Promise<{ providerConfigKey: string; connectionId: string } | AuthError> {
+        const url = this.hostBaseUrl + `/unauth/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig)}`;
+
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!res.ok) {
+            const errorResponse = await res.json();
+            throw { ...errorResponse, message: errorResponse.error };
+        }
+
+        return res.json();
     }
 
     public auth(

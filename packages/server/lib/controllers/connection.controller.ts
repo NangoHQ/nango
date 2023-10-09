@@ -149,7 +149,7 @@ class ConnectionController {
                     provider: config.provider,
                     providerConfigKey: connection.provider_config_key,
                     creationDate: connection.created_at,
-                    oauthType: connection.credentials.type,
+                    oauthType: connection.credentials.type || 'None',
                     connectionConfig: connection.connection_config,
                     connectionMetadata: connection.metadata,
                     accessToken: connection.credentials.type === ProviderAuthModes.OAuth2 ? connection.credentials.access_token : null,

@@ -141,8 +141,7 @@ export default function IntegrationCreate() {
             };
         }
 
-        nango
-            .auth(target.integration_unique_key.value, target.connection_id.value, {
+        nango[authMode === AuthModes.None ? 'create' : 'auth'](target.integration_unique_key.value, target.connection_id.value, {
                 user_scope: selectedScopes || [],
                 params: connectionConfigParams || {},
                 authorization_params: authorizationParams || {},
@@ -288,7 +287,7 @@ credentials: {
 
 const nango = new Nango(${argsStr});
 
-nango.auth('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr}).then((result: { providerConfigKey: string; connectionId: string }) => {
+nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr}).then((result: { providerConfigKey: string; connectionId: string }) => {
     // do something
 }).catch((err: { message: string; type: string }) => {
     // handle error
