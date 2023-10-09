@@ -362,7 +362,7 @@ github:
         retry:
             at: 'x-ratelimit-reset'
     docs: https://docs.github.com/en/rest
-github_app:
+github-app:
     alias: github
     auth_mode: APP
     authorization_url: ${connectionConfig.appPublicLink}/installations/new
