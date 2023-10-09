@@ -122,7 +122,7 @@ const result = await nango.getRecords<GithubIssue>({
 
 ```bash
 curl --request GET \
-  --url https://api.nango.dev/sync/records?model=GithubIssue \
+  --url 'https://api.nango.dev/sync/records?model=GithubIssue' \
   --header 'Authorization: Bearer <your-dev-secret-key>' \
   --header 'Connection-Id: test-connection-id' \
   --header 'Provider-Config-Key: demo-github-integration'
