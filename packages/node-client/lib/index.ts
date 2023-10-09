@@ -561,6 +561,35 @@ export class Nango {
         });
     }
 
+    public async *paginate(config: ProxyConfiguration, nangoProxyFunction: (config: ProxyConfiguration) => Promise<AxiosResponse<any>>): AsyncGenerator<any, undefined, void> {
+        if (!config.pagination) {
+            throw Error(`Pagination config is not specififed for '${config.providerConfigKey}' provider nor it's passed as an override to 'paginate' method`);
+        }
+
+        let page = 1;
+        const defaultMaxValuePerPage:number = 100;
+        const limit: number = config.pagination?.limit ?? defaultMaxValuePerPage;
+        const endpoint:string = config.endpoint;
+
+        while (true) {
+            const resp: AxiosResponse<any> = await nangoProxyFunction({
+                endpoint: endpoint + (endpoint.includes('?') ? '&' : '?') + `limit=${limit}&page=${page}`
+            });
+
+            if (!resp.data.length) {
+                return;
+            }
+
+            yield resp.data;
+
+            if (resp.data.length < limit) {
+                return;
+            }
+
+            page += 1;
+        }
+    }
+
     private async listConnectionDetails(connectionId?: string): Promise<AxiosResponse<{ connections: ConnectionList[] }>> {
         let url = `${this.serverUrl}/connection?`;
         if (connectionId) {

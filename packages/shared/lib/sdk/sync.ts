@@ -243,6 +243,10 @@ export class NangoAction {
         });
     }
 
+    public async paginate(config: ProxyConfiguration, nangoProxyFunction: (config: ProxyConfiguration) => Promise<AxiosResponse<any>>): Promise<AsyncGenerator<any, undefined, void>> {
+        return this.nango.paginate(config, nangoProxyFunction);
+    }
+
     public async getConnection(): Promise<Connection> {
         return this.nango.getConnection(this.providerConfigKey as string, this.connectionId as string);
     }
