@@ -231,45 +231,18 @@ export class NangoAction {
         }
     }
 
-    public async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T> | AsyncGenerator<T, undefined, void>> {
-        if (config.paginate) {
-            if (!this.providerConfigKey) {
-                throw Error(`Please, specify provider config key`);
-            }
-
-            const providerConfigKey: string = this.providerConfigKey;
-            const template: Template = configService.getTemplate(providerConfigKey);
-            const templatePaginationConfig: OffsetPagination | CursorPagination | undefined = template.proxy?.paginate;
-
-            if(!templatePaginationConfig) {
-                throw Error(`Please, add pagination config to 'providers.yaml' file`);
-            }
-
-            let paginationConfig: OffsetPagination | CursorPagination = templatePaginationConfig;
-            if (typeof config.paginate === 'boolean') {
-                console.debug(`Paginating using the default config from providers.yaml`);
-            } else if (typeof config.paginate === 'object') {
-                const paginationConfigOverride: Record<string, any> = config.paginate as Record<string, any>;
-
-                if (paginationConfigOverride) {
-                    paginationConfig = { ...paginationConfig, ...paginationConfigOverride };
-                }
-            }
-
-            return this.paginate(config, paginationConfig, this.nango.proxy);
-        }
-
+    public async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>>  {
         return this.nango.proxy(config);
     }
 
-    public async get<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T> | AsyncGenerator<T, undefined, void>> {
+    public async get<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
         return this.proxy({
             ...config,
             method: 'GET'
         });
     }
 
-    public async post < T = any > (config: ProxyConfiguration): Promise<AxiosResponse<T> | AsyncGenerator<T, undefined, void>> {
+    public async post<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T> | AsyncGenerator<T, undefined, void>> {
         return this.proxy({
             ...config,
             method: 'POST'
@@ -347,13 +320,31 @@ export class NangoAction {
         return this.attributes as A;
     }
 
-    private async *paginate<T = any>(
+    public async *paginate<T = any>(
         config: ProxyConfiguration,
-        paginationConfig: Pagination,
         nangoProxyFunction: (config: ProxyConfiguration) => Promise<AxiosResponse<T>>
     ): AsyncGenerator<T, undefined, void> {
         if (!this.providerConfigKey) {
-            throw Error(`Failed to find provider config key`);
+            throw Error(`Please, specify provider config key`);
+        }
+
+        const providerConfigKey: string = this.providerConfigKey;
+        const template: Template = configService.getTemplate(providerConfigKey);
+        const templatePaginationConfig: OffsetPagination | CursorPagination | undefined = template.proxy?.paginate;
+
+        if (!templatePaginationConfig) {
+            throw Error(`Please, add pagination config to 'providers.yaml' file`);
+        }
+
+        let paginationConfig: OffsetPagination | CursorPagination = templatePaginationConfig;
+        if (typeof config.paginate === 'boolean') {
+            console.debug(`Paginating using the default config from providers.yaml`);
+        } else if (typeof config.paginate === 'object') {
+            const paginationConfigOverride: Record<string, any> = config.paginate as Record<string, any>;
+
+            if (paginationConfigOverride) {
+                paginationConfig = { ...paginationConfig, ...paginationConfigOverride };
+            }
         }
 
         switch (paginationConfig.type) {
@@ -365,7 +356,7 @@ export class NangoAction {
                 const endpoint: string = config.endpoint;
 
                 while (true) {
-                    const resp: AxiosResponse<T> = await nangoProxyFunction.call(this.nango, {
+                    const resp: AxiosResponse<T> = await nangoProxyFunction.call(this, {
                         ...config,
                         ...{
                             endpoint: endpoint + (endpoint.includes('?') ? '&' : '?') + `limit=${limit}&page=${page}`
