@@ -29,7 +29,7 @@ export default function ConnectionAppSetup() {
                 const account = (await res.json())['account'];
                 setPublicKey(account.public_key);
                 setHostUrl(account.host || baseUrl());
-                setWebsocketsPath(account.websockets_path); 
+                setWebsocketsPath(account.websockets_path);
             }
         };
 
