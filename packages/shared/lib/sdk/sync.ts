@@ -78,9 +78,9 @@ export interface CursorPagination extends Pagination {
     cursorParameterName: string;
 }
 
-export interface PageIncrement extends Pagination { }
+export interface PageIncrement extends Pagination {}
 
-export interface OffsetIncrement extends Pagination { }
+export interface OffsetIncrement extends Pagination {}
 
 interface ProxyConfiguration {
     endpoint: string;
@@ -351,19 +351,30 @@ export class NangoAction {
             config.method = 'GET';
         }
 
-        const updatedConfigParams: Record<string, string> = (config.params as Record<string, string>) ?? {};
+        const configMethod: string = config.method.toLocaleLowerCase();
+        let passPaginationParamsInBody: boolean = false;
+        if (['post', 'put', 'patch'].includes(configMethod)) {
+            passPaginationParamsInBody = true;
+        }
+
+        const updatedBodyOrParams: Record<string, string> = (passPaginationParamsInBody ? config.data : config.params) as Record<string, string> ?? {};
         const defaultMaxValuePerPage: string = '100';
-        const limit: string = (paginationConfig['limit'] as unknown as string) || updatedConfigParams['limit'] || defaultMaxValuePerPage;
-        updatedConfigParams['limit'] = limit;
+        const limit: string = (paginationConfig['limit'] as unknown as string) || updatedBodyOrParams['limit'] || defaultMaxValuePerPage;
+        updatedBodyOrParams['limit'] = limit;
 
         switch (paginationConfig.type) {
             case PaginationType.PAGE_INCREMENT: {
                 let page = 1;
 
                 while (true) {
-                    updatedConfigParams['page'] = `${page}`;
+                    updatedBodyOrParams['page'] = `${page}`;
 
-                    config.params = updatedConfigParams;
+                    if (passPaginationParamsInBody) {
+                        config.data = updatedBodyOrParams;
+                    } else {
+                        config.params = updatedBodyOrParams;
+                    }
+
                     const resp: AxiosResponse<T> = await this.proxy<T>(config);
 
                     const responseData: T[] = paginationConfig.responsePath ? this.getNestedField(resp.data, paginationConfig.responsePath) : resp.data;
@@ -386,14 +397,20 @@ export class NangoAction {
                 let nextCursor: string | undefined;
                 while (true) {
                     if (nextCursor) {
-                        updatedConfigParams[cursorBasedPagination.cursorParameterName] = `${nextCursor}`;
+                        updatedBodyOrParams[cursorBasedPagination.cursorParameterName] = `${nextCursor}`;
                     }
 
-                    config.params = updatedConfigParams;
+                    if (passPaginationParamsInBody) {
+                        config.data = updatedBodyOrParams;
+                    } else {
+                        config.params = updatedBodyOrParams;
+                    }
 
                     const resp: AxiosResponse<T> = await this.proxy<T>(config);
 
-                    const responseData: T[] = cursorBasedPagination.responsePath ? this.getNestedField(resp.data, cursorBasedPagination.responsePath) : resp.data;
+                    const responseData: T[] = cursorBasedPagination.responsePath
+                        ? this.getNestedField(resp.data, cursorBasedPagination.responsePath)
+                        : resp.data;
                     if (!responseData.length) {
                         return;
                     }
