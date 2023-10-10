@@ -473,6 +473,7 @@ hubspot:
             nextCursorParameterPath: 'paging.next.after'
             cursorParameterName: 'after'
             responsePath: 'results'
+            limit: 100
     docs: https://developers.hubspot.com/docs/api/overview
 instagram:
     auth_mode: OAUTH2
@@ -852,6 +853,7 @@ slack:
             type: CursorBased
             nextCursorParameterPath: 'response_metadata.next_cursor'
             cursorParameterName: 'cursor'
+            limit: 100
     docs: https://api.slack.com/apis
 smugmug:
     auth_mode: OAUTH1
