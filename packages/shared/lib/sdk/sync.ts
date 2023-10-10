@@ -357,7 +357,7 @@ export class NangoAction {
             passPaginationParamsInBody = true;
         }
 
-        const updatedBodyOrParams: Record<string, string> = (passPaginationParamsInBody ? config.data : config.params) as Record<string, string> ?? {};
+        const updatedBodyOrParams: Record<string, string> = ((passPaginationParamsInBody ? config.data : config.params) as Record<string, string>) ?? {};
         const defaultMaxValuePerPage: string = '100';
         const limit: string = (paginationConfig['limit'] as unknown as string) || updatedBodyOrParams['limit'] || defaultMaxValuePerPage;
         updatedBodyOrParams['limit'] = limit;
@@ -369,11 +369,7 @@ export class NangoAction {
                 while (true) {
                     updatedBodyOrParams['page'] = `${page}`;
 
-                    if (passPaginationParamsInBody) {
-                        config.data = updatedBodyOrParams;
-                    } else {
-                        config.params = updatedBodyOrParams;
-                    }
+                    this.updateConfigBodyOrParams(passPaginationParamsInBody, config, updatedBodyOrParams);
 
                     const resp: AxiosResponse<T> = await this.proxy<T>(config);
 
@@ -400,11 +396,7 @@ export class NangoAction {
                         updatedBodyOrParams[cursorBasedPagination.cursorParameterName] = `${nextCursor}`;
                     }
 
-                    if (passPaginationParamsInBody) {
-                        config.data = updatedBodyOrParams;
-                    } else {
-                        config.params = updatedBodyOrParams;
-                    }
+                    this.updateConfigBodyOrParams(passPaginationParamsInBody, config, updatedBodyOrParams);
 
                     const resp: AxiosResponse<T> = await this.proxy<T>(config);
 
@@ -426,6 +418,14 @@ export class NangoAction {
             }
             default:
                 throw Error(`${paginationConfig.type} pagination is not supported`);
+        }
+    }
+
+    private updateConfigBodyOrParams(passPaginationParamsInBody: boolean, config: ProxyConfiguration, updatedBodyOrParams: Record<string, string>) {
+        if (passPaginationParamsInBody) {
+            config.data = updatedBodyOrParams;
+        } else {
+            config.params = updatedBodyOrParams;
         }
     }
 
