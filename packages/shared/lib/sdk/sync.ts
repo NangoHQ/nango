@@ -7,7 +7,6 @@ import { updateSyncJobResult } from '../services/sync/job.service.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { LogActionEnum } from '../models/Activity.js';
 
-
 import { Nango } from '@nangohq/node';
 import configService from '../services/config.service.js';
 import type { Template } from '../models/index.js';
@@ -326,8 +325,7 @@ export class NangoAction {
     }
 
     public async *paginate<T = any>(
-        config: ProxyConfiguration,
-        nangoProxyFunction: (config: ProxyConfiguration) => Promise<AxiosResponse<T>>
+        config: ProxyConfiguration
     ): AsyncGenerator<T, undefined, void> {
         if (!this.providerConfigKey) {
             throw Error(`Please, specify provider config key`);
@@ -350,19 +348,23 @@ export class NangoAction {
             }
         }
 
-        const updatedConfigParams: Record<string, string> = config.params as Record<string, string> ?? {};
+        if (!config.method) { // default to get if user doesn't specify a different method themselves
+            config.method = 'GET';
+        }
+
+        const updatedConfigParams: Record<string, string> = (config.params as Record<string, string>) ?? {};
         const defaultMaxValuePerPage: string = '100';
-        const limit: string = updatedConfigParams.limit || paginationConfig.limit as unknown as string || defaultMaxValuePerPage;
-        updatedConfigParams.limit = limit;
+        const limit: string = updatedConfigParams['limit'] || (paginationConfig['limit'] as unknown as string) || defaultMaxValuePerPage;
+        updatedConfigParams['limit'] = limit;
         switch (paginationConfig.type) {
             case PaginationType.PAGE_INCREMENT: {
                 let page = 1;
 
                 while (true) {
-                    updatedConfigParams.page = `${page}`;
-                    updatedConfigParams.limit = `${limit}`;
+                    updatedConfigParams['page'] = `${page}`;
 
-                    const resp: AxiosResponse<T> = await nangoProxyFunction.call(this, config);
+                    config.params = updatedConfigParams;
+                    const resp: AxiosResponse<T> = await this.proxy(config);
 
                     if (!(resp.data as any).length) {
                         return;
@@ -388,7 +390,7 @@ export class NangoAction {
 
                     config.params = updatedConfigParams;
 
-                    const resp: AxiosResponse<T> = await nangoProxyFunction.call(this, config);
+                    const resp: AxiosResponse<T> = await this.proxy(config);
 
                     const responseData = cursorBasedPagination.responsePath ? this.getNestedField(resp.data, cursorBasedPagination.responsePath) : resp.data;
                     if (!responseData.length) {
@@ -409,7 +411,8 @@ export class NangoAction {
         }
     }
 
-    private getNestedField(object: any, path: string, defaultValue?: any): any { // TODO: extract to util or figure out how to use lodash
+    private getNestedField(object: any, path: string, defaultValue?: any): any {
+        // TODO: extract to util or figure out how to use lodash
         const keys = path.split('.');
         let result = object;
 
