@@ -674,7 +674,8 @@ class ConnectionService {
 
             return { success: true, error: null, response: credentials };
         } catch (e) {
-            const error = new NangoError('refresh_token_external_error', e as Error);
+            const errorMessage = JSON.stringify(e, ['message', 'name'], 2);
+            const error = new NangoError('refresh_token_external_error', errorMessage);
             return { success: false, error, response: null };
         }
     }
