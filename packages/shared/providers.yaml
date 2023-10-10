@@ -362,7 +362,7 @@ github:
         retry:
             at: 'x-ratelimit-reset'
         paginate:
-            type: offset
+            type: PageIncrement
             limit: 100
     docs: https://docs.github.com/en/rest
 gitlab:
@@ -468,6 +468,11 @@ hubspot:
     token_url: https://api.hubapi.com/oauth/v1/token
     proxy:
         base_url: https://api.hubapi.com
+        paginate:
+            type: CursorBased
+            nextCursorParameterPath: 'paging.next.after'
+            cursorParameterName: 'after'
+            responsePath: 'results'
     docs: https://developers.hubspot.com/docs/api/overview
 instagram:
     auth_mode: OAUTH2
@@ -843,6 +848,10 @@ slack:
         - incoming_webhook.url
     proxy:
         base_url: https://slack.com/api
+        paginate:
+            type: CursorBased
+            nextCursorParameterPath: 'response_metadata.next_cursor'
+            cursorParameterName: 'cursor'
     docs: https://api.slack.com/apis
 smugmug:
     auth_mode: OAUTH1

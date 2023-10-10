@@ -7,6 +7,7 @@ import { updateSyncJobResult } from '../services/sync/job.service.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { LogActionEnum } from '../models/Activity.js';
 
+
 import { Nango } from '@nangohq/node';
 import configService from '../services/config.service.js';
 import type { Template } from '../models/index.js';
@@ -62,13 +63,15 @@ interface DataResponse {
 }
 
 export enum PaginationType {
-    CURSOR = 'cursor',
-    OFFSET = 'offset'
+    CURSOR_BASED = 'CursorBased',
+    OFFSET_INCREMENT = 'OffsetIncrement',
+    PAGE_INCREMENT = 'PageIncrement'
 }
 
 interface Pagination {
     type: PaginationType;
     limit?: number;
+    responsePath?: string;
 }
 
 export interface CursorPagination extends Pagination {
@@ -76,7 +79,9 @@ export interface CursorPagination extends Pagination {
     cursorParameterName: string;
 }
 
-export interface OffsetPagination extends Pagination {}
+export interface PageIncrement extends Pagination { }
+
+export interface OffsetIncrement extends Pagination { }
 
 interface ProxyConfiguration {
     endpoint: string;
@@ -231,7 +236,7 @@ export class NangoAction {
         }
     }
 
-    public async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>>  {
+    public async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
         return this.nango.proxy(config);
     }
 
@@ -330,16 +335,14 @@ export class NangoAction {
 
         const providerConfigKey: string = this.providerConfigKey;
         const template: Template = configService.getTemplate(providerConfigKey);
-        const templatePaginationConfig: OffsetPagination | CursorPagination | undefined = template.proxy?.paginate;
+        const templatePaginationConfig: Pagination | undefined = template.proxy?.paginate;
 
         if (!templatePaginationConfig) {
             throw Error(`Please, add pagination config to 'providers.yaml' file`);
         }
 
-        let paginationConfig: OffsetPagination | CursorPagination = templatePaginationConfig;
-        if (typeof config.paginate === 'boolean') {
-            console.debug(`Paginating using the default config from providers.yaml`);
-        } else if (typeof config.paginate === 'object') {
+        let paginationConfig: Pagination = templatePaginationConfig;
+        if (config.paginate) {
             const paginationConfigOverride: Record<string, any> = config.paginate as Record<string, any>;
 
             if (paginationConfigOverride) {
@@ -347,21 +350,19 @@ export class NangoAction {
             }
         }
 
+        const updatedConfigParams: Record<string, string> = config.params as Record<string, string> ?? {};
+        const defaultMaxValuePerPage: string = '100';
+        const limit: string = updatedConfigParams.limit || paginationConfig.limit as unknown as string || defaultMaxValuePerPage;
+        updatedConfigParams.limit = limit;
         switch (paginationConfig.type) {
-            case PaginationType.OFFSET:
-                const offsetPaginationConfig: OffsetPagination = paginationConfig as OffsetPagination;
+            case PaginationType.PAGE_INCREMENT: {
                 let page = 1;
-                const defaultMaxValuePerPage: number = 100;
-                const limit: number = offsetPaginationConfig.limit ?? defaultMaxValuePerPage;
-                const endpoint: string = config.endpoint;
 
                 while (true) {
-                    const resp: AxiosResponse<T> = await nangoProxyFunction.call(this, {
-                        ...config,
-                        ...{
-                            endpoint: endpoint + (endpoint.includes('?') ? '&' : '?') + `limit=${limit}&page=${page}`
-                        }
-                    });
+                    updatedConfigParams.page = `${page}`;
+                    updatedConfigParams.limit = `${limit}`;
+
+                    const resp: AxiosResponse<T> = await nangoProxyFunction.call(this, config);
 
                     if (!(resp.data as any).length) {
                         return;
@@ -375,9 +376,52 @@ export class NangoAction {
 
                     page += 1;
                 }
+            }
+            case PaginationType.CURSOR_BASED: {
+                const cursorBasedPagination: CursorPagination = paginationConfig as CursorPagination;
+
+                let nextCursor: string | undefined;
+                while (true) {
+                    if (nextCursor) {
+                        updatedConfigParams[cursorBasedPagination.cursorParameterName] = `${nextCursor}`;
+                    }
+
+                    config.params = updatedConfigParams;
+
+                    const resp: AxiosResponse<T> = await nangoProxyFunction.call(this, config);
+
+                    const responseData = cursorBasedPagination.responsePath ? this.getNestedField(resp.data, cursorBasedPagination.responsePath) : resp.data;
+                    if (!responseData.length) {
+                        return;
+                    }
+
+                    yield responseData;
+
+                    nextCursor = this.getNestedField(resp.data, cursorBasedPagination.nextCursorParameterPath);
+
+                    if (!nextCursor || nextCursor.trim().length === 0) {
+                        return;
+                    }
+                }
+            }
             default:
                 throw Error(`${paginationConfig.type} pagination is not supported`);
         }
+    }
+
+    private getNestedField(object: any, path: string, defaultValue?: any): any { // TODO: extract to util or figure out how to use lodash
+        const keys = path.split('.');
+        let result = object;
+
+        for (const key of keys) {
+            if (result && typeof result === 'object' && key in result) {
+                result = result[key];
+            } else {
+                return defaultValue;
+            }
+        }
+
+        return result !== undefined ? result : defaultValue;
     }
 }
 

@@ -1,4 +1,4 @@
-import type { CursorPagination, OffsetPagination } from '../sdk/sync.js';
+import type { CursorPagination as CursorBased, OffsetIncrement as OffsetIncrement, PageIncrement } from '../sdk/sync.js';
 import type { AuthModes } from './Auth.js';
 import type { TimestampsAndDeleted } from './Generic.js';
 
@@ -26,7 +26,7 @@ export interface Template {
             at?: string;
             after?: string;
         };
-        paginate?: OffsetPagination | CursorPagination;
+        paginate?: OffsetIncrement | PageIncrement | CursorBased;
     };
     authorization_url: string;
     authorization_params?: Record<string, string>;
