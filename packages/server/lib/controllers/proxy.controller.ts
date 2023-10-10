@@ -717,8 +717,8 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
                     providerResponse: errorMessage.toString()
                 }),
                 params: {
-                    requestHeaders: JSON.stringify(config.headers),
-                    responseHeaders: JSON.stringify(error?.response?.headers)
+                    requestHeaders: JSON.stringify(config.headers, null, 2),
+                    responseHeaders: JSON.stringify(error?.response?.headers, null, 2)
                 }
             });
         } else {
