@@ -97,12 +97,12 @@ class ConnectionController {
 
             const template: ProviderTemplate | undefined = configService.getTemplate(config.provider);
 
-            if (connection.credentials.type === ProviderAuthModes.OAuth2) {
+            if (connection?.credentials?.type === ProviderAuthModes.OAuth2 || connection?.credentials?.type === ProviderAuthModes.App) {
                 const {
                     success,
                     error,
                     response: credentials
-                } = await connectionService.refreshOauth2CredentialsIfNeeded(
+                } = await connectionService.refreshCredentialsIfNeeded(
                     connection,
                     config,
                     template as ProviderTemplateOAuth2,

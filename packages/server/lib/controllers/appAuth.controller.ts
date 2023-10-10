@@ -7,12 +7,11 @@ import type { LogLevel } from '@nangohq/shared';
 import {
     environmentService,
     AuthCredentials,
-    AppCredentials,
+    NangoError,
     SyncClient,
     findActivityLogBySession,
     errorManager,
     analytics,
-    interpolateStringFromObject,
     createActivityLogAndLogMessage,
     createActivityLogMessage,
     updateSuccess as updateSuccessActivityLog,
@@ -124,90 +123,44 @@ class AppAuthController {
                 );
             }
 
-            const tokenUrl = interpolateStringFromObject(template.token_url, { connectionConfig });
+            const { success, error, response: credentials } = await connectionService.getAppCredentials(template, config, connectionConfig);
 
-            const privateKeyBase64 = config.oauth_client_secret;
-
-            let privateKey = Buffer.from(privateKeyBase64, 'base64').toString('utf8');
-            privateKey = privateKey.replace('-----BEGIN RSA PRIVATE KEY-----', '-----BEGIN RSA PRIVATE KEY-----\n');
-            privateKey = privateKey.replace('-----END RSA PRIVATE KEY-----', '\n-----END RSA PRIVATE KEY-----');
-            privateKey = privateKey.replace(/(.{64})/g, '$1\n');
-
-            const now = Math.floor(Date.now() / 1000);
-            const expiration = now + 10 * 60;
-
-            const payload = {
-                iat: now,
-                exp: expiration,
-                iss: config.oauth_client_id
-            };
-
-            const token = jwt.sign(payload, privateKey, { algorithm: 'RS256' });
-
-            try {
-                const tokenResponse = await axios.post(
-                    tokenUrl,
-                    {},
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                            Accept: 'application/vnd.github.v3+json'
-                        }
-                    }
-                );
-
-                const rawCredentials = tokenResponse.data;
-
-                const credentials: AppCredentials = {
-                    type: AuthModes.App,
-                    access_token: (rawCredentials as any)?.token,
-                    expires_at: (rawCredentials as any)?.expires_at,
-                    raw: rawCredentials as unknown as Record<string, unknown>
-                };
-
-                await updateSuccessActivityLog(activityLogId as number, true);
-
-                const [updatedConnection] = await connectionService.upsertConnection(
-                    connectionId,
-                    providerConfigKey,
-                    session.provider,
-                    credentials as unknown as AuthCredentials,
-                    connectionConfig,
-                    environmentId,
-                    accountId
-                );
-
-                if (updatedConnection) {
-                    const syncClient = await SyncClient.getInstance();
-                    await syncClient?.initiate(updatedConnection.id);
-                }
-
+            if (!success || !credentials) {
                 await createActivityLogMessageAndEnd({
-                    level: 'info',
-                    activity_log_id: activityLogId as number,
-                    content: 'App connection was successful and credentials were saved',
-                    timestamp: Date.now()
-                });
-
-                return wsClient.notifySuccess(res, wsClientId, providerConfigKey, connectionId);
-            } catch (e) {
-                const errorMessage = JSON.stringify(e, ['message', 'name'], 2);
-
-                await createActivityLogMessage({
                     level: 'error',
                     activity_log_id: activityLogId as number,
-                    content: `Error during app token retrieval call: ${errorMessage}`,
+                    content: `Error during app token retrieval call: ${error?.message}`,
                     timestamp: Date.now()
                 });
 
-                return wsClient.notifyErr(
-                    res,
-                    wsClientId,
-                    providerConfigKey,
-                    connectionId,
-                    WSErrBuilder.InvalidConnectionConfig(template.token_url, JSON.stringify(connectionConfig))
-                );
+                return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, error as NangoError);
             }
+
+            await updateSuccessActivityLog(activityLogId as number, true);
+
+            const [updatedConnection] = await connectionService.upsertConnection(
+                connectionId,
+                providerConfigKey,
+                session.provider,
+                credentials as unknown as AuthCredentials,
+                connectionConfig,
+                environmentId,
+                accountId
+            );
+
+            if (updatedConnection) {
+                const syncClient = await SyncClient.getInstance();
+                await syncClient?.initiate(updatedConnection.id);
+            }
+
+            await createActivityLogMessageAndEnd({
+                level: 'info',
+                activity_log_id: activityLogId as number,
+                content: 'App connection was successful and credentials were saved',
+                timestamp: Date.now()
+            });
+
+            return wsClient.notifySuccess(res, wsClientId, providerConfigKey, connectionId);
         } catch (err) {
             const prettyError = JSON.stringify(err, ['message', 'name'], 2);
 
