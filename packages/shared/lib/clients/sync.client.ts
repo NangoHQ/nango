@@ -457,22 +457,23 @@ class SyncClient {
                     content: `The action workflow ${workflowId} did not complete successfully`
                 });
 
-                return { success: false, error: null, response: null };
+                return actionHandler;
             }
 
             await createActivityLogMessageAndEnd({
                 level: 'info',
                 activity_log_id: activityLogId as number,
                 timestamp: Date.now(),
-                content: `The action workflow ${workflowId} was successfully run. A truncated response is: ${JSON.stringify(actionHandler, null, 2).slice(
-                    0,
-                    100
-                )}`
+                content: `The action workflow ${workflowId} was successfully run. A truncated response is: ${JSON.stringify(
+                    actionHandler.response,
+                    null,
+                    2
+                ).slice(0, 100)}`
             });
 
             await updateSuccessActivityLog(activityLogId as number, true);
 
-            return { success: true, error: null, response: actionHandler };
+            return actionHandler;
         } catch (e) {
             const errorMessage = JSON.stringify(e, ['message', 'name'], 2);
             const error = new NangoError('action_failure', { errorMessage });

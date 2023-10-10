@@ -267,7 +267,7 @@ export default class SyncRun {
                         content
                     });
 
-                    return { success: true, results: userDefinedResults };
+                    return { success: true, response: userDefinedResults };
                 }
 
                 if (userDefinedResults === undefined) {
