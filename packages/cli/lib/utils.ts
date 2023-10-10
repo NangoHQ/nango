@@ -12,7 +12,7 @@ import { exec, spawn } from 'child_process';
 import promptly from 'promptly';
 import chalk from 'chalk';
 import type { NangoModel, NangoIntegrationData, NangoIntegration } from '@nangohq/shared';
-import { cloudHost, stagingHost, nangoConfigFile } from '@nangohq/shared';
+import { SyncConfigType, cloudHost, stagingHost, nangoConfigFile } from '@nangohq/shared';
 import * as dotenv from 'dotenv';
 import { init, generate, tsc } from './sync.js';
 
@@ -407,7 +407,20 @@ export function buildInterfaces(models: NangoModel, integrations: NangoIntegrati
         // we only care that models that are returned have an ID field
         // if the model is not returned from a sync script then it must be a
         // helper model that is used to build the returned models
-        if (returnedModels.includes(modelName) && !fields['id']) {
+        const syncForModel = Object.keys(integrations).find((providerConfigKey) => {
+            const syncObject = integrations[providerConfigKey] as unknown as { [key: string]: NangoIntegration };
+            const syncNames = Object.keys(syncObject);
+            for (let i = 0; i < syncNames.length; i++) {
+                const syncName = syncNames[i] as string;
+                const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
+                if (syncData.returns && syncData.type !== SyncConfigType.ACTION) {
+                    return syncData.returns.includes(modelName);
+                }
+            }
+            return false;
+        });
+
+        if (returnedModels.includes(modelName) && !fields['id'] && syncForModel) {
             throw new Error(`Model "${modelName}" doesn't have an id field. This is required to be able to uniquely identify the data record.`);
         }
 
