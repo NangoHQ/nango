@@ -380,7 +380,7 @@ export class NangoAction {
 
                     yield responseData;
 
-                    if ((resp.data as any).length < limit) {
+                    if (responseData.length < +limit) {
                         return;
                     }
 
