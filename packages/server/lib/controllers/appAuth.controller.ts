@@ -1,9 +1,4 @@
 import type { Request, Response, NextFunction } from 'express';
-import axios from 'axios';
-import jwt from 'jsonwebtoken';
-import * as uuid from 'uuid';
-import * as crypto from 'node:crypto';
-import type { LogLevel } from '@nangohq/shared';
 import {
     environmentService,
     AuthCredentials,
@@ -12,16 +7,12 @@ import {
     findActivityLogBySession,
     errorManager,
     analytics,
-    createActivityLogAndLogMessage,
     createActivityLogMessage,
     updateSuccess as updateSuccessActivityLog,
-    AuthModes as ProviderAuthModes,
     configService,
     connectionService,
     createActivityLogMessageAndEnd,
-    AuthModes,
-    ErrorSourceEnum,
-    LogActionEnum
+    AuthModes
 } from '@nangohq/shared';
 import { missesInterpolationParam } from '../utils/utils.js';
 import { WSErrBuilder } from '../utils/web-socket-error.js';
@@ -177,120 +168,6 @@ class AppAuthController {
 
             return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError(prettyError));
         }
-    }
-
-    /**
-     * App Webhook
-     * @desc receive a POST request from an app installation with
-     * the information to be able to obtain an access token to make requests
-     */
-    public async webhook(req: Request, res: Response, _: NextFunction) {
-        if (!req.body) {
-            return res.sendStatus(400);
-        }
-
-        if (req.body.action === 'created') {
-            const { installation } = req.body;
-            const { id: installationId, account } = installation;
-            const { access_tokens_url, app_id } = installation;
-            const { sender } = req.body;
-            const { id: senderId, login: senderLogin } = sender;
-
-            const config = await configService.getConfigByClientId(app_id);
-
-            if (config == null) {
-                const errorMessage = `No provider config found for app id: ${app_id}`;
-                const e = new Error(errorMessage);
-
-                errorManager.report(e, {
-                    source: ErrorSourceEnum.PLATFORM,
-                    operation: LogActionEnum.AUTH,
-                    metadata: errorManager.getExpressRequestContext(req)
-                });
-                return res.sendStatus(404);
-            }
-
-            const log = {
-                level: 'info' as LogLevel,
-                success: false,
-                action: LogActionEnum.AUTH,
-                start: Date.now(),
-                end: Date.now(),
-                timestamp: Date.now(),
-                connection_id: '',
-                provider_config_key: config.unique_key,
-                environment_id: config.environment_id
-            };
-
-            await createActivityLogAndLogMessage(log, {
-                level: 'debug',
-                content: `Received app webhook from ${config.unique_key}`,
-                state: senderId,
-                timestamp: Date.now(),
-                url: req.originalUrl,
-                params: {
-                    installation: JSON.stringify(installation),
-                    installationId,
-                    account: JSON.stringify(account),
-                    senderId,
-                    senderLogin
-                }
-            });
-
-            const privateKeyBase64 = config.oauth_client_secret;
-
-            let privateKey = Buffer.from(privateKeyBase64, 'base64').toString('utf8');
-            privateKey = privateKey.replace('-----BEGIN RSA PRIVATE KEY-----', '-----BEGIN RSA PRIVATE KEY-----\n');
-            privateKey = privateKey.replace('-----END RSA PRIVATE KEY-----', '\n-----END RSA PRIVATE KEY-----');
-            privateKey = privateKey.replace(/(.{64})/g, '$1\n');
-
-            const now = Math.floor(Date.now() / 1000);
-            const expiration = now + 10 * 60;
-
-            const payload = {
-                iat: now,
-                exp: expiration,
-                iss: app_id
-            };
-
-            const token = jwt.sign(payload, privateKey, { algorithm: 'RS256' });
-
-            try {
-                const tokenResponse = await axios.post(
-                    access_tokens_url,
-                    {},
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                            Accept: 'application/vnd.github.v3+json'
-                        }
-                    }
-                );
-
-                await oAuthSessionService.create({
-                    provider: config.provider,
-                    providerConfigKey: config.unique_key,
-                    environmentId: config.environment_id,
-                    callbackUrl: '',
-                    authMode: ProviderAuthModes.App,
-                    codeVerifier: crypto.randomBytes(24).toString('hex'),
-                    id: uuid.v1(),
-                    connectionConfig: {
-                        credentials: tokenResponse.data,
-                        access_tokens_url,
-                        app_id
-                    },
-                    connectionId: '',
-                    webSocketClientId: installationId
-                });
-            } catch (e) {
-                console.log(e);
-            }
-        }
-
-        res.sendStatus(200);
-
-        return;
     }
 }
 
