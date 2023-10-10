@@ -78,7 +78,9 @@ export interface CursorPagination extends Pagination {
     cursorParameterName: string;
 }
 
-export interface PageIncrement extends Pagination {}
+export interface PageIncrement extends Pagination {
+    pageParameterName?: string;
+}
 
 export interface OffsetIncrement extends Pagination {}
 
@@ -364,10 +366,12 @@ export class NangoAction {
 
         switch (paginationConfig.type) {
             case PaginationType.PAGE_INCREMENT: {
+                const pageIncderementPaginationConfig: PageIncrement = paginationConfig as PageIncrement;
                 let page = 1;
+                const pageParameterName: string = pageIncderementPaginationConfig.pageParameterName ?? 'page';
 
                 while (true) {
-                    updatedBodyOrParams['page'] = `${page}`;
+                    updatedBodyOrParams[pageParameterName] = `${page}`;
 
                     this.updateConfigBodyOrParams(passPaginationParamsInBody, config, updatedBodyOrParams);
 
