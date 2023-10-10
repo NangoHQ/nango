@@ -78,9 +78,9 @@ export interface CursorPagination extends Pagination {
     cursorParameterName: string;
 }
 
-export interface PageIncrement extends Pagination {}
+export interface PageIncrement extends Pagination { }
 
-export interface OffsetIncrement extends Pagination {}
+export interface OffsetIncrement extends Pagination { }
 
 interface ProxyConfiguration {
     endpoint: string;
@@ -324,7 +324,7 @@ export class NangoAction {
         return this.attributes as A;
     }
 
-    public async *paginate<T = any>(config: ProxyConfiguration): AsyncGenerator<T, undefined, void> {
+    public async *paginate<T = any>(config: ProxyConfiguration): AsyncGenerator<T[], undefined, void> {
         if (!this.providerConfigKey) {
             throw Error(`Please, specify provider config key`);
         }
@@ -364,13 +364,14 @@ export class NangoAction {
                     updatedConfigParams['page'] = `${page}`;
 
                     config.params = updatedConfigParams;
-                    const resp: AxiosResponse<T> = await this.proxy(config);
+                    const resp: AxiosResponse<T> = await this.proxy<T>(config);
 
-                    if (!(resp.data as any).length) {
+                    const responseData: T[] = paginationConfig.responsePath ? this.getNestedField(resp.data, paginationConfig.responsePath) : resp.data;
+                    if (!responseData.length) {
                         return;
                     }
 
-                    yield resp.data;
+                    yield responseData;
 
                     if ((resp.data as any).length < limit) {
                         return;
@@ -390,9 +391,9 @@ export class NangoAction {
 
                     config.params = updatedConfigParams;
 
-                    const resp: AxiosResponse<T> = await this.proxy(config);
+                    const resp: AxiosResponse<T> = await this.proxy<T>(config);
 
-                    const responseData = cursorBasedPagination.responsePath ? this.getNestedField(resp.data, cursorBasedPagination.responsePath) : resp.data;
+                    const responseData: T[] = cursorBasedPagination.responsePath ? this.getNestedField(resp.data, cursorBasedPagination.responsePath) : resp.data;
                     if (!responseData.length) {
                         return;
                     }
