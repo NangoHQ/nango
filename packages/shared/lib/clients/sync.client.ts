@@ -26,6 +26,7 @@ import { NangoError } from '../utils/error.js';
 import { isProd } from '../utils/utils.js';
 
 const generateActionWorkflowId = (actionName: string, connectionId: string) => `${TASK_QUEUE}.ACTION:${actionName}.${connectionId}.${Date.now()}`;
+const generateWorkflowId = (sync: Sync, syncName: string, connectionId: string) => `${TASK_QUEUE}.${syncName}.${connectionId}-${sync.id}`;
 const generateScheduleId = (sync: Sync, syncName: string, connectionId: string) => `${TASK_QUEUE}.${syncName}.${connectionId}-schedule-${sync.id}`;
 
 const OVERLAP_POLICY: ScheduleOverlapPolicy = ScheduleOverlapPolicy.BUFFER_ONE;
