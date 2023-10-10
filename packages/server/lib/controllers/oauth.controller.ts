@@ -12,7 +12,9 @@ import {
 import {
     getConnectionConfig,
     SyncClient,
+    interpolateStringFromObject,
     getOauthCallbackUrl,
+    getGlobalAppCallbackUrl,
     createActivityLog,
     createActivityLogMessageAndEnd,
     createActivityLogMessage,
@@ -213,6 +215,9 @@ class OAuthController {
                     activityLogId as number,
                     userScope
                 );
+            } else if (template.auth_mode === ProviderAuthModes.App) {
+                const appCallBackUrl = getGlobalAppCallbackUrl();
+                return this.appRequest(template, config, session, res, appCallBackUrl, activityLogId as number);
             } else if (template.auth_mode === ProviderAuthModes.OAuth1) {
                 return this.oauth1Request(template, config, session, res, callbackUrl, activityLogId as number);
             }
@@ -390,6 +395,94 @@ class OAuthController {
 
                 return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownGrantType(grantType));
             }
+        } catch (error: any) {
+            const prettyError = JSON.stringify(error, ['message', 'name'], 2);
+
+            const content = WSErrBuilder.UnkownError().message + '\n' + prettyError;
+
+            await createActivityLogMessage({
+                level: 'error',
+                activity_log_id: activityLogId as number,
+                content,
+                timestamp: Date.now(),
+                auth_mode: template.auth_mode,
+                url: callbackUrl,
+                params: {
+                    ...connectionConfig
+                }
+            });
+
+            return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError(prettyError));
+        }
+    }
+
+    private async appRequest(
+        template: ProviderTemplate,
+        providerConfig: ProviderConfig,
+        session: OAuthSession,
+        res: Response,
+        callbackUrl: string,
+        activityLogId: number
+    ) {
+        const wsClientId = session.webSocketClientId;
+        const providerConfigKey = session.providerConfigKey;
+        const connectionId = session.connectionId;
+
+        const connectionConfig = {
+            appPublicLink: providerConfig.app_link
+        };
+
+        try {
+            if (missesInterpolationParam(template.authorization_url, connectionConfig)) {
+                await createActivityLogMessage({
+                    level: 'error',
+                    activity_log_id: activityLogId as number,
+                    content: WSErrBuilder.InvalidConnectionConfig(template.authorization_url, JSON.stringify(connectionConfig)).message,
+                    timestamp: Date.now(),
+                    auth_mode: template.auth_mode,
+                    url: callbackUrl,
+                    params: {
+                        ...connectionConfig
+                    }
+                });
+
+                return wsClient.notifyErr(
+                    res,
+                    wsClientId,
+                    providerConfigKey,
+                    connectionId,
+                    WSErrBuilder.InvalidConnectionConfig(template.authorization_url, JSON.stringify(connectionConfig))
+                );
+            }
+
+            await oAuthSessionService.create(session);
+
+            const appUrl = interpolateStringFromObject(template.authorization_url, {
+                connectionConfig
+            });
+
+            const params = new URLSearchParams({
+                state: session.id
+            });
+
+            const authorizationUri = `${appUrl}?${params.toString()}`;
+
+            await createActivityLogMessage({
+                level: 'info',
+                activity_log_id: activityLogId as number,
+                content: `Redirecting to ${authorizationUri} for ${providerConfigKey} (connection ${connectionId})`,
+                timestamp: Date.now(),
+                url: callbackUrl,
+                auth_mode: template.auth_mode,
+                params: {
+                    ...connectionConfig,
+                    external_api_url: authorizationUri
+                }
+            });
+
+            await addEndTimeActivityLog(activityLogId as number);
+
+            res.redirect(authorizationUri);
         } catch (error: any) {
             const prettyError = JSON.stringify(error, ['message', 'name'], 2);
 

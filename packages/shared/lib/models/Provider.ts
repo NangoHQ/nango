@@ -11,6 +11,7 @@ export interface Config extends TimestampsAndDeleted {
     environment_id: number;
     oauth_client_secret_iv?: string | null;
     oauth_client_secret_tag?: string | null;
+    app_link?: string | null;
 }
 
 export interface Template {
@@ -52,6 +53,8 @@ export interface IntegrationWithCreds extends Integration {
     client_id: string;
     client_secret: string;
     scopes: string;
+    auth_mode: AuthModes;
+    app_link?: string;
 }
 
 export interface Integration {
