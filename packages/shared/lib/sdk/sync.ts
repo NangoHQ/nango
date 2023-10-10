@@ -94,7 +94,7 @@ interface ProxyConfiguration {
     data?: unknown;
     retries?: number;
     baseUrlOverride?: string;
-    paginate?: Record<string, any> | boolean; // Supported only by Syncs and Actions ATM
+    paginate?: Record<string, any>; // Supported only by Syncs and Actions ATM
 }
 
 enum AuthModes {
