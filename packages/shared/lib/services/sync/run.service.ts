@@ -1,6 +1,7 @@
 import { loadLocalNangoConfig, nangoConfigFile } from '../nango-config.service.js';
 import type { NangoConnection } from '../../models/Connection.js';
 import { SyncResult, SyncType, SyncStatus, Job as SyncJob } from '../../models/Sync.js';
+import type { ServiceResponse } from '../../models/Generic.js';
 import { createActivityLogMessage, createActivityLogMessageAndEnd, updateSuccess as updateSuccessActivityLog } from '../activity/activity.service.js';
 import { addSyncConfigToJob, updateSyncJobResult, updateSyncJobStatus } from '../sync/job.service.js';
 import { getSyncConfig } from './config/config.service.js';
@@ -83,7 +84,12 @@ export default class SyncRun {
         }
     }
 
-    async run(optionalLastSyncDate?: Date | null, bypassEnvironment?: boolean, optionalSecretKey?: string, optionalHost?: string): Promise<boolean | object> {
+    async run(
+        optionalLastSyncDate?: Date | null,
+        bypassEnvironment?: boolean,
+        optionalSecretKey?: string,
+        optionalHost?: string
+    ): Promise<boolean | object | ServiceResponse> {
         if (this.debug) {
             const content = this.loadLocation ? `Looking for a local nango config at ${this.loadLocation}` : `Looking for a sync config for ${this.syncName}`;
             if (this.writeToDb) {
@@ -242,7 +248,7 @@ export default class SyncRun {
                         }.`
                     );
 
-                    return false;
+                    return this.isAction ? { success: false } : false;
                 }
 
                 if (!this.writeToDb) {
@@ -261,7 +267,7 @@ export default class SyncRun {
                         content
                     });
 
-                    return userDefinedResults;
+                    return { success: true, results: userDefinedResults };
                 }
 
                 if (userDefinedResults === undefined) {

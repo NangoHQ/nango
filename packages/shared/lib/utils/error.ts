@@ -194,6 +194,14 @@ export class NangoError extends Error {
                 }
                 break;
 
+            case 'action_failure':
+                this.status = 400;
+                this.message = `Failed to perform the action. Please try again.`;
+                if (this.payload) {
+                    this.message += ` Please make sure this value exists in the Nango dashboard ${JSON.stringify(this.payload, null, 2)}`;
+                }
+                break;
+
             case 'missing_provider_template':
                 this.status = 400;
                 this.message = `Missing param 'provider'.`;
