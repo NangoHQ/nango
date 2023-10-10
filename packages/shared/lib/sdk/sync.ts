@@ -78,9 +78,9 @@ export interface CursorPagination extends Pagination {
     cursorParameterName: string;
 }
 
-export interface PageIncrement extends Pagination { }
+export interface PageIncrement extends Pagination {}
 
-export interface OffsetIncrement extends Pagination { }
+export interface OffsetIncrement extends Pagination {}
 
 interface ProxyConfiguration {
     endpoint: string;
@@ -246,21 +246,21 @@ export class NangoAction {
         });
     }
 
-    public async post<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T> | AsyncGenerator<T, undefined, void>> {
+    public async post<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
         return this.proxy({
             ...config,
             method: 'POST'
         });
     }
 
-    public async patch<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T> | AsyncGenerator<T, undefined, void>> {
+    public async patch<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
         return this.proxy({
             ...config,
             method: 'PATCH'
         });
     }
 
-    public async delete<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T> | AsyncGenerator<T, undefined, void>> {
+    public async delete<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
         return this.proxy({
             ...config,
             method: 'DELETE'
@@ -324,9 +324,7 @@ export class NangoAction {
         return this.attributes as A;
     }
 
-    public async *paginate<T = any>(
-        config: ProxyConfiguration
-    ): AsyncGenerator<T, undefined, void> {
+    public async *paginate<T = any>(config: ProxyConfiguration): AsyncGenerator<T, undefined, void> {
         if (!this.providerConfigKey) {
             throw Error(`Please, specify provider config key`);
         }
@@ -348,14 +346,16 @@ export class NangoAction {
             }
         }
 
-        if (!config.method) { // default to get if user doesn't specify a different method themselves
+        if (!config.method) {
+            // default to get if user doesn't specify a different method themselves
             config.method = 'GET';
         }
 
         const updatedConfigParams: Record<string, string> = (config.params as Record<string, string>) ?? {};
         const defaultMaxValuePerPage: string = '100';
-        const limit: string = updatedConfigParams['limit'] || (paginationConfig['limit'] as unknown as string) || defaultMaxValuePerPage;
+        const limit: string = (paginationConfig['limit'] as unknown as string) || updatedConfigParams['limit'] || defaultMaxValuePerPage;
         updatedConfigParams['limit'] = limit;
+
         switch (paginationConfig.type) {
             case PaginationType.PAGE_INCREMENT: {
                 let page = 1;
