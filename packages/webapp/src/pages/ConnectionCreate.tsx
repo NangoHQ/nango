@@ -278,14 +278,6 @@ credentials: {
 }`;
         }
 
-        let nangoCall = 'auth';
-
-        if (authMode === AuthModes.None) {
-            nangoCall = 'create';
-        } else if (authMode === AuthModes.App) {
-            nangoCall = 'appCreate';
-        }
-
         const connectionConfigStr =
             !connectionConfigParamsStr && !authorizationParamsStr && !userScopesStr && !hmacKeyStr
                 ? ''
@@ -295,7 +287,7 @@ credentials: {
 
 const nango = new Nango(${argsStr});
 
-nango.${nangoCall}('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr}).then((result: { providerConfigKey: string; connectionId: string }) => {
+nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integration?.uniqueKey}', '${connectionId}'${connectionConfigStr}).then((result: {
     // do something
 }).catch((err: { message: string; type: string }) => {
     // handle error

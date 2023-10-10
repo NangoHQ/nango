@@ -217,21 +217,6 @@ class ConfigService {
 
         return result;
     }
-
-    async getConfigByClientId(clientId: string): Promise<ProviderConfig | null> {
-        const result = await db.knex
-            .withSchema(db.schema())
-            .select('*')
-            .from<ProviderConfig>(`_nango_configs`)
-            .where({ oauth_client_id: clientId, deleted: false })
-            .first();
-
-        if (!result) {
-            return null;
-        }
-
-        return encryptionManager.decryptProviderConfig(result);
-    }
 }
 
 export default new ConfigService();
