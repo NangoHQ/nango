@@ -65,7 +65,6 @@ interface DataResponse {
 
 export enum PaginationType {
     CURSOR = 'cursor',
-    PAGE = 'page',
     LINK_REL = 'link_rel'
 }
 
@@ -80,11 +79,6 @@ export interface CursorPagination extends Pagination {
     type: PaginationType.CURSOR;
     next_cursor_parameter_path: string;
     cursor_parameter_name: string;
-}
-
-export interface PagePagination extends Pagination {
-    type: PaginationType.PAGE;
-    page_parameter_name?: string;
 }
 
 export interface LinkRelPagination extends Pagination {
@@ -373,34 +367,6 @@ export class NangoAction {
         updatedBodyOrParams[limitParameterName] = limit;
 
         switch (paginationConfig.type) {
-            case PaginationType.PAGE: {
-                const pageIncderementPaginationConfig: PagePagination = paginationConfig as PagePagination;
-                let page = 1;
-                const pageParameterName: string = pageIncderementPaginationConfig.page_parameter_name ?? 'page';
-
-                while (true) {
-                    updatedBodyOrParams[pageParameterName] = `${page}`;
-
-                    this.updateConfigBodyOrParams(passPaginationParamsInBody, config, updatedBodyOrParams);
-
-                    const response: AxiosResponse = await this.proxy(config);
-
-                    const responseData: T[] = paginationConfig.response_path
-                        ? this.getNestedField(response.data, paginationConfig.response_path)
-                        : response.data;
-                    if (!responseData.length) {
-                        return;
-                    }
-
-                    yield responseData;
-
-                    if (responseData.length < +limit) {
-                        return;
-                    }
-
-                    page += 1;
-                }
-            }
             case PaginationType.CURSOR: {
                 const cursorBasedPagination: CursorPagination = paginationConfig as CursorPagination;
 
@@ -455,7 +421,7 @@ export class NangoAction {
                         const path = url.pathname;
                         config.endpoint = path;
                         config.params = {
-                            ...config.params as Record<string, string>,
+                            ...(config.params as Record<string, string>),
                             ...Object.fromEntries(searchParams.entries())
                         };
                         continue;
