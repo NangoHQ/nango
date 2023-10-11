@@ -62,9 +62,8 @@ interface DataResponse {
 }
 
 export enum PaginationType {
-    CURSOR_BASED = 'CursorBased',
-    OFFSET_INCREMENT = 'OffsetIncrement',
-    PAGE_INCREMENT = 'PageIncrement'
+    CURSOR = 'cursor',
+    PAGE = 'page'
 }
 
 interface Pagination {
@@ -74,15 +73,15 @@ interface Pagination {
 }
 
 export interface CursorPagination extends Pagination {
+    type: PaginationType.CURSOR;
     nextCursorParameterPath: string;
     cursorParameterName: string;
 }
 
-export interface PageIncrement extends Pagination {
+export interface PagePagination extends Pagination {
+    type: PaginationType.PAGE;
     pageParameterName?: string;
 }
-
-export interface OffsetIncrement extends Pagination {}
 
 interface ProxyConfiguration {
     endpoint: string;
@@ -336,7 +335,7 @@ export class NangoAction {
         const templatePaginationConfig: Pagination | undefined = template.proxy?.paginate;
 
         if (!templatePaginationConfig) {
-            throw Error(`Please, add pagination config to 'providers.yaml' file`);
+            throw Error(`Pagination is not supported for ${providerConfigKey}. Please, add pagination config to 'providers.yaml' file`);
         }
 
         let paginationConfig: Pagination = templatePaginationConfig;
@@ -354,10 +353,7 @@ export class NangoAction {
         }
 
         const configMethod: string = config.method.toLocaleLowerCase();
-        let passPaginationParamsInBody: boolean = false;
-        if (['post', 'put', 'patch'].includes(configMethod)) {
-            passPaginationParamsInBody = true;
-        }
+        let passPaginationParamsInBody: boolean = ['post', 'put', 'patch'].includes(configMethod);
 
         const updatedBodyOrParams: Record<string, string> = ((passPaginationParamsInBody ? config.data : config.params) as Record<string, string>) ?? {};
         const defaultMaxValuePerPage: string = '100';
@@ -365,8 +361,8 @@ export class NangoAction {
         updatedBodyOrParams['limit'] = limit;
 
         switch (paginationConfig.type) {
-            case PaginationType.PAGE_INCREMENT: {
-                const pageIncderementPaginationConfig: PageIncrement = paginationConfig as PageIncrement;
+            case PaginationType.PAGE: {
+                const pageIncderementPaginationConfig: PagePagination = paginationConfig as PagePagination;
                 let page = 1;
                 const pageParameterName: string = pageIncderementPaginationConfig.pageParameterName ?? 'page';
 
@@ -375,9 +371,9 @@ export class NangoAction {
 
                     this.updateConfigBodyOrParams(passPaginationParamsInBody, config, updatedBodyOrParams);
 
-                    const resp: AxiosResponse<T> = await this.proxy<T>(config);
+                    const response: AxiosResponse = await this.proxy(config);
 
-                    const responseData: T[] = paginationConfig.responsePath ? this.getNestedField(resp.data, paginationConfig.responsePath) : resp.data;
+                    const responseData: T[] = paginationConfig.responsePath ? this.getNestedField(response.data, paginationConfig.responsePath) : response.data;
                     if (!responseData.length) {
                         return;
                     }
@@ -391,7 +387,7 @@ export class NangoAction {
                     page += 1;
                 }
             }
-            case PaginationType.CURSOR_BASED: {
+            case PaginationType.CURSOR: {
                 const cursorBasedPagination: CursorPagination = paginationConfig as CursorPagination;
 
                 let nextCursor: string | undefined;
@@ -402,18 +398,18 @@ export class NangoAction {
 
                     this.updateConfigBodyOrParams(passPaginationParamsInBody, config, updatedBodyOrParams);
 
-                    const resp: AxiosResponse<T> = await this.proxy<T>(config);
+                    const response: AxiosResponse = await this.proxy(config);
 
                     const responseData: T[] = cursorBasedPagination.responsePath
-                        ? this.getNestedField(resp.data, cursorBasedPagination.responsePath)
-                        : resp.data;
+                        ? this.getNestedField(response.data, cursorBasedPagination.responsePath)
+                        : response.data;
                     if (!responseData.length) {
                         return;
                     }
 
                     yield responseData;
 
-                    nextCursor = this.getNestedField(resp.data, cursorBasedPagination.nextCursorParameterPath);
+                    nextCursor = this.getNestedField(response.data, cursorBasedPagination.nextCursorParameterPath);
 
                     if (!nextCursor || nextCursor.trim().length === 0) {
                         return;
@@ -421,7 +417,7 @@ export class NangoAction {
                 }
             }
             default:
-                throw Error(`${paginationConfig.type} pagination is not supported`);
+                throw Error(`'${paginationConfig.type}' pagination is not supported. Please, make sure it's one of ${Object.values(PaginationType)}`);
         }
     }
 

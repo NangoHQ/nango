@@ -70,6 +70,12 @@ asana:
         grant_type: refresh_token
     proxy:
         base_url: https://app.asana.com
+        paginate:
+            type: cursor
+            nextCursorParameterPath: 'next_page.offset'
+            cursorParameterName: 'offset'
+            responsePath: 'data'
+            limit: 100
     docs: https://developers.asana.com/reference
 ashby:
     auth_mode: BASIC
@@ -362,7 +368,7 @@ github:
         retry:
             at: 'x-ratelimit-reset'
         paginate:
-            type: PageIncrement
+            type: page
             limit: 100
     docs: https://docs.github.com/en/rest
 gitlab:
@@ -469,7 +475,7 @@ hubspot:
     proxy:
         base_url: https://api.hubapi.com
         paginate:
-            type: CursorBased
+            type: cursor
             nextCursorParameterPath: 'paging.next.after'
             cursorParameterName: 'after'
             responsePath: 'results'
@@ -850,7 +856,7 @@ slack:
     proxy:
         base_url: https://slack.com/api
         paginate:
-            type: CursorBased
+            type: cursor
             nextCursorParameterPath: 'response_metadata.next_cursor'
             cursorParameterName: 'cursor'
             limit: 100
