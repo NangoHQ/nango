@@ -359,12 +359,12 @@ export class NangoAction {
         let passPaginationParamsInBody: boolean = ['post', 'put', 'patch'].includes(configMethod);
 
         const updatedBodyOrParams: Record<string, string> = ((passPaginationParamsInBody ? config.data : config.params) as Record<string, string>) ?? {};
-        const defaultMaxValuePerPage: string = '10';
         const limitParameterName: string = paginationConfig.limit_parameter_name;
 
-        const limit: string = (paginationConfig['limit'] as unknown as string) || updatedBodyOrParams[limitParameterName] || defaultMaxValuePerPage;
-
-        updatedBodyOrParams[limitParameterName] = limit;
+        if (paginationConfig['limit']) {
+            const limit: string = paginationConfig['limit'] as unknown as string;
+            updatedBodyOrParams[limitParameterName] = limit;
+        }
 
         switch (paginationConfig.type) {
             case PaginationType.CURSOR: {
