@@ -507,6 +507,9 @@ jira:
         prompt: consent
     proxy:
         base_url: https://api.atlassian.com
+        paginate:
+            type: offset
+            offset_parameter_name: start
 keap:
     auth_mode: OAUTH2
     authorization_url: https://accounts.infusionsoft.com/app/oauth/authorize

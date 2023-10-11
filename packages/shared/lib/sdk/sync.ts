@@ -66,7 +66,8 @@ interface DataResponse {
 export enum PaginationType {
     CURSOR = 'cursor',
     LINK_REL = 'link_rel',
-    URL = 'url'
+    URL = 'url',
+    OFFSET = 'offset'
 }
 
 interface Pagination {
@@ -90,6 +91,11 @@ export interface LinkRelPagination extends Pagination {
 export interface UrlPagination extends Pagination {
     type: PaginationType.URL;
     next_url_parameter_path: string;
+}
+
+export interface OffsetPagination extends Pagination {
+    type: PaginationType.OFFSET;
+    offset_parameter_name: string;
 }
 
 interface ProxyConfiguration {
@@ -374,20 +380,20 @@ export class NangoAction {
 
         switch (paginationConfig.type) {
             case PaginationType.CURSOR: {
-                const cursorBasedPagination: CursorPagination = paginationConfig as CursorPagination;
+                const cursorPagination: CursorPagination = paginationConfig as CursorPagination;
 
                 let nextCursor: string | undefined;
                 while (true) {
                     if (nextCursor) {
-                        updatedBodyOrParams[cursorBasedPagination.cursor_parameter_name] = `${nextCursor}`;
+                        updatedBodyOrParams[cursorPagination.cursor_parameter_name] = `${nextCursor}`;
                     }
 
                     this.updateConfigBodyOrParams(passPaginationParamsInBody, config, updatedBodyOrParams);
 
                     const response: AxiosResponse = await this.proxy(config);
 
-                    const responseData: T[] = cursorBasedPagination.response_data_path
-                        ? this.getNestedField(response.data, cursorBasedPagination.response_data_path)
+                    const responseData: T[] = cursorPagination.response_data_path
+                        ? this.getNestedField(response.data, cursorPagination.response_data_path)
                         : response.data;
                     if (!responseData.length) {
                         return;
@@ -395,7 +401,7 @@ export class NangoAction {
 
                     yield responseData;
 
-                    nextCursor = this.getNestedField(response.data, cursorBasedPagination.next_cursor_parameter_path);
+                    nextCursor = this.getNestedField(response.data, cursorPagination.next_cursor_parameter_path);
 
                     if (!nextCursor || nextCursor.trim().length === 0) {
                         return;
@@ -450,6 +456,35 @@ export class NangoAction {
                     } else {
                         return;
                     }
+                }
+            }
+            case PaginationType.OFFSET: {
+                const offsetPagination: OffsetPagination = paginationConfig as OffsetPagination;
+                const offsetParameterName: string = offsetPagination.offset_parameter_name;
+                let offset: number = 0;
+
+                while (true) {
+                    updatedBodyOrParams[offsetParameterName] = `${offset}`;
+
+                    this.updateConfigBodyOrParams(passPaginationParamsInBody, config, updatedBodyOrParams);
+
+                    const response: AxiosResponse = await this.proxy(config);
+
+                    const responseData: T[] = paginationConfig.response_data_path
+                        ? this.getNestedField(response.data, paginationConfig.response_data_path)
+                        : response.data;
+                    if (!responseData.length) {
+                        return;
+                    }
+
+                    yield responseData;
+
+                    if (responseData.length < 1) {
+                        // Last page was empty so no need to fetch further
+                        return;
+                    }
+
+                    offset += responseData.length;
                 }
             }
             default:
