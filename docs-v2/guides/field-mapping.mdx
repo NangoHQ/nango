@@ -6,7 +6,7 @@ description: 'Synchronize user-specific data using custom fields.'
 
 ## When should you use field mappings?
 
-Field mappings enable you to synchronize data stored in custom fields tailored to individual users. This is useful when your customers store information in custom-defined fields, and you need to sync that data to fields within your product. The solution? Offer a user interface where customers can map their custom field names to the standardized field names used by your product. Once this mapping is defined, Nango facilitates the data synchronization through [syncs](/guides/sync) and [actions](/guides/actions).
+Field mappings enable you to synchronize data stored in custom fields tailored to individual users. This is useful when your customers store information in custom-defined fields, and you need to sync that data to fields within your product. The solution? Offer a user interface where customers can map their custom field names to the standardized field names used by your product. Once this mapping is defined, Nango facilitates the data synchronization through [syncs](/guides/sync) and [actions](/guides/action).
 
 ## How can field mappings be implemented in Nango?
 
@@ -18,7 +18,7 @@ Nango provides dedicated tools to support field mappings of any complexity. Here
 4. Within your _sync_ script, retrieve the field mappings from the [metadata](/guides/oauth#storing-custom-metadata-per-connection) to access the custom fields specified by your customer.
 
 <Tip>
-When collecting field mappings, you may want to display the available custom fields to users, fetching them directly from their external systems. For these types of one-time synchronous tasks, consider utilizing our [actions](/guides/actions) feature.
+When collecting field mappings, you may want to display the available custom fields to users, fetching them directly from their external systems. For these types of one-time synchronous tasks, consider utilizing our [actions](/guides/action) feature.
 </Tip>
 
 <Frame caption="Field mapping flow in Nango">

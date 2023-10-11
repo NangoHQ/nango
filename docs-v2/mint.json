@@ -68,14 +68,14 @@
                 ]
         },
         {
-            "group": "Guides & Templates",
+            "group": "Guides",
             "pages": [
+                "guides/oauth",
+                "guides/sync",
+                "guides/action",
                 {
-                    "group": "Authorize APIs",
-                    "pages": ["guides/oauth", "guides/api-key", "contribute"]
-                }, {
-                    "group": "Consume APIs",
-                    "pages": ["guides/sync", "guides/actions", "guides/proxy", "guides/webhooks", "guides/field-mapping", "guides/env-vars"]
+                    "group": "Other Guides",
+                    "pages": ["guides/proxy", "guides/webhooks", "guides/custom-script", "guides/advanced-auth", "guides/field-mapping", "guides/api-key", "guides/env-vars", "contribute"]
                 }, {
                     "group": "Integration Templates",
                     "pages": [
