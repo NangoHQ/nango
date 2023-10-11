@@ -72,7 +72,7 @@ export enum PaginationType {
 interface Pagination {
     type: PaginationType;
     limit?: number;
-    response_path?: string;
+    response_data_path?: string;
     limit_parameter_name: string;
 }
 
@@ -386,8 +386,8 @@ export class NangoAction {
 
                     const response: AxiosResponse = await this.proxy(config);
 
-                    const responseData: T[] = cursorBasedPagination.response_path
-                        ? this.getNestedField(response.data, cursorBasedPagination.response_path)
+                    const responseData: T[] = cursorBasedPagination.response_data_path
+                        ? this.getNestedField(response.data, cursorBasedPagination.response_data_path)
                         : response.data;
                     if (!responseData.length) {
                         return;
@@ -409,8 +409,8 @@ export class NangoAction {
                 while (true) {
                     const response: AxiosResponse = await this.proxy(config);
 
-                    const responseData: T[] = paginationConfig.response_path
-                        ? this.getNestedField(response.data, paginationConfig.response_path)
+                    const responseData: T[] = paginationConfig.response_data_path
+                        ? this.getNestedField(response.data, paginationConfig.response_data_path)
                         : response.data;
                     if (!responseData.length) {
                         return;
@@ -428,15 +428,15 @@ export class NangoAction {
                     }
                 }
             }
-            case PaginationType.URL:{
+            case PaginationType.URL: {
                 const urlPagination: UrlPagination = paginationConfig as UrlPagination;
 
                 this.updateConfigBodyOrParams(passPaginationParamsInBody, config, updatedBodyOrParams);
                 while (true) {
                     const response: AxiosResponse = await this.proxy(config);
 
-                    const responseData: T[] = paginationConfig.response_path
-                        ? this.getNestedField(response.data, paginationConfig.response_path)
+                    const responseData: T[] = paginationConfig.response_data_path
+                        ? this.getNestedField(response.data, paginationConfig.response_data_path)
                         : response.data;
                     if (!responseData.length) {
                         return;

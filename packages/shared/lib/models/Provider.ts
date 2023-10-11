@@ -1,4 +1,4 @@
-import type { CursorPagination, LinkRelPagination } from '../sdk/sync.js';
+import type { CursorPagination, LinkRelPagination, UrlPagination } from '../sdk/sync.js';
 import type { AuthModes } from './Auth.js';
 import type { TimestampsAndDeleted } from './Generic.js';
 
@@ -26,7 +26,7 @@ export interface Template {
             at?: string;
             after?: string;
         };
-        paginate?: LinkRelPagination | CursorPagination;
+        paginate?: LinkRelPagination | CursorPagination | UrlPagination;
     };
     authorization_url: string;
     authorization_params?: Record<string, string>;

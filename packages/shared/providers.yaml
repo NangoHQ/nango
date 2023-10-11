@@ -74,7 +74,7 @@ asana:
             type: cursor
             next_cursor_parameter_path: 'next_page.offset'
             cursor_parameter_name: 'offset'
-            response_path: 'data'
+            response_data_path: 'data'
     docs: https://developers.asana.com/reference
 ashby:
     auth_mode: BASIC
@@ -478,7 +478,7 @@ hubspot:
             type: cursor
             next_cursor_parameter_path: 'paging.next.after'
             cursor_parameter_name: 'after'
-            response_path: 'results'
+            response_data_path: 'results'
     docs: https://developers.hubspot.com/docs/api/overview
 instagram:
     auth_mode: OAUTH2
