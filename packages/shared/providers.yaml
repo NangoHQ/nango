@@ -362,6 +362,12 @@ github:
         retry:
             at: 'x-ratelimit-reset'
     docs: https://docs.github.com/en/rest
+github-app:
+    alias: github
+    auth_mode: APP
+    authorization_url: ${connectionConfig.appPublicLink}/installations/new
+    token_url: https://api.github.com/app/installations/${connectionConfig.installation_id}/access_tokens
+    docs: https://docs.github.com/en/apps
 gitlab:
     auth_mode: OAUTH2
     authorization_url: https://gitlab.com/oauth/authorize
@@ -459,12 +465,18 @@ highlevel:
     proxy:
         base_url: https://services.leadconnectorhq.com
     docs: https://highlevel.stoplight.io/docs/integrations/0443d7d1a4bd0-overview
+    disable_pkce: true
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 hubspot:
     auth_mode: OAUTH2
     authorization_url: https://app.hubspot.com/oauth/authorize
     token_url: https://api.hubapi.com/oauth/v1/token
     proxy:
         base_url: https://api.hubapi.com
+        decompress: true
     docs: https://developers.hubspot.com/docs/api/overview
 instagram:
     auth_mode: OAUTH2
@@ -557,6 +569,7 @@ microsoft-teams:
         prompt: consent
     proxy:
         base_url: https://graph.microsoft.com
+        decompress: true
     token_params:
         grant_type: authorization_code
     refresh_params:
@@ -698,6 +711,7 @@ pipedrive:
     token_url: https://oauth.pipedrive.com/oauth/token
     proxy:
         base_url: https://${connectionConfig.subdomain}.pipedrive.com
+        decompress: true
 qualtrics:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.qualtrics.com/oauth2/auth

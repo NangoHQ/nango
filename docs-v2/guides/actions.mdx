@@ -159,7 +159,7 @@ interface SlackAlertParams {
 
 export default async function runAction(nango: NangoSync, input: SlackAlertParams): Promise<SlackAlertResponse> {
     const res = await nango.post({
-        endpoint: '/api/chat.postMessage',
+        endpoint: '/chat.postMessage',
         params: {
             channel: input.channel,
             text: "Hello world :tada"

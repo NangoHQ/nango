@@ -138,7 +138,7 @@ paths:
                 - name: include_creds
                   in: query
                   required: false
-                  description: If true, the response will contain the client ID, secret and scopes (false by default).
+                  description: If true, the response will contain the client ID, secret, scopes, auth_mode and app link - if applicable. include_creds is false by default.
                   schema:
                       type: boolean
             responses:
@@ -214,6 +214,12 @@ paths:
     /connection:
         get:
             description: Returns a list of connections
+            parameters:
+                - name: connectionId
+                  in: query
+                  schema:
+                      type: string
+                  description: Filter the list of connections based on this connection ID.
             responses:
                 '200':
                     description: Successfully returned a list of connections
@@ -271,7 +277,8 @@ paths:
                                     type: string
                                     description: (OAuth 2, optional) Pass the refresh token if you have it.
                                 expires_at:
-                                    type: Date
+                                    type: string
+                                    format: date
                                     description: (OAuth 2, optional) Safer and preferred.
                                 expires_in:
                                     type: integer
@@ -670,6 +677,11 @@ paths:
                       type: string
                   description: Provide an API base URL when the base API is not listed in the providers.yaml or it needs to be overridden. Optional
                 - in: header
+                  name: Decompress
+                  schema:
+                      type: string
+                  description: Override the decompress option when making requests. Optional, defaults to false
+                - in: header
                   name: nango-proxy-$ANY_HEADER
                   schema:
                       type: string
@@ -704,6 +716,11 @@ paths:
                   schema:
                       type: string
                   description: Provide an API base URL when the base API is not listed in the providers.yaml or it needs to be overridden. Optional
+                - in: header
+                  name: Decompress
+                  schema:
+                      type: string
+                  description: Override the decompress option when making requests. Optional, defaults to false
                 - in: header
                   name: nango-proxy-$ANY_HEADER
                   schema:
@@ -748,6 +765,11 @@ paths:
                       type: string
                   description: Provide an API base URL when the base API is not listed in the providers.yaml or it needs to be overridden. Optional
                 - in: header
+                  name: Decompress
+                  schema:
+                      type: string
+                  description: Override the decompress option when making requests. Optional, defaults to false
+                - in: header
                   name: nango-proxy-$ANY_HEADER
                   schema:
                       type: string
@@ -790,6 +812,11 @@ paths:
                   schema:
                       type: string
                   description: Provide an API base URL when the base API is not listed in the providers.yaml or it needs to be overridden. Optional
+                - in: header
+                  name: Decompress
+                  schema:
+                      type: string
+                  description: Override the decompress option when making requests. Optional, defaults to false
                 - in: header
                   name: nango-proxy-$ANY_HEADER
                   schema:
@@ -838,6 +865,11 @@ paths:
                   schema:
                       type: string
                   description: Provide an API base URL when the base API is not listed in the providers.yaml or it needs to be overridden. Optional
+                - in: header
+                  name: Decompress
+                  schema:
+                      type: string
+                  description: Override the decompress option when making requests. Optional, defaults to false
                 - in: header
                   name: nango-proxy-$ANY_HEADER
                   schema:
