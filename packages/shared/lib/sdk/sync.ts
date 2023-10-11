@@ -65,7 +65,8 @@ interface DataResponse {
 
 export enum PaginationType {
     CURSOR = 'cursor',
-    LINK_REL = 'link_rel'
+    LINK_REL = 'link_rel',
+    URL = 'url'
 }
 
 interface Pagination {
@@ -84,6 +85,11 @@ export interface CursorPagination extends Pagination {
 export interface LinkRelPagination extends Pagination {
     type: PaginationType.LINK_REL;
     link_rel: string;
+}
+
+export interface UrlPagination extends Pagination {
+    type: PaginationType.URL;
+    next_url_parameter_path: string;
 }
 
 interface ProxyConfiguration {
@@ -413,18 +419,34 @@ export class NangoAction {
                     yield responseData;
 
                     const linkHeader = parseLinksHeader(response.headers['link']);
-                    let nextPageUrl: string | undefined = linkHeader?.[linkRelPagination.link_rel]?.url;
+                    const nextPageUrl: string | undefined = linkHeader?.[linkRelPagination.link_rel]?.url;
 
                     if (nextPageUrl && isValidHttpUrl(nextPageUrl)) {
-                        const url = new URL(nextPageUrl);
-                        const searchParams: URLSearchParams = url.searchParams;
-                        const path = url.pathname;
-                        config.endpoint = path;
-                        config.params = {
-                            ...(config.params as Record<string, string>),
-                            ...Object.fromEntries(searchParams.entries())
-                        };
-                        continue;
+                        this.updateProxyConfigEndpointAndParams(nextPageUrl, config);
+                    } else {
+                        return;
+                    }
+                }
+            }
+            case PaginationType.URL:{
+                const urlPagination: UrlPagination = paginationConfig as UrlPagination;
+
+                this.updateConfigBodyOrParams(passPaginationParamsInBody, config, updatedBodyOrParams);
+                while (true) {
+                    const response: AxiosResponse = await this.proxy(config);
+
+                    const responseData: T[] = paginationConfig.response_path
+                        ? this.getNestedField(response.data, paginationConfig.response_path)
+                        : response.data;
+                    if (!responseData.length) {
+                        return;
+                    }
+
+                    yield responseData;
+
+                    const nextPageUrl: string | undefined = this.getNestedField(response.data, urlPagination.next_url_parameter_path);
+                    if (nextPageUrl && isValidHttpUrl(nextPageUrl)) {
+                        this.updateProxyConfigEndpointAndParams(nextPageUrl, config);
                     } else {
                         return;
                     }
@@ -433,6 +455,17 @@ export class NangoAction {
             default:
                 throw Error(`'${paginationConfig.type} ' pagination is not supported. Please, make sure it's one of ${Object.values(PaginationType)} `);
         }
+    }
+
+    private updateProxyConfigEndpointAndParams(nextPageUrl: string, config: ProxyConfiguration) {
+        const url = new URL(nextPageUrl);
+        const searchParams: URLSearchParams = url.searchParams;
+        const path = url.pathname;
+        config.endpoint = path;
+        config.params = {
+            ...(config.params as Record<string, string>),
+            ...Object.fromEntries(searchParams.entries())
+        };
     }
 
     private updateConfigBodyOrParams(passPaginationParamsInBody: boolean, config: ProxyConfiguration, updatedBodyOrParams: Record<string, string>) {
