@@ -72,10 +72,9 @@ asana:
         base_url: https://app.asana.com
         paginate:
             type: cursor
-            nextCursorParameterPath: 'next_page.offset'
-            cursorParameterName: 'offset'
-            responsePath: 'data'
-            limit: 100
+            next_cursor_parameter_path: 'next_page.offset'
+            cursor_parameter_name: 'offset'
+            response_path: 'data'
     docs: https://developers.asana.com/reference
 ashby:
     auth_mode: BASIC
@@ -369,7 +368,7 @@ github:
             at: 'x-ratelimit-reset'
         paginate:
             type: page
-            limit: 100
+            limit_parameter_name: 'per_page'
     docs: https://docs.github.com/en/rest
 gitlab:
     auth_mode: OAUTH2
@@ -476,10 +475,9 @@ hubspot:
         base_url: https://api.hubapi.com
         paginate:
             type: cursor
-            nextCursorParameterPath: 'paging.next.after'
-            cursorParameterName: 'after'
-            responsePath: 'results'
-            limit: 100
+            next_cursor_parameter_path: 'paging.next.after'
+            cursor_parameter_name: 'after'
+            response_path: 'results'
     docs: https://developers.hubspot.com/docs/api/overview
 instagram:
     auth_mode: OAUTH2
@@ -857,9 +855,8 @@ slack:
         base_url: https://slack.com/api
         paginate:
             type: cursor
-            nextCursorParameterPath: 'response_metadata.next_cursor'
-            cursorParameterName: 'cursor'
-            limit: 100
+            next_cursor_parameter_path: 'response_metadata.next_cursor'
+            cursor_parameter_name: 'cursor'
     docs: https://api.slack.com/apis
 smugmug:
     auth_mode: OAUTH1

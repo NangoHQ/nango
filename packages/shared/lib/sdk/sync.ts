@@ -69,18 +69,19 @@ export enum PaginationType {
 interface Pagination {
     type: PaginationType;
     limit?: number;
-    responsePath?: string;
+    response_path?: string;
+    limit_parameter_name: string;
 }
 
 export interface CursorPagination extends Pagination {
     type: PaginationType.CURSOR;
-    nextCursorParameterPath: string;
-    cursorParameterName: string;
+    next_cursor_parameter_path: string;
+    cursor_parameter_name: string;
 }
 
 export interface PagePagination extends Pagination {
     type: PaginationType.PAGE;
-    pageParameterName?: string;
+    page_parameter_name?: string;
 }
 
 interface ProxyConfiguration {
@@ -356,15 +357,18 @@ export class NangoAction {
         let passPaginationParamsInBody: boolean = ['post', 'put', 'patch'].includes(configMethod);
 
         const updatedBodyOrParams: Record<string, string> = ((passPaginationParamsInBody ? config.data : config.params) as Record<string, string>) ?? {};
-        const defaultMaxValuePerPage: string = '100';
-        const limit: string = (paginationConfig['limit'] as unknown as string) || updatedBodyOrParams['limit'] || defaultMaxValuePerPage;
-        updatedBodyOrParams['limit'] = limit;
+        const defaultMaxValuePerPage: string = '10';
+        const limitParameterName: string = paginationConfig.limit_parameter_name;
+
+        const limit: string = (paginationConfig['limit'] as unknown as string) || updatedBodyOrParams[limitParameterName] || defaultMaxValuePerPage;
+
+        updatedBodyOrParams[limitParameterName] = limit;
 
         switch (paginationConfig.type) {
             case PaginationType.PAGE: {
                 const pageIncderementPaginationConfig: PagePagination = paginationConfig as PagePagination;
                 let page = 1;
-                const pageParameterName: string = pageIncderementPaginationConfig.pageParameterName ?? 'page';
+                const pageParameterName: string = pageIncderementPaginationConfig.page_parameter_name ?? 'page';
 
                 while (true) {
                     updatedBodyOrParams[pageParameterName] = `${page}`;
@@ -373,7 +377,7 @@ export class NangoAction {
 
                     const response: AxiosResponse = await this.proxy(config);
 
-                    const responseData: T[] = paginationConfig.responsePath ? this.getNestedField(response.data, paginationConfig.responsePath) : response.data;
+                    const responseData: T[] = paginationConfig.response_path ? this.getNestedField(response.data, paginationConfig.response_path) : response.data;
                     if (!responseData.length) {
                         return;
                     }
@@ -393,15 +397,15 @@ export class NangoAction {
                 let nextCursor: string | undefined;
                 while (true) {
                     if (nextCursor) {
-                        updatedBodyOrParams[cursorBasedPagination.cursorParameterName] = `${nextCursor}`;
+                        updatedBodyOrParams[cursorBasedPagination.cursor_parameter_name] = `${nextCursor}`;
                     }
 
                     this.updateConfigBodyOrParams(passPaginationParamsInBody, config, updatedBodyOrParams);
 
                     const response: AxiosResponse = await this.proxy(config);
 
-                    const responseData: T[] = cursorBasedPagination.responsePath
-                        ? this.getNestedField(response.data, cursorBasedPagination.responsePath)
+                    const responseData: T[] = cursorBasedPagination.response_path
+                        ? this.getNestedField(response.data, cursorBasedPagination.response_path)
                         : response.data;
                     if (!responseData.length) {
                         return;
@@ -409,7 +413,7 @@ export class NangoAction {
 
                     yield responseData;
 
-                    nextCursor = this.getNestedField(response.data, cursorBasedPagination.nextCursorParameterPath);
+                    nextCursor = this.getNestedField(response.data, cursorBasedPagination.next_cursor_parameter_path);
 
                     if (!nextCursor || nextCursor.trim().length === 0) {
                         return;
