@@ -427,8 +427,11 @@ export class NangoAction {
                     const linkHeader = parseLinksHeader(response.headers['link']);
                     const nextPageUrl: string | undefined = linkHeader?.[linkRelPagination.link_rel]?.url;
 
-                    if (nextPageUrl && isValidHttpUrl(nextPageUrl)) {
-                        this.updateProxyConfigEndpointAndParams(nextPageUrl, config);
+                    if (nextPageUrl) {
+                        if (!isValidHttpUrl(nextPageUrl)) {
+                            throw Error(`Next page URL ${nextPageUrl} returned from ${this.providerConfigKey} is invalid`);
+                        }
+                        this.updateEndpointAndParams(nextPageUrl, config);
                     } else {
                         return;
                     }
@@ -451,8 +454,11 @@ export class NangoAction {
                     yield responseData;
 
                     const nextPageUrl: string | undefined = this.getNestedField(response.data, urlPagination.next_url_parameter_path);
-                    if (nextPageUrl && isValidHttpUrl(nextPageUrl)) {
-                        this.updateProxyConfigEndpointAndParams(nextPageUrl, config);
+                    if (nextPageUrl) {
+                        if (!isValidHttpUrl(nextPageUrl)) {
+                            throw Error(`Next page URL ${nextPageUrl} returned from ${this.providerConfigKey} is invalid`);
+                        }
+                        this.updateEndpointAndParams(nextPageUrl, config);
                     } else {
                         return;
                     }
@@ -492,7 +498,7 @@ export class NangoAction {
         }
     }
 
-    private updateProxyConfigEndpointAndParams(nextPageUrl: string, config: ProxyConfiguration) {
+    private updateEndpointAndParams(nextPageUrl: string, config: ProxyConfiguration) {
         const url = new URL(nextPageUrl);
         const searchParams: URLSearchParams = url.searchParams;
         const path = url.pathname;
