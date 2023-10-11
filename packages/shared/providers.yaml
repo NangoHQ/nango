@@ -72,9 +72,10 @@ asana:
         base_url: https://app.asana.com
         paginate:
             type: cursor
-            next_cursor_parameter_path: 'next_page.offset'
-            cursor_parameter_name: 'offset'
-            response_data_path: 'data'
+            next_cursor_parameter_path: next_page.offset
+            cursor_parameter_name: offset
+            response_data_path: data
+            limit_parameter_name: limit
     docs: https://developers.asana.com/reference
 ashby:
     auth_mode: BASIC
@@ -367,7 +368,7 @@ github:
         retry:
             at: 'x-ratelimit-reset'
         paginate:
-            limit_parameter_name: 'per_page'
+            limit_parameter_name: per_page
             type: link_rel
             link_rel: next
     docs: https://docs.github.com/en/rest
@@ -476,9 +477,10 @@ hubspot:
         base_url: https://api.hubapi.com
         paginate:
             type: cursor
-            next_cursor_parameter_path: 'paging.next.after'
-            cursor_parameter_name: 'after'
-            response_data_path: 'results'
+            next_cursor_parameter_path: paging.next.after
+            limit_parameter_name: limit
+            cursor_parameter_name: after
+            response_data_path: results
     docs: https://developers.hubspot.com/docs/api/overview
 instagram:
     auth_mode: OAUTH2
@@ -510,6 +512,7 @@ jira:
         paginate:
             type: offset
             offset_parameter_name: start
+            limit_parameter_name: limit
 keap:
     auth_mode: OAUTH2
     authorization_url: https://accounts.infusionsoft.com/app/oauth/authorize
@@ -859,8 +862,9 @@ slack:
         base_url: https://slack.com/api
         paginate:
             type: cursor
-            next_cursor_parameter_path: 'response_metadata.next_cursor'
-            cursor_parameter_name: 'cursor'
+            next_cursor_parameter_path: response_metadata.next_cursor
+            cursor_parameter_name: cursor
+            limit_parameter_name: limit
     docs: https://api.slack.com/apis
 smugmug:
     auth_mode: OAUTH1
