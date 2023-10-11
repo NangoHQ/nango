@@ -367,8 +367,9 @@ github:
         retry:
             at: 'x-ratelimit-reset'
         paginate:
-            type: page
             limit_parameter_name: 'per_page'
+            type: link_rel
+            link_rel: next
     docs: https://docs.github.com/en/rest
 gitlab:
     auth_mode: OAUTH2

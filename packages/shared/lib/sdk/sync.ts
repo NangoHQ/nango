@@ -10,6 +10,8 @@ import { LogActionEnum } from '../models/Activity.js';
 import { Nango } from '@nangohq/node';
 import configService from '../services/config.service.js';
 import type { Template } from '../models/index.js';
+import { isValidHttpUrl } from '../utils/utils.js';
+import parseLinksHeader from 'parse-link-header';
 
 type LogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
 
@@ -63,7 +65,8 @@ interface DataResponse {
 
 export enum PaginationType {
     CURSOR = 'cursor',
-    PAGE = 'page'
+    PAGE = 'page',
+    LINK_REL = 'link_rel'
 }
 
 interface Pagination {
@@ -82,6 +85,11 @@ export interface CursorPagination extends Pagination {
 export interface PagePagination extends Pagination {
     type: PaginationType.PAGE;
     page_parameter_name?: string;
+}
+
+export interface LinkRelPagination extends Pagination {
+    type: PaginationType.LINK_REL;
+    link_rel: string;
 }
 
 interface ProxyConfiguration {
@@ -377,7 +385,9 @@ export class NangoAction {
 
                     const response: AxiosResponse = await this.proxy(config);
 
-                    const responseData: T[] = paginationConfig.response_path ? this.getNestedField(response.data, paginationConfig.response_path) : response.data;
+                    const responseData: T[] = paginationConfig.response_path
+                        ? this.getNestedField(response.data, paginationConfig.response_path)
+                        : response.data;
                     if (!responseData.length) {
                         return;
                     }
@@ -420,8 +430,42 @@ export class NangoAction {
                     }
                 }
             }
+            case PaginationType.LINK_REL: {
+                const linkRelPagination: LinkRelPagination = paginationConfig as LinkRelPagination;
+
+                this.updateConfigBodyOrParams(passPaginationParamsInBody, config, updatedBodyOrParams);
+                while (true) {
+                    const response: AxiosResponse = await this.proxy(config);
+
+                    const responseData: T[] = paginationConfig.response_path
+                        ? this.getNestedField(response.data, paginationConfig.response_path)
+                        : response.data;
+                    if (!responseData.length) {
+                        return;
+                    }
+
+                    yield responseData;
+
+                    const linkHeader = parseLinksHeader(response.headers['link']);
+                    let nextPageUrl: string | undefined = linkHeader?.[linkRelPagination.link_rel]?.url;
+
+                    if (nextPageUrl && isValidHttpUrl(nextPageUrl)) {
+                        const url = new URL(nextPageUrl);
+                        const searchParams: URLSearchParams = url.searchParams;
+                        const path = url.pathname;
+                        config.endpoint = path;
+                        config.params = {
+                            ...config.params as Record<string, string>,
+                            ...Object.fromEntries(searchParams.entries())
+                        };
+                        continue;
+                    } else {
+                        return;
+                    }
+                }
+            }
             default:
-                throw Error(`'${paginationConfig.type}' pagination is not supported. Please, make sure it's one of ${Object.values(PaginationType)}`);
+                throw Error(`'${paginationConfig.type} ' pagination is not supported. Please, make sure it's one of ${Object.values(PaginationType)} `);
         }
     }
 
@@ -511,7 +555,7 @@ export class NangoSync extends NangoAction {
                 await createActivityLogMessage({
                     level: 'error',
                     activity_log_id: this.activityLogId as number,
-                    content: `There was an issue with the batch save. ${error?.message}`,
+                    content: `There was an issue with the batch save.${error?.message} `,
                     timestamp: Date.now()
                 });
             }
@@ -554,7 +598,7 @@ export class NangoSync extends NangoAction {
             await createActivityLogMessage({
                 level: 'info',
                 activity_log_id: this.activityLogId as number,
-                content: `Batch save was a success and resulted in ${JSON.stringify(updatedResults, null, 2)}`,
+                content: `Batch save was a success and resulted in ${JSON.stringify(updatedResults, null, 2)} `,
                 timestamp: Date.now()
             });
 
@@ -562,7 +606,7 @@ export class NangoSync extends NangoAction {
 
             return true;
         } else {
-            const content = `There was an issue with the batch save. ${responseResults?.error}`;
+            const content = `There was an issue with the batch save.${responseResults?.error} `;
 
             if (!this.dryRun) {
                 await createActivityLogMessage({
@@ -613,7 +657,7 @@ export class NangoSync extends NangoAction {
                 await createActivityLogMessage({
                     level: 'error',
                     activity_log_id: this.activityLogId as number,
-                    content: `There was an issue with the batch delete. ${error?.message}`,
+                    content: `There was an issue with the batch delete.${error?.message} `,
                     timestamp: Date.now()
                 });
             }
@@ -657,7 +701,7 @@ export class NangoSync extends NangoAction {
             await createActivityLogMessage({
                 level: 'info',
                 activity_log_id: this.activityLogId as number,
-                content: `Batch delete was a success and resulted in ${JSON.stringify(updatedResults, null, 2)}`,
+                content: `Batch delete was a success and resulted in ${JSON.stringify(updatedResults, null, 2)} `,
                 timestamp: Date.now()
             });
 
@@ -665,7 +709,7 @@ export class NangoSync extends NangoAction {
 
             return true;
         } else {
-            const content = `There was an issue with the batch delete. ${responseResults?.error}`;
+            const content = `There was an issue with the batch delete.${responseResults?.error} `;
 
             if (!this.dryRun) {
                 await createActivityLogMessage({
