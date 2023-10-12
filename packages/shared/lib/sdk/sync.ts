@@ -99,7 +99,7 @@ interface ProxyConfiguration {
     data?: unknown;
     retries?: number;
     baseUrlOverride?: string;
-    paginate?: Record<string, any>; // Supported only by Syncs and Actions ATM
+    paginate?: Partial<CursorPagination> | Partial<NextUrlPagination>; // Supported only by Syncs and Actions ATM
 }
 
 enum AuthModes {
@@ -339,6 +339,8 @@ export class NangoAction {
         }
 
         let paginationConfig: Pagination = templatePaginationConfig;
+        delete paginationConfig.limit;
+
         if (config.paginate) {
             const paginationConfigOverride: Record<string, any> = config.paginate as Record<string, any>;
 
