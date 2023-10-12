@@ -65,9 +65,7 @@ interface DataResponse {
 
 export enum PaginationType {
     CURSOR = 'cursor',
-    LINK_REL = 'link_rel',
-    URL = 'url',
-    OFFSET = 'offset'
+    NEXT_URL = 'next_url'
 }
 
 interface Pagination {
@@ -83,19 +81,10 @@ export interface CursorPagination extends Pagination {
     cursor_parameter_name: string;
 }
 
-export interface LinkRelPagination extends Pagination {
-    type: PaginationType.LINK_REL;
-    link_rel: string;
-}
-
-export interface UrlPagination extends Pagination {
-    type: PaginationType.URL;
-    next_url_parameter_path: string;
-}
-
-export interface OffsetPagination extends Pagination {
-    type: PaginationType.OFFSET;
-    offset_parameter_name: string;
+export interface NextUrlPagination extends Pagination {
+    type: PaginationType.NEXT_URL;
+    link_rel?: string;
+    next_url_body_parameter_path?: string;
 }
 
 interface ProxyConfiguration {
@@ -341,11 +330,7 @@ export class NangoAction {
     }
 
     public async *paginate<T = any>(config: ProxyConfiguration): AsyncGenerator<T[], undefined, void> {
-        if (!this.providerConfigKey) {
-            throw Error(`Please, specify provider config key`);
-        }
-
-        const providerConfigKey: string = this.providerConfigKey;
+        const providerConfigKey: string = this.providerConfigKey as string;
         const template: Template = configService.getTemplate(providerConfigKey);
         const templatePaginationConfig: Pagination | undefined = template.proxy?.paginate;
 
@@ -363,19 +348,18 @@ export class NangoAction {
         }
 
         if (!config.method) {
-            // default to get if user doesn't specify a different method themselves
+            // default to GET if user doesn't specify a different method themselves
             config.method = 'GET';
         }
 
         const configMethod: string = config.method.toLocaleLowerCase();
-        let passPaginationParamsInBody: boolean = ['post', 'put', 'patch'].includes(configMethod);
+        const passPaginationParamsInBody: boolean = ['post', 'put', 'patch'].includes(configMethod);
 
-        const updatedBodyOrParams: Record<string, string> = ((passPaginationParamsInBody ? config.data : config.params) as Record<string, string>) ?? {};
+        const updatedBodyOrParams: Record<string, any> = ((passPaginationParamsInBody ? config.data : config.params) as Record<string, any>) ?? {};
         const limitParameterName: string = paginationConfig.limit_parameter_name;
 
         if (paginationConfig['limit']) {
-            const limit: string = paginationConfig['limit'] as unknown as string;
-            updatedBodyOrParams[limitParameterName] = limit;
+            updatedBodyOrParams[limitParameterName] = paginationConfig['limit'];
         }
 
         switch (paginationConfig.type) {
@@ -385,7 +369,7 @@ export class NangoAction {
                 let nextCursor: string | undefined;
                 while (true) {
                     if (nextCursor) {
-                        updatedBodyOrParams[cursorPagination.cursor_parameter_name] = `${nextCursor}`;
+                        updatedBodyOrParams[cursorPagination.cursor_parameter_name] = nextCursor;
                     }
 
                     this.updateConfigBodyOrParams(passPaginationParamsInBody, config, updatedBodyOrParams);
@@ -408,8 +392,8 @@ export class NangoAction {
                     }
                 }
             }
-            case PaginationType.LINK_REL: {
-                const linkRelPagination: LinkRelPagination = paginationConfig as LinkRelPagination;
+            case PaginationType.NEXT_URL: {
+                const nextUrlPagination: NextUrlPagination = paginationConfig as NextUrlPagination;
 
                 this.updateConfigBodyOrParams(passPaginationParamsInBody, config, updatedBodyOrParams);
                 while (true) {
@@ -424,89 +408,34 @@ export class NangoAction {
 
                     yield responseData;
 
-                    const linkHeader = parseLinksHeader(response.headers['link']);
-                    const nextPageUrl: string | undefined = linkHeader?.[linkRelPagination.link_rel]?.url;
+                    let nextPageUrl: string | undefined;
 
-                    if (nextPageUrl) {
-                        if (!isValidHttpUrl(nextPageUrl)) {
-                            throw Error(`Next page URL ${nextPageUrl} returned from ${this.providerConfigKey} is invalid`);
-                        }
-                        this.updateEndpointAndParams(nextPageUrl, config);
+                    if (nextUrlPagination.link_rel) {
+                        const linkHeader = parseLinksHeader(response.headers['link']);
+                        nextPageUrl = linkHeader?.[nextUrlPagination.link_rel]?.url;
+                    } else if (nextUrlPagination.next_url_body_parameter_path) {
+                        nextPageUrl = this.getNestedField(response.data, nextUrlPagination.next_url_body_parameter_path);
                     } else {
-                        return;
-                    }
-                }
-            }
-            case PaginationType.URL: {
-                const urlPagination: UrlPagination = paginationConfig as UrlPagination;
-
-                this.updateConfigBodyOrParams(passPaginationParamsInBody, config, updatedBodyOrParams);
-                while (true) {
-                    const response: AxiosResponse = await this.proxy(config);
-
-                    const responseData: T[] = paginationConfig.response_data_path
-                        ? this.getNestedField(response.data, paginationConfig.response_data_path)
-                        : response.data;
-                    if (!responseData.length) {
-                        return;
+                        throw Error(`Either 'link_rel' or 'next_url_body_parameter_path' should be specified for '${paginationConfig.type}' pagination`);
                     }
 
-                    yield responseData;
+                    if (!nextPageUrl) {
+                        return
+                    }
 
-                    const nextPageUrl: string | undefined = this.getNestedField(response.data, urlPagination.next_url_parameter_path);
-                    if (nextPageUrl) {
-                        if (!isValidHttpUrl(nextPageUrl)) {
-                            throw Error(`Next page URL ${nextPageUrl} returned from ${this.providerConfigKey} is invalid`);
-                        }
-                        this.updateEndpointAndParams(nextPageUrl, config);
+                    if (!isValidHttpUrl(nextPageUrl)) {
+                        // some providers only send path+query params in the link so we can immediately assign those to the endpoint
+                        config.endpoint = nextPageUrl;
                     } else {
-                        return;
+                        const url: URL = new URL(nextPageUrl);
+                        config.endpoint = url.pathname + url.search;
                     }
-                }
-            }
-            case PaginationType.OFFSET: {
-                const offsetPagination: OffsetPagination = paginationConfig as OffsetPagination;
-                const offsetParameterName: string = offsetPagination.offset_parameter_name;
-                let offset: number = 0;
-
-                while (true) {
-                    updatedBodyOrParams[offsetParameterName] = `${offset}`;
-
-                    this.updateConfigBodyOrParams(passPaginationParamsInBody, config, updatedBodyOrParams);
-
-                    const response: AxiosResponse = await this.proxy(config);
-
-                    const responseData: T[] = paginationConfig.response_data_path
-                        ? this.getNestedField(response.data, paginationConfig.response_data_path)
-                        : response.data;
-                    if (!responseData.length) {
-                        return;
-                    }
-
-                    yield responseData;
-
-                    if (responseData.length < 1) {
-                        // Last page was empty so no need to fetch further
-                        return;
-                    }
-
-                    offset += responseData.length;
+                    delete config.params;
                 }
             }
             default:
                 throw Error(`'${paginationConfig.type} ' pagination is not supported. Please, make sure it's one of ${Object.values(PaginationType)} `);
         }
-    }
-
-    private updateEndpointAndParams(nextPageUrl: string, config: ProxyConfiguration) {
-        const url = new URL(nextPageUrl);
-        const searchParams: URLSearchParams = url.searchParams;
-        const path = url.pathname;
-        config.endpoint = path;
-        config.params = {
-            ...(config.params as Record<string, string>),
-            ...Object.fromEntries(searchParams.entries())
-        };
     }
 
     private updateConfigBodyOrParams(passPaginationParamsInBody: boolean, config: ProxyConfiguration, updatedBodyOrParams: Record<string, string>) {
