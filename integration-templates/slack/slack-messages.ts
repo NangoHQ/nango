@@ -3,7 +3,7 @@ import { createHash } from 'crypto';
 
 export default async function fetchData(nango: NangoSync) {
     // Get all channels we are part of
-    let channels = await getAllPages(nango, 'users.conversations', {}, 'channels');
+    let channels = await getAllRecords(nango, 'users.conversations', {}, 'channels');
 
     await nango.log(`Bot is part of ${channels.length} channels`);
 
@@ -16,7 +16,7 @@ export default async function fetchData(nango: NangoSync) {
 
     // For every channel read messages, replies & reactions
     for (let channel of channels) {
-        let allMessages = await getAllPages(nango, 'conversations.history', { channel: channel.id, oldest: oldestTimestamp.toString() }, 'messages');
+        let allMessages = await getAllRecords(nango, 'conversations.history', { channel: channel.id, oldest: oldestTimestamp.toString() }, 'messages');
 
         for (let message of allMessages) {
             const mappedMessage: SlackMessage = {
@@ -71,7 +71,7 @@ export default async function fetchData(nango: NangoSync) {
 
             // Replies to fetch?
             if (message.reply_count > 0) {
-                const allReplies = await getAllPages(nango, 'conversations.replies', { channel: channel.id, ts: message.thread_ts }, 'messages');
+                const allReplies = await getAllRecords(nango, 'conversations.replies', { channel: channel.id, ts: message.thread_ts }, 'messages');
 
                 for (let reply of allReplies) {
                     if (reply.ts === message.ts) {
@@ -141,31 +141,21 @@ export default async function fetchData(nango: NangoSync) {
     await nango.batchSave(batchReactions, 'SlackMessageReaction');
 }
 
-async function getAllPages(nango: NangoSync, endpoint: string, params: Record<string, string>, resultsKey: string) {
-    let nextCursor = 'x';
-    let responses: any[] = [];
+async function getAllRecords(nango: NangoSync, endpoint: string, params: Record<string, string>, resultsKey: string) {
+    let records: any[] = [];
 
-    while (nextCursor !== '') {
-        const response = await nango.get({
-            endpoint: endpoint,
-            params: {
-                limit: '200',
-                cursor: nextCursor !== 'x' ? nextCursor : '',
-                ...params
-            },
-            retries: 10
-        });
-
-        if (!response.data.ok) {
-            await nango.log(`Received a Slack API error (for ${endpoint}): ${JSON.stringify(response.data, null, 2)}`);
+    const proxyConfig = {
+        endpoint: endpoint,
+        params,
+        retries: 10,
+        paginate: {
+            response_data_path: resultsKey
         }
+    };
 
-        const results = response.data[resultsKey];
-        const response_metadata = response.data.response_metadata;
-
-        responses = responses.concat(results);
-        nextCursor = response_metadata && response_metadata.next_cursor ? response_metadata.next_cursor : '';
+    for await (const recordBatch of nango.paginate(proxyConfig)) {
+        records.push(...recordBatch);
     }
 
-    return responses;
+    return records;
 }
