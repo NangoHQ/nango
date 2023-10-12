@@ -1,9 +1,10 @@
 import { expect, describe, it, beforeAll } from 'vitest';
 import { multipleMigrations } from '../../../db/database.js';
+import type { DataResponse } from '../../../models/Data.js';
 import * as DataService from './data.service.js';
 import connectionService from '../../connection.service.js';
 import { getFullRecords, getFullSnapshotRecords, takeSnapshot, getDeletedKeys } from './delete.service.js';
-import { getDataRecords } from './records.service.js';
+import { getDataRecords, formatDataRecords } from './records.service.js';
 import { createConfigSeeds } from '../../../db/seeders/config.seeder.js';
 import type { DataRecord } from '../../../models/Sync.js';
 import { generateInsertableJson, createRecords } from './mocks.js';
@@ -210,5 +211,92 @@ describe('Data delete service integration tests', () => {
         );
 
         expect(recordResponse?.length).toEqual(0);
+    });
+    it('When track deletes is true and an entry is updated it only that record should show as updated when getDataRecords is called', async () => {
+        const records = generateInsertableJson(100);
+        const { response, meta } = await createRecords(records, environmentName);
+        const { response: rawRecords } = response;
+        const { modelName, nangoConnectionId, syncId, syncJobId } = meta;
+        const { response: formattedResults } = formatDataRecords(
+            rawRecords as DataResponse[],
+            nangoConnectionId as number,
+            modelName,
+            syncId as string,
+            syncJobId as number
+        );
+        const { error, success } = await DataService.upsert(
+            formattedResults as unknown as DataRecord[],
+            '_nango_sync_data_records',
+            'external_id',
+            nangoConnectionId as number,
+            modelName,
+            1,
+            true // track_deletes
+        );
+        expect(success).toBe(true);
+        expect(error).toBe(undefined);
+        await takeSnapshot(nangoConnectionId as number, modelName);
+
+        if (formattedResults) {
+            // @ts-ignore
+            rawRecords[0]!['json']['updatedAt'] = new Date().toISOString();
+        }
+
+        const { response: updatedFormattedResults } = formatDataRecords(
+            rawRecords as DataResponse[],
+            nangoConnectionId as number,
+            modelName,
+            syncId as string,
+            syncJobId as number
+        );
+
+        const { error: updateError, success: updateSuccess } = await DataService.upsert(
+            updatedFormattedResults as DataRecord[],
+            '_nango_sync_data_records',
+            'external_id',
+            nangoConnectionId as number,
+            modelName,
+            1,
+            true // track_deletes
+        );
+
+        expect(updateSuccess).toBe(true);
+        expect(updateError).toBe(undefined);
+
+        const deletedKeys = await getDeletedKeys('_nango_sync_data_records', 'external_id', nangoConnectionId as number, modelName);
+        expect(deletedKeys?.length).toEqual(0);
+
+        const connection = await connectionService.getConnectionById(nangoConnectionId as number);
+
+        const { response: updatedRecordResponse } = await getDataRecords(
+            connection?.connection_id as string,
+            connection?.provider_config_key as string,
+            connection?.environment_id as number,
+            modelName,
+            undefined, // delta
+            undefined, // offset
+            undefined, // limit
+            undefined, // sortBy
+            'asc',
+            'updated'
+        );
+
+        expect(updatedRecordResponse?.length).toEqual(1);
+
+        // When track deletes is true and an entry is updated it should show as updated when getDataRecords is called
+        const { response: addedRecordResponse } = await getDataRecords(
+            connection?.connection_id as string,
+            connection?.provider_config_key as string,
+            connection?.environment_id as number,
+            modelName,
+            undefined, // delta
+            undefined, // offset
+            undefined, // limit
+            undefined, // sortBy
+            'asc',
+            'added'
+        );
+
+        expect(addedRecordResponse?.length).toEqual(99);
     });
 });
