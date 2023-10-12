@@ -70,26 +70,23 @@ export enum PaginationType {
 }
 
 interface Pagination {
-    type: PaginationType;
+    type: string;
     limit?: number;
     response_data_path?: string;
     limit_parameter_name: string;
 }
 
 export interface CursorPagination extends Pagination {
-    type: PaginationType.CURSOR;
     next_cursor_parameter_path: string;
     cursor_parameter_name: string;
 }
 
 export interface NextUrlPagination extends Pagination {
-    type: PaginationType.NEXT_URL;
     link_rel?: string;
     next_url_body_parameter_path?: string;
 }
 
 export interface OffsetPagination extends Pagination {
-    type: PaginationType.OFFSET;
     offset_parameter_name: string;
 }
 
