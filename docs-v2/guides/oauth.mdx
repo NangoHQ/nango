@@ -1,62 +1,68 @@
 ---
-title: 'Authorize APIs With OAuth'
-sidebarTitle: 'OAuth'
-description: 'Get access tokens for APIs.'
+title: 'Authorize APIs'
+sidebarTitle: 'Authorize APIs (⏱️ 10mins)'
+description: 'Retrieve, store and refresh access tokens for OAuth APIs in under 10 minutes.'
 ---
 
-This guide shows how you can let your users authorize external APIs, from inside your app. Once authorized, you will retrieve, store and refresh OAuth credentials so you can later perform API requests or use Nango's syncing features.
-
 <Tip>
-    This feature is free & unlimited on Nango Cloud.
+    Nango Cloud offers this feature for free and without limits.
 </Tip>
 
-## Step 1: Set up Nango
+This guide walks you through letting your users authorize external APIs directly from within your application.
 
-Create a free Nango account (no credit card required):
+## Step 1: Get Started with Nango
+
+First, sign up for a free Nango account (no credit card needed):
 [![Try Nango Cloud](/images/nango-deploy-button.svg)](https://app.nango.dev/signup)
 
-Open the [Dashboard](https://app.nango.dev) in your browser.
+## Step 2: Create an integration
 
-## Step 2: Create an _integration_
+Visit the [Add New Integration page](https://app.nango.dev/integration/create) and complete the form.
 
-On the Dashboard, go to the [New Integration page](https://app.nango.dev/integration/create) and fill in the form.
-
-To get the `Client ID` and `Client Secret` you will need to register your app with the API. The API provider will ask you to submit the `Callback URL` shown at the bottom of the New Integration page on Nango. You should also register the necessary scopes both with the API provider and on the New Integration page on Nango. 
+For the `Client ID` and `Client Secret`, you'll need to register your OAuth application on the developer portal of the external API you're integrating with.
 
 <Tip>
-    Search for your API here on the Nango docs: e.g. [Notion](/integrations/all/notion).  
-    It will show you helpful links to register your OAuth app & get scopes.
+    To register your OAuth app, find your API within Nango's documentation and go to the `Getting Started` section. For example, check out [Notion](/integrations/all/notion).
 </Tip>
 
-## Step 3: Test your _integration_
+When registering, the API provider will prompt you for the `Callback URL`. Use the one displayed at the bottom of Nango's integration page. Remember to also register the required scopes both with the API provider and within Nango's integration page.
 
-Click "Auth" next to the integration to try an OAuth flow from Nango.
-![Nango OAuth button](/images/quickstart/nango-oauth-button.png)
+## Step 3: Test your integration
 
-- If you get an error check the [Activity tab](https://app.nango.dev/activity): The logs there can show you helpful information to debug the issue.
-- If the OAuth flow succeeds, you can get your access token from the [Connections tab](https://app.nango.dev/connections) - Congrats! 🎉
+Click `Auth` next to the integration to initiate the OAuth flow via Nango.
+<Frame>
+  <img src="/images/quickstart/nango-oauth-button.png" />
+</Frame>
+
+Once the API authorization is successful, retrieve your access token from the [Connections tab](https://app.nango.dev/connections). Well done! 🎉
 
 ## Step 4: Embed Nango in your frontend
 
-Install `@nangohq/frontend` and use the code snippet from the [Add New Connection page](https://app.nango.dev/connections/create) (step 3 above) to trigger OAuth flows from your frontend (cf. [Frontend SDK docs](/sdks/frontend)).
+To kick-start, install `@nangohq/frontend`.  Then, utilize the code snippet provided on the [Add New Connection page](https://app.nango.dev/connections/create) (from step 3) to initiate OAuth flows from your frontend. Further details can be found in the [Frontend SDK docs](/sdks/frontend).
 
-`<CONNECTION-ID>` identifies this user's connection with the _integration_ in Nango. We recommend using a user ID or similar for it.
+Here, the `<CONNECTION-ID>` signifies a unique user connection to the integration within Nango. We suggest using a distinctive user ID or a similar identifier.
 
-## Step 5: Retrieve access tokens
-In your backend you can use our [Node SDK](/sdks/node) or [Connections REST API](/api-reference/connection/get) to fetch always-fresh access tokens (which will allow you to query the external API).
+## Step 5: Access tokens via your backend
+For backend operations, either our [Node SDK](/sdks/node) or [REST API](/api-reference/connection/get) can be employed to consistently fetch updated access tokens. These tokens enable you to query the external API.
 
--   `<INTEGRATION-ID>` is the name of your integration. It is listed on the [Integrations tab](https://app.nango.dev/integrations) in the Dashboard, e.g. `slack`
--   `<CONNECTION-ID>` is the Connection ID you passed in step 4 above.
 
-<Tip>
-    When you fetch access tokens from Nango, Nango refreshes them if necessary. Always fetch them **fresh** to make sure you never work with an expired access token!
-</Tip>
+-   `<INTEGRATION-ID>` represents the name of your integration. Find it on the [Integrations tab](https://app.nango.dev/integrations) in the Dashboard, e.g., `slack`.
+-   `<CONNECTION-ID>` corresponds to the Connection ID designated in step 4.
 
-### With the backend Node SDK
+Transition to the [Project Settings tab](https://app.nango.dev/project-settings) to obtain the secret key necessary for fetching the credentials:
 
-Check the [backend Node SDK reference](/sdks/node) for more details.
+<Tabs>
 
-Install `@nangohq/node`, then use:
+<Tab title="cURL">
+
+```bash
+curl --request GET \
+        --url https://api.nango.dev/connection/<CONNECTION-ID>?provider_config_key=<INTEGRATION-ID> \
+        --header 'Authorization: Bearer <SECRET-KEY-FROM-PROJECT-SETTINGS>'
+```
+</Tab>
+
+<Tab title="Node SDK">
 
 ```ts
 import { Nango } from '@nangohq/node';
@@ -65,170 +71,15 @@ let nango = new Nango({ secretKey: '<SECRET-KEY>' });
 
 let creds = await nango.getConnection('<INTEGRATION-ID>', '<CONNECTION-ID>');
 ```
+</Tab>
 
-### With the REST API
+</Tabs>
 
-Check the [API reference](/api-reference/connection/get) for full details and an example response
+## Next Steps
 
-Get the `Secret Key` from the [Project Settings page](https://app.nango.dev/project-settings).
+Dive deeper with the [Advanced Authorization guide](/guides/advanced-auth). Explore the [Synchronize With APIs guide](/guides/sync).
 
-```bash
-curl --request GET \
-        --url https://api.nango.dev/connection/<CONNECTION-ID>?provider_config_key=<INTEGRATION-ID> \
-        --header 'Authorization: Bearer <SECRET-KEY-FROM-PROJECT-SETTINGS>'
-```
-
-## Advanced Configuration
-
-### Custom Callback URL
-
-You can change the callback URL of Nango if you want to personalize it (e.g. use your own domain).
-
-If you are using Nango Cloud, follow these steps:
-
-1. Add a new endpoint in your app, e.g. `https://EXAMPLE.com/oauth-callback`. All requests to this endpoint should redirect to `https://api.nango.dev/oauth/callback` and **pass along all original parameters**. The easiest way to do this is with a 308 redirect.
-2. Change the registered OAuth callback URL with all API providers. Otherwise they will refuse new flows!
-3. When you are ready change your Nango callback URL in the Project Settings page ([cloud](https://app.nango.dev/project-settings))
-
-<Warning>
-Before saving the custom callback URL in Nango, ensure that:
-
--   the callback URL redirects to `https://api.nango.dev/oauth/callback` and passes along all parameters (e.g. 308 redirect)
--   your OAuth app, as registered with the external API provider, has the new callback URL whitelisted
-
-</Warning>
-
-If you are self-hosting Nango, follow the instructions [here](/use/self-hosting-instructions) to change your callback URL.
-
-### Connection Configuration
-
-Some APIs require additional parameters to run an OAuth flow or make API requests.
-
-Some examples:
-
-- Zendesk OAuth has the following authorization URL, where the subdomain is specific to a user's Zendesk account:
-    ```
-    https://<USER-SUBDOMAIN>.zendesk.com/oauth/authorizations/new
-    ```
-- Qualtrics, Shopify and Gorgias have the same per-customer subdomains as Zendesk
-- Salesforce uses a different API base URL per customer, e.g. `https://mycustomer.api.salesforce.com`
-- Zoho uses different API base URLs for different data centers. E.g. US customer's data is at `https://accounts.zoho.com` and EU customer's at `https://accounts.zoho.eu`
-
-#### Setting Connection Configuration
-
-For some APIs Nango requires additional details from the end user to run an OAuth flow or make API requests.
-
-This is documented in two places:
-- On the [API's Nango docs page](/integrations/overview)
-- On the dashboard page for [Adding a new Connection](https://app.nango.dev/connections/create) (Recommended)
-
-For instance, to specify the subdomain for Zendesk, pass in an additional configuration object to `nango.auth()`:
-
-```typescript
-nango.auth(
-        'zendesk',
-        '<CONNECTION-ID>',
-        {
-            params: {
-                subdomain: '<ZENDESK-SUBDOMAIN>' 
-            }
-        });
-```
-
-#### Automatically retrieved Connection Configuration
-
-Some Connection Configurations, such as the base URL for the Salesforce API, are automatically retrieved by Nango. This is noted on the [API's Nango docs page](/integrations/overview).
-
-Nango will automatically use this information for the Proxy, but if needed you can also retrieve it (see next section).
-
-#### Fetching Connection Configuration data
-
-Nango stores all connection configuration data on the [Connection](/core-concepts#connections) objects. You can retrieve it with the [SDKs](/sdks) or [REST API](/api-reference).
-
-```json
-{
-    ...,
-    "connectionConfiguration": {
-        "subdomain": "myshop",
-        "instance_url": "https://mygreatcorp.api.salesforce.com"
-    },
-    ...
-}
-```
-
-### Storing custom metadata per Connection
-
-Nango lets you store arbitrary metadata on the Connection.
-
-This is useful for:
-- Storing custom field mappings per customer (e.g. map "name" from the external API to "firstname" in your data model)
-- Storing per-customer configuration (e.g. which filters for syncing objects, categories to skip etc.)
-- Any other per-connection data you want to have available in your sync scripts
-
-This metadata is available to you in [syncs](/guides/sync) & [actions](/guides/actions) with `getMetadata()`:
-
-```ts
-interface Metadata {
-    owner: string;
-    repo: string;
-    branch: string;
-}
-
-export default async function fetchData(nango: NangoSync) {
-    const { owner, repo, branch } = await nango.getMetadata<Metadata>();
-    ...
-}
-```
-
-It can also be set and retrieved with the [SDKs](/sdks/node#set-and-fetch-custom-metadata) and the [REST API](https://docs.nango.dev/api-reference/connection/set-metadata). Check these pages for the methods to set and retrieve it.
-
-### Connection-Specific Authorization Params
-
-Some APIs require to pass additional query parameters in the authorization URL. If this applies to all users & use-cases, these params can be added to the [providers.yaml](https://nango.dev/providers.yaml) _API configurations_. 
-
-But sometimes, the additional authorization parameter is specific to a user or a use-case. In this case, it is possible to add it to the `nango.auth()` call from the Frontend SDK:
-
-```typescript
-nango.auth('discord', '<CONNECTION-ID>', { authorization_params: { key: 'value' } });
-```
-
-### Securing the Frontend SDK calls with HMAC
-
-By default, this feature is disabled and your frontend can attempt to create a new _connection_ using any Integration ID and Connection ID.
-
-But you might want to ensure that the app user is the only one that can create a new connection with that Connection ID.
-
-To enable this feature:
-1. Add a secret HMAC key in your [Project Settings](https://app.nango.dev/project-settings). Pick a large, random value!
-2. Generate the HMAC signature in your backend and pass it to your frontend where you make the `nango.auth` calls.
-2. When ready, enable the HMAC check in the Project settings. Nango will now reject auth calls without or mismatching HMAC signature, so make sure your code is ready before you flip the switch! 
-
-The HMAC digest is generated by your backend using the secret HMAC key you set and the combination of the **Integration ID** and the **Connection ID**. Your backend should keep the secret HMAC key private and not reveal it to your frontend or end-users!
-
-In your frontend pass the HMAC digest as follows in `nango.auth`:
-
-```ts
-nango.auth('<INTEGRATION-ID>', '<CONNECTION-ID>', { hmac: '<HMAC-DIGEST>' });
-```
-
-The HMAC digest can be generated by using the following code in your backend (node example):
-
-```js
-import * as crypto from 'node:crypto';
-
-// TODO: execute authentication and authorization checks before generating the HMAC digest.
-
-// The value of '<HMAC-KEY>' should match the secret HMAC key set in your project settings.
-const hmac = crypto.createHmac('sha256', '<HMAC-KEY>');
-hmac.update('<INTEGRATION-ID>:<CONNECTION-ID>');
-const digest = hmac.digest('hex');
-
-// TODO: return the value of `digest` to the frontend to pass to `nango.auth`.
-```
-
-### Configure Integrations Programmatically
-
-Nango offers a [REST API](/api-reference/integration/list) to programmatically manage your [Integrations](/core-concepts#integrations).
+Looking for authorizing APIs with API keys or Basic auth? Here is the [related guide](guides/api-key).
 
 ## Questions, problems, feedback?
 

@@ -109,7 +109,15 @@ enum AuthModes {
     OAuth1 = 'OAUTH1',
     OAuth2 = 'OAUTH2',
     Basic = 'BASIC',
-    ApiKey = 'API_KEY'
+    ApiKey = 'API_KEY',
+    App = 'APP'
+}
+
+interface AppCredentials {
+    type?: AuthModes.App;
+    access_token: string;
+    expires_at?: Date | undefined;
+    raw: Record<string, any>;
 }
 
 interface BasicApiCredentials {
@@ -142,7 +150,7 @@ interface OAuth1Credentials extends CredentialsCommon {
     oauth_token_secret: string;
 }
 
-type AuthCredentials = OAuth2Credentials | OAuth1Credentials | BasicApiCredentials | ApiKeyCredentials;
+type AuthCredentials = OAuth2Credentials | OAuth1Credentials | BasicApiCredentials | ApiKeyCredentials | AppCredentials;
 
 interface Metadata {
     [key: string]: string | Record<string, string>;

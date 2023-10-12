@@ -372,6 +372,12 @@ github:
             limit_parameter_name: per_page
             link_rel: next
     docs: https://docs.github.com/en/rest
+github-app:
+    alias: github
+    auth_mode: APP
+    authorization_url: ${connectionConfig.appPublicLink}/installations/new
+    token_url: https://api.github.com/app/installations/${connectionConfig.installation_id}/access_tokens
+    docs: https://docs.github.com/en/apps
 gitlab:
     auth_mode: OAUTH2
     authorization_url: https://gitlab.com/oauth/authorize
@@ -469,12 +475,18 @@ highlevel:
     proxy:
         base_url: https://services.leadconnectorhq.com
     docs: https://highlevel.stoplight.io/docs/integrations/0443d7d1a4bd0-overview
+    disable_pkce: true
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 hubspot:
     auth_mode: OAUTH2
     authorization_url: https://app.hubspot.com/oauth/authorize
     token_url: https://api.hubapi.com/oauth/v1/token
     proxy:
         base_url: https://api.hubapi.com
+        decompress: true
         paginate:
             type: cursor
             next_cursor_parameter_path: paging.next.after
@@ -579,6 +591,7 @@ microsoft-teams:
         prompt: consent
     proxy:
         base_url: https://graph.microsoft.com
+        decompress: true
     token_params:
         grant_type: authorization_code
     refresh_params:
@@ -720,6 +733,7 @@ pipedrive:
     token_url: https://oauth.pipedrive.com/oauth/token
     proxy:
         base_url: https://${connectionConfig.subdomain}.pipedrive.com
+        decompress: true
 qualtrics:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.qualtrics.com/oauth2/auth
@@ -1107,6 +1121,17 @@ wave-accounting:
     token_url: https://api.waveapps.com/oauth2/token
     proxy:
         base_url: https://gql.waveapps.com
+wildix-pbx:
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.subdomain}.wildixin.com/authorization/oauth2
+    token_url: https://${connectionConfig.subdomain}.wildixin.com/authorization/oauth2Token
+    authorization_params:
+        response_type: code
+    redirect_uri_metadata:
+        - subdomain
+    docs: https://docs.wildix.com/wms/index.html
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.wildixin.com
 workable:
     auth_mode: API_KEY
     proxy:

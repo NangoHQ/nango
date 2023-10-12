@@ -282,7 +282,7 @@ export class Nango {
         });
     }
 
-    public async getRecords<T = any>(config: GetRecordsRequestConfig): Promise<T & { _nango_metadata: RecordMetadata }[]> {
+    public async getRecords<T = any>(config: GetRecordsRequestConfig): Promise<(T & { _nango_metadata: RecordMetadata })[]> {
         const { connectionId, providerConfigKey, model, delta, offset, limit, includeNangoMetadata } = config;
         validateSyncRecordConfiguration(config);
 

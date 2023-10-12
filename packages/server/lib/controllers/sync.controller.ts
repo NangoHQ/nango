@@ -21,6 +21,7 @@ import {
     getProviderConfigBySyncAndAccount,
     SyncCommand,
     CommandToActivityLog,
+    ServiceResponse,
     errorManager,
     analytics,
     ErrorSourceEnum,
@@ -283,9 +284,20 @@ class SyncController {
 
             const syncClient = await SyncClient.getInstance();
 
-            const result = await syncClient?.triggerAction(connection as Connection, action_name as string, input, activityLogId as number);
+            const { success: actionSuccess, response: actionResponse } = (await syncClient?.triggerAction(
+                connection as Connection,
+                action_name as string,
+                input,
+                activityLogId as number
+            )) as ServiceResponse;
 
-            res.send(result);
+            if (!actionSuccess) {
+                res.sendStatus(400);
+                return;
+            } else {
+                res.send(actionResponse);
+                return;
+            }
         } catch (e) {
             next(e);
         }
