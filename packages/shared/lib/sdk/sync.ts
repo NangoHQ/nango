@@ -65,7 +65,8 @@ interface DataResponse {
 
 export enum PaginationType {
     CURSOR = 'cursor',
-    NEXT_URL = 'next_url'
+    NEXT_URL = 'next_url',
+    OFFSET = 'offset'
 }
 
 interface Pagination {
@@ -87,6 +88,11 @@ export interface NextUrlPagination extends Pagination {
     next_url_body_parameter_path?: string;
 }
 
+export interface OffsetPagination extends Pagination {
+    type: PaginationType.OFFSET;
+    offset_parameter_name: string;
+}
+
 interface ProxyConfiguration {
     endpoint: string;
     providerConfigKey?: string;
@@ -99,7 +105,7 @@ interface ProxyConfiguration {
     data?: unknown;
     retries?: number;
     baseUrlOverride?: string;
-    paginate?: Partial<CursorPagination> | Partial<NextUrlPagination>; // Supported only by Syncs and Actions ATM
+    paginate?: Partial<CursorPagination> | Partial<NextUrlPagination> | Partial<OffsetPagination>; // Supported only by Syncs and Actions ATM
 }
 
 enum AuthModes {
@@ -364,6 +370,7 @@ export class NangoAction {
             updatedBodyOrParams[limitParameterName] = paginationConfig['limit'];
         }
 
+        // TODO: Consider creating 'Paginator' interface and moving the case block to specific implementations of 'Paginator'
         switch (paginationConfig.type) {
             case PaginationType.CURSOR: {
                 const cursorPagination: CursorPagination = paginationConfig as CursorPagination;
@@ -381,6 +388,7 @@ export class NangoAction {
                     const responseData: T[] = cursorPagination.response_data_path
                         ? this.getNestedField(response.data, cursorPagination.response_data_path)
                         : response.data;
+
                     if (!responseData.length) {
                         return;
                     }
@@ -424,6 +432,35 @@ export class NangoAction {
                         config.endpoint = url.pathname + url.search;
                     }
                     delete config.params;
+                }
+            }
+            case PaginationType.OFFSET: {
+                const offsetPagination: OffsetPagination = paginationConfig as OffsetPagination;
+                const offsetParameterName: string = offsetPagination.offset_parameter_name;
+                let offset: number = 0;
+
+                while (true) {
+                    updatedBodyOrParams[offsetParameterName] = `${offset}`;
+
+                    this.updateConfigBodyOrParams(passPaginationParamsInBody, config, updatedBodyOrParams);
+
+                    const response: AxiosResponse = await this.proxy(config);
+
+                    const responseData: T[] = paginationConfig.response_data_path
+                        ? this.getNestedField(response.data, paginationConfig.response_data_path)
+                        : response.data;
+                    if (!responseData.length) {
+                        return;
+                    }
+
+                    yield responseData;
+
+                    if (responseData.length < 1) {
+                        // Last page was empty so no need to fetch further
+                        return;
+                    }
+
+                    offset += responseData.length;
                 }
             }
             default:
