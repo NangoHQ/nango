@@ -1,5 +1,11 @@
 import type { NangoSync, GithubRepoFile } from './models';
 
+enum PaginationType {
+    RepoFile,
+    CommitFile,
+    Commit
+}
+
 enum Models {
     GithubRepoFile = 'GithubRepoFile'
 }
@@ -11,81 +17,26 @@ interface Metadata {
 }
 
 export default async function fetchData(nango: NangoSync) {
-    let { owner, repo, branch } = await nango.getMetadata<Metadata>();
+    const { owner, repo, branch } = await nango.getMetadata<Metadata>();
+
     // On the first run, fetch all files. On subsequent runs, fetch only updated files.
     if (!nango.lastSyncDate) {
-        await saveAllRepositoryFiles(nango, owner, repo, branch);
+        await getAllFilesFromRepo(nango, owner, repo, branch);
     } else {
-        await saveFileUpdates(nango, owner, repo, nango.lastSyncDate);
+        await getUpdatedFiles(nango, owner, repo, nango.lastSyncDate);
     }
 }
 
-async function saveAllRepositoryFiles(nango: NangoSync, owner: string, repo: string, branch: string) {
-    let count = 0;
-
-    const endpoint: string = `/repos/${owner}/${repo}/git/trees/${branch}`;
-    const proxyConfig = {
-        endpoint,
-        params: { recursive: '1' },
-        paginate: { response_data_path: 'tree' }
-    };
-
-    await nango.log(`Fetching files from endpoint ${endpoint}.`);
-
-    for await (const fileBatch of nango.paginate(proxyConfig)) {
-        const blobFiles = fileBatch.filter((item: any) => item.type === 'blob');
-        count += blobFiles.length;
-        await nango.batchSave(blobFiles.map(mapToFile), Models.GithubRepoFile);
-    }
-    await nango.log(`Got ${count} file(s).`);
+async function getAllFilesFromRepo(nango: NangoSync, owner: string, repo: string, branch: string) {
+    await paginate(nango, `/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`, PaginationType.RepoFile);
 }
 
-async function saveFileUpdates(nango: NangoSync, owner: string, repo: string, since: Date) {
-    const commitsSinceLastSync: any[] = await getCommitsSinceLastSync(owner, repo, since, nango);
+async function getUpdatedFiles(nango: NangoSync, owner: string, repo: string, since: Date) {
+    const commitsSinceLastSync = await paginate(nango, `/repos/${owner}/${repo}/commits`, PaginationType.Commit, { since: since.toISOString() });
 
     for (const commitSummary of commitsSinceLastSync) {
-        await saveFilesUpdatedByCommit(owner, repo, commitSummary, nango);
+        await paginate(nango, `/repos/${owner}/${repo}/commits/${commitSummary.sha}`, PaginationType.CommitFile);
     }
-}
-
-async function getCommitsSinceLastSync(owner: string, repo: string, since: Date, nango: NangoSync) {
-    let count = 0;
-    const endpoint: string = `/repos/${owner}/${repo}/commits`;
-
-    const proxyConfig = {
-        endpoint,
-        params: { since: since.toISOString() }
-    };
-
-    await nango.log(`Fetching commits from endpoint ${endpoint}.`);
-
-    const commitsSinceLastSync: any[] = [];
-    for await (const commitBatch of nango.paginate(proxyConfig)) {
-        count += commitBatch.length;
-        commitsSinceLastSync.push(...commitBatch);
-    }
-    await nango.log(`Got ${count} commits(s).`);
-    return commitsSinceLastSync;
-}
-
-async function saveFilesUpdatedByCommit(owner: string, repo: string, commitSummary: any, nango: NangoSync) {
-    let count = 0;
-    const endpoint: string = `/repos/${owner}/${repo}/commits/${commitSummary.sha}`;
-    const proxyConfig = {
-        endpoint,
-        paginate: {
-            response_data_path: 'files'
-        }
-    };
-
-    await nango.log(`Fetching files from endpoint ${endpoint}.`);
-
-    for await (const fileBatch of nango.paginate(proxyConfig)) {
-        count += fileBatch.length;
-        await nango.batchSave(fileBatch.filter((file: any) => file.status !== 'removed').map(mapToFile), Models.GithubRepoFile);
-        await nango.batchDelete(fileBatch.filter((file: any) => file.status === 'removed').map(mapToFile), Models.GithubRepoFile);
-    }
-    await nango.log(`Got ${count} file(s).`);
 }
 
 function mapToFile(file: any): GithubRepoFile {
@@ -95,4 +46,52 @@ function mapToFile(file: any): GithubRepoFile {
         url: file.url || file.blob_url,
         last_modified_date: file.committer?.date ? new Date(file.committer?.date) : new Date() // Use commit date or current date
     };
+}
+
+async function paginate(nango: NangoSync, endpoint: string, type: PaginationType, params?: any): Promise<any[]> {
+    let page = 1;
+    const PER_PAGE = 100;
+    const results: any[] = [];
+    let count = 0;
+    const objectType = type === PaginationType.Commit ? 'commit' : 'file';
+
+    await nango.log(`Fetching ${objectType}(s) from endpoint ${endpoint}.`);
+
+    while (true) {
+        const response = await nango.get({
+            endpoint: endpoint,
+            params: {
+                ...params,
+                page: page,
+                per_page: PER_PAGE
+            }
+        });
+
+        switch (type) {
+            case PaginationType.RepoFile:
+                const files = response.data.tree.filter((item: any) => item.type === 'blob');
+                count += files.length;
+                await nango.batchSave(files.map(mapToFile), Models.GithubRepoFile);
+                break;
+            case PaginationType.CommitFile:
+                count += response.data.files.length;
+                await nango.batchSave(response.data.files.filter((file: any) => file.status !== 'removed').map(mapToFile), Models.GithubRepoFile);
+                await nango.batchDelete(response.data.files.filter((file: any) => file.status === 'removed').map(mapToFile), Models.GithubRepoFile);
+                break;
+            case PaginationType.Commit:
+                count += response.data.length;
+                results.push(...response.data);
+                break;
+        }
+
+        if (!response.headers.link || !response.headers.link.includes('rel="next"')) {
+            break;
+        }
+
+        page++;
+    }
+
+    await nango.log(`Got ${count} ${objectType}(s).`);
+
+    return results;
 }

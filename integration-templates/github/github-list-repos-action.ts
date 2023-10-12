@@ -4,15 +4,15 @@ export default async function runAction(nango: NangoSync): Promise<{ repos: Gith
     let allRepos: any[] = [];
 
     // Fetch user's personal repositories.
-    const personalRepos = await getAll(nango, '/user/repos');
+    const personalRepos = await paginate(nango, '/user/repos');
     allRepos = allRepos.concat(personalRepos);
 
     // Fetch organizations the user is a part of.
-    const organizations = await getAll(nango, '/user/orgs');
+    const organizations = await paginate(nango, '/user/orgs');
 
     // For each organization, fetch its repositories.
     for (const org of organizations) {
-        const orgRepos = await getAll(nango, `/orgs/${org.login}/repos`);
+        const orgRepos = await paginate(nango, `/orgs/${org.login}/repos`);
         allRepos = allRepos.concat(orgRepos);
     }
 
@@ -30,12 +30,29 @@ export default async function runAction(nango: NangoSync): Promise<{ repos: Gith
     return { repos: mappedRepos };
 }
 
-async function getAll(nango: NangoSync, endpoint: string) {
-    const records: any[] = [];
+async function paginate(nango: NangoSync, endpoint: string) {
+    const MAX_PAGE = 100;
 
-    for await (const recordBatch of nango.paginate({ endpoint })) {
-        records.push(...recordBatch);
+    let results: any[] = [];
+    let page = 1;
+
+    while (true) {
+        const resp = await nango.get({
+            endpoint: endpoint,
+            params: {
+                limit: `${MAX_PAGE}`,
+                page: `${page}`
+            }
+        });
+
+        results = results.concat(resp.data);
+
+        if (resp.data.length == MAX_PAGE) {
+            page += 1;
+        } else {
+            break;
+        }
     }
 
-    return records;
+    return results;
 }

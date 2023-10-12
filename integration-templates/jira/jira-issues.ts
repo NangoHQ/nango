@@ -2,30 +2,35 @@ import type { NangoSync, JiraIssue } from './models';
 
 export default async function fetchData(nango: NangoSync) {
     const jql = nango.lastSyncDate ? `updated >= "${nango.lastSyncDate?.toISOString().slice(0, -8).replace('T', ' ')}"` : '';
+    let startAt: number = 0;
+    const maxResults: number = 50;
     const fields = 'id,key,summary,description,issuetype,status,assignee,reporter,project,created,updated';
     const cloudId = await getCloudId(nango);
 
-    const proxyConfig = {
-        baseUrlOverride: `https://api.atlassian.com/ex/jira/${cloudId}`,
-        endpoint: `/rest/api/3/search`,
-        paginate: {
-            type: 'offset',
-            offset_parameter_name: 'startAt',
-            limit_parameter_name: 'maxResults',
-            response_data_path: 'issues'
-        },
-        params: {
-            jql: jql,
-            fields: fields
-        },
-        headers: {
-            'X-Atlassian-Token': 'no-check'
-        },
-        retries: 10 // Exponential backoff + long-running job = handles rate limits well.
-    };
+    while (true) {
+        const response = await nango.get({
+            baseUrlOverride: 'https://api.atlassian.com',
+            endpoint: `ex/jira/${cloudId}/rest/api/3/search`,
+            params: {
+                jql: jql,
+                startAt: `${startAt}`,
+                maxResults: `${maxResults}`,
+                fields: fields
+            },
+            headers: {
+                'X-Atlassian-Token': 'no-check'
+            },
+            retries: 10 // Exponential backoff + long-running job = handles rate limits well.
+        });
 
-    for await (const issueBatch of nango.paginate(proxyConfig)) {
-        await nango.batchSave(mapIssues(issueBatch), 'JiraIssue');
+        const issues = response.data.issues;
+        await nango.batchSave(mapIssues(issues), 'JiraIssue');
+
+        if (issues.length < maxResults) {
+            break;
+        } else {
+            startAt += maxResults;
+        }
     }
 }
 

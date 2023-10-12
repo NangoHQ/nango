@@ -1,7 +1,7 @@
 import type { SlackChannel, NangoSync } from './models';
 
 export default async function fetchData(nango: NangoSync) {
-    const responses = await getAllChannels(nango, 'conversations.list');
+    const responses = await getAllPages(nango, 'conversations.list');
 
     const mappedChannels: SlackChannel[] = responses.map((record: any) => {
         return {
@@ -27,7 +27,6 @@ export default async function fetchData(nango: NangoSync) {
     // Now let's also join all public channels where we are not yet a member
     await joinPublicChannels(nango, mappedChannels);
 
-    // console.log(mappedChannels)
     // Save channels
     await nango.batchSave(mappedChannels, 'SlackChannel');
 }
@@ -35,7 +34,7 @@ export default async function fetchData(nango: NangoSync) {
 // Checks for public channels where the bot is not a member yet and joins them
 async function joinPublicChannels(nango: NangoSync, channels: SlackChannel[]) {
     // Get ID of all channels where we are already a member
-    const joinedChannelsResponse = await getAllChannels(nango, 'users.conversations');
+    const joinedChannelsResponse = await getAllPages(nango, 'users.conversations');
     const channelIds = joinedChannelsResponse.map((record: any) => {
         return record.id;
     });
@@ -53,18 +52,27 @@ async function joinPublicChannels(nango: NangoSync, channels: SlackChannel[]) {
     }
 }
 
-async function getAllChannels(nango: NangoSync, endpoint: string) {
-    const channels: any[] = [];
+async function getAllPages(nango: NangoSync, endpoint: string) {
+    var nextCursor = 'x';
+    var responses: any[] = [];
 
-    const proxyConfig = {
-        endpoint,
-        paginate: {
-            response_data_path: 'channels'
+    while (nextCursor !== '') {
+        const response = await nango.get({
+            endpoint: endpoint,
+            params: {
+                limit: '200',
+                cursor: nextCursor !== 'x' ? nextCursor : ''
+            }
+        });
+
+        if (!response.data.ok) {
+            await nango.log(`Received a Slack API error (for ${endpoint}): ${JSON.stringify(response.data, null, 2)}`);
         }
-    };
-    for await (const channelBatch of nango.paginate(proxyConfig)) {
-        channels.push(...channelBatch);
+
+        const { channels, response_metadata } = response.data;
+        responses = responses.concat(channels);
+        nextCursor = response_metadata.next_cursor;
     }
 
-    return channels;
+    return responses;
 }
