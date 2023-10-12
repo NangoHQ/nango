@@ -408,19 +408,10 @@ export class NangoAction {
 
                     yield responseData;
 
-                    let nextPageUrl: string | undefined;
-
-                    if (nextUrlPagination.link_rel) {
-                        const linkHeader = parseLinksHeader(response.headers['link']);
-                        nextPageUrl = linkHeader?.[nextUrlPagination.link_rel]?.url;
-                    } else if (nextUrlPagination.next_url_body_parameter_path) {
-                        nextPageUrl = this.getNestedField(response.data, nextUrlPagination.next_url_body_parameter_path);
-                    } else {
-                        throw Error(`Either 'link_rel' or 'next_url_body_parameter_path' should be specified for '${paginationConfig.type}' pagination`);
-                    }
+                    let nextPageUrl: string | undefined = this.getNextPageUrlFromBodyOrHeaders(nextUrlPagination, response, paginationConfig);
 
                     if (!nextPageUrl) {
-                        return
+                        return;
                     }
 
                     if (!isValidHttpUrl(nextPageUrl)) {
@@ -436,6 +427,17 @@ export class NangoAction {
             default:
                 throw Error(`'${paginationConfig.type} ' pagination is not supported. Please, make sure it's one of ${Object.values(PaginationType)} `);
         }
+    }
+
+    private getNextPageUrlFromBodyOrHeaders(nextUrlPagination: NextUrlPagination, response: AxiosResponse<any, any>, paginationConfig: Pagination) {
+        if (nextUrlPagination.link_rel) {
+            const linkHeader = parseLinksHeader(response.headers['link']);
+            return linkHeader?.[nextUrlPagination.link_rel]?.url;
+        } else if (nextUrlPagination.next_url_body_parameter_path) {
+            return this.getNestedField(response.data, nextUrlPagination.next_url_body_parameter_path);
+        }
+
+        throw Error(`Either 'link_rel' or 'next_url_body_parameter_path' should be specified for '${paginationConfig.type}' pagination`);
     }
 
     private updateConfigBodyOrParams(passPaginationParamsInBody: boolean, config: ProxyConfiguration, updatedBodyOrParams: Record<string, string>) {
