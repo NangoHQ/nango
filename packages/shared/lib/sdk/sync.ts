@@ -102,7 +102,7 @@ interface ProxyConfiguration {
     data?: unknown;
     retries?: number;
     baseUrlOverride?: string;
-    paginate?: Partial<CursorPagination> | Partial<NextUrlPagination> | Partial<OffsetPagination>; // Supported only by Syncs and Actions ATM
+    paginate?: Partial<CursorPagination> | Partial<NextUrlPagination> | Partial<OffsetPagination>;
 }
 
 enum AuthModes {
@@ -361,7 +361,6 @@ export class NangoAction {
         }
 
         if (!config.method) {
-            // default to GET if user doesn't specify a different method themselves
             config.method = 'GET';
         }
 
@@ -469,7 +468,7 @@ export class NangoAction {
                 }
             }
             default:
-                throw Error(`'${paginationConfig.type} ' pagination is not supported. Please, make sure it's one of ${Object.values(PaginationType)} `);
+                throw Error(`'${paginationConfig.type} ' pagination is not supported. Please, make sure it's one of ${Object.values(PaginationType)}`);
         }
     }
 
@@ -570,7 +569,7 @@ export class NangoSync extends NangoAction {
                 await createActivityLogMessage({
                     level: 'error',
                     activity_log_id: this.activityLogId as number,
-                    content: `There was an issue with the batch save.${error?.message} `,
+                    content: `There was an issue with the batch save.${error?.message}`,
                     timestamp: Date.now()
                 });
             }
@@ -613,7 +612,7 @@ export class NangoSync extends NangoAction {
             await createActivityLogMessage({
                 level: 'info',
                 activity_log_id: this.activityLogId as number,
-                content: `Batch save was a success and resulted in ${JSON.stringify(updatedResults, null, 2)} `,
+                content: `Batch save was a success and resulted in ${JSON.stringify(updatedResults, null, 2)}`,
                 timestamp: Date.now()
             });
 
@@ -621,7 +620,7 @@ export class NangoSync extends NangoAction {
 
             return true;
         } else {
-            const content = `There was an issue with the batch save.${responseResults?.error} `;
+            const content = `There was an issue with the batch save.${responseResults?.error}`;
 
             if (!this.dryRun) {
                 await createActivityLogMessage({
@@ -672,7 +671,7 @@ export class NangoSync extends NangoAction {
                 await createActivityLogMessage({
                     level: 'error',
                     activity_log_id: this.activityLogId as number,
-                    content: `There was an issue with the batch delete.${error?.message} `,
+                    content: `There was an issue with the batch delete.${error?.message}`,
                     timestamp: Date.now()
                 });
             }
@@ -716,7 +715,7 @@ export class NangoSync extends NangoAction {
             await createActivityLogMessage({
                 level: 'info',
                 activity_log_id: this.activityLogId as number,
-                content: `Batch delete was a success and resulted in ${JSON.stringify(updatedResults, null, 2)} `,
+                content: `Batch delete was a success and resulted in ${JSON.stringify(updatedResults, null, 2)}`,
                 timestamp: Date.now()
             });
 
@@ -724,7 +723,7 @@ export class NangoSync extends NangoAction {
 
             return true;
         } else {
-            const content = `There was an issue with the batch delete.${responseResults?.error} `;
+            const content = `There was an issue with the batch delete.${responseResults?.error}`;
 
             if (!this.dryRun) {
                 await createActivityLogMessage({
