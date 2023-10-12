@@ -39,6 +39,13 @@ class WebhookService {
     ) {
         const webhookUrl = await environmentService.getWebhookUrl(nangoConnection.environment_id);
 
+        console.log({
+            responseResults: {
+                added: responseResults.added,
+                updated: responseResults.updated,
+                deleted: responseResults.deleted
+            }
+        });
         if (!webhookUrl) {
             return;
         }
