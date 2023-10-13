@@ -37,6 +37,32 @@ describe('classToObject', () => {
         expect(obj['method']()).toBe('methodValue');
     });
 
+    it('should convert class instance to object of an object that extends another', () => {
+        class BaseClass {
+            otherProp = 'someValue';
+            someDate = new Date('2021-01-01');
+
+            otherMethod() {
+                return 'otherMethodValue';
+            }
+        }
+        class TestClass extends BaseClass {
+            prop = 'value';
+            someOtherDate = new Date('2021-01-01');
+            method() {
+                return 'methodValue';
+            }
+        }
+        const instance = new TestClass();
+        const obj: any = IntegrationUtils.classToObject(instance);
+        expect(obj).toHaveProperty('prop', 'value');
+        expect(obj['method']()).toBe('methodValue');
+        expect(obj.someDate.toISOString()).toBe('2021-01-01T00:00:00.000Z');
+        expect(obj).toHaveProperty('otherProp', 'someValue');
+        expect(obj['otherMethod']()).toBe('otherMethodValue');
+        expect(obj.someOtherDate.toISOString()).toBe('2021-01-01T00:00:00.000Z');
+    });
+
     it('should return the same object if not a class instance', () => {
         const obj = { key: 'value' };
         expect(IntegrationUtils.classToObject(obj)).toBe(obj);

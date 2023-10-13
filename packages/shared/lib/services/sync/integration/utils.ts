@@ -44,21 +44,22 @@ export function classToObject(instance: object): Record<string, unknown> {
 
     const obj: Record<string, unknown> = {};
 
-    let proto = Object.getPrototypeOf(instance);
-
-    while (proto && proto !== Object.prototype) {
-        const keys = Object.getOwnPropertyNames(proto);
-
-        for (const key of keys) {
-            const value = (instance as Record<string, unknown>)[key];
-            if (typeof value === 'function') {
-                obj[key] = value.bind(instance);
+    const copyProperties = (inst: any) => {
+        Object.getOwnPropertyNames(inst).forEach((key) => {
+            if (inst[key] instanceof Date) {
+                obj[key] = new Date(inst[key].getTime());
+            } else if (typeof inst[key] === 'function') {
+                obj[key] = inst[key].bind(instance);
             } else {
-                obj[key] = value;
+                obj[key] = inst[key];
             }
-        }
+        });
+    };
 
-        proto = Object.getPrototypeOf(proto);
+    let currentInstance: any = instance;
+    while (currentInstance && currentInstance !== Object.prototype) {
+        copyProperties(currentInstance);
+        currentInstance = Object.getPrototypeOf(currentInstance);
     }
 
     return obj;
@@ -217,6 +218,92 @@ export function hostToQuickJSHandle(vm: QuickJSContext, val: unknown, depth = 0)
         createHashFn.dispose();
 
         return cryptoObjHandle;
+    }
+
+    if (val instanceof Date) {
+        const dateObjHandle = vm.newObject();
+
+        vm.setProp(
+            dateObjHandle,
+            'toISOString',
+            vm.newFunction('toISOString', () => {
+                return vm.newString(val.toISOString());
+            })
+        );
+
+        vm.setProp(
+            dateObjHandle,
+            'getTime',
+            vm.newFunction('getTime', () => {
+                return vm.newNumber(val.getTime());
+            })
+        );
+
+        vm.setProp(
+            dateObjHandle,
+            'getDate',
+            vm.newFunction('getDate', () => {
+                return vm.newNumber(val.getDate());
+            })
+        );
+
+        vm.setProp(
+            dateObjHandle,
+            'getDay',
+            vm.newFunction('getDay', () => {
+                return vm.newNumber(val.getDay());
+            })
+        );
+
+        vm.setProp(
+            dateObjHandle,
+            'getFullYear',
+            vm.newFunction('getFullYear', () => {
+                return vm.newNumber(val.getFullYear());
+            })
+        );
+
+        vm.setProp(
+            dateObjHandle,
+            'getHours',
+            vm.newFunction('getHours', () => {
+                return vm.newNumber(val.getHours());
+            })
+        );
+
+        vm.setProp(
+            dateObjHandle,
+            'getMilliseconds',
+            vm.newFunction('getMilliseconds', () => {
+                return vm.newNumber(val.getMilliseconds());
+            })
+        );
+
+        vm.setProp(
+            dateObjHandle,
+            'getMinutes',
+            vm.newFunction('getMinutes', () => {
+                return vm.newNumber(val.getMinutes());
+            })
+        );
+
+        vm.setProp(
+            dateObjHandle,
+            'getMonth',
+            vm.newFunction('getMonth', () => {
+                return vm.newNumber(val.getMonth());
+            })
+        );
+
+        vm.setProp(
+            dateObjHandle,
+            'getSeconds',
+            vm.newFunction('getSeconds', () => {
+                return vm.newNumber(val.getSeconds());
+            })
+        );
+
+        return dateObjHandle;
     }
 
     if (val instanceof Error) {
