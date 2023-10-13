@@ -1,3 +1,4 @@
+import axios from 'axios';
 import type { QuickJSContext, QuickJSHandle } from 'quickjs-emscripten';
 import path from 'path';
 import crypto from 'crypto';
@@ -225,6 +226,42 @@ export function hostToQuickJSHandle(vm: QuickJSContext, val: unknown, depth = 0)
         if (val.stack) {
             vm.setProp(errorObjHandle, 'stack', vm.newString(val.stack));
         }
+
+        if (axios.isAxiosError(val)) {
+            const axiosErrorObjHandle = vm.newObject();
+
+            if (val.config) {
+                const configHandle = hostToQuickJSHandle(vm, val.config, depth + 1);
+                vm.setProp(axiosErrorObjHandle, 'config', configHandle);
+                configHandle.dispose();
+            }
+
+            if (val.response) {
+                const responseHandle = hostToQuickJSHandle(
+                    vm,
+                    {
+                        status: val.response.status,
+                        statusText: val.response.statusText,
+                        headers: val.response.headers,
+                        data: val.response.data
+                    },
+                    depth + 1
+                );
+                vm.setProp(axiosErrorObjHandle, 'response', responseHandle);
+                responseHandle.dispose();
+            }
+
+            vm.setProp(errorObjHandle, 'axiosError', axiosErrorObjHandle);
+        }
+
+        for (const key in val) {
+            if (Object.prototype.hasOwnProperty.call(val, key) && !['message', 'name', 'stack'].includes(key)) {
+                const propHandle = hostToQuickJSHandle(vm, (val as any)[key], depth + 1);
+                vm.setProp(errorObjHandle, key, propHandle);
+                propHandle.dispose();
+            }
+        }
+
         return errorObjHandle;
     }
 
