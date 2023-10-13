@@ -72,10 +72,10 @@ asana:
         base_url: https://app.asana.com
         paginate:
             type: cursor
-            next_cursor_parameter_path: next_page.offset
-            cursor_parameter_name: offset
-            response_data_path: data
-            limit_parameter_name: limit
+            cursor_path_in_response: next_page.offset
+            cursor_name_in_request: offset
+            response_path: data
+            limit_name_in_request: limit
     docs: https://developers.asana.com/reference
 ashby:
     auth_mode: BASIC
@@ -369,8 +369,8 @@ github:
             at: 'x-ratelimit-reset'
         paginate:
             type: link
-            limit_parameter_name: per_page
-            link_rel: next
+            limit_name_in_request: per_page
+            link_rel_in_response_header: next
     docs: https://docs.github.com/en/rest
 github-app:
     alias: github
@@ -489,10 +489,10 @@ hubspot:
         decompress: true
         paginate:
             type: cursor
-            next_cursor_parameter_path: paging.next.after
-            limit_parameter_name: limit
-            cursor_parameter_name: after
-            response_data_path: results
+            cursor_path_in_response: paging.next.after
+            limit_name_in_request: limit
+            cursor_name_in_request: after
+            response_path: results
     docs: https://developers.hubspot.com/docs/api/overview
 instagram:
     auth_mode: OAUTH2
@@ -523,10 +523,10 @@ jira:
         base_url: https://api.atlassian.com
         paginate:
             type: link
-            link_rel: next
-            limit_parameter_name: limit
-            response_data_path: results
-            link_body_parameter_path: _links.next
+            link_rel_in_response_header: next
+            limit_name_in_request: limit
+            response_path: results
+            link_path_in_response_body: _links.next
 keap:
     auth_mode: OAUTH2
     authorization_url: https://accounts.infusionsoft.com/app/oauth/authorize
@@ -878,9 +878,9 @@ slack:
         base_url: https://slack.com/api
         paginate:
             type: cursor
-            next_cursor_parameter_path: response_metadata.next_cursor
-            cursor_parameter_name: cursor
-            limit_parameter_name: limit
+            cursor_path_in_response: response_metadata.next_cursor
+            cursor_name_in_request: cursor
+            limit_name_in_request: limit
     docs: https://api.slack.com/apis
 smugmug:
     auth_mode: OAUTH1

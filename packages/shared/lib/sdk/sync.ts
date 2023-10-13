@@ -72,22 +72,22 @@ export enum PaginationType {
 interface Pagination {
     type: string;
     limit?: number;
-    response_data_path?: string;
-    limit_parameter_name: string;
+    response_path?: string;
+    limit_name_in_request: string;
 }
 
 export interface CursorPagination extends Pagination {
-    next_cursor_parameter_path: string;
-    cursor_parameter_name: string;
+    cursor_path_in_response: string;
+    cursor_name_in_request: string;
 }
 
-export interface NextUrlPagination extends Pagination {
-    link_rel?: string;
-    link_body_parameter_path?: string;
+export interface LinkPagination extends Pagination {
+    link_rel_in_response_header?: string;
+    link_path_in_response_body?: string;
 }
 
 export interface OffsetPagination extends Pagination {
-    offset_parameter_name: string;
+    offset_name_in_request: string;
 }
 
 interface ProxyConfiguration {
@@ -102,7 +102,7 @@ interface ProxyConfiguration {
     data?: unknown;
     retries?: number;
     baseUrlOverride?: string;
-    paginate?: Partial<CursorPagination> | Partial<NextUrlPagination> | Partial<OffsetPagination>;
+    paginate?: Partial<CursorPagination> | Partial<LinkPagination> | Partial<OffsetPagination>;
 }
 
 enum AuthModes {
@@ -368,7 +368,7 @@ export class NangoAction {
         const passPaginationParamsInBody: boolean = ['post', 'put', 'patch'].includes(configMethod);
 
         const updatedBodyOrParams: Record<string, any> = ((passPaginationParamsInBody ? config.data : config.params) as Record<string, any>) ?? {};
-        const limitParameterName: string = paginationConfig.limit_parameter_name;
+        const limitParameterName: string = paginationConfig.limit_name_in_request;
 
         if (paginationConfig['limit']) {
             updatedBodyOrParams[limitParameterName] = paginationConfig['limit'];
@@ -382,15 +382,15 @@ export class NangoAction {
                 let nextCursor: string | undefined;
                 while (true) {
                     if (nextCursor) {
-                        updatedBodyOrParams[cursorPagination.cursor_parameter_name] = nextCursor;
+                        updatedBodyOrParams[cursorPagination.cursor_name_in_request] = nextCursor;
                     }
 
                     this.updateConfigBodyOrParams(passPaginationParamsInBody, config, updatedBodyOrParams);
 
                     const response: AxiosResponse = await this.proxy(config);
 
-                    const responseData: T[] = cursorPagination.response_data_path
-                        ? this.getNestedField(response.data, cursorPagination.response_data_path)
+                    const responseData: T[] = cursorPagination.response_path
+                        ? this.getNestedField(response.data, cursorPagination.response_path)
                         : response.data;
 
                     if (!responseData.length) {
@@ -399,7 +399,7 @@ export class NangoAction {
 
                     yield responseData;
 
-                    nextCursor = this.getNestedField(response.data, cursorPagination.next_cursor_parameter_path);
+                    nextCursor = this.getNestedField(response.data, cursorPagination.cursor_path_in_response);
 
                     if (!nextCursor || nextCursor.trim().length === 0) {
                         return;
@@ -407,14 +407,14 @@ export class NangoAction {
                 }
             }
             case PaginationType.LINK: {
-                const nextUrlPagination: NextUrlPagination = paginationConfig as NextUrlPagination;
+                const linkPagination: LinkPagination = paginationConfig as LinkPagination;
 
                 this.updateConfigBodyOrParams(passPaginationParamsInBody, config, updatedBodyOrParams);
                 while (true) {
                     const response: AxiosResponse = await this.proxy(config);
 
-                    const responseData: T[] = paginationConfig.response_data_path
-                        ? this.getNestedField(response.data, paginationConfig.response_data_path)
+                    const responseData: T[] = paginationConfig.response_path
+                        ? this.getNestedField(response.data, paginationConfig.response_path)
                         : response.data;
                     if (!responseData.length) {
                         return;
@@ -422,7 +422,7 @@ export class NangoAction {
 
                     yield responseData;
 
-                    let nextPageUrl: string | undefined = this.getNextPageUrlFromBodyOrHeaders(nextUrlPagination, response, paginationConfig);
+                    let nextPageUrl: string | undefined = this.getNextPageUrlFromBodyOrHeaders(linkPagination, response, paginationConfig);
 
                     if (!nextPageUrl) {
                         return;
@@ -440,7 +440,7 @@ export class NangoAction {
             }
             case PaginationType.OFFSET: {
                 const offsetPagination: OffsetPagination = paginationConfig as OffsetPagination;
-                const offsetParameterName: string = offsetPagination.offset_parameter_name;
+                const offsetParameterName: string = offsetPagination.offset_name_in_request;
                 let offset: number = 0;
 
                 while (true) {
@@ -450,8 +450,8 @@ export class NangoAction {
 
                     const response: AxiosResponse = await this.proxy(config);
 
-                    const responseData: T[] = paginationConfig.response_data_path
-                        ? this.getNestedField(response.data, paginationConfig.response_data_path)
+                    const responseData: T[] = paginationConfig.response_path
+                        ? this.getNestedField(response.data, paginationConfig.response_path)
                         : response.data;
                     if (!responseData.length) {
                         return;
@@ -472,15 +472,15 @@ export class NangoAction {
         }
     }
 
-    private getNextPageUrlFromBodyOrHeaders(nextUrlPagination: NextUrlPagination, response: AxiosResponse<any, any>, paginationConfig: Pagination) {
-        if (nextUrlPagination.link_rel) {
+    private getNextPageUrlFromBodyOrHeaders(linkPagination: LinkPagination, response: AxiosResponse<any, any>, paginationConfig: Pagination) {
+        if (linkPagination.link_rel_in_response_header) {
             const linkHeader = parseLinksHeader(response.headers['link']);
-            return linkHeader?.[nextUrlPagination.link_rel]?.url;
-        } else if (nextUrlPagination.link_body_parameter_path) {
-            return this.getNestedField(response.data, nextUrlPagination.link_body_parameter_path);
+            return linkHeader?.[linkPagination.link_rel_in_response_header]?.url;
+        } else if (linkPagination.link_path_in_response_body) {
+            return this.getNestedField(response.data, linkPagination.link_path_in_response_body);
         }
 
-        throw Error(`Either 'link_rel' or 'link_body_parameter_path' should be specified for '${paginationConfig.type}' pagination`);
+        throw Error(`Either 'link_rel_in_response_header' or 'link_path_in_response_body' should be specified for '${paginationConfig.type}' pagination`);
     }
 
     private updateConfigBodyOrParams(passPaginationParamsInBody: boolean, config: ProxyConfiguration, updatedBodyOrParams: Record<string, string>) {
