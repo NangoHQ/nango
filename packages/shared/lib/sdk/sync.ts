@@ -12,6 +12,7 @@ import configService from '../services/config.service.js';
 import type { Template } from '../models/index.js';
 import { isValidHttpUrl } from '../utils/utils.js';
 import parseLinksHeader from 'parse-link-header';
+import * as _ from 'lodash';
 
 type LogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
 
@@ -390,7 +391,7 @@ export class NangoAction {
                     const response: AxiosResponse = await this.proxy(config);
 
                     const responseData: T[] = cursorPagination.response_path
-                        ? this.getNestedField(response.data, cursorPagination.response_path)
+                        ? _.get(response.data, cursorPagination.response_path)
                         : response.data;
 
                     if (!responseData.length) {
@@ -399,7 +400,7 @@ export class NangoAction {
 
                     yield responseData;
 
-                    nextCursor = this.getNestedField(response.data, cursorPagination.cursor_path_in_response);
+                    nextCursor = _.get(response.data, cursorPagination.cursor_path_in_response);
 
                     if (!nextCursor || nextCursor.trim().length === 0) {
                         return;
@@ -414,7 +415,7 @@ export class NangoAction {
                     const response: AxiosResponse = await this.proxy(config);
 
                     const responseData: T[] = paginationConfig.response_path
-                        ? this.getNestedField(response.data, paginationConfig.response_path)
+                        ? _.get(response.data, paginationConfig.response_path)
                         : response.data;
                     if (!responseData.length) {
                         return;
@@ -451,7 +452,7 @@ export class NangoAction {
                     const response: AxiosResponse = await this.proxy(config);
 
                     const responseData: T[] = paginationConfig.response_path
-                        ? this.getNestedField(response.data, paginationConfig.response_path)
+                        ? _.get(response.data, paginationConfig.response_path)
                         : response.data;
                     if (!responseData.length) {
                         return;
@@ -481,7 +482,7 @@ export class NangoAction {
             const linkHeader = parseLinksHeader(response.headers['link']);
             return linkHeader?.[linkPagination.link_rel_in_response_header]?.url;
         } else if (linkPagination.link_path_in_response_body) {
-            return this.getNestedField(response.data, linkPagination.link_path_in_response_body);
+            return _.get(response.data, linkPagination.link_path_in_response_body);
         }
 
         throw Error(`Either 'link_rel_in_response_header' or 'link_path_in_response_body' should be specified for '${paginationConfig.type}' pagination`);
@@ -493,22 +494,6 @@ export class NangoAction {
         } else {
             config.params = updatedBodyOrParams;
         }
-    }
-
-    private getNestedField(object: any, path: string, defaultValue?: any): any {
-        // TODO: extract to util or figure out how to use lodash
-        const keys = path.split('.');
-        let result = object;
-
-        for (const key of keys) {
-            if (result && typeof result === 'object' && key in result) {
-                result = result[key];
-            } else {
-                return defaultValue;
-            }
-        }
-
-        return result !== undefined ? result : defaultValue;
     }
 }
 
