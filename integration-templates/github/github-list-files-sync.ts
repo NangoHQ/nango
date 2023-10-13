@@ -10,8 +10,11 @@ interface Metadata {
     branch: string;
 }
 
+const LIMIT: number = 100;
+
 export default async function fetchData(nango: NangoSync) {
-    let { owner, repo, branch } = await nango.getMetadata<Metadata>();
+    const { owner, repo, branch } = await nango.getMetadata<Metadata>();
+
     // On the first run, fetch all files. On subsequent runs, fetch only updated files.
     if (!nango.lastSyncDate) {
         await saveAllRepositoryFiles(nango, owner, repo, branch);
@@ -27,7 +30,7 @@ async function saveAllRepositoryFiles(nango: NangoSync, owner: string, repo: str
     const proxyConfig = {
         endpoint,
         params: { recursive: '1' },
-        paginate: { response_data_path: 'tree' }
+        paginate: { response_path: 'tree', limit: LIMIT }
     };
 
     await nango.log(`Fetching files from endpoint ${endpoint}.`);
@@ -54,7 +57,10 @@ async function getCommitsSinceLastSync(owner: string, repo: string, since: Date,
 
     const proxyConfig = {
         endpoint,
-        params: { since: since.toISOString() }
+        params: { since: since.toISOString() },
+        paginate: {
+            limit: LIMIT
+        }
     };
 
     await nango.log(`Fetching commits from endpoint ${endpoint}.`);
@@ -74,7 +80,8 @@ async function saveFilesUpdatedByCommit(owner: string, repo: string, commitSumma
     const proxyConfig = {
         endpoint,
         paginate: {
-            response_data_path: 'files'
+            response_data_path: 'files',
+            limit: LIMIT
         }
     };
 

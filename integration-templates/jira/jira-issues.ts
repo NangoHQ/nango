@@ -1,5 +1,7 @@
 import type { NangoSync, JiraIssue } from './models';
 
+const LIMIT: number = 50;
+
 export default async function fetchData(nango: NangoSync) {
     const jql = nango.lastSyncDate ? `updated >= "${nango.lastSyncDate?.toISOString().slice(0, -8).replace('T', ' ')}"` : '';
     const fields = 'id,key,summary,description,issuetype,status,assignee,reporter,project,created,updated';
@@ -10,9 +12,10 @@ export default async function fetchData(nango: NangoSync) {
         endpoint: `/rest/api/3/search`,
         paginate: {
             type: 'offset',
-            offset_parameter_name: 'startAt',
-            limit_parameter_name: 'maxResults',
-            response_data_path: 'issues'
+            offset_name_in_request: 'startAt',
+            limit_name_in_request: 'maxResults',
+            response_path: 'issues',
+            limit: LIMIT
         },
         params: {
             jql: jql,

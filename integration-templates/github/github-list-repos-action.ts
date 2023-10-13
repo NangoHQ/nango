@@ -1,5 +1,7 @@
 import type { NangoSync, GithubRepo } from './models';
 
+const LIMIT: number = 100;
+
 export default async function runAction(nango: NangoSync): Promise<{ repos: GithubRepo[] }> {
     let allRepos: any[] = [];
 
@@ -33,7 +35,8 @@ export default async function runAction(nango: NangoSync): Promise<{ repos: Gith
 async function getAll(nango: NangoSync, endpoint: string) {
     const records: any[] = [];
 
-    for await (const recordBatch of nango.paginate({ endpoint })) {
+    const proxyConfig = { endpoint, limit: LIMIT };
+    for await (const recordBatch of nango.paginate(proxyConfig)) {
         records.push(...recordBatch);
     }
 

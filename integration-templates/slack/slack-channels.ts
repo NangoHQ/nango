@@ -27,7 +27,6 @@ export default async function fetchData(nango: NangoSync) {
     // Now let's also join all public channels where we are not yet a member
     await joinPublicChannels(nango, mappedChannels);
 
-    // console.log(mappedChannels)
     // Save channels
     await nango.batchSave(mappedChannels, 'SlackChannel');
 }
@@ -59,7 +58,8 @@ async function getAllChannels(nango: NangoSync, endpoint: string) {
     const proxyConfig = {
         endpoint,
         paginate: {
-            response_data_path: 'channels'
+            limit: 200,
+            response_path: 'channels'
         }
     };
     for await (const channelBatch of nango.paginate(proxyConfig)) {

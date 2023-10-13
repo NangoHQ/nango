@@ -17,7 +17,10 @@ export default async function fetchData(nango: NangoSync) {
     const proxyConfig = {
         baseUrlOverride: `https://api.atlassian.com/ex/confluence/${cloudId}`, // The base URL is specific for user because of the cloud ID path param
         endpoint: `/wiki/api/v2/pages`,
-        retries: 10
+        retries: 10,
+        paginate: {
+            limit: 250
+        }
     };
     for await (const pageBatch of nango.paginate(proxyConfig)) {
         const confluencePages = mapConfluencePages(pageBatch);

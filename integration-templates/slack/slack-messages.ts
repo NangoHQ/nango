@@ -149,7 +149,8 @@ async function getAllRecords(nango: NangoSync, endpoint: string, params: Record<
         params,
         retries: 10,
         paginate: {
-            response_data_path: resultsKey
+            limit: 200,
+            response_path: resultsKey
         }
     };
 

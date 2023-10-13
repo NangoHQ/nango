@@ -44,7 +44,8 @@ async function getAllUsers(nango: NangoSync) {
         endpoint: 'users.list',
         retries: 10,
         paginate: {
-            response_data_path: 'members'
+            limit: 200,
+            response_path: 'members'
         }
     };
 

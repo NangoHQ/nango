@@ -1,10 +1,18 @@
 import type { NangoSync, GithubIssue } from './models';
 
+const LIMIT: number = 100;
+
 export default async function fetchData(nango: NangoSync) {
-    const repos: any[] = await getAll(nango, '/user/repos');
+    const repos: any[] = await getAllRepositories(nango);
 
     for (let repo of repos) {
-        for await (const issueBatch of nango.paginate({ endpoint: `/repos/${repo.owner.login}/${repo.name}/issues` })) {
+        const proxyConfig = {
+            endpoint: `/repos/${repo.owner.login}/${repo.name}/issues`,
+            paginate: {
+                limit: LIMIT
+            }
+        };
+        for await (const issueBatch of nango.paginate(proxyConfig)) {
             let issues: any[] = issueBatch.filter((issue) => !('pull_request' in issue));
 
             const mappedIssues: GithubIssue[] = issues.map((issue) => ({
@@ -29,10 +37,16 @@ export default async function fetchData(nango: NangoSync) {
     }
 }
 
-async function getAll(nango: NangoSync, endpoint: string) {
+async function getAllRepositories(nango: NangoSync) {
     const records: any[] = [];
+    const proxyConfig = {
+        endpoint: '/user/repos',
+        paginate: {
+            limit: LIMIT
+        }
+    };
 
-    for await (const recordBatch of nango.paginate({ endpoint })) {
+    for await (const recordBatch of nango.paginate(proxyConfig)) {
         records.push(...recordBatch);
     }
 
