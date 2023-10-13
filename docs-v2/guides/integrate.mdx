@@ -1,0 +1,95 @@
+---
+title: 'How To Integrate Nango'
+sidebarTitle: 'How To Integrate Nango'
+description: 'Nango centralizes data transfer between external APIs and your app.'
+---
+
+<Frame caption="The 4 steps to integrate Nango.">
+  <img src="/images/nango-data-flow.png" />
+</Frame>
+
+## 1. Get user permission from your site
+
+Integrate the Nango frontend SDK into your application to get user permission to access their data.
+
+Store `connectionId` & `integrationId` in your database. You'll need these to get data later.
+
+```ts Frontend: Trigger the OAuth flow.
+const integrationId = 'zendesk';
+const connectionId = 'user123';
+
+const result = await nango.auth(integrationId, connectionId);
+
+if (result.ok) {
+    saveToDatabase(connectionId, integrationId);
+}
+```
+
+## 2. Get data update notifications
+
+Nango will alert you (via a webhook) when there's new data to fetch.
+
+You choose how often to check for data updates. Nango will only alert you when there are actual changes.
+
+Key fields in the webhook payload, essential for later data retrieval:
+
+- `connectionId` : The specific end-user related to the data.
+- `model` : The data model for which new data is available.
+- `queryTimeStamp`: Timestamp to locate recent modifications.
+
+```json Backend: Receive this webhook payload.
+{
+    "connectionId": "user123",
+    "model": "ticket",
+    "providerConfigKey": "zendesk",
+    "responseResults": { "ticket": { "added": 2, "updated": 6, "deleted": 0 } },
+    "queryTimeStamp": "2023-05-31T11:46:13.390Z"
+}
+```
+
+## 3. Collect and save the new data
+
+When you receive the webhook, fetch the most recent data from Nango using the backend SDK or API.
+
+This data will be in the format you've chosen. It can even be standardized across different APIs.
+
+You can directly save this data to your database.
+
+```ts Backend: Fetch & save new records.
+const records = await nango.getRecords<Ticket>({
+    providerConfigKey: 'zendesk',
+    connectionId: 'user123',
+    model: 'ticket',
+    delta: queryTimeStamp
+});
+
+saveToDatabase(records);
+```
+
+## 4. Write back to external APIs
+
+Push updates back to external APIs in a way that is:
+
+- **Synchronous:** Have your changes immediately reflected.
+- **Unified:** Benefit from standardized schemas across different APIs.
+- **Customizable:** Support intricate workflows and combined API calls.
+
+```ts Backend: Write back to external APIs.
+const result = await nango.triggerAction({
+    providerConfigKey: 'zendesk',
+    connectionId: 'user123',
+    action: 'create-ticket',
+    input: { "title": "...", "content": "..." }
+});
+```
+
+## Next Steps
+
+Dive deeper with the following guides: 
+- [Authorize APIs](/guides/oauth)
+- [Synchronize Data](/guides/sync)
+- [Perform Actions](/guides/action)
+
+## Questions, problems, feedback?
+
+We're here to help! Please reach out on the [Slack community](https://nango.dev/slack), we are very active there.
