@@ -70,6 +70,7 @@
         {
             "group": "Guides",
             "pages": [
+                "guides/integrate",
                 "guides/oauth",
                 "guides/sync",
                 "guides/action",
