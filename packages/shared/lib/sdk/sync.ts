@@ -422,17 +422,17 @@ export class NangoAction {
 
                     yield responseData;
 
-                    let nextPageUrl: string | undefined = this.getNextPageUrlFromBodyOrHeaders(linkPagination, response, paginationConfig);
+                    let nextPageLink: string | undefined = this.getNextPageLinkFromBodyOrHeaders(linkPagination, response, paginationConfig);
 
-                    if (!nextPageUrl) {
+                    if (!nextPageLink) {
                         return;
                     }
 
-                    if (!isValidHttpUrl(nextPageUrl)) {
+                    if (!isValidHttpUrl(nextPageLink)) {
                         // some providers only send path+query params in the link so we can immediately assign those to the endpoint
-                        config.endpoint = nextPageUrl;
+                        config.endpoint = nextPageLink;
                     } else {
-                        const url: URL = new URL(nextPageUrl);
+                        const url: URL = new URL(nextPageLink);
                         config.endpoint = url.pathname + url.search;
                     }
                     delete config.params;
@@ -476,7 +476,7 @@ export class NangoAction {
         }
     }
 
-    private getNextPageUrlFromBodyOrHeaders(linkPagination: LinkPagination, response: AxiosResponse<any, any>, paginationConfig: Pagination) {
+    private getNextPageLinkFromBodyOrHeaders(linkPagination: LinkPagination, response: AxiosResponse<any, any>, paginationConfig: Pagination) {
         if (linkPagination.link_rel_in_response_header) {
             const linkHeader = parseLinksHeader(response.headers['link']);
             return linkHeader?.[linkPagination.link_rel_in_response_header]?.url;
