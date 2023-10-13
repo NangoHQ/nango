@@ -2,8 +2,8 @@ import { expect, describe, it, vi } from 'vitest';
 import SyncRun from './run.service.js';
 import * as ConfigService from './config/config.service.js';
 import environmentService from '../environment.service.js';
+import integationService from './integration/integration.service.js';
 import LocalFileService from '../file/local.service.js';
-import integationService from './integration.service.js';
 import { SyncType } from '../../models/Sync.js';
 import type { Environment } from '../../models/Environment.js';
 
