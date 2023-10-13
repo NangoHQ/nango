@@ -149,3 +149,40 @@ nango_connection_id = ? AND model = ?
         return false;
     }
 };
+
+/**
+ * Update Created At
+ * @desc using the DELETE_RECORDS_TABLE, update the created_at in the RECORDS_TABLE
+ * column using the value in the DELETE_RECORDS_TABLE
+ * where those same records exist in the RECORDS_TABLE using the uniqueKey
+ */
+export const updateCreatedAtForUpdatedRecords = async (nangoConnectionId: number, model: string, uniqueKey: string, updatedKeys: string[]) => {
+    const results = await schema()
+        .from<DataRecord>(DELETE_RECORDS_TABLE)
+        .innerJoin(RECORDS_TABLE, function () {
+            this.on(`${DELETE_RECORDS_TABLE}.${uniqueKey}`, '=', `${RECORDS_TABLE}.${uniqueKey}`)
+                .andOn(`${DELETE_RECORDS_TABLE}.nango_connection_id`, '=', db.knex.raw('?', [nangoConnectionId]))
+                .andOn(`${DELETE_RECORDS_TABLE}.model`, '=', db.knex.raw('?', [model]));
+        })
+        .select(`${DELETE_RECORDS_TABLE}.id`, `${DELETE_RECORDS_TABLE}.${uniqueKey}`, `${DELETE_RECORDS_TABLE}.created_at`);
+
+    if (!results || results.length === 0) {
+        return;
+    }
+
+    await Promise.all(
+        results.map(async (result: DataRecord) => {
+            await schema()
+                .from<DataRecord>(RECORDS_TABLE)
+                .where({
+                    nango_connection_id: nangoConnectionId,
+                    model,
+                    [uniqueKey]: result[uniqueKey]
+                })
+                .whereIn(uniqueKey, updatedKeys)
+                .update({
+                    created_at: result.created_at as Date
+                });
+        })
+    );
+};

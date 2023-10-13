@@ -7,6 +7,7 @@ export enum AuthModes {
     OAuth2 = 'OAUTH2',
     Basic = 'BASIC',
     ApiKey = 'API_KEY',
+    App = 'APP',
     None = 'NONE'
 }
 
@@ -93,6 +94,13 @@ export interface ApiKeyCredentials {
 }
 
 export type AuthCredentials = OAuth2Credentials | OAuth1Credentials;
+
+export interface AppCredentials {
+    type?: AuthModes.App;
+    access_token: string;
+    expires_at?: Date | undefined;
+    raw: Record<string, any>;
+}
 
 export interface OAuth2Credentials extends CredentialsCommon {
     type: AuthModes.OAuth2;

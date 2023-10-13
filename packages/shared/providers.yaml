@@ -362,6 +362,12 @@ github:
         retry:
             at: 'x-ratelimit-reset'
     docs: https://docs.github.com/en/rest
+github-app:
+    alias: github
+    auth_mode: APP
+    authorization_url: ${connectionConfig.appPublicLink}/installations/new
+    token_url: https://api.github.com/app/installations/${connectionConfig.installation_id}/access_tokens
+    docs: https://docs.github.com/en/apps
 gitlab:
     auth_mode: OAUTH2
     authorization_url: https://gitlab.com/oauth/authorize
@@ -1088,6 +1094,17 @@ wave-accounting:
     token_url: https://api.waveapps.com/oauth2/token
     proxy:
         base_url: https://gql.waveapps.com
+wildix-pbx:
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.subdomain}.wildixin.com/authorization/oauth2
+    token_url: https://${connectionConfig.subdomain}.wildixin.com/authorization/oauth2Token
+    authorization_params:
+        response_type: code
+    redirect_uri_metadata:
+        - subdomain
+    docs: https://docs.wildix.com/wms/index.html
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.wildixin.com
 workable:
     auth_mode: API_KEY
     proxy:

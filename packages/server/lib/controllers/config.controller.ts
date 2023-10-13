@@ -98,12 +98,23 @@ class ConfigController {
                 return;
             }
 
+            const provider = req.body['provider'];
+
+            const template = await configService.getTemplate(provider as string);
+
+            let oauth_client_secret = req.body['client_secret'] ?? null;
+
+            if (template.auth_mode === AuthModes.App) {
+                oauth_client_secret = Buffer.from(oauth_client_secret).toString('base64');
+            }
+
             const newConfig: ProviderConfig = {
                 unique_key: req.body['provider_config_key'],
                 provider: req.body['provider'],
                 oauth_client_id: req.body['client_id'],
-                oauth_client_secret: req.body['client_secret'],
+                oauth_client_secret,
                 oauth_scopes: req.body['scopes'],
+                app_link: req.body['app_link'],
                 environment_id: environment.id
             };
 
@@ -160,13 +171,24 @@ class ConfigController {
                 return;
             }
 
+            const providerTemplate = configService.getTemplate(config?.provider);
+            const authMode = providerTemplate.auth_mode;
+
+            let client_secret = config.oauth_client_secret;
+
+            if (authMode === AuthModes.App) {
+                client_secret = Buffer.from(client_secret, 'base64').toString('ascii');
+            }
+
             const configRes: ProviderIntegration | IntegrationWithCreds = includeCreds
                 ? ({
                       unique_key: config.unique_key,
                       provider: config.provider,
                       client_id: config.oauth_client_id,
-                      client_secret: config.oauth_client_secret,
-                      scopes: config.oauth_scopes
+                      client_secret,
+                      scopes: config.oauth_scopes,
+                      app_link: config.app_link,
+                      auth_mode: authMode
                   } as IntegrationWithCreds)
                 : ({ unique_key: config.unique_key, provider: config.provider } as ProviderIntegration);
 
@@ -210,13 +232,23 @@ class ConfigController {
             const providerTemplate = configService.getTemplate(provider);
             const authMode = providerTemplate.auth_mode;
 
-            if (authMode !== AuthModes.ApiKey && authMode !== AuthModes.Basic && authMode !== AuthModes.None && req.body['oauth_client_id'] == null) {
+            if ((authMode === AuthModes.OAuth1 || authMode === AuthModes.OAuth2) && req.body['oauth_client_id'] == null) {
                 errorManager.errRes(res, 'missing_client_id');
                 return;
             }
 
-            if (authMode !== AuthModes.ApiKey && authMode !== AuthModes.Basic && authMode !== AuthModes.None && req.body['oauth_client_secret'] == null) {
+            if (authMode === AuthModes.App && req.body['oauth_client_id'] == null) {
+                errorManager.errRes(res, 'missing_app_id');
+                return;
+            }
+
+            if ((authMode === AuthModes.OAuth1 || authMode === AuthModes.OAuth2) && req.body['oauth_client_secret'] == null) {
                 errorManager.errRes(res, 'missing_client_secret');
+                return;
+            }
+
+            if (authMode === AuthModes.App && req.body['oauth_client_secret'] == null) {
+                errorManager.errRes(res, 'missing_app_secret');
                 return;
             }
 
@@ -227,9 +259,15 @@ class ConfigController {
                 return;
             }
 
+            let oauth_client_secret = req.body['oauth_client_secret'] ?? null;
+
+            if (authMode === AuthModes.App) {
+                oauth_client_secret = Buffer.from(oauth_client_secret).toString('base64');
+            }
+
             const oauth_client_id = req.body['oauth_client_id'] ?? null;
-            const oauth_client_secret = req.body['oauth_client_secret'] ?? null;
             const oauth_scopes = req.body['oauth_scopes'] ?? '';
+            const app_link = req.body['app_link'] ?? null;
 
             if (oauth_scopes && Array.isArray(oauth_scopes)) {
                 errorManager.errRes(res, 'invalid_oauth_scopes');
@@ -248,6 +286,7 @@ class ConfigController {
                           .filter((w: string) => w)
                           .join(',')
                     : '',
+                app_link,
                 environment_id: environmentId
             };
 
@@ -299,12 +338,19 @@ class ConfigController {
                 return;
             }
 
+            let oauth_client_secret = req.body['oauth_client_secret'] ?? null;
+
+            if (template.auth_mode === AuthModes.App) {
+                oauth_client_secret = Buffer.from(oauth_client_secret).toString('base64');
+            }
+
             const newConfig: ProviderConfig = {
                 unique_key: req.body['provider_config_key'],
                 provider: req.body['provider'],
                 oauth_client_id: req.body['oauth_client_id'],
-                oauth_client_secret: req.body['oauth_client_secret'],
+                oauth_client_secret,
                 oauth_scopes: req.body['oauth_scopes'],
+                app_link: req.body['app_link'],
                 environment_id: environmentId
             };
 

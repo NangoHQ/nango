@@ -33,30 +33,35 @@ interface Props {
 const JsonPrettyPrint: React.FC<Props> = ({ data }): ReactElement<any, any> => {
   let prettyJson = '';
   let message = '';
+  let isJson = true;
 
   try {
-    const jsonRegex = /(\[.*\])/s;
+    const jsonRegex = /({.*})|(\[.*\])/s;
     const match = (data as string)?.match(jsonRegex);
 
     if (match) {
       const json = JSON.parse(match[0]);
       prettyJson = JSON.stringify(json, null, 2);
-      message = (data as string)?.replace(jsonRegex, '').trim(); // Extract the message part
+      message = (data as string)?.replace(jsonRegex, '').trim();
     } else {
-      prettyJson = data as string;
+      try {
+        prettyJson = JSON.stringify(JSON.parse(data as string), null, 2);
+      } catch {
+        isJson = false;
+        prettyJson = data as string;
+      }
     }
 
     return (
-      <div>
+      <>
         {message && <p>{message}</p>}
-        <pre className="max-w-5xl overflow-auto whitespace-pre-wrap break-all">{prettyJson}</pre>
-      </div>
+        {isJson ? <pre className="max-w-5xl overflow-auto whitespace-pre-wrap break-all">{prettyJson}</pre> : <>{prettyJson}</>}
+      </>
     );
   } catch (e) {
-    return <span className="whitespace-normal break-all overflow-wrap">{data}</span>;
+      return <span className="whitespace-normal break-all overflow-wrap">{data?.toString()}</span>;
   }
 };
-
 export default function Activity() {
     const navigate = useNavigate();
 
@@ -175,7 +180,7 @@ export default function Activity() {
         return Object.entries(params).map(([key, value]) => (
             <div className={`max-w-5xl whitespace-normal break-all overflow-wrap ${level === 'error' ? 'text-red-500' : level === 'warn' ? 'text-orange-500' : ''}`} key={key}>
                 <span>{key}: </span>
-                <span className="max-w-5xl whitespace-normal break-all overflow-wrap">{value === null ? '' : value.toString()}</span>
+                {value === null ? '' : <JsonPrettyPrint data={value} />}
             </div>
         ));
     };
@@ -219,7 +224,7 @@ export default function Activity() {
                                 {activities.filter((activity: ActivityResponse) => typeof activity?.action === 'string').map((activity: ActivityResponse, index: number) => (
                                     <tr key={activity.id} ref={activityRefs[activity.id]}>
                                         <td
-                                            className={`mx-8 flex-col px-10 py-4 whitespace-nowrap ${
+                                            className={`mx-8 flex-col px-3 py-4 whitespace-nowrap ${
                                                 index !== -1 ? 'border-b border-border-gray' : ''
                                             } h-16`}
                                         >

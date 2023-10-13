@@ -1,3 +1,5 @@
+import jwt from 'jsonwebtoken';
+import axios from 'axios';
 import db from '../db/database.js';
 import analytics from '../utils/analytics.js';
 import providerClientManager from '../clients/provider.client.js';
@@ -28,9 +30,16 @@ import type { Metadata, Connection, StoredConnection, BaseConnection, NangoConne
 import type { ServiceResponse } from '../models/Generic.js';
 import encryptionManager from '../utils/encryption.manager.js';
 import metricsManager from '../utils/metrics.manager.js';
-import { AuthModes as ProviderAuthModes, OAuth2Credentials, ImportedCredentials, ApiKeyCredentials, BasicApiCredentials } from '../models/Auth.js';
+import {
+    AppCredentials,
+    AuthModes as ProviderAuthModes,
+    OAuth2Credentials,
+    ImportedCredentials,
+    ApiKeyCredentials,
+    BasicApiCredentials
+} from '../models/Auth.js';
 import { schema } from '../db/database.js';
-import { parseTokenExpirationDate, isTokenExpired } from '../utils/utils.js';
+import { interpolateStringFromObject, parseTokenExpirationDate, isTokenExpired } from '../utils/utils.js';
 import SyncClient from '../clients/sync.client.js';
 
 class ConnectionService {
@@ -313,9 +322,15 @@ class ConnectionService {
 
         // Parse the token expiration date.
         if (connection != null) {
-            const credentials = connection.credentials as OAuth1Credentials | OAuth2Credentials;
+            const credentials = connection.credentials as OAuth1Credentials | OAuth2Credentials | AppCredentials;
             if (credentials.type && credentials.type === ProviderAuthModes.OAuth2) {
                 const creds = credentials as OAuth2Credentials;
+                creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
+                connection.credentials = creds;
+            }
+
+            if (credentials.type && credentials.type === ProviderAuthModes.App) {
+                const creds = credentials as AppCredentials;
                 creds.expires_at = creds.expires_at != null ? parseTokenExpirationDate(creds.expires_at) : undefined;
                 connection.credentials = creds;
             }
@@ -384,7 +399,10 @@ class ConnectionService {
             .update({ metadata });
     }
 
-    async listConnections(environment_id: number, connectionId?: string): Promise<{ id: number; connection_id: number; provider: string; created: string }[]> {
+    public async listConnections(
+        environment_id: number,
+        connectionId?: string
+    ): Promise<{ id: number; connection_id: number; provider: string; created: string }[]> {
         const queryBuilder = db.knex
             .withSchema(db.schema())
             .from<Connection>(`_nango_connections`)
@@ -396,7 +414,7 @@ class ConnectionService {
         return queryBuilder;
     }
 
-    async deleteConnection(connection: Connection, providerConfigKey: string, environment_id: number): Promise<number> {
+    public async deleteConnection(connection: Connection, providerConfigKey: string, environment_id: number): Promise<number> {
         if (connection) {
             await syncOrchestrator.deleteSyncsByConnection(connection);
         }
@@ -477,12 +495,12 @@ class ConnectionService {
 
         const template: ProviderTemplate | undefined = configService.getTemplate(config?.provider as string);
 
-        if (connection?.credentials?.type === ProviderAuthModes.OAuth2) {
+        if (connection?.credentials?.type === ProviderAuthModes.OAuth2 || connection?.credentials?.type === ProviderAuthModes.App) {
             const {
                 success,
                 error,
                 response: credentials
-            } = await this.refreshOauth2CredentialsIfNeeded(
+            } = await this.refreshCredentialsIfNeeded(
                 connection as Connection,
                 config as ProviderConfig,
                 template as ProviderTemplateOAuth2,
@@ -558,14 +576,14 @@ class ConnectionService {
         }
     }
 
-    public async refreshOauth2CredentialsIfNeeded(
+    public async refreshCredentialsIfNeeded(
         connection: Connection,
         providerConfig: ProviderConfig,
         template: ProviderTemplateOAuth2,
         activityLogId: number | null = null,
         instantRefresh = false,
         logAction: LogAction = 'token'
-    ): Promise<ServiceResponse<OAuth2Credentials>> {
+    ): Promise<ServiceResponse<OAuth2Credentials | AppCredentials>> {
         const connectionId = connection.connection_id;
         const credentials = connection.credentials as OAuth2Credentials;
         const providerConfigKey = connection.provider_config_key;
@@ -576,6 +594,7 @@ class ConnectionService {
         }
 
         const shouldRefresh = await this.shouldRefreshCredentials(connection, credentials, providerConfig, template, instantRefresh);
+
         if (shouldRefresh) {
             try {
                 const { success, error, response: newCredentials } = await this.getNewCredentials(connection, providerConfig, template);
@@ -608,6 +627,59 @@ class ConnectionService {
         return { success: true, error: null, response: credentials };
     }
 
+    public async getAppCredentials(
+        template: ProviderTemplate,
+        config: ProviderConfig,
+        connectionConfig: Connection['connection_config']
+    ): Promise<ServiceResponse<AppCredentials>> {
+        const tokenUrl = interpolateStringFromObject(template.token_url, { connectionConfig });
+        const privateKeyBase64 = config.oauth_client_secret;
+
+        let privateKey = Buffer.from(privateKeyBase64, 'base64').toString('utf8');
+        privateKey = privateKey.replace('-----BEGIN RSA PRIVATE KEY-----', '-----BEGIN RSA PRIVATE KEY-----\n');
+        privateKey = privateKey.replace('-----END RSA PRIVATE KEY-----', '\n-----END RSA PRIVATE KEY-----');
+        privateKey = privateKey.replace(/(.{64})/g, '$1\n');
+
+        const now = Math.floor(Date.now() / 1000);
+        const expiration = now + 10 * 60;
+
+        const payload = {
+            iat: now,
+            exp: expiration,
+            iss: config.oauth_client_id
+        };
+
+        const token = jwt.sign(payload, privateKey, { algorithm: 'RS256' });
+
+        try {
+            const tokenResponse = await axios.post(
+                tokenUrl,
+                {},
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        Accept: 'application/vnd.github.v3+json'
+                    }
+                }
+            );
+
+            const rawCredentials = tokenResponse.data;
+
+            const credentials: AppCredentials = {
+                type: ProviderAuthModes.App,
+                access_token: (rawCredentials as any)?.token,
+                expires_at: (rawCredentials as any)?.expires_at,
+                raw: rawCredentials as unknown as Record<string, unknown>
+            };
+
+            return { success: true, error: null, response: credentials };
+        } catch (e) {
+            const errorMessage = JSON.stringify(e, ['message', 'name'], 2);
+            const error = new NangoError('refresh_token_external_error', errorMessage);
+            return { success: false, error, response: null };
+        }
+    }
+
     private findRunningRefresh(connectionId: string, providerConfigKey: string): CredentialsRefresh | undefined {
         return this.runningCredentialsRefreshes.find((refresh) => refresh.connectionId === connectionId && refresh.providerConfigKey === providerConfigKey);
     }
@@ -623,9 +695,16 @@ class ConnectionService {
             instantRefresh ||
             (providerClient.shouldIntrospectToken(providerConfig.provider) && (await providerClient.introspectedTokenExpired(providerConfig, connection)));
 
-        const tokenExpirationCondition =
-            credentials.refresh_token &&
-            (refreshCondition || (credentials.expires_at && isTokenExpired(credentials.expires_at, template.token_expiration_buffer || 15 * 60)));
+        let tokenExpirationCondition;
+
+        if (template.auth_mode === ProviderAuthModes.OAuth2) {
+            tokenExpirationCondition =
+                credentials.refresh_token &&
+                (refreshCondition || (credentials.expires_at && isTokenExpired(credentials.expires_at, template.token_expiration_buffer || 15 * 60)));
+        } else if (template.auth_mode === ProviderAuthModes.App) {
+            tokenExpirationCondition =
+                refreshCondition || (credentials.expires_at && isTokenExpired(credentials.expires_at, template.token_expiration_buffer || 15 * 60));
+        }
 
         return Boolean(tokenExpirationCondition);
     }
@@ -633,15 +712,23 @@ class ConnectionService {
     private async getNewCredentials(
         connection: Connection,
         providerConfig: ProviderConfig,
-        template: ProviderTemplateOAuth2
-    ): Promise<ServiceResponse<OAuth2Credentials>> {
+        template: ProviderTemplate
+    ): Promise<ServiceResponse<OAuth2Credentials | AppCredentials>> {
         if (providerClientManager.shouldUseProviderClient(providerConfig.provider)) {
-            const rawCreds = await providerClientManager.refreshToken(template, providerConfig, connection);
+            const rawCreds = await providerClientManager.refreshToken(template as ProviderTemplateOAuth2, providerConfig, connection);
             const parsedCreds = this.parseRawCredentials(rawCreds, ProviderAuthModes.OAuth2) as OAuth2Credentials;
 
             return { success: true, error: null, response: parsedCreds };
+        } else if (template.auth_mode === ProviderAuthModes.App) {
+            const { success, error, response: credentials } = await this.getAppCredentials(template, providerConfig, connection.connection_config);
+
+            if (!success || !credentials) {
+                return { success, error, response: null };
+            }
+
+            return { success: true, error: null, response: credentials };
         } else {
-            const { success, error, response: creds } = await getFreshOAuth2Credentials(connection, providerConfig, template);
+            const { success, error, response: creds } = await getFreshOAuth2Credentials(connection, providerConfig, template as ProviderTemplateOAuth2);
 
             return { success, error, response: success ? (creds as OAuth2Credentials) : null };
         }

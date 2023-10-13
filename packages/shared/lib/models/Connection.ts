@@ -1,4 +1,4 @@
-import type { AuthCredentials, ApiKeyCredentials, BasicApiCredentials } from './Auth.js';
+import type { AuthCredentials, ApiKeyCredentials, BasicApiCredentials, AppCredentials } from './Auth.js';
 import type { TimestampsAndDeleted } from './Generic.js';
 
 export interface Metadata {
@@ -23,7 +23,7 @@ export interface StoredConnection extends BaseConnection {
 }
 
 export interface Connection extends BaseConnection {
-    credentials: AuthCredentials | ApiKeyCredentials | BasicApiCredentials;
+    credentials: AuthCredentials | ApiKeyCredentials | BasicApiCredentials | AppCredentials;
 }
 
 export interface ApiConnection {
