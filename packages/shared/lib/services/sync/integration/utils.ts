@@ -43,15 +43,21 @@ export function classToObject(instance: object): Record<string, unknown> {
 
     const obj: Record<string, unknown> = {};
 
-    const keys = [...Object.getOwnPropertyNames(instance), ...Object.getOwnPropertyNames(Object.getPrototypeOf(instance))];
+    let proto = Object.getPrototypeOf(instance);
 
-    for (const key of keys) {
-        const value = (instance as Record<string, unknown>)[key];
-        if (typeof value === 'function') {
-            obj[key] = value.bind(instance);
-        } else {
-            obj[key] = value;
+    while (proto && proto !== Object.prototype) {
+        const keys = Object.getOwnPropertyNames(proto);
+
+        for (const key of keys) {
+            const value = (instance as Record<string, unknown>)[key];
+            if (typeof value === 'function') {
+                obj[key] = value.bind(instance);
+            } else {
+                obj[key] = value;
+            }
         }
+
+        proto = Object.getPrototypeOf(proto);
     }
 
     return obj;
