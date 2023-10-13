@@ -583,6 +583,20 @@ integrations:
         channel_id: string
         user_id: string
         reaction_name: string
+  wildix-pbx:
+    wildix-pbx-colleagues:
+      runs: every 1 hour
+      returns:
+        - WildixPbxColleague
+    models:
+      WildixPbxColleague:
+        id: string
+        name: string
+        extension: string
+        email: string
+        mobilePhone: string
+        licenseType: string
+        language: string
   zendesk:
     zendesk-tickets:
       runs: every 1 hour
