@@ -459,6 +459,10 @@ export class NangoAction {
 
                     yield responseData;
 
+                    if (paginationConfig['limit'] && responseData.length < paginationConfig['limit']) {
+                        return;
+                    }
+
                     if (responseData.length < 1) {
                         // Last page was empty so no need to fetch further
                         return;
