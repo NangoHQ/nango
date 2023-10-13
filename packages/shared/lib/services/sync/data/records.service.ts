@@ -223,4 +223,5 @@ export function verifyUniqueKeysAreUnique(data: DataResponse[], optionalUniqueKe
 
 export async function deleteRecordsBySyncId(sync_id: string): Promise<void> {
     await schema().from<SyncDataRecord>('_nango_sync_data_records').where({ sync_id }).del();
+    await schema().from<SyncDataRecord>('_nango_sync_data_records_deletes').where({ sync_id }).del();
 }

@@ -117,10 +117,12 @@ export const clearLastSyncDate = async (id: string): Promise<void> => {
  * during the integration script so we don't want to override what they
  * set in the script
  */
-export const setLastSyncDate = async (id: string, date: Date, override = true): Promise<boolean> => {
-    if (!date) {
+export const setLastSyncDate = async (id: string, tempDate: Date | string, override = true): Promise<boolean> => {
+    if (!tempDate) {
         return false;
     }
+
+    const date = typeof tempDate === 'string' ? new Date(tempDate) : tempDate;
 
     if (isNaN(date.getTime())) {
         return false;
