@@ -368,7 +368,7 @@ github:
         retry:
             at: 'x-ratelimit-reset'
         paginate:
-            type: next_url
+            type: link
             limit_parameter_name: per_page
             link_rel: next
     docs: https://docs.github.com/en/rest
@@ -522,11 +522,11 @@ jira:
     proxy:
         base_url: https://api.atlassian.com
         paginate:
-            type: next_url
+            type: link
             link_rel: next
             limit_parameter_name: limit
             response_data_path: results
-            next_url_body_parameter_path: _links.next
+            link_body_parameter_path: _links.next
 keap:
     auth_mode: OAUTH2
     authorization_url: https://accounts.infusionsoft.com/app/oauth/authorize

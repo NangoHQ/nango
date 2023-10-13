@@ -65,7 +65,7 @@ interface DataResponse {
 
 export enum PaginationType {
     CURSOR = 'cursor',
-    NEXT_URL = 'next_url',
+    LINK = 'link',
     OFFSET = 'offset'
 }
 
@@ -83,7 +83,7 @@ export interface CursorPagination extends Pagination {
 
 export interface NextUrlPagination extends Pagination {
     link_rel?: string;
-    next_url_body_parameter_path?: string;
+    link_body_parameter_path?: string;
 }
 
 export interface OffsetPagination extends Pagination {
@@ -346,7 +346,7 @@ export class NangoAction {
         const templatePaginationConfig: Pagination | undefined = template.proxy?.paginate;
 
         if (!templatePaginationConfig) {
-            throw Error(`Pagination is not supported for ${providerConfigKey}. Please, add pagination config to 'providers.yaml' file`);
+            throw Error(`Pagination is not supported for '${providerConfigKey}'. Please, add pagination config to 'providers.yaml' file`);
         }
 
         let paginationConfig: Pagination = templatePaginationConfig;
@@ -406,7 +406,7 @@ export class NangoAction {
                     }
                 }
             }
-            case PaginationType.NEXT_URL: {
+            case PaginationType.LINK: {
                 const nextUrlPagination: NextUrlPagination = paginationConfig as NextUrlPagination;
 
                 this.updateConfigBodyOrParams(passPaginationParamsInBody, config, updatedBodyOrParams);
@@ -476,11 +476,11 @@ export class NangoAction {
         if (nextUrlPagination.link_rel) {
             const linkHeader = parseLinksHeader(response.headers['link']);
             return linkHeader?.[nextUrlPagination.link_rel]?.url;
-        } else if (nextUrlPagination.next_url_body_parameter_path) {
-            return this.getNestedField(response.data, nextUrlPagination.next_url_body_parameter_path);
+        } else if (nextUrlPagination.link_body_parameter_path) {
+            return this.getNestedField(response.data, nextUrlPagination.link_body_parameter_path);
         }
 
-        throw Error(`Either 'link_rel' or 'next_url_body_parameter_path' should be specified for '${paginationConfig.type}' pagination`);
+        throw Error(`Either 'link_rel' or 'link_body_parameter_path' should be specified for '${paginationConfig.type}' pagination`);
     }
 
     private updateConfigBodyOrParams(passPaginationParamsInBody: boolean, config: ProxyConfiguration, updatedBodyOrParams: Record<string, string>) {
