@@ -2,30 +2,10 @@ import type { SlackUser, NangoSync } from './models';
 
 export default async function fetchData(nango: NangoSync) {
     // Fetch all users (paginated)
-    let nextCursor = 'x';
-    let responses: any[] = [];
-
-    while (nextCursor !== '') {
-        const response = await nango.get({
-            endpoint: 'users.list',
-            retries: 10,
-            params: {
-                limit: '200',
-                cursor: nextCursor !== 'x' ? nextCursor : ''
-            }
-        });
-
-        if (!response.data.ok) {
-            await nango.log(`Received a Slack API error: ${JSON.stringify(response.data, null, 2)}`);
-        }
-
-        const { members, response_metadata } = response.data;
-        responses = responses.concat(members);
-        nextCursor = response_metadata.next_cursor;
-    }
+    const users: any[] = await getAllUsers(nango);
 
     // Transform users into our data model
-    const users: SlackUser[] = responses.map((record: any) => {
+    const mappedUsers: SlackUser[] = users.map((record: any) => {
         return {
             id: record.id,
             team_id: record.team_id,
@@ -55,5 +35,22 @@ export default async function fetchData(nango: NangoSync) {
         };
     });
 
-    await nango.batchSave(users, 'SlackUser');
+    await nango.batchSave(mappedUsers, 'SlackUser');
+}
+async function getAllUsers(nango: NangoSync) {
+    const users: any[] = [];
+
+    const proxyConfig = {
+        endpoint: 'users.list',
+        retries: 10,
+        paginate: {
+            response_data_path: 'members'
+        }
+    };
+
+    for await (const userBatch of nango.paginate(proxyConfig)) {
+        users.push(...userBatch);
+    }
+
+    return users;
 }
