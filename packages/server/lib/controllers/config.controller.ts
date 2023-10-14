@@ -186,7 +186,7 @@ class ConfigController {
                       provider: config.provider,
                       client_id: config.oauth_client_id,
                       client_secret,
-                      scopes: config.oauth_scopes,
+                      oauth_scopes: config.oauth_scopes,
                       app_link: config.app_link,
                       auth_mode: authMode
                   } as IntegrationWithCreds)
