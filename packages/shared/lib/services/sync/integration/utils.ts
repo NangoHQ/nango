@@ -404,8 +404,12 @@ export function hostToQuickJSHandle(vm: QuickJSContext, val: unknown, depth = 0)
 
         const proto = Object.getPrototypeOf(val);
         for (const key in proto) {
-            if (Object.prototype.hasOwnProperty.call(proto, key) && typeof proto[key] === 'function') {
-                handlePropertyOrMethod(vm, key, proto, objHandle, depth);
+            try {
+                if (Object.prototype.hasOwnProperty.call(proto, key) && typeof proto[key] === 'function') {
+                    handlePropertyOrMethod(vm, key, proto, objHandle, depth);
+                }
+            } catch (_error) {
+                // TODO figure out why this happens
             }
         }
 
