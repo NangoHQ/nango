@@ -130,7 +130,7 @@ class IntegrationService {
                     isMemoryLimitError = true;
                 }
 
-                if ('response' in err && 'data' in err.response) {
+                if (err && typeof err === 'object' && 'response' in err && err.response && typeof err.response === 'object' && 'data' in err.response) {
                     const message = JSON.stringify(err.response.data, null, 2);
                     content = `The script failed to execute for ${syncName} with the following error: ${message}`;
                 } else {
