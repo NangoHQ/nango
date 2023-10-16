@@ -164,14 +164,28 @@ paths:
                                                 type: string
                                                 description: The Nango API Configuration.
                                             syncs:
-                                                id: string
-                                                nango_connection_id: integer
-                                                name: string
-                                                created_at: string
-                                                updated_at: string
-                                                deleted: boolean
-                                                deleted_at: string
-                                                last_sync_date: string
+                                                type: array
+                                                items:
+                                                    type: object
+                                                    properties:
+                                                        id:
+                                                            type: string
+                                                            description: The unique ID for the sync.
+                                                        name:
+                                                            type: string
+                                                            description: The name of the sync.
+                                                        connection_id:
+                                                            type: string
+                                                            description: The name of the connection id.
+                                                        created_at:
+                                                            type: string
+                                                            description: The creation timestamp of the sync.
+                                                        updated_at:
+                                                            type: string
+                                                            description: The last updated timestamp of the sync.
+                                                        last_sync_date:
+                                                            type: string
+                                                            description: The timestamp of the last completed sync.
                 '400':
                     description: Invalid request
                     content:
