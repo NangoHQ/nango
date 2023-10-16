@@ -58,6 +58,12 @@
             "url": "https://nango.dev/slack"
         }
     ],
+    "redirects": [
+        {
+            "source": "guides/actions",
+            "destination": "guides/action"
+        }
+    ],
     "navigation": [
         {
             "group": "Getting Started",
