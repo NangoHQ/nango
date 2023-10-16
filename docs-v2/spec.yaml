@@ -163,6 +163,15 @@ paths:
                                             provider:
                                                 type: string
                                                 description: The Nango API Configuration.
+                                            syncs:
+                                                id: string
+                                                nango_connection_id: integer
+                                                name: string
+                                                created_at: string
+                                                updated_at: string
+                                                deleted: boolean
+                                                deleted_at: string
+                                                last_sync_date: string
                 '400':
                     description: Invalid request
                     content:
