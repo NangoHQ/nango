@@ -90,7 +90,8 @@ export async function deploy(
             type = SyncConfigType.SYNC,
             track_deletes,
             auto_start,
-            attributes = {}
+            attributes = {},
+            metadata = {}
         } = sync;
         if (type === SyncConfigType.SYNC && !runs) {
             const error = new NangoError('missing_required_fields_on_deploy');
@@ -204,6 +205,7 @@ export async function deploy(
             track_deletes: track_deletes || false,
             auto_start: auto_start === false ? false : true,
             attributes,
+            metadata,
             file_location,
             runs,
             active: true,

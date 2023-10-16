@@ -59,6 +59,11 @@ export enum SyncConfigType {
     ACTION = 'action'
 }
 
+export interface NangoConfigMetadata {
+    scopes?: string[];
+    description?: string;
+}
+
 export interface SyncConfig extends TimestampsAndDeleted {
     id?: number;
     environment_id: number;
@@ -73,6 +78,7 @@ export interface SyncConfig extends TimestampsAndDeleted {
     track_deletes: boolean;
     auto_start: boolean;
     attributes?: object;
+    metadata?: NangoConfigMetadata;
     version?: string;
     pre_built?: boolean;
     is_public?: boolean;
@@ -122,6 +128,7 @@ interface InternalIncomingPreBuiltFlowConfig {
     runs: string;
     auto_start?: boolean;
     attributes?: object;
+    metadata?: NangoConfigMetadata;
     model_schema: string;
 }
 
