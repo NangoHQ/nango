@@ -51,7 +51,7 @@ class ConfigController {
                     connectionCount: connections.filter((connection) => connection.provider === config.unique_key).length,
                     creationDate: config.created_at
                 };
-                if (template) {
+                if (template && template.auth_mode !== AuthModes.App) {
                     integration['connectionConfigParams'] = parseConnectionConfigParamsFromTemplate(template!);
                 }
                 return integration;
