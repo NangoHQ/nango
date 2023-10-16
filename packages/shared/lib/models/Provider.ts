@@ -1,5 +1,6 @@
 import type { AuthModes } from './Auth.js';
 import type { TimestampsAndDeleted } from './Generic.js';
+import type { Sync } from './Sync.js';
 
 export interface Config extends TimestampsAndDeleted {
     id?: number;
@@ -55,9 +56,11 @@ export interface IntegrationWithCreds extends Integration {
     scopes: string;
     auth_mode: AuthModes;
     app_link?: string;
+    syncs: Sync[];
 }
 
 export interface Integration {
     unique_key: string;
     provider: string;
+    syncs: Sync[];
 }
