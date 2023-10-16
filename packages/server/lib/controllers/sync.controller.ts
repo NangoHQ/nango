@@ -389,7 +389,7 @@ class SyncController {
 
     public async getSyncStatus(req: Request, res: Response, next: NextFunction) {
         try {
-            const { syncs: passedSyncNames, provider_config_key, connection_id } = req.body;
+            const { syncs: passedSyncNames, provider_config_key, connection_id } = req.query;
 
             let syncNames = passedSyncNames;
 
@@ -399,8 +399,8 @@ class SyncController {
                 return;
             }
 
-            if (typeof syncNames === 'string' && syncNames !== '*') {
-                res.status(400).send({ message: 'Syncs must be an array' });
+            if (!syncNames) {
+                res.status(400).send({ message: 'Sync names must be passed in' });
 
                 return;
             }
@@ -415,9 +415,16 @@ class SyncController {
 
             if (syncNames === '*') {
                 syncNames = await getSyncsByProviderConfigKey(environmentId, provider_config_key as string).then((syncs) => syncs.map((sync) => sync.name));
+            } else {
+                syncNames = (syncNames as string).split(',');
             }
 
-            const syncsWithStatus = await syncOrchestrator.getSyncStatus(environmentId, provider_config_key as string, syncNames as string[], connection_id);
+            const syncsWithStatus = await syncOrchestrator.getSyncStatus(
+                environmentId,
+                provider_config_key as string,
+                syncNames as string[],
+                connection_id as string
+            );
 
             res.send({ syncs: syncsWithStatus });
         } catch (e) {

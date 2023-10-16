@@ -632,6 +632,28 @@ paths:
                                     descriptions: A list of sync names that you wish to pause.
                                     items:
                                         type: string
+    /sync/status:
+        get:
+            description: Get the status of specified sync(s) (for a given connection or all applicable connections if no connection is specified)
+            parameters:
+                - name: provider_config_key
+                  in: query
+                  required: true
+                  schema:
+                      type: string
+                  description: The ID of the integration you established within Nango
+                - name: syncs
+                  in: query
+                  required: true
+                  schema:
+                      type: string
+                  description: The name of the syncs you want to fetch a status for. Pass in "*" to return all syncs per the integration
+                - name: connection_id
+                  in: query
+                  required: false
+                  schema:
+                      type: string
+                  description: The ID of the connection. If omitted, all connections will be surfaced.
     /action/trigger:
         post:
             description: Triggers an action for a connection
