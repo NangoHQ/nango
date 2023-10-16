@@ -20,8 +20,7 @@ export default class Nango {
     private publicKey: string;
     private debug = false;
     public win: null | AuthorizationModal = null;
-    // @ts-ignore
-    private tm: null | Timer = null;
+    private tm: null | NodeJS.Timer = null;
 
     constructor(config: { host?: string; websocketsPath?: string; publicKey: string; debug?: boolean }) {
         config.host = config.host || prodHost; // Default to Nango Cloud.
@@ -123,12 +122,10 @@ export default class Nango {
             };
 
             if (this.status === AuthorizationStatus.BUSY) {
-                reject(
-                    {
-                        message: 'The authorization window is oppened',
-                        type: 'windowIsOppened'
-                    }
-                );
+                reject({
+                    message: 'The authorization window is opened',
+                    type: 'windowIsOppened'
+                });
             }
 
             // Save authorization status (for handler)
@@ -138,13 +135,13 @@ export default class Nango {
             this.win = new AuthorizationModal(this.websocketsBaseUrl, url, successHandler, errorHandler, this.debug);
             this.tm = setInterval(() => {
                 if (!this.win?.modal?.window || this.win?.modal?.window.closed) {
-                    clearTimeout(this.tm);
+                    clearTimeout(this.tm as unknown as number);
                     this.win = null;
                     this.status = AuthorizationStatus.CANCELED;
                     reject({
-                        message: 'The authorization window is closed',
+                        message: 'The authorization window was closed before the authorization flow was completed',
                         type: 'windowClosed'
-                    })
+                    });
                 }
             }, 500);
         });
@@ -285,7 +282,7 @@ enum AuthorizationStatus {
     IDLE,
     BUSY,
     DONE,
-    CANCELED,
+    CANCELED
 }
 
 /**
