@@ -351,13 +351,13 @@ export default function IntegrationCreate() {
                                     <div>
                                         <div className="flex">
                                             <label htmlFor="client_secret" className="text-text-light-gray block text-sm font-semibold">
-                                                App Secret Key
+                                                App Private Key
                                             </label>
                                             <Tooltip
                                                 text={
                                                     <>
                                                         <div className="flex text-black text-sm">
-                                                            <p>{`Obtain the app secret key from the from the app page.`}</p>
+                                                            <p>{`Obtain the app private key from the from the app page by downloading the private key and pasting the entirety of its contents here.`}</p>
                                                         </div>
                                                     </>
                                                 }

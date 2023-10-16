@@ -10,7 +10,8 @@ import {
     Config as ProviderConfig,
     IntegrationWithCreds,
     Integration as ProviderIntegration,
-    connectionService
+    connectionService,
+    getSyncsByProviderConfigKey
 } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession, parseConnectionConfigParamsFromTemplate } from '../utils/utils.js';
 
@@ -180,6 +181,8 @@ class ConfigController {
                 client_secret = Buffer.from(client_secret, 'base64').toString('ascii');
             }
 
+            const syncs = await getSyncsByProviderConfigKey(environmentId, providerConfigKey);
+
             const configRes: ProviderIntegration | IntegrationWithCreds = includeCreds
                 ? ({
                       unique_key: config.unique_key,
@@ -188,9 +191,10 @@ class ConfigController {
                       client_secret,
                       scopes: config.oauth_scopes,
                       app_link: config.app_link,
-                      auth_mode: authMode
+                      auth_mode: authMode,
+                      syncs
                   } as IntegrationWithCreds)
-                : ({ unique_key: config.unique_key, provider: config.provider } as ProviderIntegration);
+                : ({ unique_key: config.unique_key, provider: config.provider, syncs } as ProviderIntegration);
 
             res.status(200).send({ config: configRes });
         } catch (err) {
