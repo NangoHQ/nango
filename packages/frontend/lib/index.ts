@@ -19,6 +19,9 @@ export default class Nango {
     private status: AuthorizationStatus;
     private publicKey: string;
     private debug = false;
+    public win: null | AuthorizationModal = null;
+    // @ts-ignore
+    private tm: null | Timer = null;
 
     constructor(config: { host?: string; websocketsPath?: string; publicKey: string; debug?: boolean }) {
         config.host = config.host || prodHost; // Default to Nango Cloud.
@@ -119,11 +122,31 @@ export default class Nango {
                 });
             };
 
+            if (this.status === AuthorizationStatus.BUSY) {
+                reject(
+                    {
+                        message: 'The authorization window is oppened',
+                        type: 'windowIsOppened'
+                    }
+                );
+            }
+
             // Save authorization status (for handler)
             this.status = AuthorizationStatus.BUSY;
 
             // Open authorization modal
-            new AuthorizationModal(this.websocketsBaseUrl, url, successHandler, errorHandler, this.debug);
+            this.win = new AuthorizationModal(this.websocketsBaseUrl, url, successHandler, errorHandler, this.debug);
+            this.tm = setInterval(() => {
+                if (!this.win?.modal?.window || this.win?.modal?.window.closed) {
+                    clearTimeout(this.tm);
+                    this.win = null;
+                    this.status = AuthorizationStatus.CANCELED;
+                    reject({
+                        message: 'The authorization window is closed',
+                        type: 'windowClosed'
+                    })
+                }
+            }, 500);
         });
     }
 
@@ -261,7 +284,8 @@ interface ApiKeyCredentials {
 enum AuthorizationStatus {
     IDLE,
     BUSY,
-    DONE
+    DONE,
+    CANCELED,
 }
 
 /**
@@ -272,7 +296,7 @@ class AuthorizationModal {
     private features: { [key: string]: string | number };
     private width = 500;
     private height = 600;
-    private modal: Window;
+    public modal: Window;
     private swClient: WebSocket;
     private debug: boolean;
 
