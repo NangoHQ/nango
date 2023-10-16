@@ -250,7 +250,7 @@ export default function Activity() {
                                                         <AlertCircle className="stroke-red-500" size="32" />
                                                     </Link>
                                                 )}
-                                                <div className="ml-10 w-36 mr-36">
+                                                <div className="ml-10 w-60 mr-4 truncate overflow-hidden">
                                                     {(activity?.action === 'account') && (
                                                         <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-yellow-500 bg-opacity-20">
                                                             <User className="stroke-yellow-500 mr-2" size="16" />
@@ -276,7 +276,9 @@ export default function Activity() {
                                                                 <p className="inline-block text-red-500">action</p>
                                                             </div>
                                                             {activity.operation_name && (
-                                                                <p className="text-gray-500 ml-2 text-sm">({activity?.operation_name})</p>
+                                                                <Tooltip text={activity.operation_name} type="dark">
+                                                                    <p className="text-gray-500 ml-2 text-sm overflow-hidden truncate">({activity?.operation_name})</p>
+                                                                </Tooltip>
                                                             )}
                                                         </span>
                                                     )}
@@ -290,7 +292,9 @@ export default function Activity() {
                                                                 to={`/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '#sync' : ''}`}
                                                             >
                                                                 {activity.operation_name && (
-                                                                    <p className="text-gray-500 ml-2 text-sm">({activity?.operation_name})</p>
+                                                                    <Tooltip text={activity.operation_name} type="dark">
+                                                                        <p className="text-gray-500 ml-2 text-sm overflow-hidden truncate">({activity?.operation_name})</p>
+                                                                    </Tooltip>
                                                                 )}
                                                             </Link>
                                                         </span>
@@ -347,7 +351,9 @@ export default function Activity() {
                                                                 to="/syncs"
                                                             >
                                                                 {activity.operation_name && (
-                                                                    <p className="text-gray-500 ml-2 text-sm">({activity?.operation_name})</p>
+                                                                    <Tooltip text={activity.operation_name} type="dark">
+                                                                        <p className="text-gray-500 ml-2 text-sm overflow-hidden truncate">({activity?.operation_name})</p>
+                                                                    </Tooltip>
                                                                 )}
                                                             </Link>
                                                         </span>
