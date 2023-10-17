@@ -163,7 +163,7 @@ paths:
                                             provider:
                                                 type: string
                                                 description: The Nango API Configuration.
-                                            syncs:
+                                            actions:
                                                 type: array
                                                 items:
                                                     type: object
@@ -177,7 +177,7 @@ paths:
                                                         updated_at:
                                                             type: string
                                                             description: The last updated timestamp of the sync.
-                                            actions:
+                                            syncs:
                                                 type: array
                                                 items:
                                                     type: object
