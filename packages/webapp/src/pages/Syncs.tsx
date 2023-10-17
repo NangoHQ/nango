@@ -150,8 +150,8 @@ export default function Syncs() {
                                     </div>
                                 </div>
                                 {syncs.filter(sync => sync.type === currentTab).map((sync, index) => (
-                                    <div key={index} className="text-white px-5 text-sm">
-                                        <div className={`flex pb-4 py-6 items-center ${syncs.filter(sync => sync.type === currentTab).length > 1 ? 'border-b border-border-gray' : ''}`}>
+                                    <div key={index} className={`text-white px-5 text-sm  ${syncs.filter(sync => sync.type === currentTab).length > 1 ? 'border-b border-border-gray' : ''}`}>
+                                        <div className="flex pb-4 py-6 items-center">
                                             <div className="flex flex-col w-48">
                                                 <span>
                                                     {sync.sync_name}@v{sync.version}
@@ -211,8 +211,8 @@ export default function Syncs() {
                                             <span className="text-gray-500 mr-4">{formatDateToUSFormat(sync.updated_at)}</span>
                                             <Button type="button" variant="secondary" onClick={() => downloadFlow(sync)}>Download</Button>
                                         </div>
-                                        {sync.metadata && (
-                                            <div className="text-xs text-gray-400 mt-3 mb-3 w-3/4">
+                                        {sync.metadata && sync.metadata.description && (
+                                            <div className="text-xs text-gray-400 mb-3 w-2/3">
                                                 <span className="font-bold">Description:</span> {sync.metadata.description}
                                             </div>
                                         )}

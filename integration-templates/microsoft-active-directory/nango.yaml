@@ -1,15 +1,23 @@
 integrations:
-    # Supports both Microsoft 365 groups & users and Azure Active Directory
-    microsoft-teams: # scopes: GroupMember.Read.All, User.Read.All
+    microsoft-teams:
         microsoft-org-unit:
             runs: every 6 hours
             returns:
                 - OrganizationalUnit
-
+            description: |
+              Continuously fetches groups from either Microsoft 365 or Azure Active Directory.
+              Details: full refresh, support deletes, goes back all time, metadata is not required.
+              Required scope(s): GroupMember.Read.All
         microsoft-users:
             runs: every hour
             returns:
                 - User
+            description: |
+              Continuously fetches users from either Microsoft 365 or Azure Active Directory given specified
+              groups to sync. Expects an `orgsToSync` metadata property with an array
+              of organization ids.
+              Details: full refresh, doesn't support deletes, goes back all time, metadata is required.
+              Required scope(s): User.Read.All
 
 models:
     OrganizationalUnit:
