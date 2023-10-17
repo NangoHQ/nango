@@ -98,9 +98,27 @@ export interface IntegrationWithCreds extends Integration {
     scopes: string;
 }
 
+interface Timestamps {
+    created_at: string;
+    updated_at: string;
+}
+
+export interface Sync extends Timestamps {
+    id: string;
+    name: string;
+    connection_id: string;
+    last_sync_date: string;
+}
+
+export interface Action extends Timestamps {
+    name: string;
+}
+
 export interface Integration {
     unique_key: string;
     provider: string;
+    syncs: Sync[];
+    actions: Action[];
 }
 
 export interface SyncStatus {

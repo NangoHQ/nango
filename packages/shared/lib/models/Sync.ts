@@ -36,6 +36,10 @@ export interface Sync extends TimestampsAndDeleted {
     };
 }
 
+export interface Action extends TimestampsAndDeleted {
+    name: string;
+}
+
 export interface Job extends TimestampsAndDeleted {
     id?: number;
     status: SyncStatus;
