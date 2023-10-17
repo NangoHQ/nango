@@ -4,14 +4,6 @@ sidebarTitle: 'Node'
 icon: 'node'
 ---
 
-The backend Node SDK lets you:
-- retrieve [API credentials](/guides/oauth)
-- retrieve [synced data](/guides/sync)
-- trigger [actions](/guides/action)
-- manage [connections](/core-concepts#connections) and [syncs](/core-concepts#syncs)
-- [proxy requests](/guides/proxy) to external APIs
-- get types for [webhooks](/guides/webhooks)
-
 # Installing & instantiating the node SDK
 
 Install it with your favorite package manager, e.g.:
@@ -123,7 +115,7 @@ For OAuth 2, always fetch the latest access token from Nango before you run an A
 const list = await nango.listConnections('<CONNECTION-ID>');
 ```
 
-This returns you all [Connections](/core-concepts#connections) of a specific user (i.e. Connection ID):
+This returns you all connections of a specific user (i.e. Connection ID):
 
 ```js
 {
@@ -144,7 +136,7 @@ This returns you all [Connections](/core-concepts#connections) of a specific use
 const list = await nango.listConnections();
 ```
 
-Returns a list of minimalistic [Connection](/core-concepts#connections) objects. This can be helpful if you need to check whether a user has setup a specific [Integration](/core-concepts#integrations). Note that the list does not contain any access credentials and fetching it also does not refresh the access tokens of any _connections_.
+Returns a list of minimalistic connection objects. This can be helpful if you need to check whether a user has setup a specific integration. Note that the list does not contain any access credentials and fetching it also does not refresh the access tokens of any _connections_.
 
 Please check the [REST API reference](/api-reference/connection/list) for an example response and the full list of returned fields.
 
