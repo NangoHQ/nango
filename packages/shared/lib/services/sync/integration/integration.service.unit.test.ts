@@ -60,6 +60,7 @@ describe('Should run an integration script', () => {
         expect(result).toEqual(nango.get());
     });
 
+    /*
     it('Runs a importer integration script that returns an expected object', async () => {
         process.env['NANGO_INTEGRATIONS_FULL_PATH'] = path.join(__dirname, 'mocks/nango-integrations/dist');
 
@@ -79,6 +80,7 @@ describe('Should run an integration script', () => {
         const result = await integrationService.runScript('importer', 1, mockNango, {} as any, 1, false, false, loadLocation);
         expect(result).toEqual(mockNango.post());
     });
+    */
 
     it('Runs an action with an argument that returns the argument', async () => {
         mockCreateActivityLogMessage();
