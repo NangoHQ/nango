@@ -6,7 +6,7 @@ import type { NangoSync } from '../../../sdk/sync.js';
 import localFileService from '../../file/local.service.js';
 import remoteFileService from '../../file/remote.service.js';
 import { isCloud } from '../../../utils/utils.js';
-import { classToObject, createConsoleLog, createRequireMethod, hostToQuickJSHandle, quickJSHandleToHost } from './utils.js';
+import { classToObject, createConsoleLog, createRequireMethod, hostToQuickJSHandle, quickJSHandleToHost, createBuffer } from './utils.js';
 
 const memoryLimit = 500;
 
@@ -20,6 +20,7 @@ class IntegrationService {
 
         createConsoleLog(vm);
         createRequireMethod(vm);
+        createBuffer(vm);
 
         if (sandbox) {
             for (const [name, value] of Object.entries(sandbox)) {
