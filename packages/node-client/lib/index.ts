@@ -378,7 +378,7 @@ export class Nango {
         return response.data;
     }
 
-    public async setMetadata(providerConfigKey: string, connectionId: string, metadata: Record<string, string>): Promise<AxiosResponse<void>> {
+    public async setMetadata(providerConfigKey: string, connectionId: string, metadata: Record<string, any>): Promise<AxiosResponse<void>> {
         if (!providerConfigKey) {
             throw new Error('Provider Config Key is required');
         }
