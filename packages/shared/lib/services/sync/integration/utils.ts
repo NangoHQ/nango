@@ -98,6 +98,29 @@ export async function createRequireMethod(vm: QuickJSContext): Promise<void> {
     globalObject.dispose();
 }
 
+export async function createBuffer(vm: QuickJSContext): Promise<void> {
+    const globalObject = vm.global;
+
+    const fromFunction = vm.newFunction('from', (data: QuickJSHandle, encoding: QuickJSHandle) => {
+        const hostData = quickJSHandleToHost(vm, data);
+        const hostEncoding = quickJSHandleToHost(vm, encoding) as BufferEncoding;
+
+        const buffer = Buffer.from(hostData, hostEncoding);
+        const string = buffer.toString('utf8');
+
+        return hostToQuickJSHandle(vm, string);
+    });
+
+    const bufferObject = vm.newObject();
+    vm.setProp(bufferObject, 'from', fromFunction);
+
+    vm.setProp(globalObject, 'Buffer', bufferObject);
+
+    fromFunction.dispose();
+    bufferObject.dispose();
+    globalObject.dispose();
+}
+
 export function createHashBridge(algorithm: string, data: string): string {
     const hash = crypto.createHash(algorithm);
     hash.update(data);
