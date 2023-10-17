@@ -5,7 +5,8 @@ export enum SyncStatus {
     RUNNING = 'RUNNING',
     PAUSED = 'PAUSED',
     STOPPED = 'STOPPED',
-    SUCCESS = 'SUCCESS'
+    SUCCESS = 'SUCCESS',
+    ERROR = 'ERROR'
 }
 
 export enum SyncType {
