@@ -9,7 +9,7 @@ import localFileService from '../file/local.service.js';
 import { getLastSyncDate, setLastSyncDate, clearLastSyncDate } from './sync.service.js';
 import { formatDataRecords } from './data/records.service.js';
 import { upsert } from './data/data.service.js';
-import { getDeletedKeys, takeSnapshot } from './data/delete.service.js';
+import { getDeletedKeys, takeSnapshot, syncUpdateAtForDeletedRecords } from './data/delete.service.js';
 import environmentService from '../environment.service.js';
 import integationService from './integration/integration.service.js';
 import webhookService from '../webhook.service.js';
@@ -207,7 +207,8 @@ export default class SyncRun {
                 syncJobId: this.syncJobId,
                 lastSyncDate: lastSyncDate as Date,
                 dryRun: !this.writeToDb,
-                attributes: syncData.attributes
+                attributes: syncData.attributes,
+                track_deletes: trackDeletes as boolean
             });
 
             if (this.debug) {
@@ -287,7 +288,15 @@ export default class SyncRun {
                             success,
                             error,
                             response: formattedResults
-                        } = formatDataRecords(userDefinedResults[model], this.nangoConnection.id as number, model, this.syncId, this.syncJobId as number);
+                        } = formatDataRecords(
+                            userDefinedResults[model],
+                            this.nangoConnection.id as number,
+                            model,
+                            this.syncId,
+                            this.syncJobId as number,
+                            lastSyncDate as Date,
+                            trackDeletes
+                        );
 
                         if (!success || formattedResults === null) {
                             await this.reportFailureForResults(error?.message as string);
@@ -371,6 +380,10 @@ export default class SyncRun {
         let i = 0;
         for (const model of models) {
             const deletedKeys = trackDeletes ? await getDeletedKeys('_nango_sync_data_records', 'external_id', this.nangoConnection.id as number, model) : [];
+
+            if (trackDeletes) {
+                await syncUpdateAtForDeletedRecords(this.nangoConnection.id as number, model, 'external_id', deletedKeys);
+            }
 
             await this.reportResults(
                 model,

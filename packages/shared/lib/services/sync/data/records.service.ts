@@ -15,11 +15,19 @@ export const formatDataRecords = (
     model: string,
     syncId: string,
     sync_job_id: number,
+    lastSyncDate = new Date(),
+    trackDeletes = false,
     softDelete = false
 ): ServiceResponse<SyncDataRecord[]> => {
     const formattedRecords: SyncDataRecord[] = [] as SyncDataRecord[];
 
     const deletedAtKey = 'deletedAt';
+
+    let oldTimestamp = new Date();
+
+    if (trackDeletes) {
+        oldTimestamp = lastSyncDate;
+    }
 
     for (let i = 0; i < records.length; i++) {
         const record = records[i];
@@ -57,6 +65,11 @@ export const formatDataRecords = (
             external_is_deleted: softDelete,
             external_deleted_at
         };
+
+        if (trackDeletes) {
+            formattedRecords[i]!.created_at = oldTimestamp;
+            formattedRecords[i]!.updated_at = oldTimestamp;
+        }
     }
     return { success: true, error: null, response: formattedRecords };
 };
