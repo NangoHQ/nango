@@ -212,7 +212,7 @@ export default function Syncs() {
                                             <Button type="button" variant="secondary" onClick={() => downloadFlow(sync)}>Download</Button>
                                         </div>
                                         {sync.metadata && sync.metadata.description && (
-                                            <div className="text-xs text-gray-400 mb-3 w-2/3">
+                                            <div className="text-xs text-gray-400 mb-3 max-w-2xl">
                                                 <span className="font-bold">Description:</span> {sync.metadata.description}
                                             </div>
                                         )}
