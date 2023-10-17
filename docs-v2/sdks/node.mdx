@@ -271,7 +271,7 @@ await nango.triggerSync('<INTEGRATION-ID>', '<CONNECTION-ID>');
 You can optionally trigger for certain specified sync(s) for a _connection_:
 
 ```ts
-await nango.triggerSync('<INTEGRATION-ID>', '<CONNECTION-ID>', ['github-sync', 'hubspot-sync']);
+await nango.triggerSync('<INTEGRATION-ID>', ['github-sync', 'hubspot-sync'], '<CONNECTION-ID>');
 ```
 
 ### Start/pause syncs
@@ -279,8 +279,8 @@ Starts or pauses the continuous execution of specified sync(s) for a given _conn
 
 
 ```ts
-await nango.pauseSync('<INTEGRATION-ID>', '<CONNECTION-ID>', ['github-sync', 'hubspot-sync']);
-await nango.startSync('<INTEGRATION-ID>', '<CONNECTION-ID>', ['github-sync', 'hubspot-sync']);
+await nango.pauseSync('<INTEGRATION-ID>', ['github-sync', 'hubspot-sync'], '<CONNECTION-ID>');
+await nango.startSync('<INTEGRATION-ID>', ['github-sync', 'hubspot-sync'], '<CONNECTION-ID>');
 ```
 
 ### Sync status
