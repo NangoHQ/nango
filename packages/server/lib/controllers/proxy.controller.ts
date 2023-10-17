@@ -153,7 +153,7 @@ class ProxyController {
             const path = req.params[0] as string;
             const { query }: UrlWithParsedQuery = url.parse(req.url, true) as unknown as UrlWithParsedQuery;
             const queryString = querystring.stringify(query);
-            const endpoint = `${path}${queryString ? `?${queryString}` : ''}`;
+            let endpoint = `${path}${queryString ? `?${queryString}` : ''}`;
 
             if (!endpoint) {
                 await createActivityLogMessageAndEnd({
@@ -250,6 +250,10 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
                     timestamp: Date.now(),
                     content: `Proxy: API call configuration constructed successfully with the base api url set to ${baseUrlOverride || template.proxy.base_url}`
                 });
+            }
+
+            if (!baseUrlOverride && template.proxy.base_url && endpoint.includes(template.proxy.base_url)) {
+                endpoint = endpoint.replace(template.proxy.base_url, '');
             }
 
             const configBody: ProxyBodyConfiguration = {

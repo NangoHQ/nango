@@ -18,6 +18,7 @@ interface FlowDetails {
     returns: string[];
     runs: string;
     rawName?: string
+    description?: string;
 }
 
 interface Flow {
@@ -323,6 +324,18 @@ export default function FlowCreate() {
                                     </div>
                                 </div>
                             </div>
+                            {flow?.description && (
+                                <div>
+                                    <div className="flex">
+                                        <label htmlFor="flow-name" className="text-text-light-gray block text-sm font-semibold">
+                                            Description
+                                        </label>
+                                    </div>
+                                    <div className="mt-1">
+                                        <span className="text-text-light-gray">{flow?.description}</span>
+                                    </div>
+                                </div>
+                            )}
                             {flow?.type !== 'action' && (
                                 <div>
                                     <div>

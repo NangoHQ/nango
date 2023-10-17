@@ -49,6 +49,10 @@ export interface Sync {
               };
           }[]
         | null;
+    metadata?: {
+        description?: string;
+        scopes?: string[];
+    };
 }
 
 export interface SyncResponse {

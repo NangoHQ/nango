@@ -1,4 +1,4 @@
-import type { SyncConfigType } from '../models/Sync.js';
+import type { SyncConfigType, NangoConfigMetadata } from '../models/Sync.js';
 
 export * as HubspotModels from './Hubspot.js';
 export * as GithubModels from './Github.js';
@@ -10,6 +10,7 @@ export interface NangoIntegrationData {
     track_deletes?: boolean;
     auto_start?: boolean;
     attributes?: object;
+    metadata?: NangoConfigMetadata;
     fileLocation?: string;
     version?: string;
     sync_config_id?: number;
@@ -51,6 +52,9 @@ export interface NangoSyncConfig {
     runs: string;
     auto_start?: boolean;
     attributes?: object;
+    description?: string;
+    scopes?: string[];
+    metadata?: NangoConfigMetadata;
     track_deletes?: boolean;
     returns: string[];
     models: NangoSyncModel[];

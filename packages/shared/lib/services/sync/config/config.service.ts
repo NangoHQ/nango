@@ -293,6 +293,7 @@ export async function getSyncConfigsWithConnectionsByEnvironmentId(environment_i
             `${TABLE}.auto_start`,
             `${TABLE}.pre_built`,
             `${TABLE}.is_public`,
+            `${TABLE}.metadata`,
             '_nango_configs.provider',
             '_nango_configs.unique_key',
             db.knex.raw(

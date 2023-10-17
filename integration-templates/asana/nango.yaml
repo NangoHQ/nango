@@ -1,9 +1,14 @@
 integrations:
-    asana: # scopes: default
+    asana:
         asana-tasks:
             runs: every 30min
             returns:
                 - AsanaTask
+            description: |
+              Continuously fetches Asana tasks. This is just a trivial example:
+              it will only get tasks from the first project of the first workspace.
+              Details: full refresh, doesn't support deletes, sync goes to all time, metadata is not required.
+              Required scope(s): default
 
 models:
     AsanaTask:
