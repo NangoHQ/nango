@@ -65,7 +65,7 @@ paths:
                                     description: Comma separated list of scopes.
             responses:
                 '200':
-                    description: Successfully created an integrations
+                    description: Successfully created an integration
                 '400':
                     description: Invalid request
                     content:
@@ -369,43 +369,6 @@ paths:
             responses:
                 '200':
                     description: Successfully returned a connection
-                    # content:
-                    #     application/json:
-                    #         schema:
-                    #             type: object
-                    #             required:
-                    #                 - id
-                    #                 - created_at
-                    #                 - updated_at
-                    #                 - provider_config_key
-                    #                 - connection_id
-                    #                 - credentials
-                    #             properties:
-                    #                 id:
-                    #                     type: integer
-                    #                     description: The internal Nango ID used for the connection.
-                    #                 created_at:
-                    #                     type: string
-                    #                     description: connection creation date.
-                    #                 updated_at:
-                    #                     type: string
-                    #                     description: connection update date.
-                    #                 provider_config_key:
-                    #                     type: string
-                    #                     description: The integration ID used to create the connection (aka Unique Key).
-                    #                 connection_id:
-                    #                     type: string
-                    #                     description: The connection ID used to create the connection.
-                    #                 connection_config:
-                    #                     type: object
-                    #                     description: Important configuration passed in by you during the OAuth flow.
-                    #                 metadata:
-                    #                     type: object
-                    #                     description: Important metadata passed in by the external API during the OAuth flow.
-                    #                 credentials:
-                    #                     type: object
-                    #                     description: The credentials to access the external API.
-
                 '400':
                     description: Invalid request
                     content:
