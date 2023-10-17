@@ -1,7 +1,7 @@
 import { schema } from '../../../db/database.js';
 import { verifyUniqueKeysAreUnique } from './records.service.js';
 import { createActivityLogMessage } from '../../activity/activity.service.js';
-import { clearOldRecords, updateCreatedAtForUpdatedRecords } from './delete.service.js';
+import { clearOldRecords, syncCreatedAtForAddedRecords, syncUpdateAtForChangedRecords } from './delete.service.js';
 import type { UpsertResponse } from '../../../models/Data.js';
 import type { DataRecord } from '../../../models/Sync.js';
 
@@ -62,7 +62,8 @@ export async function upsert(
         if (track_deletes) {
             // we need to main the created at date of the existing records so we know what
             // was added and what was updated
-            await updateCreatedAtForUpdatedRecords(nangoConnectionId, model, uniqueKey, updatedKeys);
+            await syncUpdateAtForChangedRecords(nangoConnectionId, model, uniqueKey, updatedKeys);
+            await syncCreatedAtForAddedRecords(nangoConnectionId, model, uniqueKey, addedKeys);
         }
 
         return {

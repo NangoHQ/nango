@@ -222,7 +222,9 @@ describe('Data delete service integration tests', () => {
             nangoConnectionId as number,
             modelName,
             syncId as string,
-            syncJobId as number
+            syncJobId as number,
+            new Date(),
+            true
         );
         const { error, success } = await DataService.upsert(
             formattedResults as unknown as DataRecord[],
@@ -247,7 +249,9 @@ describe('Data delete service integration tests', () => {
             nangoConnectionId as number,
             modelName,
             syncId as string,
-            syncJobId as number
+            syncJobId as number,
+            new Date(),
+            true
         );
 
         const { error: updateError, success: updateSuccess } = await DataService.upsert(
