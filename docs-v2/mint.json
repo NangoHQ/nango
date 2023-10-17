@@ -333,7 +333,7 @@
         },
         {
             "group": "Syncs",
-            "pages": ["api-reference/sync/records-get", "api-reference/sync/trigger", "api-reference/sync/start", "api-reference/sync/pause"]
+            "pages": ["api-reference/sync/records-get", "api-reference/sync/trigger", "api-reference/sync/start", "api-reference/sync/pause", "api-reference/sync/status"]
         },
         {
             "group": "Actions",

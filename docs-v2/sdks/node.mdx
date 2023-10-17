@@ -271,7 +271,7 @@ await nango.triggerSync('<INTEGRATION-ID>', '<CONNECTION-ID>');
 You can optionally trigger for certain specified sync(s) for a _connection_:
 
 ```ts
-await nango.triggerSync('<INTEGRATION-ID>', '<CONNECTION-ID>', ['github-sync', 'hubspot-sync']);
+await nango.triggerSync('<INTEGRATION-ID>', ['github-sync', 'hubspot-sync'], '<CONNECTION-ID>');
 ```
 
 ### Start/pause syncs
@@ -279,8 +279,41 @@ Starts or pauses the continuous execution of specified sync(s) for a given _conn
 
 
 ```ts
-await nango.pauseSync('<INTEGRATION-ID>', '<CONNECTION-ID>', ['github-sync', 'hubspot-sync']);
-await nango.startSync('<INTEGRATION-ID>', '<CONNECTION-ID>', ['github-sync', 'hubspot-sync']);
+await nango.pauseSync('<INTEGRATION-ID>', ['github-sync', 'hubspot-sync'], '<CONNECTION-ID>');
+await nango.startSync('<INTEGRATION-ID>', ['github-sync', 'hubspot-sync'], '<CONNECTION-ID>');
+```
+
+### Sync status
+Returns the status of syncs given an integration, sync names, and an optional connection id
+
+```ts
+const syncStatuses = await nango.syncStatus('<INTEGRATION-ID>', '<Array of sync names | *>', '<CONNECTION-ID>')
+
+console.log(syncStatuses);
+
+/*
+{
+    "syncs": [
+        {
+            "id": "e234d172-6830-4db9-a6b2-2a30f2f668e2",
+            "name": "salesforce-articles",
+            "status": "ERROR",
+            "latestResult": {}
+        },
+        {
+            "id": "3463bfdd-3fa2-418c-9e53-09f59416fe5f",
+            "name": "salesforce-tickets",
+            "status": "SUCCESS",
+            "latestResult": {
+                "SalesforceTicket": {
+                    "added": 27,
+                    "updated": 0
+                }
+            }
+        }
+    ]
+}
+*/
 ```
 
 ### Read synced data

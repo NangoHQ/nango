@@ -9,6 +9,7 @@ import {
     connectionService,
     getSyncs,
     verifyOwnership,
+    getSyncsByProviderConfigKey,
     SyncClient,
     updateScheduleStatus,
     updateSuccess as updateSuccessActivityLog,
@@ -381,6 +382,51 @@ class SyncController {
             await syncOrchestrator.runSyncCommand(environmentId, provider_config_key as string, syncNames as string[], SyncCommand.UNPAUSE, connection_id);
 
             res.sendStatus(200);
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    public async getSyncStatus(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { syncs: passedSyncNames, provider_config_key, connection_id } = req.query;
+
+            let syncNames = passedSyncNames;
+
+            if (!provider_config_key) {
+                res.status(400).send({ message: 'Missing provider config key' });
+
+                return;
+            }
+
+            if (!syncNames) {
+                res.status(400).send({ message: 'Sync names must be passed in' });
+
+                return;
+            }
+
+            if (!syncNames) {
+                res.status(400).send({ message: 'Missing sync names' });
+
+                return;
+            }
+
+            const environmentId = getEnvironmentId(res);
+
+            if (syncNames === '*') {
+                syncNames = await getSyncsByProviderConfigKey(environmentId, provider_config_key as string).then((syncs) => syncs.map((sync) => sync.name));
+            } else {
+                syncNames = (syncNames as string).split(',');
+            }
+
+            const syncsWithStatus = await syncOrchestrator.getSyncStatus(
+                environmentId,
+                provider_config_key as string,
+                syncNames as string[],
+                connection_id as string
+            );
+
+            res.send({ syncs: syncsWithStatus });
         } catch (e) {
             next(e);
         }
