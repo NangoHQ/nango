@@ -69,13 +69,13 @@
             "group": "Getting Started",
             "pages": [
                     "introduction",
-                    "quickstart"
+                    "guides/integrate"
                 ]
         },
         {
-            "group": "Guides",
+            "group": "Step-By-Step Guides",
             "pages": [
-                "guides/integrate",
+                "quickstart",
                 "guides/oauth",
                 "guides/sync",
                 "guides/action",
