@@ -3,7 +3,7 @@ import db, { schema, dbNamespace } from '../../../db/database.js';
 import configService from '../../config.service.js';
 import remoteFileService from '../../file/remote.service.js';
 import { LogActionEnum } from '../../../models/Activity.js';
-import { SyncConfigWithProvider, SyncConfig, SlimSync, SyncConfigType } from '../../../models/Sync.js';
+import { Action, SyncConfigWithProvider, SyncConfig, SlimSync, SyncConfigType } from '../../../models/Sync.js';
 import type { NangoConnection } from '../../../models/Connection.js';
 import type { Config as ProviderConfig } from '../../../models/Provider.js';
 import type { NangoConfig } from '../../../integrations/index.js';
@@ -140,6 +140,28 @@ export async function getActionConfigByNameAndProviderConfigKey(environment_id: 
     }
 
     return false;
+}
+
+export async function getActionsByProviderConfigKey(environment_id: number, unique_key: string): Promise<Action[]> {
+    const nango_config_id = await configService.getIdByProviderConfigKey(environment_id, unique_key);
+
+    if (!nango_config_id) {
+        return [];
+    }
+
+    const result = await schema().from<SyncConfig>(TABLE).select('sync_name as name', 'created_at', 'updated_at').where({
+        environment_id,
+        nango_config_id,
+        deleted: false,
+        active: true,
+        type: SyncConfigType.ACTION
+    });
+
+    if (result) {
+        return result;
+    }
+
+    return [];
 }
 
 export async function getSyncAndActionConfigByParams(environment_id: number, sync_name: string, providerConfigKey: string): Promise<SyncConfig | null> {

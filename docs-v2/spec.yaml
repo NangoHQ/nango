@@ -168,6 +168,20 @@ paths:
                                                 items:
                                                     type: object
                                                     properties:
+                                                        name:
+                                                            type: string
+                                                            description: The name of the action.
+                                                        created_at:
+                                                            type: string
+                                                            description: The creation timestamp of the sync.
+                                                        updated_at:
+                                                            type: string
+                                                            description: The last updated timestamp of the sync.
+                                            actions:
+                                                type: array
+                                                items:
+                                                    type: object
+                                                    properties:
                                                         id:
                                                             type: string
                                                             description: The unique ID for the sync.

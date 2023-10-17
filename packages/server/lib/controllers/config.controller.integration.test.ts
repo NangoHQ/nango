@@ -199,7 +199,8 @@ describe('Should verify the config controller HTTP API calls', async () => {
             config: {
                 provider: 'notion',
                 unique_key: 'test',
-                syncs: []
+                syncs: [],
+                actions: []
             }
         });
 
@@ -219,7 +220,8 @@ describe('Should verify the config controller HTTP API calls', async () => {
                 scopes: 'abc,def,efg',
                 app_link: null,
                 auth_mode: 'OAUTH2',
-                syncs: []
+                syncs: [],
+                actions: []
             }
         });
     });
