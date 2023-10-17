@@ -254,6 +254,19 @@ export function hostToQuickJSHandle(vm: QuickJSContext, val: unknown, depth = 0)
             })
         );
 
+        const dateClass = vm.getProp(vm.global, 'Date') || vm.newObject();
+        vm.setProp(
+            dateClass,
+            'parse',
+            vm.newFunction('parse', (dateString: QuickJSHandle) => {
+                const hostDateString = quickJSHandleToHost(vm, dateString) as string;
+                const timestamp = Date.parse(hostDateString);
+                return vm.newNumber(timestamp);
+            })
+        );
+
+        dateClass.dispose();
+
         vm.setProp(
             dateObjHandle,
             'getTime',
