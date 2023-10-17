@@ -283,6 +283,39 @@ await nango.pauseSync('<INTEGRATION-ID>', '<CONNECTION-ID>', ['github-sync', 'hu
 await nango.startSync('<INTEGRATION-ID>', '<CONNECTION-ID>', ['github-sync', 'hubspot-sync']);
 ```
 
+### Sync status
+Returns the status of syncs given an integration, sync names, and an optional connection id
+
+```ts
+const syncStatuses = await nango.syncStatus('<INTEGRATION-ID>', '<Array of sync names | *>', '<CONNECTION-ID>')
+
+console.log(syncStatuses);
+
+/*
+{
+    "syncs": [
+        {
+            "id": "e234d172-6830-4db9-a6b2-2a30f2f668e2",
+            "name": "salesforce-articles",
+            "status": "ERROR",
+            "latestResult": {}
+        },
+        {
+            "id": "3463bfdd-3fa2-418c-9e53-09f59416fe5f",
+            "name": "salesforce-tickets",
+            "status": "SUCCESS",
+            "latestResult": {
+                "SalesforceTicket": {
+                    "added": 27,
+                    "updated": 0
+                }
+            }
+        }
+    ]
+}
+*/
+```
+
 ### Read synced data
 
 To read synced data from Nango use `getRecords`:
