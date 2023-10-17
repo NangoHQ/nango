@@ -97,13 +97,13 @@ The `nango.getConnection()` method returns the necessary information authenticat
         "subdomain": "myshop",
         "realmId": "XXXXX",
         "instance_id": "YYYYYYY"
-    },                      
+    },
     "account_id": 0,                              // ID of your Nango account (Nango Cloud only)
     "metadata": {                                 // Custom metadata stored by you
         "myProperty": "yes",
         "filter": "closed=true"
     }
-}                              
+}
   ```
 
 <Tip>
@@ -203,7 +203,7 @@ Please check the [REST API reference](/api-reference/integration/get) for an exa
 ### Proxy
 
 <Info>
-    Some APIs are not yet fully-configured to work with the Proxy and require you to indicate the base URL. 
+    Some APIs are not yet fully-configured to work with the Proxy and require you to indicate the base URL.
 
     You can check if your API contains the `proxy.base_url` field in the [providers.yaml](https://nango.dev/providers.yaml) configuration file.
 
@@ -244,14 +244,14 @@ const res = await nango.proxy({
 ```
 
 <Info>
-    The base URL should already be set for you for each API, but you can override with the `baseUrlOverride` field. 
-    
+    The base URL should already be set for you for each API, but you can override with the `baseUrlOverride` field.
+
     Some APIs don't have a default base URL (because it hasn't been configured in Nango or they have multiple ones). You can check this by looking at the `proxy.base_url` field in the [providers.yaml](https://nango.dev/providers.yaml) configuration file. Feel free to contribute this field or reach out on the [Slack community](https://www.nango.dev/slack) to ask us to do it.
 </Info>
 
 There are also convenience methods available: `nango.get({})`, `nango.post({})`, `nango.patch{{}}` and `nango.delete({})`.
 
-**Return value**  
+**Return value**
 When you call the proxy Nango creates the API request to the external API and runs it for you (possibly with retries).
 
 The response from the external API is passed back to you exactly as Nango gets it:
@@ -281,6 +281,39 @@ Starts or pauses the continuous execution of specified sync(s) for a given _conn
 ```ts
 await nango.pauseSync('<INTEGRATION-ID>', '<CONNECTION-ID>', ['github-sync', 'hubspot-sync']);
 await nango.startSync('<INTEGRATION-ID>', '<CONNECTION-ID>', ['github-sync', 'hubspot-sync']);
+```
+
+### Sync status
+Returns the status of syncs given an integration, sync names, and an optional connection id
+
+```ts
+const syncStatuses = await nango.syncStatus('<INTEGRATION-ID>', '<Array of sync names | *>', '<CONNECTION-ID>')
+
+console.log(syncStatuses);
+
+/*
+{
+    "syncs": [
+        {
+            "id": "e234d172-6830-4db9-a6b2-2a30f2f668e2",
+            "name": "salesforce-articles",
+            "status": "ERROR",
+            "latestResult": {}
+        },
+        {
+            "id": "3463bfdd-3fa2-418c-9e53-09f59416fe5f",
+            "name": "salesforce-tickets",
+            "status": "SUCCESS",
+            "latestResult": {
+                "SalesforceTicket": {
+                    "added": 27,
+                    "updated": 0
+                }
+            }
+        }
+    ]
+}
+*/
 ```
 
 ### Read synced data

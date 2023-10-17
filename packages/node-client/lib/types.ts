@@ -102,3 +102,20 @@ export interface Integration {
     unique_key: string;
     provider: string;
 }
+
+export interface SyncStatus {
+    id: string;
+    name: string;
+    status: 'RUNNING' | 'SUCCESS' | 'ERROR' | 'PAUSED' | 'STOPPED';
+    latestResult: Record<string, StatusAction>;
+}
+
+export interface StatusAction {
+    added: number;
+    updated: number;
+    deleted?: number;
+}
+
+export interface SyncStatusResponse {
+    syncs: SyncStatus[];
+}

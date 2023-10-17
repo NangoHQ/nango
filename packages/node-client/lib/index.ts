@@ -13,7 +13,8 @@ import {
     Connection,
     ConnectionList,
     Integration,
-    IntegrationWithCreds
+    IntegrationWithCreds,
+    SyncStatusResponse
 } from './types.js';
 import { validateProxyConfiguration, validateSyncRecordConfiguration } from './utils.js';
 
@@ -427,13 +428,8 @@ export class Nango {
         throw new Error('getFieldMapping is deprecated. Please use getMetadata instead.');
     }
 
-    public async triggerSync(providerConfigKey: string, connectionId: string, syncs?: string[]): Promise<void> {
+    public async triggerSync(providerConfigKey: string, syncs?: string[], connectionId?: string): Promise<void> {
         const url = `${this.serverUrl}/sync/trigger`;
-
-        const headers = {
-            'Connection-Id': connectionId,
-            'Provider-Config-Key': providerConfigKey
-        };
 
         if (typeof syncs === 'string') {
             throw new Error('Syncs must be an array of strings. If it is a single sync, please wrap it in an array.');
@@ -445,16 +441,12 @@ export class Nango {
             connection_id: connectionId
         };
 
-        return axios.post(url, body, { headers: this.enrichHeaders(headers) });
+        return axios.post(url, body, { headers: this.enrichHeaders() });
     }
 
-    public async pauseSync(providerConfigKey: string, connectionId: string, syncs: string[]): Promise<void> {
+    public async pauseSync(providerConfigKey: string, syncs: string[], connectionId?: string): Promise<void> {
         if (!providerConfigKey) {
             throw new Error('Provider Config Key is required');
-        }
-
-        if (!connectionId) {
-            throw new Error('Connection Id is required');
         }
 
         if (!syncs) {
@@ -476,13 +468,9 @@ export class Nango {
         return axios.post(url, body, { headers: this.enrichHeaders() });
     }
 
-    public async startSync(providerConfigKey: string, connectionId: string, syncs: string[]): Promise<void> {
+    public async startSync(providerConfigKey: string, syncs: string[], connectionId?: string): Promise<void> {
         if (!providerConfigKey) {
             throw new Error('Provider Config Key is required');
-        }
-
-        if (!connectionId) {
-            throw new Error('Connection Id is required');
         }
 
         if (!syncs) {
@@ -502,6 +490,32 @@ export class Nango {
         const url = `${this.serverUrl}/sync/start`;
 
         return axios.post(url, body, { headers: this.enrichHeaders() });
+    }
+
+    public async syncStatus(providerConfigKey: string, syncs: '*' | string[], connectionId?: string): Promise<SyncStatusResponse> {
+        if (!providerConfigKey) {
+            throw new Error('Provider Config Key is required');
+        }
+
+        if (!syncs) {
+            throw new Error('Sync is required');
+        }
+
+        if (typeof syncs === 'string' && syncs !== '*') {
+            throw new Error('Syncs must be an array of strings. If it is a single sync, please wrap it in an array.');
+        }
+
+        const url = `${this.serverUrl}/sync/status`;
+
+        const params = {
+            syncs: syncs === '*' ? '*' : syncs.join(','),
+            provider_config_key: providerConfigKey,
+            connection_id: connectionId
+        };
+
+        const response = await axios.get(url, { headers: this.enrichHeaders(), params });
+
+        return response.data;
     }
 
     public async triggerAction(providerConfigKey: string, connectionId: string, actionName: string, input: Record<string, unknown>): Promise<object> {

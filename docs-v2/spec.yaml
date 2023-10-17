@@ -654,6 +654,33 @@ paths:
                   schema:
                       type: string
                   description: The ID of the connection. If omitted, all connections will be surfaced.
+            responses:
+                '200':
+                    description: Successfully returned a list of syncs and their status
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    syncs:
+                                        type: array
+                                        items:
+                                            type: object
+                                            properties:
+                                                id:
+                                                    type: string
+                                                    description: The unique identifier for the sync.
+                                                name:
+                                                    type: string
+                                                    description: The name of the sync.
+                                                status:
+                                                    type: string
+                                                    enum: ["RUNNING", "PAUSED", "STOPPED", "SUCCESS", "ERROR"]
+                                                    description: The current status of the sync.
+                                                latestResult:
+                                                    type: object
+                                                    description: Additional information regarding the latest result of the sync. Contains a model name with added, updated and deleted records
+                                                    additionalProperties:
     /action/trigger:
         post:
             description: Triggers an action for a connection
