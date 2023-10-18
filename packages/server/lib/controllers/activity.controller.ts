@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 import type { NextFunction } from 'express';
 
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
-import { getLogsByEnvironment, errorManager } from '@nangohq/shared';
+import { getTopLevelLogByEnvironment, getLogMessagesForLogs, errorManager } from '@nangohq/shared';
 
 class ActivityController {
     public async retrieve(req: Request, res: Response, next: NextFunction) {
@@ -16,7 +16,18 @@ class ActivityController {
             }
             const { environment } = response;
 
-            const logs = await getLogsByEnvironment(environment.id, limit, offset);
+            const logs = await getTopLevelLogByEnvironment(environment.id, limit, offset);
+            res.send(logs);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    public async getMessages(req: Request, res: Response, next: NextFunction) {
+        try {
+            const logIds = req.query['logIds'] ? (req.query['logIds'] as string).split(',').map((logId) => parseInt(logId)) : [];
+
+            const logs = await getLogMessagesForLogs(logIds);
             res.send(logs);
         } catch (error) {
             next(error);

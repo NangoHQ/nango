@@ -1,4 +1,4 @@
-import type { HTTP_VERB } from './Generic.js';
+import type { HTTP_VERB, Timestamps } from './Generic.js';
 
 export type LogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
 export type LogAction =
@@ -61,7 +61,7 @@ export interface ActivityLog {
     operation_name?: string;
 }
 
-export interface ActivityLogMessage {
+export interface ActivityLogMessage extends Timestamps {
     id?: number;
     level: LogLevel;
     activity_log_id?: number;
