@@ -9,7 +9,7 @@ import localFileService from '../file/local.service.js';
 import { getLastSyncDate, setLastSyncDate, clearLastSyncDate } from './sync.service.js';
 import { formatDataRecords } from './data/records.service.js';
 import { upsert } from './data/data.service.js';
-import { getDeletedKeys, takeSnapshot, syncUpdateAtForDeletedRecords } from './data/delete.service.js';
+import { getDeletedKeys, takeSnapshot, clearOldRecords, syncUpdateAtForDeletedRecords } from './data/delete.service.js';
 import environmentService from '../environment.service.js';
 import webhookService from '../webhook.service.js';
 import { NangoSync } from '../../sdk/sync.js';
@@ -381,6 +381,9 @@ export default class SyncRun {
     async finishSync(models: string[], syncStartDate: Date, version: string, trackDeletes?: boolean): Promise<void> {
         let i = 0;
         for (const model of models) {
+            if (trackDeletes) {
+                await clearOldRecords(this.nangoConnection?.id as number, model);
+            }
             const deletedKeys = trackDeletes ? await getDeletedKeys('_nango_sync_data_records', 'external_id', this.nangoConnection.id as number, model) : [];
 
             if (trackDeletes) {

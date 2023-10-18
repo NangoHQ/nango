@@ -199,6 +199,7 @@ export interface DataRecord extends Timestamps {
     external_deleted_at?: Date | null;
     json_iv?: string | null;
     json_tag?: string | null;
+    pending_delete?: boolean;
 }
 
 export type LastAction = 'added' | 'updated' | 'deleted';

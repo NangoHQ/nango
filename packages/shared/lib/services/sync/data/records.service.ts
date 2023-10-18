@@ -63,7 +63,8 @@ export const formatDataRecords = (
             sync_id: syncId,
             sync_job_id,
             external_is_deleted: softDelete,
-            external_deleted_at
+            external_deleted_at,
+            pending_delete: false
         };
 
         if (trackDeletes) {
