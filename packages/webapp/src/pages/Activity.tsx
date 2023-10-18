@@ -155,7 +155,8 @@ export default function Activity() {
         };
 
         getActivityLogs();
-    }, [logIds, activities]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [logIds]);
 
 
     useEffect(() => {
