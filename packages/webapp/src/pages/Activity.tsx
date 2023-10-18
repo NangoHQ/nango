@@ -155,7 +155,7 @@ export default function Activity() {
         };
 
         getActivityLogs();
-    }, [logIds]);
+    }, [logIds, activities]);
 
 
     useEffect(() => {
