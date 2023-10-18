@@ -1,7 +1,7 @@
 import { schema } from '../../../db/database.js';
 import { verifyUniqueKeysAreUnique } from './records.service.js';
 import { createActivityLogMessage } from '../../activity/activity.service.js';
-import { clearOldRecords, syncCreatedAtForAddedRecords, syncUpdateAtForChangedRecords } from './delete.service.js';
+import { markRecordsForDeletion, syncCreatedAtForAddedRecords, syncUpdateAtForChangedRecords } from './delete.service.js';
 import type { UpsertResponse } from '../../../models/Data.js';
 import type { DataRecord } from '../../../models/Sync.js';
 
@@ -33,7 +33,7 @@ export async function upsert(
 
     try {
         if (track_deletes) {
-            await clearOldRecords(nangoConnectionId, model);
+            await markRecordsForDeletion(nangoConnectionId, model);
         }
 
         const results = await schema()
