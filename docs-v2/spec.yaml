@@ -515,12 +515,6 @@ paths:
                       type: string
                       enum: [desc, asc]
                   description: Set the order of results. The default is 'desc'. The options are 'desc' or 'asc'.
-                - name: include_nango_metadata
-                  in: query
-                  required: false
-                  schema:
-                      type: boolean
-                  description: If set to true, includes Nango metadata for each record in the response. Default is 'false'.
                 - name: filter
                   in: query
                   required: false
