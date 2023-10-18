@@ -1,1207 +1,1207 @@
 accelo:
-  auth_mode: OAUTH2
-  authorization_url: https://${connectionConfig.subdomain}.api.accelo.com/oauth2/v0/authorize
-  token_url: https://${connectionConfig.subdomain}.api.accelo.com/oauth2/v0/token
-  scope_separator: ','
-  authorization_params:
-    response_type: code
-  token_params:
-    grant_type: authorization_code
-  refresh_params:
-    grant_type: refresh_token
-  proxy:
-    base_url: https://${connectionConfig.subdomain}.api.accelo.com
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.subdomain}.api.accelo.com/oauth2/v0/authorize
+    token_url: https://${connectionConfig.subdomain}.api.accelo.com/oauth2/v0/token
+    scope_separator: ','
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.api.accelo.com
 adobe:
-  auth_mode: OAUTH2
-  authorization_url: https://ims-na1.adobelogin.com/ims/authorize/v2
-  token_url: https://ims-na1.adobelogin.com/ims/token/v3
-  default_scopes:
-    - offline_access
-  authorization_params:
-    response_type: code
-  token_params:
-    grant_type: authorization_code
-  refresh_params:
-    grant_type: refresh_token
+    auth_mode: OAUTH2
+    authorization_url: https://ims-na1.adobelogin.com/ims/authorize/v2
+    token_url: https://ims-na1.adobelogin.com/ims/token/v3
+    default_scopes:
+        - offline_access
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 aircall:
-  auth_mode: OAUTH2
-  authorization_url: https://dashboard.aircall.io/oauth/authorize
-  token_url: https://api.aircall.io/v1/oauth/token
-  authorization_params:
-    response_type: code
-    scope: public_api
-  token_params:
-    grant_type: authorization_code
+    auth_mode: OAUTH2
+    authorization_url: https://dashboard.aircall.io/oauth/authorize
+    token_url: https://api.aircall.io/v1/oauth/token
+    authorization_params:
+        response_type: code
+        scope: public_api
+    token_params:
+        grant_type: authorization_code
 airtable:
-  auth_mode: OAUTH2
-  authorization_url: https://airtable.com/oauth2/v1/authorize
-  token_url: https://airtable.com/oauth2/v1/token
-  authorization_method: header
-  auth:
-    response_type: code
-  proxy:
-    base_url: https://api.airtable.com
-  docs: https://airtable.com/developers/web/api/introduction
+    auth_mode: OAUTH2
+    authorization_url: https://airtable.com/oauth2/v1/authorize
+    token_url: https://airtable.com/oauth2/v1/token
+    authorization_method: header
+    auth:
+        response_type: code
+    proxy:
+        base_url: https://api.airtable.com
+    docs: https://airtable.com/developers/web/api/introduction
 amazon:
-  auth_mode: OAUTH2
-  authorization_url: https://www.amazon.com/ap/oa
-  token_url: https://api.amazon.${connectionConfig.extension}/auth/o2/token
-  authorization_params:
-    response_type: code
-  token_params:
-    grant_type: authorization_code
-  refresh_params:
-    grant_type: refresh_token
-  proxy:
-    base_url: https://api.amazon.com
+    auth_mode: OAUTH2
+    authorization_url: https://www.amazon.com/ap/oa
+    token_url: https://api.amazon.${connectionConfig.extension}/auth/o2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.amazon.com
 amplitude:
-  auth_mode: BASIC
-  proxy:
-    base_url: https://amplitude.com
+    auth_mode: BASIC
+    proxy:
+        base_url: https://amplitude.com
 asana:
-  auth_mode: OAUTH2
-  authorization_url: https://app.asana.com/-/oauth_authorize
-  token_url: https://app.asana.com/-/oauth_token
-  token_params:
-    grant_type: authorization_code
-  auth:
-    response_type: code
-  refresh_params:
-    grant_type: refresh_token
-  proxy:
-    base_url: https://app.asana.com
-  docs: https://developers.asana.com/reference
+    auth_mode: OAUTH2
+    authorization_url: https://app.asana.com/-/oauth_authorize
+    token_url: https://app.asana.com/-/oauth_token
+    token_params:
+        grant_type: authorization_code
+    auth:
+        response_type: code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://app.asana.com
+    docs: https://developers.asana.com/reference
 ashby:
-  auth_mode: BASIC
-  proxy:
-    base_url: https://api.ashbyhq.com
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.ashbyhq.com
 atlassian:
-  auth_mode: OAUTH2
-  authorization_url: https://auth.atlassian.com/authorize
-  token_url: https://auth.atlassian.com/oauth/token
-  default_scopes:
-    - offline_access
-  authorization_params:
-    response_type: code
-    audience: api.atlassian.com
-    prompt: consent
-  token_params:
-    grant_type: authorization_code
-  refresh_params:
-    grant_type: refresh_token
-  proxy:
-    base_url: https://api.atlassian.com
+    auth_mode: OAUTH2
+    authorization_url: https://auth.atlassian.com/authorize
+    token_url: https://auth.atlassian.com/oauth/token
+    default_scopes:
+        - offline_access
+    authorization_params:
+        response_type: code
+        audience: api.atlassian.com
+        prompt: consent
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.atlassian.com
 bamboohr:
-  auth_mode: OAUTH2
-  authorization_url: https://${connectionConfig.subdomain}.bamboohr.com/authorize.php
-  token_url: https://${connectionConfig.subdomain}.bamboohr.com/token.php
-  authorization_params:
-    response_type: code
-    request: authorize
-  token_params:
-    grant_type: authorization_code
-    request: token
-  proxy:
-    base_url: https://api.bamboohr.com/api/gateway.php/${connectionConfig.subdomain}
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.subdomain}.bamboohr.com/authorize.php
+    token_url: https://${connectionConfig.subdomain}.bamboohr.com/token.php
+    authorization_params:
+        response_type: code
+        request: authorize
+    token_params:
+        grant_type: authorization_code
+        request: token
+    proxy:
+        base_url: https://api.bamboohr.com/api/gateway.php/${connectionConfig.subdomain}
 battlenet:
-  auth_mode: OAUTH2
-  authorization_url: https://oauth.battle.${connectionConfig.extension}/authorize
-  token_url: https://oauth.battle.${connectionConfig.extension}/token
-  authorization_params:
-    response_type: code
-  token_params:
-    grant_type: authorization_code
+    auth_mode: OAUTH2
+    authorization_url: https://oauth.battle.${connectionConfig.extension}/authorize
+    token_url: https://oauth.battle.${connectionConfig.extension}/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
 bitbucket:
-  auth_mode: OAUTH2
-  authorization_url: https://bitbucket.org/site/oauth2/authorize
-  token_url: https://bitbucket.org/site/oauth2/access_token
-  proxy:
-    base_url: https://api.bitbucket.org
+    auth_mode: OAUTH2
+    authorization_url: https://bitbucket.org/site/oauth2/authorize
+    token_url: https://bitbucket.org/site/oauth2/access_token
+    proxy:
+        base_url: https://api.bitbucket.org
 boldsign:
-  auth_mode: OAUTH2
-  authorization_url: https://account.boldsign.com/connect/authorize
-  token_url: https://account.boldsign.com/connect/token
-  authorization_params:
-    response_type: code
-  token_params:
-    grant_type: authorization_code
-  refresh_params:
-    grant_type: refresh_token
-  proxy:
-    base_url: https://api.boldsign.com
+    auth_mode: OAUTH2
+    authorization_url: https://account.boldsign.com/connect/authorize
+    token_url: https://account.boldsign.com/connect/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.boldsign.com
 box:
-  auth_mode: OAUTH2
-  authorization_url: https://account.box.com/api/oauth2/authorize
-  token_url: https://api.box.com/oauth2/token
-  proxy:
-    base_url: https://api.box.com
+    auth_mode: OAUTH2
+    authorization_url: https://account.box.com/api/oauth2/authorize
+    token_url: https://api.box.com/oauth2/token
+    proxy:
+        base_url: https://api.box.com
 braintree:
-  auth_mode: OAUTH2
-  authorization_url: https://api.braintreegateway.com/oauth/connect
-  token_url: https://api.braintreegateway.com/oauth/access_tokens
-  scope_separator: ','
-  authorization_method: header
-  body_format: json
-  token_params:
-    grant_type: authorization_code
-  redirect_uri_metadata:
-    - merchantId
+    auth_mode: OAUTH2
+    authorization_url: https://api.braintreegateway.com/oauth/connect
+    token_url: https://api.braintreegateway.com/oauth/access_tokens
+    scope_separator: ','
+    authorization_method: header
+    body_format: json
+    token_params:
+        grant_type: authorization_code
+    redirect_uri_metadata:
+        - merchantId
 braintree-sandbox:
-  auth_mode: OAUTH2
-  authorization_url: https://api.sandbox.braintreegateway.com/oauth/connect
-  token_url: https://api.sandbox.braintreegateway.com/oauth/access_tokens
-  scope_separator: ','
-  authorization_method: header
-  body_format: json
-  token_params:
-    grant_type: authorization_code
-  redirect_uri_metadata:
-    - merchantId
+    auth_mode: OAUTH2
+    authorization_url: https://api.sandbox.braintreegateway.com/oauth/connect
+    token_url: https://api.sandbox.braintreegateway.com/oauth/access_tokens
+    scope_separator: ','
+    authorization_method: header
+    body_format: json
+    token_params:
+        grant_type: authorization_code
+    redirect_uri_metadata:
+        - merchantId
 brex:
-  auth_mode: OAUTH2
-  authorization_url: https://accounts-api.brex.com/oauth2/default/v1/authorize
-  token_url: https://accounts-api.brex.com/oauth2/default/v1/token
-  default_scopes:
-    - openid
-    - offline_access
-  proxy:
-    base_url: https://platform.brexapis.com
+    auth_mode: OAUTH2
+    authorization_url: https://accounts-api.brex.com/oauth2/default/v1/authorize
+    token_url: https://accounts-api.brex.com/oauth2/default/v1/token
+    default_scopes:
+        - openid
+        - offline_access
+    proxy:
+        base_url: https://platform.brexapis.com
 brex-staging:
-  auth_mode: OAUTH2
-  authorization_url: https://accounts-api.staging.brexapps.com/oauth2/default/v1/authorize
-  token_url: https://accounts-api.staging.brexapps.com/oauth2/default/v1/token
-  proxy:
-    base_url: https://platform.staging.brexapis.com
+    auth_mode: OAUTH2
+    authorization_url: https://accounts-api.staging.brexapps.com/oauth2/default/v1/authorize
+    token_url: https://accounts-api.staging.brexapps.com/oauth2/default/v1/token
+    proxy:
+        base_url: https://platform.staging.brexapis.com
 calendly:
-  auth_mode: OAUTH2
-  authorization_url: https://auth.calendly.com/oauth/authorize
-  token_url: https://auth.calendly.com/oauth/token
-  authorization_params:
-    response_type: code
-  proxy:
-    base_url: https://api.calendly.com
+    auth_mode: OAUTH2
+    authorization_url: https://auth.calendly.com/oauth/authorize
+    token_url: https://auth.calendly.com/oauth/token
+    authorization_params:
+        response_type: code
+    proxy:
+        base_url: https://api.calendly.com
 clickup:
-  auth_mode: OAUTH2
-  authorization_url: https://app.clickup.com/api
-  token_url: https://api.clickup.com/api/v2/oauth/token
-  proxy:
-    base_url: https://api.clickup.com
+    auth_mode: OAUTH2
+    authorization_url: https://app.clickup.com/api
+    token_url: https://api.clickup.com/api/v2/oauth/token
+    proxy:
+        base_url: https://api.clickup.com
 confluence:
-  alias: jira
+    alias: jira
 contentstack:
-  auth_mode: OAUTH2
-  authorization_url: https://${connectionConfig.subdomain}.contentstack.com/apps/${connectionConfig.appId}/authorize
-  token_url: https://${connectionConfig.subdomain}.contentstack.com/apps-api/apps/token
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.subdomain}.contentstack.com/apps/${connectionConfig.appId}/authorize
+    token_url: https://${connectionConfig.subdomain}.contentstack.com/apps-api/apps/token
 deel:
-  auth_mode: OAUTH2
-  authorization_url: https://auth.letsdeel.com/oauth2/authorize
-  token_url: https://auth.letsdeel.com/oauth2/tokens
-  token_request_auth_method: basic
-  authorization_params:
-    response_type: code
-  token_params:
-    grant_type: authorization_code
-  refresh_params:
-    grant_type: refresh_token
-  proxy:
-    base_url: https://api.letsdeel.com
+    auth_mode: OAUTH2
+    authorization_url: https://auth.letsdeel.com/oauth2/authorize
+    token_url: https://auth.letsdeel.com/oauth2/tokens
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.letsdeel.com
 deel-sandbox:
-  auth_mode: OAUTH2
-  authorization_url: https://auth-demo.letsdeel.com/oauth2/authorize
-  token_url: https://auth-demo.letsdeel.com/oauth2/tokens
-  token_request_auth_method: basic
-  authorization_params:
-    response_type: code
-  token_params:
-    grant_type: authorization_code
-  refresh_params:
-    grant_type: refresh_token
-  proxy:
-    base_url: https://api-staging.letsdeel.com
+    auth_mode: OAUTH2
+    authorization_url: https://auth-demo.letsdeel.com/oauth2/authorize
+    token_url: https://auth-demo.letsdeel.com/oauth2/tokens
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api-staging.letsdeel.com
 digitalocean:
-  auth_mode: OAUTH2
-  authorization_url: https://cloud.digitalocean.com/v1/oauth/authorize
-  token_url: https://cloud.digitalocean.com/v1/oauth/token
-  authorization_params:
-    response_type: code
-  token_params:
-    grant_type: authorization_code
-  refresh_params:
-    grant_type: refresh_token
-  proxy:
-    base_url: https://api.digitalocean.com
+    auth_mode: OAUTH2
+    authorization_url: https://cloud.digitalocean.com/v1/oauth/authorize
+    token_url: https://cloud.digitalocean.com/v1/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.digitalocean.com
 discord:
-  auth_mode: OAUTH2
-  authorization_url: https://discord.com/api/oauth2/authorize
-  token_url: https://discord.com/api/oauth2/token
-  authorization_params:
-    response_type: code
-  proxy:
-    base_url: https://discord.com
-    retry:
-      after: 'Retry-After'
+    auth_mode: OAUTH2
+    authorization_url: https://discord.com/api/oauth2/authorize
+    token_url: https://discord.com/api/oauth2/token
+    authorization_params:
+        response_type: code
+    proxy:
+        base_url: https://discord.com
+        retry:
+            after: 'Retry-After'
 docusign:
-  auth_mode: OAUTH2
-  authorization_url: https://account.docusign.com/oauth/auth
-  token_url: https://account.docusign.com/oauth/token
-  token_request_auth_method: basic
-  authorization_params:
-    response_type: code
-  token_params:
-    grant_type: authorization_code
-  refresh_params:
-    grant_type: refresh_token
-  proxy:
-    base_url: https://www.docusign.net
+    auth_mode: OAUTH2
+    authorization_url: https://account.docusign.com/oauth/auth
+    token_url: https://account.docusign.com/oauth/token
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://www.docusign.net
 docusign-sandbox:
-  auth_mode: OAUTH2
-  authorization_url: https://account-d.docusign.com/oauth/auth
-  token_url: https://account-d.docusign.com/oauth/token
-  token_request_auth_method: basic
-  authorization_params:
-    response_type: code
-  token_params:
-    grant_type: authorization_code
-  refresh_params:
-    grant_type: refresh_token
-  proxy:
-    base_url: https://demo.docusign.net
+    auth_mode: OAUTH2
+    authorization_url: https://account-d.docusign.com/oauth/auth
+    token_url: https://account-d.docusign.com/oauth/token
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://demo.docusign.net
 dropbox:
-  auth_mode: OAUTH2
-  authorization_url: https://www.dropbox.com/oauth2/authorize
-  token_url: https://api.dropboxapi.com/oauth2/token
-  authorization_params:
-    token_access_type: offline
-  proxy:
-    base_url: https://api.dropboxapi.com
+    auth_mode: OAUTH2
+    authorization_url: https://www.dropbox.com/oauth2/authorize
+    token_url: https://api.dropboxapi.com/oauth2/token
+    authorization_params:
+        token_access_type: offline
+    proxy:
+        base_url: https://api.dropboxapi.com
 epic-games:
-  auth_mode: OAUTH2
-  authorization_url: https://www.epicgames.com/id/authorize
-  token_url: https://api.epicgames.dev/epic/oauth/v1/token
-  authorization_method: header
-  proxy:
-    base_url: https://api.epicgames.dev
+    auth_mode: OAUTH2
+    authorization_url: https://www.epicgames.com/id/authorize
+    token_url: https://api.epicgames.dev/epic/oauth/v1/token
+    authorization_method: header
+    proxy:
+        base_url: https://api.epicgames.dev
 evaluagent:
-  auth_mode: BASIC
-  proxy:
-    base_url: https://${connectionConfig.region}.evaluagent.com
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.region}.evaluagent.com
 eventbrite:
-  auth_mode: OAUTH2
-  authorization_url: https://www.eventbrite.com/oauth/authorize
-  token_url: https://www.eventbrite.com/oauth/token
-  authorization_params:
-    response_type: code
-  token_params:
-    grant_type: authorization_code
-  proxy:
-    base_url: https://www.eventbriteapi.com
+    auth_mode: OAUTH2
+    authorization_url: https://www.eventbrite.com/oauth/authorize
+    token_url: https://www.eventbrite.com/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    proxy:
+        base_url: https://www.eventbriteapi.com
 exact-online:
-  auth_mode: OAUTH2
-  authorization_url: https://start.exactonline.${connectionConfig.extension}/api/oauth2/auth
-  token_url: https://start.exactonline.${connectionConfig.extension}/api/oauth2/token
-  authorization_method: header
-  authorization_params:
-    response_type: code
-  token_params:
-    grant_type: authorization_code
-  refresh_params:
-    grant_type: refresh_token
-  token_expiration_buffer: 30
+    auth_mode: OAUTH2
+    authorization_url: https://start.exactonline.${connectionConfig.extension}/api/oauth2/auth
+    token_url: https://start.exactonline.${connectionConfig.extension}/api/oauth2/token
+    authorization_method: header
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    token_expiration_buffer: 30
 factorial:
-  auth_mode: OAUTH2
-  authorization_url: https://api.factorialhr.com/oauth/authorize
-  token_url: https://api.factorialhr.com/oauth/token
-  disable_pkce: true
+    auth_mode: OAUTH2
+    authorization_url: https://api.factorialhr.com/oauth/authorize
+    token_url: https://api.factorialhr.com/oauth/token
+    disable_pkce: true
 facebook:
-  auth_mode: OAUTH2
-  authorization_url: https://www.facebook.com/v15.0/dialog/oauth
-  token_url: https://graph.facebook.com/v15.0/oauth/access_token
-  proxy:
-    base_url: https://graph.facebook.com
+    auth_mode: OAUTH2
+    authorization_url: https://www.facebook.com/v15.0/dialog/oauth
+    token_url: https://graph.facebook.com/v15.0/oauth/access_token
+    proxy:
+        base_url: https://graph.facebook.com
 figjam:
-  alias: figma
+    alias: figma
 figma:
-  auth_mode: OAUTH2
-  authorization_url: https://www.figma.com/oauth
-  token_url: https://www.figma.com/api/oauth/token
-  refresh_url: https://www.figma.com/api/oauth/refresh
-  disable_pkce: true
-  proxy:
-    base_url: https://api.figma.com
+    auth_mode: OAUTH2
+    authorization_url: https://www.figma.com/oauth
+    token_url: https://www.figma.com/api/oauth/token
+    refresh_url: https://www.figma.com/api/oauth/refresh
+    disable_pkce: true
+    proxy:
+        base_url: https://api.figma.com
 fitbit:
-  auth_mode: OAUTH2
-  authorization_url: https://www.fitbit.com/oauth2/authorize
-  token_url: https://api.fitbit.com/oauth2/token
-  authorization_method: header
-  proxy:
-    base_url: https://api.fitbit.com
+    auth_mode: OAUTH2
+    authorization_url: https://www.fitbit.com/oauth2/authorize
+    token_url: https://api.fitbit.com/oauth2/token
+    authorization_method: header
+    proxy:
+        base_url: https://api.fitbit.com
 freshbooks:
-  auth_mode: OAUTH2
-  authorization_url: https://auth.freshbooks.com/oauth/authorize
-  token_url: https://api.freshbooks.com/auth/oauth/token
-  authorization_params:
-    response_type: code
-  proxy:
-    base_url: https://api.freshbooks.com
+    auth_mode: OAUTH2
+    authorization_url: https://auth.freshbooks.com/oauth/authorize
+    token_url: https://api.freshbooks.com/auth/oauth/token
+    authorization_params:
+        response_type: code
+    proxy:
+        base_url: https://api.freshbooks.com
 freshservice:
-  auth_mode: BASIC
-  proxy:
-    base_url: https://${connectionConfig.subdomain}.freshservice.com
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.freshservice.com
 front:
-  auth_mode: OAUTH2
-  authorization_url: https://app.frontapp.com/oauth/authorize
-  token_url: https://app.frontapp.com/oauth/token
-  proxy:
-    base_url: https://api2.frontapp.com
+    auth_mode: OAUTH2
+    authorization_url: https://app.frontapp.com/oauth/authorize
+    token_url: https://app.frontapp.com/oauth/token
+    proxy:
+        base_url: https://api2.frontapp.com
 github:
-  auth_mode: OAUTH2
-  authorization_url: https://github.com/login/oauth/authorize
-  token_url: https://github.com/login/oauth/access_token
-  proxy:
-    base_url: https://api.github.com
-    retry:
-      at: 'x-ratelimit-reset'
-  docs: https://docs.github.com/en/rest
+    auth_mode: OAUTH2
+    authorization_url: https://github.com/login/oauth/authorize
+    token_url: https://github.com/login/oauth/access_token
+    proxy:
+        base_url: https://api.github.com
+        retry:
+            at: 'x-ratelimit-reset'
+    docs: https://docs.github.com/en/rest
 github-app:
-  alias: github
-  auth_mode: APP
-  authorization_url: ${connectionConfig.appPublicLink}/installations/new
-  token_url: https://api.github.com/app/installations/${connectionConfig.installation_id}/access_tokens
-  docs: https://docs.github.com/en/apps
+    alias: github
+    auth_mode: APP
+    authorization_url: ${connectionConfig.appPublicLink}/installations/new
+    token_url: https://api.github.com/app/installations/${connectionConfig.installation_id}/access_tokens
+    docs: https://docs.github.com/en/apps
 gitlab:
-  auth_mode: OAUTH2
-  authorization_url: https://gitlab.com/oauth/authorize
-  token_url: https://gitlab.com/oauth/token
-  authorization_params:
-    response_type: code
+    auth_mode: OAUTH2
+    authorization_url: https://gitlab.com/oauth/authorize
+    token_url: https://gitlab.com/oauth/token
+    authorization_params:
+        response_type: code
 gong:
-  auth_mode: BASIC
-  proxy:
-    base_url: https://api.gong.io
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.gong.io
 gong-oauth:
-  auth_mode: OAUTH2
-  authorization_url: https://app.gong.io/oauth2/authorize
-  token_url: https://app.gong.io/oauth2/generate-customer-token
-  authorization_params:
-    response_type: code
-    access_type: offline
-  token_params:
-    grant_type: authorization_code
-  refresh_params:
-    grant_type: refresh_token
-  disable_pkce: true
-  token_request_auth_method: basic
-  proxy:
-    base_url: https://api.gong.io
+    auth_mode: OAUTH2
+    authorization_url: https://app.gong.io/oauth2/authorize
+    token_url: https://app.gong.io/oauth2/generate-customer-token
+    authorization_params:
+        response_type: code
+        access_type: offline
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    disable_pkce: true
+    token_request_auth_method: basic
+    proxy:
+        base_url: https://api.gong.io
 google:
-  auth_mode: OAUTH2
-  authorization_url: https://accounts.google.com/o/oauth2/v2/auth
-  token_url: https://oauth2.googleapis.com/token
-  authorization_params:
-    response_type: code
-    access_type: offline
-    prompt: consent
+    auth_mode: OAUTH2
+    authorization_url: https://accounts.google.com/o/oauth2/v2/auth
+    token_url: https://oauth2.googleapis.com/token
+    authorization_params:
+        response_type: code
+        access_type: offline
+        prompt: consent
 google-calendar:
-  alias: google
-  proxy:
-    base_url: https://www.googleapis.com
-  docs: https://developers.google.com/calendar/api/v3/reference
+    alias: google
+    proxy:
+        base_url: https://www.googleapis.com
+    docs: https://developers.google.com/calendar/api/v3/reference
 google-mail:
-  alias: google
-  proxy:
-    base_url: https://gmail.googleapis.com
-  docs: https://developers.google.com/gmail/api/reference/rest
+    alias: google
+    proxy:
+        base_url: https://gmail.googleapis.com
+    docs: https://developers.google.com/gmail/api/reference/rest
 google-sheet:
-  alias: google
-  proxy:
-    base_url: https://sheets.googleapis.com
-  docs: https://developers.google.com/sheets/api/reference/rest
+    alias: google
+    proxy:
+        base_url: https://sheets.googleapis.com
+    docs: https://developers.google.com/sheets/api/reference/rest
 gorgias:
-  auth_mode: OAUTH2
-  authorization_url: https://${connectionConfig.subdomain}.gorgias.com/oauth/authorize
-  token_url: https://${connectionConfig.subdomain}.gorgias.com/oauth/token
-  token_request_auth_method: basic
-  default_scopes:
-    - offline
-  authorization_params:
-    response_type: code
-  token_params:
-    grant_type: authorization_code
-  refresh_params:
-    grant_type: refresh_token
-  proxy:
-    base_url: https://${connectionConfig.subdomain}.gorgias.com
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.subdomain}.gorgias.com/oauth/authorize
+    token_url: https://${connectionConfig.subdomain}.gorgias.com/oauth/token
+    token_request_auth_method: basic
+    default_scopes:
+        - offline
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.gorgias.com
 greenhouse:
-  auth_mode: OAUTH2
-  authorization_url: https://api.greenhouse.io/oauth/authorize
-  token_url: https://api.greenhouse.io/oauth/token
-  proxy:
-    base_url: https://${connectionConfig.resource}.greenhouse.io
+    auth_mode: OAUTH2
+    authorization_url: https://api.greenhouse.io/oauth/authorize
+    token_url: https://api.greenhouse.io/oauth/token
+    proxy:
+        base_url: https://${connectionConfig.resource}.greenhouse.io
 gumroad:
-  auth_mode: OAUTH2
-  authorization_url: https://gumroad.com/oauth/authorize
-  token_url: https://api.gumroad.com/oauth/token
-  authorization_params:
-    response_type: code
-  token_params:
-    grant_type: authorization_code
-  refresh_params:
-    grant_type: refresh_token
-  proxy:
-    base_url: https://api.gumroad.com
+    auth_mode: OAUTH2
+    authorization_url: https://gumroad.com/oauth/authorize
+    token_url: https://api.gumroad.com/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.gumroad.com
 gusto:
-  auth_mode: OAUTH2
-  authorization_url: https://api.gusto.com/oauth/authorize
-  token_url: https://api.gusto.com/oauth/token
-  authorization_params:
-    response_type: code
-  token_params:
-    grant_type: authorization_code
-  refresh_params:
-    grant_type: refresh_token
-  proxy:
-    base_url: https://api.gusto.com
+    auth_mode: OAUTH2
+    authorization_url: https://api.gusto.com/oauth/authorize
+    token_url: https://api.gusto.com/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.gusto.com
 health-gorilla:
-  auth_mode: OAUTH2
-  authorization_url: https://api.healthgorilla.com/oauth/authorize
-  token_url: https://api.healthgorilla.com/oauth/token
-  authorization_params:
-    response_type: code
-  token_params:
-    grant_type: authorization_code
-  refresh_params:
-    grant_type: refresh_token
-  proxy:
-    base_url: https://healthgorilla.com
+    auth_mode: OAUTH2
+    authorization_url: https://api.healthgorilla.com/oauth/authorize
+    token_url: https://api.healthgorilla.com/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://healthgorilla.com
 highlevel:
-  auth_mode: OAUTH2
-  authorization_url: https://marketplace.gohighlevel.com/oauth/chooselocation
-  token_url: https://services.leadconnectorhq.com/oauth/token
-  proxy:
-    base_url: https://services.leadconnectorhq.com
-  docs: https://highlevel.stoplight.io/docs/integrations/0443d7d1a4bd0-overview
-  disable_pkce: true
-  token_params:
-    grant_type: authorization_code
-  refresh_params:
-    grant_type: refresh_token
+    auth_mode: OAUTH2
+    authorization_url: https://marketplace.gohighlevel.com/oauth/chooselocation
+    token_url: https://services.leadconnectorhq.com/oauth/token
+    proxy:
+        base_url: https://services.leadconnectorhq.com
+    docs: https://highlevel.stoplight.io/docs/integrations/0443d7d1a4bd0-overview
+    disable_pkce: true
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 hubspot:
-  auth_mode: OAUTH2
-  authorization_url: https://app.hubspot.com/oauth/authorize
-  token_url: https://api.hubapi.com/oauth/v1/token
-  proxy:
-    base_url: https://api.hubapi.com
-    decompress: true
-  docs: https://developers.hubspot.com/docs/api/overview
+    auth_mode: OAUTH2
+    authorization_url: https://app.hubspot.com/oauth/authorize
+    token_url: https://api.hubapi.com/oauth/v1/token
+    proxy:
+        base_url: https://api.hubapi.com
+        decompress: true
+    docs: https://developers.hubspot.com/docs/api/overview
 instagram:
-  auth_mode: OAUTH2
-  authorization_url: https://api.instagram.com/oauth/authorize
-  token_url: https://api.instagram.com/oauth/access_token
-  proxy:
-    base_url: https://graph.instagram.com
+    auth_mode: OAUTH2
+    authorization_url: https://api.instagram.com/oauth/authorize
+    token_url: https://api.instagram.com/oauth/access_token
+    proxy:
+        base_url: https://graph.instagram.com
 intercom:
-  auth_mode: OAUTH2
-  authorization_url: https://app.intercom.io/oauth
-  token_url: https://api.intercom.io/auth/eagle/token
-  proxy:
-    base_url: https://api.intercom.io
+    auth_mode: OAUTH2
+    authorization_url: https://app.intercom.io/oauth
+    token_url: https://api.intercom.io/auth/eagle/token
+    proxy:
+        base_url: https://api.intercom.io
 intuit:
-  auth_mode: OAUTH2
-  authorization_url: https://appcenter.intuit.com/connect/oauth2
-  token_url: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
-  proxy:
-    base_url: https://quickbooks.api.intuit.com
+    auth_mode: OAUTH2
+    authorization_url: https://appcenter.intuit.com/connect/oauth2
+    token_url: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+    proxy:
+        base_url: https://quickbooks.api.intuit.com
 jira:
-  auth_mode: OAUTH2
-  authorization_url: https://auth.atlassian.com/authorize
-  token_url: https://auth.atlassian.com/oauth/token
-  authorization_params:
-    audience: api.atlassian.com
-    prompt: consent
-  proxy:
-    base_url: https://api.atlassian.com
+    auth_mode: OAUTH2
+    authorization_url: https://auth.atlassian.com/authorize
+    token_url: https://auth.atlassian.com/oauth/token
+    authorization_params:
+        audience: api.atlassian.com
+        prompt: consent
+    proxy:
+        base_url: https://api.atlassian.com
 keap:
-  auth_mode: OAUTH2
-  authorization_url: https://accounts.infusionsoft.com/app/oauth/authorize
-  token_url: https://api.infusionsoft.com/token
-  authorization_params:
-    response_type: code
-  token_params:
-    grant_type: authorization_code
-  refresh_params:
-    grant_type: refresh_token
-  proxy:
-    base_url: https://api.infusionsoft.com
+    auth_mode: OAUTH2
+    authorization_url: https://accounts.infusionsoft.com/app/oauth/authorize
+    token_url: https://api.infusionsoft.com/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.infusionsoft.com
 lever:
-  auth_mode: OAUTH2
-  authorization_url: https://auth.lever.co/authorize
-  token_url: https://auth.lever.co/oauth/token
-  authorization_params:
-    response_type: code
-    prompt: consent
-    audience: https://api.lever.co/v1
-  proxy:
-    base_url: https://api.lever.co
+    auth_mode: OAUTH2
+    authorization_url: https://auth.lever.co/authorize
+    token_url: https://auth.lever.co/oauth/token
+    authorization_params:
+        response_type: code
+        prompt: consent
+        audience: https://api.lever.co/v1
+    proxy:
+        base_url: https://api.lever.co
 linear:
-  auth_mode: OAUTH2
-  authorization_url: https://linear.app/oauth/authorize
-  token_url: https://api.linear.app/oauth/token
-  scope_separator: ','
-  authorization_params:
-    prompt: consent
-  proxy:
-    base_url: https://api.linear.app
-  disable_pkce: true
+    auth_mode: OAUTH2
+    authorization_url: https://linear.app/oauth/authorize
+    token_url: https://api.linear.app/oauth/token
+    scope_separator: ','
+    authorization_params:
+        prompt: consent
+    proxy:
+        base_url: https://api.linear.app
+    disable_pkce: true
 linkedin:
-  auth_mode: OAUTH2
-  authorization_url: https://www.linkedin.com/oauth/v2/authorization
-  token_url: https://www.linkedin.com/oauth/v2/accessToken
-  disable_pkce: true
-  proxy:
-    base_url: https://api.linkedin.com
+    auth_mode: OAUTH2
+    authorization_url: https://www.linkedin.com/oauth/v2/authorization
+    token_url: https://www.linkedin.com/oauth/v2/accessToken
+    disable_pkce: true
+    proxy:
+        base_url: https://api.linkedin.com
 linkhut:
-  auth_mode: OAUTH2
-  authorization_url: https://ln.ht/_/oauth/authorize
-  token_url: https://api.ln.ht/v1/oauth/token
-  proxy:
-    base_url: https://api.ln.ht
+    auth_mode: OAUTH2
+    authorization_url: https://ln.ht/_/oauth/authorize
+    token_url: https://api.ln.ht/v1/oauth/token
+    proxy:
+        base_url: https://api.ln.ht
 mailchimp:
-  auth_mode: OAUTH2
-  authorization_url: https://login.mailchimp.com/oauth2/authorize
-  token_url: https://login.mailchimp.com/oauth2/token
-  authorization_params:
-    response_type: code
+    auth_mode: OAUTH2
+    authorization_url: https://login.mailchimp.com/oauth2/authorize
+    token_url: https://login.mailchimp.com/oauth2/token
+    authorization_params:
+        response_type: code
 microsoft-teams:
-  auth_mode: OAUTH2
-  authorization_url: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
-  token_url: https://login.microsoftonline.com/common/oauth2/v2.0/token
-  disable_pkce: true
-  default_scopes:
-    - offline_access
-  authorization_params:
-    response_type: code
-    response_mode: query
-    prompt: consent
-  proxy:
-    base_url: https://graph.microsoft.com
-    decompress: true
-  token_params:
-    grant_type: authorization_code
-  refresh_params:
-    grant_type: refresh_token
+    auth_mode: OAUTH2
+    authorization_url: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
+    token_url: https://login.microsoftonline.com/common/oauth2/v2.0/token
+    disable_pkce: true
+    default_scopes:
+        - offline_access
+    authorization_params:
+        response_type: code
+        response_mode: query
+        prompt: consent
+    proxy:
+        base_url: https://graph.microsoft.com
+        decompress: true
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 mixpanel:
-  auth_mode: BASIC
-  proxy:
-    base_url: https://mixpanel.com
+    auth_mode: BASIC
+    proxy:
+        base_url: https://mixpanel.com
 miro:
-  auth_mode: OAUTH2
-  authorization_url: https://miro.com/oauth/authorize
-  token_url: https://api.miro.com/v1/oauth/token
-  authorization_params:
-    response_type: code
-  token_params:
-    grant_type: authorization_code
-  refresh_params:
-    grant_type: refresh_token
-  proxy:
-    base_url: https://api.miro.com
+    auth_mode: OAUTH2
+    authorization_url: https://miro.com/oauth/authorize
+    token_url: https://api.miro.com/v1/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.miro.com
 monday:
-  auth_mode: OAUTH2
-  authorization_url: https://auth.monday.com/oauth2/authorize
-  token_url: https://auth.monday.com/oauth2/token
+    auth_mode: OAUTH2
+    authorization_url: https://auth.monday.com/oauth2/authorize
+    token_url: https://auth.monday.com/oauth2/token
 mural:
-  auth_mode: OAUTH2
-  authorization_url: https://app.mural.co/api/public/v1/authorization/oauth2
-  token_url: https://app.mural.co/api/public/v1/authorization/oauth2/token
-  authorization_params:
-    response_type: code
-  token_params:
-    grant_type: authorization_code
-  refresh_params:
-    grant_type: refresh_token
-  proxy:
-    base_url: https://app.mural.co
+    auth_mode: OAUTH2
+    authorization_url: https://app.mural.co/api/public/v1/authorization/oauth2
+    token_url: https://app.mural.co/api/public/v1/authorization/oauth2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://app.mural.co
 nationbuilder:
-  auth_mode: OAUTH2
-  authorization_url: https://${connectionConfig.accountId}.nationbuilder.com/oauth/authorize
-  token_url: https://${connectionConfig.accountId}.nationbuilder.com/oauth/token
-  authorization_params:
-    response_type: code
-  token_params:
-    grant_type: authorization_code
-  refresh_params:
-    grant_type: refresh_token
-  default_scopes:
-    - default
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.accountId}.nationbuilder.com/oauth/authorize
+    token_url: https://${connectionConfig.accountId}.nationbuilder.com/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    default_scopes:
+        - default
 netsuite:
-  auth_mode: OAUTH2
-  authorization_url: https://${connectionConfig.accountId}.app.netsuite.com/app/login/oauth2/authorize.nl
-  token_url: https://${connectionConfig.accountId}.suitetalk.api.netsuite.com/services/rest/auth/oauth2/v1/token
-  default_scopes:
-    - restlets
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.accountId}.app.netsuite.com/app/login/oauth2/authorize.nl
+    token_url: https://${connectionConfig.accountId}.suitetalk.api.netsuite.com/services/rest/auth/oauth2/v1/token
+    default_scopes:
+        - restlets
 notion:
-  auth_mode: OAUTH2
-  authorization_url: https://api.notion.com/v1/oauth/authorize
-  token_url: https://api.notion.com/v1/oauth/token
-  authorization_params:
-    response_type: code
-    owner: user
-  authorization_method: header
-  body_format: json
-  proxy:
-    base_url: https://api.notion.com
-    headers:
-      'Notion-Version': '2022-06-28'
-  docs: https://developers.notion.com/reference
+    auth_mode: OAUTH2
+    authorization_url: https://api.notion.com/v1/oauth/authorize
+    token_url: https://api.notion.com/v1/oauth/token
+    authorization_params:
+        response_type: code
+        owner: user
+    authorization_method: header
+    body_format: json
+    proxy:
+        base_url: https://api.notion.com
+        headers:
+            'Notion-Version': '2022-06-28'
+    docs: https://developers.notion.com/reference
 one-drive:
-  alias: microsoft-teams
+    alias: microsoft-teams
 osu:
-  auth_mode: OAUTH2
-  authorization_url: https://osu.ppy.sh/oauth/authorize
-  token_url: https://osu.ppy.sh/oauth/token
-  default_scopes:
-    - identify
-  authorization_params:
-    response_type: code
-  token_params:
-    grant_type: authorization_code
-  refresh_params:
-    grant_type: refresh_token
-  proxy:
-    base_url: https://osu.ppy.sh
+    auth_mode: OAUTH2
+    authorization_url: https://osu.ppy.sh/oauth/authorize
+    token_url: https://osu.ppy.sh/oauth/token
+    default_scopes:
+        - identify
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://osu.ppy.sh
 outreach:
-  auth_mode: OAUTH2
-  authorization_url: https://api.outreach.io/oauth/authorize
-  token_url: https://api.outreach.io/oauth/token
-  authorization_params:
-    response_type: code
-  token_params:
-    grant_type: authorization_code
-  refresh_params:
-    grant_type: refresh_token
-  proxy:
-    base_url: https://api.outreach.io
+    auth_mode: OAUTH2
+    authorization_url: https://api.outreach.io/oauth/authorize
+    token_url: https://api.outreach.io/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.outreach.io
 pagerduty:
-  auth_mode: OAUTH2
-  authorization_url: https://app.pagerduty.com/oauth/authorize
-  token_url: https://app.pagerduty.com/oauth/token
-  proxy:
-    base_url: https://api.pagerduty.com
+    auth_mode: OAUTH2
+    authorization_url: https://app.pagerduty.com/oauth/authorize
+    token_url: https://app.pagerduty.com/oauth/token
+    proxy:
+        base_url: https://api.pagerduty.com
 pandadoc:
-  auth_mode: OAUTH2
-  authorization_url: https://app.pandadoc.com/oauth2/authorize
-  token_url: https://api.pandadoc.com/oauth2/access_token
-  authorization_params:
-    response_type: code
-  token_params:
-    grant_type: authorization_code
-  refresh_params:
-    grant_type: refresh_token
-  proxy:
-    base_url: https://api.pandadoc.com
+    auth_mode: OAUTH2
+    authorization_url: https://app.pandadoc.com/oauth2/authorize
+    token_url: https://api.pandadoc.com/oauth2/access_token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.pandadoc.com
 payfit:
-  auth_mode: OAUTH2
-  authorization_url: https://oauth.payfit.com/authorize
-  token_url: https://app.pagerduty.com/oauth/token
-  authorization_params:
-    response_type: code
-  token_params:
-    grant_type: authorization_code
+    auth_mode: OAUTH2
+    authorization_url: https://oauth.payfit.com/authorize
+    token_url: https://app.pagerduty.com/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
 pennylane:
-  auth_mode: OAUTH2
-  authorization_url: https://app.pennylane.com/oauth/authorize
-  token_url: https://app.pennylane.com/oauth/token
-  proxy:
-    base_url: https://app.pennylane.com
-  scope_separator: '+'
-  authorization_params:
-    response_type: code
-  token_params:
-    grant_type: authorization_code
-  refresh_params:
-    grant_type: refresh_token
+    auth_mode: OAUTH2
+    authorization_url: https://app.pennylane.com/oauth/authorize
+    token_url: https://app.pennylane.com/oauth/token
+    proxy:
+        base_url: https://app.pennylane.com
+    scope_separator: '+'
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 pipedrive:
-  auth_mode: OAUTH2
-  authorization_url: https://oauth.pipedrive.com/oauth/authorize
-  token_url: https://oauth.pipedrive.com/oauth/token
-  proxy:
-    base_url: https://${connectionConfig.subdomain}.pipedrive.com
-    decompress: true
+    auth_mode: OAUTH2
+    authorization_url: https://oauth.pipedrive.com/oauth/authorize
+    token_url: https://oauth.pipedrive.com/oauth/token
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.pipedrive.com
+        decompress: true
 qualtrics:
-  auth_mode: OAUTH2
-  authorization_url: https://${connectionConfig.subdomain}.qualtrics.com/oauth2/auth
-  token_url: https://${connectionConfig.subdomain}.qualtrics.com/oauth2/token
-  proxy:
-    base_url: https://${connectionConfig.subdomain}.qualtrics.com
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.subdomain}.qualtrics.com/oauth2/auth
+    token_url: https://${connectionConfig.subdomain}.qualtrics.com/oauth2/token
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.qualtrics.com
 quickbooks:
-  auth_mode: OAUTH2
-  authorization_url: https://appcenter.intuit.com/connect/oauth2
-  token_url: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
-  redirect_uri_metadata:
-    - realmId
-  proxy:
-    base_url: https://quickbooks.api.intuit.com
+    auth_mode: OAUTH2
+    authorization_url: https://appcenter.intuit.com/connect/oauth2
+    token_url: https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer
+    redirect_uri_metadata:
+        - realmId
+    proxy:
+        base_url: https://quickbooks.api.intuit.com
 ramp:
-  auth_mode: OAUTH2
-  authorization_url: https://app.ramp.com/v1/authorize
-  token_url: https://api.ramp.com/developer/v1/token
-  authorization_method: header
-  proxy:
-    base_url: https://api.ramp.com
+    auth_mode: OAUTH2
+    authorization_url: https://app.ramp.com/v1/authorize
+    token_url: https://api.ramp.com/developer/v1/token
+    authorization_method: header
+    proxy:
+        base_url: https://api.ramp.com
 ramp-sandbox:
-  auth_mode: OAUTH2
-  authorization_url: https://demo.ramp.com/v1/authorize
-  token_url: https://demo-api.ramp.com/developer/v1/token
-  authorization_method: header
-  proxy:
-    base_url: https://demo-api.ramp.com
+    auth_mode: OAUTH2
+    authorization_url: https://demo.ramp.com/v1/authorize
+    token_url: https://demo-api.ramp.com/developer/v1/token
+    authorization_method: header
+    proxy:
+        base_url: https://demo-api.ramp.com
 reddit:
-  auth_mode: OAUTH2
-  authorization_url: https://www.reddit.com/api/v1/authorize
-  token_url: https://www.reddit.com/api/v1/access_token
-  authorization_method: header
-  authorization_params:
-    duration: permanent
-  proxy:
-    base_url: https://oauth.reddit.com
+    auth_mode: OAUTH2
+    authorization_url: https://www.reddit.com/api/v1/authorize
+    token_url: https://www.reddit.com/api/v1/access_token
+    authorization_method: header
+    authorization_params:
+        duration: permanent
+    proxy:
+        base_url: https://oauth.reddit.com
 ring-central:
-  auth_mode: OAUTH2
-  authorization_url: https://platform.ringcentral.com/restapi/oauth/authorize
-  token_url: https://platform.ringcentral.com/restapi/oauth/token
-  authorization_method: header
-  authorization_params:
-    response_type: code
-  token_params:
-    grant_type: authorization_code
-  refresh_params:
-    grant_type: refresh_token
-  proxy:
-    base_url: https://platform.ringcentral.com
-  docs: https://developers.ringcentral.com/api-reference/
+    auth_mode: OAUTH2
+    authorization_url: https://platform.ringcentral.com/restapi/oauth/authorize
+    token_url: https://platform.ringcentral.com/restapi/oauth/token
+    authorization_method: header
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://platform.ringcentral.com
+    docs: https://developers.ringcentral.com/api-reference/
 ring-central-sandbox:
-  auth_mode: OAUTH2
-  authorization_url: https://platform.devtest.ringcentral.com/restapi/oauth/authorize
-  token_url: https://platform.devtest.ringcentral.com/restapi/oauth/token
-  authorization_method: header
-  authorization_params:
-    response_type: code
-  token_params:
-    grant_type: authorization_code
-  refresh_params:
-    grant_type: refresh_token
-  proxy:
-    base_url: https://platform.devtest.ringcentral.com
-  docs: https://developers.ringcentral.com/api-reference/
+    auth_mode: OAUTH2
+    authorization_url: https://platform.devtest.ringcentral.com/restapi/oauth/authorize
+    token_url: https://platform.devtest.ringcentral.com/restapi/oauth/token
+    authorization_method: header
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://platform.devtest.ringcentral.com
+    docs: https://developers.ringcentral.com/api-reference/
 segment:
-  auth_mode: OAUTH2
-  authorization_url: https://id.segmentapis.com/oauth2/auth
-  token_url: https://id.segmentapis.com/oauth2/token
-  token_request_auth_method: basic
-  proxy:
-    base_url: https://api.segment.io
+    auth_mode: OAUTH2
+    authorization_url: https://id.segmentapis.com/oauth2/auth
+    token_url: https://id.segmentapis.com/oauth2/token
+    token_request_auth_method: basic
+    proxy:
+        base_url: https://api.segment.io
 sage:
-  auth_mode: OAUTH2
-  authorization_url: https://www.sageone.com/oauth2/auth/central
-  token_url: https://oauth.accounting.sage.com/token
-  authorization_params:
-    filter: apiv3.1
-  proxy:
-    base_url: https://api.accounting.sage.com
+    auth_mode: OAUTH2
+    authorization_url: https://www.sageone.com/oauth2/auth/central
+    token_url: https://oauth.accounting.sage.com/token
+    authorization_params:
+        filter: apiv3.1
+    proxy:
+        base_url: https://api.accounting.sage.com
 salesforce:
-  auth_mode: OAUTH2
-  authorization_url: https://login.salesforce.com/services/oauth2/authorize
-  token_url: https://login.salesforce.com/services/oauth2/token
-  default_scopes:
-    - offline_access
-  token_response_metadata:
-    - instance_url
-  proxy:
-    base_url: ${connectionConfig.instance_url}
-  docs: https://developer.salesforce.com/docs/api
+    auth_mode: OAUTH2
+    authorization_url: https://login.salesforce.com/services/oauth2/authorize
+    token_url: https://login.salesforce.com/services/oauth2/token
+    default_scopes:
+        - offline_access
+    token_response_metadata:
+        - instance_url
+    proxy:
+        base_url: ${connectionConfig.instance_url}
+    docs: https://developer.salesforce.com/docs/api
 salesforce-sandbox:
-  auth_mode: OAUTH2
-  authorization_url: https://test.salesforce.com/services/oauth2/authorize
-  token_url: https://test.salesforce.com/services/oauth2/token
-  default_scopes:
-    - offline_access
-  token_response_metadata:
-    - instance_url
-  proxy:
-    base_url: ${connectionConfig.instance_url}
-  docs: https://developer.salesforce.com/docs/api
+    auth_mode: OAUTH2
+    authorization_url: https://test.salesforce.com/services/oauth2/authorize
+    token_url: https://test.salesforce.com/services/oauth2/token
+    default_scopes:
+        - offline_access
+    token_response_metadata:
+        - instance_url
+    proxy:
+        base_url: ${connectionConfig.instance_url}
+    docs: https://developer.salesforce.com/docs/api
 salesloft:
-  auth_mode: OAUTH2
-  authorization_url: https://accounts.salesloft.com/oauth/authorize
-  token_url: https://accounts.salesloft.com/oauth/token
-  proxy:
-    base_url: https://api.salesloft.com
+    auth_mode: OAUTH2
+    authorization_url: https://accounts.salesloft.com/oauth/authorize
+    token_url: https://accounts.salesloft.com/oauth/token
+    proxy:
+        base_url: https://api.salesloft.com
 servicem8:
-  auth_mode: OAUTH2
-  authorization_url: https://go.servicem8.com/oauth/authorize
-  token_url: https://go.servicem8.com/oauth/access_token
-  proxy:
-    base_url: https://api.servicem8.com
-  docs: https://developer.servicem8.com/docs
-  scope_seprator: ' '
-  authorization_params:
-    response_type: code
-  token_params:
-    grant_type: authorization_code
-  refresh_params:
-    grant_type: refresh_token
+    auth_mode: OAUTH2
+    authorization_url: https://go.servicem8.com/oauth/authorize
+    token_url: https://go.servicem8.com/oauth/access_token
+    proxy:
+        base_url: https://api.servicem8.com
+    docs: https://developer.servicem8.com/docs
+    scope_seprator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 shopify:
-  auth_mode: OAUTH2
-  authorization_url: https://${connectionConfig.subdomain}.myshopify.com/admin/oauth/authorize
-  token_url: https://${connectionConfig.subdomain}.myshopify.com/admin/oauth/access_token
-  proxy:
-    base_url: https://{connectionConfig.subdomain}.myshopify.com
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.subdomain}.myshopify.com/admin/oauth/authorize
+    token_url: https://${connectionConfig.subdomain}.myshopify.com/admin/oauth/access_token
+    proxy:
+        base_url: https://{connectionConfig.subdomain}.myshopify.com
 shortcut:
-  auth_mode: API_KEY
-  proxy:
-    base_url: https://api.app.shortcut.com
-    headers:
-      Shortcut-Token: ${apiKey}
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.app.shortcut.com
+        headers:
+            Shortcut-Token: ${apiKey}
 slack:
-  auth_mode: OAUTH2
-  authorization_url: https://slack.com/oauth/v2/authorize
-  token_url: https://slack.com/api/oauth.v2.access
-  token_response_metadata:
-    - incoming_webhook.url
-  proxy:
-    base_url: https://slack.com/api
-  docs: https://api.slack.com/apis
+    auth_mode: OAUTH2
+    authorization_url: https://slack.com/oauth/v2/authorize
+    token_url: https://slack.com/api/oauth.v2.access
+    token_response_metadata:
+        - incoming_webhook.url
+    proxy:
+        base_url: https://slack.com/api
+    docs: https://api.slack.com/apis
 smugmug:
-  auth_mode: OAUTH1
-  request_url: https://api.smugmug.com/services/oauth/1.0a/getRequestToken
-  authorization_url: https://api.smugmug.com/services/oauth/1.0a/authorize
-  token_url: https://api.smugmug.com/services/oauth/1.0a/getAccessToken
-  scope_separator: ','
-  signature_method: 'PLAINTEXT'
-  proxy:
-    base_url: https://www.smugmug.com
-    docs: https://api.smugmug.com/api/v2/doc
+    auth_mode: OAUTH1
+    request_url: https://api.smugmug.com/services/oauth/1.0a/getRequestToken
+    authorization_url: https://api.smugmug.com/services/oauth/1.0a/authorize
+    token_url: https://api.smugmug.com/services/oauth/1.0a/getAccessToken
+    scope_separator: ','
+    signature_method: 'PLAINTEXT'
+    proxy:
+        base_url: https://www.smugmug.com
+        docs: https://api.smugmug.com/api/v2/doc
 splitwise:
-  auth_mode: OAUTH2
-  authorization_url: https://secure.splitwise.com/oauth/authorize
-  token_url: https://secure.splitwise.com/oauth/token
-  proxy:
-    base_url: https://secure.splitwise.com
+    auth_mode: OAUTH2
+    authorization_url: https://secure.splitwise.com/oauth/authorize
+    token_url: https://secure.splitwise.com/oauth/token
+    proxy:
+        base_url: https://secure.splitwise.com
 spotify:
-  auth_mode: OAUTH2
-  authorization_url: https://accounts.spotify.com/authorize
-  token_url: https://accounts.spotify.com/api/token
-  authorization_params:
-    response_type: code
-  token_params:
-    grant_type: authorization_code
-  refresh_params:
-    grant_type: refresh_token
-  proxy:
-    base_url: https://api.spotify.com
-  docs: https://developer.spotify.com/documentation/web-api
+    auth_mode: OAUTH2
+    authorization_url: https://accounts.spotify.com/authorize
+    token_url: https://accounts.spotify.com/api/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.spotify.com
+    docs: https://developer.spotify.com/documentation/web-api
 squareup:
-  auth_mode: OAUTH2
-  authorization_url: https://connect.squareup.com/oauth2/authorize
-  token_url: https://connect.squareup.com/oauth2/token
-  disable_pkce: true
-  scope_separator: '+'
-  decode_url: true
-  authorization_params:
-    response_type: code
-    session: false
-  token_params:
-    grant_type: authorization_code
-  refresh_params:
-    grant_type: refresh_token
-  proxy:
-    base_url: https://connect.squareup.com
+    auth_mode: OAUTH2
+    authorization_url: https://connect.squareup.com/oauth2/authorize
+    token_url: https://connect.squareup.com/oauth2/token
+    disable_pkce: true
+    scope_separator: '+'
+    decode_url: true
+    authorization_params:
+        response_type: code
+        session: false
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://connect.squareup.com
 squareup-sandbox:
-  auth_mode: OAUTH2
-  authorization_url: https://connect.squareupsandbox.com/oauth2/authorize
-  token_url: https://connect.squareupsandbox.com/oauth2/token
-  scope_separator: '+'
-  disable_pkce: true
-  authorization_params:
-    response_type: code
-    session: false
-  token_params:
-    grant_type: authorization_code
-  refresh_params:
-    grant_type: refresh_token
-  proxy:
-    base_url: https://connect.squareupsandbox.com
+    auth_mode: OAUTH2
+    authorization_url: https://connect.squareupsandbox.com/oauth2/authorize
+    token_url: https://connect.squareupsandbox.com/oauth2/token
+    scope_separator: '+'
+    disable_pkce: true
+    authorization_params:
+        response_type: code
+        session: false
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://connect.squareupsandbox.com
 stackexchange:
-  auth_mode: OAUTH2
-  authorization_url: https://stackoverflow.com/oauth
-  token_url: https://stackoverflow.com/oauth/access_token/json
-  default_scopes:
-    - no_expiry
-  proxy:
-    base_url: https://api.stackexchange.com
+    auth_mode: OAUTH2
+    authorization_url: https://stackoverflow.com/oauth
+    token_url: https://stackoverflow.com/oauth/access_token/json
+    default_scopes:
+        - no_expiry
+    proxy:
+        base_url: https://api.stackexchange.com
 strava:
-  auth_mode: OAUTH2
-  authorization_url: https://www.strava.com/oauth/mobile/authorize
-  token_url: https://www.strava.com/api/v3/oauth/token
-  scope_separator: ','
-  authorization_params:
-    response_type: code
-    approval_prompt: auto
-  token_params:
-    grant_type: authorization_code
-  refresh_params:
-    grant_type: refresh_token
-  proxy:
-    base_url: https://www.strava.com
+    auth_mode: OAUTH2
+    authorization_url: https://www.strava.com/oauth/mobile/authorize
+    token_url: https://www.strava.com/api/v3/oauth/token
+    scope_separator: ','
+    authorization_params:
+        response_type: code
+        approval_prompt: auto
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://www.strava.com
 stripe:
-  auth_mode: OAUTH2
-  authorization_url: https://connect.stripe.com/oauth/authorize
-  token_url: https://connect.stripe.com/oauth/token
+    auth_mode: OAUTH2
+    authorization_url: https://connect.stripe.com/oauth/authorize
+    token_url: https://connect.stripe.com/oauth/token
 stripe-express:
-  auth_mode: OAUTH2
-  authorization_url: https://connect.stripe.com/express/oauth/authorize
-  token_url: https://connect.stripe.com/oauth/token
-  token_response_metadata:
-    - stripe_user_id
-  proxy:
-    base_url: https://api.stripe.com
+    auth_mode: OAUTH2
+    authorization_url: https://connect.stripe.com/express/oauth/authorize
+    token_url: https://connect.stripe.com/oauth/token
+    token_response_metadata:
+        - stripe_user_id
+    proxy:
+        base_url: https://api.stripe.com
 survey-monkey:
-  auth_mode: OAUTH2
-  authorization_url: https://api.surveymonkey.com/oauth/authorize
-  token_url: https://api.surveymonkey.com/oauth/token
-  disable_pkce: true
-  authorization_params:
-    response_type: code
-  token_params:
-    grant_type: authorization_code
-  proxy:
-    base_url: https://api.surveymonkey.com
+    auth_mode: OAUTH2
+    authorization_url: https://api.surveymonkey.com/oauth/authorize
+    token_url: https://api.surveymonkey.com/oauth/token
+    disable_pkce: true
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    proxy:
+        base_url: https://api.surveymonkey.com
 teamwork:
-  auth_mode: OAUTH2
-  authorization_url: https://www.teamwork.com/launchpad/login
-  token_url: https://www.teamwork.com/launchpad/v1/token.json
-  proxy:
-    base_url: https://api.surveymonkey.com
+    auth_mode: OAUTH2
+    authorization_url: https://www.teamwork.com/launchpad/login
+    token_url: https://www.teamwork.com/launchpad/v1/token.json
+    proxy:
+        base_url: https://api.surveymonkey.com
 timely:
-  auth_mode: OAUTH2
-  authorization_url: https://api.timelyapp.com/1.1/oauth/authorize
-  token_url: https://api.timelyapp.com/1.1/oauth/token
-  disable_pkce: true
-  authorization_params:
-    response_type: code
-  token_params:
-    grant_type: authorization_code
-  proxy:
-    base_url: https://api.timelyapp.com
-  docs: https://dev.timelyapp.com
+    auth_mode: OAUTH2
+    authorization_url: https://api.timelyapp.com/1.1/oauth/authorize
+    token_url: https://api.timelyapp.com/1.1/oauth/token
+    disable_pkce: true
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    proxy:
+        base_url: https://api.timelyapp.com
+    docs: https://dev.timelyapp.com
 trello:
-  auth_mode: OAUTH1
-  request_url: https://trello.com/1/OAuthGetRequestToken
-  authorization_url: https://trello.com/1/OAuthAuthorizeToken
-  token_url: https://trello.com/1/OAuthGetAccessToken
-  signature_method: 'HMAC-SHA1'
-  scope_separator: ','
-  authorization_params:
-    expiration: never
-  proxy:
-    base_url: https://api.trello.com
+    auth_mode: OAUTH1
+    request_url: https://trello.com/1/OAuthGetRequestToken
+    authorization_url: https://trello.com/1/OAuthAuthorizeToken
+    token_url: https://trello.com/1/OAuthGetAccessToken
+    signature_method: 'HMAC-SHA1'
+    scope_separator: ','
+    authorization_params:
+        expiration: never
+    proxy:
+        base_url: https://api.trello.com
 todoist:
-  auth_mode: OAUTH2
-  authorization_url: https://todoist.com/oauth/authorize
-  token_url: https://todoist.com/oauth/access_token
-  scope_separator: ','
-  proxy:
-    base_url: https://api.todoist.com
+    auth_mode: OAUTH2
+    authorization_url: https://todoist.com/oauth/authorize
+    token_url: https://todoist.com/oauth/access_token
+    scope_separator: ','
+    proxy:
+        base_url: https://api.todoist.com
 twitch:
-  auth_mode: OAUTH2
-  authorization_url: https://id.twitch.tv/oauth2/authorize
-  token_url: https://id.twitch.tv/oauth2/token
-  authorization_params:
-    force_verify: false
-    response_type: code
-  token_params:
-    grant_type: authorization_code
-  refresh_params:
-    grant_type: refresh_token
-  proxy:
-    base_url: https://api.twitch.tv
+    auth_mode: OAUTH2
+    authorization_url: https://id.twitch.tv/oauth2/authorize
+    token_url: https://id.twitch.tv/oauth2/token
+    authorization_params:
+        force_verify: false
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.twitch.tv
 twitter:
-  auth_mode: OAUTH1
-  request_url: https://api.twitter.com/oauth/request_token
-  authorization_url: https://api.twitter.com/oauth/authorize
-  token_url: https://api.twitter.com/oauth/access_token
-  signature_method: 'HMAC-SHA1'
-  request_params:
-    x_auth_access_type: write
-  proxy:
-    base_url: https://api.twitter.com
+    auth_mode: OAUTH1
+    request_url: https://api.twitter.com/oauth/request_token
+    authorization_url: https://api.twitter.com/oauth/authorize
+    token_url: https://api.twitter.com/oauth/access_token
+    signature_method: 'HMAC-SHA1'
+    request_params:
+        x_auth_access_type: write
+    proxy:
+        base_url: https://api.twitter.com
 twitter-v2:
-  auth_mode: OAUTH2
-  authorization_url: https://twitter.com/i/oauth2/authorize
-  token_url: https://api.twitter.com/2/oauth2/token
-  token_request_auth_method: basic
-  authorization_params:
-    response_type: code
-    response_mode: query
-  token_params:
-    grant_type: authorization_code
-  refresh_params:
-    grant_type: refresh_token
-  default_scopes:
-    - offline.access
-  proxy:
-    base_url: https://api.twitter.com
+    auth_mode: OAUTH2
+    authorization_url: https://twitter.com/i/oauth2/authorize
+    token_url: https://api.twitter.com/2/oauth2/token
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+        response_mode: query
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    default_scopes:
+        - offline.access
+    proxy:
+        base_url: https://api.twitter.com
 twinfield:
-  auth_mode: OAUTH2
-  authorization_url: https://login.twinfield.com/auth/authentication/connect/authorize
-  token_url: https://login.twinfield.com/auth/authentication/connect/token
-  authorization_params:
-    response_type: code
-    nonce: AnotherRandomStringTwinfield
-  refresh_params:
-    greant_type: refresh_token
-  scope_seprator: ' '
-  default_scopes:
-    - openid
-    - twf.user
-    - twf.organisation
-    - twf.organisationUser
-    - offline_access
-  disable_pkce: true
+    auth_mode: OAUTH2
+    authorization_url: https://login.twinfield.com/auth/authentication/connect/authorize
+    token_url: https://login.twinfield.com/auth/authentication/connect/token
+    authorization_params:
+        response_type: code
+        nonce: AnotherRandomStringTwinfield
+    refresh_params:
+        greant_type: refresh_token
+    scope_seprator: ' '
+    default_scopes:
+        - openid
+        - twf.user
+        - twf.organisation
+        - twf.organisationUser
+        - offline_access
+    disable_pkce: true
 typeform:
-  auth_mode: OAUTH2
-  authorization_url: https://api.typeform.com/oauth/authorize
-  token_url: https://api.typeform.com/oauth/token
-  disable_pkce: true
-  default_scopes:
-    - offline
-  authorization_params:
-    response_type: code
-  token_params:
-    grant_type: authorization_code
-  refresh_params:
-    grant_type: refresh_token
-  proxy:
-    base_url: https://api.typeform.com
+    auth_mode: OAUTH2
+    authorization_url: https://api.typeform.com/oauth/authorize
+    token_url: https://api.typeform.com/oauth/token
+    disable_pkce: true
+    default_scopes:
+        - offline
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.typeform.com
 uber:
-  auth_mode: OAUTH2
-  authorization_url: https://login.uber.com/oauth/v2/authorize
-  token_url: https://login.uber.com/oauth/v2/token
-  authorization_params:
-    response_type: code
-  token_params:
-    grant_type: authorization_code
-  refresh_params:
-    grant_type: refresh_token
-  proxy:
-    base_url: https://api.uber.com
+    auth_mode: OAUTH2
+    authorization_url: https://login.uber.com/oauth/v2/authorize
+    token_url: https://login.uber.com/oauth/v2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.uber.com
 unauthenticated:
-  auth_mode: NONE
+    auth_mode: NONE
 wakatime:
-  auth_mode: OAUTH2
-  authorization_url: https://wakatime.com/oauth/authorize
-  token_url: https://wakatime.com/oauth/token
-  docs: https://wakatime.com/developers
-  proxy:
-    base_url: https://wakatime.com
+    auth_mode: OAUTH2
+    authorization_url: https://wakatime.com/oauth/authorize
+    token_url: https://wakatime.com/oauth/token
+    docs: https://wakatime.com/developers
+    proxy:
+        base_url: https://wakatime.com
 wave-accounting:
-  auth_mode: OAUTH2
-  authorization_url: https://api.waveapps.com/oauth2/authorize
-  token_url: https://api.waveapps.com/oauth2/token
-  proxy:
-    base_url: https://gql.waveapps.com
+    auth_mode: OAUTH2
+    authorization_url: https://api.waveapps.com/oauth2/authorize
+    token_url: https://api.waveapps.com/oauth2/token
+    proxy:
+        base_url: https://gql.waveapps.com
 wildix-pbx:
-  auth_mode: OAUTH2
-  authorization_url: https://${connectionConfig.subdomain}.wildixin.com/authorization/oauth2
-  token_url: https://${connectionConfig.subdomain}.wildixin.com/authorization/oauth2Token
-  authorization_params:
-    response_type: code
-  redirect_uri_metadata:
-    - subdomain
-  docs: https://docs.wildix.com/wms/index.html
-  proxy:
-    base_url: https://${connectionConfig.subdomain}.wildixin.com
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.subdomain}.wildixin.com/authorization/oauth2
+    token_url: https://${connectionConfig.subdomain}.wildixin.com/authorization/oauth2Token
+    authorization_params:
+        response_type: code
+    redirect_uri_metadata:
+        - subdomain
+    docs: https://docs.wildix.com/wms/index.html
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.wildixin.com
 workable:
-  auth_mode: API_KEY
-  proxy:
-    headers:
-      Authorization: Bearer ${apiKey}
-    base_url: https://${connectionConfig.subdomain}.workable.com
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            Authorization: Bearer ${apiKey}
+        base_url: https://${connectionConfig.subdomain}.workable.com
 xero:
-  auth_mode: OAUTH2
-  authorization_url: https://login.xero.com/identity/connect/authorize
-  token_url: https://identity.xero.com/connect/token
-  authorization_params:
-    response_type: code
-  default_scopes:
-    - offline_access
-  proxy:
-    base_url: https://api.xero.com
+    auth_mode: OAUTH2
+    authorization_url: https://login.xero.com/identity/connect/authorize
+    token_url: https://identity.xero.com/connect/token
+    authorization_params:
+        response_type: code
+    default_scopes:
+        - offline_access
+    proxy:
+        base_url: https://api.xero.com
 yahoo:
-  auth_mode: OAUTH2
-  authorization_url: https://api.login.yahoo.com/oauth2/request_auth
-  token_url: https://api.login.yahoo.com/oauth2/get_token
+    auth_mode: OAUTH2
+    authorization_url: https://api.login.yahoo.com/oauth2/request_auth
+    token_url: https://api.login.yahoo.com/oauth2/get_token
 yandex:
-  auth_mode: OAUTH2
-  authorization_url: https://oauth.yandex.com/authorize
-  token_url: https://oauth.yandex.com/token
-  authorization_params:
-    response_type: code
-  token_params:
-    grant_type: authorization_code
-  refresh_params:
-    grant_type: refresh_token
-  proxy:
-    base_url: https://translate.yandex.net
+    auth_mode: OAUTH2
+    authorization_url: https://oauth.yandex.com/authorize
+    token_url: https://oauth.yandex.com/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://translate.yandex.net
 youtube:
-  alias: google
+    alias: google
 zapier-nla:
-  auth_mode: OAUTH2
-  authorization_url: https://nla.zapier.com/oauth/authorize/
-  token_url: https://nla.zapier.com/oauth/token/
-  proxy:
-    base_url: https://nla.zapier.com
+    auth_mode: OAUTH2
+    authorization_url: https://nla.zapier.com/oauth/authorize/
+    token_url: https://nla.zapier.com/oauth/token/
+    proxy:
+        base_url: https://nla.zapier.com
 zendesk:
-  auth_mode: OAUTH2
-  authorization_url: https://${connectionConfig.subdomain}.zendesk.com/oauth/authorizations/new
-  token_url: https://${connectionConfig.subdomain}.zendesk.com/oauth/tokens
-  proxy:
-    base_url: https://${connectionConfig.subdomain}.zendesk.com
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.subdomain}.zendesk.com/oauth/authorizations/new
+    token_url: https://${connectionConfig.subdomain}.zendesk.com/oauth/tokens
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.zendesk.com
 zenefits:
-  auth_mode: OAUTH2
-  authorization_url: https://secure.zenefits.com/oauth2/platform-authorize
-  token_url: https://secure.zenefits.com/oauth2/token
-  authorization_params:
-    response_type: code
-  token_params:
-    grant_type: authorization_code
-  refresh_params:
-    grant_type: refresh_token
-  proxy:
-    base_url: https://api.zenefits.com
+    auth_mode: OAUTH2
+    authorization_url: https://secure.zenefits.com/oauth2/platform-authorize
+    token_url: https://secure.zenefits.com/oauth2/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.zenefits.com
 zoho:
-  auth_mode: OAUTH2
-  authorization_url: https://accounts.zoho.${connectionConfig.extension}/oauth/v2/auth
-  token_url: https://accounts.zoho.${connectionConfig.extension}/oauth/v2/token
-  authorization_params:
-    prompt: consent
-    access_type: offline
-  proxy:
-    base_url: https://www.zohoapis.${connectionConfig.extension}
+    auth_mode: OAUTH2
+    authorization_url: https://accounts.zoho.${connectionConfig.extension}/oauth/v2/auth
+    token_url: https://accounts.zoho.${connectionConfig.extension}/oauth/v2/token
+    authorization_params:
+        prompt: consent
+        access_type: offline
+    proxy:
+        base_url: https://www.zohoapis.${connectionConfig.extension}
 zoho-books:
-  alias: zoho
+    alias: zoho
 zoho-crm:
-  alias: zoho
+    alias: zoho
 zoho-desk:
-  alias: zoho
+    alias: zoho
 zoho-inventory:
-  alias: zoho
+    alias: zoho
 zoho-invoice:
-  alias: zoho
+    alias: zoho
 zoom:
-  auth_mode: OAUTH2
-  authorization_url: https://zoom.us/oauth/authorize
-  token_url: https://zoom.us/oauth/token
-  authorization_params:
-    response_type: code
-  proxy:
-    base_url: https://developer.zoom.us
+    auth_mode: OAUTH2
+    authorization_url: https://zoom.us/oauth/authorize
+    token_url: https://zoom.us/oauth/token
+    authorization_params:
+        response_type: code
+    proxy:
+        base_url: https://developer.zoom.us
