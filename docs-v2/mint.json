@@ -81,7 +81,7 @@
                 "guides/action",
                 {
                     "group": "Other Guides",
-                    "pages": ["guides/proxy", "guides/webhooks", "guides/custom-script", "guides/advanced-auth", "guides/field-mapping", "guides/api-key", "guides/env-vars", "contribute"]
+                    "pages": ["guides/proxy", "guides/webhooks", "guides/custom", "guides/advanced-auth", "guides/field-mapping", "guides/api-key", "guides/env-vars", "contribute"]
                 }, {
                     "group": "Integration Templates",
                     "pages": [

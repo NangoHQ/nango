@@ -1,14 +1,14 @@
 ---
 title: 'How To Integrate Nango'
 sidebarTitle: 'How To Integrate Nango'
-description: 'Nango centralizes data transfer between external APIs and your app.'
+description: 'Nango unifies interactions between your app and external APIs.'
 ---
 
 <Frame caption="The steps to integrate Nango.">
   <img src="/images/nango-data-flow.png" />
 </Frame>
 
-## 1. Get user permission from your site
+## 1. Get user permission in your app
 
 Integrate the Nango frontend SDK into your application to get user permission to access their data.
 
@@ -18,7 +18,8 @@ Store `connectionId` & `integrationId` in your database. You'll need these to ge
 const integrationId = 'zendesk';
 const connectionId = 'user123';
 
-const result = await nango.auth(integrationId, connectionId);
+// Show authorization popup.
+const result = await nango.auth(integrationId, connectionId); 
 
 if (result.ok) {
     saveToDatabase(connectionId, integrationId);
