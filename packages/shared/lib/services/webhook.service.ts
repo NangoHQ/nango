@@ -37,13 +37,15 @@ class WebhookService {
         now: Date | undefined,
         activityLogId: number
     ) {
-        const webhookUrl = await environmentService.getWebhookUrl(nangoConnection.environment_id);
+        const webhookInfo = await environmentService.getWebhookInfo(nangoConnection.environment_id);
 
-        if (!webhookUrl) {
+        if (!webhookInfo || !webhookInfo.webhook_url) {
             return;
         }
 
-        if (responseResults.added === 0 && responseResults.updated === 0 && responseResults.deleted === 0) {
+        const { webhook_url: webhookUrl, always_send_webhook: alwaysSendWebhook } = webhookInfo;
+
+        if (!alwaysSendWebhook && responseResults.added === 0 && responseResults.updated === 0 && responseResults.deleted === 0) {
             await createActivityLogMessage({
                 level: 'info',
                 activity_log_id: activityLogId,
