@@ -19,6 +19,7 @@ import {
     isInitialSyncStillRunning,
     logger
 } from '@nangohq/shared';
+import integrationService from './integration.service.js';
 import type { ContinuousSyncArgs, InitialSyncArgs, ActionArgs } from './models/Worker';
 
 export async function routeSync(args: InitialSyncArgs): Promise<boolean | object> {
@@ -49,6 +50,7 @@ export async function runAction(args: ActionArgs): Promise<object> {
     const { input, nangoConnection, actionName, activityLogId } = args;
 
     const syncRun = new syncRunService({
+        integrationService,
         writeToDb: true,
         nangoConnection,
         syncName: actionName,
@@ -222,6 +224,7 @@ export async function syncProvider(
         }
 
         const syncRun = new syncRunService({
+            integrationService,
             writeToDb: true,
             syncId,
             syncJobId,

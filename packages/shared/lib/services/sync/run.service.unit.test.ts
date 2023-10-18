@@ -2,12 +2,22 @@ import { expect, describe, it, vi } from 'vitest';
 import SyncRun from './run.service.js';
 import * as ConfigService from './config/config.service.js';
 import environmentService from '../environment.service.js';
-import integationService from './integration/integration.service.js';
 import LocalFileService from '../file/local.service.js';
-import { SyncType } from '../../models/Sync.js';
+import { IntegrationServiceInterface, SyncType } from '../../models/Sync.js';
 import type { Environment } from '../../models/Environment.js';
 
+class integrationServiceMock implements IntegrationServiceInterface {
+    async runScript() {
+        return {
+            success: true
+        };
+    }
+}
+
+const integrationService = new integrationServiceMock();
+
 const dryRunConfig = {
+    integrationService: integrationService as unknown as IntegrationServiceInterface,
     writeToDb: false,
     nangoConnection: {
         connection_id: '1234',
@@ -25,6 +35,7 @@ const dryRunConfig = {
 describe('SyncRun', () => {
     it('should initialize correctly', () => {
         const config = {
+            integrationService: integrationService as unknown as IntegrationServiceInterface,
             writeToDb: true,
             nangoConnection: {
                 connection_id: '1234',
@@ -91,9 +102,9 @@ describe('SyncRun', () => {
             };
         });
 
-        vi.spyOn(integationService, 'runScript').mockImplementation(() => {
+        vi.spyOn(integrationService, 'runScript').mockImplementation(() => {
             return Promise.resolve({
-                some: 'data'
+                success: true
             });
         });
 
@@ -114,7 +125,8 @@ describe('SyncRun', () => {
         expect(failRun).toEqual(false);
 
         // if run script returns null then fail
-        vi.spyOn(integationService, 'runScript').mockImplementation(() => {
+        // @ts-ignore
+        vi.spyOn(integrationService, 'runScript').mockImplementation(() => {
             return Promise.resolve(null);
         });
 

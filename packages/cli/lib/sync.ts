@@ -50,6 +50,7 @@ import {
     getNangoRootPath,
     printDebug
 } from './utils.js';
+import integrationService from './local-integration.service.js';
 import type { DeployOptions, GlobalOptions } from './types.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -640,6 +641,7 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
     }
 
     const syncRun = new syncRunService({
+        integrationService,
         writeToDb: false,
         nangoConnection,
         input: normalizedInput as object,

@@ -1,5 +1,7 @@
 import { LogActionEnum } from './Activity.js';
 import type { Timestamps, TimestampsAndDeleted } from './Generic.js';
+import type { NangoSync } from '../sdk/sync.js';
+import type { NangoIntegrationData } from '../integrations/index.js';
 
 export enum SyncStatus {
     RUNNING = 'RUNNING',
@@ -254,4 +256,18 @@ export interface SyncConfigWithProvider {
     provider_config_key: string;
     unique_key: string;
     type: SyncConfigType;
+}
+
+export interface IntegrationServiceInterface {
+    runScript(
+        syncName: string,
+        activityLogId: number | undefined,
+        nango: NangoSync,
+        integrationData: NangoIntegrationData,
+        environmentId: number,
+        writeToDb: boolean,
+        isAction: boolean,
+        optionalLoadLocation?: string,
+        input?: object
+    ): Promise<any>;
 }
