@@ -1,6 +1,6 @@
 import { loadLocalNangoConfig, nangoConfigFile } from '../nango-config.service.js';
 import type { NangoConnection } from '../../models/Connection.js';
-import { SyncResult, SyncType, SyncStatus, Job as SyncJob } from '../../models/Sync.js';
+import { SyncResult, SyncType, SyncStatus, Job as SyncJob, IntegrationServiceInterface } from '../../models/Sync.js';
 import type { ServiceResponse } from '../../models/Generic.js';
 import { createActivityLogMessage, createActivityLogMessageAndEnd, updateSuccess as updateSuccessActivityLog } from '../activity/activity.service.js';
 import { addSyncConfigToJob, updateSyncJobResult, updateSyncJobStatus } from '../sync/job.service.js';
@@ -11,7 +11,6 @@ import { formatDataRecords } from './data/records.service.js';
 import { upsert } from './data/data.service.js';
 import { getDeletedKeys, takeSnapshot, syncUpdateAtForDeletedRecords } from './data/delete.service.js';
 import environmentService from '../environment.service.js';
-import integationService from './integration/integration.service.js';
 import webhookService from '../webhook.service.js';
 import { NangoSync } from '../../sdk/sync.js';
 import { isCloud, getApiUrl } from '../../utils/utils.js';
@@ -23,6 +22,7 @@ import { LogActionEnum } from '../../models/Activity.js';
 import type { Environment } from '../../models/Environment';
 
 interface SyncRunConfig {
+    integrationService: IntegrationServiceInterface;
     writeToDb: boolean;
     isAction?: boolean;
     nangoConnection: NangoConnection;
@@ -39,6 +39,7 @@ interface SyncRunConfig {
 }
 
 export default class SyncRun {
+    integrationService: IntegrationServiceInterface;
     writeToDb: boolean;
     isAction: boolean;
     nangoConnection: NangoConnection;
@@ -53,6 +54,7 @@ export default class SyncRun {
     input?: object;
 
     constructor(config: SyncRunConfig) {
+        this.integrationService = config.integrationService;
         this.writeToDb = config.writeToDb;
         this.isAction = config.isAction || false;
         this.nangoConnection = config.nangoConnection;
@@ -230,7 +232,7 @@ export default class SyncRun {
 
                 const syncStartDate = new Date();
 
-                const userDefinedResults = await integationService.runScript(
+                const userDefinedResults = await this.integrationService.runScript(
                     this.syncName,
                     this.activityLogId as number,
                     nango,
