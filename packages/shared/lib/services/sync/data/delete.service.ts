@@ -103,8 +103,8 @@ export const markRecordsForDeletion = async (nangoConnectionId: number, model: s
 
 /**
  * Clear Old Records
- * @desc get the job of the last set of records that were inserted and remove
- * them if any records exist
+ * @desc clear out any records that are marked for deletion
+ * so that the delete accounting can be done correctly
  */
 export const clearOldRecords = async (nangoConnectionId: number, model: string) => {
     await schema()
