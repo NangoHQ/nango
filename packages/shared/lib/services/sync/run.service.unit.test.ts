@@ -110,7 +110,7 @@ describe('SyncRun', () => {
 
         const run = await syncRun.run();
 
-        expect(run).toEqual({ some: 'data' });
+        expect(run).toEqual({ success: true });
 
         // if integration file not found it should return false
         vi.spyOn(LocalFileService, 'checkForIntegrationDistFile').mockImplementation(() => {
