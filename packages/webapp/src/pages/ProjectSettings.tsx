@@ -629,7 +629,7 @@ export default function ProjectSettings() {
                                                             <div className="flex text-black text-sm">
                                                                 {`To secure the Frontend SDK calls with`}
                                                                 <a
-                                                                    href="https://docs.nango.dev/guides/oauth#securing-the-frontend-sdk-calls-with-hmac"
+                                                                    href="https://docs.nango.dev/guides/advanced-auth#securing-the-frontend-sdk-calls-with-hmac"
                                                                     target="_blank"
                                                                     rel="noreferrer"
                                                                     className="text-text-blue ml-1"
