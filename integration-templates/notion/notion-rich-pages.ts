@@ -2,7 +2,9 @@
 import type { NangoSync, NotionRichPage } from './models';
 
 export default async function fetchData(nango: NangoSync) {
-    const pages = (await paginate(nango, 'post', '/v1/search', 'Notion pages', 100, true)).filter((result: any) => result.object === 'page');
+    const pages = (await paginate(nango, 'post', '/v1/search', 'Notion pages', 100, false)).filter((result: any) => result.object === 'page');
+
+    console.log('pages', JSON.stringify(pages, null, 2));
 
     const batchSize = 10;
     await nango.log(`Found ${pages.length} new/updated Notion pages to sync.`);
@@ -10,7 +12,8 @@ export default async function fetchData(nango: NangoSync) {
     for (let i = 0; i < pages.length; i += batchSize) {
         await nango.log(`Fetching plain text, in batch of ${batchSize} Notion pages, from page ${i + 1} (total pages: ${pages.length})`);
         const batchOfPages = pages.slice(i, Math.min(pages.length, i + batchSize));
-        const pagesWithPlainText = await Promise.all(batchOfPages.map(async (page: any) => mapPage(page, await fetchAsMarkdown(nango, page))));
+        const pagesWithPlainText = await Promise.all(batchOfPages.map(async (page: any) => mapPage(nango, page)));
+        console.log('pagesWithPlainText', JSON.stringify(pagesWithPlainText, null, 2));
         await nango.batchSave(pagesWithPlainText, 'NotionRichPage');
     }
 }
@@ -368,17 +371,91 @@ const blockToMarkdown = async (nango: NangoSync, block: any) => {
     return parsedData;
 };
 
-const mapPage = (page: any, plainText: string): NotionRichPage => {
+const mapPage = async (nango: NangoSync, page: any): Promise<NotionRichPage> => {
+    const content = await fetchAsMarkdown(nango, page);
+
+    const keys = Object.keys(page.properties);
+
+    const properties = keys.reduce((acc: any, key: string) => {
+        const textValue = propertyToPlainText(page.properties[key]);
+        if (!textValue) {
+            return acc;
+        }
+        return { ...acc, [key]: textValue };
+    }, {});
+
+    let title = properties.title;
+    if (!title) {
+        // When the page is part of a table, the title is the
+        // value of the first column, and can be obtained by
+        // finding the column with a 'title' type.
+        for (const key of keys) {
+            const property = page.properties[key];
+            if (property.type === 'title') {
+                title = property.title.map((t: any) => t.plain_text).join('');
+                break;
+            }
+        }
+    }
+
     return {
         id: page.id,
         path: page.url,
-        title: page.title,
-        content: plainText,
+        title,
+        content: content,
         contentType: 'md',
+        last_modified: page.last_edited_time,
         meta: {
-            parent_page_id: page.parent.page_id
+            created_time: page.created_time,
+            last_edited_time: page.last_edited_time,
+            properties
         }
     };
+};
+
+const propertyToPlainText = (property: any) => {
+    try {
+        switch (property.type) {
+            case 'title': {
+                return property.title.map((t: any) => t.plain_text).join('');
+            }
+            case 'rich_text': {
+                return property.rich_text.map((t: any) => t.plain_text).join('');
+            }
+            case 'number': {
+                return String(property.number);
+            }
+            case 'select': {
+                return property.select.name;
+            }
+            case 'multi_select': {
+                return property.multi_select.map((s: any) => s.name).join(', ');
+            }
+            case 'checkbox': {
+                return String(property.checkbox);
+            }
+            case 'date': {
+                return property.date.start;
+            }
+            case 'created_time': {
+                return property.created_time;
+            }
+            case 'email': {
+                return property.email;
+            }
+            case 'phone_number': {
+                return property.phone_number;
+            }
+            case 'status': {
+                return property.status.name;
+            }
+            case 'formula': {
+                return property.formula.string;
+            }
+        }
+    } catch {
+        return undefined;
+    }
 };
 
 const inlineCode = (text: string) => {

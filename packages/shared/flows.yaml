@@ -436,7 +436,7 @@ integrations:
 
         sub-databases and retrieve only the text content and ignores
 
-        ignores images, files and other blocks that do not have
+        images, files and other blocks that do not have
 
         a `rich_text` property.
 
@@ -446,6 +446,7 @@ integrations:
         Required scope(s): none
     notion-rich-pages:
       runs: every 6 hours
+      track_deletes: true
       returns:
         - NotionRichPage
       description: >
@@ -453,11 +454,10 @@ integrations:
 
         sub-databases and maps to full markdown. It transforms
 
-        transforms images, tables, uploaded files, etc into their Markdown
-        counterparts.
+        images, tables, uploaded files, etc into their markdown counterparts.
 
-        Details: incremental sync, doesn't support deletes, sync goes to all
-        time, metadata is not required.
+        Details: full sync, tracks deletes, sync goes to all time, metadata is
+        not required.
 
         Required scope(s): none
     models:
