@@ -58,24 +58,30 @@
             "url": "https://nango.dev/slack"
         }
     ],
+    "redirects": [
+        {
+            "source": "guides/actions",
+            "destination": "guides/action"
+        }
+    ],
     "navigation": [
         {
             "group": "Getting Started",
             "pages": [
                     "introduction",
-                    "quickstart",
-                    "core-concepts"
+                    "guides/integrate"
                 ]
         },
         {
-            "group": "Guides",
+            "group": "Step-By-Step Guides",
             "pages": [
+                "quickstart",
                 "guides/oauth",
                 "guides/sync",
                 "guides/action",
                 {
                     "group": "Other Guides",
-                    "pages": ["guides/proxy", "guides/webhooks", "guides/custom-script", "guides/advanced-auth", "guides/field-mapping", "guides/api-key", "guides/env-vars", "contribute"]
+                    "pages": ["guides/proxy", "guides/webhooks", "guides/custom", "guides/advanced-auth", "guides/field-mapping", "guides/api-key", "guides/env-vars", "contribute"]
                 }, {
                     "group": "Integration Templates",
                     "pages": [
@@ -326,7 +332,7 @@
         },
         {
             "group": "Syncs",
-            "pages": ["api-reference/sync/records-get", "api-reference/sync/trigger", "api-reference/sync/start", "api-reference/sync/pause"]
+            "pages": ["api-reference/sync/records-get", "api-reference/sync/trigger", "api-reference/sync/start", "api-reference/sync/pause", "api-reference/sync/status"]
         },
         {
             "group": "Actions",

@@ -65,7 +65,7 @@ paths:
                                     description: Comma separated list of scopes.
             responses:
                 '200':
-                    description: Successfully created an integrations
+                    description: Successfully created an integration
                 '400':
                     description: Invalid request
                     content:
@@ -163,6 +163,43 @@ paths:
                                             provider:
                                                 type: string
                                                 description: The Nango API Configuration.
+                                            actions:
+                                                type: array
+                                                items:
+                                                    type: object
+                                                    properties:
+                                                        name:
+                                                            type: string
+                                                            description: The name of the action.
+                                                        created_at:
+                                                            type: string
+                                                            description: The creation timestamp of the sync.
+                                                        updated_at:
+                                                            type: string
+                                                            description: The last updated timestamp of the sync.
+                                            syncs:
+                                                type: array
+                                                items:
+                                                    type: object
+                                                    properties:
+                                                        id:
+                                                            type: string
+                                                            description: The unique ID for the sync.
+                                                        name:
+                                                            type: string
+                                                            description: The name of the sync.
+                                                        connection_id:
+                                                            type: string
+                                                            description: The name of the connection id.
+                                                        created_at:
+                                                            type: string
+                                                            description: The creation timestamp of the sync.
+                                                        updated_at:
+                                                            type: string
+                                                            description: The last updated timestamp of the sync.
+                                                        last_sync_date:
+                                                            type: string
+                                                            description: The timestamp of the last completed sync.
                 '400':
                     description: Invalid request
                     content:
@@ -346,43 +383,6 @@ paths:
             responses:
                 '200':
                     description: Successfully returned a connection
-                    # content:
-                    #     application/json:
-                    #         schema:
-                    #             type: object
-                    #             required:
-                    #                 - id
-                    #                 - created_at
-                    #                 - updated_at
-                    #                 - provider_config_key
-                    #                 - connection_id
-                    #                 - credentials
-                    #             properties:
-                    #                 id:
-                    #                     type: integer
-                    #                     description: The internal Nango ID used for the connection.
-                    #                 created_at:
-                    #                     type: string
-                    #                     description: connection creation date.
-                    #                 updated_at:
-                    #                     type: string
-                    #                     description: connection update date.
-                    #                 provider_config_key:
-                    #                     type: string
-                    #                     description: The integration ID used to create the connection (aka Unique Key).
-                    #                 connection_id:
-                    #                     type: string
-                    #                     description: The connection ID used to create the connection.
-                    #                 connection_config:
-                    #                     type: object
-                    #                     description: Important configuration passed in by you during the OAuth flow.
-                    #                 metadata:
-                    #                     type: object
-                    #                     description: Important metadata passed in by the external API during the OAuth flow.
-                    #                 credentials:
-                    #                     type: object
-                    #                     description: The credentials to access the external API.
-
                 '400':
                     description: Invalid request
                     content:
@@ -515,12 +515,6 @@ paths:
                       type: string
                       enum: [desc, asc]
                   description: Set the order of results. The default is 'desc'. The options are 'desc' or 'asc'.
-                - name: include_nango_metadata
-                  in: query
-                  required: false
-                  schema:
-                      type: boolean
-                  description: If set to true, includes Nango metadata for each record in the response. Default is 'false'.
                 - name: filter
                   in: query
                   required: false
@@ -609,6 +603,55 @@ paths:
                                     descriptions: A list of sync names that you wish to pause.
                                     items:
                                         type: string
+    /sync/status:
+        get:
+            description: Get the status of specified sync(s) (for a given connection or all applicable connections if no connection is specified)
+            parameters:
+                - name: provider_config_key
+                  in: query
+                  required: true
+                  schema:
+                      type: string
+                  description: The ID of the integration you established within Nango
+                - name: syncs
+                  in: query
+                  required: true
+                  schema:
+                      type: string
+                  description: The name of the syncs you want to fetch a status for. Pass in "*" to return all syncs per the integration
+                - name: connection_id
+                  in: query
+                  required: false
+                  schema:
+                      type: string
+                  description: The ID of the connection. If omitted, all connections will be surfaced.
+            responses:
+                '200':
+                    description: Successfully returned a list of syncs and their status
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    syncs:
+                                        type: array
+                                        items:
+                                            type: object
+                                            properties:
+                                                id:
+                                                    type: string
+                                                    description: The unique identifier for the sync.
+                                                name:
+                                                    type: string
+                                                    description: The name of the sync.
+                                                status:
+                                                    type: string
+                                                    enum: ["RUNNING", "PAUSED", "STOPPED", "SUCCESS", "ERROR"]
+                                                    description: The current status of the sync.
+                                                latestResult:
+                                                    type: object
+                                                    description: Additional information regarding the latest result of the sync. Contains a model name with added, updated and deleted records
+                                                    additionalProperties:
     /action/trigger:
         post:
             description: Triggers an action for a connection

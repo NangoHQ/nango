@@ -388,6 +388,21 @@ gong:
     auth_mode: BASIC
     proxy:
         base_url: https://api.gong.io
+gong-oauth:
+    auth_mode: OAUTH2
+    authorization_url: https://app.gong.io/oauth2/authorize
+    token_url: https://app.gong.io/oauth2/generate-customer-token
+    authorization_params:
+        response_type: code
+        access_type: offline
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    disable_pkce: true
+    token_request_auth_method: basic
+    proxy:
+        base_url: https://api.gong.io
 google:
     auth_mode: OAUTH2
     authorization_url: https://accounts.google.com/o/oauth2/v2/auth

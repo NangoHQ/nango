@@ -551,7 +551,15 @@ export class NangoSync extends NangoAction {
             success,
             error,
             response: formattedResults
-        } = formatDataRecords(results as unknown as DataResponse[], this.nangoConnectionId as number, model, this.syncId as string, this.syncJobId);
+        } = formatDataRecords(
+            results as unknown as DataResponse[],
+            this.nangoConnectionId as number,
+            model,
+            this.syncId as string,
+            this.syncJobId,
+            this.lastSyncDate,
+            this.track_deletes
+        );
 
         if (!success || formattedResults === null) {
             if (!this.dryRun) {
@@ -585,7 +593,7 @@ export class NangoSync extends NangoAction {
             this.nangoConnectionId as number,
             model,
             this.activityLogId as number,
-            syncConfig?.track_deletes
+            this.track_deletes
         );
 
         if (responseResults.success) {
@@ -653,7 +661,16 @@ export class NangoSync extends NangoAction {
             success,
             error,
             response: formattedResults
-        } = formatDataRecords(results as unknown as DataResponse[], this.nangoConnectionId as number, model, this.syncId as string, this.syncJobId, true);
+        } = formatDataRecords(
+            results as unknown as DataResponse[],
+            this.nangoConnectionId as number,
+            model,
+            this.syncId as string,
+            this.syncJobId,
+            this.lastSyncDate,
+            this.track_deletes,
+            true
+        );
 
         if (!success || formattedResults === null) {
             if (!this.dryRun) {
@@ -687,7 +704,7 @@ export class NangoSync extends NangoAction {
             this.nangoConnectionId as number,
             model,
             this.activityLogId as number,
-            syncConfig?.track_deletes,
+            this.track_deletes,
             true
         );
 

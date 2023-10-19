@@ -106,7 +106,9 @@ export function convertConfigObject(config: NangoConfig): SimplifiedNangoIntegra
                 auto_start: sync.auto_start === false ? false : true,
                 attributes: sync.attributes || {},
                 returns: sync.returns,
-                models: models || []
+                models: models || [],
+                description: sync.description || '',
+                scopes: sync.scopes || []
             });
         }
         output.push({ providerConfigKey, syncs });

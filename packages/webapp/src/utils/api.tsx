@@ -158,6 +158,34 @@ export function useEditHmacEnabledAPI() {
     };
 }
 
+export function useEditAlwaysSendWebhookAPI() {
+    const signout = useSignout();
+
+    return async (alwaysSendWebhook: boolean) => {
+        try {
+            const options = {
+                method: 'POST',
+                headers: getHeaders(),
+                body: JSON.stringify({ always_send_webhook: alwaysSendWebhook })
+            };
+
+            let res = await fetch('/api/v1/environment/webhook-send', options);
+
+            if (res.status === 401) {
+                return signout();
+            }
+
+            if (res.status !== 200) {
+                return serverErrorToast();
+            }
+
+            return res;
+        } catch (e) {
+            requestErrorToast();
+        }
+    };
+}
+
 export function useEditHmacKeyAPI() {
     const signout = useSignout();
 

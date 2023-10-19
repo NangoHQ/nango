@@ -117,10 +117,12 @@ export const clearLastSyncDate = async (id: string): Promise<void> => {
  * during the integration script so we don't want to override what they
  * set in the script
  */
-export const setLastSyncDate = async (id: string, date: Date, override = true): Promise<boolean> => {
-    if (!date) {
+export const setLastSyncDate = async (id: string, tempDate: Date | string, override = true): Promise<boolean> => {
+    if (!tempDate) {
         return false;
     }
+
+    const date = typeof tempDate === 'string' ? new Date(tempDate) : tempDate;
 
     if (isNaN(date.getTime())) {
         return false;
@@ -325,7 +327,7 @@ export const getSyncsByConnectionId = async (nangoConnectionId: number): Promise
 export const getSyncsByProviderConfigKey = async (environment_id: number, providerConfigKey: string): Promise<Sync[]> => {
     const results = await db.knex
         .withSchema(db.schema())
-        .select(`${TABLE}.*`)
+        .select(`${TABLE}.id`, `${TABLE}.name`, `_nango_connections.connection_id`, `${TABLE}.created_at`, `${TABLE}.updated_at`, `${TABLE}.last_sync_date`)
         .from<Sync>(TABLE)
         .join('_nango_connections', '_nango_connections.id', `${TABLE}.nango_connection_id`)
         .where({
