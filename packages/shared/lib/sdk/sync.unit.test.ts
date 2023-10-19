@@ -61,7 +61,7 @@ describe('Pagination', () => {
         };
         vi.spyOn(configService, 'getTemplate').mockImplementation(() => template);
 
-        const expectedErrorMessage: string = `Pagination is not supported for '${providerConfigKey}'. Please, add pagination config to 'providers.yaml' file`;
+        const expectedErrorMessage = `Pagination is not supported for '${providerConfigKey}'. Please, add pagination config to 'providers.yaml' file`;
         await expect(() => nangoAction.paginate({ endpoint: '' }).next()).rejects.toThrowError(expectedErrorMessage);
     });
 
@@ -71,7 +71,7 @@ describe('Pagination', () => {
         // TODO: mock to return at least one more page to check that cursor is passed in body too
         (await import('@nangohq/node')).Nango.prototype.proxy = vi.fn().mockReturnValue({ data: { issues: [] } });
 
-        const endpoint: string = '/issues';
+        const endpoint = '/issues';
 
         await nangoAction.paginate({ endpoint, method: 'POST', paginate: { limit: 2 } }).next();
 
@@ -91,7 +91,7 @@ describe('Pagination', () => {
             .mockReturnValueOnce({ data: { issues: [{}, {}, {}] } })
             .mockReturnValueOnce({ data: { issues: [] } });
 
-        const endpoint: string = '/issues';
+        const endpoint = '/issues';
         const paginationConfigOverride: OffsetPagination = {
             type: 'offset',
             limit_name_in_request: 'per_page',
@@ -124,7 +124,7 @@ describe('Pagination', () => {
             .mockReturnValueOnce({ data: { issues: secondBatch } })
             .mockReturnValueOnce({ data: { issues: [] } });
 
-        const endpoint: string = '/issues';
+        const endpoint = '/issues';
 
         const generator = nangoAction.paginate({ endpoint });
 
@@ -164,7 +164,7 @@ describe('Pagination', () => {
             })
             .mockReturnValueOnce({ data: { issues: thirdBatch } });
 
-        const endpoint: string = '/issues';
+        const endpoint = '/issues';
 
         const generator = nangoAction.paginate({ endpoint });
 
@@ -191,7 +191,7 @@ describe('Pagination', () => {
             }
         });
 
-        const endpoint: string = '/issues';
+        const endpoint = '/issues';
 
         const generator = nangoAction.paginate({ endpoint });
 
@@ -230,7 +230,7 @@ describe('Pagination', () => {
                     }
                 });
 
-            const endpoint: string = '/issues';
+            const endpoint = '/issues';
 
             const generator = nangoAction.paginate({ endpoint });
 
@@ -273,7 +273,7 @@ describe('Pagination', () => {
             })
             .mockReturnValueOnce({ data: { issues: thirdBatch } });
 
-        const endpoint: string = '/issues';
+        const endpoint = '/issues';
 
         const generator = nangoAction.paginate({ endpoint });
 

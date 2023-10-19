@@ -9,7 +9,6 @@ import { LogActionEnum } from '../models/Activity.js';
 
 import { Nango } from '@nangohq/node';
 import configService from '../services/config.service.js';
-import type { Template } from '../models/index.js';
 import { isValidHttpUrl } from '../utils/utils.js';
 import parseLinksHeader from 'parse-link-header';
 import * as _ from 'lodash';
@@ -343,7 +342,7 @@ export class NangoAction {
 
     public async *paginate<T = any>(config: ProxyConfiguration): AsyncGenerator<T[], undefined, void> {
         const providerConfigKey: string = this.providerConfigKey as string;
-        const template: Template = configService.getTemplate(providerConfigKey);
+        const template = configService.getTemplate(providerConfigKey);
         const templatePaginationConfig: Pagination | undefined = template.proxy?.paginate;
 
         if (!templatePaginationConfig) {
@@ -419,7 +418,7 @@ export class NangoAction {
 
                     yield responseData;
 
-                    let nextPageLink: string | undefined = this.getNextPageLinkFromBodyOrHeaders(linkPagination, response, paginationConfig);
+                    const nextPageLink: string | undefined = this.getNextPageLinkFromBodyOrHeaders(linkPagination, response, paginationConfig);
 
                     if (!nextPageLink) {
                         return;
@@ -438,7 +437,7 @@ export class NangoAction {
             case PaginationType.OFFSET: {
                 const offsetPagination: OffsetPagination = paginationConfig as OffsetPagination;
                 const offsetParameterName: string = offsetPagination.offset_name_in_request;
-                let offset: number = 0;
+                let offset = 0;
 
                 while (true) {
                     updatedBodyOrParams[offsetParameterName] = `${offset}`;
