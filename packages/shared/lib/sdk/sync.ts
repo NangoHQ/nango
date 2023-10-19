@@ -559,7 +559,7 @@ export class NangoSync extends NangoAction {
                 await createActivityLogMessage({
                     level: 'error',
                     activity_log_id: this.activityLogId as number,
-                    content: `There was an issue with the batch save.${error?.message}`,
+                    content: `There was an issue with the batch save. ${error?.message}`,
                     timestamp: Date.now()
                 });
             }
@@ -610,7 +610,7 @@ export class NangoSync extends NangoAction {
 
             return true;
         } else {
-            const content = `There was an issue with the batch save.${responseResults?.error}`;
+            const content = `There was an issue with the batch save. ${responseResults?.error}`;
 
             if (!this.dryRun) {
                 await createActivityLogMessage({
@@ -670,7 +670,7 @@ export class NangoSync extends NangoAction {
                 await createActivityLogMessage({
                     level: 'error',
                     activity_log_id: this.activityLogId as number,
-                    content: `There was an issue with the batch delete.${error?.message}`,
+                    content: `There was an issue with the batch delete. ${error?.message}`,
                     timestamp: Date.now()
                 });
             }
@@ -722,7 +722,7 @@ export class NangoSync extends NangoAction {
 
             return true;
         } else {
-            const content = `There was an issue with the batch delete.${responseResults?.error}`;
+            const content = `There was an issue with the batch delete. ${responseResults?.error}`;
 
             if (!this.dryRun) {
                 await createActivityLogMessage({
