@@ -390,9 +390,7 @@ export class NangoAction {
 
                     const response: AxiosResponse = await this.proxy(config);
 
-                    const responseData: T[] = cursorPagination.response_path
-                        ? _.get(response.data, cursorPagination.response_path)
-                        : response.data;
+                    const responseData: T[] = cursorPagination.response_path ? _.get(response.data, cursorPagination.response_path) : response.data;
 
                     if (!responseData.length) {
                         return;
@@ -414,9 +412,7 @@ export class NangoAction {
                 while (true) {
                     const response: AxiosResponse = await this.proxy(config);
 
-                    const responseData: T[] = paginationConfig.response_path
-                        ? _.get(response.data, paginationConfig.response_path)
-                        : response.data;
+                    const responseData: T[] = paginationConfig.response_path ? _.get(response.data, paginationConfig.response_path) : response.data;
                     if (!responseData.length) {
                         return;
                     }
@@ -451,9 +447,7 @@ export class NangoAction {
 
                     const response: AxiosResponse = await this.proxy(config);
 
-                    const responseData: T[] = paginationConfig.response_path
-                        ? _.get(response.data, paginationConfig.response_path)
-                        : response.data;
+                    const responseData: T[] = paginationConfig.response_path ? _.get(response.data, paginationConfig.response_path) : response.data;
                     if (!responseData.length) {
                         return;
                     }
