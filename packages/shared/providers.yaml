@@ -835,6 +835,12 @@ salesloft:
     token_url: https://accounts.salesloft.com/oauth/token
     proxy:
         base_url: https://api.salesloft.com
+sendgrid:
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            Authorization: Bearer ${apiKey}
+        base_url: https://api.sendgrid.com
 servicem8:
     auth_mode: OAUTH2
     authorization_url: https://go.servicem8.com/oauth/authorize
