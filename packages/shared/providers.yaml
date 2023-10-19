@@ -674,6 +674,12 @@ notion:
         base_url: https://api.notion.com
         headers:
             'Notion-Version': '2022-06-28'
+        paginate:
+            type: cursor
+            cursor_path_in_response: start_cursor
+            cursor_name_in_request: start_cursor
+            limit_name_in_request: page_size
+            response_path: results
     docs: https://developers.notion.com/reference
 one-drive:
     alias: microsoft-teams

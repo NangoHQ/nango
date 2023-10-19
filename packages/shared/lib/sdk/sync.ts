@@ -10,7 +10,6 @@ import { LogActionEnum } from '../models/Activity.js';
 import { Nango } from '@nangohq/node';
 import configService from '../services/config.service.js';
 import paginateService from '../services/paginate.service.js';
-import * as _ from 'lodash';
 
 type LogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
 
@@ -344,24 +343,18 @@ export class NangoAction {
         const template = configService.getTemplate(providerConfigKey);
         const templatePaginationConfig: Pagination | undefined = template.proxy?.paginate;
 
-        if (!templatePaginationConfig) {
-            throw Error(`Pagination is not supported for '${providerConfigKey}'. Please, add pagination config to 'providers.yaml' file`);
+        if (!templatePaginationConfig && (!config.paginate || !config.paginate.type)) {
+            throw Error('There was no pagination configuration for this integration or configuration passed in.');
         }
 
-        let paginationConfig: Pagination = templatePaginationConfig as Pagination;
-        delete paginationConfig.limit;
+        const paginationConfig: Pagination = {
+            ...(templatePaginationConfig || {}),
+            ...(config.paginate || {})
+        } as Pagination;
 
-        if (config.paginate) {
-            const paginationConfigOverride: Record<string, any> = config.paginate as Record<string, any>;
+        paginateService.validateConfiguration(paginationConfig);
 
-            if (paginationConfigOverride) {
-                paginationConfig = { ...paginationConfig, ...paginationConfigOverride };
-            }
-        }
-
-        if (!config.method) {
-            config.method = 'GET';
-        }
+        config.method = config.method || 'GET';
 
         const configMethod: string = config.method.toLocaleLowerCase();
         const passPaginationParamsInBody: boolean = ['post', 'put', 'patch'].includes(configMethod);
@@ -373,24 +366,24 @@ export class NangoAction {
             updatedBodyOrParams[limitParameterName] = paginationConfig['limit'];
         }
 
-        switch (paginationConfig.type) {
+        switch (paginationConfig.type.toLowerCase()) {
             case PaginationType.CURSOR:
                 return yield* paginateService.cursor<T>(
                     config,
                     paginationConfig as CursorPagination,
                     updatedBodyOrParams,
                     passPaginationParamsInBody,
-                    this.proxy
+                    this.proxy.bind(this)
                 );
             case PaginationType.LINK:
-                return yield* paginateService.link<T>(config, paginationConfig, updatedBodyOrParams, passPaginationParamsInBody, this.proxy);
+                return yield* paginateService.link<T>(config, paginationConfig, updatedBodyOrParams, passPaginationParamsInBody, this.proxy.bind(this));
             case PaginationType.OFFSET:
                 return yield* paginateService.offset<T>(
                     config,
                     paginationConfig as OffsetPagination,
                     updatedBodyOrParams,
                     passPaginationParamsInBody,
-                    this.proxy
+                    this.proxy.bind(this)
                 );
             default:
                 throw Error(`'${paginationConfig.type} ' pagination is not supported. Please, make sure it's one of ${Object.values(PaginationType)}`);

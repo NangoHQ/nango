@@ -1,9 +1,44 @@
 import parseLinksHeader from 'parse-link-header';
-import * as _ from 'lodash';
+import get from 'lodash-es/get.js';
 import type { Pagination, AxiosResponse, ProxyConfiguration, CursorPagination, OffsetPagination, LinkPagination } from '../sdk/sync.js';
+import { PaginationType } from '../sdk/sync.js';
 import { isValidHttpUrl } from '../utils/utils.js';
 
 class PaginationService {
+    public validateConfiguration(paginationConfig: Pagination): void {
+        if (!paginationConfig.type) {
+            throw new Error('Pagination type is required');
+        }
+        const { type } = paginationConfig;
+        if (type.toLowerCase() === PaginationType.CURSOR) {
+            const cursorPagination: CursorPagination = paginationConfig as CursorPagination;
+            if (!cursorPagination.cursor_name_in_request) {
+                throw new Error('Param cursor_name_in_request is required for cursor pagination');
+            }
+            if (!cursorPagination.cursor_path_in_response) {
+                throw new Error('Param cursor_path_in_response is required for cursor pagination');
+            }
+
+            if (paginationConfig.limit && !paginationConfig.limit_name_in_request) {
+                throw new Error('Param limit_name_in_request is required for cursor pagination when limit is set');
+            }
+        } else if (type.toLowerCase() === PaginationType.LINK) {
+            const linkPagination: LinkPagination = paginationConfig as LinkPagination;
+            if (!linkPagination.link_rel_in_response_header && !linkPagination.link_path_in_response_body) {
+                throw new Error('Either param link_rel_in_response_header or link_path_in_response_body is required for link pagination');
+            }
+        } else if (type.toLowerCase() === PaginationType.OFFSET) {
+            const offsetPagination: OffsetPagination = paginationConfig as OffsetPagination;
+            if (!offsetPagination.offset_name_in_request) {
+                throw new Error('Param offset_name_in_request is required for offset pagination');
+            }
+        } else {
+            throw new Error(
+                `Pagination type ${type} is not supported. Only ${PaginationType.CURSOR}, ${PaginationType.LINK}, and ${PaginationType.OFFSET} pagination types are supported.`
+            );
+        }
+    }
+
     public async *cursor<T>(
         config: ProxyConfiguration,
         paginationConfig: CursorPagination,
@@ -24,7 +59,7 @@ class PaginationService {
 
             const response: AxiosResponse = await proxy(config);
 
-            const responseData: T[] = cursorPagination.response_path ? _.get(response.data, cursorPagination.response_path) : response.data;
+            const responseData: T[] = cursorPagination.response_path ? get(response.data, cursorPagination.response_path) : response.data;
 
             if (!responseData.length) {
                 return;
@@ -32,7 +67,7 @@ class PaginationService {
 
             yield responseData;
 
-            nextCursor = _.get(response.data, cursorPagination.cursor_path_in_response);
+            nextCursor = get(response.data, cursorPagination.cursor_path_in_response);
 
             if (!nextCursor || nextCursor.trim().length === 0) {
                 return;
@@ -54,7 +89,7 @@ class PaginationService {
         while (true) {
             const response: AxiosResponse = await proxy(config);
 
-            const responseData: T[] = paginationConfig.response_path ? _.get(response.data, paginationConfig.response_path) : response.data;
+            const responseData: T[] = paginationConfig.response_path ? get(response.data, paginationConfig.response_path) : response.data;
             if (!responseData.length) {
                 return;
             }
@@ -96,7 +131,7 @@ class PaginationService {
 
             const response: AxiosResponse = await proxy(config);
 
-            const responseData: T[] = paginationConfig.response_path ? _.get(response.data, paginationConfig.response_path) : response.data;
+            const responseData: T[] = paginationConfig.response_path ? get(response.data, paginationConfig.response_path) : response.data;
             if (!responseData.length) {
                 return;
             }
@@ -125,7 +160,7 @@ class PaginationService {
             const linkHeader = parseLinksHeader(response.headers['link']);
             return linkHeader?.[linkPagination.link_rel_in_response_header]?.url;
         } else if (linkPagination.link_path_in_response_body) {
-            return _.get(response.data, linkPagination.link_path_in_response_body);
+            return get(response.data, linkPagination.link_path_in_response_body);
         }
 
         throw Error(`Either 'link_rel_in_response_header' or 'link_path_in_response_body' should be specified for '${paginationConfig.type}' pagination`);

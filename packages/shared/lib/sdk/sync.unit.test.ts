@@ -61,7 +61,7 @@ describe('Pagination', () => {
         };
         vi.spyOn(configService, 'getTemplate').mockImplementation(() => template);
 
-        const expectedErrorMessage = `Pagination is not supported for '${providerConfigKey}'. Please, add pagination config to 'providers.yaml' file`;
+        const expectedErrorMessage = 'There was no pagination configuration for this integration or configuration passed in';
         await expect(() => nangoAction.paginate({ endpoint: '' }).next()).rejects.toThrowError(expectedErrorMessage);
     });
 
