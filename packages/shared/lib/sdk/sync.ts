@@ -9,8 +9,7 @@ import { LogActionEnum } from '../models/Activity.js';
 
 import { Nango } from '@nangohq/node';
 import configService from '../services/config.service.js';
-import { isValidHttpUrl } from '../utils/utils.js';
-import parseLinksHeader from 'parse-link-header';
+import paginateService from '../services/paginate.service.js';
 import * as _ from 'lodash';
 
 type LogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
@@ -49,7 +48,7 @@ interface ParamsSerializerOptions extends SerializerOptions {
     serialize?: CustomParamsSerializer;
 }
 
-interface AxiosResponse<T = any, D = any> {
+export interface AxiosResponse<T = any, D = any> {
     data: T;
     status: number;
     statusText: string;
@@ -69,7 +68,7 @@ export enum PaginationType {
     OFFSET = 'offset'
 }
 
-interface Pagination {
+export interface Pagination {
     type: string;
     limit?: number;
     response_path?: string;
@@ -90,7 +89,7 @@ export interface OffsetPagination extends Pagination {
     offset_name_in_request: string;
 }
 
-interface ProxyConfiguration {
+export interface ProxyConfiguration {
     endpoint: string;
     providerConfigKey?: string;
     connectionId?: string;
@@ -349,7 +348,7 @@ export class NangoAction {
             throw Error(`Pagination is not supported for '${providerConfigKey}'. Please, add pagination config to 'providers.yaml' file`);
         }
 
-        let paginationConfig: Pagination = templatePaginationConfig;
+        let paginationConfig: Pagination = templatePaginationConfig as Pagination;
         delete paginationConfig.limit;
 
         if (config.paginate) {
@@ -374,118 +373,27 @@ export class NangoAction {
             updatedBodyOrParams[limitParameterName] = paginationConfig['limit'];
         }
 
-        // TODO: Consider creating 'Paginator' interface and moving the case block to specific implementations of 'Paginator'
         switch (paginationConfig.type) {
-            case PaginationType.CURSOR: {
-                const cursorPagination: CursorPagination = paginationConfig as CursorPagination;
-
-                let nextCursor: string | undefined;
-                while (true) {
-                    if (nextCursor) {
-                        updatedBodyOrParams[cursorPagination.cursor_name_in_request] = nextCursor;
-                    }
-
-                    this.updateConfigBodyOrParams(passPaginationParamsInBody, config, updatedBodyOrParams);
-
-                    const response: AxiosResponse = await this.proxy(config);
-
-                    const responseData: T[] = cursorPagination.response_path ? _.get(response.data, cursorPagination.response_path) : response.data;
-
-                    if (!responseData.length) {
-                        return;
-                    }
-
-                    yield responseData;
-
-                    nextCursor = _.get(response.data, cursorPagination.cursor_path_in_response);
-
-                    if (!nextCursor || nextCursor.trim().length === 0) {
-                        return;
-                    }
-                }
-            }
-            case PaginationType.LINK: {
-                const linkPagination: LinkPagination = paginationConfig as LinkPagination;
-
-                this.updateConfigBodyOrParams(passPaginationParamsInBody, config, updatedBodyOrParams);
-                while (true) {
-                    const response: AxiosResponse = await this.proxy(config);
-
-                    const responseData: T[] = paginationConfig.response_path ? _.get(response.data, paginationConfig.response_path) : response.data;
-                    if (!responseData.length) {
-                        return;
-                    }
-
-                    yield responseData;
-
-                    const nextPageLink: string | undefined = this.getNextPageLinkFromBodyOrHeaders(linkPagination, response, paginationConfig);
-
-                    if (!nextPageLink) {
-                        return;
-                    }
-
-                    if (!isValidHttpUrl(nextPageLink)) {
-                        // some providers only send path+query params in the link so we can immediately assign those to the endpoint
-                        config.endpoint = nextPageLink;
-                    } else {
-                        const url: URL = new URL(nextPageLink);
-                        config.endpoint = url.pathname + url.search;
-                    }
-                    delete config.params;
-                }
-            }
-            case PaginationType.OFFSET: {
-                const offsetPagination: OffsetPagination = paginationConfig as OffsetPagination;
-                const offsetParameterName: string = offsetPagination.offset_name_in_request;
-                let offset = 0;
-
-                while (true) {
-                    updatedBodyOrParams[offsetParameterName] = `${offset}`;
-
-                    this.updateConfigBodyOrParams(passPaginationParamsInBody, config, updatedBodyOrParams);
-
-                    const response: AxiosResponse = await this.proxy(config);
-
-                    const responseData: T[] = paginationConfig.response_path ? _.get(response.data, paginationConfig.response_path) : response.data;
-                    if (!responseData.length) {
-                        return;
-                    }
-
-                    yield responseData;
-
-                    if (paginationConfig['limit'] && responseData.length < paginationConfig['limit']) {
-                        return;
-                    }
-
-                    if (responseData.length < 1) {
-                        // Last page was empty so no need to fetch further
-                        return;
-                    }
-
-                    offset += responseData.length;
-                }
-            }
+            case PaginationType.CURSOR:
+                return yield* paginateService.cursor<T>(
+                    config,
+                    paginationConfig as CursorPagination,
+                    updatedBodyOrParams,
+                    passPaginationParamsInBody,
+                    this.proxy
+                );
+            case PaginationType.LINK:
+                return yield* paginateService.link<T>(config, paginationConfig, updatedBodyOrParams, passPaginationParamsInBody, this.proxy);
+            case PaginationType.OFFSET:
+                return yield* paginateService.offset<T>(
+                    config,
+                    paginationConfig as OffsetPagination,
+                    updatedBodyOrParams,
+                    passPaginationParamsInBody,
+                    this.proxy
+                );
             default:
                 throw Error(`'${paginationConfig.type} ' pagination is not supported. Please, make sure it's one of ${Object.values(PaginationType)}`);
-        }
-    }
-
-    private getNextPageLinkFromBodyOrHeaders(linkPagination: LinkPagination, response: AxiosResponse<any, any>, paginationConfig: Pagination) {
-        if (linkPagination.link_rel_in_response_header) {
-            const linkHeader = parseLinksHeader(response.headers['link']);
-            return linkHeader?.[linkPagination.link_rel_in_response_header]?.url;
-        } else if (linkPagination.link_path_in_response_body) {
-            return _.get(response.data, linkPagination.link_path_in_response_body);
-        }
-
-        throw Error(`Either 'link_rel_in_response_header' or 'link_path_in_response_body' should be specified for '${paginationConfig.type}' pagination`);
-    }
-
-    private updateConfigBodyOrParams(passPaginationParamsInBody: boolean, config: ProxyConfiguration, updatedBodyOrParams: Record<string, string>) {
-        if (passPaginationParamsInBody) {
-            config.data = updatedBodyOrParams;
-        } else {
-            config.params = updatedBodyOrParams;
         }
     }
 }
