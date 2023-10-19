@@ -160,28 +160,33 @@ export default function Activity() {
 
 
     useEffect(() => {
-        if (isInitialMount.current && activityLogId && typeof activityLogId === 'string' && Object.keys(activityRefs).length > 0) {
-            const id = parseInt(activityLogId);
-            setExpandedRow(id);
+        const scrollToLog = async () => {
+            if (isInitialMount.current && activityLogId && typeof activityLogId === 'string' && Object.keys(activityRefs).length > 0) {
+                const id = parseInt(activityLogId);
+                setExpandedRow(id);
 
-            // remove query param env from the url without updating the push state
-            navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, env: null }), { replace: true });
+                // remove query param env from the url without updating the push state
+                navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, env: null }), { replace: true });
 
-            if (activityRefs[id] && activityRefs[id]?.current && activityRefs[id]?.current !== null) {
-                setTimeout(() => {
-                    activityRefs[id]?.current?.scrollIntoView({
-                        behavior: "smooth",
-                        block: "nearest",
-                    });
-                }, 100);
+                // wait 1 second before scrolling
+                await new Promise(resolve => setTimeout(resolve, 500));
 
-                isInitialMount.current = false;
+                if (activityRefs[id] && activityRefs[id]?.current && activityRefs[id]?.current !== null) {
+                    setTimeout(() => {
+                        activityRefs[id]?.current?.scrollIntoView({
+                            behavior: "smooth",
+                            block: "nearest",
+                        });
+                    }, 100);
 
+                    isInitialMount.current = false;
+                }
             }
         }
+
+        scrollToLog();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activityLogId, activityRefs]);
-
 
     const incrementPage = () => {
         if (activities.length < limit) {
@@ -452,7 +457,7 @@ export default function Activity() {
                                                 )}
                                                 {activity.messages && activity.messages.length > 0 && activity.messages[0] && <CopyButton icontype="link" dark text={`${window.location.host}/activity?env=${env}&activity_log_id=${activity.id}${offset === 0 ? '': `&offset=${offset}`}`} />}
                                             </div>
-                                            {activity.id === expandedRow && activity.messages[0] && (
+                                            {activity.id === expandedRow && activity.messages && activity.messages[0] && (
                                                 <>
                                                 <div className="flex flex-col space-y-4 mt-6 font-mono">
                                                     {activity.messages.map((message, index: number) => (
