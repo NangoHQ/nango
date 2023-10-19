@@ -122,6 +122,7 @@ export async function deploy(
             if (debug) {
                 await createActivityLogMessage({
                     level: 'debug',
+                    environment_id,
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: `A previous sync config was found for ${syncName} with version ${previousSyncAndActionConfig.version}`
@@ -170,6 +171,7 @@ export async function deploy(
 
             await createActivityLogMessageAndEnd({
                 level: 'error',
+                environment_id,
                 activity_log_id: activityLogId as number,
                 timestamp: Date.now(),
                 content: `There was an error uploading the sync file ${syncName}-v${version}.js`
@@ -188,6 +190,7 @@ export async function deploy(
             if (debug) {
                 await createActivityLogMessage({
                     level: 'debug',
+                    environment_id,
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: `Marking ${ids.length} old sync configs as inactive for ${syncName} with version ${version} as the active sync config`
@@ -222,6 +225,7 @@ export async function deploy(
     if (insertData.length === 0) {
         if (debug) {
             await createActivityLogMessage({
+                environment_id,
                 level: 'debug',
                 activity_log_id: activityLogId as number,
                 timestamp: Date.now(),
@@ -244,6 +248,7 @@ export async function deploy(
 
         await createActivityLogMessageAndEnd({
             level: 'info',
+            environment_id,
             activity_log_id: activityLogId as number,
             timestamp: Date.now(),
             content: `Successfully deployed the ${nameOfType}${syncsWithVersions.length > 1 ? 's' : ''} ${JSON.stringify(syncsWithVersions, null, 2)}`
@@ -273,7 +278,8 @@ export async function deploy(
         await createActivityLogDatabaseErrorMessageAndEnd(
             `Failed to deploy the syncs (${JSON.stringify(syncsWithVersions, null, 2)}).`,
             e,
-            activityLogId as number
+            activityLogId as number,
+            environment_id
         );
 
         const shortContent = `Failure to deploy the syncs (${syncsWithVersions.map((sync) => sync.syncName).join(', ')}).`;
@@ -421,6 +427,7 @@ export async function deployPreBuilt(
         if (!file_location) {
             await createActivityLogMessageAndEnd({
                 level: 'error',
+                environment_id,
                 activity_log_id: activityLogId as number,
                 timestamp: Date.now(),
                 content: `There was an error uploading the ${is_public ? 'public template' : ''} file ${sync_name}-v${version}.js`
@@ -514,6 +521,7 @@ export async function deployPreBuilt(
 
         await createActivityLogMessageAndEnd({
             level: 'info',
+            environment_id,
             activity_log_id: activityLogId as number,
             timestamp: Date.now(),
             content
@@ -539,7 +547,7 @@ export async function deployPreBuilt(
         await updateSuccessActivityLog(activityLogId as number, false);
 
         const content = `Failed to deploy the ${nameOfType}${configs.length === 1 ? '' : 's'} (${configs.map((config) => config.name).join(', ')}).`;
-        await createActivityLogDatabaseErrorMessageAndEnd(content, e, activityLogId as number);
+        await createActivityLogDatabaseErrorMessageAndEnd(content, e, activityLogId as number, environment_id);
 
         await metricsManager.capture(
             'sync_deploy_failure',

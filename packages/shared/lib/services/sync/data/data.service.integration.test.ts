@@ -56,7 +56,8 @@ describe('Data service integration tests', () => {
             'external_id',
             1,
             modelName,
-            job.id as number
+            1,
+            1
         );
         expect(success).toBe(true);
         expect(error).toBe(undefined);

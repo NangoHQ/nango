@@ -34,6 +34,7 @@ class IntegrationService implements IntegrationServiceInterface {
                 if (activityLogId && writeToDb) {
                     await createActivityLogMessage({
                         level: 'error',
+                        environment_id: environmentId,
                         activity_log_id: activityLogId,
                         content,
                         timestamp: Date.now()
@@ -46,6 +47,7 @@ class IntegrationService implements IntegrationServiceInterface {
             if (!script && activityLogId && writeToDb) {
                 await createActivityLogMessage({
                     level: 'error',
+                    environment_id: environmentId,
                     activity_log_id: activityLogId,
                     content: `Unable to find integration file for ${syncName}`,
                     timestamp: Date.now()
@@ -76,6 +78,7 @@ class IntegrationService implements IntegrationServiceInterface {
                     if (activityLogId && writeToDb) {
                         await createActivityLogMessage({
                             level: 'error',
+                            environment_id: environmentId,
                             activity_log_id: activityLogId,
                             content,
                             timestamp: Date.now()
@@ -101,6 +104,7 @@ class IntegrationService implements IntegrationServiceInterface {
                 if (activityLogId && writeToDb) {
                     await createActivityLogMessage({
                         level: 'error',
+                        environment_id: environmentId,
                         activity_log_id: activityLogId,
                         content,
                         timestamp: Date.now()
@@ -118,6 +122,7 @@ class IntegrationService implements IntegrationServiceInterface {
             if (activityLogId && writeToDb) {
                 await createActivityLogMessage({
                     level: 'error',
+                    environment_id: environmentId,
                     activity_log_id: activityLogId,
                     content,
                     timestamp: Date.now()

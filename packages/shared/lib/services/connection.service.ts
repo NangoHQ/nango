@@ -462,6 +462,7 @@ class ConnectionService {
             if (activityLogId) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
+                    environment_id: environmentId,
                     activity_log_id: activityLogId,
                     content: `Connection not found using connectionId: ${connectionId} and providerConfigKey: ${providerConfigKey} and the environment: ${environmentId}`,
                     timestamp: Date.now()
@@ -483,6 +484,7 @@ class ConnectionService {
             if (activityLogId) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
+                    environment_id: environmentId,
                     activity_log_id: activityLogId,
                     content: `Configuration not found using the providerConfigKey: ${providerConfigKey}, the account id: ${accountId} and the environment: ${environmentId}`,
                     timestamp: Date.now()
@@ -505,6 +507,7 @@ class ConnectionService {
                 config as ProviderConfig,
                 template as ProviderTemplateOAuth2,
                 activityLogId,
+                environmentId,
                 instantRefresh,
                 action
             );
@@ -581,6 +584,7 @@ class ConnectionService {
         providerConfig: ProviderConfig,
         template: ProviderTemplateOAuth2,
         activityLogId: number | null = null,
+        environment_id: number,
         instantRefresh = false,
         logAction: LogAction = 'token'
     ): Promise<ServiceResponse<OAuth2Credentials | AppCredentials>> {
@@ -607,7 +611,7 @@ class ConnectionService {
                 this.removeFromRunningRefreshes(connectionId, providerConfigKey);
 
                 if (activityLogId && logAction === 'token') {
-                    await this.logActivity(activityLogId, `Token was refreshed for ${providerConfigKey} and connection ${connectionId}`);
+                    await this.logActivity(activityLogId, environment_id, `Token was refreshed for ${providerConfigKey} and connection ${connectionId}`);
                 }
 
                 return { success: true, error: null, response: newCredentials };
@@ -615,7 +619,7 @@ class ConnectionService {
                 this.removeFromRunningRefreshes(connectionId, providerConfigKey);
 
                 if (activityLogId && logAction === 'token') {
-                    await this.logErrorActivity(activityLogId, `Refresh oauth2 token call failed`);
+                    await this.logErrorActivity(activityLogId, environment_id, `Refresh oauth2 token call failed`);
                 }
 
                 const error = new NangoError('refresh_token_external_error', e as Error);
@@ -740,20 +744,22 @@ class ConnectionService {
         );
     }
 
-    private async logActivity(activityLogId: number, message: string): Promise<void> {
+    private async logActivity(activityLogId: number, environment_id: number, message: string): Promise<void> {
         await updateActivityLogAction(activityLogId, 'token');
         await createActivityLogMessage({
             level: 'info',
+            environment_id,
             activity_log_id: activityLogId,
             content: message,
             timestamp: Date.now()
         });
     }
 
-    private async logErrorActivity(activityLogId: number, message: string): Promise<void> {
+    private async logErrorActivity(activityLogId: number, environment_id: number, message: string): Promise<void> {
         await updateActivityLogAction(activityLogId, 'token');
         await createActivityLogMessage({
             level: 'error',
+            environment_id,
             activity_log_id: activityLogId,
             content: message,
             timestamp: Date.now()

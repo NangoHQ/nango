@@ -97,6 +97,7 @@ export default class SyncRun {
             if (this.writeToDb) {
                 await createActivityLogMessage({
                     level: 'debug',
+                    environment_id: this.nangoConnection.environment_id,
                     activity_log_id: this.activityLogId as number,
                     timestamp: Date.now(),
                     content
@@ -158,6 +159,7 @@ export default class SyncRun {
                     if (this.writeToDb) {
                         await createActivityLogMessage({
                             level: 'debug',
+                            environment_id: this.nangoConnection.environment_id,
                             activity_log_id: this.activityLogId as number,
                             timestamp: Date.now(),
                             content
@@ -218,6 +220,7 @@ export default class SyncRun {
                 if (this.writeToDb) {
                     await createActivityLogMessage({
                         level: 'debug',
+                        environment_id: this.nangoConnection.environment_id,
                         activity_log_id: this.activityLogId as number,
                         timestamp: Date.now(),
                         content
@@ -265,6 +268,7 @@ export default class SyncRun {
 
                     await createActivityLogMessageAndEnd({
                         level: 'info',
+                        environment_id: this.nangoConnection.environment_id,
                         activity_log_id: this.activityLogId as number,
                         timestamp: Date.now(),
                         content
@@ -341,7 +345,8 @@ export default class SyncRun {
                                     'external_id',
                                     this.nangoConnection.id as number,
                                     model,
-                                    this.activityLogId
+                                    this.activityLogId,
+                                    this.nangoConnection.environment_id
                                 );
 
                                 if (upsertResult.success) {
@@ -486,11 +491,21 @@ export default class SyncRun {
             deleted
         };
 
-        await webhookService.sendUpdate(this.nangoConnection, this.syncName, model, results, this.syncType, syncStartDate, this.activityLogId);
+        await webhookService.sendUpdate(
+            this.nangoConnection,
+            this.syncName,
+            model,
+            results,
+            this.syncType,
+            syncStartDate,
+            this.activityLogId,
+            this.nangoConnection.environment_id
+        );
 
         if (index === numberOfModels - 1) {
             await createActivityLogMessageAndEnd({
                 level: 'info',
+                environment_id: this.nangoConnection.environment_id,
                 activity_log_id: this.activityLogId,
                 timestamp: Date.now(),
                 content
@@ -498,6 +513,7 @@ export default class SyncRun {
         } else {
             await createActivityLogMessage({
                 level: 'info',
+                environment_id: this.nangoConnection.environment_id,
                 activity_log_id: this.activityLogId,
                 timestamp: Date.now(),
                 content
@@ -530,6 +546,7 @@ export default class SyncRun {
 
         await createActivityLogMessageAndEnd({
             level: 'error',
+            environment_id: this.nangoConnection.environment_id,
             activity_log_id: this.activityLogId,
             timestamp: Date.now(),
             content

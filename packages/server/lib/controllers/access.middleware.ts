@@ -90,7 +90,7 @@ export class AccessMiddleware {
 
     async noAuth(req: Request, _: Response, next: NextFunction) {
         if (!req.isAuthenticated()) {
-            const user = await userService.getUserById(0);
+            const user = await userService.getUserById(process.env['LOCAL_NANGO_USER_ID'] ? parseInt(process.env['LOCAL_NANGO_USER_ID']) : 0);
 
             req.login(user!, function (err) {
                 if (err) {

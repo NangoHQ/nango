@@ -61,6 +61,7 @@ class UnAuthController {
                 if (!hmac) {
                     await createActivityLogMessageAndEnd({
                         level: 'error',
+                        environment_id: environmentId,
                         activity_log_id: activityLogId as number,
                         timestamp: Date.now(),
                         content: 'Missing HMAC in query params'
@@ -74,6 +75,7 @@ class UnAuthController {
                 if (!verified) {
                     await createActivityLogMessageAndEnd({
                         level: 'error',
+                        environment_id: environmentId,
                         activity_log_id: activityLogId as number,
                         timestamp: Date.now(),
                         content: 'Invalid HMAC'
@@ -90,6 +92,7 @@ class UnAuthController {
             if (config == null) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
+                    environment_id: environmentId,
                     activity_log_id: activityLogId as number,
                     content: `Error during API Key auth: config not found`,
                     timestamp: Date.now()
@@ -105,6 +108,7 @@ class UnAuthController {
             if (template.auth_mode !== AuthModes.None) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
+                    environment_id: environmentId,
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: `Provider ${config?.provider} does not support unauth creation`
@@ -119,6 +123,7 @@ class UnAuthController {
 
             await createActivityLogMessage({
                 level: 'info',
+                environment_id: environmentId,
                 activity_log_id: activityLogId as number,
                 content: `Unauthenticated connection creation was successful`,
                 timestamp: Date.now()
@@ -145,6 +150,7 @@ class UnAuthController {
 
             await createActivityLogMessage({
                 level: 'error',
+                environment_id: environmentId,
                 activity_log_id: activityLogId as number,
                 content: `Error during Unauth create: ${prettyError}`,
                 timestamp: Date.now()

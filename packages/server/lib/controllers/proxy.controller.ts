@@ -85,6 +85,7 @@ class ProxyController {
             if (!connectionId) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
+                    environment_id,
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: `The connection id value is missing. If you're making a HTTP request then it should be included in the header 'Connection-Id'. If you're using the SDK the connectionId property should be specified.`
@@ -99,6 +100,7 @@ class ProxyController {
             if (!providerConfigKey) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
+                    environment_id,
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: `The provider config key value is missing. If you're making a HTTP request then it should be included in the header 'Provider-Config-Key'. If you're using the SDK the providerConfigKey property should be specified.`
@@ -113,6 +115,7 @@ class ProxyController {
             if (!isSync) {
                 await createActivityLogMessage({
                     level: 'debug',
+                    environment_id,
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: `Connection id: '${connectionId}' and provider config key: '${providerConfigKey}' parsed and received successfully`
@@ -142,6 +145,7 @@ class ProxyController {
             if (!isSync) {
                 await createActivityLogMessage({
                     level: 'debug',
+                    environment_id,
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: 'Connection credentials found successfully'
@@ -158,6 +162,7 @@ class ProxyController {
             if (!endpoint) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
+                    environment_id,
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: 'Proxy: a API URL endpoint is missing.'
@@ -201,6 +206,7 @@ class ProxyController {
             if (!isSync) {
                 await createActivityLogMessage({
                     level: 'debug',
+                    environment_id,
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: 'Proxy: token retrieved successfully'
@@ -213,6 +219,7 @@ class ProxyController {
             if (!providerConfig) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
+                    environment_id,
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: 'Provider configuration not found'
@@ -230,6 +237,7 @@ class ProxyController {
             if ((!template.proxy || !template.proxy.base_url) && !baseUrlOverride) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
+                    environment_id,
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: `${Date.now()} The proxy is not supported for this provider ${String(
@@ -246,6 +254,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
             if (!isSync) {
                 await createActivityLogMessage({
                     level: 'debug',
+                    environment_id,
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: `Proxy: API call configuration constructed successfully with the base api url set to ${baseUrlOverride || template.proxy.base_url}`
@@ -274,13 +283,14 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
             if (!isSync) {
                 await createActivityLogMessage({
                     level: 'debug',
+                    environment_id,
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: `Endpoint set to ${configBody.endpoint} with retries set to ${configBody.retries}`
                 });
             }
 
-            await this.sendToHttpMethod(res, next, method as HTTP_VERB, configBody, activityLogId as number, connection, isSync, isDryRun);
+            await this.sendToHttpMethod(res, next, method as HTTP_VERB, configBody, activityLogId as number, environment_id, connection, isSync, isDryRun);
         } catch (error) {
             const environmentId = getEnvironmentId(res);
             const connectionId = req.get('Connection-Id') as string;
@@ -299,7 +309,13 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         }
     }
 
-    private retryHandler = async (activityLogId: number, error: AxiosError, type: 'at' | 'after', retryHeader: string): Promise<boolean> => {
+    private retryHandler = async (
+        activityLogId: number,
+        environment_id: number,
+        error: AxiosError,
+        type: 'at' | 'after',
+        retryHeader: string
+    ): Promise<boolean> => {
         if (type === 'at') {
             const resetTimeEpoch = error?.response?.headers[retryHeader] || error?.response?.headers[retryHeader.toLowerCase()];
 
@@ -314,6 +330,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
 
                     await createActivityLogMessage({
                         level: 'error',
+                        environment_id,
                         activity_log_id: activityLogId,
                         timestamp: Date.now(),
                         content
@@ -335,6 +352,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
 
                 await createActivityLogMessage({
                     level: 'error',
+                    environment_id,
                     activity_log_id: activityLogId,
                     timestamp: Date.now(),
                     content
@@ -356,7 +374,13 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
      * @param {AxiosError} error
      * @param {attemptNumber} number
      */
-    private retry = async (activityLogId: number, config: ProxyBodyConfiguration, error: AxiosError, attemptNumber: number): Promise<boolean> => {
+    private retry = async (
+        activityLogId: number,
+        environment_id: number,
+        config: ProxyBodyConfiguration,
+        error: AxiosError,
+        attemptNumber: number
+    ): Promise<boolean> => {
         if (
             error?.response?.status.toString().startsWith('5') ||
             // Note that Github issues a 403 for both rate limits and improper scopes
@@ -370,7 +394,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
                 const type = config.template.proxy.retry.at ? 'at' : 'after';
                 const retryHeader = config.template.proxy.retry.at ? config.template.proxy.retry.at : config.template.proxy.retry.after;
 
-                return this.retryHandler(activityLogId, error, type, retryHeader as string);
+                return this.retryHandler(activityLogId, environment_id, error, type, retryHeader as string);
             }
 
             const content = `API received an ${
@@ -379,6 +403,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
 
             await createActivityLogMessage({
                 level: 'error',
+                environment_id,
                 activity_log_id: activityLogId,
                 timestamp: Date.now(),
                 content
@@ -405,6 +430,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         method: HTTP_VERB,
         configBody: ProxyBodyConfiguration,
         activityLogId: number,
+        environment_id: number,
         connection: Connection,
         isSync?: string,
         isDryRun?: string
@@ -417,15 +443,15 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         }
 
         if (method === 'POST') {
-            return this.post(res, next, url, configBody, activityLogId, decompress, isSync, isDryRun);
+            return this.post(res, next, url, configBody, activityLogId, environment_id, decompress, isSync, isDryRun);
         } else if (method === 'PATCH') {
-            return this.patch(res, next, url, configBody, activityLogId, decompress, isSync, isDryRun);
+            return this.patch(res, next, url, configBody, activityLogId, environment_id, decompress, isSync, isDryRun);
         } else if (method === 'PUT') {
-            return this.put(res, next, url, configBody, activityLogId, decompress, isSync, isDryRun);
+            return this.put(res, next, url, configBody, activityLogId, environment_id, decompress, isSync, isDryRun);
         } else if (method === 'DELETE') {
-            return this.delete(res, next, url, configBody, activityLogId, decompress, isSync, isDryRun);
+            return this.delete(res, next, url, configBody, activityLogId, environment_id, decompress, isSync, isDryRun);
         } else {
-            return this.get(res, next, url, configBody, activityLogId, decompress, isSync, isDryRun);
+            return this.get(res, next, url, configBody, activityLogId, environment_id, decompress, isSync, isDryRun);
         }
     }
 
@@ -434,6 +460,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         responseStream: AxiosResponse,
         config: ProxyBodyConfiguration,
         activityLogId: number,
+        environment_id: number,
         url: string,
         isSync?: string,
         isDryRun?: string
@@ -445,6 +472,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         if (!isDryRun) {
             await createActivityLogMessageAndEnd({
                 level: 'info',
+                environment_id,
                 activity_log_id: activityLogId,
                 timestamp: Date.now(),
                 content: `${config.method.toUpperCase()} request to ${url} was successful`,
@@ -461,7 +489,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
     }
 
-    private async handleErrorResponse(res: Response, e: unknown, url: string, config: ProxyBodyConfiguration, activityLogId: number) {
+    private async handleErrorResponse(res: Response, e: unknown, url: string, config: ProxyBodyConfiguration, activityLogId: number, environment_id: number) {
         const error = e as AxiosError;
 
         if (!error?.response?.data) {
@@ -478,6 +506,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
             if (activityLogId) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
+                    environment_id,
                     activity_log_id: activityLogId,
                     timestamp: Date.now(),
                     content: `${method.toUpperCase()} request to ${url} failed`,
@@ -512,7 +541,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         if (errorData) {
             errorData.pipe(stringify).pipe(res);
             stringify.on('data', (data) => {
-                this.reportError(error, url, config, activityLogId, data);
+                this.reportError(error, url, config, activityLogId, environment_id, data);
             });
         }
     }
@@ -530,6 +559,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         url: string,
         config: ProxyBodyConfiguration,
         activityLogId: number,
+        environment_id: number,
         decompress: boolean,
         isSync?: string,
         isDryRun?: string
@@ -547,12 +577,12 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
                         decompress
                     });
                 },
-                { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId, config) }
+                { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId, environment_id, config) }
             );
 
-            this.handleResponse(res, responseStream, config, activityLogId, url, isSync, isDryRun);
+            this.handleResponse(res, responseStream, config, activityLogId, environment_id, url, isSync, isDryRun);
         } catch (e: unknown) {
-            this.handleErrorResponse(res, e, url, config, activityLogId);
+            this.handleErrorResponse(res, e, url, config, activityLogId, environment_id);
         }
     }
 
@@ -569,6 +599,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         url: string,
         config: ProxyBodyConfiguration,
         activityLogId: number,
+        environment_id: number,
         decompress: boolean,
         isSync?: string,
         isDryRun?: string
@@ -586,12 +617,12 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
                         decompress
                     });
                 },
-                { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId, config) }
+                { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId, environment_id, config) }
             );
 
-            this.handleResponse(res, responseStream, config, activityLogId, url, isSync, isDryRun);
+            this.handleResponse(res, responseStream, config, activityLogId, environment_id, url, isSync, isDryRun);
         } catch (error) {
-            this.handleErrorResponse(res, error, url, config, activityLogId);
+            this.handleErrorResponse(res, error, url, config, activityLogId, environment_id);
         }
     }
 
@@ -608,6 +639,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         url: string,
         config: ProxyBodyConfiguration,
         activityLogId: number,
+        environment_id: number,
         decompress: boolean,
         isSync?: string,
         isDryRun?: string
@@ -625,12 +657,12 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
                         decompress
                     });
                 },
-                { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId, config) }
+                { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId, environment_id, config) }
             );
 
-            this.handleResponse(res, responseStream, config, activityLogId, url, isSync, isDryRun);
+            this.handleResponse(res, responseStream, config, activityLogId, environment_id, url, isSync, isDryRun);
         } catch (error) {
-            this.handleErrorResponse(res, error, url, config, activityLogId);
+            this.handleErrorResponse(res, error, url, config, activityLogId, environment_id);
         }
     }
 
@@ -647,6 +679,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         url: string,
         config: ProxyBodyConfiguration,
         activityLogId: number,
+        environment_id: number,
         decompress: boolean,
         isSync?: string,
         isDryRun?: string
@@ -664,12 +697,12 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
                         decompress
                     });
                 },
-                { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId, config) }
+                { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId, environment_id, config) }
             );
 
-            this.handleResponse(res, responseStream, config, activityLogId, url, isSync, isDryRun);
+            this.handleResponse(res, responseStream, config, activityLogId, environment_id, url, isSync, isDryRun);
         } catch (error) {
-            this.handleErrorResponse(res, error, url, config, activityLogId);
+            this.handleErrorResponse(res, error, url, config, activityLogId, environment_id);
         }
     }
 
@@ -686,6 +719,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         url: string,
         config: ProxyBodyConfiguration,
         activityLogId: number,
+        environment_id: number,
         decompress: boolean,
         isSync?: string,
         isDryRun?: string
@@ -702,18 +736,26 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
                         decompress
                     });
                 },
-                { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId, config) }
+                { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId, environment_id, config) }
             );
-            this.handleResponse(res, responseStream, config, activityLogId, url, isSync, isDryRun);
+            this.handleResponse(res, responseStream, config, activityLogId, environment_id, url, isSync, isDryRun);
         } catch (e) {
-            this.handleErrorResponse(res, e, url, config, activityLogId);
+            this.handleErrorResponse(res, e, url, config, activityLogId, environment_id);
         }
     }
 
-    private async reportError(error: AxiosError, url: string, config: ProxyBodyConfiguration, activityLogId: number, errorMessage: string) {
+    private async reportError(
+        error: AxiosError,
+        url: string,
+        config: ProxyBodyConfiguration,
+        activityLogId: number,
+        environment_id: number,
+        errorMessage: string
+    ) {
         if (activityLogId) {
             await createActivityLogMessageAndEnd({
                 level: 'error',
+                environment_id,
                 activity_log_id: activityLogId,
                 timestamp: Date.now(),
                 content: JSON.stringify({

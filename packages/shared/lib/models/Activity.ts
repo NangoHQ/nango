@@ -63,6 +63,7 @@ export interface ActivityLog {
 
 export interface ActivityLogMessage extends Timestamps {
     id?: number;
+    environment_id: number;
     level: LogLevel;
     activity_log_id?: number;
     content: string;

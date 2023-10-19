@@ -27,7 +27,14 @@ class ActivityController {
         try {
             const logIds = req.query['logIds'] ? (req.query['logIds'] as string).split(',').map((logId) => parseInt(logId)) : [];
 
-            const logs = await getLogMessagesForLogs(logIds);
+            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
+            if (!sessionSuccess || response === null) {
+                errorManager.errResFromNangoErr(res, sessionError);
+                return;
+            }
+            const { environment } = response;
+
+            const logs = await getLogMessagesForLogs(logIds, environment.id);
             res.send(logs);
         } catch (error) {
             next(error);
