@@ -15,10 +15,11 @@ export async function upsert(
     nangoConnectionId: number,
     model: string,
     activityLogId: number,
+    environment_id: number,
     track_deletes = false,
     softDelete = false
 ): Promise<UpsertResponse> {
-    const responseWithoutDuplicates = await removeDuplicateKey(response, uniqueKey, activityLogId, model);
+    const responseWithoutDuplicates = await removeDuplicateKey(response, uniqueKey, activityLogId, environment_id, model);
 
     if (!responseWithoutDuplicates || responseWithoutDuplicates.length === 0) {
         return {
@@ -93,12 +94,19 @@ export async function upsert(
     }
 }
 
-export async function removeDuplicateKey(response: DataRecord[], uniqueKey: string, activityLogId: number, model: string): Promise<DataRecord[]> {
+export async function removeDuplicateKey(
+    response: DataRecord[],
+    uniqueKey: string,
+    activityLogId: number,
+    environment_id: number,
+    model: string
+): Promise<DataRecord[]> {
     const { nonUniqueKeys } = verifyUniqueKeysAreUnique(response, uniqueKey);
 
     for (const nonUniqueKey of nonUniqueKeys) {
         await createActivityLogMessage({
             level: 'error',
+            environment_id,
             activity_log_id: activityLogId,
             content: `There was a duplicate key found: ${nonUniqueKey}. This record will be ignore in relation to the model ${model}.`,
             timestamp: Date.now()

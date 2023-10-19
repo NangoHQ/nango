@@ -51,6 +51,7 @@ export class Orchestrator {
             if (debug && activityLogId) {
                 await createActivityLogMessage({
                     level: 'debug',
+                    environment_id: environmentId,
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: `Beginning iteration of starting syncs for ${syncName} with ${connections.length} connections`
@@ -77,6 +78,7 @@ export class Orchestrator {
             if (debug && activityLogId) {
                 await createActivityLogMessage({
                     level: 'debug',
+                    environment_id: environmentId,
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: `Finished iteration of starting syncs for ${syncName} with ${connections.length} connections`
@@ -88,6 +90,7 @@ export class Orchestrator {
             const prettyError = JSON.stringify(e, ['message', 'name'], 2);
             await createActivityLogMessage({
                 level: 'error',
+                environment_id: environmentId,
                 activity_log_id: activityLogId as number,
                 timestamp: Date.now(),
                 content: `Error starting syncs for ${syncName} with ${connections.length} connections: ${prettyError}`
@@ -193,7 +196,7 @@ export class Orchestrator {
 
                 const syncClient = await SyncClient.getInstance();
                 await syncClient?.runSyncCommand(schedule?.schedule_id as string, sync?.id as string, command, activityLogId as number, environmentId);
-                await updateScheduleStatus(schedule?.schedule_id as string, command, activityLogId as number);
+                await updateScheduleStatus(schedule?.schedule_id as string, command, activityLogId as number, environmentId);
             }
         } else {
             const syncs =
@@ -209,7 +212,7 @@ export class Orchestrator {
                 const schedule = await getSchedule(sync?.id as string);
                 const syncClient = await SyncClient.getInstance();
                 await syncClient?.runSyncCommand(schedule?.schedule_id as string, sync?.id as string, command, activityLogId as number, environmentId);
-                await updateScheduleStatus(schedule?.schedule_id as string, command, activityLogId as number);
+                await updateScheduleStatus(schedule?.schedule_id as string, command, activityLogId as number, environmentId);
             }
         }
     }

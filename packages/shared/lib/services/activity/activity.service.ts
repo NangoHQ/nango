@@ -23,6 +23,7 @@ interface ActivityLogMessagesGrouped {
  *
  * _nango_activity_log_messages:
  *     index:
+ *          - environment_id
  *          - activity_log_id: activity_log_id_index
  *          - created_at: created_at_index
  */
@@ -214,7 +215,7 @@ export async function getTopLevelLogByEnvironment(environment_id: number, limit 
  * @returns A promise that resolves to an object containing arrays of ActivityLogMessage objects,
  * each keyed by its associated log ID.
  */
-export async function getLogMessagesForLogs(logIds: number[]): Promise<ActivityLogMessagesGrouped> {
+export async function getLogMessagesForLogs(logIds: number[], environment_id: number): Promise<ActivityLogMessagesGrouped> {
     if (!logIds.length) {
         return [];
     }
@@ -224,10 +225,11 @@ export async function getLogMessagesForLogs(logIds: number[]): Promise<ActivityL
             SELECT activity_log_id, array_agg(row_to_json(_nango_activity_log_messages.*)) as messages
             FROM _nango_activity_log_messages
             WHERE activity_log_id = ANY(?)
+            AND environment_id = ${environment_id}
             GROUP BY activity_log_id
         `;
 
-        const result = await db.knex.raw(query, [logIds]);
+        const result = await db.knex.raw(query, [logIds], environment_id);
 
         const groupedMessages: ActivityLogMessagesGrouped = result.rows.reduce(
             (groups: ActivityLogMessagesGrouped, row: { activity_log_id: number; messages: ActivityLogMessage[] }) => {
@@ -246,7 +248,7 @@ export async function getLogMessagesForLogs(logIds: number[]): Promise<ActivityL
     }
 }
 
-export async function createActivityLogDatabaseErrorMessageAndEnd(baseMessage: string, error: any, activityLogId: number) {
+export async function createActivityLogDatabaseErrorMessageAndEnd(baseMessage: string, error: any, activityLogId: number, environment_id: number) {
     let errorMessage = baseMessage;
 
     if ('code' in error) errorMessage += ` Error code: ${error.code}.\n`;
@@ -256,6 +258,7 @@ export async function createActivityLogDatabaseErrorMessageAndEnd(baseMessage: s
 
     await createActivityLogMessageAndEnd({
         level: 'error',
+        environment_id,
         activity_log_id: activityLogId,
         timestamp: Date.now(),
         content: errorMessage

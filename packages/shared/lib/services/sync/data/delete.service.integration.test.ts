@@ -55,6 +55,7 @@ describe('Data delete service integration tests', () => {
             'external_id',
             nangoConnectionId as number,
             modelName,
+            1,
             1
         );
         expect(success).toBe(true);
@@ -94,6 +95,7 @@ describe('Data delete service integration tests', () => {
             'external_id',
             nangoConnectionId as number,
             modelName,
+            1,
             1
         );
         expect(success).toBe(true);
@@ -120,6 +122,7 @@ describe('Data delete service integration tests', () => {
             nangoConnectionId as number,
             modelName,
             1,
+            1,
             true // track_deletes
         );
         expect(success).toBe(true);
@@ -134,6 +137,7 @@ describe('Data delete service integration tests', () => {
             'external_id',
             nangoConnectionId as number,
             modelName,
+            1,
             1,
             true // track_deletes
         );
@@ -174,6 +178,7 @@ describe('Data delete service integration tests', () => {
             nangoConnectionId as number,
             modelName,
             1,
+            1,
             false // track_deletes
         );
         expect(success).toBe(true);
@@ -192,6 +197,7 @@ describe('Data delete service integration tests', () => {
             'external_id',
             nangoConnectionId as number,
             modelName,
+            1,
             1,
             false // track_deletes
         );
@@ -238,6 +244,7 @@ describe('Data delete service integration tests', () => {
             nangoConnectionId as number,
             modelName,
             1,
+            1,
             true // track_deletes
         );
         expect(success).toBe(true);
@@ -265,6 +272,7 @@ describe('Data delete service integration tests', () => {
             'external_id',
             nangoConnectionId as number,
             modelName,
+            1,
             1,
             true // track_deletes
         );

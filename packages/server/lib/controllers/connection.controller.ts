@@ -72,6 +72,7 @@ class ConnectionController {
             if (connection == null) {
                 await createActivityLogAndLogMessage(log, {
                     level: 'error',
+                    environment_id: environment.id,
                     timestamp: Date.now(),
                     content: 'Unknown connection'
                 });
@@ -87,6 +88,7 @@ class ConnectionController {
             if (config == null) {
                 await createActivityLogAndLogMessage(log, {
                     level: 'error',
+                    environment_id: environment.id,
                     timestamp: Date.now(),
                     content: 'Unknown provider config'
                 });
@@ -107,6 +109,7 @@ class ConnectionController {
                     config,
                     template as ProviderTemplateOAuth2,
                     null,
+                    environment.id,
                     instantRefresh,
                     LogActionEnum.TOKEN
                 );
@@ -125,6 +128,7 @@ class ConnectionController {
 
                 await createActivityLogAndLogMessage(log, {
                     level: 'info',
+                    environment_id: environment.id,
                     auth_mode: template?.auth_mode,
                     content: `Token manual refresh fetch was successful for ${providerConfigKey} and connection ${connectionId} from the web UI`,
                     timestamp: Date.now()
@@ -280,6 +284,7 @@ class ConnectionController {
             if (!isSync && !isDryRun) {
                 await createActivityLogMessageAndEnd({
                     level: 'info',
+                    environment_id: environmentId,
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: 'Connection credentials found successfully',

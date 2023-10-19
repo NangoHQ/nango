@@ -148,6 +148,7 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
         const content = `The continuous sync failed to run because of a failure to obtain the provider config for ${syncName} with the following error: ${prettyError}`;
         await createActivityLogAndLogMessage(log, {
             level: 'error',
+            environment_id: environmentId,
             timestamp: Date.now(),
             content
         });
@@ -217,6 +218,7 @@ export async function syncProvider(
         if (debug) {
             await createActivityLogMessage({
                 level: 'info',
+                environment_id: nangoConnection?.environment_id as number,
                 activity_log_id: activityLogId,
                 timestamp: Date.now(),
                 content: `Starting sync ${syncType} for ${syncName} with syncId ${syncId} and syncJobId ${syncJobId} with execution id of ${temporalContext.info.workflowExecution.workflowId} for attempt #${temporalContext.info.attempt}`
@@ -258,6 +260,7 @@ export async function syncProvider(
 
         await createActivityLogAndLogMessage(log, {
             level: 'error',
+            environment_id: nangoConnection?.environment_id as number,
             timestamp: Date.now(),
             content
         });

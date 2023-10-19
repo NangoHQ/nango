@@ -289,7 +289,8 @@ class SyncController {
                 connection as Connection,
                 action_name as string,
                 input,
-                activityLogId as number
+                activityLogId as number,
+                environmentId
             )) as ServiceResponse;
 
             if (!actionSuccess) {
@@ -463,6 +464,7 @@ class SyncController {
             if (!verifyOwnership(nango_connection_id, environment.id, sync_id)) {
                 await createActivityLogAndLogMessage(log, {
                     level: 'error',
+                    environment_id: environment.id,
                     timestamp: Date.now(),
                     content: `Unauthorized access to run the command: "${action}" for sync: ${sync_id}`
                 });
@@ -474,10 +476,11 @@ class SyncController {
 
             const syncClient = await SyncClient.getInstance();
             await syncClient?.runSyncCommand(schedule_id, sync_id, command, activityLogId as number, environment.id);
-            await updateScheduleStatus(schedule_id, command, activityLogId as number);
+            await updateScheduleStatus(schedule_id, command, activityLogId as number, environment.id);
 
             await createActivityLogMessageAndEnd({
                 level: 'info',
+                environment_id: environment.id,
                 activity_log_id: activityLogId as number,
                 timestamp: Date.now(),
                 content: `Sync was updated with command: "${action}" for sync: ${sync_id}`
