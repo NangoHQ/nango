@@ -9,7 +9,7 @@ import { createActivityLogMessage } from './activity/activity.service.js';
 const RETRY_ATTEMPTS = 10;
 
 class WebhookService {
-    private retry = async (activityLogId: number, error: AxiosError, attemptNumber: number): Promise<boolean> => {
+    private retry = async (activityLogId: number, environment_id: number, error: AxiosError, attemptNumber: number): Promise<boolean> => {
         if (error?.response && (error?.response?.status < 200 || error?.response?.status >= 300)) {
             const content = `Webhook response received an ${
                 error?.response?.status || error?.code
@@ -17,6 +17,7 @@ class WebhookService {
 
             await createActivityLogMessage({
                 level: 'error',
+                environment_id,
                 activity_log_id: activityLogId,
                 timestamp: Date.now(),
                 content
@@ -35,17 +36,21 @@ class WebhookService {
         responseResults: SyncResult,
         syncType: SyncType,
         now: Date | undefined,
-        activityLogId: number
+        activityLogId: number,
+        environment_id: number
     ) {
-        const webhookUrl = await environmentService.getWebhookUrl(nangoConnection.environment_id);
+        const webhookInfo = await environmentService.getWebhookInfo(nangoConnection.environment_id);
 
-        if (!webhookUrl) {
+        if (!webhookInfo || !webhookInfo.webhook_url) {
             return;
         }
 
-        if (responseResults.added === 0 && responseResults.updated === 0 && responseResults.deleted === 0) {
+        const { webhook_url: webhookUrl, always_send_webhook: alwaysSendWebhook } = webhookInfo;
+
+        if (!alwaysSendWebhook && responseResults.added === 0 && responseResults.updated === 0 && responseResults.deleted === 0) {
             await createActivityLogMessage({
                 level: 'info',
+                environment_id,
                 activity_log_id: activityLogId,
                 content: `There were no added, updated, or deleted results so a webhook with changes was not sent.`,
                 timestamp: Date.now()
@@ -81,12 +86,13 @@ class WebhookService {
                 () => {
                     return axios.post(webhookUrl, body);
                 },
-                { numOfAttempts: RETRY_ATTEMPTS, retry: this.retry.bind(this, activityLogId) }
+                { numOfAttempts: RETRY_ATTEMPTS, retry: this.retry.bind(this, activityLogId, environment_id) }
             );
 
             if (response.status >= 200 && response.status < 300) {
                 await createActivityLogMessage({
                     level: 'info',
+                    environment_id,
                     activity_log_id: activityLogId,
                     content: `Webhook sent successfully and received with a ${
                         response.status
@@ -96,6 +102,7 @@ class WebhookService {
             } else {
                 await createActivityLogMessage({
                     level: 'error',
+                    environment_id,
                     activity_log_id: activityLogId,
                     content: `Webhook sent successfully to ${webhookUrl} with the following data: ${JSON.stringify(body, null, 2)} but received a ${
                         response.status
@@ -108,6 +115,7 @@ class WebhookService {
 
             await createActivityLogMessage({
                 level: 'error',
+                environment_id,
                 activity_log_id: activityLogId,
                 content: `Webhook failed to send to ${webhookUrl}. The error was: ${errorMessage}`,
                 timestamp: Date.now()

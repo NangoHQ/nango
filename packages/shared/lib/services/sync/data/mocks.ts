@@ -41,6 +41,7 @@ export function generateInsertableJson(num: number) {
             jobTitle: Math.random().toString(36).substring(7),
             website: Math.random().toString(36).substring(7),
             externalCreatedAt: Math.random().toString(36).substring(7),
+            updatedAt: Math.random().toString(36).substring(7),
             externalUpdatedAt: Math.random().toString(36).substring(7)
         });
     }

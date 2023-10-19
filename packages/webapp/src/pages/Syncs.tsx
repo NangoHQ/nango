@@ -149,70 +149,75 @@ export default function Syncs() {
                                         <span className="w-36">Last Deployed</span>
                                     </div>
                                 </div>
-                                    {syncs.filter(sync => sync.type === currentTab).map((sync, index) => (
-                                        <div key={index} className="text-white px-5 text-sm">
-                                            <div className="flex pb-4 py-6 items-center border-b border-border-gray">
-                                                <div className="flex flex-col w-48">
-                                                    <span>
-                                                        {sync.sync_name}@v{sync.version}
-                                                    </span>
-                                                    <span className="text-xs text-gray-400">
-                                                            {!sync.pre_built && (
-                                                                <>Custom</>
-                                                            )}
-                                                            {sync.pre_built && sync.is_public && (
-                                                                <>Template</>
-                                                            )}
-                                                            {sync.pre_built && !sync.is_public && (
-                                                                <>Template (private)</>
-                                                            )}
-                                                    </span>
-                                                </div>
-                                                <span className={`w-44`}>
-                                                    <Link to={`/integration/${sync.unique_key}`}>
-                                                        {sync?.provider ? (
-                                                            <div className="flex ml-2 items-center">
-                                                                <img src={`images/template-logos/${sync.provider}.svg`} alt="" className="h-7 mt-0.5" />
-                                                                <p className="ml-2 w-44">{sync.unique_key}</p>
-                                                            </div>
-                                                        ) : (
-                                                            <div className="">{sync.unique_key}</div>
-                                                        )}
-                                                    </Link>
+                                {syncs.filter(sync => sync.type === currentTab).map((sync, index) => (
+                                    <div key={index} className={`text-white px-5 text-sm  ${syncs.filter(sync => sync.type === currentTab).length > 1 ? 'border-b border-border-gray' : ''}`}>
+                                        <div className="flex pb-4 py-6 items-center">
+                                            <div className="flex flex-col w-48">
+                                                <span>
+                                                    {sync.sync_name}@v{sync.version}
                                                 </span>
-                                                {currentTab === 'sync' && <span className="w-32">{sync.runs || '-'}</span>}
-                                                {currentTab === 'sync' && <span className="w-16">{sync.auto_start === true ? 'Y' : 'N'}</span>}
-                                                {sync.models ? (
-                                                    <Tooltip text={sync.models.join(', ')} type="dark">
-                                                        <span className={`block ${currentTab === 'sync' ? 'w-12 ml-4' : 'w-12'} mr-2`}>{sync.models.length}</span>
-                                                    </Tooltip>
-                                                ) : (
-                                                    <span className="w-24 ml-4 mr-2">-</span>
-                                                )}
-                                                {currentTab === 'sync' && (
-                                                    <Tooltip
-                                                        text={
-                                                            sync.connections === null
-                                                                ? ''
-                                                                : sync.connections.slice(0, 20).map((connection, index: number) => (
-                                                                      <span key={connection.connection_id}>
-                                                                          <Link to={`/connections/${sync.unique_key}/${connection.connection_id}#sync`}>
-                                                                              {connection.connection_id}
-                                                                          </Link>
-                                                                          {sync.connections && index < sync?.connections?.length - 1 ? ', ' : ''}
-                                                                      </span>
-                                                                  ))
-                                                        }
-                                                        type="dark"
-                                                    >
-                                                        <span className="w-12 ml-6 mr-16">{sync.connections === null ? 0 : sync.connections.length}</span>
-                                                    </Tooltip>
-                                                )}
-                                                <span className="text-gray-500 mr-4">{formatDateToUSFormat(sync.updated_at)}</span>
-                                                <Button type="button" variant="secondary" onClick={() => downloadFlow(sync)}>Download</Button>
+                                                <span className="text-xs text-gray-400">
+                                                        {!sync.pre_built && (
+                                                            <>Custom</>
+                                                        )}
+                                                        {sync.pre_built && sync.is_public && (
+                                                            <>Template</>
+                                                        )}
+                                                        {sync.pre_built && !sync.is_public && (
+                                                            <>Template (private)</>
+                                                        )}
+                                                </span>
                                             </div>
+                                            <span className={`w-44`}>
+                                                <Link to={`/integration/${sync.unique_key}`}>
+                                                    {sync?.provider ? (
+                                                        <div className="flex ml-2 items-center">
+                                                            <img src={`images/template-logos/${sync.provider}.svg`} alt="" className="h-7 mt-0.5" />
+                                                            <p className="ml-2 w-44">{sync.unique_key}</p>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="">{sync.unique_key}</div>
+                                                    )}
+                                                </Link>
+                                            </span>
+                                            {currentTab === 'sync' && <span className="w-32">{sync.runs || '-'}</span>}
+                                            {currentTab === 'sync' && <span className="w-16">{sync.auto_start === true ? 'Y' : 'N'}</span>}
+                                            {sync.models ? (
+                                                <Tooltip text={sync.models.join(', ')} type="dark">
+                                                    <span className={`block ${currentTab === 'sync' ? 'w-12 ml-4' : 'w-12'} mr-2`}>{sync.models.length}</span>
+                                                </Tooltip>
+                                            ) : (
+                                                <span className="w-24 ml-4 mr-2">-</span>
+                                            )}
+                                            {currentTab === 'sync' && (
+                                                <Tooltip
+                                                    text={
+                                                        sync.connections === null
+                                                            ? ''
+                                                            : sync.connections.slice(0, 20).map((connection, index: number) => (
+                                                                  <span key={connection.connection_id}>
+                                                                      <Link to={`/connections/${sync.unique_key}/${connection.connection_id}#sync`}>
+                                                                          {connection.connection_id}
+                                                                      </Link>
+                                                                      {sync.connections && index < sync?.connections?.length - 1 ? ', ' : ''}
+                                                                  </span>
+                                                              ))
+                                                    }
+                                                    type="dark"
+                                                >
+                                                    <span className="w-12 ml-6 mr-16">{sync.connections === null ? 0 : sync.connections.length}</span>
+                                                </Tooltip>
+                                            )}
+                                            <span className="text-gray-500 mr-4">{formatDateToUSFormat(sync.updated_at)}</span>
+                                            <Button type="button" variant="secondary" onClick={() => downloadFlow(sync)}>Download</Button>
                                         </div>
-                                    ))}
+                                        {sync.metadata && sync.metadata.description && (
+                                            <div className="text-xs text-gray-400 mb-3 max-w-2xl">
+                                                <span className="font-bold">Description:</span> {sync.metadata.description}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
                             </div>
                         )}
                     </>

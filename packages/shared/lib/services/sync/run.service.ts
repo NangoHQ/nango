@@ -1,6 +1,7 @@
 import { loadLocalNangoConfig, nangoConfigFile } from '../nango-config.service.js';
 import type { NangoConnection } from '../../models/Connection.js';
-import { SyncResult, SyncType, SyncStatus, Job as SyncJob } from '../../models/Sync.js';
+import { SyncResult, SyncType, SyncStatus, Job as SyncJob, IntegrationServiceInterface } from '../../models/Sync.js';
+import type { ServiceResponse } from '../../models/Generic.js';
 import { createActivityLogMessage, createActivityLogMessageAndEnd, updateSuccess as updateSuccessActivityLog } from '../activity/activity.service.js';
 import { addSyncConfigToJob, updateSyncJobResult, updateSyncJobStatus } from '../sync/job.service.js';
 import { getSyncConfig } from './config/config.service.js';
@@ -8,9 +9,8 @@ import localFileService from '../file/local.service.js';
 import { getLastSyncDate, setLastSyncDate, clearLastSyncDate } from './sync.service.js';
 import { formatDataRecords } from './data/records.service.js';
 import { upsert } from './data/data.service.js';
-import { getDeletedKeys, takeSnapshot } from './data/delete.service.js';
+import { getDeletedKeys, takeSnapshot, clearOldRecords, syncUpdateAtForDeletedRecords } from './data/delete.service.js';
 import environmentService from '../environment.service.js';
-import integationService from './integration.service.js';
 import webhookService from '../webhook.service.js';
 import { NangoSync } from '../../sdk/sync.js';
 import { isCloud, getApiUrl } from '../../utils/utils.js';
@@ -22,6 +22,7 @@ import { LogActionEnum } from '../../models/Activity.js';
 import type { Environment } from '../../models/Environment';
 
 interface SyncRunConfig {
+    integrationService: IntegrationServiceInterface;
     writeToDb: boolean;
     isAction?: boolean;
     nangoConnection: NangoConnection;
@@ -38,6 +39,7 @@ interface SyncRunConfig {
 }
 
 export default class SyncRun {
+    integrationService: IntegrationServiceInterface;
     writeToDb: boolean;
     isAction: boolean;
     nangoConnection: NangoConnection;
@@ -52,6 +54,7 @@ export default class SyncRun {
     input?: object;
 
     constructor(config: SyncRunConfig) {
+        this.integrationService = config.integrationService;
         this.writeToDb = config.writeToDb;
         this.isAction = config.isAction || false;
         this.nangoConnection = config.nangoConnection;
@@ -83,12 +86,18 @@ export default class SyncRun {
         }
     }
 
-    async run(optionalLastSyncDate?: Date | null, bypassEnvironment?: boolean, optionalSecretKey?: string, optionalHost?: string): Promise<boolean | object> {
+    async run(
+        optionalLastSyncDate?: Date | null,
+        bypassEnvironment?: boolean,
+        optionalSecretKey?: string,
+        optionalHost?: string
+    ): Promise<boolean | object | ServiceResponse> {
         if (this.debug) {
             const content = this.loadLocation ? `Looking for a local nango config at ${this.loadLocation}` : `Looking for a sync config for ${this.syncName}`;
             if (this.writeToDb) {
                 await createActivityLogMessage({
                     level: 'debug',
+                    environment_id: this.nangoConnection.environment_id,
                     activity_log_id: this.activityLogId as number,
                     timestamp: Date.now(),
                     content
@@ -150,6 +159,7 @@ export default class SyncRun {
                     if (this.writeToDb) {
                         await createActivityLogMessage({
                             level: 'debug',
+                            environment_id: this.nangoConnection.environment_id,
                             activity_log_id: this.activityLogId as number,
                             timestamp: Date.now(),
                             content
@@ -201,7 +211,8 @@ export default class SyncRun {
                 syncJobId: this.syncJobId,
                 lastSyncDate: lastSyncDate as Date,
                 dryRun: !this.writeToDb,
-                attributes: syncData.attributes
+                attributes: syncData.attributes,
+                track_deletes: trackDeletes as boolean
             });
 
             if (this.debug) {
@@ -209,6 +220,7 @@ export default class SyncRun {
                 if (this.writeToDb) {
                     await createActivityLogMessage({
                         level: 'debug',
+                        environment_id: this.nangoConnection.environment_id,
                         activity_log_id: this.activityLogId as number,
                         timestamp: Date.now(),
                         content
@@ -223,7 +235,7 @@ export default class SyncRun {
 
                 const syncStartDate = new Date();
 
-                const userDefinedResults = await integationService.runScript(
+                const userDefinedResults = await this.integrationService.runScript(
                     this.syncName,
                     this.activityLogId as number,
                     nango,
@@ -242,7 +254,7 @@ export default class SyncRun {
                         }.`
                     );
 
-                    return false;
+                    return this.isAction ? { success: false } : false;
                 }
 
                 if (!this.writeToDb) {
@@ -256,12 +268,13 @@ export default class SyncRun {
 
                     await createActivityLogMessageAndEnd({
                         level: 'info',
+                        environment_id: this.nangoConnection.environment_id,
                         activity_log_id: this.activityLogId as number,
                         timestamp: Date.now(),
                         content
                     });
 
-                    return userDefinedResults;
+                    return { success: true, response: userDefinedResults };
                 }
 
                 if (userDefinedResults === undefined) {
@@ -281,7 +294,15 @@ export default class SyncRun {
                             success,
                             error,
                             response: formattedResults
-                        } = formatDataRecords(userDefinedResults[model], this.nangoConnection.id as number, model, this.syncId, this.syncJobId as number);
+                        } = formatDataRecords(
+                            userDefinedResults[model],
+                            this.nangoConnection.id as number,
+                            model,
+                            this.syncId,
+                            this.syncJobId as number,
+                            lastSyncDate as Date,
+                            trackDeletes
+                        );
 
                         if (!success || formattedResults === null) {
                             await this.reportFailureForResults(error?.message as string);
@@ -324,7 +345,8 @@ export default class SyncRun {
                                     'external_id',
                                     this.nangoConnection.id as number,
                                     model,
-                                    this.activityLogId
+                                    this.activityLogId,
+                                    this.nangoConnection.environment_id
                                 );
 
                                 if (upsertResult.success) {
@@ -364,7 +386,14 @@ export default class SyncRun {
     async finishSync(models: string[], syncStartDate: Date, version: string, trackDeletes?: boolean): Promise<void> {
         let i = 0;
         for (const model of models) {
+            if (trackDeletes) {
+                await clearOldRecords(this.nangoConnection?.id as number, model);
+            }
             const deletedKeys = trackDeletes ? await getDeletedKeys('_nango_sync_data_records', 'external_id', this.nangoConnection.id as number, model) : [];
+
+            if (trackDeletes) {
+                await syncUpdateAtForDeletedRecords(this.nangoConnection.id as number, model, 'external_id', deletedKeys);
+            }
 
             await this.reportResults(
                 model,
@@ -462,11 +491,21 @@ export default class SyncRun {
             deleted
         };
 
-        await webhookService.sendUpdate(this.nangoConnection, this.syncName, model, results, this.syncType, syncStartDate, this.activityLogId);
+        await webhookService.sendUpdate(
+            this.nangoConnection,
+            this.syncName,
+            model,
+            results,
+            this.syncType,
+            syncStartDate,
+            this.activityLogId,
+            this.nangoConnection.environment_id
+        );
 
         if (index === numberOfModels - 1) {
             await createActivityLogMessageAndEnd({
                 level: 'info',
+                environment_id: this.nangoConnection.environment_id,
                 activity_log_id: this.activityLogId,
                 timestamp: Date.now(),
                 content
@@ -474,6 +513,7 @@ export default class SyncRun {
         } else {
             await createActivityLogMessage({
                 level: 'info',
+                environment_id: this.nangoConnection.environment_id,
                 activity_log_id: this.activityLogId,
                 timestamp: Date.now(),
                 content
@@ -506,6 +546,7 @@ export default class SyncRun {
 
         await createActivityLogMessageAndEnd({
             level: 'error',
+            environment_id: this.nangoConnection.environment_id,
             activity_log_id: this.activityLogId,
             timestamp: Date.now(),
             content

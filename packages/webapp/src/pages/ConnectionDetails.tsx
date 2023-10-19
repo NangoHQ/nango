@@ -385,7 +385,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                 </Prism>
                                             </div>
                                         </div>
-                                        {(connection.oauthType === AuthModes.OAuth1 || connection.oauthType === AuthModes.OAuth2) && (
+                                        {(connection.oauthType === AuthModes.OAuth1 || connection.oauthType === AuthModes.OAuth2 || connection.oauthType === AuthModes.App) && (
                                             <>
                                                 <div>
                                                     <div className="mx-8 mt-8">

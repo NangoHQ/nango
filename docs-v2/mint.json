@@ -58,24 +58,30 @@
             "url": "https://nango.dev/slack"
         }
     ],
+    "redirects": [
+        {
+            "source": "guides/actions",
+            "destination": "guides/action"
+        }
+    ],
     "navigation": [
         {
             "group": "Getting Started",
             "pages": [
                     "introduction",
-                    "quickstart",
-                    "core-concepts"
+                    "guides/integrate"
                 ]
         },
         {
-            "group": "Guides & Templates",
+            "group": "Step-By-Step Guides",
             "pages": [
+                "quickstart",
+                "guides/oauth",
+                "guides/sync",
+                "guides/action",
                 {
-                    "group": "Authorize APIs",
-                    "pages": ["guides/oauth", "guides/api-key", "contribute"]
-                }, {
-                    "group": "Consume APIs",
-                    "pages": ["guides/sync", "guides/actions", "guides/proxy", "guides/webhooks", "guides/field-mapping", "guides/env-vars"]
+                    "group": "Other Guides",
+                    "pages": ["guides/proxy", "guides/webhooks", "guides/custom", "guides/advanced-auth", "guides/field-mapping", "guides/api-key", "guides/env-vars", "contribute"]
                 }, {
                     "group": "Integration Templates",
                     "pages": [
@@ -240,8 +246,9 @@
                         "integrations/all/sage",
                         "integrations/all/salesforce",
                         "integrations/all/salesloft",
-                        "integrations/all/servicem8",
                         "integrations/all/segment",
+                        "integrations/all/sendgrid",
+                        "integrations/all/servicem8",
                         "integrations/all/shopify",
                         "integrations/all/shortcut",
                         "integrations/all/slack",
@@ -265,6 +272,7 @@
                         "integrations/all/uber",
                         "integrations/all/wakatime",
                         "integrations/all/wave-accounting",
+                        "integrations/all/wildix-pbx",
                         "integrations/all/workable",
                         "integrations/all/xero",
                         "integrations/all/yahoo",
@@ -325,7 +333,7 @@
         },
         {
             "group": "Syncs",
-            "pages": ["api-reference/sync/records-get", "api-reference/sync/trigger", "api-reference/sync/start", "api-reference/sync/pause"]
+            "pages": ["api-reference/sync/records-get", "api-reference/sync/trigger", "api-reference/sync/start", "api-reference/sync/pause", "api-reference/sync/status"]
         },
         {
             "group": "Actions",

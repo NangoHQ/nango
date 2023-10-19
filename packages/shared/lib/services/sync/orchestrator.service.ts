@@ -1,7 +1,7 @@
 import { deleteSyncConfig, deleteSyncFilesForConfig } from './config/config.service.js';
 import connectionService from '../connection.service.js';
 import { deleteScheduleForSync, deleteSchedulesBySyncId as deleteSyncSchedulesBySyncId, getSchedule, updateScheduleStatus } from './schedule.service.js';
-import { deleteJobsBySyncId as deleteSyncJobsBySyncId } from './job.service.js';
+import { deleteJobsBySyncId as deleteSyncJobsBySyncId, getLatestSyncJob } from './job.service.js';
 import { deleteRecordsBySyncId as deleteSyncResultsBySyncId } from './data/records.service.js';
 import {
     createSync,
@@ -17,7 +17,16 @@ import configService from '../config.service.js';
 import type { LogLevel } from '../../models/Activity.js';
 import type { Connection } from '../../models/Connection.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
-import { SyncConfigType, SyncDeploymentResult, IncomingSyncConfig, Sync, SyncCommand, CommandToActivityLog } from '../../models/Sync.js';
+import {
+    SyncStatus,
+    ScheduleStatus,
+    SyncConfigType,
+    SyncDeploymentResult,
+    IncomingSyncConfig,
+    Sync,
+    SyncCommand,
+    CommandToActivityLog
+} from '../../models/Sync.js';
 
 interface CreateSyncArgs {
     connections: Connection[];
@@ -42,6 +51,7 @@ export class Orchestrator {
             if (debug && activityLogId) {
                 await createActivityLogMessage({
                     level: 'debug',
+                    environment_id: environmentId,
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: `Beginning iteration of starting syncs for ${syncName} with ${connections.length} connections`
@@ -68,6 +78,7 @@ export class Orchestrator {
             if (debug && activityLogId) {
                 await createActivityLogMessage({
                     level: 'debug',
+                    environment_id: environmentId,
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: `Finished iteration of starting syncs for ${syncName} with ${connections.length} connections`
@@ -79,6 +90,7 @@ export class Orchestrator {
             const prettyError = JSON.stringify(e, ['message', 'name'], 2);
             await createActivityLogMessage({
                 level: 'error',
+                environment_id: environmentId,
                 activity_log_id: activityLogId as number,
                 timestamp: Date.now(),
                 content: `Error starting syncs for ${syncName} with ${connections.length} connections: ${prettyError}`
@@ -177,11 +189,14 @@ export class Orchestrator {
 
             for (const syncName of syncNames) {
                 const sync = await getSyncByIdAndName(connection?.id as number, syncName);
+                if (!sync) {
+                    continue;
+                }
                 const schedule = await getSchedule(sync?.id as string);
 
                 const syncClient = await SyncClient.getInstance();
                 await syncClient?.runSyncCommand(schedule?.schedule_id as string, sync?.id as string, command, activityLogId as number, environmentId);
-                await updateScheduleStatus(schedule?.schedule_id as string, command, activityLogId as number);
+                await updateScheduleStatus(schedule?.schedule_id as string, command, activityLogId as number, environmentId);
             }
         } else {
             const syncs =
@@ -197,9 +212,76 @@ export class Orchestrator {
                 const schedule = await getSchedule(sync?.id as string);
                 const syncClient = await SyncClient.getInstance();
                 await syncClient?.runSyncCommand(schedule?.schedule_id as string, sync?.id as string, command, activityLogId as number, environmentId);
-                await updateScheduleStatus(schedule?.schedule_id as string, command, activityLogId as number);
+                await updateScheduleStatus(schedule?.schedule_id as string, command, activityLogId as number, environmentId);
             }
         }
+    }
+
+    public async getSyncStatus(environmentId: number, providerConfigKey: string, syncNames: string[], connectionId?: string): Promise<any> {
+        const syncsWithStatus = [];
+
+        if (connectionId) {
+            const { success, error, response: connection } = await connectionService.getConnection(connectionId as string, providerConfigKey, environmentId);
+
+            if (!success) {
+                throw error;
+            }
+
+            for (const syncName of syncNames) {
+                const sync = await getSyncByIdAndName(connection?.id as number, syncName);
+                if (!sync) {
+                    continue;
+                }
+                const latestJob = await getLatestSyncJob(sync?.id as string);
+                const schedule = await getSchedule(sync?.id as string);
+                const status = {
+                    id: sync?.id,
+                    name: sync?.name,
+                    status: this.classifySyncStatus(latestJob?.status as SyncStatus, schedule?.status as ScheduleStatus),
+                    latestResult: latestJob?.result
+                };
+                syncsWithStatus.push(status);
+            }
+        } else {
+            const syncs =
+                syncNames.length > 0
+                    ? await getSyncsByProviderConfigAndSyncNames(environmentId, providerConfigKey, syncNames)
+                    : await getSyncsByProviderConfigKey(environmentId, providerConfigKey);
+
+            if (!syncs) {
+                return;
+            }
+
+            for (const sync of syncs) {
+                const schedule = await getSchedule(sync?.id as string);
+                const latestJob = await getLatestSyncJob(sync?.id as string);
+                const status = {
+                    id: sync?.id,
+                    name: sync?.name,
+                    status: this.classifySyncStatus(latestJob?.status as SyncStatus, schedule?.status as ScheduleStatus),
+                    latestResult: latestJob?.result
+                };
+                syncsWithStatus.push(status);
+            }
+        }
+
+        return syncsWithStatus;
+    }
+
+    public classifySyncStatus(jobStatus: SyncStatus, scheduleStatus: ScheduleStatus): SyncStatus {
+        if (scheduleStatus === ScheduleStatus.PAUSED) {
+            return SyncStatus.PAUSED;
+        } else if (scheduleStatus === ScheduleStatus.RUNNING && jobStatus === null) {
+            return SyncStatus.ERROR;
+        } else if (jobStatus === SyncStatus.STOPPED) {
+            return SyncStatus.ERROR;
+        } else if (jobStatus === SyncStatus.RUNNING) {
+            return SyncStatus.RUNNING;
+        } else if (jobStatus === SyncStatus.SUCCESS) {
+            return SyncStatus.SUCCESS;
+        }
+
+        return SyncStatus.STOPPED;
     }
 
     /**

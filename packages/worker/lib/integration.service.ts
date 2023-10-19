@@ -1,13 +1,16 @@
 import { NodeVM } from 'vm2';
-import type { NangoIntegrationData } from '../../integrations/index.js';
-import { getRootDir } from '../nango-config.service.js';
-import localFileService from '../file/local.service.js';
-import { createActivityLogMessage } from '../activity/activity.service.js';
-import type { NangoSync } from '../../sdk/sync.js';
-import remoteFileService from '../file/remote.service.js';
-import { isCloud } from '../../utils/utils.js';
+import {
+    IntegrationServiceInterface,
+    createActivityLogMessage,
+    getRootDir,
+    NangoIntegrationData,
+    NangoSync,
+    localFileService,
+    remoteFileService,
+    isCloud
+} from '@nangohq/shared';
 
-class IntegrationService {
+class IntegrationService implements IntegrationServiceInterface {
     async runScript(
         syncName: string,
         activityLogId: number | undefined,
@@ -31,6 +34,7 @@ class IntegrationService {
                 if (activityLogId && writeToDb) {
                     await createActivityLogMessage({
                         level: 'error',
+                        environment_id: environmentId,
                         activity_log_id: activityLogId,
                         content,
                         timestamp: Date.now()
@@ -43,6 +47,7 @@ class IntegrationService {
             if (!script && activityLogId && writeToDb) {
                 await createActivityLogMessage({
                     level: 'error',
+                    environment_id: environmentId,
                     activity_log_id: activityLogId,
                     content: `Unable to find integration file for ${syncName}`,
                     timestamp: Date.now()
@@ -73,6 +78,7 @@ class IntegrationService {
                     if (activityLogId && writeToDb) {
                         await createActivityLogMessage({
                             level: 'error',
+                            environment_id: environmentId,
                             activity_log_id: activityLogId,
                             content,
                             timestamp: Date.now()
@@ -98,6 +104,7 @@ class IntegrationService {
                 if (activityLogId && writeToDb) {
                     await createActivityLogMessage({
                         level: 'error',
+                        environment_id: environmentId,
                         activity_log_id: activityLogId,
                         content,
                         timestamp: Date.now()
@@ -115,6 +122,7 @@ class IntegrationService {
             if (activityLogId && writeToDb) {
                 await createActivityLogMessage({
                     level: 'error',
+                    environment_id: environmentId,
                     activity_log_id: activityLogId,
                     content,
                     timestamp: Date.now()

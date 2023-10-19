@@ -63,6 +63,7 @@ class ApiAuthController {
                 if (!hmac) {
                     await createActivityLogMessageAndEnd({
                         level: 'error',
+                        environment_id: environmentId,
                         activity_log_id: activityLogId as number,
                         timestamp: Date.now(),
                         content: 'Missing HMAC in query params'
@@ -76,6 +77,7 @@ class ApiAuthController {
                 if (!verified) {
                     await createActivityLogMessageAndEnd({
                         level: 'error',
+                        environment_id: environmentId,
                         activity_log_id: activityLogId as number,
                         timestamp: Date.now(),
                         content: 'Invalid HMAC'
@@ -92,6 +94,7 @@ class ApiAuthController {
             if (config == null) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
+                    environment_id: environmentId,
                     activity_log_id: activityLogId as number,
                     content: `Error during API Key auth: config not found`,
                     timestamp: Date.now()
@@ -107,6 +110,7 @@ class ApiAuthController {
             if (template.auth_mode !== AuthModes.ApiKey) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
+                    environment_id: environmentId,
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: `Provider ${config?.provider} does not support API key auth`
@@ -129,6 +133,7 @@ class ApiAuthController {
 
             await createActivityLogMessage({
                 level: 'info',
+                environment_id: environmentId,
                 activity_log_id: activityLogId as number,
                 content: `API key auth creation was successful`,
                 timestamp: Date.now()
@@ -160,6 +165,7 @@ class ApiAuthController {
 
             await createActivityLogMessage({
                 level: 'error',
+                environment_id: environmentId,
                 activity_log_id: activityLogId as number,
                 content: `Error during API key auth: ${prettyError}`,
                 timestamp: Date.now()
@@ -226,6 +232,7 @@ class ApiAuthController {
                 if (!hmac) {
                     await createActivityLogMessageAndEnd({
                         level: 'error',
+                        environment_id: environmentId,
                         activity_log_id: activityLogId as number,
                         timestamp: Date.now(),
                         content: 'Missing HMAC in query params'
@@ -239,6 +246,7 @@ class ApiAuthController {
                 if (!verified) {
                     await createActivityLogMessageAndEnd({
                         level: 'error',
+                        environment_id: environmentId,
                         activity_log_id: activityLogId as number,
                         timestamp: Date.now(),
                         content: 'Invalid HMAC'
@@ -256,6 +264,7 @@ class ApiAuthController {
             if (config == null) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
+                    environment_id: environmentId,
                     activity_log_id: activityLogId as number,
                     content: `Error during basic API auth: config not found`,
                     timestamp: Date.now()
@@ -271,6 +280,7 @@ class ApiAuthController {
             if (template.auth_mode !== AuthModes.Basic) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
+                    environment_id: environmentId,
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: `Provider ${config?.provider} does not support Basic API auth`
@@ -285,6 +295,7 @@ class ApiAuthController {
 
             await createActivityLogMessage({
                 level: 'info',
+                environment_id: environmentId,
                 activity_log_id: activityLogId as number,
                 content: `Basic API key auth creation was successful with the username ${username}`,
                 timestamp: Date.now()
@@ -317,6 +328,7 @@ class ApiAuthController {
 
             await createActivityLogMessage({
                 level: 'error',
+                environment_id: environmentId,
                 activity_log_id: activityLogId as number,
                 content: `Error during basic API auth: ${prettyError}`,
                 timestamp: Date.now()

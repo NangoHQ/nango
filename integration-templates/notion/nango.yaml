@@ -4,6 +4,23 @@ integrations:
             runs: every 6 hours
             returns:
                 - NotionPage
+            description: |
+              Sync pages, subpages, database entries, entries of
+              sub-databases and retrieve only the text content and ignores
+              ignores images, files and other blocks that do not have
+              a `rich_text` property.
+              Details: incremental sync, doesn't support deletes, sync goes to all time, metadata is not required.
+              Required scope(s): none
+        notion-rich-pages:
+            runs: every 6 hours
+            returns:
+                - NotionRichPage
+            description: |
+              Sync pages, subpages, database entries, entries of
+              sub-databases and maps to full markdown. It transforms
+              transforms images, tables, uploaded files, etc into their Markdown counterparts.
+              Details: incremental sync, doesn't support deletes, sync goes to all time, metadata is not required.
+              Required scope(s): none
 
 models:
     NotionPage:
@@ -11,3 +28,11 @@ models:
         url: string
         content: string
         parent_page_id: string | undefined
+    NotionRichPage:
+        id: string
+        path: string
+        title: string
+        content: string
+        contentType: string
+        meta: object
+        last_modified: string

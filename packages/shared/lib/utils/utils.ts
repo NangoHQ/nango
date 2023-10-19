@@ -157,6 +157,11 @@ export function getGlobalOAuthCallbackUrl() {
     return baseUrl + '/oauth/callback';
 }
 
+export function getGlobalAppCallbackUrl() {
+    const baseUrl = process.env['NANGO_SERVER_URL'] || getLocalOAuthCallbackUrlBaseUrl();
+    return baseUrl + '/app-auth/connect';
+}
+
 export async function getOauthCallbackUrl(environmentId?: number) {
     const globalCallbackUrl = getGlobalOAuthCallbackUrl();
 
@@ -166,6 +171,13 @@ export async function getOauthCallbackUrl(environmentId?: number) {
     }
 
     return globalCallbackUrl;
+}
+
+export async function getAppCallbackUrl(_environmentId?: number) {
+    const globalAppCallbackUrl = getGlobalAppCallbackUrl();
+
+    // TODO add this to settings and make it configurable
+    return globalAppCallbackUrl;
 }
 
 /**

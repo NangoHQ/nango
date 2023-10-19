@@ -1,0 +1,16 @@
+integrations:
+  wildix-pbx:
+    wildix-pbx-colleagues:
+      runs: every 1 hour
+      returns:
+        - WildixPbxColleague
+
+models:
+  WildixPbxColleague:
+    id: string
+    name: string
+    extension: string
+    email: string
+    mobilePhone: string
+    licenseType: string
+    language: string

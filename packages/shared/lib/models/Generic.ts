@@ -19,7 +19,7 @@ export interface Deleted {
 
 export interface TimestampsAndDeleted extends Timestamps, Deleted {}
 
-export interface ServiceResponse<T> {
+export interface ServiceResponse<T = any> {
     success: boolean;
     error: NangoError | null;
     response: T | null;

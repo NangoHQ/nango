@@ -9,6 +9,7 @@ import {
     connectionService,
     getSyncs,
     verifyOwnership,
+    getSyncsByProviderConfigKey,
     SyncClient,
     updateScheduleStatus,
     updateSuccess as updateSuccessActivityLog,
@@ -21,6 +22,7 @@ import {
     getProviderConfigBySyncAndAccount,
     SyncCommand,
     CommandToActivityLog,
+    ServiceResponse,
     errorManager,
     analytics,
     ErrorSourceEnum,
@@ -283,9 +285,21 @@ class SyncController {
 
             const syncClient = await SyncClient.getInstance();
 
-            const result = await syncClient?.triggerAction(connection as Connection, action_name as string, input, activityLogId as number);
+            const { success: actionSuccess, response: actionResponse } = (await syncClient?.triggerAction(
+                connection as Connection,
+                action_name as string,
+                input,
+                activityLogId as number,
+                environmentId
+            )) as ServiceResponse;
 
-            res.send(result);
+            if (!actionSuccess) {
+                res.sendStatus(400);
+                return;
+            } else {
+                res.send(actionResponse);
+                return;
+            }
         } catch (e) {
             next(e);
         }
@@ -374,6 +388,51 @@ class SyncController {
         }
     }
 
+    public async getSyncStatus(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { syncs: passedSyncNames, provider_config_key, connection_id } = req.query;
+
+            let syncNames = passedSyncNames;
+
+            if (!provider_config_key) {
+                res.status(400).send({ message: 'Missing provider config key' });
+
+                return;
+            }
+
+            if (!syncNames) {
+                res.status(400).send({ message: 'Sync names must be passed in' });
+
+                return;
+            }
+
+            if (!syncNames) {
+                res.status(400).send({ message: 'Missing sync names' });
+
+                return;
+            }
+
+            const environmentId = getEnvironmentId(res);
+
+            if (syncNames === '*') {
+                syncNames = await getSyncsByProviderConfigKey(environmentId, provider_config_key as string).then((syncs) => syncs.map((sync) => sync.name));
+            } else {
+                syncNames = (syncNames as string).split(',');
+            }
+
+            const syncsWithStatus = await syncOrchestrator.getSyncStatus(
+                environmentId,
+                provider_config_key as string,
+                syncNames as string[],
+                connection_id as string
+            );
+
+            res.send({ syncs: syncsWithStatus });
+        } catch (e) {
+            next(e);
+        }
+    }
+
     public async syncCommand(req: Request, res: Response, next: NextFunction) {
         try {
             const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
@@ -405,6 +464,7 @@ class SyncController {
             if (!verifyOwnership(nango_connection_id, environment.id, sync_id)) {
                 await createActivityLogAndLogMessage(log, {
                     level: 'error',
+                    environment_id: environment.id,
                     timestamp: Date.now(),
                     content: `Unauthorized access to run the command: "${action}" for sync: ${sync_id}`
                 });
@@ -416,10 +476,11 @@ class SyncController {
 
             const syncClient = await SyncClient.getInstance();
             await syncClient?.runSyncCommand(schedule_id, sync_id, command, activityLogId as number, environment.id);
-            await updateScheduleStatus(schedule_id, command, activityLogId as number);
+            await updateScheduleStatus(schedule_id, command, activityLogId as number, environment.id);
 
             await createActivityLogMessageAndEnd({
                 level: 'info',
+                environment_id: environment.id,
                 activity_log_id: activityLogId as number,
                 timestamp: Date.now(),
                 content: `Sync was updated with command: "${action}" for sync: ${sync_id}`

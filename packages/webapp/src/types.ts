@@ -49,6 +49,10 @@ export interface Sync {
               };
           }[]
         | null;
+    metadata?: {
+        description?: string;
+        scopes?: string[];
+    };
 }
 
 export interface SyncResponse {
@@ -81,6 +85,7 @@ export enum AuthModes {
     OAuth2 = 'OAUTH2',
     Basic = 'BASIC',
     ApiKey = 'API_KEY',
+    App = 'APP',
     None = 'NONE'
 }
 
