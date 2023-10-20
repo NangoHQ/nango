@@ -133,7 +133,6 @@ export class Nango {
      *      LIST
      *      GET
      *      CREATE
-     *      IMPORT
      *      UPDATE
      *      DELETE
      * =======
@@ -150,6 +149,23 @@ export class Nango {
         const url = `${this.serverUrl}/config/${providerConfigKey}`;
         const response = await axios.get(url, { headers: this.enrichHeaders({}), params: { include_creds: includeIntegrationCredetials } });
         return response.data;
+    }
+
+    public async createIntegration(provider: string, providerConfigKey: string, credentials?: Record<string, string>): Promise<Integration> {
+        const url = `${this.serverUrl}/config`;
+        const response = await axios.post(url, { provider, provider_config_key: providerConfigKey, ...credentials }, { headers: this.enrichHeaders({}) });
+        return response.data;
+    }
+
+    public async updateIntegration(provider: string, providerConfigKey: string, credentials?: Record<string, string>): Promise<Integration> {
+        const url = `${this.serverUrl}/config/${providerConfigKey}`;
+        const response = await axios.put(url, { provider, provider_config_key: providerConfigKey, ...credentials }, { headers: this.enrichHeaders({}) });
+        return response.data;
+    }
+
+    public async deleteIntegration(providerConfigKey: string): Promise<void> {
+        const url = `${this.serverUrl}/config/${providerConfigKey}`;
+        return await axios.delete(url, { headers: this.enrichHeaders({}) });
     }
 
     /**
@@ -294,9 +310,9 @@ export class Nango {
      * =======
      * SYNCS
      *      GET RECORDS
+     *      TRIGGER
      *      START
      *      PAUSE
-     *      TRIGGER
      *      STATUS
      *      GET ENVIRONMENT VARIABLES
      * =======
@@ -356,6 +372,22 @@ export class Nango {
         return response.data;
     }
 
+    public async triggerSync(providerConfigKey: string, syncs?: string[], connectionId?: string): Promise<void> {
+        const url = `${this.serverUrl}/sync/trigger`;
+
+        if (typeof syncs === 'string') {
+            throw new Error('Syncs must be an array of strings. If it is a single sync, please wrap it in an array.');
+        }
+
+        const body = {
+            syncs: syncs || [],
+            provider_config_key: providerConfigKey,
+            connection_id: connectionId
+        };
+
+        return axios.post(url, body, { headers: this.enrichHeaders() });
+    }
+
     public async startSync(providerConfigKey: string, syncs: string[], connectionId?: string): Promise<void> {
         if (!providerConfigKey) {
             throw new Error('Provider Config Key is required');
@@ -394,22 +426,6 @@ export class Nango {
         }
 
         const url = `${this.serverUrl}/sync/pause`;
-
-        const body = {
-            syncs: syncs || [],
-            provider_config_key: providerConfigKey,
-            connection_id: connectionId
-        };
-
-        return axios.post(url, body, { headers: this.enrichHeaders() });
-    }
-
-    public async triggerSync(providerConfigKey: string, syncs?: string[], connectionId?: string): Promise<void> {
-        const url = `${this.serverUrl}/sync/trigger`;
-
-        if (typeof syncs === 'string') {
-            throw new Error('Syncs must be an array of strings. If it is a single sync, please wrap it in an array.');
-        }
 
         const body = {
             syncs: syncs || [],
