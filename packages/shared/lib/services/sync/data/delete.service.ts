@@ -75,25 +75,7 @@ export const getFullSnapshotRecords = async (nangoConnectionId: number, model: s
     return results;
 };
 
-/**
- * Clear Old Records
- * @desc get the job of the last set of records that were inserted and remove
- * them if any records exist
- */
-export const clearOldRecords = async (nangoConnectionId: number, model: string) => {
-    const exists = await schema()
-        .from<DataRecord>(RECORDS_TABLE)
-        .where({
-            nango_connection_id: nangoConnectionId,
-            model
-        })
-        .select('id')
-        .first();
-
-    if (!exists) {
-        return;
-    }
-
+export const markRecordsForDeletion = async (nangoConnectionId: number, model: string) => {
     const oldDeleteRecord = await schema()
         .from<DataRecord>(DELETE_RECORDS_TABLE)
         .where({
@@ -113,8 +95,26 @@ export const clearOldRecords = async (nangoConnectionId: number, model: string) 
                 model,
                 sync_job_id
             })
-            .del();
+            .update({
+                pending_delete: true
+            });
     }
+};
+
+/**
+ * Clear Old Records
+ * @desc clear out any records that are marked for deletion
+ * so that the delete accounting can be done correctly
+ */
+export const clearOldRecords = async (nangoConnectionId: number, model: string) => {
+    await schema()
+        .from<DataRecord>(RECORDS_TABLE)
+        .where({
+            nango_connection_id: nangoConnectionId,
+            model,
+            pending_delete: true
+        })
+        .del();
 };
 
 /**
@@ -156,33 +156,54 @@ nango_connection_id = ? AND model = ?
  * column using the value in the DELETE_RECORDS_TABLE
  * where those same records exist in the RECORDS_TABLE using the uniqueKey
  */
-export const updateCreatedAtForUpdatedRecords = async (nangoConnectionId: number, model: string, uniqueKey: string, updatedKeys: string[]) => {
-    const results = await schema()
-        .from<DataRecord>(DELETE_RECORDS_TABLE)
-        .innerJoin(RECORDS_TABLE, function () {
-            this.on(`${DELETE_RECORDS_TABLE}.${uniqueKey}`, '=', `${RECORDS_TABLE}.${uniqueKey}`)
-                .andOn(`${DELETE_RECORDS_TABLE}.nango_connection_id`, '=', db.knex.raw('?', [nangoConnectionId]))
-                .andOn(`${DELETE_RECORDS_TABLE}.model`, '=', db.knex.raw('?', [model]));
-        })
-        .select(`${DELETE_RECORDS_TABLE}.id`, `${DELETE_RECORDS_TABLE}.${uniqueKey}`, `${DELETE_RECORDS_TABLE}.created_at`);
-
-    if (!results || results.length === 0) {
+export const syncUpdateAtForChangedRecords = async (nangoConnectionId: number, model: string, uniqueKey: string, updatedKeys: string[]) => {
+    if (updatedKeys.length === 0) {
         return;
     }
 
-    await Promise.all(
-        results.map(async (result: DataRecord) => {
-            await schema()
-                .from<DataRecord>(RECORDS_TABLE)
-                .where({
-                    nango_connection_id: nangoConnectionId,
-                    model,
-                    [uniqueKey]: result[uniqueKey]
-                })
-                .whereIn(uniqueKey, updatedKeys)
-                .update({
-                    created_at: result.created_at as Date
-                });
+    await schema()
+        .from<DataRecord>(RECORDS_TABLE)
+        .where({
+            nango_connection_id: nangoConnectionId,
+            model
         })
-    );
+        .whereIn(uniqueKey, updatedKeys)
+        .update({
+            updated_at: new Date()
+        });
+};
+
+export const syncCreatedAtForAddedRecords = async (nangoConnectionId: number, model: string, uniqueKey: string, addedKeys: string[]) => {
+    if (addedKeys.length === 0) {
+        return;
+    }
+
+    await schema()
+        .from<DataRecord>(RECORDS_TABLE)
+        .where({
+            nango_connection_id: nangoConnectionId,
+            model
+        })
+        .whereIn(uniqueKey, addedKeys)
+        .update({
+            created_at: new Date(),
+            updated_at: new Date()
+        });
+};
+
+export const syncUpdateAtForDeletedRecords = async (nangoConnectionId: number, model: string, uniqueKey: string, deletedKeys: string[]) => {
+    if (deletedKeys.length === 0) {
+        return;
+    }
+
+    await schema()
+        .from<DataRecord>(RECORDS_TABLE)
+        .where({
+            nango_connection_id: nangoConnectionId,
+            model
+        })
+        .whereIn(uniqueKey, deletedKeys)
+        .update({
+            updated_at: new Date()
+        });
 };

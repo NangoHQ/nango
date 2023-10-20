@@ -84,6 +84,7 @@ class OAuthController {
             if (connectionId == null) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
+                    environment_id: environmentId,
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: WSErrBuilder.MissingConnectionId().message
@@ -93,6 +94,7 @@ class OAuthController {
             } else if (providerConfigKey == null) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
+                    environment_id: environmentId,
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: WSErrBuilder.MissingProviderConfigKey().message
@@ -108,6 +110,7 @@ class OAuthController {
                 if (!hmac) {
                     await createActivityLogMessageAndEnd({
                         level: 'error',
+                        environment_id: environmentId,
                         activity_log_id: activityLogId as number,
                         timestamp: Date.now(),
                         content: WSErrBuilder.MissingHmac().message
@@ -119,6 +122,7 @@ class OAuthController {
                 if (!verified) {
                     await createActivityLogMessageAndEnd({
                         level: 'error',
+                        environment_id: environmentId,
                         activity_log_id: activityLogId as number,
                         timestamp: Date.now(),
                         content: WSErrBuilder.InvalidHmac().message
@@ -130,6 +134,7 @@ class OAuthController {
 
             await createActivityLogMessage({
                 level: 'info',
+                environment_id: environmentId,
                 activity_log_id: activityLogId as number,
                 content: 'Authorization URL request from the client',
                 timestamp: Date.now(),
@@ -147,6 +152,7 @@ class OAuthController {
             if (config == null) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
+                    environment_id: environmentId,
                     activity_log_id: activityLogId as number,
                     content: WSErrBuilder.UnknownProviderConfigKey(providerConfigKey).message,
                     timestamp: Date.now(),
@@ -162,6 +168,7 @@ class OAuthController {
             } catch {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
+                    environment_id: environmentId,
                     activity_log_id: activityLogId as number,
                     content: WSErrBuilder.UnkownProviderTemplate(config.provider).message,
                     timestamp: Date.now(),
@@ -193,6 +200,7 @@ class OAuthController {
             if (config?.oauth_client_id == null || config?.oauth_client_secret == null || config.oauth_scopes == null) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
+                    environment_id: environmentId,
                     activity_log_id: activityLogId as number,
                     content: WSErrBuilder.InvalidProviderConfig(providerConfigKey).message,
                     timestamp: Date.now(),
@@ -213,17 +221,19 @@ class OAuthController {
                     authorizationParams,
                     callbackUrl,
                     activityLogId as number,
+                    environmentId,
                     userScope
                 );
             } else if (template.auth_mode === ProviderAuthModes.App) {
                 const appCallBackUrl = getGlobalAppCallbackUrl();
-                return this.appRequest(template, config, session, res, appCallBackUrl, activityLogId as number);
+                return this.appRequest(template, config, session, res, appCallBackUrl, activityLogId as number, environmentId);
             } else if (template.auth_mode === ProviderAuthModes.OAuth1) {
-                return this.oauth1Request(template, config, session, res, callbackUrl, activityLogId as number);
+                return this.oauth1Request(template, config, session, res, callbackUrl, activityLogId as number, environmentId);
             }
 
             await createActivityLogMessageAndEnd({
                 level: 'error',
+                environment_id: environmentId,
                 activity_log_id: activityLogId as number,
                 content: WSErrBuilder.UnkownAuthMode(template.auth_mode).message,
                 timestamp: Date.now(),
@@ -235,6 +245,7 @@ class OAuthController {
             const prettyError = JSON.stringify(e, ['message', 'name'], 2);
             await createActivityLogMessage({
                 level: 'error',
+                environment_id: environmentId,
                 activity_log_id: activityLogId as number,
                 content: WSErrBuilder.UnkownError().message + '\n' + prettyError,
                 timestamp: Date.now()
@@ -263,6 +274,7 @@ class OAuthController {
         authorizationParams: Record<string, string | undefined>,
         callbackUrl: string,
         activityLogId: number,
+        environment_id: number,
         userScope?: string
     ) {
         const oauth2Template = template as ProviderTemplateOAuth2;
@@ -274,6 +286,7 @@ class OAuthController {
             if (missesInterpolationParam(template.authorization_url, connectionConfig)) {
                 await createActivityLogMessage({
                     level: 'error',
+                    environment_id,
                     activity_log_id: activityLogId as number,
                     content: WSErrBuilder.InvalidConnectionConfig(template.authorization_url, JSON.stringify(connectionConfig)).message,
                     timestamp: Date.now(),
@@ -296,6 +309,7 @@ class OAuthController {
             if (missesInterpolationParam(template.token_url, connectionConfig)) {
                 await createActivityLogMessage({
                     level: 'error',
+                    environment_id,
                     activity_log_id: activityLogId as number,
                     content: WSErrBuilder.InvalidConnectionConfig(template.token_url, JSON.stringify(connectionConfig)).message,
                     timestamp: Date.now(),
@@ -358,6 +372,7 @@ class OAuthController {
 
                 await createActivityLogMessage({
                     level: 'info',
+                    environment_id,
                     activity_log_id: activityLogId as number,
                     content: `Redirecting to ${authorizationUri} for ${providerConfigKey} (connection ${connectionId})`,
                     timestamp: Date.now(),
@@ -381,6 +396,7 @@ class OAuthController {
 
                 await createActivityLogMessage({
                     level: 'error',
+                    environment_id,
                     activity_log_id: activityLogId as number,
                     content: WSErrBuilder.UnkownGrantType(grantType).message,
                     timestamp: Date.now(),
@@ -402,6 +418,7 @@ class OAuthController {
 
             await createActivityLogMessage({
                 level: 'error',
+                environment_id,
                 activity_log_id: activityLogId as number,
                 content,
                 timestamp: Date.now(),
@@ -422,7 +439,8 @@ class OAuthController {
         session: OAuthSession,
         res: Response,
         callbackUrl: string,
-        activityLogId: number
+        activityLogId: number,
+        environment_id: number
     ) {
         const wsClientId = session.webSocketClientId;
         const providerConfigKey = session.providerConfigKey;
@@ -436,6 +454,7 @@ class OAuthController {
             if (missesInterpolationParam(template.authorization_url, connectionConfig)) {
                 await createActivityLogMessage({
                     level: 'error',
+                    environment_id,
                     activity_log_id: activityLogId as number,
                     content: WSErrBuilder.InvalidConnectionConfig(template.authorization_url, JSON.stringify(connectionConfig)).message,
                     timestamp: Date.now(),
@@ -469,6 +488,7 @@ class OAuthController {
 
             await createActivityLogMessage({
                 level: 'info',
+                environment_id,
                 activity_log_id: activityLogId as number,
                 content: `Redirecting to ${authorizationUri} for ${providerConfigKey} (connection ${connectionId})`,
                 timestamp: Date.now(),
@@ -490,6 +510,7 @@ class OAuthController {
 
             await createActivityLogMessage({
                 level: 'error',
+                environment_id,
                 activity_log_id: activityLogId as number,
                 content,
                 timestamp: Date.now(),
@@ -514,7 +535,8 @@ class OAuthController {
         session: OAuthSession,
         res: Response,
         callbackUrl: string,
-        activityLogId: number
+        activityLogId: number,
+        environment_id: number
     ) {
         const callbackParams = new URLSearchParams({
             state: session.id
@@ -527,6 +549,7 @@ class OAuthController {
 
         await createActivityLogMessage({
             level: 'info',
+            environment_id,
             activity_log_id: activityLogId as number,
             content: `OAuth callback URL was retrieved`,
             timestamp: Date.now(),
@@ -550,6 +573,7 @@ class OAuthController {
 
             await createActivityLogMessage({
                 level: 'error',
+                environment_id,
                 activity_log_id: activityLogId as number,
                 content: WSErrBuilder.TokenError().message,
                 timestamp: Date.now(),
@@ -569,6 +593,7 @@ class OAuthController {
 
         await createActivityLogMessage({
             level: 'info',
+            environment_id,
             activity_log_id: activityLogId as number,
             content: `Request token for ${session.providerConfigKey} (connection: ${session.connectionId}) was a success. Redirecting to: ${redirectUrl}`,
             timestamp: Date.now(),
@@ -625,6 +650,7 @@ class OAuthController {
         try {
             await createActivityLogMessage({
                 level: 'debug',
+                environment_id: session.environmentId,
                 activity_log_id: activityLogId as number,
                 content: `Received callback from ${session.providerConfigKey} for connection ${session.connectionId}`,
                 state: state as string,
@@ -636,13 +662,14 @@ class OAuthController {
             const config = (await configService.getProviderConfig(session.providerConfigKey, session.environmentId))!;
 
             if (session.authMode === ProviderAuthModes.OAuth2) {
-                return this.oauth2Callback(template as ProviderTemplateOAuth2, config, session, req, res, activityLogId as number);
+                return this.oauth2Callback(template as ProviderTemplateOAuth2, config, session, req, res, activityLogId as number, session.environmentId);
             } else if (session.authMode === ProviderAuthModes.OAuth1) {
-                return this.oauth1Callback(template, config, session, req, res, activityLogId as number);
+                return this.oauth1Callback(template, config, session, req, res, activityLogId as number, session.environmentId);
             }
 
             await createActivityLogMessage({
                 level: 'error',
+                environment_id: session.environmentId,
                 activity_log_id: activityLogId as number,
                 content: WSErrBuilder.UnkownAuthMode(session.authMode).message,
                 state: state as string,
@@ -666,6 +693,7 @@ class OAuthController {
 
             await createActivityLogMessage({
                 level: 'error',
+                environment_id: session.environmentId,
                 activity_log_id: activityLogId as number,
                 content,
                 timestamp: Date.now(),
@@ -684,7 +712,8 @@ class OAuthController {
         session: OAuthSession,
         req: Request,
         res: Response,
-        activityLogId: number
+        activityLogId: number,
+        environment_id: number
     ) {
         const { code } = req.query;
         const providerConfigKey = session.providerConfigKey;
@@ -695,6 +724,7 @@ class OAuthController {
         if (!code) {
             await createActivityLogMessage({
                 level: 'error',
+                environment_id,
                 activity_log_id: activityLogId as number,
                 content: WSErrBuilder.InvalidCallbackOAuth2().message,
                 timestamp: Date.now(),
@@ -734,6 +764,7 @@ class OAuthController {
 
             await createActivityLogMessage({
                 level: 'info',
+                environment_id,
                 activity_log_id: activityLogId as number,
                 content: `Initiating token request for ${session.provider} using ${providerConfigKey} for the connection ${connectionId}`,
                 timestamp: Date.now(),
@@ -764,6 +795,7 @@ class OAuthController {
 
             await createActivityLogMessage({
                 level: 'info',
+                environment_id,
                 activity_log_id: activityLogId as number,
                 content: `Token response was received for ${session.provider} using ${providerConfigKey} for the connection ${connectionId}`,
                 timestamp: Date.now()
@@ -778,6 +810,7 @@ class OAuthController {
             } catch (e) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
+                    environment_id,
                     activity_log_id: activityLogId as number,
                     content: `The OAuth token response from the server could not be parsed - OAuth flow failed. The server returned:\n${JSON.stringify(
                         rawCredentials
@@ -804,6 +837,7 @@ class OAuthController {
 
             await createActivityLogMessageAndEnd({
                 level: 'debug',
+                environment_id,
                 activity_log_id: activityLogId as number,
                 content: `OAuth connection for ${providerConfigKey} was successful`,
                 timestamp: Date.now(),
@@ -839,6 +873,7 @@ class OAuthController {
 
             await createActivityLogMessageAndEnd({
                 level: 'error',
+                environment_id,
                 activity_log_id: activityLogId as number,
                 content: WSErrBuilder.UnkownError().message + '\n' + prettyError,
                 timestamp: Date.now()
@@ -854,7 +889,8 @@ class OAuthController {
         session: OAuthSession,
         req: Request,
         res: Response,
-        activityLogId: number
+        activityLogId: number,
+        environment_id: number
     ) {
         const { oauth_token, oauth_verifier } = req.query;
         const providerConfigKey = session.providerConfigKey;
@@ -865,6 +901,7 @@ class OAuthController {
         if (!oauth_token || !oauth_verifier) {
             await createActivityLogMessageAndEnd({
                 level: 'error',
+                environment_id,
                 activity_log_id: activityLogId as number,
                 content: WSErrBuilder.InvalidCallbackOAuth1().message,
                 timestamp: Date.now()
@@ -897,6 +934,7 @@ class OAuthController {
 
                 await createActivityLogMessageAndEnd({
                     level: 'info',
+                    environment_id,
                     activity_log_id: activityLogId as number,
                     content: `OAuth connection for ${providerConfigKey} was successful`,
                     timestamp: Date.now(),
@@ -921,6 +959,7 @@ class OAuthController {
 
                 await createActivityLogMessageAndEnd({
                     level: 'error',
+                    environment_id,
                     activity_log_id: activityLogId as number,
                     content: WSErrBuilder.UnkownError().message + '\n' + prettyError,
                     timestamp: Date.now()

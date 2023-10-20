@@ -3,7 +3,7 @@ import { multipleMigrations } from '../../../db/database.js';
 import type { DataResponse } from '../../../models/Data.js';
 import * as DataService from './data.service.js';
 import connectionService from '../../connection.service.js';
-import { getFullRecords, getFullSnapshotRecords, takeSnapshot, getDeletedKeys } from './delete.service.js';
+import { clearOldRecords, getFullRecords, getFullSnapshotRecords, takeSnapshot, getDeletedKeys } from './delete.service.js';
 import { getDataRecords, formatDataRecords } from './records.service.js';
 import { createConfigSeeds } from '../../../db/seeders/config.seeder.js';
 import type { DataRecord } from '../../../models/Sync.js';
@@ -55,6 +55,7 @@ describe('Data delete service integration tests', () => {
             'external_id',
             nangoConnectionId as number,
             modelName,
+            1,
             1
         );
         expect(success).toBe(true);
@@ -94,14 +95,19 @@ describe('Data delete service integration tests', () => {
             'external_id',
             nangoConnectionId as number,
             modelName,
+            1,
             1
         );
         expect(success).toBe(true);
         expect(error).toBe(undefined);
         await takeSnapshot(meta.nangoConnectionId as number, meta.modelName);
         const fullRecords = await getFullRecords(nangoConnectionId as number, modelName);
+        const fullRecordsWithoutPendingDelete = fullRecords.map((record: any) => {
+            const { pending_delete, ...rest } = record;
+            return rest;
+        });
         const snapshotFullRecords = await getFullSnapshotRecords(nangoConnectionId as number, modelName);
-        expect(fullRecords).toEqual(snapshotFullRecords);
+        expect(fullRecordsWithoutPendingDelete).toEqual(snapshotFullRecords);
     });
 
     it('Given a snapshot, the next insert with less records should show as deleted if track deletes is true', async () => {
@@ -115,6 +121,7 @@ describe('Data delete service integration tests', () => {
             'external_id',
             nangoConnectionId as number,
             modelName,
+            1,
             1,
             true // track_deletes
         );
@@ -131,11 +138,13 @@ describe('Data delete service integration tests', () => {
             nangoConnectionId as number,
             modelName,
             1,
+            1,
             true // track_deletes
         );
         expect(slimSuccess).toBe(true);
         expect(slimError).toBe(undefined);
 
+        await clearOldRecords(nangoConnectionId as number, modelName);
         const deletedKeys = await getDeletedKeys('_nango_sync_data_records', 'external_id', nangoConnectionId as number, modelName);
         expect(deletedKeys?.length).toEqual(20);
 
@@ -169,6 +178,7 @@ describe('Data delete service integration tests', () => {
             nangoConnectionId as number,
             modelName,
             1,
+            1,
             false // track_deletes
         );
         expect(success).toBe(true);
@@ -187,6 +197,7 @@ describe('Data delete service integration tests', () => {
             'external_id',
             nangoConnectionId as number,
             modelName,
+            1,
             1,
             false // track_deletes
         );
@@ -222,7 +233,9 @@ describe('Data delete service integration tests', () => {
             nangoConnectionId as number,
             modelName,
             syncId as string,
-            syncJobId as number
+            syncJobId as number,
+            new Date(),
+            true
         );
         const { error, success } = await DataService.upsert(
             formattedResults as unknown as DataRecord[],
@@ -230,6 +243,7 @@ describe('Data delete service integration tests', () => {
             'external_id',
             nangoConnectionId as number,
             modelName,
+            1,
             1,
             true // track_deletes
         );
@@ -247,7 +261,9 @@ describe('Data delete service integration tests', () => {
             nangoConnectionId as number,
             modelName,
             syncId as string,
-            syncJobId as number
+            syncJobId as number,
+            new Date(),
+            true
         );
 
         const { error: updateError, success: updateSuccess } = await DataService.upsert(
@@ -256,6 +272,7 @@ describe('Data delete service integration tests', () => {
             'external_id',
             nangoConnectionId as number,
             modelName,
+            1,
             1,
             true // track_deletes
         );

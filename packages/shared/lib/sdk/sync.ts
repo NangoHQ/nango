@@ -286,6 +286,7 @@ export class NangoAction {
 
         await createActivityLogMessage({
             level: userDefinedLevel?.level ?? 'info',
+            environment_id: this.environmentId as number,
             activity_log_id: this.activityLogId as number,
             content,
             timestamp: Date.now()
@@ -363,12 +364,21 @@ export class NangoSync extends NangoAction {
             success,
             error,
             response: formattedResults
-        } = formatDataRecords(results as unknown as DataResponse[], this.nangoConnectionId as number, model, this.syncId as string, this.syncJobId);
+        } = formatDataRecords(
+            results as unknown as DataResponse[],
+            this.nangoConnectionId as number,
+            model,
+            this.syncId as string,
+            this.syncJobId,
+            this.lastSyncDate,
+            this.track_deletes
+        );
 
         if (!success || formattedResults === null) {
             if (!this.dryRun) {
                 await createActivityLogMessage({
                     level: 'error',
+                    environment_id: this.environmentId as number,
                     activity_log_id: this.activityLogId as number,
                     content: `There was an issue with the batch save. ${error?.message}`,
                     timestamp: Date.now()
@@ -397,7 +407,8 @@ export class NangoSync extends NangoAction {
             this.nangoConnectionId as number,
             model,
             this.activityLogId as number,
-            syncConfig?.track_deletes
+            this.environmentId as number,
+            this.track_deletes
         );
 
         if (responseResults.success) {
@@ -412,6 +423,7 @@ export class NangoSync extends NangoAction {
 
             await createActivityLogMessage({
                 level: 'info',
+                environment_id: this.environmentId as number,
                 activity_log_id: this.activityLogId as number,
                 content: `Batch save was a success and resulted in ${JSON.stringify(updatedResults, null, 2)}`,
                 timestamp: Date.now()
@@ -426,6 +438,7 @@ export class NangoSync extends NangoAction {
             if (!this.dryRun) {
                 await createActivityLogMessage({
                     level: 'error',
+                    environment_id: this.environmentId as number,
                     activity_log_id: this.activityLogId as number,
                     content,
                     timestamp: Date.now()
@@ -465,12 +478,22 @@ export class NangoSync extends NangoAction {
             success,
             error,
             response: formattedResults
-        } = formatDataRecords(results as unknown as DataResponse[], this.nangoConnectionId as number, model, this.syncId as string, this.syncJobId, true);
+        } = formatDataRecords(
+            results as unknown as DataResponse[],
+            this.nangoConnectionId as number,
+            model,
+            this.syncId as string,
+            this.syncJobId,
+            this.lastSyncDate,
+            this.track_deletes,
+            true
+        );
 
         if (!success || formattedResults === null) {
             if (!this.dryRun) {
                 await createActivityLogMessage({
                     level: 'error',
+                    environment_id: this.environmentId as number,
                     activity_log_id: this.activityLogId as number,
                     content: `There was an issue with the batch delete. ${error?.message}`,
                     timestamp: Date.now()
@@ -499,7 +522,8 @@ export class NangoSync extends NangoAction {
             this.nangoConnectionId as number,
             model,
             this.activityLogId as number,
-            syncConfig?.track_deletes,
+            this.environmentId as number,
+            this.track_deletes,
             true
         );
 
@@ -515,6 +539,7 @@ export class NangoSync extends NangoAction {
 
             await createActivityLogMessage({
                 level: 'info',
+                environment_id: this.environmentId as number,
                 activity_log_id: this.activityLogId as number,
                 content: `Batch delete was a success and resulted in ${JSON.stringify(updatedResults, null, 2)}`,
                 timestamp: Date.now()
@@ -529,6 +554,7 @@ export class NangoSync extends NangoAction {
             if (!this.dryRun) {
                 await createActivityLogMessage({
                     level: 'error',
+                    environment_id: this.environmentId as number,
                     activity_log_id: this.activityLogId as number,
                     content,
                     timestamp: Date.now()

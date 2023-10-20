@@ -2,7 +2,7 @@ import { proxyActivities } from '@temporalio/workflow';
 import type * as activities from './activities.js';
 import type { ContinuousSyncArgs, InitialSyncArgs, ActionArgs } from './models/Worker';
 
-const DEFAULT_TIMEOUT = '90 minutes';
+const DEFAULT_TIMEOUT = '24 hours';
 
 const { routeSync, scheduleAndRouteSync, runAction } = proxyActivities<typeof activities>({
     startToCloseTimeout: DEFAULT_TIMEOUT,

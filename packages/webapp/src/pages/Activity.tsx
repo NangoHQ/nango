@@ -66,10 +66,11 @@ export default function Activity() {
     const navigate = useNavigate();
 
     const [loaded, setLoaded] = useState(false);
-    const [activities, setActivities] = useState([]);
+    const [activities, setActivities] = useState<ActivityResponse[]>([]);
     const [expandedRow, setExpandedRow] = useState(-1);
     const [limit,] = useState(20);
     const [offset, setOffset] = useState(0);
+    const [logIds, setLogIds] = useState<number[]>([]);
 
     const location = useLocation();
     const queryParams = queryString.parse(location.search);
@@ -105,6 +106,7 @@ export default function Activity() {
                 try {
                     const data = await res.json();
                     setActivities(data);
+                    setLogIds(data.map((activity: ActivityResponse) => activity.id));
 
                     setActivityRefs(data.reduce((acc: Record<number, React.RefObject<HTMLTableRowElement>>, activity: ActivityResponse) => {
                         acc[activity.id] = createRef<HTMLTableRowElement>();
@@ -124,28 +126,67 @@ export default function Activity() {
     }, [getActivityAPI, loaded, setLoaded, limit, offset, initialOffset]);
 
     useEffect(() => {
-        if (isInitialMount.current && activityLogId && typeof activityLogId === 'string' && Object.keys(activityRefs).length > 0) {
-            const id = parseInt(activityLogId);
-            setExpandedRow(id);
+        const getActivityLogs = async () => {
+            if (logIds.length > 0) {
+                const res = await fetch(`/api/v1/activity-messages?logIds=${logIds.join(',')}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    }
+                });
 
-            // remove query param env from the url without updating the push state
-            navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, env: null }), { replace: true });
+                if (res?.status === 200) {
+                    try {
+                        const allMessages = await res.json();
+                        const logsWithMessages = activities.map((activity: ActivityResponse) => {
+                            const logMessages = allMessages[activity.id];
+                            if (logMessages) {
+                                activity.messages = logMessages;
+                            }
+                            return activity;
+                        });
+                        setActivities(logsWithMessages as ActivityResponse[]);
+                    } catch (e) {
+                        console.log(e)
+                    }
+                }
+            }
+        };
 
-            if (activityRefs[id] && activityRefs[id]?.current && activityRefs[id]?.current !== null) {
-                setTimeout(() => {
-                    activityRefs[id]?.current?.scrollIntoView({
-                        behavior: "smooth",
-                        block: "nearest",
-                    });
-                }, 100);
+        getActivityLogs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [logIds]);
 
-                isInitialMount.current = false;
 
+    useEffect(() => {
+        const scrollToLog = async () => {
+            if (isInitialMount.current && activityLogId && typeof activityLogId === 'string' && Object.keys(activityRefs).length > 0) {
+                const id = parseInt(activityLogId);
+                setExpandedRow(id);
+
+                // remove query param env from the url without updating the push state
+                navigate(location.pathname + '?' + queryString.stringify({ ...queryParams, env: null }), { replace: true });
+
+                // wait 1 second before scrolling
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                if (activityRefs[id] && activityRefs[id]?.current && activityRefs[id]?.current !== null) {
+                    setTimeout(() => {
+                        activityRefs[id]?.current?.scrollIntoView({
+                            behavior: "smooth",
+                            block: "nearest",
+                        });
+                    }, 100);
+
+                    isInitialMount.current = false;
+                }
             }
         }
+
+        scrollToLog();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activityLogId, activityRefs]);
-
 
     const incrementPage = () => {
         if (activities.length < limit) {
@@ -406,7 +447,7 @@ export default function Activity() {
                                                     )}
                                                 </Link>
                                                 <p className="text-gray-500 w-40">{formatTimestamp(Number(activity.timestamp))}</p>
-                                                {activity.messages && activity.messages.length > 0 && activity.messages[0] !== null && (
+                                                {activity.messages && activity.messages.length > 0 && activity.messages && activity.messages[0] !== null && (
                                                     <button
                                                         className="flex h-8 mr-2 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white bg-gray-800 hover:bg-gray-700"
                                                         onClick={() => setExpandedRow(activity.id === expandedRow ? -1 : activity.id)}
@@ -414,9 +455,9 @@ export default function Activity() {
                                                         <p>{activity.id === expandedRow ? 'Hide Logs' : 'Show Logs'}</p>
                                                     </button>
                                                 )}
-                                                {activity.messages[0] && <CopyButton icontype="link" dark text={`${window.location.host}/activity?env=${env}&activity_log_id=${activity.id}${offset === 0 ? '': `&offset=${offset}`}`} />}
+                                                {activity.messages && activity.messages.length > 0 && activity.messages[0] && <CopyButton icontype="link" dark text={`${window.location.host}/activity?env=${env}&activity_log_id=${activity.id}${offset === 0 ? '': `&offset=${offset}`}`} />}
                                             </div>
-                                            {activity.id === expandedRow && activity.messages[0] && (
+                                            {activity.id === expandedRow && activity.messages && activity.messages[0] && (
                                                 <>
                                                 <div className="flex flex-col space-y-4 mt-6 font-mono">
                                                     {activity.messages.map((message, index: number) => (

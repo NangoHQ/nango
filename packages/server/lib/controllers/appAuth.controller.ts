@@ -62,6 +62,7 @@ class AppAuthController {
             if (config == null) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
+                    environment_id: environmentId,
                     activity_log_id: activityLogId as number,
                     content: `Error during API Key auth: config not found`,
                     timestamp: Date.now()
@@ -77,6 +78,7 @@ class AppAuthController {
             if (template.auth_mode !== AuthModes.App) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
+                    environment_id: environmentId,
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: `Provider ${config?.provider} does not support app creation`
@@ -95,6 +97,7 @@ class AppAuthController {
             if (missesInterpolationParam(template.token_url, connectionConfig)) {
                 await createActivityLogMessage({
                     level: 'error',
+                    environment_id: environmentId,
                     activity_log_id: activityLogId as number,
                     content: WSErrBuilder.InvalidConnectionConfig(template.token_url, JSON.stringify(connectionConfig)).message,
                     timestamp: Date.now(),
@@ -119,6 +122,7 @@ class AppAuthController {
             if (!success || !credentials) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
+                    environment_id: environmentId,
                     activity_log_id: activityLogId as number,
                     content: `Error during app token retrieval call: ${error?.message}`,
                     timestamp: Date.now()
@@ -146,6 +150,7 @@ class AppAuthController {
 
             await createActivityLogMessageAndEnd({
                 level: 'info',
+                environment_id: environmentId,
                 activity_log_id: activityLogId as number,
                 content: 'App connection was successful and credentials were saved',
                 timestamp: Date.now()
@@ -159,6 +164,7 @@ class AppAuthController {
 
             await createActivityLogMessage({
                 level: 'error',
+                environment_id: environmentId,
                 activity_log_id: activityLogId as number,
                 content,
                 timestamp: Date.now(),

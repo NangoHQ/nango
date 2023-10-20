@@ -95,6 +95,7 @@ app.route('/sync/trigger').post(apiAuth, syncController.trigger.bind(syncControl
 app.route('/sync/pause').post(apiAuth, syncController.pause.bind(syncController));
 app.route('/sync/start').post(apiAuth, syncController.start.bind(syncController));
 app.route('/sync/provider').get(apiAuth, syncController.getSyncProvider.bind(syncController));
+app.route('/sync/status').get(apiAuth, syncController.getSyncStatus.bind(syncController));
 app.route('/flow/attributes').get(apiAuth, syncController.getFlowAttributes.bind(syncController));
 app.route('/action/trigger').post(apiAuth, syncController.triggerAction.bind(syncController));
 
@@ -123,6 +124,7 @@ app.route('/api/v1/environment/callback').post(webAuth, environmentController.up
 app.route('/api/v1/environment/webhook').post(webAuth, environmentController.updateWebhookURL.bind(environmentController));
 app.route('/api/v1/environment/hmac').get(webAuth, environmentController.getHmacDigest.bind(environmentController));
 app.route('/api/v1/environment/hmac-enabled').post(webAuth, environmentController.updateHmacEnabled.bind(environmentController));
+app.route('/api/v1/environment/webhook-send').post(webAuth, environmentController.updateAlwaysSendWebhook.bind(environmentController));
 app.route('/api/v1/environment/hmac-key').post(webAuth, environmentController.updateHmacKey.bind(environmentController));
 app.route('/api/v1/environment/environment-variables').post(webAuth, environmentController.updateEnvironmentVariables.bind(environmentController));
 app.route('/api/v1/environment/rotate-key').post(webAuth, environmentController.rotateKey.bind(accountController));
@@ -143,6 +145,7 @@ app.route('/api/v1/user/password').put(webAuth, userController.editPassword.bind
 app.route('/api/v1/users/:userId/suspend').post(webAuth, userController.suspend.bind(userController));
 app.route('/api/v1/users/invite').post(webAuth, userController.invite.bind(userController));
 app.route('/api/v1/activity').get(webAuth, activityController.retrieve.bind(activityController));
+app.route('/api/v1/activity-messages').get(webAuth, activityController.getMessages.bind(activityController));
 app.route('/api/v1/sync').get(webAuth, syncController.getSyncsByParams.bind(syncController));
 app.route('/api/v1/sync/command').post(webAuth, syncController.syncCommand.bind(syncController));
 app.route('/api/v1/syncs').get(webAuth, syncController.getSyncs.bind(syncController));

@@ -327,7 +327,7 @@ export const getSyncsByConnectionId = async (nangoConnectionId: number): Promise
 export const getSyncsByProviderConfigKey = async (environment_id: number, providerConfigKey: string): Promise<Sync[]> => {
     const results = await db.knex
         .withSchema(db.schema())
-        .select(`${TABLE}.*`)
+        .select(`${TABLE}.id`, `${TABLE}.name`, `_nango_connections.connection_id`, `${TABLE}.created_at`, `${TABLE}.updated_at`, `${TABLE}.last_sync_date`)
         .from<Sync>(TABLE)
         .join('_nango_connections', '_nango_connections.id', `${TABLE}.nango_connection_id`)
         .where({
@@ -493,6 +493,7 @@ export const getAndReconcileDifferences = async (
                 if (debug && activityLogId) {
                     await createActivityLogMessage({
                         level: 'debug',
+                        environment_id: environmentId,
                         activity_log_id: activityLogId as number,
                         timestamp: Date.now(),
                         content: `Creating sync ${syncName} for ${providerConfigKey} with ${connections.length} connections and initiating`
@@ -508,6 +509,7 @@ export const getAndReconcileDifferences = async (
             const syncNames = syncsToCreate.map((sync) => sync.syncName);
             await createActivityLogMessage({
                 level: 'debug',
+                environment_id: environmentId,
                 activity_log_id: activityLogId as number,
                 timestamp: Date.now(),
                 content: `Creating ${syncsToCreate.length} sync${syncsToCreate.length === 1 ? '' : 's'} ${JSON.stringify(syncNames, null, 2)}`
@@ -553,6 +555,7 @@ export const getAndReconcileDifferences = async (
                 if (debug && activityLogId) {
                     await createActivityLogMessage({
                         level: 'debug',
+                        environment_id: environmentId,
                         activity_log_id: activityLogId as number,
                         timestamp: Date.now(),
                         content: `Deleting sync ${existingSync.sync_name} for ${existingSync.unique_key} with ${connections.length} connections`
@@ -576,6 +579,7 @@ export const getAndReconcileDifferences = async (
 
                     await createActivityLogMessage({
                         level: 'debug',
+                        environment_id: environmentId,
                         activity_log_id: activityLogId as number,
                         timestamp: Date.now(),
                         content
@@ -588,6 +592,7 @@ export const getAndReconcileDifferences = async (
     if (debug && activityLogId) {
         await createActivityLogMessageAndEnd({
             level: 'debug',
+            environment_id: environmentId,
             activity_log_id: activityLogId as number,
             timestamp: Date.now(),
             content: 'Sync deploy diff in debug mode process complete successfully.'

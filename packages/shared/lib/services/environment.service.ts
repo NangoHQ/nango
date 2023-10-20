@@ -307,18 +307,22 @@ class EnvironmentService {
         return db.knex.withSchema(db.schema()).from<Environment>(TABLE).where({ id }).update({ webhook_url: webhookUrl }, ['id']);
     }
 
-    async getWebhookUrl(id: number): Promise<string | null> {
-        const result = await db.knex.withSchema(db.schema()).select('webhook_url').from<Environment>(TABLE).where({ id });
+    async getWebhookInfo(id: number): Promise<{ webhook_url: string; always_send_webhook: boolean } | null> {
+        const result = await db.knex.withSchema(db.schema()).select('webhook_url', 'always_send_webhook').from<Environment>(TABLE).where({ id });
 
         if (result == null || result.length == 0 || result[0] == null) {
             return null;
         }
 
-        return result[0].webhook_url;
+        return result[0];
     }
 
     async editHmacEnabled(hmacEnabled: boolean, id: number): Promise<Environment | null> {
         return db.knex.withSchema(db.schema()).from<Environment>(TABLE).where({ id }).update({ hmac_enabled: hmacEnabled }, ['id']);
+    }
+
+    async editAlwaysSendWebhook(always_send_webhook: boolean, id: number): Promise<Environment | null> {
+        return db.knex.withSchema(db.schema()).from<Environment>(TABLE).where({ id }).update({ always_send_webhook }, ['id']);
     }
 
     async editHmacKey(hmacKey: string, id: number): Promise<Environment | null> {

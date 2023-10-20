@@ -10,7 +10,9 @@ import {
     Config as ProviderConfig,
     IntegrationWithCreds,
     Integration as ProviderIntegration,
-    connectionService
+    connectionService,
+    getSyncsByProviderConfigKey,
+    getActionsByProviderConfigKey
 } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession, parseConnectionConfigParamsFromTemplate } from '../utils/utils.js';
 
@@ -50,7 +52,7 @@ class ConfigController {
                     connectionCount: connections.filter((connection) => connection.provider === config.unique_key).length,
                     creationDate: config.created_at
                 };
-                if (template) {
+                if (template && template.auth_mode !== AuthModes.App) {
                     integration['connectionConfigParams'] = parseConnectionConfigParamsFromTemplate(template!);
                 }
                 return integration;
@@ -180,6 +182,9 @@ class ConfigController {
                 client_secret = Buffer.from(client_secret, 'base64').toString('ascii');
             }
 
+            const syncs = await getSyncsByProviderConfigKey(environmentId, providerConfigKey);
+            const actions = await getActionsByProviderConfigKey(environmentId, providerConfigKey);
+
             const configRes: ProviderIntegration | IntegrationWithCreds = includeCreds
                 ? ({
                       unique_key: config.unique_key,
@@ -188,9 +193,11 @@ class ConfigController {
                       client_secret,
                       oauth_scopes: config.oauth_scopes,
                       app_link: config.app_link,
-                      auth_mode: authMode
+                      auth_mode: authMode,
+                      syncs,
+                      actions
                   } as IntegrationWithCreds)
-                : ({ unique_key: config.unique_key, provider: config.provider } as ProviderIntegration);
+                : ({ unique_key: config.unique_key, provider: config.provider, syncs, actions } as ProviderIntegration);
 
             res.status(200).send({ config: configRes });
         } catch (err) {
