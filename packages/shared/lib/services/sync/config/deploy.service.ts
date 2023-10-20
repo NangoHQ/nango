@@ -24,7 +24,7 @@ import {
     IncomingPreBuiltFlowConfig
 } from '../../../models/Sync.js';
 import { NangoError } from '../../../utils/error.js';
-import metricsManager from '../../../utils/metrics.manager.js';
+import metricsManager, { MetricTypes } from '../../../utils/metrics.manager.js';
 import { getEnv } from '../../../utils/utils.js';
 import { nangoConfigFile } from '../../nango-config.service.js';
 import { getSyncAndActionConfigByParams, increment, getSyncAndActionConfigsBySyncNameAndConfigId } from './config.service.js';
@@ -259,7 +259,7 @@ export async function deploy(
             .join(', ')}).`;
 
         await metricsManager.capture(
-            'sync_deploy_success',
+            MetricTypes.SYNC_DEPLOY_SUCCESS,
             shortContent,
             LogActionEnum.SYNC_DEPLOY,
             {
@@ -285,7 +285,7 @@ export async function deploy(
         const shortContent = `Failure to deploy the syncs (${syncsWithVersions.map((sync) => sync.syncName).join(', ')}).`;
 
         await metricsManager.capture(
-            'sync_deploy_failure',
+            MetricTypes.SYNC_DEPLOY_FAILURE,
             shortContent,
             LogActionEnum.SYNC_DEPLOY,
             {
@@ -528,7 +528,7 @@ export async function deployPreBuilt(
         });
 
         await metricsManager.capture(
-            'sync_deploy_success',
+            MetricTypes.SYNC_DEPLOY_SUCCESS,
             content,
             LogActionEnum.SYNC_DEPLOY,
             {
@@ -550,7 +550,7 @@ export async function deployPreBuilt(
         await createActivityLogDatabaseErrorMessageAndEnd(content, e, activityLogId as number, environment_id);
 
         await metricsManager.capture(
-            'sync_deploy_failure',
+            MetricTypes.SYNC_DEPLOY_FAILURE,
             content,
             LogActionEnum.SYNC_DEPLOY,
             {

@@ -15,7 +15,7 @@ import webhookService from '../webhook.service.js';
 import { NangoSync } from '../../sdk/sync.js';
 import { isCloud, getApiUrl } from '../../utils/utils.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
-import metricsManager from '../../utils/metrics.manager.js';
+import metricsManager, { MetricTypes } from '../../utils/metrics.manager.js';
 import type { NangoIntegrationData, NangoIntegration } from '../../integrations/index.js';
 import type { UpsertResponse, UpsertSummary } from '../../models/Data.js';
 import { LogActionEnum } from '../../models/Activity.js';
@@ -235,6 +235,7 @@ export default class SyncRun {
 
                 const syncStartDate = new Date();
 
+                const startTime = Date.now();
                 const userDefinedResults = await this.integrationService.runScript(
                     this.syncName,
                     this.activityLogId as number,
@@ -260,6 +261,18 @@ export default class SyncRun {
                 if (!this.writeToDb) {
                     return userDefinedResults;
                 }
+
+                const endTime = Date.now();
+                const totalRunTime = endTime - startTime;
+
+                await metricsManager.captureMetric(
+                    MetricTypes.SYNC_TRACK_RUNTIME,
+                    this.syncId as string,
+                    this.syncType,
+                    totalRunTime,
+                    LogActionEnum.SYNC,
+                    `environmentId: ${this.nangoConnection.environment_id}, syncId: ${this.syncId}, syncName: ${this.syncName}, syncJobId: ${this.syncJobId}, syncDataVersion: ${syncData.version}`
+                );
 
                 if (this.isAction) {
                     const content = `${this.syncName} action was run successfully and results are being sent synchronously.`;
@@ -325,7 +338,7 @@ export default class SyncRun {
 
                             if (formattedResults.length > 0) {
                                 await metricsManager.capture(
-                                    'sync_script_return_used',
+                                    MetricTypes.SYNC_SCRIPT_RETURN_USED,
                                     'Data was sent at the end of the integration script instead of using batchSave',
                                     LogActionEnum.SYNC,
                                     {
@@ -520,7 +533,7 @@ export default class SyncRun {
             });
         }
 
-        await metricsManager.capture('sync_success', content, LogActionEnum.SYNC, {
+        await metricsManager.capture(MetricTypes.SYNC_SUCCESS, content, LogActionEnum.SYNC, {
             model,
             environmentId: String(this.nangoConnection.environment_id),
             responseResults: JSON.stringify(responseResults),
@@ -566,7 +579,7 @@ export default class SyncRun {
             }
         });
 
-        await metricsManager.capture('sync_failure', content, LogActionEnum.SYNC, {
+        await metricsManager.capture(MetricTypes.SYNC_FAILURE, content, LogActionEnum.SYNC, {
             environmentId: String(this.nangoConnection.environment_id),
             syncName: this.syncName,
             connectionDetails: JSON.stringify(this.nangoConnection),
