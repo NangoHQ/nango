@@ -271,7 +271,7 @@ export default function FlowCreate() {
         <DashboardLayout selectedItem={LeftNavBarItems.Syncs}>
             {flows && Object.keys(flows).length > 0 && (
                 <div className="mx-auto pb-40">
-                    <h2 className="mx-20 mt-16 text-left text-3xl font-semibold tracking-tight text-white mb-12">Add New {flow?.type === 'action' ? 'Action' : 'Sync'}</h2>
+                    <h2 className="mx-20 mt-16 text-left text-3xl font-semibold tracking-tight text-white mb-12">Add New Sync or Action</h2>
                     <div className="mx-20 h-fit text-white text-sm">
                         <div className="mb-8">
                             <Info>

@@ -66,6 +66,7 @@ export interface SyncResponse {
     schedule_status: 'RUNNING' | 'PAUSED' | 'STOPPED';
     schedule_id: string;
     latest_sync: {
+        created_at: string;
         updated_at: string;
         type: 'INITIAL' | 'INCREMENTAL';
         status: 'SUCCESS' | 'STOPPED' | 'RUNNING' | 'PAUSED';
@@ -76,6 +77,10 @@ export interface SyncResponse {
         version: string;
         models: string[];
     };
+    thirty_day_timestamps: {
+        created_at: string;
+        updated_at: string;
+    }[];
 }
 
 export type RunSyncCommand = 'PAUSE' | 'UNPAUSE' | 'RUN' | 'RUN_FULL';

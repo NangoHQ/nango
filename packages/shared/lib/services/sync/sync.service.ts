@@ -246,6 +246,19 @@ export const getSyncs = async (nangoConnection: Connection): Promise<Sync[]> => 
         await markAllAsStopped();
     }
 
+    const syncJobTimestampsSubQuery = db.knex.raw(
+        `(
+            SELECT json_agg(json_build_object(
+                'created_at', nango.${SYNC_JOB_TABLE}.created_at,
+                'updated_at', nango.${SYNC_JOB_TABLE}.updated_at
+            ))
+            FROM nango.${SYNC_JOB_TABLE}
+            WHERE nango.${SYNC_JOB_TABLE}.sync_id = nango.${TABLE}.id
+                AND nango.${SYNC_JOB_TABLE}.created_at >= CURRENT_DATE - INTERVAL '30 days'
+                AND nango.${SYNC_JOB_TABLE}.deleted = false
+        ) as thirty_day_timestamps`
+    );
+
     const result = await schema()
         .from<Sync>(TABLE)
         .select(
@@ -258,6 +271,7 @@ export const getSyncs = async (nangoConnection: Connection): Promise<Sync[]> => 
                 `(
                     SELECT json_build_object(
                         'job_id', nango.${SYNC_JOB_TABLE}.id,
+                        'created_at', nango.${SYNC_JOB_TABLE}.created_at,
                         'updated_at', nango.${SYNC_JOB_TABLE}.updated_at,
                         'type', nango.${SYNC_JOB_TABLE}.type,
                         'result', nango.${SYNC_JOB_TABLE}.result,
@@ -277,7 +291,8 @@ export const getSyncs = async (nangoConnection: Connection): Promise<Sync[]> => 
                     LIMIT 1
                 ) as latest_sync
                 `
-            )
+            ),
+            syncJobTimestampsSubQuery
         )
         .leftJoin(SYNC_JOB_TABLE, `${SYNC_JOB_TABLE}.sync_id`, '=', `${TABLE}.id`)
         .join(SYNC_SCHEDULE_TABLE, `${SYNC_SCHEDULE_TABLE}.sync_id`, `${TABLE}.id`)
