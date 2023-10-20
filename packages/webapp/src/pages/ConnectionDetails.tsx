@@ -605,7 +605,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                         className="flex h-8 mr-2 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white bg-gray-800 hover:bg-gray-700"
                                                         onClick={() => syncCommand('RUN', sync.nango_connection_id, sync.schedule_id, sync.id, sync.name)}
                                                     >
-                                                        <p>Sync</p>
+                                                        <p>Trigger</p>
                                                     </button>
                                                     {/*
                                                     <button
