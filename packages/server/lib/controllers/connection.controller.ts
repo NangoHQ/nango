@@ -9,6 +9,7 @@ import {
     OAuth1Credentials,
     OAuth2Credentials,
     ImportedCredentials,
+    AppCredentials,
     TemplateOAuth2 as ProviderTemplateOAuth2,
     getEnvironmentAndAccountId,
     ConnectionList,
@@ -71,6 +72,7 @@ class ConnectionController {
             if (connection == null) {
                 await createActivityLogAndLogMessage(log, {
                     level: 'error',
+                    environment_id: environment.id,
                     timestamp: Date.now(),
                     content: 'Unknown connection'
                 });
@@ -86,6 +88,7 @@ class ConnectionController {
             if (config == null) {
                 await createActivityLogAndLogMessage(log, {
                     level: 'error',
+                    environment_id: environment.id,
                     timestamp: Date.now(),
                     content: 'Unknown provider config'
                 });
@@ -96,16 +99,17 @@ class ConnectionController {
 
             const template: ProviderTemplate | undefined = configService.getTemplate(config.provider);
 
-            if (connection.credentials.type === ProviderAuthModes.OAuth2) {
+            if (connection?.credentials?.type === ProviderAuthModes.OAuth2 || connection?.credentials?.type === ProviderAuthModes.App) {
                 const {
                     success,
                     error,
                     response: credentials
-                } = await connectionService.refreshOauth2CredentialsIfNeeded(
+                } = await connectionService.refreshCredentialsIfNeeded(
                     connection,
                     config,
                     template as ProviderTemplateOAuth2,
                     null,
+                    environment.id,
                     instantRefresh,
                     LogActionEnum.TOKEN
                 );
@@ -124,6 +128,7 @@ class ConnectionController {
 
                 await createActivityLogAndLogMessage(log, {
                     level: 'info',
+                    environment_id: environment.id,
                     auth_mode: template?.auth_mode,
                     content: `Token manual refresh fetch was successful for ${providerConfigKey} and connection ${connectionId} from the web UI`,
                     timestamp: Date.now()
@@ -134,7 +139,12 @@ class ConnectionController {
             let credentials = null;
 
             if (connection.credentials.type === ProviderAuthModes.OAuth1 || connection.credentials.type === ProviderAuthModes.OAuth2) {
-                const credentials = connection.credentials as OAuth2Credentials | OAuth1Credentials;
+                credentials = connection.credentials as OAuth2Credentials | OAuth1Credentials;
+                rawCredentials = credentials.raw;
+            }
+
+            if (connection.credentials.type === ProviderAuthModes.App) {
+                credentials = connection.credentials as AppCredentials;
                 rawCredentials = credentials.raw;
             }
 
@@ -152,9 +162,15 @@ class ConnectionController {
                     oauthType: connection.credentials.type || 'None',
                     connectionConfig: connection.connection_config,
                     connectionMetadata: connection.metadata,
-                    accessToken: connection.credentials.type === ProviderAuthModes.OAuth2 ? connection.credentials.access_token : null,
+                    accessToken:
+                        connection.credentials.type === ProviderAuthModes.OAuth2 || connection.credentials.type === ProviderAuthModes.App
+                            ? connection.credentials.access_token
+                            : null,
                     refreshToken: connection.credentials.type === ProviderAuthModes.OAuth2 ? connection.credentials.refresh_token : null,
-                    expiresAt: connection.credentials.type === ProviderAuthModes.OAuth2 ? connection.credentials.expires_at : null,
+                    expiresAt:
+                        connection.credentials.type === ProviderAuthModes.OAuth2 || connection.credentials.type === ProviderAuthModes.App
+                            ? connection.credentials.expires_at
+                            : null,
                     oauthToken: connection.credentials.type === ProviderAuthModes.OAuth1 ? connection.credentials.oauth_token : null,
                     oauthTokenSecret: connection.credentials.type === ProviderAuthModes.OAuth1 ? connection.credentials.oauth_token_secret : null,
                     credentials,
@@ -268,6 +284,7 @@ class ConnectionController {
             if (!isSync && !isDryRun) {
                 await createActivityLogMessageAndEnd({
                     level: 'info',
+                    environment_id: environmentId,
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content: 'Connection credentials found successfully',

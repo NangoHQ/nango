@@ -21,11 +21,19 @@ export const formatDataRecords = (
     model: string,
     syncId: string,
     sync_job_id: number,
+    lastSyncDate = new Date(),
+    trackDeletes = false,
     softDelete = false
 ): ServiceResponse<SyncDataRecord[]> => {
     const formattedRecords: SyncDataRecord[] = [] as SyncDataRecord[];
 
     const deletedAtKey = 'deletedAt';
+
+    let oldTimestamp = new Date();
+
+    if (trackDeletes) {
+        oldTimestamp = lastSyncDate;
+    }
 
     for (let i = 0; i < records.length; i++) {
         const record = records[i];
@@ -61,8 +69,14 @@ export const formatDataRecords = (
             sync_id: syncId,
             sync_job_id,
             external_is_deleted: softDelete,
-            external_deleted_at
+            external_deleted_at,
+            pending_delete: false
         };
+
+        if (trackDeletes) {
+            formattedRecords[i]!.created_at = oldTimestamp;
+            formattedRecords[i]!.updated_at = oldTimestamp;
+        }
     }
     return { success: true, error: null, response: formattedRecords };
 };
@@ -232,4 +246,5 @@ export function verifyUniqueKeysAreUnique(data: DataResponse[], optionalUniqueKe
 
 export async function deleteRecordsBySyncId(sync_id: string): Promise<void> {
     await schema().from<SyncDataRecord>('_nango_sync_data_records').where({ sync_id }).del();
+    await schema().from<SyncDataRecord>('_nango_sync_data_records_deletes').where({ sync_id }).del();
 }

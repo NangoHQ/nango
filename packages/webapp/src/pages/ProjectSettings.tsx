@@ -5,7 +5,15 @@ import { AlertTriangle, HelpCircle } from '@geist-ui/icons';
 import { TrashIcon } from '@heroicons/react/24/outline';
 import { Tooltip, useModal, Modal } from '@geist-ui/core';
 
-import { useGetProjectInfoAPI, useEditCallbackUrlAPI, useEditWebhookUrlAPI, useEditHmacEnabledAPI, useEditHmacKeyAPI, useEditEnvVariablesAPI } from '../utils/api';
+import {
+    useGetProjectInfoAPI,
+    useEditCallbackUrlAPI,
+    useEditWebhookUrlAPI,
+    useEditHmacEnabledAPI,
+    useEditHmacKeyAPI,
+    useEditEnvVariablesAPI,
+    useEditAlwaysSendWebhookAPI
+} from '../utils/api';
 import { isCloud, defaultCallback } from '../utils/utils';
 import DashboardLayout from '../layout/DashboardLayout';
 import { LeftNavBarItems } from '../components/LeftNavBar';
@@ -30,12 +38,14 @@ export default function ProjectSettings() {
 
     const [hmacKey, setHmacKey] = useState('');
     const [hmacEnabled, setHmacEnabled] = useState(false);
+    const [alwaysSendWebhook, setAlwaysSendWebhook] = useState(false);
     const [hmacEditMode, setHmacEditMode] = useState(false);
     const [envVariables, setEnvVariables] = useState<{ name: string; value: string }[]>([]);
     const getProjectInfoAPI = useGetProjectInfoAPI();
     const editCallbackUrlAPI = useEditCallbackUrlAPI();
     const editWebhookUrlAPI = useEditWebhookUrlAPI();
     const editHmacEnabled = useEditHmacEnabledAPI();
+    const editAlwaysSendWebhook = useEditAlwaysSendWebhookAPI();
     const editHmacKey = useEditHmacKeyAPI();
     const editEnvVariables = useEditEnvVariablesAPI();
 
@@ -67,6 +77,7 @@ export default function ProjectSettings() {
                 setWebhookUrl(account.webhook_url || '');
 
                 setHmacEnabled(account.hmac_enabled);
+                setAlwaysSendWebhook(account.always_send_webhook);
                 setHmacKey(account.hmac_key);
 
                 setEnvVariables(account.env_variables);
@@ -124,6 +135,13 @@ export default function ProjectSettings() {
                 toast.success(checked ? 'HMAC enabled.' : 'HMAC disabled.', { position: toast.POSITION.BOTTOM_CENTER });
             });
         }
+    };
+
+    const handleWebookSendUpdate = async (checked: boolean) => {
+        setAlwaysSendWebhook(checked);
+        editAlwaysSendWebhook(checked).then((_) => {
+            toast.success(checked ? 'Always send webhooks.' : 'Only send webhhoks on added, updated, or deleted.', { position: toast.POSITION.BOTTOM_CENTER });
+        });
     };
 
     const handleHmacSave = async (e: React.SyntheticEvent) => {
@@ -572,6 +590,32 @@ export default function ProjectSettings() {
                                 </div>
                             </div>
                             <div>
+                                <div className="mx-8 mt-8">
+                                    <div className="flex items-center mb-2">
+                                        <label htmlFor="hmac_enabled" className="text-text-light-gray text-sm font-semibold">
+                                            Always Send Webhooks
+                                        </label>
+                                        <Tooltip
+                                            text={
+                                                <>
+                                                    <div className="flex text-black text-sm">
+                                                        {`When running a sync a webhook can always be sent after completion or only sent when data is added, created, or deleted.`}
+                                                    </div>
+                                                </>
+                                            }
+                                        >
+                                            <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                        </Tooltip>
+                                        <input
+                                            type="checkbox"
+                                            className="flex ml-3 bg-black"
+                                            checked={alwaysSendWebhook}
+                                            onChange={(event) => handleWebookSendUpdate(event.target.checked)}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
                                 <div className="mx-8 mt-8 relative">
                                     <div className="flex mb-2">
                                         <div className="flex text-white  mb-2">
@@ -585,7 +629,7 @@ export default function ProjectSettings() {
                                                             <div className="flex text-black text-sm">
                                                                 {`To secure the Frontend SDK calls with`}
                                                                 <a
-                                                                    href="https://docs.nango.dev/guides/oauth#securing-the-frontend-sdk-calls-with-hmac"
+                                                                    href="https://docs.nango.dev/guides/advanced-auth#securing-the-frontend-sdk-calls-with-hmac"
                                                                     target="_blank"
                                                                     rel="noreferrer"
                                                                     className="text-text-blue ml-1"

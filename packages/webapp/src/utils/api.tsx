@@ -158,6 +158,34 @@ export function useEditHmacEnabledAPI() {
     };
 }
 
+export function useEditAlwaysSendWebhookAPI() {
+    const signout = useSignout();
+
+    return async (alwaysSendWebhook: boolean) => {
+        try {
+            const options = {
+                method: 'POST',
+                headers: getHeaders(),
+                body: JSON.stringify({ always_send_webhook: alwaysSendWebhook })
+            };
+
+            let res = await fetch('/api/v1/environment/webhook-send', options);
+
+            if (res.status === 401) {
+                return signout();
+            }
+
+            if (res.status !== 200) {
+                return serverErrorToast();
+            }
+
+            return res;
+        } catch (e) {
+            requestErrorToast();
+        }
+    };
+}
+
 export function useEditHmacKeyAPI() {
     const signout = useSignout();
 
@@ -291,7 +319,7 @@ export function useGetIntegrationDetailsAPI() {
 export function useCreateIntegrationAPI() {
     const signout = useSignout();
 
-    return async (provider: string, authMode: AuthModes, providerConfigKey: string, clientId: string, clientSecret: string, scopes: string) => {
+    return async (provider: string, authMode: AuthModes, providerConfigKey: string, clientId: string, clientSecret: string, scopes: string, app_link: string) => {
         try {
             const options = {
                 method: 'POST',
@@ -302,7 +330,8 @@ export function useCreateIntegrationAPI() {
                     provider_config_key: providerConfigKey,
                     oauth_client_id: clientId,
                     oauth_client_secret: clientSecret,
-                    oauth_scopes: scopes
+                    oauth_scopes: scopes,
+                    app_link
                 })
             };
 
@@ -322,7 +351,7 @@ export function useCreateIntegrationAPI() {
 export function useEditIntegrationAPI() {
     const signout = useSignout();
 
-    return async (provider: string, authMode: AuthModes, providerConfigKey: string, clientId: string, clientSecret: string, scopes: string) => {
+    return async (provider: string, authMode: AuthModes, providerConfigKey: string, clientId: string, clientSecret: string, scopes: string, app_link: string) => {
         try {
             const options = {
                 method: 'PUT',
@@ -333,7 +362,8 @@ export function useEditIntegrationAPI() {
                     provider_config_key: providerConfigKey,
                     client_id: clientId,
                     client_secret: clientSecret,
-                    scopes: scopes
+                    scopes: scopes,
+                    app_link
                 })
             };
 

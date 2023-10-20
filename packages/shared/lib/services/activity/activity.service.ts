@@ -7,6 +7,10 @@ import logger from '../../logger/console.js';
 const activityLogTableName = '_nango_activity_logs';
 const activityLogMessageTableName = '_nango_activity_log_messages';
 
+interface ActivityLogMessagesGrouped {
+    [logId: number]: ActivityLogMessage[];
+}
+
 /**
  * _nango_activity_logs
  * _nango_activity_log_messages
@@ -19,6 +23,7 @@ const activityLogMessageTableName = '_nango_activity_log_messages';
  *
  * _nango_activity_log_messages:
  *     index:
+ *          - environment_id
  *          - activity_log_id: activity_log_id_index
  *          - created_at: created_at_index
  */
@@ -188,15 +193,10 @@ export async function findActivityLogBySession(session_id: string): Promise<numb
     return result[0].id;
 }
 
-export async function getLogsByEnvironment(environment_id: number, limit = 20, offset = 0): Promise<ActivityLog[]> {
+export async function getTopLevelLogByEnvironment(environment_id: number, limit = 20, offset = 0): Promise<ActivityLog[]> {
     const logs = await db.knex
         .withSchema(db.schema())
         .from<ActivityLog>('_nango_activity_logs')
-        .select(
-            '_nango_activity_logs.*',
-            db.knex.raw('json_agg(_nango_activity_log_messages ORDER BY _nango_activity_log_messages.created_at ASC) as messages')
-        )
-        .innerJoin('_nango_activity_log_messages', '_nango_activity_logs.id', '=', '_nango_activity_log_messages.activity_log_id')
         .where({ environment_id })
         .groupBy('_nango_activity_logs.id')
         .orderBy('_nango_activity_logs.timestamp', 'desc')
@@ -206,7 +206,57 @@ export async function getLogsByEnvironment(environment_id: number, limit = 20, o
     return logs || [];
 }
 
-export async function createActivityLogDatabaseErrorMessageAndEnd(baseMessage: string, error: any, activityLogId: number) {
+/**
+ * Retrieves log messages and organizes them by log ID using raw SQL.
+ * @desc Iterates over an array of log IDs, fetching the corresponding log messages
+ * from the database and grouping them by log ID using a raw SQL query.
+ *
+ * @param logIds - An array of log IDs to retrieve messages for.
+ * @returns A promise that resolves to an object containing arrays of ActivityLogMessage objects,
+ * each keyed by its associated log ID.
+ */
+export async function getLogMessagesForLogs(logIds: number[], _environment_id: number): Promise<ActivityLogMessagesGrouped> {
+    if (!logIds.length) {
+        return [];
+    }
+
+    try {
+        const query = `
+            SELECT activity_log_id, array_agg(row_to_json(_nango_activity_log_messages.*)) as messages
+            FROM _nango_activity_log_messages
+            WHERE activity_log_id = ANY(?)
+            GROUP BY activity_log_id
+        `;
+        /*
+        const query = `
+            SELECT activity_log_id, array_agg(row_to_json(_nango_activity_log_messages.*)) as messages
+            FROM _nango_activity_log_messages
+            WHERE activity_log_id = ANY(?)
+            AND environment_id = ${environment_id}
+            GROUP BY activity_log_id
+        `;
+        */
+
+        const result = await db.knex.raw(query, [logIds]);
+
+        const groupedMessages: ActivityLogMessagesGrouped = result.rows.reduce(
+            (groups: ActivityLogMessagesGrouped, row: { activity_log_id: number; messages: ActivityLogMessage[] }) => {
+                groups[row.activity_log_id] = row.messages.sort(
+                    (a, b) => new Date(a.created_at as unknown as string).getTime() - new Date(b.created_at as unknown as string).getTime()
+                );
+                return groups;
+            },
+            {}
+        );
+
+        return groupedMessages;
+    } catch (error) {
+        console.error(error);
+        return [];
+    }
+}
+
+export async function createActivityLogDatabaseErrorMessageAndEnd(baseMessage: string, error: any, activityLogId: number, environment_id: number) {
     let errorMessage = baseMessage;
 
     if ('code' in error) errorMessage += ` Error code: ${error.code}.\n`;
@@ -216,6 +266,7 @@ export async function createActivityLogDatabaseErrorMessageAndEnd(baseMessage: s
 
     await createActivityLogMessageAndEnd({
         level: 'error',
+        environment_id,
         activity_log_id: activityLogId,
         timestamp: Date.now(),
         content: errorMessage

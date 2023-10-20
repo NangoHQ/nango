@@ -26,8 +26,8 @@ indent_style = space
 insert_final_newline = true
 trim_trailing_whitespace = true
 
-[{.babelrc,bower.json,nodemon.json,*.yml}]
-indent_size = 2
+[{.babelrc,bower.json,nodemon.json,*.yml,*.yaml}]
+indent_size = 4
 
 [Makefile]
 indent_style = tab

@@ -134,6 +134,7 @@ class AccountController {
 
             await createActivityLogAndLogMessage(log, {
                 level: 'info',
+                environment_id: response.environment.id,
                 timestamp: Date.now(),
                 //content: `A Nango admin logged into your account for the following reason: "${login_reason}"`
                 content: `A Nango admin logged into another account for the following reason: "${login_reason}"`

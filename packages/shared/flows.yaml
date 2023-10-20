@@ -4,6 +4,15 @@ integrations:
       runs: every 30min
       returns:
         - AsanaTask
+      description: >
+        Continuously fetches Asana tasks. This is just a trivial example:
+
+        it will only get tasks from the first project of the first workspace.
+
+        Details: full refresh, doesn't support deletes, sync goes to all time,
+        metadata is not required.
+
+        Required scope(s): default
     models:
       AsanaTask:
         id: string
@@ -365,10 +374,30 @@ integrations:
       runs: every 6 hours
       returns:
         - OrganizationalUnit
+      description: >
+        Continuously fetches groups from either Microsoft 365 or Azure Active
+        Directory.
+
+        Details: full refresh, support deletes, goes back all time, metadata is
+        not required.
+
+        Required scope(s): GroupMember.Read.All
     microsoft-users:
       runs: every hour
       returns:
         - User
+      description: >
+        Continuously fetches users from either Microsoft 365 or Azure Active
+        Directory given specified
+
+        groups to sync. Expects an `orgsToSync` metadata property with an array
+
+        of organization ids.
+
+        Details: full refresh, doesn't support deletes, goes back all time,
+        metadata is required.
+
+        Required scope(s): User.Read.All
     models:
       OrganizationalUnit:
         id: string
@@ -425,6 +454,10 @@ integrations:
       runs: every day
       returns:
         - SalesforceArticle
+    salesforce-tickets:
+      runs: every day
+      returns:
+        - SalesforceTicket
     models:
       SalesforceAccount:
         id: string
@@ -451,6 +484,31 @@ integrations:
         id: string
         title: string
         content: string
+        last_modified_date: string
+      SalesforceTicket:
+        id: string
+        case_number: string
+        subject: string | null
+        account_id: string
+        account_name: string | null
+        contact_id: string
+        contact_name: string | null
+        owner_id: string
+        owner_name: string | null
+        priority: string
+        status: string
+        description: string | null
+        type: string
+        created_date: string
+        closed_date: string
+        origin: string
+        is_closed: boolean
+        is_escalated: boolean
+        conversation:
+          id: string
+          body: string
+          created_date: string
+          created_by: string
         last_modified_date: string
   slack:
     slack-users:
@@ -554,6 +612,20 @@ integrations:
         channel_id: string
         user_id: string
         reaction_name: string
+  wildix-pbx:
+    wildix-pbx-colleagues:
+      runs: every 1 hour
+      returns:
+        - WildixPbxColleague
+    models:
+      WildixPbxColleague:
+        id: string
+        name: string
+        extension: string
+        email: string
+        mobilePhone: string
+        licenseType: string
+        language: string
   zendesk:
     zendesk-tickets:
       runs: every 1 hour

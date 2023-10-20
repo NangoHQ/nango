@@ -140,7 +140,9 @@ describe('Should verify the config controller HTTP API calls', async () => {
                 provider: 'notion',
                 oauth_client_id: 'abc',
                 oauth_client_secret: 'def',
-                oauth_scopes: 'abc,def,efg'
+                oauth_scopes: 'abc,def,efg',
+                app_link: null,
+                auth_mode: 'OAUTH2'
             },
             headers: {
                 Authorization: `Bearer ${result[0].secret_key}`
@@ -196,7 +198,9 @@ describe('Should verify the config controller HTTP API calls', async () => {
         expect(sendMock).toHaveBeenCalledWith({
             config: {
                 provider: 'notion',
-                unique_key: 'test'
+                unique_key: 'test',
+                syncs: [],
+                actions: []
             }
         });
 
@@ -213,7 +217,11 @@ describe('Should verify the config controller HTTP API calls', async () => {
                 unique_key: 'test',
                 client_id: 'abc',
                 client_secret: 'def',
-                scopes: 'abc,def,efg'
+                scopes: 'abc,def,efg',
+                app_link: null,
+                auth_mode: 'OAUTH2',
+                syncs: [],
+                actions: []
             }
         });
     });

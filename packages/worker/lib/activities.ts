@@ -19,6 +19,7 @@ import {
     isInitialSyncStillRunning,
     logger
 } from '@nangohq/shared';
+import integrationService from './integration.service.js';
 import type { ContinuousSyncArgs, InitialSyncArgs, ActionArgs } from './models/Worker';
 
 export async function routeSync(args: InitialSyncArgs): Promise<boolean | object> {
@@ -49,6 +50,7 @@ export async function runAction(args: ActionArgs): Promise<object> {
     const { input, nangoConnection, actionName, activityLogId } = args;
 
     const syncRun = new syncRunService({
+        integrationService,
         writeToDb: true,
         nangoConnection,
         syncName: actionName,
@@ -146,6 +148,7 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
         const content = `The continuous sync failed to run because of a failure to obtain the provider config for ${syncName} with the following error: ${prettyError}`;
         await createActivityLogAndLogMessage(log, {
             level: 'error',
+            environment_id: environmentId,
             timestamp: Date.now(),
             content
         });
@@ -215,6 +218,7 @@ export async function syncProvider(
         if (debug) {
             await createActivityLogMessage({
                 level: 'info',
+                environment_id: nangoConnection?.environment_id as number,
                 activity_log_id: activityLogId,
                 timestamp: Date.now(),
                 content: `Starting sync ${syncType} for ${syncName} with syncId ${syncId} and syncJobId ${syncJobId} with execution id of ${temporalContext.info.workflowExecution.workflowId} for attempt #${temporalContext.info.attempt}`
@@ -222,6 +226,7 @@ export async function syncProvider(
         }
 
         const syncRun = new syncRunService({
+            integrationService,
             writeToDb: true,
             syncId,
             syncJobId,
@@ -255,6 +260,7 @@ export async function syncProvider(
 
         await createActivityLogAndLogMessage(log, {
             level: 'error',
+            environment_id: nangoConnection?.environment_id as number,
             timestamp: Date.now(),
             content
         });

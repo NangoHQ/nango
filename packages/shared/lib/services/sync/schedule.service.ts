@@ -57,14 +57,15 @@ export const markAllAsStopped = async (): Promise<void> => {
     await schema().update({ status: ScheduleStatus.STOPPED }).from<SyncSchedule>(TABLE);
 };
 
-export const updateScheduleStatus = async (schedule_id: string, status: SyncCommand, activityLogId: number): Promise<void> => {
+export const updateScheduleStatus = async (schedule_id: string, status: SyncCommand, activityLogId: number, environment_id: number): Promise<void> => {
     try {
         await schema().update({ status: SyncCommandToScheduleStatus[status] }).from<SyncSchedule>(TABLE).where({ schedule_id, deleted: false });
     } catch (error: any) {
         await createActivityLogDatabaseErrorMessageAndEnd(
             `Failed to update schedule status to ${status} for schedule_id: ${schedule_id}.`,
             error,
-            activityLogId
+            activityLogId,
+            environment_id
         );
     }
 };

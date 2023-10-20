@@ -3,13 +3,13 @@ title: Gong
 sidebarTitle: Gong
 ---
 
-API configuration: [`gong`](https://nango.dev/providers.yaml)
+API configuration: [`gong`](https://nango.dev/providers.yaml), [`gong-oauth`](https://nango.dev/providers.yaml)
 
 ## Features
 
 | Feature                                                                          | Status                          |
 | -------------------------------------------------------------------------------- | ------------------------------- |
-| [Auth (Basic)](/guides/api-key)                                                      | ✅                              |
+| Auth ([Basic](/guides/api-key) + [OAuth](guides/oauth))| ✅                              |
 | [Syncs](/guides/sync) & [Actions](/guides/actions)                                                              | ✅                              |
 | [Nango Proxy](/guides/proxy)                          | ✅                              |
 | Auto-pagination                     | 🚫 (time to contribute: &lt;1h) |
@@ -18,9 +18,10 @@ API configuration: [`gong`](https://nango.dev/providers.yaml)
 <Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
 ## Getting started
 
-Gong offers both Basic auth (API key) and OAuth as authentication. For now Nango only implements Basic auth, see [this issue](https://github.com/NangoHQ/nango/issues/648) for OAuth support. 
+Gong offers both Basic auth (API key) and OAuth as authentication. Nango implements both. To register an OAuth app, you need to request a developer account. At first, the OAuth app will be private (only for test) and you need an additional approval to make it public.
 
 -   [How to find API credentials (for end-users)](https://help.gong.io/hc/en-us/articles/360042449451-Receive-access-to-the-API)
+-   [Request a developer account to create an OAuth app](https://app.gong.io/welcome/developer/sign-up)
 -   [API Docs](https://app.gong.io/settings/api/documentation#overview)
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>

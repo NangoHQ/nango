@@ -1,5 +1,6 @@
 import type { AuthModes } from './Auth.js';
 import type { TimestampsAndDeleted } from './Generic.js';
+import type { Sync, Action } from './Sync.js';
 
 export interface Config extends TimestampsAndDeleted {
     id?: number;
@@ -11,6 +12,7 @@ export interface Config extends TimestampsAndDeleted {
     environment_id: number;
     oauth_client_secret_iv?: string | null;
     oauth_client_secret_tag?: string | null;
+    app_link?: string | null;
 }
 
 export interface Template {
@@ -25,6 +27,7 @@ export interface Template {
             at?: string;
             after?: string;
         };
+        decompress?: boolean;
     };
     authorization_url: string;
     authorization_params?: Record<string, string>;
@@ -51,9 +54,15 @@ export interface IntegrationWithCreds extends Integration {
     client_id: string;
     client_secret: string;
     scopes: string;
+    auth_mode: AuthModes;
+    app_link?: string;
+    syncs: Sync[];
+    actions: Action[];
 }
 
 export interface Integration {
     unique_key: string;
     provider: string;
+    syncs: Sync[];
+    actions: Action[];
 }

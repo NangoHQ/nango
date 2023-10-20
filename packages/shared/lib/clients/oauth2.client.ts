@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2022 Nango, all rights reserved.
- */
-
 import {
     Config as ProviderConfig,
     TemplateOAuth2 as ProviderTemplateOAuth2,
@@ -21,8 +17,6 @@ import Boom from '@hapi/boom';
 import { NangoError } from '../utils/error.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 
-// Simple OAuth 2 does what it says on the tin: A simple, no-frills client for OAuth 2 that implements the 3 most common grant_types.
-// Well maintained, I like :-)
 export function getSimpleOAuth2ClientConfig(providerConfig: ProviderConfig, template: ProviderTemplate, connectionConfig: Record<string, string>) {
     const strippedTokenUrl = template.token_url.replace(/connectionConfig\./g, '');
     const tokenUrl = new URL(interpolateString(strippedTokenUrl, connectionConfig));

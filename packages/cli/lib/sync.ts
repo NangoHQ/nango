@@ -23,7 +23,8 @@ import type {
     Connection as NangoConnection,
     NangoIntegration,
     NangoIntegrationData,
-    SimplifiedNangoIntegration
+    SimplifiedNangoIntegration,
+    NangoConfigMetadata
 } from '@nangohq/shared';
 import {
     getInterval,
@@ -49,6 +50,7 @@ import {
     getNangoRootPath,
     printDebug
 } from './utils.js';
+import integrationService from './local-integration.service.js';
 import type { DeployOptions, GlobalOptions } from './types.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -639,6 +641,7 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
     }
 
     const syncRun = new syncRunService({
+        integrationService,
         writeToDb: false,
         nangoConnection,
         input: normalizedInput as object,
@@ -992,6 +995,16 @@ function packageIntegrationData(config: SimplifiedNangoIntegration[], debug: boo
 
             const { path: integrationFilePath, result: integrationFileResult } = localFileService.checkForIntegrationDistFile(syncName, './');
 
+            const metadata = {} as NangoConfigMetadata;
+
+            if (sync.description) {
+                metadata['description'] = sync.description;
+            }
+
+            if (sync.scopes) {
+                metadata['scopes'] = sync.scopes;
+            }
+
             if (!integrationFileResult) {
                 console.log(chalk.red(`No integration file found for ${syncName} at ${integrationFilePath}. Skipping...`));
                 continue;
@@ -1032,6 +1045,7 @@ function packageIntegrationData(config: SimplifiedNangoIntegration[], debug: boo
                 track_deletes: sync.track_deletes || false,
                 auto_start: sync.auto_start === false ? false : true,
                 attributes: sync.attributes || {},
+                metadata: metadata || {},
                 type,
                 fileBody: {
                     js: localFileService.getIntegrationFile(syncName, './') as string,

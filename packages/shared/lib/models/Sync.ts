@@ -1,11 +1,14 @@
 import { LogActionEnum } from './Activity.js';
 import type { Timestamps, TimestampsAndDeleted } from './Generic.js';
+import type { NangoSync } from '../sdk/sync.js';
+import type { NangoIntegrationData } from '../integrations/index.js';
 
 export enum SyncStatus {
     RUNNING = 'RUNNING',
     PAUSED = 'PAUSED',
     STOPPED = 'STOPPED',
-    SUCCESS = 'SUCCESS'
+    SUCCESS = 'SUCCESS',
+    ERROR = 'ERROR'
 }
 
 export enum SyncType {
@@ -35,6 +38,10 @@ export interface Sync extends TimestampsAndDeleted {
     };
 }
 
+export interface Action extends TimestampsAndDeleted {
+    name: string;
+}
+
 export interface Job extends TimestampsAndDeleted {
     id?: number;
     status: SyncStatus;
@@ -59,6 +66,11 @@ export enum SyncConfigType {
     ACTION = 'action'
 }
 
+export interface NangoConfigMetadata {
+    scopes?: string[];
+    description?: string;
+}
+
 export interface SyncConfig extends TimestampsAndDeleted {
     id?: number;
     environment_id: number;
@@ -73,6 +85,7 @@ export interface SyncConfig extends TimestampsAndDeleted {
     track_deletes: boolean;
     auto_start: boolean;
     attributes?: object;
+    metadata?: NangoConfigMetadata;
     version?: string;
     pre_built?: boolean;
     is_public?: boolean;
@@ -122,6 +135,7 @@ interface InternalIncomingPreBuiltFlowConfig {
     runs: string;
     auto_start?: boolean;
     attributes?: object;
+    metadata?: NangoConfigMetadata;
     model_schema: string;
 }
 
@@ -185,6 +199,9 @@ export interface DataRecord extends Timestamps {
     sync_config_id?: number | undefined;
     external_is_deleted?: boolean;
     external_deleted_at?: Date | null;
+    json_iv?: string | null;
+    json_tag?: string | null;
+    pending_delete?: boolean;
 }
 
 export type LastAction = 'added' | 'updated' | 'deleted';
@@ -242,4 +259,18 @@ export interface SyncConfigWithProvider {
     provider_config_key: string;
     unique_key: string;
     type: SyncConfigType;
+}
+
+export interface IntegrationServiceInterface {
+    runScript(
+        syncName: string,
+        activityLogId: number | undefined,
+        nango: NangoSync,
+        integrationData: NangoIntegrationData,
+        environmentId: number,
+        writeToDb: boolean,
+        isAction: boolean,
+        optionalLoadLocation?: string,
+        input?: object
+    ): Promise<any>;
 }

@@ -5,6 +5,7 @@ import fs from 'fs-extra';
 import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { NangoIntegrationData, NangoConfig, NangoIntegration } from '../integrations/index.js';
 import { Sync, SyncStatus, SyncType, ScheduleStatus, SyncCommand, SyncWithSchedule } from '../models/Sync.js';
+import type { ServiceResponse } from '../models/Generic.js';
 import { LogActionEnum, LogLevel } from '../models/Activity.js';
 import { TASK_QUEUE } from '../constants.js';
 import {
@@ -21,9 +22,10 @@ import connectionService from '../services/connection.service.js';
 import configService from '../services/config.service.js';
 import { createSync } from '../services/sync/sync.service.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
+import { NangoError } from '../utils/error.js';
 import { isProd } from '../utils/utils.js';
 
-const generateActionWorkflowId = (actionName: string, connectionId: string) => `${TASK_QUEUE}.ACTION:${actionName}.${connectionId}`;
+const generateActionWorkflowId = (actionName: string, connectionId: string) => `${TASK_QUEUE}.ACTION:${actionName}.${connectionId}.${Date.now()}`;
 const generateWorkflowId = (sync: Sync, syncName: string, connectionId: string) => `${TASK_QUEUE}.${syncName}.${connectionId}-${sync.id}`;
 const generateScheduleId = (sync: Sync, syncName: string, connectionId: string) => `${TASK_QUEUE}.${syncName}.${connectionId}-schedule-${sync.id}`;
 
@@ -156,6 +158,7 @@ class SyncClient {
                 const content = `The sync was not created or started due to an error with the sync interval "${syncData.runs}": ${error?.message}`;
                 await createActivityLogMessageAndEnd({
                     level: 'error',
+                    environment_id: nangoConnection?.environment_id as number,
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
                     content
@@ -186,6 +189,7 @@ class SyncClient {
                 if (debug) {
                     await createActivityLogMessage({
                         level: 'debug',
+                        environment_id: nangoConnection?.environment_id as number,
                         activity_log_id: activityLogId as number,
                         timestamp: Date.now(),
                         content: `Starting sync job ${jobId} for sync ${sync.id}`
@@ -266,6 +270,7 @@ class SyncClient {
             if (syncData.auto_start !== false && handle) {
                 await createActivityLogMessage({
                     level: 'info',
+                    environment_id: nangoConnection?.environment_id as number,
                     activity_log_id: activityLogId as number,
                     content: `Started initial background sync ${handle?.workflowId} and data updated on a schedule ${scheduleId} at ${syncData.runs} in the task queue: ${TASK_QUEUE}`,
                     timestamp: Date.now()
@@ -395,6 +400,7 @@ class SyncClient {
 
             await createActivityLogMessageAndEnd({
                 level: 'error',
+                environment_id: environmentId,
                 activity_log_id: activityLogId as number,
                 timestamp: Date.now(),
                 content: `The sync command: ${command} failed with error: ${errorMessage}`
@@ -420,14 +426,24 @@ class SyncClient {
         }
     }
 
-    async triggerAction(connection: NangoConnection, actionName: string, input: object, activityLogId: number) {
+    async triggerAction(
+        connection: NangoConnection,
+        actionName: string,
+        input: object,
+        activityLogId: number,
+        environment_id: number
+    ): Promise<ServiceResponse> {
         const workflowId = generateActionWorkflowId(actionName, connection.connection_id as string);
 
         try {
             await createActivityLogMessage({
                 level: 'info',
+                environment_id,
                 activity_log_id: activityLogId as number,
                 content: `Starting action workflow ${workflowId} in the task queue: ${TASK_QUEUE}`,
+                params: {
+                    input: JSON.stringify(input, null, 2)
+                },
                 timestamp: Date.now()
             });
 
@@ -444,10 +460,40 @@ class SyncClient {
                 ]
             });
 
+            if (actionHandler.success === false) {
+                await createActivityLogMessageAndEnd({
+                    level: 'error',
+                    environment_id,
+                    activity_log_id: activityLogId as number,
+                    timestamp: Date.now(),
+                    content: `The action workflow ${workflowId} did not complete successfully`
+                });
+
+                return actionHandler;
+            }
+
+            await createActivityLogMessageAndEnd({
+                level: 'info',
+                environment_id,
+                activity_log_id: activityLogId as number,
+                timestamp: Date.now(),
+                content: `The action workflow ${workflowId} was successfully run. A truncated response is: ${JSON.stringify(
+                    actionHandler.response,
+                    null,
+                    2
+                ).slice(0, 100)}`
+            });
+
+            await updateSuccessActivityLog(activityLogId as number, true);
+
             return actionHandler;
         } catch (e) {
+            const errorMessage = JSON.stringify(e, ['message', 'name'], 2);
+            const error = new NangoError('action_failure', { errorMessage });
+
             await createActivityLogMessageAndEnd({
                 level: 'error',
+                environment_id,
                 activity_log_id: activityLogId as number,
                 timestamp: Date.now(),
                 content: `The action workflow ${workflowId} failed with error: ${e}`
@@ -464,7 +510,7 @@ class SyncClient {
                 }
             });
 
-            return null;
+            return { success: false, error, response: null };
         }
     }
 
@@ -489,6 +535,7 @@ class SyncClient {
             if (activityLogId && syncName) {
                 await createActivityLogMessage({
                     level: 'info',
+                    environment_id: environmentId,
                     activity_log_id: activityLogId as number,
                     content: `Updated sync "${syncName}" schedule "${schedule_id}" with interval ${interval} and offset ${offset}.`,
                     timestamp: Date.now()
