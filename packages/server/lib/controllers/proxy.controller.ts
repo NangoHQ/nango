@@ -856,14 +856,19 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
      */
     private parseHeaders(req: Request) {
         const headers = req.rawHeaders;
-        const HEADER_PROXY = 'nango-proxy-';
+        const HEADER_PROXY_LOWER = 'nango-proxy-';
+        const HEADER_PROXY_UPPER = 'Nango-Proxy-';
         const forwardedHeaders: ForwardedHeaders = {};
 
-        for (let i = 0, n = headers.length; i < n; i += 2) {
-            const headerKey = headers[i]?.toLowerCase();
+        if (!headers) {
+            return forwardedHeaders;
+        }
 
-            if (headerKey?.startsWith(HEADER_PROXY)) {
-                forwardedHeaders[headerKey.slice(HEADER_PROXY.length)] = headers[i + 1] || '';
+        for (let i = 0, n = headers.length; i < n; i += 2) {
+            const headerKey = headers[i];
+
+            if (headerKey?.toLowerCase().startsWith(HEADER_PROXY_LOWER) || headerKey?.startsWith(HEADER_PROXY_UPPER)) {
+                forwardedHeaders[headerKey.slice(HEADER_PROXY_LOWER.length)] = headers[i + 1] || '';
             }
         }
 

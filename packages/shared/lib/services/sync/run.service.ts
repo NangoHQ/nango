@@ -242,7 +242,11 @@ export default class SyncRun {
                 const syncStartDate = new Date();
 
                 const startTime = Date.now();
-                const userDefinedResults = await this.integrationService.runScript(
+                const {
+                    success,
+                    error,
+                    response: userDefinedResults
+                } = await this.integrationService.runScript(
                     this.syncName,
                     this.activityLogId as number,
                     nango,
@@ -254,14 +258,14 @@ export default class SyncRun {
                     this.input
                 );
 
-                if (userDefinedResults === null) {
+                if (!success || userDefinedResults === null) {
                     await this.reportFailureForResults(
                         `The integration was run but there was a problem in retrieving the results from the script "${this.syncName}"${
                             syncData?.version ? ` version: ${syncData.version}` : ''
                         }.`
                     );
 
-                    return this.isAction ? { success: false } : false;
+                    return this.isAction ? { success: false, error } : false;
                 }
 
                 if (!this.writeToDb) {
@@ -301,6 +305,8 @@ export default class SyncRun {
                     return { success: true, response: userDefinedResults };
                 }
 
+                // means a void response from the sync script which is expected
+                // and means that they're using batchSave or batchDelete
                 if (userDefinedResults === undefined) {
                     await this.finishSync(models, syncStartDate, syncData.version as string, trackDeletes);
 

@@ -285,7 +285,11 @@ class SyncController {
 
             const syncClient = await SyncClient.getInstance();
 
-            const { success: actionSuccess, response: actionResponse } = (await syncClient?.triggerAction(
+            const {
+                success: actionSuccess,
+                error: actionError,
+                response: actionResponse
+            } = (await syncClient?.triggerAction(
                 connection as Connection,
                 action_name as string,
                 input,
@@ -294,7 +298,7 @@ class SyncController {
             )) as ServiceResponse;
 
             if (!actionSuccess) {
-                res.sendStatus(400);
+                errorManager.errResFromNangoErr(res, actionError);
                 return;
             } else {
                 res.send(actionResponse);

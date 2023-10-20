@@ -7,7 +7,9 @@ import {
     NangoSync,
     localFileService,
     remoteFileService,
-    isCloud
+    isCloud,
+    ServiceResponse,
+    NangoError
 } from '@nangohq/shared';
 
 class IntegrationService implements IntegrationServiceInterface {
@@ -21,7 +23,7 @@ class IntegrationService implements IntegrationServiceInterface {
         isAction: boolean,
         optionalLoadLocation?: string,
         input?: object
-    ): Promise<any> {
+    ): Promise<ServiceResponse<any>> {
         try {
             const script: string | null =
                 isCloud() && !optionalLoadLocation
@@ -53,7 +55,9 @@ class IntegrationService implements IntegrationServiceInterface {
                     timestamp: Date.now()
                 });
 
-                return null;
+                const error = new NangoError('Unable to find integration file', 404);
+
+                return { success: false, error, response: null };
             }
 
             try {
@@ -72,7 +76,7 @@ class IntegrationService implements IntegrationServiceInterface {
                 if (typeof scriptExports.default === 'function') {
                     const results = isAction ? await scriptExports.default(nango, input) : await scriptExports.default(nango);
 
-                    return results;
+                    return { success: true, error: null, response: results };
                 } else {
                     const content = `There is no default export that is a function for ${syncName}`;
                     if (activityLogId && writeToDb) {
@@ -87,7 +91,7 @@ class IntegrationService implements IntegrationServiceInterface {
                         console.error(content);
                     }
 
-                    return null;
+                    return { success: false, error: new NangoError(content, 500), response: null };
                 }
             } catch (err: any) {
                 let content;
@@ -113,7 +117,7 @@ class IntegrationService implements IntegrationServiceInterface {
                     console.error(content);
                 }
 
-                return null;
+                return { success: false, error: new NangoError(content, 500), response: null };
             }
         } catch (err) {
             const errorMessage = JSON.stringify(err, ['message', 'name', 'stack'], 2);
@@ -131,7 +135,7 @@ class IntegrationService implements IntegrationServiceInterface {
                 console.error(content);
             }
 
-            return null;
+            return { success: false, error: new NangoError(content, 500), response: null };
         }
     }
 }
