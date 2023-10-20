@@ -50,6 +50,11 @@ export async function routeSync(args: InitialSyncArgs): Promise<boolean | object
 export async function runAction(args: ActionArgs): Promise<object> {
     const { input, nangoConnection, actionName, activityLogId } = args;
 
+    const syncConfig: ProviderConfig = (await configService.getProviderConfig(
+        nangoConnection?.provider_config_key as string,
+        nangoConnection?.environment_id as number
+    )) as ProviderConfig;
+
     const syncRun = new syncRunService({
         integrationService,
         writeToDb: true,
@@ -59,6 +64,7 @@ export async function runAction(args: ActionArgs): Promise<object> {
         syncType: SyncType.ACTION,
         activityLogId,
         input,
+        provider: syncConfig.provider,
         debug: false
     });
 
@@ -235,6 +241,7 @@ export async function syncProvider(
             syncName,
             syncType,
             activityLogId,
+            provider: syncConfig.provider,
             debug
         });
 

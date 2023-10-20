@@ -59,7 +59,7 @@ class MetricsManager {
                                 value
                             }
                         ],
-                        unit: 'ms',
+                        unit: 'seconds',
                         resources: [
                             {
                                 name: metricId,
