@@ -431,7 +431,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                                         <ul className="flex pb-4 items-center text-lg border-b border-border-gray">
                                             <li className="pr-12">Integration Script</li>
                                             <li className="pr-20">Models</li>
-                                            <li className="pr-12">Status</li>
+                                            <li className="pr-16">Status</li>
                                             <li className="pr-20">Last Sync</li>
                                             <li className="pr-20">Next Sync</li>
                                             <li>30d Run Time</li>

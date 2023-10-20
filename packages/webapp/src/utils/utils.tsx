@@ -231,5 +231,7 @@ export function calculateTotalRuntime(timestamps: { created_at: string; updated_
     if (minutes > 0) runtime += `${minutes}m `;
     if (seconds > 0) runtime += `${seconds}s`;
 
-    return runtime.trim();
+    const result = runtime.trim();
+
+    return  result === '' ? '-' : result;
 };
