@@ -136,6 +136,8 @@ class SyncClient {
         debug = false
     ): Promise<void> {
         try {
+            let activityLogId: number | null = null;
+
             const log = {
                 level: 'info' as LogLevel,
                 success: null,
@@ -150,7 +152,10 @@ class SyncClient {
                 environment_id: nangoConnection?.environment_id as number,
                 operation_name: syncName
             };
-            const activityLogId = await createActivityLog(log);
+
+            if (syncData.auto_start !== false) {
+                activityLogId = await createActivityLog(log);
+            }
 
             const { success, error, response } = getInterval(syncData.runs, new Date());
 

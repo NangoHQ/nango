@@ -29,7 +29,7 @@ import { NangoError } from '../utils/error.js';
 import type { Metadata, Connection, StoredConnection, BaseConnection, NangoConnection } from '../models/Connection.js';
 import type { ServiceResponse } from '../models/Generic.js';
 import encryptionManager from '../utils/encryption.manager.js';
-import metricsManager from '../utils/metrics.manager.js';
+import metricsManager, { MetricTypes } from '../utils/metrics.manager.js';
 import {
     AppCredentials,
     AuthModes as ProviderAuthModes,
@@ -276,7 +276,7 @@ class ConnectionService {
         if (!connectionId) {
             const error = new NangoError('missing_connection');
 
-            await metricsManager.capture('get_connection_failure', error.message, LogActionEnum.AUTH, {
+            await metricsManager.capture(MetricTypes.GET_CONNECTION_FAILURE, error.message, LogActionEnum.AUTH, {
                 environmentId: String(environment_id),
                 connectionId,
                 providerConfigKey
@@ -288,7 +288,7 @@ class ConnectionService {
         if (!providerConfigKey) {
             const error = new NangoError('missing_provider_config');
 
-            await metricsManager.capture('get_connection_failure', error.message, LogActionEnum.AUTH, {
+            await metricsManager.capture(MetricTypes.GET_CONNECTION_FAILURE, error.message, LogActionEnum.AUTH, {
                 environmentId: String(environment_id),
                 connectionId,
                 providerConfigKey
@@ -309,7 +309,7 @@ class ConnectionService {
 
             const error = new NangoError('unknown_connection', { connectionId, providerConfigKey, environmentName });
 
-            await metricsManager.capture('get_connection_failure', error.message, LogActionEnum.AUTH, {
+            await metricsManager.capture(MetricTypes.GET_CONNECTION_FAILURE, error.message, LogActionEnum.AUTH, {
                 environmentId: String(environment_id),
                 connectionId,
                 providerConfigKey
@@ -340,7 +340,7 @@ class ConnectionService {
 
         const content = 'Connection fetched successfully';
 
-        await metricsManager.capture('get_connection_success', content, LogActionEnum.AUTH, {
+        await metricsManager.capture(MetricTypes.GET_CONNECTION_SUCCESS, content, LogActionEnum.AUTH, {
             environmentId: String(environment_id),
             connectionId,
             providerConfigKey
