@@ -860,6 +860,10 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         const HEADER_PROXY_UPPER = 'Nango-Proxy-';
         const forwardedHeaders: ForwardedHeaders = {};
 
+        if (!headers) {
+            return forwardedHeaders;
+        }
+
         for (let i = 0, n = headers.length; i < n; i += 2) {
             const headerKey = headers[i];
 
