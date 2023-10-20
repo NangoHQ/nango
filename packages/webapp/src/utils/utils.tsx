@@ -200,7 +200,7 @@ export function getRunTime(created_at: string, updated_at: string): string {
     if (minutes > 0) runtime += `${minutes}m `;
     if (seconds > 0) runtime += `${seconds}s`;
 
-    return runtime.trim();
+    return runtime.trim() || '-';
 }
 
 /**

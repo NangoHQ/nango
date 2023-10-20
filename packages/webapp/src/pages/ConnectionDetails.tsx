@@ -428,12 +428,12 @@ We could not retrieve and/or refresh your access token due to the following erro
                             <>
                                 {syncs.length > 0 && (
                                     <div className="text-white px-5">
-                                        <ul className="flex pb-4 items-center text-lg border-b border-border-gray">
-                                            <li className="pr-12">Integration Script</li>
-                                            <li className="pr-20">Models</li>
-                                            <li className="pr-16">Status</li>
-                                            <li className="pr-20">Last Sync</li>
-                                            <li className="pr-20">Next Sync</li>
+                                        <ul className="flex space-x-14 pb-4 items-center text-lg border-b border-border-gray">
+                                            <li>Integration Script</li>
+                                            <li className="w-[7.5rem]">Models</li>
+                                            <li className="w-[3.75rem]">Status</li>
+                                            <li>Last Sync</li>
+                                            <li>Next Sync</li>
                                             <li>30d Run Time</li>
                                         </ul>
                                     </div>
@@ -464,18 +464,18 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                     }
                                                     type="dark"
                                                 >
-                                                            <li className="w-40">{sync.name}{sync.latest_sync && (<>@v{sync?.latest_sync?.version}</>)}</li>
+                                                            <li className="w-44">{sync.name}{sync.latest_sync && (<>@v{sync?.latest_sync?.version}</>)}</li>
                                                 </Tooltip>
-                                                <li className="w-36 ml-6 text-sm truncate overflow-hidden">
-                                                    <Tooltip text={sync?.latest_sync?.models?.join(', ') || ''} type="dark">
-                                                        {sync.latest_sync && sync.latest_sync.models ? (
-                                                            <>
-                                                                {sync.latest_sync.models.map((model) => model.charAt(0).toUpperCase() + model.slice(1)).join(', ')}
-                                                            </>
-                                                        ) : '-'}
-                                                    </Tooltip>
-                                                </li>
-                                                <li className="w-32 ml-2">
+                                                <Tooltip text={sync?.latest_sync?.models?.join(', ') || ''} type="dark">
+                                                    <li className="w-44 ml-4 text-sm truncate">
+                                                            {sync.latest_sync && sync.latest_sync.models ? (
+                                                                <>
+                                                                    {sync.latest_sync.models.map((model) => model.charAt(0).toUpperCase() + model.slice(1)).join(', ')}
+                                                                </>
+                                                            ) : '-'}
+                                                    </li>
+                                                </Tooltip>
+                                                <li className="w-28">
                                                     {sync.schedule_status === 'PAUSED' && (
                                                         <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-red-500 bg-opacity-20">
                                                             <X className="stroke-red-500 mr-2" size="12" />
@@ -523,7 +523,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                                     to={`/activity?activity_log_id=${sync.latest_sync?.activity_log_id}`}
                                                                     className={successBubbleStyles}
                                                                 >
-                                                                        <SuccessBubble />
+                                                                    <SuccessBubble />
                                                                 </Link>
                                                             </Tooltip>
                                                     ) : (
@@ -539,12 +539,12 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                         {sync.latest_sync?.activity_log_id !== null ? (
                                                             <Link
                                                                 to={`/activity?activity_log_id=${sync.latest_sync?.activity_log_id}`}
-                                                                className="block w-36 ml-1 text-gray-500 text-sm"
+                                                                className="block w-32 ml-1 text-gray-500 text-sm"
                                                             >
                                                                 {formatDateToUSFormat(sync.latest_sync?.updated_at)}
                                                             </Link>
                                                         ) : (
-                                                            <li className="w-36 ml-1 text-gray-500 text-sm">{formatDateToUSFormat(sync.latest_sync?.updated_at)}</li>
+                                                            <li className="w-32 ml-1 text-gray-500 text-sm">{formatDateToUSFormat(sync.latest_sync?.updated_at)}</li>
                                                         )}
                                                     </Tooltip>
                                                 ): (
@@ -552,37 +552,39 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                         {sync.latest_sync?.activity_log_id? (
                                                             <Link
                                                                 to={`/activity?activity_log_id=${sync.latest_sync?.activity_log_id}`}
-                                                                className="block w-36 ml-1 text-gray-500 text-sm"
+                                                                className="block w-32 ml-1 text-gray-500 text-sm"
                                                             >
                                                                 {formatDateToUSFormat(sync.latest_sync?.updated_at)}
                                                             </Link>
                                                         ) : (
-                                                            <li className="w-36 ml-1 text-gray-500 text-sm">{formatDateToUSFormat(sync.latest_sync?.updated_at)}</li>
+                                                            <li className="w-32 ml-1 text-gray-500 text-sm">{formatDateToUSFormat(sync.latest_sync?.updated_at)}</li>
                                                         )}
                                                     </>
                                                 )}
                                                 {sync.schedule_status === 'RUNNING' && (
                                                     <>
                                                         {interpretNextRun(sync.futureActionTimes) === '-' ? (
-                                                            <li className="ml-4 w-36 text-sm text-gray-500">-</li>
+                                                            <li className="ml-3 w-32 text-sm text-gray-500">-</li>
                                                         ) : (
                                                             <Tooltip text={interpretNextRun(sync.futureActionTimes, sync.latest_sync?.updated_at)[1]} type="dark">
-                                                                <li className="ml-4 w-36 text-sm text-gray-500">{interpretNextRun(sync.futureActionTimes, sync.latest_sync?.updated_at)[0]}</li>
+                                                                <li className="ml-3 w-32 text-sm text-gray-500">{interpretNextRun(sync.futureActionTimes, sync.latest_sync?.updated_at)[0]}</li>
                                                             </Tooltip>
                                                         )}
                                                     </>
                                                 )}
                                                 {sync.schedule_status === 'RUNNING' && !sync.futureActionTimes && (
-                                                    <li className="ml-4 w-36 text-sm text-gray-500">-</li>
+                                                    <li className="ml-3 w-32 text-sm text-gray-500">-</li>
                                                 )}
                                                 {sync.schedule_status !== 'RUNNING' && (
-                                                    <li className="ml-4 w-36 text-sm text-gray-500">-</li>
+                                                    <li className="ml-3 w-32 text-sm text-gray-500">-</li>
                                                 )}
                                                 {sync.thirty_day_timestamps ? (
-                                                    <li className="ml-4 w-36 text-sm text-gray-500">
+                                                    <li className="w-24 ml-[0.25rem] text-sm text-gray-500">
                                                         {calculateTotalRuntime(sync.thirty_day_timestamps)}
                                                     </li>
-                                                    ) : '-'
+                                                ) : (
+                                                    <li className="w-24 ml-[0.25rem] text-sm text-gray-500">-</li>
+                                                )
                                                 }
                                                 <li className="flex ml-8">
                                                     <button
@@ -603,7 +605,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                         className="flex h-8 mr-2 rounded-md pl-2 pr-3 pt-1.5 text-sm text-white bg-gray-800 hover:bg-gray-700"
                                                         onClick={() => syncCommand('RUN', sync.nango_connection_id, sync.schedule_id, sync.id, sync.name)}
                                                     >
-                                                        <p>Trigger</p>
+                                                        <p>Sync</p>
                                                     </button>
                                                     {/*
                                                     <button
