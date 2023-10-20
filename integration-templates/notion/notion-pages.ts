@@ -51,7 +51,6 @@ async function paginate(nango: NangoSync, method: 'get' | 'post', endpoint: stri
         const res = await nango.proxy({
             method: method,
             endpoint: endpoint,
-            headers: { 'Notion-Version': '2022-06-28' },
             data: method === 'post' ? { page_size: pageSize, start_cursor: cursor } : {},
             params: method === 'get' ? ({ page_size: `${pageSize}`, start_cursor: cursor } as any) : {},
             retries: 10 // Exponential backoff + long-running job = handles rate limits well.
