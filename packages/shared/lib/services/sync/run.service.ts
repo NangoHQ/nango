@@ -245,7 +245,7 @@ export default class SyncRun {
                 const {
                     success,
                     error,
-                    results: userDefinedResults
+                    response: userDefinedResults
                 } = await this.integrationService.runScript(
                     this.syncName,
                     this.activityLogId as number,
