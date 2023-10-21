@@ -16,6 +16,7 @@ import {
     ErrorSourceEnum,
     errorManager,
     metricsManager,
+    MetricTypes,
     isInitialSyncStillRunning,
     logger
 } from '@nangohq/shared';
@@ -49,6 +50,11 @@ export async function routeSync(args: InitialSyncArgs): Promise<boolean | object
 export async function runAction(args: ActionArgs): Promise<object> {
     const { input, nangoConnection, actionName, activityLogId } = args;
 
+    const syncConfig: ProviderConfig = (await configService.getProviderConfig(
+        nangoConnection?.provider_config_key as string,
+        nangoConnection?.environment_id as number
+    )) as ProviderConfig;
+
     const syncRun = new syncRunService({
         integrationService,
         writeToDb: true,
@@ -58,6 +64,7 @@ export async function runAction(args: ActionArgs): Promise<object> {
         syncType: SyncType.ACTION,
         activityLogId,
         input,
+        provider: syncConfig.provider,
         debug: false
     });
 
@@ -78,7 +85,7 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
 
         logger.log('info', content);
 
-        await metricsManager.capture('sync_overlap', content, LogActionEnum.SYNC, {
+        await metricsManager.capture(MetricTypes.SYNC_OVERLAP, content, LogActionEnum.SYNC, {
             environmentId: String(nangoConnection?.environment_id),
             connectionId: nangoConnection?.connection_id as string,
             providerConfigKey: nangoConnection?.provider_config_key as string,
@@ -153,7 +160,7 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
             content
         });
 
-        await metricsManager.capture('sync_failure', content, LogActionEnum.SYNC, {
+        await metricsManager.capture(MetricTypes.SYNC_FAILURE, content, LogActionEnum.SYNC, {
             environmentId: String(environmentId),
             connectionId: nangoConnection?.connection_id as string,
             providerConfigKey: nangoConnection?.provider_config_key as string,
@@ -234,6 +241,7 @@ export async function syncProvider(
             syncName,
             syncType,
             activityLogId,
+            provider: syncConfig.provider,
             debug
         });
 
@@ -265,7 +273,7 @@ export async function syncProvider(
             content
         });
 
-        await metricsManager.capture('sync_overlap', content, LogActionEnum.SYNC, {
+        await metricsManager.capture(MetricTypes.SYNC_OVERLAP, content, LogActionEnum.SYNC, {
             environmentId: String(nangoConnection?.environment_id),
             syncId,
             connectionId: nangoConnection?.connection_id as string,

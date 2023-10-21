@@ -8,6 +8,8 @@ import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { LogActionEnum } from '../models/Activity.js';
 
 import { Nango } from '@nangohq/node';
+import configService from '../services/config.service.js';
+import paginateService from '../services/paginate.service.js';
 
 type LogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
 
@@ -45,7 +47,7 @@ interface ParamsSerializerOptions extends SerializerOptions {
     serialize?: CustomParamsSerializer;
 }
 
-interface AxiosResponse<T = any, D = any> {
+export interface AxiosResponse<T = any, D = any> {
     data: T;
     status: number;
     statusText: string;
@@ -59,7 +61,34 @@ interface DataResponse {
     [index: string]: unknown | undefined | string | number | boolean | Record<string, string | boolean | number | unknown>;
 }
 
-interface ProxyConfiguration {
+export enum PaginationType {
+    CURSOR = 'cursor',
+    LINK = 'link',
+    OFFSET = 'offset'
+}
+
+export interface Pagination {
+    type: string;
+    limit?: number;
+    response_path?: string;
+    limit_name_in_request: string;
+}
+
+export interface CursorPagination extends Pagination {
+    cursor_path_in_response: string;
+    cursor_name_in_request: string;
+}
+
+export interface LinkPagination extends Pagination {
+    link_rel_in_response_header?: string;
+    link_path_in_response_body?: string;
+}
+
+export interface OffsetPagination extends Pagination {
+    offset_name_in_request: string;
+}
+
+export interface ProxyConfiguration {
     endpoint: string;
     providerConfigKey?: string;
     connectionId?: string;
@@ -71,6 +100,7 @@ interface ProxyConfiguration {
     data?: unknown;
     retries?: number;
     baseUrlOverride?: string;
+    paginate?: Partial<CursorPagination> | Partial<LinkPagination> | Partial<OffsetPagination>;
 }
 
 enum AuthModes {
@@ -307,6 +337,58 @@ export class NangoAction {
         }
 
         return this.attributes as A;
+    }
+
+    public async *paginate<T = any>(config: ProxyConfiguration): AsyncGenerator<T[], undefined, void> {
+        const providerConfigKey: string = this.providerConfigKey as string;
+        const template = configService.getTemplate(providerConfigKey);
+        const templatePaginationConfig: Pagination | undefined = template.proxy?.paginate;
+
+        if (!templatePaginationConfig && (!config.paginate || !config.paginate.type)) {
+            throw Error('There was no pagination configuration for this integration or configuration passed in.');
+        }
+
+        const paginationConfig: Pagination = {
+            ...(templatePaginationConfig || {}),
+            ...(config.paginate || {})
+        } as Pagination;
+
+        paginateService.validateConfiguration(paginationConfig);
+
+        config.method = config.method || 'GET';
+
+        const configMethod: string = config.method.toLocaleLowerCase();
+        const passPaginationParamsInBody: boolean = ['post', 'put', 'patch'].includes(configMethod);
+
+        const updatedBodyOrParams: Record<string, any> = ((passPaginationParamsInBody ? config.data : config.params) as Record<string, any>) ?? {};
+        const limitParameterName: string = paginationConfig.limit_name_in_request;
+
+        if (paginationConfig['limit']) {
+            updatedBodyOrParams[limitParameterName] = paginationConfig['limit'];
+        }
+
+        switch (paginationConfig.type.toLowerCase()) {
+            case PaginationType.CURSOR:
+                return yield* paginateService.cursor<T>(
+                    config,
+                    paginationConfig as CursorPagination,
+                    updatedBodyOrParams,
+                    passPaginationParamsInBody,
+                    this.proxy.bind(this)
+                );
+            case PaginationType.LINK:
+                return yield* paginateService.link<T>(config, paginationConfig, updatedBodyOrParams, passPaginationParamsInBody, this.proxy.bind(this));
+            case PaginationType.OFFSET:
+                return yield* paginateService.offset<T>(
+                    config,
+                    paginationConfig as OffsetPagination,
+                    updatedBodyOrParams,
+                    passPaginationParamsInBody,
+                    this.proxy.bind(this)
+                );
+            default:
+                throw Error(`'${paginationConfig.type} ' pagination is not supported. Please, make sure it's one of ${Object.values(PaginationType)}`);
+        }
     }
 }
 

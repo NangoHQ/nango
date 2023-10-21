@@ -104,7 +104,8 @@ describe('SyncRun', () => {
 
         vi.spyOn(integrationService, 'runScript').mockImplementation(() => {
             return Promise.resolve({
-                success: true
+                success: true,
+                response: { success: true }
             });
         });
 

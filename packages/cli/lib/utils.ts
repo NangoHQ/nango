@@ -289,7 +289,7 @@ export async function getProviderBySyncName(params: Record<string, string>, debu
                 params,
                 null,
                 2
-            )}}`
+            )}`
         );
     }
     return await axios
