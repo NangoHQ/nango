@@ -162,7 +162,6 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                         </div>
                     )}
                 </div>
-
             </div>
         </div>
     );
