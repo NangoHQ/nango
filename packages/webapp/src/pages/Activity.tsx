@@ -228,8 +228,8 @@ export default function Activity() {
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Activity}>
-            <div className="max-w-screen-xl px-16 w-fit mx-auto">
-                <div className="flex items-center mt-16 mb-6">
+            <div className="w-fit">
+                <div className="flex items-center mb-6">
                     <div className="flex flex-col text-left">
                         <span className="flex items-center mb-3">
                             <h2 className="text-3xl font-semibold tracking-tight text-white mr-4">Activity</h2>

@@ -86,10 +86,10 @@ export default function Syncs() {
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Syncs}>
-            <div className="px-16 w-fit mx-auto min-w-[1000px] text-sm">
+            <div className="w-fit mx-auto min-w-[1000px] text-sm">
                 <div className="flex flex-col text-left">
                     <span className="flex items-center mb-3">
-                        <h2 className="flex mt-16 text-left text-3xl font-semibold tracking-tight text-white">{currentTab === 'sync' ? 'Syncs' : 'Actions'}</h2>
+                        <h2 className="flex text-left text-3xl font-semibold tracking-tight text-white">{currentTab === 'sync' ? 'Syncs' : 'Actions'}</h2>
                     </span>
                     <span className="flex flex-col text-white mb-4">An overview of all your active sync and action scripts in Nango.</span>
                 </div>

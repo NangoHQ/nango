@@ -57,7 +57,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
 
     return (
         <div>
-            <div className="h-[calc(100vh-1rem)] mt-14 border-r-2 border-t-2 border-border-gray flex flex-col h-full w-60 fixed bg-bg-black z-50 justify-between">
+            <div className="border-r-2 border-border-gray flex flex-col h-full w-60 bg-bg-black justify-between">
                 <div className="">
                     {envs.length > 0 && (
                         <div className="mt-10">

@@ -45,7 +45,7 @@ export default function ConnectionList() {
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Connections}>
             {connections && !!connections.length && (
-                <div className="px-16 w-fit mx-auto">
+                <div className="w-fit">
                     <div className="flex justify-between">
                         <h2 className="mt-16 text-left text-3xl font-semibold tracking-tight text-white mb-12">Connections</h2>
                         <Link to="/connections/create" className="mt-auto mb-4 pt-2.5 px-4 h-10 rounded-md text-sm text-black bg-white hover:bg-gray-300">
@@ -85,9 +85,9 @@ export default function ConnectionList() {
                 </div>
             )}
             {connections && !!!connections.length && (
-                <div className="mx-auto">
-                    <div className="mx-16">
-                        <h2 className="mt-16 text-left text-3xl font-semibold tracking-tight text-white mb-12">Connections</h2>
+                <div className="">
+                    <div className="">
+                        <h2 className="text-left text-3xl font-semibold tracking-tight text-white mb-12">Connections</h2>
                         <div className="text-sm w-largebox h-40">
                             <Link to="/connections/create" className="py-3 px-4 rounded-md text-sm text-black bg-white hover:bg-gray-300">
                                 Add your 1st Connection

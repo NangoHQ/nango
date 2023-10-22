@@ -297,9 +297,9 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Connections}>
             {integrations && !!integrations.length && publicKey && hostUrl && (
-                <div className="mx-auto w-largebox pb-40">
-                    <h2 className="mx-20 mt-16 text-left text-3xl font-semibold tracking-tight text-white mb-12">Add New Connection</h2>
-                    <div className="mx-20 h-fit border border-border-gray rounded-md text-white text-sm py-14 px-8">
+                <div className="">
+                    <h2 className="text-left text-3xl font-semibold tracking-tight text-white mb-12">Add New Connection</h2>
+                    <div className="h-fit border border-border-gray rounded-md text-white text-sm py-14 px-8">
                         <form className="space-y-6" onSubmit={handleCreate}>
                             <div>
                                 <div>
@@ -557,9 +557,9 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                 </div>
             )}
             {integrations && !!!integrations.length && (
-                <div className="mx-auto">
-                    <div className="mx-16">
-                        <h2 className="mt-16 text-left text-3xl font-semibold tracking-tight text-white mb-12">Add New Connection</h2>
+                <div className="">
+                    <div className="">
+                        <h2 className="text-left text-3xl font-semibold tracking-tight text-white mb-12">Add New Connection</h2>
                         <div className="text-sm w-largebox h-40">
                             <p className="text-white text-sm">
                                 You have not created any Integrations yet. Please create an{' '}

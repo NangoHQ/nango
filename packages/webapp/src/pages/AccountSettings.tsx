@@ -184,9 +184,9 @@ export default function AccountSettings() {
                 <Modal.Action passive onClick={() => setInviteVisible(false)}>Cancel</Modal.Action>
                 <Modal.Action onClick={handleSubmit}>Submit</Modal.Action>
             </Modal>
-            <div className="mx-auto w-largebox">
-                <div className="mx-20 h-full mb-20">
-                    <h2 className="mt-16 text-left text-3xl font-semibold tracking-tight text-white mb-12">Account Settings</h2>
+            <div className="">
+                <div className="h-full">
+                    <h2 className="text-left text-3xl font-semibold tracking-tight text-white mb-12">Account Settings</h2>
                     <div className="border border-border-gray rounded-md h-fit pt-6 pb-14">
                         <div>
                             <div className="mx-8 mt-8">

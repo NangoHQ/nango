@@ -8,11 +8,13 @@ interface DashboardLayoutI {
 
 export default function DashboardLayout({ children, selectedItem }: DashboardLayoutI) {
     return (
-        <div className="h-full">
+        <div className="h-full overflow-hidden">
             <TopNavBar />
-            <div className="flex h-full max-w-6xl">
+            <div className="flex h-full items-stretch">
                 <LeftNavBar selectedItem={selectedItem} />
-                <div className="ml-60 pt-14 max-w-4xl mx-auto">{children}</div>
+                <div className="w-full overflow-y-scroll">
+                    <div className="p-16 mb-16 mr-auto max-w-6xl">{children}</div>
+                </div>
             </div>
         </div>
     );

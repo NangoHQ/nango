@@ -194,13 +194,13 @@ export default function IntegrationCreate() {
                 />
             )}
             {(providers || integration) && (
-                <div className="mx-auto w-largebox pb-40">
-                    <h2 className="mx-20 mt-16 text-left text-3xl font-semibold tracking-tight text-white mb-12">
+                <div className="">
+                    <h2 className="text-left text-3xl font-semibold tracking-tight text-white mb-12">
                       {providerConfigKey && integration
                         ? 'Update Integration'
                         : 'Add New Integration'}
                     </h2>
-                    <div className="mx-20 h-fit border border-border-gray rounded-md text-white text-sm py-14 px-8">
+                    <div className="h-fit border border-border-gray rounded-md text-white text-sm py-14 px-8">
                         <form className="space-y-6" onSubmit={handleSave}>
                             {!providerConfigKey && providers && (
                                 <div>

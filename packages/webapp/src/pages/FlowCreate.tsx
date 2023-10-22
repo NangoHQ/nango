@@ -270,9 +270,9 @@ export default function FlowCreate() {
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Syncs}>
             {flows && Object.keys(flows).length > 0 && (
-                <div className="mx-auto pb-40">
-                    <h2 className="mx-20 mt-16 text-left text-3xl font-semibold tracking-tight text-white mb-12">Add New Sync or Action</h2>
-                    <div className="mx-20 h-fit text-white text-sm">
+                <div className="">
+                    <h2 className="text-left text-3xl font-semibold tracking-tight text-white mb-12">Add New Sync or Action</h2>
+                    <div className="h-fit text-white text-sm">
                         <div className="mb-8">
                             <Info>
                                 If none of the available templates fit your specific needs, you can create your own <a href={`https://docs.nango.dev/guides/${flow?.type === 'sync' ? 'sync' : 'actions'}`} className="text-[#4E80EE]" rel="noreferrer" target="_blank">custom {flow?.type || 'sync' }s</a>,
