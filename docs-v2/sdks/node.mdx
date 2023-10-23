@@ -324,7 +324,7 @@ const records = await nango.getRecords<ModelName>({
     offset: <number>,                         // Optional: For pagination: The number of records to skip. If not passed, no records are skipped.
     sortBy: 'id' | 'createdAt' | 'updatedAt', // Optional: Optional: Set how the records are sorted. The default is by 'id'
     order: 'asc' | 'desc',                    // Optional: Set the order of results. The default is 'desc'
-    filter: 'added' | 'updated' | 'deleted'   // Optional: Retrieve only records that have been added, updated, or deleted since the last sync. Useful when used with the delta parameter.
+    filter: 'added' | 'updated' | 'deleted'   // Optional: Retrieve only records that have been added, updated, or deleted since the last sync. Useful when used with the delta parameter. Also accepts comma separated combinations e.g., "added,updated"
 });
 
 console.log(records);
