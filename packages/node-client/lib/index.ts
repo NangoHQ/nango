@@ -284,7 +284,7 @@ export class Nango {
     }
 
     public async getRecords<T = any>(config: GetRecordsRequestConfig): Promise<(T & { _nango_metadata: RecordMetadata })[]> {
-        const { connectionId, providerConfigKey, model, delta, offset, limit, includeNangoMetadata } = config;
+        const { connectionId, providerConfigKey, model, delta, offset, limit, includeNangoMetadata, filter } = config;
         validateSyncRecordConfiguration(config);
 
         const order = config?.order === 'asc' ? 'asc' : 'desc';
@@ -299,20 +299,6 @@ export class Nango {
                 break;
         }
 
-        let filter = '';
-
-        switch (config.filter) {
-            case 'deleted':
-                filter = 'deleted';
-                break;
-            case 'updated':
-                filter = 'updated';
-                break;
-            case 'added':
-                filter = 'added';
-                break;
-        }
-
         if (includeNangoMetadata) {
             console.warn(
                 `The includeNangoMetadata option will be deprecated soon and will be removed in a future release. Each record now has a _nango_metadata property which includes the same properties.`
@@ -322,7 +308,8 @@ export class Nango {
 
         const url = `${this.serverUrl}/sync/records/?model=${model}&order=${order}&delta=${delta || ''}&offset=${offset || ''}&limit=${limit || ''}&sort_by=${
             sortBy || ''
-        }&include_nango_metadata=${includeMetadata}&filter=${filter}`;
+        }&include_nango_metadata=${includeMetadata}${filter ? `&filter=${filter}` : ''}`;
+
         const headers: Record<string, string | number | boolean> = {
             'Connection-Id': connectionId,
             'Provider-Config-Key': providerConfigKey

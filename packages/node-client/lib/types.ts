@@ -41,6 +41,9 @@ export interface ProxyConfiguration {
     decompress?: boolean;
 }
 
+type FilterAction = 'added' | 'updated' | 'deleted';
+type CombinedFilterAction = `${FilterAction},${FilterAction}`;
+
 export interface GetRecordsRequestConfig {
     providerConfigKey: string;
     connectionId: string;
@@ -51,7 +54,7 @@ export interface GetRecordsRequestConfig {
     sortBy?: 'updatedAt' | 'createdAt' | 'id';
     order?: 'asc' | 'desc';
     includeNangoMetadata?: boolean;
-    filter?: 'added' | 'updated' | 'deleted';
+    filter?: FilterAction | CombinedFilterAction;
 }
 
 export interface BasicApiCredentials {
