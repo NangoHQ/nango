@@ -199,8 +199,6 @@ class ProxyController {
                         token = credentials?.access_token;
                     }
                     break;
-                default:
-                    throw new Error(`Unrecognized Auth type '${connection?.credentials?.type}' in stored credentials.`);
             }
 
             if (!isSync) {
@@ -269,7 +267,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
                 endpoint,
                 method: method as HTTP_VERB,
                 template,
-                token,
+                token: token || '',
                 provider: String(providerConfig?.provider),
                 providerConfigKey,
                 connectionId,
@@ -290,7 +288,17 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
                 });
             }
 
-            await this.sendToHttpMethod(res, next, method as HTTP_VERB, configBody, activityLogId as number, environment_id, connection, isSync, isDryRun);
+            await this.sendToHttpMethod(
+                res,
+                next,
+                method as HTTP_VERB,
+                configBody,
+                activityLogId as number,
+                environment_id,
+                connection as Connection,
+                isSync,
+                isDryRun
+            );
         } catch (error) {
             const environmentId = getEnvironmentId(res);
             const connectionId = req.get('Connection-Id') as string;
