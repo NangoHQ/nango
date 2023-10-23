@@ -4,7 +4,8 @@ export enum AuthModes {
     OAuth1 = 'OAUTH1',
     OAuth2 = 'OAUTH2',
     Basic = 'BASIC',
-    ApiKey = 'API_KEY'
+    ApiKey = 'API_KEY',
+    App = 'APP'
 }
 
 export interface CredentialsCommon<T = Record<string, any>> {
@@ -24,6 +25,13 @@ export interface OAuth2Credentials extends CredentialsCommon {
 
     refresh_token?: string;
     expires_at?: Date | undefined;
+}
+
+export interface AppCredentials {
+    type?: AuthModes.App;
+    access_token: string;
+    expires_at?: Date | undefined;
+    raw: Record<string, any>;
 }
 
 export interface ProxyConfiguration {

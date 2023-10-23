@@ -1,4 +1,7 @@
-import { IntegrationServiceInterface, NangoIntegrationData, NangoSync, localFileService } from '@nangohq/shared';
+import { NangoError, IntegrationServiceInterface, NangoIntegrationData, NangoSync, localFileService } from '@nangohq/shared';
+import * as vm from 'vm';
+import * as url from 'url';
+import * as crypto from 'crypto';
 
 class IntegrationService implements IntegrationServiceInterface {
     async runScript(
@@ -18,7 +21,7 @@ class IntegrationService implements IntegrationServiceInterface {
             if (!script) {
                 const content = `Unable to find integration file for ${syncName}`;
 
-                console.error(content);
+                return { success: false, error: new NangoError(content, 500), response: null };
             }
 
             try {
@@ -31,28 +34,40 @@ class IntegrationService implements IntegrationServiceInterface {
                     })();
                 `;
 
-                const scriptExports: any = eval(wrappedScript);
+                const scriptObj = new vm.Script(wrappedScript);
+                const sandbox = {
+                    console: console,
+                    require: (moduleName: string) => {
+                        switch (moduleName) {
+                            case 'url':
+                                return url;
+                            case 'crypto':
+                                return crypto;
+                            default:
+                                throw new Error(`Module '${moduleName}' is not allowed`);
+                        }
+                    }
+                };
+
+                const context = vm.createContext(sandbox);
+                const scriptExports: any = scriptObj.runInContext(context);
+
                 if (scriptExports && typeof scriptExports === 'function') {
                     const results = isAction ? await scriptExports(nango, input) : await scriptExports(nango);
-                    return results;
+                    return { success: true, response: results };
                 } else {
                     const content = `There is no default export that is a function for ${syncName}`;
-                    console.error(content);
 
-                    return null;
+                    return { success: false, error: new NangoError(content, 500), response: null };
                 }
             } catch (err: any) {
-                console.error(err);
-
-                return null;
+                return { success: false, error: new NangoError(err.message, 500), response: null };
             }
         } catch (err) {
             const errorMessage = JSON.stringify(err, ['message', 'name', 'stack'], 2);
             const content = `The script failed to load for ${syncName} with the following error: ${errorMessage}`;
 
-            console.error(content);
-
-            return null;
+            return { success: false, error: new NangoError(content, 500), response: null };
         }
     }
 }

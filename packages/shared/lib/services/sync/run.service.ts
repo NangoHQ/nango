@@ -15,6 +15,7 @@ import webhookService from '../webhook.service.js';
 import { NangoSync } from '../../sdk/sync.js';
 import { isCloud, getApiUrl } from '../../utils/utils.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
+import { NangoError } from '../../utils/error.js';
 import metricsManager, { MetricTypes } from '../../utils/metrics.manager.js';
 import type { NangoIntegrationData, NangoIntegration } from '../../integrations/index.js';
 import type { UpsertResponse, UpsertSummary } from '../../models/Data.js';
@@ -97,7 +98,7 @@ export default class SyncRun {
         bypassEnvironment?: boolean,
         optionalSecretKey?: string,
         optionalHost?: string
-    ): Promise<boolean | object | ServiceResponse> {
+    ): Promise<ServiceResponse<boolean | object>> {
         if (this.debug) {
             const content = this.loadLocation ? `Looking for a local nango config at ${this.loadLocation}` : `Looking for a sync config for ${this.syncName}`;
             if (this.writeToDb) {
@@ -123,7 +124,8 @@ export default class SyncRun {
             } else {
                 console.error(message);
             }
-            return false;
+
+            return { success: false, error: new NangoError(message), response: false };
         }
 
         const { integrations } = nangoConfig;
@@ -131,9 +133,8 @@ export default class SyncRun {
 
         if (!integrations[this.nangoConnection.provider_config_key] && !this.writeToDb) {
             const message = `The connection you provided which applies to integration "${this.nangoConnection.provider_config_key}" does not match any integration in the ${nangoConfigFile}`;
-            console.error(message);
 
-            return false;
+            return { success: false, error: new NangoError(message), response: false };
         }
 
         // if there is a matching customer integration code for the provider config key then run it
@@ -145,10 +146,9 @@ export default class SyncRun {
             }
 
             if (!environment && !bypassEnvironment) {
-                await this.reportFailureForResults(
-                    `No environment was found for ${this.nangoConnection.environment_id}. The sync cannot continue without a valid environment`
-                );
-                return false;
+                const message = `No environment was found for ${this.nangoConnection.environment_id}. The sync cannot continue without a valid environment`;
+                await this.reportFailureForResults(message);
+                return { success: false, error: new NangoError(message), response: false };
             }
 
             const secretKey = optionalSecretKey || (environment ? (environment?.secret_key as string) : '');
@@ -186,11 +186,10 @@ export default class SyncRun {
                     this.loadLocation
                 );
                 if (!integrationFileResult) {
-                    await this.reportFailureForResults(
-                        `Integration was attempted to run for ${this.syncName} but no integration file was found at ${integrationFilePath}.`
-                    );
+                    const message = `Integration was attempted to run for ${this.syncName} but no integration file was found at ${integrationFilePath}.`;
+                    await this.reportFailureForResults(message);
 
-                    return false;
+                    return { success: false, error: new NangoError(message), response: false };
                 }
             }
 
@@ -259,13 +258,12 @@ export default class SyncRun {
                 );
 
                 if (!success || userDefinedResults === null) {
-                    await this.reportFailureForResults(
-                        `The integration was run but there was a problem in retrieving the results from the script "${this.syncName}"${
-                            syncData?.version ? ` version: ${syncData.version}` : ''
-                        }.`
-                    );
+                    const message = `The integration was run but there was a problem in retrieving the results from the script "${this.syncName}"${
+                        syncData?.version ? ` version: ${syncData.version}` : ''
+                    }.`;
+                    await this.reportFailureForResults(message);
 
-                    return this.isAction ? { success: false, error } : false;
+                    return { success: false, error: new NangoError(message, error), response: false };
                 }
 
                 if (!this.writeToDb) {
@@ -302,7 +300,7 @@ export default class SyncRun {
                         content
                     });
 
-                    return { success: true, response: userDefinedResults };
+                    return { success: true, error: null, response: userDefinedResults };
                 }
 
                 // means a void response from the sync script which is expected
@@ -310,7 +308,7 @@ export default class SyncRun {
                 if (userDefinedResults === undefined) {
                     await this.finishSync(models, syncStartDate, syncData.version as string, trackDeletes);
 
-                    return true;
+                    return { success: true, error: null, response: true };
                 }
 
                 let i = 0;
@@ -337,7 +335,7 @@ export default class SyncRun {
                         if (!success || formattedResults === null) {
                             await this.reportFailureForResults(error?.message as string);
 
-                            return false;
+                            return { success: false, error: new NangoError(error?.message as string), response: false };
                         }
 
                         if (this.writeToDb && this.activityLogId) {
@@ -386,11 +384,10 @@ export default class SyncRun {
                                 }
 
                                 if (!upsertResult.success) {
-                                    await this.reportFailureForResults(
-                                        `There was a problem upserting the data for ${this.syncName} and the model ${model} with the error message: ${upsertResult?.error}`
-                                    );
+                                    const message = `There was a problem upserting the data for ${this.syncName} and the model ${model} with the error message: ${upsertResult?.error}`;
+                                    await this.reportFailureForResults(message);
 
-                                    return false;
+                                    return { success: false, error: new NangoError(message), response: result };
                                 }
                             }
                         }
@@ -410,7 +407,7 @@ export default class SyncRun {
             }
         }
 
-        return result;
+        return { success: true, error: null, response: result };
     }
 
     async finishSync(models: string[], syncStartDate: Date, version: string, trackDeletes?: boolean): Promise<void> {

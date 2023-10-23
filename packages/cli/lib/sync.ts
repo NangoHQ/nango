@@ -28,7 +28,6 @@ import type {
 } from '@nangohq/shared';
 import {
     getInterval,
-    analytics,
     loadSimplifiedConfig,
     cloudHost,
     stagingHost,
@@ -658,13 +657,6 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
     try {
         const secretKey = process.env['NANGO_SECRET_KEY'];
         const results = await syncRun.run(lastSyncDate, true, secretKey, process.env['NANGO_HOSTPORT']);
-
-        analytics.trackByEnvironmentId('sync:cli_dry_run_performed', nangoConnection.environment_id, {
-            connection_id: nangoConnection.id,
-            sync_name: syncName,
-            provider_config_key: providerConfigKey,
-            last_sync_date: lastSyncDate?.toISOString()
-        });
 
         if (results) {
             console.log(JSON.stringify(results, null, 2));
