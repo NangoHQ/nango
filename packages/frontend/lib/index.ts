@@ -60,11 +60,7 @@ export default class Nango {
         }
     }
 
-    public async create(
-        providerConfigKey: string,
-        connectionId: string,
-        connectionConfig: ConnectionConfig
-    ): Promise<AuthResult | AuthError> {
+    public async create(providerConfigKey: string, connectionId: string, connectionConfig: ConnectionConfig): Promise<AuthResult | AuthError> {
         const url = this.hostBaseUrl + `/unauth/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig)}`;
 
         const res = await fetch(url, {
