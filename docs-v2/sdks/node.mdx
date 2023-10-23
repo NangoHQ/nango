@@ -349,3 +349,20 @@ By default this returns an array of objects in the data model that you queried w
 ```
 
 If you are using the [Nango webhooks](/guides/webhooks#from-nango) you can use the timestamp you get from the webhook for the `delta` parameter.
+
+
+### Get environment variables
+
+To get the environment variables from a sync script you can use `getEnvironmentVariables`:
+
+```ts
+const vars = await nango.getEnvironmentVariables();
+
+console.log(vars);
+
+/*
+{
+    [ "name": "BOT_TOKEN", "value": "abcdefg" ]
+}
+*/
+```

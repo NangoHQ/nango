@@ -463,12 +463,7 @@ export class Nango {
             return [];
         }
 
-        return response.data.map((variable: Record<string, string>) => {
-            return {
-                name: variable['name'],
-                value: variable['value']
-            };
-        });
+        return response.data;
     }
 
     /**
