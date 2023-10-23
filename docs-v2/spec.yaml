@@ -50,7 +50,7 @@ paths:
                             properties:
                                 provider_config_key:
                                     type: string
-                                    description: The integration ID that you created on Nango.
+                                    description: A unique integration ID, which you will use in the other API calls to reference this integration.
                                 provider:
                                     type: string
                                     description: The Nango API Configuration.

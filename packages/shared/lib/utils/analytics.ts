@@ -1,4 +1,4 @@
-import { PostHog } from 'posthog-node';
+import type { PostHog } from 'posthog-node';
 import { getBaseUrl, localhostUrl, dirname, UserType, isCloud, isStaging } from '../utils/utils.js';
 import ip from 'ip';
 import errorManager, { ErrorSourceEnum } from './error.manager.js';
@@ -17,8 +17,8 @@ class Analytics {
     constructor() {
         try {
             if (process.env['TELEMETRY']?.toLowerCase() !== 'false' && !isStaging()) {
-                this.client = new PostHog('phc_4S2pWFTyPYT1i7zwC8YYQqABvGgSAzNHubUkdEFvcTl');
-                this.client.enable();
+                //this.client = new PostHog('phc_4S2pWFTyPYT1i7zwC8YYQqABvGgSAzNHubUkdEFvcTl');
+                //this.client.enable();
                 this.packageVersion = JSON.parse(readFileSync(path.resolve(dirname(), '../../../package.json'), 'utf8')).version;
             }
         } catch (e) {
