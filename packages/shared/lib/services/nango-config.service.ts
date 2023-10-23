@@ -94,7 +94,7 @@ export function convertConfigObject(config: NangoConfig): SimplifiedNangoIntegra
                             modelFields.push({ name: fieldName, type: fieldType as string });
                         }
                     }
-                    models.push({ name: model, fields: [modelFields] });
+                    models.push({ name: model, fields: modelFields });
                 });
             }
 

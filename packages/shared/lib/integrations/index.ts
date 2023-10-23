@@ -43,7 +43,7 @@ interface NangoSyncModelField {
 
 export interface NangoSyncModel {
     name: string;
-    fields: NangoSyncModelField[][];
+    fields: NangoSyncModelField[];
 }
 
 export interface NangoSyncConfig {
