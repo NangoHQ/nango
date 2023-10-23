@@ -123,7 +123,7 @@ describe('SyncRun', () => {
 
         const failRun = await syncRun.run();
 
-        expect(failRun).toEqual(false);
+        expect(failRun.response).toEqual(false);
 
         // if run script returns null then fail
         // @ts-ignore
@@ -131,8 +131,8 @@ describe('SyncRun', () => {
             return Promise.resolve(null);
         });
 
-        const noDataRun = await syncRun.run();
+        const { response } = await syncRun.run();
 
-        expect(noDataRun).toEqual(false);
+        expect(response).toEqual(false);
     });
 });
