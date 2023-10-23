@@ -21,8 +21,7 @@ class IntegrationService implements IntegrationServiceInterface {
             if (!script) {
                 const content = `Unable to find integration file for ${syncName}`;
 
-                console.error(content);
-                return null;
+                return { success: false, error: new NangoError(content, 500), response: null };
             }
 
             try {
@@ -58,14 +57,11 @@ class IntegrationService implements IntegrationServiceInterface {
                     return { success: true, response: results };
                 } else {
                     const content = `There is no default export that is a function for ${syncName}`;
-                    console.error(content);
 
                     return { success: false, error: new NangoError(content, 500), response: null };
                 }
             } catch (err: any) {
-                console.error(err);
-
-                return null;
+                return { success: false, error: new NangoError(err.message, 500), response: null };
             }
         } catch (err) {
             const errorMessage = JSON.stringify(err, ['message', 'name', 'stack'], 2);
