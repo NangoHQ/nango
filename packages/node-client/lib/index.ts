@@ -158,12 +158,12 @@ export class Nango {
     }
 
     public async updateIntegration(provider: string, providerConfigKey: string, credentials?: Record<string, string>): Promise<Integration> {
-        const url = `${this.serverUrl}/config/${providerConfigKey}`;
+        const url = `${this.serverUrl}/config`;
         const response = await axios.put(url, { provider, provider_config_key: providerConfigKey, ...credentials }, { headers: this.enrichHeaders({}) });
         return response.data;
     }
 
-    public async deleteIntegration(providerConfigKey: string): Promise<void> {
+    public async deleteIntegration(providerConfigKey: string): Promise<AxiosResponse<void>> {
         const url = `${this.serverUrl}/config/${providerConfigKey}`;
         return await axios.delete(url, { headers: this.enrichHeaders({}) });
     }
@@ -205,7 +205,7 @@ export class Nango {
 
     public async importConnection(_connectionArgs: CreateConnectionOAuth1 | (CreateConnectionOAuth2 & { metadata: string; connection_config: string })) {
         throw new Error(
-            'This method has been deprecated, please use the REST API to create a connection. See https://docs.nango.dev/api-reference/connection/post'
+            'This method has been deprecated, please use the REST API to import a connection. See https://docs.nango.dev/api-reference/connection/post'
         );
     }
 
@@ -295,7 +295,7 @@ export class Nango {
         return axios.post(url, metadata, { headers: this.enrichHeaders(headers) });
     }
 
-    public async deleteConnection(providerConfigKey: string, connectionId: string): Promise<void> {
+    public async deleteConnection(providerConfigKey: string, connectionId: string): Promise<AxiosResponse<void>> {
         const url = `${this.serverUrl}/connection/${connectionId}?provider_config_key=${providerConfigKey}`;
 
         const headers = {
