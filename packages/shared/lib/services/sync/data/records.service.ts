@@ -157,14 +157,29 @@ export async function getDataRecords(
     }
 
     if (filter) {
-        switch (filter) {
-            case 'added':
+        switch (true) {
+            case filter.includes('added') && filter.includes('updated'):
+                query = query.andWhere('external_deleted_at', null).andWhere(function () {
+                    this.where('created_at', '=', db.knex.raw('updated_at')).orWhere('created_at', '!=', db.knex.raw('updated_at'));
+                });
+                break;
+            case filter.includes('updated') && filter.includes('deleted'):
+                query = query.andWhere(function () {
+                    this.where('external_is_deleted', true).orWhere('external_deleted_at', null).andWhere('created_at', '!=', db.knex.raw('updated_at'));
+                });
+                break;
+            case filter.includes('added') && filter.includes('deleted'):
+                query = query.andWhere(function () {
+                    this.where('external_is_deleted', true).orWhere('external_deleted_at', null).andWhere('created_at', '=', db.knex.raw('updated_at'));
+                });
+                break;
+            case filter === 'added':
                 query = query.andWhere('external_deleted_at', null).andWhere('created_at', '=', db.knex.raw('updated_at'));
                 break;
-            case 'updated':
+            case filter === 'updated':
                 query = query.andWhere('external_deleted_at', null).andWhere('created_at', '!=', db.knex.raw('updated_at'));
                 break;
-            case 'deleted':
+            case filter === 'deleted':
                 query = query.andWhere({ external_is_deleted: true });
                 break;
         }

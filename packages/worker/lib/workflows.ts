@@ -13,11 +13,11 @@ const { routeSync, scheduleAndRouteSync, runAction } = proxyActivities<typeof ac
     }
 });
 
-export async function initialSync(args: InitialSyncArgs): Promise<boolean | object> {
+export async function initialSync(args: InitialSyncArgs): Promise<boolean | object | null> {
     return routeSync(args);
 }
 
-export async function continuousSync(args: ContinuousSyncArgs): Promise<boolean | object> {
+export async function continuousSync(args: ContinuousSyncArgs): Promise<boolean | object | null> {
     return scheduleAndRouteSync(args);
 }
 
