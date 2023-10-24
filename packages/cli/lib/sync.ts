@@ -112,9 +112,9 @@ export const generate = async (debug = false, inParentDirectory = false) => {
     const typesContent = fs.readFileSync(`${getNangoRootPath()}/${NangoSyncTypesFileLocation}`, 'utf8');
     fs.writeFileSync(`${dirPrefix}/${TYPES_FILE_NAME}`, typesContent, { flag: 'a' });
 
-    const config = await getConfig();
+    const config = await getConfig(dirPrefix, debug);
     const flowConfig = `export const NangoFlows = ${JSON.stringify(config, null, 2)}; \n`;
-    fs.writeFileSync(`./${TYPES_FILE_NAME}`, flowConfig, { flag: 'a' });
+    fs.writeFileSync(`${dirPrefix}/${TYPES_FILE_NAME}`, flowConfig, { flag: 'a' });
 
     if (debug) {
         printDebug(`NangoSync types written to ${TYPES_FILE_NAME}`);
@@ -327,8 +327,9 @@ const createModelFile = async (notify = false) => {
     }
 };
 
-const getConfig = async (debug = false): Promise<SimplifiedNangoIntegration[]> => {
-    const config = await loadSimplifiedConfig('./');
+const getConfig = async (optionalLoadLocation = '', debug = false): Promise<SimplifiedNangoIntegration[]> => {
+    const loadLocation = optionalLoadLocation || './';
+    const config = await loadSimplifiedConfig(loadLocation);
 
     if (!config) {
         throw new Error(`Error loading the ${nangoConfigFile} file`);
@@ -399,7 +400,7 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
 
     await tsc(debug);
 
-    const config = await getConfig(debug);
+    const config = await getConfig('', debug);
 
     const postData: IncomingSyncConfig[] | null = packageIntegrationData(config, debug, optionalSyncName, version);
 
@@ -516,7 +517,7 @@ export const adminDeploy = async (environmentName: string, debug = false) => {
 
     await tsc(debug);
 
-    const config = await getConfig(debug);
+    const config = await getConfig('', debug);
 
     const flowData = packageIntegrationData(config, debug);
 
@@ -586,7 +587,7 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
         return;
     }
 
-    const config = await getConfig(debug);
+    const config = await getConfig('', debug);
 
     const providerConfigKey = config.find((config) => [...config.syncs, ...config.actions].find((sync) => sync.name === syncName))?.providerConfigKey;
 
