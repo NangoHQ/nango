@@ -78,6 +78,7 @@ export async function getAllSyncsAndActions(environment_id: number): Promise<Sim
             `${TABLE}.auto_start`,
             `${TABLE}.attributes`,
             `${TABLE}.version`,
+            `${TABLE}.metadata`,
             '_nango_configs.provider',
             '_nango_configs.unique_key'
         )
@@ -116,6 +117,7 @@ export async function getAllSyncsAndActions(environment_id: number): Promise<Sim
             runs: syncConfig.runs,
             type: syncConfig.type,
             returns: syncConfig.models,
+            metadata: syncConfig.metadata,
             track_deletes: syncConfig.track_deletes,
             auto_start: syncConfig.auto_start,
             attributes: syncConfig.attributes || {},

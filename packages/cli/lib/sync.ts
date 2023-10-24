@@ -112,6 +112,10 @@ export const generate = async (debug = false, inParentDirectory = false) => {
     const typesContent = fs.readFileSync(`${getNangoRootPath()}/${NangoSyncTypesFileLocation}`, 'utf8');
     fs.writeFileSync(`${dirPrefix}/${TYPES_FILE_NAME}`, typesContent, { flag: 'a' });
 
+    const config = await getConfig();
+    const flowConfig = `export const NangoFlows = ${JSON.stringify(config, null, 2)}; \n`;
+    fs.writeFileSync(`./${TYPES_FILE_NAME}`, flowConfig, { flag: 'a' });
+
     if (debug) {
         printDebug(`NangoSync types written to ${TYPES_FILE_NAME}`);
     }
@@ -303,7 +307,7 @@ NANGO_DEPLOY_AUTO_CONFIRM=false # Default value`
     console.log(chalk.green(`Nango integrations initialized!`));
 };
 
-const createModelFile = (notify = false) => {
+const createModelFile = async (notify = false) => {
     const configContents = fs.readFileSync(`./${nangoConfigFile}`, 'utf8');
     const configData: NangoConfig = yaml.load(configContents) as unknown as NangoConfig;
     const { models, integrations } = configData;
@@ -313,6 +317,10 @@ const createModelFile = (notify = false) => {
     // insert NangoSync types to the bottom of the file
     const typesContent = fs.readFileSync(`${getNangoRootPath()}/${NangoSyncTypesFileLocation}`, 'utf8');
     fs.writeFileSync(`./${TYPES_FILE_NAME}`, typesContent, { flag: 'a' });
+
+    const config = await getConfig();
+    const flowConfig = `export const NangoFlows = ${JSON.stringify(config, null, 2)}; \n`;
+    fs.writeFileSync(`./${TYPES_FILE_NAME}`, flowConfig, { flag: 'a' });
 
     if (notify) {
         console.log(chalk.green(`The ${nangoConfigFile} was updated. The interface file (${TYPES_FILE_NAME}) was updated to reflect the updated config`));
@@ -682,7 +690,7 @@ export const tsc = async (debug = false, syncName?: string): Promise<boolean> =>
         if (debug) {
             printDebug(`Creating ${TYPES_FILE_NAME} file`);
         }
-        createModelFile();
+        await createModelFile();
     }
 
     const compiler = tsNode.create({
@@ -853,7 +861,7 @@ export const tscWatch = async (debug = false) => {
         if (debug) {
             printDebug(`Creating ${TYPES_FILE_NAME} file`);
         }
-        createModelFile();
+        await createModelFile();
     }
 
     watcher.on('add', (filePath: string) => {
@@ -919,8 +927,8 @@ export const configWatch = (debug = false) => {
     }
     const watcher = chokidar.watch(watchPath, { ignoreInitial: true });
 
-    watcher.on('change', () => {
-        createModelFile(true);
+    watcher.on('change', async () => {
+        await createModelFile(true);
     });
 };
 
