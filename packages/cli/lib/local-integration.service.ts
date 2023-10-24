@@ -54,16 +54,17 @@ class IntegrationService implements IntegrationServiceInterface {
 
                 if (scriptExports && typeof scriptExports === 'function') {
                     const results = isAction ? await scriptExports(nango, input) : await scriptExports(nango);
-                    return { success: true, response: results };
+                    return { success: true, error: null, response: results };
                 } else {
                     const content = `There is no default export that is a function for ${syncName}`;
 
                     return { success: false, error: new NangoError(content, 500), response: null };
                 }
             } catch (err: any) {
-                return { success: false, error: new NangoError(err.message, 500), response: null };
+                return { success: false, error: new NangoError(err?.response?.data?.message || err.message, 500), response: null };
             }
         } catch (err) {
+            console.log(err);
             const errorMessage = JSON.stringify(err, ['message', 'name', 'stack'], 2);
             const content = `The script failed to load for ${syncName} with the following error: ${errorMessage}`;
 

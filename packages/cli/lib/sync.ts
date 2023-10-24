@@ -110,7 +110,7 @@ export const generate = async (debug = false, inParentDirectory = false) => {
 
     // insert NangoSync types to the bottom of the file
     const typesContent = fs.readFileSync(`${getNangoRootPath()}/${NangoSyncTypesFileLocation}`, 'utf8');
-    fs.writeFileSync(`${dirPrefix}/${TYPES_FILE_NAME}`, typesContent, { flag: 'a' });
+    fs.writeFileSync(`${dirPrefix}/${TYPES_FILE_NAME}`, `export namespace NangoTypes {\n ${typesContent} \n}`, { flag: 'a' });
 
     const config = await getConfig(dirPrefix, debug);
     const flowConfig = `export const NangoFlows = ${JSON.stringify(config, null, 2)}; \n`;
@@ -153,40 +153,58 @@ export const generate = async (debug = false, inParentDirectory = false) => {
                 process.exit(1);
             }
 
-            const { returns: models, type = SyncConfigType.SYNC } = syncData;
+            const { returns: modelOrModels, inputs, type = SyncConfigType.SYNC } = syncData;
             const syncNameCamel = syncName
                 .split('-')
                 .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
                 .join('');
 
-            let ejsTeamplateContents = '';
+            let ejsTemplateContents = '';
+
             if (syncName === exampleSyncName && type === SyncConfigType.SYNC) {
-                ejsTeamplateContents = githubExampleTemplateContents;
+                ejsTemplateContents = githubExampleTemplateContents;
             } else {
-                ejsTeamplateContents = type === SyncConfigType.SYNC ? syncTemplateContents : actionTemplateContents;
+                ejsTemplateContents = type === SyncConfigType.SYNC ? syncTemplateContents : actionTemplateContents;
             }
-            const rendered = ejs.render(ejsTeamplateContents, {
+
+            const formatModelName = (model: string) => {
+                if (['string', 'number', 'boolean'].includes(model)) {
+                    return '';
+                }
+                const singularModel = model.charAt(model.length - 1) === 's' ? model.slice(0, -1) : model;
+                return `${singularModel.charAt(0).toUpperCase()}${singularModel.slice(1)}`;
+            };
+
+            let interfaceNames: string | string[];
+            let mappings: { name: string; type: string } | { name: string; type: string }[];
+
+            if (typeof modelOrModels === 'string') {
+                const formattedName = formatModelName(modelOrModels);
+                interfaceNames = formattedName;
+                mappings = {
+                    name: modelOrModels,
+                    type: formattedName
+                };
+            } else {
+                interfaceNames = modelOrModels.map(formatModelName);
+                mappings = modelOrModels.map((model) => ({
+                    name: model,
+                    type: formatModelName(model)
+                }));
+            }
+
+            const rendered = ejs.render(ejsTemplateContents, {
                 syncName: syncNameCamel,
                 interfaceFileName: TYPES_FILE_NAME.replace('.ts', ''),
-                interfaceNames: models
-                    ? models?.map((model) => {
-                          const singularModel = model?.charAt(model.length - 1) === 's' ? model.slice(0, -1) : model;
-                          return `${singularModel.charAt(0).toUpperCase()}${singularModel.slice(1)}`;
-                      })
-                    : [],
-                mappings: models
-                    ? models?.map((model) => {
-                          const singularModel = model.charAt(model.length - 1) === 's' ? model.slice(0, -1) : model;
-                          return {
-                              name: model,
-                              type: `${singularModel.charAt(0).toUpperCase()}${singularModel.slice(1)}`
-                          };
-                      })
-                    : []
+                interfaceNames,
+                mappings,
+                inputs: inputs || ''
             });
 
+            const stripped = rendered.replace(/^\s+/, '');
+
             if (!fs.existsSync(`${dirPrefix}/${syncName}.ts`)) {
-                fs.writeFileSync(`${dirPrefix}/${syncName}.ts`, rendered);
+                fs.writeFileSync(`${dirPrefix}/${syncName}.ts`, stripped);
                 if (debug) {
                     printDebug(`Created ${syncName}.ts file`);
                 }
@@ -316,7 +334,7 @@ const createModelFile = async (notify = false) => {
 
     // insert NangoSync types to the bottom of the file
     const typesContent = fs.readFileSync(`${getNangoRootPath()}/${NangoSyncTypesFileLocation}`, 'utf8');
-    fs.writeFileSync(`./${TYPES_FILE_NAME}`, typesContent, { flag: 'a' });
+    fs.writeFileSync(`./${TYPES_FILE_NAME}`, `export namespace NangoTypes {\n ${typesContent} \n}`, { flag: 'a' });
 
     const config = await getConfig();
     const flowConfig = `export const NangoFlows = ${JSON.stringify(config, null, 2)}; \n`;
@@ -596,9 +614,16 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
         return;
     }
 
-    const syncInfo = config
-        .find((config) => [...config.syncs, ...config.actions].find((sync) => sync.name === syncName))
-        ?.syncs.find((sync) => sync.name === syncName);
+    const foundConfig = config.find((configItem) => {
+        const syncsArray = configItem.syncs || [];
+        const actionsArray = configItem.actions || [];
+
+        return [...syncsArray, ...actionsArray].some((sync) => sync.name === syncName);
+    });
+
+    const syncInfo = foundConfig
+        ? (foundConfig.syncs || []).find((sync) => sync.name === syncName) || (foundConfig.actions || []).find((action) => action.name === syncName)
+        : null;
 
     if (debug) {
         printDebug(`Provider config key found to be ${providerConfigKey}`);

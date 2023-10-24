@@ -81,7 +81,8 @@ export function convertConfigObject(config: NangoConfig): SimplifiedNangoIntegra
             const sync: NangoSyncConfig = integration[syncName] as NangoSyncConfig;
             const models: NangoSyncModel[] = [];
             if (sync.returns) {
-                sync.returns.forEach((model) => {
+                const syncReturns = Array.isArray(sync.returns) ? sync.returns : [sync.returns];
+                syncReturns.forEach((model) => {
                     const modelFields = [];
                     const modelData = config.models[model] || config.models[`${model.slice(0, -1)}`];
                     for (const fieldName in modelData) {

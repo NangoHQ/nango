@@ -257,7 +257,7 @@ export default class SyncRun {
                     this.input
                 );
 
-                if (!success || userDefinedResults === null) {
+                if (!success || (error && userDefinedResults === null)) {
                     const message = `The integration was run but there was a problem in retrieving the results from the script "${this.syncName}"${
                         syncData?.version ? ` version: ${syncData.version}` : ''
                     }.`;
