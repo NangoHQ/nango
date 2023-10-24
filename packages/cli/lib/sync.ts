@@ -596,9 +596,16 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
         return;
     }
 
-    const syncInfo = config
-        .find((config) => [...config.syncs, ...config.actions].find((sync) => sync.name === syncName))
-        ?.syncs.find((sync) => sync.name === syncName);
+    const foundConfig = config.find((configItem) => {
+        const syncsArray = configItem.syncs || [];
+        const actionsArray = configItem.actions || [];
+
+        return [...syncsArray, ...actionsArray].some((sync) => sync.name === syncName);
+    });
+
+    const syncInfo = foundConfig
+        ? (foundConfig.syncs || []).find((sync) => sync.name === syncName) || (foundConfig.actions || []).find((action) => action.name === syncName)
+        : null;
 
     if (debug) {
         printDebug(`Provider config key found to be ${providerConfigKey}`);
