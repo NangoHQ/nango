@@ -110,7 +110,9 @@ export async function getAllSyncsAndActions(environment_id: number): Promise<Sim
             continue;
         }
 
-        nangoConfig['integrations'][uniqueKey] = {};
+        if (!nangoConfig['integrations'][uniqueKey]) {
+            nangoConfig['integrations'][uniqueKey] = {};
+        }
         const syncName = syncConfig.sync_name;
 
         nangoConfig['integrations'][uniqueKey]![syncName] = {
@@ -130,7 +132,7 @@ export async function getAllSyncsAndActions(environment_id: number): Promise<Sim
     const simlpleConfig = convertConfigObject(nangoConfig);
     const configWithModels = simlpleConfig.map((config: SimplifiedNangoIntegration) => {
         const { providerConfigKey } = config;
-        for (const sync of config.syncs) {
+        for (const sync of [...config.syncs, ...config.actions]) {
             const { name } = sync;
             const model_schema = syncConfigs.find(
                 (syncConfig: extendedSyncConfig) => syncConfig.sync_name === name && syncConfig.unique_key === providerConfigKey
