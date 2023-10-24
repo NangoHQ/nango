@@ -713,7 +713,10 @@ export const tsc = async (debug = false, syncName?: string): Promise<boolean> =>
             const providerConfiguration = config.find((config) =>
                 [...config.syncs, ...config.actions].find((sync) => sync.name === path.basename(filePath, '.ts'))
             );
-            const syncConfig = providerConfiguration?.syncs.find((sync) => sync.name === path.basename(filePath, '.ts'));
+            if (!providerConfiguration) {
+                return false;
+            }
+            const syncConfig = [...providerConfiguration.syncs, ...providerConfiguration.actions].find((sync) => sync.name === path.basename(filePath, '.ts'));
             const type = syncConfig?.type || SyncConfigType.SYNC;
 
             if (!nangoCallsAreUsedCorrectly(filePath, type)) {
@@ -909,7 +912,11 @@ export const tscWatch = async (debug = false) => {
             const providerConfiguration = config.find((config) =>
                 [...config.syncs, ...config.actions].find((sync) => sync.name === path.basename(filePath, '.ts'))
             );
-            const syncConfig = providerConfiguration?.syncs.find((sync) => sync.name === path.basename(filePath, '.ts'));
+            if (!providerConfiguration) {
+                return;
+            }
+            const syncConfig = [...providerConfiguration.syncs, ...providerConfiguration.actions].find((sync) => sync.name === path.basename(filePath, '.ts'));
+
             const type = syncConfig?.type || SyncConfigType.SYNC;
 
             if (!nangoCallsAreUsedCorrectly(filePath, type)) {
