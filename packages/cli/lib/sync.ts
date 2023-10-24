@@ -588,14 +588,16 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
 
     const config = await getConfig(debug);
 
-    const providerConfigKey = config.find((config) => config.syncs.find((sync) => sync.name === syncName))?.providerConfigKey;
+    const providerConfigKey = config.find((config) => [...config.syncs, ...config.actions].find((sync) => sync.name === syncName))?.providerConfigKey;
 
     if (!providerConfigKey) {
         console.log(chalk.red(`Provider config key not found, please check that the provider exists for this sync name: ${syncName}`));
         return;
     }
 
-    const syncInfo = config.find((config) => config.syncs.find((sync) => sync.name === syncName))?.syncs.find((sync) => sync.name === syncName);
+    const syncInfo = config
+        .find((config) => [...config.syncs, ...config.actions].find((sync) => sync.name === syncName))
+        ?.syncs.find((sync) => sync.name === syncName);
 
     if (debug) {
         printDebug(`Provider config key found to be ${providerConfigKey}`);
@@ -708,7 +710,9 @@ export const tsc = async (debug = false, syncName?: string): Promise<boolean> =>
 
     for (const filePath of integrationFiles) {
         try {
-            const providerConfiguration = config.find((config) => config.syncs.find((sync) => sync.name === path.basename(filePath, '.ts')));
+            const providerConfiguration = config.find((config) =>
+                [...config.syncs, ...config.actions].find((sync) => sync.name === path.basename(filePath, '.ts'))
+            );
             const syncConfig = providerConfiguration?.syncs.find((sync) => sync.name === path.basename(filePath, '.ts'));
             const type = syncConfig?.type || SyncConfigType.SYNC;
 
@@ -902,7 +906,9 @@ export const tscWatch = async (debug = false) => {
         });
 
         try {
-            const providerConfiguration = config.find((config) => config.syncs.find((sync) => sync.name === path.basename(filePath, '.ts')));
+            const providerConfiguration = config.find((config) =>
+                [...config.syncs, ...config.actions].find((sync) => sync.name === path.basename(filePath, '.ts'))
+            );
             const syncConfig = providerConfiguration?.syncs.find((sync) => sync.name === path.basename(filePath, '.ts'));
             const type = syncConfig?.type || SyncConfigType.SYNC;
 
