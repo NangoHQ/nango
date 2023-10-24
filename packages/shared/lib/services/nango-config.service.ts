@@ -7,7 +7,7 @@ import ms from 'ms';
 import type { NangoConfig, SimplifiedNangoIntegration, NangoSyncConfig, NangoSyncModel } from '../integrations/index.js';
 import { isCloud } from '../utils/utils.js';
 import type { ServiceResponse } from '../models/Generic.js';
-import type { SyncConfigType } from '../models/Sync.js';
+import { SyncConfigType } from '../models/Sync.js';
 import { NangoError } from '../utils/error.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -75,6 +75,7 @@ export function convertConfigObject(config: NangoConfig): SimplifiedNangoIntegra
 
     for (const providerConfigKey in config.integrations) {
         const syncs = [];
+        const actions = [];
         const integration = config.integrations[providerConfigKey];
         for (const syncName in integration) {
             const sync: NangoSyncConfig = integration[syncName] as NangoSyncConfig;
@@ -98,7 +99,7 @@ export function convertConfigObject(config: NangoConfig): SimplifiedNangoIntegra
                 });
             }
 
-            syncs.push({
+            const flowObject = {
                 name: syncName,
                 type: sync.type as SyncConfigType,
                 runs: sync.runs,
@@ -107,11 +108,16 @@ export function convertConfigObject(config: NangoConfig): SimplifiedNangoIntegra
                 attributes: sync.attributes || {},
                 returns: sync.returns,
                 models: models || [],
-                description: sync.description || '',
-                scopes: sync.scopes || []
-            });
+                description: sync?.description || sync?.metadata?.description || '',
+                scopes: sync?.scopes || sync?.metadata?.scopes || []
+            };
+            if (sync.type === SyncConfigType.ACTION) {
+                actions.push(flowObject);
+            } else {
+                syncs.push(flowObject);
+            }
         }
-        output.push({ providerConfigKey, syncs });
+        output.push({ providerConfigKey, syncs, actions });
     }
 
     return output;
