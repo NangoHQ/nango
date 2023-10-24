@@ -734,19 +734,21 @@ export const checkYamlMatchesTsFiles = async (): Promise<boolean> => {
     const config = await getConfig();
 
     const syncNames = config.map((provider) => provider.syncs.map((sync) => sync.name)).flat();
+    const actionNames = config.map((provider) => provider.actions.map((action) => action.name)).flat();
+    const flows = [...syncNames, ...actionNames];
 
     const tsFiles = glob.sync(`./*.ts`);
 
     const tsFileNames = tsFiles.filter((file) => !file.includes('models.ts')).map((file) => path.basename(file, '.ts'));
 
-    const missingSyncs = syncNames.filter((syncName) => !tsFileNames.includes(syncName));
+    const missingSyncsAndActions = flows.filter((syncOrActionName) => !tsFileNames.includes(syncOrActionName));
 
-    if (missingSyncs.length > 0) {
-        console.log(chalk.red(`The following syncs are missing a corresponding .ts file: ${missingSyncs.join(', ')}`));
+    if (missingSyncsAndActions.length > 0) {
+        console.log(chalk.red(`The following syncs are missing a corresponding .ts file: ${missingSyncsAndActions.join(', ')}`));
         throw new Error('Syncs missing .ts files');
     }
 
-    const extraSyncs = tsFileNames.filter((syncName) => !syncNames.includes(syncName));
+    const extraSyncs = tsFileNames.filter((syncName) => !flows.includes(syncName));
 
     if (extraSyncs.length > 0) {
         console.log(chalk.red(`The following .ts files do not have a corresponding sync in the config: ${extraSyncs.join(', ')}`));

@@ -63,4 +63,5 @@ export interface NangoSyncConfig {
 export interface SimplifiedNangoIntegration {
     providerConfigKey: string;
     syncs: NangoSyncConfig[];
+    actions: NangoSyncConfig[];
 }
