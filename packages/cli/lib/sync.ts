@@ -987,12 +987,13 @@ function packageIntegrationData(config: SimplifiedNangoIntegration[], debug: boo
     for (const integration of config) {
         const { providerConfigKey } = integration;
         let { syncs } = integration;
+        const { actions } = integration;
 
         if (optionalSyncName) {
             syncs = syncs.filter((sync) => sync.name === optionalSyncName);
         }
 
-        for (const sync of syncs) {
+        for (const sync of [...syncs, ...actions]) {
             const { name: syncName, runs = '', returns: models, models: model_schema, type = SyncConfigType.SYNC } = sync;
 
             const { path: integrationFilePath, result: integrationFileResult } = localFileService.checkForIntegrationDistFile(syncName, './');
