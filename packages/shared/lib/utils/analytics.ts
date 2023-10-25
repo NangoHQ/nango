@@ -1,4 +1,4 @@
-import type { PostHog } from 'posthog-node';
+import { PostHog } from 'posthog-node';
 import { getBaseUrl, localhostUrl, dirname, UserType, isCloud, isStaging } from '../utils/utils.js';
 import ip from 'ip';
 import errorManager, { ErrorSourceEnum } from './error.manager.js';
@@ -10,6 +10,28 @@ import userService from '../services/user.service.js';
 import type { Account, User } from '../models/Admin.js';
 import { LogActionEnum } from '../models/Activity.js';
 
+export enum AnalyticsTypes {
+    CONNECTION_UPDATED = 'server:connection_updated',
+    CONNECTION_INSERTED = 'server:connection_inserted',
+    API_CONNECTION_UPDATED = 'server:api_key_connection_updated',
+    API_CONNECTION_INSERTED = 'server:api_key_connection_inserted',
+    UNAUTH_CONNECTION_UPDATED = 'server:unauth_connection_updated',
+    UNAUTH_CONNECTION_INSERTED = 'server:unauth_connection_inserted',
+    ACCOUNT_CREATED = 'server:account_created',
+    ACCOUNT_JOINED = 'server:account_joined',
+    CONNECTION_LIST_FETCHED = 'server:connection_list_fetched',
+    CONFIG_CREATED = 'server:config_created',
+    PRE_BASIC_API_KEY_AUTH = 'server:pre_basic_api_key_auth',
+    PRE_API_KEY_AUTH = 'server:pre_api_key_auth',
+    PRE_APP_AUTH = 'server:pre_appauth',
+    SYNC_UNPAUSE = 'sync:command_unpause',
+    SYNC_PAUSE = 'sync:command_pause',
+    SYNC_RUN = 'sync:command_run',
+    SYNC_DEPLOY_SUCCESS = 'sync:deploy_succeeded',
+    PRE_WS_OAUTH = 'server:pre_ws_oauth',
+    PRE_UNAUTH = 'server:pre_unauth'
+}
+
 class Analytics {
     client: PostHog | undefined;
     packageVersion: string | undefined;
@@ -17,8 +39,8 @@ class Analytics {
     constructor() {
         try {
             if (process.env['TELEMETRY']?.toLowerCase() !== 'false' && !isStaging()) {
-                //this.client = new PostHog('phc_4S2pWFTyPYT1i7zwC8YYQqABvGgSAzNHubUkdEFvcTl');
-                //this.client.enable();
+                this.client = new PostHog('phc_4S2pWFTyPYT1i7zwC8YYQqABvGgSAzNHubUkdEFvcTl');
+                this.client.enable();
                 this.packageVersion = JSON.parse(readFileSync(path.resolve(dirname(), '../../../package.json'), 'utf8')).version;
             }
         } catch (e) {
