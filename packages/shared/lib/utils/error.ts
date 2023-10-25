@@ -1,14 +1,18 @@
 export class NangoError extends Error {
-    public readonly status: number;
+    public readonly status: number = 500;
     public readonly type: string;
     public payload: { [key: string]: unknown };
     public override readonly message: string;
 
-    constructor(type: string, payload = {}) {
+    constructor(type: string, payload = {}, status?: number) {
         super();
 
         this.type = type;
         this.payload = payload;
+
+        if (status) {
+            this.status = status;
+        }
 
         switch (type) {
             case 'missing_auth_header':
@@ -369,6 +373,14 @@ export class NangoError extends Error {
                 this.message = 'Sync interval is invalid. The interval should be a time unit.';
                 break;
 
+            case 'sync_script_failure':
+                this.message = `The sync script failed with an error: ${this.payload}`;
+                break;
+
+            case 'action_script_failure':
+                this.message = `The action script failed with an error: ${this.payload}`;
+                break;
+
             default:
                 this.status = 500;
                 this.type = 'unhandled_' + type;
@@ -380,3 +392,28 @@ export class NangoError extends Error {
         this.payload = payload;
     }
 }
+
+export const formatScriptError = (err: any, errorType: string, scriptName: string) => {
+    let errorMessage: string;
+
+    if ('response' in err && 'data' in err.response) {
+        if (typeof err.response.data === 'string' && (err.response.data.trim().startsWith('<!DOCTYPE html>') || /<\/?[a-z][\s\S]*>/i.test(err.response.data))) {
+            errorMessage = err.response.data;
+        } else {
+            errorMessage = JSON.stringify(err.response.data, null, 2);
+        }
+    } else if (err.message) {
+        errorMessage = err.message;
+    } else if (typeof err === 'object' && Object.keys(err as object).length > 0) {
+        errorMessage = JSON.stringify(err, ['message', 'name', 'stack'], 2);
+    } else {
+        errorMessage = String(err);
+    }
+
+    const content = `The script failed to execute for ${scriptName} with the following error: ${errorMessage}`;
+
+    const status = err?.response?.status || 500;
+    const error = new NangoError(errorType, content, status);
+
+    return { success: false, error, response: null };
+};

@@ -1,4 +1,4 @@
-import { NangoError, IntegrationServiceInterface, NangoIntegrationData, NangoSync, localFileService } from '@nangohq/shared';
+import { NangoError, formatScriptError, IntegrationServiceInterface, NangoIntegrationData, NangoSync, localFileService } from '@nangohq/shared';
 import * as vm from 'vm';
 import * as url from 'url';
 import * as crypto from 'crypto';
@@ -61,10 +61,11 @@ class IntegrationService implements IntegrationServiceInterface {
                     return { success: false, error: new NangoError(content, 500), response: null };
                 }
             } catch (err: any) {
-                return { success: false, error: new NangoError(err?.response?.data?.message || err.message, 500), response: null };
+                const errorType = isAction ? 'action_script_failure' : 'sync_script_failre';
+
+                return formatScriptError(err, errorType, syncName);
             }
         } catch (err) {
-            console.log(err);
             const errorMessage = JSON.stringify(err, ['message', 'name', 'stack'], 2);
             const content = `The script failed to load for ${syncName} with the following error: ${errorMessage}`;
 

@@ -35,7 +35,8 @@ import {
     syncRunService,
     nangoConfigFile,
     localFileService,
-    SyncConfigType
+    SyncConfigType,
+    JAVASCRIPT_PRIMITIVES
 } from '@nangohq/shared';
 import {
     hostport,
@@ -168,7 +169,7 @@ export const generate = async (debug = false, inParentDirectory = false) => {
             }
 
             const formatModelName = (model: string) => {
-                if (['string', 'number', 'boolean'].includes(model)) {
+                if (JAVASCRIPT_PRIMITIVES.includes(model)) {
                     return '';
                 }
                 const singularModel = model.charAt(model.length - 1) === 's' ? model.slice(0, -1) : model;
@@ -1081,7 +1082,7 @@ function packageIntegrationData(config: SimplifiedNangoIntegration[], debug: boo
             const body = {
                 syncName,
                 providerConfigKey,
-                models,
+                models: Array.isArray(models) ? models : [models],
                 version: version as string,
                 runs,
                 track_deletes: sync.track_deletes || false,

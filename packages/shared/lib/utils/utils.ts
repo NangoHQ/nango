@@ -29,6 +29,8 @@ export enum NodeEnv {
     Prod = 'production'
 }
 
+export const JAVASCRIPT_PRIMITIVES = ['string', 'number', 'boolean', 'bigint', 'symbol', 'undefined', 'object', 'null'];
+
 export function getEnv() {
     if (isStaging()) {
         return NodeEnv.Staging;
