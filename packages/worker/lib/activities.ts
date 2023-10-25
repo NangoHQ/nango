@@ -9,6 +9,7 @@ import {
     LogLevel,
     LogActionEnum,
     syncRunService,
+    ServiceResponse,
     NangoConnection,
     environmentService,
     createActivityLogMessage,
@@ -23,7 +24,7 @@ import {
 import integrationService from './integration.service.js';
 import type { ContinuousSyncArgs, InitialSyncArgs, ActionArgs } from './models/Worker';
 
-export async function routeSync(args: InitialSyncArgs): Promise<boolean | object> {
+export async function routeSync(args: InitialSyncArgs): Promise<boolean | object | null> {
     const { syncId, syncJobId, syncName, activityLogId, nangoConnection, debug } = args;
     let environmentId = nangoConnection?.environment_id;
 
@@ -47,7 +48,7 @@ export async function routeSync(args: InitialSyncArgs): Promise<boolean | object
     );
 }
 
-export async function runAction(args: ActionArgs): Promise<object> {
+export async function runAction(args: ActionArgs): Promise<ServiceResponse> {
     const { input, nangoConnection, actionName, activityLogId } = args;
 
     const syncConfig: ProviderConfig = (await configService.getProviderConfig(
@@ -70,10 +71,10 @@ export async function runAction(args: ActionArgs): Promise<object> {
 
     const actionResults = await syncRun.run();
 
-    return actionResults as object;
+    return actionResults;
 }
 
-export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<boolean | object> {
+export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<boolean | object | null> {
     const { syncId, activityLogId, syncName, nangoConnection, debug } = args;
     let environmentId = nangoConnection?.environment_id;
     let syncJobId;
@@ -200,7 +201,7 @@ export async function syncProvider(
     existingActivityLogId: number,
     temporalContext: Context,
     debug = false
-): Promise<boolean | object> {
+): Promise<boolean | object | null> {
     try {
         let activityLogId = existingActivityLogId;
 
@@ -247,7 +248,7 @@ export async function syncProvider(
 
         const result = await syncRun.run();
 
-        return result as boolean;
+        return result.response;
     } catch (err: any) {
         const prettyError = JSON.stringify(err, ['message', 'name'], 2);
         const log = {

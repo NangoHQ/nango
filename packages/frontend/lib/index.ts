@@ -11,7 +11,16 @@ const enum WSMessageType {
     Success = 'success'
 }
 
-type AuthError = { message: string; type: string };
+export class AuthError extends Error {
+    type: string;
+
+    constructor(message: string, type: string) {
+        super(message);
+        this.type = type;
+    }
+}
+
+export type AuthResult = { providerConfigKey: string; connectionId: string };
 
 export default class Nango {
     private hostBaseUrl: string;
@@ -51,11 +60,7 @@ export default class Nango {
         }
     }
 
-    public async create(
-        providerConfigKey: string,
-        connectionId: string,
-        connectionConfig: ConnectionConfig
-    ): Promise<{ providerConfigKey: string; connectionId: string } | AuthError> {
+    public async create(providerConfigKey: string, connectionId: string, connectionConfig: ConnectionConfig): Promise<AuthResult | AuthError> {
         const url = this.hostBaseUrl + `/unauth/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig)}`;
 
         const res = await fetch(url, {
@@ -77,7 +82,7 @@ export default class Nango {
         providerConfigKey: string,
         connectionId: string,
         conectionConfigOrCredentials?: ConnectionConfig | BasicApiCredentials | ApiKeyCredentials
-    ): Promise<{ providerConfigKey: string; connectionId: string } | AuthError> {
+    ): Promise<AuthResult | AuthError> {
         if (conectionConfigOrCredentials && 'credentials' in conectionConfigOrCredentials && Object.keys(conectionConfigOrCredentials.credentials).length > 0) {
             const credentials = conectionConfigOrCredentials.credentials as BasicApiCredentials | ApiKeyCredentials;
             const { credentials: _, ...connectionConfig } = conectionConfigOrCredentials as ConnectionConfig;
@@ -115,17 +120,13 @@ export default class Nango {
 
                 this.status = AuthorizationStatus.DONE;
 
-                return reject({
-                    message: errorDesc,
-                    type: errorType
-                });
+                const error = new AuthError(errorDesc, errorType);
+                return reject(error);
             };
 
             if (this.status === AuthorizationStatus.BUSY) {
-                reject({
-                    message: 'The authorization window is opened',
-                    type: 'windowIsOppened'
-                });
+                const error = new AuthError('The authorization window is already opened', 'windowIsOppened');
+                reject(error);
             }
 
             // Save authorization status (for handler)
@@ -138,10 +139,8 @@ export default class Nango {
                     clearTimeout(this.tm as unknown as number);
                     this.win = null;
                     this.status = AuthorizationStatus.CANCELED;
-                    reject({
-                        message: 'The authorization window was closed before the authorization flow was completed',
-                        type: 'windowClosed'
-                    });
+                    const error = new AuthError('The authorization window was closed before the authorization flow was completed', 'windowClosed');
+                    reject(error);
                 }
             }, 500);
         });
@@ -168,7 +167,7 @@ export default class Nango {
         connectionId: string,
         connectionConfigWithCredentials: ConnectionConfig,
         connectionConfig: ConnectionConfig
-    ): Promise<{ providerConfigKey: string; connectionId: string } | AuthError> {
+    ): Promise<AuthResult | AuthError> {
         const { params: credentials } = connectionConfigWithCredentials as ConnectionConfig;
 
         if (!credentials) {

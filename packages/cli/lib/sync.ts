@@ -28,7 +28,6 @@ import type {
 } from '@nangohq/shared';
 import {
     getInterval,
-    analytics,
     loadSimplifiedConfig,
     cloudHost,
     stagingHost,
@@ -36,7 +35,8 @@ import {
     syncRunService,
     nangoConfigFile,
     localFileService,
-    SyncConfigType
+    SyncConfigType,
+    JAVASCRIPT_PRIMITIVES
 } from '@nangohq/shared';
 import {
     hostport,
@@ -113,6 +113,10 @@ export const generate = async (debug = false, inParentDirectory = false) => {
     const typesContent = fs.readFileSync(`${getNangoRootPath()}/${NangoSyncTypesFileLocation}`, 'utf8');
     fs.writeFileSync(`${dirPrefix}/${TYPES_FILE_NAME}`, typesContent, { flag: 'a' });
 
+    const config = await getConfig(dirPrefix, debug);
+    const flowConfig = `export const NangoFlows = ${JSON.stringify(config, null, 2)}; \n`;
+    fs.writeFileSync(`${dirPrefix}/${TYPES_FILE_NAME}`, flowConfig, { flag: 'a' });
+
     if (debug) {
         printDebug(`NangoSync types written to ${TYPES_FILE_NAME}`);
     }
@@ -150,40 +154,58 @@ export const generate = async (debug = false, inParentDirectory = false) => {
                 process.exit(1);
             }
 
-            const { returns: models, type = SyncConfigType.SYNC } = syncData;
+            const { returns: modelOrModels, inputs, type = SyncConfigType.SYNC } = syncData;
             const syncNameCamel = syncName
                 .split('-')
                 .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
                 .join('');
 
-            let ejsTeamplateContents = '';
+            let ejsTemplateContents = '';
+
             if (syncName === exampleSyncName && type === SyncConfigType.SYNC) {
-                ejsTeamplateContents = githubExampleTemplateContents;
+                ejsTemplateContents = githubExampleTemplateContents;
             } else {
-                ejsTeamplateContents = type === SyncConfigType.SYNC ? syncTemplateContents : actionTemplateContents;
+                ejsTemplateContents = type === SyncConfigType.SYNC ? syncTemplateContents : actionTemplateContents;
             }
-            const rendered = ejs.render(ejsTeamplateContents, {
+
+            const formatModelName = (model: string) => {
+                if (JAVASCRIPT_PRIMITIVES.includes(model)) {
+                    return '';
+                }
+                const singularModel = model.charAt(model.length - 1) === 's' ? model.slice(0, -1) : model;
+                return `${singularModel.charAt(0).toUpperCase()}${singularModel.slice(1)}`;
+            };
+
+            let interfaceNames: string | string[];
+            let mappings: { name: string; type: string } | { name: string; type: string }[];
+
+            if (typeof modelOrModels === 'string') {
+                const formattedName = formatModelName(modelOrModels);
+                interfaceNames = formattedName;
+                mappings = {
+                    name: modelOrModels,
+                    type: formattedName
+                };
+            } else {
+                interfaceNames = modelOrModels.map(formatModelName);
+                mappings = modelOrModels.map((model) => ({
+                    name: model,
+                    type: formatModelName(model)
+                }));
+            }
+
+            const rendered = ejs.render(ejsTemplateContents, {
                 syncName: syncNameCamel,
                 interfaceFileName: TYPES_FILE_NAME.replace('.ts', ''),
-                interfaceNames: models
-                    ? models?.map((model) => {
-                          const singularModel = model?.charAt(model.length - 1) === 's' ? model.slice(0, -1) : model;
-                          return `${singularModel.charAt(0).toUpperCase()}${singularModel.slice(1)}`;
-                      })
-                    : [],
-                mappings: models
-                    ? models?.map((model) => {
-                          const singularModel = model.charAt(model.length - 1) === 's' ? model.slice(0, -1) : model;
-                          return {
-                              name: model,
-                              type: `${singularModel.charAt(0).toUpperCase()}${singularModel.slice(1)}`
-                          };
-                      })
-                    : []
+                interfaceNames,
+                mappings,
+                inputs: inputs || ''
             });
 
+            const stripped = rendered.replace(/^\s+/, '');
+
             if (!fs.existsSync(`${dirPrefix}/${syncName}.ts`)) {
-                fs.writeFileSync(`${dirPrefix}/${syncName}.ts`, rendered);
+                fs.writeFileSync(`${dirPrefix}/${syncName}.ts`, stripped);
                 if (debug) {
                     printDebug(`Created ${syncName}.ts file`);
                 }
@@ -304,7 +326,7 @@ NANGO_DEPLOY_AUTO_CONFIRM=false # Default value`
     console.log(chalk.green(`Nango integrations initialized!`));
 };
 
-const createModelFile = (notify = false) => {
+const createModelFile = async (notify = false) => {
     const configContents = fs.readFileSync(`./${nangoConfigFile}`, 'utf8');
     const configData: NangoConfig = yaml.load(configContents) as unknown as NangoConfig;
     const { models, integrations } = configData;
@@ -315,13 +337,18 @@ const createModelFile = (notify = false) => {
     const typesContent = fs.readFileSync(`${getNangoRootPath()}/${NangoSyncTypesFileLocation}`, 'utf8');
     fs.writeFileSync(`./${TYPES_FILE_NAME}`, typesContent, { flag: 'a' });
 
+    const config = await getConfig();
+    const flowConfig = `export const NangoFlows = ${JSON.stringify(config, null, 2)}; \n`;
+    fs.writeFileSync(`./${TYPES_FILE_NAME}`, flowConfig, { flag: 'a' });
+
     if (notify) {
         console.log(chalk.green(`The ${nangoConfigFile} was updated. The interface file (${TYPES_FILE_NAME}) was updated to reflect the updated config`));
     }
 };
 
-const getConfig = async (debug = false): Promise<SimplifiedNangoIntegration[]> => {
-    const config = await loadSimplifiedConfig('./');
+const getConfig = async (optionalLoadLocation = '', debug = false): Promise<SimplifiedNangoIntegration[]> => {
+    const loadLocation = optionalLoadLocation || './';
+    const config = await loadSimplifiedConfig(loadLocation);
 
     if (!config) {
         throw new Error(`Error loading the ${nangoConfigFile} file`);
@@ -392,7 +419,7 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
 
     await tsc(debug);
 
-    const config = await getConfig(debug);
+    const config = await getConfig('', debug);
 
     const postData: IncomingSyncConfig[] | null = packageIntegrationData(config, debug, optionalSyncName, version);
 
@@ -509,7 +536,7 @@ export const adminDeploy = async (environmentName: string, debug = false) => {
 
     await tsc(debug);
 
-    const config = await getConfig(debug);
+    const config = await getConfig('', debug);
 
     const flowData = packageIntegrationData(config, debug);
 
@@ -579,16 +606,25 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
         return;
     }
 
-    const config = await getConfig(debug);
+    const config = await getConfig('', debug);
 
-    const providerConfigKey = config.find((config) => config.syncs.find((sync) => sync.name === syncName))?.providerConfigKey;
+    const providerConfigKey = config.find((config) => [...config.syncs, ...config.actions].find((sync) => sync.name === syncName))?.providerConfigKey;
 
     if (!providerConfigKey) {
         console.log(chalk.red(`Provider config key not found, please check that the provider exists for this sync name: ${syncName}`));
         return;
     }
 
-    const syncInfo = config.find((config) => config.syncs.find((sync) => sync.name === syncName))?.syncs.find((sync) => sync.name === syncName);
+    const foundConfig = config.find((configItem) => {
+        const syncsArray = configItem.syncs || [];
+        const actionsArray = configItem.actions || [];
+
+        return [...syncsArray, ...actionsArray].some((sync) => sync.name === syncName);
+    });
+
+    const syncInfo = foundConfig
+        ? (foundConfig.syncs || []).find((sync) => sync.name === syncName) || (foundConfig.actions || []).find((action) => action.name === syncName)
+        : null;
 
     if (debug) {
         printDebug(`Provider config key found to be ${providerConfigKey}`);
@@ -659,13 +695,6 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
         const secretKey = process.env['NANGO_SECRET_KEY'];
         const results = await syncRun.run(lastSyncDate, true, secretKey, process.env['NANGO_HOSTPORT']);
 
-        analytics.trackByEnvironmentId('sync:cli_dry_run_performed', nangoConnection.environment_id, {
-            connection_id: nangoConnection.id,
-            sync_name: syncName,
-            provider_config_key: providerConfigKey,
-            last_sync_date: lastSyncDate?.toISOString()
-        });
-
         if (results) {
             console.log(JSON.stringify(results, null, 2));
         }
@@ -690,7 +719,7 @@ export const tsc = async (debug = false, syncName?: string): Promise<boolean> =>
         if (debug) {
             printDebug(`Creating ${TYPES_FILE_NAME} file`);
         }
-        createModelFile();
+        await createModelFile();
     }
 
     const compiler = tsNode.create({
@@ -708,8 +737,13 @@ export const tsc = async (debug = false, syncName?: string): Promise<boolean> =>
 
     for (const filePath of integrationFiles) {
         try {
-            const providerConfiguration = config.find((config) => config.syncs.find((sync) => sync.name === path.basename(filePath, '.ts')));
-            const syncConfig = providerConfiguration?.syncs.find((sync) => sync.name === path.basename(filePath, '.ts'));
+            const providerConfiguration = config.find((config) =>
+                [...config.syncs, ...config.actions].find((sync) => sync.name === path.basename(filePath, '.ts'))
+            );
+            if (!providerConfiguration) {
+                return false;
+            }
+            const syncConfig = [...providerConfiguration.syncs, ...providerConfiguration.actions].find((sync) => sync.name === path.basename(filePath, '.ts'));
             const type = syncConfig?.type || SyncConfigType.SYNC;
 
             if (!nangoCallsAreUsedCorrectly(filePath, type)) {
@@ -734,19 +768,21 @@ export const checkYamlMatchesTsFiles = async (): Promise<boolean> => {
     const config = await getConfig();
 
     const syncNames = config.map((provider) => provider.syncs.map((sync) => sync.name)).flat();
+    const actionNames = config.map((provider) => provider.actions.map((action) => action.name)).flat();
+    const flows = [...syncNames, ...actionNames];
 
     const tsFiles = glob.sync(`./*.ts`);
 
     const tsFileNames = tsFiles.filter((file) => !file.includes('models.ts')).map((file) => path.basename(file, '.ts'));
 
-    const missingSyncs = syncNames.filter((syncName) => !tsFileNames.includes(syncName));
+    const missingSyncsAndActions = flows.filter((syncOrActionName) => !tsFileNames.includes(syncOrActionName));
 
-    if (missingSyncs.length > 0) {
-        console.log(chalk.red(`The following syncs are missing a corresponding .ts file: ${missingSyncs.join(', ')}`));
+    if (missingSyncsAndActions.length > 0) {
+        console.log(chalk.red(`The following syncs are missing a corresponding .ts file: ${missingSyncsAndActions.join(', ')}`));
         throw new Error('Syncs missing .ts files');
     }
 
-    const extraSyncs = tsFileNames.filter((syncName) => !syncNames.includes(syncName));
+    const extraSyncs = tsFileNames.filter((syncName) => !flows.includes(syncName));
 
     if (extraSyncs.length > 0) {
         console.log(chalk.red(`The following .ts files do not have a corresponding sync in the config: ${extraSyncs.join(', ')}`));
@@ -861,7 +897,7 @@ export const tscWatch = async (debug = false) => {
         if (debug) {
             printDebug(`Creating ${TYPES_FILE_NAME} file`);
         }
-        createModelFile();
+        await createModelFile();
     }
 
     watcher.on('add', (filePath: string) => {
@@ -900,8 +936,14 @@ export const tscWatch = async (debug = false) => {
         });
 
         try {
-            const providerConfiguration = config.find((config) => config.syncs.find((sync) => sync.name === path.basename(filePath, '.ts')));
-            const syncConfig = providerConfiguration?.syncs.find((sync) => sync.name === path.basename(filePath, '.ts'));
+            const providerConfiguration = config.find((config) =>
+                [...config.syncs, ...config.actions].find((sync) => sync.name === path.basename(filePath, '.ts'))
+            );
+            if (!providerConfiguration) {
+                return;
+            }
+            const syncConfig = [...providerConfiguration.syncs, ...providerConfiguration.actions].find((sync) => sync.name === path.basename(filePath, '.ts'));
+
             const type = syncConfig?.type || SyncConfigType.SYNC;
 
             if (!nangoCallsAreUsedCorrectly(filePath, type)) {
@@ -927,8 +969,8 @@ export const configWatch = (debug = false) => {
     }
     const watcher = chokidar.watch(watchPath, { ignoreInitial: true });
 
-    watcher.on('change', () => {
-        createModelFile(true);
+    watcher.on('change', async () => {
+        await createModelFile(true);
     });
 };
 
@@ -985,12 +1027,13 @@ function packageIntegrationData(config: SimplifiedNangoIntegration[], debug: boo
     for (const integration of config) {
         const { providerConfigKey } = integration;
         let { syncs } = integration;
+        const { actions } = integration;
 
         if (optionalSyncName) {
             syncs = syncs.filter((sync) => sync.name === optionalSyncName);
         }
 
-        for (const sync of syncs) {
+        for (const sync of [...syncs, ...actions]) {
             const { name: syncName, runs = '', returns: models, models: model_schema, type = SyncConfigType.SYNC } = sync;
 
             const { path: integrationFilePath, result: integrationFileResult } = localFileService.checkForIntegrationDistFile(syncName, './');
@@ -1039,7 +1082,7 @@ function packageIntegrationData(config: SimplifiedNangoIntegration[], debug: boo
             const body = {
                 syncName,
                 providerConfigKey,
-                models,
+                models: Array.isArray(models) ? models : [models],
                 version: version as string,
                 runs,
                 track_deletes: sync.track_deletes || false,

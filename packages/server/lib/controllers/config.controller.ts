@@ -6,6 +6,7 @@ import {
     getEnvironmentId,
     getEnvironmentAndAccountId,
     analytics,
+    AnalyticsTypes,
     configService,
     Config as ProviderConfig,
     IntegrationWithCreds,
@@ -300,7 +301,7 @@ class ConfigController {
             const result = await configService.createProviderConfig(config);
 
             if (Array.isArray(result) && result.length === 1 && result[0] != null && 'id' in result[0]) {
-                analytics.track('server:config_created', accountId, { provider: config.provider });
+                analytics.track(AnalyticsTypes.CONFIG_CREATED, accountId, { provider: config.provider });
                 res.status(200).send();
             } else {
                 throw new NangoError('provider_config_creation_failure');

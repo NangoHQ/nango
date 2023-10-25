@@ -35,6 +35,11 @@ const JsonPrettyPrint: React.FC<Props> = ({ data }): ReactElement<any, any> => {
   let message = '';
   let isJson = true;
 
+  const isHtml = (string: string | number | undefined) => {
+    const htmlRegex = /<\/?[a-z][\s\S]*>/i;
+    return htmlRegex.test(string as string);
+  };
+
   try {
     const jsonRegex = /({.*})|(\[.*\])/s;
     const match = (data as string)?.match(jsonRegex);
@@ -49,6 +54,9 @@ const JsonPrettyPrint: React.FC<Props> = ({ data }): ReactElement<any, any> => {
       } catch {
         isJson = false;
         prettyJson = data as string;
+        if (isHtml(data)) {
+          return <div className="whitespace-normal break-all overflow-wrap" dangerouslySetInnerHTML={{ __html: String(data) }}></div>;
+        }
       }
     }
 
@@ -62,6 +70,7 @@ const JsonPrettyPrint: React.FC<Props> = ({ data }): ReactElement<any, any> => {
       return <span className="whitespace-normal break-all overflow-wrap">{data?.toString()}</span>;
   }
 };
+
 export default function Activity() {
     const navigate = useNavigate();
 

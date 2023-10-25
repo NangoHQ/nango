@@ -197,7 +197,20 @@ class EnvironmentController {
         try {
             const environmentId = getEnvironmentId(res);
             const environmentVariables = await environmentService.getEnvironmentVariables(environmentId);
-            res.status(200).send(environmentVariables);
+
+            if (!environmentVariables) {
+                res.status(200).send([]);
+                return;
+            }
+
+            const envs = environmentVariables.map((env) => {
+                return {
+                    name: env.name,
+                    value: env.value
+                };
+            });
+
+            res.status(200).send(envs);
         } catch (err) {
             next(err);
         }
