@@ -32,8 +32,7 @@
         }
     }
 %>
-import type { NangoTypes<%= formattedInterfaceNames ? ', ' + formattedInterfaceNames : '' %><%= formattedInputs ? ', ' + formattedInputs : '' %> } from './<%= interfaceFileName %>';
-type NangoAction = NangoTypes.NangoAction;
+import type { NangoAction<%= formattedInterfaceNames ? ', ' + formattedInterfaceNames : '' %><%= formattedInputs ? ', ' + formattedInputs : '' %> } from './<%= interfaceFileName %>';
 
 export default async function runAction(nango: NangoAction, input<%= optionalInput %>: <%= paramInputs %>): Promise<<%= returnTypes %>> {
     // Integration code goes here
