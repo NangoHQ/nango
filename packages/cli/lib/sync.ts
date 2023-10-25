@@ -111,7 +111,7 @@ export const generate = async (debug = false, inParentDirectory = false) => {
 
     // insert NangoSync types to the bottom of the file
     const typesContent = fs.readFileSync(`${getNangoRootPath()}/${NangoSyncTypesFileLocation}`, 'utf8');
-    fs.writeFileSync(`${dirPrefix}/${TYPES_FILE_NAME}`, `export namespace NangoTypes {\n ${typesContent} \n}`, { flag: 'a' });
+    fs.writeFileSync(`${dirPrefix}/${TYPES_FILE_NAME}`, typesContent, { flag: 'a' });
 
     const config = await getConfig(dirPrefix, debug);
     const flowConfig = `export const NangoFlows = ${JSON.stringify(config, null, 2)}; \n`;
@@ -335,7 +335,7 @@ const createModelFile = async (notify = false) => {
 
     // insert NangoSync types to the bottom of the file
     const typesContent = fs.readFileSync(`${getNangoRootPath()}/${NangoSyncTypesFileLocation}`, 'utf8');
-    fs.writeFileSync(`./${TYPES_FILE_NAME}`, `export namespace NangoTypes {\n ${typesContent} \n}`, { flag: 'a' });
+    fs.writeFileSync(`./${TYPES_FILE_NAME}`, typesContent, { flag: 'a' });
 
     const config = await getConfig();
     const flowConfig = `export const NangoFlows = ${JSON.stringify(config, null, 2)}; \n`;
