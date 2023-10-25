@@ -66,13 +66,15 @@ class MetricsManager {
                                 type: metricCategory
                             }
                         ],
+                        type: 3,
                         tags: [`environment:${process.env['NODE_ENV']}`, `service:${operation}`, additionalTags]
                     }
                 ]
             }
         };
 
-        await this.metricsInstance?.submitMetrics(params);
+        const result = await this.metricsInstance?.submitMetrics(params);
+        console.log('capture metric result', result);
     }
 }
 
