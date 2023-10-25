@@ -35,7 +35,8 @@ import {
     syncRunService,
     nangoConfigFile,
     localFileService,
-    SyncConfigType
+    SyncConfigType,
+    JAVASCRIPT_PRIMITIVES
 } from '@nangohq/shared';
 import {
     hostport,
@@ -153,40 +154,58 @@ export const generate = async (debug = false, inParentDirectory = false) => {
                 process.exit(1);
             }
 
-            const { returns: models, type = SyncConfigType.SYNC } = syncData;
+            const { returns: modelOrModels, inputs, type = SyncConfigType.SYNC } = syncData;
             const syncNameCamel = syncName
                 .split('-')
                 .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
                 .join('');
 
-            let ejsTeamplateContents = '';
+            let ejsTemplateContents = '';
+
             if (syncName === exampleSyncName && type === SyncConfigType.SYNC) {
-                ejsTeamplateContents = githubExampleTemplateContents;
+                ejsTemplateContents = githubExampleTemplateContents;
             } else {
-                ejsTeamplateContents = type === SyncConfigType.SYNC ? syncTemplateContents : actionTemplateContents;
+                ejsTemplateContents = type === SyncConfigType.SYNC ? syncTemplateContents : actionTemplateContents;
             }
-            const rendered = ejs.render(ejsTeamplateContents, {
+
+            const formatModelName = (model: string) => {
+                if (JAVASCRIPT_PRIMITIVES.includes(model)) {
+                    return '';
+                }
+                const singularModel = model.charAt(model.length - 1) === 's' ? model.slice(0, -1) : model;
+                return `${singularModel.charAt(0).toUpperCase()}${singularModel.slice(1)}`;
+            };
+
+            let interfaceNames: string | string[];
+            let mappings: { name: string; type: string } | { name: string; type: string }[];
+
+            if (typeof modelOrModels === 'string') {
+                const formattedName = formatModelName(modelOrModels);
+                interfaceNames = formattedName;
+                mappings = {
+                    name: modelOrModels,
+                    type: formattedName
+                };
+            } else {
+                interfaceNames = modelOrModels.map(formatModelName);
+                mappings = modelOrModels.map((model) => ({
+                    name: model,
+                    type: formatModelName(model)
+                }));
+            }
+
+            const rendered = ejs.render(ejsTemplateContents, {
                 syncName: syncNameCamel,
                 interfaceFileName: TYPES_FILE_NAME.replace('.ts', ''),
-                interfaceNames: models
-                    ? models?.map((model) => {
-                          const singularModel = model?.charAt(model.length - 1) === 's' ? model.slice(0, -1) : model;
-                          return `${singularModel.charAt(0).toUpperCase()}${singularModel.slice(1)}`;
-                      })
-                    : [],
-                mappings: models
-                    ? models?.map((model) => {
-                          const singularModel = model.charAt(model.length - 1) === 's' ? model.slice(0, -1) : model;
-                          return {
-                              name: model,
-                              type: `${singularModel.charAt(0).toUpperCase()}${singularModel.slice(1)}`
-                          };
-                      })
-                    : []
+                interfaceNames,
+                mappings,
+                inputs: inputs || ''
             });
 
+            const stripped = rendered.replace(/^\s+/, '');
+
             if (!fs.existsSync(`${dirPrefix}/${syncName}.ts`)) {
-                fs.writeFileSync(`${dirPrefix}/${syncName}.ts`, rendered);
+                fs.writeFileSync(`${dirPrefix}/${syncName}.ts`, stripped);
                 if (debug) {
                     printDebug(`Created ${syncName}.ts file`);
                 }
@@ -1063,7 +1082,7 @@ function packageIntegrationData(config: SimplifiedNangoIntegration[], debug: boo
             const body = {
                 syncName,
                 providerConfigKey,
-                models,
+                models: Array.isArray(models) ? models : [models],
                 version: version as string,
                 runs,
                 track_deletes: sync.track_deletes || false,

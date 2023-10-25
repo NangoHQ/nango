@@ -7,6 +7,7 @@ export interface NangoIntegrationData {
     type?: SyncConfigType;
     runs: string;
     returns: string[];
+    inputs?: string[];
     track_deletes?: boolean;
     auto_start?: boolean;
     attributes?: object;

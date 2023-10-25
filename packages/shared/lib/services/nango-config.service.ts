@@ -70,6 +70,31 @@ export function getRootDir(optionalLoadLocation?: string) {
     }
 }
 
+function getFieldsForModel(modelName: string, config: NangoConfig): { name: string; type: string }[] {
+    const modelFields = [];
+    const modelData = config.models[modelName] || config.models[`${modelName.slice(0, -1)}`];
+
+    for (const fieldName in modelData) {
+        const fieldType = modelData[fieldName];
+        if (fieldName === '__extends') {
+            const extendedModels = (fieldType as string).split(',');
+            for (const extendedModel of extendedModels) {
+                const extendedFields = getFieldsForModel(extendedModel.trim(), config);
+                modelFields.push(...extendedFields);
+            }
+        } else if (typeof fieldType === 'object') {
+            for (const subFieldName in fieldType) {
+                const subFieldType = fieldType[subFieldName];
+                modelFields.push({ name: `${fieldName}.${subFieldName}`, type: subFieldType as string });
+            }
+        } else {
+            modelFields.push({ name: fieldName, type: fieldType as string });
+        }
+    }
+
+    return modelFields;
+}
+
 export function convertConfigObject(config: NangoConfig): SimplifiedNangoIntegration[] {
     const output = [];
 
@@ -77,24 +102,14 @@ export function convertConfigObject(config: NangoConfig): SimplifiedNangoIntegra
         const syncs = [];
         const actions = [];
         const integration = config.integrations[providerConfigKey];
+
         for (const syncName in integration) {
             const sync: NangoSyncConfig = integration[syncName] as NangoSyncConfig;
             const models: NangoSyncModel[] = [];
             if (sync.returns) {
-                sync.returns.forEach((model) => {
-                    const modelFields = [];
-                    const modelData = config.models[model] || config.models[`${model.slice(0, -1)}`];
-                    for (const fieldName in modelData) {
-                        const fieldType = modelData[fieldName];
-                        if (typeof fieldType === 'object') {
-                            for (const subFieldName in fieldType) {
-                                const subFieldType = fieldType[subFieldName];
-                                modelFields.push({ name: `${fieldName}.${subFieldName}`, type: subFieldType as string });
-                            }
-                        } else {
-                            modelFields.push({ name: fieldName, type: fieldType as string });
-                        }
-                    }
+                const syncReturns = Array.isArray(sync.returns) ? sync.returns : [sync.returns];
+                syncReturns.forEach((model) => {
+                    const modelFields = getFieldsForModel(model, config);
                     models.push({ name: model, fields: modelFields });
                 });
             }
@@ -111,12 +126,14 @@ export function convertConfigObject(config: NangoConfig): SimplifiedNangoIntegra
                 description: sync?.description || sync?.metadata?.description || '',
                 scopes: sync?.scopes || sync?.metadata?.scopes || []
             };
+
             if (sync.type === SyncConfigType.ACTION) {
                 actions.push(flowObject);
             } else {
                 syncs.push(flowObject);
             }
         }
+
         output.push({ providerConfigKey, syncs, actions });
     }
 
