@@ -889,6 +889,8 @@ shopify:
     token_url: https://${connectionConfig.subdomain}.myshopify.com/admin/oauth/access_token
     proxy:
         base_url: https://${connectionConfig.subdomain}.myshopify.com
+        headers:
+            X-Shopify-Access-Token: ${accessToken}
 shortcut:
     auth_mode: API_KEY
     proxy:

@@ -134,6 +134,28 @@ describe('Proxy Controller Construct Header Tests', () => {
         });
     });
 
+    it('Should correctly insert headers with dynamic values for oauth', () => {
+        const config = {
+            template: {
+                auth_mode: 'OAUTH2',
+                proxy: {
+                    headers: {
+                        'X-Access-Token': '${accessToken}'
+                    }
+                }
+            },
+            token: 'some-oauth-access-token'
+        };
+
+        // @ts-ignore
+        const result = proxyController.constructHeaders(config);
+
+        expect(result).toEqual({
+            Authorization: 'Bearer some-oauth-access-token',
+            'X-Access-Token': 'some-oauth-access-token'
+        });
+    });
+
     it('Should correctly merge provided headers', () => {
         const config = {
             template: {
