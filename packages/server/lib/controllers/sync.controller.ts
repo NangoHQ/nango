@@ -25,6 +25,7 @@ import {
     ServiceResponse,
     errorManager,
     analytics,
+    AnalyticsTypes,
     ErrorSourceEnum,
     LogActionEnum,
     NangoError,
@@ -63,7 +64,7 @@ class SyncController {
                 return;
             }
 
-            analytics.trackByEnvironmentId('sync:deploy_succeeded', environmentId);
+            analytics.trackByEnvironmentId(AnalyticsTypes.SYNC_DEPLOY_SUCCESS, environmentId);
 
             res.send(syncConfigDeployResult?.result);
         } catch (e) {
@@ -491,7 +492,21 @@ class SyncController {
             });
             await updateSuccessActivityLog(activityLogId as number, true);
 
-            analytics.trackByEnvironmentId(`sync:command_${command.toLowerCase()}`, environment.id, {
+            let event = AnalyticsTypes.SYNC_RUN;
+
+            switch (command) {
+                case SyncCommand.PAUSE:
+                    event = AnalyticsTypes.SYNC_PAUSE;
+                    break;
+                case SyncCommand.UNPAUSE:
+                    event = AnalyticsTypes.SYNC_UNPAUSE;
+                    break;
+                case SyncCommand.RUN:
+                    event = AnalyticsTypes.SYNC_RUN;
+                    break;
+            }
+
+            analytics.trackByEnvironmentId(event, environment.id, {
                 sync_id,
                 sync_name,
                 provider,

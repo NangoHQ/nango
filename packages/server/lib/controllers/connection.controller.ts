@@ -22,6 +22,7 @@ import {
     getEnvironmentId,
     errorManager,
     analytics,
+    AnalyticsTypes,
     NangoError,
     createActivityLogAndLogMessage,
     environmentService
@@ -325,7 +326,7 @@ class ConnectionController {
             const connections = await connectionService.listConnections(environmentId, connectionId as string);
 
             if (!isWeb) {
-                analytics.track('server:connection_list_fetched', accountId);
+                analytics.track(AnalyticsTypes.CONNECTION_LIST_FETCHED, accountId);
                 res.status(200).send({ connections });
 
                 return;
