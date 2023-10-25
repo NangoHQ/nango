@@ -284,7 +284,7 @@ class ConnectionController {
 
             if (!isSync && !isDryRun) {
                 await createActivityLogMessageAndEnd({
-                    level: 'info',
+                    level: 'debug',
                     environment_id: environmentId,
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),

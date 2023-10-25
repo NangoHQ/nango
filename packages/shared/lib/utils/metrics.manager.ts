@@ -74,8 +74,7 @@ class MetricsManager {
             }
         };
 
-        const result = await this.metricsInstance?.submitMetrics(params);
-        console.log('capture metric result', result);
+        await this.metricsInstance?.submitMetrics(params);
     }
 }
 
