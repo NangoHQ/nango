@@ -219,6 +219,7 @@
                         "integrations/all/jira",
                         "integrations/all/keap",
                         "integrations/all/lever",
+                        "integrations/all/lever-sandbox",
                         "integrations/all/linear",
                         "integrations/all/linkedin",
                         "integrations/all/mailchimp",
