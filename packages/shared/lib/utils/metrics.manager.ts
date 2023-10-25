@@ -48,6 +48,7 @@ class MetricsManager {
     }
 
     public async captureMetric(metricName: string, metricId: string, metricCategory: string, value: number, operation: string, additionalTags = '') {
+        const currentTime = Math.floor(Date.now() / 1000);
         const params: v2.MetricsApiSubmitMetricsRequest = {
             body: {
                 series: [
@@ -55,7 +56,7 @@ class MetricsManager {
                         metric: metricName,
                         points: [
                             {
-                                timestamp: new Date().getTime(),
+                                timestamp: currentTime,
                                 value
                             }
                         ],
