@@ -108,7 +108,8 @@ class SyncController {
 
     public async getRecords(req: Request, res: Response, next: NextFunction) {
         try {
-            const { model, delta, offset, limit, sort_by, order, filter, include_nango_metadata } = req.query;
+            const { delta, offset, limit, sort_by, order, filter, include_nango_metadata } = req.query;
+            const model = req.params['model'] || req.query['model']; //TODO: deprecate 'model' query parameter
             const environmentId = getEnvironmentId(res);
 
             const connectionId = req.get('Connection-Id') as string;
