@@ -57,10 +57,10 @@ export default function LeftNavBar(props: LeftNavBarProps) {
 
     return (
         <div>
-            <div className="border-r-2 border-border-gray flex flex-col h-full w-60 bg-bg-black justify-between">
+            <div className="h-[calc(100%-4rem)] border-r-2 border-border-gray flex flex-col w-60 bg-bg-black justify-between p-6">
                 <div className="">
                     {envs.length > 0 && (
-                        <div className="mb-8">
+                        <div className="mb-6">
                             <select
                                 id="environment"
                                 name="env"
@@ -124,7 +124,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                         </Link>
                     </div>
                 </div>
-                <div className='px-6'>
+                <div className=''>
                     {isCloud() && (
                         <div className="">
                             <ul className="text-white space-y-1 text-sm">
