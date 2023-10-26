@@ -676,6 +676,8 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
         normalizedInput = actionInput;
     }
 
+    const logMessages: string[] = [];
+
     const syncRun = new syncRunService({
         integrationService,
         writeToDb: false,
@@ -688,7 +690,8 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
         syncName,
         syncType: SyncType.INITIAL,
         loadLocation: './',
-        debug
+        debug,
+        logMessages
     });
 
     try {
@@ -698,6 +701,35 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
         if (results) {
             console.log(JSON.stringify(results, null, 2));
         }
+
+        if (syncRun.logMessages.length > 0) {
+            let index = 0;
+            const batchCount = 10;
+
+            const displayBatch = () => {
+                for (let i = 0; i < batchCount && index < syncRun.logMessages.length; i++, index++) {
+                    const logs = syncRun.logMessages[index];
+                    console.log(chalk.yellow(JSON.stringify(logs, null, 2)));
+                }
+            };
+
+            console.log(chalk.yellow('The following log messages were generated:'));
+
+            displayBatch();
+
+            while (index < syncRun.logMessages.length) {
+                const remaining = syncRun.logMessages.length - index;
+                const confirmation = await promptly.confirm(
+                    `There are ${remaining} logs messages remaining. Would you like to see the next 10 log messages? (y/n)`
+                );
+                if (confirmation) {
+                    displayBatch();
+                } else {
+                    break;
+                }
+            }
+        }
+
         process.exit(0);
     } catch (e) {
         process.exit(1);

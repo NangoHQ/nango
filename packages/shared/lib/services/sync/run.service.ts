@@ -38,6 +38,8 @@ interface SyncRunConfig {
     loadLocation?: string;
     debug?: boolean;
     input?: object;
+
+    logMessages?: string[];
 }
 
 export default class SyncRun {
@@ -55,6 +57,8 @@ export default class SyncRun {
     loadLocation?: string;
     debug?: boolean;
     input?: object;
+
+    logMessages: string[] = [];
 
     constructor(config: SyncRunConfig) {
         this.integrationService = config.integrationService;
@@ -90,6 +94,10 @@ export default class SyncRun {
 
         if (config.provider) {
             this.provider = config.provider;
+        }
+
+        if (config.logMessages) {
+            this.logMessages = config.logMessages;
         }
     }
 
@@ -239,7 +247,8 @@ export default class SyncRun {
                 lastSyncDate: lastSyncDate as Date,
                 dryRun: !this.writeToDb,
                 attributes: syncData.attributes,
-                track_deletes: trackDeletes as boolean
+                track_deletes: trackDeletes as boolean,
+                logMessages: this.logMessages
             });
 
             if (this.debug) {

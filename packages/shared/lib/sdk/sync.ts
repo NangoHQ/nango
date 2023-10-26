@@ -182,6 +182,8 @@ interface NangoProps {
     dryRun?: boolean;
     track_deletes?: boolean;
     attributes?: object | undefined;
+
+    logMessages?: unknown[];
 }
 
 interface UserLogParameters {
@@ -395,6 +397,7 @@ export class NangoAction {
 export class NangoSync extends NangoAction {
     lastSyncDate?: Date;
     track_deletes = false;
+    logMessages?: unknown[] = [];
 
     constructor(config: NangoProps) {
         super(config);
@@ -405,6 +408,10 @@ export class NangoSync extends NangoAction {
 
         if (config.track_deletes) {
             this.track_deletes = config.track_deletes;
+        }
+
+        if (config.logMessages) {
+            this.logMessages = config.logMessages;
         }
     }
 
@@ -471,8 +478,8 @@ export class NangoSync extends NangoAction {
         }
 
         if (this.dryRun) {
-            console.log('A batch save call would save following data:');
-            console.log(JSON.stringify(results, null, 2));
+            this.logMessages?.push(`A batch save call would delete the following data`);
+            this.logMessages?.push(...results);
             return null;
         }
 
@@ -586,8 +593,8 @@ export class NangoSync extends NangoAction {
         }
 
         if (this.dryRun) {
-            console.log('A batch delete call would delete the following data:');
-            console.log(JSON.stringify(results, null, 2));
+            this.logMessages?.push(`A batch delete call would delete the following data`);
+            this.logMessages?.push(...results);
             return null;
         }
 
