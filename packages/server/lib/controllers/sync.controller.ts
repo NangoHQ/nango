@@ -109,7 +109,18 @@ class SyncController {
     public async getRecords(req: Request, res: Response, next: NextFunction) {
         try {
             const { delta, offset, limit, sort_by, order, filter, include_nango_metadata } = req.query;
-            const model = req.params['model'] || req.query['model']; //TODO: deprecate 'model' query parameter
+
+            // transform kebab-case to model case (ex: github-issue => GithubIssue)
+            const toCase = (s: string) => {
+                return s
+                    .split('-')
+                    .map((word, _index) => {
+                        return word.charAt(0).toUpperCase() + word.slice(1);
+                    })
+                    .join('');
+            };
+
+            const model = toCase(req.params['model'] as string) || req.query['model']; //TODO: deprecate 'model' query parameter
             const environmentId = getEnvironmentId(res);
 
             const connectionId = req.get('Connection-Id') as string;
