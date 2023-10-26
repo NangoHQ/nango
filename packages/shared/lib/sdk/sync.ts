@@ -393,6 +393,10 @@ export class NangoAction {
                 throw Error(`'${paginationConfig.type} ' pagination is not supported. Please, make sure it's one of ${Object.values(PaginationType)}`);
         }
     }
+
+    public async triggerAction(providerConfigKey: string, connectionId: string, actionName: string, input?: unknown): Promise<object> {
+        return this.nango.triggerAction(providerConfigKey, connectionId, actionName, input);
+    }
 }
 
 export class NangoSync extends NangoAction {
