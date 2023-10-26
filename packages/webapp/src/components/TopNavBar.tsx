@@ -10,7 +10,7 @@ export default function NavBar() {
     };
 
     return (
-        <div className="w-full bg-bg-black h-16 border-b-2 border-border-gray flex justify-between items-center p-6">
+        <div className="w-full bg-bg-black h-16 border-b-2 border-border-gray flex justify-between items-center px-6">
             <div className="">
                 <img className="h-8 w-8" src="/logo-circled.svg" alt="Nango" />
             </div>
