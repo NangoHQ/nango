@@ -151,7 +151,7 @@ interface OAuth1Credentials extends CredentialsCommon {
 type AuthCredentials = OAuth2Credentials | OAuth1Credentials | BasicApiCredentials | ApiKeyCredentials | AppCredentials;
 
 interface Metadata {
-    [key: string]: string | Record<string, string>;
+    [key: string]: string | Record<string, any>;
 }
 
 interface Connection {
@@ -182,6 +182,9 @@ interface NangoProps {
     dryRun?: boolean;
     track_deletes?: boolean;
     attributes?: object | undefined;
+
+    logMessages?: unknown[] | undefined;
+    stubbedMetadata?: Metadata | undefined;
 }
 
 interface UserLogParameters {
@@ -395,6 +398,8 @@ export class NangoAction {
 export class NangoSync extends NangoAction {
     lastSyncDate?: Date;
     track_deletes = false;
+    logMessages?: unknown[] | undefined = [];
+    stubbedMetadata?: Metadata | undefined = {};
 
     constructor(config: NangoProps) {
         super(config);
@@ -405,6 +410,14 @@ export class NangoSync extends NangoAction {
 
         if (config.track_deletes) {
             this.track_deletes = config.track_deletes;
+        }
+
+        if (config.logMessages) {
+            this.logMessages = config.logMessages;
+        }
+
+        if (config.stubbedMetadata) {
+            this.stubbedMetadata = config.stubbedMetadata;
         }
     }
 
@@ -471,8 +484,8 @@ export class NangoSync extends NangoAction {
         }
 
         if (this.dryRun) {
-            console.log('A batch save call would save following data:');
-            console.log(JSON.stringify(results, null, 2));
+            this.logMessages?.push(`A batch save call would delete the following data`);
+            this.logMessages?.push(...results);
             return null;
         }
 
@@ -586,8 +599,8 @@ export class NangoSync extends NangoAction {
         }
 
         if (this.dryRun) {
-            console.log('A batch delete call would delete the following data:');
-            console.log(JSON.stringify(results, null, 2));
+            this.logMessages?.push(`A batch delete call would delete the following data`);
+            this.logMessages?.push(...results);
             return null;
         }
 
@@ -658,5 +671,12 @@ export class NangoSync extends NangoAction {
 
             throw new Error(responseResults?.error);
         }
+    }
+    public override async getMetadata<T = Metadata>(): Promise<T> {
+        if (this.dryRun && this.stubbedMetadata) {
+            return this.stubbedMetadata as T;
+        }
+
+        return super.getMetadata();
     }
 }
