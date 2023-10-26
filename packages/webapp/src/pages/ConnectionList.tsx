@@ -88,7 +88,7 @@ export default function ConnectionList() {
                 <div className="">
                     <div className="">
                         <h2 className="text-left text-3xl font-semibold tracking-tight text-white mb-12">Connections</h2>
-                        <div className="text-sm w-largebox h-40">
+                        <div className="text-sm h-40">
                             <Link to="/connections/create" className="py-3 px-4 rounded-md text-sm text-black bg-white hover:bg-gray-300">
                                 Add your 1st Connection
                             </Link>

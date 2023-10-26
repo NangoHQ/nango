@@ -176,7 +176,7 @@ We could not retrieve and/or refresh your access token due to the following erro
 
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Connections}>
-            <div className="mx-auto w-largebox">
+            <div className="">
                 <div className="mx-16 pb-40">
                     <div className="flex mt-16 mb-6 justify-between">
                         <Typography

@@ -560,7 +560,7 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                 <div className="">
                     <div className="">
                         <h2 className="text-left text-3xl font-semibold tracking-tight text-white mb-12">Add New Connection</h2>
-                        <div className="text-sm w-largebox h-40">
+                        <div className="text-sm h-40">
                             <p className="text-white text-sm">
                                 You have not created any Integrations yet. Please create an{' '}
                                 <Link to="/integrations" className="text-text-blue">
