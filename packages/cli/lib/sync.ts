@@ -24,6 +24,7 @@ import type {
     NangoIntegration,
     NangoIntegrationData,
     SimplifiedNangoIntegration,
+    Metadata,
     NangoConfigMetadata
 } from '@nangohq/shared';
 import {
@@ -67,6 +68,7 @@ interface RunArgs extends GlobalOptions {
     lastSyncDate?: string;
     useServerLastSyncDate?: boolean;
     input?: object;
+    metadata?: Metadata;
 }
 
 const exampleSyncName = 'github-issue-example';
@@ -577,7 +579,7 @@ export const adminDeploy = async (environmentName: string, debug = false) => {
 
 export const dryRun = async (options: RunArgs, environment: string, debug = false) => {
     let syncName = '';
-    let connectionId, suppliedLastSyncDate, actionInput;
+    let connectionId, suppliedLastSyncDate, actionInput, stubbedMetadata;
 
     await parseSecretKey(environment, debug);
 
@@ -593,7 +595,7 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
     }
 
     if (Object.keys(options).length > 0) {
-        ({ sync: syncName, connectionId, lastSyncDate: suppliedLastSyncDate, input: actionInput } = options);
+        ({ sync: syncName, connectionId, lastSyncDate: suppliedLastSyncDate, input: actionInput, metadata: stubbedMetadata } = options);
     }
 
     if (!syncName) {
@@ -691,7 +693,8 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
         syncType: SyncType.INITIAL,
         loadLocation: './',
         debug,
-        logMessages
+        logMessages,
+        stubbedMetadata
     });
 
     try {
@@ -702,13 +705,14 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
             console.log(JSON.stringify(results, null, 2));
         }
 
-        if (syncRun.logMessages.length > 0) {
+        if (syncRun.logMessages && syncRun.logMessages.length > 0) {
+            const logMessages = syncRun.logMessages as unknown[];
             let index = 0;
             const batchCount = 10;
 
             const displayBatch = () => {
-                for (let i = 0; i < batchCount && index < syncRun.logMessages.length; i++, index++) {
-                    const logs = syncRun.logMessages[index];
+                for (let i = 0; i < batchCount && index < logMessages.length; i++, index++) {
+                    const logs = logMessages[index];
                     console.log(chalk.yellow(JSON.stringify(logs, null, 2)));
                 }
             };

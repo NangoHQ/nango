@@ -151,7 +151,7 @@ interface OAuth1Credentials extends CredentialsCommon {
 type AuthCredentials = OAuth2Credentials | OAuth1Credentials | BasicApiCredentials | ApiKeyCredentials | AppCredentials;
 
 interface Metadata {
-    [key: string]: string | Record<string, string>;
+    [key: string]: string | Record<string, any>;
 }
 
 interface Connection {
@@ -183,7 +183,8 @@ interface NangoProps {
     track_deletes?: boolean;
     attributes?: object | undefined;
 
-    logMessages?: unknown[];
+    logMessages?: unknown[] | undefined;
+    stubbedMetadata?: Metadata | undefined;
 }
 
 interface UserLogParameters {
@@ -397,7 +398,8 @@ export class NangoAction {
 export class NangoSync extends NangoAction {
     lastSyncDate?: Date;
     track_deletes = false;
-    logMessages?: unknown[] = [];
+    logMessages?: unknown[] | undefined = [];
+    stubbedMetadata?: Metadata | undefined = {};
 
     constructor(config: NangoProps) {
         super(config);
@@ -412,6 +414,10 @@ export class NangoSync extends NangoAction {
 
         if (config.logMessages) {
             this.logMessages = config.logMessages;
+        }
+
+        if (config.stubbedMetadata) {
+            this.stubbedMetadata = config.stubbedMetadata;
         }
     }
 
@@ -665,5 +671,12 @@ export class NangoSync extends NangoAction {
 
             throw new Error(responseResults?.error);
         }
+    }
+    public override async getMetadata<T = Metadata>(): Promise<T> {
+        if (this.dryRun && this.stubbedMetadata) {
+            return this.stubbedMetadata as T;
+        }
+
+        return super.getMetadata();
     }
 }
