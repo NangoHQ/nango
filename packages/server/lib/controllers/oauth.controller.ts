@@ -42,6 +42,7 @@ import {
     providerClientManager,
     errorManager,
     analytics,
+    AnalyticsTypes,
     hmacService,
     ErrorSourceEnum
 } from '@nangohq/shared';
@@ -74,7 +75,7 @@ class OAuthController {
 
         try {
             if (!wsClientId) {
-                analytics.track('server:pre_ws_oauth', accountId);
+                analytics.track(AnalyticsTypes.PRE_WS_OAUTH, accountId);
             }
 
             const callbackUrl = await getOauthCallbackUrl(environmentId);

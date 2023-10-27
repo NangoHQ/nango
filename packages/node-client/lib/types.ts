@@ -79,7 +79,7 @@ export interface ApiKeyCredentials {
 type AuthCredentials = OAuth2Credentials | OAuth1Credentials | BasicApiCredentials | ApiKeyCredentials;
 
 export interface Metadata {
-    [key: string]: string | Record<string, string>;
+    [key: string]: string | Record<string, any>;
 }
 
 export interface Connection {

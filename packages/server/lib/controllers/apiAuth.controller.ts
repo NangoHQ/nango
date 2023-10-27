@@ -6,6 +6,7 @@ import {
     createActivityLog,
     errorManager,
     analytics,
+    AnalyticsTypes,
     SyncClient,
     createActivityLogMessage,
     updateSuccess as updateSuccessActivityLog,
@@ -43,7 +44,7 @@ class ApiAuthController {
         const activityLogId = await createActivityLog(log);
 
         try {
-            analytics.track('server:pre_api_key_auth', accountId);
+            analytics.track(AnalyticsTypes.PRE_API_KEY_AUTH, accountId);
 
             if (!providerConfigKey) {
                 errorManager.errRes(res, 'missing_connection');
@@ -206,7 +207,7 @@ class ApiAuthController {
         const activityLogId = await createActivityLog(log);
 
         try {
-            analytics.track('server:pre_basic_api_key_auth', accountId);
+            analytics.track(AnalyticsTypes.PRE_BASIC_API_KEY_AUTH, accountId);
 
             if (!providerConfigKey) {
                 errorManager.errRes(res, 'missing_connection');

@@ -78,6 +78,7 @@ export async function getAllSyncsAndActions(environment_id: number): Promise<Sim
             `${TABLE}.auto_start`,
             `${TABLE}.attributes`,
             `${TABLE}.version`,
+            `${TABLE}.metadata`,
             '_nango_configs.provider',
             '_nango_configs.unique_key'
         )
@@ -109,13 +110,17 @@ export async function getAllSyncsAndActions(environment_id: number): Promise<Sim
             continue;
         }
 
-        nangoConfig['integrations'][uniqueKey] = {};
+        if (!nangoConfig['integrations'][uniqueKey]) {
+            nangoConfig['integrations'][uniqueKey] = {};
+            nangoConfig['integrations'][uniqueKey]!['provider'] = syncConfig.provider;
+        }
         const syncName = syncConfig.sync_name;
 
         nangoConfig['integrations'][uniqueKey]![syncName] = {
             runs: syncConfig.runs,
             type: syncConfig.type,
             returns: syncConfig.models,
+            metadata: syncConfig.metadata,
             track_deletes: syncConfig.track_deletes,
             auto_start: syncConfig.auto_start,
             attributes: syncConfig.attributes || {},
@@ -128,7 +133,7 @@ export async function getAllSyncsAndActions(environment_id: number): Promise<Sim
     const simlpleConfig = convertConfigObject(nangoConfig);
     const configWithModels = simlpleConfig.map((config: SimplifiedNangoIntegration) => {
         const { providerConfigKey } = config;
-        for (const sync of config.syncs) {
+        for (const sync of [...config.syncs, ...config.actions]) {
             const { name } = sync;
             const model_schema = syncConfigs.find(
                 (syncConfig: extendedSyncConfig) => syncConfig.sync_name === name && syncConfig.unique_key === providerConfigKey

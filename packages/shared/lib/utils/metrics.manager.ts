@@ -47,7 +47,16 @@ class MetricsManager {
         await this.logInstance?.submitLog(params);
     }
 
-    public async captureMetric(metricName: string, metricId: string, metricCategory: string, value: number, operation: string, additionalTags = '') {
+    public async captureMetric(
+        metricName: string,
+        metricId: string,
+        metricCategory: string,
+        value: number,
+        operation: string,
+        optionalAdditionalTags?: string[]
+    ) {
+        const additionalTags = optionalAdditionalTags || [];
+        const currentTime = Math.floor(Date.now() / 1000);
         const params: v2.MetricsApiSubmitMetricsRequest = {
             body: {
                 series: [
@@ -55,7 +64,7 @@ class MetricsManager {
                         metric: metricName,
                         points: [
                             {
-                                timestamp: new Date().getTime(),
+                                timestamp: currentTime,
                                 value
                             }
                         ],
@@ -66,7 +75,8 @@ class MetricsManager {
                                 type: metricCategory
                             }
                         ],
-                        tags: [`environment:${process.env['NODE_ENV']}`, `service:${operation}`, additionalTags]
+                        type: 3,
+                        tags: [`environment:${process.env['NODE_ENV']}`, `service:${operation}`, ...additionalTags]
                     }
                 ]
             }

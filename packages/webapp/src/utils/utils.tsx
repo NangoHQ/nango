@@ -189,6 +189,7 @@ export function getRunTime(created_at: string, updated_at: string): string {
 
     const diffMilliseconds = updatedAt.getTime() - createdAt.getTime();
 
+    const milliseconds = diffMilliseconds % 1000;
     const seconds = Math.floor((diffMilliseconds / 1000) % 60);
     const minutes = Math.floor((diffMilliseconds / (1000 * 60)) % 60);
     const hours = Math.floor((diffMilliseconds / (1000 * 60 * 60)) % 24);
@@ -198,7 +199,11 @@ export function getRunTime(created_at: string, updated_at: string): string {
     if (days > 0) runtime += `${days}d `;
     if (hours > 0) runtime += `${hours}h `;
     if (minutes > 0) runtime += `${minutes}m `;
-    if (seconds > 0) runtime += `${seconds}s`;
+    if (seconds > 0) runtime += `${seconds}s `;
+
+    if (!days && !hours && !minutes && !seconds && milliseconds > 0) {
+        runtime += `${milliseconds}ms`;
+    }
 
     return runtime.trim() || '-';
 }

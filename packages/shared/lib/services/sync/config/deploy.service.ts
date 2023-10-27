@@ -371,7 +371,7 @@ export async function deployPreBuilt(
 
         providerConfigKeys.push(provider_config_key);
 
-        const { type, models, auto_start, runs, model_schema, is_public } = config;
+        const { type, models, auto_start, runs, model_schema, is_public, attributes = {}, metadata = {} } = config;
         const sync_name = config.name || config.syncName;
 
         if (type === SyncConfigType.SYNC && !runs) {
@@ -474,6 +474,8 @@ export async function deployPreBuilt(
             track_deletes: false,
             type,
             auto_start: auto_start === false ? false : true,
+            attributes,
+            metadata,
             pre_built: true,
             is_public
         });

@@ -391,7 +391,8 @@ export function buildInterfaces(models: NangoModel, integrations: NangoIntegrati
             const syncName = syncNames[i] as string;
             const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
             if (syncData.returns) {
-                syncData.returns.forEach((modelName) => {
+                const syncReturns = Array.isArray(syncData.returns) ? syncData.returns : [syncData.returns];
+                syncReturns.forEach((modelName) => {
                     if (!acc.includes(modelName)) {
                         acc.push(modelName);
                     }
