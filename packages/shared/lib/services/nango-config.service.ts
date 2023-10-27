@@ -102,6 +102,12 @@ export function convertConfigObject(config: NangoConfig): SimplifiedNangoIntegra
         const syncs = [];
         const actions = [];
         const integration = config.integrations[providerConfigKey];
+        let provider;
+
+        if (integration!['provider']) {
+            provider = integration!['provider'];
+            delete integration!['provider'];
+        }
 
         for (const syncName in integration) {
             const sync: NangoSyncConfig = integration[syncName] as NangoSyncConfig;
@@ -134,7 +140,17 @@ export function convertConfigObject(config: NangoConfig): SimplifiedNangoIntegra
             }
         }
 
-        output.push({ providerConfigKey, syncs, actions });
+        const simplifiedIntegration: SimplifiedNangoIntegration = {
+            providerConfigKey,
+            syncs,
+            actions
+        };
+
+        if (provider) {
+            simplifiedIntegration.provider = provider as unknown as string;
+        }
+
+        output.push(simplifiedIntegration);
     }
 
     return output;
