@@ -100,6 +100,7 @@ program
     .option('-e [environment]', 'The Nango environment, defaults to dev.', 'dev')
     .option('-l, --lastSyncDate [lastSyncDate]', 'Optional (for syncs only): last sync date to retrieve records greater than this date')
     .option('-i, --input [input]', 'Optional (for actions only): input to pass to the action script')
+    .option('-m, --metadata [metadata]', 'Optional (for syncs only): metadata to stub for the sync script')
     .action(async function (this: Command, sync: string, connectionId: string) {
         const { autoConfirm, debug, e: environment } = this.opts();
         await verifyNecessaryFiles(autoConfirm, debug);

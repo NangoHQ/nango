@@ -473,7 +473,7 @@ export class Nango {
      * =======
      */
 
-    public async triggerAction(providerConfigKey: string, connectionId: string, actionName: string, input: Record<string, unknown>): Promise<object> {
+    public async triggerAction(providerConfigKey: string, connectionId: string, actionName: string, input?: unknown): Promise<object> {
         const url = `${this.serverUrl}/action/trigger`;
 
         const headers = {

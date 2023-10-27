@@ -24,6 +24,7 @@ import type {
     NangoIntegration,
     NangoIntegrationData,
     SimplifiedNangoIntegration,
+    Metadata,
     NangoConfigMetadata
 } from '@nangohq/shared';
 import {
@@ -67,6 +68,7 @@ interface RunArgs extends GlobalOptions {
     lastSyncDate?: string;
     useServerLastSyncDate?: boolean;
     input?: object;
+    metadata?: Metadata;
 }
 
 const exampleSyncName = 'github-issue-example';
@@ -114,7 +116,7 @@ export const generate = async (debug = false, inParentDirectory = false) => {
     fs.writeFileSync(`${dirPrefix}/${TYPES_FILE_NAME}`, typesContent, { flag: 'a' });
 
     const config = await getConfig(dirPrefix, debug);
-    const flowConfig = `export const NangoFlows = ${JSON.stringify(config, null, 2)}; \n`;
+    const flowConfig = `export const NangoFlows = ${JSON.stringify(config, null, 2)} as const; \n`;
     fs.writeFileSync(`${dirPrefix}/${TYPES_FILE_NAME}`, flowConfig, { flag: 'a' });
 
     if (debug) {
@@ -338,7 +340,7 @@ const createModelFile = async (notify = false) => {
     fs.writeFileSync(`./${TYPES_FILE_NAME}`, typesContent, { flag: 'a' });
 
     const config = await getConfig();
-    const flowConfig = `export const NangoFlows = ${JSON.stringify(config, null, 2)}; \n`;
+    const flowConfig = `export const NangoFlows = ${JSON.stringify(config, null, 2)} as const; \n`;
     fs.writeFileSync(`./${TYPES_FILE_NAME}`, flowConfig, { flag: 'a' });
 
     if (notify) {
@@ -577,7 +579,7 @@ export const adminDeploy = async (environmentName: string, debug = false) => {
 
 export const dryRun = async (options: RunArgs, environment: string, debug = false) => {
     let syncName = '';
-    let connectionId, suppliedLastSyncDate, actionInput;
+    let connectionId, suppliedLastSyncDate, actionInput, stubbedMetadata;
 
     await parseSecretKey(environment, debug);
 
@@ -593,7 +595,7 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
     }
 
     if (Object.keys(options).length > 0) {
-        ({ sync: syncName, connectionId, lastSyncDate: suppliedLastSyncDate, input: actionInput } = options);
+        ({ sync: syncName, connectionId, lastSyncDate: suppliedLastSyncDate, input: actionInput, metadata: stubbedMetadata } = options);
     }
 
     if (!syncName) {
@@ -676,6 +678,8 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
         normalizedInput = actionInput;
     }
 
+    const logMessages: string[] = [];
+
     const syncRun = new syncRunService({
         integrationService,
         writeToDb: false,
@@ -688,7 +692,9 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
         syncName,
         syncType: SyncType.INITIAL,
         loadLocation: './',
-        debug
+        debug,
+        logMessages,
+        stubbedMetadata
     });
 
     try {
@@ -698,6 +704,36 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
         if (results) {
             console.log(JSON.stringify(results, null, 2));
         }
+
+        if (syncRun.logMessages && syncRun.logMessages.length > 0) {
+            const logMessages = syncRun.logMessages as unknown[];
+            let index = 0;
+            const batchCount = 10;
+
+            const displayBatch = () => {
+                for (let i = 0; i < batchCount && index < logMessages.length; i++, index++) {
+                    const logs = logMessages[index];
+                    console.log(chalk.yellow(JSON.stringify(logs, null, 2)));
+                }
+            };
+
+            console.log(chalk.yellow('The following log messages were generated:'));
+
+            displayBatch();
+
+            while (index < syncRun.logMessages.length) {
+                const remaining = syncRun.logMessages.length - index;
+                const confirmation = await promptly.confirm(
+                    `There are ${remaining} logs messages remaining. Would you like to see the next 10 log messages? (y/n)`
+                );
+                if (confirmation) {
+                    displayBatch();
+                } else {
+                    break;
+                }
+            }
+        }
+
         process.exit(0);
     } catch (e) {
         process.exit(1);

@@ -112,6 +112,7 @@ export async function getAllSyncsAndActions(environment_id: number): Promise<Sim
 
         if (!nangoConfig['integrations'][uniqueKey]) {
             nangoConfig['integrations'][uniqueKey] = {};
+            nangoConfig['integrations'][uniqueKey]!['provider'] = syncConfig.provider;
         }
         const syncName = syncConfig.sync_name;
 

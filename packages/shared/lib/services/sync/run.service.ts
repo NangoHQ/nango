@@ -21,6 +21,7 @@ import type { NangoIntegrationData, NangoIntegration } from '../../integrations/
 import type { UpsertResponse, UpsertSummary } from '../../models/Data.js';
 import { LogActionEnum } from '../../models/Activity.js';
 import type { Environment } from '../../models/Environment';
+import type { Metadata } from '../../models/Connection';
 
 interface SyncRunConfig {
     integrationService: IntegrationServiceInterface;
@@ -38,6 +39,9 @@ interface SyncRunConfig {
     loadLocation?: string;
     debug?: boolean;
     input?: object;
+
+    logMessages?: unknown[] | undefined;
+    stubbedMetadata?: Metadata | undefined;
 }
 
 export default class SyncRun {
@@ -55,6 +59,9 @@ export default class SyncRun {
     loadLocation?: string;
     debug?: boolean;
     input?: object;
+
+    logMessages?: unknown[] | undefined = [];
+    stubbedMetadata?: Metadata | undefined = {};
 
     constructor(config: SyncRunConfig) {
         this.integrationService = config.integrationService;
@@ -90,6 +97,14 @@ export default class SyncRun {
 
         if (config.provider) {
             this.provider = config.provider;
+        }
+
+        if (config.logMessages) {
+            this.logMessages = config.logMessages;
+        }
+
+        if (config.stubbedMetadata) {
+            this.stubbedMetadata = config.stubbedMetadata;
         }
     }
 
@@ -239,7 +254,9 @@ export default class SyncRun {
                 lastSyncDate: lastSyncDate as Date,
                 dryRun: !this.writeToDb,
                 attributes: syncData.attributes,
-                track_deletes: trackDeletes as boolean
+                track_deletes: trackDeletes as boolean,
+                logMessages: this.logMessages,
+                stubbedMetadata: this.stubbedMetadata
             });
 
             if (this.debug) {
