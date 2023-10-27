@@ -564,6 +564,16 @@ lever:
         audience: https://api.lever.co/v1
     proxy:
         base_url: https://api.lever.co
+lever-sandbox:
+    auth_mode: OAUTH2
+    authorization_url: https://sandbox-lever.auth0.com/authorize
+    token_url: https://sandbox-lever.auth0.com/oauth/token
+    authorization_params:
+        response_type: code
+        prompt: consent
+        audience: https://api.sandbox.lever.co/v1/
+    proxy:
+        base_url: https://api.sandbox.lever.co
 linear:
     auth_mode: OAUTH2
     authorization_url: https://linear.app/oauth/authorize
@@ -889,6 +899,8 @@ shopify:
     token_url: https://${connectionConfig.subdomain}.myshopify.com/admin/oauth/access_token
     proxy:
         base_url: https://${connectionConfig.subdomain}.myshopify.com
+        headers:
+            X-Shopify-Access-Token: ${accessToken}
 shortcut:
     auth_mode: API_KEY
     proxy:

@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import axios from 'axios';
 import db from '../db/database.js';
-import analytics from '../utils/analytics.js';
+import analytics, { AnalyticsTypes } from '../utils/analytics.js';
 import providerClientManager from '../clients/provider.client.js';
 import type {
     TemplateOAuth2 as ProviderTemplateOAuth2,
@@ -75,7 +75,7 @@ class ConnectionService {
                 .where({ id: storedConnection.id, deleted: false })
                 .update(encryptedConnection);
 
-            analytics.track('server:connection_updated', accountId, { provider });
+            analytics.track(AnalyticsTypes.CONNECTION_UPDATED, accountId, { provider });
 
             return [{ id: storedConnection.id }];
         }
@@ -95,7 +95,7 @@ class ConnectionService {
                 ['id']
             );
 
-        analytics.track('server:connection_inserted', accountId, { provider });
+        analytics.track(AnalyticsTypes.CONNECTION_INSERTED, accountId, { provider });
 
         return id;
     }
@@ -126,7 +126,7 @@ class ConnectionService {
                 .where({ id: storedConnection.id, deleted: false })
                 .update(encryptedConnection);
 
-            analytics.track('server:api_key_connection_updated', accountId, { provider });
+            analytics.track(AnalyticsTypes.API_CONNECTION_UPDATED, accountId, { provider });
 
             return [{ id: storedConnection.id }];
         }
@@ -144,7 +144,7 @@ class ConnectionService {
                 ['id']
             );
 
-        analytics.track('server:api_key_connection_inserted', accountId, { provider });
+        analytics.track(AnalyticsTypes.API_CONNECTION_INSERTED, accountId, { provider });
 
         return id;
     }
@@ -159,7 +159,7 @@ class ConnectionService {
                 updated_at: new Date()
             });
 
-            analytics.track('server:unauth_connection_updated', accountId, { provider });
+            analytics.track(AnalyticsTypes.UNAUTH_CONNECTION_UPDATED, accountId, { provider });
 
             return [{ id: storedConnection.id }];
         }
@@ -174,7 +174,7 @@ class ConnectionService {
             ['id']
         );
 
-        analytics.track('server:unauth_connection_inserted', accountId, { provider });
+        analytics.track(AnalyticsTypes.UNAUTH_CONNECTION_INSERTED, accountId, { provider });
 
         return id;
     }
@@ -337,14 +337,6 @@ class ConnectionService {
         }
 
         await this.updateLastFetched(connection?.id as number);
-
-        const content = 'Connection fetched successfully';
-
-        await metricsManager.capture(MetricTypes.GET_CONNECTION_SUCCESS, content, LogActionEnum.AUTH, {
-            environmentId: String(environment_id),
-            connectionId,
-            providerConfigKey
-        });
 
         return { success: true, error: null, response: connection };
     }
@@ -518,8 +510,6 @@ class ConnectionService {
 
             connection.credentials = credentials as OAuth2Credentials;
         }
-
-        analytics.track('server:connection_fetched', accountId, { provider: config?.provider });
 
         return { success: true, error: null, response: connection };
     }

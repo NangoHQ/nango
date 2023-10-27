@@ -842,7 +842,10 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         if ('proxy' in config.template && 'headers' in config.template.proxy) {
             headers = Object.entries(config.template.proxy.headers).reduce(
                 (acc: Record<string, string>, [key, value]: [string, string]) => {
-                    acc[key] = interpolateIfNeeded(value, config.token as unknown as Record<string, string>);
+                    // allows oauth2 acessToken key to be interpolated and injected
+                    // into the header in addition to api key values
+                    const tokenPair = config.template.auth_mode === AuthModes.OAuth2 ? { accessToken: config.token } : config.token;
+                    acc[key] = interpolateIfNeeded(value, tokenPair as unknown as Record<string, string>);
                     return acc;
                 },
                 { ...headers }

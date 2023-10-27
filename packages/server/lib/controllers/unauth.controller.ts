@@ -6,6 +6,7 @@ import {
     createActivityLog,
     errorManager,
     analytics,
+    AnalyticsTypes,
     SyncClient,
     createActivityLogMessage,
     updateSuccess as updateSuccessActivityLog,
@@ -41,7 +42,7 @@ class UnAuthController {
         const activityLogId = await createActivityLog(log);
 
         try {
-            analytics.track('server:pre_unauth', accountId);
+            analytics.track(AnalyticsTypes.PRE_UNAUTH, accountId);
 
             if (!providerConfigKey) {
                 errorManager.errRes(res, 'missing_connection');
