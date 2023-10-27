@@ -116,7 +116,7 @@ export const generate = async (debug = false, inParentDirectory = false) => {
     fs.writeFileSync(`${dirPrefix}/${TYPES_FILE_NAME}`, typesContent, { flag: 'a' });
 
     const config = await getConfig(dirPrefix, debug);
-    const flowConfig = `export const NangoFlows = ${JSON.stringify(config, null, 2)}; \n`;
+    const flowConfig = `export const NangoFlows = ${JSON.stringify(config, null, 2)} as const; \n`;
     fs.writeFileSync(`${dirPrefix}/${TYPES_FILE_NAME}`, flowConfig, { flag: 'a' });
 
     if (debug) {
@@ -340,7 +340,7 @@ const createModelFile = async (notify = false) => {
     fs.writeFileSync(`./${TYPES_FILE_NAME}`, typesContent, { flag: 'a' });
 
     const config = await getConfig();
-    const flowConfig = `export const NangoFlows = ${JSON.stringify(config, null, 2)}; \n`;
+    const flowConfig = `export const NangoFlows = ${JSON.stringify(config, null, 2)} as const; \n`;
     fs.writeFileSync(`./${TYPES_FILE_NAME}`, flowConfig, { flag: 'a' });
 
     if (notify) {
