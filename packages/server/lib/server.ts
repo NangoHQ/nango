@@ -103,7 +103,8 @@ app.route('/flow/attributes').get(apiAuth, syncController.getFlowAttributes.bind
 app.route('/flow/configs').get(apiAuth, flowController.getFlowConfig.bind(flowController));
 app.route('/action/trigger').post(apiAuth, syncController.triggerAction.bind(syncController));
 
-app.route('/api/:model').get(apiAuth, syncController.getRecords.bind(syncController));
+app.route('/in/data/:model').get(apiAuth, syncController.getRecords.bind(syncController));
+app.route('/in/:action_name').all(apiAuth, syncController.triggerAction.bind(syncController));
 
 app.route('/admin/flow/deploy/pre-built').post(apiAuth, flowController.adminDeployPrivateFlow.bind(flowController));
 

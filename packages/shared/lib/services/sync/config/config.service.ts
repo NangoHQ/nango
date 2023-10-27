@@ -3,7 +3,7 @@ import db, { schema, dbNamespace } from '../../../db/database.js';
 import configService from '../../config.service.js';
 import remoteFileService from '../../file/remote.service.js';
 import { LogActionEnum } from '../../../models/Activity.js';
-import { Action, SyncConfigWithProvider, SyncConfig, SlimSync, SyncConfigType } from '../../../models/Sync.js';
+import { Action, SyncConfigWithProvider, SyncConfig, SlimSync, SyncConfigType, NangoConfigMetadata } from '../../../models/Sync.js';
 import { convertConfigObject } from '../../nango-config.service.js';
 import type { NangoConnection } from '../../../models/Connection.js';
 import type { Config as ProviderConfig } from '../../../models/Provider.js';
@@ -56,7 +56,8 @@ export async function getSyncConfig(nangoConnection: NangoConnection, syncName?:
                 fileLocation: syncConfig.file_location,
                 version: syncConfig.version as string,
                 pre_built: syncConfig.pre_built as boolean,
-                is_public: syncConfig.is_public as boolean
+                is_public: syncConfig.is_public as boolean,
+                metadata: syncConfig.metadata as NangoConfigMetadata
             };
 
             nangoConfig.integrations[key] = providerConfig;

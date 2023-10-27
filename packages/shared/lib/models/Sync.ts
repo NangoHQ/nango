@@ -1,5 +1,5 @@
 import { LogActionEnum } from './Activity.js';
-import type { Timestamps, TimestampsAndDeleted } from './Generic.js';
+import type { HTTP_VERB, Timestamps, TimestampsAndDeleted } from './Generic.js';
 import type { NangoSync } from '../sdk/sync.js';
 import type { NangoIntegrationData } from '../integrations/index.js';
 
@@ -69,6 +69,7 @@ export enum SyncConfigType {
 export interface NangoConfigMetadata {
     scopes?: string[];
     description?: string;
+    method?: HTTP_VERB;
 }
 
 export interface SyncConfig extends TimestampsAndDeleted {

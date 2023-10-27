@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import type { NextFunction } from 'express';
-import type { LogLevel, Connection } from '@nangohq/shared';
+import type { LogLevel, Connection, NangoConnection } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import {
     getEnvironmentId,
@@ -33,7 +33,8 @@ import {
     configService,
     syncOrchestrator,
     getAttributes,
-    flowService
+    flowService,
+    getSyncConfig
 } from '@nangohq/shared';
 
 class SyncController {
@@ -259,7 +260,9 @@ class SyncController {
             const connectionId = req.get('Connection-Id') as string;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
 
-            const { action_name, input } = req.body;
+            const { input } = req.body;
+
+            const action_name = (req.params['action_name'] as string) || req.body['action_name']; //TODO: deprecate 'action_name' body parameter
 
             if (!action_name) {
                 res.status(400).send({ message: 'Missing action name' });
@@ -288,6 +291,17 @@ class SyncController {
             if (!success) {
                 errorManager.errResFromNangoErr(res, error);
 
+                return;
+            }
+
+            const nangoConfig = await getSyncConfig(connection as NangoConnection, action_name, true);
+            if (!nangoConfig) {
+                res.status(404).send({ message: `Failed to load the Nango config for action '${action_name}'` });
+                return;
+            }
+            const action_method = nangoConfig?.integrations?.[providerConfigKey]?.[action_name]?.metadata?.method || 'POST';
+            if (req.method != action_method) {
+                res.status(400).send({ message: `Unsupported http method '${req.method}' for action '${action_name}'. Expected: '${action_method}'` });
                 return;
             }
 
