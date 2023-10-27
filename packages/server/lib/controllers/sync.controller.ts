@@ -112,7 +112,7 @@ class SyncController {
             const { delta, offset, limit, sort_by, order, filter, include_nango_metadata } = req.query;
 
             // transform kebab-case to model case (ex: github-issue => GithubIssue)
-            const toCase = (s: string) => {
+            const toModelCase = (s: string) => {
                 return s
                     .split('-')
                     .map((word, _index) => {
@@ -120,8 +120,7 @@ class SyncController {
                     })
                     .join('');
             };
-
-            const model = toCase(req.params['model'] as string) || req.query['model']; //TODO: deprecate 'model' query parameter
+            const model = toModelCase(req.params['action_or_model'] || "" as string) || req.query['model'];
             const environmentId = getEnvironmentId(res);
 
             const connectionId = req.get('Connection-Id') as string;
@@ -144,6 +143,7 @@ class SyncController {
                 filter as LastAction,
                 include_nango_metadata === 'true'
             );
+            // TODO: return error if model doesn't exist instead of an empty list
 
             if (!success) {
                 errorManager.errResFromNangoErr(res, error);
@@ -254,6 +254,61 @@ class SyncController {
         }
     }
 
+    public async actionOrModel(req: Request, res: Response, next: NextFunction) {
+        try {
+            const environmentId = getEnvironmentId(res);
+            const providerConfigKey = req.get('Provider-Config-Key') as string;
+            const connectionId = req.get('Connection-Id') as string;
+            const action_or_model = req.params['action_or_model'] as string;
+            const category = req.params['category'] as string;
+
+            //TODO: add support for category per sync
+            if (category != "all") {
+                res.status(404).send({ message: `Unknown category ${category}` });
+                return;
+            }
+
+            if (!action_or_model) {
+                res.status(400).send({ message: 'Missing action or model name' });
+                return;
+            }
+
+            if (!connectionId) {
+                res.status(400).send({ message: 'Missing connection id' });
+
+                return;
+            }
+
+            if (!providerConfigKey) {
+                res.status(400).send({ message: 'Missing provider config key' });
+
+                return;
+            }
+
+            const {
+                success,
+                error,
+                response: connection
+            } = await connectionService.getConnection(connectionId as string, providerConfigKey as string, environmentId);
+
+            if (!success) {
+                errorManager.errResFromNangoErr(res, error);
+                return;
+            }
+
+            const actionConfig = await getSyncConfig(connection as NangoConnection, action_or_model, true);
+            if (actionConfig) {
+                return await this.triggerAction(req, res, next);
+            } else {
+                // if no action config is found, fallback to fetching records
+                return await this.getRecords(req, res, next);
+            }
+
+        } catch (e) {
+            next(e);
+        }
+    }
+
     public async triggerAction(req: Request, res: Response, next: NextFunction) {
         try {
             const environmentId = getEnvironmentId(res);
@@ -262,7 +317,7 @@ class SyncController {
 
             const { input } = req.body;
 
-            const action_name = (req.params['action_name'] as string) || req.body['action_name']; //TODO: deprecate 'action_name' body parameter
+            const action_name = (req.params['action_or_model'] as string) || req.body['action_name'];
 
             if (!action_name) {
                 res.status(400).send({ message: 'Missing action name' });

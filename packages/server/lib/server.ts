@@ -101,10 +101,9 @@ app.route('/sync/provider').get(apiAuth, syncController.getSyncProvider.bind(syn
 app.route('/sync/status').get(apiAuth, syncController.getSyncStatus.bind(syncController));
 app.route('/flow/attributes').get(apiAuth, syncController.getFlowAttributes.bind(syncController));
 app.route('/flow/configs').get(apiAuth, flowController.getFlowConfig.bind(flowController));
-app.route('/action/trigger').post(apiAuth, syncController.triggerAction.bind(syncController));
+app.route('/action/trigger').post(apiAuth, syncController.triggerAction.bind(syncController)); //TODO: to deprecate
 
-app.route('/in/data/:model').get(apiAuth, syncController.getRecords.bind(syncController));
-app.route('/in/:action_name').all(apiAuth, syncController.triggerAction.bind(syncController));
+app.route('/v1/:category/:action_or_model').all(apiAuth, syncController.actionOrModel.bind(syncController));
 
 app.route('/admin/flow/deploy/pre-built').post(apiAuth, flowController.adminDeployPrivateFlow.bind(flowController));
 
