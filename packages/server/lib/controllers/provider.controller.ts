@@ -10,7 +10,6 @@ class ProviderController {
         try {
             let templates = configService.templates ?? {};
             const query = req.query['query'] as string | undefined;
-            const limit = parseInt((req.query['limit'] as string) ?? '10');
 
             if (query) {
                 templates = Object.fromEntries(
@@ -19,8 +18,6 @@ class ProviderController {
                     })
                 );
             }
-
-            templates = Object.fromEntries(Object.entries(templates).slice(0, limit));
 
             res.status(200).send({
                 providers: templates
