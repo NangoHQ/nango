@@ -395,7 +395,7 @@ async function parseSecretKey(environment: string, debug = false): Promise<void>
 }
 
 export const deploy = async (options: DeployOptions, environment: string, debug = false) => {
-    const { env, version, sync: optionalSyncName, autoConfirm } = options;
+    const { env, version, sync: optionalSyncName, action: optionalActionName, autoConfirm } = options;
     await verifyNecessaryFiles(autoConfirm);
 
     await parseSecretKey(environment, debug);
@@ -419,11 +419,13 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
         printDebug(`Environment is set to ${environment}`);
     }
 
+    const singleDeployMode = Boolean(optionalSyncName || optionalActionName);
+
     await tsc(debug);
 
     const config = await getConfig('', debug);
 
-    const postData: IncomingSyncConfig[] | null = packageIntegrationData(config, debug, optionalSyncName, version);
+    const postData: IncomingSyncConfig[] | null = packageIntegrationData(config, debug, version, optionalSyncName, optionalActionName);
 
     if (!postData) {
         return;
@@ -437,7 +439,7 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
         try {
             const response = await axios.post(
                 confirmationUrl,
-                { syncs: postData, reconcile: false, debug },
+                { syncs: postData, reconcile: false, debug, singleDeployMode },
                 { headers: enrichHeaders(), httpsAgent: httpsAgent() }
             );
             console.log(JSON.stringify(response.data, null, 2));
@@ -461,7 +463,7 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
 
             const confirmation = await promptly.confirm('Do you want to continue y/n?');
             if (confirmation) {
-                await deploySyncs(url, { syncs: postData, nangoYamlBody, reconcile: true, debug });
+                await deploySyncs(url, { syncs: postData, nangoYamlBody, reconcile: true, debug, singleDeployMode });
             } else {
                 console.log(chalk.red('Syncs/Actions were not deployed. Exiting'));
                 process.exit(0);
@@ -489,11 +491,14 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
         if (debug) {
             printDebug(`Auto confirm is set so deploy will start without confirmation`);
         }
-        await deploySyncs(url, { syncs: postData, nangoYamlBody, reconcile: true, debug });
+        await deploySyncs(url, { syncs: postData, nangoYamlBody, reconcile: true, debug, singleDeployMode });
     }
 };
 
-async function deploySyncs(url: string, body: { syncs: IncomingSyncConfig[]; nangoYamlBody: string | null; reconcile: boolean; debug: boolean }) {
+async function deploySyncs(
+    url: string,
+    body: { syncs: IncomingSyncConfig[]; nangoYamlBody: string | null; reconcile: boolean; debug: boolean; singleDeployMode?: boolean }
+) {
     await axios
         .post(url, body, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
         .then((response: AxiosResponse) => {
@@ -1057,19 +1062,36 @@ export const dockerRun = async (debug = false) => {
     });
 };
 
-function packageIntegrationData(config: SimplifiedNangoIntegration[], debug: boolean, version = '', optionalSyncName = ''): IncomingSyncConfig[] | null {
+function packageIntegrationData(
+    config: SimplifiedNangoIntegration[],
+    debug: boolean,
+    version = '',
+    optionalSyncName = '',
+    optionalActionName = ''
+): IncomingSyncConfig[] | null {
     const postData: IncomingSyncConfig[] = [];
 
     for (const integration of config) {
         const { providerConfigKey } = integration;
-        let { syncs } = integration;
-        const { actions } = integration;
+        let { syncs, actions } = integration;
+
+        let flows = [...syncs, ...actions];
 
         if (optionalSyncName) {
             syncs = syncs.filter((sync) => sync.name === optionalSyncName);
+            flows = syncs;
         }
 
-        for (const sync of [...syncs, ...actions]) {
+        if (optionalActionName) {
+            actions = actions.filter((action) => action.name === optionalActionName);
+            flows = actions;
+        }
+
+        if (optionalSyncName && optionalActionName) {
+            flows = [...syncs, ...actions];
+        }
+
+        for (const sync of flows) {
             const { name: syncName, runs = '', returns: models, models: model_schema, type = SyncConfigType.SYNC } = sync;
 
             const { path: integrationFilePath, result: integrationFileResult } = localFileService.checkForIntegrationDistFile(syncName, './');
