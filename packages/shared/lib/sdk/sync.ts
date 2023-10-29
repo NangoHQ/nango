@@ -677,10 +677,10 @@ export class NangoSync extends NangoAction {
         }
     }
     public override async getMetadata<T = Metadata>(): Promise<T> {
-        if (this.dryRun && this.stubbedMetadata) {
+        if (this.dryRun && Object.keys(this.stubbedMetadata as object).length > 0) {
             return this.stubbedMetadata as T;
         }
 
-        return super.getMetadata();
+        return super.getMetadata<T>();
     }
 }
