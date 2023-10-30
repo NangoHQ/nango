@@ -11,7 +11,7 @@ import { formatDataRecords } from './data/records.service.js';
 import { upsert } from './data/data.service.js';
 import { getDeletedKeys, takeSnapshot, clearOldRecords, syncUpdateAtForDeletedRecords } from './data/delete.service.js';
 import environmentService from '../environment.service.js';
-import webhookService from '../webhook.service.js';
+import notificationService from '../notification.service.js';
 import { NangoSync } from '../../sdk/sync.js';
 import { isCloud, getApiUrl, JAVASCRIPT_PRIMITIVES } from '../../utils/utils.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
@@ -558,7 +558,7 @@ export default class SyncRun {
             deleted
         };
 
-        await webhookService.sendUpdate(
+        await notificationService.sendWebhook(
             this.nangoConnection,
             this.syncName,
             model,
@@ -609,7 +609,20 @@ export default class SyncRun {
     }
 
     async reportFailureForResults(content: string) {
-        if (!this.writeToDb || !this.activityLogId || !this.syncJobId) {
+        if (!this.writeToDb) {
+            return;
+        }
+
+        await notificationService.reportFailure(
+            this.nangoConnection,
+            this.syncName,
+            this.syncType,
+            this.activityLogId as number,
+            this.nangoConnection.environment_id,
+            this.provider as string
+        );
+
+        if (!this.activityLogId || !this.syncJobId) {
             console.error(content);
             return;
         }

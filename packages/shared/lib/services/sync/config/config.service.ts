@@ -218,6 +218,7 @@ export async function getActionConfigByNameAndProviderConfigKey(environment_id: 
             nango_config_id,
             sync_name: name,
             deleted: false,
+            active: true,
             type: SyncConfigType.ACTION
         })
         .first();
