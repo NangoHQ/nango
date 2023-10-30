@@ -299,21 +299,31 @@ export default function ProjectSettings() {
         }
     };
 
-    const enableSlackNotifications = async () => {
+    const updateSlackNotifications = async (enabled: boolean) => {
         await fetch('/api/v1/environment/slack-notifications-enabled', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                slack_notifications: true
+                slack_notifications: enabled
             })
         });
     }
 
     const disconnectSlack = async () => {
-        const connectionId =  `account-${accountId}`;
-        console.log(connectionId);
+        await updateSlackNotifications(false);
+
+        const res = await fetch(`/api/v1/connection/admin/account-${accountId}`, {
+            method: 'DELETE'
+        });
+
+        if (res?.status !== 204) {
+            toast.error('There was a problem when disconnecting Slack', { position: toast.POSITION.BOTTOM_CENTER });
+        } else {
+            toast.success('Slack was disconnected successfully.', { position: toast.POSITION.BOTTOM_CENTER });
+            setSlackIsConnected(false);
+        }
     }
 
     const connectSlack = async () => {
@@ -341,7 +351,8 @@ export default function ProjectSettings() {
                 hmac: hmacDigest,
             })
             .then(async () => {
-                await enableSlackNotifications();
+                await updateSlackNotifications(true);
+                setSlackIsConnected(true);
                 toast.success('Slack connection created!', { position: toast.POSITION.BOTTOM_CENTER });
             })
             .catch((err: { message: string; type: string }) => {

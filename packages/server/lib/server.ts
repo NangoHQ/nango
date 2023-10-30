@@ -142,6 +142,7 @@ app.route('/api/v1/provider').get(connectionController.listProviders.bind(connec
 app.route('/api/v1/connection').get(webAuth, connectionController.listConnections.bind(connectionController));
 app.route('/api/v1/connection/:connectionId').get(webAuth, connectionController.getConnectionWeb.bind(connectionController));
 app.route('/api/v1/connection/:connectionId').delete(webAuth, connectionController.deleteConnection.bind(connectionController));
+app.route('/api/v1/connection/admin/:connectionId').delete(webAuth, connectionController.deleteAdminConnection.bind(connectionController));
 app.route('/api/v1/user').get(webAuth, userController.getUser.bind(userController));
 app.route('/api/v1/user/name').put(webAuth, userController.editName.bind(userController));
 app.route('/api/v1/user/password').put(webAuth, userController.editPassword.bind(userController));
