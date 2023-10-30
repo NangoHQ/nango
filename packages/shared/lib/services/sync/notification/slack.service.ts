@@ -240,12 +240,6 @@ class SlackService {
         admin_slack_timestamp: string,
         connectionCount: number
     ) {
-        const slackNotificationsEnabled = await environmentService.getSlackNotificationsEnabled(nangoConnection.environment_id);
-
-        if (!slackNotificationsEnabled) {
-            return;
-        }
-
         if (syncName === this.actionName) {
             return;
         }
