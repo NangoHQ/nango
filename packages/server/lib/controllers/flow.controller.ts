@@ -12,6 +12,7 @@ import {
     syncOrchestrator,
     FlowDownloadBody,
     remoteFileService,
+    getAllSyncsAndActions,
     getNangoConfigIdAndLocationFromId
 } from '@nangohq/shared';
 
@@ -169,6 +170,25 @@ class FlowController {
                 await remoteFileService.zipAndSendFiles(res, name, accountId, environmentId, nango_config_id, file_location);
                 return;
             }
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    public async getFlowConfig(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { success, error, response } = await getEnvironmentAndAccountId(res, req);
+
+            if (!success || response === null) {
+                errorManager.errResFromNangoErr(res, error);
+                return;
+            }
+
+            const { environmentId } = response;
+
+            const nangoConfigs = await getAllSyncsAndActions(environmentId);
+
+            res.send(nangoConfigs);
         } catch (e) {
             next(e);
         }

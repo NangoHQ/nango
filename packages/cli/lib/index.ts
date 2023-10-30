@@ -100,6 +100,7 @@ program
     .option('-e [environment]', 'The Nango environment, defaults to dev.', 'dev')
     .option('-l, --lastSyncDate [lastSyncDate]', 'Optional (for syncs only): last sync date to retrieve records greater than this date')
     .option('-i, --input [input]', 'Optional (for actions only): input to pass to the action script')
+    .option('-m, --metadata [metadata]', 'Optional (for syncs only): metadata to stub for the sync script')
     .action(async function (this: Command, sync: string, connectionId: string) {
         const { autoConfirm, debug, e: environment } = this.opts();
         await verifyNecessaryFiles(autoConfirm, debug);
@@ -127,6 +128,7 @@ program
     .arguments('environment')
     .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integration with. Can be used for rollbacks.')
     .option('-s, --sync [syncName]', 'Optional deploy only this sync name.')
+    .option('-a, --action [actionName]', 'Optional deploy only this action name.')
     .option('--no-compile-interfaces', `Don't compile the ${nangoConfigFile}`, true)
     .action(async function (this: Command, environment: string) {
         const options = this.opts();

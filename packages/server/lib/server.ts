@@ -97,6 +97,7 @@ app.route('/sync/start').post(apiAuth, syncController.start.bind(syncController)
 app.route('/sync/provider').get(apiAuth, syncController.getSyncProvider.bind(syncController));
 app.route('/sync/status').get(apiAuth, syncController.getSyncStatus.bind(syncController));
 app.route('/flow/attributes').get(apiAuth, syncController.getFlowAttributes.bind(syncController));
+app.route('/flow/configs').get(apiAuth, flowController.getFlowConfig.bind(flowController));
 app.route('/action/trigger').post(apiAuth, syncController.triggerAction.bind(syncController));
 
 app.route('/admin/flow/deploy/pre-built').post(apiAuth, flowController.adminDeployPrivateFlow.bind(flowController));

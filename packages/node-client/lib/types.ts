@@ -4,7 +4,8 @@ export enum AuthModes {
     OAuth1 = 'OAUTH1',
     OAuth2 = 'OAUTH2',
     Basic = 'BASIC',
-    ApiKey = 'API_KEY'
+    ApiKey = 'API_KEY',
+    App = 'APP'
 }
 
 export interface CredentialsCommon<T = Record<string, any>> {
@@ -26,6 +27,13 @@ export interface OAuth2Credentials extends CredentialsCommon {
     expires_at?: Date | undefined;
 }
 
+export interface AppCredentials {
+    type?: AuthModes.App;
+    access_token: string;
+    expires_at?: Date | undefined;
+    raw: Record<string, any>;
+}
+
 export interface ProxyConfiguration {
     endpoint: string;
     providerConfigKey?: string;
@@ -41,6 +49,9 @@ export interface ProxyConfiguration {
     decompress?: boolean;
 }
 
+type FilterAction = 'added' | 'updated' | 'deleted';
+type CombinedFilterAction = `${FilterAction},${FilterAction}`;
+
 export interface GetRecordsRequestConfig {
     providerConfigKey: string;
     connectionId: string;
@@ -51,7 +62,7 @@ export interface GetRecordsRequestConfig {
     sortBy?: 'updatedAt' | 'createdAt' | 'id';
     order?: 'asc' | 'desc';
     includeNangoMetadata?: boolean;
-    filter?: 'added' | 'updated' | 'deleted';
+    filter?: FilterAction | CombinedFilterAction;
 }
 
 export interface BasicApiCredentials {
@@ -68,7 +79,7 @@ export interface ApiKeyCredentials {
 type AuthCredentials = OAuth2Credentials | OAuth1Credentials | BasicApiCredentials | ApiKeyCredentials;
 
 export interface Metadata {
-    [key: string]: string | Record<string, string>;
+    [key: string]: string | Record<string, any>;
 }
 
 export interface Connection {

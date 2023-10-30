@@ -178,3 +178,65 @@ export function parseLatestSyncResult(result: SyncResult, models: string[]) {
         return JSON.stringify(result, null, 2);
     }
 }
+
+export function getRunTime(created_at: string, updated_at: string): string {
+    if (!created_at || !updated_at) {
+        return '-';
+    }
+
+    const createdAt = new Date(created_at);
+    const updatedAt = new Date(updated_at);
+
+    const diffMilliseconds = updatedAt.getTime() - createdAt.getTime();
+
+    const milliseconds = diffMilliseconds % 1000;
+    const seconds = Math.floor((diffMilliseconds / 1000) % 60);
+    const minutes = Math.floor((diffMilliseconds / (1000 * 60)) % 60);
+    const hours = Math.floor((diffMilliseconds / (1000 * 60 * 60)) % 24);
+    const days = Math.floor(diffMilliseconds / (1000 * 60 * 60 * 24));
+
+    let runtime = '';
+    if (days > 0) runtime += `${days}d `;
+    if (hours > 0) runtime += `${hours}h `;
+    if (minutes > 0) runtime += `${minutes}m `;
+    if (seconds > 0) runtime += `${seconds}s `;
+
+    if (!days && !hours && !minutes && !seconds && milliseconds > 0) {
+        runtime += `${milliseconds}ms`;
+    }
+
+    return runtime.trim() || '-';
+}
+
+/**
+ * Calculate Total Runtime
+ * @desc iterate over each timestamp and calculate the total runtime
+ * to get the total runtime for the total of array timestamps
+ */
+export function calculateTotalRuntime(timestamps: { created_at: string; updated_at: string}[]): string {
+    let totalRuntime = 0;
+
+    timestamps.forEach(timestamp => {
+        const createdAt = new Date(timestamp.created_at);
+        const updatedAt = new Date(timestamp.updated_at);
+
+        const diffMilliseconds = updatedAt.getTime() - createdAt.getTime();
+
+        totalRuntime += diffMilliseconds;
+    });
+
+    const seconds = Math.floor((totalRuntime / 1000) % 60);
+    const minutes = Math.floor((totalRuntime / (1000 * 60)) % 60);
+    const hours = Math.floor((totalRuntime / (1000 * 60 * 60)) % 24);
+    const days = Math.floor(totalRuntime / (1000 * 60 * 60 * 24));
+
+    let runtime = '';
+    if (days > 0) runtime += `${days}d `;
+    if (hours > 0) runtime += `${hours}h `;
+    if (minutes > 0) runtime += `${minutes}m `;
+    if (seconds > 0) runtime += `${seconds}s`;
+
+    const result = runtime.trim();
+
+    return  result === '' ? '-' : result;
+};

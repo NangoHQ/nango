@@ -7,7 +7,10 @@ import {
     NangoSync,
     localFileService,
     remoteFileService,
-    isCloud
+    isCloud,
+    ServiceResponse,
+    NangoError,
+    formatScriptError
 } from '@nangohq/shared';
 
 class IntegrationService implements IntegrationServiceInterface {
@@ -21,7 +24,7 @@ class IntegrationService implements IntegrationServiceInterface {
         isAction: boolean,
         optionalLoadLocation?: string,
         input?: object
-    ): Promise<any> {
+    ): Promise<ServiceResponse<any>> {
         try {
             const script: string | null =
                 isCloud() && !optionalLoadLocation
@@ -39,8 +42,6 @@ class IntegrationService implements IntegrationServiceInterface {
                         content,
                         timestamp: Date.now()
                     });
-                } else {
-                    console.error(content);
                 }
             }
 
@@ -53,7 +54,9 @@ class IntegrationService implements IntegrationServiceInterface {
                     timestamp: Date.now()
                 });
 
-                return null;
+                const error = new NangoError('Unable to find integration file', 404);
+
+                return { success: false, error, response: null };
             }
 
             try {
@@ -72,7 +75,7 @@ class IntegrationService implements IntegrationServiceInterface {
                 if (typeof scriptExports.default === 'function') {
                     const results = isAction ? await scriptExports.default(nango, input) : await scriptExports.default(nango);
 
-                    return results;
+                    return { success: true, error: null, response: results };
                 } else {
                     const content = `There is no default export that is a function for ${syncName}`;
                     if (activityLogId && writeToDb) {
@@ -83,37 +86,25 @@ class IntegrationService implements IntegrationServiceInterface {
                             content,
                             timestamp: Date.now()
                         });
-                    } else {
-                        console.error(content);
                     }
 
-                    return null;
+                    return { success: false, error: new NangoError(content, 500), response: null };
                 }
             } catch (err: any) {
-                let content;
-                if ('response' in err && 'data' in err.response) {
-                    const message = JSON.stringify(err.response.data, null, 2);
-                    content = `The script failed to execute for ${syncName} with the following error: ${message}`;
-                } else {
-                    const prettyError = JSON.stringify(err, ['message', 'name', 'stack'], 2);
-
-                    const errorMessage = typeof err === 'object' && Object.keys(err as object).length > 0 ? prettyError : String(err);
-                    content = `The script failed to execute for ${syncName} with the following error: ${errorMessage}`;
-                }
+                const errorType = isAction ? 'action_script_failure' : 'sync_script_failre';
+                const { success, error, response } = formatScriptError(err, errorType, syncName);
 
                 if (activityLogId && writeToDb) {
                     await createActivityLogMessage({
                         level: 'error',
                         environment_id: environmentId,
                         activity_log_id: activityLogId,
-                        content,
+                        content: error.message,
                         timestamp: Date.now()
                     });
-                } else {
-                    console.error(content);
                 }
 
-                return null;
+                return { success, error, response };
             }
         } catch (err) {
             const errorMessage = JSON.stringify(err, ['message', 'name', 'stack'], 2);
@@ -127,11 +118,9 @@ class IntegrationService implements IntegrationServiceInterface {
                     content,
                     timestamp: Date.now()
                 });
-            } else {
-                console.error(content);
             }
 
-            return null;
+            return { success: false, error: new NangoError(content, 500), response: null };
         }
     }
 }

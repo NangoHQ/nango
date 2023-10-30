@@ -70,6 +70,12 @@ asana:
         grant_type: refresh_token
     proxy:
         base_url: https://app.asana.com
+        paginate:
+            type: cursor
+            cursor_path_in_response: next_page.offset
+            cursor_name_in_request: offset
+            response_path: data
+            limit_name_in_request: limit
     docs: https://developers.asana.com/reference
 ashby:
     auth_mode: BASIC
@@ -361,6 +367,10 @@ github:
         base_url: https://api.github.com
         retry:
             at: 'x-ratelimit-reset'
+        paginate:
+            type: link
+            limit_name_in_request: per_page
+            link_rel_in_response_header: next
     docs: https://docs.github.com/en/rest
 github-app:
     alias: github
@@ -492,6 +502,12 @@ hubspot:
     proxy:
         base_url: https://api.hubapi.com
         decompress: true
+        paginate:
+            type: cursor
+            cursor_path_in_response: paging.next.after
+            limit_name_in_request: limit
+            cursor_name_in_request: after
+            response_path: results
     docs: https://developers.hubspot.com/docs/api/overview
 instagram:
     auth_mode: OAUTH2
@@ -520,6 +536,12 @@ jira:
         prompt: consent
     proxy:
         base_url: https://api.atlassian.com
+        paginate:
+            type: link
+            link_rel_in_response_header: next
+            limit_name_in_request: limit
+            response_path: results
+            link_path_in_response_body: _links.next
 keap:
     auth_mode: OAUTH2
     authorization_url: https://accounts.infusionsoft.com/app/oauth/authorize
@@ -542,6 +564,16 @@ lever:
         audience: https://api.lever.co/v1
     proxy:
         base_url: https://api.lever.co
+lever-sandbox:
+    auth_mode: OAUTH2
+    authorization_url: https://sandbox-lever.auth0.com/authorize
+    token_url: https://sandbox-lever.auth0.com/oauth/token
+    authorization_params:
+        response_type: code
+        prompt: consent
+        audience: https://api.sandbox.lever.co/v1/
+    proxy:
+        base_url: https://api.sandbox.lever.co
 linear:
     auth_mode: OAUTH2
     authorization_url: https://linear.app/oauth/authorize
@@ -652,6 +684,12 @@ notion:
         base_url: https://api.notion.com
         headers:
             'Notion-Version': '2022-06-28'
+        paginate:
+            type: cursor
+            cursor_path_in_response: start_cursor
+            cursor_name_in_request: start_cursor
+            limit_name_in_request: page_size
+            response_path: results
     docs: https://developers.notion.com/reference
 one-drive:
     alias: microsoft-teams
@@ -860,7 +898,9 @@ shopify:
     authorization_url: https://${connectionConfig.subdomain}.myshopify.com/admin/oauth/authorize
     token_url: https://${connectionConfig.subdomain}.myshopify.com/admin/oauth/access_token
     proxy:
-        base_url: https://{connectionConfig.subdomain}.myshopify.com
+        base_url: https://${connectionConfig.subdomain}.myshopify.com
+        headers:
+            X-Shopify-Access-Token: ${accessToken}
 shortcut:
     auth_mode: API_KEY
     proxy:
@@ -875,6 +915,11 @@ slack:
         - incoming_webhook.url
     proxy:
         base_url: https://slack.com/api
+        paginate:
+            type: cursor
+            cursor_path_in_response: response_metadata.next_cursor
+            cursor_name_in_request: cursor
+            limit_name_in_request: limit
     docs: https://api.slack.com/apis
 smugmug:
     auth_mode: OAUTH1

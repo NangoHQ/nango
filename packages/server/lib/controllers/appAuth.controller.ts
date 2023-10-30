@@ -7,6 +7,7 @@ import {
     findActivityLogBySession,
     errorManager,
     analytics,
+    AnalyticsTypes,
     createActivityLogMessage,
     updateSuccess as updateSuccessActivityLog,
     configService,
@@ -39,7 +40,7 @@ class AppAuthController {
         }
         const accountId = (await environmentService.getAccountIdFromEnvironment(session.environmentId)) as number;
 
-        analytics.track('server:pre_appauth', accountId);
+        analytics.track(AnalyticsTypes.PRE_APP_AUTH, accountId);
 
         const { providerConfigKey, connectionId, webSocketClientId: wsClientId, environmentId } = session;
         const activityLogId = await findActivityLogBySession(session.id);

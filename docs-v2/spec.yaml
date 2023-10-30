@@ -50,7 +50,7 @@ paths:
                             properties:
                                 provider_config_key:
                                     type: string
-                                    description: The integration ID that you created on Nango.
+                                    description: A unique integration ID, which you will use in the other API calls to reference this integration.
                                 provider:
                                     type: string
                                     description: The Nango API Configuration.
@@ -683,6 +683,9 @@ paths:
                                 input:
                                     type: object
                                     description: The necessary input for your action's 'runAction' function.
+    /environment-variables:
+        get:
+            description: Retrieve the environment variables as inputted in the Nango dashboard
     /proxy/{anyPath}:
         get:
             description: Make a GET request with the Proxy.

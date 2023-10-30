@@ -13,6 +13,7 @@ import {
     ErrorSourceEnum,
     environmentService,
     analytics,
+    AnalyticsTypes,
     isCloud,
     getBaseUrl,
     NangoError
@@ -119,7 +120,7 @@ class AuthController {
                 throw new NangoError('user_creation_failure');
             }
 
-            const event = joinedWithToken ? 'server:account_joined' : 'server:account_created';
+            const event = joinedWithToken ? AnalyticsTypes.ACCOUNT_JOINED : AnalyticsTypes.ACCOUNT_CREATED;
             analytics.track(event, account.id, {}, isCloud() ? { email: email } : {});
 
             if (isCloud() && !joinedWithToken) {

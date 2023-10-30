@@ -6,7 +6,7 @@ import connectionService from './services/connection.service.js';
 import providerClientManager from './clients/provider.client.js';
 import SyncClient from './clients/sync.client.js';
 import errorManager, { ErrorSourceEnum } from './utils/error.manager.js';
-import metricsManager from './utils/metrics.manager.js';
+import metricsManager, { MetricTypes } from './utils/metrics.manager.js';
 import accountService from './services/account.service.js';
 import environmentService from './services/environment.service.js';
 import webhookService from './services/webhook.service.js';
@@ -17,7 +17,7 @@ import hmacService from './services/hmac.service.js';
 import syncRunService from './services/sync/run.service.js';
 import syncOrchestrator from './services/sync/orchestrator.service.js';
 import flowService from './services/flow.service.js';
-import analytics from './utils/analytics.js';
+import analytics, { AnalyticsTypes } from './utils/analytics.js';
 import logger from './logger/console.js';
 
 export * from './services/activity/activity.service.js';
@@ -54,6 +54,7 @@ export {
     SyncClient,
     errorManager,
     metricsManager,
+    MetricTypes,
     ErrorSourceEnum,
     accountService,
     environmentService,
@@ -66,5 +67,6 @@ export {
     hmacService,
     flowService,
     analytics,
+    AnalyticsTypes,
     logger
 };

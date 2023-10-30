@@ -7,6 +7,7 @@ export interface NangoIntegrationData {
     type?: SyncConfigType;
     runs: string;
     returns: string[];
+    inputs?: string[];
     track_deletes?: boolean;
     auto_start?: boolean;
     attributes?: object;
@@ -43,7 +44,7 @@ interface NangoSyncModelField {
 
 export interface NangoSyncModel {
     name: string;
-    fields: NangoSyncModelField[][];
+    fields: NangoSyncModelField[];
 }
 
 export interface NangoSyncConfig {
@@ -62,5 +63,7 @@ export interface NangoSyncConfig {
 
 export interface SimplifiedNangoIntegration {
     providerConfigKey: string;
+    provider?: string;
     syncs: NangoSyncConfig[];
+    actions: NangoSyncConfig[];
 }

@@ -22,6 +22,7 @@ import {
     getEnvironmentId,
     errorManager,
     analytics,
+    AnalyticsTypes,
     NangoError,
     createActivityLogAndLogMessage,
     environmentService
@@ -283,7 +284,7 @@ class ConnectionController {
 
             if (!isSync && !isDryRun) {
                 await createActivityLogMessageAndEnd({
-                    level: 'info',
+                    level: 'debug',
                     environment_id: environmentId,
                     activity_log_id: activityLogId as number,
                     timestamp: Date.now(),
@@ -325,7 +326,7 @@ class ConnectionController {
             const connections = await connectionService.listConnections(environmentId, connectionId as string);
 
             if (!isWeb) {
-                analytics.track('server:connection_list_fetched', accountId);
+                analytics.track(AnalyticsTypes.CONNECTION_LIST_FETCHED, accountId);
                 res.status(200).send({ connections });
 
                 return;

@@ -25,6 +25,7 @@ import {
     ServiceResponse,
     errorManager,
     analytics,
+    AnalyticsTypes,
     ErrorSourceEnum,
     LogActionEnum,
     NangoError,
@@ -38,7 +39,12 @@ import {
 class SyncController {
     public async deploySync(req: Request, res: Response, next: NextFunction) {
         try {
-            const { syncs, reconcile, debug }: { syncs: IncomingSyncConfig[]; reconcile: boolean; debug: boolean } = req.body;
+            const {
+                syncs,
+                reconcile,
+                debug,
+                singleDeployMode
+            }: { syncs: IncomingSyncConfig[]; reconcile: boolean; debug: boolean; singleDeployMode?: boolean } = req.body;
             const environmentId = getEnvironmentId(res);
             let reconcileSuccess = true;
 
@@ -51,7 +57,14 @@ class SyncController {
             }
 
             if (reconcile) {
-                const success = await getAndReconcileDifferences(environmentId, syncs, reconcile, syncConfigDeployResult?.activityLogId as number, debug);
+                const success = await getAndReconcileDifferences(
+                    environmentId,
+                    syncs,
+                    reconcile,
+                    syncConfigDeployResult?.activityLogId as number,
+                    debug,
+                    singleDeployMode
+                );
                 if (!success) {
                     reconcileSuccess = false;
                 }
@@ -63,7 +76,7 @@ class SyncController {
                 return;
             }
 
-            analytics.trackByEnvironmentId('sync:deploy_succeeded', environmentId);
+            analytics.trackByEnvironmentId(AnalyticsTypes.SYNC_DEPLOY_SUCCESS, environmentId);
 
             res.send(syncConfigDeployResult?.result);
         } catch (e) {
@@ -81,10 +94,11 @@ class SyncController {
 
     public async confirmation(req: Request, res: Response, next: NextFunction) {
         try {
-            const { syncs, debug }: { syncs: IncomingSyncConfig[]; reconcile: boolean; debug: boolean } = req.body;
+            const { syncs, debug, singleDeployMode }: { syncs: IncomingSyncConfig[]; reconcile: boolean; debug: boolean; singleDeployMode?: boolean } =
+                req.body;
             const environmentId = getEnvironmentId(res);
 
-            const result = await getAndReconcileDifferences(environmentId, syncs, false, null, debug);
+            const result = await getAndReconcileDifferences(environmentId, syncs, false, null, debug, singleDeployMode);
 
             res.send(result);
         } catch (e) {
@@ -285,7 +299,11 @@ class SyncController {
 
             const syncClient = await SyncClient.getInstance();
 
-            const { success: actionSuccess, response: actionResponse } = (await syncClient?.triggerAction(
+            const {
+                success: actionSuccess,
+                error: actionError,
+                response: actionResponse
+            } = (await syncClient?.triggerAction(
                 connection as Connection,
                 action_name as string,
                 input,
@@ -294,7 +312,7 @@ class SyncController {
             )) as ServiceResponse;
 
             if (!actionSuccess) {
-                res.sendStatus(400);
+                errorManager.errResFromNangoErr(res, actionError);
                 return;
             } else {
                 res.send(actionResponse);
@@ -487,7 +505,21 @@ class SyncController {
             });
             await updateSuccessActivityLog(activityLogId as number, true);
 
-            analytics.trackByEnvironmentId(`sync:command_${command.toLowerCase()}`, environment.id, {
+            let event = AnalyticsTypes.SYNC_RUN;
+
+            switch (command) {
+                case SyncCommand.PAUSE:
+                    event = AnalyticsTypes.SYNC_PAUSE;
+                    break;
+                case SyncCommand.UNPAUSE:
+                    event = AnalyticsTypes.SYNC_UNPAUSE;
+                    break;
+                case SyncCommand.RUN:
+                    event = AnalyticsTypes.SYNC_RUN;
+                    break;
+            }
+
+            analytics.trackByEnvironmentId(event, environment.id, {
                 sync_id,
                 sync_name,
                 provider,

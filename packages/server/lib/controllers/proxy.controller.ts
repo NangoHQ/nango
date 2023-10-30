@@ -199,8 +199,6 @@ class ProxyController {
                         token = credentials?.access_token;
                     }
                     break;
-                default:
-                    throw new Error(`Unrecognized Auth type '${connection?.credentials?.type}' in stored credentials.`);
             }
 
             if (!isSync) {
@@ -269,7 +267,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
                 endpoint,
                 method: method as HTTP_VERB,
                 template,
-                token,
+                token: token || '',
                 provider: String(providerConfig?.provider),
                 providerConfigKey,
                 connectionId,
@@ -290,7 +288,17 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
                 });
             }
 
-            await this.sendToHttpMethod(res, next, method as HTTP_VERB, configBody, activityLogId as number, environment_id, connection, isSync, isDryRun);
+            await this.sendToHttpMethod(
+                res,
+                next,
+                method as HTTP_VERB,
+                configBody,
+                activityLogId as number,
+                environment_id,
+                connection as Connection,
+                isSync,
+                isDryRun
+            );
         } catch (error) {
             const environmentId = getEnvironmentId(res);
             const connectionId = req.get('Connection-Id') as string;
@@ -834,7 +842,10 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         if ('proxy' in config.template && 'headers' in config.template.proxy) {
             headers = Object.entries(config.template.proxy.headers).reduce(
                 (acc: Record<string, string>, [key, value]: [string, string]) => {
-                    acc[key] = interpolateIfNeeded(value, config.token as unknown as Record<string, string>);
+                    // allows oauth2 acessToken key to be interpolated and injected
+                    // into the header in addition to api key values
+                    const tokenPair = config.template.auth_mode === AuthModes.OAuth2 ? { accessToken: config.token } : config.token;
+                    acc[key] = interpolateIfNeeded(value, tokenPair as unknown as Record<string, string>);
                     return acc;
                 },
                 { ...headers }
@@ -856,14 +867,19 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
      */
     private parseHeaders(req: Request) {
         const headers = req.rawHeaders;
-        const HEADER_PROXY = 'nango-proxy-';
+        const HEADER_PROXY_LOWER = 'nango-proxy-';
+        const HEADER_PROXY_UPPER = 'Nango-Proxy-';
         const forwardedHeaders: ForwardedHeaders = {};
 
-        for (let i = 0, n = headers.length; i < n; i += 2) {
-            const headerKey = headers[i]?.toLowerCase();
+        if (!headers) {
+            return forwardedHeaders;
+        }
 
-            if (headerKey?.startsWith(HEADER_PROXY)) {
-                forwardedHeaders[headerKey.slice(HEADER_PROXY.length)] = headers[i + 1] || '';
+        for (let i = 0, n = headers.length; i < n; i += 2) {
+            const headerKey = headers[i];
+
+            if (headerKey?.toLowerCase().startsWith(HEADER_PROXY_LOWER) || headerKey?.startsWith(HEADER_PROXY_UPPER)) {
+                forwardedHeaders[headerKey.slice(HEADER_PROXY_LOWER.length)] = headers[i + 1] || '';
             }
         }
 

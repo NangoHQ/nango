@@ -215,7 +215,7 @@ export async function getTopLevelLogByEnvironment(environment_id: number, limit 
  * @returns A promise that resolves to an object containing arrays of ActivityLogMessage objects,
  * each keyed by its associated log ID.
  */
-export async function getLogMessagesForLogs(logIds: number[], _environment_id: number): Promise<ActivityLogMessagesGrouped> {
+export async function getLogMessagesForLogs(logIds: number[], environment_id: number): Promise<ActivityLogMessagesGrouped> {
     if (!logIds.length) {
         return [];
     }
@@ -225,17 +225,9 @@ export async function getLogMessagesForLogs(logIds: number[], _environment_id: n
             SELECT activity_log_id, array_agg(row_to_json(_nango_activity_log_messages.*)) as messages
             FROM _nango_activity_log_messages
             WHERE activity_log_id = ANY(?)
-            GROUP BY activity_log_id
-        `;
-        /*
-        const query = `
-            SELECT activity_log_id, array_agg(row_to_json(_nango_activity_log_messages.*)) as messages
-            FROM _nango_activity_log_messages
-            WHERE activity_log_id = ANY(?)
             AND environment_id = ${environment_id}
             GROUP BY activity_log_id
         `;
-        */
 
         const result = await db.knex.raw(query, [logIds]);
 

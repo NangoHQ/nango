@@ -4,9 +4,10 @@ import configService from '../../config.service.js';
 import remoteFileService from '../../file/remote.service.js';
 import { LogActionEnum } from '../../../models/Activity.js';
 import { Action, SyncConfigWithProvider, SyncConfig, SlimSync, SyncConfigType } from '../../../models/Sync.js';
+import { convertConfigObject } from '../../nango-config.service.js';
 import type { NangoConnection } from '../../../models/Connection.js';
 import type { Config as ProviderConfig } from '../../../models/Provider.js';
-import type { NangoConfig } from '../../../integrations/index.js';
+import type { NangoConfig, SimplifiedNangoIntegration } from '../../../integrations/index.js';
 import errorManager, { ErrorSourceEnum } from '../../../utils/error.manager.js';
 
 const TABLE = dbNamespace + 'sync_configs';
@@ -63,6 +64,92 @@ export async function getSyncConfig(nangoConnection: NangoConnection, syncName?:
     }
 
     return nangoConfig;
+}
+
+export async function getAllSyncsAndActions(environment_id: number): Promise<SimplifiedNangoIntegration[]> {
+    const syncConfigs = await schema()
+        .select(
+            `${TABLE}.sync_name`,
+            `${TABLE}.runs`,
+            `${TABLE}.type`,
+            `${TABLE}.models`,
+            `${TABLE}.model_schema`,
+            `${TABLE}.track_deletes`,
+            `${TABLE}.auto_start`,
+            `${TABLE}.attributes`,
+            `${TABLE}.version`,
+            `${TABLE}.metadata`,
+            '_nango_configs.provider',
+            '_nango_configs.unique_key'
+        )
+        .from<SyncConfig>(TABLE)
+        .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')
+        .where({
+            [`${TABLE}.environment_id`]: environment_id,
+            [`${TABLE}.deleted`]: false,
+            active: true
+        });
+
+    if (!syncConfigs) {
+        return [];
+    }
+
+    const nangoConfig: NangoConfig = {
+        integrations: {},
+        models: {}
+    };
+
+    for (const syncConfig of syncConfigs) {
+        if (!syncConfig) {
+            continue;
+        }
+
+        const uniqueKey = syncConfig.unique_key;
+
+        if (!uniqueKey) {
+            continue;
+        }
+
+        if (!nangoConfig['integrations'][uniqueKey]) {
+            nangoConfig['integrations'][uniqueKey] = {};
+            nangoConfig['integrations'][uniqueKey]!['provider'] = syncConfig.provider;
+        }
+        const syncName = syncConfig.sync_name;
+
+        nangoConfig['integrations'][uniqueKey]![syncName] = {
+            runs: syncConfig.runs,
+            type: syncConfig.type,
+            returns: syncConfig.models,
+            metadata: syncConfig.metadata,
+            track_deletes: syncConfig.track_deletes,
+            auto_start: syncConfig.auto_start,
+            attributes: syncConfig.attributes || {},
+            version: syncConfig.version as string
+        };
+    }
+
+    type extendedSyncConfig = SyncConfig & { provider: string; unique_key: string };
+
+    const simlpleConfig = convertConfigObject(nangoConfig);
+    const configWithModels = simlpleConfig.map((config: SimplifiedNangoIntegration) => {
+        const { providerConfigKey } = config;
+        for (const sync of [...config.syncs, ...config.actions]) {
+            const { name } = sync;
+            const model_schema = syncConfigs.find(
+                (syncConfig: extendedSyncConfig) => syncConfig.sync_name === name && syncConfig.unique_key === providerConfigKey
+            )?.model_schema;
+            for (const model of model_schema) {
+                if (Array.isArray(model.fields) && Array.isArray(model.fields[0])) {
+                    model.fields = model.fields.flat();
+                }
+            }
+            sync.models = model_schema;
+        }
+
+        return config;
+    });
+
+    return configWithModels;
 }
 
 export async function getSyncConfigsByParams(environment_id: number, providerConfigKey: string, isAction?: boolean): Promise<SyncConfig[] | null> {
