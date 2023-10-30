@@ -23,4 +23,5 @@ export interface Environment extends Timestamps {
     pending_secret_key_iv?: string | null;
     pending_secret_key_tag?: string | null;
     pending_public_key?: string | null;
+    slack_notifications?: boolean;
 }

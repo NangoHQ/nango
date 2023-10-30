@@ -325,6 +325,20 @@ class EnvironmentService {
         return db.knex.withSchema(db.schema()).from<Environment>(TABLE).where({ id }).update({ always_send_webhook }, ['id']);
     }
 
+    async editSlackNotifications(slack_notifications: boolean, id: number): Promise<Environment | null> {
+        return db.knex.withSchema(db.schema()).from<Environment>(TABLE).where({ id }).update({ slack_notifications }, ['id']);
+    }
+
+    async getSlackNotificationsEnabled(environmentId: number): Promise<boolean | null> {
+        const result = await db.knex.withSchema(db.schema()).select('slack_notifications').from<Environment>(TABLE).where({ id: environmentId });
+
+        if (result == null || result.length == 0 || result[0] == null) {
+            return null;
+        }
+
+        return result[0].slack_notifications;
+    }
+
     async editHmacKey(hmacKey: string, id: number): Promise<Environment | null> {
         return db.knex.withSchema(db.schema()).from<Environment>(TABLE).where({ id }).update({ hmac_key: hmacKey }, ['id']);
     }
