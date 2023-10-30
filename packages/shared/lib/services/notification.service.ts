@@ -172,15 +172,6 @@ class NotificationService {
             return;
         }
 
-        const { success: actionSuccess, error: actionError } = (await syncClient?.triggerAction(
-            nangoAdminConnection,
-            actionName,
-            payload,
-            originalActivityLogId,
-            environment_id,
-            false
-        )) as ServiceResponse;
-
         const log = {
             level: 'info' as LogLevel,
             success: true,
@@ -194,6 +185,15 @@ class NotificationService {
             environment_id: info?.environmentId as number,
             operation_name: actionName
         };
+
+        const { success: actionSuccess, error: actionError } = (await syncClient?.triggerAction(
+            nangoAdminConnection,
+            actionName,
+            payload,
+            originalActivityLogId,
+            environment_id,
+            false
+        )) as ServiceResponse;
 
         const content = actionSuccess
             ? `The action ${actionName} was successfully triggered for the ${syncType} ${syncName} for environment ${info?.environmentId} for account ${info?.accountId}.`
