@@ -6,6 +6,7 @@
 import _ from './utils/config.js';
 import oauthController from './controllers/oauth.controller.js';
 import configController from './controllers/config.controller.js';
+import providerController from './controllers/provider.controller.js';
 import connectionController from './controllers/connection.controller.js';
 import authController from './controllers/auth.controller.js';
 import unAuthController from './controllers/unauth.controller.js';
@@ -77,6 +78,8 @@ app.route('/api-auth/basic/:providerConfigKey').post(apiPublicAuth, apiAuthContr
 app.route('/unauth/:providerConfigKey').post(apiPublicAuth, unAuthController.create.bind(unAuthController));
 
 // API routes (API key auth).
+app.route('/provider').get(apiAuth, providerController.listProviders.bind(providerController));
+app.route('/provider/:provider').get(apiAuth, providerController.getProvider.bind(providerController));
 app.route('/config').get(apiAuth, configController.listProviderConfigs.bind(configController));
 app.route('/config/:providerConfigKey').get(apiAuth, configController.getProviderConfig.bind(configController));
 app.route('/config').post(apiAuth, configController.createProviderConfig.bind(configController));
