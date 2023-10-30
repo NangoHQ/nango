@@ -615,7 +615,9 @@ export class Nango {
 
         const headers = {
             'Content-Type': 'application/json',
-            'Accept-Encoding': 'application/json'
+            'Accept-Encoding': 'application/json',
+            'Nango-Is-Sync': this.isSync,
+            'Nango-Is-Dry-Run': this.dryRun
         };
 
         if (additionalHeader) {
