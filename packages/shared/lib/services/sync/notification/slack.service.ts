@@ -29,6 +29,46 @@ interface NotificationPayload {
     ts?: string;
 }
 
+interface SlackActionResponse {
+    ok: boolean;
+    channel: string;
+    ts: string;
+    message: {
+        bot_id: string;
+        type: string;
+        text: string;
+        user: string;
+        ts: string;
+        app_id: string;
+        team: string;
+        bot_profile: {
+            id: string;
+            app_id: string;
+            name: string;
+            icons: any;
+            deleted: boolean;
+            updated: number;
+            team_id: string;
+        };
+        attachments: any[];
+    };
+    warning?: string;
+    response_metadata: {
+        warnings: string[];
+    };
+}
+
+/**
+ * _nango_slack_notifications
+ * @desc persistence layer for slack notifications and the connection list
+ * to be able to trigger or resolve notifications
+ *
+ *  index:
+ *      - open
+ *      - environment_id
+ *      - name
+ */
+
 class SlackService {
     private actionName = 'flow-result-notifier-action';
     private adminConnectionId = process.env['NANGO_ADMIN_CONNECTION_ID'] || 'admin-slack';
@@ -36,7 +76,12 @@ class SlackService {
     private nangoAdminUUID = process.env['NANGO_ADMIN_UUID'];
     private env = 'prod';
 
-    private async getNangoAdminConnection() {
+    /**
+     * Get Nango Admin Connection
+     * @desc get the admin connection information to be able to send a duplicate
+     * notification to the Nango admin account
+     */
+    private async getNangoAdminConnection(): Promise<NangoConnection | null> {
         const info = await accountService.getAccountAndEnvironmentIdByUUID(this.nangoAdminUUID as string, this.env);
 
         const { success, response: slackConnection } = await connectionService.getConnection(
@@ -58,6 +103,13 @@ class SlackService {
         return info?.environmentId as number;
     }
 
+    /**
+     * Send Duplicate Notification to Nango Admins
+     * @desc append the account and environment information to the notification content,
+     * add the payload timestamp if available and send the notification to the Nango Admins
+     * and with the action response update the slack timestamp to the notification
+     * record. This is so future notifications can be sent as updates to the original
+     */
     private async sendDuplicateNotificationToNangoAdmins(
         payload: NotificationPayload,
         originalActivityLogId: number,
@@ -80,20 +132,25 @@ class SlackService {
             payload.ts = ts;
         }
 
-        const { response } = (await syncClient?.triggerAction(
+        const { response } = (await syncClient?.triggerAction<SlackActionResponse>(
             nangoAdminConnection as NangoConnection,
             this.actionName,
             payload,
             originalActivityLogId,
             nangoAdminConnection?.environment_id as number,
             false
-        )) as ServiceResponse;
+        )) as ServiceResponse<SlackActionResponse>;
 
         if (id && response) {
             await this.updateNotificationWithAdminTimestamp(id, response.ts);
         }
     }
 
+    /**
+     * Update Notification with Timestamp
+     * @desc used to keep the slack_timestamp up to date to be able to
+     * send updates to the original notification
+     */
     private async updateNotificationWithTimestamp(id: number, ts: string) {
         await schema()
             .from<SlackNotification>(TABLE)
@@ -103,6 +160,11 @@ class SlackService {
             .where('id', id);
     }
 
+    /**
+     * Update Notification with Admin Timestamp
+     * @desc used to keep the admin_slack_timestamp up to date to be able to
+     * send updates to the original notification
+     */
     private async updateNotificationWithAdminTimestamp(id: number, ts: string) {
         await schema()
             .from<SlackNotification>(TABLE)
@@ -112,6 +174,18 @@ class SlackService {
             .where('id', id);
     }
 
+    /**
+     * Report Failure
+     * @desc
+     *      1) if slack notifications are enabled and the name is not itself (to avoid an infinite loop)
+     *      add the connection to the notification list, grab the connection information
+     *      of the admin slack notification action and send the notification to the slack channel
+     *      by triggering the action.
+     *      2) Update the notification record with the slack timestamp
+     *      so future notifications can be sent as updates to the original.
+     *      3) Send a duplicate notification to the Nango Admins
+     *      4) Add an activity log entry for the notification to the admin account
+     */
     async reportFailure(
         nangoConnection: NangoConnection,
         syncName: string,
@@ -135,6 +209,8 @@ class SlackService {
         const accountUUID = await environmentService.getAccountUUIDFromEnvironment(environment_id);
         const slackConnectionId = `account-${accountUUID}`;
         const nangoEnvironmentId = await this.getAdminEnvironmentId();
+
+        // we get the connection on the nango admin account to be able to send the notification
         const { success: connectionSuccess, response: slackConnection } = await connectionService.getConnection(
             slackConnectionId,
             this.integrationKey,
@@ -194,16 +270,16 @@ class SlackService {
             success: actionSuccess,
             error: actionError,
             response: actionResponse
-        } = (await syncClient?.triggerAction(
+        } = (await syncClient?.triggerAction<SlackActionResponse>(
             slackConnection as NangoConnection,
             this.actionName,
             payload,
             originalActivityLogId,
             environment_id,
             false
-        )) as ServiceResponse;
+        )) as ServiceResponse<SlackActionResponse>;
 
-        await this.updateNotificationWithTimestamp(slackNotificationStatus.id, actionResponse.ts);
+        await this.updateNotificationWithTimestamp(slackNotificationStatus.id, actionResponse?.ts as string);
 
         await this.sendDuplicateNotificationToNangoAdmins(
             payload,
@@ -229,6 +305,16 @@ class SlackService {
         await updateSuccessActivityLog(activityLogId as number, actionSuccess);
     }
 
+    /**
+     * Report Resolution
+     * @desc
+     *      1) if there are no more connections that are failing then send
+     *      a resolution notification to the slack channel, otherwise update the message
+     *      with the decremented connection count.
+     *      2) Send a duplicate notification to the Nango Admins
+     *      3) Add an activity log entry for the notification to the admin account
+     *
+     */
     async reportResolution(
         nangoConnection: NangoConnection,
         syncName: string,
@@ -295,14 +381,14 @@ class SlackService {
 
         const activityLogId = await createActivityLog(log);
 
-        const { success: actionSuccess, error: actionError } = (await syncClient?.triggerAction(
+        const { success: actionSuccess, error: actionError } = (await syncClient?.triggerAction<SlackActionResponse>(
             slackConnection as NangoConnection,
             this.actionName,
             payload,
             originalActivityLogId,
             environment_id,
             false
-        )) as ServiceResponse;
+        )) as ServiceResponse<SlackActionResponse>;
 
         await this.sendDuplicateNotificationToNangoAdmins(payload, originalActivityLogId, environment_id, undefined, admin_slack_timestamp);
 
@@ -322,6 +408,12 @@ class SlackService {
         await updateSuccessActivityLog(activityLogId as number, actionSuccess);
     }
 
+    /**
+     * Has Open Notification
+     * @desc Check if there is an open notification for the given name
+     * and environment id and if so return the necessary information to be able
+     * to update the notification.
+     */
     async hasOpenNotification(
         nangoConnection: NangoConnection,
         name: string
@@ -342,6 +434,11 @@ class SlackService {
         return hasOpenNotification[0];
     }
 
+    /**
+     * Create Notification
+     * @desc create a new notification for the given name and environment id
+     * and return the id of the created notification.
+     */
     async createNotification(nangoConnection: NangoConnection, name: string, type: SyncType): Promise<Pick<SlackNotification, 'id'> | null> {
         const result = await schema()
             .from<SlackNotification>(TABLE)
@@ -361,6 +458,11 @@ class SlackService {
         return null;
     }
 
+    /**
+     * Add Failing Connection
+     * @desc check if there is an open notification for the given name and environment id
+     * and if so add the connection id to the connection list.
+     */
     async addFailingConnection(nangoConnection: NangoConnection, name: string, type: SyncType): Promise<ServiceResponse<NotificationResponse>> {
         const isOpen = await this.hasOpenNotification(nangoConnection, name);
 
@@ -417,6 +519,12 @@ class SlackService {
         };
     }
 
+    /**
+     * Remove Failing Connection
+     * @desc check if there is an open notification for the given name and environment id
+     * and if so remove the connection id from the connection list and report
+     * resolution to the slack channel.
+     */
     async removeFailingConnection(
         nangoConnection: NangoConnection,
         name: string,
@@ -456,6 +564,9 @@ class SlackService {
                 updated_at: new Date()
             });
 
+        // we report resolution to the slack channel which could be either
+        // 1) The slack notification is resolved, connection_list === 0
+        // 2) The list of failing connections has been decremented
         await this.reportResolution(
             nangoConnection,
             name,

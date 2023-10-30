@@ -431,14 +431,14 @@ class SyncClient {
         }
     }
 
-    async triggerAction(
+    async triggerAction<T = any>(
         connection: NangoConnection,
         actionName: string,
         input: object,
         activityLogId: number,
         environment_id: number,
         writeLogs = true
-    ): Promise<ServiceResponse> {
+    ): Promise<ServiceResponse<T>> {
         const workflowId = generateActionWorkflowId(actionName, connection.connection_id as string);
 
         try {
