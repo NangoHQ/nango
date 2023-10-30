@@ -340,7 +340,7 @@ export default class SyncRun {
                 // means a void response from the sync script which is expected
                 // and means that they're using batchSave or batchDelete
                 if (userDefinedResults === undefined) {
-                    await this.finishSync(models, syncStartDate, syncData.version as string, trackDeletes);
+                    await this.finishSync(models, syncStartDate, syncData.version as string, totalRunTime, trackDeletes);
 
                     return { success: true, error: null, response: true };
                 }
@@ -381,6 +381,7 @@ export default class SyncRun {
                                     models.length,
                                     syncStartDate,
                                     syncData.version as string,
+                                    totalRunTime,
                                     trackDeletes
                                 );
                             }
@@ -414,7 +415,15 @@ export default class SyncRun {
                                 if (upsertResult.success) {
                                     const { summary } = upsertResult;
 
-                                    await this.reportResults(model, summary as UpsertSummary, i, models.length, syncStartDate, syncData.version as string);
+                                    await this.reportResults(
+                                        model,
+                                        summary as UpsertSummary,
+                                        i,
+                                        models.length,
+                                        syncStartDate,
+                                        syncData.version as string,
+                                        totalRunTime
+                                    );
                                 }
 
                                 if (!upsertResult.success) {
@@ -450,7 +459,7 @@ export default class SyncRun {
         return { success: true, error: null, response: result };
     }
 
-    async finishSync(models: string[], syncStartDate: Date, version: string, trackDeletes?: boolean): Promise<void> {
+    async finishSync(models: string[], syncStartDate: Date, version: string, totalRunTime: number, trackDeletes?: boolean): Promise<void> {
         let i = 0;
         for (const model of models) {
             if (trackDeletes) {
@@ -469,6 +478,7 @@ export default class SyncRun {
                 models.length,
                 syncStartDate,
                 version,
+                totalRunTime,
                 trackDeletes
             );
             i++;
@@ -482,6 +492,7 @@ export default class SyncRun {
         numberOfModels: number,
         syncStartDate: Date,
         version: string,
+        totalRunTime: number,
         trackDeletes?: boolean
     ): Promise<void> {
         if (!this.writeToDb || !this.activityLogId || !this.syncJobId) {
@@ -602,6 +613,7 @@ export default class SyncRun {
                 syncId: this.syncId as string,
                 syncJobId: String(this.syncJobId),
                 syncType: this.syncType,
+                totalRunTime: `${totalRunTime} seconds`,
                 debug: String(this.debug)
             },
             `syncId:${this.syncId}`
