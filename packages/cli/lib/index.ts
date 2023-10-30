@@ -128,6 +128,7 @@ program
     .arguments('environment')
     .option('-v, --version [version]', 'Optional: Set a version of this deployment to tag this integration with. Can be used for rollbacks.')
     .option('-s, --sync [syncName]', 'Optional deploy only this sync name.')
+    .option('-a, --action [actionName]', 'Optional deploy only this action name.')
     .option('--no-compile-interfaces', `Don't compile the ${nangoConfigFile}`, true)
     .action(async function (this: Command, environment: string) {
         const options = this.opts();
