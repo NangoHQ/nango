@@ -5,6 +5,7 @@ import type { Environment } from '../models/Environment.js';
 import type { EnvironmentVariable } from '../models/EnvironmentVariable.js';
 import type { Account } from '../models/Admin.js';
 import { LogActionEnum } from '../models/Activity.js';
+import accountService from './account.service.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { isCloud } from '../utils/utils.js';
 
@@ -111,6 +112,20 @@ class EnvironmentService {
         }
 
         return result[0].account_id;
+    }
+
+    async getAccountUUIDFromEnvironment(environment_id: number): Promise<string | null> {
+        const result = await db.knex.withSchema(db.schema()).select('account_id').from<Environment>(TABLE).where({ id: environment_id });
+
+        if (result == null || result.length == 0 || result[0] == null) {
+            return null;
+        }
+
+        const accountId = result[0].account_id;
+
+        const uuid = await accountService.getUUIDFromAccountId(accountId);
+
+        return uuid;
     }
 
     async getAccountIdAndEnvironmentIdByPublicKey(publicKey: string): Promise<{ accountId: number; environmentId: number } | null> {

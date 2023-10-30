@@ -43,7 +43,7 @@ export default function ProjectSettings() {
 
     const [hmacKey, setHmacKey] = useState('');
     const [hmacEnabled, setHmacEnabled] = useState(false);
-    const [accountId, setAccountId] = useState<number>();
+    const [accountUUID, setAccountUUID] = useState<number>();
     const [alwaysSendWebhook, setAlwaysSendWebhook] = useState(false);
     const [hmacEditMode, setHmacEditMode] = useState(false);
     const [envVariables, setEnvVariables] = useState<{ name: string; value: string }[]>([]);
@@ -82,7 +82,7 @@ export default function ProjectSettings() {
 
                 setWebhookUrl(account.webhook_url || '');
                 setHostUrl(account.host);
-                setAccountId(account.account_id);
+                setAccountUUID(account.uuid);
 
                 setHmacEnabled(account.hmac_enabled);
                 setAlwaysSendWebhook(account.always_send_webhook);
@@ -314,7 +314,7 @@ export default function ProjectSettings() {
     const disconnectSlack = async () => {
         await updateSlackNotifications(false);
 
-        const res = await fetch(`/api/v1/connection/admin/account-${accountId}`, {
+        const res = await fetch(`/api/v1/connection/admin/account-${accountUUID}`, {
             method: 'DELETE'
         });
 
@@ -327,7 +327,7 @@ export default function ProjectSettings() {
     }
 
     const connectSlack = async () => {
-        const connectionId =  `account-${accountId}`;
+        const connectionId =  `account-${accountUUID}`;
 
         const res = await fetch(`/api/v1/environment/admin-auth?connection_id=${connectionId}`, {
             method: 'GET',
@@ -838,7 +838,7 @@ export default function ProjectSettings() {
                                             </button>
                                         </div>
                                     </form>
-                                    {env === 'prod' && (
+                                    {env !== 'prod' && (
                                         <>
                                             <Button className="mt-6" variant="yellow" onClick={slackIsConnected ? disconnectSlack : connectSlack}>
                                                 {slackIsConnected ? 'Disconnect Slack' : 'Connect Slack'}

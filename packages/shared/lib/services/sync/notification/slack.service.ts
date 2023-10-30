@@ -73,8 +73,8 @@ class SlackService {
 
         const syncClient = await SyncClient.getInstance();
 
-        const accountId = await environmentService.getAccountIdFromEnvironment(environment_id);
-        payload.content = `${payload.content} [Account ${accountId} Environment ${environment_id}]`;
+        const accountUUID = await environmentService.getAccountUUIDFromEnvironment(environment_id);
+        payload.content = `${payload.content} [Account ${accountUUID} Environment ${environment_id}]`;
 
         if (ts) {
             payload.ts = ts;
@@ -132,8 +132,8 @@ class SlackService {
 
         const { success, error, response: slackNotificationStatus } = await this.addFailingConnection(nangoConnection, syncName, syncType);
 
-        const accountId = await environmentService.getAccountIdFromEnvironment(environment_id);
-        const slackConnectionId = `account-${accountId}`;
+        const accountUUID = await environmentService.getAccountUUIDFromEnvironment(environment_id);
+        const slackConnectionId = `account-${accountUUID}`;
         const nangoEnvironmentId = await this.getAdminEnvironmentId();
         const { success: connectionSuccess, response: slackConnection } = await connectionService.getConnection(
             slackConnectionId,
@@ -214,8 +214,8 @@ class SlackService {
         );
 
         const content = actionSuccess
-            ? `The action ${this.actionName} was successfully triggered for the ${syncType} ${syncName} for environment ${slackConnection?.environment_id} for account ${accountId}.`
-            : `The action ${this.actionName} failed to trigger for the ${syncType} ${syncName} with the error: ${actionError} for environment ${slackConnection?.environment_id} for account ${accountId}.`;
+            ? `The action ${this.actionName} was successfully triggered for the ${syncType} ${syncName} for environment ${slackConnection?.environment_id} for account ${accountUUID}.`
+            : `The action ${this.actionName} failed to trigger for the ${syncType} ${syncName} with the error: ${actionError} for environment ${slackConnection?.environment_id} for account ${accountUUID}.`;
 
         await createActivityLogMessage({
             level: actionSuccess ? 'info' : 'error',
@@ -266,9 +266,9 @@ class SlackService {
 
         const syncClient = await SyncClient.getInstance();
 
-        const accountId = await environmentService.getAccountIdFromEnvironment(environment_id);
+        const accountUUID = await environmentService.getAccountUUIDFromEnvironment(environment_id);
         const nangoEnvironmentId = await this.getAdminEnvironmentId();
-        const slackConnectionId = `account-${accountId}`;
+        const slackConnectionId = `account-${accountUUID}`;
         const { success: connectionSuccess, response: slackConnection } = await connectionService.getConnection(
             slackConnectionId,
             this.integrationKey,
@@ -307,8 +307,8 @@ class SlackService {
         await this.sendDuplicateNotificationToNangoAdmins(payload, originalActivityLogId, environment_id, undefined, admin_slack_timestamp);
 
         const content = actionSuccess
-            ? `The action ${this.actionName} was successfully triggered for the ${syncType} ${syncName} for environment ${slackConnection?.environment_id} for account ${accountId}.`
-            : `The action ${this.actionName} failed to trigger for the ${syncType} ${syncName} with the error: ${actionError} for environment ${slackConnection?.environment_id} for account ${accountId}.`;
+            ? `The action ${this.actionName} was successfully triggered for the ${syncType} ${syncName} for environment ${slackConnection?.environment_id} for account ${accountUUID}.`
+            : `The action ${this.actionName} failed to trigger for the ${syncType} ${syncName} with the error: ${actionError} for environment ${slackConnection?.environment_id} for account ${accountUUID}.`;
 
         await createActivityLogMessage({
             level: actionSuccess ? 'info' : 'error',
