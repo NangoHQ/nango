@@ -1,20 +1,14 @@
 import axios, { AxiosError } from 'axios';
 import { backOff } from 'exponential-backoff';
-import { SyncType } from '../models/Sync.js';
-import type { NangoConnection } from '../models/Connection';
-import type { ServiceResponse } from '../models/Generic';
-import type { SyncResult, NangoSyncWebhookBody } from '../models/Sync';
-import environmentService from './environment.service.js';
-import { LogActionEnum, LogLevel } from '../models/Activity.js';
-import { updateSuccess as updateSuccessActivityLog, createActivityLogMessage, createActivityLogAndLogMessage } from './activity/activity.service.js';
-import { getBaseUrl } from '../utils/utils.js';
-import connectionService from './connection.service.js';
-import accountService from './account.service.js';
-import SyncClient from '../clients/sync.client.js';
+import { SyncType } from '../../../models/Sync.js';
+import type { NangoConnection } from '../../../models/Connection';
+import type { SyncResult, NangoSyncWebhookBody } from '../../../models/Sync';
+import environmentService from '../../environment.service.js';
+import { createActivityLogMessage } from '../../activity/activity.service.js';
 
 const RETRY_ATTEMPTS = 10;
 
-class NotificationService {
+class WebhookService {
     private retry = async (activityLogId: number, environment_id: number, error: AxiosError, attemptNumber: number): Promise<boolean> => {
         if (error?.response && (error?.response?.status < 200 || error?.response?.status >= 300)) {
             const content = `Webhook response received an ${
@@ -35,7 +29,7 @@ class NotificationService {
         return false;
     };
 
-    async sendWebhook(
+    async send(
         nangoConnection: NangoConnection,
         syncName: string,
         model: string,
@@ -128,86 +122,6 @@ class NotificationService {
             });
         }
     }
-
-    async reportFailure(
-        nangoConnection: NangoConnection,
-        syncName: string,
-        syncType: SyncType,
-        originalActivityLogId: number,
-        environment_id: number,
-        provider: string
-    ) {
-        const slackNotificationsEnabled = await environmentService.getSlackNotificationsEnabled(nangoConnection.environment_id);
-
-        if (!slackNotificationsEnabled) {
-            return;
-        }
-
-        const actionName = 'flow-result-notifier-action';
-
-        if (syncName === actionName) {
-            return;
-        }
-
-        const envName = await environmentService.getEnvironmentName(nangoConnection.environment_id);
-        const payload = {
-            title: `${syncType} Failure`,
-            content: `The ${syncType} sync for ${syncName} failed. Please check the logs (${getBaseUrl()}/activity?env=${envName}&activity_log_id=${originalActivityLogId}) for more information.`,
-            connectionCount: 1, // TODO
-            status: 'open',
-            name: syncName,
-            providerConfigKey: nangoConnection.provider_config_key,
-            provider
-        };
-
-        const syncClient = await SyncClient.getInstance();
-
-        const integrationKey = process.env['NANGO_SLACK_INTEGRATION_KEY'] || 'slack';
-        const nangoAdminUUID = process.env['NANGO_ADMIN_UUID'];
-        const env = 'prod';
-        const info = await accountService.getAccountAndEnvironmentIdByUUID(nangoAdminUUID as string, env);
-        const [nangoAdminConnection] = await connectionService.getConnectionsByEnvironmentAndConfig(info?.environmentId as number, integrationKey);
-
-        if (!nangoAdminConnection) {
-            return;
-        }
-
-        const log = {
-            level: 'info' as LogLevel,
-            success: true,
-            action: LogActionEnum.ACTION,
-            start: Date.now(),
-            end: Date.now(),
-            timestamp: Date.now(),
-            connection_id: nangoAdminConnection?.connection_id as string,
-            provider_config_key: nangoAdminConnection?.provider_config_key as string,
-            provider: integrationKey,
-            environment_id: info?.environmentId as number,
-            operation_name: actionName
-        };
-
-        const { success: actionSuccess, error: actionError } = (await syncClient?.triggerAction(
-            nangoAdminConnection,
-            actionName,
-            payload,
-            originalActivityLogId,
-            environment_id,
-            false
-        )) as ServiceResponse;
-
-        const content = actionSuccess
-            ? `The action ${actionName} was successfully triggered for the ${syncType} ${syncName} for environment ${info?.environmentId} for account ${info?.accountId}.`
-            : `The action ${actionName} failed to trigger for the ${syncType} ${syncName} with the error: ${actionError} for environment ${info?.environmentId} for account ${info?.accountId}.`;
-
-        const activityLogId = await createActivityLogAndLogMessage(log, {
-            level: actionSuccess ? 'info' : 'error',
-            environment_id: info?.environmentId as number as number,
-            timestamp: Date.now(),
-            content
-        });
-
-        await updateSuccessActivityLog(activityLogId as number, actionSuccess);
-    }
 }
 
-export default new NotificationService();
+export default new WebhookService();

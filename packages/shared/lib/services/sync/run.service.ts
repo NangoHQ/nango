@@ -11,7 +11,8 @@ import { formatDataRecords } from './data/records.service.js';
 import { upsert } from './data/data.service.js';
 import { getDeletedKeys, takeSnapshot, clearOldRecords, syncUpdateAtForDeletedRecords } from './data/delete.service.js';
 import environmentService from '../environment.service.js';
-import notificationService from '../notification.service.js';
+import slackNotificationService from './notification/slack.service.js';
+import webhookService from './notification/webhook.service.js';
 import { NangoSync } from '../../sdk/sync.js';
 import { isCloud, getApiUrl, JAVASCRIPT_PRIMITIVES } from '../../utils/utils.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
@@ -334,6 +335,15 @@ export default class SyncRun {
                         content
                     });
 
+                    await slackNotificationService.removeFailingConnection(
+                        this.nangoConnection,
+                        this.syncName,
+                        this.syncType,
+                        this.activityLogId as number,
+                        this.nangoConnection.environment_id,
+                        this.provider as string
+                    );
+
                     return { success: true, error: null, response: userDefinedResults };
                 }
 
@@ -509,6 +519,14 @@ export default class SyncRun {
             // then don't override it
             const override = false;
             await setLastSyncDate(this.syncId as string, syncStartDate, override);
+            await slackNotificationService.removeFailingConnection(
+                this.nangoConnection,
+                this.syncName,
+                this.syncType,
+                this.activityLogId as number,
+                this.nangoConnection.environment_id,
+                this.provider as string
+            );
         }
 
         if (trackDeletes) {
@@ -569,7 +587,7 @@ export default class SyncRun {
             deleted
         };
 
-        await notificationService.sendWebhook(
+        await webhookService.send(
             this.nangoConnection,
             this.syncName,
             model,
@@ -625,7 +643,7 @@ export default class SyncRun {
             return;
         }
 
-        await notificationService.reportFailure(
+        await slackNotificationService.reportFailure(
             this.nangoConnection,
             this.syncName,
             this.syncType,
