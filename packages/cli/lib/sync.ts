@@ -105,7 +105,9 @@ export const generate = async (debug = false, inParentDirectory = false) => {
 
     const interfaceDefinitions = buildInterfaces(models, integrations, debug);
 
-    fs.writeFileSync(`${dirPrefix}/${TYPES_FILE_NAME}`, interfaceDefinitions.join('\n'));
+    if (interfaceDefinitions) {
+        fs.writeFileSync(`${dirPrefix}/${TYPES_FILE_NAME}`, interfaceDefinitions.join('\n'));
+    }
 
     if (debug) {
         printDebug(`Interfaces from the ${nangoConfigFile} file written to ${TYPES_FILE_NAME}`);
@@ -333,7 +335,9 @@ const createModelFile = async (notify = false) => {
     const configData: NangoConfig = yaml.load(configContents) as unknown as NangoConfig;
     const { models, integrations } = configData;
     const interfaceDefinitions = buildInterfaces(models, integrations);
-    fs.writeFileSync(`./${TYPES_FILE_NAME}`, interfaceDefinitions.join('\n'));
+    if (interfaceDefinitions) {
+        fs.writeFileSync(`./${TYPES_FILE_NAME}`, interfaceDefinitions.join('\n'));
+    }
 
     // insert NangoSync types to the bottom of the file
     const typesContent = fs.readFileSync(`${getNangoRootPath()}/${NangoSyncTypesFileLocation}`, 'utf8');
@@ -857,7 +861,8 @@ const nangoCallsAreUsedCorrectly = (filePath: string, type = SyncConfigType.SYNC
         'delete',
         'getConnection',
         'setLastSyncDate',
-        'getEnvironmentVariables'
+        'getEnvironmentVariables',
+        'triggerAction'
     ];
 
     const disallowedActionCalls = ['batchSend', 'batchSave', 'batchDelete', 'setLastSyncDate'];
