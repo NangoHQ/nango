@@ -838,7 +838,7 @@ export default function ProjectSettings() {
                                             </button>
                                         </div>
                                     </form>
-                                    {env !== 'prod' && (
+                                    {env === 'prod' && (
                                         <>
                                             <Button className="mt-6" variant="yellow" onClick={slackIsConnected ? disconnectSlack : connectSlack}>
                                                 {slackIsConnected ? 'Disconnect Slack' : 'Connect Slack'}
