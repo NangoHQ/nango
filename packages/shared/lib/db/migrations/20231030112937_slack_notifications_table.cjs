@@ -8,6 +8,8 @@ exports.up = async function (knex, _) {
         table.string('name').index();
         table.string('type');
         table.specificType('connection_list', 'integer ARRAY');
+        table.string('slack_timestamp');
+        table.string('admin_slack_timestamp');
         table.timestamps(true, true);
     });
 };

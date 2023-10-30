@@ -8,4 +8,6 @@ export interface SlackNotification extends Timestamps {
     name: string;
     type: SyncType;
     connection_list: number[];
+    slack_timestamp?: string;
+    admin_slack_timestamp?: string;
 }
