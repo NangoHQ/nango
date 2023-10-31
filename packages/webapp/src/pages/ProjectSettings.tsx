@@ -519,6 +519,33 @@ export default function ProjectSettings() {
                                     </div>
                                 </div>
                             </div>
+                            {env === 'prod' && (
+                                <div className="flex items-center justify-between mx-8 mt-8">
+                                    <div>
+                                        <label htmlFor="slack_alerts" className="flex text-text-light-gray items-center block text-sm font-semibold mb-2">
+                                            Slack Alerts
+                                        <Tooltip
+                                            text={
+                                                <div className="flex text-black text-sm">
+                                                    {slackIsConnected ?
+                                                        'Stop receiving Slack alerts to a public channel of your choice when a syncs or actions fail.' :
+                                                        'Receive Slack alerts to a public channel of your choice when a syncs or actions fail.'
+                                                    }
+                                                </div>
+                                            }
+                                        >
+                                            <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                        </Tooltip>
+                                        </label>
+                                    </div>
+                                    <div className="">
+                                        <Button className="items-center" variant="primary" onClick={slackIsConnected ? disconnectSlack : connectSlack}>
+                                            <img src={`images/template-logos/slack.svg`} alt="" className="flex h-7 pb-0.5" />
+                                            {slackIsConnected ? 'Disconnect' : 'Connect'}
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
                             <div>
                                 <div className="mx-8 mt-8">
                                     <div className="flex text-white  mb-2">
@@ -670,7 +697,7 @@ export default function ProjectSettings() {
                                             text={
                                                 <>
                                                     <div className="flex text-black text-sm">
-                                                        {`When running a sync a webhook can always be sent after completion or only sent when data is added, created, or deleted.`}
+                                                        {`If checked, a webhook wil be sent on every sync run completion, even if no data has changed.`}
                                                     </div>
                                                 </>
                                             }
@@ -838,25 +865,6 @@ export default function ProjectSettings() {
                                             </button>
                                         </div>
                                     </form>
-                                    {env === 'prod' && (
-                                        <>
-                                            <Button className="mt-6" variant="yellow" onClick={slackIsConnected ? disconnectSlack : connectSlack}>
-                                                {slackIsConnected ? 'Disconnect Slack' : 'Connect Slack'}
-                                            </Button>
-                                            <Tooltip
-                                                text={
-                                                    <div className="flex text-black text-sm">
-                                                        {slackIsConnected ?
-                                                            'Stop receiving Slack alerts when a sync or action fails' :
-                                                            'Receive Slack alerts when a sync or action fails.'
-                                                        }
-                                                    </div>
-                                                }
-                                            >
-                                                <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
-                                            </Tooltip>
-                                        </>
-                                    )}
                                 </div>
                             </div>
                         </div>
