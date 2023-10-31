@@ -1,5 +1,15 @@
 import type { Request, Response, NextFunction } from 'express';
-import { hmacService, environmentService, errorManager, getBaseUrl, isCloud, getWebsocketsPath, getOauthCallbackUrl, getEnvironmentId } from '@nangohq/shared';
+import {
+    accountService,
+    hmacService,
+    environmentService,
+    errorManager,
+    getBaseUrl,
+    isCloud,
+    getWebsocketsPath,
+    getOauthCallbackUrl,
+    getEnvironmentId
+} from '@nangohq/shared';
 import { packageJsonFile, getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 
 class EnvironmentController {
@@ -27,7 +37,7 @@ class EnvironmentController {
                 errorManager.errResFromNangoErr(res, sessionError);
                 return;
             }
-            const { environment } = response;
+            const { environment, account } = response;
 
             if (!isCloud()) {
                 environment.websockets_path = getWebsocketsPath();
@@ -46,7 +56,7 @@ class EnvironmentController {
 
             const environmentVariables = await environmentService.getEnvironmentVariables(environment.id);
 
-            res.status(200).send({ account: { ...environment, env_variables: environmentVariables, host: getBaseUrl() } });
+            res.status(200).send({ account: { ...environment, env_variables: environmentVariables, host: getBaseUrl(), uuid: account.uuid } });
         } catch (err) {
             next(err);
         }
@@ -78,6 +88,28 @@ class EnvironmentController {
             } else {
                 res.status(200).send({ hmac_digest: null });
             }
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async getAdminAuthInfo(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { connection_id: connectionId } = req.query;
+
+            if (!connectionId) {
+                errorManager.errRes(res, 'missing_connection_id');
+                return;
+            }
+
+            const integration_key = process.env['NANGO_SLACK_INTEGRATION_KEY'] || 'slack';
+            const nangoAdminUUID = process.env['NANGO_ADMIN_UUID'];
+            const env = 'prod';
+            const info = await accountService.getAccountAndEnvironmentIdByUUID(nangoAdminUUID as string, env);
+            const digest = await hmacService.digest(info?.environmentId as number, integration_key, connectionId as string);
+            const { environment } = await environmentService.getAccountAndEnvironmentById(info?.accountId as number, env);
+
+            res.status(200).send({ hmac_digest: digest, public_key: environment?.public_key, integration_key });
         } catch (err) {
             next(err);
         }
@@ -166,6 +198,27 @@ class EnvironmentController {
             const { environment } = response;
 
             await environmentService.editHmacEnabled(req.body['hmac_enabled'], environment.id);
+            res.status(200).send();
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async updateSlackNotificationsEnabled(req: Request, res: Response, next: NextFunction) {
+        try {
+            if (!req.body) {
+                errorManager.errRes(res, 'missing_body');
+                return;
+            }
+
+            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
+            if (!sessionSuccess || response === null) {
+                errorManager.errResFromNangoErr(res, sessionError);
+                return;
+            }
+            const { environment } = response;
+
+            await environmentService.editSlackNotifications(req.body['slack_notifications'], environment.id);
             res.status(200).send();
         } catch (err) {
             next(err);

@@ -129,11 +129,13 @@ app.route('/api/v1/environment/webhook').post(webAuth, environmentController.upd
 app.route('/api/v1/environment/hmac').get(webAuth, environmentController.getHmacDigest.bind(environmentController));
 app.route('/api/v1/environment/hmac-enabled').post(webAuth, environmentController.updateHmacEnabled.bind(environmentController));
 app.route('/api/v1/environment/webhook-send').post(webAuth, environmentController.updateAlwaysSendWebhook.bind(environmentController));
+app.route('/api/v1/environment/slack-notifications-enabled').post(webAuth, environmentController.updateSlackNotificationsEnabled.bind(environmentController));
 app.route('/api/v1/environment/hmac-key').post(webAuth, environmentController.updateHmacKey.bind(environmentController));
 app.route('/api/v1/environment/environment-variables').post(webAuth, environmentController.updateEnvironmentVariables.bind(environmentController));
 app.route('/api/v1/environment/rotate-key').post(webAuth, environmentController.rotateKey.bind(accountController));
 app.route('/api/v1/environment/revert-key').post(webAuth, environmentController.revertKey.bind(accountController));
 app.route('/api/v1/environment/activate-key').post(webAuth, environmentController.activateKey.bind(accountController));
+app.route('/api/v1/environment/admin-auth').get(webAuth, environmentController.getAdminAuthInfo.bind(environmentController));
 app.route('/api/v1/integration').get(webAuth, configController.listProviderConfigsWeb.bind(configController));
 app.route('/api/v1/integration/:providerConfigKey').get(webAuth, configController.getProviderConfig.bind(configController));
 app.route('/api/v1/integration').put(webAuth, configController.editProviderConfigWeb.bind(connectionController));
@@ -143,6 +145,7 @@ app.route('/api/v1/provider').get(connectionController.listProviders.bind(connec
 app.route('/api/v1/connection').get(webAuth, connectionController.listConnections.bind(connectionController));
 app.route('/api/v1/connection/:connectionId').get(webAuth, connectionController.getConnectionWeb.bind(connectionController));
 app.route('/api/v1/connection/:connectionId').delete(webAuth, connectionController.deleteConnection.bind(connectionController));
+app.route('/api/v1/connection/admin/:connectionId').delete(webAuth, connectionController.deleteAdminConnection.bind(connectionController));
 app.route('/api/v1/user').get(webAuth, userController.getUser.bind(userController));
 app.route('/api/v1/user/name').put(webAuth, userController.editName.bind(userController));
 app.route('/api/v1/user/password').put(webAuth, userController.editPassword.bind(userController));

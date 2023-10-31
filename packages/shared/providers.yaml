@@ -913,6 +913,9 @@ slack:
     token_url: https://slack.com/api/oauth.v2.access
     token_response_metadata:
         - incoming_webhook.url
+        - incoming_webhook.channel
+        - incoming_webhook.channel_id
+        - bot_user_id
     proxy:
         base_url: https://slack.com/api
         paginate:

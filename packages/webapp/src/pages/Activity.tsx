@@ -340,6 +340,7 @@ export default function Activity() {
                                                             </div>
                                                             <Link
                                                                 to={`/connections/${activity.provider_config_key}/${activity.connection_id}${activity?.action === 'sync' ? '#sync' : ''}`}
+                                                                className="flex items-center"
                                                             >
                                                                 {activity.operation_name && (
                                                                     <Tooltip text={activity.operation_name} type="dark">

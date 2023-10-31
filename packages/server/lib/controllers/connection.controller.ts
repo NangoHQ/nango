@@ -27,6 +27,7 @@ import {
     NangoError,
     createActivityLogAndLogMessage,
     environmentService,
+    accountService,
     SyncClient,
     Connection
 } from '@nangohq/shared';
@@ -396,6 +397,48 @@ class ConnectionController {
             }
 
             await connectionService.deleteConnection(connection, providerConfigKey, environmentId);
+
+            res.status(204).send();
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async deleteAdminConnection(req: Request, res: Response, next: NextFunction) {
+        try {
+            const connectionId = req.params['connectionId'] as string;
+
+            if (!connectionId) {
+                errorManager.errRes(res, 'missing_connection_id');
+                return;
+            }
+
+            const integration_key = process.env['NANGO_SLACK_INTEGRATION_KEY'] || 'slack';
+            const nangoAdminUUID = process.env['NANGO_ADMIN_UUID'];
+            const env = 'prod';
+
+            const info = await accountService.getAccountAndEnvironmentIdByUUID(nangoAdminUUID as string, env);
+            const {
+                success,
+                error,
+                response: connection
+            } = await connectionService.getConnection(connectionId as string, integration_key, info?.environmentId as number);
+
+            if (!success) {
+                errorManager.errResFromNangoErr(res, error);
+
+                return;
+            }
+
+            if (connection == null) {
+                const environmentName = await environmentService.getEnvironmentName(info?.environmentId as number);
+                const error = new NangoError('unknown_connection', { connectionId, providerConfigKey: integration_key, environmentName });
+                errorManager.errResFromNangoErr(res, error);
+
+                return;
+            }
+
+            await connectionService.deleteConnection(connection, integration_key, info?.environmentId as number);
 
             res.status(204).send();
         } catch (err) {

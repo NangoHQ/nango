@@ -9,7 +9,6 @@ import errorManager, { ErrorSourceEnum } from './utils/error.manager.js';
 import metricsManager, { MetricTypes } from './utils/metrics.manager.js';
 import accountService from './services/account.service.js';
 import environmentService from './services/environment.service.js';
-import webhookService from './services/webhook.service.js';
 import userService from './services/user.service.js';
 import remoteFileService from './services/file/remote.service.js';
 import localFileService from './services/file/local.service.js';
@@ -59,7 +58,6 @@ export {
     accountService,
     environmentService,
     userService,
-    webhookService,
     remoteFileService,
     localFileService,
     syncRunService,

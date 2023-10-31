@@ -159,7 +159,7 @@ class ProxyController {
             const queryString = querystring.stringify(query);
             let endpoint = `${path}${queryString ? `?${queryString}` : ''}`;
 
-            if (!endpoint) {
+            if (!endpoint && !baseUrlOverride) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     environment_id,
@@ -822,7 +822,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         }
 
         const fullEndpoint = interpolateIfNeeded(
-            `${mapProxyBaseUrlInterpolationFormat(base)}/${endpoint}`,
+            `${mapProxyBaseUrlInterpolationFormat(base)}${endpoint ? '/' : ''}${endpoint}`,
             connectionCopyWithParsedConnectionConfig(connection) as unknown as Record<string, string>
         );
 
