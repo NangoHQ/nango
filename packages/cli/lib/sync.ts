@@ -1152,7 +1152,8 @@ function packageIntegrationData(
                     js: localFileService.getIntegrationFile(syncName, './') as string,
                     ts: localFileService.getIntegrationTsFile(syncName, './') as string
                 },
-                model_schema: JSON.stringify(model_schema)
+                model_schema: JSON.stringify(model_schema),
+                endpoints: sync.endpoints
             };
 
             postData.push(body);

@@ -13,7 +13,7 @@ import {
 } from '../../activity/activity.service.js';
 import { getSyncsByProviderConfigAndSyncName } from '../sync.service.js';
 import { LogActionEnum, LogLevel } from '../../../models/Activity.js';
-import type { ServiceResponse } from '../../../models/Generic.js';
+import type { HTTP_VERB, ServiceResponse } from '../../../models/Generic.js';
 import {
     SyncModelSchema,
     IncomingSyncConfig,
@@ -21,7 +21,8 @@ import {
     SyncDeploymentResult,
     SyncConfigResult,
     SyncConfigType,
-    IncomingPreBuiltFlowConfig
+    IncomingPreBuiltFlowConfig,
+    SyncEndpoint
 } from '../../../models/Sync.js';
 import { NangoError } from '../../../utils/error.js';
 import metricsManager, { MetricTypes } from '../../../utils/metrics.manager.js';
@@ -30,6 +31,7 @@ import { nangoConfigFile } from '../../nango-config.service.js';
 import { getSyncAndActionConfigByParams, increment, getSyncAndActionConfigsBySyncNameAndConfigId } from './config.service.js';
 
 const TABLE = dbNamespace + 'sync_configs';
+const ENDPOINT_TABLE = dbNamespace + 'sync_endpoints';
 
 const nameOfType = 'sync/action';
 
@@ -39,12 +41,12 @@ export async function deploy(
     nangoYamlBody: string,
     debug = false
 ): Promise<ServiceResponse<SyncConfigResult | null>> {
-    const insertData = [];
+    const insertData: SyncConfig[] = [];
 
     const providers = syncs.map((sync) => sync.providerConfigKey);
     const providerConfigKeys = [...new Set(providers)];
 
-    const idsToMarkAsInvactive = [];
+    const idsToMarkAsInvactive: number[] = [];
     const accountId = (await environmentService.getAccountIdFromEnvironment(environment_id)) as number;
 
     const log = {
@@ -238,7 +240,29 @@ export async function deploy(
     }
 
     try {
-        await schema().from<SyncConfig>(TABLE).insert(insertData);
+        const syncIds = await schema().from<SyncConfig>(TABLE).insert(insertData).returning('id');
+
+        const endpoints: Array<SyncEndpoint> = [];
+        syncIds.forEach((row, index) => {
+            const sync = syncs[index] as IncomingSyncConfig;
+            if (sync.endpoints && row.id) {
+                sync.endpoints.forEach((endpoint, endpointIndex) => {
+                    const method = Object.keys(endpoint)[0] as HTTP_VERB;
+                    const path = endpoint[method];
+                    const res: SyncEndpoint = {
+                        sync_config_id: row.id as number,
+                        method,
+                        path
+                    };
+                    const model = sync.models[endpointIndex] as string;
+                    if (model) {
+                        res.model = model;
+                    }
+                    endpoints.push(res);
+                });
+            }
+        });
+        await schema().from<SyncEndpoint>(ENDPOINT_TABLE).insert(endpoints);
 
         if (idsToMarkAsInvactive.length > 0) {
             await schema().from<SyncConfig>(TABLE).update({ active: false }).whereIn('id', idsToMarkAsInvactive);
@@ -501,7 +525,29 @@ export async function deployPreBuilt(
     const isPublic = configs.every((config) => config.is_public);
 
     try {
-        await schema().from<SyncConfig>(TABLE).insert(insertData);
+        const syncIds = await schema().from<SyncConfig>(TABLE).insert(insertData).returning('id');
+
+        const endpoints: Array<SyncEndpoint> = [];
+        syncIds.forEach((row, index) => {
+            const sync = configs[index] as IncomingPreBuiltFlowConfig;
+            if (sync.endpoints && row.id) {
+                sync.endpoints.forEach((endpoint, endpointIndex) => {
+                    const method = Object.keys(endpoint)[0] as HTTP_VERB;
+                    const path = endpoint[method];
+                    const res: SyncEndpoint = {
+                        sync_config_id: row.id as number,
+                        method,
+                        path
+                    };
+                    const model = sync.models[endpointIndex] as string;
+                    if (model) {
+                        res.model = model;
+                    }
+                    endpoints.push(res);
+                });
+            }
+        });
+        await schema().from<SyncEndpoint>(ENDPOINT_TABLE).insert(endpoints);
 
         if (idsToMarkAsInvactive.length > 0) {
             await schema().from<SyncConfig>(TABLE).update({ active: false }).whereIn('id', idsToMarkAsInvactive);

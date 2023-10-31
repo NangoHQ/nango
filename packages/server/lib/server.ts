@@ -103,7 +103,7 @@ app.route('/flow/attributes').get(apiAuth, syncController.getFlowAttributes.bind
 app.route('/flow/configs').get(apiAuth, flowController.getFlowConfig.bind(flowController));
 app.route('/action/trigger').post(apiAuth, syncController.triggerAction.bind(syncController)); //TODO: to deprecate
 
-app.route('/v1/:category/:action_or_model').all(apiAuth, syncController.actionOrModel.bind(syncController));
+app.route('/v1/*').all(apiAuth, syncController.actionOrModel.bind(syncController));
 
 app.route('/admin/flow/deploy/pre-built').post(apiAuth, flowController.adminDeployPrivateFlow.bind(flowController));
 

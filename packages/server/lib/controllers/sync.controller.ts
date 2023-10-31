@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import type { NextFunction } from 'express';
-import type { LogLevel, Connection, NangoConnection } from '@nangohq/shared';
+import type { LogLevel, Connection, NangoConnection, HTTP_VERB } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 import {
     getEnvironmentId,
@@ -34,7 +34,7 @@ import {
     syncOrchestrator,
     getAttributes,
     flowService,
-    getSyncConfig
+    getActionOrModelByEndpoint
 } from '@nangohq/shared';
 
 class SyncController {
@@ -109,20 +109,8 @@ class SyncController {
 
     public async getRecords(req: Request, res: Response, next: NextFunction) {
         try {
-            const { delta, offset, limit, sort_by, order, filter, include_nango_metadata } = req.query;
-
-            // transform kebab-case to model case (ex: github-issue => GithubIssue)
-            const toModelCase = (s: string) => {
-                return s
-                    .split('-')
-                    .map((word, _index) => {
-                        return word.charAt(0).toUpperCase() + word.slice(1);
-                    })
-                    .join('');
-            };
-            const model = toModelCase(req.params['action_or_model'] || "" as string) || req.query['model'];
+            const { model, delta, offset, limit, sort_by, order, filter, include_nango_metadata } = req.query;
             const environmentId = getEnvironmentId(res);
-
             const connectionId = req.get('Connection-Id') as string;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
 
@@ -259,20 +247,7 @@ class SyncController {
             const environmentId = getEnvironmentId(res);
             const providerConfigKey = req.get('Provider-Config-Key') as string;
             const connectionId = req.get('Connection-Id') as string;
-            const action_or_model = req.params['action_or_model'] as string;
-            const category = req.params['category'] as string;
-
-            //TODO: add support for category per sync
-            if (category != "all") {
-                res.status(404).send({ message: `Unknown category ${category}` });
-                return;
-            }
-
-            if (!action_or_model) {
-                res.status(400).send({ message: 'Missing action or model name' });
-                return;
-            }
-
+            const path = '/' + req.params['0'];
             if (!connectionId) {
                 res.status(400).send({ message: 'Missing connection id' });
 
@@ -284,7 +259,6 @@ class SyncController {
 
                 return;
             }
-
             const {
                 success,
                 error,
@@ -296,14 +270,19 @@ class SyncController {
                 return;
             }
 
-            const actionConfig = await getSyncConfig(connection as NangoConnection, action_or_model, true);
-            if (actionConfig) {
-                return await this.triggerAction(req, res, next);
+            const [action, model] = await getActionOrModelByEndpoint(connection as NangoConnection, req.method as HTTP_VERB, path);
+            if (action) {
+                const input = req.body;
+                req.body = {};
+                req.body['action_name'] = action;
+                req.body['input'] = input;
+                await this.triggerAction(req, res, next);
+            } else if (model) {
+                req.query['model'] = model;
+                await this.getRecords(req, res, next);
             } else {
-                // if no action config is found, fallback to fetching records
-                return await this.getRecords(req, res, next);
+                res.status(404).send({ message: `Unknown endpoint '${req.method} ${path}'` });
             }
-
         } catch (e) {
             next(e);
         }
@@ -315,9 +294,7 @@ class SyncController {
             const connectionId = req.get('Connection-Id') as string;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
 
-            const { input } = req.body;
-
-            const action_name = (req.params['action_or_model'] as string) || req.body['action_name'];
+            const { input, action_name } = req.body;
 
             if (!action_name) {
                 res.status(400).send({ message: 'Missing action name' });
@@ -346,17 +323,6 @@ class SyncController {
             if (!success) {
                 errorManager.errResFromNangoErr(res, error);
 
-                return;
-            }
-
-            const nangoConfig = await getSyncConfig(connection as NangoConnection, action_name, true);
-            if (!nangoConfig) {
-                res.status(404).send({ message: `Failed to load the Nango config for action '${action_name}'` });
-                return;
-            }
-            const action_method = nangoConfig?.integrations?.[providerConfigKey]?.[action_name]?.metadata?.method || 'POST';
-            if (req.method != action_method) {
-                res.status(400).send({ message: `Unsupported http method '${req.method}' for action '${action_name}'. Expected: '${action_method}'` });
                 return;
             }
 

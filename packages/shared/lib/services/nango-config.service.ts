@@ -29,6 +29,7 @@ export function loadLocalNangoConfig(loadLocation?: string): Promise<NangoConfig
 
     try {
         const yamlConfig = fs.readFileSync(location, 'utf8');
+
         const configData: NangoConfig = yaml.load(yamlConfig) as unknown as NangoConfig;
 
         return Promise.resolve(configData);
@@ -130,7 +131,8 @@ export function convertConfigObject(config: NangoConfig): SimplifiedNangoIntegra
                 returns: sync.returns,
                 models: models || [],
                 description: sync?.description || sync?.metadata?.description || '',
-                scopes: sync?.scopes || sync?.metadata?.scopes || []
+                scopes: sync?.scopes || sync?.metadata?.scopes || [],
+                endpoints: sync?.endpoints || []
             };
 
             if (sync.type === SyncConfigType.ACTION) {
@@ -152,7 +154,6 @@ export function convertConfigObject(config: NangoConfig): SimplifiedNangoIntegra
 
         output.push(simplifiedIntegration);
     }
-
     return output;
 }
 
