@@ -11,7 +11,12 @@ import {
     getSyncsByProviderConfigAndSyncNames,
     getSyncByIdAndName
 } from './sync.service.js';
-import { createActivityLog, createActivityLogMessage } from '../activity/activity.service.js';
+import {
+    createActivityLogMessageAndEnd,
+    createActivityLog,
+    createActivityLogMessage,
+    updateSuccess as updateSuccessActivityLog
+} from '../activity/activity.service.js';
 import SyncClient from '../../clients/sync.client.js';
 import configService from '../config.service.js';
 import type { LogLevel } from '../../models/Activity.js';
@@ -198,6 +203,13 @@ export class Orchestrator {
                 await syncClient?.runSyncCommand(schedule?.schedule_id as string, sync?.id as string, command, activityLogId as number, environmentId);
                 await updateScheduleStatus(schedule?.schedule_id as string, command, activityLogId as number, environmentId);
             }
+            await createActivityLogMessageAndEnd({
+                level: 'info',
+                environment_id: environmentId,
+                activity_log_id: activityLogId as number,
+                timestamp: Date.now(),
+                content: `Sync was updated with command: "${action}" for sync: ${syncNames.join(', ')}`
+            });
         } else {
             const syncs =
                 syncNames.length > 0
@@ -214,7 +226,16 @@ export class Orchestrator {
                 await syncClient?.runSyncCommand(schedule?.schedule_id as string, sync?.id as string, command, activityLogId as number, environmentId);
                 await updateScheduleStatus(schedule?.schedule_id as string, command, activityLogId as number, environmentId);
             }
+            await createActivityLogMessageAndEnd({
+                level: 'info',
+                environment_id: environmentId,
+                activity_log_id: activityLogId as number,
+                timestamp: Date.now(),
+                content: `Sync was updated with command: "${action}" for sync: ${syncNames.join(', ')}`
+            });
         }
+
+        await updateSuccessActivityLog(activityLogId as number, true);
     }
 
     public async getSyncStatus(environmentId: number, providerConfigKey: string, syncNames: string[], connectionId?: string): Promise<any> {
