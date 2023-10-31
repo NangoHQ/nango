@@ -440,6 +440,13 @@ class ConnectionController {
 
             await connectionService.deleteConnection(connection, integration_key, info?.environmentId as number);
 
+            const { success: sessionSuccess, response } = await getUserAccountAndEnvironmentFromSession(req);
+
+            if (sessionSuccess) {
+                const { environment } = response;
+                // TODO
+            }
+
             res.status(204).send();
         } catch (err) {
             next(err);
