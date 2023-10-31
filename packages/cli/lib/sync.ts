@@ -786,13 +786,13 @@ export const tsc = async (debug = false, syncName?: string): Promise<boolean> =>
                 [...config.syncs, ...config.actions].find((sync) => sync.name === path.basename(filePath, '.ts'))
             );
             if (!providerConfiguration) {
-                return false;
+                continue;
             }
             const syncConfig = [...providerConfiguration.syncs, ...providerConfiguration.actions].find((sync) => sync.name === path.basename(filePath, '.ts'));
             const type = syncConfig?.type || SyncConfigType.SYNC;
 
             if (!nangoCallsAreUsedCorrectly(filePath, type)) {
-                return false;
+                continue;
             }
             const result = compiler.compile(fs.readFileSync(filePath, 'utf8'), filePath);
             const jsFilePath = filePath.replace(/\/[^\/]*$/, `/dist/${path.basename(filePath.replace('.ts', '.js'))}`);

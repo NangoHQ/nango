@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/nango-worker",
-    "version": "0.35.22",
+    "version": "0.35.25",
     "type": "module",
     "main": "dist/worker.js",
     "scripts": {
@@ -15,7 +15,7 @@
         "directory": "packages/worker"
     },
     "dependencies": {
-        "@nangohq/shared": "0.35.22",
+        "@nangohq/shared": "0.35.25",
         "@octokit/plugin-retry": "^6.0.0",
         "@octokit/plugin-throttling": "^7.0.0",
         "@octokit/rest": "^20.0.1",

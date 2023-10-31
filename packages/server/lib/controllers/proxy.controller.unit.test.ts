@@ -440,4 +440,26 @@ describe('Proxy Controller Construct URL Tests', () => {
 
         expect(parsedHeaders).toEqual({});
     });
+
+    it('Should strip away the auth token from the headers', () => {
+        const headers = {
+            Authorization: 'Bearer real-token',
+            'Another-Header': 'value',
+            'Sensitive-Token': 'real-token'
+        };
+
+        const config = {
+            token: 'real-token',
+            headers: headers
+        };
+
+        // @ts-ignore
+        const strippedHeaders = proxyController.stripSensitiveHeaders(headers, config);
+
+        expect(strippedHeaders).toEqual({
+            Authorization: 'Bearer xxxx',
+            'Another-Header': 'value',
+            'Sensitive-Token': 'xxxx'
+        });
+    });
 });

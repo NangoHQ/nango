@@ -10,6 +10,7 @@ import {
     OAuth2Credentials,
     ImportedCredentials,
     AppCredentials,
+    AuthCredentials,
     TemplateOAuth2 as ProviderTemplateOAuth2,
     getEnvironmentAndAccountId,
     ConnectionList,
@@ -26,7 +27,9 @@ import {
     NangoError,
     createActivityLogAndLogMessage,
     environmentService,
-    accountService
+    accountService,
+    SyncClient,
+    Connection
 } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 
@@ -522,6 +525,7 @@ class ConnectionController {
             const template = await configService.getTemplate(provider as string);
 
             let oAuthCredentials: ImportedCredentials;
+            let updatedConnection: Connection;
 
             if (template.auth_mode === ProviderAuthModes.OAuth2) {
                 const { access_token, refresh_token, expires_at, expires_in, metadata, connection_config } = req.body;
@@ -541,7 +545,14 @@ class ConnectionController {
                     raw: req.body.raw || req.body
                 };
 
-                await connectionService.importOAuthConnection(connection_id, provider_config_key, provider, environmentId, accountId, oAuthCredentials);
+                [updatedConnection] = await connectionService.importOAuthConnection(
+                    connection_id,
+                    provider_config_key,
+                    provider,
+                    environmentId,
+                    accountId,
+                    oAuthCredentials
+                );
             } else if (template.auth_mode === ProviderAuthModes.OAuth1) {
                 const { oauth_token, oauth_token_secret } = req.body;
 
@@ -562,7 +573,14 @@ class ConnectionController {
                     raw: req.body.raw || req.body
                 };
 
-                await connectionService.importOAuthConnection(connection_id, provider_config_key, provider, environmentId, accountId, oAuthCredentials);
+                [updatedConnection] = await connectionService.importOAuthConnection(
+                    connection_id,
+                    provider_config_key,
+                    provider,
+                    environmentId,
+                    accountId,
+                    oAuthCredentials
+                );
             } else if (template.auth_mode === ProviderAuthModes.Basic) {
                 const { username, password } = req.body;
 
@@ -582,7 +600,14 @@ class ConnectionController {
                     password
                 };
 
-                await connectionService.importApiAuthConnection(connection_id, provider_config_key, provider, environmentId, accountId, credentials);
+                [updatedConnection] = await connectionService.importApiAuthConnection(
+                    connection_id,
+                    provider_config_key,
+                    provider,
+                    environmentId,
+                    accountId,
+                    credentials
+                );
             } else if (template.auth_mode === ProviderAuthModes.ApiKey) {
                 const { api_key: apiKey } = req.body;
 
@@ -596,10 +621,63 @@ class ConnectionController {
                     apiKey
                 };
 
-                await connectionService.importApiAuthConnection(connection_id, provider_config_key, provider, environmentId, accountId, credentials);
+                [updatedConnection] = await connectionService.importApiAuthConnection(
+                    connection_id,
+                    provider_config_key,
+                    provider,
+                    environmentId,
+                    accountId,
+                    credentials
+                );
+            } else if (template.auth_mode === ProviderAuthModes.App) {
+                const { app_id, installation_id } = req.body;
+
+                if (!app_id) {
+                    errorManager.errRes(res, 'missing_app_id');
+                    return;
+                }
+
+                if (!installation_id) {
+                    errorManager.errRes(res, 'missing_installation_id');
+                    return;
+                }
+
+                const connectionConfig = {
+                    installation_id,
+                    app_id
+                };
+
+                const config = await configService.getProviderConfig(provider_config_key as string, environmentId);
+
+                if (!config) {
+                    errorManager.errRes(res, 'unknown_provider_config');
+                    return;
+                }
+
+                const { success, error, response: credentials } = await connectionService.getAppCredentials(template, config, connectionConfig);
+
+                if (!success || !credentials) {
+                    errorManager.errResFromNangoErr(res, error);
+                    return;
+                }
+
+                [updatedConnection] = await connectionService.upsertConnection(
+                    connection_id,
+                    provider_config_key,
+                    provider,
+                    credentials as unknown as AuthCredentials,
+                    connectionConfig,
+                    environmentId,
+                    accountId
+                );
             } else {
                 errorManager.errRes(res, 'unknown_oauth_type');
                 return;
+            }
+
+            if (updatedConnection && updatedConnection.id) {
+                const syncClient = await SyncClient.getInstance();
+                await syncClient?.initiate(updatedConnection.id);
             }
 
             res.status(201).send(req.body);
