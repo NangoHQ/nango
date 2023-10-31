@@ -379,6 +379,11 @@ export default function ProjectSettings() {
                                             </>
                                         )}
                                     </div>
+                                    {hasPendingPublicKey && (
+                                        <div className=" text-red-500 text-sm">
+                                            Click 'Activate' to use this new key. Until then, Nango expects the old key. After activation the old key won't work.
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                             <div>
@@ -446,6 +451,11 @@ export default function ProjectSettings() {
                                             </>
                                         )}
                                     </div>
+                                    {hasPendingSecretKey && (
+                                        <div className=" text-red-500 text-sm">
+                                            Click 'Activate' to use this new key. Until then, Nango expects the old key. After activation the old key won't work.
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                             <div>
