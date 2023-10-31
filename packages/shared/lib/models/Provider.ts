@@ -1,7 +1,7 @@
 import type { CursorPagination, LinkPagination, OffsetPagination } from '../sdk/sync.js';
 import type { AuthModes } from './Auth.js';
 import type { TimestampsAndDeleted } from './Generic.js';
-import type { Sync, Action } from './Sync.js';
+import type { SyncConfig, Action } from './Sync.js';
 
 export interface Config extends TimestampsAndDeleted {
     id?: number;
@@ -58,13 +58,13 @@ export interface IntegrationWithCreds extends Integration {
     scopes: string;
     auth_mode: AuthModes;
     app_link?: string;
-    syncs: Sync[];
+    syncs: SyncConfig[];
     actions: Action[];
 }
 
 export interface Integration {
     unique_key: string;
     provider: string;
-    syncs: Sync[];
+    syncs: SyncConfig[];
     actions: Action[];
 }
