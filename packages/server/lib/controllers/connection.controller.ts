@@ -10,6 +10,7 @@ import {
     OAuth2Credentials,
     ImportedCredentials,
     AppCredentials,
+    AuthCredentials,
     TemplateOAuth2 as ProviderTemplateOAuth2,
     getEnvironmentAndAccountId,
     ConnectionList,
@@ -554,6 +555,47 @@ class ConnectionController {
                 };
 
                 await connectionService.importApiAuthConnection(connection_id, provider_config_key, provider, environmentId, accountId, credentials);
+            } else if (template.auth_mode === ProviderAuthModes.App) {
+                const { app_id, installation_id } = req.body;
+
+                if (!app_id) {
+                    errorManager.errRes(res, 'missing_app_id');
+                    return;
+                }
+
+                if (!installation_id) {
+                    errorManager.errRes(res, 'missing_installation_id');
+                    return;
+                }
+
+                const connectionConfig = {
+                    installation_id,
+                    app_id
+                };
+
+                const config = await configService.getProviderConfig(provider_config_key as string, environmentId);
+
+                if (!config) {
+                    errorManager.errRes(res, 'unknown_provider_config');
+                    return;
+                }
+
+                const { success, error, response: credentials } = await connectionService.getAppCredentials(template, config, connectionConfig);
+
+                if (!success || !credentials) {
+                    errorManager.errResFromNangoErr(res, error);
+                    return;
+                }
+
+                await connectionService.upsertConnection(
+                    connection_id,
+                    provider_config_key,
+                    provider,
+                    credentials as unknown as AuthCredentials,
+                    connectionConfig,
+                    environmentId,
+                    accountId
+                );
             } else {
                 errorManager.errRes(res, 'unknown_oauth_type');
                 return;
