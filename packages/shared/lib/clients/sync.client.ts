@@ -463,7 +463,7 @@ class SyncClient {
                         actionName,
                         nangoConnection: connection,
                         input,
-                        activityLogId
+                        activityLogId: writeLogs ? activityLogId : undefined
                     }
                 ]
             });
