@@ -10,10 +10,29 @@ async function getCloudId(nango: NangoSync): Promise<string> {
 }
 
 export default async function fetchData(nango: NangoSync) {
-    let cloudId = await getCloudId(nango);
-    const results = await paginate(nango, 'get', 'wiki/api/v2/spaces', 'Confluence spaces', 250, cloudId);
+    const cloudId = await getCloudId(nango);
+    let totalRecords = 0;
 
-    let spaces: ConfluenceSpace[] = results?.map((space: any) => {
+    const proxyConfig = {
+        baseUrlOverride: `https://api.atlassian.com/ex/confluence/${cloudId}`, // The base URL is specific for user because of the cloud ID path param
+        endpoint: `/wiki/api/v2/spaces`,
+        retries: 10,
+        paginate: {
+            limit: 250
+        }
+    };
+    for await (const spaceBatch of nango.paginate(proxyConfig)) {
+        const confluenceSpaces = mapConfluenceSpaces(spaceBatch);
+        const batchSize: number = confluenceSpaces.length;
+        totalRecords += batchSize;
+
+        await nango.log(`Saving batch of ${batchSize} spaces (total records: ${totalRecords})`);
+        await nango.batchSave(confluenceSpaces, 'ConfluenceSpace');
+    }
+}
+
+function mapConfluenceSpaces(spaces: any[]): ConfluenceSpace[] {
+    return spaces.map((space: any) => {
         return {
             id: space.id,
             key: space.key,
@@ -26,33 +45,4 @@ export default async function fetchData(nango: NangoSync) {
             description: space.description || ''
         };
     });
-
-    await nango.log(`Fetching ${spaces.length}`);
-    await nango.batchSave(spaces, 'ConfluenceSpace');
-}
-
-async function paginate(nango: NangoSync, method: 'get' | 'post', endpoint: string, desc: string, pageSize = 250, cloudId: string) {
-    let pageCounter = 0;
-    let results: any[] = [];
-
-    while (true) {
-        await nango.log(`Fetching ${desc} - with pageCounter = ${pageCounter} & pageSize = ${pageSize}`);
-        const res = await nango.get({
-            baseUrlOverride: `https://api.atlassian.com`, // Optional
-            endpoint: `ex/confluence/${cloudId}/${endpoint}`,
-            method: method,
-            params: { limit: `${pageSize}` },
-            retries: 10 // Exponential backoff + long-running job = handles rate limits well.
-        });
-        await nango.log(`Appending records of count ${res.data.results.length} to results of count ${results.length}`);
-        if (res.data) {
-            results = [...results, ...res.data.results];
-        }
-        if (res.data['_links'].next) {
-            endpoint = res.data['_links'].next;
-            pageCounter += 1;
-        } else {
-            return results;
-        }
-    }
 }

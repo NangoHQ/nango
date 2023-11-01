@@ -445,7 +445,8 @@ export const getAndReconcileDifferences = async (
     syncs: IncomingSyncConfig[],
     performAction: boolean,
     activityLogId: number | null,
-    debug = false
+    debug = false,
+    singleDeployMode = false
 ): Promise<SyncAndActionDifferences | null> => {
     const newSyncs: SlimSync[] = [];
     const newActions: SlimAction[] = [];
@@ -548,57 +549,59 @@ export const getAndReconcileDifferences = async (
     const deletedSyncs: SlimSync[] = [];
     const deletedActions: SlimAction[] = [];
 
-    for (const existingSync of existingSyncs) {
-        const exists = syncs.find((sync) => sync.syncName === existingSync.sync_name && sync.providerConfigKey === existingSync.unique_key);
+    if (!singleDeployMode) {
+        for (const existingSync of existingSyncs) {
+            const exists = syncs.find((sync) => sync.syncName === existingSync.sync_name && sync.providerConfigKey === existingSync.unique_key);
 
-        if (!exists) {
-            const connections = await connectionService.getConnectionsByEnvironmentAndConfig(environmentId, existingSync.unique_key);
-            if (existingSync.type === SyncConfigType.SYNC) {
-                deletedSyncs.push({
-                    name: existingSync.sync_name,
-                    providerConfigKey: existingSync.unique_key,
-                    connections: connections?.length as number
-                });
-            } else {
-                deletedActions.push({
-                    name: existingSync.sync_name,
-                    providerConfigKey: existingSync.unique_key
-                });
-            }
-
-            if (performAction) {
-                if (debug && activityLogId) {
-                    await createActivityLogMessage({
-                        level: 'debug',
-                        environment_id: environmentId,
-                        activity_log_id: activityLogId as number,
-                        timestamp: Date.now(),
-                        content: `Deleting sync ${existingSync.sync_name} for ${existingSync.unique_key} with ${connections.length} connections`
+            if (!exists) {
+                const connections = await connectionService.getConnectionsByEnvironmentAndConfig(environmentId, existingSync.unique_key);
+                if (existingSync.type === SyncConfigType.SYNC) {
+                    deletedSyncs.push({
+                        name: existingSync.sync_name,
+                        providerConfigKey: existingSync.unique_key,
+                        connections: connections?.length as number
+                    });
+                } else {
+                    deletedActions.push({
+                        name: existingSync.sync_name,
+                        providerConfigKey: existingSync.unique_key
                     });
                 }
-                await syncOrchestrator.deleteConfig(existingSync.id as number, environmentId);
 
-                if (existingSync.type === SyncConfigType.SYNC) {
-                    for (const connection of connections) {
-                        const syncId = await getSyncByIdAndName(connection.id as number, existingSync.sync_name);
-                        if (syncId) {
-                            await syncOrchestrator.deleteSync(syncId.id as string, environmentId);
+                if (performAction) {
+                    if (debug && activityLogId) {
+                        await createActivityLogMessage({
+                            level: 'debug',
+                            environment_id: environmentId,
+                            activity_log_id: activityLogId as number,
+                            timestamp: Date.now(),
+                            content: `Deleting sync ${existingSync.sync_name} for ${existingSync.unique_key} with ${connections.length} connections`
+                        });
+                    }
+                    await syncOrchestrator.deleteConfig(existingSync.id as number, environmentId);
+
+                    if (existingSync.type === SyncConfigType.SYNC) {
+                        for (const connection of connections) {
+                            const syncId = await getSyncByIdAndName(connection.id as number, existingSync.sync_name);
+                            if (syncId) {
+                                await syncOrchestrator.deleteSync(syncId.id as string, environmentId);
+                            }
                         }
                     }
-                }
 
-                if (activityLogId) {
-                    const connectionDescription =
-                        existingSync.type === SyncConfigType.SYNC ? ` with ${connections.length} connection${connections.length > 1 ? 's' : ''}.` : '.';
-                    const content = `Successfully deleted ${existingSync.type} ${existingSync.sync_name} for ${existingSync.unique_key}${connectionDescription}`;
+                    if (activityLogId) {
+                        const connectionDescription =
+                            existingSync.type === SyncConfigType.SYNC ? ` with ${connections.length} connection${connections.length > 1 ? 's' : ''}.` : '.';
+                        const content = `Successfully deleted ${existingSync.type} ${existingSync.sync_name} for ${existingSync.unique_key}${connectionDescription}`;
 
-                    await createActivityLogMessage({
-                        level: 'debug',
-                        environment_id: environmentId,
-                        activity_log_id: activityLogId as number,
-                        timestamp: Date.now(),
-                        content
-                    });
+                        await createActivityLogMessage({
+                            level: 'debug',
+                            environment_id: environmentId,
+                            activity_log_id: activityLogId as number,
+                            timestamp: Date.now(),
+                            content
+                        });
+                    }
                 }
             }
         }

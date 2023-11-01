@@ -105,7 +105,9 @@ export const generate = async (debug = false, inParentDirectory = false) => {
 
     const interfaceDefinitions = buildInterfaces(models, integrations, debug);
 
-    fs.writeFileSync(`${dirPrefix}/${TYPES_FILE_NAME}`, interfaceDefinitions.join('\n'));
+    if (interfaceDefinitions) {
+        fs.writeFileSync(`${dirPrefix}/${TYPES_FILE_NAME}`, interfaceDefinitions.join('\n'));
+    }
 
     if (debug) {
         printDebug(`Interfaces from the ${nangoConfigFile} file written to ${TYPES_FILE_NAME}`);
@@ -333,7 +335,9 @@ const createModelFile = async (notify = false) => {
     const configData: NangoConfig = yaml.load(configContents) as unknown as NangoConfig;
     const { models, integrations } = configData;
     const interfaceDefinitions = buildInterfaces(models, integrations);
-    fs.writeFileSync(`./${TYPES_FILE_NAME}`, interfaceDefinitions.join('\n'));
+    if (interfaceDefinitions) {
+        fs.writeFileSync(`./${TYPES_FILE_NAME}`, interfaceDefinitions.join('\n'));
+    }
 
     // insert NangoSync types to the bottom of the file
     const typesContent = fs.readFileSync(`${getNangoRootPath()}/${NangoSyncTypesFileLocation}`, 'utf8');
@@ -395,7 +399,7 @@ async function parseSecretKey(environment: string, debug = false): Promise<void>
 }
 
 export const deploy = async (options: DeployOptions, environment: string, debug = false) => {
-    const { env, version, sync: optionalSyncName, autoConfirm } = options;
+    const { env, version, sync: optionalSyncName, action: optionalActionName, autoConfirm } = options;
     await verifyNecessaryFiles(autoConfirm);
 
     await parseSecretKey(environment, debug);
@@ -419,11 +423,13 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
         printDebug(`Environment is set to ${environment}`);
     }
 
+    const singleDeployMode = Boolean(optionalSyncName || optionalActionName);
+
     await tsc(debug);
 
     const config = await getConfig('', debug);
 
-    const postData: IncomingSyncConfig[] | null = packageIntegrationData(config, debug, optionalSyncName, version);
+    const postData: IncomingSyncConfig[] | null = packageIntegrationData(config, debug, version, optionalSyncName, optionalActionName);
 
     if (!postData) {
         return;
@@ -437,7 +443,7 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
         try {
             const response = await axios.post(
                 confirmationUrl,
-                { syncs: postData, reconcile: false, debug },
+                { syncs: postData, reconcile: false, debug, singleDeployMode },
                 { headers: enrichHeaders(), httpsAgent: httpsAgent() }
             );
             console.log(JSON.stringify(response.data, null, 2));
@@ -461,7 +467,7 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
 
             const confirmation = await promptly.confirm('Do you want to continue y/n?');
             if (confirmation) {
-                await deploySyncs(url, { syncs: postData, nangoYamlBody, reconcile: true, debug });
+                await deploySyncs(url, { syncs: postData, nangoYamlBody, reconcile: true, debug, singleDeployMode });
             } else {
                 console.log(chalk.red('Syncs/Actions were not deployed. Exiting'));
                 process.exit(0);
@@ -489,11 +495,14 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
         if (debug) {
             printDebug(`Auto confirm is set so deploy will start without confirmation`);
         }
-        await deploySyncs(url, { syncs: postData, nangoYamlBody, reconcile: true, debug });
+        await deploySyncs(url, { syncs: postData, nangoYamlBody, reconcile: true, debug, singleDeployMode });
     }
 };
 
-async function deploySyncs(url: string, body: { syncs: IncomingSyncConfig[]; nangoYamlBody: string | null; reconcile: boolean; debug: boolean }) {
+async function deploySyncs(
+    url: string,
+    body: { syncs: IncomingSyncConfig[]; nangoYamlBody: string | null; reconcile: boolean; debug: boolean; singleDeployMode?: boolean }
+) {
     await axios
         .post(url, body, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
         .then((response: AxiosResponse) => {
@@ -777,13 +786,13 @@ export const tsc = async (debug = false, syncName?: string): Promise<boolean> =>
                 [...config.syncs, ...config.actions].find((sync) => sync.name === path.basename(filePath, '.ts'))
             );
             if (!providerConfiguration) {
-                return false;
+                continue;
             }
             const syncConfig = [...providerConfiguration.syncs, ...providerConfiguration.actions].find((sync) => sync.name === path.basename(filePath, '.ts'));
             const type = syncConfig?.type || SyncConfigType.SYNC;
 
             if (!nangoCallsAreUsedCorrectly(filePath, type)) {
-                return false;
+                continue;
             }
             const result = compiler.compile(fs.readFileSync(filePath, 'utf8'), filePath);
             const jsFilePath = filePath.replace(/\/[^\/]*$/, `/dist/${path.basename(filePath.replace('.ts', '.js'))}`);
@@ -857,7 +866,8 @@ const nangoCallsAreUsedCorrectly = (filePath: string, type = SyncConfigType.SYNC
         'delete',
         'getConnection',
         'setLastSyncDate',
-        'getEnvironmentVariables'
+        'getEnvironmentVariables',
+        'triggerAction'
     ];
 
     const disallowedActionCalls = ['batchSend', 'batchSave', 'batchDelete', 'setLastSyncDate'];
@@ -1057,19 +1067,36 @@ export const dockerRun = async (debug = false) => {
     });
 };
 
-function packageIntegrationData(config: SimplifiedNangoIntegration[], debug: boolean, version = '', optionalSyncName = ''): IncomingSyncConfig[] | null {
+function packageIntegrationData(
+    config: SimplifiedNangoIntegration[],
+    debug: boolean,
+    version = '',
+    optionalSyncName = '',
+    optionalActionName = ''
+): IncomingSyncConfig[] | null {
     const postData: IncomingSyncConfig[] = [];
 
     for (const integration of config) {
         const { providerConfigKey } = integration;
-        let { syncs } = integration;
-        const { actions } = integration;
+        let { syncs, actions } = integration;
+
+        let flows = [...syncs, ...actions];
 
         if (optionalSyncName) {
             syncs = syncs.filter((sync) => sync.name === optionalSyncName);
+            flows = syncs;
         }
 
-        for (const sync of [...syncs, ...actions]) {
+        if (optionalActionName) {
+            actions = actions.filter((action) => action.name === optionalActionName);
+            flows = actions;
+        }
+
+        if (optionalSyncName && optionalActionName) {
+            flows = [...syncs, ...actions];
+        }
+
+        for (const sync of flows) {
             const { name: syncName, runs = '', returns: models, models: model_schema, type = SyncConfigType.SYNC } = sync;
 
             const { path: integrationFilePath, result: integrationFileResult } = localFileService.checkForIntegrationDistFile(syncName, './');

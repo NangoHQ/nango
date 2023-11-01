@@ -913,6 +913,9 @@ slack:
     token_url: https://slack.com/api/oauth.v2.access
     token_response_metadata:
         - incoming_webhook.url
+        - incoming_webhook.channel
+        - incoming_webhook.channel_id
+        - bot_user_id
     proxy:
         base_url: https://slack.com/api
         paginate:
@@ -1217,6 +1220,10 @@ zendesk:
     token_url: https://${connectionConfig.subdomain}.zendesk.com/oauth/tokens
     proxy:
         base_url: https://${connectionConfig.subdomain}.zendesk.com
+        paginate:
+            type: link
+            limit_name_in_request: per_page
+            link_path_in_response_body: next_page
 zenefits:
     auth_mode: OAUTH2
     authorization_url: https://secure.zenefits.com/oauth2/platform-authorize
