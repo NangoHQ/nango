@@ -16,6 +16,7 @@ import hmacService from './services/hmac.service.js';
 import syncRunService from './services/sync/run.service.js';
 import syncOrchestrator from './services/sync/orchestrator.service.js';
 import flowService from './services/flow.service.js';
+import slackNotificationService from './services/sync/notification/slack.service.js';
 import analytics, { AnalyticsTypes } from './utils/analytics.js';
 import logger from './logger/console.js';
 
@@ -64,6 +65,7 @@ export {
     syncOrchestrator,
     hmacService,
     flowService,
+    slackNotificationService,
     analytics,
     AnalyticsTypes,
     logger

@@ -580,6 +580,19 @@ class SlackService {
             connection_list.length
         );
     }
+
+    async closeAllOpenNotifications(environment_id: number): Promise<void> {
+        await schema()
+            .from<SlackNotification>(TABLE)
+            .where({
+                environment_id,
+                open: true
+            })
+            .update({
+                open: false,
+                updated_at: new Date()
+            });
+    }
 }
 
 export default new SlackService();
