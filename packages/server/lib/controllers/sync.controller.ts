@@ -249,13 +249,13 @@ class SyncController {
             const connectionId = req.get('Connection-Id') as string;
             const path = '/' + req.params['0'];
             if (!connectionId) {
-                res.status(400).send({ message: 'Missing connection id' });
+                res.status(400).send({ error: 'Missing connection id' });
 
                 return;
             }
 
             if (!providerConfigKey) {
-                res.status(400).send({ message: 'Missing provider config key' });
+                res.status(400).send({ error: 'Missing provider config key' });
 
                 return;
             }
@@ -297,19 +297,19 @@ class SyncController {
             const { input, action_name } = req.body;
 
             if (!action_name) {
-                res.status(400).send({ message: 'Missing action name' });
+                res.status(400).send({ error: 'Missing action name' });
 
                 return;
             }
 
             if (!connectionId) {
-                res.status(400).send({ message: 'Missing connection id' });
+                res.status(400).send({ error: 'Missing connection id' });
 
                 return;
             }
 
             if (!providerConfigKey) {
-                res.status(400).send({ message: 'Missing provider config key' });
+                res.status(400).send({ error: 'Missing provider config key' });
 
                 return;
             }

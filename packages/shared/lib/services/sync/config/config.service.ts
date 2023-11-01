@@ -9,7 +9,6 @@ import type { NangoConnection } from '../../../models/Connection.js';
 import type { Config as ProviderConfig } from '../../../models/Provider.js';
 import type { NangoConfig, SimplifiedNangoIntegration } from '../../../integrations/index.js';
 import errorManager, { ErrorSourceEnum } from '../../../utils/error.manager.js';
-import type { HTTP_VERB } from '../../../models/Generic.js';
 
 const TABLE = dbNamespace + 'sync_configs';
 
@@ -573,34 +572,3 @@ export async function getNangoConfigIdAndLocationFromId(id: number): Promise<{ n
     return result;
 }
 
-type ActionOrModel = [string, undefined?] | [undefined, string] | [null, null];
-export async function getActionOrModelByEndpoint(nangoConnection: NangoConnection, method: HTTP_VERB, path: string): Promise<ActionOrModel> {
-    const config = await configService.getProviderConfig(nangoConnection.provider_config_key, nangoConnection.environment_id);
-    if (!config) {
-        throw new Error('Provider config not found');
-    }
-    const endpointTable = dbNamespace + 'sync_endpoints';
-    const result = await schema()
-        .select(`${TABLE}.sync_name`, `${endpointTable}.model as model`, `${TABLE}.type`)
-        .from<SyncConfig>(TABLE)
-        .join(endpointTable, `${TABLE}.id`, `${endpointTable}.sync_config_id`)
-        .where({
-            [`${TABLE}.environment_id`]: nangoConnection.environment_id,
-            [`${TABLE}.nango_config_id`]: config.id as number,
-            [`${TABLE}.active`]: true,
-            [`${TABLE}.deleted`]: false,
-            [`${endpointTable}.method`]: method,
-            [`${endpointTable}.path`]: path
-        })
-        .first()
-        .orderBy(`${TABLE}.id`, 'desc');
-
-    if (!result) {
-        return [null, null];
-    }
-    if (result['type'] == SyncConfigType.ACTION) {
-        return [result['sync_name']];
-    } else {
-        return [null, result['model']];
-    }
-}
