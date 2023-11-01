@@ -6,7 +6,8 @@
     "main": "dist/server.js",
     "scripts": {
         "start": "tsc && node dist/server.js",
-        "dev": "nodemon"
+        "dev": "nodemon",
+        "nango": "cd nango-integrations && node ../../cli/dist/index.js"
     },
     "keywords": [],
     "repository": {

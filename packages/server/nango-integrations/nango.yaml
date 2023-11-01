@@ -1,0 +1,44 @@
+integrations:
+  slack:
+    flow-result-notifier-action:
+      type: action
+      returns: SlackResponse
+      inputs: SlackMessage
+      description: |
+        Post a message to a particular slack channel
+        of a flow result
+        Details: Post a message to a pre specified channel.
+        Required scope(s): chat:write, incoming-webhook, channels:join
+
+models:
+  SlackMessage:
+    content: string
+    providerConfigKey: string
+    provider: string
+    status: |
+      'closed' | 'open'
+    ts: string | undefined
+  SlackResponse:
+    ok: boolean
+    channel: string
+    ts: string
+    message:
+      bot_id: string
+      type: string
+      text: string
+      user: string
+      ts: string
+      app_id: string
+      team: string
+      bot_profile:
+        id: string
+        app_id: string
+        name: string
+        icons: object
+        deleted: boolean
+        updated: number
+        team_id: string
+      attachments: object[]
+    warning: string | undefined
+    response_metadata:
+      warnings: string[]
