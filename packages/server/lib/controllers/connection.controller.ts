@@ -29,7 +29,8 @@ import {
     environmentService,
     accountService,
     SyncClient,
-    Connection
+    Connection,
+    slackNotificationService
 } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
 
@@ -439,6 +440,13 @@ class ConnectionController {
             }
 
             await connectionService.deleteConnection(connection, integration_key, info?.environmentId as number);
+
+            const { success: sessionSuccess, response } = await getUserAccountAndEnvironmentFromSession(req);
+
+            if (sessionSuccess && response) {
+                const { environment } = response;
+                await slackNotificationService.closeAllOpenNotifications(environment.id);
+            }
 
             res.status(204).send();
         } catch (err) {
