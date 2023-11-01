@@ -1220,6 +1220,10 @@ zendesk:
     token_url: https://${connectionConfig.subdomain}.zendesk.com/oauth/tokens
     proxy:
         base_url: https://${connectionConfig.subdomain}.zendesk.com
+        paginate:
+            type: link
+            limit_name_in_request: per_page
+            link_path_in_response_body: next_page
 zenefits:
     auth_mode: OAUTH2
     authorization_url: https://secure.zenefits.com/oauth2/platform-authorize
