@@ -5,6 +5,7 @@ import { Activity, Briefcase, User } from '@geist-ui/icons';
 
 import { useStore } from '../store';
 import { isCloud } from '../utils/utils';
+import { useSignout } from '../utils/user';
 
 export enum LeftNavBarItems {
     Integrations = 0,
@@ -24,10 +25,18 @@ export default function LeftNavBar(props: LeftNavBarProps) {
     const [envs, setEnvs] = useState<{ name: string; }[]>([]);
     const [version, setVersion] = useState<string>('');
 
+    const signout = useSignout();
+
     useEffect(() => {
         fetch('/api/v1/meta')
-            .then(res => res.json())
+            .then(res => {
+                if(res.status === 401) {
+                    return signout();
+                }
+                return res.json();
+            })
             .then(data => {
+                if(!data) return;
                 setEnvs(data.environments);
                 setVersion(data.version);
             })
