@@ -177,8 +177,8 @@ We could not retrieve and/or refresh your access token due to the following erro
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Connections}>
             <div className="">
-                <div className="mx-16 pb-40">
-                    <div className="flex mt-16 mb-6 justify-between">
+                <div className="">
+                    <div className="flex mb-6 justify-between flex-wrap gap-4">
                         <Typography
                             className="max-w-3xl"
                             tooltipProps={{
