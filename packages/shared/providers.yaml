@@ -24,9 +24,11 @@ adobe:
     refresh_params:
         grant_type: refresh_token
 affinity:
-    auth_mode: BASIC
+    auth_mode: API_KEY    
     proxy:
         base_url: https://api.affinity.co
+        headers:
+            Authorization: Basic ${apiKey}
 aircall:
     auth_mode: OAUTH2
     authorization_url: https://dashboard.aircall.io/oauth/authorize
