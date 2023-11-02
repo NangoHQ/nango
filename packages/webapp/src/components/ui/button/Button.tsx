@@ -10,7 +10,8 @@ const buttonStyles = cva('disabled:pointer-events-none disabled:opacity-50 round
             secondary: 'bg-[#282828] text-white hover:bg-gray-800',
             success: 'bg-green-700 text-white hover:bg-green-500',
             danger: 'bg-red-700 text-white hover:bg-red-500',
-            zombie: 'bg-transparent text-white hover:bg-gray-700'
+            zombie: 'bg-transparent text-white hover:bg-gray-700',
+            yellow: 'bg-yellow-500 text-white hover:bg-yellow-400'
         },
         size: {
             xs: 'h-8 py-1 px-2',

@@ -98,7 +98,7 @@ export interface Connection {
 
 export interface ConnectionList {
     id: number;
-    connection_id: number;
+    connection_id: string;
     provider: string;
     created: string;
 }
@@ -121,6 +121,11 @@ export interface Sync extends Timestamps {
     last_sync_date: string;
 }
 
+export interface SyncConfig extends Timestamps {
+    name: string;
+    description?: string;
+}
+
 export interface Action extends Timestamps {
     name: string;
 }
@@ -128,7 +133,7 @@ export interface Action extends Timestamps {
 export interface Integration {
     unique_key: string;
     provider: string;
-    syncs: Sync[];
+    syncs: SyncConfig[];
     actions: Action[];
 }
 

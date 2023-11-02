@@ -1,10 +1,10 @@
 import axios, { AxiosError } from 'axios';
 import { backOff } from 'exponential-backoff';
-import { SyncType } from '../models/Sync.js';
-import type { NangoConnection } from '../models/Connection';
-import type { SyncResult, NangoSyncWebhookBody } from '../models/Sync';
-import environmentService from './environment.service.js';
-import { createActivityLogMessage } from './activity/activity.service.js';
+import { SyncType } from '../../../models/Sync.js';
+import type { NangoConnection } from '../../../models/Connection';
+import type { SyncResult, NangoSyncWebhookBody } from '../../../models/Sync';
+import environmentService from '../../environment.service.js';
+import { createActivityLogMessage } from '../../activity/activity.service.js';
 
 const RETRY_ATTEMPTS = 10;
 
@@ -29,7 +29,7 @@ class WebhookService {
         return false;
     };
 
-    async sendUpdate(
+    async send(
         nangoConnection: NangoConnection,
         syncName: string,
         model: string,

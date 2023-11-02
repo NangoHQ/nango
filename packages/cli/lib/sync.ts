@@ -105,7 +105,9 @@ export const generate = async (debug = false, inParentDirectory = false) => {
 
     const interfaceDefinitions = buildInterfaces(models, integrations, debug);
 
-    fs.writeFileSync(`${dirPrefix}/${TYPES_FILE_NAME}`, interfaceDefinitions.join('\n'));
+    if (interfaceDefinitions) {
+        fs.writeFileSync(`${dirPrefix}/${TYPES_FILE_NAME}`, interfaceDefinitions.join('\n'));
+    }
 
     if (debug) {
         printDebug(`Interfaces from the ${nangoConfigFile} file written to ${TYPES_FILE_NAME}`);
@@ -333,7 +335,9 @@ const createModelFile = async (notify = false) => {
     const configData: NangoConfig = yaml.load(configContents) as unknown as NangoConfig;
     const { models, integrations } = configData;
     const interfaceDefinitions = buildInterfaces(models, integrations);
-    fs.writeFileSync(`./${TYPES_FILE_NAME}`, interfaceDefinitions.join('\n'));
+    if (interfaceDefinitions) {
+        fs.writeFileSync(`./${TYPES_FILE_NAME}`, interfaceDefinitions.join('\n'));
+    }
 
     // insert NangoSync types to the bottom of the file
     const typesContent = fs.readFileSync(`${getNangoRootPath()}/${NangoSyncTypesFileLocation}`, 'utf8');
@@ -782,13 +786,13 @@ export const tsc = async (debug = false, syncName?: string): Promise<boolean> =>
                 [...config.syncs, ...config.actions].find((sync) => sync.name === path.basename(filePath, '.ts'))
             );
             if (!providerConfiguration) {
-                return false;
+                continue;
             }
             const syncConfig = [...providerConfiguration.syncs, ...providerConfiguration.actions].find((sync) => sync.name === path.basename(filePath, '.ts'));
             const type = syncConfig?.type || SyncConfigType.SYNC;
 
             if (!nangoCallsAreUsedCorrectly(filePath, type)) {
-                return false;
+                continue;
             }
             const result = compiler.compile(fs.readFileSync(filePath, 'utf8'), filePath);
             const jsFilePath = filePath.replace(/\/[^\/]*$/, `/dist/${path.basename(filePath.replace('.ts', '.js'))}`);
@@ -862,7 +866,8 @@ const nangoCallsAreUsedCorrectly = (filePath: string, type = SyncConfigType.SYNC
         'delete',
         'getConnection',
         'setLastSyncDate',
-        'getEnvironmentVariables'
+        'getEnvironmentVariables',
+        'triggerAction'
     ];
 
     const disallowedActionCalls = ['batchSend', 'batchSave', 'batchDelete', 'setLastSyncDate'];
