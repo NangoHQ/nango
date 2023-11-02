@@ -164,6 +164,7 @@
                     "pages": [
                         "integrations/all/accelo",
                         "integrations/all/adobe",
+                        "integrations/all/affinity",
                         "integrations/all/aircall",
                         "integrations/all/airtable",
                         "integrations/all/amazon",
