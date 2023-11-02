@@ -21,24 +21,24 @@ export interface LeftNavBarProps {
 }
 
 export default function LeftNavBar(props: LeftNavBarProps) {
-    const [envs, setEnvs] = useState<{ name: string; }[]>([]);
+    const [envs, setEnvs] = useState<{ name: string }[]>([]);
     const [version, setVersion] = useState<string>('');
 
     useEffect(() => {
         fetch('/api/v1/meta')
-            .then(res => res.json())
-            .then(data => {
+            .then((res) => res.json())
+            .then((data) => {
                 setEnvs(data.environments);
                 setVersion(data.version);
             })
-            .catch(err => {
+            .catch((err) => {
                 console.error(err);
             });
     }, []);
 
-    const env = useStore(state => state.cookieValue);
+    const env = useStore((state) => state.cookieValue);
 
-    const setCookieValue = useStore(state => state.setCookieValue);
+    const setCookieValue = useStore((state) => state.setCookieValue);
 
     const handleEnvChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const newEnv = e.target.value;
@@ -53,7 +53,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
         if (window.location.pathname.includes('connections') && window.location.pathname.split('/').length > 2) {
             window.location.href = '/connections';
         }
-    }
+    };
 
     return (
         <div>
@@ -124,7 +124,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                         </Link>
                     </div>
                 </div>
-                <div className=''>
+                <div className="">
                     {isCloud() && (
                         <div className="">
                             <ul className="text-white space-y-1 text-sm">
@@ -156,9 +156,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                     {version && (
                         <div>
                             <hr className="border-border-gray border my-1" />
-                            <span className="flex py-1 items-center text-center text-gray-500 justify-center text-sm">
-                                v{version}
-                            </span>
+                            <span className="flex py-1 items-center text-center text-gray-500 justify-center text-sm">v{version}</span>
                         </div>
                     )}
                 </div>

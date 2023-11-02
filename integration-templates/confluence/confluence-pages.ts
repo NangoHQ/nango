@@ -6,69 +6,30 @@ async function getCloudId(nango: NangoSync): Promise<string> {
         endpoint: `oauth/token/accessible-resources`,
         retries: 10 // Exponential backoff + long-running job = handles rate limits well.
     });
+
     return response.data[0].id;
 }
 
-interface ResultPage {
-    pageNumber: number;
-    results: any[];
-    nextPageEndpoint: string;
-    totalResultCount: number;
-}
-
 export default async function fetchData(nango: NangoSync) {
-    let cloudId = await getCloudId(nango);
+    let totalRecords = 0;
 
-    let resultPage: ResultPage | null = null;
-    while (true) {
-        resultPage = await getNextPage(nango, 'get', 'wiki/api/v2/pages', resultPage, 2, cloudId);
-
-        if (!resultPage) {
-            break;
+    const cloudId: string = await getCloudId(nango);
+    const proxyConfig = {
+        baseUrlOverride: `https://api.atlassian.com/ex/confluence/${cloudId}`, // The base URL is specific for user because of the cloud ID path param
+        endpoint: `/wiki/api/v2/pages`,
+        retries: 10,
+        paginate: {
+            limit: 250
         }
+    };
+    for await (const pageBatch of nango.paginate(proxyConfig)) {
+        const confluencePages = mapConfluencePages(pageBatch);
+        const batchSize: number = confluencePages.length;
+        totalRecords += batchSize;
 
-        let confluencePages = mapConfluencePages(resultPage.results);
-
+        await nango.log(`Saving batch of ${batchSize} pages (total records: ${totalRecords})`);
         await nango.batchSave(confluencePages, 'ConfluencePage');
     }
-}
-
-async function getNextPage(
-    nango: NangoSync,
-    method: 'get' | 'post',
-    endpoint: string,
-    prevResultPage: ResultPage | null,
-    pageSize = 250,
-    cloudId: string
-): Promise<ResultPage | null> {
-    if (prevResultPage && !prevResultPage.nextPageEndpoint) {
-        return null;
-    }
-
-    await nango.log(`Fetching Confluence Pages - with pageCounter = ${prevResultPage ? prevResultPage.pageNumber : 0} & pageSize = ${pageSize}`);
-
-    const res = await nango.get({
-        baseUrlOverride: `https://api.atlassian.com`, // Optional
-        endpoint: `ex/confluence/${cloudId}/${prevResultPage ? prevResultPage.nextPageEndpoint : endpoint}`,
-        method: method,
-        params: { limit: `${pageSize}`, 'body-format': 'storage' }, // Page format storage or atlas_doc_format
-        retries: 10 // Exponential backoff + long-running job = handles rate limits well.
-    });
-
-    if (!res.data) {
-        return null;
-    }
-
-    const resultPage = {
-        pageNumber: prevResultPage ? prevResultPage.pageNumber + 1 : 1,
-        results: res.data.results,
-        nextPageEndpoint: res.data['_links'].next ? res.data['_links'].next : '',
-        totalResultCount: prevResultPage ? prevResultPage.totalResultCount + res.data.results.length : res.data.results.length
-    };
-
-    await nango.log(`Saving page with ${resultPage.results.length} records (total records: ${resultPage.totalResultCount})`);
-
-    return resultPage;
 }
 
 function mapConfluencePages(results: any[]): ConfluencePage[] {

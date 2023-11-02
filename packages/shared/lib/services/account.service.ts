@@ -57,6 +57,16 @@ class AccountService {
 
         return { accountId, environmentId: environment[0].id };
     }
+
+    async getUUIDFromAccountId(accountId: number): Promise<string | null> {
+        const account = await db.knex.withSchema(db.schema()).select('uuid').from<Account>(`_nango_accounts`).where({ id: accountId });
+
+        if (account == null || account.length == 0 || account[0] == null) {
+            return null;
+        }
+
+        return account[0].uuid;
+    }
 }
 
 export default new AccountService();

@@ -71,7 +71,6 @@ export default function IntegrationCreate() {
         }
     }, [isHmacEnabled, integration?.uniqueKey, connectionId, getHmacAPI]);
 
-
     useEffect(() => {
         const getIntegrations = async () => {
             let res = await getIntegrationListAPI();

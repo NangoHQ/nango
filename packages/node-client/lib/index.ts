@@ -473,7 +473,7 @@ export class Nango {
      * =======
      */
 
-    public async triggerAction(providerConfigKey: string, connectionId: string, actionName: string, input: Record<string, unknown>): Promise<object> {
+    public async triggerAction(providerConfigKey: string, connectionId: string, actionName: string, input?: unknown): Promise<object> {
         const url = `${this.serverUrl}/action/trigger`;
 
         const headers = {
@@ -615,7 +615,9 @@ export class Nango {
 
         const headers = {
             'Content-Type': 'application/json',
-            'Accept-Encoding': 'application/json'
+            'Accept-Encoding': 'application/json',
+            'Nango-Is-Sync': this.isSync,
+            'Nango-Is-Dry-Run': this.dryRun
         };
 
         if (additionalHeader) {

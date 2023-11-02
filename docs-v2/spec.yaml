@@ -182,24 +182,18 @@ paths:
                                                 items:
                                                     type: object
                                                     properties:
-                                                        id:
-                                                            type: string
-                                                            description: The unique ID for the sync.
                                                         name:
                                                             type: string
                                                             description: The name of the sync.
-                                                        connection_id:
-                                                            type: string
-                                                            description: The name of the connection id.
                                                         created_at:
                                                             type: string
                                                             description: The creation timestamp of the sync.
                                                         updated_at:
                                                             type: string
                                                             description: The last updated timestamp of the sync.
-                                                        last_sync_date:
+                                                        description:
                                                             type: string
-                                                            description: The timestamp of the last completed sync.
+                                                            description: Description of what the sync does and details about it
                 '400':
                     description: Invalid request
                     content:

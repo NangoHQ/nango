@@ -79,7 +79,7 @@ export interface ApiKeyCredentials {
 type AuthCredentials = OAuth2Credentials | OAuth1Credentials | BasicApiCredentials | ApiKeyCredentials;
 
 export interface Metadata {
-    [key: string]: string | Record<string, string>;
+    [key: string]: string | Record<string, any>;
 }
 
 export interface Connection {
@@ -121,6 +121,11 @@ export interface Sync extends Timestamps {
     last_sync_date: string;
 }
 
+export interface SyncConfig extends Timestamps {
+    name: string;
+    description?: string;
+}
+
 export interface Action extends Timestamps {
     name: string;
 }
@@ -128,7 +133,7 @@ export interface Action extends Timestamps {
 export interface Integration {
     unique_key: string;
     provider: string;
-    syncs: Sync[];
+    syncs: SyncConfig[];
     actions: Action[];
 }
 

@@ -11,4 +11,5 @@ export interface DeployOptions extends GlobalOptions {
     staging?: boolean;
     version?: string;
     sync?: string;
+    action?: string;
 }

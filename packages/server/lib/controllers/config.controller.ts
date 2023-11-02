@@ -12,7 +12,7 @@ import {
     IntegrationWithCreds,
     Integration as ProviderIntegration,
     connectionService,
-    getSyncsByProviderConfigKey,
+    getUniqueSyncsByProviderConfig,
     getActionsByProviderConfigKey
 } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession, parseConnectionConfigParamsFromTemplate } from '../utils/utils.js';
@@ -183,7 +183,14 @@ class ConfigController {
                 client_secret = Buffer.from(client_secret, 'base64').toString('ascii');
             }
 
-            const syncs = await getSyncsByProviderConfigKey(environmentId, providerConfigKey);
+            const syncConfigs = await getUniqueSyncsByProviderConfig(environmentId, providerConfigKey);
+            const syncs = syncConfigs.map((sync) => {
+                const { metadata, ...config } = sync;
+                return {
+                    ...config,
+                    description: metadata?.description
+                };
+            });
             const actions = await getActionsByProviderConfigKey(environmentId, providerConfigKey);
 
             const configRes: ProviderIntegration | IntegrationWithCreds = includeCreds

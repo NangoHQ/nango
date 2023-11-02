@@ -24,6 +24,7 @@ import type {
     NangoIntegration,
     NangoIntegrationData,
     SimplifiedNangoIntegration,
+    Metadata,
     NangoConfigMetadata
 } from '@nangohq/shared';
 import {
@@ -67,6 +68,7 @@ interface RunArgs extends GlobalOptions {
     lastSyncDate?: string;
     useServerLastSyncDate?: boolean;
     input?: object;
+    metadata?: Metadata;
 }
 
 const exampleSyncName = 'github-issue-example';
@@ -103,7 +105,9 @@ export const generate = async (debug = false, inParentDirectory = false) => {
 
     const interfaceDefinitions = buildInterfaces(models, integrations, debug);
 
-    fs.writeFileSync(`${dirPrefix}/${TYPES_FILE_NAME}`, interfaceDefinitions.join('\n'));
+    if (interfaceDefinitions) {
+        fs.writeFileSync(`${dirPrefix}/${TYPES_FILE_NAME}`, interfaceDefinitions.join('\n'));
+    }
 
     if (debug) {
         printDebug(`Interfaces from the ${nangoConfigFile} file written to ${TYPES_FILE_NAME}`);
@@ -114,7 +118,7 @@ export const generate = async (debug = false, inParentDirectory = false) => {
     fs.writeFileSync(`${dirPrefix}/${TYPES_FILE_NAME}`, typesContent, { flag: 'a' });
 
     const config = await getConfig(dirPrefix, debug);
-    const flowConfig = `export const NangoFlows = ${JSON.stringify(config, null, 2)}; \n`;
+    const flowConfig = `export const NangoFlows = ${JSON.stringify(config, null, 2)} as const; \n`;
     fs.writeFileSync(`${dirPrefix}/${TYPES_FILE_NAME}`, flowConfig, { flag: 'a' });
 
     if (debug) {
@@ -331,14 +335,16 @@ const createModelFile = async (notify = false) => {
     const configData: NangoConfig = yaml.load(configContents) as unknown as NangoConfig;
     const { models, integrations } = configData;
     const interfaceDefinitions = buildInterfaces(models, integrations);
-    fs.writeFileSync(`./${TYPES_FILE_NAME}`, interfaceDefinitions.join('\n'));
+    if (interfaceDefinitions) {
+        fs.writeFileSync(`./${TYPES_FILE_NAME}`, interfaceDefinitions.join('\n'));
+    }
 
     // insert NangoSync types to the bottom of the file
     const typesContent = fs.readFileSync(`${getNangoRootPath()}/${NangoSyncTypesFileLocation}`, 'utf8');
     fs.writeFileSync(`./${TYPES_FILE_NAME}`, typesContent, { flag: 'a' });
 
     const config = await getConfig();
-    const flowConfig = `export const NangoFlows = ${JSON.stringify(config, null, 2)}; \n`;
+    const flowConfig = `export const NangoFlows = ${JSON.stringify(config, null, 2)} as const; \n`;
     fs.writeFileSync(`./${TYPES_FILE_NAME}`, flowConfig, { flag: 'a' });
 
     if (notify) {
@@ -393,7 +399,7 @@ async function parseSecretKey(environment: string, debug = false): Promise<void>
 }
 
 export const deploy = async (options: DeployOptions, environment: string, debug = false) => {
-    const { env, version, sync: optionalSyncName, autoConfirm } = options;
+    const { env, version, sync: optionalSyncName, action: optionalActionName, autoConfirm } = options;
     await verifyNecessaryFiles(autoConfirm);
 
     await parseSecretKey(environment, debug);
@@ -417,11 +423,13 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
         printDebug(`Environment is set to ${environment}`);
     }
 
+    const singleDeployMode = Boolean(optionalSyncName || optionalActionName);
+
     await tsc(debug);
 
     const config = await getConfig('', debug);
 
-    const postData: IncomingSyncConfig[] | null = packageIntegrationData(config, debug, optionalSyncName, version);
+    const postData: IncomingSyncConfig[] | null = packageIntegrationData(config, debug, version, optionalSyncName, optionalActionName);
 
     if (!postData) {
         return;
@@ -435,7 +443,7 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
         try {
             const response = await axios.post(
                 confirmationUrl,
-                { syncs: postData, reconcile: false, debug },
+                { syncs: postData, reconcile: false, debug, singleDeployMode },
                 { headers: enrichHeaders(), httpsAgent: httpsAgent() }
             );
             console.log(JSON.stringify(response.data, null, 2));
@@ -459,7 +467,7 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
 
             const confirmation = await promptly.confirm('Do you want to continue y/n?');
             if (confirmation) {
-                await deploySyncs(url, { syncs: postData, nangoYamlBody, reconcile: true, debug });
+                await deploySyncs(url, { syncs: postData, nangoYamlBody, reconcile: true, debug, singleDeployMode });
             } else {
                 console.log(chalk.red('Syncs/Actions were not deployed. Exiting'));
                 process.exit(0);
@@ -487,11 +495,14 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
         if (debug) {
             printDebug(`Auto confirm is set so deploy will start without confirmation`);
         }
-        await deploySyncs(url, { syncs: postData, nangoYamlBody, reconcile: true, debug });
+        await deploySyncs(url, { syncs: postData, nangoYamlBody, reconcile: true, debug, singleDeployMode });
     }
 };
 
-async function deploySyncs(url: string, body: { syncs: IncomingSyncConfig[]; nangoYamlBody: string | null; reconcile: boolean; debug: boolean }) {
+async function deploySyncs(
+    url: string,
+    body: { syncs: IncomingSyncConfig[]; nangoYamlBody: string | null; reconcile: boolean; debug: boolean; singleDeployMode?: boolean }
+) {
     await axios
         .post(url, body, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
         .then((response: AxiosResponse) => {
@@ -577,7 +588,7 @@ export const adminDeploy = async (environmentName: string, debug = false) => {
 
 export const dryRun = async (options: RunArgs, environment: string, debug = false) => {
     let syncName = '';
-    let connectionId, suppliedLastSyncDate, actionInput;
+    let connectionId, suppliedLastSyncDate, actionInput, stubbedMetadata;
 
     await parseSecretKey(environment, debug);
 
@@ -593,7 +604,7 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
     }
 
     if (Object.keys(options).length > 0) {
-        ({ sync: syncName, connectionId, lastSyncDate: suppliedLastSyncDate, input: actionInput } = options);
+        ({ sync: syncName, connectionId, lastSyncDate: suppliedLastSyncDate, input: actionInput, metadata: stubbedMetadata } = options);
     }
 
     if (!syncName) {
@@ -676,6 +687,8 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
         normalizedInput = actionInput;
     }
 
+    const logMessages: string[] = [];
+
     const syncRun = new syncRunService({
         integrationService,
         writeToDb: false,
@@ -688,7 +701,9 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
         syncName,
         syncType: SyncType.INITIAL,
         loadLocation: './',
-        debug
+        debug,
+        logMessages,
+        stubbedMetadata
     });
 
     try {
@@ -698,6 +713,36 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
         if (results) {
             console.log(JSON.stringify(results, null, 2));
         }
+
+        if (syncRun.logMessages && syncRun.logMessages.length > 0) {
+            const logMessages = syncRun.logMessages as unknown[];
+            let index = 0;
+            const batchCount = 10;
+
+            const displayBatch = () => {
+                for (let i = 0; i < batchCount && index < logMessages.length; i++, index++) {
+                    const logs = logMessages[index];
+                    console.log(chalk.yellow(JSON.stringify(logs, null, 2)));
+                }
+            };
+
+            console.log(chalk.yellow('The following log messages were generated:'));
+
+            displayBatch();
+
+            while (index < syncRun.logMessages.length) {
+                const remaining = syncRun.logMessages.length - index;
+                const confirmation = await promptly.confirm(
+                    `There are ${remaining} logs messages remaining. Would you like to see the next 10 log messages? (y/n)`
+                );
+                if (confirmation) {
+                    displayBatch();
+                } else {
+                    break;
+                }
+            }
+        }
+
         process.exit(0);
     } catch (e) {
         process.exit(1);
@@ -741,13 +786,13 @@ export const tsc = async (debug = false, syncName?: string): Promise<boolean> =>
                 [...config.syncs, ...config.actions].find((sync) => sync.name === path.basename(filePath, '.ts'))
             );
             if (!providerConfiguration) {
-                return false;
+                continue;
             }
             const syncConfig = [...providerConfiguration.syncs, ...providerConfiguration.actions].find((sync) => sync.name === path.basename(filePath, '.ts'));
             const type = syncConfig?.type || SyncConfigType.SYNC;
 
             if (!nangoCallsAreUsedCorrectly(filePath, type)) {
-                return false;
+                continue;
             }
             const result = compiler.compile(fs.readFileSync(filePath, 'utf8'), filePath);
             const jsFilePath = filePath.replace(/\/[^\/]*$/, `/dist/${path.basename(filePath.replace('.ts', '.js'))}`);
@@ -821,7 +866,8 @@ const nangoCallsAreUsedCorrectly = (filePath: string, type = SyncConfigType.SYNC
         'delete',
         'getConnection',
         'setLastSyncDate',
-        'getEnvironmentVariables'
+        'getEnvironmentVariables',
+        'triggerAction'
     ];
 
     const disallowedActionCalls = ['batchSend', 'batchSave', 'batchDelete', 'setLastSyncDate'];
@@ -1021,19 +1067,36 @@ export const dockerRun = async (debug = false) => {
     });
 };
 
-function packageIntegrationData(config: SimplifiedNangoIntegration[], debug: boolean, version = '', optionalSyncName = ''): IncomingSyncConfig[] | null {
+function packageIntegrationData(
+    config: SimplifiedNangoIntegration[],
+    debug: boolean,
+    version = '',
+    optionalSyncName = '',
+    optionalActionName = ''
+): IncomingSyncConfig[] | null {
     const postData: IncomingSyncConfig[] = [];
 
     for (const integration of config) {
         const { providerConfigKey } = integration;
-        let { syncs } = integration;
-        const { actions } = integration;
+        let { syncs, actions } = integration;
+
+        let flows = [...syncs, ...actions];
 
         if (optionalSyncName) {
             syncs = syncs.filter((sync) => sync.name === optionalSyncName);
+            flows = syncs;
         }
 
-        for (const sync of [...syncs, ...actions]) {
+        if (optionalActionName) {
+            actions = actions.filter((action) => action.name === optionalActionName);
+            flows = actions;
+        }
+
+        if (optionalSyncName && optionalActionName) {
+            flows = [...syncs, ...actions];
+        }
+
+        for (const sync of flows) {
             const { name: syncName, runs = '', returns: models, models: model_schema, type = SyncConfigType.SYNC } = sync;
 
             const { path: integrationFilePath, result: integrationFileResult } = localFileService.checkForIntegrationDistFile(syncName, './');

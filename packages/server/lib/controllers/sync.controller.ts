@@ -39,7 +39,12 @@ import {
 class SyncController {
     public async deploySync(req: Request, res: Response, next: NextFunction) {
         try {
-            const { syncs, reconcile, debug }: { syncs: IncomingSyncConfig[]; reconcile: boolean; debug: boolean } = req.body;
+            const {
+                syncs,
+                reconcile,
+                debug,
+                singleDeployMode
+            }: { syncs: IncomingSyncConfig[]; reconcile: boolean; debug: boolean; singleDeployMode?: boolean } = req.body;
             const environmentId = getEnvironmentId(res);
             let reconcileSuccess = true;
 
@@ -52,7 +57,14 @@ class SyncController {
             }
 
             if (reconcile) {
-                const success = await getAndReconcileDifferences(environmentId, syncs, reconcile, syncConfigDeployResult?.activityLogId as number, debug);
+                const success = await getAndReconcileDifferences(
+                    environmentId,
+                    syncs,
+                    reconcile,
+                    syncConfigDeployResult?.activityLogId as number,
+                    debug,
+                    singleDeployMode
+                );
                 if (!success) {
                     reconcileSuccess = false;
                 }
@@ -82,10 +94,11 @@ class SyncController {
 
     public async confirmation(req: Request, res: Response, next: NextFunction) {
         try {
-            const { syncs, debug }: { syncs: IncomingSyncConfig[]; reconcile: boolean; debug: boolean } = req.body;
+            const { syncs, debug, singleDeployMode }: { syncs: IncomingSyncConfig[]; reconcile: boolean; debug: boolean; singleDeployMode?: boolean } =
+                req.body;
             const environmentId = getEnvironmentId(res);
 
-            const result = await getAndReconcileDifferences(environmentId, syncs, false, null, debug);
+            const result = await getAndReconcileDifferences(environmentId, syncs, false, null, debug, singleDeployMode);
 
             res.send(result);
         } catch (e) {

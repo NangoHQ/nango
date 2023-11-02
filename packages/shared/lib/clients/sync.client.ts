@@ -431,26 +431,29 @@ class SyncClient {
         }
     }
 
-    async triggerAction(
+    async triggerAction<T = any>(
         connection: NangoConnection,
         actionName: string,
         input: object,
         activityLogId: number,
-        environment_id: number
-    ): Promise<ServiceResponse> {
+        environment_id: number,
+        writeLogs = true
+    ): Promise<ServiceResponse<T>> {
         const workflowId = generateActionWorkflowId(actionName, connection.connection_id as string);
 
         try {
-            await createActivityLogMessage({
-                level: 'info',
-                environment_id,
-                activity_log_id: activityLogId as number,
-                content: `Starting action workflow ${workflowId} in the task queue: ${TASK_QUEUE}`,
-                params: {
-                    input: JSON.stringify(input, null, 2)
-                },
-                timestamp: Date.now()
-            });
+            if (writeLogs) {
+                await createActivityLogMessage({
+                    level: 'info',
+                    environment_id,
+                    activity_log_id: activityLogId as number,
+                    content: `Starting action workflow ${workflowId} in the task queue: ${TASK_QUEUE}`,
+                    params: {
+                        input: JSON.stringify(input, null, 2)
+                    },
+                    timestamp: Date.now()
+                });
+            }
 
             const actionHandler = await this.client?.workflow.execute('action', {
                 taskQueue: TASK_QUEUE,
@@ -460,15 +463,14 @@ class SyncClient {
                         actionName,
                         nangoConnection: connection,
                         input,
-                        activityLogId
+                        activityLogId: writeLogs ? activityLogId : undefined
                     }
                 ]
             });
 
             const { success, error, response } = actionHandler;
-            console.log(success, error, response);
 
-            if (success === false || error) {
+            if (writeLogs && (success === false || error)) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     environment_id,
@@ -480,28 +482,35 @@ class SyncClient {
                 return { success, error, response };
             }
 
-            await createActivityLogMessageAndEnd({
-                level: 'info',
-                environment_id,
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: `The action workflow ${workflowId} was successfully run. A truncated response is: ${JSON.stringify(response, null, 2)?.slice(0, 100)}`
-            });
+            if (writeLogs) {
+                await createActivityLogMessageAndEnd({
+                    level: 'info',
+                    environment_id,
+                    activity_log_id: activityLogId as number,
+                    timestamp: Date.now(),
+                    content: `The action workflow ${workflowId} was successfully run. A truncated response is: ${JSON.stringify(response, null, 2)?.slice(
+                        0,
+                        100
+                    )}`
+                });
 
-            await updateSuccessActivityLog(activityLogId as number, true);
+                await updateSuccessActivityLog(activityLogId as number, true);
+            }
 
             return { success, error, response };
         } catch (e) {
             const errorMessage = JSON.stringify(e, ['message', 'name'], 2);
             const error = new NangoError('action_failure', { errorMessage });
 
-            await createActivityLogMessageAndEnd({
-                level: 'error',
-                environment_id,
-                activity_log_id: activityLogId as number,
-                timestamp: Date.now(),
-                content: `The action workflow ${workflowId} failed with error: ${e}`
-            });
+            if (writeLogs) {
+                await createActivityLogMessageAndEnd({
+                    level: 'error',
+                    environment_id,
+                    activity_log_id: activityLogId as number,
+                    timestamp: Date.now(),
+                    content: `The action workflow ${workflowId} failed with error: ${e}`
+                });
+            }
 
             await errorManager.report(e, {
                 source: ErrorSourceEnum.PLATFORM,

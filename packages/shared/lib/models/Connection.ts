@@ -2,8 +2,7 @@ import type { AuthCredentials, ApiKeyCredentials, BasicApiCredentials, AppCreden
 import type { TimestampsAndDeleted } from './Generic.js';
 
 export interface Metadata {
-    fieldMapping: Record<string, string>;
-    [key: string]: string | Record<string, string>;
+    [key: string]: string | Record<string, any>;
 }
 
 export interface BaseConnection extends TimestampsAndDeleted {

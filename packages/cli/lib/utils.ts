@@ -383,7 +383,7 @@ export function getFieldType(rawField: string | NangoModel, debug = false): stri
     }
 }
 
-export function buildInterfaces(models: NangoModel, integrations: NangoIntegration, debug = false): (string | undefined)[] {
+export function buildInterfaces(models: NangoModel, integrations: NangoIntegration, debug = false): (string | undefined)[] | null {
     const returnedModels = Object.keys(integrations).reduce((acc, providerConfigKey) => {
         const syncObject = integrations[providerConfigKey] as unknown as { [key: string]: NangoIntegration };
         const syncNames = Object.keys(syncObject);
@@ -401,6 +401,10 @@ export function buildInterfaces(models: NangoModel, integrations: NangoIntegrati
         }
         return acc;
     }, [] as string[]);
+
+    if (!models) {
+        return null;
+    }
 
     const interfaceDefinitions = Object.keys(models).map((modelName: string) => {
         const fields = models[modelName] as NangoModel;

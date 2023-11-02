@@ -11,7 +11,8 @@ import { formatDataRecords } from './data/records.service.js';
 import { upsert } from './data/data.service.js';
 import { getDeletedKeys, takeSnapshot, clearOldRecords, syncUpdateAtForDeletedRecords } from './data/delete.service.js';
 import environmentService from '../environment.service.js';
-import webhookService from '../webhook.service.js';
+import slackNotificationService from './notification/slack.service.js';
+import webhookService from './notification/webhook.service.js';
 import { NangoSync } from '../../sdk/sync.js';
 import { isCloud, getApiUrl, JAVASCRIPT_PRIMITIVES } from '../../utils/utils.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
@@ -21,6 +22,7 @@ import type { NangoIntegrationData, NangoIntegration } from '../../integrations/
 import type { UpsertResponse, UpsertSummary } from '../../models/Data.js';
 import { LogActionEnum } from '../../models/Activity.js';
 import type { Environment } from '../../models/Environment';
+import type { Metadata } from '../../models/Connection';
 
 interface SyncRunConfig {
     integrationService: IntegrationServiceInterface;
@@ -38,6 +40,9 @@ interface SyncRunConfig {
     loadLocation?: string;
     debug?: boolean;
     input?: object;
+
+    logMessages?: unknown[] | undefined;
+    stubbedMetadata?: Metadata | undefined;
 }
 
 export default class SyncRun {
@@ -55,6 +60,9 @@ export default class SyncRun {
     loadLocation?: string;
     debug?: boolean;
     input?: object;
+
+    logMessages?: unknown[] | undefined = [];
+    stubbedMetadata?: Metadata | undefined = {};
 
     constructor(config: SyncRunConfig) {
         this.integrationService = config.integrationService;
@@ -90,6 +98,14 @@ export default class SyncRun {
 
         if (config.provider) {
             this.provider = config.provider;
+        }
+
+        if (config.logMessages) {
+            this.logMessages = config.logMessages;
+        }
+
+        if (config.stubbedMetadata) {
+            this.stubbedMetadata = config.stubbedMetadata;
         }
     }
 
@@ -239,7 +255,9 @@ export default class SyncRun {
                 lastSyncDate: lastSyncDate as Date,
                 dryRun: !this.writeToDb,
                 attributes: syncData.attributes,
-                track_deletes: trackDeletes as boolean
+                track_deletes: trackDeletes as boolean,
+                logMessages: this.logMessages,
+                stubbedMetadata: this.stubbedMetadata
             });
 
             if (this.debug) {
@@ -317,13 +335,22 @@ export default class SyncRun {
                         content
                     });
 
+                    await slackNotificationService.removeFailingConnection(
+                        this.nangoConnection,
+                        this.syncName,
+                        this.syncType,
+                        this.activityLogId as number,
+                        this.nangoConnection.environment_id,
+                        this.provider as string
+                    );
+
                     return { success: true, error: null, response: userDefinedResults };
                 }
 
                 // means a void response from the sync script which is expected
                 // and means that they're using batchSave or batchDelete
                 if (userDefinedResults === undefined) {
-                    await this.finishSync(models, syncStartDate, syncData.version as string, trackDeletes);
+                    await this.finishSync(models, syncStartDate, syncData.version as string, totalRunTime, trackDeletes);
 
                     return { success: true, error: null, response: true };
                 }
@@ -364,6 +391,7 @@ export default class SyncRun {
                                     models.length,
                                     syncStartDate,
                                     syncData.version as string,
+                                    totalRunTime,
                                     trackDeletes
                                 );
                             }
@@ -397,7 +425,15 @@ export default class SyncRun {
                                 if (upsertResult.success) {
                                     const { summary } = upsertResult;
 
-                                    await this.reportResults(model, summary as UpsertSummary, i, models.length, syncStartDate, syncData.version as string);
+                                    await this.reportResults(
+                                        model,
+                                        summary as UpsertSummary,
+                                        i,
+                                        models.length,
+                                        syncStartDate,
+                                        syncData.version as string,
+                                        totalRunTime
+                                    );
                                 }
 
                                 if (!upsertResult.success) {
@@ -433,7 +469,7 @@ export default class SyncRun {
         return { success: true, error: null, response: result };
     }
 
-    async finishSync(models: string[], syncStartDate: Date, version: string, trackDeletes?: boolean): Promise<void> {
+    async finishSync(models: string[], syncStartDate: Date, version: string, totalRunTime: number, trackDeletes?: boolean): Promise<void> {
         let i = 0;
         for (const model of models) {
             if (trackDeletes) {
@@ -452,6 +488,7 @@ export default class SyncRun {
                 models.length,
                 syncStartDate,
                 version,
+                totalRunTime,
                 trackDeletes
             );
             i++;
@@ -465,6 +502,7 @@ export default class SyncRun {
         numberOfModels: number,
         syncStartDate: Date,
         version: string,
+        totalRunTime: number,
         trackDeletes?: boolean
     ): Promise<void> {
         if (!this.writeToDb || !this.activityLogId || !this.syncJobId) {
@@ -481,6 +519,14 @@ export default class SyncRun {
             // then don't override it
             const override = false;
             await setLastSyncDate(this.syncId as string, syncStartDate, override);
+            await slackNotificationService.removeFailingConnection(
+                this.nangoConnection,
+                this.syncName,
+                this.syncType,
+                this.activityLogId as number,
+                this.nangoConnection.environment_id,
+                this.provider as string
+            );
         }
 
         if (trackDeletes) {
@@ -541,7 +587,7 @@ export default class SyncRun {
             deleted
         };
 
-        await webhookService.sendUpdate(
+        await webhookService.send(
             this.nangoConnection,
             this.syncName,
             model,
@@ -585,6 +631,7 @@ export default class SyncRun {
                 syncId: this.syncId as string,
                 syncJobId: String(this.syncJobId),
                 syncType: this.syncType,
+                totalRunTime: `${totalRunTime} seconds`,
                 debug: String(this.debug)
             },
             `syncId:${this.syncId}`
@@ -592,7 +639,20 @@ export default class SyncRun {
     }
 
     async reportFailureForResults(content: string) {
-        if (!this.writeToDb || !this.activityLogId || !this.syncJobId) {
+        if (!this.writeToDb) {
+            return;
+        }
+
+        await slackNotificationService.reportFailure(
+            this.nangoConnection,
+            this.syncName,
+            this.syncType,
+            this.activityLogId as number,
+            this.nangoConnection.environment_id,
+            this.provider as string
+        );
+
+        if (!this.activityLogId || !this.syncJobId) {
             console.error(content);
             return;
         }
