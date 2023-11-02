@@ -98,7 +98,7 @@ export interface Connection {
 
 export interface ConnectionList {
     id: number;
-    connection_id: number;
+    connection_id: string;
     provider: string;
     created: string;
 }
