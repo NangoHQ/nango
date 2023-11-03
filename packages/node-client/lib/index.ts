@@ -138,26 +138,26 @@ export class Nango {
      * =======
      */
 
-    public async listIntegrations(): Promise<Pick<Integration, 'unique_key' | 'provider'>[]> {
+    public async listIntegrations(): Promise<{ config: Pick<Integration, 'unique_key' | 'provider'>[] }> {
         const url = `${this.serverUrl}/config`;
         const response = await axios.get(url, { headers: this.enrichHeaders({}) });
 
         return response.data;
     }
 
-    public async getIntegration(providerConfigKey: string, includeIntegrationCredetials = false): Promise<Integration | IntegrationWithCreds> {
+    public async getIntegration(providerConfigKey: string, includeIntegrationCredetials = false): Promise<{ config: Integration | IntegrationWithCreds }> {
         const url = `${this.serverUrl}/config/${providerConfigKey}`;
         const response = await axios.get(url, { headers: this.enrichHeaders({}), params: { include_creds: includeIntegrationCredetials } });
         return response.data;
     }
 
-    public async createIntegration(provider: string, providerConfigKey: string, credentials?: Record<string, string>): Promise<Integration> {
+    public async createIntegration(provider: string, providerConfigKey: string, credentials?: Record<string, string>): Promise<{ config: Integration }> {
         const url = `${this.serverUrl}/config`;
         const response = await axios.post(url, { provider, provider_config_key: providerConfigKey, ...credentials }, { headers: this.enrichHeaders({}) });
         return response.data;
     }
 
-    public async updateIntegration(provider: string, providerConfigKey: string, credentials?: Record<string, string>): Promise<Integration> {
+    public async updateIntegration(provider: string, providerConfigKey: string, credentials?: Record<string, string>): Promise<{ config: Integration }> {
         const url = `${this.serverUrl}/config`;
         const response = await axios.put(url, { provider, provider_config_key: providerConfigKey, ...credentials }, { headers: this.enrichHeaders({}) });
         return response.data;

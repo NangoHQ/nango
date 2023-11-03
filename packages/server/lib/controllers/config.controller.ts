@@ -309,7 +309,7 @@ class ConfigController {
 
             if (Array.isArray(result) && result.length === 1 && result[0] != null && 'id' in result[0]) {
                 analytics.track(AnalyticsTypes.CONFIG_CREATED, accountId, { provider: config.provider });
-                res.status(200).send();
+                res.status(200).send({ config });
             } else {
                 throw new NangoError('provider_config_creation_failure');
             }
@@ -377,7 +377,7 @@ class ConfigController {
             }
 
             await configService.editProviderConfig(newConfig);
-            res.status(200).send();
+            res.status(200).send({ config: newConfig });
         } catch (err) {
             next(err);
         }
