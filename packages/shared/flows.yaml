@@ -109,7 +109,7 @@ integrations:
       runs: every day
       auto_start: false
       returns:
-        - GithubIssue
+        - Issue
       description: |
         Fetches the Github issues but up to a maximum of 15 for demo
         purposes.
@@ -128,6 +128,9 @@ integrations:
     github-write-file-action:
       type: action
     models:
+      Issue:
+        id: integer
+        __extends: GithubIssue
       GithubIssue:
         id: integer
         owner: string

@@ -5,7 +5,6 @@ exports.up = async function (knex, _) {
         table.increments('id').primary();
         table.integer('user_id').unsigned().references('id').inTable(`nango._nango_users`).index();
         table.integer('progress').index();
-        table.boolean('sync_data_ready');
         table.boolean('complete');
         table.timestamps(true, true);
     });

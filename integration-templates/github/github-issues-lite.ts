@@ -1,4 +1,4 @@
-import type { NangoSync, GithubIssue } from './models';
+import type { NangoSync, Issue } from './models';
 
 export default async function fetchData(nango: NangoSync) {
     const MAX_ISSUES = 15;
@@ -19,7 +19,7 @@ export default async function fetchData(nango: NangoSync) {
 
         issues = issues.filter((issue: any) => !('pull_request' in issue));
 
-        const mappedIssues: GithubIssue[] = issues.map((issue: any) => ({
+        const mappedIssues: Issue[] = issues.map((issue: any) => ({
             id: issue.id,
             owner: repo.owner.login,
             repo: repo.name,
@@ -34,7 +34,7 @@ export default async function fetchData(nango: NangoSync) {
         }));
 
         if (mappedIssues.length > 0) {
-            await nango.batchSave(mappedIssues, 'GithubIssue');
+            await nango.batchSave(mappedIssues, 'Issue');
             await nango.log(`Sent ${mappedIssues.length} issues from ${repo.owner.login}/${repo.name}`);
         }
     }

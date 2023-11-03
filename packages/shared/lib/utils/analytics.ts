@@ -19,6 +19,11 @@ export enum AnalyticsTypes {
     CONNECTION_INSERTED = 'server:connection_inserted',
     CONNECTION_LIST_FETCHED = 'server:connection_list_fetched',
     CONNECTION_UPDATED = 'server:connection_updated',
+    ONBOARDING_0 = 'onboarding:step_1_authorize',
+    ONBOARDING_1 = 'onboarding:step_2_sync',
+    ONBOARDING_2 = 'onboarding:step_3_receive_webhooks',
+    ONBOARDING_3 = 'onboarding:step_4_action_writeback',
+    ONBOARDING_4 = 'onboarding:step_5_ship_first_integration',
     PRE_API_KEY_AUTH = 'server:pre_api_key_auth',
     PRE_APP_AUTH = 'server:pre_appauth',
     PRE_BASIC_API_KEY_AUTH = 'server:pre_basic_api_key_auth',
@@ -30,8 +35,7 @@ export enum AnalyticsTypes {
     SYNC_UNPAUSE = 'sync:command_unpause',
     UNAUTH_CONNECTION_INSERTED = 'server:unauth_connection_inserted',
     UNAUTH_CONNECTION_UPDATED = 'server:unauth_connection_updated',
-    WEB_CONNECION_CREATED = 'web:connection_created',
-    WEB_DEMO_CONNECTION_CREATED = 'web:demo_connection_created'
+    WEB_CONNECION_CREATED = 'web:connection_created'
 }
 
 class Analytics {

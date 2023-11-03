@@ -494,7 +494,9 @@ class SyncController {
 
             const syncClient = await SyncClient.getInstance();
             await syncClient?.runSyncCommand(schedule_id, sync_id, command, activityLogId as number, environment.id);
-            await updateScheduleStatus(schedule_id, command, activityLogId as number, environment.id);
+            if (command !== SyncCommand.RUN) {
+                await updateScheduleStatus(schedule_id, command, activityLogId as number, environment.id);
+            }
 
             await createActivityLogMessageAndEnd({
                 level: 'info',
