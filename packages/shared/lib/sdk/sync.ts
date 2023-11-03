@@ -344,7 +344,13 @@ export class NangoAction {
 
     public async *paginate<T = any>(config: ProxyConfiguration): AsyncGenerator<T[], undefined, void> {
         const providerConfigKey: string = this.providerConfigKey as string;
-        const template = configService.getTemplate(providerConfigKey);
+        const response = await this.nango.getIntegration(providerConfigKey);
+
+        if (!response || !response.config || !response.config.provider) {
+            throw Error(`There was no provider found for the provider config key: ${providerConfigKey}`);
+        }
+
+        const template = configService.getTemplate(response.config.provider);
         const templatePaginationConfig: Pagination | undefined = template.proxy?.paginate;
 
         if (!templatePaginationConfig && (!config.paginate || !config.paginate.type)) {

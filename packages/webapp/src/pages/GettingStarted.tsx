@@ -76,7 +76,8 @@ export default function GettingStarted() {
                 setSecretKey(account.secret_key);
                 setHostUrl(account.host || baseUrl());
                 const email = account.email;
-                const strippedEmail = email.includes('@') ? email.split('@')[0] : email;
+                let strippedEmail = email.includes('@') ? email.split('@')[0] : email;
+                strippedEmail = strippedEmail.replace(/[^a-zA-Z0-9]/g, '_');
                 setConnectionId(strippedEmail);
                 setSyncSnippet(nodeSnippet(model, account.secret_key, strippedEmail, providerConfigKey));
             }
