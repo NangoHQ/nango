@@ -12,6 +12,7 @@ import Info from '../components/ui/Info'
 import CopyButton from '../components/ui/button/CopyButton';
 import { useGetProjectInfoAPI } from '../utils/api';
 import Spinner from '../components/ui/Spinner';
+import { nodeSnippet, curlSnippet, pythonSnippet, phpSnippet, goSnippet, javaSnippet } from '../utils/language-snippets';
 
 import { useStore } from '../store';
 
@@ -27,7 +28,10 @@ enum Steps {
 enum Language {
     Node = 0,
     cURL = 1,
-    Other = 2
+    Python = 2,
+    PHP = 3,
+    Go = 4,
+    Java = 5
 }
 
 export default function GettingStarted() {
@@ -47,55 +51,12 @@ export default function GettingStarted() {
     const { setVisible, bindings } = useModal()
 
     const model = 'Issue';
+    const providerConfigKey = 'demo-github-integration';
 
     const env = useStore(state => state.cookieValue);
 
     const getProjectInfoAPI = useGetProjectInfoAPI()
 
-    const nodeSyncSnippet = (setConnectionId?: string, setSecretKey?: string) => {
-        const connection_id = setConnectionId || connectionId;
-        const secret_key = setSecretKey || secretKey;
-        return `import Nango from '@nangohq/node';
-const nango = new Nango({ secretKey: '${secret_key}' });
-
-const issues = await nango.getRecords({
-    proivderConfigKey: '${providerConfigKey}',
-    connectionId: '${connection_id}',
-    model: '${model}'
-});
-
-console.log(issues);
-`};
-
-    const curlSyncSnippet = () => {
-        return `
-    curl --request GET \\
-    --url https://api.nango.dev/sync/records?model=${model} \\
-    --header 'Authorization: Bearer ${secretKey}' \\
-    --header 'Connection-Id: ${connectionId}' \\
-    --header 'Provider-Config-Key: ${providerConfigKey}'
-        `;
-    };
-
-    const otherLanguageSnippet = () => {
-        return`
-        import requests
-
-url = "https://api.nango.dev/sync/records"
-
-querystring = {"model":"${model}"}
-
-headers = {
-    "Authorization": "Bearer ${secretKey}",
-    "Connection-Id": "${connectionId}",
-    "Provider-Config-Key": "${providerConfigKey}",
-}
-
-response = requests.request("GET", url, headers=headers, params=querystring)
-
-print(response.text)
-        `
-    };
 
     useEffect(() => {
         setLoaded(false);
@@ -117,7 +78,7 @@ print(response.text)
                 const email = account.email;
                 const strippedEmail = email.includes('@') ? email.split('@')[0] : email;
                 setConnectionId(strippedEmail);
-                setSyncSnippet(nodeSyncSnippet(strippedEmail, account.secret_key));
+                setSyncSnippet(nodeSnippet(model, account.secret_key, strippedEmail, providerConfigKey));
             }
         };
 
@@ -161,8 +122,6 @@ print(response.text)
             getProgress();
         }
     }, [loaded, setLoaded, connectionId]);
-
-    const providerConfigKey = 'demo-github-integration';
 
     const authorizeSnippet = () => {
         return `import Nango from '@nangohq/frontend';
@@ -420,7 +379,7 @@ nango.auth('${providerConfigKey}', '${connectionId}')
                                                 className={`cursor-default ${language === Language.Node ? 'pointer-events-none' : 'cursor-pointer'}`}
                                                 onClick={() => {
                                                   if (language !== Language.Node) {
-                                                    setSyncSnippet(nodeSyncSnippet());
+                                                    setSyncSnippet(nodeSnippet(model, secretKey, connectionId, providerConfigKey));
                                                     setLanguage(Language.Node);
                                                   }
                                                 }}
@@ -433,7 +392,7 @@ nango.auth('${providerConfigKey}', '${connectionId}')
                                                 className={`cursor-default ${language === Language.cURL ? 'pointer-events-none' : 'cursor-pointer'}`}
                                                 onClick={() => {
                                                   if (language !== Language.cURL) {
-                                                    setSyncSnippet(curlSyncSnippet());
+                                                    setSyncSnippet(curlSnippet(model, secretKey, connectionId, providerConfigKey));
                                                     setLanguage(Language.cURL);
                                                   }
                                                 }}
@@ -442,16 +401,55 @@ nango.auth('${providerConfigKey}', '${connectionId}')
                                             </Button>
                                             <Button
                                                 type="button"
-                                                variant={`${language === Language.Other ? 'black' : 'zombie'}`}
-                                                className={`cursor-default ${language === Language.Other ? 'pointer-events-none' : 'cursor-pointer'}`}
+                                                variant={`${language === Language.Python ? 'black' : 'zombie'}`}
+                                                className={`cursor-default ${language === Language.Python ? 'pointer-events-none' : 'cursor-pointer'}`}
                                                 onClick={() => {
-                                                  if (language !== Language.Other) {
-                                                    setSyncSnippet(otherLanguageSnippet());
-                                                    setLanguage(Language.Other);
+                                                  if (language !== Language.Python) {
+                                                    setSyncSnippet(pythonSnippet(model, secretKey, connectionId, providerConfigKey));
+                                                    setLanguage(Language.Python);
                                                   }
                                                 }}
                                             >
                                                 Python
+                                            </Button>
+                                            <Button
+                                                type="button"
+                                                variant={`${language === Language.PHP ? 'black' : 'zombie'}`}
+                                                className={`cursor-default ${language === Language.PHP ? 'pointer-events-none' : 'cursor-pointer'}`}
+                                                onClick={() => {
+                                                  if (language !== Language.PHP) {
+                                                    setSyncSnippet(phpSnippet(model, secretKey, connectionId, providerConfigKey));
+                                                    setLanguage(Language.PHP);
+                                                  }
+                                                }}
+                                            >
+                                                PHP
+                                            </Button>
+                                            <Button
+                                                type="button"
+                                                variant={`${language === Language.Go ? 'black' : 'zombie'}`}
+                                                className={`cursor-default ${language === Language.Go ? 'pointer-events-none' : 'cursor-pointer'}`}
+                                                onClick={() => {
+                                                  if (language !== Language.Go) {
+                                                    setSyncSnippet(goSnippet(model, secretKey, connectionId, providerConfigKey));
+                                                    setLanguage(Language.Go);
+                                                  }
+                                                }}
+                                            >
+                                                Go
+                                            </Button>
+                                            <Button
+                                                type="button"
+                                                variant={`${language === Language.Java ? 'black' : 'zombie'}`}
+                                                className={`cursor-default ${language === Language.Java ? 'pointer-events-none' : 'cursor-pointer'}`}
+                                                onClick={() => {
+                                                  if (language !== Language.Java) {
+                                                    setSyncSnippet(javaSnippet(model, secretKey, connectionId, providerConfigKey));
+                                                    setLanguage(Language.Java);
+                                                  }
+                                                }}
+                                            >
+                                                Java
                                             </Button>
                                         </div>
                                         <CopyButton dark text={syncSnippet} />
