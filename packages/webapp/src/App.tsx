@@ -23,8 +23,13 @@ import UserSettings from './pages/UserSettings';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { isCloud } from './utils/utils';
+import { useStore } from './store';
 
 const App = () => {
+    const env = useStore(state => state.cookieValue);
+
+    const landingPage = env === 'dev' ? '/getting-started' : '/integrations';
+
     return (
         <MantineProvider
             theme={{
@@ -43,7 +48,7 @@ const App = () => {
             }}
         >
             <Routes>
-                <Route path="/" element={<Navigate to="/integrations" replace />} />
+                <Route path="/" element={<Navigate to={landingPage} replace />} />
                 <Route path="/getting-started" element={<PrivateRoute />}>
                     <Route path="/getting-started" element={<GettingStarted />} />
                 </Route>
