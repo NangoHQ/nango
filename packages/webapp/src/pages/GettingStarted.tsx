@@ -52,10 +52,11 @@ export default function GettingStarted() {
 
     const getProjectInfoAPI = useGetProjectInfoAPI()
 
-    const nodeSyncSnippet = (setConnectionId?: string) => {
+    const nodeSyncSnippet = (setConnectionId?: string, setSecretKey?: string) => {
         const connection_id = setConnectionId || connectionId;
+        const secret_key = setSecretKey || secretKey;
         return `import Nango from '@nangohq/node';
-const nango = new Nango({ secretKey: '${secretKey}' });
+const nango = new Nango({ secretKey: '${secret_key}' });
 
 const issues = await nango.getRecords({
     proivderConfigKey: '${providerConfigKey}',
@@ -116,7 +117,7 @@ print(response.text)
                 const email = account.email;
                 const strippedEmail = email.includes('@') ? email.split('@')[0] : email;
                 setConnectionId(strippedEmail);
-                setSyncSnippet(nodeSyncSnippet(strippedEmail));
+                setSyncSnippet(nodeSyncSnippet(strippedEmail, account.secret_key));
             }
         };
 
@@ -143,14 +144,15 @@ print(response.text)
             });
 
             if (res.status === 200) {
-                const { progress, id, records } = await res.json();
+                const { progress, id, records: fetchedRecords } = await res.json();
                 setStep(progress || 0);
                 if (id) {
                     setOnboardingId(id);
                 }
 
-                if (records) {
-                    setRecords(records);
+                if (fetchedRecords) {
+                    setRecords(fetchedRecords);
+                    setSyncStillRunning(false);
                 }
             }
         };
@@ -249,6 +251,31 @@ nango.auth('${providerConfigKey}', '${connectionId}')
         setVisible(true);
     }
 
+    const fetchRecords = async () => {
+        const params = {
+            model
+        };
+
+        const res = await fetch(`/sync/records?${new URLSearchParams(params).toString()}`, {
+            method: 'GET',
+            headers: {
+                    'Authorization': `Bearer ${secretKey}`,
+                    'Content-Type': 'application/json',
+                    'Provider-Config-Key': providerConfigKey,
+                    'Connection-Id': connectionId
+                }
+            });
+
+            if (res.status !== 200) {
+                const { message } = await res.json();
+                setServerErrorMessage(message);
+                return;
+            }
+
+            const fetchedRecords = await res.json();
+            setRecords(fetchedRecords);
+    };
+
     let pollingInterval: NodeJS.Timer | null = null;
 
     const startPolling = () => {
@@ -271,6 +298,7 @@ nango.auth('${providerConfigKey}', '${connectionId}')
 
             if (data.jobStatus === 'SUCCESS') {
                 clearInterval(pollingInterval as unknown as number);
+                await fetchRecords();
                 pollingInterval = null;
                 setSyncStillRunning(false);
             }
@@ -279,29 +307,9 @@ nango.auth('${providerConfigKey}', '${connectionId}')
     };
 
     const onGetRecords = async () => {
-        startPolling();
-        const params = {
-            model
-        };
-
-        const res = await fetch(`/sync/records?${new URLSearchParams(params).toString()}`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${secretKey}`,
-                'Content-Type': 'application/json',
-                'Provider-Config-Key': providerConfigKey,
-                'Connection-Id': connectionId
-            }
-        });
-
-        if (res.status !== 200) {
-            const { message } = await res.json();
-            setServerErrorMessage(message);
-            return;
+        if (records.length === 0) {
+            startPolling();
         }
-
-        const records = await res.json();
-        setRecords(records);
         setStep(Steps.Receive);
         await updateProgress(Steps.Receive);
     };
@@ -464,7 +472,7 @@ nango.auth('${providerConfigKey}', '${connectionId}')
                                         ) : (
                                             <>
                                                 {syncStillRunning ? (
-                                                    <div className="flex items-center"><Spinner size={1} /><span className="ml-2">The sync is still running</span></div>
+                                                    <div className="flex items-center"><Spinner size={1} /><span className="ml-2">Please wait while "Issues" are being fetched</span></div>
                                                 ) : (
                                                     <>
                                                         <span className="mx-2 text-[#34A853] mr-4 mt-2">
