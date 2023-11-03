@@ -299,8 +299,7 @@ export class Nango {
         const url = `${this.serverUrl}/connection/${connectionId}?provider_config_key=${providerConfigKey}`;
 
         const headers = {
-            'Content-Type': 'application/json',
-            'Accept-Encoding': 'application/json'
+            'Content-Type': 'application/json'
         };
 
         return axios.delete(url, { headers: this.enrichHeaders(headers) });
@@ -453,8 +452,7 @@ export class Nango {
         const url = `${this.serverUrl}/environment-variables`;
 
         const headers = {
-            'Content-Type': 'application/json',
-            'Accept-Encoding': 'application/json'
+            'Content-Type': 'application/json'
         };
 
         const response = await axios.get(url, { headers: this.enrichHeaders(headers) });
@@ -615,7 +613,6 @@ export class Nango {
 
         const headers = {
             'Content-Type': 'application/json',
-            'Accept-Encoding': 'application/json',
             'Nango-Is-Sync': this.isSync,
             'Nango-Is-Dry-Run': this.dryRun
         };
@@ -640,8 +637,7 @@ export class Nango {
         }
 
         const headers = {
-            'Content-Type': 'application/json',
-            'Accept-Encoding': 'application/json'
+            'Content-Type': 'application/json'
         };
 
         return axios.get(url, { headers: this.enrichHeaders(headers) });

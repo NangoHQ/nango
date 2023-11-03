@@ -410,7 +410,7 @@ export default function FlowCreate() {
                                 )}
                                 <Button type="button" variant="secondary" onClick={downloadFlow}>Download</Button>
                                 {isDownloading && (
-                                    <span className="ml-4"><Spinner /></span>
+                                    <span className="ml-4"><Spinner size={2} /></span>
                                 )}
                                 </div>
                                 {!canAdd && (

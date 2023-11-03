@@ -30,7 +30,8 @@ import {
     IncomingSyncConfig,
     Sync,
     SyncCommand,
-    CommandToActivityLog
+    CommandToActivityLog,
+    ReportedSyncJobStatus
 } from '../../models/Sync.js';
 
 interface CreateSyncArgs {
@@ -201,7 +202,10 @@ export class Orchestrator {
 
                 const syncClient = await SyncClient.getInstance();
                 await syncClient?.runSyncCommand(schedule?.schedule_id as string, sync?.id as string, command, activityLogId as number, environmentId);
-                await updateScheduleStatus(schedule?.schedule_id as string, command, activityLogId as number, environmentId);
+                // if they're triggering a sync that shouldn't change the schedule status
+                if (command !== SyncCommand.RUN) {
+                    await updateScheduleStatus(schedule?.schedule_id as string, command, activityLogId as number, environmentId);
+                }
             }
             await createActivityLogMessageAndEnd({
                 level: 'info',
@@ -224,7 +228,9 @@ export class Orchestrator {
                 const schedule = await getSchedule(sync?.id as string);
                 const syncClient = await SyncClient.getInstance();
                 await syncClient?.runSyncCommand(schedule?.schedule_id as string, sync?.id as string, command, activityLogId as number, environmentId);
-                await updateScheduleStatus(schedule?.schedule_id as string, command, activityLogId as number, environmentId);
+                if (command !== SyncCommand.RUN) {
+                    await updateScheduleStatus(schedule?.schedule_id as string, command, activityLogId as number, environmentId);
+                }
             }
             await createActivityLogMessageAndEnd({
                 level: 'info',
@@ -238,8 +244,14 @@ export class Orchestrator {
         await updateSuccessActivityLog(activityLogId as number, true);
     }
 
-    public async getSyncStatus(environmentId: number, providerConfigKey: string, syncNames: string[], connectionId?: string): Promise<any> {
-        const syncsWithStatus = [];
+    public async getSyncStatus(
+        environmentId: number,
+        providerConfigKey: string,
+        syncNames: string[],
+        connectionId?: string,
+        includeJobStatus = false
+    ): Promise<ReportedSyncJobStatus[] | void> {
+        const syncsWithStatus: ReportedSyncJobStatus[] = [];
 
         if (connectionId) {
             const { success, error, response: connection } = await connectionService.getConnection(connectionId as string, providerConfigKey, environmentId);
@@ -255,12 +267,15 @@ export class Orchestrator {
                 }
                 const latestJob = await getLatestSyncJob(sync?.id as string);
                 const schedule = await getSchedule(sync?.id as string);
-                const status = {
-                    id: sync?.id,
-                    name: sync?.name,
+                const status: ReportedSyncJobStatus = {
+                    id: sync?.id as string,
+                    name: sync?.name as string,
                     status: this.classifySyncStatus(latestJob?.status as SyncStatus, schedule?.status as ScheduleStatus),
                     latestResult: latestJob?.result
-                };
+                } as ReportedSyncJobStatus;
+                if (includeJobStatus) {
+                    status['jobStatus'] = latestJob?.status as SyncStatus;
+                }
                 syncsWithStatus.push(status);
             }
         } else {
@@ -276,12 +291,15 @@ export class Orchestrator {
             for (const sync of syncs) {
                 const schedule = await getSchedule(sync?.id as string);
                 const latestJob = await getLatestSyncJob(sync?.id as string);
-                const status = {
+                const status: ReportedSyncJobStatus = {
                     id: sync?.id,
                     name: sync?.name,
                     status: this.classifySyncStatus(latestJob?.status as SyncStatus, schedule?.status as ScheduleStatus),
                     latestResult: latestJob?.result
-                };
+                } as ReportedSyncJobStatus;
+                if (includeJobStatus) {
+                    status['jobStatus'] = latestJob?.status as SyncStatus;
+                }
                 syncsWithStatus.push(status);
             }
         }
@@ -290,7 +308,7 @@ export class Orchestrator {
     }
 
     public classifySyncStatus(jobStatus: SyncStatus, scheduleStatus: ScheduleStatus): SyncStatus {
-        if (scheduleStatus === ScheduleStatus.PAUSED) {
+        if (scheduleStatus === ScheduleStatus.PAUSED && jobStatus !== SyncStatus.RUNNING) {
             return SyncStatus.PAUSED;
         } else if (scheduleStatus === ScheduleStatus.RUNNING && jobStatus === null) {
             return SyncStatus.ERROR;

@@ -476,7 +476,7 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                     </li>
                                                 </Tooltip>
                                                 <li className="w-28">
-                                                    {sync.schedule_status === 'PAUSED' && (
+                                                    {sync.schedule_status === 'PAUSED' && sync.latest_sync?.status !== 'RUNNING' && (
                                                         <div className="inline-flex justify-center items-center rounded-full py-1 px-4 bg-red-500 bg-opacity-20">
                                                             <X className="stroke-red-500 mr-2" size="12" />
                                                             <p className="inline-block text-red-500 text-sm">stopped</p>
@@ -502,7 +502,6 @@ We could not retrieve and/or refresh your access token due to the following erro
                                                         </div>
                                                     ))}
                                                     {sync.latest_sync?.status === 'RUNNING' &&
-                                                        sync.schedule_status !== 'PAUSED' &&
                                                         (sync.latest_sync.activity_log_id && sync.latest_sync?.activity_log_id !== null ? (
                                                             <Link
                                                                 to={`/activity?activity_log_id=${sync.latest_sync?.activity_log_id}`}
