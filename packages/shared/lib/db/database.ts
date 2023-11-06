@@ -32,18 +32,6 @@ export const dbNamespace = '_nango_';
 export const multipleMigrations = async (): Promise<void> => {
     await db.knex.raw(`CREATE SCHEMA IF NOT EXISTS ${db.schema()}`);
 
-    const results = await db.knex.raw(`
-        SELECT table_name
-        FROM information_schema.tables
-        WHERE table_schema = '${db.schema()}'
-        AND table_name = 'knex_migrations'
-    `);
-
-    if (results.rows && results.rows.length > 0) {
-        console.log('knex_migrations table already exists, skipping migration setup.');
-        return;
-    }
-
     const [_, pendingMigrations] = await db.knex.migrate.list({
         directory: String(process.env['NANGO_DB_MIGRATION_FOLDER'])
     });

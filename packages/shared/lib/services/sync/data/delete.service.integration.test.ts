@@ -13,7 +13,6 @@ const environmentName = 'delete-service';
 
 describe('Data delete service integration tests', () => {
     beforeAll(async () => {
-        await multipleMigrations();
         await createConfigSeeds(environmentName);
     });
 
