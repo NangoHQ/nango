@@ -14,7 +14,8 @@ export enum LeftNavBarItems {
     Activity,
     Syncs,
     AccountSettings,
-    UserSettings
+    UserSettings,
+    GettingStarted
 }
 
 export interface LeftNavBarProps {
@@ -68,6 +69,11 @@ export default function LeftNavBar(props: LeftNavBarProps) {
         <div>
             <div className="h-full pt-14 border-r-2 border-t-2 border-border-gray flex flex-col w-60 fixed bg-bg-black z-20 justify-between">
                 <div className="mt-8 px-6">
+                    {envs.length === 0 && (
+                        <div className="mb-8">
+                            <select className="border-border-gray bg-bg-black text-text-light-gray block w-full appearance-none rounded-md border px-3 py-2 text-base shadow-sm active:outline-none focus:outline-none active:border-white focus:border-white"></select>
+                        </div>
+                    )}
                     {envs.length > 0 && (
                         <div className="mb-8">
                             <select
@@ -86,6 +92,17 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                         </div>
                     )}
                     <div className="space-y-1">
+                        {env === 'dev' && (
+                            <Link
+                                to="/getting-started"
+                                className={`flex h-10 p-2 gap-x-3 items-center rounded-md text-sm text-white ${
+                                    props.selectedItem === LeftNavBarItems.GettingStarted ? 'bg-gray-800' : 'hover:bg-gray-700'
+                                }`}
+                            >
+                                <img className="h-5" src="/images/rocket-icon.svg" alt="" />
+                                <p>Getting Started</p>
+                            </Link>
+                        )}
                         <Link
                             to="/integrations"
                             className={`flex h-10 p-2 gap-x-3 items-center rounded-md text-sm text-white ${

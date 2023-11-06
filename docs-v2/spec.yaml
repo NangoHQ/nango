@@ -66,6 +66,25 @@ paths:
             responses:
                 '200':
                     description: Successfully created an integration
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - config
+                                properties:
+                                    config:
+                                        type: object
+                                        required:
+                                            - unique_key
+                                            - provider
+                                        properties:
+                                            unique_key:
+                                                type: string
+                                                description: The integration ID that you created in Nango.
+                                            provider:
+                                                type: string
+                                                description: The Nango API Configuration.
                 '400':
                     description: Invalid request
                     content:
@@ -107,6 +126,25 @@ paths:
             responses:
                 '200':
                     description: Successfully edit an integration
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - config
+                                properties:
+                                    config:
+                                        type: object
+                                        required:
+                                            - unique_key
+                                            - provider
+                                        properties:
+                                            unique_key:
+                                                type: string
+                                                description: The integration ID that you created in Nango.
+                                            provider:
+                                                type: string
+                                                description: The Nango API Configuration.
                 '400':
                     description: Invalid request
                     content:

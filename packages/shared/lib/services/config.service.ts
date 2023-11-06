@@ -17,6 +17,8 @@ class ConfigService {
         this.templates = this.getTemplatesFromFile();
     }
 
+    public DEMO_GITHUB_CONFIG_KEY = 'demo-github-integration';
+
     private getTemplatesFromFile() {
         const templatesPath = path.join(dirname(), '../../../providers.yaml');
 
@@ -121,7 +123,7 @@ class ConfigService {
 
         const config: ProviderConfig = {
             environment_id: devEnvironment.id,
-            unique_key: 'demo-github-integration',
+            unique_key: this.DEMO_GITHUB_CONFIG_KEY,
             provider: 'github',
             oauth_client_id: process.env['DEFAULT_GITHUB_CLIENT_ID'] || '',
             oauth_client_secret: process.env['DEFAULT_GITHUB_CLIENT_SECRET'] || '',
@@ -129,6 +131,17 @@ class ConfigService {
         };
 
         await this.createProviderConfig(config);
+    }
+
+    async createDefaultProviderConfigIfNotExisting(accountId: number) {
+        const environments = await db.knex.withSchema(db.schema()).select('*').from(`_nango_environments`).where({ account_id: accountId, name: 'dev' });
+        const devEnvironment = environments[0];
+
+        const existingConfig = await this.getProviderConfig(this.DEMO_GITHUB_CONFIG_KEY, devEnvironment.id);
+
+        if (existingConfig == null) {
+            await this.createDefaultProviderConfig(accountId);
+        }
     }
 
     async deleteProviderConfig(providerConfigKey: string, environment_id: number): Promise<number> {
