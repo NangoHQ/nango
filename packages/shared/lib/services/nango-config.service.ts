@@ -77,6 +77,7 @@ function getFieldsForModel(modelName: string, config: NangoConfig): { name: stri
     if (JAVASCRIPT_PRIMITIVES.includes(modelName)) {
         return null;
     }
+
     const modelData = config.models[modelName] || config.models[`${modelName.slice(0, -1)}`];
 
     for (const fieldName in modelData) {
