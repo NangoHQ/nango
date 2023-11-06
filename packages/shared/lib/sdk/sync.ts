@@ -409,7 +409,7 @@ export class NangoSync extends NangoAction {
     lastSyncDate?: Date;
     track_deletes = false;
     logMessages?: unknown[] | undefined = [];
-    stubbedMetadata?: Metadata | undefined = {};
+    stubbedMetadata?: Metadata | undefined = undefined;
 
     constructor(config: NangoProps) {
         super(config);
@@ -494,7 +494,7 @@ export class NangoSync extends NangoAction {
         }
 
         if (this.dryRun) {
-            this.logMessages?.push(`A batch save call would save the following data`);
+            this.logMessages?.push(`A batch save call would save the following data to the ${model} model:}`);
             this.logMessages?.push(...results);
             return null;
         }
@@ -683,7 +683,7 @@ export class NangoSync extends NangoAction {
         }
     }
     public override async getMetadata<T = Metadata>(): Promise<T> {
-        if (this.dryRun && Object.keys(this.stubbedMetadata as object).length > 0) {
+        if (this.dryRun && this.stubbedMetadata) {
             return this.stubbedMetadata as T;
         }
 
