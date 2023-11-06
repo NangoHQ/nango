@@ -71,7 +71,7 @@ interface RunArgs extends GlobalOptions {
     metadata?: Metadata;
 }
 
-const exampleSyncName = 'github-issue-example';
+export const exampleSyncName = 'github-issue-example';
 
 export const version = (debug: boolean) => {
     if (debug) {

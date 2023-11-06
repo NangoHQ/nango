@@ -35,6 +35,7 @@ export const multipleMigrations = async (): Promise<void> => {
     const [_, pendingMigrations] = await db.knex.migrate.list({
         directory: String(process.env['NANGO_DB_MIGRATION_FOLDER'])
     });
+    console.log(_);
 
     if (pendingMigrations.length === 0) {
         console.log('No pending migrations, skipping migration step.');
