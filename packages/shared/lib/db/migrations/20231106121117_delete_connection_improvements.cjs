@@ -1,6 +1,6 @@
 const SYNC_TABLE = '_nango_syncs';
 const SYNC_RECORDS_TABLE = '_nango_sync_data_records';
-const SYNC_RECORDS_DELETE_TABLE = '_nango_sync_data_records_deleted';
+const SYNC_RECORDS_DELETE_TABLE = '_nango_sync_data_records_deletes';
 const SYNC_SCHEDULE_TABLE = '_nango_sync_schedules';
 
 exports.up = async function (knex, _) {
