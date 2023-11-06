@@ -1,4 +1,4 @@
-import { expect, describe, it, afterEach } from 'vitest';
+import { expect, describe, it, afterEach, beforeAll } from 'vitest';
 import path from 'path';
 import * as fs from 'fs';
 import yaml from 'js-yaml';
@@ -6,6 +6,12 @@ import { init, generate, exampleSyncName } from './sync.js';
 
 describe('generate function tests', () => {
     const testDirectory = './nango-integrations';
+
+    beforeAll(async () => {
+        if (!fs.existsSync('./packages/cli/dist/nango-sync.d.ts')) {
+            await fs.promises.writeFile('./packages/cli/dist/nango-sync.d.ts', '', 'utf8');
+        }
+    });
 
     afterEach(async () => {
         await fs.promises.rm(testDirectory, { recursive: true, force: true });
