@@ -41,7 +41,7 @@ export class AuthClient {
                 store: sessionStore,
                 name: 'nango_session',
                 unset: 'destroy',
-                cookie: { maxAge: 60 * 60 * 1000, secure: false },
+                cookie: { maxAge: 30 * 24 * 60 * 60 * 1000, secure: false },
                 rolling: true
             })
         );
