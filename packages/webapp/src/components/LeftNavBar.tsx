@@ -44,6 +44,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
             .catch(err => {
                 console.error(err);
             });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const env = useStore(state => state.cookieValue);
