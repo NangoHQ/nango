@@ -32,6 +32,7 @@ export const dbNamespace = '_nango_';
 export const multipleMigrations = async (): Promise<void> => {
     await db.knex.raw(`CREATE SCHEMA IF NOT EXISTS ${db.schema()}`);
 
+    console.log(await db.knex.migrate.status());
     const [_, pendingMigrations] = await db.knex.migrate.list({
         directory: String(process.env['NANGO_DB_MIGRATION_FOLDER'])
     });
