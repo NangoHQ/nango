@@ -1,5 +1,5 @@
 import { expect, describe, it, beforeAll } from 'vitest';
-import { multipleMigrations } from '../../../db/database.js';
+//import { multipleMigrations } from '../../../db/database.js';
 import type { DataResponse } from '../../../models/Data.js';
 import * as DataService from './data.service.js';
 import connectionService from '../../connection.service.js';
