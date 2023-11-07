@@ -1,5 +1,5 @@
 import * as uuid from 'uuid';
-import db from '../db/database.js';
+import db, { schema } from '../db/database.js';
 import encryptionManager from '../utils/encryption.manager.js';
 import type { Environment } from '../models/Environment.js';
 import type { EnvironmentVariable } from '../models/EnvironmentVariable.js';
@@ -251,10 +251,7 @@ class EnvironmentService {
     }
 
     async createEnvironment(accountId: number, environment: string): Promise<Environment | null> {
-        const result: void | Pick<Environment, 'id'> = await db.knex
-            .withSchema(db.schema())
-            .from<Environment>(TABLE)
-            .insert({ account_id: accountId, name: environment }, ['id']);
+        const result: void | Pick<Environment, 'id'> = await schema().from<Environment>(TABLE).insert({ account_id: accountId, name: environment }, ['id']);
 
         if (Array.isArray(result) && result.length === 1 && result[0] != null && 'id' in result[0]) {
             const environmentId = result[0]['id'];
