@@ -1,4 +1,4 @@
-import db from '../database.js';
+import db, { schema } from '../database.js';
 import connectionService from '../../services/connection.service.js';
 import environmentService from '../../services/environment.service.js';
 import type { AuthCredentials } from '../../models/Auth.js';
@@ -8,7 +8,7 @@ export const createConnectionSeeds = async (environmentName = ''): Promise<numbe
     if (environmentName) {
         result = [await environmentService.createEnvironment(0, environmentName)];
     } else {
-        result = await db.knex.withSchema(db.schema()).select('*').from('_nango_environments');
+        result = await schema().select('*').from('_nango_environments');
     }
 
     const connections = [];
