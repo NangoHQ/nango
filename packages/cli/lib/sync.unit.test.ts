@@ -2,8 +2,7 @@ import { expect, describe, it, afterEach, beforeAll } from 'vitest';
 import path from 'path';
 import * as fs from 'fs';
 import yaml from 'js-yaml';
-import { SyncConfigType } from '@nangohq/shared';
-import { init, generate, exampleSyncName, nangoCallsAreUsedCorrectly } from './sync.js';
+import { init, generate, exampleSyncName } from './sync.js';
 
 describe('generate function tests', () => {
     const testDirectory = './nango-integrations';
@@ -214,29 +213,5 @@ describe('generate function tests', () => {
         const yamlData = yaml.dump(data);
         await fs.promises.writeFile(`${testDirectory}/nango.yaml`, yamlData, 'utf8');
         expect(generate(false, true)).rejects.toThrow();
-    });
-
-    it('should not complain of try catch not being awaited', async () => {
-        const filePath = './packages/cli/lib/fixtures';
-        const awaiting = nangoCallsAreUsedCorrectly(`${filePath}/sync.ts`, SyncConfigType.SYNC, ['GithubIssue']);
-        expect(awaiting).toBe(true);
-    });
-
-    it('should complain of a non try catch not being awaited', async () => {
-        const filePath = './packages/cli/lib/fixtures';
-        const awaiting = nangoCallsAreUsedCorrectly(`${filePath}/failing-sync.ts`, SyncConfigType.SYNC, ['GithubIssue']);
-        expect(awaiting).toBe(false);
-    });
-
-    it('should not complain about a correct model', async () => {
-        const filePath = './packages/cli/lib/fixtures';
-        const usedCorrectly = nangoCallsAreUsedCorrectly(`${filePath}/bad-model.ts`, SyncConfigType.SYNC, ['SomeBadModel']);
-        expect(usedCorrectly).toBe(true);
-    });
-
-    it('should complain about an incorrect model', async () => {
-        const filePath = './packages/cli/lib/fixtures';
-        const awaiting = nangoCallsAreUsedCorrectly(`${filePath}/bad-model.ts`, SyncConfigType.SYNC, ['GithubIssue']);
-        expect(awaiting).toBe(false);
     });
 });

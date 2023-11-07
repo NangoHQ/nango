@@ -14,7 +14,7 @@ import parser from '@babel/parser';
 import traverse, { NodePath } from '@babel/traverse';
 import type { ChildProcess } from 'node:child_process';
 import promptly from 'promptly';
-import * as t from '@babel/types';
+import type * as t from '@babel/types';
 
 import type {
     SyncDeploymentResult,
@@ -884,9 +884,9 @@ export const nangoCallsAreUsedCorrectly = (filePath: string, type = SyncConfigTy
     };
 
     const callsReferencingModelsToCheck = ['batchSave', 'batchDelete'];
-    const traverseFn = (traverse as any).default || traverse;
 
-    traverseFn(ast, {
+    // @ts-ignore
+    traverse.default(ast, {
         CallExpression(path: NodePath<t.CallExpression>) {
             const lineNumber = path.node.loc?.start.line as number;
             const callee = path.node.callee as t.MemberExpression;
@@ -907,16 +907,11 @@ export const nangoCallsAreUsedCorrectly = (filePath: string, type = SyncConfigTy
                     }
                 }
 
-                const isAwaited = path.findParent((parentPath) => parentPath.isAwaitExpression());
-                const isThenOrCatch = path.findParent(
-                    (parentPath) =>
-                        t.isMemberExpression(parentPath.node) &&
-                        (t.isIdentifier(parentPath.node.property, { name: 'then' }) || t.isIdentifier(parentPath.node.property, { name: 'catch' }))
-                );
-
-                if (!isAwaited && !isThenOrCatch && nangoCalls.includes(callee.property.name)) {
-                    awaitMessage(callee.property.name, lineNumber);
-                    areAwaited = false;
+                if (path.parent.type !== 'AwaitExpression') {
+                    if (nangoCalls.includes(callee.property.name)) {
+                        awaitMessage(callee.property.name, lineNumber);
+                        areAwaited = false;
+                    }
                 }
 
                 if (callsReferencingModelsToCheck.includes(callee.property.name)) {
