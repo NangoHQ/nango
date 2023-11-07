@@ -1,4 +1,4 @@
-import db from '../database.js';
+import { schema } from '../database.js';
 import configService from '../../services/config.service.js';
 import environmentService from '../../services/environment.service.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
@@ -8,7 +8,7 @@ export const createConfigSeeds = async (environmentName = ''): Promise<void> => 
     if (environmentName) {
         result = [await environmentService.createEnvironment(0, environmentName)];
     } else {
-        result = await db.knex.withSchema(db.schema()).select('*').from('_nango_environments');
+        result = await schema().select('*').from('_nango_environments');
     }
 
     for (const row of result) {
@@ -34,8 +34,4 @@ export const createConfigSeeds = async (environmentName = ''): Promise<void> => 
             environment_id
         } as ProviderConfig);
     }
-};
-
-export const deleteAllConfigSeeds = async (): Promise<void> => {
-    await db.knex.raw('TRUNCATE TABLE nango._nango_configs CASCADE');
 };
