@@ -26,7 +26,7 @@ adobe:
 affinity:
     auth_mode: BASIC
     proxy:
-        base_url: https://api.affinity.co        
+        base_url: https://api.affinity.co
 aircall:
     auth_mode: OAUTH2
     authorization_url: https://dashboard.aircall.io/oauth/authorize
