@@ -37,7 +37,7 @@ class EnvironmentController {
                 errorManager.errResFromNangoErr(res, sessionError);
                 return;
             }
-            const { environment, account } = response;
+            const { environment, account, user } = response;
 
             if (!isCloud()) {
                 environment.websockets_path = getWebsocketsPath();
@@ -56,7 +56,9 @@ class EnvironmentController {
 
             const environmentVariables = await environmentService.getEnvironmentVariables(environment.id);
 
-            res.status(200).send({ account: { ...environment, env_variables: environmentVariables, host: getBaseUrl(), uuid: account.uuid } });
+            res.status(200).send({
+                account: { ...environment, env_variables: environmentVariables, host: getBaseUrl(), uuid: account.uuid, email: user.email }
+            });
         } catch (err) {
             next(err);
         }
