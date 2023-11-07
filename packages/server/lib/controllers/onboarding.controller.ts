@@ -85,10 +85,15 @@ class OnboardingController {
             const { connection_id: connectionId, provider_config_key: providerConfigKey } = req.query;
 
             // TODO if there are previous jobs then no need for more polling
-            const status = await syncOrchestrator.getSyncStatus(environment.id, providerConfigKey as string, [syncName], connectionId as string, true);
+            const {
+                success,
+                error,
+                response: status
+            } = await syncOrchestrator.getSyncStatus(environment.id, providerConfigKey as string, [syncName], connectionId as string, true);
 
-            if (!status || status.length === 0) {
-                res.sendStatus(404);
+            if (!success || !status) {
+                errorManager.errResFromNangoErr(res, error);
+                return;
             }
 
             const [job] = status as ReportedSyncJobStatus[];

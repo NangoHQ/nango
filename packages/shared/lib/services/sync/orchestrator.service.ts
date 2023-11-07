@@ -22,6 +22,7 @@ import configService from '../config.service.js';
 import type { LogLevel } from '../../models/Activity.js';
 import type { Connection } from '../../models/Connection.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
+import type { ServiceResponse } from '../../models/Generic';
 import {
     SyncStatus,
     ScheduleStatus,
@@ -250,14 +251,14 @@ export class Orchestrator {
         syncNames: string[],
         connectionId?: string,
         includeJobStatus = false
-    ): Promise<ReportedSyncJobStatus[] | void> {
+    ): Promise<ServiceResponse<ReportedSyncJobStatus[] | void>> {
         const syncsWithStatus: ReportedSyncJobStatus[] = [];
 
         if (connectionId) {
             const { success, error, response: connection } = await connectionService.getConnection(connectionId as string, providerConfigKey, environmentId);
 
             if (!success) {
-                throw error;
+                return { success: false, error, response: null };
             }
 
             for (const syncName of syncNames) {
@@ -285,7 +286,7 @@ export class Orchestrator {
                     : await getSyncsByProviderConfigKey(environmentId, providerConfigKey);
 
             if (!syncs) {
-                return;
+                return { success: true, error: null, response: syncsWithStatus };
             }
 
             for (const sync of syncs) {
@@ -304,7 +305,7 @@ export class Orchestrator {
             }
         }
 
-        return syncsWithStatus;
+        return { success: true, error: null, response: syncsWithStatus };
     }
 
     public classifySyncStatus(jobStatus: SyncStatus, scheduleStatus: ScheduleStatus): SyncStatus {

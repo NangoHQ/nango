@@ -424,12 +424,6 @@ class SyncController {
                 return;
             }
 
-            if (!syncNames) {
-                res.status(400).send({ message: 'Missing sync names' });
-
-                return;
-            }
-
             const environmentId = getEnvironmentId(res);
 
             if (syncNames === '*') {
@@ -438,12 +432,16 @@ class SyncController {
                 syncNames = (syncNames as string).split(',');
             }
 
-            const syncsWithStatus = await syncOrchestrator.getSyncStatus(
-                environmentId,
-                provider_config_key as string,
-                syncNames as string[],
-                connection_id as string
-            );
+            const {
+                success,
+                error,
+                response: syncsWithStatus
+            } = await syncOrchestrator.getSyncStatus(environmentId, provider_config_key as string, syncNames as string[], connection_id as string);
+
+            if (!success || !syncsWithStatus) {
+                errorManager.errResFromNangoErr(res, error);
+                return;
+            }
 
             res.send({ syncs: syncsWithStatus });
         } catch (e) {
