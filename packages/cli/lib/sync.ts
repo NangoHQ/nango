@@ -842,7 +842,7 @@ export const checkYamlMatchesTsFiles = async (): Promise<boolean> => {
     return true;
 };
 
-export const nangoCallsAreUsedCorrectly = (filePath: string, type = SyncConfigType.SYNC, modelNames: string[]): boolean => {
+const nangoCallsAreUsedCorrectly = (filePath: string, type = SyncConfigType.SYNC, modelNames: string[]): boolean => {
     const code = fs.readFileSync(filePath, 'utf-8');
     let areAwaited = true;
     let usedCorrectly = true;
