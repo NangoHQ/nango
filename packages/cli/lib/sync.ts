@@ -49,7 +49,8 @@ import {
     buildInterfaces,
     enrichHeaders,
     getNangoRootPath,
-    printDebug
+    printDebug,
+    getModelNamesFromConfig
 } from './utils.js';
 import integrationService from './local-integration.service.js';
 import type { DeployOptions, GlobalOptions } from './types.js';
@@ -779,6 +780,7 @@ export const tsc = async (debug = false, syncName?: string): Promise<boolean> =>
     let success = true;
 
     const config = await getConfig();
+    const modelNames = getModelNamesFromConfig(config);
 
     for (const filePath of integrationFiles) {
         try {
@@ -791,7 +793,10 @@ export const tsc = async (debug = false, syncName?: string): Promise<boolean> =>
             const syncConfig = [...providerConfiguration.syncs, ...providerConfiguration.actions].find((sync) => sync.name === path.basename(filePath, '.ts'));
             const type = syncConfig?.type || SyncConfigType.SYNC;
 
-            if (!nangoCallsAreUsedCorrectly(filePath, type)) {
+            if (!nangoCallsAreUsedCorrectly(filePath, type, modelNames)) {
+                if (syncName && filePath.includes(syncName)) {
+                    success = false;
+                }
                 continue;
             }
             const result = compiler.compile(fs.readFileSync(filePath, 'utf8'), filePath);
@@ -837,7 +842,7 @@ export const checkYamlMatchesTsFiles = async (): Promise<boolean> => {
     return true;
 };
 
-const nangoCallsAreUsedCorrectly = (filePath: string, type = SyncConfigType.SYNC): boolean => {
+const nangoCallsAreUsedCorrectly = (filePath: string, type = SyncConfigType.SYNC, modelNames: string[]): boolean => {
     const code = fs.readFileSync(filePath, 'utf-8');
     let areAwaited = true;
     let usedCorrectly = true;
@@ -878,6 +883,8 @@ const nangoCallsAreUsedCorrectly = (filePath: string, type = SyncConfigType.SYNC
         setFieldMapping: 'setMetadata'
     };
 
+    const callsReferencingModelsToCheck = ['batchSave', 'batchDelete'];
+
     // @ts-ignore
     traverse.default(ast, {
         CallExpression(path: NodePath<t.CallExpression>) {
@@ -906,6 +913,21 @@ const nangoCallsAreUsedCorrectly = (filePath: string, type = SyncConfigType.SYNC
                         areAwaited = false;
                     }
                 }
+
+                if (callsReferencingModelsToCheck.includes(callee.property.name)) {
+                    const args = path.node.arguments as t.Expression[];
+                    const modelArg = args[args.length - 1] as t.StringLiteral;
+                    if (!modelNames.includes(modelArg.value)) {
+                        console.log(
+                            chalk.red(
+                                `"${
+                                    modelArg.value
+                                }" is not a valid model name. Please check "${filePath}:${lineNumber}". The possible model names are: ${modelNames.join(', ')}`
+                            )
+                        );
+                        usedCorrectly = false;
+                    }
+                }
             }
         }
     });
@@ -916,6 +938,7 @@ const nangoCallsAreUsedCorrectly = (filePath: string, type = SyncConfigType.SYNC
 export const tscWatch = async (debug = false) => {
     const tsconfig = fs.readFileSync(`${getNangoRootPath()}/tsconfig.dev.json`, 'utf8');
     const config = await getConfig();
+    const modelNames = getModelNamesFromConfig(config);
 
     const watchPath = [`./*.ts`, `./${nangoConfigFile}`];
 
@@ -992,7 +1015,7 @@ export const tscWatch = async (debug = false) => {
 
             const type = syncConfig?.type || SyncConfigType.SYNC;
 
-            if (!nangoCallsAreUsedCorrectly(filePath, type)) {
+            if (!nangoCallsAreUsedCorrectly(filePath, type, modelNames)) {
                 return;
             }
             const result = compiler.compile(fs.readFileSync(filePath, 'utf8'), filePath);
