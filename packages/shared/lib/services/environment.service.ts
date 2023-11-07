@@ -198,7 +198,7 @@ class EnvironmentService {
 
     async getById(id: number): Promise<Environment | null> {
         try {
-            const result = await db.knex.withSchema(db.schema()).select('*').from<Environment>(TABLE).where({ id });
+            const result = (await schema().select('*').from<Environment>(TABLE).where({ id })) as unknown as Environment[];
 
             if (result == null || result.length == 0 || result[0] == null) {
                 return null;
