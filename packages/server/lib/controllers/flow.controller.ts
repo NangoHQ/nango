@@ -13,7 +13,8 @@ import {
     FlowDownloadBody,
     remoteFileService,
     getAllSyncsAndActions,
-    getNangoConfigIdAndLocationFromId
+    getNangoConfigIdAndLocationFromId,
+    getSyncConfigConnections
 } from '@nangohq/shared';
 
 class FlowController {
@@ -189,6 +190,38 @@ class FlowController {
             const nangoConfigs = await getAllSyncsAndActions(environmentId);
 
             res.send(nangoConfigs);
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    public async deleteFlow(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { success, error, response } = await getEnvironmentAndAccountId(res, req);
+
+            if (!success || response === null) {
+                errorManager.errResFromNangoErr(res, error);
+                return;
+            }
+
+            const { environmentId } = response;
+
+            const id = req.params['id'];
+
+            if (!id) {
+                res.status(400).send('Missing id');
+                return;
+            }
+
+            const syncsWithConnections = await getSyncConfigConnections(Number(id), environmentId);
+
+            for (const syncsWithConnection of syncsWithConnections) {
+                await syncOrchestrator.deleteSync(syncsWithConnection.id as string, environmentId);
+            }
+
+            await syncOrchestrator.deleteConfig(Number(id), environmentId);
+
+            res.sendStatus(204);
         } catch (e) {
             next(e);
         }

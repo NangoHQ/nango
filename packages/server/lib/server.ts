@@ -167,6 +167,7 @@ app.route('/api/v1/syncs').get(webAuth, syncController.getSyncs.bind(syncControl
 app.route('/api/v1/flows').get(webAuth, flowController.getFlows.bind(syncController));
 app.route('/api/v1/flow/deploy/pre-built').post(webAuth, flowController.deployPreBuiltFlow.bind(flowController));
 app.route('/api/v1/flow/download').post(webAuth, flowController.downloadFlow.bind(flowController));
+app.route('/api/v1/flow/:id').delete(webAuth, flowController.deleteFlow.bind(flowController));
 
 app.route('/api/v1/onboarding').get(webAuth, onboardingController.status.bind(onboardingController));
 app.route('/api/v1/onboarding').post(webAuth, onboardingController.init.bind(onboardingController));

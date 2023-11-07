@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
-import { RefreshCw } from '@geist-ui/icons';
+import { AlertTriangle, RefreshCw } from '@geist-ui/icons';
+import { Tooltip, useModal, Modal } from '@geist-ui/core';
 import { BoltIcon } from '@heroicons/react/24/outline';
 import DashboardLayout from '../layout/DashboardLayout';
-import { Tooltip } from '@geist-ui/core';
 import { LeftNavBarItems } from '../components/LeftNavBar';
 import { useGetAllSyncsAPI } from '../utils/api';
 import { Sync } from '../types';
@@ -21,7 +21,9 @@ export default function Syncs() {
     const [syncs, setSyncs] = useState<Sync[]>([]);
     const [currentTab, setCurrentTab] = useState<'action' | 'sync'>('sync');
     const [hasFlows, setFlows] = useState(false);
+    const [selectedFlowToDelete, setSelectedFlowToDelete] = useState<Sync | null>(null);
     const getSyncsAPI = useGetAllSyncsAPI();
+    const { setVisible, bindings } = useModal()
 
     const env = useStore(state => state.cookieValue);
 
@@ -84,8 +86,46 @@ export default function Syncs() {
         document.body.removeChild(link);
     }
 
+    const onDeletePreBuilt = async () => {
+        const res = await fetch(`/api/v1/flow/${selectedFlowToDelete?.id}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+        });
+
+        if (res.status === 204) {
+            toast.success(`${currentTab} deleted successfully`, {
+                position: toast.POSITION.BOTTOM_CENTER
+            });
+        } else {
+            toast.error('Something went wrong', {
+                position: toast.POSITION.BOTTOM_CENTER
+            });
+        }
+        setLoaded(false);
+        setVisible(false);
+    };
+
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Syncs}>
+            <Modal {...bindings} wrapClassName="!w-max overflow-visible">
+                <div className="flex justify-between">
+                    <div className="flex h-full">
+                        <span className="flex bg-red-200 w-10 h-10 rounded-full items-center justify-center">
+                            <AlertTriangle className="stroke-red-600" />
+                        </span>
+                    </div>
+                    <div>
+                        <Modal.Title className="text-lg">Delete the prebuilt {currentTab}?</Modal.Title>
+                        <Modal.Content>
+                          <p>This will delete the {selectedFlowToDelete?.sync_name}@{selectedFlowToDelete?.version} {currentTab}.</p>
+                        </Modal.Content>
+                    </div>
+                </div>
+                <Modal.Action passive className="!text-lg" onClick={() => setVisible(false)}>Cancel</Modal.Action>
+                <Modal.Action className="!bg-red-500 !text-white !text-lg" onClick={() => onDeletePreBuilt()}>Delete</Modal.Action>
+            </Modal>
             <div className="px-16 w-fit mx-auto min-w-[1000px] text-sm">
                 <div className="flex flex-col text-left">
                     <span className="flex items-center mb-3">
@@ -210,6 +250,20 @@ export default function Syncs() {
                                             )}
                                             <span className="text-gray-500 mr-4">{formatDateToUSFormat(sync.updated_at)}</span>
                                             <Button type="button" variant="secondary" onClick={() => downloadFlow(sync)}>Download</Button>
+                                            {sync.pre_built ? (
+                                                <Button type="button" variant="danger" className="ml-1.5"
+                                                    onClick={() => {
+                                                        setSelectedFlowToDelete(sync)
+                                                        setVisible(true)
+                                                    }}
+                                                >
+                                                    Delete
+                                                </Button>
+                                            ) : (
+                                                <Tooltip type="dark" text={`To delete a custom sync use the nango cli and remove the ${currentTab} entry.`}>
+                                                    <Button type="button" variant="danger" className="ml-1.5" disabled>Delete</Button>
+                                                </Tooltip>
+                                            )}
                                         </div>
                                         {sync.metadata && sync.metadata.description && (
                                             <div className="text-xs text-gray-400 mb-3 max-w-2xl">

@@ -457,6 +457,24 @@ export async function getSyncConfigsWithConnectionsByEnvironmentId(environment_i
     return result;
 }
 
+export async function getSyncConfigConnections(id: number, environment_id: number): Promise<{ connection_id: string; id: string; name: string }[]> {
+    const result = await schema()
+        .select(`_nango_connections.connection_id`, '_nango_syncs.id', '_nango_syncs.name')
+        .from<SyncConfig>(TABLE)
+        .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')
+        .join('_nango_connections', '_nango_connections.provider_config_key', '_nango_configs.unique_key')
+        .join('_nango_syncs', `_nango_syncs.name`, `${TABLE}.sync_name`)
+        .where({
+            '_nango_configs.environment_id': environment_id,
+            active: true,
+            '_nango_configs.deleted': false,
+            [`${TABLE}.deleted`]: false,
+            [`${TABLE}.id`]: id
+        });
+
+    return result;
+}
+
 /**
  * Get Sync Configs By Provider Key
  * @desc grab all the sync configs by a provider key
