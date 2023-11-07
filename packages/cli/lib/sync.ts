@@ -14,7 +14,7 @@ import parser from '@babel/parser';
 import traverse, { NodePath } from '@babel/traverse';
 import type { ChildProcess } from 'node:child_process';
 import promptly from 'promptly';
-import type * as t from '@babel/types';
+import * as t from '@babel/types';
 
 import type {
     SyncDeploymentResult,
@@ -842,7 +842,7 @@ export const checkYamlMatchesTsFiles = async (): Promise<boolean> => {
     return true;
 };
 
-const nangoCallsAreUsedCorrectly = (filePath: string, type = SyncConfigType.SYNC, modelNames: string[]): boolean => {
+export const nangoCallsAreUsedCorrectly = (filePath: string, type = SyncConfigType.SYNC, modelNames: string[]): boolean => {
     const code = fs.readFileSync(filePath, 'utf-8');
     let areAwaited = true;
     let usedCorrectly = true;
@@ -884,9 +884,9 @@ const nangoCallsAreUsedCorrectly = (filePath: string, type = SyncConfigType.SYNC
     };
 
     const callsReferencingModelsToCheck = ['batchSave', 'batchDelete'];
+    const traverseFn = (traverse as any).default || traverse;
 
-    // @ts-ignore
-    traverse.default(ast, {
+    traverseFn(ast, {
         CallExpression(path: NodePath<t.CallExpression>) {
             const lineNumber = path.node.loc?.start.line as number;
             const callee = path.node.callee as t.MemberExpression;
@@ -907,11 +907,16 @@ const nangoCallsAreUsedCorrectly = (filePath: string, type = SyncConfigType.SYNC
                     }
                 }
 
-                if (path.parent.type !== 'AwaitExpression') {
-                    if (nangoCalls.includes(callee.property.name)) {
-                        awaitMessage(callee.property.name, lineNumber);
-                        areAwaited = false;
-                    }
+                const isAwaited = path.findParent((parentPath) => parentPath.isAwaitExpression());
+                const isThenOrCatch = path.findParent(
+                    (parentPath) =>
+                        t.isMemberExpression(parentPath.node) &&
+                        (t.isIdentifier(parentPath.node.property, { name: 'then' }) || t.isIdentifier(parentPath.node.property, { name: 'catch' }))
+                );
+
+                if (!isAwaited && !isThenOrCatch && nangoCalls.includes(callee.property.name)) {
+                    awaitMessage(callee.property.name, lineNumber);
+                    areAwaited = false;
                 }
 
                 if (callsReferencingModelsToCheck.includes(callee.property.name)) {
