@@ -10,7 +10,11 @@ const ENDPOINT_TABLE = dbNamespace + 'sync_endpoints';
 const SYNC_CONFIG_TABLE = dbNamespace + 'sync_configs';
 const CONFIG_TABLE = dbNamespace + 'configs';
 
-type ActionOrModel = [string, undefined?] | [undefined, string] | [null, null];
+interface ActionOrModel {
+    action?: string;
+    model?: string;
+}
+
 export async function getActionOrModelByEndpoint(nangoConnection: NangoConnection, method: HTTP_VERB, path: string): Promise<ActionOrModel> {
     const config = await configService.getProviderConfig(nangoConnection.provider_config_key, nangoConnection.environment_id);
     if (!config) {
@@ -32,12 +36,12 @@ export async function getActionOrModelByEndpoint(nangoConnection: NangoConnectio
         .orderBy(`${SYNC_CONFIG_TABLE}.id`, 'desc');
 
     if (!result) {
-        return [null, null];
+        return {};
     }
     if (result['type'] == SyncConfigType.ACTION) {
-        return [result['sync_name']];
+        return { action: result['sync_name'] };
     } else {
-        return [null, result['model']];
+        return { model: result['model'] };
     }
 }
 
@@ -50,7 +54,7 @@ export async function getOpenApiSpec(environment_id: number): Promise<string> {
         .where({
             [`${SYNC_CONFIG_TABLE}.environment_id`]: environment_id,
             [`${SYNC_CONFIG_TABLE}.active`]: true,
-            [`${SYNC_CONFIG_TABLE}.deleted`]: false,
+            [`${SYNC_CONFIG_TABLE}.deleted`]: false
         });
 
     if (!rows) {

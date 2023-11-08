@@ -262,7 +262,10 @@ export async function deploy(
                 });
             }
         });
-        await schema().from<SyncEndpoint>(ENDPOINT_TABLE).insert(endpoints);
+
+        if (endpoints.length > 0) {
+            await schema().from<SyncEndpoint>(ENDPOINT_TABLE).insert(endpoints);
+        }
 
         if (idsToMarkAsInvactive.length > 0) {
             await schema().from<SyncConfig>(TABLE).update({ active: false }).whereIn('id', idsToMarkAsInvactive);
