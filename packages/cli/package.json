@@ -16,7 +16,7 @@
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "scripts": {
         "build": "tsc",
-        "copyfiles": "copyfiles -u 1 lib/*.ejs dist",
+        "copyfiles": "copyfiles -u 1 lib/templates/*.ejs dist",
         "postbuild": "npm run copyfiles",
         "dev": "npm run copyfiles && tsc -w"
     },
