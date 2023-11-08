@@ -231,33 +231,7 @@ export const generate = async (debug = false, inParentDirectory = false) => {
  * and create an example nango.yaml file
  */
 export const init = async (debug = false) => {
-    const data: NangoConfig = {
-        integrations: {
-            'demo-github-integration': {
-                [exampleSyncName]: {
-                    type: SyncConfigType.SYNC,
-                    runs: 'every half hour',
-                    returns: ['GithubIssue']
-                }
-            }
-        },
-        models: {
-            GithubIssue: {
-                id: 'integer',
-                owner: 'string',
-                repo: 'string',
-                issue_number: 'number',
-                title: 'string',
-                author: 'string',
-                author_id: 'string',
-                state: 'string',
-                date_created: 'date',
-                date_last_modified: 'date',
-                body: 'string'
-            }
-        }
-    };
-    const yamlData = yaml.dump(data);
+    const yamlData = fs.readFileSync(path.resolve(__dirname, `./templates/${nangoConfigFile}`), 'utf8');
 
     // if currently in the nango-integrations directory then don't create another one
     const cwd = process.cwd();
