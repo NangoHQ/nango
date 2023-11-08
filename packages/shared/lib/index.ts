@@ -33,7 +33,6 @@ export * as dataService from './services/sync/data/data.service.js';
 export * as syncDataService from './services/sync/data/records.service.js';
 
 export * as oauth2Client from './clients/oauth2.client.js';
-export * from './integrations/index.js';
 
 export * from './services/nango-config.service.js';
 

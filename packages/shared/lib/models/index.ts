@@ -8,3 +8,4 @@ export * from './Sync.js';
 export * from './Data.js';
 export * from './Environment.js';
 export * from './Flow.js';
+export * from './NangoConfig.js';

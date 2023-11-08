@@ -1,7 +1,7 @@
 import { LogActionEnum } from './Activity.js';
 import type { HTTP_VERB, Timestamps, TimestampsAndDeleted } from './Generic.js';
 import type { NangoSync } from '../sdk/sync.js';
-import type { NangoIntegrationData, NangoSyncEndpoint } from '../integrations/index.js';
+import type { NangoIntegrationData, NangoSyncEndpoint } from './NangoConfig.js';
 
 export enum SyncStatus {
     RUNNING = 'RUNNING',
@@ -14,6 +14,7 @@ export enum SyncStatus {
 export enum SyncType {
     INITIAL = 'INITIAL',
     INCREMENTAL = 'INCREMENTAL',
+    FULL = 'FULL',
     ACTION = 'ACTION'
 }
 

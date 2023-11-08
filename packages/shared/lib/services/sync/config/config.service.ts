@@ -7,12 +7,12 @@ import { Action, SyncConfigWithProvider, SyncConfig, SlimSync, SyncConfigType, N
 import { convertConfigObject } from '../../nango-config.service.js';
 import type { NangoConnection } from '../../../models/Connection.js';
 import type { Config as ProviderConfig } from '../../../models/Provider.js';
-import type { NangoConfig, SimplifiedNangoIntegration } from '../../../integrations/index.js';
+import type { NangoConfigV1, SimplifiedNangoIntegration } from '../../../models/NangoConfig.js';
 import errorManager, { ErrorSourceEnum } from '../../../utils/error.manager.js';
 
 const TABLE = dbNamespace + 'sync_configs';
 
-export async function getSyncConfig(nangoConnection: NangoConnection, syncName?: string, isAction?: boolean): Promise<NangoConfig | null> {
+export async function getSyncConfig(nangoConnection: NangoConnection, syncName?: string, isAction?: boolean): Promise<NangoConfigV1 | null> {
     let syncConfigs;
 
     if (!syncName) {
@@ -32,7 +32,7 @@ export async function getSyncConfig(nangoConnection: NangoConnection, syncName?:
         syncConfigs = [syncConfigs];
     }
 
-    const nangoConfig: NangoConfig = {
+    const nangoConfig: NangoConfigV1 = {
         integrations: {
             [nangoConnection.provider_config_key as string]: {}
         },
@@ -95,7 +95,7 @@ export async function getAllSyncsAndActions(environment_id: number): Promise<Sim
         return [];
     }
 
-    const nangoConfig: NangoConfig = {
+    const nangoConfig: NangoConfigV1 = {
         integrations: {},
         models: {}
     };
@@ -612,4 +612,3 @@ export async function getNangoConfigIdAndLocationFromId(id: number): Promise<{ n
 
     return result;
 }
-

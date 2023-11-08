@@ -248,7 +248,7 @@ export async function deploy(
             if (sync.endpoints && row.id) {
                 sync.endpoints.forEach((endpoint, endpointIndex) => {
                     const method = Object.keys(endpoint)[0] as HTTP_VERB;
-                    const path = endpoint[method];
+                    const path = endpoint[method] as string;
                     const res: SyncEndpoint = {
                         sync_config_id: row.id as number,
                         method,
@@ -536,7 +536,7 @@ export async function deployPreBuilt(
             if (sync.endpoints && row.id) {
                 sync.endpoints.forEach((endpoint, endpointIndex) => {
                     const method = Object.keys(endpoint)[0] as HTTP_VERB;
-                    const path = endpoint[method];
+                    const path = endpoint[method] as string;
                     const res: SyncEndpoint = {
                         sync_config_id: row.id as number,
                         method,
@@ -550,7 +550,10 @@ export async function deployPreBuilt(
                 });
             }
         });
-        await schema().from<SyncEndpoint>(ENDPOINT_TABLE).insert(endpoints);
+
+        if (endpoints.length > 0) {
+            await schema().from<SyncEndpoint>(ENDPOINT_TABLE).insert(endpoints);
+        }
 
         if (idsToMarkAsInvactive.length > 0) {
             await schema().from<SyncConfig>(TABLE).update({ active: false }).whereIn('id', idsToMarkAsInvactive);

@@ -4,10 +4,20 @@ import { fileURLToPath } from 'url';
 import yaml from 'js-yaml';
 import ms from 'ms';
 
-import type { NangoConfig, SimplifiedNangoIntegration, NangoSyncConfig, NangoSyncModel } from '../integrations/index.js';
+import type {
+    NangoConfig,
+    NangoConfigV1,
+    NangoConfigV2,
+    SimplifiedNangoIntegration,
+    NangoSyncConfig,
+    NangoSyncModel,
+    NangoV2Integration,
+    NangoSyncEndpoint,
+    NangoIntegrationDataV2
+} from '../models/NangoConfig.js';
 import { isCloud } from '../utils/utils.js';
-import type { ServiceResponse } from '../models/Generic.js';
-import { SyncConfigType } from '../models/Sync.js';
+import type { HTTP_VERB, ServiceResponse } from '../models/Generic.js';
+import { SyncType, SyncConfigType } from '../models/Sync.js';
 import { NangoError } from '../utils/error.js';
 import { JAVASCRIPT_PRIMITIVES } from '../utils/utils.js';
 
@@ -48,7 +58,14 @@ export async function loadSimplifiedConfig(loadLocation?: string): Promise<Simpl
         if (!configData) {
             return null;
         }
-        const config = convertConfigObject(configData);
+        let config: SimplifiedNangoIntegration[] = [];
+        const [firstProviderConfigKey] = Object.keys(configData.integrations) as [string];
+        const firstProviderConfig = configData.integrations[firstProviderConfigKey] as NangoV2Integration;
+        if (firstProviderConfig['syncs'] || firstProviderConfig['actions']) {
+            config = convertV2ConfigObject(configData as NangoConfigV2);
+        } else {
+            config = convertConfigObject(configData as NangoConfigV1);
+        }
 
         return config;
     } catch (error) {
@@ -104,7 +121,7 @@ function getFieldsForModel(modelName: string, config: NangoConfig): { name: stri
     return modelFields;
 }
 
-export function convertConfigObject(config: NangoConfig): SimplifiedNangoIntegration[] {
+export function convertConfigObject(config: NangoConfigV1): SimplifiedNangoIntegration[] {
     const output = [];
 
     for (const providerConfigKey in config.integrations) {
@@ -119,7 +136,7 @@ export function convertConfigObject(config: NangoConfig): SimplifiedNangoIntegra
         }
 
         for (const syncName in integration) {
-            const sync: NangoSyncConfig = integration[syncName] as NangoSyncConfig;
+            const sync: NangoSyncConfig = integration[syncName] as unknown as NangoSyncConfig;
             const models: NangoSyncModel[] = [];
             if (sync.returns) {
                 const syncReturns = Array.isArray(sync.returns) ? sync.returns : [sync.returns];
@@ -131,7 +148,6 @@ export function convertConfigObject(config: NangoConfig): SimplifiedNangoIntegra
 
             const flowObject = {
                 name: syncName,
-                type: sync.type as SyncConfigType,
                 runs: sync.runs,
                 track_deletes: sync.track_deletes || false,
                 auto_start: sync.auto_start === false ? false : true,
@@ -161,6 +177,147 @@ export function convertConfigObject(config: NangoConfig): SimplifiedNangoIntegra
         }
 
         output.push(simplifiedIntegration);
+    }
+    return output;
+}
+
+const assignEndpoints = (rawEndpoint: string, defaultMethod: HTTP_VERB) => {
+    let endpoints: NangoSyncEndpoint[] = [];
+    const endpoint = rawEndpoint.split(' ') as string[];
+    if (endpoint.length > 1) {
+        const method = endpoint[0]?.toUpperCase() as HTTP_VERB;
+        endpoints = [
+            {
+                [method]: endpoint[1] as string
+            }
+        ];
+    } else {
+        endpoints = [
+            {
+                [defaultMethod]: endpoint[0] as string
+            }
+        ];
+    }
+
+    return endpoints;
+};
+
+export function convertV2ConfigObject(config: NangoConfigV2): SimplifiedNangoIntegration[] {
+    const output: SimplifiedNangoIntegration[] = [];
+
+    for (const providerConfigKey in config.integrations) {
+        const builtSyncs: NangoSyncConfig[] = [];
+        const builtActions: NangoSyncConfig[] = [];
+        const integration: NangoV2Integration = config.integrations[providerConfigKey] as NangoV2Integration;
+        let provider;
+
+        if (integration!['provider']) {
+            provider = integration!['provider'];
+            delete integration!['provider'];
+        }
+
+        const syncs = integration['syncs'] as NangoV2Integration;
+        const actions = integration['actions'] as NangoV2Integration;
+        for (const syncName in syncs) {
+            const sync: NangoIntegrationDataV2 = syncs[syncName] as NangoIntegrationDataV2;
+            const models: NangoSyncModel[] = [];
+            const inputModel: NangoSyncModel = {} as NangoSyncModel;
+
+            if (sync.output) {
+                const syncReturns = Array.isArray(sync.output) ? sync.output : [sync.output];
+                syncReturns.forEach((model) => {
+                    const modelFields = getFieldsForModel(model, config) as { name: string; type: string }[];
+                    models.push({ name: model, fields: modelFields });
+                });
+            }
+
+            if (sync.input) {
+                const modelFields = getFieldsForModel(sync.input as string, config) as { name: string; type: string }[];
+                inputModel.name = sync.input as string;
+                inputModel.fields = modelFields;
+            }
+
+            let endpoints: NangoSyncEndpoint[] = [];
+            if (Array.isArray(sync?.endpoint)) {
+                for (const endpoint of sync?.endpoint as string[]) {
+                    endpoints.push(...assignEndpoints(endpoint, 'GET'));
+                }
+            } else {
+                endpoints = assignEndpoints(sync?.endpoint as string, 'GET');
+            }
+
+            const syncObject: NangoSyncConfig = {
+                name: syncName,
+                models: models || [],
+                sync_type: sync.sync_type?.toUpperCase() === SyncType.INCREMENTAL ? SyncType.INCREMENTAL : SyncType.FULL,
+                runs: sync.runs,
+                track_deletes: sync.track_deletes || false,
+                auto_start: sync.auto_start === false ? false : true,
+                attributes: sync.attributes || {},
+                input: inputModel,
+                returns: sync.output as string[],
+                description: sync?.description || sync?.metadata?.description || '',
+                scopes: sync?.scopes || sync?.metadata?.scopes || [],
+                endpoints
+            };
+
+            builtSyncs.push(syncObject);
+        }
+
+        for (const actionName in actions) {
+            const action: NangoIntegrationDataV2 = actions[actionName] as NangoIntegrationDataV2;
+            const models: NangoSyncModel[] = [];
+            const inputModel: NangoSyncModel = {} as NangoSyncModel;
+
+            if (action.output) {
+                const syncReturns = Array.isArray(action.output) ? action.output : [action.output];
+                syncReturns.forEach((model) => {
+                    const modelFields = getFieldsForModel(model, config) as { name: string; type: string }[];
+                    models.push({ name: model, fields: modelFields });
+                });
+            }
+
+            if (action.input) {
+                const modelFields = getFieldsForModel(action.input as string, config) as { name: string; type: string }[];
+                inputModel.name = action.input as string;
+                inputModel.fields = modelFields;
+            }
+
+            let endpoints: NangoSyncEndpoint[] = [];
+            if (Array.isArray(action?.endpoint)) {
+                for (const endpoint of action?.endpoint as string[]) {
+                    endpoints.push(...assignEndpoints(endpoint, 'POST'));
+                }
+            } else {
+                endpoints = assignEndpoints(action?.endpoint as string, 'POST');
+            }
+
+            const actionObject: NangoSyncConfig = {
+                name: actionName,
+                models: models || [],
+                runs: action.runs,
+                attributes: action.attributes || {},
+                returns: action.output as string[],
+                description: action?.description || action?.metadata?.description || '',
+                scopes: action?.scopes || action?.metadata?.scopes || [],
+                input: inputModel,
+                endpoints
+            };
+
+            builtActions.push(actionObject);
+        }
+
+        const simplifiedIntegration: SimplifiedNangoIntegration = {
+            providerConfigKey,
+            syncs: builtSyncs,
+            actions: builtActions
+        };
+
+        output.push(simplifiedIntegration);
+
+        if (provider) {
+            simplifiedIntegration.provider = provider as unknown as string;
+        }
     }
     return output;
 }

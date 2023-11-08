@@ -11,7 +11,7 @@ import util from 'util';
 import { exec, spawn } from 'child_process';
 import promptly from 'promptly';
 import chalk from 'chalk';
-import type { SimplifiedNangoIntegration, NangoModel, NangoIntegrationData, NangoIntegration } from '@nangohq/shared';
+import type { NangoModel, NangoIntegrationData, NangoIntegration } from '@nangohq/shared';
 import { SyncConfigType, cloudHost, stagingHost, nangoConfigFile } from '@nangohq/shared';
 import * as dotenv from 'dotenv';
 import { init, generate, tsc } from './sync.js';
@@ -469,22 +469,6 @@ export function getNangoRootPath(debug = false) {
     }
 
     return path.resolve(packagePath, '..');
-}
-
-export function getModelNamesFromConfig(config: SimplifiedNangoIntegration[]): string[] {
-    const modelNames = config.reduce((acc: string[], config) => {
-        const syncs = config.syncs || [];
-        const actions = config.actions || [];
-        const allSyncs = [...syncs, ...actions];
-        const models = allSyncs.reduce((acc: string[], sync) => {
-            const models = sync.models || [];
-            const names = models.map((model) => model.name);
-            return [...acc, ...names];
-        }, []);
-        return [...acc, ...models];
-    }, []);
-
-    return modelNames;
 }
 
 function getPackagePath(debug = false) {

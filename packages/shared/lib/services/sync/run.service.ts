@@ -18,7 +18,7 @@ import { isCloud, getApiUrl, JAVASCRIPT_PRIMITIVES } from '../../utils/utils.js'
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { NangoError } from '../../utils/error.js';
 import metricsManager, { MetricTypes } from '../../utils/metrics.manager.js';
-import type { NangoIntegrationData, NangoIntegration } from '../../integrations/index.js';
+import type { NangoIntegrationData, NangoIntegration } from '../../models/NangoConfig.js';
 import type { UpsertResponse, UpsertSummary } from '../../models/Data.js';
 import { LogActionEnum } from '../../models/Activity.js';
 import type { Environment } from '../../models/Environment';
@@ -226,17 +226,17 @@ export default class SyncRun {
             }
 
             // TODO this only works for dryrun at the moment
-            if (this.isAction && syncData.inputs) {
-                const { inputs } = syncData;
-                if (JAVASCRIPT_PRIMITIVES.includes(inputs as unknown as string)) {
-                    if (typeof this.input !== (inputs as unknown as string)) {
-                        const message = `The input provided of ${this.input} for ${this.syncName} is not of type ${inputs}`;
+            if (this.isAction && syncData.input) {
+                const { input } = syncData;
+                if (JAVASCRIPT_PRIMITIVES.includes(input as unknown as string)) {
+                    if (typeof this.input !== (input as unknown as string)) {
+                        const message = `The input provided of ${this.input} for ${this.syncName} is not of type ${input}`;
                         await this.reportFailureForResults(message);
 
                         return { success: false, error: new NangoError('action_script_failure', message, 500), response: false };
                     }
                 } else {
-                    if (configModels[inputs as unknown as string]) {
+                    if (configModels[input as unknown as string]) {
                         // TODO use joi or zod to validate the input dynamically
                     }
                 }

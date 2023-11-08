@@ -3,10 +3,10 @@ import path from 'path';
 import fs from 'fs';
 import { dirname } from '../utils/utils.js';
 import { getPublicConfig } from './sync/config/config.service.js';
-import type { NangoIntegration, NangoIntegrationData, NangoModel } from '../integrations/index.js';
+import type { NangoIntegration, NangoIntegrationData, NangoModelV1 } from '../models/NangoConfig.js';
 
 export interface Config {
-    integrations: NangoIntegration & NangoModel;
+    integrations: NangoIntegration & NangoModelV1;
 }
 
 class FlowService {
@@ -32,7 +32,7 @@ class FlowService {
                     const models = flow['returns'] as string[];
 
                     const model_schema = models.map((modelName: string) => {
-                        const allModels = allFlows['models'] as NangoModel['models'];
+                        const allModels = allFlows['models'] as NangoModelV1['models'];
                         const modelDetails = allModels[modelName] as Record<string, string>;
                         return {
                             name: modelName,

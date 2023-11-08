@@ -4,9 +4,11 @@ import * as fs from 'fs';
 import yaml from 'js-yaml';
 import { SyncConfigType } from '@nangohq/shared';
 import { init, generate, exampleSyncName, nangoCallsAreUsedCorrectly } from './sync.js';
+import yamlService from './services/yaml.service.js';
 
 describe('generate function tests', () => {
     const testDirectory = './nango-integrations';
+    const fixturesPath = './packages/cli/lib/fixtures';
 
     beforeAll(async () => {
         if (!fs.existsSync('./packages/cli/dist/nango-sync.d.ts')) {
@@ -217,26 +219,288 @@ describe('generate function tests', () => {
     });
 
     it('should not complain of try catch not being awaited', async () => {
-        const filePath = './packages/cli/lib/fixtures';
-        const awaiting = nangoCallsAreUsedCorrectly(`${filePath}/sync.ts`, SyncConfigType.SYNC, ['GithubIssue']);
+        const awaiting = nangoCallsAreUsedCorrectly(`${fixturesPath}/sync.ts`, SyncConfigType.SYNC, ['GithubIssue']);
         expect(awaiting).toBe(true);
     });
 
     it('should complain of a non try catch not being awaited', async () => {
-        const filePath = './packages/cli/lib/fixtures';
-        const awaiting = nangoCallsAreUsedCorrectly(`${filePath}/failing-sync.ts`, SyncConfigType.SYNC, ['GithubIssue']);
+        const awaiting = nangoCallsAreUsedCorrectly(`${fixturesPath}/failing-sync.ts`, SyncConfigType.SYNC, ['GithubIssue']);
         expect(awaiting).toBe(false);
     });
 
     it('should not complain about a correct model', async () => {
-        const filePath = './packages/cli/lib/fixtures';
-        const usedCorrectly = nangoCallsAreUsedCorrectly(`${filePath}/bad-model.ts`, SyncConfigType.SYNC, ['SomeBadModel']);
+        const usedCorrectly = nangoCallsAreUsedCorrectly(`${fixturesPath}/bad-model.ts`, SyncConfigType.SYNC, ['SomeBadModel']);
         expect(usedCorrectly).toBe(true);
     });
 
     it('should complain about an incorrect model', async () => {
-        const filePath = './packages/cli/lib/fixtures';
-        const awaiting = nangoCallsAreUsedCorrectly(`${filePath}/bad-model.ts`, SyncConfigType.SYNC, ['GithubIssue']);
+        const awaiting = nangoCallsAreUsedCorrectly(`${fixturesPath}/bad-model.ts`, SyncConfigType.SYNC, ['GithubIssue']);
         expect(awaiting).toBe(false);
+    });
+
+    it('should parse a nango.yaml file that is version 1 as expected', async () => {
+        const config = await yamlService.getConfig(path.resolve(__dirname, `./fixtures/nango-yaml/v1`));
+        expect(config).toBeDefined();
+        expect(config).toEqual([
+            {
+                providerConfigKey: 'demo-github-integration',
+                syncs: [
+                    {
+                        name: 'github-issue-example',
+                        models: [
+                            {
+                                name: 'GithubIssue',
+                                fields: [
+                                    { name: 'id', type: 'integer' },
+                                    { name: 'owner', type: 'string' },
+                                    { name: 'repo', type: 'string' },
+                                    { name: 'issue_number', type: 'number' },
+                                    { name: 'title', type: 'string' },
+                                    { name: 'author', type: 'string' },
+                                    { name: 'author_id', type: 'string' },
+                                    { name: 'state', type: 'string' },
+                                    { name: 'date_created', type: 'date' },
+                                    { name: 'date_last_modified', type: 'date' },
+                                    { name: 'body', type: 'string' }
+                                ]
+                            }
+                        ],
+                        runs: 'every half hour',
+                        track_deletes: false,
+                        auto_start: true,
+                        attributes: {},
+                        returns: ['GithubIssue'],
+                        description: '',
+                        scopes: [],
+                        endpoints: []
+                    }
+                ],
+                actions: []
+            }
+        ]);
+    });
+
+    it('should parse a nango.yaml file that is version 2 as expected', async () => {
+        const config = await yamlService.getConfig(path.resolve(__dirname, `./fixtures/nango-yaml/v2`));
+        console.log(JSON.stringify(config));
+        expect(config).toBeDefined();
+        expect(config).toEqual([
+            {
+                providerConfigKey: 'demo-github-integration',
+                syncs: [
+                    {
+                        name: 'github-issue-example',
+                        models: [
+                            {
+                                name: 'GithubIssue',
+                                fields: [
+                                    {
+                                        name: 'id',
+                                        type: 'integer'
+                                    },
+                                    {
+                                        name: 'owner',
+                                        type: 'string'
+                                    },
+                                    {
+                                        name: 'repo',
+                                        type: 'string'
+                                    },
+                                    {
+                                        name: 'issue_number',
+                                        type: 'number'
+                                    },
+                                    {
+                                        name: 'title',
+                                        type: 'string'
+                                    },
+                                    {
+                                        name: 'author',
+                                        type: 'string'
+                                    },
+                                    {
+                                        name: 'author_id',
+                                        type: 'string'
+                                    },
+                                    {
+                                        name: 'state',
+                                        type: 'string'
+                                    },
+                                    {
+                                        name: 'date_created',
+                                        type: 'date'
+                                    },
+                                    {
+                                        name: 'date_last_modified',
+                                        type: 'date'
+                                    },
+                                    {
+                                        name: 'body',
+                                        type: 'string'
+                                    }
+                                ]
+                            }
+                        ],
+                        sync_type: 'INCREMENTAL',
+                        runs: 'every half hour',
+                        track_deletes: false,
+                        auto_start: true,
+                        attributes: {},
+                        input: {},
+                        returns: 'GithubIssue',
+                        description: 'Sync github issues continuously from public repos\n',
+                        scopes: 'public_repo',
+                        endpoints: [
+                            {
+                                GET: '/ticketing/tickets'
+                            }
+                        ]
+                    },
+                    {
+                        name: 'github-issue-example-two',
+                        models: [
+                            {
+                                name: 'GithubIssue',
+                                fields: [
+                                    {
+                                        name: 'id',
+                                        type: 'integer'
+                                    },
+                                    {
+                                        name: 'owner',
+                                        type: 'string'
+                                    },
+                                    {
+                                        name: 'repo',
+                                        type: 'string'
+                                    },
+                                    {
+                                        name: 'issue_number',
+                                        type: 'number'
+                                    },
+                                    {
+                                        name: 'title',
+                                        type: 'string'
+                                    },
+                                    {
+                                        name: 'author',
+                                        type: 'string'
+                                    },
+                                    {
+                                        name: 'author_id',
+                                        type: 'string'
+                                    },
+                                    {
+                                        name: 'state',
+                                        type: 'string'
+                                    },
+                                    {
+                                        name: 'date_created',
+                                        type: 'date'
+                                    },
+                                    {
+                                        name: 'date_last_modified',
+                                        type: 'date'
+                                    },
+                                    {
+                                        name: 'body',
+                                        type: 'string'
+                                    }
+                                ]
+                            }
+                        ],
+                        sync_type: 'INCREMENTAL',
+                        runs: 'every hour',
+                        track_deletes: false,
+                        auto_start: true,
+                        attributes: {},
+                        input: {},
+                        returns: 'GithubIssue',
+                        description: 'Sync github issues continuously from public repos example two\n',
+                        scopes: 'public_repo',
+                        endpoints: [
+                            {
+                                GET: '/ticketing/tickets-two'
+                            }
+                        ]
+                    }
+                ],
+                actions: [
+                    {
+                        name: 'github-create-issue',
+                        models: [
+                            {
+                                name: 'GithubCreateOutput',
+                                fields: [
+                                    {
+                                        name: 'result',
+                                        type: 'GithubIssue'
+                                    }
+                                ]
+                            }
+                        ],
+                        attributes: {},
+                        returns: 'GithubCreateOutput',
+                        runs: undefined,
+                        description: 'Creates a GitHub issue.',
+                        scopes: 'repo:write',
+                        input: {
+                            name: 'GithubCreateIssueInput',
+                            fields: [
+                                {
+                                    name: 'id',
+                                    type: 'integer'
+                                },
+                                {
+                                    name: 'owner',
+                                    type: 'string'
+                                },
+                                {
+                                    name: 'repo',
+                                    type: 'string'
+                                },
+                                {
+                                    name: 'issue_number',
+                                    type: 'number'
+                                },
+                                {
+                                    name: 'title',
+                                    type: 'string'
+                                },
+                                {
+                                    name: 'author',
+                                    type: 'string'
+                                },
+                                {
+                                    name: 'author_id',
+                                    type: 'string'
+                                },
+                                {
+                                    name: 'state',
+                                    type: 'string'
+                                },
+                                {
+                                    name: 'date_created',
+                                    type: 'date'
+                                },
+                                {
+                                    name: 'date_last_modified',
+                                    type: 'date'
+                                },
+                                {
+                                    name: 'body',
+                                    type: 'string'
+                                }
+                            ]
+                        },
+                        endpoints: [
+                            {
+                                POST: '/ticketing/tickets'
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]);
     });
 });

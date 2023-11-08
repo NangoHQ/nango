@@ -29,7 +29,6 @@ import type {
 } from '@nangohq/shared';
 import {
     getInterval,
-    loadSimplifiedConfig,
     cloudHost,
     stagingHost,
     SyncType,
@@ -46,13 +45,13 @@ import {
     verifyNecessaryFiles,
     getConnection,
     NANGO_INTEGRATIONS_NAME,
-    buildInterfaces,
     enrichHeaders,
     getNangoRootPath,
-    printDebug,
-    getModelNamesFromConfig
+    printDebug
 } from './utils.js';
 import integrationService from './services/local-integration.service.js';
+import yamlService from './services/yaml.service.js';
+import modelService from './services/model.service.js';
 import type { DeployOptions, GlobalOptions } from './types.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -104,7 +103,7 @@ export const generate = async (debug = false, inParentDirectory = false) => {
     const { integrations } = configData;
     const { models } = configData;
 
-    const interfaceDefinitions = buildInterfaces(models, integrations, debug);
+    const interfaceDefinitions = modelService.build(models, integrations, debug);
 
     if (interfaceDefinitions) {
         fs.writeFileSync(`${dirPrefix}/${TYPES_FILE_NAME}`, interfaceDefinitions.join('\n'));
@@ -118,7 +117,7 @@ export const generate = async (debug = false, inParentDirectory = false) => {
     const typesContent = fs.readFileSync(`${getNangoRootPath()}/${NangoSyncTypesFileLocation}`, 'utf8');
     fs.writeFileSync(`${dirPrefix}/${TYPES_FILE_NAME}`, typesContent, { flag: 'a' });
 
-    const config = await getConfig(dirPrefix, debug);
+    const config = await yamlService.getConfig(dirPrefix, debug);
     const flowConfig = `export const NangoFlows = ${JSON.stringify(config, null, 2)} as const; \n`;
     fs.writeFileSync(`${dirPrefix}/${TYPES_FILE_NAME}`, flowConfig, { flag: 'a' });
 
@@ -159,7 +158,7 @@ export const generate = async (debug = false, inParentDirectory = false) => {
                 process.exit(1);
             }
 
-            const { returns: modelOrModels, inputs, type = SyncConfigType.SYNC } = syncData;
+            const { returns: modelOrModels, input, type = SyncConfigType.SYNC } = syncData;
             const syncNameCamel = syncName
                 .split('-')
                 .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
@@ -204,7 +203,7 @@ export const generate = async (debug = false, inParentDirectory = false) => {
                 interfaceFileName: TYPES_FILE_NAME.replace('.ts', ''),
                 interfaceNames,
                 mappings,
-                inputs: inputs || ''
+                inputs: input || ''
             });
 
             const stripped = rendered.replace(/^\s+/, '');
@@ -309,7 +308,7 @@ const createModelFile = async (notify = false) => {
     const configContents = fs.readFileSync(`./${nangoConfigFile}`, 'utf8');
     const configData: NangoConfig = yaml.load(configContents) as unknown as NangoConfig;
     const { models, integrations } = configData;
-    const interfaceDefinitions = buildInterfaces(models, integrations);
+    const interfaceDefinitions = modelService.build(models, integrations);
     if (interfaceDefinitions) {
         fs.writeFileSync(`./${TYPES_FILE_NAME}`, interfaceDefinitions.join('\n'));
     }
@@ -318,28 +317,13 @@ const createModelFile = async (notify = false) => {
     const typesContent = fs.readFileSync(`${getNangoRootPath()}/${NangoSyncTypesFileLocation}`, 'utf8');
     fs.writeFileSync(`./${TYPES_FILE_NAME}`, typesContent, { flag: 'a' });
 
-    const config = await getConfig();
+    const config = await yamlService.getConfig();
     const flowConfig = `export const NangoFlows = ${JSON.stringify(config, null, 2)} as const; \n`;
     fs.writeFileSync(`./${TYPES_FILE_NAME}`, flowConfig, { flag: 'a' });
 
     if (notify) {
         console.log(chalk.green(`The ${nangoConfigFile} was updated. The interface file (${TYPES_FILE_NAME}) was updated to reflect the updated config`));
     }
-};
-
-const getConfig = async (optionalLoadLocation = '', debug = false): Promise<SimplifiedNangoIntegration[]> => {
-    const loadLocation = optionalLoadLocation || './';
-    const config = await loadSimplifiedConfig(loadLocation);
-
-    if (!config) {
-        throw new Error(`Error loading the ${nangoConfigFile} file`);
-    }
-
-    if (debug) {
-        printDebug(`Config file file found`);
-    }
-
-    return config;
 };
 
 async function parseSecretKey(environment: string, debug = false): Promise<void> {
@@ -402,7 +386,7 @@ export const deploy = async (options: DeployOptions, environment: string, debug 
 
     await tsc(debug);
 
-    const config = await getConfig('', debug);
+    const config = await yamlService.getConfig('', debug);
 
     const postData: IncomingSyncConfig[] | null = packageIntegrationData(config, debug, version, optionalSyncName, optionalActionName);
 
@@ -522,7 +506,7 @@ export const adminDeploy = async (environmentName: string, debug = false) => {
 
     await tsc(debug);
 
-    const config = await getConfig('', debug);
+    const config = await yamlService.getConfig('', debug);
 
     const flowData = packageIntegrationData(config, debug);
 
@@ -592,7 +576,7 @@ export const dryRun = async (options: RunArgs, environment: string, debug = fals
         return;
     }
 
-    const config = await getConfig('', debug);
+    const config = await yamlService.getConfig('', debug);
 
     const providerConfigKey = config.find((config) => [...config.syncs, ...config.actions].find((sync) => sync.name === syncName))?.providerConfigKey;
 
@@ -753,8 +737,8 @@ export const tsc = async (debug = false, syncName?: string): Promise<boolean> =>
     const integrationFiles = syncName ? [`./${syncName}.ts`] : glob.sync(`./*.ts`);
     let success = true;
 
-    const config = await getConfig();
-    const modelNames = getModelNamesFromConfig(config);
+    const config = await yamlService.getConfig();
+    const modelNames = yamlService.getModelNames(config);
 
     for (const filePath of integrationFiles) {
         try {
@@ -789,7 +773,7 @@ export const tsc = async (debug = false, syncName?: string): Promise<boolean> =>
 };
 
 export const checkYamlMatchesTsFiles = async (): Promise<boolean> => {
-    const config = await getConfig();
+    const config = await yamlService.getConfig();
 
     const syncNames = config.map((provider) => provider.syncs.map((sync) => sync.name)).flat();
     const actionNames = config.map((provider) => provider.actions.map((action) => action.name)).flat();
@@ -916,8 +900,8 @@ export const nangoCallsAreUsedCorrectly = (filePath: string, type = SyncConfigTy
 
 export const tscWatch = async (debug = false) => {
     const tsconfig = fs.readFileSync(`${getNangoRootPath()}/tsconfig.dev.json`, 'utf8');
-    const config = await getConfig();
-    const modelNames = getModelNamesFromConfig(config);
+    const config = await yamlService.getConfig();
+    const modelNames = yamlService.getModelNames(config);
 
     const watchPath = [`./*.ts`, `./${nangoConfigFile}`];
 

@@ -1,0 +1,46 @@
+integrations:
+  demo-github-integration:
+    syncs:
+      github-issue-example:
+        description: |
+            Sync github issues continuously from public repos
+        sync_type: incremental
+        auto_start: true
+        runs: every half hour
+        endpoint: /ticketing/tickets
+        scopes: public_repo
+        output: GithubIssue
+      github-issue-example-two:
+        description: |
+            Sync github issues continuously from public repos example two
+        sync_type: incremental
+        auto_start: true
+        runs: every hour
+        endpoint: /ticketing/tickets-two
+        scopes: public_repo
+        output: GithubIssue
+    actions:
+      github-create-issue:
+        description: Creates a GitHub issue.
+        endpoint: /ticketing/tickets
+        scopes: repo:write
+        input: GithubCreateIssueInput
+        output: GithubCreateOutput
+
+models:
+  GithubIssue:
+    id: integer
+    owner: string
+    repo: string
+    issue_number: number
+    title: string
+    author: string
+    author_id: string
+    state: string
+    date_created: date
+    date_last_modified: date
+    body: string
+  GithubCreateIssueInput:
+    __extends: GithubIssue
+  GithubCreateOutput:
+    result: GithubIssue
