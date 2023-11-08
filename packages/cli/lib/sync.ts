@@ -52,7 +52,7 @@ import {
     printDebug,
     getModelNamesFromConfig
 } from './utils.js';
-import integrationService from './local-integration.service.js';
+import integrationService from './services/local-integration.service.js';
 import type { DeployOptions, GlobalOptions } from './types.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -95,9 +95,9 @@ export const version = (debug: boolean) => {
 
 export const generate = async (debug = false, inParentDirectory = false) => {
     const dirPrefix = inParentDirectory ? `./${NANGO_INTEGRATIONS_NAME}` : '.';
-    const syncTemplateContents = fs.readFileSync(path.resolve(__dirname, './sync.ejs'), 'utf8');
-    const actionTemplateContents = fs.readFileSync(path.resolve(__dirname, './action.ejs'), 'utf8');
-    const githubExampleTemplateContents = fs.readFileSync(path.resolve(__dirname, './github.sync.ejs'), 'utf8');
+    const syncTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/sync.ejs'), 'utf8');
+    const actionTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/action.ejs'), 'utf8');
+    const githubExampleTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/github.sync.ejs'), 'utf8');
 
     const configContents = fs.readFileSync(`${dirPrefix}/${nangoConfigFile}`, 'utf8');
     const configData: NangoConfig = yaml.load(configContents) as unknown as NangoConfig;
@@ -921,8 +921,8 @@ export const nangoCallsAreUsedCorrectly = (filePath: string, type = SyncConfigTy
 
                 if (callsReferencingModelsToCheck.includes(callee.property.name)) {
                     const args = path.node.arguments as t.Expression[];
-                    const modelArg = args[args.length - 1] as t.StringLiteral;
-                    if (!modelNames.includes(modelArg.value)) {
+                    const modelArg = args[args.length - 1];
+                    if (t.isStringLiteral(modelArg) && !modelNames.includes(modelArg.value)) {
                         console.log(
                             chalk.red(
                                 `"${
