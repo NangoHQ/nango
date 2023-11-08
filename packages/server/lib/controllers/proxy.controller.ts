@@ -501,6 +501,14 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
     private stripSensitiveHeaders(headers: ProxyBodyConfiguration['headers'], config: ProxyBodyConfiguration) {
         const safeHeaders = { ...headers };
 
+        if (!config.token) {
+            if (safeHeaders['Authorization']?.includes('Bearer')) {
+                safeHeaders['Authorization'] = safeHeaders['Authorization'].replace(/Bearer.*/, 'Bearer xxxx');
+            }
+
+            return safeHeaders;
+        }
+
         Object.keys(safeHeaders).forEach((header) => {
             if (safeHeaders[header] === config.token) {
                 safeHeaders[header] = 'xxxx';
