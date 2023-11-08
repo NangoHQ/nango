@@ -344,7 +344,13 @@ export class NangoAction {
 
     public async *paginate<T = any>(config: ProxyConfiguration): AsyncGenerator<T[], undefined, void> {
         const providerConfigKey: string = this.providerConfigKey as string;
-        const template = configService.getTemplate(providerConfigKey);
+        const response = await this.nango.getIntegration(providerConfigKey);
+
+        if (!response || !response.config || !response.config.provider) {
+            throw Error(`There was no provider found for the provider config key: ${providerConfigKey}`);
+        }
+
+        const template = configService.getTemplate(response.config.provider);
         const templatePaginationConfig: Pagination | undefined = template.proxy?.paginate;
 
         if (!templatePaginationConfig && (!config.paginate || !config.paginate.type)) {
@@ -403,7 +409,7 @@ export class NangoSync extends NangoAction {
     lastSyncDate?: Date;
     track_deletes = false;
     logMessages?: unknown[] | undefined = [];
-    stubbedMetadata?: Metadata | undefined = {};
+    stubbedMetadata?: Metadata | undefined = undefined;
 
     constructor(config: NangoProps) {
         super(config);
@@ -488,7 +494,7 @@ export class NangoSync extends NangoAction {
         }
 
         if (this.dryRun) {
-            this.logMessages?.push(`A batch save call would save the following data`);
+            this.logMessages?.push(`A batch save call would save the following data to the ${model} model:}`);
             this.logMessages?.push(...results);
             return null;
         }
@@ -677,7 +683,7 @@ export class NangoSync extends NangoAction {
         }
     }
     public override async getMetadata<T = Metadata>(): Promise<T> {
-        if (this.dryRun && Object.keys(this.stubbedMetadata as object).length > 0) {
+        if (this.dryRun && this.stubbedMetadata) {
             return this.stubbedMetadata as T;
         }
 

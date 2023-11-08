@@ -59,6 +59,7 @@ describe('Pagination', () => {
             authorization_url: '',
             token_url: ''
         };
+        (await import('@nangohq/node')).Nango.prototype.getIntegration = vi.fn().mockReturnValue({ config: { provider: 'github' } });
         vi.spyOn(configService, 'getTemplate').mockImplementation(() => template);
 
         const expectedErrorMessage = 'There was no pagination configuration for this integration or configuration passed in';
@@ -70,6 +71,7 @@ describe('Pagination', () => {
 
         // TODO: mock to return at least one more page to check that cursor is passed in body too
         (await import('@nangohq/node')).Nango.prototype.proxy = vi.fn().mockReturnValue({ data: { issues: [] } });
+        (await import('@nangohq/node')).Nango.prototype.getIntegration = vi.fn().mockReturnValue({ config: { provider: 'github' } });
 
         const endpoint = '/issues';
 

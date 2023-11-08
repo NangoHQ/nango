@@ -9,6 +9,7 @@ import { isCloud } from '../utils/utils.js';
 import type { ServiceResponse } from '../models/Generic.js';
 import { SyncConfigType } from '../models/Sync.js';
 import { NangoError } from '../utils/error.js';
+import { JAVASCRIPT_PRIMITIVES } from '../utils/utils.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -71,8 +72,13 @@ export function getRootDir(optionalLoadLocation?: string) {
     }
 }
 
-function getFieldsForModel(modelName: string, config: NangoConfig): { name: string; type: string }[] {
+function getFieldsForModel(modelName: string, config: NangoConfig): { name: string; type: string }[] | null {
     const modelFields = [];
+
+    if (JAVASCRIPT_PRIMITIVES.includes(modelName)) {
+        return null;
+    }
+
     const modelData = config.models[modelName] || config.models[`${modelName.slice(0, -1)}`];
 
     for (const fieldName in modelData) {
@@ -81,7 +87,9 @@ function getFieldsForModel(modelName: string, config: NangoConfig): { name: stri
             const extendedModels = (fieldType as string).split(',');
             for (const extendedModel of extendedModels) {
                 const extendedFields = getFieldsForModel(extendedModel.trim(), config);
-                modelFields.push(...extendedFields);
+                if (extendedFields) {
+                    modelFields.push(...extendedFields);
+                }
             }
         } else if (typeof fieldType === 'object') {
             for (const subFieldName in fieldType) {
@@ -116,7 +124,7 @@ export function convertConfigObject(config: NangoConfig): SimplifiedNangoIntegra
             if (sync.returns) {
                 const syncReturns = Array.isArray(sync.returns) ? sync.returns : [sync.returns];
                 syncReturns.forEach((model) => {
-                    const modelFields = getFieldsForModel(model, config);
+                    const modelFields = getFieldsForModel(model, config) as { name: string; type: string }[];
                     models.push({ name: model, fields: modelFields });
                 });
             }

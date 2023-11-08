@@ -18,6 +18,7 @@ import syncController from './controllers/sync.controller.js';
 import flowController from './controllers/flow.controller.js';
 import apiAuthController from './controllers/apiAuth.controller.js';
 import appAuthController from './controllers/appAuth.controller.js';
+import onboardingController from './controllers/onboarding.controller.js';
 import path from 'path';
 import { packageJsonFile, dirname } from './utils/utils.js';
 import { WebSocketServer, WebSocket } from 'ws';
@@ -125,39 +126,56 @@ app.route('/api/v1/meta').get(webAuth, environmentController.meta.bind(environme
 app.route('/api/v1/account').get(webAuth, accountController.getAccount.bind(accountController));
 app.route('/api/v1/account').put(webAuth, accountController.editAccount.bind(accountController));
 app.route('/api/v1/account/admin/switch').post(webAuth, accountController.switchAccount.bind(accountController));
+
 app.route('/api/v1/environment').get(webAuth, environmentController.getEnvironment.bind(environmentController));
 app.route('/api/v1/environment/callback').post(webAuth, environmentController.updateCallback.bind(environmentController));
 app.route('/api/v1/environment/webhook').post(webAuth, environmentController.updateWebhookURL.bind(environmentController));
 app.route('/api/v1/environment/hmac').get(webAuth, environmentController.getHmacDigest.bind(environmentController));
 app.route('/api/v1/environment/hmac-enabled').post(webAuth, environmentController.updateHmacEnabled.bind(environmentController));
 app.route('/api/v1/environment/webhook-send').post(webAuth, environmentController.updateAlwaysSendWebhook.bind(environmentController));
+app.route('/api/v1/environment/slack-notifications-enabled').post(webAuth, environmentController.updateSlackNotificationsEnabled.bind(environmentController));
 app.route('/api/v1/environment/hmac-key').post(webAuth, environmentController.updateHmacKey.bind(environmentController));
 app.route('/api/v1/environment/environment-variables').post(webAuth, environmentController.updateEnvironmentVariables.bind(environmentController));
 app.route('/api/v1/environment/rotate-key').post(webAuth, environmentController.rotateKey.bind(accountController));
 app.route('/api/v1/environment/revert-key').post(webAuth, environmentController.revertKey.bind(accountController));
 app.route('/api/v1/environment/activate-key').post(webAuth, environmentController.activateKey.bind(accountController));
+app.route('/api/v1/environment/admin-auth').get(webAuth, environmentController.getAdminAuthInfo.bind(environmentController));
+
 app.route('/api/v1/integration').get(webAuth, configController.listProviderConfigsWeb.bind(configController));
 app.route('/api/v1/integration/:providerConfigKey').get(webAuth, configController.getProviderConfig.bind(configController));
 app.route('/api/v1/integration').put(webAuth, configController.editProviderConfigWeb.bind(connectionController));
 app.route('/api/v1/integration').post(webAuth, configController.createProviderConfig.bind(configController));
 app.route('/api/v1/integration/:providerConfigKey').delete(webAuth, configController.deleteProviderConfig.bind(connectionController));
+
 app.route('/api/v1/provider').get(connectionController.listProviders.bind(connectionController));
+
 app.route('/api/v1/connection').get(webAuth, connectionController.listConnections.bind(connectionController));
 app.route('/api/v1/connection/:connectionId').get(webAuth, connectionController.getConnectionWeb.bind(connectionController));
 app.route('/api/v1/connection/:connectionId').delete(webAuth, connectionController.deleteConnection.bind(connectionController));
+app.route('/api/v1/connection/admin/:connectionId').delete(webAuth, connectionController.deleteAdminConnection.bind(connectionController));
+
 app.route('/api/v1/user').get(webAuth, userController.getUser.bind(userController));
 app.route('/api/v1/user/name').put(webAuth, userController.editName.bind(userController));
 app.route('/api/v1/user/password').put(webAuth, userController.editPassword.bind(userController));
 app.route('/api/v1/users/:userId/suspend').post(webAuth, userController.suspend.bind(userController));
 app.route('/api/v1/users/invite').post(webAuth, userController.invite.bind(userController));
+
 app.route('/api/v1/activity').get(webAuth, activityController.retrieve.bind(activityController));
 app.route('/api/v1/activity-messages').get(webAuth, activityController.getMessages.bind(activityController));
+
 app.route('/api/v1/sync').get(webAuth, syncController.getSyncsByParams.bind(syncController));
 app.route('/api/v1/sync/command').post(webAuth, syncController.syncCommand.bind(syncController));
 app.route('/api/v1/syncs').get(webAuth, syncController.getSyncs.bind(syncController));
 app.route('/api/v1/flows').get(webAuth, flowController.getFlows.bind(syncController));
 app.route('/api/v1/flow/deploy/pre-built').post(webAuth, flowController.deployPreBuiltFlow.bind(flowController));
 app.route('/api/v1/flow/download').post(webAuth, flowController.downloadFlow.bind(flowController));
+app.route('/api/v1/flow/:id').delete(webAuth, flowController.deleteFlow.bind(flowController));
+
+app.route('/api/v1/onboarding').get(webAuth, onboardingController.status.bind(onboardingController));
+app.route('/api/v1/onboarding').post(webAuth, onboardingController.init.bind(onboardingController));
+app.route('/api/v1/onboarding/verify').post(webAuth, onboardingController.verify.bind(onboardingController));
+app.route('/api/v1/onboarding/:id').put(webAuth, onboardingController.updateStatus.bind(onboardingController));
+app.route('/api/v1/onboarding/sync-status').get(webAuth, onboardingController.checkSyncCompletion.bind(onboardingController));
 
 // Hosted signin
 if (!isCloud()) {

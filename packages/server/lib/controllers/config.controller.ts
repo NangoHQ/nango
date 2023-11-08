@@ -12,7 +12,7 @@ import {
     IntegrationWithCreds,
     Integration as ProviderIntegration,
     connectionService,
-    getSyncsByProviderConfigKey,
+    getUniqueSyncsByProviderConfig,
     getActionsByProviderConfigKey
 } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession, parseConnectionConfigParamsFromTemplate } from '../utils/utils.js';
@@ -183,7 +183,14 @@ class ConfigController {
                 client_secret = Buffer.from(client_secret, 'base64').toString('ascii');
             }
 
-            const syncs = await getSyncsByProviderConfigKey(environmentId, providerConfigKey);
+            const syncConfigs = await getUniqueSyncsByProviderConfig(environmentId, providerConfigKey);
+            const syncs = syncConfigs.map((sync) => {
+                const { metadata, ...config } = sync;
+                return {
+                    ...config,
+                    description: metadata?.description
+                };
+            });
             const actions = await getActionsByProviderConfigKey(environmentId, providerConfigKey);
 
             const configRes: ProviderIntegration | IntegrationWithCreds = includeCreds
@@ -302,7 +309,12 @@ class ConfigController {
 
             if (Array.isArray(result) && result.length === 1 && result[0] != null && 'id' in result[0]) {
                 analytics.track(AnalyticsTypes.CONFIG_CREATED, accountId, { provider: config.provider });
-                res.status(200).send();
+                res.status(200).send({
+                    config: {
+                        unique_key: config.unique_key,
+                        provider: config.provider
+                    }
+                });
             } else {
                 throw new NangoError('provider_config_creation_failure');
             }
@@ -370,7 +382,12 @@ class ConfigController {
             }
 
             await configService.editProviderConfig(newConfig);
-            res.status(200).send();
+            res.status(200).send({
+                config: {
+                    unique_key: newConfig.unique_key,
+                    provider: newConfig.provider
+                }
+            });
         } catch (err) {
             next(err);
         }

@@ -414,7 +414,7 @@ export const verifyOwnership = async (nangoConnectionId: number, environment_id:
 };
 
 export const deleteSync = async (syncId: string): Promise<string> => {
-    await schema().from<Sync>(TABLE).where({ id: syncId, deleted: false }).update({ deleted: true });
+    await schema().from<Sync>(TABLE).where({ id: syncId, deleted: false }).update({ deleted: true, deleted_at: new Date() });
 
     await syncOrchestrator.deleteSyncRelatedObjects(syncId);
 

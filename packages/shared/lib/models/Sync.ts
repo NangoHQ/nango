@@ -53,6 +53,14 @@ export interface Job extends TimestampsAndDeleted {
     sync_config_id?: number;
 }
 
+export interface ReportedSyncJobStatus {
+    id?: string;
+    name?: string;
+    status: SyncStatus;
+    latestResult?: SyncResultByModel;
+    jobStatus?: SyncStatus;
+}
+
 export interface SyncModelSchema {
     name: string;
     fields: {

@@ -394,7 +394,7 @@ class ConnectionService {
     public async listConnections(
         environment_id: number,
         connectionId?: string
-    ): Promise<{ id: number; connection_id: number; provider: string; created: string }[]> {
+    ): Promise<{ id: number; connection_id: string; provider: string; created: string }[]> {
         const queryBuilder = db.knex
             .withSchema(db.schema())
             .from<Connection>(`_nango_connections`)
@@ -514,12 +514,8 @@ class ConnectionService {
         return { success: true, error: null, response: connection };
     }
 
-    public async updateLastFetched(connectionId: number) {
-        await db.knex
-            .withSchema(db.schema())
-            .from<Connection>(`_nango_connections`)
-            .where({ id: connectionId, deleted: false })
-            .update({ last_fetched_at: new Date() });
+    public async updateLastFetched(id: number) {
+        await db.knex.withSchema(db.schema()).from<Connection>(`_nango_connections`).where({ id, deleted: false }).update({ last_fetched_at: new Date() });
     }
 
     // Parses and arbitrary object (e.g. a server response or a user provided auth object) into AuthCredentials.

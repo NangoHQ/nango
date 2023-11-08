@@ -219,6 +219,7 @@ export async function getActionConfigByNameAndProviderConfigKey(environment_id: 
             nango_config_id,
             sync_name: name,
             deleted: false,
+            active: true,
             type: SyncConfigType.ACTION
         })
         .first();
@@ -243,6 +244,28 @@ export async function getActionsByProviderConfigKey(environment_id: number, uniq
         deleted: false,
         active: true,
         type: SyncConfigType.ACTION
+    });
+
+    if (result) {
+        return result;
+    }
+
+    return [];
+}
+
+export async function getUniqueSyncsByProviderConfig(environment_id: number, unique_key: string): Promise<SyncConfig[]> {
+    const nango_config_id = await configService.getIdByProviderConfigKey(environment_id, unique_key);
+
+    if (!nango_config_id) {
+        return [];
+    }
+
+    const result = await schema().from<SyncConfig>(TABLE).select('sync_name as name', 'created_at', 'updated_at', 'metadata').where({
+        environment_id,
+        nango_config_id,
+        deleted: false,
+        active: true,
+        type: SyncConfigType.SYNC
     });
 
     if (result) {
@@ -430,6 +453,24 @@ export async function getSyncConfigsWithConnectionsByEnvironmentId(environment_i
             active: true,
             '_nango_configs.deleted': false,
             [`${TABLE}.deleted`]: false
+        });
+
+    return result;
+}
+
+export async function getSyncConfigConnections(id: number, environment_id: number): Promise<{ connection_id: string; id: string; name: string }[]> {
+    const result = await schema()
+        .select(`_nango_connections.connection_id`, '_nango_syncs.id', '_nango_syncs.name')
+        .from<SyncConfig>(TABLE)
+        .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')
+        .join('_nango_connections', '_nango_connections.provider_config_key', '_nango_configs.unique_key')
+        .join('_nango_syncs', `_nango_syncs.name`, `${TABLE}.sync_name`)
+        .where({
+            '_nango_configs.environment_id': environment_id,
+            active: true,
+            '_nango_configs.deleted': false,
+            [`${TABLE}.deleted`]: false,
+            [`${TABLE}.id`]: id
         });
 
     return result;

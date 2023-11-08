@@ -1,5 +1,5 @@
 integrations:
-  gmail:
+  google-mail:
     gmail-emails:
       runs: every hour
       returns:

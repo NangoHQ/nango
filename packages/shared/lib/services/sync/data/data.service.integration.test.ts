@@ -7,6 +7,7 @@ import { createConfigSeeds } from '../../../db/seeders/config.seeder.js';
 import { createConnectionSeeds } from '../../../db/seeders/connection.seeder.js';
 import { createSyncSeeds } from '../../../db/seeders/sync.seeder.js';
 import { createSyncJobSeeds } from '../../../db/seeders/sync-job.seeder.js';
+import { createActivityLogSeed } from '../../../db/seeders/activity.seeder.js';
 import type { DataRecord, CustomerFacingDataRecord, DataRecordWithMetadata } from '../../../models/Sync.js';
 
 describe('Data service integration tests', () => {
@@ -48,13 +49,14 @@ describe('Data service integration tests', () => {
         ];
         const sync = await createSyncSeeds(connections[0]);
         const job = await createSyncJobSeeds(connections[0]);
+        const activityLogId = await createActivityLogSeed(1);
         const modelName = Math.random().toString(36).substring(7);
         const { response: formattedResults } = formatDataRecords(duplicateRecords, connections[0] as number, modelName, sync.id as string, job.id as number);
         const { error, success } = await DataService.upsert(
             formattedResults as unknown as DataRecord[],
             '_nango_sync_data_records',
             'external_id',
-            1,
+            activityLogId,
             modelName,
             1,
             1
