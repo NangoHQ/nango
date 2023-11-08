@@ -157,7 +157,7 @@ integrations:
         name: string
         url: string
         last_modified_date: date
-  gmail:
+  google-mail:
     gmail-emails:
       runs: every hour
       returns:
