@@ -223,6 +223,7 @@
                         "integrations/all/linkedin",
                         "integrations/all/mailchimp",
                         "integrations/all/microsoft-teams",
+                        "integrations/all/microsoft-tenant-specific",
                         "integrations/all/miro",
                         "integrations/all/mixpanel",
                         "integrations/all/monday",
