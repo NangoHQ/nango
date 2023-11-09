@@ -221,6 +221,11 @@ export class NangoError extends Error {
                 this.message = `Missing param 'provider'.`;
                 break;
 
+            case 'no_syncs_found':
+                this.status = 400;
+                this.message = `No syncs found given the inputs.`;
+                break;
+
             case 'missing_client_id':
                 this.status = 400;
                 this.message = `Missing param 'oauth_client_id'.`;
