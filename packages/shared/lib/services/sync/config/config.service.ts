@@ -7,7 +7,7 @@ import { Action, SyncConfigWithProvider, SyncConfig, SlimSync, SyncConfigType, N
 import { convertConfigObject } from '../../nango-config.service.js';
 import type { NangoConnection } from '../../../models/Connection.js';
 import type { Config as ProviderConfig } from '../../../models/Provider.js';
-import type { NangoConfigV1, SimplifiedNangoIntegration } from '../../../models/NangoConfig.js';
+import type { NangoConfigV1, StandardNangoConfig } from '../../../models/NangoConfig.js';
 import errorManager, { ErrorSourceEnum } from '../../../utils/error.manager.js';
 
 const TABLE = dbNamespace + 'sync_configs';
@@ -67,7 +67,7 @@ export async function getSyncConfig(nangoConnection: NangoConnection, syncName?:
     return nangoConfig;
 }
 
-export async function getAllSyncsAndActions(environment_id: number): Promise<SimplifiedNangoIntegration[]> {
+export async function getAllSyncsAndActions(environment_id: number): Promise<StandardNangoConfig[]> {
     const syncConfigs = await schema()
         .select(
             `${TABLE}.sync_name`,
@@ -132,7 +132,7 @@ export async function getAllSyncsAndActions(environment_id: number): Promise<Sim
     type extendedSyncConfig = SyncConfig & { provider: string; unique_key: string };
 
     const simlpleConfig = convertConfigObject(nangoConfig);
-    const configWithModels = simlpleConfig.map((config: SimplifiedNangoIntegration) => {
+    const configWithModels = simlpleConfig.map((config: StandardNangoConfig) => {
         const { providerConfigKey } = config;
         for (const sync of [...config.syncs, ...config.actions]) {
             const { name } = sync;

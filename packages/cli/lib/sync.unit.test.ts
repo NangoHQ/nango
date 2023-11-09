@@ -3,8 +3,10 @@ import path from 'path';
 import * as fs from 'fs';
 import yaml from 'js-yaml';
 import { SyncConfigType } from '@nangohq/shared';
-import { init, generate, exampleSyncName, nangoCallsAreUsedCorrectly } from './sync.js';
+import { init, generate } from './cli.js';
+import { exampleSyncName } from './constants.js';
 import yamlService from './services/yaml.service.js';
+import parserService from './services/parser.service.js';
 
 describe('generate function tests', () => {
     const testDirectory = './nango-integrations';
@@ -219,22 +221,22 @@ describe('generate function tests', () => {
     });
 
     it('should not complain of try catch not being awaited', async () => {
-        const awaiting = nangoCallsAreUsedCorrectly(`${fixturesPath}/sync.ts`, SyncConfigType.SYNC, ['GithubIssue']);
+        const awaiting = parserService.callsAreUsedCorrectly(`${fixturesPath}/sync.ts`, SyncConfigType.SYNC, ['GithubIssue']);
         expect(awaiting).toBe(true);
     });
 
     it('should complain of a non try catch not being awaited', async () => {
-        const awaiting = nangoCallsAreUsedCorrectly(`${fixturesPath}/failing-sync.ts`, SyncConfigType.SYNC, ['GithubIssue']);
+        const awaiting = parserService.callsAreUsedCorrectly(`${fixturesPath}/failing-sync.ts`, SyncConfigType.SYNC, ['GithubIssue']);
         expect(awaiting).toBe(false);
     });
 
     it('should not complain about a correct model', async () => {
-        const usedCorrectly = nangoCallsAreUsedCorrectly(`${fixturesPath}/bad-model.ts`, SyncConfigType.SYNC, ['SomeBadModel']);
+        const usedCorrectly = parserService.callsAreUsedCorrectly(`${fixturesPath}/bad-model.ts`, SyncConfigType.SYNC, ['SomeBadModel']);
         expect(usedCorrectly).toBe(true);
     });
 
     it('should complain about an incorrect model', async () => {
-        const awaiting = nangoCallsAreUsedCorrectly(`${fixturesPath}/bad-model.ts`, SyncConfigType.SYNC, ['GithubIssue']);
+        const awaiting = parserService.callsAreUsedCorrectly(`${fixturesPath}/bad-model.ts`, SyncConfigType.SYNC, ['GithubIssue']);
         expect(awaiting).toBe(false);
     });
 
@@ -282,7 +284,6 @@ describe('generate function tests', () => {
 
     it('should parse a nango.yaml file that is version 2 as expected', async () => {
         const config = await yamlService.getConfig(path.resolve(__dirname, `./fixtures/nango-yaml/v2`));
-        console.log(JSON.stringify(config));
         expect(config).toBeDefined();
         expect(config).toEqual([
             {

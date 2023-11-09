@@ -1,7 +1,11 @@
+import fs from 'fs';
+import yaml from 'js-yaml';
 import chalk from 'chalk';
-import type { NangoModel, NangoIntegration, NangoIntegrationData } from '@nangohq/shared';
-import { SyncConfigType } from '@nangohq/shared';
-import { printDebug } from '../utils.js';
+import type { NangoConfig, NangoModel, NangoIntegration, NangoIntegrationData } from '@nangohq/shared';
+import { SyncConfigType, nangoConfigFile } from '@nangohq/shared';
+import { printDebug, getNangoRootPath } from '../utils.js';
+import { TYPES_FILE_NAME, NangoSyncTypesFileLocation } from '../constants.js';
+import yamlService from './yaml.service.js';
 
 class ModelService {
     public build(models: NangoModel, integrations: NangoIntegration, debug = false): (string | undefined)[] | null {
@@ -140,6 +144,28 @@ class ModelService {
                 console.log(chalk.red(`Failed to parse field ${rawField} so just returning it back as a string`));
                 return String(rawField);
             }
+        }
+    }
+
+    public async createModelFile(notify = false) {
+        const configContents = fs.readFileSync(`./${nangoConfigFile}`, 'utf8');
+        const configData: NangoConfig = yaml.load(configContents) as unknown as NangoConfig;
+        const { models, integrations } = configData;
+        const interfaceDefinitions = modelService.build(models, integrations);
+        if (interfaceDefinitions) {
+            fs.writeFileSync(`./${TYPES_FILE_NAME}`, interfaceDefinitions.join('\n'));
+        }
+
+        // insert NangoSync types to the bottom of the file
+        const typesContent = fs.readFileSync(`${getNangoRootPath()}/${NangoSyncTypesFileLocation}`, 'utf8');
+        fs.writeFileSync(`./${TYPES_FILE_NAME}`, typesContent, { flag: 'a' });
+
+        const config = await yamlService.getConfig();
+        const flowConfig = `export const NangoFlows = ${JSON.stringify(config, null, 2)} as const; \n`;
+        fs.writeFileSync(`./${TYPES_FILE_NAME}`, flowConfig, { flag: 'a' });
+
+        if (notify) {
+            console.log(chalk.green(`The ${nangoConfigFile} was updated. The interface file (${TYPES_FILE_NAME}) was updated to reflect the updated config`));
         }
     }
 }

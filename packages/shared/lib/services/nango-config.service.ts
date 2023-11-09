@@ -8,7 +8,7 @@ import type {
     NangoConfig,
     NangoConfigV1,
     NangoConfigV2,
-    SimplifiedNangoIntegration,
+    StandardNangoConfig,
     NangoSyncConfig,
     NangoSyncModel,
     NangoV2Integration,
@@ -51,14 +51,14 @@ export function loadLocalNangoConfig(loadLocation?: string): Promise<NangoConfig
     return Promise.resolve(null);
 }
 
-export async function loadSimplifiedConfig(loadLocation?: string): Promise<SimplifiedNangoIntegration[] | null> {
+export async function loadSimplifiedConfig(loadLocation?: string): Promise<StandardNangoConfig[] | null> {
     try {
         const configData: NangoConfig = (await loadLocalNangoConfig(loadLocation)) as NangoConfig;
 
         if (!configData) {
             return null;
         }
-        let config: SimplifiedNangoIntegration[] = [];
+        let config: StandardNangoConfig[] = [];
         const [firstProviderConfigKey] = Object.keys(configData.integrations) as [string];
         const firstProviderConfig = configData.integrations[firstProviderConfigKey] as NangoV2Integration;
         if (firstProviderConfig['syncs'] || firstProviderConfig['actions']) {
@@ -121,7 +121,7 @@ function getFieldsForModel(modelName: string, config: NangoConfig): { name: stri
     return modelFields;
 }
 
-export function convertConfigObject(config: NangoConfigV1): SimplifiedNangoIntegration[] {
+export function convertConfigObject(config: NangoConfigV1): StandardNangoConfig[] {
     const output = [];
 
     for (const providerConfigKey in config.integrations) {
@@ -166,7 +166,7 @@ export function convertConfigObject(config: NangoConfigV1): SimplifiedNangoInteg
             }
         }
 
-        const simplifiedIntegration: SimplifiedNangoIntegration = {
+        const simplifiedIntegration: StandardNangoConfig = {
             providerConfigKey,
             syncs,
             actions
@@ -202,8 +202,8 @@ const assignEndpoints = (rawEndpoint: string, defaultMethod: HTTP_VERB) => {
     return endpoints;
 };
 
-export function convertV2ConfigObject(config: NangoConfigV2): SimplifiedNangoIntegration[] {
-    const output: SimplifiedNangoIntegration[] = [];
+export function convertV2ConfigObject(config: NangoConfigV2): StandardNangoConfig[] {
+    const output: StandardNangoConfig[] = [];
 
     for (const providerConfigKey in config.integrations) {
         const builtSyncs: NangoSyncConfig[] = [];
@@ -307,7 +307,7 @@ export function convertV2ConfigObject(config: NangoConfigV2): SimplifiedNangoInt
             builtActions.push(actionObject);
         }
 
-        const simplifiedIntegration: SimplifiedNangoIntegration = {
+        const simplifiedIntegration: StandardNangoConfig = {
             providerConfigKey,
             syncs: builtSyncs,
             actions: builtActions

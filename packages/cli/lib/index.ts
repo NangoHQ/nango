@@ -12,8 +12,12 @@ import path from 'path';
 import * as dotenv from 'dotenv';
 
 import { nangoConfigFile, loadSimplifiedConfig } from '@nangohq/shared';
-import { init, dryRun, generate, tsc, tscWatch, configWatch, dockerRun, version, deploy, adminDeploy, checkYamlMatchesTsFiles } from './sync.js';
-import { upgradeAction, NANGO_INTEGRATIONS_LOCATION, verifyNecessaryFiles, printDebug } from './utils.js';
+import { init, generate, tscWatch, configWatch, dockerRun, version } from './cli.js';
+import deployService from './services/deploy.service.js';
+import compileService from './services/compile.service.js';
+import verificationService from './services/verification.service.js';
+import dryrunService from './services/dryrun.service.js';
+import { upgradeAction, NANGO_INTEGRATIONS_LOCATION, printDebug } from './utils.js';
 import type { ENV, DeployOptions } from './types.js';
 
 class NangoCommand extends Command {
@@ -103,8 +107,8 @@ program
     .option('-m, --metadata [metadata]', 'Optional (for syncs only): metadata to stub for the sync script')
     .action(async function (this: Command, sync: string, connectionId: string) {
         const { autoConfirm, debug, e: environment } = this.opts();
-        await verifyNecessaryFiles(autoConfirm, debug);
-        dryRun({ ...this.opts(), sync, connectionId }, environment, debug);
+        await verificationService.necessaryFilesExist(autoConfirm, debug);
+        dryrunService.run({ ...this.opts(), sync, connectionId }, environment, debug);
     });
 
 program
@@ -113,7 +117,7 @@ program
     .option('--no-compile-interfaces', `Watch the ${nangoConfigFile} and recompile the interfaces on change`, true)
     .action(async function (this: Command) {
         const { compileInterfaces, autoConfirm, debug } = this.opts();
-        await verifyNecessaryFiles(autoConfirm, debug, false);
+        await verificationService.necessaryFilesExist(autoConfirm, debug, false);
 
         if (compileInterfaces) {
             configWatch(debug);
@@ -134,7 +138,7 @@ program
         const options = this.opts();
         (async (options: DeployOptions) => {
             const { debug } = options;
-            await deploy({ ...options, env: 'production' as ENV }, environment, debug);
+            await deployService.prep({ ...options, env: 'production' as ENV }, environment, debug);
         })(options as DeployOptions);
     });
 
@@ -150,7 +154,7 @@ program
     .action(async function (this: Command, environment: string) {
         const options = this.opts();
         (async (options: DeployOptions) => {
-            await deploy({ ...options, env: 'local' }, environment, options.debug);
+            await deployService.prep({ ...options, env: 'local' }, environment, options.debug);
         })(options as DeployOptions);
     });
 
@@ -164,7 +168,7 @@ program
     .action(async function (this: Command, environment: string) {
         const options = this.opts();
         (async (options: DeployOptions) => {
-            await deploy({ ...options, env: 'staging' }, environment, options.debug);
+            await deployService.prep({ ...options, env: 'staging' }, environment, options.debug);
         })(options as DeployOptions);
     });
 
@@ -173,9 +177,9 @@ program
     .description('Compile the integration files to JavaScript')
     .action(async function (this: Command) {
         const { autoConfirm, debug } = this.opts();
-        await verifyNecessaryFiles(autoConfirm, debug);
-        await checkYamlMatchesTsFiles();
-        tsc(debug);
+        await verificationService.necessaryFilesExist(autoConfirm, debug);
+        await verificationService.filesMatchConfig();
+        await compileService.run(debug);
     });
 
 program
@@ -184,7 +188,7 @@ program
     .option('--no-compile-interfaces', `Watch the ${nangoConfigFile} and recompile the interfaces on change`, true)
     .action(async function (this: Command) {
         const { compileInterfaces, autoConfirm, debug } = this.opts();
-        await verifyNecessaryFiles(autoConfirm, debug);
+        await verificationService.necessaryFilesExist(autoConfirm, debug);
         if (compileInterfaces) {
             configWatch(debug);
         }
@@ -207,7 +211,7 @@ program
     .description('Verify the parsed sync config and output the object for verification')
     .action(async function (this: Command) {
         const { autoConfirm } = this.opts();
-        await verifyNecessaryFiles(autoConfirm);
+        await verificationService.necessaryFilesExist(autoConfirm);
         const cwd = process.cwd();
         const config = await loadSimplifiedConfig(path.resolve(cwd, NANGO_INTEGRATIONS_LOCATION));
 
@@ -221,7 +225,7 @@ program
     .arguments('environmentName')
     .action(async function (this: Command, environmentName: string) {
         const { debug } = this.opts();
-        await adminDeploy(environmentName, debug);
+        await deployService.admin(environmentName, debug);
     });
 
 program.parse();

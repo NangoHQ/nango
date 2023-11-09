@@ -122,7 +122,7 @@ export interface NangoSyncConfig {
     sync_type?: SyncType;
 }
 
-export interface SimplifiedNangoIntegration {
+export interface StandardNangoConfig {
     providerConfigKey: string;
     provider?: string;
     syncs: NangoSyncConfig[];
