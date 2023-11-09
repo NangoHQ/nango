@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import promptly from 'promptly';
 import axios, { AxiosResponse } from 'axios';
-import type { SyncDeploymentResult, StandardNangoConfig, IncomingSyncConfig, NangoConfigMetadata } from '@nangohq/shared';
+import type { SyncType, SyncDeploymentResult, StandardNangoConfig, IncomingFlowConfig, NangoConfigMetadata } from '@nangohq/shared';
 import { SyncConfigType, localFileService, getInterval, stagingHost, cloudHost } from '@nangohq/shared';
 import configService from './config.service.js';
 import compileService from './compile.service.js';
@@ -36,9 +36,14 @@ class DeployService {
 
         await compileService.run(debug);
 
-        const config = await configService.load('', debug);
+        const { success, error, response: config } = await configService.load('', debug);
 
-        const flowData = deployService.package(config, debug);
+        if (!success || !config) {
+            console.log(chalk.red(error?.message));
+            return;
+        }
+
+        const flowData = this.package(config, debug);
 
         if (!flowData) {
             return;
@@ -104,9 +109,14 @@ class DeployService {
 
         await compileService.run(debug);
 
-        const config = await configService.load('', debug);
+        const { success, error, response: config } = await configService.load('', debug);
 
-        const postData: IncomingSyncConfig[] | null = deployService.package(config, debug, version, optionalSyncName, optionalActionName);
+        if (!success || !config) {
+            console.log(chalk.red(error?.message));
+            return;
+        }
+
+        const postData: IncomingFlowConfig[] | null = this.package(config, debug, version, optionalSyncName, optionalActionName);
 
         if (!postData) {
             return;
@@ -178,7 +188,7 @@ class DeployService {
 
     public async run(
         url: string,
-        body: { syncs: IncomingSyncConfig[]; nangoYamlBody: string | null; reconcile: boolean; debug: boolean; singleDeployMode?: boolean }
+        body: { syncs: IncomingFlowConfig[]; nangoYamlBody: string | null; reconcile: boolean; debug: boolean; singleDeployMode?: boolean }
     ) {
         await axios
             .post(url, body, { headers: enrichHeaders(), httpsAgent: httpsAgent() })
@@ -198,8 +208,8 @@ class DeployService {
             });
     }
 
-    public package(config: StandardNangoConfig[], debug: boolean, version = '', optionalSyncName = '', optionalActionName = ''): IncomingSyncConfig[] | null {
-        const postData: IncomingSyncConfig[] = [];
+    public package(config: StandardNangoConfig[], debug: boolean, version = '', optionalSyncName = '', optionalActionName = ''): IncomingFlowConfig[] | null {
+        const postData: IncomingFlowConfig[] = [];
 
         for (const integration of config) {
             const { providerConfigKey } = integration;
@@ -221,19 +231,19 @@ class DeployService {
                 flows = [...syncs, ...actions];
             }
 
-            for (const sync of flows) {
-                const { name: syncName, runs = '', returns: models, models: model_schema, type = SyncConfigType.SYNC } = sync;
+            for (const flow of flows) {
+                const { name: syncName, runs = '', returns: models, models: model_schema, type = SyncConfigType.SYNC } = flow;
 
                 const { path: integrationFilePath, result: integrationFileResult } = localFileService.checkForIntegrationDistFile(syncName, './');
 
                 const metadata = {} as NangoConfigMetadata;
 
-                if (sync.description) {
-                    metadata['description'] = sync.description;
+                if (flow.description) {
+                    metadata['description'] = flow.description;
                 }
 
-                if (sync.scopes) {
-                    metadata['scopes'] = sync.scopes;
+                if (flow.scopes) {
+                    metadata['scopes'] = flow.scopes;
                 }
 
                 if (!integrationFileResult) {
@@ -273,17 +283,19 @@ class DeployService {
                     models: Array.isArray(models) ? models : [models],
                     version: version as string,
                     runs,
-                    track_deletes: sync.track_deletes || false,
-                    auto_start: sync.auto_start === false ? false : true,
-                    attributes: sync.attributes || {},
+                    track_deletes: flow.track_deletes || false,
+                    auto_start: flow.auto_start === false ? false : true,
+                    attributes: flow.attributes || {},
                     metadata: metadata || {},
+                    input: flow?.input?.name || '',
+                    sync_type: flow.sync_type as SyncType,
                     type,
                     fileBody: {
                         js: localFileService.getIntegrationFile(syncName, './') as string,
                         ts: localFileService.getIntegrationTsFile(syncName, './') as string
                     },
                     model_schema: JSON.stringify(model_schema),
-                    endpoints: sync.endpoints
+                    endpoints: flow.endpoints
                 };
 
                 postData.push(body);

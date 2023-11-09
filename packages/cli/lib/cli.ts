@@ -68,7 +68,13 @@ export const generate = async (debug = false, inParentDirectory = false) => {
     const typesContent = fs.readFileSync(`${getNangoRootPath()}/${NangoSyncTypesFileLocation}`, 'utf8');
     fs.writeFileSync(`${dirPrefix}/${TYPES_FILE_NAME}`, typesContent, { flag: 'a' });
 
-    const config = await configService.load(dirPrefix, debug);
+    const { success, error, response: config } = await configService.load(dirPrefix, debug);
+
+    if (!success || !config) {
+        console.log(chalk.red(error?.message));
+        return;
+    }
+
     const flowConfig = `export const NangoFlows = ${JSON.stringify(config, null, 2)} as const; \n`;
     fs.writeFileSync(`${dirPrefix}/${TYPES_FILE_NAME}`, flowConfig, { flag: 'a' });
 
@@ -257,7 +263,13 @@ NANGO_DEPLOY_AUTO_CONFIRM=false # Default value`
 
 export const tscWatch = async (debug = false) => {
     const tsconfig = fs.readFileSync(`${getNangoRootPath()}/tsconfig.dev.json`, 'utf8');
-    const config = await configService.load();
+    const { success, error, response: config } = await configService.load();
+
+    if (!success || !config) {
+        console.log(chalk.red(error?.message));
+        return;
+    }
+
     const modelNames = configService.getModelNames(config);
 
     const watchPath = [`./*.ts`, `./${nangoConfigFile}`];
@@ -325,7 +337,7 @@ export const tscWatch = async (debug = false) => {
         });
 
         try {
-            const providerConfiguration = config.find((config) =>
+            const providerConfiguration = config?.find((config) =>
                 [...config.syncs, ...config.actions].find((sync) => sync.name === path.basename(filePath, '.ts'))
             );
             if (!providerConfiguration) {

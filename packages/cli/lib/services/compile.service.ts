@@ -41,7 +41,13 @@ class CompileService {
         const integrationFiles = syncName ? [`./${syncName}.ts`] : glob.sync(`./*.ts`);
         let success = true;
 
-        const config = await configService.load();
+        const { success: loadSuccess, error, response: config } = await configService.load('', debug);
+
+        if (!loadSuccess || !config) {
+            console.log(chalk.red(error?.message));
+            throw new Error('Error loading config');
+        }
+
         const modelNames = configService.getModelNames(config);
 
         for (const filePath of integrationFiles) {

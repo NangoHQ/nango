@@ -52,9 +52,10 @@ export function loadLocalNangoConfig(loadLocation?: string): Promise<NangoConfig
 }
 
 export function determineVersion(configData: NangoConfig): 'v1' | 'v2' {
-    if (Object.keys(configData.integrations).length === 0) {
+    if (!configData.integrations || Object.keys(configData.integrations).length === 0) {
         return 'v1';
     }
+
     const [firstProviderConfigKey] = Object.keys(configData.integrations) as [string];
     const firstProviderConfig = configData.integrations[firstProviderConfigKey] as NangoV2Integration;
     if (firstProviderConfig['syncs'] || firstProviderConfig['actions']) {
@@ -64,23 +65,23 @@ export function determineVersion(configData: NangoConfig): 'v1' | 'v2' {
     }
 }
 
-export function loadStandardConfig(configData: NangoConfig): StandardNangoConfig[] | null {
+export function loadStandardConfig(configData: NangoConfig): ServiceResponse<StandardNangoConfig[] | null> {
     try {
         if (!configData) {
-            return null;
+            return { success: false, error: new NangoError('no_config_found'), response: null };
         }
         const version = determineVersion(configData);
 
         if (!configData.integrations) {
-            return [];
+            return { success: true, error: null, response: [] };
         }
 
-        return version === 'v1' ? convertConfigObject(configData as NangoConfigV1) : convertV2ConfigObject(configData as NangoConfigV2);
-    } catch (error) {
-        console.log(error);
-    }
+        const configServiceResponse = version === 'v1' ? convertConfigObject(configData as NangoConfigV1) : convertV2ConfigObject(configData as NangoConfigV2);
 
-    return null;
+        return configServiceResponse;
+    } catch (error: any) {
+        return { success: false, error: new NangoError('error_loading_nango_config', error?.message), response: null };
+    }
 }
 
 export function getRootDir(optionalLoadLocation?: string) {
@@ -129,7 +130,7 @@ function getFieldsForModel(modelName: string, config: NangoConfig): { name: stri
     return modelFields;
 }
 
-export function convertConfigObject(config: NangoConfigV1): StandardNangoConfig[] {
+export function convertConfigObject(config: NangoConfigV1): ServiceResponse<StandardNangoConfig[]> {
     const output = [];
 
     for (const providerConfigKey in config.integrations) {
@@ -154,16 +155,18 @@ export function convertConfigObject(config: NangoConfigV1): StandardNangoConfig[
                 });
             }
 
+            const scopes = sync?.scopes || sync?.metadata?.scopes || [];
+
             const flowObject = {
                 name: syncName,
-                runs: sync.runs,
+                runs: sync.runs || '',
                 track_deletes: sync.track_deletes || false,
                 auto_start: sync.auto_start === false ? false : true,
                 attributes: sync.attributes || {},
                 returns: sync.returns,
                 models: models || [],
                 description: sync?.description || sync?.metadata?.description || '',
-                scopes: sync?.scopes || sync?.metadata?.scopes || [],
+                scopes: Array.isArray(scopes) ? scopes : String(scopes)?.split(','),
                 endpoints: sync?.endpoints || []
             };
 
@@ -186,14 +189,14 @@ export function convertConfigObject(config: NangoConfigV1): StandardNangoConfig[
 
         output.push(simplifiedIntegration);
     }
-    return output;
+    return { success: true, error: null, response: output };
 }
 
-const assignEndpoints = (rawEndpoint: string, defaultMethod: HTTP_VERB) => {
+const assignEndpoints = (rawEndpoint: string, defaultMethod: HTTP_VERB, singleAllowedMethod = false) => {
     let endpoints: NangoSyncEndpoint[] = [];
     const endpoint = rawEndpoint.split(' ') as string[];
     if (endpoint.length > 1) {
-        const method = endpoint[0]?.toUpperCase() as HTTP_VERB;
+        const method = singleAllowedMethod ? defaultMethod : (endpoint[0]?.toUpperCase() as HTTP_VERB);
         endpoints = [
             {
                 [method]: endpoint[1] as string
@@ -210,8 +213,41 @@ const assignEndpoints = (rawEndpoint: string, defaultMethod: HTTP_VERB) => {
     return endpoints;
 };
 
-export function convertV2ConfigObject(config: NangoConfigV2): StandardNangoConfig[] {
+const parseModelInEndpoint = (endpoint: string, allModelNames: string[], inputModel: NangoSyncModel, config: NangoConfig): ServiceResponse<NangoSyncModel> => {
+    if (Object.keys(inputModel).length > 0) {
+        return { success: false, error: new NangoError('conflicting_model_and_input'), response: null };
+    }
+
+    const modelNameWithIdentifier = endpoint.match(/{([^}]+)}/)?.[1];
+    const modelNameWithIdentifierArray = modelNameWithIdentifier?.split(':');
+
+    if (!modelNameWithIdentifierArray || modelNameWithIdentifierArray?.length < 2) {
+        return { success: false, error: new NangoError('invalid_model_identifier', modelNameWithIdentifier), response: null };
+    }
+
+    const [modelName, identifier] = modelNameWithIdentifierArray;
+
+    if (!allModelNames.includes(modelName as string)) {
+        return { success: false, error: new NangoError('missing_model_name', modelName), response: null };
+    }
+
+    const modelFields = getFieldsForModel(modelName as string, config) as { name: string; type: string }[];
+
+    const identifierModelFields = modelFields.filter((field) => field.name === identifier);
+
+    if (identifierModelFields.length === 0) {
+        return { success: false, error: new NangoError('missing_model_identifier', identifier), response: null };
+    }
+
+    inputModel.name = modelNameWithIdentifier as string;
+    inputModel.fields = identifierModelFields;
+
+    return { success: true, error: null, response: inputModel };
+};
+
+export function convertV2ConfigObject(config: NangoConfigV2): ServiceResponse<StandardNangoConfig[]> {
     const output: StandardNangoConfig[] = [];
+    const allModelNames = config.models ? Object.keys(config.models) : [];
 
     for (const providerConfigKey in config.integrations) {
         const builtSyncs: NangoSyncConfig[] = [];
@@ -246,16 +282,27 @@ export function convertV2ConfigObject(config: NangoConfigV2): StandardNangoConfi
             }
 
             let endpoints: NangoSyncEndpoint[] = [];
-            if (Array.isArray(sync?.endpoint)) {
-                for (const endpoint of sync?.endpoint as string[]) {
-                    endpoints.push(...assignEndpoints(endpoint, 'GET'));
+            if (sync?.endpoint) {
+                if (Array.isArray(sync?.endpoint)) {
+                    for (const endpoint of sync?.endpoint as string[]) {
+                        endpoints.push(...assignEndpoints(endpoint, 'GET', true));
+                    }
+                } else {
+                    endpoints = assignEndpoints(sync?.endpoint as string, 'GET', true);
                 }
-            } else {
-                endpoints = assignEndpoints(sync?.endpoint as string, 'GET');
+            }
+
+            const scopes = sync?.scopes || sync?.metadata?.scopes || [];
+
+            const { success, error } = getInterval(sync.runs, new Date());
+
+            if (!success) {
+                return { success: false, error, response: null };
             }
 
             const syncObject: NangoSyncConfig = {
                 name: syncName,
+                type: SyncConfigType.SYNC,
                 models: models || [],
                 sync_type: sync.sync_type?.toUpperCase() === SyncType.INCREMENTAL ? SyncType.INCREMENTAL : SyncType.FULL,
                 runs: sync.runs,
@@ -266,7 +313,7 @@ export function convertV2ConfigObject(config: NangoConfigV2): StandardNangoConfi
                 // a sync always returns an array
                 returns: Array.isArray(sync.output) ? (sync?.output as string[]) : ([sync.output] as string[]),
                 description: sync?.description || sync?.metadata?.description || '',
-                scopes: sync?.scopes || sync?.metadata?.scopes || [],
+                scopes: Array.isArray(scopes) ? scopes : String(scopes)?.split(','),
                 endpoints
             };
 
@@ -276,7 +323,7 @@ export function convertV2ConfigObject(config: NangoConfigV2): StandardNangoConfi
         for (const actionName in actions) {
             const action: NangoIntegrationDataV2 = actions[actionName] as NangoIntegrationDataV2;
             const models: NangoSyncModel[] = [];
-            const inputModel: NangoSyncModel = {} as NangoSyncModel;
+            let inputModel: NangoSyncModel = {} as NangoSyncModel;
 
             if (action.output) {
                 const syncReturns = Array.isArray(action.output) ? action.output : [action.output];
@@ -287,28 +334,55 @@ export function convertV2ConfigObject(config: NangoConfigV2): StandardNangoConfi
             }
 
             if (action.input) {
+                if (action.input.includes('{') && action.input.includes('}')) {
+                    // find which model is in between the braces
+                    const modelName = action.input.match(/{([^}]+)}/)?.[1];
+
+                    if (!allModelNames.includes(modelName as string)) {
+                        throw new Error(`Model ${modelName} not found included in models definition`);
+                    }
+                }
                 const modelFields = getFieldsForModel(action.input as string, config) as { name: string; type: string }[];
                 inputModel.name = action.input as string;
                 inputModel.fields = modelFields;
             }
 
             let endpoints: NangoSyncEndpoint[] = [];
-            if (Array.isArray(action?.endpoint)) {
-                for (const endpoint of action?.endpoint as string[]) {
-                    endpoints.push(...assignEndpoints(endpoint, 'POST'));
+            if (action?.endpoint) {
+                if (Array.isArray(action?.endpoint)) {
+                    for (const endpoint of action?.endpoint as string[]) {
+                        endpoints.push(...assignEndpoints(endpoint, 'POST'));
+                        if (action?.endpoint?.includes('{') && action?.endpoint.includes('}')) {
+                            const { success, error, response } = parseModelInEndpoint(endpoint as string, allModelNames, inputModel, config);
+                            if (!success || !response) {
+                                return { success, error, response: null };
+                            }
+                            inputModel = response;
+                        }
+                    }
+                } else {
+                    endpoints = assignEndpoints(action?.endpoint as string, 'POST');
+                    if (action?.endpoint?.includes('{') && action?.endpoint.includes('}')) {
+                        const { success, error, response } = parseModelInEndpoint(action?.endpoint as string, allModelNames, inputModel, config);
+                        if (!success || !response) {
+                            return { success, error, response: null };
+                        }
+                        inputModel = response;
+                    }
                 }
-            } else {
-                endpoints = assignEndpoints(action?.endpoint as string, 'POST');
             }
+
+            const scopes = action?.scopes || action?.metadata?.scopes || [];
 
             const actionObject: NangoSyncConfig = {
                 name: actionName,
+                type: SyncConfigType.ACTION,
                 models: models || [],
-                runs: action.runs,
+                runs: '',
                 attributes: action.attributes || {},
                 returns: action.output as string[],
                 description: action?.description || action?.metadata?.description || '',
-                scopes: action?.scopes || action?.metadata?.scopes || [],
+                scopes: Array.isArray(scopes) ? scopes : String(scopes)?.split(','),
                 input: inputModel,
                 endpoints
             };
@@ -328,7 +402,7 @@ export function convertV2ConfigObject(config: NangoConfigV2): StandardNangoConfi
             simplifiedIntegration.provider = provider as unknown as string;
         }
     }
-    return output;
+    return { success: true, error: null, response: output };
 }
 
 export function getOffset(interval: string, date: Date): number {

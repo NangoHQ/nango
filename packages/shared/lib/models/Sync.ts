@@ -99,6 +99,8 @@ export interface SyncConfig extends TimestampsAndDeleted {
     pre_built?: boolean;
     is_public?: boolean;
     endpoints?: NangoSyncEndpoint[];
+    input?: string;
+    sync_type?: SyncType | undefined;
 }
 
 export interface SyncEndpoint extends Timestamps {
@@ -173,7 +175,7 @@ export interface IncomingPreBuiltFlowConfig extends InternalIncomingPreBuiltFlow
     };
 }
 
-export interface IncomingSyncConfig extends InternalIncomingPreBuiltFlowConfig {
+export interface IncomingFlowConfig extends InternalIncomingPreBuiltFlowConfig {
     syncName: string;
     providerConfigKey: string;
     fileBody?: {
@@ -182,6 +184,8 @@ export interface IncomingSyncConfig extends InternalIncomingPreBuiltFlowConfig {
     };
     version?: string;
     track_deletes?: boolean;
+    input?: string;
+    sync_type?: SyncType;
 }
 
 export enum ScheduleStatus {

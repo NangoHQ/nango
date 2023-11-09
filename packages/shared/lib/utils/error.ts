@@ -392,6 +392,37 @@ export class NangoError extends Error {
                 this.message = `The sync script failed with an error: ${this.payload}`;
                 break;
 
+            case 'error_loading_nango_config':
+                this.status = 400;
+                this.message = 'Error loading nango config. Please make sure it is present and formatted correctly.';
+                break;
+
+            case 'no_config_found':
+                this.status = 400;
+                this.message = 'No nango config found. Please make sure it is present and formatted correctly.';
+                break;
+
+            case 'conflicting_model_and_input':
+                this.status = 400;
+                this.message = 'Cannot have a model in the endpoint and in the input';
+                break;
+
+            case 'invalid_model_identifier':
+                this.status = 400;
+                this.message =
+                    'Invalid model identifier. Please make sure to include a model identifier in the endpoint or in the input by using a colon (:) to separate the model name and the model identifier.';
+                break;
+
+            case 'missing_model_identifier':
+                this.status = 400;
+                this.message = `The model identifier was not found in the model. Please make sure the field "${this.payload}" is included in the model.`;
+                break;
+
+            case 'missing_model_name':
+                this.status = 400;
+                this.message = `Model ${this.payload} not found included in models definition`;
+                break;
+
             case 'action_script_failure':
                 this.message = `The action script failed with an error: ${this.payload}`;
                 break;

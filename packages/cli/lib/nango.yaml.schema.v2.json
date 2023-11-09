@@ -38,7 +38,15 @@
                                     ]
                                 },
                                 "input": { "type": "string", "nullable": true },
-                                "output": { "type": "string" }
+                                "output": {
+                                    "oneOf": [
+                                        { "type": "string" },
+                                        {
+                                            "type": "array",
+                                            "items": { "type": "string" }
+                                        }
+                                    ]
+                                }
                             },
                             "required": ["runs", "output"]
                         }
@@ -72,4 +80,3 @@
     },
     "additionalProperties": true
 }
-

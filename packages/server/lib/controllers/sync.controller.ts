@@ -18,7 +18,7 @@ import {
     createActivityLog,
     getAndReconcileDifferences,
     getSyncConfigsWithConnectionsByEnvironmentId,
-    IncomingSyncConfig,
+    IncomingFlowConfig,
     getProviderConfigBySyncAndAccount,
     SyncCommand,
     CommandToActivityLog,
@@ -45,7 +45,7 @@ class SyncController {
                 reconcile,
                 debug,
                 singleDeployMode
-            }: { syncs: IncomingSyncConfig[]; reconcile: boolean; debug: boolean; singleDeployMode?: boolean } = req.body;
+            }: { syncs: IncomingFlowConfig[]; reconcile: boolean; debug: boolean; singleDeployMode?: boolean } = req.body;
             const environmentId = getEnvironmentId(res);
             let reconcileSuccess = true;
 
@@ -95,7 +95,7 @@ class SyncController {
 
     public async confirmation(req: Request, res: Response, next: NextFunction) {
         try {
-            const { syncs, debug, singleDeployMode }: { syncs: IncomingSyncConfig[]; reconcile: boolean; debug: boolean; singleDeployMode?: boolean } =
+            const { syncs, debug, singleDeployMode }: { syncs: IncomingFlowConfig[]; reconcile: boolean; debug: boolean; singleDeployMode?: boolean } =
                 req.body;
             const environmentId = getEnvironmentId(res);
 

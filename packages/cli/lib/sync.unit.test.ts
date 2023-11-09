@@ -178,7 +178,7 @@ describe('generate function tests', () => {
         await generate(false, true);
     });
 
-    it('should allow javascript primitivs as a return type with no model', async () => {
+    it('should allow javascript primitives as a return type with no model', async () => {
         await init();
         const data = {
             integrations: {
@@ -217,7 +217,7 @@ describe('generate function tests', () => {
         };
         const yamlData = yaml.dump(data);
         await fs.promises.writeFile(`${testDirectory}/nango.yaml`, yamlData, 'utf8');
-        expect(generate(false, true)).rejects.toThrow();
+        expect(await generate(false, true)).toBeUndefined();
     });
 
     it('should not complain of try catch not being awaited', async () => {
@@ -241,267 +241,16 @@ describe('generate function tests', () => {
     });
 
     it('should parse a nango.yaml file that is version 1 as expected', async () => {
-        const config = await configService.load(path.resolve(__dirname, `./fixtures/nango-yaml/v1`));
+        const { response: config } = await configService.load(path.resolve(__dirname, `./fixtures/nango-yaml/v1`));
         expect(config).toBeDefined();
-        expect(config).toEqual([
-            {
-                providerConfigKey: 'demo-github-integration',
-                syncs: [
-                    {
-                        name: 'github-issue-example',
-                        models: [
-                            {
-                                name: 'GithubIssue',
-                                fields: [
-                                    { name: 'id', type: 'integer' },
-                                    { name: 'owner', type: 'string' },
-                                    { name: 'repo', type: 'string' },
-                                    { name: 'issue_number', type: 'number' },
-                                    { name: 'title', type: 'string' },
-                                    { name: 'author', type: 'string' },
-                                    { name: 'author_id', type: 'string' },
-                                    { name: 'state', type: 'string' },
-                                    { name: 'date_created', type: 'date' },
-                                    { name: 'date_last_modified', type: 'date' },
-                                    { name: 'body', type: 'string' }
-                                ]
-                            }
-                        ],
-                        runs: 'every half hour',
-                        track_deletes: false,
-                        auto_start: true,
-                        attributes: {},
-                        returns: ['GithubIssue'],
-                        description: '',
-                        scopes: [],
-                        endpoints: []
-                    }
-                ],
-                actions: []
-            }
-        ]);
+        const json = fs.readFileSync(path.resolve(__dirname, `./fixtures/nango-yaml/v1/object.json`), 'utf8');
+        expect(config).toEqual(JSON.parse(json));
     });
 
     it('should parse a nango.yaml file that is version 2 as expected', async () => {
-        const config = await configService.load(path.resolve(__dirname, `./fixtures/nango-yaml/v2`));
+        const { response: config } = await configService.load(path.resolve(__dirname, `./fixtures/nango-yaml/v2`));
         expect(config).toBeDefined();
-        expect(config).toEqual([
-            {
-                providerConfigKey: 'demo-github-integration',
-                syncs: [
-                    {
-                        name: 'github-issue-example',
-                        models: [
-                            {
-                                name: 'GithubIssue',
-                                fields: [
-                                    {
-                                        name: 'id',
-                                        type: 'integer'
-                                    },
-                                    {
-                                        name: 'owner',
-                                        type: 'string'
-                                    },
-                                    {
-                                        name: 'repo',
-                                        type: 'string'
-                                    },
-                                    {
-                                        name: 'issue_number',
-                                        type: 'number'
-                                    },
-                                    {
-                                        name: 'title',
-                                        type: 'string'
-                                    },
-                                    {
-                                        name: 'author',
-                                        type: 'string'
-                                    },
-                                    {
-                                        name: 'author_id',
-                                        type: 'string'
-                                    },
-                                    {
-                                        name: 'state',
-                                        type: 'string'
-                                    },
-                                    {
-                                        name: 'date_created',
-                                        type: 'date'
-                                    },
-                                    {
-                                        name: 'date_last_modified',
-                                        type: 'date'
-                                    },
-                                    {
-                                        name: 'body',
-                                        type: 'string'
-                                    }
-                                ]
-                            }
-                        ],
-                        sync_type: 'INCREMENTAL',
-                        runs: 'every half hour',
-                        track_deletes: false,
-                        auto_start: true,
-                        attributes: {},
-                        input: {},
-                        returns: ['GithubIssue'],
-                        description: 'Sync github issues continuously from public repos\n',
-                        scopes: 'public_repo',
-                        endpoints: [
-                            {
-                                GET: '/ticketing/tickets'
-                            }
-                        ]
-                    },
-                    {
-                        name: 'github-issue-example-two',
-                        models: [
-                            {
-                                name: 'GithubIssue',
-                                fields: [
-                                    {
-                                        name: 'id',
-                                        type: 'integer'
-                                    },
-                                    {
-                                        name: 'owner',
-                                        type: 'string'
-                                    },
-                                    {
-                                        name: 'repo',
-                                        type: 'string'
-                                    },
-                                    {
-                                        name: 'issue_number',
-                                        type: 'number'
-                                    },
-                                    {
-                                        name: 'title',
-                                        type: 'string'
-                                    },
-                                    {
-                                        name: 'author',
-                                        type: 'string'
-                                    },
-                                    {
-                                        name: 'author_id',
-                                        type: 'string'
-                                    },
-                                    {
-                                        name: 'state',
-                                        type: 'string'
-                                    },
-                                    {
-                                        name: 'date_created',
-                                        type: 'date'
-                                    },
-                                    {
-                                        name: 'date_last_modified',
-                                        type: 'date'
-                                    },
-                                    {
-                                        name: 'body',
-                                        type: 'string'
-                                    }
-                                ]
-                            }
-                        ],
-                        sync_type: 'INCREMENTAL',
-                        runs: 'every hour',
-                        track_deletes: false,
-                        auto_start: true,
-                        attributes: {},
-                        input: {},
-                        returns: ['GithubIssue'],
-                        description: 'Sync github issues continuously from public repos example two\n',
-                        scopes: 'public_repo',
-                        endpoints: [
-                            {
-                                GET: '/ticketing/tickets-two'
-                            }
-                        ]
-                    }
-                ],
-                actions: [
-                    {
-                        name: 'github-create-issue',
-                        models: [
-                            {
-                                name: 'GithubCreateOutput',
-                                fields: [
-                                    {
-                                        name: 'result',
-                                        type: 'GithubIssue'
-                                    }
-                                ]
-                            }
-                        ],
-                        attributes: {},
-                        returns: 'GithubCreateOutput',
-                        runs: undefined,
-                        description: 'Creates a GitHub issue.',
-                        scopes: 'repo:write',
-                        input: {
-                            name: 'GithubCreateIssueInput',
-                            fields: [
-                                {
-                                    name: 'id',
-                                    type: 'integer'
-                                },
-                                {
-                                    name: 'owner',
-                                    type: 'string'
-                                },
-                                {
-                                    name: 'repo',
-                                    type: 'string'
-                                },
-                                {
-                                    name: 'issue_number',
-                                    type: 'number'
-                                },
-                                {
-                                    name: 'title',
-                                    type: 'string'
-                                },
-                                {
-                                    name: 'author',
-                                    type: 'string'
-                                },
-                                {
-                                    name: 'author_id',
-                                    type: 'string'
-                                },
-                                {
-                                    name: 'state',
-                                    type: 'string'
-                                },
-                                {
-                                    name: 'date_created',
-                                    type: 'date'
-                                },
-                                {
-                                    name: 'date_last_modified',
-                                    type: 'date'
-                                },
-                                {
-                                    name: 'body',
-                                    type: 'string'
-                                }
-                            ]
-                        },
-                        endpoints: [
-                            {
-                                POST: '/ticketing/tickets'
-                            }
-                        ]
-                    }
-                ]
-            }
-        ]);
+        const json = fs.readFileSync(path.resolve(__dirname, `./fixtures/nango-yaml/v2/object.json`), 'utf8');
+        expect(config).toEqual(JSON.parse(json));
     });
 });

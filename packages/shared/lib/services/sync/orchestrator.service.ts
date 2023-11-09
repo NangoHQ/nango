@@ -30,7 +30,7 @@ import {
     ScheduleStatus,
     SyncConfigType,
     SyncDeploymentResult,
-    IncomingSyncConfig,
+    IncomingFlowConfig,
     Sync,
     SyncType,
     SyncCommand,
@@ -42,7 +42,7 @@ interface CreateSyncArgs {
     connections: Connection[];
     providerConfigKey: string;
     environmentId: number;
-    sync: IncomingSyncConfig;
+    sync: IncomingFlowConfig;
     syncName: string;
 }
 
@@ -52,7 +52,7 @@ export class Orchestrator {
         syncName: string,
         providerConfigKey: string,
         environmentId: number,
-        sync: IncomingSyncConfig,
+        sync: IncomingFlowConfig,
         debug = false,
         activityLogId?: number
     ): Promise<boolean> {
@@ -382,7 +382,7 @@ export class Orchestrator {
                 name as string,
                 providerConfigKey,
                 environmentId,
-                flow as unknown as IncomingSyncConfig,
+                flow as unknown as IncomingFlowConfig,
                 false
             );
         }

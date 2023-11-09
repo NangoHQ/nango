@@ -7,7 +7,7 @@ integrations:
         sync_type: incremental
         auto_start: true
         runs: every half hour
-        endpoint: /ticketing/tickets
+        endpoint: DELETE /ticketing/tickets
         scopes: public_repo
         output: GithubIssue
       github-issue-example-two:
@@ -19,13 +19,34 @@ integrations:
         endpoint: /ticketing/tickets-two
         scopes: public_repo
         output: GithubIssue
+      github-multiple-models:
+        description: Sync github issues to multiple models
+        sync_type: full
+        auto_start: true
+        runs: every 5 minutes
+        endpoint:
+          - /ticketing/ticket
+          - /ticketing/pr
+        output:
+          - GithubIssue
+          - GithubPR
     actions:
+      github-get-issue:
+        description: Get a GitHub issue.
+        endpoint: GET /ticketing/tickets/{GithubCreateIssueInput:id}
+        output: GithubIssue
+        scopes: repo:read
       github-create-issue:
         description: Creates a GitHub issue.
         endpoint: /ticketing/tickets
         scopes: repo:write
         input: GithubCreateIssueInput
         output: GithubCreateOutput
+      github-delete-issue:
+        description: Deletes a GitHub issue.
+        endpoint: DELETE /ticketing/tickets/{GithubIssue:id}
+        scopes: repo:write
+        output: boolean
 
 models:
   GithubIssue:
@@ -44,3 +65,5 @@ models:
     __extends: GithubIssue
   GithubCreateOutput:
     result: GithubIssue
+  GithubPR:
+    __extends: GithubIssue

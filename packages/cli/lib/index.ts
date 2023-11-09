@@ -214,7 +214,12 @@ program
         const { autoConfirm } = this.opts();
         await verificationService.necessaryFilesExist(autoConfirm);
         const cwd = process.cwd();
-        const config = await configService.load(path.resolve(cwd, NANGO_INTEGRATIONS_LOCATION));
+        const { success, error, response: config } = await configService.load(path.resolve(cwd, NANGO_INTEGRATIONS_LOCATION));
+
+        if (!success || !config) {
+            console.log(chalk.red(error?.message));
+            return;
+        }
 
         console.log(chalk.green(JSON.stringify(config, null, 2)));
     });

@@ -94,7 +94,12 @@ class VerificationService {
     }
 
     public async filesMatchConfig(): Promise<boolean> {
-        const config = await configService.load();
+        const { success, error, response: config } = await configService.load();
+
+        if (!success || !config) {
+            console.log(chalk.red(error?.message));
+            throw new Error('Failed to load config');
+        }
 
         const syncNames = config.map((provider) => provider.syncs.map((sync) => sync.name)).flat();
         const actionNames = config.map((provider) => provider.actions.map((action) => action.name)).flat();

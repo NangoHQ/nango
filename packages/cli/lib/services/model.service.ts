@@ -160,7 +160,13 @@ class ModelService {
         const typesContent = fs.readFileSync(`${getNangoRootPath()}/${NangoSyncTypesFileLocation}`, 'utf8');
         fs.writeFileSync(`./${TYPES_FILE_NAME}`, typesContent, { flag: 'a' });
 
-        const config = await configService.load();
+        const { success, error, response: config } = await configService.load();
+
+        if (!success || !config) {
+            console.log(chalk.red(error?.message));
+            throw new Error('Failed to load config');
+        }
+
         const flowConfig = `export const NangoFlows = ${JSON.stringify(config, null, 2)} as const; \n`;
         fs.writeFileSync(`./${TYPES_FILE_NAME}`, flowConfig, { flag: 'a' });
 

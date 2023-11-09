@@ -50,7 +50,12 @@ class DryRunService {
             return;
         }
 
-        const config = await configService.load('', debug);
+        const { success, error, response: config } = await configService.load('', debug);
+
+        if (!success || !config) {
+            console.log(chalk.red(error?.message));
+            return;
+        }
 
         const providerConfigKey = config.find((config) => [...config.syncs, ...config.actions].find((sync) => sync.name === syncName))?.providerConfigKey;
 

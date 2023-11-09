@@ -1,29 +1,31 @@
 import fs from 'fs';
 import Ajv from 'ajv';
 import chalk from 'chalk';
-import type { NangoConfig, StandardNangoConfig } from '@nangohq/shared';
-import { loadLocalNangoConfig, loadStandardConfig, nangoConfigFile, determineVersion } from '@nangohq/shared';
+import type { NangoConfig, StandardNangoConfig, ServiceResponse } from '@nangohq/shared';
+import { loadLocalNangoConfig, loadStandardConfig, nangoConfigFile, determineVersion, NangoError } from '@nangohq/shared';
 import { getNangoRootPath, printDebug } from '../utils.js';
 
 class ConfigService {
-    public async load(optionalLoadLocation = '', debug = false): Promise<StandardNangoConfig[]> {
+    public async load(optionalLoadLocation = '', debug = false): Promise<ServiceResponse<StandardNangoConfig[]>> {
         const loadLocation = optionalLoadLocation || './';
         const localConfig = await loadLocalNangoConfig(loadLocation);
-        if (!localConfig) {
-            throw new Error(`Error loading the ${nangoConfigFile} file`);
-        }
-        this.validate(localConfig);
-        const config = loadStandardConfig(localConfig);
 
-        if (!config) {
-            throw new Error(`Error loading the ${nangoConfigFile} file`);
+        if (!localConfig) {
+            return { success: false, error: new NangoError('error_loading_nango_config'), response: null };
+        }
+
+        this.validate(localConfig);
+        const { success, error, response: config } = loadStandardConfig(localConfig);
+
+        if (!success || !config) {
+            return { success: false, error, response: null };
         }
 
         if (debug) {
             printDebug(`Config file file found`);
         }
 
-        return config;
+        return { success: true, error: null, response: config };
     }
 
     public getModelNames(config: StandardNangoConfig[]): string[] {

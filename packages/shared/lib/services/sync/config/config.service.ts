@@ -111,6 +111,7 @@ export async function getAllSyncsAndActions(environment_id: number): Promise<Sta
             continue;
         }
 
+        // TODO construct a V2 object
         if (!nangoConfig['integrations'][uniqueKey]) {
             nangoConfig['integrations'][uniqueKey] = {};
             nangoConfig['integrations'][uniqueKey]!['provider'] = syncConfig.provider;
@@ -131,8 +132,13 @@ export async function getAllSyncsAndActions(environment_id: number): Promise<Sta
 
     type extendedSyncConfig = SyncConfig & { provider: string; unique_key: string };
 
-    const simlpleConfig = convertConfigObject(nangoConfig);
-    const configWithModels = simlpleConfig.map((config: StandardNangoConfig) => {
+    const { success, response: standardConfig } = convertConfigObject(nangoConfig);
+
+    if (!success || !standardConfig) {
+        return [];
+    }
+
+    const configWithModels = standardConfig.map((config: StandardNangoConfig) => {
         const { providerConfigKey } = config;
         for (const sync of [...config.syncs, ...config.actions]) {
             const { name } = sync;

@@ -6,6 +6,9 @@ integrations:
       auto_start: true
       returns:
         - GithubIssue
+    github-write-action:
+      type: action
+      returns: boolean
 
 models:
   GithubIssue:
