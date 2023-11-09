@@ -9,7 +9,8 @@ import {
     getSyncsByConnectionId,
     getSyncsByProviderConfigKey,
     getSyncsByProviderConfigAndSyncNames,
-    getSyncByIdAndName
+    getSyncByIdAndName,
+    getSyncNamesByConnectionId
 } from './sync.service.js';
 import {
     createActivityLogMessageAndEnd,
@@ -21,6 +22,7 @@ import SyncClient from '../../clients/sync.client.js';
 import configService from '../config.service.js';
 import type { LogLevel } from '../../models/Activity.js';
 import type { Connection } from '../../models/Connection.js';
+import { NangoError } from '../../utils/error.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
 import type { ServiceResponse } from '../../models/Generic';
 import {
@@ -165,7 +167,13 @@ export class Orchestrator {
         }
     }
 
-    public async runSyncCommand(environmentId: number, providerConfigKey: string, syncNames: string[], command: SyncCommand, connectionId?: string) {
+    public async runSyncCommand(
+        environmentId: number,
+        providerConfigKey: string,
+        syncNames: string[],
+        command: SyncCommand,
+        connectionId?: string
+    ): Promise<ServiceResponse<boolean>> {
         const action = CommandToActivityLog[command];
         const provider = await configService.getProviderName(providerConfigKey as string);
 
@@ -191,10 +199,16 @@ export class Orchestrator {
             } = await connectionService.getConnection(connectionId as string, providerConfigKey as string, environmentId);
 
             if (!success) {
-                throw error;
+                return { success: false, error, response: false };
             }
 
-            for (const syncName of syncNames) {
+            let syncs = syncNames;
+
+            if (syncs.length === 0) {
+                syncs = await getSyncNamesByConnectionId(connection?.id as number);
+            }
+
+            for (const syncName of syncs) {
                 const sync = await getSyncByIdAndName(connection?.id as number, syncName);
                 if (!sync) {
                     continue;
@@ -222,7 +236,9 @@ export class Orchestrator {
                     : await getSyncsByProviderConfigKey(environmentId, providerConfigKey);
 
             if (!syncs) {
-                return;
+                const error = new NangoError('no_syncs_found');
+
+                return { success: false, error, response: false };
             }
 
             for (const sync of syncs) {
@@ -243,6 +259,8 @@ export class Orchestrator {
         }
 
         await updateSuccessActivityLog(activityLogId as number, true);
+
+        return { success: true, error: null, response: true };
     }
 
     public async getSyncStatus(

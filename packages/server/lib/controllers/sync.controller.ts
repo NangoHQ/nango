@@ -233,7 +233,18 @@ class SyncController {
 
             const environmentId = getEnvironmentId(res);
 
-            await syncOrchestrator.runSyncCommand(environmentId, provider_config_key as string, syncNames as string[], SyncCommand.RUN, connection_id);
+            const { success, error } = await syncOrchestrator.runSyncCommand(
+                environmentId,
+                provider_config_key as string,
+                syncNames as string[],
+                SyncCommand.RUN,
+                connection_id
+            );
+
+            if (!success) {
+                errorManager.errResFromNangoErr(res, error);
+                return;
+            }
 
             res.sendStatus(200);
         } catch (e) {
