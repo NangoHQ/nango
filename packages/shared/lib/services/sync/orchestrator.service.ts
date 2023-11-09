@@ -9,7 +9,8 @@ import {
     getSyncsByConnectionId,
     getSyncsByProviderConfigKey,
     getSyncsByProviderConfigAndSyncNames,
-    getSyncByIdAndName
+    getSyncByIdAndName,
+    getSyncNamesByConnectionId
 } from './sync.service.js';
 import {
     createActivityLogMessageAndEnd,
@@ -194,7 +195,13 @@ export class Orchestrator {
                 throw error;
             }
 
-            for (const syncName of syncNames) {
+            let syncs = syncNames;
+
+            if (syncs.length === 0) {
+                syncs = await getSyncNamesByConnectionId(connection?.id as number);
+            }
+
+            for (const syncName of syncs) {
                 const sync = await getSyncByIdAndName(connection?.id as number, syncName);
                 if (!sync) {
                     continue;
