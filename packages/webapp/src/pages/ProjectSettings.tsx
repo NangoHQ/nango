@@ -774,6 +774,7 @@ export default function ProjectSettings() {
                                                     autoComplete="new-password"
                                                     type="text"
                                                     value={hmacKey}
+                                                    onChange={(event) => setHmacKey(event.target.value)}
                                                     className="border-border-gray bg-bg-black text-text-light-gray focus:ring-blue block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-600 shadow-sm focus:border-blue-500 focus:outline-none"
                                                 />
                                                 <button
