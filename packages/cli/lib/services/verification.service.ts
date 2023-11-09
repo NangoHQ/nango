@@ -5,7 +5,7 @@ import path from 'path';
 import promptly from 'promptly';
 
 import { nangoConfigFile } from '@nangohq/shared';
-import yamlService from './yaml.service.js';
+import configService from './config.service.js';
 import compileService from './compile.service.js';
 import { printDebug } from '../utils.js';
 import { NANGO_INTEGRATIONS_NAME } from '../constants.js';
@@ -94,7 +94,7 @@ class VerificationService {
     }
 
     public async filesMatchConfig(): Promise<boolean> {
-        const config = await yamlService.getConfig();
+        const config = await configService.load();
 
         const syncNames = config.map((provider) => provider.syncs.map((sync) => sync.name)).flat();
         const actionNames = config.map((provider) => provider.actions.map((action) => action.name)).flat();

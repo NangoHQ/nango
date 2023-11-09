@@ -5,7 +5,7 @@ import type { Metadata, NangoConnection } from '@nangohq/shared';
 import { SyncConfigType, SyncType, syncRunService, cloudHost, stagingHost } from '@nangohq/shared';
 import type { GlobalOptions } from '../types.js';
 import { parseSecretKey, printDebug, hostport, getConnection } from '../utils.js';
-import yamlService from './yaml.service.js';
+import configService from './config.service.js';
 import compileService from './compile.service.js';
 import integrationService from './local-integration.service.js';
 
@@ -50,7 +50,7 @@ class DryRunService {
             return;
         }
 
-        const config = await yamlService.getConfig('', debug);
+        const config = await configService.load('', debug);
 
         const providerConfigKey = config.find((config) => [...config.syncs, ...config.actions].find((sync) => sync.name === syncName))?.providerConfigKey;
 

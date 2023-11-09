@@ -5,7 +5,7 @@ import yaml from 'js-yaml';
 import { SyncConfigType } from '@nangohq/shared';
 import { init, generate } from './cli.js';
 import { exampleSyncName } from './constants.js';
-import yamlService from './services/yaml.service.js';
+import configService from './services/config.service.js';
 import parserService from './services/parser.service.js';
 
 describe('generate function tests', () => {
@@ -241,7 +241,7 @@ describe('generate function tests', () => {
     });
 
     it('should parse a nango.yaml file that is version 1 as expected', async () => {
-        const config = await yamlService.getConfig(path.resolve(__dirname, `./fixtures/nango-yaml/v1`));
+        const config = await configService.load(path.resolve(__dirname, `./fixtures/nango-yaml/v1`));
         expect(config).toBeDefined();
         expect(config).toEqual([
             {
@@ -283,7 +283,7 @@ describe('generate function tests', () => {
     });
 
     it('should parse a nango.yaml file that is version 2 as expected', async () => {
-        const config = await yamlService.getConfig(path.resolve(__dirname, `./fixtures/nango-yaml/v2`));
+        const config = await configService.load(path.resolve(__dirname, `./fixtures/nango-yaml/v2`));
         expect(config).toBeDefined();
         expect(config).toEqual([
             {
@@ -348,7 +348,7 @@ describe('generate function tests', () => {
                         auto_start: true,
                         attributes: {},
                         input: {},
-                        returns: 'GithubIssue',
+                        returns: ['GithubIssue'],
                         description: 'Sync github issues continuously from public repos\n',
                         scopes: 'public_repo',
                         endpoints: [
@@ -416,7 +416,7 @@ describe('generate function tests', () => {
                         auto_start: true,
                         attributes: {},
                         input: {},
-                        returns: 'GithubIssue',
+                        returns: ['GithubIssue'],
                         description: 'Sync github issues continuously from public repos example two\n',
                         scopes: 'public_repo',
                         endpoints: [

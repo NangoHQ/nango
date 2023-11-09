@@ -5,7 +5,7 @@ import type { NangoConfig, NangoModel, NangoIntegration, NangoIntegrationData } 
 import { SyncConfigType, nangoConfigFile } from '@nangohq/shared';
 import { printDebug, getNangoRootPath } from '../utils.js';
 import { TYPES_FILE_NAME, NangoSyncTypesFileLocation } from '../constants.js';
-import yamlService from './yaml.service.js';
+import configService from './config.service.js';
 
 class ModelService {
     public build(models: NangoModel, integrations: NangoIntegration, debug = false): (string | undefined)[] | null {
@@ -160,7 +160,7 @@ class ModelService {
         const typesContent = fs.readFileSync(`${getNangoRootPath()}/${NangoSyncTypesFileLocation}`, 'utf8');
         fs.writeFileSync(`./${TYPES_FILE_NAME}`, typesContent, { flag: 'a' });
 
-        const config = await yamlService.getConfig();
+        const config = await configService.load();
         const flowConfig = `export const NangoFlows = ${JSON.stringify(config, null, 2)} as const; \n`;
         fs.writeFileSync(`./${TYPES_FILE_NAME}`, flowConfig, { flag: 'a' });
 

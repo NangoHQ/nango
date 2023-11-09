@@ -238,7 +238,7 @@ export class Orchestrator {
                 environment_id: environmentId,
                 activity_log_id: activityLogId as number,
                 timestamp: Date.now(),
-                content: `Sync was updated with command: "${action}" for sync: ${syncNames.join(', ')}`
+                content: `Sync was updated with command: "${action}" for sync: ${Array.isArray(syncNames) ? syncNames.join(', ') : syncNames}`
             });
         }
 

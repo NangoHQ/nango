@@ -51,23 +51,31 @@ export function loadLocalNangoConfig(loadLocation?: string): Promise<NangoConfig
     return Promise.resolve(null);
 }
 
-export async function loadSimplifiedConfig(loadLocation?: string): Promise<StandardNangoConfig[] | null> {
-    try {
-        const configData: NangoConfig = (await loadLocalNangoConfig(loadLocation)) as NangoConfig;
+export function determineVersion(configData: NangoConfig): 'v1' | 'v2' {
+    if (Object.keys(configData.integrations).length === 0) {
+        return 'v1';
+    }
+    const [firstProviderConfigKey] = Object.keys(configData.integrations) as [string];
+    const firstProviderConfig = configData.integrations[firstProviderConfigKey] as NangoV2Integration;
+    if (firstProviderConfig['syncs'] || firstProviderConfig['actions']) {
+        return 'v2';
+    } else {
+        return 'v1';
+    }
+}
 
+export function loadStandardConfig(configData: NangoConfig): StandardNangoConfig[] | null {
+    try {
         if (!configData) {
             return null;
         }
-        let config: StandardNangoConfig[] = [];
-        const [firstProviderConfigKey] = Object.keys(configData.integrations) as [string];
-        const firstProviderConfig = configData.integrations[firstProviderConfigKey] as NangoV2Integration;
-        if (firstProviderConfig['syncs'] || firstProviderConfig['actions']) {
-            config = convertV2ConfigObject(configData as NangoConfigV2);
-        } else {
-            config = convertConfigObject(configData as NangoConfigV1);
+        const version = determineVersion(configData);
+
+        if (!configData.integrations) {
+            return [];
         }
 
-        return config;
+        return version === 'v1' ? convertConfigObject(configData as NangoConfigV1) : convertV2ConfigObject(configData as NangoConfigV2);
     } catch (error) {
         console.log(error);
     }
@@ -255,7 +263,8 @@ export function convertV2ConfigObject(config: NangoConfigV2): StandardNangoConfi
                 auto_start: sync.auto_start === false ? false : true,
                 attributes: sync.attributes || {},
                 input: inputModel,
-                returns: sync.output as string[],
+                // a sync always returns an array
+                returns: Array.isArray(sync.output) ? (sync?.output as string[]) : ([sync.output] as string[]),
                 description: sync?.description || sync?.metadata?.description || '',
                 scopes: sync?.scopes || sync?.metadata?.scopes || [],
                 endpoints

@@ -14,7 +14,7 @@ import type { ChildProcess } from 'node:child_process';
 import type { NangoConfig, NangoIntegration, NangoIntegrationData } from '@nangohq/shared';
 import { nangoConfigFile, SyncConfigType, JAVASCRIPT_PRIMITIVES } from '@nangohq/shared';
 import { NANGO_INTEGRATIONS_NAME, getNangoRootPath, printDebug } from './utils.js';
-import yamlService from './services/yaml.service.js';
+import configService from './services/config.service.js';
 import modelService from './services/model.service.js';
 import parserService from './services/parser.service.js';
 import { NangoSyncTypesFileLocation, TYPES_FILE_NAME, exampleSyncName } from './constants.js';
@@ -68,7 +68,7 @@ export const generate = async (debug = false, inParentDirectory = false) => {
     const typesContent = fs.readFileSync(`${getNangoRootPath()}/${NangoSyncTypesFileLocation}`, 'utf8');
     fs.writeFileSync(`${dirPrefix}/${TYPES_FILE_NAME}`, typesContent, { flag: 'a' });
 
-    const config = await yamlService.getConfig(dirPrefix, debug);
+    const config = await configService.load(dirPrefix, debug);
     const flowConfig = `export const NangoFlows = ${JSON.stringify(config, null, 2)} as const; \n`;
     fs.writeFileSync(`${dirPrefix}/${TYPES_FILE_NAME}`, flowConfig, { flag: 'a' });
 
@@ -257,8 +257,8 @@ NANGO_DEPLOY_AUTO_CONFIRM=false # Default value`
 
 export const tscWatch = async (debug = false) => {
     const tsconfig = fs.readFileSync(`${getNangoRootPath()}/tsconfig.dev.json`, 'utf8');
-    const config = await yamlService.getConfig();
-    const modelNames = yamlService.getModelNames(config);
+    const config = await configService.load();
+    const modelNames = configService.getModelNames(config);
 
     const watchPath = [`./*.ts`, `./${nangoConfigFile}`];
 

@@ -5,7 +5,7 @@ import chalk from 'chalk';
 import path from 'path';
 import { SyncConfigType } from '@nangohq/shared';
 
-import yamlService from './yaml.service.js';
+import configService from './config.service.js';
 import { getNangoRootPath, printDebug } from '../utils.js';
 import { TYPES_FILE_NAME } from '../constants.js';
 import modelService from './model.service.js';
@@ -41,8 +41,8 @@ class CompileService {
         const integrationFiles = syncName ? [`./${syncName}.ts`] : glob.sync(`./*.ts`);
         let success = true;
 
-        const config = await yamlService.getConfig();
-        const modelNames = yamlService.getModelNames(config);
+        const config = await configService.load();
+        const modelNames = configService.getModelNames(config);
 
         for (const filePath of integrationFiles) {
             try {

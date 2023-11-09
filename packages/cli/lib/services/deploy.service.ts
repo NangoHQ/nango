@@ -3,7 +3,7 @@ import promptly from 'promptly';
 import axios, { AxiosResponse } from 'axios';
 import type { SyncDeploymentResult, StandardNangoConfig, IncomingSyncConfig, NangoConfigMetadata } from '@nangohq/shared';
 import { SyncConfigType, localFileService, getInterval, stagingHost, cloudHost } from '@nangohq/shared';
-import yamlService from './yaml.service.js';
+import configService from './config.service.js';
 import compileService from './compile.service.js';
 import verificationService from './verification.service.js';
 import { printDebug, parseSecretKey, port, enrichHeaders, httpsAgent } from '../utils.js';
@@ -36,7 +36,7 @@ class DeployService {
 
         await compileService.run(debug);
 
-        const config = await yamlService.getConfig('', debug);
+        const config = await configService.load('', debug);
 
         const flowData = deployService.package(config, debug);
 
@@ -104,7 +104,7 @@ class DeployService {
 
         await compileService.run(debug);
 
-        const config = await yamlService.getConfig('', debug);
+        const config = await configService.load('', debug);
 
         const postData: IncomingSyncConfig[] | null = deployService.package(config, debug, version, optionalSyncName, optionalActionName);
 

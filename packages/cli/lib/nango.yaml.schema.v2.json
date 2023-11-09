@@ -1,0 +1,75 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "integrations": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "object",
+                "properties": {
+                    "syncs": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "object",
+                            "properties": {
+                                "description": { "type": "string" },
+                                "sync_type": {
+                                    "type": "string",
+                                    "enum": ["incremental", "full"]
+                                },
+                                "auto_start": { "type": "boolean" },
+                                "runs": { "type": "string" },
+                                "endpoint": {
+                                    "oneOf": [
+                                        { "type": "string" },
+                                        {
+                                            "type": "array",
+                                            "items": { "type": "string" }
+                                        }
+                                    ]
+                                },
+                                "scopes": {
+                                    "oneOf": [
+                                        { "type": "string" },
+                                        {
+                                            "type": "array",
+                                            "items": { "type": "string" }
+                                        }
+                                    ]
+                                },
+                                "input": { "type": "string", "nullable": true },
+                                "output": { "type": "string" }
+                            },
+                            "required": ["runs", "output"]
+                        }
+                    },
+                    "actions": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "object",
+                            "properties": {
+                                "description": { "type": "string" },
+                                "endpoint": { "type": "string" },
+                                "scopes": { "type": "string", "nullable": true },
+                                "input": { "type": "string", "nullable": true },
+                                "output": {
+                                    "oneOf": [
+                                        { "type": "string" },
+                                        {
+                                            "type": "array",
+                                            "items": { "type": "string" }
+                                        }
+                                    ]
+                                }
+                            },
+                            "required": ["description", "endpoint", "output"]
+                        }
+                    }
+                },
+                "additionalProperties": true
+            }
+        }
+    },
+    "additionalProperties": true
+}
+

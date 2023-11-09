@@ -11,12 +11,13 @@ import figlet from 'figlet';
 import path from 'path';
 import * as dotenv from 'dotenv';
 
-import { nangoConfigFile, loadSimplifiedConfig } from '@nangohq/shared';
+import { nangoConfigFile } from '@nangohq/shared';
 import { init, generate, tscWatch, configWatch, dockerRun, version } from './cli.js';
 import deployService from './services/deploy.service.js';
 import compileService from './services/compile.service.js';
 import verificationService from './services/verification.service.js';
 import dryrunService from './services/dryrun.service.js';
+import configService from './services/config.service.js';
 import { upgradeAction, NANGO_INTEGRATIONS_LOCATION, printDebug } from './utils.js';
 import type { ENV, DeployOptions } from './types.js';
 
@@ -213,7 +214,7 @@ program
         const { autoConfirm } = this.opts();
         await verificationService.necessaryFilesExist(autoConfirm);
         const cwd = process.cwd();
-        const config = await loadSimplifiedConfig(path.resolve(cwd, NANGO_INTEGRATIONS_LOCATION));
+        const config = await configService.load(path.resolve(cwd, NANGO_INTEGRATIONS_LOCATION));
 
         console.log(chalk.green(JSON.stringify(config, null, 2)));
     });
