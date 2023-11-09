@@ -30,6 +30,7 @@ import {
     SyncDeploymentResult,
     IncomingSyncConfig,
     Sync,
+    SyncType,
     SyncCommand,
     CommandToActivityLog,
     ReportedSyncJobStatus
@@ -253,6 +254,7 @@ export class Orchestrator {
         includeJobStatus = false
     ): Promise<ServiceResponse<ReportedSyncJobStatus[] | void>> {
         const syncsWithStatus: ReportedSyncJobStatus[] = [];
+        const syncClient = await SyncClient.getInstance();
 
         if (connectionId) {
             const { success, error, response: connection } = await connectionService.getConnection(connectionId as string, providerConfigKey, environmentId);
@@ -268,16 +270,30 @@ export class Orchestrator {
                 }
                 const latestJob = await getLatestSyncJob(sync?.id as string);
                 const schedule = await getSchedule(sync?.id as string);
-                const status: ReportedSyncJobStatus = {
+                const status = this.classifySyncStatus(latestJob?.status as SyncStatus, schedule?.status as ScheduleStatus);
+
+                let nextScheduledSyncAt = null;
+                if (status !== SyncStatus.PAUSED) {
+                    const syncSchedule = await syncClient?.describeSchedule(schedule?.schedule_id as string);
+
+                    if (syncSchedule && syncSchedule?.info && syncSchedule?.info?.futureActionTimes && syncSchedule?.info?.futureActionTimes?.length > 0) {
+                        const futureRun = syncSchedule?.info?.futureActionTimes[0];
+                        nextScheduledSyncAt = syncClient?.formatFutureRun(futureRun?.seconds?.toNumber() as number);
+                    }
+                }
+                const reportedStatus: ReportedSyncJobStatus = {
                     id: sync?.id as string,
+                    type: latestJob?.type as SyncType,
+                    finishedAt: latestJob?.updated_at,
+                    nextScheduledSyncAt,
                     name: sync?.name as string,
-                    status: this.classifySyncStatus(latestJob?.status as SyncStatus, schedule?.status as ScheduleStatus),
+                    status,
                     latestResult: latestJob?.result
                 } as ReportedSyncJobStatus;
                 if (includeJobStatus) {
-                    status['jobStatus'] = latestJob?.status as SyncStatus;
+                    reportedStatus['jobStatus'] = latestJob?.status as SyncStatus;
                 }
-                syncsWithStatus.push(status);
+                syncsWithStatus.push(reportedStatus);
             }
         } else {
             const syncs =

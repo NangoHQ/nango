@@ -680,10 +680,19 @@ paths:
                                                     type: string
                                                     enum: ["RUNNING", "PAUSED", "STOPPED", "SUCCESS", "ERROR"]
                                                     description: The current status of the sync.
+                                                type:
+                                                    type: string
+                                                    description: The most recent sync type completed
+                                                    enum: ["INCREMENTAL", "INITIAL"]
+                                                finishedAt:
+                                                    type: string
+                                                    description: ISO string of the most recently completed sync
+                                                nextScheduledSyncAt:
+                                                    type: string
+                                                    description: ISO string of the next scheduled sync time
                                                 latestResult:
                                                     type: object
                                                     description: Additional information regarding the latest result of the sync. Contains a model name with added, updated and deleted records
-                                                    additionalProperties:
     /action/trigger:
         post:
             description: Triggers an action for a connection
