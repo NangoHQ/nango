@@ -31,7 +31,18 @@ class OnboardingController {
             const onboardingId = await initOrUpdateOnboarding(user.id, account.id);
 
             const { connection_id, provider_config_key } = req.body;
-            await syncOrchestrator.runSyncCommand(environment.id, provider_config_key as string, [syncName], SyncCommand.RUN, connection_id);
+            const { success, error } = await syncOrchestrator.runSyncCommand(
+                environment.id,
+                provider_config_key as string,
+                [syncName],
+                SyncCommand.RUN,
+                connection_id
+            );
+
+            if (!success) {
+                errorManager.errResFromNangoErr(res, error);
+                return;
+            }
 
             if (!onboardingId) {
                 res.status(500).json({
