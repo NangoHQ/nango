@@ -1,23 +1,13 @@
 import type { NangoSync, ConfluencePage } from './models';
 
-async function getCloudId(nango: NangoSync): Promise<string> {
-    const response = await nango.get({
-        baseUrlOverride: 'https://api.atlassian.com',
-        endpoint: `oauth/token/accessible-resources`,
-        retries: 10 // Exponential backoff + long-running job = handles rate limits well.
-    });
-
-    return response.data[0].id;
-}
-
 export default async function fetchData(nango: NangoSync) {
     let totalRecords = 0;
 
     const cloudId: string = await getCloudId(nango);
     const proxyConfig = {
-        baseUrlOverride: `https://api.atlassian.com/ex/confluence/${cloudId}`, // The base URL is specific for user because of the cloud ID path param
+        // The base URL is specific for user because of the cloud ID path param
+        baseUrlOverride: `https://api.atlassian.com/ex/confluence/${cloudId}`,
         endpoint: `/wiki/api/v2/pages`,
-        retries: 10,
         paginate: {
             limit: 250
         }
@@ -58,4 +48,13 @@ function mapConfluencePages(results: any[]): ConfluencePage[] {
             }
         };
     });
+}
+
+async function getCloudId(nango: NangoSync): Promise<string> {
+    const response = await nango.get({
+        baseUrlOverride: 'https://api.atlassian.com',
+        endpoint: `oauth/token/accessible-resources`
+    });
+
+    return response.data[0].id;
 }

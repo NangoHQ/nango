@@ -372,6 +372,16 @@ export const getSyncsByProviderConfigAndSyncName = async (environment_id: number
     return results;
 };
 
+export const getSyncNamesByConnectionId = async (nangoConnectionId: number): Promise<string[]> => {
+    const results = await db.knex.withSchema(db.schema()).select('name').from<Sync>(TABLE).where({ nango_connection_id: nangoConnectionId, deleted: false });
+
+    if (Array.isArray(results) && results.length > 0) {
+        return results.map((sync) => sync.name);
+    }
+
+    return [];
+};
+
 export const getSyncsByProviderConfigAndSyncNames = async (environment_id: number, providerConfigKey: string, syncNames: string[]): Promise<Sync[]> => {
     const results = await db.knex
         .withSchema(db.schema())

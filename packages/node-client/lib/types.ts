@@ -130,6 +130,8 @@ export interface Action extends Timestamps {
     name: string;
 }
 
+type SyncType = 'INCREMENTAL' | 'INITIAL';
+
 export interface Integration {
     unique_key: string;
     provider: string;
@@ -139,6 +141,9 @@ export interface Integration {
 
 export interface SyncStatus {
     id: string;
+    type: SyncType;
+    finishedAt: string;
+    nextScheduledSyncAt: string;
     name: string;
     status: 'RUNNING' | 'SUCCESS' | 'ERROR' | 'PAUSED' | 'STOPPED';
     latestResult: Record<string, StatusAction>;

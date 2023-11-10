@@ -62,7 +62,7 @@ export default class SyncRun {
     input?: object;
 
     logMessages?: unknown[] | undefined = [];
-    stubbedMetadata?: Metadata | undefined = {};
+    stubbedMetadata?: Metadata | undefined = undefined;
 
     constructor(config: SyncRunConfig) {
         this.integrationService = config.integrationService;

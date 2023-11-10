@@ -261,7 +261,7 @@ export default class Nango {
 }
 
 interface ConnectionConfig {
-    params: Record<string, string>;
+    params?: Record<string, string>;
     hmac?: string;
     user_scope?: string[];
     authorization_params?: Record<string, string | undefined>;

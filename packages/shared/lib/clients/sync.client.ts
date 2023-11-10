@@ -341,6 +341,18 @@ class SyncClient {
         }
     }
 
+    formatFutureRun(nextRun: number): Date | string {
+        if (!nextRun) {
+            return '-';
+        }
+
+        const milliseconds = Number(nextRun) * 1000;
+
+        const date = new Date(milliseconds);
+
+        return date;
+    }
+
     async listSchedules() {
         if (!this.client) {
             return;

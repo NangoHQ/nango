@@ -31,7 +31,18 @@ class OnboardingController {
             const onboardingId = await initOrUpdateOnboarding(user.id, account.id);
 
             const { connection_id, provider_config_key } = req.body;
-            await syncOrchestrator.runSyncCommand(environment.id, provider_config_key as string, [syncName], SyncCommand.RUN, connection_id);
+            const { success, error } = await syncOrchestrator.runSyncCommand(
+                environment.id,
+                provider_config_key as string,
+                [syncName],
+                SyncCommand.RUN,
+                connection_id
+            );
+
+            if (!success) {
+                errorManager.errResFromNangoErr(res, error);
+                return;
+            }
 
             if (!onboardingId) {
                 res.status(500).json({
@@ -85,10 +96,15 @@ class OnboardingController {
             const { connection_id: connectionId, provider_config_key: providerConfigKey } = req.query;
 
             // TODO if there are previous jobs then no need for more polling
-            const status = await syncOrchestrator.getSyncStatus(environment.id, providerConfigKey as string, [syncName], connectionId as string, true);
+            const {
+                success,
+                error,
+                response: status
+            } = await syncOrchestrator.getSyncStatus(environment.id, providerConfigKey as string, [syncName], connectionId as string, true);
 
-            if (!status || status.length === 0) {
-                res.sendStatus(404);
+            if (!success || !status) {
+                errorManager.errResFromNangoErr(res, error);
+                return;
             }
 
             const [job] = status as ReportedSyncJobStatus[];

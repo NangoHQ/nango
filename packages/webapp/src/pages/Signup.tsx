@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
+import { useAnalyticsTrack } from '../utils/analytics';
 import { useSignupAPI } from '../utils/api';
 import { useSignin, User } from '../utils/user';
 import DefaultLayout from '../layout/DefaultLayout';
@@ -10,6 +11,7 @@ export default function Signup() {
     const navigate = useNavigate();
     const signin = useSignin();
     const signupAPI = useSignupAPI();
+    const analyticsTrack = useAnalyticsTrack();
 
     const handleSubmit = async (e: React.SyntheticEvent) => {
         e.preventDefault();
@@ -26,6 +28,13 @@ export default function Signup() {
         if (res?.status === 200) {
             let data = await res.json();
             let user: User = data['user'];
+            analyticsTrack('web:account_signup', {
+                user_id: user.id,
+                email: user.email,
+                name: user.name,
+                accountId: user.accountId
+
+            });
             signin(user);
             navigate('/');
         } else if (res != null) {
