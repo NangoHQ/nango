@@ -625,6 +625,21 @@ microsoft-teams:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+microsoft-tenant-specific:
+    auth_mode: OAUTH2
+    authorization_url: https://login.microsoftonline.com/${connectionConfig.tenant}/oauth2/v2.0/authorize
+    token_url: https://login.microsoftonline.com/${connectionConfig.tenant}/oauth2/v2.0/token
+    disable_pkce: true
+    default_scopes:
+        - offline_access
+    authorization_params:
+        response_type: code
+        response_mode: query
+        prompt: consent
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 mixpanel:
     auth_mode: BASIC
     proxy:
