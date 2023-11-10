@@ -562,6 +562,12 @@ keap:
         grant_type: refresh_token
     proxy:
         base_url: https://api.infusionsoft.com
+klaviyo:
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://a.klaviyo.com
+        header:
+            Authorization: Klaviyo-API-Key ${apiKey}
 lever:
     auth_mode: OAUTH2
     authorization_url: https://auth.lever.co/authorize
