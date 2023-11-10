@@ -326,16 +326,31 @@ export class Orchestrator {
             for (const sync of syncs) {
                 const schedule = await getSchedule(sync?.id as string);
                 const latestJob = await getLatestSyncJob(sync?.id as string);
-                const status: ReportedSyncJobStatus = {
+                const status = this.classifySyncStatus(latestJob?.status as SyncStatus, schedule?.status as ScheduleStatus);
+
+                let nextScheduledSyncAt = null;
+                if (status !== SyncStatus.PAUSED) {
+                    const syncSchedule = await syncClient?.describeSchedule(schedule?.schedule_id as string);
+
+                    if (syncSchedule && syncSchedule?.info && syncSchedule?.info?.futureActionTimes && syncSchedule?.info?.futureActionTimes?.length > 0) {
+                        const futureRun = syncSchedule?.info?.futureActionTimes[0];
+                        nextScheduledSyncAt = syncClient?.formatFutureRun(futureRun?.seconds?.toNumber() as number);
+                    }
+                }
+
+                const reportedStatus: ReportedSyncJobStatus = {
                     id: sync?.id,
+                    type: latestJob?.type as SyncType,
+                    finishedAt: latestJob?.updated_at,
+                    nextScheduledSyncAt,
                     name: sync?.name,
-                    status: this.classifySyncStatus(latestJob?.status as SyncStatus, schedule?.status as ScheduleStatus),
+                    status,
                     latestResult: latestJob?.result
                 } as ReportedSyncJobStatus;
                 if (includeJobStatus) {
-                    status['jobStatus'] = latestJob?.status as SyncStatus;
+                    reportedStatus['jobStatus'] = latestJob?.status as SyncStatus;
                 }
-                syncsWithStatus.push(status);
+                syncsWithStatus.push(reportedStatus);
             }
         }
 
