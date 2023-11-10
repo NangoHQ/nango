@@ -7,23 +7,34 @@
             "additionalProperties": {
                 "type": "object",
                 "additionalProperties": {
-                    "type": "object",
-                    "properties": {
-                        "type": { "type": "string" },
-                        "returns": {
-                            "oneOf": [
-                                { "type": "string" },
-                                {
-                                    "type": "array",
-                                    "items": { "type": "string" }
-                                }
-                            ]
+                    "anyOf": [
+                        {
+                            "type": "object",
+                            "additionalProperties": false
                         },
-                        "description": { "type": "string" },
-                        "runs": { "type": "string", "nullable": true },
-                        "track_deletes": { "type": "boolean", "nullable": true },
-                        "auto_start": { "type": "boolean", "nullable": true }
-                    }
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "type": { "type": "string" },
+                                "returns": {
+                                    "oneOf": [
+                                        { "type": "string" },
+                                        {
+                                            "type": "array",
+                                            "items": { "type": "string" }
+                                        }
+                                    ]
+                                },
+                                "description": { "type": "string" },
+                                "runs": { "type": "string", "nullable": true },
+                                "track_deletes": { "type": "boolean", "nullable": true },
+                                "auto_start": { "type": "boolean", "nullable": true }
+                            }
+                        }
+                    ]
                 }
             }
         },

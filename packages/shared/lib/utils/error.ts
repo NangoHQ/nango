@@ -394,7 +394,29 @@ export class NangoError extends Error {
 
             case 'error_loading_nango_config':
                 this.status = 400;
-                this.message = 'Error loading nango config. Please make sure it is present and formatted correctly.';
+                this.message = `Error loading nango config. Please make sure it is present and formatted correctly.${
+                    this.payload ? ` Error: ${this.payload}` : ''
+                }`;
+                break;
+
+            case 'endpoint_output_mismatch':
+                this.status = 400;
+                this.message = `The number of endpoints doesn't match the number of models returned from the output for ${this.payload}. The endpoints to model should match 1 to 1.`;
+                break;
+
+            case 'action_single_endpoint':
+                this.status = 400;
+                this.message = `Actions are only allowed to have one model to be returned and only allow a single endpoint`;
+                break;
+
+            case 'duplicate_endpoint':
+                this.status = 400;
+                this.message = `Duplicate endpoint "${this.payload}" found. Please make sure all endpoints are unique within an integration.`;
+                break;
+
+            case 'duplicate_model':
+                this.status = 400;
+                this.message = `Duplicate model "${this.payload}" found. Please make sure all models are unique within an integration.`;
                 break;
 
             case 'no_config_found':

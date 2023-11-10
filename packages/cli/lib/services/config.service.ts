@@ -15,7 +15,7 @@ class ConfigService {
         }
 
         this.validate(localConfig);
-        const { success, error, response: config } = loadStandardConfig(localConfig);
+        const { success, error, response: config } = loadStandardConfig(localConfig, true);
 
         if (!success || !config) {
             return { success: false, error, response: null };

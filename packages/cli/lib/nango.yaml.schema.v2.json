@@ -8,73 +8,95 @@
                 "type": "object",
                 "properties": {
                     "syncs": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "type": "object",
-                            "properties": {
-                                "description": { "type": "string" },
-                                "sync_type": {
-                                    "type": "string",
-                                    "enum": ["incremental", "full"]
-                                },
-                                "auto_start": { "type": "boolean" },
-                                "runs": { "type": "string" },
-                                "endpoint": {
-                                    "oneOf": [
-                                        { "type": "string" },
-                                        {
-                                            "type": "array",
-                                            "items": { "type": "string" }
-                                        }
-                                    ]
-                                },
-                                "scopes": {
-                                    "oneOf": [
-                                        { "type": "string" },
-                                        {
-                                            "type": "array",
-                                            "items": { "type": "string" }
-                                        }
-                                    ]
-                                },
-                                "input": { "type": "string", "nullable": true },
-                                "output": {
-                                    "oneOf": [
-                                        { "type": "string" },
-                                        {
-                                            "type": "array",
-                                            "items": { "type": "string" }
-                                        }
-                                    ]
-                                }
+                        "anyOf": [
+                            {
+                                "type": "object",
+                                "additionalProperties": false
                             },
-                            "required": ["runs", "output"]
-                        }
+                            {
+                                "type": "null"
+                            },
+                            {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "type": "object",
+                                    "properties": {
+                                        "description": { "type": "string" },
+                                        "sync_type": {
+                                            "type": "string",
+                                            "enum": ["incremental", "full"]
+                                        },
+                                        "auto_start": { "type": "boolean" },
+                                        "runs": { "type": "string" },
+                                        "endpoint": {
+                                            "oneOf": [
+                                                { "type": "string" },
+                                                {
+                                                    "type": "array",
+                                                    "items": { "type": "string" }
+                                                }
+                                            ]
+                                        },
+                                        "scopes": {
+                                            "oneOf": [
+                                                { "type": "string" },
+                                                {
+                                                    "type": "array",
+                                                    "items": { "type": "string" }
+                                                }
+                                            ]
+                                        },
+                                        "input": { "type": "string", "nullable": true },
+                                        "output": {
+                                            "oneOf": [
+                                                { "type": "string" },
+                                                {
+                                                    "type": "array",
+                                                    "items": { "type": "string" }
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": ["endpoint", "output"]
+                                }
+                            }
+                        ]
                     },
                     "actions": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "type": "object",
-                            "properties": {
-                                "description": { "type": "string" },
-                                "endpoint": { "type": "string" },
-                                "scopes": { "type": "string", "nullable": true },
-                                "input": { "type": "string", "nullable": true },
-                                "output": {
-                                    "oneOf": [
-                                        { "type": "string" },
-                                        {
-                                            "type": "array",
-                                            "items": { "type": "string" }
-                                        }
-                                    ]
-                                }
+                        "anyOf": [
+                            {
+                                "type": "null"
                             },
-                            "required": ["description", "endpoint", "output"]
-                        }
+                            {
+                                "type": "object",
+                                "additionalProperties": false
+                            },
+                            {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "type": "object",
+                                    "properties": {
+                                        "description": { "type": "string" },
+                                        "endpoint": { "type": "string" },
+                                        "scopes": { "type": "string", "nullable": true },
+                                        "input": { "type": "string", "nullable": true },
+                                        "output": {
+                                            "oneOf": [
+                                                { "type": "string" },
+                                                {
+                                                    "type": "array",
+                                                    "items": { "type": "string" }
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "required": ["endpoint"]
+                                }
+                            }
+                        ]
                     }
                 },
-                "additionalProperties": true
+                "additionalProperties": false
             }
         }
     },

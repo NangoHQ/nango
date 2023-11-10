@@ -227,16 +227,16 @@ export default class SyncRun {
 
             // TODO this only works for dryrun at the moment
             if (this.isAction && syncData.input) {
-                const { input } = syncData;
-                if (JAVASCRIPT_PRIMITIVES.includes(input as unknown as string)) {
-                    if (typeof this.input !== (input as unknown as string)) {
-                        const message = `The input provided of ${this.input} for ${this.syncName} is not of type ${input}`;
+                const { input: configInput } = syncData;
+                if (JAVASCRIPT_PRIMITIVES.includes(configInput as unknown as string)) {
+                    if (typeof this.input !== (configInput as unknown as string)) {
+                        const message = `The input provided of ${this.input} for ${this.syncName} is not of type ${configInput}`;
                         await this.reportFailureForResults(message);
 
                         return { success: false, error: new NangoError('action_script_failure', message, 500), response: false };
                     }
                 } else {
-                    if (configModels[input as unknown as string]) {
+                    if (configModels[configInput as unknown as string]) {
                         // TODO use joi or zod to validate the input dynamically
                     }
                 }
