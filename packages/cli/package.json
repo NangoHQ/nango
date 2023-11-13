@@ -1,6 +1,6 @@
 {
     "name": "nango",
-    "version": "0.36.12",
+    "version": "0.36.13",
     "description": "Nango's CLI tool.",
     "type": "module",
     "main": "dist/index.js",
@@ -23,7 +23,7 @@
     "dependencies": {
         "@babel/traverse": "^7.22.5",
         "@inquirer/prompts": "^2.3.0",
-        "@nangohq/shared": "0.36.12",
+        "@nangohq/shared": "0.36.13",
         "@vercel/ncc": "^0.36.1",
         "ajv": "^8.12.0",
         "axios": "^1.2.0",
