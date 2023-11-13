@@ -108,6 +108,10 @@ function getFieldsForModel(modelName: string, config: NangoConfig): { name: stri
         return null;
     }
 
+    if (!config.models || Object.keys(config.models).length === 0) {
+        return null;
+    }
+
     const modelData = config.models[modelName] || config.models[`${modelName.slice(0, -1)}`];
 
     for (const fieldName in modelData) {

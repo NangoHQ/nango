@@ -139,7 +139,7 @@ export async function getAllSyncsAndActions(environment_id: number): Promise<Sta
             version: syncConfig.version as string,
             endpoint:
                 !syncConfig.endpoints || syncConfig.endpoints.legnth === 0
-                    ? []
+                    ? null
                     : syncConfig.endpoints.map((endpoint: { path: string; method: string }) => `${endpoint.method} ${endpoint.path}`),
             input: syncConfig.input
         } as NangoIntegrationDataV2;

@@ -11,7 +11,7 @@ import * as dotenv from 'dotenv';
 import { spawn } from 'child_process';
 import type { ChildProcess } from 'node:child_process';
 
-import type { NangoConfig, NangoIntegration, NangoIntegrationData } from '@nangohq/shared';
+import type { NangoConfig, NangoIntegration, NangoIntegrationData, NangoIntegrationDataV2 } from '@nangohq/shared';
 import { nangoConfigFile, SyncConfigType, JAVASCRIPT_PRIMITIVES } from '@nangohq/shared';
 import { NANGO_INTEGRATIONS_NAME, getNangoRootPath, printDebug } from './utils.js';
 import configService from './services/config.service.js';
@@ -51,8 +51,7 @@ export const generate = async (debug = false, inParentDirectory = false) => {
 
     const configContents = fs.readFileSync(`${dirPrefix}/${nangoConfigFile}`, 'utf8');
     const configData: NangoConfig = yaml.load(configContents) as unknown as NangoConfig;
-    const { integrations } = configData;
-    const { models } = configData;
+    const { models, integrations } = configData;
 
     const interfaceDefinitions = modelService.build(models, integrations, debug);
 
@@ -84,46 +83,31 @@ export const generate = async (debug = false, inParentDirectory = false) => {
 
     const allSyncNames: Record<string, boolean> = {};
 
-    for (let i = 0; i < Object.keys(integrations).length; i++) {
-        const providerConfigKey = Object.keys(integrations)[i] as string;
-        if (debug) {
-            printDebug(`Generating ${providerConfigKey} integrations`);
-        }
-        const syncObject = integrations[providerConfigKey] as unknown as { [key: string]: NangoIntegration };
-        const syncNames = Object.keys(syncObject);
-        for (let k = 0; k < syncNames.length; k++) {
-            const syncName = syncNames[k] as string;
+    for (const standardConfig of config) {
+        const { syncs, actions } = standardConfig;
 
-            if (allSyncNames[syncName] === undefined) {
-                allSyncNames[syncName] = true;
+        for (const flow of [...syncs, ...actions]) {
+            const { name, type, returns: models, input } = flow;
+
+            if (allSyncNames[name] === undefined) {
+                allSyncNames[name] = true;
             } else {
-                console.log(chalk.red(`The sync name ${syncName} is duplicated in the ${nangoConfigFile} file. All sync names must be unique.`));
+                console.log(chalk.red(`The ${type} name ${name} is duplicated in the ${nangoConfigFile} file. All sync names must be unique.`));
                 process.exit(1);
             }
 
             if (debug) {
-                printDebug(`Generating ${syncName} integration`);
-            }
-            const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
-
-            if (syncData.type !== SyncConfigType.ACTION && !syncData.returns) {
-                console.log(
-                    chalk.red(
-                        `The ${syncName} integration is missing a returns property for what models the sync returns. Make sure you have "returns" instead of "return"`
-                    )
-                );
-                process.exit(1);
+                printDebug(`Generating ${name} integration`);
             }
 
-            const { returns: modelOrModels, input, type = SyncConfigType.SYNC } = syncData;
-            const syncNameCamel = syncName
+            const flowNameCamel = name
                 .split('-')
                 .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
                 .join('');
 
             let ejsTemplateContents = '';
 
-            if (syncName === exampleSyncName && type === SyncConfigType.SYNC) {
+            if (name === exampleSyncName && type === SyncConfigType.SYNC) {
                 ejsTemplateContents = githubExampleTemplateContents;
             } else {
                 ejsTemplateContents = type === SyncConfigType.SYNC ? syncTemplateContents : actionTemplateContents;
@@ -140,45 +124,43 @@ export const generate = async (debug = false, inParentDirectory = false) => {
             let interfaceNames: string | string[];
             let mappings: { name: string; type: string } | { name: string; type: string }[];
 
-            if (typeof modelOrModels === 'string') {
-                const formattedName = formatModelName(modelOrModels);
+            if (typeof models === 'string') {
+                const formattedName = formatModelName(models);
                 interfaceNames = formattedName;
                 mappings = {
-                    name: modelOrModels,
+                    name: models,
                     type: formattedName
                 };
             } else {
-                interfaceNames = modelOrModels.map(formatModelName);
-                mappings = modelOrModels.map((model) => ({
+                interfaceNames = models.map(formatModelName);
+                mappings = models.map((model) => ({
                     name: model,
                     type: formatModelName(model)
                 }));
             }
 
             const rendered = ejs.render(ejsTemplateContents, {
-                syncName: syncNameCamel,
+                syncName: flowNameCamel,
                 interfaceFileName: TYPES_FILE_NAME.replace('.ts', ''),
                 interfaceNames,
                 mappings,
-                inputs: input || ''
+                inputs: input && Object.keys(input).length > 0 ? input : ''
             });
 
             const stripped = rendered.replace(/^\s+/, '');
 
-            if (!fs.existsSync(`${dirPrefix}/${syncName}.ts`)) {
-                fs.writeFileSync(`${dirPrefix}/${syncName}.ts`, stripped);
+            if (!fs.existsSync(`${dirPrefix}/${name}.ts`)) {
+                fs.writeFileSync(`${dirPrefix}/${name}.ts`, stripped);
                 if (debug) {
-                    printDebug(`Created ${syncName}.ts file`);
+                    printDebug(`Created ${name}.ts file`);
                 }
             } else {
                 if (debug) {
-                    printDebug(`${syncName}.ts file already exists, so will not overwrite it.`);
+                    printDebug(`${name}.ts file already exists, so will not overwrite it.`);
                 }
             }
         }
     }
-
-    console.log(chalk.green(`Integration files have been created`));
 };
 
 /**
