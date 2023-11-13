@@ -27,8 +27,8 @@ export interface OAuth2Credentials extends CredentialsCommon {
     expires_at?: Date | undefined;
 }
 
-export interface AppCredentials {
-    type?: AuthModes.App;
+export interface AppCredentials extends CredentialsCommon {
+    type: AuthModes.App;
     access_token: string;
     expires_at?: Date | undefined;
     raw: Record<string, any>;
@@ -65,18 +65,18 @@ export interface GetRecordsRequestConfig {
     filter?: FilterAction | CombinedFilterAction;
 }
 
-export interface BasicApiCredentials {
-    type?: AuthModes.Basic;
+export interface BasicApiCredentials extends CredentialsCommon {
+    type: AuthModes.Basic;
     username: string;
     password: string;
 }
 
-export interface ApiKeyCredentials {
-    type?: AuthModes.ApiKey;
+export interface ApiKeyCredentials extends CredentialsCommon {
+    type: AuthModes.ApiKey;
     apiKey: string;
 }
 
-type AuthCredentials = OAuth2Credentials | OAuth1Credentials | BasicApiCredentials | ApiKeyCredentials;
+type AuthCredentials = OAuth2Credentials | OAuth1Credentials | BasicApiCredentials | ApiKeyCredentials | AppCredentials;
 
 export interface Metadata {
     [key: string]: string | Record<string, any>;
