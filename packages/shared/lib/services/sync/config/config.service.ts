@@ -164,7 +164,7 @@ export async function getAllSyncsAndActions(environment_id: number): Promise<Sta
 
     type extendedSyncConfig = SyncConfig & { provider: string; unique_key: string };
 
-    const { success, response: standardConfig, error } = convertV2ConfigObject(nangoConfig);
+    const { success, response: standardConfig } = convertV2ConfigObject(nangoConfig);
 
     if (!success || !standardConfig) {
         return [];
