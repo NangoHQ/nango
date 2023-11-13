@@ -113,6 +113,79 @@ describe('generate function tests', () => {
         expect(fs.existsSync(`${testDirectory}/single-model-return.ts`)).toBe(true);
     });
 
+    it('should throw an error if endpoint is missing from a v2 config', async () => {
+        await init();
+        const data = {
+            integrations: {
+                'demo-github-integration': {
+                    syncs: {
+                        'single-model-return': {
+                            type: 'sync',
+                            runs: 'every half hour',
+                            returns: 'GithubIssue'
+                        }
+                    }
+                }
+            },
+            models: {
+                GithubIssue: {
+                    id: 'integer',
+                    owner: 'string',
+                    repo: 'string',
+                    issue_number: 'number',
+                    title: 'string',
+                    author: 'string',
+                    author_id: 'string',
+                    state: 'string',
+                    date_created: 'date',
+                    date_last_modified: 'date',
+                    body: 'string'
+                }
+            }
+        };
+        const yamlData = yaml.dump(data);
+        await fs.promises.writeFile(`${testDirectory}/nango.yaml`, yamlData, 'utf8');
+        expect(generate(false, true)).rejects.toThrow(`Problem validating the nango.yaml file`);
+        expect(fs.existsSync(`${testDirectory}/single-model-return.ts`)).toBe(false);
+    });
+
+    it('should generate missing from a v2 config', async () => {
+        await init();
+        const data = {
+            integrations: {
+                'demo-github-integration': {
+                    syncs: {
+                        'single-model-issue-output': {
+                            type: 'sync',
+                            runs: 'every half hour',
+                            endpoint: 'GET /tickets/issue',
+                            output: 'GithubIssue'
+                        }
+                    }
+                }
+            },
+            models: {
+                GithubIssue: {
+                    id: 'integer',
+                    owner: 'string',
+                    repo: 'string',
+                    issue_number: 'number',
+                    title: 'string',
+                    author: 'string',
+                    author_id: 'string',
+                    state: 'string',
+                    date_created: 'date',
+                    date_last_modified: 'date',
+                    body: 'string'
+                }
+            }
+        };
+        const yamlData = yaml.dump(data);
+        await fs.promises.writeFile(`${testDirectory}/nango.yaml`, yamlData, 'utf8');
+        await generate(false, true);
+        expect(fs.existsSync(`${testDirectory}/single-model-issue-output.ts`)).toBe(true);
+    });
+
     it('should throw an error if a model is missing an id that is actively used', async () => {
         await init();
         const data = {

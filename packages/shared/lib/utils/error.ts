@@ -395,7 +395,7 @@ export class NangoError extends Error {
             case 'error_loading_nango_config':
                 this.status = 400;
                 this.message = `Error loading nango config. Please make sure it is present and formatted correctly.${
-                    this.payload ? ` Error: ${this.payload}` : ''
+                    this.payload ? ` Error: ${JSON.stringify(this.payload, null, 2)}` : ''
                 }`;
                 break;
 

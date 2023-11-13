@@ -1,5 +1,6 @@
 import fs from 'fs';
 import Ajv from 'ajv';
+import addErrors from 'ajv-errors';
 import chalk from 'chalk';
 import type { NangoConfig, StandardNangoConfig, ServiceResponse } from '@nangohq/shared';
 import { loadLocalNangoConfig, loadStandardConfig, nangoConfigFile, determineVersion, NangoError } from '@nangohq/shared';
@@ -45,7 +46,8 @@ class ConfigService {
     }
 
     private validate(config: NangoConfig): void {
-        const ajv = new Ajv();
+        const ajv = new Ajv({ allErrors: true });
+        addErrors(ajv);
         if (!config || !config.integrations) {
             return;
         }
@@ -61,8 +63,18 @@ class ConfigService {
         const validate = ajv.compile(JSON.parse(schema));
 
         if (!validate(config)) {
-            console.log(chalk.red(`yaml validation failed with ${JSON.stringify(validate.errors, null, 2)}`));
-            throw new Error(`Error validating the ${nangoConfigFile} file`);
+            const validationMessageStart = 'nango yaml schema validation error:;';
+            let messages = validate.errors
+                ?.filter((error) => error?.message?.includes(validationMessageStart))
+                .map((error) => error.message)
+                .join('\n');
+
+            if (messages?.length === 0) {
+                messages = validate.errors?.map((error) => error.message).join('\n');
+            }
+
+            console.log(chalk.red(`yaml validation failed with: ${messages}`));
+            throw new Error(`Problem validating the ${nangoConfigFile} file`);
         }
     }
 }
