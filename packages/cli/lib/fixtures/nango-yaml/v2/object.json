@@ -38,7 +38,7 @@
                 "name": "github-issue-example-two",
                 "models": [
                     {
-                        "name": "GithubIssue",
+                        "name": "GithubIssue2",
                         "fields": [
                             { "name": "id", "type": "integer" },
                             { "name": "owner", "type": "string" },
@@ -61,7 +61,7 @@
                 "type": "sync",
                 "attributes": {},
                 "input": {},
-                "returns": ["GithubIssue"],
+                "returns": ["GithubIssue2"],
                 "description": "Sync github issues continuously from public repos example two\n",
                 "scopes": ["public_repo"],
                 "endpoints": [{ "GET": "/ticketing/tickets-two" }]
@@ -70,7 +70,7 @@
                 "name": "github-multiple-models",
                 "models": [
                     {
-                        "name": "GithubIssue",
+                        "name": "GithubIssue3",
                         "fields": [
                             { "name": "id", "type": "integer" },
                             { "name": "owner", "type": "string" },
@@ -109,7 +109,7 @@
                 "type": "sync",
                 "attributes": {},
                 "input": {},
-                "returns": ["GithubIssue", "GithubPR"],
+                "returns": ["GithubIssue3", "GithubPR"],
                 "description": "Sync github issues to multiple models",
                 "scopes": [],
                 "endpoints": [{ "GET": "/ticketing/ticket" }, { "GET": "/ticketing/pr" }]
@@ -121,7 +121,7 @@
                 "description": "Get a GitHub issue.",
                 "models": [
                     {
-                        "name": "GithubIssue",
+                        "name": "GithubIssueAction",
                         "fields": [
                             { "name": "id", "type": "integer" },
                             { "name": "owner", "type": "string" },
@@ -143,7 +143,7 @@
                     "fields": [{ "name": "id", "type": "integer" }]
                 },
                 "endpoints": [{ "GET": "/ticketing/tickets/{GithubCreateIssueInput:id}" }],
-                "returns": "GithubIssue",
+                "returns": "GithubIssueAction",
                 "runs": "",
                 "scopes": ["repo:read"],
                 "type": "action"

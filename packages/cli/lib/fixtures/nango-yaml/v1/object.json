@@ -29,7 +29,8 @@
                 "returns": ["GithubIssue"],
                 "description": "",
                 "scopes": [],
-                "endpoints": []
+                "endpoints": [],
+                "type": "sync"
             }
         ],
         "actions": [
@@ -43,7 +44,8 @@
                 "returns": "boolean",
                 "runs": "",
                 "scopes": [],
-                "track_deletes": false
+                "track_deletes": false,
+                "type": "action"
             }
         ]
     }

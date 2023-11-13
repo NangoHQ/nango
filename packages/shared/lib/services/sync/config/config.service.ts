@@ -82,14 +82,18 @@ export async function getAllSyncsAndActions(environment_id: number): Promise<Sta
             `${TABLE}.sync_type`,
             `${TABLE}.metadata`,
             `${TABLE}.input`,
-            '_nango_sync_endpoints.method',
-            '_nango_sync_endpoints.path',
             '_nango_configs.provider',
-            '_nango_configs.unique_key'
+            '_nango_configs.unique_key',
+            db.knex.raw(
+                `(
+            SELECT json_agg(json_build_object('method', method, 'path', path))
+            FROM _nango_sync_endpoints
+            WHERE _nango_sync_endpoints.sync_config_id = ${TABLE}.id
+        ) as endpoints`
+            )
         )
         .from<SyncConfig>(TABLE)
         .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')
-        .join('_nango_sync_endpoints', `${TABLE}.id`, '_nango_sync_endpoints.sync_config_id')
         .where({
             [`${TABLE}.environment_id`]: environment_id,
             [`${TABLE}.deleted`]: false,
@@ -126,13 +130,17 @@ export async function getAllSyncsAndActions(environment_id: number): Promise<Sta
             runs: syncConfig.runs,
             type: syncConfig.type,
             output: syncConfig.models,
+            returns: syncConfig.models,
             description: syncConfig.metadata.description || '',
             track_deletes: syncConfig.track_deletes,
             auto_start: syncConfig.auto_start,
             attributes: syncConfig.attributes || {},
             scopes: syncConfig.metadata.scopes || [],
             version: syncConfig.version as string,
-            endpoint: `${syncConfig.method} ${syncConfig.path}`,
+            endpoint:
+                !syncConfig.endpoints || syncConfig.endpoints.legnth === 0
+                    ? []
+                    : syncConfig.endpoints.map((endpoint: { path: string; method: string }) => `${endpoint.method} ${endpoint.path}`),
             input: syncConfig.input
         } as NangoIntegrationDataV2;
 
@@ -156,7 +164,7 @@ export async function getAllSyncsAndActions(environment_id: number): Promise<Sta
 
     type extendedSyncConfig = SyncConfig & { provider: string; unique_key: string };
 
-    const { success, response: standardConfig } = convertV2ConfigObject(nangoConfig);
+    const { success, response: standardConfig, error } = convertV2ConfigObject(nangoConfig);
 
     if (!success || !standardConfig) {
         return [];
@@ -166,12 +174,19 @@ export async function getAllSyncsAndActions(environment_id: number): Promise<Sta
         const { providerConfigKey } = config;
         for (const sync of [...config.syncs, ...config.actions]) {
             const { name } = sync;
-            const model_schema = syncConfigs.find(
+            const syncObject = syncConfigs.find(
                 (syncConfig: extendedSyncConfig) => syncConfig.sync_name === name && syncConfig.unique_key === providerConfigKey
-            )?.model_schema;
+            );
+
+            const { model_schema, input } = syncObject;
+
             for (const model of model_schema) {
                 if (Array.isArray(model.fields) && Array.isArray(model.fields[0])) {
                     model.fields = model.fields.flat();
+                }
+
+                if (model.name === input) {
+                    sync.input = model;
                 }
             }
             sync.models = model_schema;

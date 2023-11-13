@@ -416,7 +416,7 @@ export class NangoError extends Error {
 
             case 'duplicate_model':
                 this.status = 400;
-                this.message = `Duplicate model "${this.payload}" found. Please make sure all models are unique within an integration.`;
+                this.message = `Duplicate model "${this.payload['model']}" for the ${this.payload['type']} "${this.payload['name']}" found. Please make sure all models are unique within an integration.`;
                 break;
 
             case 'no_config_found':

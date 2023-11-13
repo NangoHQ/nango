@@ -175,7 +175,14 @@ export default class SyncRun {
             const providerConfigKey = this.nangoConnection.provider_config_key;
             const syncObject = integrations[providerConfigKey] as unknown as { [key: string]: NangoIntegration };
 
-            const syncData = syncObject[this.syncName] as unknown as NangoIntegrationData;
+            let syncData: NangoIntegrationData;
+
+            if (this.isAction) {
+                syncData = (syncObject['actions'] ? syncObject!['actions']![this.syncName] : syncObject[this.syncName]) as unknown as NangoIntegrationData;
+            } else {
+                syncData = (syncObject['syncs'] ? syncObject!['syncs']![this.syncName] : syncObject[this.syncName]) as unknown as NangoIntegrationData;
+            }
+
             const { returns: models, track_deletes: trackDeletes } = syncData;
 
             if (syncData.sync_config_id) {

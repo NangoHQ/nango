@@ -203,7 +203,7 @@ const assignEndpoints = (rawEndpoint: string, defaultMethod: HTTP_VERB, singleAl
     if (endpoint.length > 1) {
         const method = singleAllowedMethod ? defaultMethod : (endpoint[0]?.toUpperCase() as HTTP_VERB);
 
-        if (singleAllowedMethod && showMessages) {
+        if (singleAllowedMethod && showMessages && endpoint[0]?.toUpperCase() !== defaultMethod) {
             console.log(chalk.yellow(`A sync only allows for a ${defaultMethod} method. The provided ${endpoint[0]?.toUpperCase()} method will be ignored.`));
         }
 
@@ -292,7 +292,7 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                             allModels.push(model);
                         }
                     } else {
-                        const error = new NangoError('duplicate_model', model);
+                        const error = new NangoError('duplicate_model', { model, name: syncName, type: 'sync' });
                         return { success: false, error, response: null };
                     }
                     const modelFields = getFieldsForModel(model, config) as { name: string; type: string }[];
@@ -387,7 +387,7 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                             allModels.push(model);
                         }
                     } else {
-                        const error = new NangoError('duplicate_model', model);
+                        const error = new NangoError('duplicate_model', { model, name: actionName, type: 'action' });
                         return { success: false, error, response: null };
                     }
                     const modelFields = getFieldsForModel(model, config) as { name: string; type: string }[];
@@ -410,26 +410,33 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
             }
 
             let endpoints: NangoSyncEndpoint[] = [];
+            let actionEndpoint: string;
+
             if (action?.endpoint) {
                 if (Array.isArray(action?.endpoint)) {
-                    const error = new NangoError('action_single_endpoint', actionName);
+                    if (action?.endpoint?.length > 1) {
+                        const error = new NangoError('action_single_endpoint', actionName);
 
-                    return { success: false, error, response: null };
+                        return { success: false, error, response: null };
+                    }
+                    actionEndpoint = action?.endpoint[0] as string;
+                } else {
+                    actionEndpoint = action?.endpoint as string;
                 }
 
-                endpoints = assignEndpoints(action?.endpoint as string, 'POST', false, showMessages);
-                if (action?.endpoint?.includes('{') && action?.endpoint.includes('}')) {
-                    const { success, error, response } = parseModelInEndpoint(action?.endpoint as string, allModelNames, inputModel, config);
+                endpoints = assignEndpoints(actionEndpoint, 'POST', false, showMessages);
+                if (actionEndpoint?.includes('{') && actionEndpoint.includes('}')) {
+                    const { success, error, response } = parseModelInEndpoint(actionEndpoint, allModelNames, inputModel, config);
                     if (!success || !response) {
                         return { success, error, response: null };
                     }
                     inputModel = response;
                 }
 
-                if (!allEndpoints.includes(action?.endpoint)) {
-                    allEndpoints.push(action?.endpoint);
+                if (!allEndpoints.includes(actionEndpoint)) {
+                    allEndpoints.push(actionEndpoint);
                 } else {
-                    const error = new NangoError('duplicate_endpoint', action?.endpoint);
+                    const error = new NangoError('duplicate_endpoint', actionEndpoint);
                     return { success: false, error, response: null };
                 }
             }

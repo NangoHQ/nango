@@ -18,7 +18,7 @@ integrations:
         runs: every hour
         endpoint: /ticketing/tickets-two
         scopes: public_repo
-        output: GithubIssue
+        output: GithubIssue2
       github-multiple-models:
         description: Sync github issues to multiple models
         sync_type: full
@@ -28,13 +28,13 @@ integrations:
           - /ticketing/ticket
           - /ticketing/pr
         output:
-          - GithubIssue
+          - GithubIssue3
           - GithubPR
     actions:
       github-get-issue:
         description: Get a GitHub issue.
         endpoint: GET /ticketing/tickets/{GithubCreateIssueInput:id}
-        output: GithubIssue
+        output: GithubIssueAction
         scopes: repo:read
       github-create-issue:
         description: Creates a GitHub issue.
@@ -61,6 +61,12 @@ models:
     date_created: date
     date_last_modified: date
     body: string
+  GithubIssueAction:
+    __extends: GithubIssue
+  GithubIssue2:
+    __extends: GithubIssue
+  GithubIssue3:
+    __extends: GithubIssue
   GithubCreateIssueInput:
     __extends: GithubIssue
   GithubCreateOutput:
