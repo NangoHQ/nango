@@ -419,6 +419,12 @@ google-calendar:
     alias: google
     proxy:
         base_url: https://www.googleapis.com
+        paginate:
+            type: cursor
+            cursor_path_in_response: nextPageToken
+            limit_name_in_request: maxSize
+            cursor_name_in_request: pageToken
+            response_path: items
     docs: https://developers.google.com/calendar/api/v3/reference
 google-mail:
     alias: google
