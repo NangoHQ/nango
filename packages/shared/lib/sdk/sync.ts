@@ -124,8 +124,8 @@ interface BasicApiCredentials extends CredentialsCommon {
     password: string;
 }
 
-interface ApiKeyCredentials {
-    type?: AuthModes.ApiKey;
+interface ApiKeyCredentials extends CredentialsCommon {
+    type: AuthModes.ApiKey;
     apiKey: string;
 }
 
