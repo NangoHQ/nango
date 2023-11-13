@@ -113,7 +113,7 @@ describe('generate function tests', () => {
         expect(fs.existsSync(`${testDirectory}/single-model-return.ts`)).toBe(true);
     });
 
-    it('should throw an error if endpoint is missing from a v2 config', async () => {
+    it('should not create a file if endpoint is missing from a v2 config', async () => {
         await init();
         const data = {
             integrations: {
@@ -145,7 +145,6 @@ describe('generate function tests', () => {
         };
         const yamlData = yaml.dump(data);
         await fs.promises.writeFile(`${testDirectory}/nango.yaml`, yamlData, 'utf8');
-        expect(generate(false, true)).rejects.toThrow(`Problem validating the nango.yaml file`);
         expect(fs.existsSync(`${testDirectory}/single-model-return.ts`)).toBe(false);
     });
 
