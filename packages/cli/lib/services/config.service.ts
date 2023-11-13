@@ -15,7 +15,12 @@ class ConfigService {
             return { success: false, error: new NangoError('error_loading_nango_config'), response: null };
         }
 
-        this.validate(localConfig);
+        const { success: validationSuccess, error: validationError } = this.validate(localConfig);
+
+        if (!validationSuccess) {
+            return { success: false, error: validationError, response: null };
+        }
+
         const { success, error, response: config } = loadStandardConfig(localConfig, true);
 
         if (!success || !config) {
@@ -45,15 +50,20 @@ class ConfigService {
         return modelNames;
     }
 
-    private validate(config: NangoConfig): void {
+    private validate(config: NangoConfig): ServiceResponse<null> {
         const ajv = new Ajv({ allErrors: true });
         addErrors(ajv);
         if (!config || !config.integrations) {
-            return;
+            return { success: true, error: null, response: null };
         }
 
         if (config.integrations['syncs'] || config.integrations['actions']) {
-            throw new Error(`The ${nangoConfigFile} file has an invalid format, syncs or actions should be nested under a provider config key.`);
+            const error = new NangoError(
+                'pass_through_error',
+                `The ${nangoConfigFile} file has an invalid format, syncs or actions should be nested under a provider config key.`
+            );
+
+            return { success: false, error, response: null };
         }
 
         const version = determineVersion(config);
@@ -74,8 +84,12 @@ class ConfigService {
             }
 
             console.log(chalk.red(`yaml validation failed with: ${messages}`));
-            throw new Error(`Problem validating the ${nangoConfigFile} file`);
+            const error = new NangoError('pass_through_error', `Problem validating the ${nangoConfigFile} file.`);
+
+            return { success: false, error, response: null };
         }
+
+        return { success: true, error: null, response: null };
     }
 }
 

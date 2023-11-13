@@ -64,7 +64,7 @@
                                                 }
                                             ],
                                             "errorMessage": {
-                                                "type": "nango yaml schema validation error: endpoint must be a string or an array of strings."
+                                                "_": "nango yaml schema validation error: endpoint must be a string or an array of strings."
                                             }
                                         },
                                         "scopes": {
@@ -76,7 +76,7 @@
                                                 }
                                             ],
                                             "errorMessage": {
-                                                "type": "nango yaml schema validation error: scopes must be a string or an array of strings."
+                                                "_": "nango yaml schema validation error: scopes must be a string or an array of strings."
                                             }
                                         },
                                         "input": {
@@ -95,7 +95,7 @@
                                                 }
                                             ],
                                             "errorMessage": {
-                                                "type": "nango yaml schema validation error: output must be a string or an array of strings."
+                                                "_": "nango yaml schema validation error: output must be a string or an array of strings."
                                             }
                                         }
                                     },
@@ -154,7 +154,7 @@
                                                 }
                                             ],
                                             "errorMessage": {
-                                                "type": "nango yaml schema validation error: scopes must be a string or an array of strings."
+                                                "_": "nango yaml schema validation error: scopes must be a string or an array of strings."
                                             }
                                         },
                                         "input": {
@@ -173,7 +173,7 @@
                                                 }
                                             ],
                                             "errorMessage": {
-                                                "type": "nango yaml schema validation error: output must be a string or an array of strings."
+                                                "_": "nango yaml schema validation error: output must be a string or an array of strings."
                                             }
                                         }
                                     },
