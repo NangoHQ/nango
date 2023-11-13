@@ -111,15 +111,15 @@ enum AuthModes {
     App = 'APP'
 }
 
-interface AppCredentials {
-    type?: AuthModes.App;
+interface AppCredentials extends CredentialsCommon {
+    type: AuthModes.App;
     access_token: string;
     expires_at?: Date | undefined;
     raw: Record<string, any>;
 }
 
-interface BasicApiCredentials {
-    type?: AuthModes.Basic;
+interface BasicApiCredentials extends CredentialsCommon {
+    type: AuthModes.Basic;
     username: string;
     password: string;
 }
