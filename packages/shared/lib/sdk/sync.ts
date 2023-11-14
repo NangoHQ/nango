@@ -101,6 +101,7 @@ export interface ProxyConfiguration {
     retries?: number;
     baseUrlOverride?: string;
     paginate?: Partial<CursorPagination> | Partial<LinkPagination> | Partial<OffsetPagination>;
+    responseType?: 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream';
 }
 
 enum AuthModes {
