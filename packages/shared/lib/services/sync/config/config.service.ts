@@ -7,12 +7,12 @@ import { Action, SyncConfigWithProvider, SyncConfig, SlimSync, SyncConfigType, N
 import { convertV2ConfigObject } from '../../nango-config.service.js';
 import type { NangoConnection } from '../../../models/Connection.js';
 import type { Config as ProviderConfig } from '../../../models/Provider.js';
-import type { NangoConfigV1, NangoV2Integration, StandardNangoConfig, NangoIntegrationDataV2 } from '../../../models/NangoConfig.js';
+import type { NangoConfig, NangoConfigV1, NangoV2Integration, StandardNangoConfig, NangoIntegrationDataV2 } from '../../../models/NangoConfig.js';
 import errorManager, { ErrorSourceEnum } from '../../../utils/error.manager.js';
 
 const TABLE = dbNamespace + 'sync_configs';
 
-export async function getSyncConfig(nangoConnection: NangoConnection, syncName?: string, isAction?: boolean): Promise<NangoConfigV1 | null> {
+export async function getSyncConfig(nangoConnection: NangoConnection, syncName?: string, isAction?: boolean): Promise<NangoConfig | null> {
     let syncConfigs;
 
     if (!syncName) {
@@ -50,6 +50,7 @@ export async function getSyncConfig(nangoConnection: NangoConnection, syncName?:
                 runs: syncConfig.runs,
                 type: syncConfig.type,
                 returns: syncConfig.models,
+                input: syncConfig.input as string,
                 track_deletes: syncConfig.track_deletes,
                 auto_start: syncConfig.auto_start,
                 attributes: syncConfig.attributes || {},
