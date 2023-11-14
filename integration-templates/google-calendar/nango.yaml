@@ -75,7 +75,7 @@ models:
       self: boolean
     start:
       date: date
-      string: string
+      dateTime: string
       timeZone: string
     end:
       date: date
@@ -87,7 +87,7 @@ models:
     recurringEventId: string
     originalStartTime:
       date: date
-      string: string
+      dateTime: string
       timeZone: string
     transparency: string
     visibility: string
