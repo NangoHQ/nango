@@ -495,7 +495,7 @@ export class NangoSync extends NangoAction {
         }
 
         if (this.dryRun) {
-            this.logMessages?.push(`A batch save call would save the following data to the ${model} model:}`);
+            this.logMessages?.push(`A batch save call would save the following data to the ${model} model:`);
             this.logMessages?.push(...results);
             return null;
         }
@@ -610,7 +610,7 @@ export class NangoSync extends NangoAction {
         }
 
         if (this.dryRun) {
-            this.logMessages?.push(`A batch delete call would delete the following data`);
+            this.logMessages?.push(`A batch delete call would delete the following data:`);
             this.logMessages?.push(...results);
             return null;
         }

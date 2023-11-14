@@ -3,7 +3,7 @@ import type { NangoConnection } from '../models/Connection.js';
 import ms from 'ms';
 import fs from 'fs-extra';
 import type { Config as ProviderConfig } from '../models/Provider.js';
-import type { NangoIntegrationData, NangoConfig, NangoIntegration } from '../integrations/index.js';
+import type { NangoIntegrationData, NangoConfig, NangoIntegration } from '../models/NangoConfig.js';
 import { Sync, SyncStatus, SyncType, ScheduleStatus, SyncCommand, SyncWithSchedule } from '../models/Sync.js';
 import type { ServiceResponse } from '../models/Generic.js';
 import { LogActionEnum, LogLevel } from '../models/Activity.js';

@@ -30,7 +30,7 @@ import {
     ScheduleStatus,
     SyncConfigType,
     SyncDeploymentResult,
-    IncomingSyncConfig,
+    IncomingFlowConfig,
     Sync,
     SyncType,
     SyncCommand,
@@ -42,7 +42,7 @@ interface CreateSyncArgs {
     connections: Connection[];
     providerConfigKey: string;
     environmentId: number;
-    sync: IncomingSyncConfig;
+    sync: IncomingFlowConfig;
     syncName: string;
 }
 
@@ -52,7 +52,7 @@ export class Orchestrator {
         syncName: string,
         providerConfigKey: string,
         environmentId: number,
-        sync: IncomingSyncConfig,
+        sync: IncomingFlowConfig,
         debug = false,
         activityLogId?: number
     ): Promise<boolean> {
@@ -255,7 +255,7 @@ export class Orchestrator {
                 environment_id: environmentId,
                 activity_log_id: activityLogId as number,
                 timestamp: Date.now(),
-                content: `Sync was updated with command: "${action}" for sync: ${syncNames.join(', ')}`
+                content: `Sync was updated with command: "${action}" for sync: ${Array.isArray(syncNames) ? syncNames.join(', ') : syncNames}`
             });
         }
 
@@ -397,7 +397,7 @@ export class Orchestrator {
                 name as string,
                 providerConfigKey,
                 environmentId,
-                flow as unknown as IncomingSyncConfig,
+                flow as unknown as IncomingFlowConfig,
                 false
             );
         }
