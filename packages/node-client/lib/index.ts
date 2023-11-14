@@ -549,6 +549,10 @@ export class Nango {
             options.paramsSerializer = config.paramsSerializer;
         }
 
+        if (config.responseType) {
+            options.responseType = config.responseType;
+        }
+
         if (this.dryRun) {
             const stringifyParams = (params: Record<string, string>) => {
                 return Object.keys(params)

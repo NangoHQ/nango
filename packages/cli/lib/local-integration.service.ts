@@ -2,6 +2,7 @@ import { NangoError, formatScriptError, IntegrationServiceInterface, NangoIntegr
 import * as vm from 'vm';
 import * as url from 'url';
 import * as crypto from 'crypto';
+import { Buffer } from 'buffer';
 
 class IntegrationService implements IntegrationServiceInterface {
     async runScript(
@@ -36,7 +37,7 @@ class IntegrationService implements IntegrationServiceInterface {
 
                 const scriptObj = new vm.Script(wrappedScript);
                 const sandbox = {
-                    console: console,
+                    console,
                     require: (moduleName: string) => {
                         switch (moduleName) {
                             case 'url':
@@ -46,7 +47,8 @@ class IntegrationService implements IntegrationServiceInterface {
                             default:
                                 throw new Error(`Module '${moduleName}' is not allowed`);
                         }
-                    }
+                    },
+                    Buffer
                 };
 
                 const context = vm.createContext(sandbox);
