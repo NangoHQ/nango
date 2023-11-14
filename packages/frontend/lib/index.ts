@@ -30,8 +30,10 @@ export default class Nango {
     private debug = false;
     public win: null | AuthorizationModal = null;
     private tm: null | NodeJS.Timer = null;
+    private width: number | null = null;
+    private height: number | null = null;
 
-    constructor(config: { host?: string; websocketsPath?: string; publicKey: string; debug?: boolean }) {
+    constructor(config: { host?: string; websocketsPath?: string; publicKey: string; width?: number; height?: number; debug?: boolean }) {
         config.host = config.host || prodHost; // Default to Nango Cloud.
         config.websocketsPath = config.websocketsPath || '/'; // Default to root path.
         this.debug = config.debug || false;
@@ -39,6 +41,14 @@ export default class Nango {
         if (this.debug) {
             console.log(debugLogPrefix, `Debug mode is enabled.`);
             console.log(debugLogPrefix, `Using host: ${config.host}.`);
+        }
+
+        if (config.width) {
+            this.width = config.width;
+        }
+
+        if (config.height) {
+            this.height = config.height;
         }
 
         this.hostBaseUrl = config.host.slice(-1) === '/' ? config.host.slice(0, -1) : config.host; // Remove trailing slash.
@@ -60,7 +70,7 @@ export default class Nango {
         }
     }
 
-    public async create(providerConfigKey: string, connectionId: string, connectionConfig: ConnectionConfig): Promise<AuthResult | AuthError> {
+    public async create(providerConfigKey: string, connectionId: string, connectionConfig: ConnectionConfig): Promise<AuthResult> {
         const url = this.hostBaseUrl + `/unauth/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig)}`;
 
         const res = await fetch(url, {
@@ -82,7 +92,7 @@ export default class Nango {
         providerConfigKey: string,
         connectionId: string,
         conectionConfigOrCredentials?: ConnectionConfig | BasicApiCredentials | ApiKeyCredentials
-    ): Promise<AuthResult | AuthError> {
+    ): Promise<AuthResult> {
         if (conectionConfigOrCredentials && 'credentials' in conectionConfigOrCredentials && Object.keys(conectionConfigOrCredentials.credentials).length > 0) {
             const credentials = conectionConfigOrCredentials.credentials as BasicApiCredentials | ApiKeyCredentials;
             const { credentials: _, ...connectionConfig } = conectionConfigOrCredentials as ConnectionConfig;
@@ -133,7 +143,14 @@ export default class Nango {
             this.status = AuthorizationStatus.BUSY;
 
             // Open authorization modal
-            this.win = new AuthorizationModal(this.websocketsBaseUrl, url, successHandler, errorHandler, this.debug);
+            this.win = new AuthorizationModal(
+                this.websocketsBaseUrl,
+                url,
+                successHandler,
+                errorHandler,
+                { width: this.width, height: this.height },
+                this.debug
+            );
             this.tm = setInterval(() => {
                 if (!this.win?.modal?.window || this.win?.modal?.window.closed) {
                     clearTimeout(this.tm as unknown as number);
@@ -167,7 +184,7 @@ export default class Nango {
         connectionId: string,
         connectionConfigWithCredentials: ConnectionConfig,
         connectionConfig: ConnectionConfig
-    ): Promise<AuthResult | AuthError> {
+    ): Promise<AuthResult> {
         const { params: credentials } = connectionConfigWithCredentials as ConnectionConfig;
 
         if (!credentials) {
@@ -188,7 +205,7 @@ export default class Nango {
 
             if (!res.ok) {
                 const errorResponse = await res.json();
-                throw { ...errorResponse, message: errorResponse.error };
+                throw new AuthError(errorResponse.error, errorResponse.errorType);
             }
 
             return res.json();
@@ -301,13 +318,14 @@ class AuthorizationModal {
         url: string,
         successHandler: (providerConfigKey: string, connectionId: string) => any,
         errorHandler: (errorType: string, errorDesc: string) => any,
+        { width, height }: { width?: number | null; height?: number | null },
         debug?: boolean
     ) {
         // Window modal URL
         this.url = url;
         this.debug = debug || false;
 
-        const { left, top, computedWidth, computedHeight } = this.layout(this.width, this.height);
+        const { left, top, computedWidth, computedHeight } = this.layout(width || this.width, height || this.height);
 
         // Window modal features
         this.features = {
