@@ -18,6 +18,7 @@ integrations:
         metadata not required.
         Required scope(s): https://www.googleapis.com/auth/calendar.readonly
       type: sync
+      track_deletes: true
       runs: every hour
       returns:
         - GoogleCalendar
