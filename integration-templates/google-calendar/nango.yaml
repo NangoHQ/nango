@@ -57,8 +57,8 @@ models:
     id: string
     status: string
     htmlLink: string
-    created: datetime
-    updated: datetime
+    created: string
+    updated: string
     summary: string
     description: string
     location: string
@@ -75,11 +75,11 @@ models:
       self: boolean
     start:
       date: date
-      dateTime: datetime
+      string: string
       timeZone: string
     end:
       date: date
-      dateTime: datetime
+      string: string
       timeZone: string
     endTimeUnspecified: boolean
     recurrence:
@@ -87,7 +87,7 @@ models:
     recurringEventId: string
     originalStartTime:
       date: date
-      dateTime: datetime
+      string: string
       timeZone: string
     transparency: string
     visibility: string
