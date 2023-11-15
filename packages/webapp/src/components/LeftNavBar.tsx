@@ -2,7 +2,13 @@ import { useEffect, useState } from 'react';
 import Cookies from 'js-cookie';
 import { Link } from 'react-router-dom';
 import { Briefcase, User } from '@geist-ui/icons';
-import { SquaresPlusIcon, BuildingOfficeIcon, QueueListIcon, AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline'
+import {
+    SquaresPlusIcon,
+    BuildingOfficeIcon,
+    QueueListIcon,
+    AdjustmentsHorizontalIcon,
+    EllipsisHorizontalIcon,
+} from '@heroicons/react/24/outline'
 
 import { useStore } from '../store';
 import { isCloud } from '../utils/utils';
@@ -30,6 +36,7 @@ const navHoverBg = 'hover:bg-neutral-800';
 export default function LeftNavBar(props: LeftNavBarProps) {
     const [envs, setEnvs] = useState<{ name: string; }[]>([]);
     const [version, setVersion] = useState<string>('');
+    const [email, setEmail] = useState<string>('');
 
     const signout = useSignout();
 
@@ -45,6 +52,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                 if(!data) return;
                 setEnvs(data.environments);
                 setVersion(data.version);
+                setEmail(data.email);
             })
             .catch(err => {
                 console.error(err);
@@ -53,6 +61,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
     }, []);
 
     const env = useStore(state => state.cookieValue);
+    console.log(version)
 
     const setCookieValue = useStore(state => state.setCookieValue);
 
@@ -176,12 +185,15 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                             </ul>
                         </div>
                     )}
-                    {version && (
-                        <div>
-                            <hr className="border-border-gray border my-1" />
-                            <span className="flex py-1 items-center text-center text-gray-500 justify-center text-sm">
-                                v{version}
+                    {email && (
+                        <div className="flex py-8 items-center">
+                            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-transparent text-sm border border-gray-400 text-gray-400 mr-3">
+                                {email.slice(0, 1).toUpperCase()}
+                            </div>
+                            <span className="items-center text-center text-gray-400 justify-center text-sm truncate">
+                                {email}
                             </span>
+                            <EllipsisHorizontalIcon className="flex h-5 w-5 ml-3 text-gray-400 cursor-pointer" />
                         </div>
                     )}
                 </div>
