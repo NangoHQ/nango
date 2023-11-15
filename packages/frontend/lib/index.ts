@@ -56,7 +56,8 @@ export default class Nango {
         this.publicKey = config.publicKey;
 
         if (!config.publicKey) {
-            throw new Error('You must specify a public key (cf. documentation).');
+            const error = new AuthError('You must specify a public key (cf. documentation).', 'missingPublicKey');
+            throw error;
         }
 
         try {
@@ -66,11 +67,12 @@ export default class Nango {
             const websocketUrl = new URL(config.websocketsPath, baseUrl);
             this.websocketsBaseUrl = websocketUrl.toString().replace('https://', 'wss://').replace('http://', 'ws://');
         } catch (err) {
-            throw new Error(`Invalid URL provided for the Nango host: ${this.hostBaseUrl}`);
+            const error = new AuthError('Invalid URL provided for the Nango host.', 'invalidHostUrl');
+            throw error;
         }
     }
 
-    public async create(providerConfigKey: string, connectionId: string, connectionConfig: ConnectionConfig): Promise<AuthResult> {
+    public async create(providerConfigKey: string, connectionId: string, connectionConfig?: ConnectionConfig): Promise<AuthResult> {
         const url = this.hostBaseUrl + `/unauth/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig)}`;
 
         const res = await fetch(url, {
@@ -82,7 +84,7 @@ export default class Nango {
 
         if (!res.ok) {
             const errorResponse = await res.json();
-            throw { ...errorResponse, message: errorResponse.error };
+            throw new AuthError(errorResponse.error, errorResponse.type);
         }
 
         return res.json();
@@ -106,7 +108,8 @@ export default class Nango {
         try {
             new URL(url);
         } catch (err) {
-            throw new Error(`Could not construct valid Nango URL based on provided parameters: ${url}`);
+            const error = new AuthError('Invalid URL provided for the Nango host.', 'invalidHostUrl');
+            throw error;
         }
 
         return new Promise((resolve, reject) => {
@@ -188,7 +191,8 @@ export default class Nango {
         const { params: credentials } = connectionConfigWithCredentials as ConnectionConfig;
 
         if (!credentials) {
-            throw new Error('You must specify credentials.');
+            const authError = new AuthError('You must specify credentials.', 'missingCredentials');
+            throw authError;
         }
 
         if ('apiKey' in credentials) {
@@ -205,7 +209,7 @@ export default class Nango {
 
             if (!res.ok) {
                 const errorResponse = await res.json();
-                throw new AuthError(errorResponse.error, errorResponse.errorType);
+                throw new AuthError(errorResponse.error, errorResponse.type);
             }
 
             return res.json();
@@ -214,7 +218,8 @@ export default class Nango {
         if ('username' in credentials || 'password' in credentials) {
             const basicCredentials = credentials as BasicApiCredentials;
             if (!basicCredentials.username) {
-                throw new Error('You must specify a username.');
+                const authError = new AuthError('You must specify a username.', 'missingUsername');
+                throw authError;
             }
 
             const url = this.hostBaseUrl + `/api-auth/basic/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`;
@@ -229,7 +234,7 @@ export default class Nango {
 
             if (!res.ok) {
                 const errorResponse = await res.json();
-                throw { ...errorResponse, message: errorResponse.error };
+                throw new AuthError(errorResponse.error, errorResponse.type);
             }
 
             return res.json();
