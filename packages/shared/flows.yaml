@@ -176,6 +176,7 @@ integrations:
         metadata not required.
         Required scope(s): https://www.googleapis.com/auth/calendar.readonly
       type: sync
+      track_deletes: true
       runs: every hour
       returns:
         - GoogleCalendar
@@ -213,8 +214,8 @@ integrations:
         id: string
         status: string
         htmlLink: string
-        created: datetime
-        updated: datetime
+        created: string
+        updated: string
         summary: string
         description: string
         location: string
@@ -231,11 +232,11 @@ integrations:
           self: boolean
         start:
           date: date
-          dateTime: datetime
+          dateTime: string
           timeZone: string
         end:
           date: date
-          dateTime: datetime
+          string: string
           timeZone: string
         endTimeUnspecified: boolean
         recurrence:
@@ -243,7 +244,7 @@ integrations:
         recurringEventId: string
         originalStartTime:
           date: date
-          dateTime: datetime
+          dateTime: string
           timeZone: string
         transparency: string
         visibility: string
