@@ -56,8 +56,7 @@ export default class Nango {
         this.publicKey = config.publicKey;
 
         if (!config.publicKey) {
-            const error = new AuthError('You must specify a public key (cf. documentation).', 'missingPublicKey');
-            throw error;
+            throw new AuthError('You must specify a public key (cf. documentation).', 'missingPublicKey');;
         }
 
         try {
