@@ -279,7 +279,7 @@ export default function IntegrationCreate() {
                             )}
 
                             {(authMode === AuthModes.Basic || authMode === AuthModes.ApiKey) && !providerConfigKey && (
-                                <Info>
+                                <Info size={20}>
                                     The "{selectedProvider}" integration provider uses {authMode === AuthModes.Basic ? 'basic auth' : 'API Keys'} for authentication (<a href="https://docs.nango.dev/guides/oauth#connection-configuration" className="text-white underline hover:text-text-light-blue" rel="noreferrer" target="_blank">docs</a>).
                                 </Info>
                             )}

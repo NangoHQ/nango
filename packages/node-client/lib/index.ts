@@ -76,7 +76,7 @@ export interface NangoSyncWebhookBody {
 
 export type LastAction = 'added' | 'updated' | 'deleted';
 
-interface RecordMetadata {
+export interface RecordMetadata {
     first_seen_at: Date;
     last_seen_at: Date;
     last_action: LastAction;
