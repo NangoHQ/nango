@@ -15,13 +15,16 @@ class WebhookService {
                 error?.response?.status || error?.code
             } error, retrying with exponential backoffs for ${attemptNumber} out of ${RETRY_ATTEMPTS} times`;
 
-            await createActivityLogMessage({
-                level: 'error',
-                environment_id,
-                activity_log_id: activityLogId,
-                timestamp: Date.now(),
-                content
-            });
+            await createActivityLogMessage(
+                {
+                    level: 'error',
+                    environment_id,
+                    activity_log_id: activityLogId,
+                    timestamp: Date.now(),
+                    content
+                },
+                false
+            );
 
             return true;
         }
