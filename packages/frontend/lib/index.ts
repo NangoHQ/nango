@@ -166,7 +166,7 @@ export default class Nango {
         });
     }
 
-    public convertCredentialsToConfig(credentials: BasicApiCredentials | ApiKeyCredentials): ConnectionConfig {
+    private convertCredentialsToConfig(credentials: BasicApiCredentials | ApiKeyCredentials): ConnectionConfig {
         const params: Record<string, string> = {};
 
         if ('username' in credentials) {
@@ -186,7 +186,7 @@ export default class Nango {
         providerConfigKey: string,
         connectionId: string,
         connectionConfigWithCredentials: ConnectionConfig,
-        connectionConfig: ConnectionConfig
+        connectionConfig?: ConnectionConfig
     ): Promise<AuthResult> {
         const { params: credentials } = connectionConfigWithCredentials as ConnectionConfig;
 
