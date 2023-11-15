@@ -66,8 +66,7 @@ export default class Nango {
             const websocketUrl = new URL(config.websocketsPath, baseUrl);
             this.websocketsBaseUrl = websocketUrl.toString().replace('https://', 'wss://').replace('http://', 'ws://');
         } catch (err) {
-            const error = new AuthError('Invalid URL provided for the Nango host.', 'invalidHostUrl');
-            throw error;
+            throw new AuthError('Invalid URL provided for the Nango host.', 'invalidHostUrl');
         }
     }
 
