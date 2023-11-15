@@ -190,8 +190,7 @@ export default class Nango {
         const { params: credentials } = connectionConfigWithCredentials as ConnectionConfig;
 
         if (!credentials) {
-            const authError = new AuthError('You must specify credentials.', 'missingCredentials');
-            throw authError;
+            throw new AuthError('You must specify credentials.', 'missingCredentials');
         }
 
         if ('apiKey' in credentials) {
