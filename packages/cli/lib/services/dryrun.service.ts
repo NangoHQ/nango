@@ -21,7 +21,7 @@ interface RunArgs extends GlobalOptions {
 class DryRunService {
     public async run(options: RunArgs, environment: string, debug = false) {
         let syncName = '';
-        let connectionId, suppliedLastSyncDate, actionInput, stubbedMetadata;
+        let connectionId, suppliedLastSyncDate, actionInput, rawStubbedMetadata;
 
         await parseSecretKey(environment, debug);
 
@@ -37,7 +37,7 @@ class DryRunService {
         }
 
         if (Object.keys(options).length > 0) {
-            ({ sync: syncName, connectionId, lastSyncDate: suppliedLastSyncDate, input: actionInput, metadata: stubbedMetadata } = options);
+            ({ sync: syncName, connectionId, lastSyncDate: suppliedLastSyncDate, input: actionInput, metadata: rawStubbedMetadata } = options);
         }
 
         if (!syncName) {
@@ -119,10 +119,17 @@ class DryRunService {
         }
 
         let normalizedInput;
+        let stubbedMetadata;
         try {
             normalizedInput = JSON.parse(actionInput as unknown as string);
         } catch (e) {
             normalizedInput = actionInput;
+        }
+
+        try {
+            stubbedMetadata = JSON.parse(rawStubbedMetadata as unknown as string);
+        } catch (e) {
+            stubbedMetadata = rawStubbedMetadata;
         }
 
         const logMessages: string[] = [];
