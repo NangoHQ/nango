@@ -106,8 +106,7 @@ export default class Nango {
         try {
             new URL(url);
         } catch (err) {
-            const error = new AuthError('Invalid URL provided for the Nango host.', 'invalidHostUrl');
-            throw error;
+            throw new AuthError('Invalid URL provided for the Nango host.', 'invalidHostUrl');
         }
 
         return new Promise((resolve, reject) => {
