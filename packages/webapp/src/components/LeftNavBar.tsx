@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import Cookies from 'js-cookie';
 import { Link } from 'react-router-dom';
-import { Activity, Briefcase, User } from '@geist-ui/icons';
+import { Briefcase, User } from '@geist-ui/icons';
+import { SquaresPlusIcon, BuildingOfficeIcon, QueueListIcon, AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline'
 
 import { useStore } from '../store';
 import { isCloud } from '../utils/utils';
@@ -21,6 +22,10 @@ export enum LeftNavBarItems {
 export interface LeftNavBarProps {
     selectedItem: LeftNavBarItems;
 }
+
+const navTextColor = 'text-gray-400';
+const navActiveBg = 'bg-zinc-900';
+const navHoverBg = 'hover:bg-neutral-800';
 
 export default function LeftNavBar(props: LeftNavBarProps) {
     const [envs, setEnvs] = useState<{ name: string; }[]>([]);
@@ -96,8 +101,8 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                         {env === 'dev' && (
                             <Link
                                 to="/getting-started"
-                                className={`flex h-10 p-2 gap-x-3 items-center rounded-md text-sm text-white ${
-                                    props.selectedItem === LeftNavBarItems.GettingStarted ? 'bg-gray-800' : 'hover:bg-gray-700'
+                                className={`flex h-10 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
+                                    props.selectedItem === LeftNavBarItems.GettingStarted ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
                                 }`}
                             >
                                 <img className="h-5" src="/images/rocket-icon.svg" alt="" />
@@ -106,48 +111,39 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                         )}
                         <Link
                             to="/integrations"
-                            className={`flex h-10 p-2 gap-x-3 items-center rounded-md text-sm text-white ${
-                                props.selectedItem === LeftNavBarItems.Integrations ? 'bg-gray-800' : 'hover:bg-gray-700'
+                            className={`flex h-10 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
+                                props.selectedItem === LeftNavBarItems.Integrations ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
                             }`}
                         >
-                            <img className="h-5" src="/images/integrations-icon.svg" alt="" />
+                            <SquaresPlusIcon className="flex h-5 w-5 text-white" />
                             <p>Integrations</p>
                         </Link>
                         <Link
                             to="/connections"
-                            className={`flex h-10 p-2 gap-x-3 items-center rounded-md text-sm text-white ${
-                                props.selectedItem === LeftNavBarItems.Connections ? 'bg-gray-800' : 'hover:bg-gray-700'
+                            className={`flex h-10 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
+                                props.selectedItem === LeftNavBarItems.Connections ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
                             }`}
                         >
-                            <img className="h-5" src="/images/connections-icon.svg" alt="" />
+                            <BuildingOfficeIcon className="flex h-5 w-5 text-white" />
                             <p>Connections</p>
                         </Link>
                         <Link
-                            to="/syncs"
-                            className={`flex h-10 p-2 gap-x-3 items-center rounded-md text-sm text-white ${
-                                props.selectedItem === LeftNavBarItems.Syncs ? 'bg-gray-800' : 'hover:bg-gray-700'
-                            }`}
-                        >
-                            <img className="h-5 stroke-white fill-white" src="/images/sync-code-icon.svg" alt="" />
-                            <p>Syncs & Actions</p>
-                        </Link>
-                        <Link
                             to="/activity"
-                            className={`flex h-10 p-2 gap-x-3 items-center rounded-md text-sm text-white ${
-                                props.selectedItem === LeftNavBarItems.Activity ? 'bg-gray-800' : 'hover:bg-gray-700'
+                            className={`flex h-10 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
+                                props.selectedItem === LeftNavBarItems.Activity ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
                             }`}
                         >
-                            <Activity className="h-5" />
+                            <QueueListIcon className="flex h-5 w-5 text-white" />
                             <p>Activity</p>
                         </Link>
                         <Link
                             to="/project-settings"
-                            className={`flex h-10 p-2 gap-x-3 items-center rounded-md text-sm text-white ${
-                                props.selectedItem === LeftNavBarItems.ProjectSettings ? 'bg-gray-800' : 'hover:bg-gray-700'
+                            className={`flex h-10 p-2 gap-x-3 items-center rounded-md text-sm ${navTextColor} ${
+                                props.selectedItem === LeftNavBarItems.ProjectSettings ? `${navActiveBg} text-white` : `text-gray-400 ${navHoverBg}`
                             }`}
                         >
-                            <img className="h-5" src="/images/settings-icon.svg" alt="" />
-                            <p>Project Settings</p>
+                            <AdjustmentsHorizontalIcon className="flex h-5 w-5 text-white" />
+                            <p>Settings</p>
                         </Link>
                     </div>
                 </div>
