@@ -318,13 +318,16 @@ export class NangoAction {
             throw new Error('There is no current activity log stream to log to');
         }
 
-        await createActivityLogMessage({
-            level: userDefinedLevel?.level ?? 'info',
-            environment_id: this.environmentId as number,
-            activity_log_id: this.activityLogId as number,
-            content,
-            timestamp: Date.now()
-        });
+        await createActivityLogMessage(
+            {
+                level: userDefinedLevel?.level ?? 'info',
+                environment_id: this.environmentId as number,
+                activity_log_id: this.activityLogId as number,
+                content,
+                timestamp: Date.now()
+            },
+            false
+        );
     }
 
     public async getEnvironmentVariables(): Promise<EnvironmentVariable[] | null> {
