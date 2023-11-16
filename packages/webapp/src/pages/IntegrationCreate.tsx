@@ -201,7 +201,9 @@ export default function IntegrationCreate() {
                         : 'Add New Integration'}
                     </h2>
                     <div className="mx-20 h-fit border border-border-gray rounded-md text-white text-sm py-14 px-8">
-                        <form className="space-y-6" onSubmit={handleSave}>
+                        <form className="space-y-6" onSubmit={handleSave} autoComplete="one-time-code">
+                            <input type="text" className="hidden" name="username" autoComplete="username" />
+                            <input type="password" className="hidden" name="password" autoComplete="password"/>
                             {!providerConfigKey && providers && (
                                 <div>
                                     <div>
@@ -426,7 +428,7 @@ export default function IntegrationCreate() {
                                                 name="client_id"
                                                 type="text"
                                                 defaultValue={integration ? integration.client_id : ''}
-                                                autoComplete="new-password"
+                                                autoComplete="one-time-code"
                                                 required
                                                 minLength={1}
                                                 className="border-border-gray bg-bg-black text-text-light-gray focus:border-white focus:ring-white block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder-gray-400 shadow-sm focus:outline-none"
@@ -456,6 +458,7 @@ export default function IntegrationCreate() {
                                                 copy={true}
                                                 id="client_secret"
                                                 name="client_secret"
+                                                autoComplete="one-time-code"
                                                 defaultValue={integration ? integration.client_secret : ''}
                                                 required
                                             />
