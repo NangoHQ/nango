@@ -128,8 +128,10 @@ export async function createActivityLogAndLogMessage(log: ActivityLog, logMessag
     return logId;
 }
 
-export async function createActivityLogMessage(logMessage: ActivityLogMessage): Promise<boolean> {
-    logger.log(logMessage.level as string, logMessage.content);
+export async function createActivityLogMessage(logMessage: ActivityLogMessage, logToConsole = true): Promise<boolean> {
+    if (logToConsole) {
+        logger.log(logMessage.level as string, logMessage.content);
+    }
 
     if (!logMessage.activity_log_id) {
         return false;

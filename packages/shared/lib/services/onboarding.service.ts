@@ -51,7 +51,7 @@ export const initOrUpdateOnboarding = async (user_id: number, account_id: number
         return null;
     }
 
-    analytics.track(AnalyticsTypes.ONBOARDING_0, account_id, { user_id });
+    analytics.track(AnalyticsTypes.ONBOARDING_1, account_id, { user_id });
 
     return result[0].id as number;
 };

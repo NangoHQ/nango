@@ -101,6 +101,7 @@ export interface ProxyConfiguration {
     retries?: number;
     baseUrlOverride?: string;
     paginate?: Partial<CursorPagination> | Partial<LinkPagination> | Partial<OffsetPagination>;
+    responseType?: 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream';
 }
 
 enum AuthModes {
@@ -111,21 +112,21 @@ enum AuthModes {
     App = 'APP'
 }
 
-interface AppCredentials {
-    type?: AuthModes.App;
+interface AppCredentials extends CredentialsCommon {
+    type: AuthModes.App;
     access_token: string;
     expires_at?: Date | undefined;
     raw: Record<string, any>;
 }
 
-interface BasicApiCredentials {
-    type?: AuthModes.Basic;
+interface BasicApiCredentials extends CredentialsCommon {
+    type: AuthModes.Basic;
     username: string;
     password: string;
 }
 
-interface ApiKeyCredentials {
-    type?: AuthModes.ApiKey;
+interface ApiKeyCredentials extends CredentialsCommon {
+    type: AuthModes.ApiKey;
     apiKey: string;
 }
 
@@ -317,13 +318,16 @@ export class NangoAction {
             throw new Error('There is no current activity log stream to log to');
         }
 
-        await createActivityLogMessage({
-            level: userDefinedLevel?.level ?? 'info',
-            environment_id: this.environmentId as number,
-            activity_log_id: this.activityLogId as number,
-            content,
-            timestamp: Date.now()
-        });
+        await createActivityLogMessage(
+            {
+                level: userDefinedLevel?.level ?? 'info',
+                environment_id: this.environmentId as number,
+                activity_log_id: this.activityLogId as number,
+                content,
+                timestamp: Date.now()
+            },
+            false
+        );
     }
 
     public async getEnvironmentVariables(): Promise<EnvironmentVariable[] | null> {
@@ -494,7 +498,7 @@ export class NangoSync extends NangoAction {
         }
 
         if (this.dryRun) {
-            this.logMessages?.push(`A batch save call would save the following data to the ${model} model:}`);
+            this.logMessages?.push(`A batch save call would save the following data to the ${model} model:`);
             this.logMessages?.push(...results);
             return null;
         }
@@ -609,7 +613,7 @@ export class NangoSync extends NangoAction {
         }
 
         if (this.dryRun) {
-            this.logMessages?.push(`A batch delete call would delete the following data`);
+            this.logMessages?.push(`A batch delete call would delete the following data:`);
             this.logMessages?.push(...results);
             return null;
         }

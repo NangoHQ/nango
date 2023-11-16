@@ -3,10 +3,14 @@ import path from 'path';
 import * as fs from 'fs';
 import yaml from 'js-yaml';
 import { SyncConfigType } from '@nangohq/shared';
-import { init, generate, exampleSyncName, nangoCallsAreUsedCorrectly } from './sync.js';
+import { init, generate } from './cli.js';
+import { exampleSyncName } from './constants.js';
+import configService from './services/config.service.js';
+import parserService from './services/parser.service.js';
 
 describe('generate function tests', () => {
     const testDirectory = './nango-integrations';
+    const fixturesPath = './packages/cli/lib/fixtures';
 
     beforeAll(async () => {
         if (!fs.existsSync('./packages/cli/dist/nango-sync.d.ts')) {
@@ -109,6 +113,78 @@ describe('generate function tests', () => {
         expect(fs.existsSync(`${testDirectory}/single-model-return.ts`)).toBe(true);
     });
 
+    it('should not create a file if endpoint is missing from a v2 config', async () => {
+        await init();
+        const data = {
+            integrations: {
+                'demo-github-integration': {
+                    syncs: {
+                        'single-model-return': {
+                            type: 'sync',
+                            runs: 'every half hour',
+                            returns: 'GithubIssue'
+                        }
+                    }
+                }
+            },
+            models: {
+                GithubIssue: {
+                    id: 'integer',
+                    owner: 'string',
+                    repo: 'string',
+                    issue_number: 'number',
+                    title: 'string',
+                    author: 'string',
+                    author_id: 'string',
+                    state: 'string',
+                    date_created: 'date',
+                    date_last_modified: 'date',
+                    body: 'string'
+                }
+            }
+        };
+        const yamlData = yaml.dump(data);
+        await fs.promises.writeFile(`${testDirectory}/nango.yaml`, yamlData, 'utf8');
+        expect(fs.existsSync(`${testDirectory}/single-model-return.ts`)).toBe(false);
+    });
+
+    it('should generate missing from a v2 config', async () => {
+        await init();
+        const data = {
+            integrations: {
+                'demo-github-integration': {
+                    syncs: {
+                        'single-model-issue-output': {
+                            type: 'sync',
+                            runs: 'every half hour',
+                            endpoint: 'GET /tickets/issue',
+                            output: 'GithubIssue'
+                        }
+                    }
+                }
+            },
+            models: {
+                GithubIssue: {
+                    id: 'integer',
+                    owner: 'string',
+                    repo: 'string',
+                    issue_number: 'number',
+                    title: 'string',
+                    author: 'string',
+                    author_id: 'string',
+                    state: 'string',
+                    date_created: 'date',
+                    date_last_modified: 'date',
+                    body: 'string'
+                }
+            }
+        };
+        const yamlData = yaml.dump(data);
+        await fs.promises.writeFile(`${testDirectory}/nango.yaml`, yamlData, 'utf8');
+        await generate(false, true);
+        expect(fs.existsSync(`${testDirectory}/single-model-issue-output.ts`)).toBe(true);
+    });
+
     it('should throw an error if a model is missing an id that is actively used', async () => {
         await init();
         const data = {
@@ -174,7 +250,7 @@ describe('generate function tests', () => {
         await generate(false, true);
     });
 
-    it('should allow javascript primitivs as a return type with no model', async () => {
+    it('should allow javascript primitives as a return type with no model', async () => {
         await init();
         const data = {
             integrations: {
@@ -213,30 +289,40 @@ describe('generate function tests', () => {
         };
         const yamlData = yaml.dump(data);
         await fs.promises.writeFile(`${testDirectory}/nango.yaml`, yamlData, 'utf8');
-        expect(generate(false, true)).rejects.toThrow();
+        expect(await generate(false, true)).toBeUndefined();
     });
 
     it('should not complain of try catch not being awaited', async () => {
-        const filePath = './packages/cli/lib/fixtures';
-        const awaiting = nangoCallsAreUsedCorrectly(`${filePath}/sync.ts`, SyncConfigType.SYNC, ['GithubIssue']);
+        const awaiting = parserService.callsAreUsedCorrectly(`${fixturesPath}/sync.ts`, SyncConfigType.SYNC, ['GithubIssue']);
         expect(awaiting).toBe(true);
     });
 
     it('should complain of a non try catch not being awaited', async () => {
-        const filePath = './packages/cli/lib/fixtures';
-        const awaiting = nangoCallsAreUsedCorrectly(`${filePath}/failing-sync.ts`, SyncConfigType.SYNC, ['GithubIssue']);
+        const awaiting = parserService.callsAreUsedCorrectly(`${fixturesPath}/failing-sync.ts`, SyncConfigType.SYNC, ['GithubIssue']);
         expect(awaiting).toBe(false);
     });
 
     it('should not complain about a correct model', async () => {
-        const filePath = './packages/cli/lib/fixtures';
-        const usedCorrectly = nangoCallsAreUsedCorrectly(`${filePath}/bad-model.ts`, SyncConfigType.SYNC, ['SomeBadModel']);
+        const usedCorrectly = parserService.callsAreUsedCorrectly(`${fixturesPath}/bad-model.ts`, SyncConfigType.SYNC, ['SomeBadModel']);
         expect(usedCorrectly).toBe(true);
     });
 
     it('should complain about an incorrect model', async () => {
-        const filePath = './packages/cli/lib/fixtures';
-        const awaiting = nangoCallsAreUsedCorrectly(`${filePath}/bad-model.ts`, SyncConfigType.SYNC, ['GithubIssue']);
+        const awaiting = parserService.callsAreUsedCorrectly(`${fixturesPath}/bad-model.ts`, SyncConfigType.SYNC, ['GithubIssue']);
         expect(awaiting).toBe(false);
+    });
+
+    it('should parse a nango.yaml file that is version 1 as expected', async () => {
+        const { response: config } = await configService.load(path.resolve(__dirname, `./fixtures/nango-yaml/v1`));
+        expect(config).toBeDefined();
+        const json = fs.readFileSync(path.resolve(__dirname, `./fixtures/nango-yaml/v1/object.json`), 'utf8');
+        expect(config).toEqual(JSON.parse(json));
+    });
+
+    it('should parse a nango.yaml file that is version 2 as expected', async () => {
+        const { response: config } = await configService.load(path.resolve(__dirname, `./fixtures/nango-yaml/v2`));
+        expect(config).toBeDefined();
+        const json = fs.readFileSync(path.resolve(__dirname, `./fixtures/nango-yaml/v2/object.json`), 'utf8');
+        expect(config).toEqual(JSON.parse(json));
     });
 });

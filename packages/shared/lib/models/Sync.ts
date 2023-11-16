@@ -1,7 +1,7 @@
 import { LogActionEnum } from './Activity.js';
-import type { Timestamps, TimestampsAndDeleted } from './Generic.js';
+import type { HTTP_VERB, Timestamps, TimestampsAndDeleted } from './Generic.js';
 import type { NangoSync } from '../sdk/sync.js';
-import type { NangoIntegrationData } from '../integrations/index.js';
+import type { NangoIntegrationData, NangoSyncEndpoint } from './NangoConfig.js';
 
 export enum SyncStatus {
     RUNNING = 'RUNNING',
@@ -14,6 +14,7 @@ export enum SyncStatus {
 export enum SyncType {
     INITIAL = 'INITIAL',
     INCREMENTAL = 'INCREMENTAL',
+    FULL = 'FULL',
     ACTION = 'ACTION'
 }
 
@@ -97,6 +98,17 @@ export interface SyncConfig extends TimestampsAndDeleted {
     version?: string;
     pre_built?: boolean;
     is_public?: boolean;
+    endpoints?: NangoSyncEndpoint[];
+    input?: string;
+    sync_type?: SyncType | undefined;
+}
+
+export interface SyncEndpoint extends Timestamps {
+    id?: number;
+    sync_config_id: number;
+    method: HTTP_VERB;
+    path: string;
+    model?: string;
 }
 
 export interface SlimSync {
@@ -145,6 +157,7 @@ interface InternalIncomingPreBuiltFlowConfig {
     attributes?: object;
     metadata?: NangoConfigMetadata;
     model_schema: string;
+    endpoints?: NangoSyncEndpoint[];
 }
 
 export interface IncomingPreBuiltFlowConfig extends InternalIncomingPreBuiltFlowConfig {
@@ -162,7 +175,7 @@ export interface IncomingPreBuiltFlowConfig extends InternalIncomingPreBuiltFlow
     };
 }
 
-export interface IncomingSyncConfig extends InternalIncomingPreBuiltFlowConfig {
+export interface IncomingFlowConfig extends InternalIncomingPreBuiltFlowConfig {
     syncName: string;
     providerConfigKey: string;
     fileBody?: {
@@ -171,6 +184,8 @@ export interface IncomingSyncConfig extends InternalIncomingPreBuiltFlowConfig {
     };
     version?: string;
     track_deletes?: boolean;
+    input?: string;
+    sync_type?: SyncType;
 }
 
 export enum ScheduleStatus {
