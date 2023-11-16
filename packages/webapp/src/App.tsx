@@ -6,7 +6,8 @@ import InviteSignup from './pages/InviteSignup';
 import Signin from './pages/Signin';
 import GettingStarted from './pages/GettingStarted';
 import IntegrationList from './pages/IntegrationList';
-import IntegrationCreate from './pages/IntegrationCreate';
+import CreateIntegration from './pages/Integration/Create';
+import ShowIntegration from './pages/Integration/Show';
 import ConnectionList from './pages/ConnectionList';
 import ConnectionCreate from './pages/ConnectionCreate';
 import FlowCreate from './pages/FlowCreate';
@@ -56,10 +57,10 @@ const App = () => {
                     <Route path="/integrations" element={<IntegrationList />} />
                 </Route>
                 <Route path="/integration/create" element={<PrivateRoute />}>
-                    <Route path="/integration/create" element={<IntegrationCreate />} />
+                    <Route path="/integration/create" element={<CreateIntegration />} />
                 </Route>
                 <Route path="/integration/:providerConfigKey" element={<PrivateRoute />}>
-                    <Route path="/integration/:providerConfigKey" element={<IntegrationCreate />} />
+                    <Route path="/integration/:providerConfigKey" element={<ShowIntegration />} />
                 </Route>
                 <Route path="/syncs" element={<PrivateRoute />}>
                     <Route path="/syncs" element={<Syncs />} />
