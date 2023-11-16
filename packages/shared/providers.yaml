@@ -795,8 +795,10 @@ pipedrive:
     auth_mode: OAUTH2
     authorization_url: https://oauth.pipedrive.com/oauth/authorize
     token_url: https://oauth.pipedrive.com/oauth/token
+    token_response_metadata:
+        - api_domain
     proxy:
-        base_url: https://${connectionConfig.subdomain}.pipedrive.com
+        base_url: ${connectionConfig.api_domain}/api
         decompress: true
 qualtrics:
     auth_mode: OAUTH2

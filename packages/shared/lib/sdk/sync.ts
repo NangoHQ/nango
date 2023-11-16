@@ -271,6 +271,13 @@ export class NangoAction {
         });
     }
 
+    public async put<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
+        return this.proxy({
+            ...config,
+            method: 'PUT'
+        });
+    }
+
     public async patch<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
         return this.proxy({
             ...config,
