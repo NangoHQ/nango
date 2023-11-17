@@ -12,9 +12,8 @@ import { exec, spawn } from 'child_process';
 import promptly from 'promptly';
 import chalk from 'chalk';
 import type { NangoModel, NangoIntegrationData, NangoIntegration } from '@nangohq/shared';
-import { SyncConfigType, cloudHost, stagingHost, nangoConfigFile } from '@nangohq/shared';
+import { SyncConfigType, cloudHost, stagingHost } from '@nangohq/shared';
 import * as dotenv from 'dotenv';
-import { init, generate, tsc } from './sync.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -108,87 +107,6 @@ export function checkEnvVars(optionalHostport?: string) {
         }
     } else {
         console.log(`Assuming you are self-hosting Nango (because you set the NANGO_HOSTPORT env var to ${hostport}).`);
-    }
-}
-
-export async function verifyNecessaryFiles(autoConfirm: boolean, debug = false, checkDist = false) {
-    const cwd = process.cwd();
-    if (debug) {
-        printDebug(`Current full working directory is read as: ${cwd}`);
-    }
-    const currentDirectorySplit = cwd.split(/[\/\\]/);
-    const currentDirectory = currentDirectorySplit[currentDirectorySplit.length - 1];
-
-    if (debug) {
-        printDebug(`Current stripped directory is read as: ${currentDirectory}`);
-    }
-
-    if (currentDirectory !== NANGO_INTEGRATIONS_NAME) {
-        console.log(chalk.red(`You must run this command in the ${NANGO_INTEGRATIONS_NAME} directory.`));
-        process.exit(1);
-    }
-
-    if (!fs.existsSync(`./${nangoConfigFile}`)) {
-        const install = autoConfirm
-            ? true
-            : await promptly.confirm(`No ${nangoConfigFile} file was found. Would you like to create some default integrations and build them? (yes/no)`);
-
-        if (install) {
-            if (debug) {
-                printDebug(`Running init, generate, and tsc to create ${nangoConfigFile} file, generate the integration files and then compile them.`);
-            }
-            init(debug);
-            await generate(debug);
-            tsc(debug);
-        } else {
-            console.log(chalk.red(`Exiting...`));
-            process.exit(1);
-        }
-    } else {
-        if (debug) {
-            printDebug(`Found ${nangoConfigFile} file successfully.`);
-        }
-    }
-
-    if (!checkDist) {
-        return;
-    }
-
-    const distDir = './dist';
-
-    if (!fs.existsSync(distDir)) {
-        if (debug) {
-            printDebug("Dist directory doesn't exist.");
-        }
-        const createDist = autoConfirm
-            ? true
-            : await promptly.confirm(`No dist directory was found. Would you like to create it and create default integrations? (yes/no)`);
-
-        if (createDist) {
-            if (debug) {
-                printDebug(`Creating the dist directory and generating the default integration files.`);
-            }
-            fs.mkdirSync(distDir);
-            await generate(debug);
-            await tsc(debug);
-        }
-    } else {
-        const files = fs.readdirSync(distDir);
-        if (files.length === 0) {
-            if (debug) {
-                printDebug(`Dist directory exists but is empty.`);
-            }
-            const compile = autoConfirm
-                ? true
-                : await promptly.confirm(`The dist directory is empty. Would you like to generate the default integrations? (yes/no)`);
-
-            if (compile) {
-                if (debug) {
-                    printDebug(`Generating the default integration files.`);
-                }
-                await tsc(debug);
-            }
-        }
     }
 }
 
@@ -383,7 +301,7 @@ export function getFieldType(rawField: string | NangoModel, debug = false): stri
     }
 }
 
-export function buildInterfaces(models: NangoModel, integrations: NangoIntegration, debug = false): (string | undefined)[] {
+export function buildInterfaces(models: NangoModel, integrations: NangoIntegration, debug = false): (string | undefined)[] | null {
     const returnedModels = Object.keys(integrations).reduce((acc, providerConfigKey) => {
         const syncObject = integrations[providerConfigKey] as unknown as { [key: string]: NangoIntegration };
         const syncNames = Object.keys(syncObject);
@@ -401,6 +319,10 @@ export function buildInterfaces(models: NangoModel, integrations: NangoIntegrati
         }
         return acc;
     }, [] as string[]);
+
+    if (!models) {
+        return null;
+    }
 
     const interfaceDefinitions = Object.keys(models).map((modelName: string) => {
         const fields = models[modelName] as NangoModel;
@@ -487,5 +409,36 @@ function getPackagePath(debug = false) {
         throw new Error(
             'Could not find nango package. Please make sure it is installed in your project or installed globally. Reach out to us in the Slack community if you continue to have issues!'
         );
+    }
+}
+
+export async function parseSecretKey(environment: string, debug = false): Promise<void> {
+    if (process.env['NANGO_SECRET_KEY_PROD'] && environment === 'prod') {
+        if (debug) {
+            printDebug(`Environment is set to prod, setting NANGO_SECRET_KEY to NANGO_SECRET_KEY_PROD.`);
+        }
+        process.env['NANGO_SECRET_KEY'] = process.env['NANGO_SECRET_KEY_PROD'];
+    }
+
+    if (process.env['NANGO_SECRET_KEY_DEV'] && environment === 'dev') {
+        if (debug) {
+            printDebug(`Environment is set to dev, setting NANGO_SECRET_KEY to NANGO_SECRET_KEY_DEV.`);
+        }
+        process.env['NANGO_SECRET_KEY'] = process.env['NANGO_SECRET_KEY_DEV'];
+    }
+
+    if (!process.env['NANGO_SECRET_KEY']) {
+        console.log(chalk.red(`NANGO_SECRET_KEY environment variable is not set. Please set it now`));
+        try {
+            const secretKey = await promptly.prompt('Secret Key: ');
+            if (secretKey) {
+                process.env['NANGO_SECRET_KEY'] = secretKey;
+            } else {
+                return;
+            }
+        } catch (error) {
+            console.log('Error occurred while trying to prompt for secret key:', error);
+            process.exit(1);
+        }
     }
 }

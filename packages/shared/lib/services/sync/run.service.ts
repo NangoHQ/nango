@@ -11,13 +11,14 @@ import { formatDataRecords } from './data/records.service.js';
 import { upsert } from './data/data.service.js';
 import { getDeletedKeys, takeSnapshot, clearOldRecords, syncUpdateAtForDeletedRecords } from './data/delete.service.js';
 import environmentService from '../environment.service.js';
-import webhookService from '../webhook.service.js';
+import slackNotificationService from './notification/slack.service.js';
+import webhookService from './notification/webhook.service.js';
 import { NangoSync } from '../../sdk/sync.js';
 import { isCloud, getApiUrl, JAVASCRIPT_PRIMITIVES } from '../../utils/utils.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { NangoError } from '../../utils/error.js';
 import metricsManager, { MetricTypes } from '../../utils/metrics.manager.js';
-import type { NangoIntegrationData, NangoIntegration } from '../../integrations/index.js';
+import type { NangoIntegrationData, NangoIntegration } from '../../models/NangoConfig.js';
 import type { UpsertResponse, UpsertSummary } from '../../models/Data.js';
 import { LogActionEnum } from '../../models/Activity.js';
 import type { Environment } from '../../models/Environment';
@@ -61,7 +62,7 @@ export default class SyncRun {
     input?: object;
 
     logMessages?: unknown[] | undefined = [];
-    stubbedMetadata?: Metadata | undefined = {};
+    stubbedMetadata?: Metadata | undefined = undefined;
 
     constructor(config: SyncRunConfig) {
         this.integrationService = config.integrationService;
@@ -174,7 +175,14 @@ export default class SyncRun {
             const providerConfigKey = this.nangoConnection.provider_config_key;
             const syncObject = integrations[providerConfigKey] as unknown as { [key: string]: NangoIntegration };
 
-            const syncData = syncObject[this.syncName] as unknown as NangoIntegrationData;
+            let syncData: NangoIntegrationData;
+
+            if (this.isAction) {
+                syncData = (syncObject['actions'] ? syncObject!['actions']![this.syncName] : syncObject[this.syncName]) as unknown as NangoIntegrationData;
+            } else {
+                syncData = (syncObject['syncs'] ? syncObject!['syncs']![this.syncName] : syncObject[this.syncName]) as unknown as NangoIntegrationData;
+            }
+
             const { returns: models, track_deletes: trackDeletes } = syncData;
 
             if (syncData.sync_config_id) {
@@ -225,17 +233,17 @@ export default class SyncRun {
             }
 
             // TODO this only works for dryrun at the moment
-            if (this.isAction && syncData.inputs) {
-                const { inputs } = syncData;
-                if (JAVASCRIPT_PRIMITIVES.includes(inputs as unknown as string)) {
-                    if (typeof this.input !== (inputs as unknown as string)) {
-                        const message = `The input provided of ${this.input} for ${this.syncName} is not of type ${inputs}`;
+            if (this.isAction && syncData.input) {
+                const { input: configInput } = syncData;
+                if (JAVASCRIPT_PRIMITIVES.includes(configInput as unknown as string)) {
+                    if (typeof this.input !== (configInput as unknown as string)) {
+                        const message = `The input provided of ${this.input} for ${this.syncName} is not of type ${configInput}`;
                         await this.reportFailureForResults(message);
 
                         return { success: false, error: new NangoError('action_script_failure', message, 500), response: false };
                     }
                 } else {
-                    if (configModels[inputs as unknown as string]) {
+                    if (configModels[configInput as unknown as string]) {
                         // TODO use joi or zod to validate the input dynamically
                     }
                 }
@@ -334,13 +342,22 @@ export default class SyncRun {
                         content
                     });
 
+                    await slackNotificationService.removeFailingConnection(
+                        this.nangoConnection,
+                        this.syncName,
+                        this.syncType,
+                        this.activityLogId as number,
+                        this.nangoConnection.environment_id,
+                        this.provider as string
+                    );
+
                     return { success: true, error: null, response: userDefinedResults };
                 }
 
                 // means a void response from the sync script which is expected
                 // and means that they're using batchSave or batchDelete
                 if (userDefinedResults === undefined) {
-                    await this.finishSync(models, syncStartDate, syncData.version as string, trackDeletes);
+                    await this.finishSync(models, syncStartDate, syncData.version as string, totalRunTime, trackDeletes);
 
                     return { success: true, error: null, response: true };
                 }
@@ -381,6 +398,7 @@ export default class SyncRun {
                                     models.length,
                                     syncStartDate,
                                     syncData.version as string,
+                                    totalRunTime,
                                     trackDeletes
                                 );
                             }
@@ -414,7 +432,15 @@ export default class SyncRun {
                                 if (upsertResult.success) {
                                     const { summary } = upsertResult;
 
-                                    await this.reportResults(model, summary as UpsertSummary, i, models.length, syncStartDate, syncData.version as string);
+                                    await this.reportResults(
+                                        model,
+                                        summary as UpsertSummary,
+                                        i,
+                                        models.length,
+                                        syncStartDate,
+                                        syncData.version as string,
+                                        totalRunTime
+                                    );
                                 }
 
                                 if (!upsertResult.success) {
@@ -450,7 +476,7 @@ export default class SyncRun {
         return { success: true, error: null, response: result };
     }
 
-    async finishSync(models: string[], syncStartDate: Date, version: string, trackDeletes?: boolean): Promise<void> {
+    async finishSync(models: string[], syncStartDate: Date, version: string, totalRunTime: number, trackDeletes?: boolean): Promise<void> {
         let i = 0;
         for (const model of models) {
             if (trackDeletes) {
@@ -469,6 +495,7 @@ export default class SyncRun {
                 models.length,
                 syncStartDate,
                 version,
+                totalRunTime,
                 trackDeletes
             );
             i++;
@@ -482,6 +509,7 @@ export default class SyncRun {
         numberOfModels: number,
         syncStartDate: Date,
         version: string,
+        totalRunTime: number,
         trackDeletes?: boolean
     ): Promise<void> {
         if (!this.writeToDb || !this.activityLogId || !this.syncJobId) {
@@ -498,6 +526,14 @@ export default class SyncRun {
             // then don't override it
             const override = false;
             await setLastSyncDate(this.syncId as string, syncStartDate, override);
+            await slackNotificationService.removeFailingConnection(
+                this.nangoConnection,
+                this.syncName,
+                this.syncType,
+                this.activityLogId as number,
+                this.nangoConnection.environment_id,
+                this.provider as string
+            );
         }
 
         if (trackDeletes) {
@@ -558,7 +594,7 @@ export default class SyncRun {
             deleted
         };
 
-        await webhookService.sendUpdate(
+        await webhookService.send(
             this.nangoConnection,
             this.syncName,
             model,
@@ -602,6 +638,7 @@ export default class SyncRun {
                 syncId: this.syncId as string,
                 syncJobId: String(this.syncJobId),
                 syncType: this.syncType,
+                totalRunTime: `${totalRunTime} seconds`,
                 debug: String(this.debug)
             },
             `syncId:${this.syncId}`
@@ -609,7 +646,20 @@ export default class SyncRun {
     }
 
     async reportFailureForResults(content: string) {
-        if (!this.writeToDb || !this.activityLogId || !this.syncJobId) {
+        if (!this.writeToDb) {
+            return;
+        }
+
+        await slackNotificationService.reportFailure(
+            this.nangoConnection,
+            this.syncName,
+            this.syncType,
+            this.activityLogId as number,
+            this.nangoConnection.environment_id,
+            this.provider as string
+        );
+
+        if (!this.activityLogId || !this.syncJobId) {
             console.error(content);
             return;
         }

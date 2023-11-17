@@ -66,6 +66,25 @@ paths:
             responses:
                 '200':
                     description: Successfully created an integration
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - config
+                                properties:
+                                    config:
+                                        type: object
+                                        required:
+                                            - unique_key
+                                            - provider
+                                        properties:
+                                            unique_key:
+                                                type: string
+                                                description: The integration ID that you created in Nango.
+                                            provider:
+                                                type: string
+                                                description: The Nango API Configuration.
                 '400':
                     description: Invalid request
                     content:
@@ -107,6 +126,25 @@ paths:
             responses:
                 '200':
                     description: Successfully edit an integration
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - config
+                                properties:
+                                    config:
+                                        type: object
+                                        required:
+                                            - unique_key
+                                            - provider
+                                        properties:
+                                            unique_key:
+                                                type: string
+                                                description: The integration ID that you created in Nango.
+                                            provider:
+                                                type: string
+                                                description: The Nango API Configuration.
                 '400':
                     description: Invalid request
                     content:
@@ -182,24 +220,18 @@ paths:
                                                 items:
                                                     type: object
                                                     properties:
-                                                        id:
-                                                            type: string
-                                                            description: The unique ID for the sync.
                                                         name:
                                                             type: string
                                                             description: The name of the sync.
-                                                        connection_id:
-                                                            type: string
-                                                            description: The name of the connection id.
                                                         created_at:
                                                             type: string
                                                             description: The creation timestamp of the sync.
                                                         updated_at:
                                                             type: string
                                                             description: The last updated timestamp of the sync.
-                                                        last_sync_date:
+                                                        description:
                                                             type: string
-                                                            description: The timestamp of the last completed sync.
+                                                            description: Description of what the sync does and details about it
                 '400':
                     description: Invalid request
                     content:
@@ -648,10 +680,19 @@ paths:
                                                     type: string
                                                     enum: ["RUNNING", "PAUSED", "STOPPED", "SUCCESS", "ERROR"]
                                                     description: The current status of the sync.
+                                                type:
+                                                    type: string
+                                                    description: The most recent sync type completed
+                                                    enum: ["INCREMENTAL", "INITIAL"]
+                                                finishedAt:
+                                                    type: string
+                                                    description: ISO string of the most recently completed sync
+                                                nextScheduledSyncAt:
+                                                    type: string
+                                                    description: ISO string of the next scheduled sync time
                                                 latestResult:
                                                     type: object
                                                     description: Additional information regarding the latest result of the sync. Contains a model name with added, updated and deleted records
-                                                    additionalProperties:
     /action/trigger:
         post:
             description: Triggers an action for a connection

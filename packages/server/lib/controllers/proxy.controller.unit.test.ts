@@ -440,4 +440,51 @@ describe('Proxy Controller Construct URL Tests', () => {
 
         expect(parsedHeaders).toEqual({});
     });
+
+    it('Should strip away the auth token from the headers', () => {
+        const headers = {
+            Accept: 'application/json',
+            Authorization: 'Bearer real-token',
+            'Another-Header': 'value',
+            'Sensitive-Token': 'real-token'
+        };
+
+        const config = {
+            token: 'real-token',
+            headers: headers
+        };
+
+        // @ts-ignore
+        const strippedHeaders = proxyController.stripSensitiveHeaders(headers, config);
+
+        expect(strippedHeaders).toEqual({
+            Accept: 'application/json',
+            Authorization: 'Bearer xxxx',
+            'Another-Header': 'value',
+            'Sensitive-Token': 'xxxx'
+        });
+    });
+
+    it('Should strip away an authorization header if there is no token', () => {
+        const headers = {
+            Accept: 'application/json',
+            Authorization: 'Bearer abcdefghijklmnopqrstuvwxyz',
+            'Another-Header': 'value',
+            'Content-Type': 'application/json'
+        };
+
+        const config = {
+            headers: headers
+        };
+
+        // @ts-ignore
+        const strippedHeaders = proxyController.stripSensitiveHeaders(headers, config);
+
+        expect(strippedHeaders).toEqual({
+            Accept: 'application/json',
+            Authorization: 'Bearer xxxx',
+            'Another-Header': 'value',
+            'Content-Type': 'application/json'
+        });
+    });
 });

@@ -134,6 +134,14 @@ export function getBaseUrl() {
     return process.env['NANGO_SERVER_URL'] || localhostUrl;
 }
 
+export function getBasePublicUrl() {
+    if (process.env['NANGO_SERVER_PUBLIC_URL']) {
+        return process.env['NANGO_SERVER_PUBLIC_URL'].replace('api.', 'app.');
+    } else {
+        return getBaseUrl();
+    }
+}
+
 /**
  * Get Oauth callback url base url.
  * @desc for ease of use with APIs that require a secure redirect

@@ -9,7 +9,7 @@ const SecretInput = forwardRef<HTMLInputElement, SecretInputProps>(function Pass
 
     const [changedValue, setChangedValue] = useState(props.defaultValue);
 
-    const value = props.optionalvalue || changedValue;
+    const value = props.optionalvalue === null ? '' : props.optionalvalue || changedValue;
     const updateValue = props.setoptionalvalue || setChangedValue;
 
     const toggleSecretVisibility = useCallback(() => setIsSecretVisible(!isSecretVisible), [isSecretVisible, setIsSecretVisible]);

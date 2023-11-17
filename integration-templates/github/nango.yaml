@@ -1,9 +1,23 @@
 integrations:
     github:
-        github-issues: # scopes: repo or public_repo
+        github-issues:
             runs: every half hour
             returns:
                 - GithubIssue
+            description: |
+                Fetches the Github issues from all a user's repositories.
+                Details: full sync, doesn't track deletes, metadata is not required.
+                Scope(s): repo or public_repo
+        github-issues-lite:
+            runs: every day
+            auto_start: false
+            returns:
+                - Issue
+            description: |
+                Fetches the Github issues but up to a maximum of 15 for demo
+                purposes.
+                Details: limited sync, doesn't track deletes, metadata is not required.
+                Scope(s): repo or public_repo
         github-list-files-sync:
             type: sync
             runs: every hour
@@ -17,6 +31,9 @@ integrations:
         github-write-file-action: # scopes: repo
             type: action
 models:
+    Issue:
+        id: integer
+        __extends: GithubIssue
     GithubIssue:
         id: integer
         owner: string

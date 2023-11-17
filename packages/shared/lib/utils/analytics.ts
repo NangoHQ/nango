@@ -11,25 +11,32 @@ import type { Account, User } from '../models/Admin.js';
 import { LogActionEnum } from '../models/Activity.js';
 
 export enum AnalyticsTypes {
-    CONNECTION_UPDATED = 'server:connection_updated',
-    CONNECTION_INSERTED = 'server:connection_inserted',
-    API_CONNECTION_UPDATED = 'server:api_key_connection_updated',
-    API_CONNECTION_INSERTED = 'server:api_key_connection_inserted',
-    UNAUTH_CONNECTION_UPDATED = 'server:unauth_connection_updated',
-    UNAUTH_CONNECTION_INSERTED = 'server:unauth_connection_inserted',
     ACCOUNT_CREATED = 'server:account_created',
     ACCOUNT_JOINED = 'server:account_joined',
-    CONNECTION_LIST_FETCHED = 'server:connection_list_fetched',
+    API_CONNECTION_INSERTED = 'server:api_key_connection_inserted',
+    API_CONNECTION_UPDATED = 'server:api_key_connection_updated',
     CONFIG_CREATED = 'server:config_created',
-    PRE_BASIC_API_KEY_AUTH = 'server:pre_basic_api_key_auth',
+    CONNECTION_INSERTED = 'server:connection_inserted',
+    CONNECTION_LIST_FETCHED = 'server:connection_list_fetched',
+    CONNECTION_UPDATED = 'server:connection_updated',
+    ONBOARDING_0 = 'onboarding:step_1_authorize',
+    ONBOARDING_1 = 'onboarding:step_2_sync',
+    ONBOARDING_2 = 'onboarding:step_3_receive_webhooks',
+    ONBOARDING_3 = 'onboarding:step_4_action_writeback',
+    ONBOARDING_4 = 'onboarding:step_5_ship_first_integration',
     PRE_API_KEY_AUTH = 'server:pre_api_key_auth',
     PRE_APP_AUTH = 'server:pre_appauth',
-    SYNC_UNPAUSE = 'sync:command_unpause',
+    PRE_BASIC_API_KEY_AUTH = 'server:pre_basic_api_key_auth',
+    PRE_UNAUTH = 'server:pre_unauth',
+    PRE_WS_OAUTH = 'server:pre_ws_oauth',
+    SYNC_DEPLOY_SUCCESS = 'sync:deploy_succeeded',
     SYNC_PAUSE = 'sync:command_pause',
     SYNC_RUN = 'sync:command_run',
-    SYNC_DEPLOY_SUCCESS = 'sync:deploy_succeeded',
-    PRE_WS_OAUTH = 'server:pre_ws_oauth',
-    PRE_UNAUTH = 'server:pre_unauth'
+    SYNC_UNPAUSE = 'sync:command_unpause',
+    UNAUTH_CONNECTION_INSERTED = 'server:unauth_connection_inserted',
+    UNAUTH_CONNECTION_UPDATED = 'server:unauth_connection_updated',
+    WEB_CONNECION_CREATED = 'web:connection_created',
+    WEB_ACCOUNT_SIGNUP = 'web:account_signup'
 }
 
 class Analytics {

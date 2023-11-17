@@ -9,30 +9,40 @@ import {
     getSyncsByConnectionId,
     getSyncsByProviderConfigKey,
     getSyncsByProviderConfigAndSyncNames,
-    getSyncByIdAndName
+    getSyncByIdAndName,
+    getSyncNamesByConnectionId
 } from './sync.service.js';
-import { createActivityLog, createActivityLogMessage } from '../activity/activity.service.js';
+import {
+    createActivityLogMessageAndEnd,
+    createActivityLog,
+    createActivityLogMessage,
+    updateSuccess as updateSuccessActivityLog
+} from '../activity/activity.service.js';
 import SyncClient from '../../clients/sync.client.js';
 import configService from '../config.service.js';
 import type { LogLevel } from '../../models/Activity.js';
 import type { Connection } from '../../models/Connection.js';
+import { NangoError } from '../../utils/error.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
+import type { ServiceResponse } from '../../models/Generic';
 import {
     SyncStatus,
     ScheduleStatus,
     SyncConfigType,
     SyncDeploymentResult,
-    IncomingSyncConfig,
+    IncomingFlowConfig,
     Sync,
+    SyncType,
     SyncCommand,
-    CommandToActivityLog
+    CommandToActivityLog,
+    ReportedSyncJobStatus
 } from '../../models/Sync.js';
 
 interface CreateSyncArgs {
     connections: Connection[];
     providerConfigKey: string;
     environmentId: number;
-    sync: IncomingSyncConfig;
+    sync: IncomingFlowConfig;
     syncName: string;
 }
 
@@ -42,7 +52,7 @@ export class Orchestrator {
         syncName: string,
         providerConfigKey: string,
         environmentId: number,
-        sync: IncomingSyncConfig,
+        sync: IncomingFlowConfig,
         debug = false,
         activityLogId?: number
     ): Promise<boolean> {
@@ -158,7 +168,13 @@ export class Orchestrator {
         }
     }
 
-    public async runSyncCommand(environmentId: number, providerConfigKey: string, syncNames: string[], command: SyncCommand, connectionId?: string) {
+    public async runSyncCommand(
+        environmentId: number,
+        providerConfigKey: string,
+        syncNames: string[],
+        command: SyncCommand,
+        connectionId?: string
+    ): Promise<ServiceResponse<boolean>> {
         const action = CommandToActivityLog[command];
         const provider = await configService.getProviderName(providerConfigKey as string);
 
@@ -184,10 +200,16 @@ export class Orchestrator {
             } = await connectionService.getConnection(connectionId as string, providerConfigKey as string, environmentId);
 
             if (!success) {
-                throw error;
+                return { success: false, error, response: false };
             }
 
-            for (const syncName of syncNames) {
+            let syncs = syncNames;
+
+            if (syncs.length === 0) {
+                syncs = await getSyncNamesByConnectionId(connection?.id as number);
+            }
+
+            for (const syncName of syncs) {
                 const sync = await getSyncByIdAndName(connection?.id as number, syncName);
                 if (!sync) {
                     continue;
@@ -196,8 +218,18 @@ export class Orchestrator {
 
                 const syncClient = await SyncClient.getInstance();
                 await syncClient?.runSyncCommand(schedule?.schedule_id as string, sync?.id as string, command, activityLogId as number, environmentId);
-                await updateScheduleStatus(schedule?.schedule_id as string, command, activityLogId as number, environmentId);
+                // if they're triggering a sync that shouldn't change the schedule status
+                if (command !== SyncCommand.RUN) {
+                    await updateScheduleStatus(schedule?.schedule_id as string, command, activityLogId as number, environmentId);
+                }
             }
+            await createActivityLogMessageAndEnd({
+                level: 'info',
+                environment_id: environmentId,
+                activity_log_id: activityLogId as number,
+                timestamp: Date.now(),
+                content: `Sync was updated with command: "${action}" for sync: ${syncNames.join(', ')}`
+            });
         } else {
             const syncs =
                 syncNames.length > 0
@@ -205,26 +237,48 @@ export class Orchestrator {
                     : await getSyncsByProviderConfigKey(environmentId, providerConfigKey);
 
             if (!syncs) {
-                return;
+                const error = new NangoError('no_syncs_found');
+
+                return { success: false, error, response: false };
             }
 
             for (const sync of syncs) {
                 const schedule = await getSchedule(sync?.id as string);
                 const syncClient = await SyncClient.getInstance();
                 await syncClient?.runSyncCommand(schedule?.schedule_id as string, sync?.id as string, command, activityLogId as number, environmentId);
-                await updateScheduleStatus(schedule?.schedule_id as string, command, activityLogId as number, environmentId);
+                if (command !== SyncCommand.RUN) {
+                    await updateScheduleStatus(schedule?.schedule_id as string, command, activityLogId as number, environmentId);
+                }
             }
+            await createActivityLogMessageAndEnd({
+                level: 'info',
+                environment_id: environmentId,
+                activity_log_id: activityLogId as number,
+                timestamp: Date.now(),
+                content: `Sync was updated with command: "${action}" for sync: ${Array.isArray(syncNames) ? syncNames.join(', ') : syncNames}`
+            });
         }
+
+        await updateSuccessActivityLog(activityLogId as number, true);
+
+        return { success: true, error: null, response: true };
     }
 
-    public async getSyncStatus(environmentId: number, providerConfigKey: string, syncNames: string[], connectionId?: string): Promise<any> {
-        const syncsWithStatus = [];
+    public async getSyncStatus(
+        environmentId: number,
+        providerConfigKey: string,
+        syncNames: string[],
+        connectionId?: string,
+        includeJobStatus = false
+    ): Promise<ServiceResponse<ReportedSyncJobStatus[] | void>> {
+        const syncsWithStatus: ReportedSyncJobStatus[] = [];
+        const syncClient = await SyncClient.getInstance();
 
         if (connectionId) {
             const { success, error, response: connection } = await connectionService.getConnection(connectionId as string, providerConfigKey, environmentId);
 
             if (!success) {
-                throw error;
+                return { success: false, error, response: null };
             }
 
             for (const syncName of syncNames) {
@@ -234,13 +288,30 @@ export class Orchestrator {
                 }
                 const latestJob = await getLatestSyncJob(sync?.id as string);
                 const schedule = await getSchedule(sync?.id as string);
-                const status = {
-                    id: sync?.id,
-                    name: sync?.name,
-                    status: this.classifySyncStatus(latestJob?.status as SyncStatus, schedule?.status as ScheduleStatus),
+                const status = this.classifySyncStatus(latestJob?.status as SyncStatus, schedule?.status as ScheduleStatus);
+
+                let nextScheduledSyncAt = null;
+                if (status !== SyncStatus.PAUSED) {
+                    const syncSchedule = await syncClient?.describeSchedule(schedule?.schedule_id as string);
+
+                    if (syncSchedule && syncSchedule?.info && syncSchedule?.info?.futureActionTimes && syncSchedule?.info?.futureActionTimes?.length > 0) {
+                        const futureRun = syncSchedule?.info?.futureActionTimes[0];
+                        nextScheduledSyncAt = syncClient?.formatFutureRun(futureRun?.seconds?.toNumber() as number);
+                    }
+                }
+                const reportedStatus: ReportedSyncJobStatus = {
+                    id: sync?.id as string,
+                    type: latestJob?.type as SyncType,
+                    finishedAt: latestJob?.updated_at,
+                    nextScheduledSyncAt,
+                    name: sync?.name as string,
+                    status,
                     latestResult: latestJob?.result
-                };
-                syncsWithStatus.push(status);
+                } as ReportedSyncJobStatus;
+                if (includeJobStatus) {
+                    reportedStatus['jobStatus'] = latestJob?.status as SyncStatus;
+                }
+                syncsWithStatus.push(reportedStatus);
             }
         } else {
             const syncs =
@@ -249,27 +320,45 @@ export class Orchestrator {
                     : await getSyncsByProviderConfigKey(environmentId, providerConfigKey);
 
             if (!syncs) {
-                return;
+                return { success: true, error: null, response: syncsWithStatus };
             }
 
             for (const sync of syncs) {
                 const schedule = await getSchedule(sync?.id as string);
                 const latestJob = await getLatestSyncJob(sync?.id as string);
-                const status = {
+                const status = this.classifySyncStatus(latestJob?.status as SyncStatus, schedule?.status as ScheduleStatus);
+
+                let nextScheduledSyncAt = null;
+                if (status !== SyncStatus.PAUSED) {
+                    const syncSchedule = await syncClient?.describeSchedule(schedule?.schedule_id as string);
+
+                    if (syncSchedule && syncSchedule?.info && syncSchedule?.info?.futureActionTimes && syncSchedule?.info?.futureActionTimes?.length > 0) {
+                        const futureRun = syncSchedule?.info?.futureActionTimes[0];
+                        nextScheduledSyncAt = syncClient?.formatFutureRun(futureRun?.seconds?.toNumber() as number);
+                    }
+                }
+
+                const reportedStatus: ReportedSyncJobStatus = {
                     id: sync?.id,
+                    type: latestJob?.type as SyncType,
+                    finishedAt: latestJob?.updated_at,
+                    nextScheduledSyncAt,
                     name: sync?.name,
-                    status: this.classifySyncStatus(latestJob?.status as SyncStatus, schedule?.status as ScheduleStatus),
+                    status,
                     latestResult: latestJob?.result
-                };
-                syncsWithStatus.push(status);
+                } as ReportedSyncJobStatus;
+                if (includeJobStatus) {
+                    reportedStatus['jobStatus'] = latestJob?.status as SyncStatus;
+                }
+                syncsWithStatus.push(reportedStatus);
             }
         }
 
-        return syncsWithStatus;
+        return { success: true, error: null, response: syncsWithStatus };
     }
 
     public classifySyncStatus(jobStatus: SyncStatus, scheduleStatus: ScheduleStatus): SyncStatus {
-        if (scheduleStatus === ScheduleStatus.PAUSED) {
+        if (scheduleStatus === ScheduleStatus.PAUSED && jobStatus !== SyncStatus.RUNNING) {
             return SyncStatus.PAUSED;
         } else if (scheduleStatus === ScheduleStatus.RUNNING && jobStatus === null) {
             return SyncStatus.ERROR;
@@ -308,7 +397,7 @@ export class Orchestrator {
                 name as string,
                 providerConfigKey,
                 environmentId,
-                flow as unknown as IncomingSyncConfig,
+                flow as unknown as IncomingFlowConfig,
                 false
             );
         }

@@ -1,10 +1,10 @@
 import axios, { AxiosError } from 'axios';
 import { backOff } from 'exponential-backoff';
-import { SyncType } from '../models/Sync.js';
-import type { NangoConnection } from '../models/Connection';
-import type { SyncResult, NangoSyncWebhookBody } from '../models/Sync';
-import environmentService from './environment.service.js';
-import { createActivityLogMessage } from './activity/activity.service.js';
+import { SyncType } from '../../../models/Sync.js';
+import type { NangoConnection } from '../../../models/Connection';
+import type { SyncResult, NangoSyncWebhookBody } from '../../../models/Sync';
+import environmentService from '../../environment.service.js';
+import { createActivityLogMessage } from '../../activity/activity.service.js';
 
 const RETRY_ATTEMPTS = 10;
 
@@ -15,13 +15,16 @@ class WebhookService {
                 error?.response?.status || error?.code
             } error, retrying with exponential backoffs for ${attemptNumber} out of ${RETRY_ATTEMPTS} times`;
 
-            await createActivityLogMessage({
-                level: 'error',
-                environment_id,
-                activity_log_id: activityLogId,
-                timestamp: Date.now(),
-                content
-            });
+            await createActivityLogMessage(
+                {
+                    level: 'error',
+                    environment_id,
+                    activity_log_id: activityLogId,
+                    timestamp: Date.now(),
+                    content
+                },
+                false
+            );
 
             return true;
         }
@@ -29,7 +32,7 @@ class WebhookService {
         return false;
     };
 
-    async sendUpdate(
+    async send(
         nangoConnection: NangoConnection,
         syncName: string,
         model: string,

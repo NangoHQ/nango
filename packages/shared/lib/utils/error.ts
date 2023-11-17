@@ -135,6 +135,16 @@ export class NangoError extends Error {
                 this.message = `Missing param 'api_key'.`;
                 break;
 
+            case 'missing_app_id':
+                this.status = 400;
+                this.message = `Missing param 'app_id'.`;
+                break;
+
+            case 'missing_installation_id':
+                this.status = 400;
+                this.message = `Missing param 'installation_id'.`;
+                break;
+
             case 'missing_basic_username':
                 this.status = 400;
                 this.message = `Missing param username for basic api authentication.`;
@@ -209,6 +219,11 @@ export class NangoError extends Error {
             case 'missing_provider_template':
                 this.status = 400;
                 this.message = `Missing param 'provider'.`;
+                break;
+
+            case 'no_syncs_found':
+                this.status = 400;
+                this.message = `No syncs found given the inputs.`;
                 break;
 
             case 'missing_client_id':
@@ -377,8 +392,66 @@ export class NangoError extends Error {
                 this.message = `The sync script failed with an error: ${this.payload}`;
                 break;
 
+            case 'error_loading_nango_config':
+                this.status = 400;
+                this.message = `Error loading nango config. Please make sure it is present and formatted correctly.${
+                    this.payload ? ` Error: ${JSON.stringify(this.payload, null, 2)}` : ''
+                }`;
+                break;
+
+            case 'endpoint_output_mismatch':
+                this.status = 400;
+                this.message = `The number of endpoints doesn't match the number of models returned from the output for ${this.payload}. The endpoints to model should match 1 to 1.`;
+                break;
+
+            case 'action_single_endpoint':
+                this.status = 400;
+                this.message = `Actions are only allowed to have one model to be returned and only allow a single endpoint`;
+                break;
+
+            case 'duplicate_endpoint':
+                this.status = 400;
+                this.message = `Duplicate endpoint "${this.payload}" found. Please make sure all endpoints are unique within an integration.`;
+                break;
+
+            case 'duplicate_model':
+                this.status = 400;
+                this.message = `Duplicate model "${this.payload['model']}" for the ${this.payload['type']} "${this.payload['name']}" found. Please make sure all models are unique within an integration.`;
+                break;
+
+            case 'no_config_found':
+                this.status = 400;
+                this.message = 'No nango config found. Please make sure it is present and formatted correctly.';
+                break;
+
+            case 'conflicting_model_and_input':
+                this.status = 400;
+                this.message = 'Cannot have a model in the endpoint and in the input';
+                break;
+
+            case 'invalid_model_identifier':
+                this.status = 400;
+                this.message =
+                    'Invalid model identifier. Please make sure to include a model identifier in the endpoint or in the input by using a colon (:) to separate the model name and the model identifier.';
+                break;
+
+            case 'missing_model_identifier':
+                this.status = 400;
+                this.message = `The model identifier was not found in the model. Please make sure the field "${this.payload}" is included in the model.`;
+                break;
+
+            case 'missing_model_name':
+                this.status = 400;
+                this.message = `Model ${this.payload} not found included in models definition`;
+                break;
+
             case 'action_script_failure':
                 this.message = `The action script failed with an error: ${this.payload}`;
+                break;
+
+            case 'pass_through_error':
+                this.status = 400;
+                this.message = `${this.payload}`;
                 break;
 
             default:

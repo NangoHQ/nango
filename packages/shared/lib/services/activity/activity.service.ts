@@ -128,8 +128,10 @@ export async function createActivityLogAndLogMessage(log: ActivityLog, logMessag
     return logId;
 }
 
-export async function createActivityLogMessage(logMessage: ActivityLogMessage): Promise<boolean> {
-    logger.log(logMessage.level as string, logMessage.content);
+export async function createActivityLogMessage(logMessage: ActivityLogMessage, logToConsole = true): Promise<boolean> {
+    if (logToConsole) {
+        logger.log(logMessage.level as string, logMessage.content);
+    }
 
     if (!logMessage.activity_log_id) {
         return false;
@@ -223,7 +225,7 @@ export async function getLogMessagesForLogs(logIds: number[], environment_id: nu
     try {
         const query = `
             SELECT activity_log_id, array_agg(row_to_json(_nango_activity_log_messages.*)) as messages
-            FROM _nango_activity_log_messages
+            FROM nango._nango_activity_log_messages
             WHERE activity_log_id = ANY(?)
             AND environment_id = ${environment_id}
             GROUP BY activity_log_id

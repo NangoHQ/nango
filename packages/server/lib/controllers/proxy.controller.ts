@@ -159,7 +159,7 @@ class ProxyController {
             const queryString = querystring.stringify(query);
             let endpoint = `${path}${queryString ? `?${queryString}` : ''}`;
 
-            if (!endpoint) {
+            if (!endpoint && !baseUrlOverride) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
                     environment_id,
@@ -478,6 +478,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         }
 
         if (!isDryRun) {
+            const safeHeaders = this.stripSensitiveHeaders(config.headers, config);
             await createActivityLogMessageAndEnd({
                 level: 'info',
                 environment_id,
@@ -485,7 +486,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
                 timestamp: Date.now(),
                 content: `${config.method.toUpperCase()} request to ${url} was successful`,
                 params: {
-                    headers: JSON.stringify(config.headers)
+                    headers: JSON.stringify(safeHeaders)
                 }
             });
         }
@@ -495,6 +496,30 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         passThroughStream.pipe(res);
 
         res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
+    }
+
+    private stripSensitiveHeaders(headers: ProxyBodyConfiguration['headers'], config: ProxyBodyConfiguration) {
+        const safeHeaders = { ...headers };
+
+        if (!config.token) {
+            if (safeHeaders['Authorization']?.includes('Bearer')) {
+                safeHeaders['Authorization'] = safeHeaders['Authorization'].replace(/Bearer.*/, 'Bearer xxxx');
+            }
+
+            return safeHeaders;
+        }
+
+        Object.keys(safeHeaders).forEach((header) => {
+            if (safeHeaders[header] === config.token) {
+                safeHeaders[header] = 'xxxx';
+            }
+            const headerValue = safeHeaders[header];
+            if (headerValue?.includes(config.token as string)) {
+                safeHeaders[header] = headerValue.replace(config.token as string, 'xxxx');
+            }
+        });
+
+        return safeHeaders;
     }
 
     private async handleErrorResponse(res: Response, e: unknown, url: string, config: ProxyBodyConfiguration, activityLogId: number, environment_id: number) {
@@ -761,6 +786,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         errorMessage: string
     ) {
         if (activityLogId) {
+            const safeHeaders = this.stripSensitiveHeaders(config.headers, config);
             await createActivityLogMessageAndEnd({
                 level: 'error',
                 environment_id,
@@ -771,7 +797,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
                     providerResponse: errorMessage.toString()
                 }),
                 params: {
-                    requestHeaders: JSON.stringify(config.headers, null, 2),
+                    requestHeaders: JSON.stringify(safeHeaders, null, 2),
                     responseHeaders: JSON.stringify(error?.response?.headers, null, 2)
                 }
             });
@@ -804,7 +830,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         }
 
         const fullEndpoint = interpolateIfNeeded(
-            `${mapProxyBaseUrlInterpolationFormat(base)}/${endpoint}`,
+            `${mapProxyBaseUrlInterpolationFormat(base)}${endpoint ? '/' : ''}${endpoint}`,
             connectionCopyWithParsedConnectionConfig(connection) as unknown as Record<string, string>
         );
 

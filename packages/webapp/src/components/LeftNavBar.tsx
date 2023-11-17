@@ -5,6 +5,7 @@ import { Activity, Briefcase, User } from '@geist-ui/icons';
 
 import { useStore } from '../store';
 import { isCloud } from '../utils/utils';
+import { useSignout } from '../utils/user';
 
 export enum LeftNavBarItems {
     Integrations = 0,
@@ -13,7 +14,8 @@ export enum LeftNavBarItems {
     Activity,
     Syncs,
     AccountSettings,
-    UserSettings
+    UserSettings,
+    GettingStarted
 }
 
 export interface LeftNavBarProps {
@@ -24,16 +26,25 @@ export default function LeftNavBar(props: LeftNavBarProps) {
     const [envs, setEnvs] = useState<{ name: string; }[]>([]);
     const [version, setVersion] = useState<string>('');
 
+    const signout = useSignout();
+
     useEffect(() => {
         fetch('/api/v1/meta')
-            .then(res => res.json())
+            .then(res => {
+                if(res.status === 401) {
+                    return signout();
+                }
+                return res.json();
+            })
             .then(data => {
+                if(!data) return;
                 setEnvs(data.environments);
                 setVersion(data.version);
             })
             .catch(err => {
                 console.error(err);
             });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const env = useStore(state => state.cookieValue);
@@ -57,8 +68,13 @@ export default function LeftNavBar(props: LeftNavBarProps) {
 
     return (
         <div>
-            <div className="h-full pt-14 border-r-2 border-t-2 border-border-gray flex flex-col w-60 fixed bg-bg-black z-49 justify-between">
+            <div className="h-full pt-14 border-r-2 border-t-2 border-border-gray flex flex-col w-60 fixed bg-bg-black z-20 justify-between">
                 <div className="mt-8 px-6">
+                    {envs.length === 0 && (
+                        <div className="mb-8">
+                            <select className="border-border-gray bg-bg-black text-text-light-gray block w-full appearance-none rounded-md border px-3 py-2 text-base shadow-sm active:outline-none focus:outline-none active:border-white focus:border-white"></select>
+                        </div>
+                    )}
                     {envs.length > 0 && (
                         <div className="mb-8">
                             <select
@@ -77,6 +93,17 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                         </div>
                     )}
                     <div className="space-y-1">
+                        {env === 'dev' && (
+                            <Link
+                                to="/getting-started"
+                                className={`flex h-10 p-2 gap-x-3 items-center rounded-md text-sm text-white ${
+                                    props.selectedItem === LeftNavBarItems.GettingStarted ? 'bg-gray-800' : 'hover:bg-gray-700'
+                                }`}
+                            >
+                                <img className="h-5" src="/images/rocket-icon.svg" alt="" />
+                                <p>Getting Started</p>
+                            </Link>
+                        )}
                         <Link
                             to="/integrations"
                             className={`flex h-10 p-2 gap-x-3 items-center rounded-md text-sm text-white ${

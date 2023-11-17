@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import db, { schema, dbNamespace } from '../../db/database.js';
 import {
     SyncConfigType,
-    IncomingSyncConfig,
+    IncomingFlowConfig,
     SyncAndActionDifferences,
     Sync,
     Job as SyncJob,
@@ -372,6 +372,16 @@ export const getSyncsByProviderConfigAndSyncName = async (environment_id: number
     return results;
 };
 
+export const getSyncNamesByConnectionId = async (nangoConnectionId: number): Promise<string[]> => {
+    const results = await db.knex.withSchema(db.schema()).select('name').from<Sync>(TABLE).where({ nango_connection_id: nangoConnectionId, deleted: false });
+
+    if (Array.isArray(results) && results.length > 0) {
+        return results.map((sync) => sync.name);
+    }
+
+    return [];
+};
+
 export const getSyncsByProviderConfigAndSyncNames = async (environment_id: number, providerConfigKey: string, syncNames: string[]): Promise<Sync[]> => {
     const results = await db.knex
         .withSchema(db.schema())
@@ -414,7 +424,7 @@ export const verifyOwnership = async (nangoConnectionId: number, environment_id:
 };
 
 export const deleteSync = async (syncId: string): Promise<string> => {
-    await schema().from<Sync>(TABLE).where({ id: syncId, deleted: false }).update({ deleted: true });
+    await schema().from<Sync>(TABLE).where({ id: syncId, deleted: false }).update({ deleted: true, deleted_at: new Date() });
 
     await syncOrchestrator.deleteSyncRelatedObjects(syncId);
 
@@ -442,7 +452,7 @@ export const findSyncByConnections = async (connectionIds: number[], sync_name: 
 
 export const getAndReconcileDifferences = async (
     environmentId: number,
-    syncs: IncomingSyncConfig[],
+    syncs: IncomingFlowConfig[],
     performAction: boolean,
     activityLogId: number | null,
     debug = false,

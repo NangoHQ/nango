@@ -76,7 +76,7 @@ export interface NangoSyncWebhookBody {
 
 export type LastAction = 'added' | 'updated' | 'deleted';
 
-interface RecordMetadata {
+export interface RecordMetadata {
     first_seen_at: Date;
     last_seen_at: Date;
     last_action: LastAction;
@@ -138,26 +138,26 @@ export class Nango {
      * =======
      */
 
-    public async listIntegrations(): Promise<Pick<Integration, 'unique_key' | 'provider'>[]> {
+    public async listIntegrations(): Promise<{ config: Pick<Integration, 'unique_key' | 'provider'>[] }> {
         const url = `${this.serverUrl}/config`;
         const response = await axios.get(url, { headers: this.enrichHeaders({}) });
 
         return response.data;
     }
 
-    public async getIntegration(providerConfigKey: string, includeIntegrationCredetials = false): Promise<Integration | IntegrationWithCreds> {
+    public async getIntegration(providerConfigKey: string, includeIntegrationCredetials = false): Promise<{ config: Integration | IntegrationWithCreds }> {
         const url = `${this.serverUrl}/config/${providerConfigKey}`;
         const response = await axios.get(url, { headers: this.enrichHeaders({}), params: { include_creds: includeIntegrationCredetials } });
         return response.data;
     }
 
-    public async createIntegration(provider: string, providerConfigKey: string, credentials?: Record<string, string>): Promise<Integration> {
+    public async createIntegration(provider: string, providerConfigKey: string, credentials?: Record<string, string>): Promise<{ config: Integration }> {
         const url = `${this.serverUrl}/config`;
         const response = await axios.post(url, { provider, provider_config_key: providerConfigKey, ...credentials }, { headers: this.enrichHeaders({}) });
         return response.data;
     }
 
-    public async updateIntegration(provider: string, providerConfigKey: string, credentials?: Record<string, string>): Promise<Integration> {
+    public async updateIntegration(provider: string, providerConfigKey: string, credentials?: Record<string, string>): Promise<{ config: Integration }> {
         const url = `${this.serverUrl}/config`;
         const response = await axios.put(url, { provider, provider_config_key: providerConfigKey, ...credentials }, { headers: this.enrichHeaders({}) });
         return response.data;
@@ -299,8 +299,7 @@ export class Nango {
         const url = `${this.serverUrl}/connection/${connectionId}?provider_config_key=${providerConfigKey}`;
 
         const headers = {
-            'Content-Type': 'application/json',
-            'Accept-Encoding': 'application/json'
+            'Content-Type': 'application/json'
         };
 
         return axios.delete(url, { headers: this.enrichHeaders(headers) });
@@ -453,8 +452,7 @@ export class Nango {
         const url = `${this.serverUrl}/environment-variables`;
 
         const headers = {
-            'Content-Type': 'application/json',
-            'Accept-Encoding': 'application/json'
+            'Content-Type': 'application/json'
         };
 
         const response = await axios.get(url, { headers: this.enrichHeaders(headers) });
@@ -551,6 +549,10 @@ export class Nango {
             options.paramsSerializer = config.paramsSerializer;
         }
 
+        if (config.responseType) {
+            options.responseType = config.responseType;
+        }
+
         if (this.dryRun) {
             const stringifyParams = (params: Record<string, string>) => {
                 return Object.keys(params)
@@ -615,7 +617,8 @@ export class Nango {
 
         const headers = {
             'Content-Type': 'application/json',
-            'Accept-Encoding': 'application/json'
+            'Nango-Is-Sync': this.isSync,
+            'Nango-Is-Dry-Run': this.dryRun
         };
 
         if (additionalHeader) {
@@ -638,8 +641,7 @@ export class Nango {
         }
 
         const headers = {
-            'Content-Type': 'application/json',
-            'Accept-Encoding': 'application/json'
+            'Content-Type': 'application/json'
         };
 
         return axios.get(url, { headers: this.enrichHeaders(headers) });

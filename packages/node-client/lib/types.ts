@@ -27,8 +27,8 @@ export interface OAuth2Credentials extends CredentialsCommon {
     expires_at?: Date | undefined;
 }
 
-export interface AppCredentials {
-    type?: AuthModes.App;
+export interface AppCredentials extends CredentialsCommon {
+    type: AuthModes.App;
     access_token: string;
     expires_at?: Date | undefined;
     raw: Record<string, any>;
@@ -41,12 +41,13 @@ export interface ProxyConfiguration {
 
     method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE' | 'get' | 'post' | 'patch' | 'put' | 'delete';
     headers?: Record<string, string>;
-    params?: string | Record<string, string>;
+    params?: string | Record<string, string | number>;
     paramsSerializer?: ParamsSerializerOptions;
     data?: unknown;
     retries?: number;
     baseUrlOverride?: string;
     decompress?: boolean;
+    responseType?: 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream';
 }
 
 type FilterAction = 'added' | 'updated' | 'deleted';
@@ -65,18 +66,18 @@ export interface GetRecordsRequestConfig {
     filter?: FilterAction | CombinedFilterAction;
 }
 
-export interface BasicApiCredentials {
-    type?: AuthModes.Basic;
+export interface BasicApiCredentials extends CredentialsCommon {
+    type: AuthModes.Basic;
     username: string;
     password: string;
 }
 
-export interface ApiKeyCredentials {
-    type?: AuthModes.ApiKey;
+export interface ApiKeyCredentials extends CredentialsCommon {
+    type: AuthModes.ApiKey;
     apiKey: string;
 }
 
-type AuthCredentials = OAuth2Credentials | OAuth1Credentials | BasicApiCredentials | ApiKeyCredentials;
+type AuthCredentials = OAuth2Credentials | OAuth1Credentials | BasicApiCredentials | ApiKeyCredentials | AppCredentials;
 
 export interface Metadata {
     [key: string]: string | Record<string, any>;
@@ -98,7 +99,7 @@ export interface Connection {
 
 export interface ConnectionList {
     id: number;
-    connection_id: number;
+    connection_id: string;
     provider: string;
     created: string;
 }
@@ -121,19 +122,29 @@ export interface Sync extends Timestamps {
     last_sync_date: string;
 }
 
+export interface SyncConfig extends Timestamps {
+    name: string;
+    description?: string;
+}
+
 export interface Action extends Timestamps {
     name: string;
 }
 
+type SyncType = 'INCREMENTAL' | 'INITIAL';
+
 export interface Integration {
     unique_key: string;
     provider: string;
-    syncs: Sync[];
+    syncs: SyncConfig[];
     actions: Action[];
 }
 
 export interface SyncStatus {
     id: string;
+    type: SyncType;
+    finishedAt: string;
+    nextScheduledSyncAt: string;
     name: string;
     status: 'RUNNING' | 'SUCCESS' | 'ERROR' | 'PAUSED' | 'STOPPED';
     latestResult: Record<string, StatusAction>;

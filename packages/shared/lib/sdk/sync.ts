@@ -95,12 +95,13 @@ export interface ProxyConfiguration {
 
     method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE' | 'get' | 'post' | 'patch' | 'put' | 'delete';
     headers?: Record<string, string>;
-    params?: string | Record<string, string>;
+    params?: string | Record<string, string | number>;
     paramsSerializer?: ParamsSerializerOptions;
     data?: unknown;
     retries?: number;
     baseUrlOverride?: string;
     paginate?: Partial<CursorPagination> | Partial<LinkPagination> | Partial<OffsetPagination>;
+    responseType?: 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream';
 }
 
 enum AuthModes {
@@ -111,21 +112,21 @@ enum AuthModes {
     App = 'APP'
 }
 
-interface AppCredentials {
-    type?: AuthModes.App;
+interface AppCredentials extends CredentialsCommon {
+    type: AuthModes.App;
     access_token: string;
     expires_at?: Date | undefined;
     raw: Record<string, any>;
 }
 
-interface BasicApiCredentials {
-    type?: AuthModes.Basic;
+interface BasicApiCredentials extends CredentialsCommon {
+    type: AuthModes.Basic;
     username: string;
     password: string;
 }
 
-interface ApiKeyCredentials {
-    type?: AuthModes.ApiKey;
+interface ApiKeyCredentials extends CredentialsCommon {
+    type: AuthModes.ApiKey;
     apiKey: string;
 }
 
@@ -270,6 +271,13 @@ export class NangoAction {
         });
     }
 
+    public async put<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
+        return this.proxy({
+            ...config,
+            method: 'PUT'
+        });
+    }
+
     public async patch<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
         return this.proxy({
             ...config,
@@ -317,13 +325,16 @@ export class NangoAction {
             throw new Error('There is no current activity log stream to log to');
         }
 
-        await createActivityLogMessage({
-            level: userDefinedLevel?.level ?? 'info',
-            environment_id: this.environmentId as number,
-            activity_log_id: this.activityLogId as number,
-            content,
-            timestamp: Date.now()
-        });
+        await createActivityLogMessage(
+            {
+                level: userDefinedLevel?.level ?? 'info',
+                environment_id: this.environmentId as number,
+                activity_log_id: this.activityLogId as number,
+                content,
+                timestamp: Date.now()
+            },
+            false
+        );
     }
 
     public async getEnvironmentVariables(): Promise<EnvironmentVariable[] | null> {
@@ -344,7 +355,13 @@ export class NangoAction {
 
     public async *paginate<T = any>(config: ProxyConfiguration): AsyncGenerator<T[], undefined, void> {
         const providerConfigKey: string = this.providerConfigKey as string;
-        const template = configService.getTemplate(providerConfigKey);
+        const response = await this.nango.getIntegration(providerConfigKey);
+
+        if (!response || !response.config || !response.config.provider) {
+            throw Error(`There was no provider found for the provider config key: ${providerConfigKey}`);
+        }
+
+        const template = configService.getTemplate(response.config.provider);
         const templatePaginationConfig: Pagination | undefined = template.proxy?.paginate;
 
         if (!templatePaginationConfig && (!config.paginate || !config.paginate.type)) {
@@ -403,7 +420,7 @@ export class NangoSync extends NangoAction {
     lastSyncDate?: Date;
     track_deletes = false;
     logMessages?: unknown[] | undefined = [];
-    stubbedMetadata?: Metadata | undefined = {};
+    stubbedMetadata?: Metadata | undefined = undefined;
 
     constructor(config: NangoProps) {
         super(config);
@@ -488,7 +505,7 @@ export class NangoSync extends NangoAction {
         }
 
         if (this.dryRun) {
-            this.logMessages?.push(`A batch save call would delete the following data`);
+            this.logMessages?.push(`A batch save call would save the following data to the ${model} model:`);
             this.logMessages?.push(...results);
             return null;
         }
@@ -603,7 +620,7 @@ export class NangoSync extends NangoAction {
         }
 
         if (this.dryRun) {
-            this.logMessages?.push(`A batch delete call would delete the following data`);
+            this.logMessages?.push(`A batch delete call would delete the following data:`);
             this.logMessages?.push(...results);
             return null;
         }
@@ -677,7 +694,7 @@ export class NangoSync extends NangoAction {
         }
     }
     public override async getMetadata<T = Metadata>(): Promise<T> {
-        if (this.dryRun && Object.keys(this.stubbedMetadata as object).length > 0) {
+        if (this.dryRun && this.stubbedMetadata) {
             return this.stubbedMetadata as T;
         }
 

@@ -1,5 +1,5 @@
 import { expect, describe, it, vi } from 'vitest';
-import { IncomingSyncConfig, SyncConfigType } from '../../../models/Sync.js';
+import { IncomingFlowConfig, SyncConfigType } from '../../../models/Sync.js';
 import environmentService from '../../environment.service.js';
 import * as SyncConfigService from './config.service.js';
 import * as SyncService from '../sync.service.js';
@@ -14,7 +14,7 @@ describe('Sync config create', () => {
 
     it('Create sync configs correctly', async () => {
         const environment_id = 1;
-        const syncs: IncomingSyncConfig[] = [];
+        const syncs: IncomingFlowConfig[] = [];
         const debug = true;
 
         vi.spyOn(environmentService, 'getAccountIdFromEnvironment').mockImplementation(() => {

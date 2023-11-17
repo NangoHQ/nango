@@ -126,7 +126,7 @@ function formatFutureRun(nextRun: number): Date | undefined {
         return;
     }
 
-    let milliseconds = Number(nextRun) * 1000;
+    const milliseconds = Number(nextRun) * 1000;
 
     const date = new Date(milliseconds);
 

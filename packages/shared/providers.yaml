@@ -359,6 +359,10 @@ front:
     token_url: https://app.frontapp.com/oauth/token
     proxy:
         base_url: https://api2.frontapp.com
+        paginate:
+            type: link
+            response_path: _results
+            link_path_in_response_body: _pagination.next
 github:
     auth_mode: OAUTH2
     authorization_url: https://github.com/login/oauth/authorize
@@ -411,10 +415,24 @@ google:
         response_type: code
         access_type: offline
         prompt: consent
+    proxy:
+        base_url: https://www.googleapis.com
+        paginate:
+            type: cursor
+            cursor_path_in_response: nextPageToken
+            limit_name_in_request: maxSize
+            cursor_name_in_request: pageToken
+            response_path: items
 google-calendar:
     alias: google
     proxy:
         base_url: https://www.googleapis.com
+        paginate:
+            type: cursor
+            cursor_path_in_response: nextPageToken
+            limit_name_in_request: maxSize
+            cursor_name_in_request: pageToken
+            response_path: items
     docs: https://developers.google.com/calendar/api/v3/reference
 google-mail:
     alias: google
@@ -621,6 +639,21 @@ microsoft-teams:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+microsoft-tenant-specific:
+    auth_mode: OAUTH2
+    authorization_url: https://login.microsoftonline.com/${connectionConfig.tenant}/oauth2/v2.0/authorize
+    token_url: https://login.microsoftonline.com/${connectionConfig.tenant}/oauth2/v2.0/token
+    disable_pkce: true
+    default_scopes:
+        - offline_access
+    authorization_params:
+        response_type: code
+        response_mode: query
+        prompt: consent
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 mixpanel:
     auth_mode: BASIC
     proxy:
@@ -762,9 +795,17 @@ pipedrive:
     auth_mode: OAUTH2
     authorization_url: https://oauth.pipedrive.com/oauth/authorize
     token_url: https://oauth.pipedrive.com/oauth/token
+    token_response_metadata:
+        - api_domain
     proxy:
-        base_url: https://${connectionConfig.subdomain}.pipedrive.com
+        base_url: ${connectionConfig.api_domain}/api
         decompress: true
+        paginate:
+            type: offset
+            offset_name_in_request: start
+            response_path: data
+            limit_name_in_request: limit
+    docs: https://developers.pipedrive.com/docs/api/v1
 qualtrics:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.qualtrics.com/oauth2/auth
@@ -913,6 +954,9 @@ slack:
     token_url: https://slack.com/api/oauth.v2.access
     token_response_metadata:
         - incoming_webhook.url
+        - incoming_webhook.channel
+        - incoming_webhook.channel_id
+        - bot_user_id
     proxy:
         base_url: https://slack.com/api
         paginate:
@@ -1217,6 +1261,10 @@ zendesk:
     token_url: https://${connectionConfig.subdomain}.zendesk.com/oauth/tokens
     proxy:
         base_url: https://${connectionConfig.subdomain}.zendesk.com
+        paginate:
+            type: link
+            limit_name_in_request: per_page
+            link_path_in_response_body: next_page
 zenefits:
     auth_mode: OAUTH2
     authorization_url: https://secure.zenefits.com/oauth2/platform-authorize
