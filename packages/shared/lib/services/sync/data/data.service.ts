@@ -4,6 +4,7 @@ import { createActivityLogMessage } from '../../activity/activity.service.js';
 import { markRecordsForDeletion, syncCreatedAtForAddedRecords, syncUpdateAtForChangedRecords } from './delete.service.js';
 import type { UpsertResponse } from '../../../models/Data.js';
 import type { DataRecord } from '../../../models/Sync.js';
+import encryptionManager from '../../../utils/encryption.manager.js';
 
 /**
  * Upsert
@@ -37,9 +38,11 @@ export async function upsert(
             await markRecordsForDeletion(nangoConnectionId, model);
         }
 
+        const encryptedRecords = encryptionManager.encryptDataRecords(responseWithoutDuplicates);
+
         const results = await schema()
             .from(dbTable)
-            .insert(responseWithoutDuplicates, ['id', 'external_id'])
+            .insert(encryptedRecords, ['id', 'external_id'])
             .onConflict(['nango_connection_id', 'external_id', 'model'])
             .merge()
             .returning(['id', 'external_id']);
