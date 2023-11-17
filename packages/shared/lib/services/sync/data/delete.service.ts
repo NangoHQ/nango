@@ -58,7 +58,7 @@ export const getDeletedKeys = async (dbTable: string, uniqueKey: string, nangoCo
 };
 
 export const getFullRecords = async (nangoConnectionId: number, model: string) => {
-    const results = await schema().from<DataRecord>(RECORDS_TABLE).where({
+    const results = await schema().from<DataRecord>(RECORDS_TABLE).select(columns).where({
         nango_connection_id: nangoConnectionId,
         model
     });

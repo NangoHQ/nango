@@ -95,7 +95,7 @@ export interface ProxyConfiguration {
 
     method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE' | 'get' | 'post' | 'patch' | 'put' | 'delete';
     headers?: Record<string, string>;
-    params?: string | Record<string, string>;
+    params?: string | Record<string, string | number>;
     paramsSerializer?: ParamsSerializerOptions;
     data?: unknown;
     retries?: number;
@@ -268,6 +268,13 @@ export class NangoAction {
         return this.proxy({
             ...config,
             method: 'POST'
+        });
+    }
+
+    public async put<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
+        return this.proxy({
+            ...config,
+            method: 'PUT'
         });
     }
 

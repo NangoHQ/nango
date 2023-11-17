@@ -19,15 +19,15 @@ exports.up = async function (knex, _) {
 
 exports.down = async function (knex, _) {
     await knex.schema.withSchema('nango').alterTable(RECORDS_TABLE, function (table) {
-        table.dropColumn('value_iv');
-        table.dropColumn('value_tag');
-    });
-    await knex.schema.withSchema('nango').alterTable(DELETED_RECORDS_TABLE, function (table) {
-        table.dropColumn('value_iv');
-        table.dropColumn('value_tag');
-    });
-    return knex.schema.withSchema('nango').alterTable(SECRETS_TABLE, function (table) {
         table.dropColumn('json_iv');
         table.dropColumn('json_tag');
+    });
+    await knex.schema.withSchema('nango').alterTable(DELETED_RECORDS_TABLE, function (table) {
+        table.dropColumn('json_iv');
+        table.dropColumn('json_tag');
+    });
+    return knex.schema.withSchema('nango').alterTable(SECRETS_TABLE, function (table) {
+        table.dropColumn('value_iv');
+        table.dropColumn('value_tag');
     });
 };
