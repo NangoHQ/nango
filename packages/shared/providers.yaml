@@ -566,7 +566,7 @@ klaviyo:
     auth_mode: API_KEY
     proxy:
         base_url: https://a.klaviyo.com
-        header:
+        headers:
             Authorization: Klaviyo-API-Key ${apiKey}
 lever:
     auth_mode: OAUTH2
