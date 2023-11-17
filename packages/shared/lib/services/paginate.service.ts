@@ -132,7 +132,7 @@ class PaginationService {
             const response: AxiosResponse = await proxy(config);
 
             const responseData: T[] = paginationConfig.response_path ? get(response.data, paginationConfig.response_path) : response.data;
-            if (!responseData.length) {
+            if (!responseData || !responseData.length) {
                 return;
             }
 
