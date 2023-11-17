@@ -34,7 +34,7 @@ import type { Response, Request } from 'express';
 import Logger from './utils/logger.js';
 import { getGlobalOAuthCallbackUrl, environmentService, getPort, isCloud, isBasicAuthEnabled, errorManager, getWebsocketsPath } from '@nangohq/shared';
 import oAuthSessionService from './services/oauth-session.service.js';
-import { deleteOldActivityLogs, encryptDataRecords } from './jobs/index.js';
+import { deleteOldActivityLogs } from './jobs/index.js';
 import migrate from './utils/migrate.js';
 
 const { NANGO_MIGRATE_AT_START = 'true' } = process.env;
@@ -206,7 +206,6 @@ wsServer.on('connection', (ws: WebSocket) => {
 
 // kick off any job
 deleteOldActivityLogs();
-encryptDataRecords();
 
 const port = getPort();
 server.listen(port, () => {

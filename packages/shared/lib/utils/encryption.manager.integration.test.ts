@@ -31,6 +31,7 @@ describe('Encryption manager tests', () => {
                 'external_id',
                 nangoConnectionId as number,
                 modelName,
+                1,
                 1
             );
 
