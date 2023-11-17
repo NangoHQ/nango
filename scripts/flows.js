@@ -31,6 +31,40 @@ fs.readdirSync(rootDir).forEach((serviceDir) => {
                 };
             }
 
+            if ('syncs' in nangoData.integrations[integrationName]) {
+                const syncs = nangoData.integrations[integrationName].syncs;
+
+                for (const sync in syncs) {
+                    syncs[sync].type = 'sync';
+                    syncs[sync].nango_yaml_version = 'v2';
+                }
+                delete nangoData.integrations[integrationName].syncs;
+
+                nangoData.integrations[integrationName] = { ...nangoData.integrations[integrationName], ...syncs };
+
+                output.integrations = {
+                    ...output.integrations,
+                    [integrationName]: nangoData.integrations[integrationName]
+                };
+            }
+
+            if ('actions' in nangoData.integrations[integrationName]) {
+                const actions = nangoData.integrations[integrationName].actions;
+
+                for (const action in actions) {
+                    actions[action].type = 'action';
+                    actions[action].nango_yaml_version = 'v2';
+                }
+                delete nangoData.integrations[integrationName].actions;
+
+                nangoData.integrations[integrationName] = { ...nangoData.integrations[integrationName], ...actions };
+
+                output.integrations = {
+                    ...output.integrations,
+                    [integrationName]: nangoData.integrations[integrationName]
+                };
+            }
+
             if (nangoData && nangoData.models) {
                 if (!output.integrations[integrationName]) {
                     output.integrations[integrationName] = {};

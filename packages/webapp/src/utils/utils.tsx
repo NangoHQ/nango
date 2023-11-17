@@ -97,6 +97,28 @@ export function elapsedTime(start: number, end: number): string {
     return `${elapsedSeconds}.${elapsedMilliseconds} seconds`;
 }
 
+export function formatDateToShortUSFormat(dateString: string): string {
+    const date = new Date(dateString);
+    const options: Intl.DateTimeFormatOptions = {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        month: 'short',
+        day: '2-digit',
+        hour12: false,
+    };
+
+    const formattedDate = date.toLocaleString('en-US', options);
+
+    if (formattedDate === 'Invalid Date') {
+        return '-';
+    }
+
+    const parts = formattedDate.split(', ');
+    return `${parts[1]}, ${parts[0]}`;
+}
+
+
 export function formatDateToUSFormat(dateString: string): string {
     const date = new Date(dateString);
     const options: Intl.DateTimeFormatOptions = {

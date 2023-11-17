@@ -1,39 +1,61 @@
 integrations:
     github:
-        github-issues:
-            runs: every half hour
-            returns:
-                - GithubIssue
-            description: |
-                Fetches the Github issues from all a user's repositories.
-                Details: full sync, doesn't track deletes, metadata is not required.
-                Scope(s): repo or public_repo
-        github-issues-lite:
-            runs: every day
-            auto_start: false
-            returns:
-                - Issue
-            description: |
-                Fetches the Github issues but up to a maximum of 15 for demo
-                purposes.
-                Details: limited sync, doesn't track deletes, metadata is not required.
-                Scope(s): repo or public_repo
-        github-list-files-sync:
-            type: sync
-            runs: every hour
-            auto_start: false # Set metadata first, then start it programmatically.
-            returns:
-                - GithubRepoFile
-        github-list-repos-action: # scopes: read:org
-            type: action
-            returns:
-                - GithubRepo
-        github-write-file-action: # scopes: repo
-            type: action
+        syncs:
+            github-issues:
+                runs: every half hour
+                output: GithubIssue
+                sync_type: full
+                scopes: public_repo
+                description: |
+                    Fetches the Github issues from all a user's repositories.
+                    Details: full sync, doesn't track deletes, metadata is not required.
+                endpoint: /github/issues
+            github-issues-lite:
+                runs: every day
+                auto_start: false
+                sync_type: full
+                output: Issue
+                scopes: public_repo
+                description: |
+                    Fetches the Github issues but up to a maximum of 15 for demo
+                    purposes.
+                    Details: limited sync, doesn't track deletes, metadata is not required.
+                endpoint: /github/lite-issues
+            github-list-files:
+                runs: every hour
+                description: |
+                    Lists all the files of a Github repo given a specific branch.
+                    Details: doesn't track deletes, metadata is required.
+                sync_type: incremental
+                auto_start: false
+                input: GithubIssueRepoInput
+                output: GithubRepoFile
+                endpoint: /github/files
+                scopes: repo
+        actions:
+            github-write-file:
+                scopes: repo
+                input: GithubWriteFileInput
+                output: GithubWriteFileActionResult
+                endpoint: PUT /github/file
+                description: |
+                    Write content to a particular github file within a repo. If
+                    the file doesn't exist it creates and then writes to it.
+            github-list-repos:
+                scopes: read:org
+                endpoint: GET /github/repos
+                output:
+                    - GithubRepo
+                description: |
+                    List github repos from an organization.
 models:
     Issue:
         id: integer
         __extends: GithubIssue
+    GithubIssueRepoInput:
+        owner: string
+        repo: string
+        branch: string
     GithubIssue:
         id: integer
         owner: string
@@ -60,3 +82,14 @@ models:
         name: string
         url: string
         last_modified_date: date
+    GithubWriteFileInput:
+        owner: string
+        repo: string
+        path: string
+        message: string
+        content: string
+        sha: string | undefined
+    GithubWriteFileActionResult:
+        url: string
+        status: string
+        sha: string

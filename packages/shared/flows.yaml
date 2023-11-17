@@ -99,38 +99,68 @@ integrations:
   github:
     github-issues:
       runs: every half hour
-      returns:
-        - GithubIssue
+      output: GithubIssue
+      sync_type: full
+      scopes: public_repo
       description: |
         Fetches the Github issues from all a user's repositories.
         Details: full sync, doesn't track deletes, metadata is not required.
-        Scope(s): repo or public_repo
+      endpoint: /github/issues
+      type: sync
+      nango_yaml_version: v2
     github-issues-lite:
       runs: every day
       auto_start: false
-      returns:
-        - Issue
+      sync_type: full
+      output: Issue
+      scopes: public_repo
       description: |
         Fetches the Github issues but up to a maximum of 15 for demo
         purposes.
         Details: limited sync, doesn't track deletes, metadata is not required.
-        Scope(s): repo or public_repo
-    github-list-files-sync:
+      endpoint: /github/lite-issues
       type: sync
+      nango_yaml_version: v2
+    github-list-files:
       runs: every hour
+      description: |
+        Lists all the files of a Github repo given a specific branch.
+        Details: doesn't track deletes, metadata is required.
+      sync_type: incremental
       auto_start: false
-      returns:
-        - GithubRepoFile
-    github-list-repos-action:
+      input: GithubIssueRepoInput
+      output: GithubRepoFile
+      endpoint: /github/files
+      scopes: repo
+      type: sync
+      nango_yaml_version: v2
+    github-write-file:
+      scopes: repo
+      input: GithubWriteFileInput
+      output: GithubWriteFileActionResult
+      endpoint: PUT /github/file
+      description: |
+        Write content to a particular github file within a repo. If
+        the file doesn't exist it creates and then writes to it.
       type: action
-      returns:
+      nango_yaml_version: v2
+    github-list-repos:
+      scopes: read:org
+      endpoint: GET /github/repos
+      output:
         - GithubRepo
-    github-write-file-action:
+      description: |
+        List github repos from an organization.
       type: action
+      nango_yaml_version: v2
     models:
       Issue:
         id: integer
         __extends: GithubIssue
+      GithubIssueRepoInput:
+        owner: string
+        repo: string
+        branch: string
       GithubIssue:
         id: integer
         owner: string
@@ -157,6 +187,17 @@ integrations:
         name: string
         url: string
         last_modified_date: date
+      GithubWriteFileInput:
+        owner: string
+        repo: string
+        path: string
+        message: string
+        content: string
+        sha: string | undefined
+      GithubWriteFileActionResult:
+        url: string
+        status: string
+        sha: string
   google-calendar:
     google-calendar-events:
       description: |

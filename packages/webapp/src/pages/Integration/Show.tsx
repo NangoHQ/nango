@@ -6,8 +6,11 @@ import {
 } from '../../utils/api';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import DashboardLayout from '../../layout/DashboardLayout';
+import APIReference from './APIReference';
+import SyncConfiguration from './SyncConfiguration';
+import AuthSettings from './AuthSettings';
 
-interface Integration {
+export interface Integration {
     unique_key: string;
     provider: string;
     client_id: string;
@@ -74,6 +77,17 @@ export default function ShowIntegration() {
                     <li className={`p-2 rounded ${activeTab === Tabs.Sync ? 'bg-zinc-900 text-white' : 'hover:bg-gray-700'}`} onClick={() => setActiveTab(Tabs.Sync)}>Sync Configuration</li>
                     <li className={`p-2 rounded ${activeTab === Tabs.Auth ? 'bg-zinc-900 text-white' : 'hover:bg-gray-700'}`} onClick={() => setActiveTab(Tabs.Auth)}>Auth Settings</li>
                 </ul>
+            </section>
+            <section className="mx-20 mt-10">
+                {activeTab === Tabs.API && integration && (
+                    <APIReference integration={integration} />
+                )}
+                {activeTab === Tabs.Sync && integration && (
+                    <SyncConfiguration integration={integration} />
+                )}
+                {activeTab === Tabs.Auth && integration && (
+                    <AuthSettings integration={integration} />
+                )}
             </section>
         </DashboardLayout>
     );

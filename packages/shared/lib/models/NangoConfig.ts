@@ -21,6 +21,7 @@ export interface NangoIntegrationDataV1 {
 export interface NangoIntegrationDataV2 extends NangoIntegrationDataV1 {
     sync_type?: SyncType;
     description?: string;
+    updated_at?: string;
     scopes?: string[];
     output?: string | string[];
 }
@@ -116,6 +117,10 @@ export interface NangoSyncConfig {
     returns: string[];
     models: NangoSyncModel[];
     endpoints: NangoSyncEndpoint[];
+    is_public?: boolean;
+    pre_built?: boolean;
+    version?: string | undefined;
+    last_deployed?: string | undefined;
 
     // v2 additions
     input?: NangoSyncModel;
