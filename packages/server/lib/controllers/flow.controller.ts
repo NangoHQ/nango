@@ -254,7 +254,6 @@ class FlowController {
             let unenabledFlows: NangoIntegration[] = [];
 
             if (flowsForProvider) {
-                console.log(enabledFlows);
                 if (enabledFlows) {
                     unenabledFlows = Object.keys(flowsForProvider)
                         .filter(

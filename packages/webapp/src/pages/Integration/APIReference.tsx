@@ -82,7 +82,7 @@ export default function APIReference(props: APIReferenceProps) {
     return (
         <div className="h-fit rounded-md text-white text-sm">
             <table className="w-[976px]">
-                <tbody className="flex flex-col space-y-6">
+                <tbody className="flex flex-col space-y-2">
                     <tr>
                         <td className="flex items-center px-3 justify-between text-xs px-2 py-2 bg-zinc-900 border border-neutral-800 rounded-md">
                             <div className="w-48">Endpoint</div>
@@ -93,7 +93,7 @@ export default function APIReference(props: APIReferenceProps) {
                     </tr>
                     {[...endpoints?.enabledFlows?.syncs || [], ...endpoints?.enabledFlows?.actions || []].map((flow) => (
                         <tr key={`tr-${flow.name}`}>
-                            <td className="flex items-center justify-between">
+                            <td className="flex items-center p-3 justify-between border-b border-border-gray">
                                 <div className="flex items-center px-3 w-48">
                                     <div className="flex flex items-center">
                                         {flow.endpoints[0]['GET'] && (
@@ -141,7 +141,7 @@ export default function APIReference(props: APIReferenceProps) {
                     ))}
                     {endpoints?.unenabledFlows?.filter(flow => flow.endpoint).map((flow) => (
                         <tr key={`tr-${flow.name}`} className="">
-                            <td className="flex items-center justify-between">
+                            <td className="flex items-center p-3 justify-between border-b border-border-gray">
                                 <div className="flex items-center px-3 w-48">
                                     {flow?.endpoint?.split(' ').length === 1 && (flow?.type === 'sync') && (
                                         <GET path={flow?.endpoint as string} />
