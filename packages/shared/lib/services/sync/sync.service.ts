@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import db, { schema, dbNamespace } from '../../db/database.js';
 import {
     SyncConfigType,
-    IncomingSyncConfig,
+    IncomingFlowConfig,
     SyncAndActionDifferences,
     Sync,
     Job as SyncJob,
@@ -452,7 +452,7 @@ export const findSyncByConnections = async (connectionIds: number[], sync_name: 
 
 export const getAndReconcileDifferences = async (
     environmentId: number,
-    syncs: IncomingSyncConfig[],
+    syncs: IncomingFlowConfig[],
     performAction: boolean,
     activityLogId: number | null,
     debug = false,

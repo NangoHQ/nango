@@ -76,7 +76,7 @@ export interface NangoSyncWebhookBody {
 
 export type LastAction = 'added' | 'updated' | 'deleted';
 
-interface RecordMetadata {
+export interface RecordMetadata {
     first_seen_at: Date;
     last_seen_at: Date;
     last_action: LastAction;
@@ -547,6 +547,10 @@ export class Nango {
 
         if (config.paramsSerializer) {
             options.paramsSerializer = config.paramsSerializer;
+        }
+
+        if (config.responseType) {
+            options.responseType = config.responseType;
         }
 
         if (this.dryRun) {

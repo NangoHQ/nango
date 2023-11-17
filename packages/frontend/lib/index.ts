@@ -30,8 +30,10 @@ export default class Nango {
     private debug = false;
     public win: null | AuthorizationModal = null;
     private tm: null | NodeJS.Timer = null;
+    private width: number | null = null;
+    private height: number | null = null;
 
-    constructor(config: { host?: string; websocketsPath?: string; publicKey: string; debug?: boolean }) {
+    constructor(config: { host?: string; websocketsPath?: string; publicKey: string; width?: number; height?: number; debug?: boolean }) {
         config.host = config.host || prodHost; // Default to Nango Cloud.
         config.websocketsPath = config.websocketsPath || '/'; // Default to root path.
         this.debug = config.debug || false;
@@ -41,12 +43,20 @@ export default class Nango {
             console.log(debugLogPrefix, `Using host: ${config.host}.`);
         }
 
+        if (config.width) {
+            this.width = config.width;
+        }
+
+        if (config.height) {
+            this.height = config.height;
+        }
+
         this.hostBaseUrl = config.host.slice(-1) === '/' ? config.host.slice(0, -1) : config.host; // Remove trailing slash.
         this.status = AuthorizationStatus.IDLE;
         this.publicKey = config.publicKey;
 
         if (!config.publicKey) {
-            throw new Error('You must specify a public key (cf. documentation).');
+            throw new AuthError('You must specify a public key (cf. documentation).', 'missingPublicKey');
         }
 
         try {
@@ -56,11 +66,11 @@ export default class Nango {
             const websocketUrl = new URL(config.websocketsPath, baseUrl);
             this.websocketsBaseUrl = websocketUrl.toString().replace('https://', 'wss://').replace('http://', 'ws://');
         } catch (err) {
-            throw new Error(`Invalid URL provided for the Nango host: ${this.hostBaseUrl}`);
+            throw new AuthError('Invalid URL provided for the Nango host.', 'invalidHostUrl');
         }
     }
 
-    public async create(providerConfigKey: string, connectionId: string, connectionConfig: ConnectionConfig): Promise<AuthResult | AuthError> {
+    public async create(providerConfigKey: string, connectionId: string, connectionConfig?: ConnectionConfig): Promise<AuthResult> {
         const url = this.hostBaseUrl + `/unauth/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig)}`;
 
         const res = await fetch(url, {
@@ -72,7 +82,7 @@ export default class Nango {
 
         if (!res.ok) {
             const errorResponse = await res.json();
-            throw { ...errorResponse, message: errorResponse.error };
+            throw new AuthError(errorResponse.error, errorResponse.type);
         }
 
         return res.json();
@@ -82,7 +92,7 @@ export default class Nango {
         providerConfigKey: string,
         connectionId: string,
         conectionConfigOrCredentials?: ConnectionConfig | BasicApiCredentials | ApiKeyCredentials
-    ): Promise<AuthResult | AuthError> {
+    ): Promise<AuthResult> {
         if (conectionConfigOrCredentials && 'credentials' in conectionConfigOrCredentials && Object.keys(conectionConfigOrCredentials.credentials).length > 0) {
             const credentials = conectionConfigOrCredentials.credentials as BasicApiCredentials | ApiKeyCredentials;
             const { credentials: _, ...connectionConfig } = conectionConfigOrCredentials as ConnectionConfig;
@@ -96,7 +106,7 @@ export default class Nango {
         try {
             new URL(url);
         } catch (err) {
-            throw new Error(`Could not construct valid Nango URL based on provided parameters: ${url}`);
+            throw new AuthError('Invalid URL provided for the Nango host.', 'invalidHostUrl');
         }
 
         return new Promise((resolve, reject) => {
@@ -133,7 +143,14 @@ export default class Nango {
             this.status = AuthorizationStatus.BUSY;
 
             // Open authorization modal
-            this.win = new AuthorizationModal(this.websocketsBaseUrl, url, successHandler, errorHandler, this.debug);
+            this.win = new AuthorizationModal(
+                this.websocketsBaseUrl,
+                url,
+                successHandler,
+                errorHandler,
+                { width: this.width, height: this.height },
+                this.debug
+            );
             this.tm = setInterval(() => {
                 if (!this.win?.modal?.window || this.win?.modal?.window.closed) {
                     clearTimeout(this.tm as unknown as number);
@@ -146,7 +163,7 @@ export default class Nango {
         });
     }
 
-    public convertCredentialsToConfig(credentials: BasicApiCredentials | ApiKeyCredentials): ConnectionConfig {
+    private convertCredentialsToConfig(credentials: BasicApiCredentials | ApiKeyCredentials): ConnectionConfig {
         const params: Record<string, string> = {};
 
         if ('username' in credentials) {
@@ -166,12 +183,12 @@ export default class Nango {
         providerConfigKey: string,
         connectionId: string,
         connectionConfigWithCredentials: ConnectionConfig,
-        connectionConfig: ConnectionConfig
-    ): Promise<AuthResult | AuthError> {
+        connectionConfig?: ConnectionConfig
+    ): Promise<AuthResult> {
         const { params: credentials } = connectionConfigWithCredentials as ConnectionConfig;
 
         if (!credentials) {
-            throw new Error('You must specify credentials.');
+            throw new AuthError('You must specify credentials.', 'missingCredentials');
         }
 
         if ('apiKey' in credentials) {
@@ -188,7 +205,7 @@ export default class Nango {
 
             if (!res.ok) {
                 const errorResponse = await res.json();
-                throw { ...errorResponse, message: errorResponse.error };
+                throw new AuthError(errorResponse.error, errorResponse.type);
             }
 
             return res.json();
@@ -197,7 +214,7 @@ export default class Nango {
         if ('username' in credentials || 'password' in credentials) {
             const basicCredentials = credentials as BasicApiCredentials;
             if (!basicCredentials.username) {
-                throw new Error('You must specify a username.');
+                throw new AuthError('You must specify a username.', 'missingUsername');
             }
 
             const url = this.hostBaseUrl + `/api-auth/basic/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`;
@@ -212,7 +229,7 @@ export default class Nango {
 
             if (!res.ok) {
                 const errorResponse = await res.json();
-                throw { ...errorResponse, message: errorResponse.error };
+                throw new AuthError(errorResponse.error, errorResponse.type);
             }
 
             return res.json();
@@ -301,13 +318,14 @@ class AuthorizationModal {
         url: string,
         successHandler: (providerConfigKey: string, connectionId: string) => any,
         errorHandler: (errorType: string, errorDesc: string) => any,
+        { width, height }: { width?: number | null; height?: number | null },
         debug?: boolean
     ) {
         // Window modal URL
         this.url = url;
         this.debug = debug || false;
 
-        const { left, top, computedWidth, computedHeight } = this.layout(this.width, this.height);
+        const { left, top, computedWidth, computedHeight } = this.layout(width || this.width, height || this.height);
 
         // Window modal features
         this.features = {
