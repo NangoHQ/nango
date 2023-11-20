@@ -2,11 +2,13 @@ integrations:
     slack: # scopes: channels:read,channels:history,channels:join,users:read
         slack-users:
             runs: every hour
+            description: 'Syncs information about all Users on the Slack workspace. Scopes: users:read'
             returns:
                 - SlackUser
 
         slack-channels:
             runs: every hour
+            description: 'Syncs information about all Slack channels. Which channels get synced (public, private, IMs, group DMs) dependson the scopes. If joinPublicChannels is set to true, the bot will automatically join all public channels as well. Scopes: At least one of channels:read, groups:read, mpim:read, im:read. To also join public channels: channels:join'
             returns:
                 - SlackChannel
 
