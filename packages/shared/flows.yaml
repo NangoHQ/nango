@@ -156,7 +156,16 @@ integrations:
     models:
       Issue:
         id: integer
-        __extends: GithubIssue
+        owner: string
+        repo: string
+        issue_number: number
+        title: string
+        author: string
+        author_id: string
+        state: string
+        date_created: date
+        date_last_modified: date
+        body: string
       GithubIssueRepoInput:
         owner: string
         repo: string
