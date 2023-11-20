@@ -58,7 +58,7 @@ Open the `nango.yaml` file inside the `nango-integrations` folder and inspect it
 integrations:
 	asana-dev: # Integration name (must match an integration name in the Integrations tab of your Nango dashboard).
 		asana-tasks: # Arbitrary (unique) sync name
-			runs: every 30min # Sync frequency
+			runs: every 30min # Sync frequency (format docs: https://github.com/vercel/ms)
 			returns:
 				- AsanaTask # Required data model (defined below) as returned by your sync script
     slack-dev:
