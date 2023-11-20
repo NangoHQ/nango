@@ -148,6 +148,6 @@ update_package_json_version $CLI_PACKAGE_JSON $3
 cp ./packages/shared/dist/lib/sdk/sync.d.ts ./packages/cli/dist/nango-sync.d.ts
 chmod +x ./packages/cli/dist/index.js
 
-cd ./packages/cli && npm publish --access public && cd ../../
+cd ./packages/cli && npm run copyfiles && npm publish --access public && cd ../../
 
 npm i
