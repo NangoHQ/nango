@@ -271,7 +271,7 @@ class FlowController {
                         .filter((flow) => flow !== 'models')
                         .map((flow) => {
                             const flowConfig = flowsForProvider[flow] as object;
-                            return { ...flowConfig, name: flow } as NangoIntegration;
+                            return { ...flowConfig, name: flow, models: flowsForProvider['models'] } as NangoIntegration;
                         });
                 }
             }

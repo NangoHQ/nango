@@ -1,33 +1,44 @@
-export const nodeSnippet = (model: string, secretKey: string, connectionId: string, providerConfigKey: string) => {
+export const nodeSnippet = (endpoint: string, secretKey: string, connectionId: string, providerConfigKey: string) => {
         return `import Nango from '@nangohq/node';
 const nango = new Nango({ secretKey: '${secretKey}' });
 
 const issues = await nango.getRecords({
     proivderConfigKey: '${providerConfigKey}',
     connectionId: '${connectionId}',
-    model: '${model}'
+    endpoint: '${endpoint}'
 });
 
 console.log(issues);
 `};
 
-export const curlSnippet = (model: string, secretKey: string, connectionId: string, providerConfigKey: string) => {
+export const nodeActionSnippet = (endpoint: string, secretKey: string, connectionId: string, providerConfigKey: string, input?: Record<string, any>) => {
+        return `import Nango from '@nangohq/node';
+const nango = new Nango({ secretKey: '${secretKey}' });
+
+const issues = await nango.triggerAction({
+    proivderConfigKey: '${providerConfigKey}',
+    connectionId: '${connectionId}',
+    endpoint: '${endpoint}'${input ? ',\n    ' : ''}${input ? `input: {\n${JSON.stringify(input, null, 2).split('\n').slice(1).join('\n').replace(/^/gm, '    ')}}` : ''}
+});
+
+console.log(issues);
+`};
+
+export const curlSnippet = (endpoint: string, secretKey: string, connectionId: string, providerConfigKey: string, method = 'GET') => {
         return `
-    curl --request GET \\
-    --url https://api.nango.dev/sync/records?model=${model} \\
+    curl --request ${method} \\
+    --url https://api.nango.dev/v1${endpoint} \\
     --header 'Authorization: Bearer ${secretKey}' \\
     --header 'Connection-Id: ${connectionId}' \\
     --header 'Provider-Config-Key: ${providerConfigKey}'
         `;
     };
 
-export const pythonSnippet = (model: string, secretKey: string, connectionId: string, providerConfigKey: string) => {
+export const pythonSnippet = (endpoint: string, secretKey: string, connectionId: string, providerConfigKey: string) => {
         return`
         import requests
 
-url = "https://api.nango.dev/sync/records"
-
-querystring = {"model":"${model}"}
+url = "https://api.nango.dev/v1${endpoint}"
 
 headers = {
     "Authorization": "Bearer ${secretKey}",
@@ -35,20 +46,20 @@ headers = {
     "Provider-Config-Key": "${providerConfigKey}",
 }
 
-response = requests.request("GET", url, headers=headers, params=querystring)
+response = requests.request("GET", url, headers=headers)
 
 print(response.text)
         `
 };
 
-export const phpSnippet = (model: string, secretKey: string, connectionId: string, providerConfigKey: string) => {
+export const phpSnippet = (endpoint: string, secretKey: string, connectionId: string, providerConfigKey: string) => {
         return`
 <?php
 
 $curl = curl_init();
 
 curl_setopt_array($curl, [
-  CURLOPT_URL => "https://api.nango.dev/sync/records?model=${model}",
+  CURLOPT_URL => "https://api.nango.dev/v1${endpoint}",
   CURLOPT_RETURNTRANSFER => true,
   CURLOPT_ENCODING => "",
   CURLOPT_MAXREDIRS => 10,
@@ -74,7 +85,7 @@ if ($err) {
 }`
 };
 
-export const goSnippet = (model: string, secretKey: string, connectionId: string, providerConfigKey: string) => {
+export const goSnippet = (endpoint: string, secretKey: string, connectionId: string, providerConfigKey: string) => {
         return`
 package main
 
@@ -86,7 +97,7 @@ import (
 
 func main() {
 
-	url := "https://api.nango.dev/sync/records?model=${model}"
+	url := "https://api.nango.dev/v1${endpoint}"
 
 	req, _ := http.NewRequest("GET", url, nil)
 
@@ -104,9 +115,9 @@ func main() {
 }`
 };
 
-export const javaSnippet = (model: string, secretKey: string, connectionId: string, providerConfigKey: string) => {
+export const javaSnippet = (endpoint: string, secretKey: string, connectionId: string, providerConfigKey: string) => {
         return`
-HttpResponse<String> response = Unirest.get("https://api.nango.dev/sync/records?model=${model}")
+HttpResponse<String> response = Unirest.get("https://api.nango.dev/v1${endpoint}")
   .header("Authorization", "Bearer ${secretKey}")
   .header("Connection-Id", "${connectionId}")
   .header("Provider-Config-Key", "${providerConfigKey}")

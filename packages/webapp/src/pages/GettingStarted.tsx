@@ -51,6 +51,7 @@ export default function GettingStarted() {
     const { setVisible, bindings } = useModal()
 
     const model = 'Issue';
+    const endpoint = '/github/lite-issues';
     const providerConfigKey = 'demo-github-integration';
 
     const env = useStore(state => state.cookieValue);
@@ -66,7 +67,7 @@ export default function GettingStarted() {
         window.location.href = '/integrations';
     }
 
-        useEffect(() => {
+    useEffect(() => {
         const getAccount = async () => {
             let res = await getProjectInfoAPI();
 
@@ -79,7 +80,7 @@ export default function GettingStarted() {
                 let strippedEmail = email.includes('@') ? email.split('@')[0] : email;
                 strippedEmail = strippedEmail.replace(/[^a-zA-Z0-9]/g, '_');
                 setConnectionId(strippedEmail);
-                setSyncSnippet(nodeSnippet(model, account.secret_key, strippedEmail, providerConfigKey));
+                setSyncSnippet(nodeSnippet(endpoint, account.secret_key, strippedEmail, providerConfigKey));
             }
         };
 
@@ -380,7 +381,7 @@ nango.auth('${providerConfigKey}', '${connectionId}')
                                                 className={`cursor-default ${language === Language.Node ? 'pointer-events-none' : 'cursor-pointer'}`}
                                                 onClick={() => {
                                                   if (language !== Language.Node) {
-                                                    setSyncSnippet(nodeSnippet(model, secretKey, connectionId, providerConfigKey));
+                                                    setSyncSnippet(nodeSnippet(endpoint, secretKey, connectionId, providerConfigKey));
                                                     setLanguage(Language.Node);
                                                   }
                                                 }}
@@ -393,7 +394,7 @@ nango.auth('${providerConfigKey}', '${connectionId}')
                                                 className={`cursor-default ${language === Language.cURL ? 'pointer-events-none' : 'cursor-pointer'}`}
                                                 onClick={() => {
                                                   if (language !== Language.cURL) {
-                                                    setSyncSnippet(curlSnippet(model, secretKey, connectionId, providerConfigKey));
+                                                    setSyncSnippet(curlSnippet(endpoint, secretKey, connectionId, providerConfigKey));
                                                     setLanguage(Language.cURL);
                                                   }
                                                 }}
@@ -406,7 +407,7 @@ nango.auth('${providerConfigKey}', '${connectionId}')
                                                 className={`cursor-default ${language === Language.Python ? 'pointer-events-none' : 'cursor-pointer'}`}
                                                 onClick={() => {
                                                   if (language !== Language.Python) {
-                                                    setSyncSnippet(pythonSnippet(model, secretKey, connectionId, providerConfigKey));
+                                                    setSyncSnippet(pythonSnippet(endpoint, secretKey, connectionId, providerConfigKey));
                                                     setLanguage(Language.Python);
                                                   }
                                                 }}
@@ -419,7 +420,7 @@ nango.auth('${providerConfigKey}', '${connectionId}')
                                                 className={`cursor-default ${language === Language.PHP ? 'pointer-events-none' : 'cursor-pointer'}`}
                                                 onClick={() => {
                                                   if (language !== Language.PHP) {
-                                                    setSyncSnippet(phpSnippet(model, secretKey, connectionId, providerConfigKey));
+                                                    setSyncSnippet(phpSnippet(endpoint, secretKey, connectionId, providerConfigKey));
                                                     setLanguage(Language.PHP);
                                                   }
                                                 }}
@@ -432,7 +433,7 @@ nango.auth('${providerConfigKey}', '${connectionId}')
                                                 className={`cursor-default ${language === Language.Go ? 'pointer-events-none' : 'cursor-pointer'}`}
                                                 onClick={() => {
                                                   if (language !== Language.Go) {
-                                                    setSyncSnippet(goSnippet(model, secretKey, connectionId, providerConfigKey));
+                                                    setSyncSnippet(goSnippet(endpoint, secretKey, connectionId, providerConfigKey));
                                                     setLanguage(Language.Go);
                                                   }
                                                 }}
@@ -445,7 +446,7 @@ nango.auth('${providerConfigKey}', '${connectionId}')
                                                 className={`cursor-default ${language === Language.Java ? 'pointer-events-none' : 'cursor-pointer'}`}
                                                 onClick={() => {
                                                   if (language !== Language.Java) {
-                                                    setSyncSnippet(javaSnippet(model, secretKey, connectionId, providerConfigKey));
+                                                    setSyncSnippet(javaSnippet(endpoint, secretKey, connectionId, providerConfigKey));
                                                     setLanguage(Language.Java);
                                                   }
                                                 }}

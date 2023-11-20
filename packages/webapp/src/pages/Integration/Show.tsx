@@ -2,6 +2,7 @@ import { useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 
 import {
+    useGetIntegrationEndpointsAPI,
     useGetIntegrationDetailsAPI
 } from '../../utils/api';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
@@ -19,19 +20,80 @@ export interface Integration {
     scopes: string;
 }
 
-enum Tabs {
+export enum Tabs {
     API,
     Sync,
     Auth
 }
 
+type HTTP_VERB = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
+
+type NangoSyncEndpoint = {
+    [key in HTTP_VERB]?: string;
+};
+
+interface NangoSyncModelField {
+    name: string;
+    type: string;
+    description?: string;
+}
+
+export interface NangoSyncModel {
+    name: string;
+    description?: string;
+    fields: NangoSyncModelField[];
+}
+
+export interface Flow extends BaseFlow {
+    attributes: Record<string, unknown>;
+    endpoints: NangoSyncEndpoint[];
+    scopes: string[];
+    sync_type?: 'FULL' | 'INCREMENTAL';
+    is_public: boolean;
+    pre_built: boolean;
+    version?: string;
+    last_deployed?: string;
+    input?: NangoSyncModel;
+}
+
+interface EnabledFlow {
+    provider: string;
+    providerConfigKey: string;
+    syncs: Flow[];
+    actions: Flow[];
+}
+
+interface BaseFlow {
+    description: string;
+    name: string;
+    returns: string | string[];
+    type: 'sync' | 'action';
+    runs?: string;
+    track_deletes: boolean;
+    auto_start?: boolean;
+    endpoint?: string;
+    models: Record<string, any>;
+}
+
+export interface UnenabledFlow extends BaseFlow {
+    input?: string;
+    output: string;
+}
+
+export interface EndpointResponse {
+    enabledFlows: EnabledFlow | null;
+    unenabledFlows: UnenabledFlow[];
+}
+
 export default function ShowIntegration() {
     const [loaded, setLoaded] = useState(false);
+    const [endpoints, setEndpoints] = useState<EndpointResponse>();
     const [integration, setIntegration] = useState<Integration | null>(null);
     const { providerConfigKey } = useParams();
     const [templateLogo, setTemplateLogo] = useState<string>('');
     const [activeTab, setActiveTab] = useState<Tabs>(Tabs.API);
     const getIntegrationDetailsAPI = useGetIntegrationDetailsAPI();
+    const getEndpoints = useGetIntegrationEndpointsAPI();
 
     useEffect(() => {
         const getProviders = async () => {
@@ -39,7 +101,13 @@ export default function ShowIntegration() {
                 let res = await getIntegrationDetailsAPI(providerConfigKey);
                 if (res?.status === 200) {
                     const data = await res.json();
+                    const loadedIntegration = data['config'];
                     setIntegration(data['config']);
+                    const endpointsRes = await getEndpoints(loadedIntegration.unique_key, loadedIntegration.provider);
+                    if (endpointsRes?.status === 200) {
+                        const endpointData = await endpointsRes.json();
+                        setEndpoints(endpointData);
+                    }
                 }
             }
         };
@@ -48,7 +116,7 @@ export default function ShowIntegration() {
             setLoaded(true);
             getProviders();
         }
-    }, [providerConfigKey, getIntegrationDetailsAPI, loaded, setLoaded]);
+    }, [providerConfigKey, getIntegrationDetailsAPI, loaded, setLoaded, getEndpoints]);
 
     if (integration != null && templateLogo === '') {
         setTemplateLogo(`images/template-logos/${integration.provider}.svg`);
@@ -79,11 +147,11 @@ export default function ShowIntegration() {
                 </ul>
             </section>
             <section className="mx-20 mt-10">
-                {activeTab === Tabs.API && integration && (
-                    <APIReference integration={integration} />
+                {activeTab === Tabs.API && integration && endpoints && (
+                    <APIReference integration={integration} setActiveTab={setActiveTab} endpoints={endpoints} />
                 )}
-                {activeTab === Tabs.Sync && integration && (
-                    <SyncConfiguration integration={integration} />
+                {activeTab === Tabs.Sync && integration && endpoints && (
+                    <SyncConfiguration integration={integration} endpoints={endpoints} />
                 )}
                 {activeTab === Tabs.Auth && integration && (
                     <AuthSettings integration={integration} />

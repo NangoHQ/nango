@@ -1,7 +1,7 @@
 import { ArrowPathRoundedSquareIcon } from '@heroicons/react/24/outline';
 import { BoltIcon } from '@heroicons/react/24/outline';
 import { formatDateToShortUSFormat } from '../../../utils/utils';
-import { Flow, UnenabledFlow } from '../APIReference';
+import { Flow, UnenabledFlow } from '../Show';
 
 export interface FlowProps {
     flow: Flow | UnenabledFlow;
@@ -9,7 +9,7 @@ export interface FlowProps {
 
 export default function FlowCard({ flow }: FlowProps) {
     return (
-        <div className="p-4">
+        <div className="p-3">
             <div className="flex space-x-2">
                 {flow?.type === 'sync' && (
                     <ArrowPathRoundedSquareIcon className="flex h-5 w-5 text-gray-400 cursor-pointer" />
@@ -80,7 +80,7 @@ export default function FlowCard({ flow }: FlowProps) {
                             <span className="flex flex-col w-1/2">
                                 <div className="text-gray-400">METADATA</div>
                                 <div className="text-white">
-                                    {Object.keys(flow?.input).length > 0 ? 'Yes' : 'No'}
+                                    {Object.keys(flow?.input as object).length > 0 ? 'Yes' : 'No'}
                                 </div>
                             </span>
                         )}

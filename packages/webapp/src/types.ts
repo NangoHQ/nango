@@ -132,3 +132,11 @@ export interface PreBuiltFlow {
     model_schema: string;
     is_public: boolean;
 }
+
+export interface FlowEndpoint {
+    GET?: string;
+    POST?: string;
+    PUT?: string;
+    PATCH?: string;
+    DELETE?: string;
+}

@@ -262,3 +262,33 @@ export function calculateTotalRuntime(timestamps: { created_at: string; updated_
 
     return  result === '' ? '-' : result;
 };
+
+export function createExampleForType(type: string): string|boolean|number {
+    switch (type) {
+        case 'string':
+            return 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.';
+        case 'integer':
+            return 123;
+        case 'boolean':
+            return true;
+        case 'number':
+            return 23;
+        case 'object':
+            return '{"isExample": true}';
+        case 'array':
+            return '[{ "isExample": true }]';
+        case 'date':
+            return '2020-01-01';
+        default:
+            return '';
+    }
+}
+
+export function generateExampleValueForProperty(json: Record<string, string>): Record<string, boolean|string|number> {
+    console.log(json)
+    const example = {} as Record<string, boolean|string|number>;
+    Object.keys(json).forEach(key => {
+        example[key] = createExampleForType(json[key]);
+    });
+    return example;
+}
