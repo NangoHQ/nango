@@ -12,6 +12,7 @@ integrations:
 
         slack-messages:
             runs: every hour
+            description: 'Syncs Slack messages, thread replies and reactions from messages & thread replies for all channels, group dms and dms the bot is a part of. For every channel it will do an initial full sync on first detection of the channel. For subsequent runs it will sync messages, threads & reactions from the last 10 days. Scopes required: channels:read, and at least one of channels:history,groups:history,mpim:history,im:history'
             returns:
                 - SlackMessage
                 - SlackMessageReply
