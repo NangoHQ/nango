@@ -3,6 +3,8 @@ import type { SlackChannel, NangoSync } from './models';
 export default async function fetchData(nango: NangoSync) {
     const responses = await getAllPages(nango, 'conversations.list');
 
+    let metadata = (await nango.getMetadata()) || {};
+
     const mappedChannels: SlackChannel[] = responses.map((record: any) => {
         return {
             id: record.id,
@@ -25,7 +27,9 @@ export default async function fetchData(nango: NangoSync) {
     });
 
     // Now let's also join all public channels where we are not yet a member
-    await joinPublicChannels(nango, mappedChannels);
+    if (metadata['joinPublicChannels']) {
+        await joinPublicChannels(nango, mappedChannels);
+    }
 
     // Save channels
     await nango.batchSave(mappedChannels, 'SlackChannel');

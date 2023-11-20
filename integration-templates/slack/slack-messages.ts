@@ -1,28 +1,58 @@
-import type { SlackMessage, SlackMessageReaction, SlackMessageReply, NangoSync } from './models';
+import type { NangoSync, SlackMessage, SlackMessageReaction, SlackMessageReply } from './models';
 import { createHash } from 'crypto';
 
 export default async function fetchData(nango: NangoSync) {
-    // Get all channels we are part of
-    let channels = await getAllPages(nango, 'users.conversations', {}, 'channels');
-
-    await nango.log(`Bot is part of ${channels.length} channels`);
-
-    const oldestTimestamp = nango.lastSyncDate ? new Date(new Date().setDate(new Date().getDate() - 10)).getTime() / 1000 : '';
-    await nango.log(`Sync last ran ${nango.lastSyncDate} - querying for messages since ${oldestTimestamp}`);
-
     let batchMessages: SlackMessage[] = [];
     let batchMessageReply: SlackMessageReply[] = [];
-    let batchReactions: SlackMessageReaction[] = [];
+
+    let metadata = (await nango.getMetadata()) || {};
+    let channelsLastSyncDate = (metadata['channelsLastSyncDate'] as Record<string, string>) || {};
+    let unseenChannels = Object.keys(channelsLastSyncDate);
+
+    const channelsRequestConfig = {
+        endpoint: 'users.conversations',
+        paginate: {
+            limit: 200,
+            response_path: 'channels'
+        }
+    };
 
     // For every channel read messages, replies & reactions
-    for (let channel of channels) {
-        let allMessages = await getAllPages(nango, 'conversations.history', { channel: channel.id, oldest: oldestTimestamp.toString() }, 'messages');
+    for await (const currentChannel of getEntries(nango.paginate(channelsRequestConfig))) {
+        const channelSyncTimestamp = (channelsLastSyncDate[currentChannel.id] as string)
+            ? new Date(new Date().setDate(new Date().getDate() - 10)).getTime() / 1000
+            : '';
+        channelsLastSyncDate[currentChannel.id] = new Date().toString();
 
-        for (let message of allMessages) {
+        // Keep track of channels we no longer saw in the API
+        if (unseenChannels.includes(currentChannel.id)) {
+            unseenChannels.splice(unseenChannels.indexOf(currentChannel.id), 1);
+        }
+
+        await nango.log(
+            `Processing channel: ${currentChannel.id} - ${
+                channelSyncTimestamp === '' ? 'Initial sync, getting whole history' : 'Incremential sync, re-syncing last 10 days'
+            }`
+        );
+
+        const messagesRequestConfig = {
+            endpoint: 'conversations.history',
+            params: {
+                channel: currentChannel['id'],
+                oldest: channelSyncTimestamp.toString()
+            },
+            paginate: {
+                limit: 200,
+                response_path: 'messages'
+            }
+        };
+
+        for await (let message of getEntries(nango.paginate(messagesRequestConfig))) {
+            message = message as Record<string, any>;
             const mappedMessage: SlackMessage = {
-                id: createHash('sha256').update(`${message.ts}${channel.id}`).digest('hex'),
+                id: createHash('sha256').update(`${message.ts}${currentChannel.id}`).digest('hex'),
                 ts: message.ts,
-                channel_id: channel.id,
+                channel_id: currentChannel.id,
                 thread_ts: message.thread_ts ? message.thread_ts : null,
                 app_id: message.app_id ? message.app_id : null,
                 bot_id: message.bot_id ? message.bot_id : null,
@@ -46,42 +76,34 @@ export default async function fetchData(nango: NangoSync) {
                 batchMessages = [];
             }
 
-            // Are there reactions?
+            // Save reactions if there are
             if (message.reactions) {
-                for (let reaction of message.reactions) {
-                    for (let user of reaction.users) {
-                        const mappedReaction: SlackMessageReaction = {
-                            id: createHash('sha256').update(`${message.ts}${reaction.name}${channel.id}${user}`).digest('hex'),
-                            message_ts: message.ts,
-                            channel_id: channel.id,
-                            user_id: user,
-                            thread_ts: message.thread_ts ? message.thread_ts : null,
-                            reaction_name: reaction.name
-                        };
-
-                        batchReactions.push(mappedReaction);
-
-                        if (batchReactions.length > 49) {
-                            await nango.batchSave<SlackMessageReaction>(batchReactions, 'SlackMessageReaction');
-                            batchReactions = [];
-                        }
-                    }
-                }
+                await saveReactions(nango, currentChannel.id, message);
             }
 
             // Replies to fetch?
             if (message.reply_count > 0) {
-                const allReplies = await getAllPages(nango, 'conversations.replies', { channel: channel.id, ts: message.thread_ts }, 'messages');
+                const messagesReplyRequestConfig = {
+                    endpoint: 'conversations.replies',
+                    params: {
+                        channel: currentChannel.id,
+                        ts: message.thread_ts
+                    },
+                    paginate: {
+                        limit: 200,
+                        response_path: 'messages'
+                    }
+                };
 
-                for (let reply of allReplies) {
+                for await (const reply of getEntries(nango.paginate(messagesReplyRequestConfig))) {
                     if (reply.ts === message.ts) {
                         continue;
                     }
 
                     const mappedReply: SlackMessageReply = {
-                        id: createHash('sha256').update(`${reply.ts}${channel.id}`).digest('hex'),
+                        id: createHash('sha256').update(`${reply.ts}${currentChannel.id}`).digest('hex'),
                         ts: reply.ts,
-                        channel_id: channel.id,
+                        channel_id: currentChannel.id,
                         thread_ts: reply.thread_ts ? reply.thread_ts : null,
                         app_id: reply.app_id ? reply.app_id : null,
                         bot_id: reply.bot_id ? reply.bot_id : null,
@@ -109,63 +131,55 @@ export default async function fetchData(nango: NangoSync) {
                         batchMessageReply = [];
                     }
 
-                    // Are there reactions
+                    // Save reactions if there are
                     if (reply.reactions) {
-                        for (let reaction of reply.reactions) {
-                            for (let user of reaction.users) {
-                                const mappedReaction: SlackMessageReaction = {
-                                    id: createHash('sha256').update(`${reply.ts}${reaction.name}${channel.id}${user}`).digest('hex'),
-                                    message_ts: reply.ts,
-                                    channel_id: channel.id,
-                                    user_id: user,
-                                    thread_ts: reply.thread_ts ? reply.thread_ts : null,
-                                    reaction_name: reaction.name
-                                };
-
-                                batchReactions.push(mappedReaction);
-
-                                if (batchReactions.length > 49) {
-                                    await nango.batchSave<SlackMessageReaction>(batchReactions, 'SlackMessageReaction');
-                                    batchReactions = [];
-                                }
-                            }
-                        }
+                        await saveReactions(nango, currentChannel.id, reply);
                     }
                 }
             }
         }
     }
-
     await nango.batchSave(batchMessages, 'SlackMessage');
     await nango.batchSave(batchMessageReply, 'SlackMessageReply');
-    await nango.batchSave(batchReactions, 'SlackMessageReaction');
-}
 
-async function getAllPages(nango: NangoSync, endpoint: string, params: Record<string, string>, resultsKey: string) {
-    let nextCursor = 'x';
-    let responses: any[] = [];
-
-    while (nextCursor !== '') {
-        const response = await nango.get({
-            endpoint: endpoint,
-            params: {
-                limit: '200',
-                cursor: nextCursor !== 'x' ? nextCursor : '',
-                ...params
-            },
-            retries: 10
-        });
-
-        if (!response.data.ok) {
-            await nango.log(`Received a Slack API error (for ${endpoint}): ${JSON.stringify(response.data, null, 2)}`);
+    // Remove channels we no longer saw
+    if (unseenChannels.length > 0) {
+        for (const channel of unseenChannels) {
+            delete channelsLastSyncDate[channel];
         }
-
-        const results = response.data[resultsKey];
-        const response_metadata = response.data.response_metadata;
-
-        responses = responses.concat(results);
-        nextCursor = response_metadata && response_metadata.next_cursor ? response_metadata.next_cursor : '';
     }
 
-    return responses;
+    // Store last sync date per channel
+    metadata = (await nango.getMetadata()) || {}; // Re-read current metadata, in case it has been changed whilst the sync ran
+    metadata['channelsLastSyncDate'] = channelsLastSyncDate;
+    await nango.setMetadata(metadata as Record<string, any>);
+}
+
+async function saveReactions(nango: NangoSync, currentChannelId: string, message: any) {
+    let batchReactions: SlackMessageReaction[] = [];
+
+    for (let reaction of message.reactions) {
+        for (let user of reaction.users) {
+            const mappedReaction: SlackMessageReaction = {
+                id: createHash('sha256').update(`${message.ts}${reaction.name}${currentChannelId}${user}`).digest('hex'),
+                message_ts: message.ts,
+                channel_id: currentChannelId,
+                user_id: user,
+                thread_ts: message.thread_ts ? message.thread_ts : null,
+                reaction_name: reaction.name
+            };
+
+            batchReactions.push(mappedReaction);
+        }
+    }
+
+    await nango.batchSave<SlackMessageReaction>(batchReactions, 'SlackMessageReaction');
+}
+
+async function* getEntries(generator: AsyncGenerator<any[]>): any {
+    for await (const entry of generator) {
+        for (const child of entry) {
+            yield child;
+        }
+    }
 }
