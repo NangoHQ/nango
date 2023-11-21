@@ -153,11 +153,6 @@ export default class Nango {
             );
             this.tm = setInterval(() => {
                 if (!this.win?.modal?.window || this.win?.modal?.window.closed) {
-                    if (this.win?.isProcessingMessage === true) {
-                        // Modal is still processing a web socket message from the server
-                        // We ignore the window being closed for now
-                        return;
-                    }
                     clearTimeout(this.tm as unknown as number);
                     this.win = null;
                     this.status = AuthorizationStatus.CANCELED;
@@ -317,7 +312,6 @@ class AuthorizationModal {
     public modal: Window;
     private swClient: WebSocket;
     private debug: boolean;
-    public isProcessingMessage = false;
 
     constructor(
         webSocketUrl: string,
@@ -354,9 +348,7 @@ class AuthorizationModal {
         this.swClient = new WebSocket(webSocketUrl);
 
         this.swClient.onmessage = (message: MessageEvent<any>) => {
-            this.isProcessingMessage = true;
             this.handleMessage(message, successHandler, errorHandler);
-            this.isProcessingMessage = false;
         };
     }
 
