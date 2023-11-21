@@ -140,3 +140,15 @@ export interface FlowEndpoint {
     PATCH?: string;
     DELETE?: string;
 }
+
+interface NangoSyncModelField {
+    name: string;
+    type: string;
+    description?: string;
+}
+
+export interface NangoSyncModel {
+    name: string;
+    description?: string;
+    fields: NangoSyncModelField[];
+}

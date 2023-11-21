@@ -40,6 +40,7 @@ const convertSyncConfigToStandardConfig = (syncConfigs: extendedSyncConfig[]): S
         const syncName = syncConfig.sync_name;
 
         const flowObject = {
+            id: syncConfig.id,
             runs: syncConfig.runs,
             type: syncConfig.type,
             output: syncConfig.models,
@@ -51,6 +52,8 @@ const convertSyncConfigToStandardConfig = (syncConfigs: extendedSyncConfig[]): S
             scopes: syncConfig?.metadata?.scopes || [],
             version: syncConfig.version as string,
             updated_at: syncConfig.updated_at?.toISOString(),
+            is_public: syncConfig?.is_public,
+            pre_built: syncConfig?.pre_built,
             endpoint:
                 !syncConfig.endpoints_object || syncConfig?.endpoints_object?.length === 0
                     ? null

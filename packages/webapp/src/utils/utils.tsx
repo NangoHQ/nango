@@ -1,5 +1,5 @@
 import parser from 'cron-parser';
-import type { SyncResult } from '../types';
+import type { SyncResult, NangoSyncModel } from '../types';
 
 export const localhostUrl: string = 'http://localhost:3003';
 export const stagingUrl: string = 'https://api-staging.nango.dev';
@@ -263,7 +263,7 @@ export function calculateTotalRuntime(timestamps: { created_at: string; updated_
     return  result === '' ? '-' : result;
 };
 
-export function createExampleForType(type: string): string|boolean|number {
+export function createExampleForType(type: string): any {
     switch (type) {
         case 'string':
             return 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.';
@@ -274,9 +274,9 @@ export function createExampleForType(type: string): string|boolean|number {
         case 'number':
             return 23;
         case 'object':
-            return '{"isExample": true}';
+            return {"isExample": true};
         case 'array':
-            return '[{ "isExample": true }]';
+            return [{ "isExample": true }];
         case 'date':
             return '2020-01-01';
         default:
@@ -284,11 +284,10 @@ export function createExampleForType(type: string): string|boolean|number {
     }
 }
 
-export function generateExampleValueForProperty(json: Record<string, string>): Record<string, boolean|string|number> {
-    console.log(json)
+export function generateExampleValueForProperty(model: NangoSyncModel): Record<string, boolean|string|number> {
     const example = {} as Record<string, boolean|string|number>;
-    Object.keys(json).forEach(key => {
-        example[key] = createExampleForType(json[key]);
-    });
+    for (const field of model.fields) {
+        example[field.name] = createExampleForType(field.type);
+    }
     return example;
 }

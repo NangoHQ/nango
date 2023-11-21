@@ -16,7 +16,7 @@ import {
     getNangoConfigIdAndLocationFromId,
     getSyncConfigConnections,
     getConfigWithEndpointsByProviderConfigKey,
-    NangoIntegration
+    StandardNangoConfig
 } from '@nangohq/shared';
 
 class FlowController {
@@ -247,36 +247,27 @@ class FlowController {
                 return;
             }
 
-            const availableFlows = flowService.getAllAvailableFlows();
-            const flowsForProvider = availableFlows.integrations[provider as string] as NangoIntegration;
+            const availableFlows = flowService.getAllAvailableFlowsAsStandardConfig();
+            const [availableFlowsForProvider] = availableFlows.filter((flow) => flow.providerConfigKey === provider);
 
             const enabledFlows = await getConfigWithEndpointsByProviderConfigKey(environmentId, provider as string);
-            let unenabledFlows: NangoIntegration[] = [];
+            const unEnabledFlows: StandardNangoConfig = availableFlowsForProvider as StandardNangoConfig;
 
-            if (flowsForProvider) {
+            if (availableFlows) {
                 if (enabledFlows) {
-                    unenabledFlows = Object.keys(flowsForProvider)
-                        .filter(
-                            (flow) =>
-                                flow !== 'models' &&
-                                !enabledFlows.syncs.some((enabledFlow) => enabledFlow.name === flow) &&
-                                !enabledFlows.actions.some((enabledFlow) => enabledFlow.name === flow)
-                        )
-                        .map((flow) => {
-                            const flowConfig = flowsForProvider[flow] as object;
-                            return { ...flowConfig, name: flow } as NangoIntegration;
-                        });
-                } else {
-                    unenabledFlows = Object.keys(flowsForProvider)
-                        .filter((flow) => flow !== 'models')
-                        .map((flow) => {
-                            const flowConfig = flowsForProvider[flow] as object;
-                            return { ...flowConfig, name: flow, models: flowsForProvider['models'] } as NangoIntegration;
-                        });
+                    const { syncs: enabledSyncs, actions: enabledActions } = enabledFlows;
+
+                    const { syncs, actions } = unEnabledFlows;
+
+                    const filteredSyncs = syncs.filter((sync) => !enabledSyncs.some((enabledSync) => enabledSync.name === sync.name));
+                    const filteredActions = actions.filter((action) => !enabledActions.some((enabledAction) => enabledAction.name === action.name));
+
+                    unEnabledFlows.syncs = filteredSyncs;
+                    unEnabledFlows.actions = filteredActions;
                 }
             }
 
-            res.send({ unenabledFlows, enabledFlows });
+            res.send({ unEnabledFlows, enabledFlows });
         } catch (e) {
             next(e);
         }

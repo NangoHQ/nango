@@ -1,10 +1,10 @@
 import { ArrowPathRoundedSquareIcon } from '@heroicons/react/24/outline';
 import { BoltIcon } from '@heroicons/react/24/outline';
 import { formatDateToShortUSFormat } from '../../../utils/utils';
-import { Flow, UnenabledFlow } from '../Show';
+import { Flow } from '../Show';
 
 export interface FlowProps {
-    flow: Flow | UnenabledFlow;
+    flow: Flow;
 }
 
 export default function FlowCard({ flow }: FlowProps) {

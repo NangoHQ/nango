@@ -3,7 +3,8 @@ import path from 'path';
 import fs from 'fs';
 import { dirname } from '../utils/utils.js';
 import { getPublicConfig } from './sync/config/config.service.js';
-import type { NangoIntegration, NangoIntegrationData, NangoModelV1 } from '../models/NangoConfig.js';
+import { loadStandardConfig } from './nango-config.service.js';
+import type { NangoConfig, NangoIntegration, NangoIntegrationData, NangoModelV1, StandardNangoConfig } from '../models/NangoConfig.js';
 
 export interface Config {
     integrations: NangoIntegration & NangoModelV1;
@@ -19,6 +20,39 @@ class FlowService {
         } catch (_e) {
             return {} as Config;
         }
+    }
+
+    public getAllAvailableFlowsAsStandardConfig(): StandardNangoConfig[] {
+        const config = this.getAllAvailableFlows();
+        const { integrations: allIntegrations } = config;
+
+        const standardConfig: StandardNangoConfig[] = [];
+
+        for (const providerConfigKey in allIntegrations) {
+            const integrations = allIntegrations[providerConfigKey] as NangoIntegration & NangoModelV1;
+            const { models, rawName, ...flow } = integrations;
+            const nangoConfig: NangoConfig = {
+                integrations: {
+                    [providerConfigKey]: flow
+                },
+                models: models as NangoModelV1
+            };
+
+            const { success, response } = loadStandardConfig(nangoConfig, false, true);
+
+            if (success && response) {
+                if (rawName) {
+                    const responseWithRaw = response.map((standardConfigItem) => {
+                        return { ...standardConfigItem, rawName };
+                    });
+                    standardConfig.push(...responseWithRaw);
+                } else {
+                    standardConfig.push(...response);
+                }
+            }
+        }
+
+        return standardConfig;
     }
 
     public getFlow(name: string) {

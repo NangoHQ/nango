@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import { AdjustmentsHorizontalIcon, ArrowPathRoundedSquareIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 import { BoltIcon } from '@heroicons/react/24/outline';
 import { Prism } from '@mantine/prism';
-import { Integration, Tabs, EndpointResponse, Flow, UnenabledFlow, NangoSyncModel } from './Show';
+import { Integration, Tabs, EndpointResponse, Flow } from './Show';
 import Button from '../../components/ui/button/Button';
 import CopyButton from '../../components/ui/button/CopyButton';
 import { useGetProjectInfoAPI } from '../../utils/api';
@@ -10,7 +10,7 @@ import FlowCard from './components/FlowCard';
 import EndpointRow from './components/EndpointRow';
 import Info from '../../components/ui/Info'
 import EndpointLabel from './components/EndpointLabel';
-import { FlowEndpoint } from '../../types';
+import { FlowEndpoint, NangoSyncModel } from '../../types';
 import { nodeSnippet, nodeActionSnippet, curlSnippet, pythonSnippet, phpSnippet, goSnippet, javaSnippet } from '../../utils/language-snippets';
 import { generateExampleValueForProperty } from '../../utils/utils';
 
@@ -32,7 +32,7 @@ enum Language {
 export default function APIReference(props: APIReferenceProps) {
     const [loaded, setLoaded] = useState(false);
     const [showDocModal, setShowDocModal] = useState(false);
-    const [modalInfo, setModalInfo] = useState<Flow | UnenabledFlow | null>(null);
+    const [modalInfo, setModalInfo] = useState<Flow | null>(null);
     const [showParametersOpen, setShowParametersOpen] = useState(false);
     const [language, setLanguage] = useState<Language>(Language.Node);
     const [syncSnippet, setSyncSnippet] = useState('');
@@ -62,17 +62,15 @@ export default function APIReference(props: APIReferenceProps) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [loaded, setLoaded, getProjectInfoAPI, setSecretKey]);
 
-    const parseInput = (flow: Flow | UnenabledFlow) => {
+    const parseInput = (flow: Flow) => {
         let input;
 
         if (flow?.input) {
-            const isNangoSyncModel = typeof flow.input === 'object' && 'name' in (flow.input as NangoSyncModel);
-            if (isNangoSyncModel) {
-                const modelName = (flow.input as NangoSyncModel)['name'];
-                input = modalInfo?.models[modelName];
-            } else {
-                input = flow?.models[flow?.input as string];
+            const rawInput = {} as Record<string, boolean|string|number>;
+            for (const field of flow.input.fields) {
+                rawInput[field.name] = field.type;
             }
+            input = rawInput;
         } else {
             input = undefined;
         }
@@ -80,7 +78,7 @@ export default function APIReference(props: APIReferenceProps) {
         return input;
     };
 
-    const openAPIDocModal = (flow: Flow | UnenabledFlow) => {
+    const openAPIDocModal = (flow: Flow) => {
         setShowDocModal(true);
 
         setSyncSnippet(
@@ -88,11 +86,8 @@ export default function APIReference(props: APIReferenceProps) {
                 ? nodeSnippet(endpoint, secretKey, connectionId, integration?.unique_key as string)
                 : nodeActionSnippet(endpoint, secretKey, connectionId, integration?.unique_key as string, parseInput(flow))
         );
-        // TODO if it is a standard nango config object
-        // http://localhost:3000/integration/notion
-        //const models = Array.isArray(flow?.models) ? flow?.models : Object.values(flow?.models);
-        const jsonSchema = 'output' in flow ? flow?.models[flow?.output as string] : 'void';
-        const jsonResponse = generateExampleValueForProperty(jsonSchema);
+        const model = flow.models.find((model) => model.name === flow.output);
+        const jsonResponse = generateExampleValueForProperty(model as NangoSyncModel);
         const metadata = {
             _nango_metadata: {
                 deleted_at: null,
@@ -154,7 +149,7 @@ export default function APIReference(props: APIReferenceProps) {
                                         <span className="ml-2 text-gray-400">{modalInfo?.type === 'action' ? 'Action' : 'Sync'} Info</span>
                                         {modalInfo && (
                                             <div className="hidden group-hover:block text-white absolute top-10 right-0 bg-neutral-800 rounded border border-neutral-700 w-56">
-                                                <FlowCard flow={modalInfo as Flow | UnenabledFlow} />
+                                                <FlowCard flow={modalInfo as Flow} />
                                             </div>
                                         )}
                                     </div>
@@ -342,7 +337,7 @@ export default function APIReference(props: APIReferenceProps) {
                                                           setSyncSnippet(
                                                               modalInfo?.type === 'sync'
                                                                   ? nodeSnippet(endpoint, secretKey, connectionId, integration?.unique_key as string)
-                                                                  : nodeActionSnippet(endpoint, secretKey, connectionId, integration?.unique_key as string, parseInput(modalInfo as Flow | UnenabledFlow))
+                                                                  : nodeActionSnippet(endpoint, secretKey, connectionId, integration?.unique_key as string, parseInput(modalInfo as Flow))
 
                                                           );
                                                         setLanguage(Language.Node);
@@ -379,14 +374,14 @@ export default function APIReference(props: APIReferenceProps) {
                             <div className="">Sync/Action Info</div>
                         </td>
                     </tr>
-                    {[...endpoints?.enabledFlows?.syncs || [], ...endpoints?.enabledFlows?.actions || []].map((flow) => (
-                        <>
+                    {[...endpoints?.enabledFlows?.syncs || [], ...endpoints?.enabledFlows?.actions || [], ...endpoints?.unEnabledFlows?.syncs || [], ...endpoints?.unEnabledFlows?.actions || []].map((flow, flowIndex) => (
+                        <Fragment key={flowIndex}>
                             {flow.endpoints.map((endpoint, index: number) => (
-                                <tr key={`tr-${flow.name}`}>
+                                <tr key={`tr-${flow.name}-${flowIndex}-${index}`}>
                                     <EndpointRow
                                         flow={flow}
                                         endpoint={endpoint}
-                                        output={flow.returns[index]}
+                                        output={Array.isArray(flow.returns) ? flow.returns[index] : flow.returns}
                                         openAPIDocModal={openAPIDocModal}
                                         source={
                                             flow.is_public ? 'Public' :
@@ -396,12 +391,7 @@ export default function APIReference(props: APIReferenceProps) {
                                     />
                                 </tr>
                             ))}
-                        </>
-                    ))}
-                    {endpoints?.unenabledFlows?.filter(flow => flow.endpoint).map((flow) => (
-                        <tr key={`tr-${flow.name}`} className="">
-                            <EndpointRow flow={flow} endpoint={flow.endpoint as string} openAPIDocModal={openAPIDocModal} source="Public" output={'returns' in flow ? Array.isArray(flow?.returns) ? flow.returns[0] : flow.returns : (flow as UnenabledFlow)?.output} />
-                        </tr>
+                        </Fragment>
                     ))}
                 </tbody>
             </table>
