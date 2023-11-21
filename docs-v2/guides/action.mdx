@@ -49,7 +49,7 @@ curl --request POST \
   --header 'Authorization: Bearer <PROJECT-SECRET-KEY>' \
   --header 'Connection-Id: <CONNECTION-ID>' \
   --header 'Provider-Config-Key: <INTEGRATION-ID>' \
-  --data '{ "action_name": "<ACTION-NAME>", "input": <ACTION-JSON-INPUT> }'
+  --data '{ "action_name": "<ACTION-NAME>", "input": <JSON-INPUT> }'
 ```
 </Tab>
 
@@ -60,12 +60,7 @@ import { Nango }  from '@nangohq/node';
 
 const nango = new Nango({ secretKey: '<PROJECT-SECRET-KEY>' });
 
-const result = await nango.triggerAction({
-    providerConfigKey: '<INTEGRATION-ID>',
-    connectionId: '<CONNECTION-ID>',
-    model: '<ACTION-NAME>',
-    input: <ACTION-JSON-INPUT>
-});
+const result = await nango.triggerAction('<INTEGRATION-ID>', '<CONNECTION-ID>', '<ACTION-NAME>', jsonInput);
 ```
 </Tab>
 

@@ -316,7 +316,7 @@ console.log(syncStatuses);
 
 ### Read synced data
 
-To read synced data from Nango use `getRecords`:
+To read synced data from Nango, use `getRecords`:
 
 ```ts
 import type { ModelName } from '<path-to-nango-integrations>/models'
@@ -356,6 +356,20 @@ By default this returns an array of objects in the data model that you queried w
 
 If you are using the [Nango webhooks](/guides/webhooks#from-nango) you can use the timestamp you get from the webhook for the `delta` parameter.
 
+
+### Trigger an action
+
+To trigger an action, use:
+
+```ts
+import { Nango }  from '@nangohq/node';
+
+const nango = new Nango({ secretKey: '<PROJECT-SECRET-KEY>' });
+
+const result = await nango.triggerAction('<INTEGRATION-ID>', '<CONNECTION-ID>', '<ACTION-NAME>', jsonInput);
+```
+
+This will return whatever the action script is configured to return. 
 
 ### Get environment variables
 
