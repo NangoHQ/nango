@@ -3,7 +3,7 @@
  */
 
 // Import environment variables (if running server locally).
-import tracer from 'dd-trace';
+import './apm.js';
 import _ from './utils/config.js';
 import oauthController from './controllers/oauth.controller.js';
 import configController from './controllers/config.controller.js';
@@ -67,12 +67,6 @@ if (NANGO_MIGRATE_AT_START === 'true') {
 
 await environmentService.cacheSecrets();
 await oAuthSessionService.clearStaleSessions();
-
-if (isCloud()) {
-    tracer.use('express', {
-        service: 'nango'
-    });
-}
 
 // API routes (no/public auth).
 app.get('/health', (_, res) => {
