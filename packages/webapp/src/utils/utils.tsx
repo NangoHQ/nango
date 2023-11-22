@@ -1,5 +1,5 @@
 import parser from 'cron-parser';
-import type { SyncResult, NangoSyncModel } from '../types';
+import type { Flow, SyncResult, NangoSyncModel } from '../types';
 
 export const localhostUrl: string = 'http://localhost:3003';
 export const stagingUrl: string = 'https://api-staging.nango.dev';
@@ -264,7 +264,9 @@ export function calculateTotalRuntime(timestamps: { created_at: string; updated_
 };
 
 export function createExampleForType(type: string): any {
-    switch (type) {
+    const rawType = type.replace('|', '').replace('null', '').replace('undefined', '').trim();
+
+    switch (rawType) {
         case 'string':
             return 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.';
         case 'integer':
@@ -290,4 +292,34 @@ export function generateExampleValueForProperty(model: NangoSyncModel): Record<s
         example[field.name] = createExampleForType(field.type);
     }
     return example;
+}
+
+export const parseInput = (flow: Flow) => {
+    let input;
+
+    if (flow?.input) {
+        const rawInput = {} as Record<string, boolean|string|number>;
+        for (const field of flow.input.fields) {
+            rawInput[field.name] = field.type;
+        }
+        input = rawInput;
+    } else {
+        input = undefined;
+    }
+
+    return input;
+};
+
+export function generateResponseModel(models: NangoSyncModel[], output: string): Record<string, any> {
+    const model = models.find((model) => model.name === output);
+    const jsonResponse = generateExampleValueForProperty(model as NangoSyncModel);
+    const metadata = {
+        _nango_metadata: {
+            deleted_at: null,
+            last_action: 'ADDED',
+            first_seen_at: '2023-09-18T15:20:35.941305+00:00',
+            last_modified_at: '2023-09-18T15:20:35.941305+00:00'
+        }
+    };
+    return {...jsonResponse, ...metadata};
 }

@@ -1,9 +1,8 @@
 import { BoltIcon } from '@heroicons/react/24/outline';
 import { Tooltip } from '@geist-ui/core';
 import { ArrowPathRoundedSquareIcon } from '@heroicons/react/24/outline';
-import { Flow } from '../Show';
 import EndpointLabel from './EndpointLabel';
-import { FlowEndpoint } from '../../../types';
+import { Flow, FlowEndpoint } from '../../../types';
 import FlowCard from './FlowCard';
 
 export interface EndpointRowProps {

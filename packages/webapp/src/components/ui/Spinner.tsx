@@ -2,7 +2,7 @@ interface SpinnerProps {
     size?: number;
 }
 
-export default function Spinner({ size = 5 }: SpinnerProps) { // Set a default size if none is provided
+export default function Spinner({ size = 5 }: SpinnerProps) {
     const heightAndWidth = `${size}rem`;
 
     return (

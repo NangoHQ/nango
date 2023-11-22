@@ -56,28 +56,46 @@ class FlowService {
     }
 
     public getFlow(name: string) {
-        const integrations = this.getAllAvailableFlows()['integrations'];
+        const integrations = this.getAllAvailableFlowsAsStandardConfig();
 
-        for (const providerName in integrations) {
-            const allFlows = integrations[providerName];
-            if (allFlows) {
-                const flow = allFlows[name] as NangoIntegrationData;
-                if (flow) {
-                    const models = flow['returns'] as string[];
+        for (const integration of integrations) {
+            for (const syncs of integration.syncs) {
+                if (syncs.name === name) {
+                    return syncs;
+                }
+            }
 
-                    const model_schema = models.map((modelName: string) => {
-                        const allModels = allFlows['models'] as NangoModelV1['models'];
-                        const modelDetails = allModels[modelName] as Record<string, string>;
-                        return {
-                            name: modelName,
-                            fields: Object.keys(modelDetails).map((field: string) => ({
-                                name: field,
-                                type: modelDetails[field]
-                            }))
-                        };
-                    });
+            for (const actions of integration.actions) {
+                if (actions.name === name) {
+                    return actions;
+                }
+            }
+        }
 
-                    return { ...flow, model_schema };
+        return null;
+    }
+
+    public getSingleFlowAsStandardConfig(name: string): StandardNangoConfig | null {
+        const integrations = this.getAllAvailableFlowsAsStandardConfig();
+
+        let standardConfig: StandardNangoConfig = {} as StandardNangoConfig;
+
+        for (const integration of integrations) {
+            for (const syncs of integration.syncs) {
+                if (syncs.name === name) {
+                    standardConfig = integration;
+                    standardConfig.syncs = [syncs];
+                    standardConfig.actions = [];
+                    return standardConfig;
+                }
+            }
+
+            for (const actions of integration.actions) {
+                if (actions.name === name) {
+                    standardConfig = integration;
+                    standardConfig.actions = [actions];
+                    standardConfig.syncs = [];
+                    return standardConfig;
                 }
             }
         }

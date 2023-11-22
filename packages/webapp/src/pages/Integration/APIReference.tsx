@@ -2,22 +2,22 @@ import { useState, useEffect, Fragment } from 'react';
 import { AdjustmentsHorizontalIcon, ArrowPathRoundedSquareIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 import { BoltIcon } from '@heroicons/react/24/outline';
 import { Prism } from '@mantine/prism';
-import { Integration, Tabs, EndpointResponse, Flow } from './Show';
+import { Tabs, EndpointResponse } from './Show';
 import Button from '../../components/ui/button/Button';
 import CopyButton from '../../components/ui/button/CopyButton';
-import { useGetProjectInfoAPI } from '../../utils/api';
 import FlowCard from './components/FlowCard';
 import EndpointRow from './components/EndpointRow';
 import Info from '../../components/ui/Info'
 import EndpointLabel from './components/EndpointLabel';
-import { FlowEndpoint, NangoSyncModel } from '../../types';
+import { IntegrationConfig, Account, FlowEndpoint, Flow } from '../../types';
 import { nodeSnippet, nodeActionSnippet, curlSnippet, pythonSnippet, phpSnippet, goSnippet, javaSnippet } from '../../utils/language-snippets';
-import { generateExampleValueForProperty } from '../../utils/utils';
+import { parseInput, generateResponseModel } from '../../utils/utils';
 
 interface APIReferenceProps {
-    integration: Integration | null;
+    integration: IntegrationConfig | null;
     setActiveTab: (tab: Tabs) => void;
     endpoints: EndpointResponse;
+    account: Account;
 }
 
 enum Language {
@@ -30,79 +30,34 @@ enum Language {
 }
 
 export default function APIReference(props: APIReferenceProps) {
-    const [loaded, setLoaded] = useState(false);
     const [showDocModal, setShowDocModal] = useState(false);
     const [modalInfo, setModalInfo] = useState<Flow | null>(null);
     const [showParametersOpen, setShowParametersOpen] = useState(false);
     const [language, setLanguage] = useState<Language>(Language.Node);
     const [syncSnippet, setSyncSnippet] = useState('');
-    const [secretKey, setSecretKey] = useState('');
     const [jsonResponseSnippet, setJsonResponseSnippet] = useState('');
 
-    const { integration, setActiveTab, endpoints } = props;
-    const getProjectInfoAPI = useGetProjectInfoAPI()
+    const { integration, setActiveTab, endpoints, account } = props;
 
     const endpoint = '/github/lite-issues';
     const connectionId = '<CONNECTION-ID>';
-
-    useEffect(() => {
-        const getAccount = async () => {
-            let res = await getProjectInfoAPI();
-
-            if (res?.status === 200) {
-                const account = (await res.json())['account'];
-                setSecretKey(account.secret_key);
-            }
-        };
-
-        if (!loaded) {
-            setLoaded(true);
-            getAccount();
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [loaded, setLoaded, getProjectInfoAPI, setSecretKey]);
-
-    const parseInput = (flow: Flow) => {
-        let input;
-
-        if (flow?.input) {
-            const rawInput = {} as Record<string, boolean|string|number>;
-            for (const field of flow.input.fields) {
-                rawInput[field.name] = field.type;
-            }
-            input = rawInput;
-        } else {
-            input = undefined;
-        }
-
-        return input;
-    };
 
     const openAPIDocModal = (flow: Flow) => {
         setShowDocModal(true);
 
         setSyncSnippet(
             flow?.type === 'sync'
-                ? nodeSnippet(endpoint, secretKey, connectionId, integration?.unique_key as string)
-                : nodeActionSnippet(endpoint, secretKey, connectionId, integration?.unique_key as string, parseInput(flow))
+                ? nodeSnippet(endpoint, account.secret_key, connectionId, integration?.unique_key as string)
+                : nodeActionSnippet(endpoint, account.secret_key, connectionId, integration?.unique_key as string, parseInput(flow))
         );
-        const model = flow.models.find((model) => model.name === flow.output);
-        const jsonResponse = generateExampleValueForProperty(model as NangoSyncModel);
-        const metadata = {
-            _nango_metadata: {
-                deleted_at: null,
-                last_action: 'ADDED',
-                first_seen_at: '2023-09-18T15:20:35.941305+00:00',
-                last_modified_at: '2023-09-18T15:20:35.941305+00:00'
-            }
-        };
-        setJsonResponseSnippet(JSON.stringify([{...jsonResponse, ...metadata}], null, 2));
+        const jsonModel = generateResponseModel(flow.models, flow.output as string);
+        setJsonResponseSnippet(JSON.stringify([{...jsonModel}], null, 2));
         setModalInfo(flow);
     }
 
     const showSyncConfigurationModal = () => {
         setShowDocModal(false);
-        setActiveTab(Tabs.Sync);
+        setActiveTab(Tabs.Scripts);
     }
 
     useEffect(() => {
@@ -180,8 +135,8 @@ export default function APIReference(props: APIReferenceProps) {
                                                   if (language !== Language.Node) {
                                                     setSyncSnippet(
                                                         modalInfo?.type === 'sync'
-                                                            ? nodeSnippet(endpoint, secretKey, connectionId, integration?.unique_key as string)
-                                                            : nodeActionSnippet(endpoint, secretKey, connectionId, integration?.unique_key as string, parseInput(modalInfo as Flow))
+                                                            ? nodeSnippet(endpoint, account.secret_key, connectionId, integration?.unique_key as string)
+                                                            : nodeActionSnippet(endpoint, account.secret_key, connectionId, integration?.unique_key as string, parseInput(modalInfo as Flow))
                                                     );
                                                     setLanguage(Language.Node);
                                                   }
@@ -195,7 +150,7 @@ export default function APIReference(props: APIReferenceProps) {
                                                 className={`cursor-default ${language === Language.cURL ? 'pointer-events-none' : 'cursor-pointer'}`}
                                                 onClick={() => {
                                                   if (language !== Language.cURL) {
-                                                    setSyncSnippet(curlSnippet(endpoint, secretKey, connectionId, integration?.unique_key as string));
+                                                    setSyncSnippet(curlSnippet(endpoint, account.secret_key, connectionId, integration?.unique_key as string));
                                                     setLanguage(Language.cURL);
                                                   }
                                                 }}
@@ -208,7 +163,7 @@ export default function APIReference(props: APIReferenceProps) {
                                                 className={`cursor-default ${language === Language.Python ? 'pointer-events-none' : 'cursor-pointer'}`}
                                                 onClick={() => {
                                                   if (language !== Language.Python) {
-                                                    setSyncSnippet(pythonSnippet(endpoint, secretKey, connectionId, integration?.unique_key as string));
+                                                    setSyncSnippet(pythonSnippet(endpoint, account.secret_key, connectionId, integration?.unique_key as string));
                                                     setLanguage(Language.Python);
                                                   }
                                                 }}
@@ -221,7 +176,7 @@ export default function APIReference(props: APIReferenceProps) {
                                                 className={`cursor-default ${language === Language.PHP ? 'pointer-events-none' : 'cursor-pointer'}`}
                                                 onClick={() => {
                                                   if (language !== Language.PHP) {
-                                                    setSyncSnippet(phpSnippet(endpoint, secretKey, connectionId, integration?.unique_key as string));
+                                                    setSyncSnippet(phpSnippet(endpoint, account.secret_key, connectionId, integration?.unique_key as string));
                                                     setLanguage(Language.PHP);
                                                   }
                                                 }}
@@ -234,7 +189,7 @@ export default function APIReference(props: APIReferenceProps) {
                                                 className={`cursor-default ${language === Language.Go ? 'pointer-events-none' : 'cursor-pointer'}`}
                                                 onClick={() => {
                                                   if (language !== Language.Go) {
-                                                    setSyncSnippet(goSnippet(endpoint, secretKey, connectionId, integration?.unique_key as string));
+                                                    setSyncSnippet(goSnippet(endpoint, account.secret_key, connectionId, integration?.unique_key as string));
                                                     setLanguage(Language.Go);
                                                   }
                                                 }}
@@ -247,7 +202,7 @@ export default function APIReference(props: APIReferenceProps) {
                                                 className={`cursor-default ${language === Language.Java ? 'pointer-events-none' : 'cursor-pointer'}`}
                                                 onClick={() => {
                                                   if (language !== Language.Java) {
-                                                    setSyncSnippet(javaSnippet(endpoint, secretKey, connectionId, integration?.unique_key as string));
+                                                    setSyncSnippet(javaSnippet(endpoint, account.secret_key, connectionId, integration?.unique_key as string));
                                                     setLanguage(Language.Java);
                                                   }
                                                 }}
@@ -336,8 +291,8 @@ export default function APIReference(props: APIReferenceProps) {
                                                       if (language !== Language.Node) {
                                                           setSyncSnippet(
                                                               modalInfo?.type === 'sync'
-                                                                  ? nodeSnippet(endpoint, secretKey, connectionId, integration?.unique_key as string)
-                                                                  : nodeActionSnippet(endpoint, secretKey, connectionId, integration?.unique_key as string, parseInput(modalInfo as Flow))
+                                                                  ? nodeSnippet(endpoint, account.secret_key, connectionId, integration?.unique_key as string)
+                                                                  : nodeActionSnippet(endpoint, account.secret_key, connectionId, integration?.unique_key as string, parseInput(modalInfo as Flow))
 
                                                           );
                                                         setLanguage(Language.Node);

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { Link } from 'react-router-dom';
-import { PlusIcon, EllipsisHorizontalIcon } from '@heroicons/react/24/outline'
+import { PlusIcon, EllipsisHorizontalIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline'
 
 import { useGetIntegrationListAPI } from '../utils/api';
 import DashboardLayout from '../layout/DashboardLayout';
@@ -48,7 +48,7 @@ export default function IntegrationList() {
         <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
             {integrations && !!integrations.length && (
                 <div className="px-16 mx-auto">
-                    <div className="flex mt-16 justify-between mb-8 items-center">
+                    <div className="flex mt-16 w-[976px] justify-between mb-8 items-center">
                         <h2 className="flex text-left text-3xl font-semibold tracking-tight text-white">Integrations</h2>
                         <Link to="/integration/create" className="flex items-center mt-auto px-4 h-10 rounded-md text-sm text-black bg-white hover:bg-gray-300">
                             <PlusIcon className="flex h-5 w-5 mr-2 text-black" />
@@ -83,7 +83,19 @@ export default function IntegrationList() {
                                                     <p className="">{connectionCount}</p>
                                                 </div>
                                             </div>
-                                            <EllipsisHorizontalIcon className="flex h-5 w-5 text-gray-400 cursor-pointer" />
+                                            <div className="group relative">
+                                                <EllipsisHorizontalIcon className="flex h-5 w-5 text-gray-400 cursor-pointer" />
+                                                <div
+                                                    className="hidden group-hover:flex p-3 hover:bg-neutral-800 text-gray-400 absolute z-10 -top-10 left-1 bg-black rounded border border-neutral-700 items-center"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        navigate(`/connections/create/${uniqueKey}`);
+                                                    }}
+                                                >
+                                                    <BuildingOfficeIcon className="flex h-5 w-5 text-gray-400" />
+                                                    <span className="pl-2">Connect</span>
+                                                </div>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}

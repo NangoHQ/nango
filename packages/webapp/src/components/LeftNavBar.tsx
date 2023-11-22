@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
 import Cookies from 'js-cookie';
-import { Link } from 'react-router-dom';
-import { Briefcase, User } from '@geist-ui/icons';
+import { Link, useNavigate } from 'react-router-dom';
 import {
     SquaresPlusIcon,
     BuildingOfficeIcon,
     QueueListIcon,
     AdjustmentsHorizontalIcon,
     EllipsisHorizontalIcon,
+    UserCircleIcon,
+    UserGroupIcon,
+    ArrowRightOnRectangleIcon as LogoutIcon,
 } from '@heroicons/react/24/outline'
 
 import { useStore } from '../store';
@@ -37,6 +39,8 @@ export default function LeftNavBar(props: LeftNavBarProps) {
     const [envs, setEnvs] = useState<{ name: string; }[]>([]);
     const [version, setVersion] = useState<string>('');
     const [email, setEmail] = useState<string>('');
+    const [showUserSettings, setShowUserSettings] = useState<boolean>(false);
+    const navigate = useNavigate();
 
     const signout = useSignout();
 
@@ -157,36 +161,8 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                     </div>
                 </div>
                 <div className='px-6'>
-                    {isCloud() && (
-                        <div className="">
-                            <ul className="text-white space-y-1 text-sm">
-                                <li>
-                                    <Link
-                                        to="/account-settings"
-                                        className={`flex h-10 p-2 gap-x-3 items-center rounded-md text-sm text-white ${
-                                            props.selectedItem === LeftNavBarItems.AccountSettings ? 'bg-gray-800' : 'hover:bg-gray-700'
-                                        }`}
-                                    >
-                                        <Briefcase className="h-5" />
-                                        Account Settings
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link
-                                        to="/user-settings"
-                                        className={`flex h-10 p-2 gap-x-3 items-center rounded-md text-sm text-white ${
-                                            props.selectedItem === LeftNavBarItems.UserSettings ? 'bg-gray-800' : 'hover:bg-gray-700'
-                                        }`}
-                                    >
-                                        <User className="h-5" />
-                                        User Settings
-                                    </Link>
-                                </li>
-                            </ul>
-                        </div>
-                    )}
                     {email && (
-                        <div className="flex py-8 items-center">
+                        <div className="flex mb-8 py-2 px-2 relative rounded items-center hover:bg-neutral-800 cursor-pointer" onClick={() => setShowUserSettings(!showUserSettings)}>
                             <div className="flex items-center justify-center w-6 h-6 rounded-full bg-transparent text-sm border border-gray-400 text-gray-400 mr-3">
                                 {email.slice(0, 1).toUpperCase()}
                             </div>
@@ -194,6 +170,33 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                                 {email}
                             </span>
                             <EllipsisHorizontalIcon className="flex h-5 w-5 ml-3 text-gray-400 cursor-pointer" />
+                            {showUserSettings &&  isCloud() && (
+                            <div className="absolute -top-[130px] left-0 group-hover:block border border-neutral-700 h-32 w-[190px] bg-black opacity-50 z-10 rounded">
+                                <ul className="text-gray-400 p-3 space-y-2">
+                                    <li
+                                        className={`flex items-center w-full hover:text-white hover:bg-neutral-800 rounded p-1 ${props.selectedItem === LeftNavBarItems.UserSettings ? 'text-white' : ''}`}
+                                        onClick={() => navigate('/user-settings')}
+                                    >
+                                        <UserCircleIcon className="h-5 w-5 mr-2" />
+                                        <span>Profile</span>
+                                    </li>
+                                    <li
+                                        className={`flex items-center w-full hover:text-white hover:bg-neutral-800 rounded p-1 ${props.selectedItem === LeftNavBarItems.AccountSettings ? 'text-white' : ''}`}
+                                        onClick={() => navigate('/account-settings')}
+                                    >
+                                        <UserGroupIcon className="h-5 w-5 mr-2" />
+                                        <span>Team</span>
+                                    </li>
+                                    <li
+                                        className="flex items-center w-full hover:text-white hover:bg-neutral-800 rounded p-1"
+                                        onClick={async () => await signout()}
+                                    >
+                                        <LogoutIcon className="h-5 w-5 mr-2" />
+                                        <span>Log Out</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            )}
                         </div>
                     )}
                 </div>

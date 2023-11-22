@@ -60,6 +60,7 @@ export interface IntegrationWithCreds extends Integration {
     app_link?: string;
     syncs: SyncConfig[];
     actions: Action[];
+    created_at: string;
 }
 
 export interface Integration {

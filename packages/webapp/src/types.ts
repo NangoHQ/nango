@@ -152,3 +152,71 @@ export interface NangoSyncModel {
     description?: string;
     fields: NangoSyncModelField[];
 }
+
+type HTTP_VERB = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
+
+export type NangoSyncEndpoint = {
+    [key in HTTP_VERB]?: string;
+};
+
+export interface Flow {
+    id?: number;
+    attributes: Record<string, unknown>;
+    endpoints: NangoSyncEndpoint[];
+    scopes: string[];
+    sync_type?: 'FULL' | 'INCREMENTAL';
+    is_public: boolean;
+    pre_built: boolean;
+    version?: string;
+    last_deployed?: string;
+    input?: NangoSyncModel;
+    description: string;
+    name: string;
+    returns: string | string[];
+    output?: string;
+    type: 'sync' | 'action';
+    runs?: string;
+    track_deletes: boolean;
+    auto_start?: boolean;
+    endpoint?: string;
+    models: NangoSyncModel[];
+}
+
+export interface Account {
+    id: number;
+    name: string;
+    account_id: number;
+    secret_key: string;
+    public_key: string;
+    secret_key_iv: string | null;
+    secret_key_tag: string | null;
+    callback_url: string;
+    webhook_url: string;
+    hmac_enabled: boolean;
+    hmac_key: string;
+    created_at: string;
+    updated_at: string;
+    pending_secret_key: string | null;
+    pending_secret_key_iv: string | null;
+    pending_secret_key_tag: string | null;
+    pending_public_key: string | null;
+    always_send_webhook: boolean;
+    slack_notifications: boolean;
+    websockets_path: string;
+    secret_key_rotatable: boolean;
+    env_variables: string[];
+    host: string;
+    uuid: string;
+    email: string;
+}
+
+export interface IntegrationConfig {
+    unique_key: string;
+    provider: string;
+    client_id: string;
+    client_secret: string;
+    app_link?: string;
+    scopes: string;
+    auth_mode: AuthModes;
+    created_at: string;
+}

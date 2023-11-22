@@ -1,18 +1,209 @@
-import { Integration } from './Show';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { useModal } from '@geist-ui/core';
+import { AuthModes, IntegrationConfig, Account } from '../../types';
+import { useDeleteIntegrationAPI, useCreateIntegrationAPI, useEditIntegrationAPI } from '../../utils/api';
+import ActionModal from '../../components/ui/Modal';
+import SecretInput from '../../components/ui/input/SecretInput';
+import { formatDateToShortUSFormat } from '../../utils/utils';
+import CopyButton from '../../components/ui/button/CopyButton';
+import TagsInput from '../../components/ui/input/TagsInput';
 
 interface AuthSettingsProps {
-    integration: Integration | null;
+    integration: IntegrationConfig | null;
+    account: Account;
 }
 
 export default function AuthSettings(props: AuthSettingsProps) {
-    const { integration } = props;
-    //const [loaded, setLoaded] = useState(false);
-    console.log(integration);
+    const [serverErrorMessage, setServerErrorMessage] = useState('');
+
+    const [modalTitle, setModalTitle] = useState('');
+    const [modalContent, setModalContent] = useState('');
+    const [modalAction, setModalAction] = useState<(() => void) | null>(null);
+    const [modalShowSpinner, setModalShowSpinner] = useState(false);
+    const [modalTitleColor, setModalTitleColor] = useState('text-white');
+
+    const { integration, account } = props;
+    const navigate = useNavigate();
+    const { setVisible, bindings } = useModal();
+    const editIntegrationAPI = useEditIntegrationAPI();
+    const createIntegrationAPI = useCreateIntegrationAPI();
+    const deleteIntegrationAPI = useDeleteIntegrationAPI();
+
+    const onDelete = async () => {
+        if (!integration) return;
+
+        setModalShowSpinner(true);
+        let res = await deleteIntegrationAPI(integration.unique_key);
+
+        if (res?.status === 204) {
+            toast.success('Integration deleted!', { position: toast.POSITION.BOTTOM_CENTER });
+            navigate('/integrations', { replace: true });
+        }
+        setModalShowSpinner(false);
+        setVisible(false);
+    };
+
+    const deleteButtonClicked = async () => {
+        setModalTitle('Delete integration?');
+        setModalTitleColor('text-pink-600');
+        setModalContent('Are you sure you want to delete this integration?');
+        setModalAction(() => () => onDelete());
+        setVisible(true);
+    };
+
+    const handleSave = async (e: React.SyntheticEvent) => {
+        e.preventDefault();
+        setServerErrorMessage('');
+
+        if (integration?.unique_key) {
+            if (!integration) {
+                return;
+            }
+
+            const target = e.target as typeof e.target & {
+                client_id: { value: string };
+                client_secret: { value: string };
+                scopes: { value: string };
+                app_link: { value: string };
+            };
+
+            let res = await editIntegrationAPI(
+                integration.provider,
+                integration.auth_mode,
+                integration.unique_key,
+                target.client_id?.value,
+                target.client_secret?.value,
+                target.scopes?.value,
+                target.app_link?.value
+            );
+
+            if (res?.status === 200) {
+                toast.success('Integration updated!', { position: toast.POSITION.BOTTOM_CENTER });
+                navigate('/integrations', { replace: true });
+            }
+        } else {
+            const target = e.target as typeof e.target & {
+                provider: { value: string };
+                unique_key: { value: string };
+                client_id: { value: string };
+                client_secret: { value: string };
+                scopes: { value: string };
+                app_link: { value: string };
+            };
+            const [provider] = target.provider.value.split('|');
+            const res = await createIntegrationAPI(provider, integration?.auth_mode as AuthModes, target.unique_key?.value, target.client_id?.value, target.client_secret?.value, target.scopes?.value, target.app_link?.value);
+
+            if (res?.status === 200) {
+                toast.success('Integration created!', { position: toast.POSITION.BOTTOM_CENTER });
+                navigate('/integrations', { replace: true });
+            } else if (res != null) {
+                let payload = await res.json();
+                toast.error(payload.type === 'duplicate_provider_config' ? 'Unique Key already exists.' : payload.error, {
+                    position: toast.POSITION.BOTTOM_CENTER
+                });
+            }
+        }
+    };
 
     return (
-        <div className="mx-auto w-largebox">
-            yo
-        </div>
+        <form className="mx-auto space-y-12 text-sm w-[976px]" onSubmit={handleSave} autoComplete="one-time-code">
+            <ActionModal
+                bindings={bindings}
+                modalTitle={modalTitle}
+                modalContent={modalContent}
+                modalAction={modalAction}
+                modalShowSpinner={modalShowSpinner}
+                modalTitleColor={modalTitleColor}
+                setVisible={setVisible}
+            />
+            <input type="text" className="hidden" name="username" autoComplete="username" />
+            <input type="password" className="hidden" name="password" autoComplete="password"/>
+            <div className="flex">
+                <div className="flex flex-col w-1/2">
+                    <span className="text-gray-400 text-xs uppercase mb-1">API Provider</span>
+                    <span className="text-white">{integration?.provider}</span>
+                </div>
+                <div className="flex flex-col w-1/2">
+                    <span className="text-gray-400 text-xs uppercase mb-1">Creation Date</span>
+                    <span className="text-white">{formatDateToShortUSFormat(integration?.created_at as string)}</span>
+                </div>
+            </div>
+            <div className="flex">
+                <div className="flex flex-col w-1/2">
+                    <span className="text-gray-400 text-xs uppercase mb-1">Auth Type</span>
+                    <span className="text-white">{integration?.auth_mode}</span>
+                </div>
+                <div className="flex flex-col w-1/2">
+                    <span className="text-gray-400 text-xs uppercase mb-1">Callback Url</span>
+                    <span className="flex items-center">
+                        <span className="text-white">{account.callback_url}</span>
+                        <CopyButton text={account.callback_url} dark classNames="" />
+                    </span>
+                </div>
+            </div>
+            <div className="flex flex-col">
+                <span className="text-gray-400 text-xs mb-1">Client ID</span>
+                <div className="flex text-white items-center">
+                    <input
+                        id="client_id"
+                        name="client_id"
+                        type="text"
+                        defaultValue={integration ? integration.client_id : ''}
+                        autoComplete="one-time-code"
+                        placeholder="Find the Client ID on the developer portal of the external API provider."
+                        required
+                        minLength={1}
+                        className="border-border-gray bg-zinc-900 text-white focus:border-white focus:ring-white block w-full appearance-none rounded-md border px-3 py-0.5 text-sm placeholder-gray-400 shadow-sm focus:outline-none"
+                    />
+                    <CopyButton text={integration?.client_id as string} dark classNames="relative -ml-6" />
+                </div>
+            </div>
+            <div className="flex flex-col">
+                <span className="text-gray-400 text-xs mb-1">Client Secret</span>
+                <div className="mt-1">
+                    <SecretInput
+                        copy={true}
+                        id="client_secret"
+                        name="client_secret"
+                        autoComplete="one-time-code"
+                        defaultValue={integration ? integration.client_secret : ''}
+                        required
+                    />
+                </div>
+            </div>
+            <div className="flex flex-col">
+                <span className="text-gray-400 text-xs mb-1">Scopes</span>
+                <div className="mt-1">
+                    <TagsInput
+                        id="scopes"
+                        name="scopes"
+                        type="text"
+                        defaultValue={integration ? integration?.scopes as string : ''}
+                        minLength={1}
+                    />
+                </div>
+            </div>
+            <div className="pb-4">
+                <div className="flex justify-between">
+                    {((!integration) || (integration?.auth_mode !== AuthModes.Basic && integration?.auth_mode !== AuthModes.ApiKey)) && (
+                        <button type="submit" className="bg-white mt-4 h-8 rounded-md hover:bg-gray-300 border px-3 pt-0.5 text-sm text-black">
+                            Save
+                        </button>
+                    )}
+                    {integration && (
+                        <button
+                            type="button"
+                            className="mt-4 flex h-8 rounded-md bg-pink-600 bg-opacity-20 border border-pink-600 pl-3 pr-3 pt-1.5 text-sm text-pink-600"
+                            onClick={deleteButtonClicked}
+                        >
+                            <p>Delete</p>
+                        </button>
+                    )}
+                </div>
+                {serverErrorMessage && <p className="mt-6 text-sm text-red-600">{serverErrorMessage}</p>}
+            </div>
+        </form>
     );
 }
-

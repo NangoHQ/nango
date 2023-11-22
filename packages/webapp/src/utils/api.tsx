@@ -780,3 +780,18 @@ export function useGetIntegrationEndpointsAPI() {
         }
     };
 }
+
+export function useGetSyncDetailsAPI() {
+    return async (providerConfigKey: string, syncId: string) => {
+        try {
+            const res = await fetch(`/api/v1/sync/${syncId}?provider_config_key=${providerConfigKey}`, {
+                method: 'GET',
+                headers: getHeaders()
+            });
+
+            return res;
+        } catch (e) {
+            requestErrorToast();
+        }
+    };
+}

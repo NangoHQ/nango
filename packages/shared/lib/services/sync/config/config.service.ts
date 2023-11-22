@@ -721,3 +721,58 @@ export async function getConfigWithEndpointsByProviderConfigKey(environment_id: 
 
     return config as StandardNangoConfig;
 }
+
+export async function getConfigWithEndpointsByProviderConfigKeyAndName(
+    environment_id: number,
+    provider_config_key: string,
+    name: string
+): Promise<StandardNangoConfig | null> {
+    const syncConfigs = await schema()
+        .from<SyncConfig>(TABLE)
+        .select(
+            `${TABLE}.id`,
+            `${TABLE}.metadata`,
+            `${TABLE}.sync_name`,
+            `${TABLE}.pre_built`,
+            `${TABLE}.is_public`,
+            `${TABLE}.updated_at`,
+            `${TABLE}.version`,
+            `${TABLE}.runs`,
+            `${TABLE}.models`,
+            `${TABLE}.model_schema`,
+            `${TABLE}.input`,
+            `${TABLE}.type`,
+            `${TABLE}.sync_type`,
+            `${TABLE}.track_deletes`,
+            `${TABLE}.auto_start`,
+            '_nango_configs.unique_key',
+            '_nango_configs.provider',
+            db.knex.raw(
+                `(
+                    SELECT json_agg(json_build_object('method', method, 'path', path))
+                    FROM _nango_sync_endpoints
+                    WHERE _nango_sync_endpoints.sync_config_id = ${TABLE}.id
+                ) as endpoints_object`
+            )
+        )
+        .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')
+        .join('_nango_sync_endpoints', `${TABLE}.id`, '_nango_sync_endpoints.sync_config_id')
+        .where({
+            '_nango_configs.environment_id': environment_id,
+            '_nango_configs.unique_key': provider_config_key,
+            '_nango_configs.deleted': false,
+            [`${TABLE}.deleted`]: false,
+            [`${TABLE}.sync_name`]: name,
+            [`${TABLE}.active`]: true
+        });
+
+    if (syncConfigs.length === 0) {
+        return null;
+    }
+
+    const standardConfig = convertSyncConfigToStandardConfig(syncConfigs);
+
+    const [config] = standardConfig;
+
+    return config as StandardNangoConfig;
+}

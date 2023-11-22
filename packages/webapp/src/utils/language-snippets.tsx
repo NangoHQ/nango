@@ -123,3 +123,23 @@ HttpResponse<String> response = Unirest.get("https://api.nango.dev/v1${endpoint}
   .header("Provider-Config-Key", "${providerConfigKey}")
   .asString();`
 };
+
+export const autoStartSnippet = (secretKey: string, provider: string, sync: string) => {
+        return `import Nango from '@nangohq/node';
+
+const nango = new Nango({ secretKey: '${secretKey}' });
+
+await nango.startSync('${provider}', ['${sync}'], '<CONNECTION-ID>');
+`};
+
+export const setMetadaSnippet = (secretKey: string, provider: string, input: Record<string, any>) => {
+        return `import Nango from '@nangohq/node';
+
+const nango = new Nango({ secretKey: '${secretKey}' });
+
+await nango.setMetadata(
+    '${provider}',
+    '<CONNECTION-ID>',
+    ${input ? `{\n${JSON.stringify(input, null, 2).split('\n').slice(1).join('\n').replace(/^/gm, '    ')}` : ''}
+);
+`};

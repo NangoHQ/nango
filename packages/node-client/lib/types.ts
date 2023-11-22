@@ -108,6 +108,7 @@ export interface IntegrationWithCreds extends Integration {
     client_id: string;
     client_secret: string;
     scopes: string;
+    created_at: string;
 }
 
 interface Timestamps {

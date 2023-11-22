@@ -202,6 +202,7 @@ class ConfigController {
                       scopes: config.oauth_scopes,
                       app_link: config.app_link,
                       auth_mode: authMode,
+                      created_at: config.created_at,
                       syncs,
                       actions
                   } as IntegrationWithCreds)
