@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 import { useModal } from '@geist-ui/core';
-import ActionModal from '../../../components/ui/Modal';
+import ActionModal from '../../../components/ui/ActionModal';
 import ToggleButton from '../../../components/ui/button/ToggleButton';
 import type { Flow } from '../../../types';
 import { useCreateFlow } from '../../../utils/api';

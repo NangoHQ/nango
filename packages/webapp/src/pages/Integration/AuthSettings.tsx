@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import { useModal } from '@geist-ui/core';
 import { AuthModes, IntegrationConfig, Account } from '../../types';
 import { useDeleteIntegrationAPI, useCreateIntegrationAPI, useEditIntegrationAPI } from '../../utils/api';
-import ActionModal from '../../components/ui/Modal';
+import ActionModal from '../../components/ui/ActionModal';
 import SecretInput from '../../components/ui/input/SecretInput';
 import { formatDateToShortUSFormat } from '../../utils/utils';
 import CopyButton from '../../components/ui/button/CopyButton';

@@ -6,6 +6,7 @@ import { PlusIcon, EllipsisHorizontalIcon, BuildingOfficeIcon } from '@heroicons
 import { useGetIntegrationListAPI } from '../utils/api';
 import DashboardLayout from '../layout/DashboardLayout';
 import { LeftNavBarItems } from '../components/LeftNavBar';
+import IntegrationLogo from '../components/ui/IntegrationLogo';
 
 import { useStore } from '../store';
 
@@ -76,7 +77,7 @@ export default function IntegrationList() {
                                         >
                                             <div className="flex">
                                                 <div className="flex w-96 flex items-center">
-                                                    <img src={`images/template-logos/${provider}.svg`} alt="" className="h-7 mt-0.5 mr-0.5" />
+                                                    <IntegrationLogo provider={provider} height={7} width={7} classNames="mr-0.5 mt-0.5" />
                                                     <p className="mt-1.5 mr-4 ml-0.5">{uniqueKey}</p>
                                                 </div>
                                                 <div className="flex items-center pl-8 flex w-40">

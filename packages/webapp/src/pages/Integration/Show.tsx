@@ -11,6 +11,7 @@ import { LeftNavBarItems } from '../../components/LeftNavBar';
 import DashboardLayout from '../../layout/DashboardLayout';
 import APIReference from './APIReference';
 import { BuildingOfficeIcon } from '@heroicons/react/24/outline';
+import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import Scripts from './Scripts';
 import AuthSettings from './AuthSettings';
 import { IntegrationConfig, Flow, Account } from '../../types';
@@ -60,7 +61,6 @@ export default function ShowIntegration() {
         }
     }, [location]);
 
-
     useEffect(() => {
         const getProviders = async () => {
             if (providerConfigKey) {
@@ -106,7 +106,7 @@ export default function ShowIntegration() {
                 <div className="mx-auto">
                     <div className="flex mx-20 w-[976px] mt-12 justify-between items-center">
                         <div className="flex">
-                            <img src={`/images/template-logos/${integration?.provider}.svg`} alt="" className="h-24 w-24" />
+                            <IntegrationLogo provider={integration?.provider} height={24} width={24} classNames="mr-2" />
                             <div className="mt-3 ml-6">
                                 <span className="text-left text-2xl font-semibold tracking-tight text-gray-400 mb-12">
                                     Integration

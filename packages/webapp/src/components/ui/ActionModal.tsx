@@ -1,4 +1,5 @@
 import { Modal } from '@geist-ui/core';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 import Spinner from './Spinner';
 import Button from './button/Button';
 
@@ -14,18 +15,21 @@ interface ModalProps {
 
 export default function ActionModal({ bindings, modalTitleColor, modalShowSpinner, modalContent, modalTitle, modalAction, setVisible }: ModalProps) {
     return (
-        <Modal {...bindings} wrapClassName="!h-[200px] !w-[550px] !max-w-[550px] !bg-black no-border-modal">
+        <Modal {...bindings} wrapClassName="!h-[200px] !w-[550px] !max-w-[550px] !bg-black no-border-modal !border !border-neutral-700">
             <div className="flex justify-between text-sm">
                 <div>
                     <Modal.Content className="overflow-scroll !h-[190px] max-w-[550px] flex flex-col justify-between h-full">
                         <div>
-                            <span className="flex items-center -mt-3">
-                                <h1 className={`${modalTitleColor} text-base mr-3 py-2`}>{modalTitle}</h1>
-                                {modalShowSpinner && <Spinner size={2} />}
-                            </span>
+                            <div className="flex justify-between items-center">
+                                <span className="flex items-center -mt-3">
+                                    <h1 className={`${modalTitleColor} text-base mr-3 py-2`}>{modalTitle}</h1>
+                                    {modalShowSpinner && <Spinner size={2} />}
+                                </span>
+                                <XMarkIcon className="flex -mt-4 cursor-pointer hover:bg-zinc-900 h-7 w-7 text-gray-400 p-1" onClick={() => setVisible(false)}/>
+                            </div>
                             <div className="mt-2 text-sm text-white">{modalContent}</div>
                         </div>
-                        <div className="flex pb-2">
+                        <div className="flex pb-4">
                             {modalAction && (
                                 <Button className="mr-4" disabled={modalShowSpinner} variant="primary" onClick={modalAction}>
                                     Confirm
