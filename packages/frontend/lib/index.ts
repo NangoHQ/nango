@@ -213,9 +213,6 @@ export default class Nango {
 
         if ('username' in credentials || 'password' in credentials) {
             const basicCredentials = credentials as BasicApiCredentials;
-            if (!basicCredentials.username) {
-                throw new AuthError('You must specify a username.', 'missingUsername');
-            }
 
             const url = this.hostBaseUrl + `/api-auth/basic/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`;
 
