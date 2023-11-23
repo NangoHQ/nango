@@ -322,32 +322,20 @@ class AuthorizationModal {
         this.swClient = new WebSocket(webSocketUrl);
 
         this.swClient.onmessage = (message: MessageEvent<any>) => {
-            let data = JSON.parse(message.data);
-            // check if the message is wrapped with a messageId
-            const messageId = data.messageId;
-            if (messageId) {
-                data = data.data;
-            }
-            // add delay to simulate slow network
-            const wsKeepOpen = this.handleMessage(data, successHandler, errorHandler);
-            if (messageId) {
-                this.swClient.send(JSON.stringify({ messageId })); // acknowledge message
-            }
-            if (!wsKeepOpen) {
-                this.swClient.close();
-            }
+            this.handleMessage(message, successHandler, errorHandler);
         };
     }
 
     /**
      * Handles the messages received from the Nango server via WebSocket.
-     * Returns true if the websocket client should be kept open, false otherwise.
      */
     handleMessage(
-        data: any,
+        message: MessageEvent<any>,
         successHandler: (providerConfigKey: string, connectionId: string) => any,
         errorHandler: (errorType: string, errorDesc: string) => any
-    ): boolean {
+    ) {
+        const data = JSON.parse(message.data);
+
         switch (data.message_type) {
             case WSMessageType.ConnectionAck:
                 if (this.debug) {
@@ -356,26 +344,28 @@ class AuthorizationModal {
 
                 const wsClientId = data.ws_client_id;
                 this.open(wsClientId);
-                return true;
+                break;
             case WSMessageType.Error:
                 if (this.debug) {
                     console.log(debugLogPrefix, 'Error received. Rejecting authorization...');
                 }
 
                 errorHandler(data.error_type, data.error_desc);
-                return false;
+                this.swClient.close();
+                break;
             case WSMessageType.Success:
                 if (this.debug) {
                     console.log(debugLogPrefix, 'Success received. Resolving authorization...');
                 }
 
                 successHandler(data.provider_config_key, data.connection_id);
-                return false;
+                this.swClient.close();
+                break;
             default:
                 if (this.debug) {
                     console.log(debugLogPrefix, 'Unknown message type received from Nango server. Ignoring...');
                 }
-                return true;
+                return;
         }
     }
 

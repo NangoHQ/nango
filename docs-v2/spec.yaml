@@ -609,6 +609,7 @@ paths:
                                 properties:
                                     message:
                                         type: string
+                    
     /sync/trigger:
         post:
             description: Triggers an additional, one-off execution of specified sync(s) (for a given connection or all applicable connections if no connection is specified).
@@ -715,7 +716,7 @@ paths:
                                 properties:
                                     message:
                                         type: string
-
+        
     /sync/status:
         get:
             description: Get the status of specified sync(s) (for a given connection or all applicable connections if no connection is specified)
