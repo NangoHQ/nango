@@ -16,6 +16,7 @@ class WSClient {
     public addClient(client: WebSocket, clientId = uuid.v4()): void {
         this.clients[clientId] = client;
         client.send(JSON.stringify({ message_type: WSMessageType.ConnectionAck, ws_client_id: clientId }));
+        logger.info(`[addClient] client added: "${clientId}"`);
     }
 
     removeClient(clientId: string): void {
@@ -32,20 +33,20 @@ class WSClient {
         if (clientId) {
             const client = this.getClient(clientId);
             if (client) {
-                const data = {
+                const data = JSON.stringify({
                     message_type: WSMessageType.Error,
                     provider_config_key: providerConfigKey,
                     connection_id: connectionId,
                     error_type: wsErr.type,
                     error_desc: wsErr.message
-                };
-                // notify client synchronously to make sure auth is completed before sending the html that will close the window
-                this.syncSend(client, data)
-                    .catch((_error) => errorHtml(res, clientId, { type: 'timeout_error', message: 'Success message timed out' }))
-                    .finally(() => {
-                        client.close();
-                        this.removeClient(clientId);
-                    });
+                });
+                client.send(data);
+                logger.info(`[notifyErr] message sent to "${clientId}: ${data}"`);
+
+                client.close();
+                this.removeClient(clientId);
+            } else {
+                logger.info(`[notifyErr] No client found for clientId "${clientId}"`);
             }
         }
 
@@ -56,50 +57,22 @@ class WSClient {
         if (clientId) {
             const client = this.getClient(clientId);
             if (client) {
-                const data = {
+                const data = JSON.stringify({
                     message_type: WSMessageType.Success,
                     provider_config_key: providerConfigKey,
                     connection_id: connectionId
-                };
-                // notify client synchronously to make sure auth is completed before sending the html that will close the window
-                this.syncSend(client, data)
-                    .then((_res) => successHtml(res, clientId, providerConfigKey, connectionId))
-                    .catch((_error) => errorHtml(res, clientId, { type: 'timeout_error', message: 'Success message timed out' }))
-                    .finally(() => {
-                        client.close();
-                        this.removeClient(clientId);
-                    });
+                });
+                client.send(data);
+                logger.info(`[notifySuccess] message sent to "${clientId}: ${data}"`);
+
+                client.close();
+                this.removeClient(clientId);
+            } else {
+                logger.info(`[notifySuccess] No client found for clientId "${clientId}"`);
             }
-        } else {
-            successHtml(res, clientId, providerConfigKey, connectionId);
         }
-    }
 
-    private syncSend(client: WebSocket, data: any) {
-        const messageId = uuid.v4();
-        const timeoutMs = 10000;
-        const message = { messageId: messageId, data };
-
-        const timeout = new Promise((_resolve, reject) => {
-            setTimeout(() => {
-                reject(new Error(`Synchronous websocket message '${messageId}' timed out after ${timeoutMs}ms`));
-            }, timeoutMs);
-        });
-        const send = new Promise(function (resolve, reject) {
-            client.onmessage = (message) => {
-                const { messageId: responseId, data } = JSON.parse(message.data.toString());
-                if (messageId === responseId) {
-                    return resolve(data);
-                }
-            };
-
-            client.onerror = (error) => {
-                return reject(error);
-            };
-
-            client.send(JSON.stringify(message));
-        });
-        return Promise.race([send, timeout]);
+        successHtml(res, clientId, providerConfigKey, connectionId);
     }
 }
 

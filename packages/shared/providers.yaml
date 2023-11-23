@@ -1153,7 +1153,7 @@ twinfield:
         response_type: code
         nonce: AnotherRandomStringTwinfield
     refresh_params:
-        greant_type: refresh_token
+        grant_type: refresh_token
     scope_seprator: ' '
     default_scopes:
         - openid
@@ -1302,5 +1302,7 @@ zoom:
     token_url: https://zoom.us/oauth/token
     authorization_params:
         response_type: code
+    refresh_params:
+        grant_type: refresh_token
     proxy:
         base_url: https://developer.zoom.us

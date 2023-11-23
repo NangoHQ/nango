@@ -29,7 +29,6 @@ export default class Nango {
     private publicKey: string;
     private debug = false;
     public win: null | AuthorizationModal = null;
-    private tm: null | NodeJS.Timer = null;
     private width: number | null = null;
     private height: number | null = null;
 
@@ -134,32 +133,11 @@ export default class Nango {
                 return reject(error);
             };
 
-            if (this.status === AuthorizationStatus.BUSY) {
-                const error = new AuthError('The authorization window is already opened', 'windowIsOppened');
-                reject(error);
-            }
-
             // Save authorization status (for handler)
             this.status = AuthorizationStatus.BUSY;
 
             // Open authorization modal
-            this.win = new AuthorizationModal(
-                this.websocketsBaseUrl,
-                url,
-                successHandler,
-                errorHandler,
-                { width: this.width, height: this.height },
-                this.debug
-            );
-            this.tm = setInterval(() => {
-                if (!this.win?.modal?.window || this.win?.modal?.window.closed) {
-                    clearTimeout(this.tm as unknown as number);
-                    this.win = null;
-                    this.status = AuthorizationStatus.CANCELED;
-                    const error = new AuthError('The authorization window was closed before the authorization flow was completed', 'windowClosed');
-                    reject(error);
-                }
-            }, 500);
+            new AuthorizationModal(this.websocketsBaseUrl, url, successHandler, errorHandler, { width: this.width, height: this.height }, this.debug);
         });
     }
 
@@ -213,9 +191,6 @@ export default class Nango {
 
         if ('username' in credentials || 'password' in credentials) {
             const basicCredentials = credentials as BasicApiCredentials;
-            if (!basicCredentials.username) {
-                throw new AuthError('You must specify a username.', 'missingUsername');
-            }
 
             const url = this.hostBaseUrl + `/api-auth/basic/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`;
 
@@ -297,8 +272,7 @@ interface ApiKeyCredentials {
 enum AuthorizationStatus {
     IDLE,
     BUSY,
-    DONE,
-    CANCELED
+    DONE
 }
 
 /**
@@ -309,7 +283,7 @@ class AuthorizationModal {
     private features: { [key: string]: string | number };
     private width = 500;
     private height = 600;
-    public modal: Window;
+    private modal: Window;
     private swClient: WebSocket;
     private debug: boolean;
 
@@ -348,32 +322,20 @@ class AuthorizationModal {
         this.swClient = new WebSocket(webSocketUrl);
 
         this.swClient.onmessage = (message: MessageEvent<any>) => {
-            let data = JSON.parse(message.data);
-            // check if the message is wrapped with a messageId
-            const messageId = data.messageId;
-            if (messageId) {
-                data = data.data;
-            }
-            // add delay to simulate slow network
-            const wsKeepOpen = this.handleMessage(data, successHandler, errorHandler);
-            if (messageId) {
-                this.swClient.send(JSON.stringify({ messageId })); // acknowledge message
-            }
-            if (!wsKeepOpen) {
-                this.swClient.close();
-            }
+            this.handleMessage(message, successHandler, errorHandler);
         };
     }
 
     /**
      * Handles the messages received from the Nango server via WebSocket.
-     * Returns true if the websocket client should be kept open, false otherwise.
      */
     handleMessage(
-        data: any,
+        message: MessageEvent<any>,
         successHandler: (providerConfigKey: string, connectionId: string) => any,
         errorHandler: (errorType: string, errorDesc: string) => any
-    ): boolean {
+    ) {
+        const data = JSON.parse(message.data);
+
         switch (data.message_type) {
             case WSMessageType.ConnectionAck:
                 if (this.debug) {
@@ -382,26 +344,28 @@ class AuthorizationModal {
 
                 const wsClientId = data.ws_client_id;
                 this.open(wsClientId);
-                return true;
+                break;
             case WSMessageType.Error:
                 if (this.debug) {
                     console.log(debugLogPrefix, 'Error received. Rejecting authorization...');
                 }
 
                 errorHandler(data.error_type, data.error_desc);
-                return false;
+                this.swClient.close();
+                break;
             case WSMessageType.Success:
                 if (this.debug) {
                     console.log(debugLogPrefix, 'Success received. Resolving authorization...');
                 }
 
                 successHandler(data.provider_config_key, data.connection_id);
-                return false;
+                this.swClient.close();
+                break;
             default:
                 if (this.debug) {
                     console.log(debugLogPrefix, 'Unknown message type received from Nango server. Ignoring...');
                 }
-                return true;
+                return;
         }
     }
 
