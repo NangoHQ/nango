@@ -32,19 +32,21 @@ class WSClient {
         if (clientId) {
             const client = this.getClient(clientId);
             if (client) {
-                client.send(
-                    JSON.stringify({
-                        message_type: WSMessageType.Error,
-                        provider_config_key: providerConfigKey,
-                        connection_id: connectionId,
-                        error_type: wsErr.type,
-                        error_desc: wsErr.message
-                    })
-                );
+                const data = JSON.stringify({
+                    message_type: WSMessageType.Error,
+                    provider_config_key: providerConfigKey,
+                    connection_id: connectionId,
+                    error_type: wsErr.type,
+                    error_desc: wsErr.message
+                });
+                client.send(data);
+                logger.info(`[notifyErr] message sent to "${clientId}: ${data}"`);
 
                 client.close();
                 this.removeClient(clientId);
             }
+        } else {
+            logger.warn(`[notifyErr] No client found for clientId "${clientId}"`);
         }
 
         errorHtml(res, clientId, wsErr);
@@ -54,17 +56,19 @@ class WSClient {
         if (clientId) {
             const client = this.getClient(clientId);
             if (client) {
-                client.send(
-                    JSON.stringify({
-                        message_type: WSMessageType.Success,
-                        provider_config_key: providerConfigKey,
-                        connection_id: connectionId
-                    })
-                );
+                const data = JSON.stringify({
+                    message_type: WSMessageType.Success,
+                    provider_config_key: providerConfigKey,
+                    connection_id: connectionId
+                });
+                client.send(data);
+                logger.info(`[notifySuccess] message sent to "${clientId}: ${data}"`);
 
                 client.close();
                 this.removeClient(clientId);
             }
+        } else {
+            logger.warn(`[notifySuccess] No client found for clientId "${clientId}"`);
         }
 
         successHtml(res, clientId, providerConfigKey, connectionId);
