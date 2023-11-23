@@ -16,6 +16,7 @@ class WSClient {
     public addClient(client: WebSocket, clientId = uuid.v4()): void {
         this.clients[clientId] = client;
         client.send(JSON.stringify({ message_type: WSMessageType.ConnectionAck, ws_client_id: clientId }));
+        logger.info(`[addClient] client added: "${clientId}"`);
     }
 
     removeClient(clientId: string): void {
@@ -44,9 +45,9 @@ class WSClient {
 
                 client.close();
                 this.removeClient(clientId);
+            } else {
+                logger.warn(`[notifyErr] No client found for clientId "${clientId}"`);
             }
-        } else {
-            logger.warn(`[notifyErr] No client found for clientId "${clientId}"`);
         }
 
         errorHtml(res, clientId, wsErr);
@@ -66,9 +67,9 @@ class WSClient {
 
                 client.close();
                 this.removeClient(clientId);
+            } else {
+                logger.warn(`[notifySuccess] No client found for clientId "${clientId}"`);
             }
-        } else {
-            logger.warn(`[notifySuccess] No client found for clientId "${clientId}"`);
         }
 
         successHtml(res, clientId, providerConfigKey, connectionId);
