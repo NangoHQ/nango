@@ -7,6 +7,10 @@ rules:
   document-start: disable
   truthy:
     check-keys: false
+  comments:
+    require-starting-space: true
+    ignore-shebangs: true
+    min-spaces-from-content: 1
 
 ignore: |
     .github/workflows/*

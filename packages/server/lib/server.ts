@@ -3,6 +3,7 @@
  */
 
 // Import environment variables (if running server locally).
+import './apm.js';
 import _ from './utils/config.js';
 import oauthController from './controllers/oauth.controller.js';
 import configController from './controllers/config.controller.js';
