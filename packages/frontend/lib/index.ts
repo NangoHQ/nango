@@ -29,7 +29,6 @@ export default class Nango {
     private publicKey: string;
     private debug = false;
     public win: null | AuthorizationModal = null;
-    private tm: null | NodeJS.Timer = null;
     private width: number | null = null;
     private height: number | null = null;
 
@@ -134,32 +133,11 @@ export default class Nango {
                 return reject(error);
             };
 
-            if (this.status === AuthorizationStatus.BUSY) {
-                const error = new AuthError('The authorization window is already opened', 'windowIsOppened');
-                reject(error);
-            }
-
             // Save authorization status (for handler)
             this.status = AuthorizationStatus.BUSY;
 
             // Open authorization modal
-            this.win = new AuthorizationModal(
-                this.websocketsBaseUrl,
-                url,
-                successHandler,
-                errorHandler,
-                { width: this.width, height: this.height },
-                this.debug
-            );
-            this.tm = setInterval(() => {
-                if (!this.win?.modal?.window || this.win?.modal?.window.closed) {
-                    clearTimeout(this.tm as unknown as number);
-                    this.win = null;
-                    this.status = AuthorizationStatus.CANCELED;
-                    const error = new AuthError('The authorization window was closed before the authorization flow was completed', 'windowClosed');
-                    reject(error);
-                }
-            }, 500);
+            new AuthorizationModal(this.websocketsBaseUrl, url, successHandler, errorHandler, { width: this.width, height: this.height }, this.debug);
         });
     }
 
@@ -294,8 +272,7 @@ interface ApiKeyCredentials {
 enum AuthorizationStatus {
     IDLE,
     BUSY,
-    DONE,
-    CANCELED
+    DONE
 }
 
 /**
@@ -306,7 +283,7 @@ class AuthorizationModal {
     private features: { [key: string]: string | number };
     private width = 500;
     private height = 600;
-    public modal: Window;
+    private modal: Window;
     private swClient: WebSocket;
     private debug: boolean;
 
