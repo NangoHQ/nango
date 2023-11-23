@@ -46,7 +46,7 @@ class WSClient {
                 client.close();
                 this.removeClient(clientId);
             } else {
-                logger.warn(`[notifyErr] No client found for clientId "${clientId}"`);
+                logger.info(`[notifyErr] No client found for clientId "${clientId}"`);
             }
         }
 
@@ -68,7 +68,7 @@ class WSClient {
                 client.close();
                 this.removeClient(clientId);
             } else {
-                logger.warn(`[notifySuccess] No client found for clientId "${clientId}"`);
+                logger.info(`[notifySuccess] No client found for clientId "${clientId}"`);
             }
         }
 
