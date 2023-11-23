@@ -483,7 +483,12 @@ export const formatScriptError = (err: any, errorType: string, scriptName: strin
         errorMessage = String(err);
     }
 
-    const content = `The script failed to execute for ${scriptName} with the following error: ${errorMessage}`;
+    let content = `The script failed to execute for ${scriptName} with the following error: ${errorMessage}`;
+
+    if(err.type === 'missing_metadata' && (errorType === 'action_script_failure' || errorType === 'sync_script_failure')){
+        const integrationType = errorType.split('_')[0];
+        content = `This ${integrationType} requires inputs to run. Currently, it is missing ${(err.missingProperty as Array<string>).slice(0, -1).join(', ')} and ${(err.missingProperty as Array<string>).at(-1)}, so it cannot execute. Use the connection metadata to pass in inputs to this ${integrationType}. You can visit this page (https://docs.nango.dev/guides/advanced-auth#storing-custom-metadata-per-connection) to see what metadata is required for this ${integrationType}.`
+    }
 
     const status = err?.response?.status || 500;
     const error = new NangoError(errorType, content, status);

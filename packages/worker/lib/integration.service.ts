@@ -91,7 +91,7 @@ class IntegrationService implements IntegrationServiceInterface {
                     return { success: false, error: new NangoError(content, 500), response: null };
                 }
             } catch (err: any) {
-                const errorType = isAction ? 'action_script_failure' : 'sync_script_failre';
+                const errorType = isAction ? 'action_script_failure' : 'sync_script_failure';
                 const { success, error, response } = formatScriptError(err, errorType, syncName);
 
                 if (activityLogId && writeToDb) {

@@ -10,10 +10,38 @@ interface Metadata {
     branch: string;
 }
 
+enum MetadataProperty {
+    owner = 'owner',
+    repo = 'repo',
+    branch = 'branch'
+}
+
+type customErrorType = Error & {
+    missingProperty: string[],
+    type: string
+}
+
 const LIMIT = 100;
 
+function validateMetadata(metaData: Metadata){
+    const err = new Error() as customErrorType;
+    const propertyMissing: string[] = [];
+    if(!metaData?.owner) propertyMissing.push(MetadataProperty.owner);
+    if(!metaData?.repo) propertyMissing.push(MetadataProperty.repo);
+    if(!metaData?.branch) propertyMissing.push(MetadataProperty.branch);
+    err.missingProperty = propertyMissing;
+    err.type = 'missing_metadata';
+
+    if(propertyMissing.length > 0) return { err: err, success: false as const }
+    return { err: null, success: true as const }
+}
+
 export default async function fetchData(nango: NangoSync) {
-    const { owner, repo, branch } = await nango.getMetadata<Metadata>();
+    const metaData = await nango.getMetadata<Metadata>();
+    const { err, success } = validateMetadata(metaData);
+    if(!success) throw err;
+
+    const { owner, repo, branch } = metaData;
 
     // On the first run, fetch all files. On subsequent runs, fetch only updated files.
     if (!nango.lastSyncDate) {
