@@ -143,7 +143,7 @@ To develop syncs locally and test them run the following within `./nango-integra
 ```bash
 nango dev # Continuously watches integration files for changes.
 ```
-Nango now watches your `nango-integrations` folder for changes and compiles the sync scripts & data models as needed. If there are any compilation errors (e.g. due to type issues) you can see them in the terminal where `nango dev` runs. 
+Nango now watches your `nango-integrations` folder for changes and compiles the sync scripts & data models as needed. If there are any compilation errors (e.g. due to type issues), you can see them in the terminal where `nango dev` runs. 
 
 Fill in the `fetchData` method with your integration code (in the example here, we fetch tasks from Asana):
 
@@ -265,11 +265,11 @@ Your _action_ scripts are deployed to Nango and automatically run on a schedule.
 Because your scripts run in Nango's cloud, you cannot import additional modules (external or relative) in the _action_ scripts at the moment (we plan to resolve this limitation in the near future).
 </Tip>
 
-To develop _actions_ locally and test them run the following within `./nango-integrations`:
+To develop _actions_ locally and test them, run the following within `./nango-integrations`:
 ```bash
 nango dev # Continuously watches integration files for changes.
 ```
-Nango now watches your `nango-integrations` folder for changes and compiles the _action_ scripts & data models as needed. If there are any compilation errors (e.g. due to type issues) you can see them in the terminal where `nango dev` runs. 
+Nango now watches your `nango-integrations` folder for changes and compiles the _action_ scripts & data models as needed. If there are any compilation errors (e.g. due to type issues), you can see them in the terminal where `nango dev` runs. 
 
 Fill in the `runAction` method with your integration code:
 
@@ -310,7 +310,7 @@ Use `await nango.log()` to log data from within integration scripts.
 
 ### Dry run your _sync/action_
 
-Before you deploy your _sync_ to your cloud account you can test it locally to make sure it works as expected. You will probably use this a lot whilst developing your sync.
+Before you deploy your _sync_ to your cloud account, you can test it locally to make sure it works as expected. You will probably use this a lot whilst developing your sync.
 
 Use the `dryrun` function of the CLI:
 
@@ -343,7 +343,7 @@ nango dryrun asana-tasks <connection-id> -l "2023-06-20T10:00:00.000Z"
     Inspect the [Syncs & Actions tab](https://app.nango.dev/syncs) to verify the deployment succeeded.
 
     <Tip>
-        When you deploy your _sync_ Nango automatically adds it to all the existing _connections_ of the _integration_, and starts syncing their data.
+        When you deploy your _sync_, Nango automatically adds it to all the existing _connections_ of the _integration_, and starts syncing their data.
         
         It will also add the _sync_ to any new _connection_ that is created (OAuth flow completes) for the _integration_.
         
@@ -400,7 +400,7 @@ discord:
 
 ### Handling record deletion
 
-In Nango, _syncs_ can detect record deletions. These deleted records are not removed but are flagged as "soft deleted" using metadata. This ensures that you can still view the records in Nango, but recognize them as deleted entities.
+In Nango, _syncs_ can detect record deletions. These deleted records are not removed, but are flagged as "soft deleted" using metadata. This ensures that you can still view the records in Nango, but recognize them as deleted entities.
 
 Each record has a `_nango_metadata` field that carries metadata, including deletion information:
 ```yaml

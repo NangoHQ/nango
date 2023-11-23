@@ -17,6 +17,7 @@ API configuration: [`jira`](https://nango.dev/providers.yaml)
 | API-specific rate limits | 🚫 (time to contribute: &lt;1h) |
 
 <Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+
 ## Getting started
 
 -   [Registering an App](https://developer.atlassian.com/cloud/confluence/oauth-2-3lo-apps/#enabling-oauth-2-0--3lo-)
@@ -30,7 +31,7 @@ API configuration: [`jira`](https://nango.dev/providers.yaml)
 ## API gotchas
 
 -   Refreshing tokens require the `offline_access` scope when creating the integration on the Nango UI.
--   Your will need to fetch your Cloud ID to be able to make API requests to the Jira API v3. You can do this with the proxy by calling:
+-   You will need to fetch your Cloud ID to be able to make API requests to the Jira API v3. You can do this with the proxy by calling:
 
 ```ts
 const response = await nango.get({
@@ -40,9 +41,9 @@ const response = await nango.get({
 const cloudId = response.data[0].id;
 ```
 
-You can then construct your URL as follow: `https://api.atlassian.com/ex/jira/${cloudId}/rest/api/3/<endpoint>`
+You can then construct your URL as follows: `https://api.atlassian.com/ex/jira/${cloudId}/rest/api/3/<endpoint>`
 
--   When you create an OAuth 2.0 (3LO) app, it's private by default. Before using the integration, you must make your app public. If you want to make your app public find the how-to [here](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/#distributing-your-oauth-2-0--3lo--apps)
--   Refresh tokens will expire after 365 days of non use and will expire by 90 days if the resource owner is inactive for 90 days, Make sure you call `nango.getConnection()` at least every 365 days to trigger a refresh. See reference [here](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/#how-do-i-get-a-new-access-token--if-my-access-token-expires-or-is-revoked-).
+-   When you create an OAuth 2.0 (3LO) app, it's private by default. Before using the integration, you must make your app public. If you want to make your app public, find the how-to [here](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/#distributing-your-oauth-2-0--3lo--apps).
+-   Refresh tokens will expire after 365 days of non use and will expire by 90 days if the resource owner is inactive for 90 days. Make sure you call `nango.getConnection()` at least every 365 days to trigger a refresh. See reference [here](https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/#how-do-i-get-a-new-access-token--if-my-access-token-expires-or-is-revoked-).
 
 <Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/jira.mdx)</Note>

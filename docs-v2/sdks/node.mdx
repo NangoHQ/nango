@@ -164,7 +164,7 @@ console.log(JSON.stringify(myMetadata));
 // prints: { "filter": "status=closed" }
 ```
 
-If you know the structure of the metadata you can specify a type for it when
+If you know the structure of the metadata, you can specify a type for it when
 retrieving;
 
 ```ts
@@ -244,14 +244,14 @@ const res = await nango.proxy({
 There are also convenience methods available: `nango.get({})`, `nango.post({})`, `nango.patch{{}}` and `nango.delete({})`.
 
 **Return value**  
-When you call the proxy Nango creates the API request to the external API and runs it for you (possibly with retries).
+When you call the proxy, Nango creates the API request to the external API and runs it for you (possibly with retries).
 
 The response from the external API is passed back to you exactly as Nango gets it:
 * Response code
 * Response headers
 * Response body
 
-For the node SDK Nango returns an [Axios response object](https://axios-http.com/docs/res_schema).
+For the node SDK, Nango returns an [Axios response object](https://axios-http.com/docs/res_schema).
 
 ### Trigger syncs
 
@@ -335,7 +335,7 @@ const records = await nango.getRecords<ModelName>({
 console.log(records);
 ```
 
-By default this returns an array of objects in the data model that you queried with some metadata about each record.
+By default, this returns an array of objects in the data model that you queried with some metadata about each record.
 
 ```json
 [
@@ -353,7 +353,7 @@ By default this returns an array of objects in the data model that you queried w
 ]
 ```
 
-If you are using the [Nango webhooks](/guides/webhooks#from-nango) you can use the timestamp you get from the webhook for the `delta` parameter.
+If you are using the [Nango webhooks](/guides/webhooks#from-nango), you can use the timestamp you get from the webhook for the `delta` parameter.
 
 
 ### Trigger an action
@@ -372,7 +372,7 @@ This will return whatever the action script is configured to return.
 
 ### Get environment variables
 
-To get the environment variables from a sync script you can use `getEnvironmentVariables`:
+To get the environment variables from a sync script, you can use `getEnvironmentVariables`:
 
 ```ts
 const vars = await nango.getEnvironmentVariables();
