@@ -16,7 +16,8 @@ import {
     getNangoConfigIdAndLocationFromId,
     getSyncConfigConnections,
     getConfigWithEndpointsByProviderConfigKey,
-    StandardNangoConfig
+    StandardNangoConfig,
+    getConfigWithEndpointsByProviderConfigKeyAndName
 } from '@nangohq/shared';
 
 class FlowController {
@@ -268,6 +269,38 @@ class FlowController {
             }
 
             res.send({ unEnabledFlows, enabledFlows });
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    public async getFlow(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
+            if (!sessionSuccess || response === null) {
+                errorManager.errResFromNangoErr(res, sessionError);
+                return;
+            }
+
+            const { environment } = response;
+            const providerConfigKey = req.query['provider_config_key'] as string;
+            const { flowName } = req.params;
+
+            if (!providerConfigKey) {
+                res.status(400).send({ message: 'Missing provider config key' });
+                return;
+            }
+
+            if (!flowName) {
+                res.status(400).send({ message: 'Missing sync name' });
+                return;
+            }
+
+            const flow = flowService.getSingleFlowAsStandardConfig(flowName);
+            const provider = await configService.getProviderName(providerConfigKey as string);
+            const flowConfig = await getConfigWithEndpointsByProviderConfigKeyAndName(environment.id, providerConfigKey, flowName as string);
+
+            res.send({ flowConfig, unEnabledFlow: flow, provider });
         } catch (e) {
             next(e);
         }

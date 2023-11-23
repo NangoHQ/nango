@@ -54,7 +54,7 @@ export default function APIReference(props: APIReferenceProps) {
         setModalInfo(flow);
     }
 
-    const showSyncConfigurationModal = () => {
+    const showScriptsTab = () => {
         setShowDocModal(false);
         setActiveTab(Tabs.Scripts);
     }
@@ -93,27 +93,29 @@ export default function APIReference(props: APIReferenceProps) {
                             <div className="flex w-full justify-between z-20">
                                 <h1 className="flex text-2xl text-white font-bold">Endpoint Reference</h1>
                                 <div className="flex">
-                                    <div className="group flex cursor-pointer hover:bg-neutral-800 px-2 py-4 h-4 items-center relative rounded border border-neutral-700">
+                                    <Button variant="zinc" size="sm" className="group flex cursor-pointer items-center relative">
                                         {modalInfo?.type === 'sync' && (
                                             <ArrowPathRoundedSquareIcon className="flex h-5 w-5 text-gray-400 cursor-pointer" />
                                         )}
                                         {modalInfo?.type === 'action' && (
                                             <BoltIcon className="flex h-5 w-5 text-gray-400 cursor-pointer" />
                                         )}
-                                        <span className="ml-2 text-gray-400">{modalInfo?.type === 'action' ? 'Action' : 'Sync'} Info</span>
+                                        <span className="text-gray-400">{modalInfo?.type === 'action' ? 'Action' : 'Sync'} Info</span>
                                         {modalInfo && (
                                             <div className="hidden group-hover:block text-white absolute top-10 right-0 bg-neutral-800 rounded border border-neutral-700 w-56">
                                                 <FlowCard flow={modalInfo as Flow} />
                                             </div>
                                         )}
-                                    </div>
-                                    <div
-                                        className="flex cursor-pointer hover:bg-neutral-800 ml-3 px-2 py-4 h-4 items-center relative rounded border border-neutral-700"
-                                        onClick={() => showSyncConfigurationModal()}
+                                    </Button>
+                                    <Button
+                                        variant="zinc"
+                                        size="sm"
+                                        className="flex cursor-pointer items-center relative rounded ml-3"
+                                        onClick={() => showScriptsTab()}
                                     >
                                         <AdjustmentsHorizontalIcon className="flex h-5 w-5 text-gray-400 cursor-pointer" />
-                                        <span className="ml-2 text-gray-400">Sync Configuration</span>
-                                    </div>
+                                        <span className="text-gray-400">Scripts</span>
+                                    </Button>
                                 </div>
                             </div>
                             <div className="flex flex-col z-10 mt-4">

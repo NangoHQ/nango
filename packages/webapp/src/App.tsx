@@ -18,7 +18,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import Activity from './pages/Activity';
 import Syncs from './pages/Syncs';
-import Sync from './pages/Integration/Sync';
+import FlowPage from './pages/Integration/FlowPage';
 import AuthLink from './pages/AuthLink';
 import AccountSettings from './pages/AccountSettings';
 import UserSettings from './pages/UserSettings';
@@ -88,8 +88,8 @@ const App = () => {
                 <Route path="/flow/create" element={<PrivateRoute />}>
                     <Route path="/flow/create" element={<FlowCreate />} />
                 </Route>
-                <Route path="/integration/:providerConfigKey/:syncName" element={<PrivateRoute />}>
-                    <Route path="/integration/:providerConfigKey/:syncName" element={<Sync />} />
+                <Route path="/integration/:providerConfigKey/:flowName" element={<PrivateRoute />}>
+                    <Route path="/integration/:providerConfigKey/:flowName" element={<FlowPage />} />
                 </Route>
                 {isCloud() && (
                     <>

@@ -20,7 +20,7 @@ export default function EndpointRow({ flow, openAPIDocModal, endpoint, source, o
                 <EndpointLabel endpoint={endpoint} type={flow.type} />
             </div>
             <div className="flex items-center ml-3">
-                <Tooltip text={flow.description} type="dark">
+                <Tooltip text={<span className="text-sm">{flow.description}</span>} type="dark">
                     <div className="text-gray-400 w-64 max-w-3xl truncate">{flow.description}</div>
                 </Tooltip>
             </div>

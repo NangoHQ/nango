@@ -84,13 +84,14 @@ export default function Scripts(props: ScriptProps) {
                     {[...endpoints?.enabledFlows?.actions || [], ...endpoints?.unEnabledFlows?.actions || []].map((flow) => (
                         <td
                             key={flow.name}
-                            className="flex items-center p-3 py-5 justify-between border-b border-border-gray"
+                            className="flex items-center cursor-pointer p-3 py-5 justify-between border-b border-border-gray"
+                            onClick={() => navigate(`/integration/${integration.provider}/${flow.name}`)}
                         >
                             <div className="flex items-center w-36">
                                 <span className="w-48">{flow.name}</span>
                             </div>
                             <div className="flex items-center w-[720px]">
-                                <Tooltip text={flow.description} type="dark">
+                                <Tooltip text={<span className="text-sm">{flow.description}</span>} type="dark">
                                     <div className="w-[710px] max-w-3xl truncate">{flow.description}</div>
                                 </Tooltip>
                             </div>

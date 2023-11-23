@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { HelpCircle } from '@geist-ui/icons';
+import { Tooltip } from '@geist-ui/core';
 import { useModal } from '@geist-ui/core';
 import { AuthModes, IntegrationConfig, Account } from '../../types';
 import { useDeleteIntegrationAPI, useCreateIntegrationAPI, useEditIntegrationAPI } from '../../utils/api';
@@ -136,7 +138,21 @@ export default function AuthSettings(props: AuthSettingsProps) {
                     <span className="text-white">{integration?.auth_mode}</span>
                 </div>
                 <div className="flex flex-col w-1/2">
-                    <span className="text-gray-400 text-xs uppercase mb-1">Callback Url</span>
+                    <div className="flex">
+                        <span className="text-gray-400 text-xs uppercase mb-1">Callback Url</span>
+                        <Tooltip
+                            type="dark"
+                            text={
+                                <>
+                                    <div className="flex text-white text-sm">
+                                        <p>{`Register this setup URL on the app settings page in the "Post Installation section". Check "Redirect on update" as well.`}</p>
+                                    </div>
+                                </>
+                            }
+                        >
+                            <HelpCircle color="gray" className="h-3 ml-1"></HelpCircle>
+                        </Tooltip>
+                    </div>
                     <span className="flex items-center">
                         <span className="text-white">{account.callback_url}</span>
                         <CopyButton text={account.callback_url} dark classNames="" />

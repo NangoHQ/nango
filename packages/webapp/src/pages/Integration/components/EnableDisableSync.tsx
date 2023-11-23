@@ -73,9 +73,15 @@ export default function EnableDisableSync({ flow, provider, setLoaded, rawName }
 
     const disableSync = (flow: Flow) => {
         if (!flow.is_public) {
+            const title = flow.pre_built ?
+                'Managed syncs cannot be disabled from the UI' :
+                'Custom syncs cannot be disabled from the UI';
+            const message = flow.pre_built ?
+                'If you want to disable this sync, ask the Nango team or download the code and deploy it as a custom sync.' :
+                'If you want to disable this sync, remove it from your `nango.yaml` configuration file.';
             setModalTitleColor('text-white')
-            setModalTitle('Only public syncs can be disabled');
-            setModalContent('If you want to disable this sync, delete it from your `nango.yaml` configuration file.')
+            setModalTitle(title);
+            setModalContent(message)
             setModalAction(null);
             setVisible(true);
 

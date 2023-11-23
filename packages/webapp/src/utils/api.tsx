@@ -781,10 +781,10 @@ export function useGetIntegrationEndpointsAPI() {
     };
 }
 
-export function useGetSyncDetailsAPI() {
-    return async (providerConfigKey: string, syncId: string) => {
+export function useGetFlowDetailsAPI() {
+    return async (providerConfigKey: string, flowName: string) => {
         try {
-            const res = await fetch(`/api/v1/sync/${syncId}?provider_config_key=${providerConfigKey}`, {
+            const res = await fetch(`/api/v1/flow/${flowName}?provider_config_key=${providerConfigKey}`, {
                 method: 'GET',
                 headers: getHeaders()
             });

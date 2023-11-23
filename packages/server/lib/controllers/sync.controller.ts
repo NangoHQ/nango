@@ -34,8 +34,7 @@ import {
     syncOrchestrator,
     getAttributes,
     flowService,
-    getActionOrModelByEndpoint,
-    getConfigWithEndpointsByProviderConfigKeyAndName
+    getActionOrModelByEndpoint
 } from '@nangohq/shared';
 
 class SyncController {
@@ -197,38 +196,6 @@ class SyncController {
             const flows = flowService.getAllAvailableFlows();
 
             res.send({ syncs, flows });
-        } catch (e) {
-            next(e);
-        }
-    }
-
-    public async getSync(req: Request, res: Response, next: NextFunction) {
-        try {
-            const { success: sessionSuccess, error: sessionError, response } = await getUserAccountAndEnvironmentFromSession(req);
-            if (!sessionSuccess || response === null) {
-                errorManager.errResFromNangoErr(res, sessionError);
-                return;
-            }
-
-            const { environment } = response;
-            const providerConfigKey = req.query['provider_config_key'] as string;
-            const { syncName } = req.params;
-
-            if (!providerConfigKey) {
-                res.status(400).send({ message: 'Missing provider config key' });
-                return;
-            }
-
-            if (!syncName) {
-                res.status(400).send({ message: 'Missing sync name' });
-                return;
-            }
-
-            const flow = flowService.getSingleFlowAsStandardConfig(syncName);
-            const provider = await configService.getProviderName(providerConfigKey as string);
-            const sync = await getConfigWithEndpointsByProviderConfigKeyAndName(environment.id, providerConfigKey, syncName as string);
-
-            res.send({ sync, unEnabledSync: flow, provider });
         } catch (e) {
             next(e);
         }

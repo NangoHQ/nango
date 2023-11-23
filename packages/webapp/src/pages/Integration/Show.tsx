@@ -10,6 +10,7 @@ import {
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import DashboardLayout from '../../layout/DashboardLayout';
 import APIReference from './APIReference';
+import Button from '../../components/ui/button/Button';
 import { BuildingOfficeIcon } from '@heroicons/react/24/outline';
 import IntegrationLogo from '../../components/ui/IntegrationLogo';
 import Scripts from './Scripts';
@@ -116,15 +117,17 @@ export default function ShowIntegration() {
                                 </h2>
                             </div>
                         </div>
-                        <div
-                            className="flex p-4 cursor-pointer h-2 hover:bg-neutral-800 text-gray-400 bg-zinc-900 rounded border border-neutral-700 items-center"
+                        <Button
+                            variant="zinc"
+                            size="sm"
+                            className="flex cursor-pointer text-gray-400 neutral-700 items-center"
                             onClick={() => {
                                 navigate(`/connections/create/${providerConfigKey}`);
                             }}
                             >
-                            <BuildingOfficeIcon className="flex h-5 w-5 text-gray-400" />
-                            <span className="pl-2">Connect</span>
-                        </div>
+                            <BuildingOfficeIcon className="flex h-5 w-5" />
+                            <span className="px-1">Connect</span>
+                        </Button>
                     </div>
                 </div>
             )}
