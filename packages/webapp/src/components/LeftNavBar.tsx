@@ -64,6 +64,20 @@ export default function LeftNavBar(props: LeftNavBarProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    useEffect(() => {
+        const closeUserSettings = (e: MouseEvent) => {
+            if (showUserSettings && !(e.target as HTMLElement).closest('.user-settings')) {
+                setShowUserSettings(false);
+            }
+        };
+
+        document.addEventListener('click', closeUserSettings);
+
+        return () => {
+            document.removeEventListener('click', closeUserSettings);
+        };
+    }, [showUserSettings]);
+
     const env = useStore(state => state.cookieValue);
     console.log(version)
 
@@ -162,7 +176,7 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                 </div>
                 <div className='px-6'>
                     {email && (
-                        <div className="flex mb-8 py-2 px-2 relative rounded items-center hover:bg-neutral-800 cursor-pointer" onClick={() => setShowUserSettings(!showUserSettings)}>
+                        <div className="flex mb-8 py-2 user-settings px-2 relative rounded items-center hover:bg-neutral-800 cursor-pointer" onClick={() => setShowUserSettings(!showUserSettings)}>
                             <div className="flex items-center justify-center w-6 h-6 rounded-full bg-transparent text-sm border border-gray-400 text-gray-400 mr-3">
                                 {email.slice(0, 1).toUpperCase()}
                             </div>
@@ -170,8 +184,8 @@ export default function LeftNavBar(props: LeftNavBarProps) {
                                 {email}
                             </span>
                             <EllipsisHorizontalIcon className="flex h-5 w-5 ml-3 text-gray-400 cursor-pointer" />
-                            {showUserSettings &&  isCloud() && (
-                            <div className="absolute -top-[130px] left-0 group-hover:block border border-neutral-700 h-32 w-[190px] bg-black opacity-50 z-10 rounded">
+                            {isCloud() && showUserSettings && (
+                            <div className="absolute -top-[130px] text-sm left-0 group-hover:block border border-neutral-700 h-32 w-[190px] bg-black opacity-50 z-10 rounded">
                                 <ul className="text-gray-400 p-3 space-y-2">
                                     <li
                                         className={`flex items-center w-full hover:text-white hover:bg-neutral-800 rounded p-1 ${props.selectedItem === LeftNavBarItems.UserSettings ? 'text-white' : ''}`}

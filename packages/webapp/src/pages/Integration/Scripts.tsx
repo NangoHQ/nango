@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router';
 import { Tooltip } from '@geist-ui/core';
+import { BoltIcon, ArrowPathRoundedSquareIcon } from '@heroicons/react/24/outline';
 import { EndpointResponse } from './Show';
 import { IntegrationConfig } from '../../types';
 import EnableDisableSync from './components/EnableDisableSync';
@@ -20,8 +21,11 @@ export default function Scripts(props: ScriptProps) {
                 <tbody className="flex flex-col space-y-2">
                     <tr>
                         <td className="flex items-center px-3 justify-between text-xs px-2 py-2 bg-zinc-900 border border-neutral-800 rounded-md">
-                            <div className="w-12">Scripts</div>
-                            <div className="w-12">Models</div>
+                            <div className="flex w-18 items-center">
+                                <ArrowPathRoundedSquareIcon className="flex h-4 w-4 mr-1" />
+                                Sync Scripts
+                            </div>
+                            <div className="w-12 -ml-10">Models</div>
                             <div className="w-72">Description</div>
                             <div className="w-12">Source</div>
                             <div className="">Enabled</div>
@@ -60,6 +64,41 @@ export default function Scripts(props: ScriptProps) {
                                     setLoaded={setLoaded}
                                     rawName={endpoints?.unEnabledFlows?.rawName}
                                 />
+                            </div>
+                        </td>
+                    ))}
+                    </tr>
+                </tbody>
+                <tbody className="flex mt-16 flex-col space-y-2">
+                    <tr>
+                        <td className="flex items-center px-3 justify-between text-xs px-2 py-2 bg-zinc-900 border border-neutral-800 rounded-md">
+                            <div className="flex w-18 items-center">
+                                <BoltIcon className="flex h-4 w-4 mr-1" />
+                                Action Scripts
+                            </div>
+                            <div className="w-[670px]">Description</div>
+                            <div className="">Source</div>
+                        </td>
+                    </tr>
+                    <tr>
+                    {[...endpoints?.enabledFlows?.actions || [], ...endpoints?.unEnabledFlows?.actions || []].map((flow) => (
+                        <td
+                            key={flow.name}
+                            className="flex items-center p-3 py-5 justify-between border-b border-border-gray"
+                        >
+                            <div className="flex items-center w-36">
+                                <span className="w-48">{flow.name}</span>
+                            </div>
+                            <div className="flex items-center w-[720px]">
+                                <Tooltip text={flow.description} type="dark">
+                                    <div className="w-[710px] max-w-3xl truncate">{flow.description}</div>
+                                </Tooltip>
+                            </div>
+                            <div className="flex items-center">
+                                {flow.is_public ? 'Public' :
+                                    flow.pre_built ? 'Managed' :
+                                    'Custom'
+                                }
                             </div>
                         </td>
                     ))}

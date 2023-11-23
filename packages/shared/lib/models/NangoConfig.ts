@@ -131,6 +131,7 @@ export interface NangoSyncConfig {
 
 export interface StandardNangoConfig {
     providerConfigKey: string;
+    rawName?: string;
     provider?: string;
     syncs: NangoSyncConfig[];
     actions: NangoSyncConfig[];

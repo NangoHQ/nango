@@ -51,6 +51,10 @@ class RemoteFileService {
         }
     }
 
+    public getRemoteFileLocationForPublicTemplate(integrationName: string, fileName: string): string {
+        return `${this.publicRoute}/${integrationName}/${fileName}`;
+    }
+
     /**
      * Copy
      * @desc copy an existing public integration file to user's location in s3,

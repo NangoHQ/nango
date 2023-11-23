@@ -12,6 +12,7 @@ import { upsert } from './data/data.service.js';
 import { getDeletedKeys, takeSnapshot, clearOldRecords, syncUpdateAtForDeletedRecords } from './data/delete.service.js';
 import environmentService from '../environment.service.js';
 import slackNotificationService from './notification/slack.service.js';
+import flowService from '../flow.service.js';
 import webhookService from './notification/webhook.service.js';
 import { NangoSync } from '../../sdk/sync.js';
 import { isCloud, getApiUrl, JAVASCRIPT_PRIMITIVES } from '../../utils/utils.js';
@@ -129,12 +130,17 @@ export default class SyncRun {
                 console.log(content);
             }
         }
-        const nangoConfig = this.loadLocation
+        let nangoConfig = this.loadLocation
             ? await loadLocalNangoConfig(this.loadLocation)
             : await getSyncConfig(this.nangoConnection, this.syncName, this.isAction);
 
+        if (this.isAction) {
+            // if this is a public action then it doesn't need to be registered
+            nangoConfig = flowService.getActionAsNangoConfig(this.provider as string, this.syncName);
+        }
+
         if (!nangoConfig) {
-            const message = `No sync configuration was found for ${this.syncName}.`;
+            const message = `No ${this.isAction ? 'action' : 'sync'} configuration was found for ${this.syncName}.`;
             if (this.activityLogId) {
                 await this.reportFailureForResults(message);
             } else {

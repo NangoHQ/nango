@@ -1,6 +1,5 @@
 import { useState, useEffect, Fragment } from 'react';
-import { AdjustmentsHorizontalIcon, ArrowPathRoundedSquareIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
-import { BoltIcon } from '@heroicons/react/24/outline';
+import { BoltIcon, AdjustmentsHorizontalIcon, ArrowPathRoundedSquareIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 import { Prism } from '@mantine/prism';
 import { Tabs, EndpointResponse } from './Show';
 import Button from '../../components/ui/button/Button';
