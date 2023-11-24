@@ -440,7 +440,6 @@ nango.${integration?.authMode === AuthModes.None ? 'create' : 'auth'}('${integra
                                                     name="username"
                                                     optionalvalue={apiAuthUsername}
                                                     setoptionalvalue={setApiAuthUsername}
-                                                    required
                                                 />
                                             </div>
 

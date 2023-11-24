@@ -566,6 +566,49 @@ paths:
                   description: The integration ID used to create the connection (aka Unique Key).
                   schema:
                       type: string
+
+            responses:
+                '200':
+                    description: Successfully created an integrations
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    type: object
+                                    properties:
+                                        your-properties:
+                                            type: string
+                                            description: The data Nango synced in for you
+                                            example: "Your synced data, in the schema you (or Nango) defined in nango.yaml"
+                                        _nango_metadata:
+                                            type: object
+                                            properties:
+                                                deleted_at:
+                                                    type: string
+                                                    nullable: true
+                                                    description: The timestamp at which Nango detected the record as deleted
+                                                last_action:
+                                                    type: string
+                                                    description: The last action seen on this record
+                                                    enum: ["ADDED", "UPDATED", "DELETED"]
+                                                first_seen_at:
+                                                    type: string
+                                                    description: The timestamp at which Nango first saw this record
+                                                    example: "2023-09-18T15:20:35.941305+00:00"
+                                                last_modified_at:
+                                                    type: string
+                                                    description: The timestamp at which Nango last detected a change to this record
+                                                    example: "2023-09-18T15:20:35.941305+00:00"
+                '400':
+                    description: Invalid request
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    message:
+                                        type: string
     /sync/trigger:
         post:
             description: Triggers an additional, one-off execution of specified sync(s) (for a given connection or all applicable connections if no connection is specified).
@@ -589,6 +632,19 @@ paths:
                                     descriptions: A list of sync names that you wish to trigger.
                                     items:
                                         type: string
+            responses:
+                '200':
+                    description: Successfully triggered the sync
+                '400':
+                    description: Invalid request
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    message:
+                                        type: string
+
     /sync/start:
         post:
             description: Starts the continuous execution of specified sync(s) (for a given connection or all applicable connections if no connection is specified).
@@ -611,6 +667,18 @@ paths:
                                     type: array
                                     descriptions: A list of sync names that you wish to start.
                                     items:
+                                        type: string
+            responses:
+                '200':
+                    description: Successfully started the sync
+                '400':
+                    description: Invalid request
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    message:
                                         type: string
     /sync/pause:
         post:
@@ -635,6 +703,19 @@ paths:
                                     descriptions: A list of sync names that you wish to pause.
                                     items:
                                         type: string
+            responses:
+                '200':
+                    description: Successfully paused the sync
+                '400':
+                    description: Invalid request
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    message:
+                                        type: string
+
     /sync/status:
         get:
             description: Get the status of specified sync(s) (for a given connection or all applicable connections if no connection is specified)
@@ -693,6 +774,15 @@ paths:
                                                 latestResult:
                                                     type: object
                                                     description: Additional information regarding the latest result of the sync. Contains a model name with added, updated and deleted records
+                '400':
+                    description: Invalid request
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    message:
+                                        type: string
     /action/trigger:
         post:
             description: Triggers an action for a connection
@@ -724,9 +814,54 @@ paths:
                                 input:
                                     type: object
                                     description: The necessary input for your action's 'runAction' function.
+
+            responses:
+                '200':
+                    description: Returns the result of the action
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    your-properties:
+                                        type: string
+                                        description: The data returned by the action
+                                        example: "The data returned by the action"
+
+                '400':
+                    description: Invalid request
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    message:
+                                        type: string
+
+
     /environment-variables:
         get:
-            description: Retrieve the environment variables as inputted in the Nango dashboard
+            description: Retrieve the environment variables as added in the Nango dashboard
+            responses:
+                '200':
+                    description: Retrieve the environment variables as added in the Nango dashboard
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    type: object
+                                    properties:
+                                        name:
+                                            type: string
+                                            description: The name of the environment variable
+                                            example: "MY_SECRET_KEY"
+                                        value:
+                                            type: string
+                                            description: The value of the environment variable
+                                            example: "SK_373892NSHFNCOWFO..."
+
+
     /proxy/{anyPath}:
         get:
             description: Make a GET request with the Proxy.
@@ -773,6 +908,9 @@ paths:
                   schema:
                       type: string
                   description: Any other headers you send are passed on to the external API
+            responses:
+                '200':
+                    description: The response exactly as returned by the external API
         post:
             description: Make a POST request with the Proxy.
             parameters:
@@ -821,6 +959,9 @@ paths:
                             properties:
                                 $ANY_BODY_PARAMS:
                                     type: string
+            responses:
+                '200':
+                    description: The response exactly as returned by the external API
         put:
             description: Make a PUT request with the Proxy.
             parameters:
@@ -869,6 +1010,9 @@ paths:
                             properties:
                                 $ANY_BODY_PARAMS:
                                     type: string
+            responses:
+                '200':
+                    description: The response exactly as returned by the external API
         patch:
             description: Make a PATCH request with the Proxy.
             parameters:
@@ -917,6 +1061,9 @@ paths:
                             properties:
                                 $ANY_BODY_PARAMS:
                                     type: string
+            responses:
+                '200':
+                    description: The response exactly as returned by the external API
         delete:
             description: Make a DELETE request with the Proxy.
             parameters:
@@ -962,3 +1109,6 @@ paths:
                   schema:
                       type: string
                   description: Any other headers you send are passed on to the external API
+            responses:
+                '200':
+                    description: The response exactly as returned by the external API
