@@ -221,12 +221,6 @@ class ApiAuthController {
                 return;
             }
 
-            if (!req.body.username) {
-                errorManager.errRes(res, 'missing_basic_username');
-
-                return;
-            }
-
             const hmacEnabled = await hmacService.isEnabled(environmentId);
             if (hmacEnabled) {
                 const hmac = req.query['hmac'] as string | undefined;
@@ -258,7 +252,7 @@ class ApiAuthController {
                 }
             }
 
-            const { username, password } = req.body;
+            const { username = '', password = '' } = req.body;
 
             const config = await configService.getProviderConfig(providerConfigKey as string, environmentId);
 
