@@ -175,7 +175,8 @@ export function convertConfigObject(config: NangoConfigV1): ServiceResponse<Stan
                 models: models || [],
                 description: sync?.description || sync?.metadata?.description || '',
                 scopes: Array.isArray(scopes) ? scopes : String(scopes)?.split(','),
-                endpoints: sync?.endpoints || []
+                endpoints: sync?.endpoints || [],
+                nango_yaml_version: 'v1'
             };
 
             if (sync.type === SyncConfigType.ACTION) {
@@ -376,7 +377,8 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                 returns: Array.isArray(sync.output) ? (sync?.output as string[]) : ([sync.output] as string[]),
                 description: sync?.description || sync?.metadata?.description || '',
                 scopes: Array.isArray(scopes) ? scopes : String(scopes)?.split(','),
-                endpoints
+                endpoints,
+                nango_yaml_version: 'v2'
             };
 
             if (sync.id) {
@@ -469,7 +471,8 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                 description: action?.description || action?.metadata?.description || '',
                 scopes: Array.isArray(scopes) ? scopes : String(scopes)?.split(','),
                 input: inputModel,
-                endpoints
+                endpoints,
+                nango_yaml_version: 'v2'
             };
 
             if (action.id) {

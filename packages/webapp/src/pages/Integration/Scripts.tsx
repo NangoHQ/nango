@@ -4,6 +4,7 @@ import { BoltIcon, ArrowPathRoundedSquareIcon } from '@heroicons/react/24/outlin
 import { EndpointResponse } from './Show';
 import { IntegrationConfig } from '../../types';
 import EnableDisableSync from './components/EnableDisableSync';
+import HelpFooter from './components/HelpFooter';
 
 interface ScriptProps {
     endpoints: EndpointResponse;
@@ -32,7 +33,7 @@ export default function Scripts(props: ScriptProps) {
                         </td>
                     </tr>
                     <tr>
-                    {[...endpoints?.enabledFlows?.syncs || [], ...endpoints?.unEnabledFlows?.syncs || []].filter(flow => flow.endpoints && flow.endpoints.length > 0).map((flow) => (
+                    {[...endpoints?.enabledFlows?.syncs || [], ...endpoints?.unEnabledFlows?.syncs || []].map((flow) => (
                         <td
                             key={flow.name}
                             className="flex items-center p-3 py-5 cursor-pointer justify-between border-b border-border-gray"
@@ -106,6 +107,7 @@ export default function Scripts(props: ScriptProps) {
                     </tr>
                 </tbody>
             </table>
+            <HelpFooter />
         </div>
     );
 }

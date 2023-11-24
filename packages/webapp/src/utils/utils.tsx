@@ -264,6 +264,10 @@ export function calculateTotalRuntime(timestamps: { created_at: string; updated_
 };
 
 export function createExampleForType(type: string): any {
+    if (typeof type !== 'string') {
+        return {};
+    }
+
     const rawType = type.replace('|', '').replace('null', '').replace('undefined', '').trim();
 
     switch (rawType) {

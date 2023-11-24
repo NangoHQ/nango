@@ -795,3 +795,19 @@ export function useGetFlowDetailsAPI() {
         }
     };
 }
+
+export function useUpdateSyncFrequency() {
+    return async (syncId: number, frequency: string) => {
+        try {
+            const res = await fetch(`/api/v1/sync/${syncId}/frequency`, {
+                method: 'PUT',
+                headers: getHeaders(),
+                body: JSON.stringify({ frequency })
+            });
+
+            return res;
+        } catch (e) {
+            requestErrorToast();
+        }
+    };
+}

@@ -8,6 +8,7 @@ import FlowCard from './components/FlowCard';
 import EndpointRow from './components/EndpointRow';
 import Info from '../../components/ui/Info'
 import EndpointLabel from './components/EndpointLabel';
+import HelpFooter from './components/HelpFooter';
 import { IntegrationConfig, Account, FlowEndpoint, Flow } from '../../types';
 import { nodeSnippet, nodeActionSnippet, curlSnippet, pythonSnippet, phpSnippet, goSnippet, javaSnippet } from '../../utils/language-snippets';
 import { parseInput, generateResponseModel } from '../../utils/utils';
@@ -356,6 +357,7 @@ export default function APIReference(props: APIReferenceProps) {
                     ))}
                 </tbody>
             </table>
+            <HelpFooter />
         </div>
     );
 }

@@ -127,6 +127,7 @@ export interface NangoSyncConfig {
     // v2 additions
     input?: NangoSyncModel;
     sync_type?: SyncType;
+    nango_yaml_version?: string;
 }
 
 export interface StandardNangoConfig {

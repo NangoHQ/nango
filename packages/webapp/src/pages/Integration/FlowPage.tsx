@@ -40,6 +40,7 @@ export default function FlowPage() {
     const updateSyncFrequency = useUpdateSyncFrequency();
     const { setVisible, bindings } = useModal();
 
+    const [source, setSource] = useState<'Public' | 'Custom' | 'Managed'>();
     const [modalTitle, setModalTitle] = useState('');
     const [modalContent, setModalContent] = useState<string | React.ReactNode>('');
     const [modalAction, setModalAction] = useState<(() => void) | null>(null);
@@ -77,12 +78,17 @@ export default function FlowPage() {
 
                     if (data.flowConfig) {
                         setFlowConfig(data.flowConfig);
-                        if (data.flowConfig.syncs.length > 0)
-                            setFlow(data.flowConfig.syncs[0]);
-                        else {
-                            setFlow(data.flowConfig.actions[0]);
+                        let flow: Flow;
+                        if (data.flowConfig.syncs.length > 0) {
+                            flow = data.flowConfig.syncs[0];
+                            setFlow(flow);
+                        } else {
+                            flow = data.flowConfig.actions[0];
+                            setFlow(flow);
                         }
+                        setSource(flow.pre_built ? 'Managed' : 'Custom')
                     } else {
+                        setSource('Public');
                         setFlowConfig(data.unEnabledFlow)
                         if (data.unEnabledFlow.syncs.length > 0){
                             setFlow(data.unEnabledFlow.syncs[0]);
@@ -148,14 +154,14 @@ export default function FlowPage() {
             return;
         }
 
-        if (!flow?.is_public && !flow?.pre_built) {
+        if (source === 'Custom') {
             setModalTitle('Cannot edit frequency for custom syncs');
             setModalContent('If you want to edit the frequency of this sync, edit it in your `nango.yaml` configuration file.');
             setVisible(true);
             return;
         }
 
-        if (!flow?.is_public && flow?.pre_built) {
+        if (source === 'Managed') {
             setModalTitle('Cannot edit frequency for managed syncs');
             setModalContent(<>If you want to edit the frequency of this sync, ask the Nango team or download the code and <a rel="noreferrer" href="https://docs.nango.dev/guides/custom#step-3-deploy-a-sync-action" target="_blank" className="underline">deploy it as a custom sync</a>.</>);
             setVisible(true);
@@ -260,6 +266,13 @@ export default function FlowPage() {
                             </Button>
                         </div>
                     </div>
+                    {flow?.nango_yaml_version === 'v1' && (
+                        <div className="mx-20 my-5">
+                            <Info size={18} padding="px-4 py-1.5">
+                                This {flow?.type} is using the legacy nango.yaml schema. <a href="https://docs.nango.dev/guides/custom" target="_blank" className="text-white underline" rel="noreferrer">Migrate to the new schema</a> to unlock capabilities, including auto-generated API documentation.
+                            </Info>
+                        </div>
+                    )}
                     <div className="mx-20 flex flex-col">
                         <span className="text-gray-400 text-xs uppercase mb-1">Description</span>
                         <div className="text-white">
@@ -307,9 +320,7 @@ export default function FlowPage() {
                         <div className="flex flex-col w-1/2">
                             <span className="text-gray-400 text-xs uppercase mb-1">Source</span>
                             <div className="text-white">
-                                {flow?.is_public ? 'Public' :
-                                    flow?.pre_built ? 'Managed' :
-                                    'Custom'}
+                                {source}
                             </div>
                         </div>
                         {flow?.sync_type && (

@@ -180,6 +180,7 @@ export interface Flow {
     auto_start?: boolean;
     endpoint?: string;
     models: NangoSyncModel[];
+    nango_yaml_version: 'v1' | 'v2';
 }
 
 export interface Account {
