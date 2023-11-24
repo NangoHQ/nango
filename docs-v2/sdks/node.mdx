@@ -149,7 +149,7 @@ This will throw an exception if the delete call is not successful.
 
 ### Set and fetch custom Metadata
 
-Nango lets you store [custom metadata](/guides/oauth#storing-custom-metadata-per-connection) on the Connection.
+Nango lets you store [custom metadata](/guides/advanced-auth#storing-custom-metadata-per-connection) on the Connection.
 
 `setMetadata` overrides any existing Metadata for the connection!
 
@@ -190,6 +190,7 @@ const integration = await nango.getIntegration(
 ```
 
 Please check the [REST API reference](/api-reference/integration/get) for an example response and the full list of returned fields.
+
 ## Sync
 
 ### Proxy
@@ -275,6 +276,7 @@ await nango.startSync('<INTEGRATION-ID>', ['github-sync', 'hubspot-sync'], '<CON
 ```
 
 ### Sync status
+
 Returns the status of syncs given an integration, sync names, and an optional connection id
 
 ```ts

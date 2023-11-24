@@ -31,7 +31,7 @@ API configuration: [`salesforce`](https://nango.dev/providers.yaml)
 
 Salesforce uses a different API base URL, called the `instance_url`, for each customer.
 
-Nango automatically retrieves the `instance_url` (e.g. `https://yourInstance.salesforce.com/`) from Salesforce and stores it in the [Connection config](/guides/oauth#automatically-retrieved-connection-configuration) for you.
+Nango automatically retrieves the `instance_url` (e.g. `https://yourInstance.salesforce.com/`) from Salesforce and stores it in the [Connection config](/guides/advanced-auth#automatically-retrieved-connection-configuration) for you.
 
 If you use the Nango Proxy, it is automatically using the correct API base URL. But, if needed, you can retrieve the `instance_url` with the [backend SDK](sdks/node#retrieve-api-credentials) or [Connections API](api-reference/connection/get).
 

@@ -13,9 +13,9 @@ Field mappings enable you to synchronize data stored in custom fields tailored t
 Nango provides dedicated tools to support field mappings of any complexity. Here's a step-by-step approach to leverage this capability:
 
 1. Set up your _sync_ so it doesn't initiate automatically upon creating a new connection (cf. [_sync_ initial state](/guides/field-mapping#sync-initial-state)).
-2. Gather field mappings from your user and store them in the connection [metadata](/guides/oauth#storing-custom-metadata-per-connection).
+2. Gather field mappings from your user and store them in the connection [metadata](/guides/advanced-auth#storing-custom-metadata-per-connection).
 3. Start the _sync_ programmatically, either via the SDK or API. (Documentation pending)
-4. Within your _sync_ script, retrieve the field mappings from the [metadata](/guides/oauth#storing-custom-metadata-per-connection) to access the custom fields specified by your customer.
+4. Within your _sync_ script, retrieve the field mappings from the [metadata](/guides/advanced-auth#storing-custom-metadata-per-connection) to access the custom fields specified by your customer.
 
 <Tip>
 When collecting field mappings, you may want to display the available custom fields to users, fetching them directly from their external systems. For these types of one-time synchronous tasks, consider utilizing our [actions](/guides/action) feature.

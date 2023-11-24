@@ -88,15 +88,13 @@ encryption key once you have set it.
 ### Custom websockets path[](#custom-websockets-path 'Direct link to Custom websockets path')
 
 The Nango server serves websockets from the `/` path by default for use by `@nangohq/frontend` during the login flow. 
-If you want more isolation between websockets and the dashboard (also served from `/`) then you can set the 
-`NANGO_SERVER_WEBSOCKETS_PATH` environment variable to serve websockets from a different path:
+If you want more isolation between websockets and the dashboard (also served from `/`), then you can set the `NANGO_SERVER_WEBSOCKETS_PATH` environment variable to serve websockets from a different path:
 
 ```
 NANGO_SERVER_WEBSOCKETS_PATH=</YOUR-WEBSOCKETS-PATH>
 ```
 
-If you do set this variable to a different path, you will need to configure the `websocketsPath` parameter when 
-initializing the `Nango` object in the `@nangohq/frontend` SDK:
+If you do set this variable to a different path, you will need to configure the `websocketsPath` parameter when initializing the `Nango` object in the `@nangohq/frontend` SDK:
 
 ```js
 import Nango from '@nangohq/frontend';
