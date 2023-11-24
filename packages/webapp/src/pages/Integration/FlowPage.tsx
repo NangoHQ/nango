@@ -3,10 +3,12 @@ import { toast } from 'react-toastify';
 import { useState, useEffect } from 'react';
 import { CodeBracketIcon, ChevronDownIcon, ChevronUpIcon, PencilSquareIcon } from '@heroicons/react/24/outline';
 import { Prism } from '@mantine/prism';
+import { useModal } from '@geist-ui/core';
 
 import {
     useGetProjectInfoAPI,
-    useGetFlowDetailsAPI
+    useGetFlowDetailsAPI,
+    useUpdateSyncFrequency
 } from '../../utils/api';
 import { LeftNavBarItems } from '../../components/LeftNavBar';
 import DashboardLayout from '../../layout/DashboardLayout';
@@ -16,6 +18,7 @@ import Spinner from '../../components/ui/Spinner';
 import { FlowConfiguration } from './Show';
 import type { Flow } from '../../types';
 import EndpointLabel from './components/EndpointLabel';
+import ActionModal from '../../components/ui/ActionModal';
 import Info from '../../components/ui/Info'
 import { parseInput, generateResponseModel, formatDateToShortUSFormat } from '../../utils/utils';
 import EnableDisableSync from './components/EnableDisableSync';
@@ -34,6 +37,17 @@ export default function FlowPage() {
     const { providerConfigKey, flowName } = useParams();
     const getFlowDetailsAPI = useGetFlowDetailsAPI();
     const getProjectInfoAPI = useGetProjectInfoAPI()
+    const updateSyncFrequency = useUpdateSyncFrequency();
+    const { setVisible, bindings } = useModal();
+
+    const [modalTitle, setModalTitle] = useState('');
+    const [modalContent, setModalContent] = useState<string | React.ReactNode>('');
+    const [modalAction, setModalAction] = useState<(() => void) | null>(null);
+    const [modalShowSpinner, setModalShowSpinner] = useState(false);
+    const [modalTitleColor,] = useState('text-white');
+
+    const [showFrequencyEditMenu, setShowFrequencyEditMenu] = useState(false);
+    const [frequencyEdit, setFrequencyEdit] = useState('');
 
     useEffect(() => {
         const getAccount = async () => {
@@ -126,8 +140,102 @@ export default function FlowPage() {
         setIsDownloading(false);
     }
 
+    const editFrequency = () => {
+        if (!flow?.version) {
+            setModalTitle('Cannot edit sync frequency');
+            setModalContent('The sync frequency cannot be edited unless the sync is enabled.');
+            setVisible(true);
+            return;
+        }
+
+        if (!flow?.is_public && !flow?.pre_built) {
+            setModalTitle('Cannot edit frequency for custom syncs');
+            setModalContent('If you want to edit the frequency of this sync, edit it in your `nango.yaml` configuration file.');
+            setVisible(true);
+            return;
+        }
+
+        if (!flow?.is_public && flow?.pre_built) {
+            setModalTitle('Cannot edit frequency for managed syncs');
+            setModalContent(<>If you want to edit the frequency of this sync, ask the Nango team or download the code and <a rel="noreferrer" href="https://docs.nango.dev/guides/custom#step-3-deploy-a-sync-action" target="_blank" className="underline">deploy it as a custom sync</a>.</>);
+            setVisible(true);
+            return;
+        }
+
+        setShowFrequencyEditMenu(true);
+    };
+
+    const onSaveFrequency = async () => {
+        // just in case they included every
+        const frequencyWithoutEvery = frequencyEdit.replace('every ', '');
+        const frequencyWithoutNumber = frequencyWithoutEvery.replace(/\d+/g, '');
+        const frequencyUnit = frequencyWithoutNumber.replace(/\s/g, '');
+
+        let unit = '';
+
+        switch (frequencyUnit) {
+            case 'minutes':
+            case 'minute':
+            case 'min':
+            case 'mins':
+            case 'm':
+                unit = 'minutes';
+            break;
+            case 'hours':
+            case 'hour':
+            case 'hr':
+            case 'hrs':
+            case 'h':
+                unit = 'hours';
+            break;
+            case 'days':
+            case 'day':
+            case 'd':
+                unit ='days';
+            break;
+        }
+
+        if (unit === 'minutes' && parseInt(frequencyWithoutEvery) < 5) {
+            setModalTitle('Invalid frequency');
+            setModalContent('The minimum frequency is 5 minutes.');
+            setVisible(true);
+            return;
+        }
+
+        if (unit === '') {
+            setModalTitle('Invalid frequency unit');
+            setModalContent(`The unit "${frequencyUnit}" is not a valid time unit. Valid units are minutes, hours, and days.`);
+            setVisible(true);
+            return;
+        }
+
+        setModalTitle('Edit sync frequency?');
+        setModalContent('This will affect potential many connections. Increased frequencies can increase your billing.');
+        setVisible(true);
+
+
+
+        setModalAction(() => async () => {
+            setModalShowSpinner(true);
+            await updateSyncFrequency(flow?.id as number, frequencyWithoutEvery);
+            setModalShowSpinner(false);
+            setShowFrequencyEditMenu(false);
+            setVisible(false);
+            setLoaded(false);
+        });
+    };
+
     return (
         <DashboardLayout selectedItem={LeftNavBarItems.Integrations}>
+            <ActionModal
+                bindings={bindings}
+                modalTitle={modalTitle}
+                modalContent={modalContent}
+                modalAction={modalAction}
+                modalShowSpinner={modalShowSpinner}
+                modalTitleColor={modalTitleColor}
+                setVisible={setVisible}
+            />
             {provider && flow && (
                 <div className="mx-auto space-y-12 text-sm">
                     <div className="flex mx-20 mt-12 justify-between">
@@ -215,11 +323,34 @@ export default function FlowPage() {
                     </div>
                     {flow?.type === 'sync' && (
                         <div className="mx-20 flex">
-                            <div className="flex flex-col w-1/2">
+                            <div className="flex flex-col w-1/2 relative">
                                 <span className="text-gray-400 text-xs uppercase mb-1">Frequency</span>
-                                <div className="flex text-white space-x-3">
-                                    <span>{flow?.runs}</span>
-                                    <PencilSquareIcon className="flex h-5 w-5 cursor-pointer" />
+                                <div className="w-2/3">
+                                    <div className="flex text-white space-x-3">
+                                        {showFrequencyEditMenu ? (
+                                            <input value={frequencyEdit}
+                                                onChange={(e) => setFrequencyEdit(e.target.value)}
+                                                className="bg-zinc-900 w-full text-white rounded-md px-3 py-0.5 mt-0.5 focus:border-white"
+                                                onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                                                    console.log(e.key)
+                                                    if (e.key === 'Enter') {
+                                                        onSaveFrequency();
+                                                    }
+                                                }}
+                                            />
+                                        ) : (
+                                            <>
+                                                <span>{flow?.runs}</span>
+                                                <PencilSquareIcon className="flex h-5 w-5 cursor-pointer hover:text-zinc-400" onClick={() => editFrequency()} />
+                                            </>
+                                        )}
+                                    </div>
+                                    {showFrequencyEditMenu && frequencyEdit && (
+                                        <div className="flex items-center border border-border-gray bg-zinc-900 text-white rounded-md px-3 py-0.5 mt-0.5 cursor-pointer">
+                                            <PencilSquareIcon className="flex h-5 w-5 cursor-pointer hover:text-zinc-400" onClick={() => editFrequency()} />
+                                            <span className="mt-0.5 cursor-pointer ml-1" onClick={() => onSaveFrequency()}>Change frequency to: {frequencyEdit}</span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                             <div className="flex flex-col w-1/2">

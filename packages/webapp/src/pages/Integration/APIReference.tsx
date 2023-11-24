@@ -93,7 +93,7 @@ export default function APIReference(props: APIReferenceProps) {
                             <div className="flex w-full justify-between z-20">
                                 <h1 className="flex text-2xl text-white font-bold">Endpoint Reference</h1>
                                 <div className="flex">
-                                    <Button variant="zinc" size="sm" className="group flex cursor-pointer items-center relative">
+                                    <Button variant="zinc" size="sm" className="text-left group flex cursor-pointer items-center relative">
                                         {modalInfo?.type === 'sync' && (
                                             <ArrowPathRoundedSquareIcon className="flex h-5 w-5 text-gray-400 cursor-pointer" />
                                         )}
@@ -122,6 +122,11 @@ export default function APIReference(props: APIReferenceProps) {
                                 <EndpointLabel endpoint={modalInfo?.endpoint as string | FlowEndpoint} type={modalInfo?.type as string} />
                                 <span className="text-gray-400 mt-2">{modalInfo?.description}</span>
                             </div>
+                            {modalInfo?.type === 'sync' && (
+                                <Info size={18} classNames="mt-5 z-10" padding="px-4 py-1.5" color="orange">
+                                    To use this endpoint, enable file synchronization in the <span className="cursor-pointer underline" onClick={() => showScriptsTab()}>scripts</span>.
+                                </Info>
+                            )}
                             <div className="flex flex-col z-10 mt-8">
                                 <h2 className="text-base">Request</h2>
                                 <span className="text-gray-400 mb-4">Use the following code snippet to call this endpoint: </span>
@@ -276,7 +281,7 @@ export default function APIReference(props: APIReferenceProps) {
                                     )}
                                 </div>
                                 <Info size={16} padding="px-4 py-1.5">
-                                    <a href="https://docs.nango.dev/guides/webhooks#webhooks-from-nango-to-your-app" target="_blank" className="text-[#4E80EE]" rel="noreferrer">Register webhooks</a> to be notified when new data is available without polling.
+                                    <a href="https://docs.nango.dev/guides/webhooks#webhooks-from-nango-to-your-app" target="_blank" className="text-white underline" rel="noreferrer">Register webhooks</a> to be notified when new data is available without polling.
                                 </Info>
                                 <div className="flex flex-col mt-8">
                                     <h2 className="text-base">Response</h2>

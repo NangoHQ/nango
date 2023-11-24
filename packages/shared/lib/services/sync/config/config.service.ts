@@ -672,6 +672,19 @@ export async function getNangoConfigIdAndLocationFromId(id: number): Promise<{ n
     return result;
 }
 
+export async function updateFrequency(sync_config_id: number, runs: string): Promise<void> {
+    await schema()
+        .from<SyncConfig>(TABLE)
+        .update({
+            runs
+        })
+        .where({
+            id: sync_config_id,
+            deleted: false,
+            active: true
+        });
+}
+
 export async function getConfigWithEndpointsByProviderConfigKey(environment_id: number, provider_config_key: string): Promise<StandardNangoConfig | null> {
     const syncConfigs = await schema()
         .from<SyncConfig>(TABLE)

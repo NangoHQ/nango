@@ -7,7 +7,7 @@ interface ModalProps {
     bindings: any;
     modalTitleColor: string;
     modalShowSpinner: boolean;
-    modalContent: string;
+    modalContent: string | React.ReactNode;
     modalTitle: string;
     modalAction: (() => void) | null;
     setVisible: (visible: boolean) => void;
@@ -20,7 +20,7 @@ export default function ActionModal({ bindings, modalTitleColor, modalShowSpinne
                 <div>
                     <Modal.Content className="overflow-scroll !h-[190px] max-w-[550px] flex flex-col justify-between h-full">
                         <div>
-                            <div className="flex justify-between items-center">
+                            <div className="flex justify-between w-[500px] items-center">
                                 <span className="flex items-center -mt-3">
                                     <h1 className={`${modalTitleColor} text-base mr-3 py-2`}>{modalTitle}</h1>
                                     {modalShowSpinner && <Spinner size={2} />}

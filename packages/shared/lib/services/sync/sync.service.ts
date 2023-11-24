@@ -450,6 +450,22 @@ export const findSyncByConnections = async (connectionIds: number[], sync_name: 
     return [];
 };
 
+export const getSyncsBySyncConfigId = async (environmentId: number, syncConfigId: number): Promise<Sync[]> => {
+    const results = await schema()
+        .select('sync_name', `${TABLE}.id`)
+        .from<Sync>(TABLE)
+        .join(SYNC_CONFIG_TABLE, `${TABLE}.name`, `${SYNC_CONFIG_TABLE}.sync_name`)
+        .where({
+            environment_id: environmentId,
+            [`${SYNC_CONFIG_TABLE}.id`]: syncConfigId,
+            [`${TABLE}.deleted`]: false,
+            [`${SYNC_CONFIG_TABLE}.deleted`]: false,
+            [`${SYNC_CONFIG_TABLE}.active`]: true
+        });
+
+    return results;
+};
+
 export const getAndReconcileDifferences = async (
     environmentId: number,
     syncs: IncomingFlowConfig[],
