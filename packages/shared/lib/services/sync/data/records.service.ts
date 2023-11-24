@@ -123,6 +123,7 @@ export async function getDataRecords(
 
     let query = schema()
         .from<SyncDataRecord>(`_nango_sync_data_records`)
+        .timeout(60000) // timeout for 1 minute
         .where({
             nango_connection_id: Number(nangoConnection.id),
             model
