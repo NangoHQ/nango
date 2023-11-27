@@ -2,12 +2,7 @@ import md5 from 'md5';
 import * as uuid from 'uuid';
 import dayjs from 'dayjs';
 
-import type {
-    DataRecord as SyncDataRecord,
-    RecordWrapCustomerFacingDataRecord,
-    CustomerFacingDataRecord,
-    DataRecordWithMetadata
-} from '../../../models/Sync.js';
+import type { DataRecord as SyncDataRecord, CustomerFacingDataRecord, DataRecordWithMetadata } from '../../../models/Sync.js';
 import type { DataResponse } from '../../../models/Data.js';
 import type { ServiceResponse } from '../../../models/Generic.js';
 import db, { schema } from '../../../db/database.js';
@@ -94,176 +89,222 @@ export async function getDataRecords(
     sortBy?: string,
     order?: 'asc' | 'desc',
     filter?: 'added' | 'updated' | 'deleted',
-    includeMetaData = false
-): Promise<ServiceResponse<CustomerFacingDataRecord[] | DataRecordWithMetadata[] | null>> {
-    if (!model) {
-        const error = new NangoError('missing_model');
-
-        return { success: false, error, response: null };
-    }
-
-    const { success, error, response: nangoConnection } = await connectionService.getConnection(connectionId, providerConfigKey, environmentId);
-
-    if (!success) {
-        return { success, error, response: null };
-    }
-
-    if (!nangoConnection) {
-        throw new Error(`No connection found for connectionId ${connectionId} and providerConfigKey ${providerConfigKey}`);
-    }
-
-    let sort = 'external_id';
-
-    switch (sortBy) {
-        case 'updated_at': {
-            sort = 'updated_at';
-            await metricsManager.capture(
-                MetricTypes.SYNC_GET_RECORDS_SORT_BY_USED,
-                `Sort by used in get records with a sort value of ${sort}`,
-                LogActionEnum.SYNC,
-                {
-                    environmentId: String(environmentId),
-                    connectionId,
-                    providerConfigKey,
-                    delta: String(delta),
-                    sort,
-                    model
-                }
-            );
-
-            break;
-        }
-        case 'created_at': {
-            sort = 'created_at';
-            await metricsManager.capture(
-                MetricTypes.SYNC_GET_RECORDS_SORT_BY_USED,
-                `Sort by used in get records with a sort value of ${sort}`,
-                LogActionEnum.SYNC,
-                {
-                    environmentId: String(environmentId),
-                    connectionId,
-                    providerConfigKey,
-                    delta: String(delta),
-                    sort,
-                    model
-                }
-            );
-            break;
-        }
-    }
-
-    let query = schema()
-        .from<SyncDataRecord>(`_nango_sync_data_records`)
-        .timeout(60000) // timeout for 1 minute
-        .where({
-            nango_connection_id: Number(nangoConnection.id),
-            model
-        })
-        .orderBy(sort, order?.toLowerCase() === 'asc' ? 'asc' : 'desc');
-
-    if (offset) {
-        if (isNaN(Number(offset))) {
-            const error = new NangoError('invalid_offset');
+    includeMetaData = false,
+    cursorValue?: string
+): Promise<ServiceResponse<{ result: CustomerFacingDataRecord[] | DataRecordWithMetadata[]; nextCursor: string } | null>> {
+    try {
+        if (!model) {
+            const error = new NangoError('missing_model');
 
             return { success: false, error, response: null };
         }
 
-        await metricsManager.capture(
-            MetricTypes.SYNC_GET_RECORDS_OFFSET_USED,
-            `Offset used in get records with an offset value of ${offset}`,
-            LogActionEnum.SYNC,
-            {
+        const { success, error, response: nangoConnection } = await connectionService.getConnection(connectionId, providerConfigKey, environmentId);
+
+        if (!success) {
+            return { success, error, response: null };
+        }
+
+        if (!nangoConnection) {
+            throw new Error(`No connection found for connectionId ${connectionId} and providerConfigKey ${providerConfigKey}`);
+        }
+
+        let sort = 'created_at';
+
+        switch (sortBy) {
+            case 'updated_at': {
+                sort = 'updated_at';
+                await metricsManager.capture(
+                    MetricTypes.SYNC_GET_RECORDS_SORT_BY_USED,
+                    `Sort by used in get records with a sort value of ${sort}`,
+                    LogActionEnum.SYNC,
+                    {
+                        environmentId: String(environmentId),
+                        connectionId,
+                        providerConfigKey,
+                        delta: String(delta),
+                        sort,
+                        model
+                    }
+                );
+
+                break;
+            }
+            case 'id': {
+                sort = 'external_id';
+                await metricsManager.capture(
+                    MetricTypes.SYNC_GET_RECORDS_SORT_BY_USED,
+                    `Sort by used in get records with a sort value of ${sort}`,
+                    LogActionEnum.SYNC,
+                    {
+                        environmentId: String(environmentId),
+                        connectionId,
+                        providerConfigKey,
+                        delta: String(delta),
+                        sort,
+                        model
+                    }
+                );
+
+                break;
+            }
+        }
+
+        let query = schema()
+            .from<SyncDataRecord>(`_nango_sync_data_records`)
+            .timeout(60000) // timeout for 1 minute
+            .where({
+                nango_connection_id: Number(nangoConnection.id),
+                model
+            })
+            .orderBy(sort, order?.toLowerCase() === 'asc' ? 'asc' : 'desc')
+            .orderBy('id', order?.toLowerCase() === 'asc' ? 'asc' : 'desc');
+
+        if (cursorValue) {
+            const decodedCursorValue = Buffer.from(cursorValue, 'base64').toString('ascii');
+            const [cursorSort, cursorId] = decodedCursorValue.split('|');
+
+            if (!cursorSort || !cursorId) {
+                const error = new NangoError('invalid_cursor_value');
+
+                return { success: false, error, response: null };
+            }
+
+            const [cursorSortKey, cursorSortValue] = cursorSort.split('^');
+            const [, cursorIdValue] = cursorId.split('^');
+
+            if (cursorSortKey === 'created_at' || cursorSortKey === 'updated_at') {
+                const comparisonOperator = order?.toLowerCase() === 'asc' ? '>' : '<';
+                const timestamp = dayjs(cursorSortValue).format('YYYY-MM-DDTHH:mm:ss.SSSZ');
+
+                console.log('timestamp', timestamp);
+
+                query = query.whereRaw(`(${cursorSortKey} ${comparisonOperator} ? OR (${cursorSortKey} = ? AND id ${comparisonOperator} ?))`, [
+                    timestamp,
+                    timestamp,
+                    cursorIdValue
+                ]);
+            }
+        }
+
+        if (offset) {
+            if (isNaN(Number(offset))) {
+                const error = new NangoError('invalid_offset');
+
+                return { success: false, error, response: null };
+            }
+
+            await metricsManager.capture(
+                MetricTypes.SYNC_GET_RECORDS_OFFSET_USED,
+                `Offset used in get records with an offset value of ${offset}`,
+                LogActionEnum.SYNC,
+                {
+                    environmentId: String(environmentId),
+                    connectionId,
+                    providerConfigKey,
+                    delta: String(delta),
+                    model
+                }
+            );
+
+            query = query.offset(Number(offset));
+        }
+
+        if (limit) {
+            if (isNaN(Number(limit))) {
+                const error = new NangoError('invalid_limit');
+
+                return { success: false, error, response: null };
+            }
+            query = query.limit(Number(limit));
+        } else {
+            query = query.limit(100);
+        }
+
+        if (delta) {
+            const time = dayjs(delta);
+
+            if (!time.isValid()) {
+                const error = new NangoError('invalid_timestamp');
+
+                return { success: false, error, response: null };
+            }
+
+            const timeToDate = time.toDate();
+
+            const utcString = timeToDate.toUTCString();
+            query = query.andWhere('updated_at', '>=', utcString);
+        }
+
+        if (filter) {
+            switch (true) {
+                case filter.includes('added') && filter.includes('updated'):
+                    query = query.andWhere('external_deleted_at', null).andWhere(function () {
+                        this.where('created_at', '=', db.knex.raw('updated_at')).orWhere('created_at', '!=', db.knex.raw('updated_at'));
+                    });
+                    break;
+                case filter.includes('updated') && filter.includes('deleted'):
+                    query = query.andWhere(function () {
+                        this.where('external_is_deleted', true).orWhere('external_deleted_at', null).andWhere('created_at', '!=', db.knex.raw('updated_at'));
+                    });
+                    break;
+                case filter.includes('added') && filter.includes('deleted'):
+                    query = query.andWhere(function () {
+                        this.where('external_is_deleted', true).orWhere('external_deleted_at', null).andWhere('created_at', '=', db.knex.raw('updated_at'));
+                    });
+                    break;
+                case filter === 'added':
+                    query = query.andWhere('external_deleted_at', null).andWhere('created_at', '=', db.knex.raw('updated_at'));
+                    break;
+                case filter === 'updated':
+                    query = query.andWhere('external_deleted_at', null).andWhere('created_at', '!=', db.knex.raw('updated_at'));
+                    break;
+                case filter === 'deleted':
+                    query = query.andWhere({ external_is_deleted: true });
+                    break;
+            }
+        }
+
+        let result;
+        let nextCursor = '';
+
+        if (includeMetaData) {
+            await metricsManager.capture(MetricTypes.SYNC_GET_RECORDS_INCLUDE_METADATA_USED, `Include Nango metadata used in get records`, LogActionEnum.SYNC, {
                 environmentId: String(environmentId),
                 connectionId,
                 providerConfigKey,
                 delta: String(delta),
                 model
-            }
-        );
+            });
 
-        query = query.offset(Number(offset));
-    }
-
-    if (limit) {
-        if (isNaN(Number(limit))) {
-            const error = new NangoError('invalid_limit');
-
-            return { success: false, error, response: null };
-        }
-        query = query.limit(Number(limit));
-    }
-
-    if (delta) {
-        const time = dayjs(delta);
-
-        if (!time.isValid()) {
-            const error = new NangoError('invalid_timestamp');
-
-            return { success: false, error, response: null };
-        }
-
-        const timeToDate = time.toDate();
-
-        const utcString = timeToDate.toUTCString();
-        query = query.andWhere('updated_at', '>=', utcString);
-    }
-
-    if (filter) {
-        switch (true) {
-            case filter.includes('added') && filter.includes('updated'):
-                query = query.andWhere('external_deleted_at', null).andWhere(function () {
-                    this.where('created_at', '=', db.knex.raw('updated_at')).orWhere('created_at', '!=', db.knex.raw('updated_at'));
-                });
-                break;
-            case filter.includes('updated') && filter.includes('deleted'):
-                query = query.andWhere(function () {
-                    this.where('external_is_deleted', true).orWhere('external_deleted_at', null).andWhere('created_at', '!=', db.knex.raw('updated_at'));
-                });
-                break;
-            case filter.includes('added') && filter.includes('deleted'):
-                query = query.andWhere(function () {
-                    this.where('external_is_deleted', true).orWhere('external_deleted_at', null).andWhere('created_at', '=', db.knex.raw('updated_at'));
-                });
-                break;
-            case filter === 'added':
-                query = query.andWhere('external_deleted_at', null).andWhere('created_at', '=', db.knex.raw('updated_at'));
-                break;
-            case filter === 'updated':
-                query = query.andWhere('external_deleted_at', null).andWhere('created_at', '!=', db.knex.raw('updated_at'));
-                break;
-            case filter === 'deleted':
-                query = query.andWhere({ external_is_deleted: true });
-                break;
-        }
-    }
-
-    let result;
-
-    if (includeMetaData) {
-        await metricsManager.capture(MetricTypes.SYNC_GET_RECORDS_INCLUDE_METADATA_USED, `Include Nango metadata used in get records`, LogActionEnum.SYNC, {
-            environmentId: String(environmentId),
-            connectionId,
-            providerConfigKey,
-            delta: String(delta),
-            model
-        });
-
-        result = await query.select(
-            'created_at as first_seen_at',
-            'updated_at as last_modified_at',
-            'external_deleted_at as deleted_at',
-            db.knex.raw(`
+            result = await query.select(
+                'created_at as first_seen_at',
+                'updated_at as last_modified_at',
+                'external_deleted_at as deleted_at',
+                db.knex.raw(`
                 CASE
                     WHEN external_deleted_at IS NOT NULL THEN 'DELETED'
                     WHEN created_at = updated_at THEN 'ADDED'
                     ELSE 'UPDATED'
                 END as last_action`),
-            'json as record'
-        );
-        result = encryptionManager.decryptDataRecords(result, 'record') as unknown as DataRecordWithMetadata[];
-    } else {
-        result = await query.select(
-            db.knex.raw(`
+                'json as record'
+            );
+            result = encryptionManager.decryptDataRecords(result, 'record') as unknown as DataRecordWithMetadata[];
+            const cursorElement = result[result.length - 1];
+
+            if (sortBy === 'updated_at') {
+                nextCursor = cursorElement?.last_modified_at.toISOString() as string;
+            } else if (sortBy === 'created_at') {
+                nextCursor = cursorElement?.first_seen_at.toISOString() as string;
+            } else {
+                // @ts-ignore
+                nextCursor = cursorElement?.record.id;
+            }
+        } else {
+            console.log('query', query.toSQL().toNative());
+            const rawResult = await query.select(
+                'id',
+                db.knex.raw(`
                 jsonb_set(
                     json::jsonb,
                     '{_nango_metadata}',
@@ -280,14 +321,36 @@ export async function getDataRecords(
                     )
                 ) as record
             `)
-        );
+            );
 
-        result = encryptionManager.decryptDataRecords(result, 'record') as unknown as RecordWrapCustomerFacingDataRecord;
+            result = encryptionManager.decryptDataRecords(rawResult, 'record') as unknown as SyncDataRecord[];
 
-        result = result.map((item: { record: CustomerFacingDataRecord }) => item.record);
+            if (result.length === 0) {
+                return { success: true, error: null, response: { result: [], nextCursor: '' } };
+            }
+
+            const customerResult = result.map((item) => item.record);
+
+            const cursorRawElement = rawResult[rawResult.length - 1] as SyncDataRecord;
+            const cursorElement = customerResult[customerResult.length - 1] as unknown as CustomerFacingDataRecord;
+
+            if (sort === 'updated_at') {
+                nextCursor = dayjs(cursorElement['_nango_metadata']['last_modified_at']).format('YYYY-MM-DDTHH:mm:ss.SSSZ') as string;
+            } else if (sort === 'created_at') {
+                nextCursor = dayjs(cursorElement['_nango_metadata']['first_seen_at']).format('YYYY-MM-DDTHH:mm:ss.SSSZ') as string;
+            } else {
+                nextCursor = cursorRawElement.id as string;
+            }
+            const encodedCursorValue = Buffer.from(`${sort}^${nextCursor}|id^${cursorRawElement.id}`).toString('base64');
+
+            return { success: true, error: null, response: { result: customerResult as CustomerFacingDataRecord[], nextCursor: encodedCursorValue } };
+        }
+
+        return { success: true, error: null, response: { result, nextCursor } };
+    } catch (error: any) {
+        const nangoError = new NangoError('pass_through_error', error);
+        return { success: false, error: nangoError, response: null };
     }
-
-    return { success: true, error: null, response: result };
 }
 
 export function verifyUniqueKeysAreUnique(data: DataResponse[], optionalUniqueKey?: string | number): { isUnique: boolean; nonUniqueKeys: string[] } {

@@ -109,16 +109,12 @@ class SyncController {
 
     public async getRecords(req: Request, res: Response, next: NextFunction) {
         try {
-            const { model, delta, offset, limit, sort_by, order, filter, include_nango_metadata } = req.query;
+            const { model, delta, offset, limit, sort_by, order, filter, include_nango_metadata, cursor } = req.query;
             const environmentId = getEnvironmentId(res);
             const connectionId = req.get('Connection-Id') as string;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
 
-            const {
-                success,
-                error,
-                response: records
-            } = await syncDataService.getDataRecords(
+            const { success, error, response } = await syncDataService.getDataRecords(
                 connectionId,
                 providerConfigKey,
                 environmentId,
@@ -129,14 +125,27 @@ class SyncController {
                 sort_by as string,
                 order as 'asc' | 'desc',
                 filter as LastAction,
-                include_nango_metadata === 'true'
+                include_nango_metadata === 'true',
+                cursor as string
             );
             // TODO: return error if model doesn't exist instead of an empty list
 
-            if (!success) {
+            if (!success || !response) {
                 errorManager.errResFromNangoErr(res, error);
 
                 return;
+            }
+
+            const { result: records, nextCursor } = response;
+
+            if (nextCursor) {
+                const nextLink = `${req.baseUrl}${req.path}?cursor=${nextCursor}${model ? `&model=${model}` : ''}${delta ? `&delta=${delta}` : ''}${
+                    offset ? `&offset=${offset}` : ''
+                }${limit ? `&limit=${limit}` : ''}${sort_by ? `&sort_by=${sort_by}` : ''}${order ? `&order=${order}` : ''}${filter ? `&filter=${filter}` : ''}${
+                    include_nango_metadata ? `&include_nango_metadata=${include_nango_metadata}` : ''
+                }`;
+
+                res.links({ next: nextLink });
             }
 
             res.send(records);

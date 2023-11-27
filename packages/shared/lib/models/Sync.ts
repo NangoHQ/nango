@@ -206,7 +206,7 @@ export interface Schedule extends TimestampsAndDeleted {
 
 export type CustomerFacingDataRecord = {
     _nango_metadata: RecordMetadata;
-} & Record<string, any>;
+} & Record<string, any> & { id: string | number };
 
 export type RecordWrapCustomerFacingDataRecord = { record: CustomerFacingDataRecord }[];
 
@@ -215,6 +215,7 @@ export interface DataRecord extends Timestamps {
     id?: string;
     external_id: string;
     json: object;
+    record?: object;
     data_hash: string;
     nango_connection_id: number;
     model: string;
@@ -231,7 +232,7 @@ export type LastAction = 'added' | 'updated' | 'deleted';
 
 interface RecordMetadata {
     first_seen_at: Date;
-    last_seen_at: Date;
+    last_modified_at: Date;
     last_action: LastAction;
     deleted_at: Date | null;
 }

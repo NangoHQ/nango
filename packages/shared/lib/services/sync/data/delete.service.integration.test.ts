@@ -163,7 +163,7 @@ describe('Data delete service integration tests', () => {
             'deleted'
         );
 
-        expect(recordResponse?.length).toEqual(20);
+        expect(recordResponse?.result?.length).toEqual(20);
     });
 
     it('Given a snapshot, the next insert with less records should not show as deleted if track deletes is false', async () => {
@@ -216,12 +216,13 @@ describe('Data delete service integration tests', () => {
             undefined, // delta
             undefined, // offset
             undefined, // limit
-            undefined, // sortBy
+            'id', // sortBy
             'asc',
             'deleted'
         );
+        console.log(recordResponse?.result);
 
-        expect(recordResponse?.length).toEqual(0);
+        expect(recordResponse?.result?.length).toEqual(0);
     });
     it('When track deletes is true and an entry is updated it only that record should show as updated when getDataRecords is called', async () => {
         const records = generateInsertableJson(100);
@@ -298,7 +299,7 @@ describe('Data delete service integration tests', () => {
             'updated'
         );
 
-        expect(updatedRecordResponse?.length).toEqual(1);
+        expect(updatedRecordResponse?.result?.length).toEqual(1);
 
         // When track deletes is true and an entry is updated it should show as updated when getDataRecords is called
         const { response: addedRecordResponse } = await getDataRecords(
@@ -314,6 +315,6 @@ describe('Data delete service integration tests', () => {
             'added'
         );
 
-        expect(addedRecordResponse?.length).toEqual(99);
+        expect(addedRecordResponse?.result?.length).toEqual(99);
     });
 });

@@ -73,7 +73,18 @@ describe('Data service integration tests', () => {
         ];
 
         const connection = await connectionService.getConnectionById(connections[0] as number);
-        const { response: records } = await getDataRecords(connection?.connection_id as string, connection?.provider_config_key as string, 1, modelName);
+        const { response } = await getDataRecords(
+            connection?.connection_id as string,
+            connection?.provider_config_key as string,
+            1,
+            modelName,
+            '',
+            undefined,
+            100,
+            'id',
+            'desc'
+        );
+        const records = response?.result;
         expect(records?.length).toBe(5);
 
         for (let i = 0; i < (records as CustomerFacingDataRecord[])?.length; i++) {
@@ -81,7 +92,7 @@ describe('Data service integration tests', () => {
             expect(records?.[i]?.id).toEqual(expectedRecords[i].id);
         }
 
-        const { response: ascRecords } = await getDataRecords(
+        const { response: ascResponse } = await getDataRecords(
             connection?.connection_id as string,
             connection?.provider_config_key as string,
             connection?.environment_id as number,
@@ -89,9 +100,11 @@ describe('Data service integration tests', () => {
             undefined, // delta
             undefined, // offset
             undefined, // limit
-            undefined, // sortBy
+            'id', // sortBy
             'asc'
         );
+
+        const ascRecords = ascResponse?.result;
 
         const reverseExpectedRecords = [...expectedRecords].reverse();
         for (let i = 0; i < (ascRecords as CustomerFacingDataRecord[])?.length; i++) {
@@ -99,7 +112,7 @@ describe('Data service integration tests', () => {
             expect(ascRecords?.[i]?.id).toEqual(reverseExpectedRecords[i].id);
         }
 
-        const { response: metaRecords } = await getDataRecords(
+        const { response: metaResponse } = await getDataRecords(
             connection?.connection_id as string,
             connection?.provider_config_key as string,
             1,
@@ -113,6 +126,8 @@ describe('Data service integration tests', () => {
             true // include metadata
         );
 
+        const metaRecords = metaResponse?.result;
+
         for (const metaRecord of metaRecords as DataRecordWithMetadata[]) {
             expect(metaRecord).toHaveProperty('first_seen_at');
             expect(metaRecord).toHaveProperty('last_modified_at');
@@ -120,7 +135,7 @@ describe('Data service integration tests', () => {
             expect(metaRecord.last_action).toBe('ADDED');
         }
 
-        const { response: regularRecords } = await getDataRecords(
+        const { response: regularResponse } = await getDataRecords(
             connection?.connection_id as string,
             connection?.provider_config_key as string,
             1,
@@ -133,6 +148,8 @@ describe('Data service integration tests', () => {
             undefined, // filter
             false // include metadata
         );
+
+        const regularRecords = regularResponse?.result;
 
         for (const regularRecord of regularRecords as CustomerFacingDataRecord[]) {
             expect(regularRecord).toHaveProperty('_nango_metadata');
