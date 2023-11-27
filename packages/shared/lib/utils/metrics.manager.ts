@@ -10,7 +10,9 @@ export enum MetricTypes {
     GET_CONNECTION_SUCCESS = 'get_connection_success',
     SYNC_DEPLOY_SUCCESS = 'sync_deploy_success',
     SYNC_DEPLOY_FAILURE = 'sync_deploy_failure',
-    SYNC_TRACK_RUNTIME = 'sync_script_track_runtime'
+    SYNC_TRACK_RUNTIME = 'sync_script_track_runtime',
+    SYNC_GET_RECORDS_OFFSET_USED = 'sync_get_records_offset_used',
+    SYNC_GET_RECORDS_INCLUDE_METADATA_USED = 'sync_get_records_include_metadata_used'
 }
 
 class MetricsManager {

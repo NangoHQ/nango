@@ -14,6 +14,8 @@ import db, { schema } from '../../../db/database.js';
 import connectionService from '../../connection.service.js';
 import { NangoError } from '../../../utils/error.js';
 import encryptionManager from '../../../utils/encryption.manager.js';
+import metricsManager, { MetricTypes } from '../../../utils/metrics.manager.js';
+import { LogActionEnum } from '../../../models/Activity.js';
 
 export const formatDataRecords = (
     records: DataResponse[],
@@ -136,6 +138,20 @@ export async function getDataRecords(
 
             return { success: false, error, response: null };
         }
+
+        await metricsManager.capture(
+            MetricTypes.SYNC_GET_RECORDS_OFFSET_USED,
+            `Offset used in get records with an offset value of ${offset}`,
+            LogActionEnum.SYNC,
+            {
+                environmentId: String(environmentId),
+                connectionId,
+                providerConfigKey,
+                delta: String(delta),
+                model
+            }
+        );
+
         query = query.offset(Number(offset));
     }
 
@@ -195,6 +211,14 @@ export async function getDataRecords(
     let result;
 
     if (includeMetaData) {
+        await metricsManager.capture(MetricTypes.SYNC_GET_RECORDS_INCLUDE_METADATA_USED, `Include Nango metadata used in get records`, LogActionEnum.SYNC, {
+            environmentId: String(environmentId),
+            connectionId,
+            providerConfigKey,
+            delta: String(delta),
+            model
+        });
+
         result = await query.select(
             'created_at as first_seen_at',
             'updated_at as last_modified_at',
