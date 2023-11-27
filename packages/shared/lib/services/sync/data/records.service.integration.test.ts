@@ -1,4 +1,5 @@
 import { expect, describe, it, beforeAll } from 'vitest';
+import dayjs from 'dayjs';
 import { multipleMigrations } from '../../../db/database.js';
 import * as DataService from './data.service.js';
 import * as RecordsService from './records.service.js';
@@ -16,8 +17,8 @@ describe('Records service integration test', () => {
     });
 
     it('Should paginate the records to retrieve all records', async () => {
-        const numOfRecords = 2;
-        const limit = 1;
+        const numOfRecords = 3000;
+        const limit = 100;
         const records = generateInsertableJson(numOfRecords);
         const { response, meta } = await createRecords(records, environmentName);
         const { response: formattedResults } = response;
@@ -63,7 +64,6 @@ describe('Records service integration test', () => {
 
             const { result: records, nextCursor } = response;
 
-            console.log(records);
             allFetchedRecords.push(...records);
 
             cursor = nextCursor;
@@ -72,6 +72,14 @@ describe('Records service integration test', () => {
             expect(records?.length).toBeLessThanOrEqual(limit);
         } while (cursor);
 
+        for (let i = 1; i < allFetchedRecords.length; i++) {
+            // @ts-ignore
+            const currentRecordDate = dayjs(allFetchedRecords[i]._nango_metadata.first_seen_at);
+            // @ts-ignore
+            const previousRecordDate = dayjs(allFetchedRecords[i - 1]._nango_metadata.first_seen_at);
+
+            expect(currentRecordDate.isAfter(previousRecordDate) || currentRecordDate.isSame(previousRecordDate)).toBe(true);
+        }
         expect(allFetchedRecords.length).toBe(numOfRecords);
     });
 });

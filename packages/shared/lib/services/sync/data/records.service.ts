@@ -109,6 +109,12 @@ export async function getDataRecords(
             throw new Error(`No connection found for connectionId ${connectionId} and providerConfigKey ${providerConfigKey}`);
         }
 
+        if (offset && cursorValue) {
+            const error = new NangoError('pass_through_error', 'offset and cursor cannot be used together');
+
+            return { success: false, error, response: null };
+        }
+
         let sort = 'created_at';
 
         switch (sortBy) {
@@ -175,15 +181,11 @@ export async function getDataRecords(
 
             if (cursorSortKey === 'created_at' || cursorSortKey === 'updated_at') {
                 const comparisonOperator = order?.toLowerCase() === 'asc' ? '>' : '<';
-                const timestamp = dayjs(cursorSortValue).format('YYYY-MM-DDTHH:mm:ss.SSSZ');
-
-                console.log('timestamp', timestamp);
-
-                query = query.whereRaw(`(${cursorSortKey} ${comparisonOperator} ? OR (${cursorSortKey} = ? AND id ${comparisonOperator} ?))`, [
-                    timestamp,
-                    timestamp,
-                    cursorIdValue
-                ]);
+                query = query.where((builder) =>
+                    builder
+                        .where(cursorSortKey as string, comparisonOperator, cursorSortValue)
+                        .orWhere((builder) => builder.where(cursorSortKey as string, '=', cursorSortValue).andWhere('id', comparisonOperator, cursorIdValue))
+                );
             }
         }
 
@@ -301,7 +303,6 @@ export async function getDataRecords(
                 nextCursor = cursorElement?.record.id;
             }
         } else {
-            console.log('query', query.toSQL().toNative());
             const rawResult = await query.select(
                 'id',
                 db.knex.raw(`
@@ -335,9 +336,9 @@ export async function getDataRecords(
             const cursorElement = customerResult[customerResult.length - 1] as unknown as CustomerFacingDataRecord;
 
             if (sort === 'updated_at') {
-                nextCursor = dayjs(cursorElement['_nango_metadata']['last_modified_at']).format('YYYY-MM-DDTHH:mm:ss.SSSZ') as string;
+                nextCursor = cursorElement['_nango_metadata']['last_modified_at'] as unknown as string;
             } else if (sort === 'created_at') {
-                nextCursor = dayjs(cursorElement['_nango_metadata']['first_seen_at']).format('YYYY-MM-DDTHH:mm:ss.SSSZ') as string;
+                nextCursor = cursorElement['_nango_metadata']['first_seen_at'] as unknown as string;
             } else {
                 nextCursor = cursorRawElement.id as string;
             }
