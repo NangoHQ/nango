@@ -115,12 +115,41 @@ export async function getDataRecords(
     let sort = 'external_id';
 
     switch (sortBy) {
-        case 'updated_at':
+        case 'updated_at': {
             sort = 'updated_at';
+            await metricsManager.capture(
+                MetricTypes.SYNC_GET_RECORDS_SORT_BY_USED,
+                `Sort by used in get records with a sort value of ${sort}`,
+                LogActionEnum.SYNC,
+                {
+                    environmentId: String(environmentId),
+                    connectionId,
+                    providerConfigKey,
+                    delta: String(delta),
+                    sort,
+                    model
+                }
+            );
+
             break;
-        case 'created_at':
+        }
+        case 'created_at': {
             sort = 'created_at';
+            await metricsManager.capture(
+                MetricTypes.SYNC_GET_RECORDS_SORT_BY_USED,
+                `Sort by used in get records with a sort value of ${sort}`,
+                LogActionEnum.SYNC,
+                {
+                    environmentId: String(environmentId),
+                    connectionId,
+                    providerConfigKey,
+                    delta: String(delta),
+                    sort,
+                    model
+                }
+            );
             break;
+        }
     }
 
     let query = schema()
