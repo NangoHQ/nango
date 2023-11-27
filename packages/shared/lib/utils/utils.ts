@@ -93,6 +93,10 @@ export function getServerBaseUrl() {
     return getServerHost() + `:${getServerPort()}`;
 }
 
+export function getRedisUrl() {
+    return process.env['NANGO_REDIS_URL'] || undefined;
+}
+
 export function isValidHttpUrl(str: string) {
     const pattern = new RegExp(
         '^(https?:\\/\\/)?' + // protocol
