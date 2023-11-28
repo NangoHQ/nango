@@ -152,6 +152,7 @@ describe('Records service integration test', () => {
         let cursor: string | undefined;
         let allRecordsLength = 0;
 
+        const startTime = Date.now();
         do {
             const { response, error } = await RecordsService.getDataRecords(
                 connection?.connection_id as string, // connectionId
@@ -184,6 +185,11 @@ describe('Records service integration test', () => {
             expect(records).not.toBe(undefined);
             expect(records?.length).toBeLessThanOrEqual(limit);
         } while (cursor);
+
+        const endTime = Date.now();
+
+        const runTime = endTime - startTime;
+        expect(runTime).toBeLessThan(5000);
 
         expect(allRecordsLength).toBe(numOfRecords);
     });
