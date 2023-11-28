@@ -159,7 +159,7 @@ export async function getDataRecords(
                 break;
             }
             case 'id': {
-                sort = 'id';
+                sort = 'external_id';
                 await metricsManager.capture(
                     MetricTypes.SYNC_GET_RECORDS_SORT_BY_USED,
                     `Sort by used in get records with a sort value of ${sort}`,

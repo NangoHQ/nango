@@ -41,18 +41,18 @@ describe('Records service integration test', () => {
         const allFetchedRecords = [];
         do {
             const { response, error } = await RecordsService.getDataRecords(
-                connection?.connection_id as string,
-                connection?.provider_config_key as string,
-                connection?.environment_id as number,
-                modelName,
-                undefined,
-                '',
-                limit,
-                'desc',
-                undefined,
-                undefined,
-                false,
-                cursor
+                connection?.connection_id as string, // connectionId
+                connection?.provider_config_key as string, // providerConfigKey
+                connection?.environment_id as number, // environmentId
+                modelName, // model
+                undefined, // delta
+                undefined, //offset
+                limit, // limit
+                undefined, // sortBy
+                undefined, // order
+                undefined, // filter
+                false, // includeMetaData
+                cursor // cursor
             );
 
             if (!response) {
@@ -121,5 +121,70 @@ describe('Records service integration test', () => {
             const { nextCursor } = recordResponse;
             expect(nextCursor).toBe(undefined);
         }
+    });
+
+    it('Should be able to retrieve 20K records in under 5s with a cursor', async () => {
+        const numOfRecords = 20000;
+        const limit = 1000;
+        const records = generateInsertableJson(numOfRecords);
+        const { response, meta } = await createRecords(records, environmentName);
+        const { response: formattedResults } = response;
+        const { modelName, nangoConnectionId } = meta;
+
+        // insert in chunks of 1000
+        // @ts-ignore
+        for (let i = 0; i < formattedResults?.length; i += 1000) {
+            const { error, success } = await DataService.upsert(
+                formattedResults?.slice(i, i + 1000) as unknown as DataRecord[],
+                '_nango_sync_data_records',
+                'external_id',
+                nangoConnectionId as number,
+                modelName,
+                1,
+                1
+            );
+            expect(success).toBe(true);
+            expect(error).toBe(undefined);
+        }
+
+        const connection = await connectionService.getConnectionById(nangoConnectionId as number);
+
+        let cursor: string | undefined;
+        let allRecordsLength = 0;
+
+        do {
+            const { response, error } = await RecordsService.getDataRecords(
+                connection?.connection_id as string, // connectionId
+                connection?.provider_config_key as string, // providerConfigKey
+                connection?.environment_id as number, // environmentId
+                modelName, // model
+                undefined, // delta
+                undefined, //offset
+                limit, // limit
+                undefined, // sortBy
+                undefined, // order
+                undefined, // filter
+                false, // includeMetaData
+                cursor // cursor
+            );
+
+            if (!response) {
+                throw new Error('Response is undefined');
+            }
+
+            expect(error).toBe(null);
+            expect(response).not.toBe(undefined);
+
+            const { result: records, nextCursor } = response;
+
+            allRecordsLength += records.length;
+
+            cursor = nextCursor;
+
+            expect(records).not.toBe(undefined);
+            expect(records?.length).toBeLessThanOrEqual(limit);
+        } while (cursor);
+
+        expect(allRecordsLength).toBe(numOfRecords);
     });
 });
