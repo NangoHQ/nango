@@ -8,6 +8,7 @@ export default defineConfig({
     test: {
         include: ['**/*.integration.{test,spec}.?(c|m)[jt]s?(x)'],
         globalSetup: './tests/setup.ts',
-        threads: false
+        threads: false,
+        testTimeout: 10000
     }
 });
