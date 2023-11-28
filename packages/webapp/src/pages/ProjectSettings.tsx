@@ -833,7 +833,6 @@ export default function ProjectSettings() {
                                                 <input
                                                     id={`env_var_name_${envVar.id || index}`}
                                                     name={`${envVar.id || index}-env_var_name_${index}`}
-                                                    data-index={index}
                                                     defaultValue={envVar.name}
                                                     autoComplete="new-password"
                                                     required
@@ -844,7 +843,6 @@ export default function ProjectSettings() {
                                                     id={`env_var_value_${envVar.id || index}`}
                                                     name={`${envVar.id || index}-env_var_value_${index}`}
                                                     defaultValue={envVar.value}
-                                                    data-index={index}
                                                     required
                                                     autoComplete="new-password"
                                                     type="password"
