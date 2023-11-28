@@ -317,20 +317,30 @@ export class Nango {
      * =======
      */
 
-    public async getRecords<T = any>(config: GetRecordsRequestConfig): Promise<(T & { _nango_metadata: RecordMetadata })[]> {
-        const { connectionId, providerConfigKey, model, delta, offset, limit, includeNangoMetadata, filter } = config;
+    public async getRecords<T = any>(
+        config: GetRecordsRequestConfig
+    ): Promise<{ records: (T & { _nango_metadata: RecordMetadata })[]; next_cursor: string | null }> {
+        const { connectionId, providerConfigKey, model, delta, offset, limit, includeNangoMetadata, filter, cursor } = config;
         validateSyncRecordConfiguration(config);
 
         const order = config?.order === 'asc' ? 'asc' : 'desc';
 
-        let sortBy = 'id';
+        let sortBy = '';
         switch (config.sortBy) {
-            case 'createdAt':
-                sortBy = 'created_at';
+            case 'id':
+                sortBy = 'id';
                 break;
             case 'updatedAt':
                 sortBy = 'updated_at';
                 break;
+        }
+
+        if (config.order) {
+            console.warn(`The order option will be deprecated soon and will be removed in a future release.`);
+        }
+
+        if (config.sortBy) {
+            console.warn(`The sortBy option will be deprecated soon and will be removed in a future release.`);
         }
 
         if (includeNangoMetadata) {
@@ -342,7 +352,7 @@ export class Nango {
 
         const url = `${this.serverUrl}/sync/records/?model=${model}&order=${order}&delta=${delta || ''}&offset=${offset || ''}&limit=${limit || ''}&sort_by=${
             sortBy || ''
-        }&include_nango_metadata=${includeMetadata}${filter ? `&filter=${filter}` : ''}`;
+        }&${includeMetadata ? 'include_nango_metadata' : ''}=${includeMetadata}${filter ? `&filter=${filter}` : ''}${cursor ? `&cursor=${cursor}` : ''}`;
 
         const headers: Record<string, string | number | boolean> = {
             'Connection-Id': connectionId,
@@ -355,7 +365,40 @@ export class Nango {
 
         const response = await axios.get(url, options);
 
-        return response.data;
+        const parseLinkHeader = (linkHeader: string): string | null => {
+            if (!linkHeader) {
+                return null;
+            }
+            const links = linkHeader.split(',').map((link) => link.trim());
+            const linkMap: Record<string, string> = {};
+
+            links.forEach((link) => {
+                const parts = link.split(';');
+                if (parts.length >= 2) {
+                    const partOne = parts[0]?.trim();
+                    const partTwo = parts[1]?.trim();
+                    const urlMatch = partOne?.match(/<(.*)>/);
+                    const relMatch = partTwo?.match(/rel="(.*)"/);
+
+                    if (urlMatch && relMatch) {
+                        const url = urlMatch[1] as string;
+                        const rel = relMatch[1] as string;
+                        linkMap[rel] = url;
+                    }
+                }
+            });
+
+            const cursor = linkMap['next']
+                ?.split('?')[1]
+                ?.split('&')
+                ?.find((param) => param.includes('cursor'));
+
+            const cursorOnly = cursor?.split('=')[1];
+
+            return cursorOnly || '';
+        };
+
+        return { records: response.data, next_cursor: parseLinkHeader(response.headers['link']) };
     }
 
     public async triggerSync(providerConfigKey: string, syncs?: string[], connectionId?: string): Promise<void> {

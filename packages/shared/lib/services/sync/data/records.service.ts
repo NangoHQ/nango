@@ -109,10 +109,32 @@ export async function getDataRecords(
             throw new Error(`No connection found for connectionId ${connectionId} and providerConfigKey ${providerConfigKey}`);
         }
 
+        if (sortBy && cursorValue) {
+            const error = new NangoError('pass_through_error', 'sortBy and cursor cannot be used together');
+
+            return { success: false, error, response: null };
+        }
+
         if (offset && cursorValue) {
             const error = new NangoError('pass_through_error', 'offset and cursor cannot be used together');
 
             return { success: false, error, response: null };
+        }
+
+        if (order) {
+            await metricsManager.capture(
+                MetricTypes.SYNC_GET_RECORDS_ORDER_USED,
+                `Order used in get records with a order value of ${order}`,
+                LogActionEnum.SYNC,
+                {
+                    environmentId: String(environmentId),
+                    connectionId,
+                    providerConfigKey,
+                    delta: String(delta),
+                    order,
+                    model
+                }
+            );
         }
 
         let sort = 'created_at';
@@ -137,7 +159,7 @@ export async function getDataRecords(
                 break;
             }
             case 'id': {
-                sort = 'external_id';
+                sort = 'id';
                 await metricsManager.capture(
                     MetricTypes.SYNC_GET_RECORDS_SORT_BY_USED,
                     `Sort by used in get records with a sort value of ${sort}`,
@@ -179,13 +201,16 @@ export async function getDataRecords(
             const [cursorSortKey, cursorSortValue] = cursorSort.split('^');
             const [, cursorIdValue] = cursorId.split('^');
 
+            const comparisonOperator = order?.toLowerCase() === 'asc' ? '>' : '<';
+
             if (cursorSortKey === 'created_at' || cursorSortKey === 'updated_at') {
-                const comparisonOperator = order?.toLowerCase() === 'asc' ? '>' : '<';
                 query = query.where((builder) =>
                     builder
                         .where(cursorSortKey as string, comparisonOperator, cursorSortValue)
                         .orWhere((builder) => builder.where(cursorSortKey as string, '=', cursorSortValue).andWhere('id', comparisonOperator, cursorIdValue))
                 );
+            } else {
+                query = query.where(cursorSortKey as string, comparisonOperator, cursorSortValue);
             }
         }
 
@@ -292,16 +317,6 @@ export async function getDataRecords(
                 'json as record'
             );
             result = encryptionManager.decryptDataRecords(result, 'record') as unknown as DataRecordWithMetadata[];
-            const cursorElement = result[result.length - 1];
-
-            if (sortBy === 'updated_at') {
-                nextCursor = cursorElement?.last_modified_at.toISOString() as string;
-            } else if (sortBy === 'created_at') {
-                nextCursor = cursorElement?.first_seen_at.toISOString() as string;
-            } else {
-                // @ts-ignore
-                nextCursor = cursorElement?.record.id;
-            }
         } else {
             const rawResult = await query.select(
                 'id',
@@ -332,7 +347,7 @@ export async function getDataRecords(
 
             const customerResult = result.map((item) => item.record);
 
-            if (offset) {
+            if (offset || sortBy) {
                 return { success: true, error: null, response: { result: customerResult as CustomerFacingDataRecord[] } };
             }
 

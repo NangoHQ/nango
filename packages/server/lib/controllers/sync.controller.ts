@@ -139,11 +139,36 @@ class SyncController {
             const { result: records, nextCursor } = response;
 
             if (nextCursor) {
-                const nextLink = `${req.baseUrl}${req.path}?cursor=${nextCursor}${model ? `&model=${model}` : ''}${delta ? `&delta=${delta}` : ''}${
-                    offset ? `&offset=${offset}` : ''
-                }${limit ? `&limit=${limit}` : ''}${sort_by ? `&sort_by=${sort_by}` : ''}${order ? `&order=${order}` : ''}${filter ? `&filter=${filter}` : ''}${
-                    include_nango_metadata ? `&include_nango_metadata=${include_nango_metadata}` : ''
-                }`;
+                const url = new URL(`${req.protocol}://${req.get('host')}${req.baseUrl}${req.path}`);
+                const params = new URLSearchParams();
+
+                params.append('cursor', nextCursor);
+                if (model) {
+                    params.append('model', model.toString());
+                }
+                if (delta) {
+                    params.append('delta', delta.toString());
+                }
+                if (offset) {
+                    params.append('offset', offset.toString());
+                }
+                if (limit) {
+                    params.append('limit', limit.toString());
+                }
+                if (sort_by) {
+                    params.append('sort_by', sort_by.toString());
+                }
+                if (order) {
+                    params.append('order', order.toString());
+                }
+                if (filter) {
+                    params.append('filter', filter.toString());
+                }
+                if (include_nango_metadata) {
+                    params.append('include_nango_metadata', include_nango_metadata.toString());
+                }
+
+                const nextLink = url.toString() + '?' + params.toString();
 
                 res.links({ next: nextLink });
             }

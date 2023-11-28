@@ -326,9 +326,8 @@ const records = await nango.getRecords<ModelName>({
     model: '<model-name>',                    // The name of the data model, from nango.yaml. E.g. ticket
     delta: '<timestamp>'                      // Optional. Only return records added or updated since this timestamp. E.g. 2023-05-31T11:46:13.390Z
     limit: <number>,                          // Optional: For pagination: Maximum of records to return. If not passed, all records are returned.
-    offset: <number>,                         // Optional: For pagination: The number of records to skip. If not passed, no records are skipped.
-    sortBy: 'id' | 'createdAt' | 'updatedAt', // Optional: Optional: Set how the records are sorted. The default is by 'id'
     order: 'asc' | 'desc',                    // Optional: Set the order of results. The default is 'desc'
+    cursor: '<string>'                        // Optional: Paginate through records using this value which can be obtained from the "next_cursor" property in the response.
     filter: 'added' | 'updated' | 'deleted'   // Optional: Retrieve only records that have been added, updated, or deleted since the last sync. Useful when used with the delta parameter. Also accepts comma separated combinations e.g., "added,updated"
 });
 
@@ -338,20 +337,28 @@ console.log(records);
 By default this returns an array of objects in the data model that you queried with some metadata about each record.
 
 ```json
-[
-    {
-        id: 123,
-        ..., // Fields as specified in the model you queried
-        _nango_metadata: {
-            deleted_at: null,
-            last_action: 'ADDED',
-            first_seen_at: '2023-09-18T15:20:35.941305+00:00',
-            last_modified_at: '2023-09-18T15:20:35.941305+00:00'
-        }
-    },
-    ...
-]
+{
+    records:
+        [
+            {
+                id: 123,
+                ..., // Fields as specified in the model you queried
+                _nango_metadata: {
+                    deleted_at: null,
+                    last_action: 'ADDED',
+                    first_seen_at: '2023-09-18T15:20:35.941305+00:00',
+                    last_modified_at: '2023-09-18T15:20:35.941305+00:00'
+                }
+            },
+            ...
+        ],
+    next_cursor: "Y3JlYXRlZF9hdF4yMDIzLTExLTE3VDExOjQ3OjE0LjQ0NyswMjowMHxpZF4xYTE2MTYwMS0yMzk5LTQ4MzYtYWFiMi1mNjk1ZWI2YTZhYzI"
+}
 ```
+
+The SDK will parse the cursor from the header and include a `next_cursor` property as part of the response.
+This value can be used with the `cursor` parameter to get the next page of results.
+If there are no more results the `next_cursor` will be null.
 
 If you are using the [Nango webhooks](/guides/webhooks#from-nango) you can use the timestamp you get from the webhook for the `delta` parameter.
 
