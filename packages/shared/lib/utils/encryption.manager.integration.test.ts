@@ -11,33 +11,25 @@ describe('Encryption manager tests', () => {
         await multipleMigrations();
     });
 
-    it('Should be able to encrypt a thousand records under 1 minute', async () => {
+    it('Should be able to encrypt 100 records under 2 seconds', async () => {
         const environmentName = 'encrypt-records';
 
-        const records = generateInsertableJson(1000);
+        const records = generateInsertableJson(100);
         const { response, meta } = await createRecords(records, environmentName);
         const { response: formattedResults } = response;
         const { modelName, nangoConnectionId } = meta;
+        const { error, success } = await upsert(
+            formattedResults as unknown as DataRecord[],
+            '_nango_sync_data_records',
+            'external_id',
+            nangoConnectionId as number,
+            modelName,
+            1,
+            1
+        );
 
-        // chunk the formatted results into 1000 chunks
-        const chunkedResults = [];
-        // @ts-ignore
-        for (let i = 0; i < formattedResults?.length; i += 1000) {
-            const chunk = formattedResults?.slice(i, i + 1000);
-            chunkedResults.push(chunk);
-            const { error, success } = await upsert(
-                chunk as unknown as DataRecord[], // Changed this line to use the chunk
-                '_nango_sync_data_records',
-                'external_id',
-                nangoConnectionId as number,
-                modelName,
-                1,
-                1
-            );
-
-            expect(success).toBe(true);
-            expect(error).toBe(undefined);
-        }
+        expect(success).toBe(true);
+        expect(error).toBe(undefined);
         const keyBuffer = crypto.randomBytes(32);
         const key = keyBuffer.toString('base64');
         // @ts-ignore
@@ -49,6 +41,6 @@ describe('Encryption manager tests', () => {
         const end = Date.now();
         const timeTaken = end - start;
 
-        expect(timeTaken).toBeLessThan(60000);
+        expect(timeTaken).toBeLessThan(2000);
     });
 });
