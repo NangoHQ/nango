@@ -13,8 +13,8 @@ const paginate = async (nango, args, cursor) => {
     if (cursor) {
         params.cursor = cursor;
     }
-    const response = await nango.getRecords(params);
-    console.log(response.records.length);
+    const response = await nango.listRecords(params);
+    console.log(response);
     if (response.next_cursor) {
         await paginate(nango, args, response.next_cursor);
     }

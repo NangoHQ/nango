@@ -1,6 +1,4 @@
-import crypto from 'crypto';
 import { expect, describe, it, beforeAll } from 'vitest';
-import encryptionManager from './encryption.manager.js';
 import { multipleMigrations } from '../db/database.js';
 import { generateInsertableJson, createRecords } from '../services/sync/data/mocks.js';
 import type { DataRecord } from '../models/Sync.js';
@@ -11,13 +9,15 @@ describe('Encryption manager tests', () => {
         await multipleMigrations();
     });
 
-    it('Should be able to encrypt 100 records under 2 seconds', async () => {
+    it('Should be able to encrypt and insert 2000 records under 2 seconds', async () => {
         const environmentName = 'encrypt-records';
 
-        const records = generateInsertableJson(100);
+        const records = generateInsertableJson(2000);
         const { response, meta } = await createRecords(records, environmentName);
         const { response: formattedResults } = response;
         const { modelName, nangoConnectionId } = meta;
+        const start = Date.now();
+
         const { error, success } = await upsert(
             formattedResults as unknown as DataRecord[],
             '_nango_sync_data_records',
@@ -30,17 +30,8 @@ describe('Encryption manager tests', () => {
 
         expect(success).toBe(true);
         expect(error).toBe(undefined);
-        const keyBuffer = crypto.randomBytes(32);
-        const key = keyBuffer.toString('base64');
-        // @ts-ignore
-        encryptionManager.key = key;
-
-        // time how long this takes
-        const start = Date.now();
-        await encryptionManager.encryptAllDataRecords();
         const end = Date.now();
         const timeTaken = end - start;
-
         expect(timeTaken).toBeLessThan(2000);
     });
 });

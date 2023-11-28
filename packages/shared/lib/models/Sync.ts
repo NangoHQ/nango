@@ -208,6 +208,8 @@ export type CustomerFacingDataRecord = {
     _nango_metadata: RecordMetadata;
 } & Record<string, any> & { id: string | number };
 
+export type GetRecordsResponse = { records: CustomerFacingDataRecord[] | DataRecordWithMetadata[]; next_cursor?: string | null } | null;
+
 export type RecordWrapCustomerFacingDataRecord = { record: CustomerFacingDataRecord }[];
 
 export interface DataRecord extends Timestamps {

@@ -4,7 +4,8 @@ import { multipleMigrations } from '../../../db/database.js';
 import * as DataService from './data.service.js';
 import * as RecordsService from './records.service.js';
 import { createConfigSeeds } from '../../../db/seeders/config.seeder.js';
-import type { DataRecord } from '../../../models/Sync.js';
+import type { GetRecordsResponse, DataRecord } from '../../../models/Sync.js';
+import type { ServiceResponse } from '../../../models/Generic.js';
 import connectionService from '../../connection.service.js';
 import { generateInsertableJson, createRecords } from './mocks.js';
 
@@ -36,37 +37,35 @@ describe('Records service integration test', () => {
         expect(success).toBe(true);
         expect(error).toBe(undefined);
 
-        let cursor: string | undefined;
+        let cursor = null;
 
         const allFetchedRecords = [];
         do {
-            const { response, error } = await RecordsService.getDataRecords(
+            const result = (await RecordsService.getAllDataRecords(
                 connection?.connection_id as string, // connectionId
                 connection?.provider_config_key as string, // providerConfigKey
                 connection?.environment_id as number, // environmentId
                 modelName, // model
                 undefined, // delta
-                undefined, //offset
                 limit, // limit
-                undefined, // sortBy
-                undefined, // order
                 undefined, // filter
-                false, // includeMetaData
                 cursor // cursor
-            );
+            )) as unknown as ServiceResponse<GetRecordsResponse>;
 
-            if (!response) {
+            if (!result.response) {
                 throw new Error('Response is undefined');
             }
+
+            const { response: recordsResponse, error } = result;
 
             expect(error).toBe(null);
             expect(response).not.toBe(undefined);
 
-            const { result: records, nextCursor } = response;
+            const { records, next_cursor } = recordsResponse;
 
             allFetchedRecords.push(...records);
 
-            cursor = nextCursor;
+            cursor = next_cursor;
 
             expect(records).not.toBe(undefined);
             expect(records?.length).toBeLessThanOrEqual(limit);
@@ -81,46 +80,6 @@ describe('Records service integration test', () => {
             expect(currentRecordDate.isAfter(previousRecordDate) || currentRecordDate.isSame(previousRecordDate)).toBe(true);
         }
         expect(allFetchedRecords.length).toBe(numOfRecords);
-    });
-
-    it('Should not provide a cursor if offset is provided', async () => {
-        const numOfRecords = 3000;
-        const limit = 100;
-        const records = generateInsertableJson(numOfRecords);
-        const { response, meta } = await createRecords(records, environmentName);
-        const { response: formattedResults } = response;
-        const { modelName, nangoConnectionId } = meta;
-        const connection = await connectionService.getConnectionById(nangoConnectionId as number);
-        const { error, success } = await DataService.upsert(
-            formattedResults as unknown as DataRecord[],
-            '_nango_sync_data_records',
-            'external_id',
-            nangoConnectionId as number,
-            modelName,
-            1,
-            1
-        );
-        expect(success).toBe(true);
-        expect(error).toBe(undefined);
-
-        const { response: recordResponse } = await RecordsService.getDataRecords(
-            connection?.connection_id as string,
-            connection?.provider_config_key as string,
-            connection?.environment_id as number,
-            modelName,
-            undefined,
-            100,
-            limit,
-            'desc',
-            undefined,
-            undefined,
-            false
-        );
-
-        if (recordResponse) {
-            const { nextCursor } = recordResponse;
-            expect(nextCursor).toBe(undefined);
-        }
     });
 
     it('Should be able to retrieve 20K records in under 5s with a cursor', async () => {
@@ -149,25 +108,21 @@ describe('Records service integration test', () => {
 
         const connection = await connectionService.getConnectionById(nangoConnectionId as number);
 
-        let cursor: string | undefined;
+        let cursor: string | undefined | null = null;
         let allRecordsLength = 0;
 
         const startTime = Date.now();
         do {
-            const { response, error } = await RecordsService.getDataRecords(
+            const { response, error } = (await RecordsService.getAllDataRecords(
                 connection?.connection_id as string, // connectionId
                 connection?.provider_config_key as string, // providerConfigKey
                 connection?.environment_id as number, // environmentId
                 modelName, // model
                 undefined, // delta
-                undefined, //offset
                 limit, // limit
-                undefined, // sortBy
-                undefined, // order
                 undefined, // filter
-                false, // includeMetaData
                 cursor // cursor
-            );
+            )) as unknown as ServiceResponse<GetRecordsResponse>;
 
             if (!response) {
                 throw new Error('Response is undefined');
@@ -176,11 +131,11 @@ describe('Records service integration test', () => {
             expect(error).toBe(null);
             expect(response).not.toBe(undefined);
 
-            const { result: records, nextCursor } = response;
+            const { records, next_cursor } = response;
 
             allRecordsLength += records.length;
 
-            cursor = nextCursor;
+            cursor = next_cursor;
 
             expect(records).not.toBe(undefined);
             expect(records?.length).toBeLessThanOrEqual(limit);

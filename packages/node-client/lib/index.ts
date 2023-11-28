@@ -7,6 +7,7 @@ import {
     OAuth2Credentials,
     ProxyConfiguration,
     GetRecordsRequestConfig,
+    ListRecordsRequestConfig,
     BasicApiCredentials,
     ApiKeyCredentials,
     AppCredentials,
@@ -317,30 +318,20 @@ export class Nango {
      * =======
      */
 
-    public async getRecords<T = any>(
-        config: GetRecordsRequestConfig
-    ): Promise<{ records: (T & { _nango_metadata: RecordMetadata })[]; next_cursor: string | null }> {
-        const { connectionId, providerConfigKey, model, delta, offset, limit, includeNangoMetadata, filter, cursor } = config;
+    public async getRecords<T = any>(config: GetRecordsRequestConfig): Promise<(T & { _nango_metadata: RecordMetadata })[]> {
+        const { connectionId, providerConfigKey, model, delta, offset, limit, includeNangoMetadata, filter } = config;
         validateSyncRecordConfiguration(config);
 
         const order = config?.order === 'asc' ? 'asc' : 'desc';
 
-        let sortBy = '';
+        let sortBy = 'id';
         switch (config.sortBy) {
-            case 'id':
-                sortBy = 'id';
+            case 'createdAt':
+                sortBy = 'created_at';
                 break;
             case 'updatedAt':
                 sortBy = 'updated_at';
                 break;
-        }
-
-        if (config.order) {
-            console.warn(`The order option will be deprecated soon and will be removed in a future release.`);
-        }
-
-        if (config.sortBy) {
-            console.warn(`The sortBy option will be deprecated soon and will be removed in a future release.`);
         }
 
         if (includeNangoMetadata) {
@@ -352,7 +343,7 @@ export class Nango {
 
         const url = `${this.serverUrl}/sync/records/?model=${model}&order=${order}&delta=${delta || ''}&offset=${offset || ''}&limit=${limit || ''}&sort_by=${
             sortBy || ''
-        }&${includeMetadata ? 'include_nango_metadata' : ''}=${includeMetadata}${filter ? `&filter=${filter}` : ''}${cursor ? `&cursor=${cursor}` : ''}`;
+        }&include_nango_metadata=${includeMetadata}${filter ? `&filter=${filter}` : ''}`;
 
         const headers: Record<string, string | number | boolean> = {
             'Connection-Id': connectionId,
@@ -365,40 +356,31 @@ export class Nango {
 
         const response = await axios.get(url, options);
 
-        const parseLinkHeader = (linkHeader: string): string | null => {
-            if (!linkHeader) {
-                return null;
-            }
-            const links = linkHeader.split(',').map((link) => link.trim());
-            const linkMap: Record<string, string> = {};
+        return response.data;
+    }
 
-            links.forEach((link) => {
-                const parts = link.split(';');
-                if (parts.length >= 2) {
-                    const partOne = parts[0]?.trim();
-                    const partTwo = parts[1]?.trim();
-                    const urlMatch = partOne?.match(/<(.*)>/);
-                    const relMatch = partTwo?.match(/rel="(.*)"/);
+    public async listRecords<T = any>(
+        config: ListRecordsRequestConfig
+    ): Promise<{ records: (T & { _nango_metadata: RecordMetadata })[]; next_cursor: string | null }> {
+        const { connectionId, providerConfigKey, model, delta, limit, filter, cursor } = config;
+        validateSyncRecordConfiguration(config);
 
-                    if (urlMatch && relMatch) {
-                        const url = urlMatch[1] as string;
-                        const rel = relMatch[1] as string;
-                        linkMap[rel] = url;
-                    }
-                }
-            });
+        const url = `${this.serverUrl}/records/?model=${model}${delta ? `&delta=${delta}` : ''}${limit ? `&limit=${limit}` : ''}${
+            filter ? `&filter=${filter}` : ''
+        }${cursor ? `&cursor=${cursor}` : ''}`;
 
-            const cursor = linkMap['next']
-                ?.split('?')[1]
-                ?.split('&')
-                ?.find((param) => param.includes('cursor'));
-
-            const cursorOnly = cursor?.split('=')[1];
-
-            return cursorOnly || '';
+        const headers: Record<string, string | number | boolean> = {
+            'Connection-Id': connectionId,
+            'Provider-Config-Key': providerConfigKey
         };
 
-        return { records: response.data, next_cursor: parseLinkHeader(response.headers['link']) };
+        const options = {
+            headers: this.enrichHeaders(headers)
+        };
+
+        const response = await axios.get(url, options);
+
+        return response.data;
     }
 
     public async triggerSync(providerConfigKey: string, syncs?: string[], connectionId?: string): Promise<void> {

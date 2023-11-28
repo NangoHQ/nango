@@ -64,7 +64,16 @@ export interface GetRecordsRequestConfig {
     order?: 'asc' | 'desc';
     includeNangoMetadata?: boolean;
     filter?: FilterAction | CombinedFilterAction;
-    cursor?: string;
+}
+
+export interface ListRecordsRequestConfig {
+    providerConfigKey: string;
+    connectionId: string;
+    model: string;
+    delta?: string;
+    limit?: number;
+    filter?: FilterAction | CombinedFilterAction;
+    cursor?: string | null;
 }
 
 export interface BasicApiCredentials extends CredentialsCommon {

@@ -107,14 +107,19 @@ class SyncController {
         }
     }
 
+    // to deprecate
     public async getRecords(req: Request, res: Response, next: NextFunction) {
         try {
-            const { model, delta, offset, limit, sort_by, order, filter, include_nango_metadata, cursor } = req.query;
+            const { model, delta, offset, limit, sort_by, order, filter, include_nango_metadata } = req.query;
             const environmentId = getEnvironmentId(res);
             const connectionId = req.get('Connection-Id') as string;
             const providerConfigKey = req.get('Provider-Config-Key') as string;
 
-            const { success, error, response } = await syncDataService.getDataRecords(
+            const {
+                success,
+                error,
+                response: records
+            } = await syncDataService.getDataRecords(
                 connectionId,
                 providerConfigKey,
                 environmentId,
@@ -125,10 +130,38 @@ class SyncController {
                 sort_by as string,
                 order as 'asc' | 'desc',
                 filter as LastAction,
-                include_nango_metadata === 'true',
+                include_nango_metadata === 'true'
+            );
+
+            if (!success) {
+                errorManager.errResFromNangoErr(res, error);
+
+                return;
+            }
+
+            res.send(records);
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    public async getAllRecords(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { model, delta, limit, filter, cursor } = req.query;
+            const environmentId = getEnvironmentId(res);
+            const connectionId = req.get('Connection-Id') as string;
+            const providerConfigKey = req.get('Provider-Config-Key') as string;
+
+            const { success, error, response } = await syncDataService.getAllDataRecords(
+                connectionId,
+                providerConfigKey,
+                environmentId,
+                model as string,
+                delta as string,
+                limit as string,
+                filter as LastAction,
                 cursor as string
             );
-            // TODO: return error if model doesn't exist instead of an empty list
 
             if (!success || !response) {
                 errorManager.errResFromNangoErr(res, error);
@@ -136,44 +169,7 @@ class SyncController {
                 return;
             }
 
-            const { result: records, nextCursor } = response;
-
-            if (nextCursor) {
-                const url = new URL(`${req.protocol}://${req.get('host')}${req.baseUrl}${req.path}`);
-                const params = new URLSearchParams();
-
-                params.append('cursor', nextCursor);
-                if (model) {
-                    params.append('model', model.toString());
-                }
-                if (delta) {
-                    params.append('delta', delta.toString());
-                }
-                if (offset) {
-                    params.append('offset', offset.toString());
-                }
-                if (limit) {
-                    params.append('limit', limit.toString());
-                }
-                if (sort_by) {
-                    params.append('sort_by', sort_by.toString());
-                }
-                if (order) {
-                    params.append('order', order.toString());
-                }
-                if (filter) {
-                    params.append('filter', filter.toString());
-                }
-                if (include_nango_metadata) {
-                    params.append('include_nango_metadata', include_nango_metadata.toString());
-                }
-
-                const nextLink = url.toString() + '?' + params.toString();
-
-                res.links({ next: nextLink });
-            }
-
-            res.send(records);
+            res.send(response);
         } catch (e) {
             next(e);
         }

@@ -67,7 +67,7 @@ import { Nango }  from '@nangohq/node';
 
 const nango = new Nango({ secretKey: '<PROJECT-SECRET-KEY>' });
 
-const result = await nango.getRecords({
+const result = await nango.listRecords({
     providerConfigKey: '<INTEGRATION-ID>',
     connectionId: '<CONNECTION-ID>',
     model: '<MODEL-NAME>'
