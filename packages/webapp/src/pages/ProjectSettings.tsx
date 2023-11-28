@@ -180,7 +180,7 @@ export default function ProjectSettings() {
 
         const envVariablesArray = entries.reduce((acc, [key, value]) => {
             // we use the index to match on the name and value
-            // but strip everything before hte dash to remove the dynamic aspect
+            // but strip everything before the dash to remove the dynamic aspect
             // to the name. The dynamic aspect is needed to make sure the values
             // show correctly when reloading environments
             const strippedKey = key.split('-')[1];
@@ -212,7 +212,6 @@ export default function ProjectSettings() {
     };
 
     const handleRemoveEnvVariable = async (index: number) => {
-        console.log(envVariables);
         setEnvVariables(envVariables.filter((_, i) => i !== index));
 
         const strippedEnvVariables = envVariables.filter((_, i) => i !== index).filter((envVariable) => envVariable.name && envVariable.value);
