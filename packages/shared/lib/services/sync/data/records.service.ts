@@ -91,7 +91,7 @@ export async function getDataRecords(
     filter?: 'added' | 'updated' | 'deleted',
     includeMetaData = false,
     cursorValue?: string
-): Promise<ServiceResponse<{ result: CustomerFacingDataRecord[] | DataRecordWithMetadata[]; nextCursor: string } | null>> {
+): Promise<ServiceResponse<{ result: CustomerFacingDataRecord[] | DataRecordWithMetadata[]; nextCursor?: string } | null>> {
     try {
         if (!model) {
             const error = new NangoError('missing_model');
@@ -331,6 +331,10 @@ export async function getDataRecords(
             }
 
             const customerResult = result.map((item) => item.record);
+
+            if (offset) {
+                return { success: true, error: null, response: { result: customerResult as CustomerFacingDataRecord[] } };
+            }
 
             const cursorRawElement = rawResult[rawResult.length - 1] as SyncDataRecord;
             const cursorElement = customerResult[customerResult.length - 1] as unknown as CustomerFacingDataRecord;

@@ -82,4 +82,44 @@ describe('Records service integration test', () => {
         }
         expect(allFetchedRecords.length).toBe(numOfRecords);
     });
+
+    it('Should not provide a cursor if offset is provided', async () => {
+        const numOfRecords = 3000;
+        const limit = 100;
+        const records = generateInsertableJson(numOfRecords);
+        const { response, meta } = await createRecords(records, environmentName);
+        const { response: formattedResults } = response;
+        const { modelName, nangoConnectionId } = meta;
+        const connection = await connectionService.getConnectionById(nangoConnectionId as number);
+        const { error, success } = await DataService.upsert(
+            formattedResults as unknown as DataRecord[],
+            '_nango_sync_data_records',
+            'external_id',
+            nangoConnectionId as number,
+            modelName,
+            1,
+            1
+        );
+        expect(success).toBe(true);
+        expect(error).toBe(undefined);
+
+        const { response: recordResponse } = await RecordsService.getDataRecords(
+            connection?.connection_id as string,
+            connection?.provider_config_key as string,
+            connection?.environment_id as number,
+            modelName,
+            undefined,
+            100,
+            limit,
+            'desc',
+            undefined,
+            undefined,
+            false
+        );
+
+        if (recordResponse) {
+            const { nextCursor } = recordResponse;
+            expect(nextCursor).toBe(undefined);
+        }
+    });
 });
