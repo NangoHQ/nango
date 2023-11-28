@@ -591,9 +591,9 @@ paths:
                                                             description: The timestamp at which Nango last detected a change to this record
                                                             example: "2023-09-18T15:20:35.941305+00:00"
                                     next_cursor:
-                                      type: string
-                                      description: The base64-encoded cursor for pagination
-                                      example: "MjAyMy0xMS0xN1QxMTo0NzoxNC40NDcrMDI6MDB8fDAzZTA1NzIxLWNiZmQtNGYxNS1iYTNhLWFlNjM2Y2MwNmEw=="
+                                        type: string
+                                        description: The base64-encoded cursor for pagination
+                                        example: "MjAyMy0xMS0xN1QxMTo0NzoxNC40NDcrMDI6MDB8fDAzZTA1NzIxLWNiZmQtNGYxNS1iYTNhLWFlNjM2Y2MwNmEw=="
                 '400':
                     description: Invalid request
                     content:
