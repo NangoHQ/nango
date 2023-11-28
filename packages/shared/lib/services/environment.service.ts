@@ -96,7 +96,12 @@ class EnvironmentService {
         }
 
         if (!this.environmentAccountSecrets[secretKey]) {
-            return null;
+            // If the secret key is not in the cache, try to get it from the database
+            const fromDb = await db.knex.withSchema(db.schema()).select('*').from<Environment>(TABLE).where({ secret_key: secretKey }).first();
+            if (fromDb == null) {
+                return null;
+            }
+            this.addToEnvironmentSecretCache(fromDb);
         }
 
         const { accountId, environmentId } = this.environmentAccountSecrets[secretKey] as EnvironmentAccount;
