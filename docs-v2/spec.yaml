@@ -532,8 +532,9 @@ paths:
                   required: false
                   schema:
                       type: string
-                  description: Base 64 encoded value that can be used to fetch the next page of results. The cursor will be included until there are no more results to paginate through.
-                  The value will be the full URL that can be used to fetch the next page of results.
+                  description: |
+                    Base 64 encoded value that can be used to fetch the next page of results. The cursor will be included until there are no more results to paginate through.
+                    The value will be the full URL that can be used to fetch the next page of results.
                 - name: filter
                   in: query
                   required: false
