@@ -192,6 +192,17 @@ clickup:
     token_url: https://api.clickup.com/api/v2/oauth/token
     proxy:
         base_url: https://api.clickup.com
+close:
+    auth_mode: OAUTH2
+    authorization_url: https://app.close.com/oauth2/authorize
+    token_url: https://api.close.com/oauth2/token/
+    authorization_params:
+        response_type: code
+    default_scopes:
+        - offline_access
+    proxy:
+        base_url: https://api.close.com/api
+        docs: https://developer.close.com/
 confluence:
     alias: jira
 contentstack:

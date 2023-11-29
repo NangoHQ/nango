@@ -181,6 +181,7 @@
                         "integrations/all/brex",
                         "integrations/all/calendly",
                         "integrations/all/clickup",
+                        "integrations/all/close",
                         "integrations/all/confluence",
                         "integrations/all/contentstack",
                         "integrations/all/deel",
