@@ -392,14 +392,8 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
      * @param {ApplicationConstructedProxyConfiguration} configBody
      */
     private sendToHttpMethod(configBody: ApplicationConstructedProxyConfiguration, internalConfig: InternalProxyConfiguration) {
-        let decompress = false;
-
-        if (configBody.decompress === true || configBody.template?.proxy?.decompress === true) {
-            decompress = true;
-        }
         const options: AxiosRequestConfig = {
-            headers: configBody.headers as Record<string, string | number | boolean>,
-            decompress
+            headers: configBody.headers as Record<string, string | number | boolean>
         };
 
         if (configBody.params) {
