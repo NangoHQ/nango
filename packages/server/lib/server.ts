@@ -26,8 +26,8 @@ import { WebSocketServer, WebSocket } from 'ws';
 import http from 'http';
 import express from 'express';
 import cors from 'cors';
-import webSocketClient from './clients/web-socket.client.js';
 import { AuthClient } from './clients/auth.client.js';
+import publisher from './clients/publisher.client.js';
 import passport from 'passport';
 import environmentController from './controllers/environment.controller.js';
 import accountController from './controllers/account.controller.js';
@@ -96,6 +96,7 @@ app.route('/environment-variables').get(apiAuth, environmentController.getEnviro
 app.route('/sync/deploy').post(apiAuth, syncController.deploySync.bind(syncController));
 app.route('/sync/deploy/confirmation').post(apiAuth, syncController.confirmation.bind(syncController));
 app.route('/sync/records').get(apiAuth, syncController.getRecords.bind(syncController)); //TODO: to deprecate
+app.route('/records').get(apiAuth, syncController.getAllRecords.bind(syncController));
 app.route('/sync/trigger').post(apiAuth, syncController.trigger.bind(syncController));
 app.route('/sync/pause').post(apiAuth, syncController.pause.bind(syncController));
 app.route('/sync/start').post(apiAuth, syncController.start.bind(syncController));
@@ -199,10 +200,10 @@ app.get('*', (_, res) => {
 });
 
 const server = http.createServer(app);
-const wsServer = new WebSocketServer({ server, path: getWebsocketsPath() });
+const wss = new WebSocketServer({ server, path: getWebsocketsPath() });
 
-wsServer.on('connection', (ws: WebSocket) => {
-    webSocketClient.addClient(ws);
+wss.on('connection', async (ws: WebSocket) => {
+    await publisher.subscribe(ws);
 });
 
 // kick off any job

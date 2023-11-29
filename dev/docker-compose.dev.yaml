@@ -1,0 +1,42 @@
+version: '3.9'
+services:
+    nango-db:
+        image: postgres
+        container_name: nango-db
+        environment:
+            POSTGRES_PASSWORD: nango
+            POSTGRES_USER: nango
+            POSTGRES_DB: nango
+        ports:
+            - '${NANGO_DB_PORT:-5432}:5432'
+        volumes:
+            - ./nango-data:/var/lib/postgresql/data
+        networks:
+            - nango
+
+    temporal:
+        image: temporalio/auto-setup
+        container_name: temporal
+        depends_on:
+            - nango-db
+        environment:
+            - DB=postgresql
+            - DB_PORT=5432
+            - POSTGRES_USER=nango
+            - POSTGRES_PWD=nango
+            - POSTGRES_SEEDS=nango-db
+        ports:
+            - 7233:7233
+        networks:
+            - nango
+
+    nango-redis:
+        image: "redis:latest"
+        container_name: nango-redis
+        ports:
+            - "6379:6379"
+        networks:
+            - nango
+
+networks:
+    nango:

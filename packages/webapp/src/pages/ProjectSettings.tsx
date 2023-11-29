@@ -46,7 +46,7 @@ export default function ProjectSettings() {
     const [accountUUID, setAccountUUID] = useState<number>();
     const [alwaysSendWebhook, setAlwaysSendWebhook] = useState(false);
     const [hmacEditMode, setHmacEditMode] = useState(false);
-    const [envVariables, setEnvVariables] = useState<{ name: string; value: string }[]>([]);
+    const [envVariables, setEnvVariables] = useState<{ id?: number, name: string; value: string }[]>([]);
     const getProjectInfoAPI = useGetProjectInfoAPI();
     const editCallbackUrlAPI = useEditCallbackUrlAPI();
     const editWebhookUrlAPI = useEditWebhookUrlAPI();
@@ -61,7 +61,9 @@ export default function ProjectSettings() {
     const env = useStore((state) => state.cookieValue);
 
     useEffect(() => {
+        setEnvVariables(envVariables.filter((env) => env.id ));
         setLoaded(false);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [env]);
 
     useEffect(() => {
@@ -92,7 +94,7 @@ export default function ProjectSettings() {
 
                 setEnvVariables(account.env_variables);
             }
-        };
+       };
 
         if (!loaded) {
             setLoaded(true);
@@ -179,7 +181,12 @@ export default function ProjectSettings() {
         const entries = Array.from(formData.entries());
 
         const envVariablesArray = entries.reduce((acc, [key, value]) => {
-            const match = key.match(/^env_var_(name|value)_(\d+)$/);
+            // we use the index to match on the name and value
+            // but strip everything before the dash to remove the dynamic aspect
+            // to the name. The dynamic aspect is needed to make sure the values
+            // show correctly when reloading environments
+            const strippedKey = key.split('-')[1];
+            const match = strippedKey.match(/^env_var_(name|value)_(\d+)$/);
             if (match) {
                 const type = match[1];
                 const index = parseInt(match[2], 10);
@@ -209,8 +216,8 @@ export default function ProjectSettings() {
     const handleRemoveEnvVariable = async (index: number) => {
         setEnvVariables(envVariables.filter((_, i) => i !== index));
 
-        const strippedEnvVariables = envVariables.filter((_, i) => i !== index).filter((envVariable) => envVariable.name !== '' && envVariable.value !== '');
-        const res = await editEnvVariables(strippedEnvVariables);
+        const strippedEnvVariables = envVariables.filter((_, i) => i !== index).filter((envVariable) => envVariable.name && envVariable.value);
+        const res = await editEnvVariables(strippedEnvVariables as unknown as Array<Record<string,string>>);
 
         if (res?.status === 200) {
             toast.success('Environment variables updated!', { position: toast.POSITION.BOTTOM_CENTER });
@@ -824,10 +831,10 @@ export default function ProjectSettings() {
                                         onSubmit={handleEnvVariablesSave}
                                     >
                                         {envVariables.map((envVar, index) => (
-                                            <div key={index} className="flex items-center mt-2">
+                                            <div key={envVar.id || `${envVar.name}_${index}`} className="flex items-center mt-2">
                                                 <input
-                                                    id={`env_var_name_${index}`}
-                                                    name={`env_var_name_${index}`}
+                                                    id={`env_var_name_${envVar.id || index}`}
+                                                    name={`${envVar.id || index}-env_var_name_${index}`}
                                                     defaultValue={envVar.name}
                                                     autoComplete="new-password"
                                                     required
@@ -835,8 +842,8 @@ export default function ProjectSettings() {
                                                     className="border-border-gray bg-bg-black text-text-light-gray focus:ring-blue block h-11 w-full appearance-none rounded-md border text-base placeholder-gray-600 shadow-sm focus:border-blue-500 focus:outline-none mr-3"
                                                 />
                                                 <input
-                                                    id={`env_var_value_${index}`}
-                                                    name={`env_var_value_${index}`}
+                                                    id={`env_var_value_${envVar.id || index}`}
+                                                    name={`${envVar.id || index}-env_var_value_${index}`}
                                                     defaultValue={envVar.value}
                                                     required
                                                     autoComplete="new-password"

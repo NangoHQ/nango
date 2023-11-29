@@ -31,6 +31,7 @@ export default class Nango {
     public win: null | AuthorizationModal = null;
     private width: number | null = null;
     private height: number | null = null;
+    private tm: null | NodeJS.Timer = null;
 
     constructor(config: { host?: string; websocketsPath?: string; publicKey: string; width?: number; height?: number; debug?: boolean }) {
         config.host = config.host || prodHost; // Default to Nango Cloud.
@@ -133,11 +134,37 @@ export default class Nango {
                 return reject(error);
             };
 
+            if (this.status === AuthorizationStatus.BUSY) {
+                const error = new AuthError('The authorization window is already opened', 'windowIsOppened');
+                reject(error);
+            }
+
             // Save authorization status (for handler)
             this.status = AuthorizationStatus.BUSY;
 
             // Open authorization modal
-            new AuthorizationModal(this.websocketsBaseUrl, url, successHandler, errorHandler, { width: this.width, height: this.height }, this.debug);
+            this.win = new AuthorizationModal(
+                this.websocketsBaseUrl,
+                url,
+                successHandler,
+                errorHandler,
+                { width: this.width, height: this.height },
+                this.debug
+            );
+            this.tm = setInterval(() => {
+                if (!this.win?.modal?.window || this.win?.modal?.window.closed) {
+                    if (this.win?.isProcessingMessage === true) {
+                        // Modal is still processing a web socket message from the server
+                        // We ignore the window being closed for now
+                        return;
+                    }
+                    clearTimeout(this.tm as unknown as number);
+                    this.win = null;
+                    this.status = AuthorizationStatus.CANCELED;
+                    const error = new AuthError('The authorization window was closed before the authorization flow was completed', 'windowClosed');
+                    reject(error);
+                }
+            }, 500);
         });
     }
 
@@ -272,6 +299,7 @@ interface ApiKeyCredentials {
 enum AuthorizationStatus {
     IDLE,
     BUSY,
+    CANCELED,
     DONE
 }
 
@@ -283,9 +311,10 @@ class AuthorizationModal {
     private features: { [key: string]: string | number };
     private width = 500;
     private height = 600;
-    private modal: Window;
+    public modal: Window;
     private swClient: WebSocket;
     private debug: boolean;
+    public isProcessingMessage = false;
 
     constructor(
         webSocketUrl: string,
@@ -322,7 +351,9 @@ class AuthorizationModal {
         this.swClient = new WebSocket(webSocketUrl);
 
         this.swClient.onmessage = (message: MessageEvent<any>) => {
+            this.isProcessingMessage = true;
             this.handleMessage(message, successHandler, errorHandler);
+            this.isProcessingMessage = false;
         };
     }
 

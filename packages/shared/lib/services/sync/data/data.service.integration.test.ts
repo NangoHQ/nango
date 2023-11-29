@@ -1,14 +1,14 @@
 import { expect, describe, it, beforeAll } from 'vitest';
 import { multipleMigrations } from '../../../db/database.js';
 import * as DataService from './data.service.js';
-import { formatDataRecords, getDataRecords } from './records.service.js';
+import { formatDataRecords, getAllDataRecords } from './records.service.js';
 import connectionService from '../../connection.service.js';
 import { createConfigSeeds } from '../../../db/seeders/config.seeder.js';
 import { createConnectionSeeds } from '../../../db/seeders/connection.seeder.js';
 import { createSyncSeeds } from '../../../db/seeders/sync.seeder.js';
 import { createSyncJobSeeds } from '../../../db/seeders/sync-job.seeder.js';
 import { createActivityLogSeed } from '../../../db/seeders/activity.seeder.js';
-import type { DataRecord, CustomerFacingDataRecord, DataRecordWithMetadata } from '../../../models/Sync.js';
+import type { DataRecord, CustomerFacingDataRecord } from '../../../models/Sync.js';
 
 describe('Data service integration tests', () => {
     beforeAll(async () => {
@@ -73,33 +73,51 @@ describe('Data service integration tests', () => {
         ];
 
         const connection = await connectionService.getConnectionById(connections[0] as number);
-        const { response: records } = await getDataRecords(connection?.connection_id as string, connection?.provider_config_key as string, 1, modelName);
+        const { response } = await getAllDataRecords(
+            connection?.connection_id as string,
+            connection?.provider_config_key as string,
+            1,
+            modelName,
+            undefined,
+            100
+        );
+        if (!response) throw new Error('No response');
+
+        const { records, next_cursor } = response;
+        expect(next_cursor).toBe(null);
+
         expect(records?.length).toBe(5);
 
-        for (let i = 0; i < (records as CustomerFacingDataRecord[])?.length; i++) {
+        // sort records by the id property
+        const sortedRecords = records?.sort((a: any, b: any) => {
+            if (a.id < b.id) return 1;
+            if (a.id > b.id) return -1;
+            return 0;
+        });
+
+        for (let i = 0; i < sortedRecords?.length; i++) {
             // @ts-ignore
-            expect(records?.[i]?.id).toEqual(expectedRecords[i].id);
+            expect(sortedRecords?.[i]?.id).toEqual(expectedRecords[i].id);
         }
 
-        const { response: ascRecords } = await getDataRecords(
+        const { response: metaRecords } = await getAllDataRecords(
             connection?.connection_id as string,
             connection?.provider_config_key as string,
-            connection?.environment_id as number,
+            1,
             modelName,
             undefined, // delta
-            undefined, // offset
             undefined, // limit
-            undefined, // sortBy
-            'asc'
+            undefined // filter
         );
 
-        const reverseExpectedRecords = [...expectedRecords].reverse();
-        for (let i = 0; i < (ascRecords as CustomerFacingDataRecord[])?.length; i++) {
-            // @ts-ignore
-            expect(ascRecords?.[i]?.id).toEqual(reverseExpectedRecords[i].id);
+        for (const metaRecord of metaRecords?.records as CustomerFacingDataRecord[]) {
+            expect(metaRecord._nango_metadata).toHaveProperty('first_seen_at');
+            expect(metaRecord._nango_metadata).toHaveProperty('last_modified_at');
+
+            expect(metaRecord._nango_metadata.last_action).toBe('ADDED');
         }
 
-        const { response: metaRecords } = await getDataRecords(
+        const { response: regularRecords } = await getAllDataRecords(
             connection?.connection_id as string,
             connection?.provider_config_key as string,
             1,
@@ -107,34 +125,10 @@ describe('Data service integration tests', () => {
             undefined, // delta
             undefined, // offset
             undefined, // limit
-            undefined, // sortBy
-            undefined, // order
-            undefined, // filter
-            true // include metadata
+            undefined // filter
         );
 
-        for (const metaRecord of metaRecords as DataRecordWithMetadata[]) {
-            expect(metaRecord).toHaveProperty('first_seen_at');
-            expect(metaRecord).toHaveProperty('last_modified_at');
-
-            expect(metaRecord.last_action).toBe('ADDED');
-        }
-
-        const { response: regularRecords } = await getDataRecords(
-            connection?.connection_id as string,
-            connection?.provider_config_key as string,
-            1,
-            modelName,
-            undefined, // delta
-            undefined, // offset
-            undefined, // limit
-            undefined, // sortBy
-            undefined, // order
-            undefined, // filter
-            false // include metadata
-        );
-
-        for (const regularRecord of regularRecords as CustomerFacingDataRecord[]) {
+        for (const regularRecord of regularRecords?.records as CustomerFacingDataRecord[]) {
             expect(regularRecord).toHaveProperty('_nango_metadata');
         }
     });

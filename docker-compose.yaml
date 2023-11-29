@@ -18,7 +18,6 @@ services:
         image: nangohq/nango-server
         container_name: nango-server
         environment:
-            - TEMPORAL_ADDRESS=temporal:7233
             - NANGO_DB_MIGRATION_FOLDER=/usr/nango-server/src/packages/shared/lib/db/migrations
             - NANGO_ENCRYPTION_KEY=${NANGO_ENCRYPTION_KEY}
             - NANGO_DB_USER=${NANGO_DB_USER}
@@ -45,39 +44,11 @@ services:
         networks:
             - nango
 
-    nango-worker:
-        image: nangohq/nango-worker
-        container_name: nango-worker
-        restart: always
+    nango-redis:
+        image: "redis:latest"
+        container_name: nango-redis
         ports:
-            - '${WORKER_PORT:-3004}:${WORKER_PORT:-3004}'
-        environment:
-            - TEMPORAL_ADDRESS=temporal:7233
-            - NANGO_ENCRYPTION_KEY=${NANGO_ENCRYPTION_KEY}
-            - NANGO_DB_USER=${NANGO_DB_USER}
-            - NANGO_DB_PASSWORD=${NANGO_DB_PASSWORD}
-            - NANGO_DB_HOST=${NANGO_DB_HOST}
-            - NANGO_DB_NAME=${NANGO_DB_NAME}
-            - NANGO_DB_SSL=${NANGO_DB_SSL}
-        depends_on:
-            - nango-db
-            - temporal
-        networks:
-            - nango
-
-    temporal:
-        image: temporalio/auto-setup
-        container_name: temporal
-        depends_on:
-            - nango-db
-        environment:
-            - DB=postgresql
-            - DB_PORT=5432
-            - POSTGRES_USER=nango
-            - POSTGRES_PWD=nango
-            - POSTGRES_SEEDS=nango-db
-        ports:
-            - 7233:7233
+            - "6379:6379"
         networks:
             - nango
 

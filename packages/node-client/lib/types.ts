@@ -66,6 +66,16 @@ export interface GetRecordsRequestConfig {
     filter?: FilterAction | CombinedFilterAction;
 }
 
+export interface ListRecordsRequestConfig {
+    providerConfigKey: string;
+    connectionId: string;
+    model: string;
+    delta?: string;
+    limit?: number;
+    filter?: FilterAction | CombinedFilterAction;
+    cursor?: string | null;
+}
+
 export interface BasicApiCredentials extends CredentialsCommon {
     type: AuthModes.Basic;
     username: string;
