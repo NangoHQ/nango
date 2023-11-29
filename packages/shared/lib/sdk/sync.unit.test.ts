@@ -1,6 +1,7 @@
 import { Nango } from '@nangohq/node';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { AuthModes, type Template } from '../models/index.js';
+import { mockErrorManagerReport } from '../utils/error.manager.mocks.js';
+import { AuthModes, Template } from '../models/index.js';
 import configService from '../services/config.service.js';
 import type { CursorPagination, LinkPagination, OffsetPagination } from '../models/Proxy.js';
 import { NangoAction } from './sync.js';
@@ -43,7 +44,8 @@ describe('Pagination', () => {
         const config: any = {
             secretKey: 'encrypted',
             serverUrl: 'https://example.com',
-            providerConfigKey
+            providerConfigKey,
+            dryRun: true
         };
         nangoAction = new NangoAction(config);
         nango = new Nango({ secretKey: config.secretKey });
@@ -69,20 +71,28 @@ describe('Pagination', () => {
 
     it('Sends pagination params in body for POST HTTP method', async () => {
         stubProviderTemplate(cursorPagination);
+        mockErrorManagerReport();
+
+        vi.spyOn(configService, 'getProviderConfig').mockImplementation((config: any) => {
+            return Promise.resolve('{}');
+        });
 
         // TODO: mock to return at least one more page to check that cursor is passed in body too
         (await import('@nangohq/node')).Nango.prototype.proxy = vi.fn().mockReturnValue({ data: { issues: [] } });
         (await import('@nangohq/node')).Nango.prototype.getIntegration = vi.fn().mockReturnValue({ config: { provider: 'github' } });
+        (await import('@nangohq/node')).Nango.prototype.getConnection = vi.fn().mockReturnValue({ credentials: {} });
 
         const endpoint = '/issues';
 
-        await nangoAction.paginate({ endpoint, method: 'POST', paginate: { limit: 2 } }).next();
+        await nangoAction.paginate({ endpoint, method: 'POST', paginate: { limit: 2 }, connectionId: 'abc' }).next();
 
         expect(nango.proxy).toHaveBeenCalledWith({
             method: 'POST',
             endpoint,
             data: { limit: 2 },
-            paginate: { limit: 2 }
+            paginate: { limit: 2 },
+            connectionId: 'abc',
+            providerConfigKey: 'github'
         });
     });
 
@@ -105,14 +115,15 @@ describe('Pagination', () => {
 
         const generator = nangoAction.paginate({ endpoint, paginate: paginationConfigOverride });
         for await (const batch of generator) {
-            console.log(batch);
+            expect(batch.length).toBe(3);
         }
 
         expect(nango.proxy).toHaveBeenLastCalledWith({
             method: 'GET',
             endpoint,
             params: { offset: '3', per_page: 3 },
-            paginate: paginationConfigOverride
+            paginate: paginationConfigOverride,
+            providerConfigKey: 'github'
         });
     });
 

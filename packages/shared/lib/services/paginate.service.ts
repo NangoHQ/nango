@@ -62,7 +62,7 @@ class PaginationService {
 
             const responseData: T[] = cursorPagination.response_path ? get(response.data, cursorPagination.response_path) : response.data;
 
-            if (!responseData.length) {
+            if (!responseData || !responseData.length) {
                 return;
             }
 

@@ -22,6 +22,11 @@ describe('Proxy Controller Construct Header Tests', () => {
                         'X-Test': 'test'
                     }
                 }
+            },
+            connection: {
+                conectionConfig: {
+                    insance_url: 'bar'
+                }
             }
         };
 
@@ -192,12 +197,12 @@ describe('Proxy Controller Construct URL Tests', () => {
                     base_url: 'https://example.com'
                 }
             },
-            endpoint: 'api/test'
+            endpoint: 'api/test',
+            connection: {}
         };
-        const connection = {};
 
         // @ts-ignore
-        const result = proxyService.constructUrl(config, connection);
+        const result = proxyService.constructUrl(config);
 
         expect(result).toBe('https://example.com/api/test');
     });
@@ -209,12 +214,12 @@ describe('Proxy Controller Construct URL Tests', () => {
                     base_url: 'https://example.com/'
                 }
             },
-            endpoint: '/api/test'
+            endpoint: '/api/test',
+            connection: {}
         };
-        const connection = {};
 
         // @ts-ignore
-        const result = proxyService.constructUrl(config, connection);
+        const result = proxyService.constructUrl(config);
 
         expect(result).toBe('https://example.com/api/test');
     });
@@ -227,12 +232,12 @@ describe('Proxy Controller Construct URL Tests', () => {
                 }
             },
             endpoint: '/api/test',
-            baseUrlOverride: 'https://override.com'
+            baseUrlOverride: 'https://override.com',
+            connection: {}
         };
-        const connection = {}; // Fill this based on your Connection interface
 
         // @ts-ignore
-        const result = proxyService.constructUrl(config, connection);
+        const result = proxyService.constructUrl(config);
 
         // Assuming interpolateIfNeeded doesn't change the input
         expect(result).toBe('https://override.com/api/test');
@@ -246,12 +251,12 @@ describe('Proxy Controller Construct URL Tests', () => {
                 }
             },
             endpoint: 'api/test',
-            baseUrlOverride: 'https://override.com'
+            baseUrlOverride: 'https://override.com',
+            connection: {}
         };
-        const connection = {}; // Fill this based on your Connection interface
 
         // @ts-ignore
-        const result = proxyService.constructUrl(config, connection);
+        const result = proxyService.constructUrl(config);
 
         // Assuming interpolateIfNeeded doesn't change the input
         expect(result).toBe('https://override.com/api/test');
@@ -270,12 +275,12 @@ describe('Proxy Controller Construct URL Tests', () => {
             },
             token: { apiKey: 'sweet-secret-token' },
             endpoint: '/api/test',
-            baseUrlOverride: 'https://override.com'
+            baseUrlOverride: 'https://override.com',
+            connection: {}
         };
-        const connection = {}; // Fill this based on your Connection interface
 
         // @ts-ignore
-        const result = proxyService.constructUrl(config, connection);
+        const result = proxyService.constructUrl(config);
 
         // Assuming interpolateIfNeeded doesn't change the input
         expect(result).toBe('https://override.com/api/test?api_key=sweet-secret-token');
@@ -294,12 +299,12 @@ describe('Proxy Controller Construct URL Tests', () => {
             },
             token: { apiKey: 'sweet-secret-token' },
             endpoint: '/api/test',
-            baseUrlOverride: 'https://override.com'
+            baseUrlOverride: 'https://override.com',
+            connection: {}
         };
-        const connection = {};
 
         // @ts-ignore
-        const result = proxyService.constructUrl(config, connection);
+        const result = proxyService.constructUrl(config);
 
         expect(result).toBe('https://override.com/api/test?key=sweet-secret-token');
     });
@@ -317,12 +322,12 @@ describe('Proxy Controller Construct URL Tests', () => {
             },
             token: { apiKey: 'sweet-secret-token' },
             endpoint: '/api/test?foo=bar',
-            baseUrlOverride: 'https://override.com'
+            baseUrlOverride: 'https://override.com',
+            connection: {}
         };
-        const connection = {};
 
         // @ts-ignore
-        const result = proxyService.constructUrl(config, connection);
+        const result = proxyService.constructUrl(config);
 
         expect(result).toBe('https://override.com/api/test?foo=bar&api_key=sweet-secret-token');
     });
@@ -345,12 +350,11 @@ describe('Proxy Controller Construct URL Tests', () => {
             },
             token: { apiKey: 'sweet-secret-token' },
             endpoint: '/api/test?foo=bar',
-            baseUrlOverride: 'https://override.com'
+            baseUrlOverride: 'https://override.com',
+            connection: {}
         };
-        const connection = {};
-
         // @ts-ignore
-        const url = proxyService.constructUrl(config, connection);
+        const url = proxyService.constructUrl(config);
 
         expect(url).toBe('https://override.com/api/test?foo=bar&api_key=sweet-secret-token');
 
@@ -373,15 +377,14 @@ describe('Proxy Controller Construct URL Tests', () => {
                 }
             },
             token: { apiKey: 'sweet-secret-token' },
-            endpoint: '/api/test'
-        };
-
-        const connection = {
-            connection_config: { extension: 'eu' }
+            endpoint: '/api/test',
+            connection: {
+                connection_config: { extension: 'eu' }
+            }
         };
 
         // @ts-ignore
-        const url = proxyService.constructUrl(config, connection);
+        const url = proxyService.constructUrl(config);
 
         expect(url).toBe('https://www.zohoapis.eu/api/test');
     });
@@ -395,15 +398,14 @@ describe('Proxy Controller Construct URL Tests', () => {
                 }
             },
             token: { apiKey: 'sweet-secret-token' },
-            endpoint: '/api/test'
-        };
-
-        const connection = {
-            metadata: { instance_url: 'https://myinstanceurl.com' }
+            endpoint: '/api/test',
+            connection: {
+                metadata: { instance_url: 'https://myinstanceurl.com' }
+            }
         };
 
         // @ts-ignore
-        const url = proxyService.constructUrl(config, connection);
+        const url = proxyService.constructUrl(config);
 
         expect(url).toBe('https://myinstanceurl.com/api/test');
     });
