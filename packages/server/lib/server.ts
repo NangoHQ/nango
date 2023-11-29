@@ -26,8 +26,8 @@ import { WebSocketServer, WebSocket } from 'ws';
 import http from 'http';
 import express from 'express';
 import cors from 'cors';
-import webSocketClient from './clients/web-socket.client.js';
 import { AuthClient } from './clients/auth.client.js';
+import publisher from './clients/publisher.client.js';
 import passport from 'passport';
 import environmentController from './controllers/environment.controller.js';
 import accountController from './controllers/account.controller.js';
@@ -202,10 +202,10 @@ app.get('*', (_, res) => {
 });
 
 const server = http.createServer(app);
-const wsServer = new WebSocketServer({ server, path: getWebsocketsPath() });
+const wss = new WebSocketServer({ server, path: getWebsocketsPath() });
 
-wsServer.on('connection', (ws: WebSocket) => {
-    webSocketClient.addClient(ws);
+wss.on('connection', async (ws: WebSocket) => {
+    await publisher.subscribe(ws);
 });
 
 // kick off any job

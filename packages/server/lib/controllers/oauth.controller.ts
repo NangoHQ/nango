@@ -46,7 +46,7 @@ import {
     hmacService,
     ErrorSourceEnum
 } from '@nangohq/shared';
-import wsClient from '../clients/web-socket.client.js';
+import publisher from '../clients/publisher.client.js';
 import { WSErrBuilder } from '../utils/web-socket-error.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
 
@@ -91,7 +91,7 @@ class OAuthController {
                     content: WSErrBuilder.MissingConnectionId().message
                 });
 
-                return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.MissingConnectionId());
+                return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.MissingConnectionId());
             } else if (providerConfigKey == null) {
                 await createActivityLogMessageAndEnd({
                     level: 'error',
@@ -101,7 +101,7 @@ class OAuthController {
                     content: WSErrBuilder.MissingProviderConfigKey().message
                 });
 
-                return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.MissingProviderConfigKey());
+                return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.MissingProviderConfigKey());
             }
             connectionId = connectionId.toString();
 
@@ -117,7 +117,7 @@ class OAuthController {
                         content: WSErrBuilder.MissingHmac().message
                     });
 
-                    return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.MissingHmac());
+                    return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.MissingHmac());
                 }
                 const verified = await hmacService.verify(hmac, environmentId, providerConfigKey, connectionId);
                 if (!verified) {
@@ -129,7 +129,7 @@ class OAuthController {
                         content: WSErrBuilder.InvalidHmac().message
                     });
 
-                    return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.InvalidHmac());
+                    return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.InvalidHmac());
                 }
             }
 
@@ -160,7 +160,7 @@ class OAuthController {
                     url: callbackUrl
                 });
 
-                return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnknownProviderConfigKey(providerConfigKey));
+                return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnknownProviderConfigKey(providerConfigKey));
             }
 
             let template: ProviderTemplate;
@@ -176,7 +176,7 @@ class OAuthController {
                     url: callbackUrl
                 });
 
-                return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownProviderTemplate(config.provider));
+                return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownProviderTemplate(config.provider));
             }
 
             const session: OAuthSession = {
@@ -209,7 +209,7 @@ class OAuthController {
                     url: callbackUrl
                 });
 
-                return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.InvalidProviderConfig(providerConfigKey));
+                return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.InvalidProviderConfig(providerConfigKey));
             }
 
             if (template.auth_mode === ProviderAuthModes.OAuth2) {
@@ -241,7 +241,7 @@ class OAuthController {
                 url: callbackUrl
             });
 
-            return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownAuthMode(template.auth_mode));
+            return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownAuthMode(template.auth_mode));
         } catch (e) {
             const prettyError = JSON.stringify(e, ['message', 'name'], 2);
             await createActivityLogMessage({
@@ -262,7 +262,7 @@ class OAuthController {
                 }
             });
 
-            return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError(prettyError));
+            return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError(prettyError));
         }
     }
 
@@ -279,7 +279,7 @@ class OAuthController {
         userScope?: string
     ) {
         const oauth2Template = template as ProviderTemplateOAuth2;
-        const wsClientId = session.webSocketClientId;
+        const channel = session.webSocketClientId;
         const providerConfigKey = session.providerConfigKey;
         const connectionId = session.connectionId;
 
@@ -298,9 +298,9 @@ class OAuthController {
                     }
                 });
 
-                return wsClient.notifyErr(
+                return publisher.notifyErr(
                     res,
-                    wsClientId,
+                    channel,
                     providerConfigKey,
                     connectionId,
                     WSErrBuilder.InvalidConnectionConfig(template.authorization_url, JSON.stringify(connectionConfig))
@@ -321,9 +321,9 @@ class OAuthController {
                     }
                 });
 
-                return wsClient.notifyErr(
+                return publisher.notifyErr(
                     res,
-                    wsClientId,
+                    channel,
                     providerConfigKey,
                     connectionId,
                     WSErrBuilder.InvalidConnectionConfig(template.token_url, JSON.stringify(connectionConfig))
@@ -410,7 +410,7 @@ class OAuthController {
                     }
                 });
 
-                return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownGrantType(grantType));
+                return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnkownGrantType(grantType));
             }
         } catch (error: any) {
             const prettyError = JSON.stringify(error, ['message', 'name'], 2);
@@ -430,7 +430,7 @@ class OAuthController {
                 }
             });
 
-            return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError(prettyError));
+            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnkownError(prettyError));
         }
     }
 
@@ -443,7 +443,7 @@ class OAuthController {
         activityLogId: number,
         environment_id: number
     ) {
-        const wsClientId = session.webSocketClientId;
+        const channel = session.webSocketClientId;
         const providerConfigKey = session.providerConfigKey;
         const connectionId = session.connectionId;
 
@@ -466,9 +466,9 @@ class OAuthController {
                     }
                 });
 
-                return wsClient.notifyErr(
+                return publisher.notifyErr(
                     res,
-                    wsClientId,
+                    channel,
                     providerConfigKey,
                     connectionId,
                     WSErrBuilder.InvalidConnectionConfig(template.authorization_url, JSON.stringify(connectionConfig))
@@ -522,7 +522,7 @@ class OAuthController {
                 }
             });
 
-            return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError(prettyError));
+            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnkownError(prettyError));
         }
     }
 
@@ -542,7 +542,7 @@ class OAuthController {
         const callbackParams = new URLSearchParams({
             state: session.id
         });
-        const wsClientId = session.webSocketClientId;
+        const channel = session.webSocketClientId;
         const providerConfigKey = session.providerConfigKey;
         const connectionId = session.connectionId;
 
@@ -585,7 +585,7 @@ class OAuthController {
                 }
             });
 
-            return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.TokenError());
+            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.TokenError());
         }
 
         session.requestTokenSecret = tokenResult.request_token_secret;
@@ -642,7 +642,7 @@ class OAuthController {
 
         const activityLogId = await findActivityLogBySession(session.id);
 
-        const wsClientId = session.webSocketClientId;
+        const channel = session.webSocketClientId;
         const providerConfigKey = session.providerConfigKey;
         const connectionId = session.connectionId;
 
@@ -679,7 +679,7 @@ class OAuthController {
                 url: req.originalUrl
             });
 
-            return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownAuthMode(session.authMode));
+            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnkownAuthMode(session.authMode));
         } catch (e) {
             const prettyError = JSON.stringify(e, ['message', 'name'], 2);
 
@@ -703,7 +703,7 @@ class OAuthController {
                 }
             });
 
-            return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError(prettyError));
+            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnkownError(prettyError));
         }
     }
 
@@ -719,7 +719,7 @@ class OAuthController {
         const { code } = req.query;
         const providerConfigKey = session.providerConfigKey;
         const connectionId = session.connectionId;
-        const wsClientId = session.webSocketClientId;
+        const channel = session.webSocketClientId;
         const callbackMetadata = getConnectionMetadataFromCallbackRequest(req.query, template);
 
         if (!code) {
@@ -736,7 +736,7 @@ class OAuthController {
                 }
             });
 
-            return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.InvalidCallbackOAuth2());
+            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.InvalidCallbackOAuth2());
         }
 
         const simpleOAuthClient = new simpleOauth2.AuthorizationCode(oauth2Client.getSimpleOAuth2ClientConfig(config, template, session.connectionConfig));
@@ -819,7 +819,7 @@ class OAuthController {
                     timestamp: Date.now()
                 });
 
-                return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError());
+                return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnkownError());
             }
 
             const accountId = (await environmentService.getAccountIdFromEnvironment(session.environmentId)) as number;
@@ -859,7 +859,7 @@ class OAuthController {
 
             await updateSuccessActivityLog(activityLogId, true);
 
-            return wsClient.notifySuccess(res, wsClientId, providerConfigKey, connectionId);
+            return publisher.notifySuccess(res, channel, providerConfigKey, connectionId);
         } catch (e) {
             const prettyError = JSON.stringify(e, ['message', 'name'], 2);
             await errorManager.report(e, {
@@ -880,7 +880,7 @@ class OAuthController {
                 timestamp: Date.now()
             });
 
-            return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError(prettyError));
+            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnkownError(prettyError));
         }
     }
 
@@ -896,7 +896,7 @@ class OAuthController {
         const { oauth_token, oauth_verifier } = req.query;
         const providerConfigKey = session.providerConfigKey;
         const connectionId = session.connectionId;
-        const wsClientId = session.webSocketClientId;
+        const channel = session.webSocketClientId;
         const metadata = getConnectionMetadataFromCallbackRequest(req.query, template);
 
         if (!oauth_token || !oauth_verifier) {
@@ -908,7 +908,7 @@ class OAuthController {
                 timestamp: Date.now()
             });
 
-            return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.InvalidCallbackOAuth1());
+            return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.InvalidCallbackOAuth1());
         }
 
         const oauth_token_secret = session.requestTokenSecret!;
@@ -943,7 +943,7 @@ class OAuthController {
                     url: session.callbackUrl
                 });
 
-                return wsClient.notifySuccess(res, wsClientId, providerConfigKey, connectionId);
+                return publisher.notifySuccess(res, channel, providerConfigKey, connectionId);
             })
             .catch(async (e) => {
                 errorManager.report(e, {
@@ -966,7 +966,7 @@ class OAuthController {
                     timestamp: Date.now()
                 });
 
-                return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError(prettyError));
+                return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnkownError(prettyError));
             });
     }
 }

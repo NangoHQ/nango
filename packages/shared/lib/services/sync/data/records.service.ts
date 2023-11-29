@@ -14,6 +14,8 @@ import db, { schema } from '../../../db/database.js';
 import connectionService from '../../connection.service.js';
 import { NangoError } from '../../../utils/error.js';
 import encryptionManager from '../../../utils/encryption.manager.js';
+import metricsManager, { MetricTypes } from '../../../utils/metrics.manager.js';
+import { LogActionEnum } from '../../../models/Activity.js';
 
 export const formatDataRecords = (
     records: DataResponse[],
@@ -113,16 +115,46 @@ export async function getDataRecords(
     let sort = 'external_id';
 
     switch (sortBy) {
-        case 'updated_at':
+        case 'updated_at': {
             sort = 'updated_at';
+            await metricsManager.capture(
+                MetricTypes.SYNC_GET_RECORDS_SORT_BY_USED,
+                `Sort by used in get records with a sort value of ${sort}`,
+                LogActionEnum.SYNC,
+                {
+                    environmentId: String(environmentId),
+                    connectionId,
+                    providerConfigKey,
+                    delta: String(delta),
+                    sort,
+                    model
+                }
+            );
+
             break;
-        case 'created_at':
+        }
+        case 'created_at': {
             sort = 'created_at';
+            await metricsManager.capture(
+                MetricTypes.SYNC_GET_RECORDS_SORT_BY_USED,
+                `Sort by used in get records with a sort value of ${sort}`,
+                LogActionEnum.SYNC,
+                {
+                    environmentId: String(environmentId),
+                    connectionId,
+                    providerConfigKey,
+                    delta: String(delta),
+                    sort,
+                    model
+                }
+            );
             break;
+        }
     }
 
     let query = schema()
         .from<SyncDataRecord>(`_nango_sync_data_records`)
+        .timeout(60000) // timeout for 1 minute
         .where({
             nango_connection_id: Number(nangoConnection.id),
             model
@@ -135,6 +167,20 @@ export async function getDataRecords(
 
             return { success: false, error, response: null };
         }
+
+        await metricsManager.capture(
+            MetricTypes.SYNC_GET_RECORDS_OFFSET_USED,
+            `Offset used in get records with an offset value of ${offset}`,
+            LogActionEnum.SYNC,
+            {
+                environmentId: String(environmentId),
+                connectionId,
+                providerConfigKey,
+                delta: String(delta),
+                model
+            }
+        );
+
         query = query.offset(Number(offset));
     }
 
@@ -194,6 +240,14 @@ export async function getDataRecords(
     let result;
 
     if (includeMetaData) {
+        await metricsManager.capture(MetricTypes.SYNC_GET_RECORDS_INCLUDE_METADATA_USED, `Include Nango metadata used in get records`, LogActionEnum.SYNC, {
+            environmentId: String(environmentId),
+            connectionId,
+            providerConfigKey,
+            delta: String(delta),
+            model
+        });
+
         result = await query.select(
             'created_at as first_seen_at',
             'updated_at as last_modified_at',

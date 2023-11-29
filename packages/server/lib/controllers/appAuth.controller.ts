@@ -18,7 +18,7 @@ import {
 import { missesInterpolationParam } from '../utils/utils.js';
 import { WSErrBuilder } from '../utils/web-socket-error.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
-import wsClient from '../clients/web-socket.client.js';
+import publisher from '../clients/publisher.client.js';
 
 class AppAuthController {
     async connect(req: Request, res: Response, _next: NextFunction) {
@@ -109,7 +109,7 @@ class AppAuthController {
                     }
                 });
 
-                return wsClient.notifyErr(
+                return publisher.notifyErr(
                     res,
                     wsClientId,
                     providerConfigKey,
@@ -129,7 +129,7 @@ class AppAuthController {
                     timestamp: Date.now()
                 });
 
-                return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, error as NangoError);
+                return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, error as NangoError);
             }
 
             await updateSuccessActivityLog(activityLogId as number, true);
@@ -157,7 +157,7 @@ class AppAuthController {
                 timestamp: Date.now()
             });
 
-            return wsClient.notifySuccess(res, wsClientId, providerConfigKey, connectionId);
+            return publisher.notifySuccess(res, wsClientId, providerConfigKey, connectionId);
         } catch (err) {
             const prettyError = JSON.stringify(err, ['message', 'name'], 2);
 
@@ -173,7 +173,7 @@ class AppAuthController {
                 url: req.originalUrl
             });
 
-            return wsClient.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError(prettyError));
+            return publisher.notifyErr(res, wsClientId, providerConfigKey, connectionId, WSErrBuilder.UnkownError(prettyError));
         }
     }
 }
