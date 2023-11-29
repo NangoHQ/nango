@@ -63,6 +63,7 @@ export default function ProjectSettings() {
     useEffect(() => {
         setEnvVariables(envVariables.filter((env) => env.id ));
         setLoaded(false);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [env]);
 
     useEffect(() => {
