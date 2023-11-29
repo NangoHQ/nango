@@ -23,7 +23,7 @@ class ProxyService {
     public async routeOrConfigure(
         externalConfig: ApplicationConstructedProxyConfiguration | UserProvidedProxyConfiguration,
         internalConfig: InternalProxyConfiguration
-    ) {
+    ): Promise<ServiceResponse<ApplicationConstructedProxyConfiguration> | AxiosResponse> {
         const { success: validationSuccess, error: validationError } = await this.validateAndLog(externalConfig, internalConfig);
 
         const { throwErrors } = internalConfig;
@@ -209,7 +209,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         if (isFlow && !isDryRun) {
             return this.sendToHttpMethod(configBody, internalConfig);
         } else {
-            return configBody;
+            return { success: true, error: null, response: configBody };
         }
     }
 

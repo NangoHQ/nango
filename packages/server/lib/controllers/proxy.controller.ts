@@ -21,6 +21,7 @@ import {
     InternalProxyConfiguration,
     ApplicationConstructedProxyConfiguration,
     ErrorSourceEnum,
+    ServiceResponse,
     proxyService
 } from '@nangohq/shared';
 
@@ -101,10 +102,17 @@ class ProxyController {
                 isDryRun: isDryRun === 'true'
             };
 
-            const configBody: ApplicationConstructedProxyConfiguration = (await proxyService.routeOrConfigure(
-                externalConfig,
-                internalConfig
-            )) as ApplicationConstructedProxyConfiguration;
+            const {
+                success,
+                error,
+                response: configBody
+            } = (await proxyService.routeOrConfigure(externalConfig, internalConfig)) as ServiceResponse<ApplicationConstructedProxyConfiguration>;
+
+            if (!success || !configBody) {
+                errorManager.errResFromNangoErr(res, error);
+
+                return;
+            }
 
             await this.sendToHttpMethod(res, next, method as HTTP_VERB, configBody, activityLogId as number, environment_id, isSync, isDryRun);
         } catch (error) {
