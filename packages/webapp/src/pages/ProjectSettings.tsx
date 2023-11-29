@@ -61,6 +61,7 @@ export default function ProjectSettings() {
     const env = useStore((state) => state.cookieValue);
 
     useEffect(() => {
+        setEnvVariables(envVariables.filter((env) => env.id ));
         setLoaded(false);
     }, [env]);
 
@@ -92,7 +93,7 @@ export default function ProjectSettings() {
 
                 setEnvVariables(account.env_variables);
             }
-        };
+       };
 
         if (!loaded) {
             setLoaded(true);
@@ -829,7 +830,7 @@ export default function ProjectSettings() {
                                         onSubmit={handleEnvVariablesSave}
                                     >
                                         {envVariables.map((envVar, index) => (
-                                            <div key={envVar.id || index} className="flex items-center mt-2">
+                                            <div key={envVar.id || `${envVar.name}_${index}`} className="flex items-center mt-2">
                                                 <input
                                                     id={`env_var_name_${envVar.id || index}`}
                                                     name={`${envVar.id || index}-env_var_name_${index}`}
