@@ -315,6 +315,10 @@ console.log(syncStatuses);
 
 ### Read synced data
 
+<Warning>
+`nango.getRecords()` is deprecated and  will be removed in future releases as it does not support efficient pagination. Please use `nango.listRecords()` detailed below.
+</Warning>
+
 To read synced data from Nango, use `listRecords`:
 
 ```ts
@@ -359,9 +363,6 @@ The value from the `next_cursor` property can be used with the `cursor` paramete
 If there are no more results the `next_cursor` will be null.
 
 If you are using the [Nango webhooks](/guides/webhooks#from-nango) you can use the timestamp you get from the webhook for the `delta` parameter.
-
-The deprecated `nango.getRecords` call will be removed in future releases as it
-does not support efficient pagination.
 
 ### Trigger an action
 
