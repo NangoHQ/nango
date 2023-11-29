@@ -15,7 +15,7 @@ services:
             - nango
 
     nango-server:
-        image: nangohq/nango-server:0.36.39
+        image: nangohq/nango-server:0.36.40
         container_name: nango-server
         environment:
             - TEMPORAL_ADDRESS=temporal:7233
@@ -47,7 +47,7 @@ services:
             - nango
 
     nango-worker:
-        image: nangohq/nango-worker:0.36.39
+        image: nangohq/nango-worker:0.36.40
         container_name: nango-worker
         restart: always
         ports:
