@@ -2,7 +2,8 @@ import { Nango } from '@nangohq/node';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthModes, type Template } from '../models/index.js';
 import configService from '../services/config.service.js';
-import { CursorPagination, NangoAction, LinkPagination, OffsetPagination } from './sync.js';
+import type { CursorPagination, LinkPagination, OffsetPagination } from '../models/Proxy.js';
+import { NangoAction } from './sync.js';
 import { isValidHttpUrl } from '../utils/utils.js';
 
 vi.mock('@nangohq/node', () => {

@@ -85,8 +85,8 @@ export interface Metadata {
 
 export interface Connection {
     id?: number;
-    created_at?: string;
-    updated_at?: string;
+    created_at?: Date;
+    updated_at?: Date;
     provider_config_key: string;
     connection_id: string;
     connection_config: Record<string, string>;
