@@ -96,6 +96,7 @@ app.route('/environment-variables').get(apiAuth, environmentController.getEnviro
 app.route('/sync/deploy').post(apiAuth, syncController.deploySync.bind(syncController));
 app.route('/sync/deploy/confirmation').post(apiAuth, syncController.confirmation.bind(syncController));
 app.route('/sync/records').get(apiAuth, syncController.getRecords.bind(syncController)); //TODO: to deprecate
+app.route('/records').get(apiAuth, syncController.getAllRecords.bind(syncController));
 app.route('/sync/trigger').post(apiAuth, syncController.trigger.bind(syncController));
 app.route('/sync/pause').post(apiAuth, syncController.pause.bind(syncController));
 app.route('/sync/start').post(apiAuth, syncController.start.bind(syncController));

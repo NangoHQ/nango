@@ -7,6 +7,7 @@ import {
     OAuth2Credentials,
     ProxyConfiguration,
     GetRecordsRequestConfig,
+    ListRecordsRequestConfig,
     BasicApiCredentials,
     ApiKeyCredentials,
     AppCredentials,
@@ -343,6 +344,30 @@ export class Nango {
         const url = `${this.serverUrl}/sync/records/?model=${model}&order=${order}&delta=${delta || ''}&offset=${offset || ''}&limit=${limit || ''}&sort_by=${
             sortBy || ''
         }&include_nango_metadata=${includeMetadata}${filter ? `&filter=${filter}` : ''}`;
+
+        const headers: Record<string, string | number | boolean> = {
+            'Connection-Id': connectionId,
+            'Provider-Config-Key': providerConfigKey
+        };
+
+        const options = {
+            headers: this.enrichHeaders(headers)
+        };
+
+        const response = await axios.get(url, options);
+
+        return response.data;
+    }
+
+    public async listRecords<T = any>(
+        config: ListRecordsRequestConfig
+    ): Promise<{ records: (T & { _nango_metadata: RecordMetadata })[]; next_cursor: string | null }> {
+        const { connectionId, providerConfigKey, model, delta, limit, filter, cursor } = config;
+        validateSyncRecordConfiguration(config);
+
+        const url = `${this.serverUrl}/records/?model=${model}${delta ? `&delta=${delta}` : ''}${limit ? `&limit=${limit}` : ''}${
+            filter ? `&filter=${filter}` : ''
+        }${cursor ? `&cursor=${cursor}` : ''}`;
 
         const headers: Record<string, string | number | boolean> = {
             'Connection-Id': connectionId,
