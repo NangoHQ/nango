@@ -13,7 +13,9 @@ export enum MetricTypes {
     SYNC_TRACK_RUNTIME = 'sync_script_track_runtime',
     SYNC_GET_RECORDS_OFFSET_USED = 'sync_get_records_offset_used',
     SYNC_GET_RECORDS_SORT_BY_USED = 'sync_get_records_sort_by_used',
-    SYNC_GET_RECORDS_INCLUDE_METADATA_USED = 'sync_get_records_include_metadata_used'
+    SYNC_GET_RECORDS_ORDER_USED = 'sync_get_records_order_used',
+    SYNC_GET_RECORDS_INCLUDE_METADATA_USED = 'sync_get_records_include_metadata_used',
+    SYNC_GET_RECORDS_DEPRECATED_METHOD_USED = 'sync_get_records_deprecated_method_used'
 }
 
 class MetricsManager {

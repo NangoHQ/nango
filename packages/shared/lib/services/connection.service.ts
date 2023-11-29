@@ -9,7 +9,6 @@ import type {
     Config as ProviderConfig,
     AuthCredentials,
     OAuth1Credentials,
-    CredentialsRefresh,
     LogAction
 } from '../models/index.js';
 import {
@@ -39,11 +38,19 @@ import {
     BasicApiCredentials
 } from '../models/Auth.js';
 import { schema } from '../db/database.js';
-import { interpolateStringFromObject, parseTokenExpirationDate, isTokenExpired } from '../utils/utils.js';
+import { interpolateStringFromObject, parseTokenExpirationDate, isTokenExpired, getRedisUrl } from '../utils/utils.js';
 import SyncClient from '../clients/sync.client.js';
+import { Locking } from '../utils/lock/locking.js';
+import { InMemoryKVStore } from '../utils/kvstore/InMemoryStore.js';
+import { RedisKVStore } from '../utils/kvstore/RedisStore.js';
+import type { KVStore } from '../utils/kvstore/KVStore.js';
 
 class ConnectionService {
-    private runningCredentialsRefreshes: CredentialsRefresh[] = [];
+    private locking: Locking;
+
+    constructor(locking: Locking) {
+        this.locking = locking;
+    }
 
     public async upsertConnection(
         connectionId: string,
@@ -578,23 +585,27 @@ class ConnectionService {
         const credentials = connection.credentials as OAuth2Credentials;
         const providerConfigKey = connection.provider_config_key;
 
-        const runningRefresh = this.findRunningRefresh(connectionId, providerConfigKey);
-        if (runningRefresh) {
-            return runningRefresh.promise;
-        }
-
         const shouldRefresh = await this.shouldRefreshCredentials(connection, credentials, providerConfig, template, instantRefresh);
 
         if (shouldRefresh) {
+            // We must ensure that only one refresh is running at a time accross all instances.
+            // Using a simple redis entry as a lock with a TTL to ensure it is always released.
+            // NOTES:
+            // - This is not a distributed lock and will not work in a multi-redis environment.
+            // - It could also be unsafe in case of a Redis crash.
+            // We are using this for now as it is a simple solution that should work for most cases.
+            const lockKey = `lock:refresh:${environment_id}:${providerConfigKey}:${connectionId}`;
             try {
+                const ttlInMs = 10000;
+                const acquitistionTimeoutMs = ttlInMs * 1.2; // giving some extra time for the lock to be released
+                await this.locking.tryAcquire(lockKey, ttlInMs, acquitistionTimeoutMs);
+
                 const { success, error, response: newCredentials } = await this.getNewCredentials(connection, providerConfig, template);
                 if (!success || !newCredentials) {
-                    this.removeFromRunningRefreshes(connectionId, providerConfigKey);
                     return { success, error, response: null };
                 }
                 connection.credentials = newCredentials;
                 await this.updateConnection(connection);
-                this.removeFromRunningRefreshes(connectionId, providerConfigKey);
 
                 if (activityLogId && logAction === 'token') {
                     await this.logActivity(activityLogId, environment_id, `Token was refreshed for ${providerConfigKey} and connection ${connectionId}`);
@@ -602,8 +613,6 @@ class ConnectionService {
 
                 return { success: true, error: null, response: newCredentials };
             } catch (e) {
-                this.removeFromRunningRefreshes(connectionId, providerConfigKey);
-
                 if (activityLogId && logAction === 'token') {
                     await this.logErrorActivity(activityLogId, environment_id, `Refresh oauth2 token call failed`);
                 }
@@ -611,6 +620,8 @@ class ConnectionService {
                 const error = new NangoError('refresh_token_external_error', e as Error);
 
                 return { success: false, error, response: null };
+            } finally {
+                this.locking.release(lockKey);
             }
         }
 
@@ -670,10 +681,6 @@ class ConnectionService {
         }
     }
 
-    private findRunningRefresh(connectionId: string, providerConfigKey: string): CredentialsRefresh | undefined {
-        return this.runningCredentialsRefreshes.find((refresh) => refresh.connectionId === connectionId && refresh.providerConfigKey === providerConfigKey);
-    }
-
     private async shouldRefreshCredentials(
         connection: Connection,
         credentials: OAuth2Credentials,
@@ -724,12 +731,6 @@ class ConnectionService {
         }
     }
 
-    private removeFromRunningRefreshes(connectionId: string, providerConfigKey: string): void {
-        this.runningCredentialsRefreshes = this.runningCredentialsRefreshes.filter(
-            (refresh) => !(refresh.connectionId === connectionId && refresh.providerConfigKey === providerConfigKey)
-        );
-    }
-
     private async logActivity(activityLogId: number, environment_id: number, message: string): Promise<void> {
         await updateActivityLogAction(activityLogId, 'token');
         await createActivityLogMessage({
@@ -753,4 +754,16 @@ class ConnectionService {
     }
 }
 
-export default new ConnectionService();
+const locking = await (async () => {
+    let store: KVStore;
+    const url = getRedisUrl();
+    if (url) {
+        store = new RedisKVStore(url);
+        await (store as RedisKVStore).connect();
+    } else {
+        store = new InMemoryKVStore();
+    }
+    return new Locking(store);
+})();
+
+export default new ConnectionService(locking);

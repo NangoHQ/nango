@@ -63,7 +63,7 @@ nango.auth('github', '<user-id>');
 *   A single line to fetch structured objects from any external API:
 
 ```ts
-nango.getRecords<GithubIssue>({
+nango.listRecords<GithubIssue>({
     providerConfigKey: 'github',
     connectionId: '<user-id>',
     model: 'GithubIssue', // Or any other data you want to sync

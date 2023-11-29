@@ -4,7 +4,7 @@ import type { DataResponse } from '../../../models/Data.js';
 import * as DataService from './data.service.js';
 import connectionService from '../../connection.service.js';
 import { clearOldRecords, getFullRecords, getFullSnapshotRecords, takeSnapshot, getDeletedKeys } from './delete.service.js';
-import { getDataRecords, formatDataRecords } from './records.service.js';
+import { getAllDataRecords, formatDataRecords } from './records.service.js';
 import { createConfigSeeds } from '../../../db/seeders/config.seeder.js';
 import type { DataRecord } from '../../../models/Sync.js';
 import { generateInsertableJson, createRecords } from './mocks.js';
@@ -150,20 +150,17 @@ describe('Data delete service integration tests', () => {
 
         const connection = await connectionService.getConnectionById(nangoConnectionId as number);
 
-        const { response: recordResponse } = await getDataRecords(
+        const { response: recordResponse } = await getAllDataRecords(
             connection?.connection_id as string,
             connection?.provider_config_key as string,
             connection?.environment_id as number,
             modelName,
             undefined, // delta
-            undefined, // offset
             undefined, // limit
-            undefined, // sortBy
-            'asc',
             'deleted'
         );
 
-        expect(recordResponse?.length).toEqual(20);
+        expect(recordResponse?.records?.length).toEqual(20);
     });
 
     it('Given a snapshot, the next insert with less records should not show as deleted if track deletes is false', async () => {
@@ -208,22 +205,19 @@ describe('Data delete service integration tests', () => {
 
         const connection = await connectionService.getConnectionById(nangoConnectionId as number);
 
-        const { response: recordResponse } = await getDataRecords(
+        const { response: recordResponse } = await getAllDataRecords(
             connection?.connection_id as string,
             connection?.provider_config_key as string,
             connection?.environment_id as number,
             modelName,
             undefined, // delta
-            undefined, // offset
             undefined, // limit
-            undefined, // sortBy
-            'asc',
             'deleted'
         );
 
-        expect(recordResponse?.length).toEqual(0);
+        expect(recordResponse?.records?.length).toEqual(0);
     });
-    it('When track deletes is true and an entry is updated it only that record should show as updated when getDataRecords is called', async () => {
+    it('When track deletes is true and an entry is updated it only that record should show as updated when getAllDataRecords is called', async () => {
         const records = generateInsertableJson(100);
         const { response, meta } = await createRecords(records, environmentName);
         const { response: rawRecords } = response;
@@ -285,35 +279,29 @@ describe('Data delete service integration tests', () => {
 
         const connection = await connectionService.getConnectionById(nangoConnectionId as number);
 
-        const { response: updatedRecordResponse } = await getDataRecords(
+        const { response: updatedRecordResponse } = await getAllDataRecords(
             connection?.connection_id as string,
             connection?.provider_config_key as string,
             connection?.environment_id as number,
             modelName,
             undefined, // delta
-            undefined, // offset
             undefined, // limit
-            undefined, // sortBy
-            'asc',
             'updated'
         );
 
-        expect(updatedRecordResponse?.length).toEqual(1);
+        expect(updatedRecordResponse?.records?.length).toEqual(1);
 
-        // When track deletes is true and an entry is updated it should show as updated when getDataRecords is called
-        const { response: addedRecordResponse } = await getDataRecords(
+        // When track deletes is true and an entry is updated it should show as updated when getAllDataRecords is called
+        const { response: addedRecordResponse } = await getAllDataRecords(
             connection?.connection_id as string,
             connection?.provider_config_key as string,
             connection?.environment_id as number,
             modelName,
             undefined, // delta
-            undefined, // offset
             undefined, // limit
-            undefined, // sortBy
-            'asc',
             'added'
         );
 
-        expect(addedRecordResponse?.length).toEqual(99);
+        expect(addedRecordResponse?.records?.length).toEqual(99);
     });
 });

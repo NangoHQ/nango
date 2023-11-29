@@ -107,6 +107,7 @@ class SyncController {
         }
     }
 
+    // to deprecate
     public async getRecords(req: Request, res: Response, next: NextFunction) {
         try {
             const { model, delta, offset, limit, sort_by, order, filter, include_nango_metadata } = req.query;
@@ -131,7 +132,6 @@ class SyncController {
                 filter as LastAction,
                 include_nango_metadata === 'true'
             );
-            // TODO: return error if model doesn't exist instead of an empty list
 
             if (!success) {
                 errorManager.errResFromNangoErr(res, error);
@@ -140,6 +140,36 @@ class SyncController {
             }
 
             res.send(records);
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    public async getAllRecords(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { model, delta, limit, filter, cursor } = req.query;
+            const environmentId = getEnvironmentId(res);
+            const connectionId = req.get('Connection-Id') as string;
+            const providerConfigKey = req.get('Provider-Config-Key') as string;
+
+            const { success, error, response } = await syncDataService.getAllDataRecords(
+                connectionId,
+                providerConfigKey,
+                environmentId,
+                model as string,
+                delta as string,
+                limit as string,
+                filter as LastAction,
+                cursor as string
+            );
+
+            if (!success || !response) {
+                errorManager.errResFromNangoErr(res, error);
+
+                return;
+            }
+
+            res.send(response);
         } catch (e) {
             next(e);
         }
