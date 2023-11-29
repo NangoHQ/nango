@@ -4,7 +4,7 @@ sidebarTitle: 'API Key & Basic Auth'
 description: 'Gather user credentials and perform requests on their behalf.'
 ---
 
-This guide shows how you can let your users authorize external APIs, from inside your app. Once authorized, you will retrieve, store and refresh API key credentials so you can later perform API requests or use Nango's syncing features.
+This guide shows how you can let your users authorize external APIs, from inside your app. Once authorized, you will retrieve, store, and refresh API key credentials so you can later perform API requests or use Nango's syncing features.
 
 <Tip>
     This feature is free & unlimited on Nango Cloud.
@@ -41,7 +41,7 @@ Install `@nangohq/frontend` and use the code snippet from the [Add New Connectio
 `<CONNECTION-ID>` identifies this user's connection with the _integration_ in Nango. We recommend using a user ID or similar for it.
 
 ## Step 5: Retrieve the API Key (or username/password)
-In your backend you can use our [Node SDK](/sdks/node) or [Connections REST API](/api-reference/connection/get) to fetch credentials (which will allow you to query the external API).
+In your backend, you can use our [Node SDK](/sdks/node) or [Connections REST API](/api-reference/connection/get) to fetch credentials (which will allow you to query the external API).
 
 -   `<INTEGRATION-ID>` is the name of your integration. It is listed on the [Integrations tab](https://app.nango.dev/integrations) in the Dashboard, e.g. `slack`
 -   `<CONNECTION-ID>` is the Connection ID you passed in step 4 above.
@@ -62,7 +62,7 @@ let creds = await nango.getConnection('<INTEGRATION-ID>', '<CONNECTION-ID>');
 
 ### With the REST API
 
-Check the [API reference](/api-reference/connection/get) for full details and an example response
+Check the [API reference](/api-reference/connection/get) for full details and an example response.
 
 Get the `Secret Key` from the [Project Settings page](https://app.nango.dev/project-settings).
 

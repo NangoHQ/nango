@@ -20,10 +20,10 @@ SERVER_PORT=<PORT>
 
 The resulting callback URL for OAuth will be `<INSTANCE-URL>/oauth/callback`.
 
-<Note>Your can customize the callback URL by updating "Callback URL" field in the "Project Settings" tab in the Nango admin.</Note>
+<Note>You can customize the callback URL by updating "Callback URL" field in the "Project Settings" tab in the Nango admin.</Note>
 
 <Note>
-    If your are using a custom domain, you should change the `NANGO_SERVER_URL` server environment variable accordingly (in the `.env` file or directly on
+    If you are using a custom domain, you should change the `NANGO_SERVER_URL` server environment variable accordingly (in the `.env` file or directly on
     Heroku/Render).
 </Note>
 
@@ -88,15 +88,13 @@ encryption key once you have set it.
 ### Custom websockets path[](#custom-websockets-path 'Direct link to Custom websockets path')
 
 The Nango server serves websockets from the `/` path by default for use by `@nangohq/frontend` during the login flow. 
-If you want more isolation between websockets and the dashboard (also served from `/`) then you can set the 
-`NANGO_SERVER_WEBSOCKETS_PATH` environment variable to serve websockets from a different path:
+If you want more isolation between websockets and the dashboard (also served from `/`), then you can set the `NANGO_SERVER_WEBSOCKETS_PATH` environment variable to serve websockets from a different path:
 
 ```
 NANGO_SERVER_WEBSOCKETS_PATH=</YOUR-WEBSOCKETS-PATH>
 ```
 
-If you do set this variable to a different path, you will need to configure the `websocketsPath` parameter when 
-initializing the `Nango` object in the `@nangohq/frontend` SDK:
+If you do set this variable to a different path, you will need to configure the `websocketsPath` parameter when initializing the `Nango` object in the `@nangohq/frontend` SDK:
 
 ```js
 import Nango from '@nangohq/frontend';
