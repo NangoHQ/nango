@@ -108,6 +108,7 @@
             "group": "Hosting Nango",
             "pages": [
                 "cloud",
+                "managed-integrations",
                 {
                     "group": "Self-Hosting Instructions",
                     "pages": [
