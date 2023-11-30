@@ -588,6 +588,12 @@ class ConnectionService {
         const shouldRefresh = await this.shouldRefreshCredentials(connection, credentials, providerConfig, template, instantRefresh);
 
         if (shouldRefresh) {
+            await metricsManager.capture(MetricTypes.AUTH_TOKEN_REFRESH_START, 'Token refresh is being started', LogActionEnum.AUTH, {
+                environmentId: String(environment_id),
+                connectionId,
+                providerConfigKey,
+                provider: providerConfig.provider
+            });
             // We must ensure that only one refresh is running at a time accross all instances.
             // Using a simple redis entry as a lock with a TTL to ensure it is always released.
             // NOTES:
@@ -611,11 +617,34 @@ class ConnectionService {
                     await this.logActivity(activityLogId, environment_id, `Token was refreshed for ${providerConfigKey} and connection ${connectionId}`);
                 }
 
+                await metricsManager.capture(MetricTypes.AUTH_TOKEN_REFRESH_SUCCESS, 'Token refresh was successful', LogActionEnum.AUTH, {
+                    environmentId: String(environment_id),
+                    connectionId,
+                    providerConfigKey,
+                    provider: providerConfig.provider
+                });
+
                 return { success: true, error: null, response: newCredentials };
-            } catch (e) {
+            } catch (e: any) {
                 if (activityLogId && logAction === 'token') {
                     await this.logErrorActivity(activityLogId, environment_id, `Refresh oauth2 token call failed`);
                 }
+
+                const errorMessage = e.message || 'Unknown error';
+                const errorDetails = {
+                    message: errorMessage,
+                    name: e.name || 'Error',
+                    stack: e.stack || 'No stack trace'
+                };
+
+                const errorString = JSON.stringify(errorDetails);
+
+                await metricsManager.capture(MetricTypes.AUTH_TOKEN_REFRESH_FAILURE, `Token refresh failed, ${errorString}`, LogActionEnum.AUTH, {
+                    environmentId: String(environment_id),
+                    connectionId,
+                    providerConfigKey,
+                    provider: providerConfig.provider
+                });
 
                 const error = new NangoError('refresh_token_external_error', e as Error);
 
