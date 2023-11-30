@@ -13,6 +13,7 @@ import userService from './services/user.service.js';
 import remoteFileService from './services/file/remote.service.js';
 import localFileService from './services/file/local.service.js';
 import hmacService from './services/hmac.service.js';
+import proxyService from './services/proxy.service.js';
 import syncRunService from './services/sync/run.service.js';
 import syncOrchestrator from './services/sync/orchestrator.service.js';
 import flowService from './services/flow.service.js';
@@ -65,6 +66,7 @@ export {
     syncRunService,
     syncOrchestrator,
     hmacService,
+    proxyService,
     flowService,
     slackNotificationService,
     analytics,

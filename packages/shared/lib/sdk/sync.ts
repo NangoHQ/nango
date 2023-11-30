@@ -10,6 +10,7 @@ import { LogActionEnum } from '../models/Activity.js';
 import { Nango } from '@nangohq/node';
 import configService from '../services/config.service.js';
 import paginateService from '../services/paginate.service.js';
+import proxyService from '../services/proxy.service.js';
 
 type LogLevel = 'info' | 'debug' | 'error' | 'warn' | 'http' | 'verbose' | 'silly';
 
@@ -61,30 +62,30 @@ interface DataResponse {
     [index: string]: unknown | undefined | string | number | boolean | Record<string, string | boolean | number | unknown>;
 }
 
-export enum PaginationType {
+enum PaginationType {
     CURSOR = 'cursor',
     LINK = 'link',
     OFFSET = 'offset'
 }
 
-export interface Pagination {
+interface Pagination {
     type: string;
     limit?: number;
     response_path?: string;
     limit_name_in_request: string;
 }
 
-export interface CursorPagination extends Pagination {
+interface CursorPagination extends Pagination {
     cursor_path_in_response: string;
     cursor_name_in_request: string;
 }
 
-export interface LinkPagination extends Pagination {
+interface LinkPagination extends Pagination {
     link_rel_in_response_header?: string;
     link_path_in_response_body?: string;
 }
 
-export interface OffsetPagination extends Pagination {
+interface OffsetPagination extends Pagination {
     offset_name_in_request: string;
 }
 
@@ -157,8 +158,8 @@ interface Metadata {
 
 interface Connection {
     id?: number;
-    created_at?: string;
-    updated_at?: string;
+    created_at?: Date;
+    updated_at?: Date;
     provider_config_key: string;
     connection_id: string;
     connection_config: Record<string, string>;
@@ -254,7 +255,36 @@ export class NangoAction {
     }
 
     public async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
-        return this.nango.proxy(config);
+        const internalConfig = {
+            environmentId: this.environmentId as number,
+            isFlow: true,
+            isDryRun: this.dryRun as boolean,
+            existingActivityLogId: this.activityLogId as number,
+            throwErrors: true
+        };
+
+        let connection = undefined;
+
+        if (!config.connectionId && this.connectionId) {
+            config.connectionId = this.connectionId;
+        }
+
+        if (!config.providerConfigKey && this.providerConfigKey) {
+            config.providerConfigKey = this.providerConfigKey;
+        }
+
+        if (this.dryRun) {
+            return this.nango.proxy(config);
+        } else {
+            const { connectionId, providerConfigKey } = config;
+            connection = await this.nango.getConnection(providerConfigKey as string, connectionId as string);
+
+            if (!connection) {
+                throw new Error(`Connection not found using the provider config key ${this.providerConfigKey} and connection id ${this.connectionId}`);
+            }
+
+            return proxyService.routeOrConfigure(config, { ...internalConfig, connection: connection as Connection }) as Promise<AxiosResponse<T>>;
+        }
     }
 
     public async get<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
