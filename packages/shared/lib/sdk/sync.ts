@@ -265,20 +265,21 @@ export class NangoAction {
 
         let connection = undefined;
 
-        if (!this.dryRun) {
-            connection = await this.nango.getConnection(this.providerConfigKey as string, this.connectionId as string);
-
-            if (!connection) {
-                throw new Error(`Connection not found using the provider config key ${this.providerConfigKey} and connection id ${this.connectionId}`);
-            }
-        }
-
         if (!config.connectionId && this.connectionId) {
             config.connectionId = this.connectionId;
         }
 
         if (!config.providerConfigKey && this.providerConfigKey) {
             config.providerConfigKey = this.providerConfigKey;
+        }
+
+        if (!this.dryRun) {
+            const { connectionId, providerConfigKey } = config;
+            connection = await this.nango.getConnection(providerConfigKey as string, connectionId as string);
+
+            if (!connection) {
+                throw new Error(`Connection not found using the provider config key ${this.providerConfigKey} and connection id ${this.connectionId}`);
+            }
         }
 
         return (
