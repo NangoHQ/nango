@@ -437,7 +437,7 @@ class OAuthController {
 
             const content = WSErrBuilder.UnkownError().message + '\n' + prettyError;
 
-            await metricsManager.capture(MetricTypes.AUTH_TOKEN_REQUEST_FAILURE, `OAuth request process failed ${content}`, LogActionEnum.AUTH, {
+            await metricsManager.capture(MetricTypes.AUTH_TOKEN_REQUEST_FAILURE, `OAuth2 request process failed ${content}`, LogActionEnum.AUTH, {
                 callbackUrl,
                 environmentId: String(environment_id),
                 providerConfigKey: String(providerConfigKey),
@@ -865,7 +865,7 @@ class OAuthController {
 
                 await metricsManager.capture(
                     MetricTypes.AUTH_TOKEN_REQUEST_FAILURE,
-                    'OAUth2 token request failed, response from the server could not be parsed',
+                    'OAuth2 token request failed, response from the server could not be parsed',
                     LogActionEnum.AUTH,
                     {
                         environmentId: String(environment_id),
