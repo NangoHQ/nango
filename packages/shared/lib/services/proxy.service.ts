@@ -44,6 +44,8 @@ class ProxyService {
         let endpoint = passedEndpoint;
         let connection: Connection | null = null;
 
+        // if this is a proxy call coming from a flow then the connection lookup
+        // is done before coming here. Otherwise we need to do it here.
         if (!internalConfig.connection) {
             const { success, error, response } = await connectionService.getConnectionCredentials(
                 accountId as number,
@@ -199,6 +201,9 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
             data,
             retries: retries ? Number(retries) : 0,
             baseUrlOverride: baseUrlOverride as string,
+            // decompress is used only when the call is truly a proxy call
+            // Coming from a flow it is not a proxy call since the worker
+            // makes the request so we don't allow an override in that case
             decompress: (externalConfig as UserProvidedProxyConfiguration).decompress === 'true' || externalConfig.decompress === true,
             connection: connection as Connection,
             params: externalConfig.params as Record<string, string>,
@@ -229,7 +234,11 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
 
             const error = new NangoError('missing_endpoint');
 
-            return { success: false, error, response: null };
+            if (internalConfig.throwErrors) {
+                throw error;
+            } else {
+                return { success: false, error, response: null };
+            }
         }
         await updateEndpointActivityLog(activityLogId as number, externalConfig.endpoint);
 
@@ -244,7 +253,11 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
 
             const error = new NangoError('missing_connection_id');
 
-            return { success: false, error, response: null };
+            if (internalConfig.throwErrors) {
+                throw error;
+            } else {
+                return { success: false, error, response: null };
+            }
         }
 
         if (!externalConfig.providerConfigKey) {
@@ -258,7 +271,11 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
 
             const error = new NangoError('missing_provider_config_key');
 
-            return { success: false, error, response: null };
+            if (internalConfig.throwErrors) {
+                throw error;
+            } else {
+                return { success: false, error, response: null };
+            }
         }
 
         const { connectionId, providerConfigKey } = externalConfig;
