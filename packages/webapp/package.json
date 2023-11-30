@@ -9,6 +9,7 @@
         "@heroicons/react": "^2.0.18",
         "@mantine/prism": "^5.10.5",
         "@nangohq/frontend": "0.36.40",
+        "@sentry/react": "^7.83.0",
         "@testing-library/jest-dom": "^5.16.5",
         "@testing-library/react": "^13.4.0",
         "@testing-library/user-event": "^13.5.0",
