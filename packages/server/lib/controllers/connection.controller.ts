@@ -538,6 +538,11 @@ class ConnectionController {
             if (template.auth_mode === ProviderAuthModes.OAuth2) {
                 const { access_token, refresh_token, expires_at, expires_in, metadata, connection_config } = req.body;
 
+                const { expires_at: parsedExpiresAt } = connectionService.parseRawCredentials(
+                    { access_token, refresh_token, expires_at, expires_in },
+                    template.auth_mode
+                ) as OAuth2Credentials;
+
                 if (!access_token) {
                     errorManager.errRes(res, 'missing_access_token');
                     return;
@@ -546,7 +551,7 @@ class ConnectionController {
                     type: template.auth_mode,
                     access_token,
                     refresh_token,
-                    expires_at,
+                    expires_at: expires_at || parsedExpiresAt,
                     expires_in,
                     metadata,
                     connection_config,
