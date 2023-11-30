@@ -273,18 +273,18 @@ export class NangoAction {
             config.providerConfigKey = this.providerConfigKey;
         }
 
-        if (!this.dryRun) {
+        if (this.dryRun) {
+            return this.nango.proxy(config);
+        } else {
             const { connectionId, providerConfigKey } = config;
             connection = await this.nango.getConnection(providerConfigKey as string, connectionId as string);
 
             if (!connection) {
                 throw new Error(`Connection not found using the provider config key ${this.providerConfigKey} and connection id ${this.connectionId}`);
             }
-        }
 
-        return (
-            this.dryRun ? this.nango.proxy(config) : proxyService.routeOrConfigure(config, { ...internalConfig, connection: connection as Connection })
-        ) as Promise<AxiosResponse<T>>;
+            return proxyService.routeOrConfigure(config, { ...internalConfig, connection: connection as Connection }) as Promise<AxiosResponse<T>>;
+        }
     }
 
     public async get<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
