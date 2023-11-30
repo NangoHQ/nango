@@ -21,6 +21,7 @@ export interface NangoIntegrationDataV1 {
 export interface NangoIntegrationDataV2 extends NangoIntegrationDataV1 {
     sync_type?: SyncType;
     description?: string;
+    'webhook-subscriptions'?: string[];
     scopes?: string[];
     output?: string | string[];
 }
@@ -37,6 +38,8 @@ export interface NangoV2IntegrationContents {
     provider?: string;
     syncs?: NangoIntegrationDataV2[];
     actions?: NangoIntegrationDataV2[];
+    'post-connection-scripts'?: string[];
+    'webhook-attribution-script'?: string;
 }
 
 export interface NangoV2Integration {
@@ -120,6 +123,7 @@ export interface NangoSyncConfig {
     // v2 additions
     input?: NangoSyncModel;
     sync_type?: SyncType;
+    webhookSubscriptions?: string[];
 }
 
 export interface StandardNangoConfig {
@@ -127,4 +131,6 @@ export interface StandardNangoConfig {
     provider?: string;
     syncs: NangoSyncConfig[];
     actions: NangoSyncConfig[];
+    postConnectionScripts?: string[];
+    webhookAttributionScript?: string;
 }

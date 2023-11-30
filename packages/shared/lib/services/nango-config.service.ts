@@ -269,6 +269,7 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
     for (const providerConfigKey in config.integrations) {
         const builtSyncs: NangoSyncConfig[] = [];
         const builtActions: NangoSyncConfig[] = [];
+
         const integration: NangoV2Integration = config.integrations[providerConfigKey] as NangoV2Integration;
         let provider;
 
@@ -283,6 +284,9 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
 
         const syncs = integration['syncs'] as NangoV2Integration;
         const actions = integration['actions'] as NangoV2Integration;
+        const webhookAttributionScript = (integration['webhook-attribution-script'] || '') as string;
+        const postConnectionScripts = (integration['post-connection-scripts'] || []) as string[];
+
         for (const syncName in syncs) {
             const sync: NangoIntegrationDataV2 = syncs[syncName] as NangoIntegrationDataV2;
             const models: NangoSyncModel[] = [];
@@ -358,6 +362,16 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                 return { success: false, error, response: null };
             }
 
+            let webhookSubscriptions: string[] = [];
+
+            if (sync['webhook-subscriptions']) {
+                if (Array.isArray(sync['webhook-subscriptions'])) {
+                    webhookSubscriptions = sync['webhook-subscriptions'] as string[];
+                } else {
+                    webhookSubscriptions = [sync['webhook-subscriptions'] as string];
+                }
+            }
+
             const syncObject: NangoSyncConfig = {
                 name: syncName,
                 type: SyncConfigType.SYNC,
@@ -372,7 +386,8 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                 returns: Array.isArray(sync.output) ? (sync?.output as string[]) : ([sync.output] as string[]),
                 description: sync?.description || sync?.metadata?.description || '',
                 scopes: Array.isArray(scopes) ? scopes : String(scopes)?.split(','),
-                endpoints
+                endpoints,
+                webhookSubscriptions
             };
 
             builtSyncs.push(syncObject);
@@ -447,6 +462,16 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
 
             const scopes = action?.scopes || action?.metadata?.scopes || [];
 
+            let webhookSubscriptions: string[] = [];
+
+            if (action['webhook-subscriptions']) {
+                if (Array.isArray(action['webhook-subscriptions'])) {
+                    webhookSubscriptions = action['webhook-subscriptions'] as string[];
+                } else {
+                    webhookSubscriptions = [action['webhook-subscriptions'] as string];
+                }
+            }
+
             const actionObject: NangoSyncConfig = {
                 name: actionName,
                 type: SyncConfigType.ACTION,
@@ -457,7 +482,8 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                 description: action?.description || action?.metadata?.description || '',
                 scopes: Array.isArray(scopes) ? scopes : String(scopes)?.split(','),
                 input: inputModel,
-                endpoints
+                endpoints,
+                webhookSubscriptions
             };
 
             builtActions.push(actionObject);
@@ -466,7 +492,9 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
         const simplifiedIntegration: StandardNangoConfig = {
             providerConfigKey,
             syncs: builtSyncs,
-            actions: builtActions
+            actions: builtActions,
+            postConnectionScripts,
+            webhookAttributionScript
         };
 
         output.push(simplifiedIntegration);
@@ -474,6 +502,7 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
         if (provider) {
             simplifiedIntegration.provider = provider as unknown as string;
         }
+        console.log(JSON.stringify(output));
     }
     return { success: true, error: null, response: output };
 }

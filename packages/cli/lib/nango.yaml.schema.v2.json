@@ -97,6 +97,18 @@
                                             "errorMessage": {
                                                 "_": "nango yaml schema validation error: output must be a string or an array of strings."
                                             }
+                                        },
+                                        "webhook-subscriptions": {
+                                            "oneOf": [
+                                                { "type": "string" },
+                                                {
+                                                    "type": "array",
+                                                    "items": { "type": "string" }
+                                                }
+                                            ],
+                                            "errorMessage": {
+                                                "_": "nango yaml schema validation error: webhook-subscriptions must be a string or an array of strings."
+                                            }
                                         }
                                     },
                                     "required": ["endpoint", "output"],
@@ -175,6 +187,18 @@
                                             "errorMessage": {
                                                 "_": "nango yaml schema validation error: output must be a string or an array of strings."
                                             }
+                                        },
+                                        "webhook-subscriptions": {
+                                            "oneOf": [
+                                                { "type": "string" },
+                                                {
+                                                    "type": "array",
+                                                    "items": { "type": "string" }
+                                                }
+                                            ],
+                                            "errorMessage": {
+                                                "_": "nango yaml schema validation error: webhook-subscriptions must be a string or an array of strings."
+                                            }
                                         }
                                     },
                                     "required": ["endpoint"],
@@ -186,6 +210,24 @@
                                 }
                             }
                         ]
+                    },
+                    "post-connection-scripts": {
+                        "errorMessage": {
+                            "_": "nango yaml schema validation error: post connection scripts must be a string or an array of strings."
+                        },
+                        "oneOf": [
+                            { "type": "string" },
+                            {
+                                "type": "array",
+                                "items": { "type": "string" }
+                            }
+                        ]
+                    },
+                    "webhook-attribution-script": {
+                        "errorMessage": {
+                            "_": "nango yaml schema validation error: webhook attribution script must be a string."
+                        },
+                        "type": "string"
                     }
                 },
                 "additionalProperties": false

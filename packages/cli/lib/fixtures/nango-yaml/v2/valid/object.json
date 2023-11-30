@@ -32,7 +32,8 @@
                 "returns": ["GithubIssue"],
                 "description": "Sync github issues continuously from public repos\n",
                 "scopes": ["public_repo"],
-                "endpoints": [{ "GET": "/ticketing/tickets" }]
+                "endpoints": [{ "GET": "/ticketing/tickets" }],
+                "webhookSubscriptions": ["issue.creation"]
             },
             {
                 "name": "github-issue-example-two",
@@ -64,7 +65,8 @@
                 "returns": ["GithubIssue2"],
                 "description": "Sync github issues continuously from public repos example two\n",
                 "scopes": ["public_repo"],
-                "endpoints": [{ "GET": "/ticketing/tickets-two" }]
+                "endpoints": [{ "GET": "/ticketing/tickets-two" }],
+                "webhookSubscriptions": []
             },
             {
                 "name": "github-multiple-models",
@@ -112,7 +114,8 @@
                 "returns": ["GithubIssue3", "GithubPR"],
                 "description": "Sync github issues to multiple models",
                 "scopes": [],
-                "endpoints": [{ "GET": "/ticketing/ticket" }, { "GET": "/ticketing/pr" }]
+                "endpoints": [{ "GET": "/ticketing/ticket" }, { "GET": "/ticketing/pr" }],
+                "webhookSubscriptions": []
             }
         ],
         "actions": [
@@ -146,7 +149,8 @@
                 "returns": "GithubIssueAction",
                 "runs": "",
                 "scopes": ["repo:read"],
-                "type": "action"
+                "type": "action",
+                "webhookSubscriptions": []
             },
             {
                 "name": "github-create-issue",
@@ -178,7 +182,8 @@
                         { "name": "body", "type": "string" }
                     ]
                 },
-                "endpoints": [{ "POST": "/ticketing/tickets" }]
+                "endpoints": [{ "POST": "/ticketing/tickets" }],
+                "webhookSubscriptions": []
             },
             {
                 "name": "github-delete-issue",
@@ -198,8 +203,11 @@
                     "name": "GithubIssue:id",
                     "fields": [{ "name": "id", "type": "integer" }]
                 },
-                "endpoints": [{ "DELETE": "/ticketing/tickets/{GithubIssue:id}" }]
+                "endpoints": [{ "DELETE": "/ticketing/tickets/{GithubIssue:id}" }],
+                "webhookSubscriptions": []
             }
-        ]
+        ],
+        "postConnectionScripts": ["store-github-connection-info"],
+        "webhookAttributionScript": "github-attribute-webhook"
     }
 ]
