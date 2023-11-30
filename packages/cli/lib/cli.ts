@@ -121,8 +121,8 @@ export const generate = async (debug = false, inParentDirectory = false) => {
                 return `${singularModel.charAt(0).toUpperCase()}${singularModel.slice(1)}`;
             };
 
-            let interfaceNames: string | string[];
-            let mappings: { name: string; type: string } | { name: string; type: string }[];
+            let interfaceNames: string | string[] = [];
+            let mappings: { name: string; type: string } | { name: string; type: string }[] = [];
 
             if (typeof models === 'string') {
                 const formattedName = formatModelName(models);
@@ -132,11 +132,13 @@ export const generate = async (debug = false, inParentDirectory = false) => {
                     type: formattedName
                 };
             } else {
-                interfaceNames = models.map(formatModelName);
-                mappings = models.map((model) => ({
-                    name: model,
-                    type: formatModelName(model)
-                }));
+                if (models && models.length !== 0) {
+                    interfaceNames = models.map(formatModelName);
+                    mappings = models.map((model) => ({
+                        name: model,
+                        type: formatModelName(model)
+                    }));
+                }
             }
 
             const rendered = ejs.render(ejsTemplateContents, {
