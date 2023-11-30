@@ -1,5 +1,15 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import React from "react";
+import {
+    Routes,
+    Route,
+    Navigate,
+    useLocation,
+    useNavigationType,
+    createRoutesFromChildren,
+    matchRoutes
+} from 'react-router-dom';
 import { MantineProvider } from '@mantine/core';
+import * as Sentry from "@sentry/react";
 
 import Signup from './pages/Signup';
 import InviteSignup from './pages/InviteSignup';
@@ -25,7 +35,24 @@ import 'react-toastify/dist/ReactToastify.css';
 import { isCloud } from './utils/utils';
 import { useStore } from './store';
 
+Sentry.init({
+  dsn: process.env.REACT_APP_PUBLIC_SENTRY_KEY,
+  integrations: [
+    new Sentry.BrowserTracing({
+      routingInstrumentation: Sentry.reactRouterV6Instrumentation(
+        React.useEffect,
+        useLocation,
+        useNavigationType,
+        createRoutesFromChildren,
+        matchRoutes
+      ),
+    }),
+  ],
+  tracesSampleRate: 1.0,
+});
+
 const App = () => {
+    const SentryRoutes = Sentry.withSentryReactRouterV6Routing(Routes)
     const env = useStore(state => state.cookieValue);
 
     const landingPage = env === 'dev' ? '/getting-started' : '/integrations';
@@ -47,7 +74,7 @@ const App = () => {
                 })
             }}
         >
-            <Routes>
+            <SentryRoutes>
                 <Route path="/" element={<Navigate to={landingPage} replace />} />
                 <Route path="/getting-started" element={<PrivateRoute />}>
                     <Route path="/getting-started" element={<GettingStarted />} />
@@ -98,7 +125,7 @@ const App = () => {
                     </>
                 )}
                 <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
+            </SentryRoutes>
             <ToastContainer />
         </MantineProvider>
     );
