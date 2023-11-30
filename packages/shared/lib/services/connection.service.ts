@@ -390,12 +390,20 @@ class ConnectionService {
         return result;
     }
 
-    public async updateMetadata(connection: Connection, metadata: Metadata) {
+    public async replaceMetadata(connection: Connection, metadata: Metadata) {
         await db.knex
             .withSchema(db.schema())
             .from<StoredConnection>(`_nango_connections`)
             .where({ id: connection.id as number, deleted: false })
             .update({ metadata });
+    }
+
+    public async updateMetadata(connection: Connection, metadata: Metadata): Promise<Metadata> {
+        const existingMetadata = await this.getMetadata(connection);
+        const newMetadata = { ...existingMetadata, ...metadata };
+        await this.replaceMetadata(connection, newMetadata);
+
+        return newMetadata;
     }
 
     public async listConnections(

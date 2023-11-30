@@ -505,6 +505,44 @@ paths:
                                     message:
                                         type: string
 
+        patch:
+            description: Update custom metadata for the connection.
+            parameters:
+                - name: connectionId
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The connection ID used to create the connection.
+                - name: Provider-Config-Key
+                  in: header
+                  required: true
+                  description: The integration ID used to create the connection (aka Unique Key).
+                  schema:
+                      type: string
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+            responses:
+                '200':
+                    description: Successfully created an integrations
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                '400':
+                    description: Invalid request
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    message:
+                                        type: string
+
     /records:
         get:
             description: Returns data synced with Nango Sync
@@ -555,7 +593,7 @@ paths:
                       type: string
 
             responses:
-                '200':
+                '201':
                     description: Successfully returned records
                     content:
                         application/json:

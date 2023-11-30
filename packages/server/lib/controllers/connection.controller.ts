@@ -28,7 +28,7 @@ import {
     createActivityLogAndLogMessage,
     environmentService,
     accountService,
-    SyncClient,
+    connectionCreated as connectionCreatedHook,
     Connection,
     slackNotificationService
 } from '@nangohq/shared';
@@ -494,9 +494,39 @@ class ConnectionController {
                 return;
             }
 
-            await connectionService.updateMetadata(connection, req.body);
+            await connectionService.replaceMetadata(connection, req.body);
 
             res.status(201).send();
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async updateMetadata(req: Request, res: Response, next: NextFunction) {
+        try {
+            const environmentId = getEnvironmentId(res);
+            const connectionId = (req.params['connectionId'] as string) || (req.get('Connection-Id') as string);
+            const providerConfigKey = (req.params['provider_config_key'] as string) || (req.get('Provider-Config-Key') as string);
+
+            const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environmentId);
+
+            if (!success) {
+                errorManager.errResFromNangoErr(res, error);
+
+                return;
+            }
+
+            if (!connection) {
+                const environmentName = await environmentService.getEnvironmentName(environmentId);
+                const error = new NangoError('unknown_connection', { connectionId, providerConfigKey, environmentName });
+                errorManager.errResFromNangoErr(res, error);
+
+                return;
+            }
+
+            const metadata = await connectionService.updateMetadata(connection, req.body);
+
+            res.status(200).send(metadata);
         } catch (err) {
             next(err);
         }

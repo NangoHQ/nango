@@ -296,6 +296,28 @@ export class Nango {
         return axios.post(url, metadata, { headers: this.enrichHeaders(headers) });
     }
 
+    public async updateMetadata(providerConfigKey: string, connectionId: string, metadata: Record<string, any>): Promise<AxiosResponse<void>> {
+        if (!providerConfigKey) {
+            throw new Error('Provider Config Key is required');
+        }
+
+        if (!connectionId) {
+            throw new Error('Connection Id is required');
+        }
+
+        if (!metadata) {
+            throw new Error('Metadata is required');
+        }
+
+        const url = `${this.serverUrl}/connection/${connectionId}/metadata?provider_config_key=${providerConfigKey}`;
+
+        const headers: Record<string, string | number | boolean> = {
+            'Provider-Config-Key': providerConfigKey as string
+        };
+
+        return axios.patch(url, metadata, { headers: this.enrichHeaders(headers) });
+    }
+
     public async deleteConnection(providerConfigKey: string, connectionId: string): Promise<AxiosResponse<void>> {
         const url = `${this.serverUrl}/connection/${connectionId}?provider_config_key=${providerConfigKey}`;
 

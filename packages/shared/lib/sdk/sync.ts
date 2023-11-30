@@ -330,6 +330,10 @@ export class NangoAction {
         return this.nango.setMetadata(this.providerConfigKey as string, this.connectionId as string, metadata);
     }
 
+    public async updateMetadata(metadata: Record<string, string>): Promise<AxiosResponse<void>> {
+        return this.nango.updateMetadata(this.providerConfigKey as string, this.connectionId as string, metadata);
+    }
+
     public async setFieldMapping(fieldMapping: Record<string, string>): Promise<AxiosResponse<void>> {
         console.warn('setFieldMapping is deprecated. Please use setMetadata instead.');
         return this.nango.setMetadata(this.providerConfigKey as string, this.connectionId as string, fieldMapping);
