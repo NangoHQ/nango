@@ -608,6 +608,13 @@ class ConnectionService {
 
                 const { success, error, response: newCredentials } = await this.getNewCredentials(connection, providerConfig, template);
                 if (!success || !newCredentials) {
+                    await metricsManager.capture(MetricTypes.AUTH_TOKEN_REFRESH_FAILURE, `Token refresh failed, ${error?.message}`, LogActionEnum.AUTH, {
+                        environmentId: String(environment_id),
+                        connectionId,
+                        providerConfigKey,
+                        provider: providerConfig.provider
+                    });
+
                     return { success, error, response: null };
                 }
                 connection.credentials = newCredentials;
