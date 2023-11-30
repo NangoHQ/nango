@@ -267,6 +267,10 @@ export class NangoAction {
 
         if (!this.dryRun) {
             connection = await this.nango.getConnection(this.providerConfigKey as string, this.connectionId as string);
+
+            if (!connection) {
+                throw new Error(`Connection not found using the provider config key ${this.providerConfigKey} and connection id ${this.connectionId}`);
+            }
         }
 
         if (!config.connectionId && this.connectionId) {
