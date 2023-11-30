@@ -21,9 +21,9 @@ Sentry.init({
     }),
     new Sentry.Replay(),
   ],
-  tracesSampleRate: 1.0,
+  tracesSampleRate: 0.1,
   replaysSessionSampleRate: 0.1,
-  replaysOnErrorSampleRate: 1.0,
+  replaysOnErrorSampleRate: 0.3,
 });
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
