@@ -11,7 +11,7 @@ import {
 } from '../utils/utils.js';
 import {
     getConnectionConfig,
-    SyncClient,
+    connectionCreated as connectionCreatedHook,
     interpolateStringFromObject,
     getOauthCallbackUrl,
     getGlobalAppCallbackUrl,
@@ -910,8 +910,7 @@ class OAuthController {
             });
 
             if (updatedConnection) {
-                const syncClient = await SyncClient.getInstance();
-                await syncClient?.initiate(updatedConnection.id);
+                await connectionCreatedHook(updatedConnection.id);
             }
 
             await updateSuccessActivityLog(activityLogId, true);

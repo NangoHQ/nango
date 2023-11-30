@@ -39,7 +39,7 @@ import {
 } from '../models/Auth.js';
 import { schema } from '../db/database.js';
 import { interpolateStringFromObject, parseTokenExpirationDate, isTokenExpired, getRedisUrl } from '../utils/utils.js';
-import SyncClient from '../clients/sync.client.js';
+import { connectionCreated as connectionCreatedHook } from '../hooks/connection.hooks.js';
 import { Locking } from '../utils/lock/locking.js';
 import { InMemoryKVStore } from '../utils/kvstore/InMemoryStore.js';
 import { RedisKVStore } from '../utils/kvstore/RedisStore.js';
@@ -208,8 +208,7 @@ class ConnectionService {
         );
 
         if (importedConnection) {
-            const syncClient = await SyncClient.getInstance();
-            syncClient?.initiate(importedConnection[0]?.id as number);
+            await connectionCreatedHook(importedConnection[0].id);
         }
 
         return importedConnection;
@@ -232,8 +231,7 @@ class ConnectionService {
         const importedConnection = await this.upsertApiConnection(connection_id, provider_config_key, provider, credentials, {}, environmentId, accountId);
 
         if (importedConnection) {
-            const syncClient = await SyncClient.getInstance();
-            syncClient?.initiate(importedConnection[0].id);
+            await connectionCreatedHook(importedConnection[0].id);
         }
 
         return importedConnection;

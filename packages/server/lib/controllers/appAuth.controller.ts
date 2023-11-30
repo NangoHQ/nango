@@ -3,7 +3,7 @@ import {
     environmentService,
     AuthCredentials,
     NangoError,
-    SyncClient,
+    connectionCreated as connectionCreatedHook,
     findActivityLogBySession,
     errorManager,
     analytics,
@@ -160,8 +160,7 @@ class AppAuthController {
             );
 
             if (updatedConnection) {
-                const syncClient = await SyncClient.getInstance();
-                await syncClient?.initiate(updatedConnection.id);
+                await connectionCreatedHook(updatedConnection.id);
             }
 
             await createActivityLogMessageAndEnd({

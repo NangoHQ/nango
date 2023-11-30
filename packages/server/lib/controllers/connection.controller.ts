@@ -714,8 +714,7 @@ class ConnectionController {
             }
 
             if (updatedConnection && updatedConnection.id) {
-                const syncClient = await SyncClient.getInstance();
-                await syncClient?.initiate(updatedConnection.id);
+                await connectionCreatedHook(updatedConnection.id);
             }
 
             res.status(201).send(req.body);
