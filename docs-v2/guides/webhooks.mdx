@@ -8,7 +8,7 @@ description: 'Get real-time updates when new data is available.'
 
 You can configure Nango to send a webhook to your app every time a sync finishes and new data is available.
 
-To set this up go to [Project Settings page](https://app.nango.dev/project-settings) and set your webhook receive URL there.
+To set this up, go to [Project Settings page](https://app.nango.dev/project-settings) and set your webhook receive URL there.
 
 <Tip>
 You can change the webhook delivery so it sends every time a sync finishes regardless if new data is available in project settings.
@@ -28,9 +28,9 @@ The webhook from Nango is a POST request with the following body:
 }
 ```
 
-If your sync returns multiple models you may receive multiple webhooks for the same sync run (one for each model).
+If your sync returns multiple models, you may receive multiple webhooks for the same sync run (one for each model).
 
-For full type safety the `@nangohq/node` package exports a type annotation for the webhook. Example usage:
+For full type safety, the `@nangohq/node` package exports a type annotation for the webhook. Example usage:
 
 ```ts
 import express from 'express';

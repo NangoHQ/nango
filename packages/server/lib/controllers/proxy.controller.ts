@@ -7,33 +7,23 @@ import axios, { AxiosError, AxiosResponse } from 'axios';
 import { backOff } from 'exponential-backoff';
 
 import {
-    Connection,
     createActivityLog,
     createActivityLogMessageAndEnd,
-    createActivityLogMessage,
-    updateProvider as updateProviderActivityLog,
     updateSuccess as updateSuccessActivityLog,
-    updateEndpoint as updateEndpointActivityLog,
-    ApiKeyCredentials,
     HTTP_VERB,
     LogLevel,
-    BasicApiCredentials,
     LogAction,
     LogActionEnum,
-    configService,
     errorManager,
-    connectionService,
+    UserProvidedProxyConfiguration,
     getAccount,
     getEnvironmentId,
-    interpolateIfNeeded,
-    AuthModes,
-    OAuth2Credentials,
-    connectionCopyWithParsedConnectionConfig,
-    NangoError,
+    InternalProxyConfiguration,
+    ApplicationConstructedProxyConfiguration,
     ErrorSourceEnum,
-    mapProxyBaseUrlInterpolationFormat
+    ServiceResponse,
+    proxyService
 } from '@nangohq/shared';
-import type { ProxyBodyConfiguration } from '../models.js';
 
 interface ForwardedHeaders {
     [key: string]: string;
@@ -82,223 +72,49 @@ class ProxyController {
                 activityLogId = existingActivityLogId ? Number(existingActivityLogId) : await createActivityLog(log);
             }
 
-            if (!connectionId) {
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    environment_id,
-                    activity_log_id: activityLogId as number,
-                    timestamp: Date.now(),
-                    content: `The connection id value is missing. If you're making a HTTP request then it should be included in the header 'Connection-Id'. If you're using the SDK the connectionId property should be specified.`
-                });
-
-                const error = new NangoError('missing_connection_id');
-                errorManager.errResFromNangoErr(res, error);
-
-                return;
-            }
-
-            if (!providerConfigKey) {
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    environment_id,
-                    activity_log_id: activityLogId as number,
-                    timestamp: Date.now(),
-                    content: `The provider config key value is missing. If you're making a HTTP request then it should be included in the header 'Provider-Config-Key'. If you're using the SDK the providerConfigKey property should be specified.`
-                });
-
-                const error = new NangoError('missing_provider_config_key');
-                errorManager.errResFromNangoErr(res, error);
-
-                return;
-            }
-
-            if (!isSync) {
-                await createActivityLogMessage({
-                    level: 'debug',
-                    environment_id,
-                    activity_log_id: activityLogId as number,
-                    timestamp: Date.now(),
-                    content: `Connection id: '${connectionId}' and provider config key: '${providerConfigKey}' parsed and received successfully`
-                });
-            }
-
-            const {
-                success,
-                error,
-                response: connection
-            } = await connectionService.getConnectionCredentials(
-                accountId,
-                environment_id,
-                connectionId,
-                providerConfigKey,
-                activityLogId as number,
-                logAction,
-                false
-            );
-
-            if (!success) {
-                errorManager.errResFromNangoErr(res, error);
-
-                return;
-            }
-
-            if (!isSync) {
-                await createActivityLogMessage({
-                    level: 'debug',
-                    environment_id,
-                    activity_log_id: activityLogId as number,
-                    timestamp: Date.now(),
-                    content: 'Connection credentials found successfully'
-                });
-            }
-
             const { method } = req;
 
             const path = req.params[0] as string;
             const { query }: UrlWithParsedQuery = url.parse(req.url, true) as unknown as UrlWithParsedQuery;
             const queryString = querystring.stringify(query);
-            let endpoint = `${path}${queryString ? `?${queryString}` : ''}`;
+            const endpoint = `${path}${queryString ? `?${queryString}` : ''}`;
 
-            if (!endpoint && !baseUrlOverride) {
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    environment_id,
-                    activity_log_id: activityLogId as number,
-                    timestamp: Date.now(),
-                    content: 'Proxy: a API URL endpoint is missing.'
-                });
+            const headers = this.parseHeaders(req);
 
-                const error = new NangoError('missing_endpoint');
+            const externalConfig: UserProvidedProxyConfiguration = {
+                endpoint,
+                providerConfigKey,
+                connectionId,
+                retries: retries ? Number(retries) : 0,
+                data: req.body,
+                headers,
+                baseUrlOverride,
+                decompress: decompress === 'true' ? true : false,
+                method: method.toUpperCase() as HTTP_VERB
+            };
+
+            const internalConfig: InternalProxyConfiguration = {
+                existingActivityLogId: activityLogId as number,
+                environmentId: environment_id,
+                accountId,
+                throwErrors: false,
+                isFlow: isSync === 'true',
+                isDryRun: isDryRun === 'true'
+            };
+
+            const {
+                success,
+                error,
+                response: configBody
+            } = (await proxyService.routeOrConfigure(externalConfig, internalConfig)) as ServiceResponse<ApplicationConstructedProxyConfiguration>;
+
+            if (!success || !configBody) {
                 errorManager.errResFromNangoErr(res, error);
 
                 return;
             }
 
-            await updateEndpointActivityLog(activityLogId as number, endpoint);
-
-            let token;
-
-            switch (connection?.credentials?.type) {
-                case AuthModes.OAuth2:
-                    {
-                        const credentials = connection.credentials as OAuth2Credentials;
-                        token = credentials?.access_token;
-                    }
-                    break;
-                case AuthModes.OAuth1:
-                    throw new Error('OAuth1 is not supported yet in the proxy.');
-                case AuthModes.Basic:
-                    token = connection?.credentials;
-                    break;
-                case AuthModes.ApiKey:
-                    token = connection?.credentials;
-                    break;
-                case AuthModes.App:
-                    {
-                        const credentials = connection?.credentials;
-                        token = credentials?.access_token;
-                    }
-                    break;
-            }
-
-            if (!isSync) {
-                await createActivityLogMessage({
-                    level: 'debug',
-                    environment_id,
-                    activity_log_id: activityLogId as number,
-                    timestamp: Date.now(),
-                    content: 'Proxy: token retrieved successfully'
-                });
-            }
-
-            const providerConfig = await configService.getProviderConfig(providerConfigKey, environment_id);
-            const headers = this.parseHeaders(req);
-
-            if (!providerConfig) {
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    environment_id,
-                    activity_log_id: activityLogId as number,
-                    timestamp: Date.now(),
-                    content: 'Provider configuration not found'
-                });
-
-                res.status(404).send();
-
-                return;
-            }
-
-            await updateProviderActivityLog(activityLogId as number, String(providerConfig?.provider));
-
-            const template = configService.getTemplate(String(providerConfig?.provider));
-
-            if ((!template.proxy || !template.proxy.base_url) && !baseUrlOverride) {
-                await createActivityLogMessageAndEnd({
-                    level: 'error',
-                    environment_id,
-                    activity_log_id: activityLogId as number,
-                    timestamp: Date.now(),
-                    content: `${Date.now()} The proxy is not supported for this provider ${String(
-                        providerConfig?.provider
-                    )}. You can easily add support by following the instructions at https://docs.nango.dev/contribute/nango-auth.
-You can also use the baseUrlOverride to get started right away.
-See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
-                });
-
-                errorManager.errRes(res, 'missing_base_api_url');
-                return;
-            }
-
-            if (!isSync) {
-                await createActivityLogMessage({
-                    level: 'debug',
-                    environment_id,
-                    activity_log_id: activityLogId as number,
-                    timestamp: Date.now(),
-                    content: `Proxy: API call configuration constructed successfully with the base api url set to ${baseUrlOverride || template.proxy.base_url}`
-                });
-            }
-
-            if (!baseUrlOverride && template.proxy.base_url && endpoint.includes(template.proxy.base_url)) {
-                endpoint = endpoint.replace(template.proxy.base_url, '');
-            }
-
-            const configBody: ProxyBodyConfiguration = {
-                endpoint,
-                method: method as HTTP_VERB,
-                template,
-                token: token || '',
-                provider: String(providerConfig?.provider),
-                providerConfigKey,
-                connectionId,
-                headers,
-                data: req.body,
-                retries: retries ? Number(retries) : 0,
-                baseUrlOverride,
-                decompress: decompress === 'true'
-            };
-
-            if (!isSync) {
-                await createActivityLogMessage({
-                    level: 'debug',
-                    environment_id,
-                    activity_log_id: activityLogId as number,
-                    timestamp: Date.now(),
-                    content: `Endpoint set to ${configBody.endpoint} with retries set to ${configBody.retries}`
-                });
-            }
-
-            await this.sendToHttpMethod(
-                res,
-                next,
-                method as HTTP_VERB,
-                configBody,
-                activityLogId as number,
-                environment_id,
-                connection as Connection,
-                isSync,
-                isDryRun
-            );
+            await this.sendToHttpMethod(res, next, method as HTTP_VERB, configBody, activityLogId as number, environment_id, isSync, isDryRun);
         } catch (error) {
             const environmentId = getEnvironmentId(res);
             const connectionId = req.get('Connection-Id') as string;
@@ -317,112 +133,6 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         }
     }
 
-    private retryHandler = async (
-        activityLogId: number,
-        environment_id: number,
-        error: AxiosError,
-        type: 'at' | 'after',
-        retryHeader: string
-    ): Promise<boolean> => {
-        if (type === 'at') {
-            const resetTimeEpoch = error?.response?.headers[retryHeader] || error?.response?.headers[retryHeader.toLowerCase()];
-
-            if (resetTimeEpoch) {
-                const currentEpochTime = Math.floor(Date.now() / 1000);
-                const retryAtEpoch = Number(resetTimeEpoch);
-
-                if (retryAtEpoch > currentEpochTime) {
-                    const waitDuration = retryAtEpoch - currentEpochTime;
-
-                    const content = `Rate limit reset time was parsed successfully, retrying after ${waitDuration} seconds`;
-
-                    await createActivityLogMessage({
-                        level: 'error',
-                        environment_id,
-                        activity_log_id: activityLogId,
-                        timestamp: Date.now(),
-                        content
-                    });
-
-                    await new Promise((resolve) => setTimeout(resolve, waitDuration * 1000));
-
-                    return true;
-                }
-            }
-        }
-
-        if (type === 'after') {
-            const retryHeaderVal = error?.response?.headers[retryHeader] || error?.response?.headers[retryHeader.toLowerCase()];
-
-            if (retryHeaderVal) {
-                const retryAfter = Number(retryHeaderVal);
-                const content = `Retry header was parsed successfully, retrying after ${retryAfter} seconds`;
-
-                await createActivityLogMessage({
-                    level: 'error',
-                    environment_id,
-                    activity_log_id: activityLogId,
-                    timestamp: Date.now(),
-                    content
-                });
-
-                await new Promise((resolve) => setTimeout(resolve, retryAfter * 1000));
-
-                return true;
-            }
-        }
-
-        return true;
-    };
-
-    /**
-     * Retry
-     * @desc if retries are set the retry function to determine if retries are
-     * actually kicked off or not
-     * @param {AxiosError} error
-     * @param {attemptNumber} number
-     */
-    private retry = async (
-        activityLogId: number,
-        environment_id: number,
-        config: ProxyBodyConfiguration,
-        error: AxiosError,
-        attemptNumber: number
-    ): Promise<boolean> => {
-        if (
-            error?.response?.status.toString().startsWith('5') ||
-            // Note that Github issues a 403 for both rate limits and improper scopes
-            (error?.response?.status === 403 &&
-                error?.response?.headers['x-ratelimit-remaining'] &&
-                error?.response?.headers['x-ratelimit-remaining'] === '0') ||
-            error?.response?.status === 429 ||
-            ['ECONNRESET', 'ETIMEDOUT', 'ECONNABORTED'].includes(error?.code as string)
-        ) {
-            if (config.template.proxy && config.template.proxy.retry && (config.template.proxy?.retry?.at || config.template.proxy?.retry?.after)) {
-                const type = config.template.proxy.retry.at ? 'at' : 'after';
-                const retryHeader = config.template.proxy.retry.at ? config.template.proxy.retry.at : config.template.proxy.retry.after;
-
-                return this.retryHandler(activityLogId, environment_id, error, type, retryHeader as string);
-            }
-
-            const content = `API received an ${
-                error?.response?.status || error?.code
-            } error, retrying with exponential backoffs for a total of ${attemptNumber} times`;
-
-            await createActivityLogMessage({
-                level: 'error',
-                environment_id,
-                activity_log_id: activityLogId,
-                timestamp: Date.now(),
-                content
-            });
-
-            return true;
-        }
-
-        return false;
-    };
-
     /**
      * Send to http method
      * @desc route the call to a HTTP request based on HTTP method passed in
@@ -430,20 +140,19 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
      * @param {Response} res Express response object
      * @param {NextFuncion} next callback function to pass control to the next middleware function in the pipeline.
      * @param {HTTP_VERB} method
-     * @param {ProxyBodyConfiguration} configBody
+     * @param {ApplicationConstructedProxyConfiguration} configBody
      */
     private sendToHttpMethod(
         res: Response,
         next: NextFunction,
         method: HTTP_VERB,
-        configBody: ProxyBodyConfiguration,
+        configBody: ApplicationConstructedProxyConfiguration,
         activityLogId: number,
         environment_id: number,
-        connection: Connection,
         isSync?: string,
         isDryRun?: string
     ) {
-        const url = this.constructUrl(configBody, connection);
+        const url = proxyService.constructUrl(configBody);
         let decompress = false;
 
         if (configBody.decompress === true || configBody.template?.proxy?.decompress === true) {
@@ -466,7 +175,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
     private async handleResponse(
         res: Response,
         responseStream: AxiosResponse,
-        config: ProxyBodyConfiguration,
+        config: ApplicationConstructedProxyConfiguration,
         activityLogId: number,
         environment_id: number,
         url: string,
@@ -478,7 +187,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         }
 
         if (!isDryRun) {
-            const safeHeaders = this.stripSensitiveHeaders(config.headers, config);
+            const safeHeaders = proxyService.stripSensitiveHeaders(config.headers, config);
             await createActivityLogMessageAndEnd({
                 level: 'info',
                 environment_id,
@@ -498,31 +207,14 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         res.writeHead(responseStream?.status, responseStream.headers as OutgoingHttpHeaders);
     }
 
-    private stripSensitiveHeaders(headers: ProxyBodyConfiguration['headers'], config: ProxyBodyConfiguration) {
-        const safeHeaders = { ...headers };
-
-        if (!config.token) {
-            if (safeHeaders['Authorization']?.includes('Bearer')) {
-                safeHeaders['Authorization'] = safeHeaders['Authorization'].replace(/Bearer.*/, 'Bearer xxxx');
-            }
-
-            return safeHeaders;
-        }
-
-        Object.keys(safeHeaders).forEach((header) => {
-            if (safeHeaders[header] === config.token) {
-                safeHeaders[header] = 'xxxx';
-            }
-            const headerValue = safeHeaders[header];
-            if (headerValue?.includes(config.token as string)) {
-                safeHeaders[header] = headerValue.replace(config.token as string, 'xxxx');
-            }
-        });
-
-        return safeHeaders;
-    }
-
-    private async handleErrorResponse(res: Response, e: unknown, url: string, config: ProxyBodyConfiguration, activityLogId: number, environment_id: number) {
+    private async handleErrorResponse(
+        res: Response,
+        e: unknown,
+        url: string,
+        config: ApplicationConstructedProxyConfiguration,
+        activityLogId: number,
+        environment_id: number
+    ) {
         const error = e as AxiosError;
 
         if (!error?.response?.data) {
@@ -584,13 +276,13 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
      * @param {Response} res Express response object
      * @param {NextFuncion} next callback function to pass control to the next middleware function in the pipeline.
      * @param {string} url
-     * @param {ProxyBodyConfiguration} config
+     * @param {ApplicationConstructedProxyConfiguration} config
      */
     private async get(
         res: Response,
         _next: NextFunction,
         url: string,
-        config: ProxyBodyConfiguration,
+        config: ApplicationConstructedProxyConfiguration,
         activityLogId: number,
         environment_id: number,
         decompress: boolean,
@@ -598,7 +290,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         isDryRun?: string
     ) {
         try {
-            const headers = this.constructHeaders(config);
+            const headers = proxyService.constructHeaders(config);
 
             const responseStream: AxiosResponse = await backOff(
                 () => {
@@ -610,7 +302,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
                         decompress
                     });
                 },
-                { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId, environment_id, config) }
+                { numOfAttempts: Number(config.retries), retry: proxyService.retry.bind(this, activityLogId, environment_id, config) }
             );
 
             this.handleResponse(res, responseStream, config, activityLogId, environment_id, url, isSync, isDryRun);
@@ -624,13 +316,13 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
      * @param {Response} res Express response object
      * @param {NextFuncion} next callback function to pass control to the next middleware function in the pipeline.
      * @param {string} url
-     * @param {ProxyBodyConfiguration} config
+     * @param {ApplicationConstructedProxyConfiguration} config
      */
     private async post(
         res: Response,
         _next: NextFunction,
         url: string,
-        config: ProxyBodyConfiguration,
+        config: ApplicationConstructedProxyConfiguration,
         activityLogId: number,
         environment_id: number,
         decompress: boolean,
@@ -638,7 +330,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         isDryRun?: string
     ) {
         try {
-            const headers = this.constructHeaders(config);
+            const headers = proxyService.constructHeaders(config);
             const responseStream: AxiosResponse = await backOff(
                 () => {
                     return axios({
@@ -650,7 +342,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
                         decompress
                     });
                 },
-                { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId, environment_id, config) }
+                { numOfAttempts: Number(config.retries), retry: proxyService.retry.bind(this, activityLogId, environment_id, config) }
             );
 
             this.handleResponse(res, responseStream, config, activityLogId, environment_id, url, isSync, isDryRun);
@@ -664,13 +356,13 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
      * @param {Response} res Express response object
      * @param {NextFuncion} next callback function to pass control to the next middleware function in the pipeline.
      * @param {string} url
-     * @param {ProxyBodyConfiguration} config
+     * @param {ApplicationConstructedProxyConfiguration} config
      */
     private async patch(
         res: Response,
         _next: NextFunction,
         url: string,
-        config: ProxyBodyConfiguration,
+        config: ApplicationConstructedProxyConfiguration,
         activityLogId: number,
         environment_id: number,
         decompress: boolean,
@@ -678,7 +370,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         isDryRun?: string
     ) {
         try {
-            const headers = this.constructHeaders(config);
+            const headers = proxyService.constructHeaders(config);
             const responseStream: AxiosResponse = await backOff(
                 () => {
                     return axios({
@@ -690,7 +382,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
                         decompress
                     });
                 },
-                { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId, environment_id, config) }
+                { numOfAttempts: Number(config.retries), retry: proxyService.retry.bind(this, activityLogId, environment_id, config) }
             );
 
             this.handleResponse(res, responseStream, config, activityLogId, environment_id, url, isSync, isDryRun);
@@ -704,13 +396,13 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
      * @param {Response} res Express response object
      * @param {NextFuncion} next callback function to pass control to the next middleware function in the pipeline.
      * @param {string} url
-     * @param {ProxyBodyConfiguration} config
+     * @param {ApplicationConstructedProxyConfiguration} config
      */
     private async put(
         res: Response,
         _next: NextFunction,
         url: string,
-        config: ProxyBodyConfiguration,
+        config: ApplicationConstructedProxyConfiguration,
         activityLogId: number,
         environment_id: number,
         decompress: boolean,
@@ -718,7 +410,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         isDryRun?: string
     ) {
         try {
-            const headers = this.constructHeaders(config);
+            const headers = proxyService.constructHeaders(config);
             const responseStream: AxiosResponse = await backOff(
                 () => {
                     return axios({
@@ -730,7 +422,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
                         decompress
                     });
                 },
-                { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId, environment_id, config) }
+                { numOfAttempts: Number(config.retries), retry: proxyService.retry.bind(this, activityLogId, environment_id, config) }
             );
 
             this.handleResponse(res, responseStream, config, activityLogId, environment_id, url, isSync, isDryRun);
@@ -744,13 +436,13 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
      * @param {Response} res Express response object
      * @param {NextFuncion} next callback function to pass control to the next middleware function in the pipeline.
      * @param {string} url
-     * @param {ProxyBodyConfiguration} config
+     * @param {ApplicationConstructedProxyConfiguration} config
      */
     private async delete(
         res: Response,
         _next: NextFunction,
         url: string,
-        config: ProxyBodyConfiguration,
+        config: ApplicationConstructedProxyConfiguration,
         activityLogId: number,
         environment_id: number,
         decompress: boolean,
@@ -758,7 +450,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
         isDryRun?: string
     ) {
         try {
-            const headers = this.constructHeaders(config);
+            const headers = proxyService.constructHeaders(config);
             const responseStream: AxiosResponse = await backOff(
                 () => {
                     return axios({
@@ -769,7 +461,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
                         decompress
                     });
                 },
-                { numOfAttempts: Number(config.retries), retry: this.retry.bind(this, activityLogId, environment_id, config) }
+                { numOfAttempts: Number(config.retries), retry: proxyService.retry.bind(this, activityLogId, environment_id, config) }
             );
             this.handleResponse(res, responseStream, config, activityLogId, environment_id, url, isSync, isDryRun);
         } catch (e) {
@@ -780,13 +472,13 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
     private async reportError(
         error: AxiosError,
         url: string,
-        config: ProxyBodyConfiguration,
+        config: ApplicationConstructedProxyConfiguration,
         activityLogId: number,
         environment_id: number,
         errorMessage: string
     ) {
         if (activityLogId) {
-            const safeHeaders = this.stripSensitiveHeaders(config.headers, config);
+            const safeHeaders = proxyService.stripSensitiveHeaders(config.headers, config);
             await createActivityLogMessageAndEnd({
                 level: 'error',
                 environment_id,
@@ -810,85 +502,7 @@ See https://docs.nango.dev/guides/proxy#proxy-requests for more information.`
     }
 
     /**
-     * Construct URL
-     * @param {ProxyBodyConfiguration} config
-     *
-     */
-    private constructUrl(config: ProxyBodyConfiguration, connection: Connection) {
-        const { template: { proxy: { base_url: templateApiBase } = {} } = {}, endpoint: apiEndpoint } = config;
-
-        const apiBase = config.baseUrlOverride || templateApiBase;
-
-        const base = apiBase?.substr(-1) === '/' ? apiBase.slice(0, -1) : apiBase;
-        let endpoint = apiEndpoint?.charAt(0) === '/' ? apiEndpoint.slice(1) : apiEndpoint;
-
-        if (config.template.auth_mode === AuthModes.ApiKey && 'proxy' in config.template && 'query' in config.template.proxy) {
-            const apiKeyProp = Object.keys(config.template.proxy.query)[0];
-            const token = config.token as ApiKeyCredentials;
-            endpoint += endpoint.includes('?') ? '&' : '?';
-            endpoint += `${apiKeyProp}=${token.apiKey}`;
-        }
-
-        const fullEndpoint = interpolateIfNeeded(
-            `${mapProxyBaseUrlInterpolationFormat(base)}${endpoint ? '/' : ''}${endpoint}`,
-            connectionCopyWithParsedConnectionConfig(connection) as unknown as Record<string, string>
-        );
-
-        return fullEndpoint;
-    }
-
-    /**
-     * Construct Headers
-     * @param {ProxyBodyConfiguration} config
-     */
-    private constructHeaders(config: ProxyBodyConfiguration) {
-        let headers = {};
-
-        switch (config.template.auth_mode) {
-            case AuthModes.Basic:
-                {
-                    const token = config.token as BasicApiCredentials;
-                    headers = {
-                        Authorization: `Basic ${Buffer.from(`${token.username}:${token.password ?? ''}`).toString('base64')}`
-                    };
-                }
-                break;
-            case AuthModes.ApiKey:
-                headers = {};
-                break;
-            default:
-                headers = {
-                    Authorization: `Bearer ${config.token}`
-                };
-                break;
-        }
-
-        // even if the auth mode isn't api key a header might exist in the proxy
-        // so inject it if so
-        if ('proxy' in config.template && 'headers' in config.template.proxy) {
-            headers = Object.entries(config.template.proxy.headers).reduce(
-                (acc: Record<string, string>, [key, value]: [string, string]) => {
-                    // allows oauth2 acessToken key to be interpolated and injected
-                    // into the header in addition to api key values
-                    const tokenPair = config.template.auth_mode === AuthModes.OAuth2 ? { accessToken: config.token } : config.token;
-                    acc[key] = interpolateIfNeeded(value, tokenPair as unknown as Record<string, string>);
-                    return acc;
-                },
-                { ...headers }
-            );
-        }
-
-        if (config.headers) {
-            const { headers: configHeaders } = config;
-            headers = { ...headers, ...configHeaders };
-        }
-
-        return headers;
-    }
-
-    /**
      * Parse Headers
-     * @param {ProxyBodyConfiguration} config
      * @param {Request} req Express request object
      */
     private parseHeaders(req: Request) {

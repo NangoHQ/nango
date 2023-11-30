@@ -9,3 +9,4 @@ export * from './Data.js';
 export * from './Environment.js';
 export * from './Flow.js';
 export * from './NangoConfig.js';
+export * from './Proxy.js';

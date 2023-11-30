@@ -23,6 +23,10 @@ adobe:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+affinity:
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.affinity.co
 aircall:
     auth_mode: OAUTH2
     authorization_url: https://dashboard.aircall.io/oauth/authorize
@@ -583,6 +587,12 @@ keap:
         grant_type: refresh_token
     proxy:
         base_url: https://api.infusionsoft.com
+klaviyo:
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://a.klaviyo.com
+        headers:
+            Authorization: Klaviyo-API-Key ${apiKey}
 lever:
     auth_mode: OAUTH2
     authorization_url: https://auth.lever.co/authorize

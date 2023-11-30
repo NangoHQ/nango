@@ -16,6 +16,7 @@ API configuration: [`adobe`](https://nango.dev/providers.yaml)
 | API-specific rate limits | 🚫 (time to contribute: &lt;1h) |
 
 <Tip>We can implement missing features in &lt;48h, just ask for it in the [community](https://nango.dev/slack).</Tip>
+
 ## Getting started
 
 -   [How to register an Application](https://developer.adobe.com/developer-console/docs/guides/getting-started)
@@ -27,9 +28,9 @@ API configuration: [`adobe`](https://nango.dev/providers.yaml)
 
 ## API gotchas
 
--   If the service you are trying to integrate allows `offline_access` then you will be able to get refresh token if you add this in the scopes
+-   If the service you are trying to integrate allows `offline_access`, then you will be able to get refresh token if you add this in the scopes.
 -   Depending on the selected API, some platforms may not be available to be used with that API. Select the platform that best suits your application use case if more than one platform is available.
--   When creating an API make, it is important to web app as the type of application you are integrating too.(Not all apps support OAuth 2.0 )
--   To refresh the token simple use `nango.getConnection()` to generate new set of tokens
+-   When creating an API make, it is important to web app as the type of application you are integrating too. (Not all apps support OAuth 2.0.)
+-   To refresh the token, simply use `nango.getConnection()` to generate a new set of tokens.
 
 <Note>Add Getting Started links and Gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/adobe.mdx)</Note>

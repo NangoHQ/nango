@@ -2,6 +2,13 @@ import { v2, client } from '@datadog/datadog-api-client';
 import { isCloud } from './utils.js';
 
 export enum MetricTypes {
+    AUTH_TOKEN_REFRESH_START = 'auth_token_refresh_start',
+    AUTH_TOKEN_REFRESH_SUCCESS = 'auth_token_refresh_success',
+    AUTH_TOKEN_REFRESH_FAILURE = 'auth_token_refresh_failure',
+    AUTH_TOKEN_REQUEST_START = 'auth_token_request_start',
+    AUTH_TOKEN_REQUEST_CALLBACK_RECEIVED = 'auth_token_request_callback_received',
+    AUTH_TOKEN_REQUEST_SUCCESS = 'auth_token_request_success',
+    AUTH_TOKEN_REQUEST_FAILURE = 'auth_token_request_failure',
     SYNC_OVERLAP = 'sync_overlap',
     SYNC_FAILURE = 'sync_failure',
     SYNC_SUCCESS = 'sync_success',

@@ -27,7 +27,7 @@ If you want to continuously sync data from the external API, check out [syncs](/
 ## Using the Proxy
 
 <Tip>
-Before you can use Proxy requests you need to setup auth by following the [Authorize APIs guide](/guides/oauth).
+Before you can use Proxy requests, you need to setup auth by following the [Authorize APIs guide](/guides/oauth).
 </Tip>
 
 ### Proxy requests 
@@ -80,7 +80,7 @@ const res = await nango.proxy({
 });
     ```
 
-    Feel free to contribuge the `proxy.base_url` field to any API in the [providers.yaml](https://nango.dev/providers.yaml) public file, or reach out on the [Slack community](https://www.nango.dev/slack) to ask us to do it.
+    Feel free to contribute the `proxy.base_url` field to any API in the [providers.yaml](https://nango.dev/providers.yaml) public file, or reach out on the [Slack community](https://www.nango.dev/slack) to ask us to do it.
 </Info>
 </Tab>
 
@@ -99,7 +99,7 @@ curl -X POST -H 'Content-Type: application/json' \
 
 
 <Note>
-    Some APIs are not yet fully-configured to work with the Proxy and require you to indicate the base URL to use. 
+    Some APIs are not yet fully configured to work with the Proxy and require you to indicate the base URL to use. 
 
     You can check if your API contains the `proxy.base_url` field in the [providers.yaml](https://nango.dev/providers.yaml) configuration file.
 
