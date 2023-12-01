@@ -10,7 +10,8 @@ const { routeSync, scheduleAndRouteSync, runAction } = proxyActivities<typeof ac
     retry: {
         initialInterval: '5m',
         maximumAttempts: 3
-    }
+    },
+    heartbeatTimeout: '30m'
 });
 
 export async function initialSync(args: InitialSyncArgs): Promise<boolean | object | null> {

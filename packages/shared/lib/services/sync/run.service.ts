@@ -1,3 +1,4 @@
+import type { Context } from '@temporalio/activity';
 import { loadLocalNangoConfig, nangoConfigFile } from '../nango-config.service.js';
 import type { NangoConnection } from '../../models/Connection.js';
 import { SyncResult, SyncType, SyncStatus, Job as SyncJob, IntegrationServiceInterface } from '../../models/Sync.js';
@@ -43,6 +44,8 @@ interface SyncRunConfig {
 
     logMessages?: unknown[] | undefined;
     stubbedMetadata?: Metadata | undefined;
+
+    temporalContext?: Context;
 }
 
 export default class SyncRun {
@@ -63,6 +66,8 @@ export default class SyncRun {
 
     logMessages?: unknown[] | undefined = [];
     stubbedMetadata?: Metadata | undefined = undefined;
+
+    temporalContext?: Context;
 
     constructor(config: SyncRunConfig) {
         this.integrationService = config.integrationService;
@@ -106,6 +111,10 @@ export default class SyncRun {
 
         if (config.stubbedMetadata) {
             this.stubbedMetadata = config.stubbedMetadata;
+        }
+
+        if (config.temporalContext) {
+            this.temporalContext = config.temporalContext;
         }
     }
 
@@ -294,6 +303,8 @@ export default class SyncRun {
                     response: userDefinedResults
                 } = await this.integrationService.runScript(
                     this.syncName,
+                    (this.syncId as string) ||
+                        `${this.syncName}-${this.nangoConnection.environment_id}-${this.nangoConnection.provider_config_key}-${this.nangoConnection.connection_id}`,
                     this.activityLogId as number,
                     nango,
                     syncData,
@@ -301,7 +312,8 @@ export default class SyncRun {
                     this.writeToDb,
                     this.isAction,
                     this.loadLocation,
-                    this.input
+                    this.input,
+                    this.temporalContext
                 );
 
                 if (!success || (error && userDefinedResults === null)) {

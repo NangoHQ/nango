@@ -1,3 +1,4 @@
+import type { Context } from '@temporalio/activity';
 import { NodeVM } from 'vm2';
 import {
     IntegrationServiceInterface,
@@ -14,8 +15,15 @@ import {
 } from '@nangohq/shared';
 
 class IntegrationService implements IntegrationServiceInterface {
+    public runningScripts: { [key: string]: Context } = {};
+
+    constructor() {
+        this.sendHeartbeat();
+    }
+
     async runScript(
         syncName: string,
+        syncId: string,
         activityLogId: number | undefined,
         nango: NangoSync,
         integrationData: NangoIntegrationData,
@@ -23,7 +31,8 @@ class IntegrationService implements IntegrationServiceInterface {
         writeToDb: boolean,
         isAction: boolean,
         optionalLoadLocation?: string,
-        input?: object
+        input?: object,
+        temporalContext?: Context
     ): Promise<ServiceResponse<any>> {
         try {
             const script: string | null =
@@ -60,6 +69,10 @@ class IntegrationService implements IntegrationServiceInterface {
             }
 
             try {
+                if (temporalContext) {
+                    this.runningScripts[syncId] = temporalContext;
+                }
+
                 const vm = new NodeVM({
                     console: 'inherit',
                     sandbox: { nango },
@@ -121,7 +134,19 @@ class IntegrationService implements IntegrationServiceInterface {
             }
 
             return { success: false, error: new NangoError(content, 500), response: null };
+        } finally {
+            delete this.runningScripts[syncId];
         }
+    }
+
+    private sendHeartbeat() {
+        setInterval(() => {
+            Object.keys(this.runningScripts).forEach((syncId) => {
+                const context = this.runningScripts[syncId];
+
+                context?.heartbeat();
+            });
+        }, 300000);
     }
 }
 
