@@ -290,6 +290,7 @@ export interface SyncConfigWithProvider {
 export interface IntegrationServiceInterface {
     runScript(
         syncName: string,
+        syncId: string,
         activityLogId: number | undefined,
         nango: NangoSync,
         integrationData: NangoIntegrationData,

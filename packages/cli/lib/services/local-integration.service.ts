@@ -7,6 +7,7 @@ import { Buffer } from 'buffer';
 class IntegrationService implements IntegrationServiceInterface {
     async runScript(
         syncName: string,
+        _syncId: string,
         _activityLogId: number | undefined,
         nango: NangoSync,
         _integrationData: NangoIntegrationData,
