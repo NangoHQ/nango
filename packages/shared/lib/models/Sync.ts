@@ -298,6 +298,7 @@ export interface IntegrationServiceInterface {
         writeToDb: boolean,
         isAction: boolean,
         optionalLoadLocation?: string,
-        input?: object
+        input?: object,
+        temporalContext?: unknown
     ): Promise<any>;
 }

@@ -152,7 +152,7 @@ class IntegrationService implements IntegrationServiceInterface {
 
                 context?.heartbeat();
             });
-        });
+        }, 600000);
     }
 }
 

@@ -311,7 +311,8 @@ export default class SyncRun {
                     this.writeToDb,
                     this.isAction,
                     this.loadLocation,
-                    this.input
+                    this.input,
+                    this.temporalContext
                 );
 
                 if (!success || (error && userDefinedResults === null)) {
