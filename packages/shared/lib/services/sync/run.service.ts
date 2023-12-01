@@ -303,7 +303,8 @@ export default class SyncRun {
                     response: userDefinedResults
                 } = await this.integrationService.runScript(
                     this.syncName,
-                    this.syncId as string,
+                    (this.syncId as string) ||
+                        `${this.syncName}-${this.nangoConnection.environment_id}-${this.nangoConnection.provider_config_key}-${this.nangoConnection.connection_id}`,
                     this.activityLogId as number,
                     nango,
                     syncData,

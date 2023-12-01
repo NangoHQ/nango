@@ -1,3 +1,4 @@
+import type { Context } from '@temporalio/activity';
 import { LogActionEnum } from './Activity.js';
 import type { HTTP_VERB, Timestamps, TimestampsAndDeleted } from './Generic.js';
 import type { NangoSync } from '../sdk/sync.js';
@@ -299,6 +300,6 @@ export interface IntegrationServiceInterface {
         isAction: boolean,
         optionalLoadLocation?: string,
         input?: object,
-        temporalContext?: unknown
+        temporalContext?: Context
     ): Promise<any>;
 }
