@@ -334,20 +334,6 @@ integrations:
             iconLink: string
             fileId: string
         eventType: string
-  google-mail:
-    gmail-emails:
-      runs: every hour
-      returns:
-        - GmailEmail
-    models:
-      GmailEmail:
-        id: string
-        sender: string
-        recipients: string
-        date: date
-        subject: string
-        body: string
-        threadId: string
   google:
     google-workspace-org-unit:
       runs: every 6 hours
@@ -396,6 +382,20 @@ integrations:
         anonymous_app: boolean
         scopes: string
     rawName: google-workspace
+  google-mail:
+    gmail-emails:
+      runs: every hour
+      returns:
+        - GmailEmail
+    models:
+      GmailEmail:
+        id: string
+        sender: string
+        recipients: string
+        date: date
+        subject: string
+        body: string
+        threadId: string
   hubspot:
     hubspot-service-tickets:
       runs: every half hour
