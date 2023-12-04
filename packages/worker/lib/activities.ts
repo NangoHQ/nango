@@ -1,4 +1,5 @@
-import { Context } from '@temporalio/activity';
+import { Context, CancelledFailure } from '@temporalio/activity';
+import { TimeoutFailure, TerminatedFailure } from '@temporalio/client';
 import {
     createSyncJob,
     SyncStatus,
@@ -17,6 +18,8 @@ import {
     ErrorSourceEnum,
     errorManager,
     metricsManager,
+    updateSyncJobStatus,
+    updateLatestJobSyncStatus,
     MetricTypes,
     isInitialSyncStillRunning,
     logger
@@ -299,5 +302,51 @@ export async function syncProvider(
         });
 
         return false;
+    }
+}
+
+export async function reportFailure(
+    error: any,
+    workflowArguments: InitialSyncArgs | ContinuousSyncArgs | ActionArgs,
+    DEFAULT_TIMEOUT: string,
+    MAXIMUM_ATTEMPTS: number
+): Promise<void> {
+    const { nangoConnection } = workflowArguments;
+    const type = 'syncName' in workflowArguments ? 'sync' : 'action';
+    const name = 'syncName' in workflowArguments ? workflowArguments.syncName : workflowArguments.actionName;
+    let content = `The ${type} "${name}" failed `;
+    const context: Context = Context.current();
+
+    if (error instanceof CancelledFailure) {
+        content += `due to a cancellation.`;
+    } else if (error.cause instanceof TerminatedFailure || error.cause.name === 'TerminatedFailure') {
+        content += `due to a termination.`;
+    } else if (error.cause instanceof TimeoutFailure || error.cause.name === 'TimeoutFailure') {
+        if (error.cause.timeoutType === 3) {
+            content += `due to a timeout with respect to the max schedule length timeout of ${DEFAULT_TIMEOUT}.`;
+        } else {
+            content += `due to a timeout and a lack of heartbeat with ${MAXIMUM_ATTEMPTS} attempts.`;
+        }
+    } else {
+        content += `due to a unknown failure.`;
+    }
+
+    await metricsManager.capture(MetricTypes.FLOW_JOB_TIMEOUT_FAILURE, content, LogActionEnum.SYNC, {
+        environmentId: String(nangoConnection?.environment_id),
+        name,
+        connectionId: nangoConnection?.connection_id as string,
+        providerConfigKey: nangoConnection?.provider_config_key as string,
+        error: JSON.stringify(error),
+        info: JSON.stringify(context.info),
+        workflowId: context.info.workflowExecution.workflowId,
+        runId: context.info.workflowExecution.runId
+    });
+
+    if (type === 'sync' && 'syncId' in workflowArguments) {
+        if ('syncJobId' in workflowArguments) {
+            await updateSyncJobStatus(workflowArguments.syncJobId, SyncStatus.STOPPED);
+        } else {
+            await updateLatestJobSyncStatus(workflowArguments.syncId, SyncStatus.STOPPED);
+        }
     }
 }
