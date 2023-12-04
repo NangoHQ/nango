@@ -1,3 +1,4 @@
+import type { Context } from '@temporalio/activity';
 import { LogActionEnum } from './Activity.js';
 import type { HTTP_VERB, Timestamps, TimestampsAndDeleted } from './Generic.js';
 import type { NangoSync } from '../sdk/sync.js';
@@ -290,6 +291,7 @@ export interface SyncConfigWithProvider {
 export interface IntegrationServiceInterface {
     runScript(
         syncName: string,
+        syncId: string,
         activityLogId: number | undefined,
         nango: NangoSync,
         integrationData: NangoIntegrationData,
@@ -297,6 +299,7 @@ export interface IntegrationServiceInterface {
         writeToDb: boolean,
         isAction: boolean,
         optionalLoadLocation?: string,
-        input?: object
+        input?: object,
+        temporalContext?: Context
     ): Promise<any>;
 }

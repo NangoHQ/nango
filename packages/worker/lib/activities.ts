@@ -56,6 +56,8 @@ export async function runAction(args: ActionArgs): Promise<ServiceResponse> {
         nangoConnection?.environment_id as number
     )) as ProviderConfig;
 
+    const context: Context = Context.current();
+
     const syncRun = new syncRunService({
         integrationService,
         writeToDb: true,
@@ -66,7 +68,8 @@ export async function runAction(args: ActionArgs): Promise<ServiceResponse> {
         activityLogId,
         input,
         provider: syncConfig.provider,
-        debug: false
+        debug: false,
+        temporalContext: context
     });
 
     const actionResults = await syncRun.run();
@@ -243,6 +246,7 @@ export async function syncProvider(
             syncType,
             activityLogId,
             provider: syncConfig.provider,
+            temporalContext,
             debug
         });
 
