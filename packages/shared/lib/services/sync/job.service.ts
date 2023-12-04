@@ -75,6 +75,13 @@ export const updateSyncJobStatus = async (id: number, status: SyncStatus): Promi
     });
 };
 
+export const updateLatestJobSyncStatus = async (sync_id: string, status: SyncStatus): Promise<void> => {
+    const latestJob = await getLatestSyncJob(sync_id);
+    if (latestJob && latestJob.id) {
+        updateSyncJobStatus(latestJob.id, status);
+    }
+};
+
 /**
  * Update Sync Job Result
  * @desc grab any existing results and add them to the current

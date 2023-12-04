@@ -22,7 +22,8 @@ export enum MetricTypes {
     SYNC_GET_RECORDS_SORT_BY_USED = 'sync_get_records_sort_by_used',
     SYNC_GET_RECORDS_ORDER_USED = 'sync_get_records_order_used',
     SYNC_GET_RECORDS_INCLUDE_METADATA_USED = 'sync_get_records_include_metadata_used',
-    SYNC_GET_RECORDS_DEPRECATED_METHOD_USED = 'sync_get_records_deprecated_method_used'
+    SYNC_GET_RECORDS_DEPRECATED_METHOD_USED = 'sync_get_records_deprecated_method_used',
+    FLOW_JOB_TIMEOUT_FAILURE = 'flow_job_failure'
 }
 
 class MetricsManager {
