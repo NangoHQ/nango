@@ -1,0 +1,35 @@
+integrations:
+    google-drive:
+        google-drive-documents:
+            type: sync
+            runs: every day
+            track_deletes: true
+            returns:
+                - Document
+            description: |
+              Sync all the content of google drive from a selected file or
+              folders. PDF files won't be parsed but rather should be fetched
+              via the proxy using the "google-drive-fetch-pdf" action.
+              Details: full sync, supports deletes, goes back all time. Metadata
+              required to filter on a particular folder, or file(s). Metadata
+              fields should be {"files": ["<some-id>"]} OR
+              {"folders": ["<some-id>"]}. The ID should be able to be provided
+              by using the Google Picker API (https://developers.google.com/drive/picker/guides/overview)
+              and using the ID field provided by the response (https://developers.google.com/drive/picker/reference/results)
+              Required scopes(s): https://www.googleapis.com/auth/drive.readonly
+        google-drive-fetch-pdf:
+            type: action
+            input: string
+            returns: string
+            description: |
+              Fetch PDF data given an ID using a responseStream, chunk the data
+              into a buffer and return a base64 encoded string that can later
+              be converted into a PDF using an external tool.
+              Required scope(s): https://www.googleapis.com/auth/drive.readonly
+
+models:
+    Document:
+        id: string
+        url: string
+        content: string
+        title: string
