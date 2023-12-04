@@ -310,25 +310,28 @@ export async function reportFailure(error: any, workflowArguments: InitialSyncAr
     const type = 'syncName' in workflowArguments ? 'sync' : 'action';
     const name = 'syncName' in workflowArguments ? workflowArguments.syncName : workflowArguments.actionName;
     let content = `The ${type} "${name}" failed `;
+    const context: Context = Context.current();
 
     if (error instanceof CancelledFailure) {
         content += `due to a cancellation.`;
-    } else if (error instanceof TerminatedFailure) {
+    } else if (error.cause instanceof TerminatedFailure) {
         content += `due to a termination.`;
-    } else if (error instanceof TimeoutFailure) {
-        content += `due to a timeout.`;
+    } else if (error.cause instanceof TimeoutFailure) {
+        if (error.cause.timeoutType === 3) {
+            content += `due to a timeout with respect to the max schedule length timeout of 24 hours.`;
+        } else {
+            content += `due to a timeout and a lack of heartbeat with 3 attempts.`;
+        }
     } else {
         content += `due to a unknown failure.`;
     }
-
-    const context: Context = Context.current();
 
     await metricsManager.capture(MetricTypes.FLOW_JOB_TIMEOUT_FAILURE, content, LogActionEnum.SYNC, {
         environmentId: String(nangoConnection?.environment_id),
         name,
         connectionId: nangoConnection?.connection_id as string,
         providerConfigKey: nangoConnection?.provider_config_key as string,
-        error: error.message,
+        error: JSON.stringify(error),
         info: JSON.stringify(context.info),
         workflowId: context.info.workflowExecution.workflowId,
         runId: context.info.workflowExecution.runId
@@ -341,5 +344,4 @@ export async function reportFailure(error: any, workflowArguments: InitialSyncAr
             await updateLatestJobSyncStatus(workflowArguments.syncId, SyncStatus.STOPPED);
         }
     }
-
 }
