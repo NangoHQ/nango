@@ -113,6 +113,10 @@ bamboohr:
         request: token
     proxy:
         base_url: https://api.bamboohr.com/api/gateway.php/${connectionConfig.subdomain}
+bamboohr-basic:
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.bamboohr.com/api/gateway.php/${connectionConfig.subdomain}
 battlenet:
     auth_mode: OAUTH2
     authorization_url: https://oauth.battle.${connectionConfig.extension}/authorize
