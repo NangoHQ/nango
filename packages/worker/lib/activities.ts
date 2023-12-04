@@ -18,6 +18,7 @@ import {
     ErrorSourceEnum,
     errorManager,
     metricsManager,
+    updateSyncJobStatus,
     MetricTypes,
     isInitialSyncStillRunning,
     logger
@@ -332,4 +333,9 @@ export async function reportFailure(error: any, workflowArguments: InitialSyncAr
         workflowId: context.info.workflowExecution.workflowId,
         runId: context.info.workflowExecution.runId
     });
+
+    if (attempt === 3 && 'syncJobId' in workflowArguments) {
+        await updateSyncJobStatus(workflowArguments.syncJobId, SyncStatus.STOPPED);
+    }
+
 }
