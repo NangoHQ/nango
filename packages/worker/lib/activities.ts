@@ -1,4 +1,5 @@
-import { Context } from '@temporalio/activity';
+import { Context, CancelledFailure } from '@temporalio/activity';
+import { TimeoutFailure, TerminatedFailure } from '@temporalio/client';
 import {
     createSyncJob,
     SyncStatus,
@@ -300,4 +301,35 @@ export async function syncProvider(
 
         return false;
     }
+}
+
+export async function reportFailure(error: any, workflowArguments: InitialSyncArgs | ContinuousSyncArgs | ActionArgs): Promise<void> {
+    const { nangoConnection } = workflowArguments;
+    const type = 'syncName' in workflowArguments ? 'sync' : 'action';
+    const name = 'syncName' in workflowArguments ? workflowArguments.syncName : workflowArguments.actionName;
+    let content = `The ${type} "${name}" failed `;
+
+    if (error instanceof CancelledFailure) {
+        content = `due to a cancellation.`;
+    } else if (error instanceof TerminatedFailure) {
+        content = `due to a termination.`;
+    } else if (error instanceof TimeoutFailure) {
+        content = `due to a timeout.`;
+    } else {
+        content = `due to a unknown failure.`;
+    }
+
+    const context: Context = Context.current();
+    const attempt = context.info.attempt;
+    content += ` Attempt #${attempt}`;
+
+    await metricsManager.capture(MetricTypes.FLOW_JOB_TIMEOUT_FAILURE, content, LogActionEnum.SYNC, {
+        environmentId: String(nangoConnection?.environment_id),
+        name,
+        connectionId: nangoConnection?.connection_id as string,
+        providerConfigKey: nangoConnection?.provider_config_key as string,
+        error: error.message,
+        workflowId: context.info.workflowExecution.workflowId,
+        runId: context.info.workflowExecution.runId
+    });
 }

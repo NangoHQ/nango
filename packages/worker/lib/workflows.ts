@@ -4,7 +4,7 @@ import type { ContinuousSyncArgs, InitialSyncArgs, ActionArgs } from './models/W
 
 const DEFAULT_TIMEOUT = '24 hours';
 
-const { routeSync, scheduleAndRouteSync, runAction } = proxyActivities<typeof activities>({
+const { reportFailure, routeSync, scheduleAndRouteSync, runAction } = proxyActivities<typeof activities>({
     startToCloseTimeout: DEFAULT_TIMEOUT,
     scheduleToCloseTimeout: DEFAULT_TIMEOUT,
     retry: {
@@ -15,13 +15,31 @@ const { routeSync, scheduleAndRouteSync, runAction } = proxyActivities<typeof ac
 });
 
 export async function initialSync(args: InitialSyncArgs): Promise<boolean | object | null> {
-    return routeSync(args);
+    try {
+        return await routeSync(args);
+    } catch (e: any) {
+        await reportFailure(e, args);
+
+        return false;
+    }
 }
 
 export async function continuousSync(args: ContinuousSyncArgs): Promise<boolean | object | null> {
-    return scheduleAndRouteSync(args);
+    try {
+        return await scheduleAndRouteSync(args);
+    } catch (e: any) {
+        await reportFailure(e, args);
+
+        return false;
+    }
 }
 
 export async function action(args: ActionArgs): Promise<object> {
-    return runAction(args);
+    try {
+        return await runAction(args);
+    } catch (e: any) {
+        await reportFailure(e, args);
+
+        return { success: false };
+    }
 }
