@@ -305,7 +305,12 @@ export async function syncProvider(
     }
 }
 
-export async function reportFailure(error: any, workflowArguments: InitialSyncArgs | ContinuousSyncArgs | ActionArgs): Promise<void> {
+export async function reportFailure(
+    error: any,
+    workflowArguments: InitialSyncArgs | ContinuousSyncArgs | ActionArgs,
+    DEFAULT_TIMEOUT: string,
+    MAXIMUM_ATTEMPTS: number
+): Promise<void> {
     const { nangoConnection } = workflowArguments;
     const type = 'syncName' in workflowArguments ? 'sync' : 'action';
     const name = 'syncName' in workflowArguments ? workflowArguments.syncName : workflowArguments.actionName;
@@ -318,9 +323,9 @@ export async function reportFailure(error: any, workflowArguments: InitialSyncAr
         content += `due to a termination.`;
     } else if (error.cause instanceof TimeoutFailure || error.cause.name === 'TimeoutFailure') {
         if (error.cause.timeoutType === 3) {
-            content += `due to a timeout with respect to the max schedule length timeout of 24 hours.`;
+            content += `due to a timeout with respect to the max schedule length timeout of ${DEFAULT_TIMEOUT}.`;
         } else {
-            content += `due to a timeout and a lack of heartbeat with 3 attempts.`;
+            content += `due to a timeout and a lack of heartbeat with ${MAXIMUM_ATTEMPTS} attempts.`;
         }
     } else {
         content += `due to a unknown failure.`;
