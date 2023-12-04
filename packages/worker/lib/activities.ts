@@ -19,6 +19,7 @@ import {
     errorManager,
     metricsManager,
     updateSyncJobStatus,
+    updateLatestJobSyncStatus,
     MetricTypes,
     isInitialSyncStillRunning,
     logger
@@ -333,8 +334,12 @@ export async function reportFailure(error: any, workflowArguments: InitialSyncAr
         runId: context.info.workflowExecution.runId
     });
 
-    if ('syncJobId' in workflowArguments) {
-        await updateSyncJobStatus(workflowArguments.syncJobId, SyncStatus.STOPPED);
+    if (type === 'sync' && 'syncId' in workflowArguments) {
+        if ('syncJobId' in workflowArguments) {
+            await updateSyncJobStatus(workflowArguments.syncJobId, SyncStatus.STOPPED);
+        } else {
+            await updateLatestJobSyncStatus(workflowArguments.syncId, SyncStatus.STOPPED);
+        }
     }
 
 }
