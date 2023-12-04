@@ -321,8 +321,6 @@ export async function reportFailure(error: any, workflowArguments: InitialSyncAr
     }
 
     const context: Context = Context.current();
-    const attempt = context.info.attempt;
-    content += ` Attempt #${attempt}`;
 
     await metricsManager.capture(MetricTypes.FLOW_JOB_TIMEOUT_FAILURE, content, LogActionEnum.SYNC, {
         environmentId: String(nangoConnection?.environment_id),
@@ -330,11 +328,12 @@ export async function reportFailure(error: any, workflowArguments: InitialSyncAr
         connectionId: nangoConnection?.connection_id as string,
         providerConfigKey: nangoConnection?.provider_config_key as string,
         error: error.message,
+        info: JSON.stringify(context.info),
         workflowId: context.info.workflowExecution.workflowId,
         runId: context.info.workflowExecution.runId
     });
 
-    if (attempt === 3 && 'syncJobId' in workflowArguments) {
+    if ('syncJobId' in workflowArguments) {
         await updateSyncJobStatus(workflowArguments.syncJobId, SyncStatus.STOPPED);
     }
 
