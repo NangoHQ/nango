@@ -311,13 +311,13 @@ export async function reportFailure(error: any, workflowArguments: InitialSyncAr
     let content = `The ${type} "${name}" failed `;
 
     if (error instanceof CancelledFailure) {
-        content = `due to a cancellation.`;
+        content += `due to a cancellation.`;
     } else if (error instanceof TerminatedFailure) {
-        content = `due to a termination.`;
+        content += `due to a termination.`;
     } else if (error instanceof TimeoutFailure) {
-        content = `due to a timeout.`;
+        content += `due to a timeout.`;
     } else {
-        content = `due to a unknown failure.`;
+        content += `due to a unknown failure.`;
     }
 
     const context: Context = Context.current();
