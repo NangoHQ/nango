@@ -314,9 +314,9 @@ export async function reportFailure(error: any, workflowArguments: InitialSyncAr
 
     if (error instanceof CancelledFailure) {
         content += `due to a cancellation.`;
-    } else if (error.cause instanceof TerminatedFailure) {
+    } else if (error.cause instanceof TerminatedFailure || error.cause.name === 'TerminatedFailure') {
         content += `due to a termination.`;
-    } else if (error.cause instanceof TimeoutFailure) {
+    } else if (error.cause instanceof TimeoutFailure || error.cause.name === 'TimeoutFailure') {
         if (error.cause.timeoutType === 3) {
             content += `due to a timeout with respect to the max schedule length timeout of 24 hours.`;
         } else {
