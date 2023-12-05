@@ -48,6 +48,7 @@ export const generate = async (debug = false, inParentDirectory = false) => {
     const syncTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/sync.ejs'), 'utf8');
     const actionTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/action.ejs'), 'utf8');
     const githubExampleTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/github.sync.ejs'), 'utf8');
+    const webhookSubscriptionTemplateContents = fs.readFileSync(path.resolve(__dirname, './templates/webhook-subscription.ejs'), 'utf8');
 
     const configContents = fs.readFileSync(`${dirPrefix}/${nangoConfigFile}`, 'utf8');
     const configData: NangoConfig = yaml.load(configContents) as unknown as NangoConfig;
@@ -159,6 +160,33 @@ export const generate = async (debug = false, inParentDirectory = false) => {
             } else {
                 if (debug) {
                     printDebug(`${name}.ts file already exists, so will not overwrite it.`);
+                }
+            }
+
+            if (type === SyncConfigType.SYNC && flow.webhookSubscriptions) {
+                ejsTemplateContents = webhookSubscriptionTemplateContents;
+
+                const renderedSubscriptionContents = ejs.render(ejsTemplateContents, {
+                    interfaceFileName: TYPES_FILE_NAME.replace('.ts', ''),
+                    interfaceNames
+                });
+
+                const webhookStripped = renderedSubscriptionContents.replace(/^\s+/, '');
+
+                for (const subscription of flow.webhookSubscriptions) {
+                    const subscriptionFileName = `${subscription}.ts`;
+                    const subscriptionFilePath = `${dirPrefix}/${subscriptionFileName}`;
+
+                    if (!fs.existsSync(subscriptionFilePath)) {
+                        fs.writeFileSync(subscriptionFilePath, webhookStripped);
+                        if (debug) {
+                            printDebug(`Created ${subscriptionFileName} file`);
+                        }
+                    } else {
+                        if (debug) {
+                            printDebug(`${subscriptionFileName} file already exists, so will not overwrite it.`);
+                        }
+                    }
                 }
             }
         }

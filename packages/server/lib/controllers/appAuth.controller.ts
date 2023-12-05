@@ -160,7 +160,15 @@ class AppAuthController {
             );
 
             if (updatedConnection) {
-                await connectionCreatedHook(updatedConnection.id);
+                await connectionCreatedHook(
+                    {
+                        id: updatedConnection.id,
+                        connection_id: connectionId,
+                        provider_config_key: providerConfigKey,
+                        environment_id: environmentId
+                    },
+                    session.provider
+                );
             }
 
             await createActivityLogMessageAndEnd({

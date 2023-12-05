@@ -32,9 +32,6 @@ integrations:
         output:
           - GithubIssue3
           - GithubPR
-    post-connection-scripts:
-      - store-github-connection-info
-    webhook-attribution-script: github-attribute-webhook
     actions:
       github-get-issue:
         description: Get a GitHub issue.

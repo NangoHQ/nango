@@ -48,6 +48,7 @@ export default function IntegrationCreate() {
     const { providerConfigKey } = useParams();
     const [templateLogo, setTemplateLogo] = useState<string>('');
     const [callbackUrl, setCallbackUrl] = useState('');
+    const [webhookReceiveUrl, setWebhookReceiveUrl] = useState('');
     const getIntegrationDetailsAPI = useGetIntegrationDetailsAPI();
     const getProvidersAPI = useGetProvidersAPI();
     const getProjectInfoAPI = useGetProjectInfoAPI();
@@ -89,6 +90,7 @@ export default function IntegrationCreate() {
             if (res?.status === 200) {
                 const account = (await res.json())['account'];
                 setCallbackUrl(account.callback_url || defaultCallback());
+                setWebhookReceiveUrl(account.webhook_receive_url);
             }
         };
 
@@ -513,6 +515,29 @@ export default function IntegrationCreate() {
                                             </div>
                                             <Prism language="bash" colorScheme="dark">
                                                 {callbackUrl}
+                                            </Prism>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div>
+                                            <div className="flex">
+                                                <label htmlFor="client_id" className="text-text-light-gray block text-sm font-semibold">
+                                                    Webhook Receive URL
+                                                </label>
+                                                <Tooltip
+                                                    text={
+                                                        <>
+                                                            <div className="flex text-black text-sm">
+                                                                <p>{`Register this webhook URL on the developer portal of the Integration Provider to receive incoming webhooks.`}</p>
+                                                            </div>
+                                                        </>
+                                                    }
+                                                >
+                                                    <HelpCircle color="gray" className="h-5 ml-1"></HelpCircle>
+                                                </Tooltip>
+                                            </div>
+                                            <Prism language="bash" colorScheme="dark">
+                                                {`${webhookReceiveUrl}/${providerConfigKey}`}
                                             </Prism>
                                         </div>
                                     </div>

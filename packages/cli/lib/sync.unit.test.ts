@@ -333,7 +333,7 @@ describe('generate function tests', () => {
         expect(error?.message).toEqual('Problem validating the nango.yaml file.');
     });
 
-    it('should throw a validation error on a nango.yaml file that is not formatted correctly -- webhook-attribution-script should not be an array', async () => {
+    it('should throw a validation error on a nango.yaml file that is not formatted correctly -- webhook subscriptions are not allowed in an action', async () => {
         const { response: config, error } = await configService.load(path.resolve(__dirname, `./fixtures/nango-yaml/v2/invalid.2`));
         expect(config).toBeNull();
         expect(error).toBeDefined();

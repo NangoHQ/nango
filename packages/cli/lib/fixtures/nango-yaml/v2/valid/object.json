@@ -149,8 +149,7 @@
                 "returns": "GithubIssueAction",
                 "runs": "",
                 "scopes": ["repo:read"],
-                "type": "action",
-                "webhookSubscriptions": []
+                "type": "action"
             },
             {
                 "name": "github-create-issue",
@@ -182,8 +181,7 @@
                         { "name": "body", "type": "string" }
                     ]
                 },
-                "endpoints": [{ "POST": "/ticketing/tickets" }],
-                "webhookSubscriptions": []
+                "endpoints": [{ "POST": "/ticketing/tickets" }]
             },
             {
                 "name": "github-delete-issue",
@@ -203,11 +201,8 @@
                     "name": "GithubIssue:id",
                     "fields": [{ "name": "id", "type": "integer" }]
                 },
-                "endpoints": [{ "DELETE": "/ticketing/tickets/{GithubIssue:id}" }],
-                "webhookSubscriptions": []
+                "endpoints": [{ "DELETE": "/ticketing/tickets/{GithubIssue:id}" }]
             }
-        ],
-        "postConnectionScripts": ["store-github-connection-info"],
-        "webhookAttributionScript": "github-attribute-webhook"
+        ]
     }
 ]

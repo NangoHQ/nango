@@ -539,6 +539,106 @@ class SyncClient {
         }
     }
 
+    async triggerWebhook<T = any>(
+        connection: NangoConnection,
+        webhookName: string,
+        parentSyncName: string,
+        input: object,
+        activityLogId: number,
+        environment_id: number,
+        writeLogs = true
+    ): Promise<ServiceResponse<T>> {
+        const workflowId = generateActionWorkflowId(webhookName, connection.connection_id as string);
+
+        try {
+            if (writeLogs) {
+                await createActivityLogMessage({
+                    level: 'info',
+                    environment_id,
+                    activity_log_id: activityLogId as number,
+                    content: `Starting webhook workflow ${workflowId} in the task queue: ${TASK_QUEUE}`,
+                    params: {
+                        input: JSON.stringify(input, null, 2)
+                    },
+                    timestamp: Date.now()
+                });
+            }
+
+            await this.client?.workflow.execute('webhook', {
+                taskQueue: TASK_QUEUE,
+                workflowId,
+                args: [
+                    {
+                        webhookName,
+                        parentSyncName,
+                        nangoConnection: connection,
+                        input,
+                        activityLogId: writeLogs ? activityLogId : undefined
+                    }
+                ]
+            });
+
+            const { success, error, response } = actionHandler;
+
+            if (writeLogs && (success === false || error)) {
+                await createActivityLogMessageAndEnd({
+                    level: 'error',
+                    environment_id,
+                    activity_log_id: activityLogId as number,
+                    timestamp: Date.now(),
+                    content: `The webhook workflow ${workflowId} did not complete successfully`
+                });
+
+                return { success, error, response };
+            }
+
+            if (writeLogs) {
+                await createActivityLogMessageAndEnd({
+                    level: 'info',
+                    environment_id,
+                    activity_log_id: activityLogId as number,
+                    timestamp: Date.now(),
+                    content: `The action workflow ${workflowId} was successfully run. A truncated response is: ${JSON.stringify(response, null, 2)?.slice(
+                        0,
+                        100
+                    )}`
+                });
+
+                await updateSuccessActivityLog(activityLogId as number, true);
+            }
+
+            return { success, error, response };
+        } catch (e) {
+            const errorMessage = JSON.stringify(e, ['message', 'name'], 2);
+            // TODO
+            const error = new NangoError('action_failure', { errorMessage });
+
+            if (writeLogs) {
+                await createActivityLogMessageAndEnd({
+                    level: 'error',
+                    environment_id,
+                    activity_log_id: activityLogId as number,
+                    timestamp: Date.now(),
+                    content: `The webhook workflow ${workflowId} failed with error: ${e}`
+                });
+            }
+
+            await errorManager.report(e, {
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.SYNC_CLIENT,
+                environmentId: connection.environment_id,
+                metadata: {
+                    parentSyncName,
+                    webhookName,
+                    connectionDetails: JSON.stringify(connection),
+                    input
+                }
+            });
+
+            return { success: false, error, response: null };
+        }
+    }
+
     async updateSyncSchedule(schedule_id: string, interval: string, offset: number, environmentId: number, syncName?: string, activityLogId?: number) {
         function updateFunction(scheduleDescription: ScheduleDescription) {
             scheduleDescription.spec = {

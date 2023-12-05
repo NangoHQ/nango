@@ -29,6 +29,7 @@ interface SyncRunConfig {
     integrationService: IntegrationServiceInterface;
     writeToDb: boolean;
     isAction?: boolean;
+    isWebhook?: boolean;
     nangoConnection: NangoConnection;
     syncName: string;
     syncType: SyncType;
@@ -52,6 +53,7 @@ export default class SyncRun {
     integrationService: IntegrationServiceInterface;
     writeToDb: boolean;
     isAction: boolean;
+    isWebhook: boolean;
     nangoConnection: NangoConnection;
     syncName: string;
     syncType: SyncType;
@@ -73,6 +75,7 @@ export default class SyncRun {
         this.integrationService = config.integrationService;
         this.writeToDb = config.writeToDb;
         this.isAction = config.isAction || false;
+        this.isWebhook = config.isWebhook || false;
         this.nangoConnection = config.nangoConnection;
         this.syncName = config.syncName;
         this.syncType = config.syncType;
@@ -160,7 +163,7 @@ export default class SyncRun {
         if (!integrations[this.nangoConnection.provider_config_key] && !this.writeToDb) {
             const message = `The connection you provided which applies to integration "${this.nangoConnection.provider_config_key}" does not match any integration in the ${nangoConfigFile}`;
 
-            const errorType = this.isAction ? 'action_script_failure' : 'sync_script_failre';
+            const errorType = this.isAction ? 'action_script_failure' : 'sync_script_failure';
             return { success: false, error: new NangoError(errorType, message, 404), response: false };
         }
 

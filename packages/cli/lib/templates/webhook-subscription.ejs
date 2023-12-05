@@ -1,0 +1,8 @@
+<%
+    const formattedInterfaceNames = Array.isArray(interfaceNames) ? interfaceNames.join(', ') : interfaceNames;
+%>
+import type { NangoSync<%= formattedInterfaceNames ? ', ' + formattedInterfaceNames : '' %> } from './<%= interfaceFileName %>';
+
+export default async function onWebhookPayloadReceived(nango: NangoSync, payload: any): Promise<void> {
+    // webhook receive data goes here
+}

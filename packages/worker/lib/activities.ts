@@ -25,7 +25,7 @@ import {
     logger
 } from '@nangohq/shared';
 import integrationService from './integration.service.js';
-import type { ContinuousSyncArgs, InitialSyncArgs, ActionArgs } from './models/Worker';
+import type { WebhookArgs, ContinuousSyncArgs, InitialSyncArgs, ActionArgs } from './models/Worker';
 
 export async function routeSync(args: InitialSyncArgs): Promise<boolean | object | null> {
     const { syncId, syncJobId, syncName, activityLogId, nangoConnection, debug } = args;
@@ -52,7 +52,7 @@ export async function routeSync(args: InitialSyncArgs): Promise<boolean | object
 }
 
 export async function runAction(args: ActionArgs): Promise<ServiceResponse> {
-    const { input, nangoConnection, actionName, activityLogId } = args;
+    const { input, nangoConnection, actionName, activityLogId, isWebhook } = args;
 
     const syncConfig: ProviderConfig = (await configService.getProviderConfig(
         nangoConnection?.provider_config_key as string,
@@ -66,6 +66,7 @@ export async function runAction(args: ActionArgs): Promise<ServiceResponse> {
         writeToDb: true,
         nangoConnection,
         syncName: actionName,
+        isWebhook: isWebhook ?? false,
         isAction: true,
         syncType: SyncType.ACTION,
         activityLogId,
@@ -307,13 +308,14 @@ export async function syncProvider(
 
 export async function reportFailure(
     error: any,
-    workflowArguments: InitialSyncArgs | ContinuousSyncArgs | ActionArgs,
+    workflowArguments: InitialSyncArgs | ContinuousSyncArgs | ActionArgs | WebhookArgs,
     DEFAULT_TIMEOUT: string,
     MAXIMUM_ATTEMPTS: number
 ): Promise<void> {
     const { nangoConnection } = workflowArguments;
     const type = 'syncName' in workflowArguments ? 'sync' : 'action';
-    const name = 'syncName' in workflowArguments ? workflowArguments.syncName : workflowArguments.actionName;
+    // TODO
+    const name = 'syncName' in workflowArguments ? workflowArguments.syncName : workflowArguments.actionName || workflowArguments.name;
     let content = `The ${type} "${name}" failed `;
     const context: Context = Context.current();
 

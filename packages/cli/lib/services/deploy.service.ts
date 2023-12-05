@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import promptly from 'promptly';
 import axios, { AxiosResponse } from 'axios';
-import type { SyncType, SyncDeploymentResult, StandardNangoConfig, IncomingFlowConfig, NangoConfigMetadata } from '@nangohq/shared';
+import type { SyncType, SyncDeploymentResult, StandardNangoConfig, IncomingFlowConfig, NangoConfigMetadata, WebhookSubscription } from '@nangohq/shared';
 import { SyncConfigType, localFileService, getInterval, stagingHost, cloudHost } from '@nangohq/shared';
 import configService from './config.service.js';
 import compileService from './compile.service.js';
@@ -277,6 +277,19 @@ class DeployService {
                     printDebug(`Integration file found for ${syncName} at ${integrationFilePath}`);
                 }
 
+                const webhookSubscriptions: WebhookSubscription[] = [];
+                if (flow.webhookSubscriptions) {
+                    for (const webhookSubscription of flow.webhookSubscriptions) {
+                        webhookSubscriptions.push({
+                            name: webhookSubscription,
+                            fileBody: {
+                                js: localFileService.getIntegrationFile(webhookSubscription, './') as string,
+                                ts: localFileService.getIntegrationTsFile(webhookSubscription, './') as string
+                            }
+                        });
+                    }
+                }
+
                 const body = {
                     syncName,
                     providerConfigKey,
@@ -295,7 +308,8 @@ class DeployService {
                         ts: localFileService.getIntegrationTsFile(syncName, './') as string
                     },
                     model_schema: JSON.stringify(model_schema),
-                    endpoints: flow.endpoints
+                    endpoints: flow.endpoints,
+                    webhookSubscriptions
                 };
 
                 postData.push(body);

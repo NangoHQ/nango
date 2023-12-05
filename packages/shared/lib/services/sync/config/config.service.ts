@@ -206,11 +206,15 @@ export async function getSyncConfigsByParams(environment_id: number, providerCon
         throw new Error('Provider config not found');
     }
 
+    return getSyncConfigsByConfigId(environment_id, config.id as number, isAction);
+}
+
+export async function getSyncConfigsByConfigId(environment_id: number, nango_config_id: number, isAction = false): Promise<SyncConfig[] | null> {
     const result = await schema()
         .from<SyncConfig>(TABLE)
         .where({
             environment_id,
-            nango_config_id: config.id as number,
+            nango_config_id,
             active: true,
             type: isAction ? SyncConfigType.ACTION : SyncConfigType.SYNC,
             deleted: false

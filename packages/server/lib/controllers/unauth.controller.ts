@@ -141,7 +141,15 @@ class UnAuthController {
             );
 
             if (updatedConnection) {
-                await connectionCreatedHook(updatedConnection.id);
+                await connectionCreatedHook(
+                    {
+                        id: updatedConnection.id,
+                        connection_id: connectionId,
+                        provider_config_key: providerConfigKey,
+                        environment_id: environmentId
+                    },
+                    config?.provider as string
+                );
             }
 
             res.status(200).send({ providerConfigKey: providerConfigKey as string, connectionId: connectionId as string });

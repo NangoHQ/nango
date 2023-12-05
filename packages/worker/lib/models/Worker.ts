@@ -24,3 +24,11 @@ export interface ActionArgs {
     nangoConnection: NangoConnection;
     activityLogId: number;
 }
+
+export interface WebhookArgs {
+    name: string;
+    parentSyncName: string;
+    nangoConnection: NangoConnection;
+    input: object;
+    activityLogId: number;
+}

@@ -25,7 +25,7 @@ import environmentService from '../services/environment.service.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import { NangoError } from '../utils/error.js';
 
-import type { Metadata, Connection, StoredConnection, BaseConnection, NangoConnection } from '../models/Connection.js';
+import type { Metadata, ConnectionConfig, Connection, StoredConnection, BaseConnection, NangoConnection } from '../models/Connection.js';
 import type { ServiceResponse } from '../models/Generic.js';
 import encryptionManager from '../utils/encryption.manager.js';
 import metricsManager, { MetricTypes } from '../utils/metrics.manager.js';
@@ -39,7 +39,7 @@ import {
 } from '../models/Auth.js';
 import { schema } from '../db/database.js';
 import { interpolateStringFromObject, parseTokenExpirationDate, isTokenExpired, getRedisUrl } from '../utils/utils.js';
-import { connectionCreated as connectionCreatedHook } from '../hooks/connection.hooks.js';
+import { connectionCreated as connectionCreatedHook } from '../hooks/hooks.js';
 import { Locking } from '../utils/lock/locking.js';
 import { InMemoryKVStore } from '../utils/kvstore/InMemoryStore.js';
 import { RedisKVStore } from '../utils/kvstore/RedisStore.js';
@@ -61,7 +61,7 @@ class ConnectionService {
         environment_id: number,
         accountId: number,
         metadata?: Metadata
-    ) {
+    ): Promise<{ id: number }[]> {
         const storedConnection = await this.checkIfConnectionExists(connectionId, providerConfigKey, environment_id);
 
         if (storedConnection) {
@@ -208,7 +208,15 @@ class ConnectionService {
         );
 
         if (importedConnection) {
-            await connectionCreatedHook(importedConnection[0].id);
+            await connectionCreatedHook(
+                {
+                    id: importedConnection[0]?.id as number,
+                    connection_id,
+                    provider_config_key,
+                    environment_id: environmentId
+                },
+                provider
+            );
         }
 
         return importedConnection;
@@ -231,7 +239,15 @@ class ConnectionService {
         const importedConnection = await this.upsertApiConnection(connection_id, provider_config_key, provider, credentials, {}, environmentId, accountId);
 
         if (importedConnection) {
-            await connectionCreatedHook(importedConnection[0].id);
+            await connectionCreatedHook(
+                {
+                    id: importedConnection[0].id,
+                    connection_id,
+                    provider_config_key,
+                    environment_id: environmentId
+                },
+                provider
+            );
         }
 
         return importedConnection;
@@ -374,6 +390,21 @@ class ConnectionService {
         return result[0].metadata;
     }
 
+    public async getConnectionConfig(connection: Connection): Promise<ConnectionConfig> {
+        const result = await db.knex.withSchema(db.schema()).from<StoredConnection>(`_nango_connections`).select('connection_config').where({
+            connection_id: connection.connection_id,
+            provider_config_key: connection.provider_config_key,
+            environment_id: connection.environment_id,
+            deleted: false
+        });
+
+        if (!result || result.length == 0 || !result[0]) {
+            return {};
+        }
+
+        return result[0].connection_config;
+    }
+
     public async getConnectionsByEnvironmentAndConfig(environment_id: number, providerConfigKey: string): Promise<NangoConnection[]> {
         const result = await db.knex
             .withSchema(db.schema())
@@ -396,12 +427,46 @@ class ConnectionService {
             .update({ metadata });
     }
 
+    public async replaceConnectionConfig(connection: Connection, config: ConnectionConfig) {
+        await db.knex
+            .withSchema(db.schema())
+            .from<StoredConnection>(`_nango_connections`)
+            .where({ id: connection.id as number, deleted: false })
+            .update({ connection_config: config });
+    }
+
     public async updateMetadata(connection: Connection, metadata: Metadata): Promise<Metadata> {
         const existingMetadata = await this.getMetadata(connection);
         const newMetadata = { ...existingMetadata, ...metadata };
         await this.replaceMetadata(connection, newMetadata);
 
         return newMetadata;
+    }
+
+    public async updateConnectionConfig(connection: Connection, config: ConnectionConfig): Promise<ConnectionConfig> {
+        const existingConfig = await this.getConnectionConfig(connection);
+        const newConfig = { ...existingConfig, ...config };
+        await this.replaceConnectionConfig(connection, newConfig);
+
+        return newConfig;
+    }
+
+    public async findConnectionByConnectionConfigValue(key: string, value: string): Promise<Connection | null> {
+        const result = await db.knex
+            .withSchema(db.schema())
+            .from<StoredConnection>(`_nango_connections`)
+            .select('*')
+            .where({
+                // connection_config is a jsonb and want to find a key with a specific value
+                connection_config: db.knex.raw(`??->>? = ?`, [key, value, value]),
+                deleted: false
+            });
+
+        if (!result || result.length == 0 || !result[0]) {
+            return null;
+        }
+
+        return encryptionManager.decryptConnection(result[0]);
     }
 
     public async listConnections(

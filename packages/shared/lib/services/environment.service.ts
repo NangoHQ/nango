@@ -201,6 +201,16 @@ class EnvironmentService {
         return { account: account[0], environment: encryptionManager.decryptEnvironment(environmentResult[0]) };
     }
 
+    async getIdByUuid(uuid: string): Promise<number | null> {
+        const result = await db.knex.withSchema(db.schema()).select('id').from<Environment>(TABLE).where({ uuid });
+
+        if (result == null || result.length == 0 || result[0] == null) {
+            return null;
+        }
+
+        return result[0].id;
+    }
+
     async getById(id: number): Promise<Environment | null> {
         try {
             const result = (await schema().select('*').from<Environment>(TABLE).where({ id })) as unknown as Environment[];

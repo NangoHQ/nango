@@ -29,7 +29,6 @@ import {
     environmentService,
     accountService,
     connectionCreated as connectionCreatedHook,
-    Connection,
     slackNotificationService
 } from '@nangohq/shared';
 import { getUserAccountAndEnvironmentFromSession } from '../utils/utils.js';
@@ -563,7 +562,7 @@ class ConnectionController {
             const template = await configService.getTemplate(provider as string);
 
             let oAuthCredentials: ImportedCredentials;
-            let updatedConnection: Connection;
+            let updatedConnection: { id: number } = {} as { id: number };
 
             if (template.auth_mode === ProviderAuthModes.OAuth2) {
                 const { access_token, refresh_token, expires_at, expires_in, metadata, connection_config } = req.body;
@@ -588,7 +587,7 @@ class ConnectionController {
                     raw: req.body.raw || req.body
                 };
 
-                [updatedConnection] = await connectionService.importOAuthConnection(
+                const [imported] = await connectionService.importOAuthConnection(
                     connection_id,
                     provider_config_key,
                     provider,
@@ -596,6 +595,10 @@ class ConnectionController {
                     accountId,
                     oAuthCredentials
                 );
+
+                if (imported) {
+                    updatedConnection = imported;
+                }
             } else if (template.auth_mode === ProviderAuthModes.OAuth1) {
                 const { oauth_token, oauth_token_secret } = req.body;
 
@@ -616,7 +619,7 @@ class ConnectionController {
                     raw: req.body.raw || req.body
                 };
 
-                [updatedConnection] = await connectionService.importOAuthConnection(
+                const [imported] = await connectionService.importOAuthConnection(
                     connection_id,
                     provider_config_key,
                     provider,
@@ -624,6 +627,10 @@ class ConnectionController {
                     accountId,
                     oAuthCredentials
                 );
+
+                if (imported) {
+                    updatedConnection = imported;
+                }
             } else if (template.auth_mode === ProviderAuthModes.Basic) {
                 const { username, password } = req.body;
 
@@ -643,7 +650,7 @@ class ConnectionController {
                     password
                 };
 
-                [updatedConnection] = await connectionService.importApiAuthConnection(
+                const [imported] = await connectionService.importApiAuthConnection(
                     connection_id,
                     provider_config_key,
                     provider,
@@ -651,6 +658,10 @@ class ConnectionController {
                     accountId,
                     credentials
                 );
+
+                if (imported) {
+                    updatedConnection = imported;
+                }
             } else if (template.auth_mode === ProviderAuthModes.ApiKey) {
                 const { api_key: apiKey } = req.body;
 
@@ -664,7 +675,7 @@ class ConnectionController {
                     apiKey
                 };
 
-                [updatedConnection] = await connectionService.importApiAuthConnection(
+                const [imported] = await connectionService.importApiAuthConnection(
                     connection_id,
                     provider_config_key,
                     provider,
@@ -672,6 +683,10 @@ class ConnectionController {
                     accountId,
                     credentials
                 );
+
+                if (imported) {
+                    updatedConnection = imported;
+                }
             } else if (template.auth_mode === ProviderAuthModes.App) {
                 const { app_id, installation_id } = req.body;
 
@@ -704,7 +719,7 @@ class ConnectionController {
                     return;
                 }
 
-                [updatedConnection] = await connectionService.upsertConnection(
+                const [imported] = await connectionService.upsertConnection(
                     connection_id,
                     provider_config_key,
                     provider,
@@ -713,13 +728,25 @@ class ConnectionController {
                     environmentId,
                     accountId
                 );
+
+                if (imported) {
+                    updatedConnection = imported;
+                }
             } else {
                 errorManager.errRes(res, 'unknown_oauth_type');
                 return;
             }
 
             if (updatedConnection && updatedConnection.id) {
-                await connectionCreatedHook(updatedConnection.id);
+                await connectionCreatedHook(
+                    {
+                        id: updatedConnection.id,
+                        connection_id,
+                        provider_config_key,
+                        environment_id: environmentId
+                    },
+                    provider
+                );
             }
 
             res.status(201).send(req.body);

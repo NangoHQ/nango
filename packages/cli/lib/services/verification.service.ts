@@ -103,13 +103,16 @@ class VerificationService {
 
         const syncNames = config.map((provider) => provider.syncs.map((sync) => sync.name)).flat();
         const actionNames = config.map((provider) => provider.actions.map((action) => action.name)).flat();
-        const flows = [...syncNames, ...actionNames];
+        const webhookSyncnames = config
+            .map((provider) => provider.syncs.map((sync) => sync.webhookSubscriptions?.filter((subscription) => subscription)).flat())
+            .flat();
+        const flows = [...syncNames, ...actionNames, ...webhookSyncnames].filter((name) => name);
 
         const tsFiles = glob.sync(`./*.ts`);
 
         const tsFileNames = tsFiles.filter((file) => !file.includes('models.ts')).map((file) => path.basename(file, '.ts'));
 
-        const missingSyncsAndActions = flows.filter((syncOrActionName) => !tsFileNames.includes(syncOrActionName));
+        const missingSyncsAndActions = flows.filter((syncOrActionName) => !tsFileNames.includes(syncOrActionName as string));
 
         if (missingSyncsAndActions.length > 0) {
             console.log(chalk.red(`The following syncs are missing a corresponding .ts file: ${missingSyncsAndActions.join(', ')}`));

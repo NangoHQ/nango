@@ -284,8 +284,6 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
 
         const syncs = integration['syncs'] as NangoV2Integration;
         const actions = integration['actions'] as NangoV2Integration;
-        const webhookAttributionScript = (integration['webhook-attribution-script'] || '') as string;
-        const postConnectionScripts = (integration['post-connection-scripts'] || []) as string[];
 
         for (const syncName in syncs) {
             const sync: NangoIntegrationDataV2 = syncs[syncName] as NangoIntegrationDataV2;
@@ -462,16 +460,6 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
 
             const scopes = action?.scopes || action?.metadata?.scopes || [];
 
-            let webhookSubscriptions: string[] = [];
-
-            if (action['webhook-subscriptions']) {
-                if (Array.isArray(action['webhook-subscriptions'])) {
-                    webhookSubscriptions = action['webhook-subscriptions'] as string[];
-                } else {
-                    webhookSubscriptions = [action['webhook-subscriptions'] as string];
-                }
-            }
-
             const actionObject: NangoSyncConfig = {
                 name: actionName,
                 type: SyncConfigType.ACTION,
@@ -482,8 +470,7 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
                 description: action?.description || action?.metadata?.description || '',
                 scopes: Array.isArray(scopes) ? scopes : String(scopes)?.split(','),
                 input: inputModel,
-                endpoints,
-                webhookSubscriptions
+                endpoints
             };
 
             builtActions.push(actionObject);
@@ -492,9 +479,7 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
         const simplifiedIntegration: StandardNangoConfig = {
             providerConfigKey,
             syncs: builtSyncs,
-            actions: builtActions,
-            postConnectionScripts,
-            webhookAttributionScript
+            actions: builtActions
         };
 
         output.push(simplifiedIntegration);
@@ -502,7 +487,6 @@ export function convertV2ConfigObject(config: NangoConfigV2, showMessages = fals
         if (provider) {
             simplifiedIntegration.provider = provider as unknown as string;
         }
-        console.log(JSON.stringify(output));
     }
     return { success: true, error: null, response: output };
 }
