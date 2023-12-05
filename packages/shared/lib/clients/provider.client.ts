@@ -199,15 +199,20 @@ class ProviderClient {
             token_type_hint: 'access_token'
         };
 
-        const res = await axios.post(url, body, { headers: headers });
+        try {
+            const res = await axios.post(url, body, { headers: headers });
 
-        if (res.status != 200 || res.data == null || !res.data['active'] || res.data['exp'] == null) {
-            return true;
+            if (res.status != 200 || res.data == null || !res.data['active'] || res.data['exp'] == null) {
+                return true;
+            }
+
+            const expireDate = parseTokenExpirationDate(res.data['exp']);
+
+            return isTokenExpired(expireDate, 15 * 60);
+        } catch (e) {
+            // TODO add observability
+            return false;
         }
-
-        const expireDate = parseTokenExpirationDate(res.data['exp']);
-
-        return isTokenExpired(expireDate, 15 * 60);
     }
 }
 
