@@ -482,7 +482,18 @@ export async function getAllDataRecords(
         } else {
             return { success: true, error: null, response: { records: customerResult as CustomerFacingDataRecord[], next_cursor: nextCursor } };
         }
-    } catch (error: any) {
+    } catch (e: any) {
+        const errorMessage = 'List records error';
+        await metricsManager.capture(MetricTypes.SYNC_GET_RECORDS_QUERY_TIMEOUT, errorMessage, LogActionEnum.SYNC, {
+            environmentId: String(environmentId),
+            connectionId,
+            providerConfigKey,
+            delta: String(delta),
+            model,
+            error: JSON.stringify(e)
+        });
+
+        const error = new Error(errorMessage);
         const nangoError = new NangoError('pass_through_error', error);
         return { success: false, error: nangoError, response: null };
     }
