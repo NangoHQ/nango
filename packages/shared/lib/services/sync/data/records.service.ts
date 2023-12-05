@@ -440,7 +440,6 @@ export async function getAllDataRecords(
         let nextCursor = null;
 
         const rawResult = await query.select(
-            'id',
             db.knex.raw(`
                 jsonb_set(
                     json::jsonb,
@@ -456,7 +455,7 @@ export async function getAllDataRecords(
                             ELSE 'UPDATED'
                         END
                     )
-                ) as record
+                ) as record, id
             `)
         );
 
