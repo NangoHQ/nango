@@ -139,7 +139,7 @@ export class Nango {
      * =======
      */
 
-    public async listIntegrations(): Promise<{ config: Pick<Integration, 'unique_key' | 'provider'>[] }> {
+    public async listIntegrations(): Promise<{ configs: Pick<Integration, 'unique_key' | 'provider'>[] }> {
         const url = `${this.serverUrl}/config`;
         const response = await axios.get(url, { headers: this.enrichHeaders({}) });
 
