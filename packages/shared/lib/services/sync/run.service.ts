@@ -150,7 +150,7 @@ export default class SyncRun {
                 console.error(message);
             }
 
-            const errorType = this.isAction ? 'action_script_failure' : 'sync_script_failre';
+            const errorType = this.isAction ? 'action_script_failure' : 'sync_script_failure';
             return { success: false, error: new NangoError(errorType, message, 404), response: false };
         }
 
@@ -160,7 +160,7 @@ export default class SyncRun {
         if (!integrations[this.nangoConnection.provider_config_key] && !this.writeToDb) {
             const message = `The connection you provided which applies to integration "${this.nangoConnection.provider_config_key}" does not match any integration in the ${nangoConfigFile}`;
 
-            const errorType = this.isAction ? 'action_script_failure' : 'sync_script_failre';
+            const errorType = this.isAction ? 'action_script_failure' : 'sync_script_failure';
             return { success: false, error: new NangoError(errorType, message, 404), response: false };
         }
 
@@ -175,7 +175,7 @@ export default class SyncRun {
             if (!environment && !bypassEnvironment) {
                 const message = `No environment was found for ${this.nangoConnection.environment_id}. The sync cannot continue without a valid environment`;
                 await this.reportFailureForResults(message);
-                const errorType = this.isAction ? 'action_script_failure' : 'sync_script_failre';
+                const errorType = this.isAction ? 'action_script_failure' : 'sync_script_failure';
                 return { success: false, error: new NangoError(errorType, message, 404), response: false };
             }
 
@@ -224,7 +224,7 @@ export default class SyncRun {
                     const message = `Integration was attempted to run for ${this.syncName} but no integration file was found at ${integrationFilePath}.`;
                     await this.reportFailureForResults(message);
 
-                    const errorType = this.isAction ? 'action_script_failure' : 'sync_script_failre';
+                    const errorType = this.isAction ? 'action_script_failure' : 'sync_script_failure';
 
                     return { success: false, error: new NangoError(errorType, message, 404), response: false };
                 }
@@ -459,7 +459,7 @@ export default class SyncRun {
                                     const message = `There was a problem upserting the data for ${this.syncName} and the model ${model} with the error message: ${upsertResult?.error}`;
                                     await this.reportFailureForResults(message);
 
-                                    const errorType = this.isAction ? 'action_script_failure' : 'sync_script_failre';
+                                    const errorType = this.isAction ? 'action_script_failure' : 'sync_script_failure';
 
                                     return { success: false, error: new NangoError(errorType, message), response: result };
                                 }
@@ -479,7 +479,7 @@ export default class SyncRun {
                     } sync did not complete successfully and has the following error: ${errorMessage}`
                 );
 
-                const errorType = this.isAction ? 'action_script_failure' : 'sync_script_failre';
+                const errorType = this.isAction ? 'action_script_failure' : 'sync_script_failure';
 
                 return { success: false, error: new NangoError(errorType, errorMessage), response: result };
             }
