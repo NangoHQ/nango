@@ -5,6 +5,9 @@ import { getSyncConfigsByConfigId } from '../../../services/sync/config/config.s
 import type { SyncConfig } from './../../../models/Sync.js';
 import type { Config as ProviderConfig } from './../../../models/Provider.js';
 import webhookService from '../../../services/sync/notification/webhook.service.js';
+import environmentService from '../../../services/environment.service.js';
+import metricsManager, { MetricTypes } from '../../../utils/metrics.manager.js';
+import { LogActionEnum } from '../../../models/Activity.js';
 
 import * as webhookHandlers from './index.js';
 
@@ -51,6 +54,16 @@ const internalNango: InternalNango = {
         if (!connection) {
             return;
         }
+
+        const accountId = await environmentService.getAccountIdFromEnvironment(integration.environment_id);
+
+        await metricsManager.capture(MetricTypes.INCOMING_WEBHOOK_RECEIVED, 'Incoming webhook received and connection found for it', LogActionEnum.WEBHOOK, {
+            accountId: String(accountId),
+            environmentId: String(integration.environment_id),
+            provider: integration.provider,
+            providerConfigKey: integration.unique_key,
+            connectionId: String(connection.connection_id)
+        });
 
         for (const syncConfig of syncConfigsWithWebhooks) {
             const { webhook_subscriptions } = syncConfig;

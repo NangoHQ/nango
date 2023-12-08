@@ -25,7 +25,8 @@ export enum MetricTypes {
     SYNC_GET_RECORDS_DEPRECATED_METHOD_USED = 'sync_get_records_deprecated_method_used',
     SYNC_GET_RECORDS_QUERY_TIMEOUT = 'sync_get_records_query_timeout',
     FLOW_JOB_TIMEOUT_FAILURE = 'flow_job_failure',
-    POST_CONNECTION_SCRIPT_FAILURE = 'post_connection_script_failure'
+    POST_CONNECTION_SCRIPT_FAILURE = 'post_connection_script_failure',
+    INCOMING_WEBHOOK_RECEIVED = 'incoming_webhook_received'
 }
 
 class MetricsManager {
