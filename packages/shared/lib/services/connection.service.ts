@@ -456,11 +456,7 @@ class ConnectionService {
             .withSchema(db.schema())
             .from<StoredConnection>(`_nango_connections`)
             .select('*')
-            .where({
-                // connection_config is a jsonb and want to find a key with a specific value
-                connection_config: db.knex.raw(`??->>? = ?`, [key, value, value]),
-                deleted: false
-            });
+            .whereRaw(`connection_config->>? = ? AND deleted = false`, [key, value]);
 
         if (!result || result.length == 0 || !result[0]) {
             return null;

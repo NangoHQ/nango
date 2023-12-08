@@ -40,9 +40,17 @@ const internalNango: InternalNango = {
             return;
         }
 
-        const connections = await connectionService.getConnectionsByEnvironmentAndConfig(integration.environment_id, integration.provider);
-
         const syncClient = await SyncClient.getInstance();
+
+        if (!body[connectionIdentifier]) {
+            return;
+        }
+
+        const connection = await connectionService.findConnectionByConnectionConfigValue(connectionIdentifier, body[connectionIdentifier]);
+
+        if (!connection) {
+            return;
+        }
 
         for (const syncConfig of syncConfigsWithWebhooks) {
             const { webhook_subscriptions } = syncConfig;
@@ -53,11 +61,7 @@ const internalNango: InternalNango = {
 
             for (const webhook of webhook_subscriptions) {
                 if (body[webhookType] === webhook) {
-                    for (const connection of connections) {
-                        if (connection?.connection_config && connection?.connection_config[connectionIdentifier] === body[connectionIdentifier]) {
-                            await syncClient?.triggerWebhook(connection, integration.provider, webhook, syncConfig.sync_name, body, integration.environment_id);
-                        }
-                    }
+                    await syncClient?.triggerWebhook(connection, integration.provider, webhook, syncConfig.sync_name, body, integration.environment_id);
                 }
             }
         }
