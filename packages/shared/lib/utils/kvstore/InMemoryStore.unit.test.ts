@@ -63,4 +63,9 @@ describe('InMemoryKVStore', () => {
         const value = await store.get('key');
         expect(value).toBeNull();
     });
+    it('should allow checking if a key exists', async () => {
+        await expect(store.exists('key')).resolves.toEqual(false);
+        store.set('key', 'value');
+        await expect(store.exists('key')).resolves.toEqual(true);
+    });
 });

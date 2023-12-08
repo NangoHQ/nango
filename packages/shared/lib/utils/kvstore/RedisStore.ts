@@ -9,7 +9,7 @@ export class RedisKVStore implements KVStore {
         this.client = createClient({ url: url });
 
         this.client.on('error', (err) => {
-            console.error(`Redis (publisher) error: ${err}`);
+            console.error(`Redis (kvstore) error: ${err}`);
         });
     }
 
@@ -33,6 +33,10 @@ export class RedisKVStore implements KVStore {
         if (res !== 'OK') {
             throw new Error(`Failed to set key: ${key}, value: ${value}, canOverride: ${canOverride}, ttlInMs: ${ttlInMs}`);
         }
+    }
+
+    public async exists(key: string): Promise<boolean> {
+        return (await this.client.exists(key)) > 0;
     }
 
     public async delete(key: string): Promise<void> {

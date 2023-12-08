@@ -20,6 +20,7 @@ import flowService from './services/flow.service.js';
 import slackNotificationService from './services/sync/notification/slack.service.js';
 import analytics, { AnalyticsTypes } from './utils/analytics.js';
 import logger from './logger/console.js';
+import featureFlags from './utils/featureflags.js';
 
 export * from './services/activity/activity.service.js';
 export * from './services/sync/sync.service.js';
@@ -71,5 +72,6 @@ export {
     slackNotificationService,
     analytics,
     AnalyticsTypes,
-    logger
+    logger,
+    featureFlags
 };
