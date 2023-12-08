@@ -463,6 +463,9 @@ google-sheet:
     proxy:
         base_url: https://sheets.googleapis.com
     docs: https://developers.google.com/sheets/api/reference/rest
+google-drive:
+    alias: google
+    docs: https://developers.google.com/drive/api/reference/rest/v3
 gorgias:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.gorgias.com/oauth/authorize
@@ -807,6 +810,28 @@ payfit:
         response_type: code
     token_params:
         grant_type: authorization_code
+paypal:
+    auth_mode: OAUTH2
+    authorization_url: https://www.paypal.com/signin/authorize
+    token_url: https://api.paypal.com/v1/oauth2/token
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+paypal-sandbox:
+    auth_mode: OAUTH2
+    authorization_url: https://www.sandbox.paypal.com/signin/authorize
+    token_url: https://api-m.sandbox.paypal.com/v1/oauth2/token
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 pennylane:
     auth_mode: OAUTH2
     authorization_url: https://app.pennylane.com/oauth/authorize

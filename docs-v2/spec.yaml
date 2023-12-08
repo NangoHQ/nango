@@ -321,6 +321,10 @@ paths:
                                                 created:
                                                     type: string
                                                     description: Connection creation date.
+                                                metadata:
+                                                    type: object
+                                                    description: Custom metadata attached to the connection
+
         post:
             description: Adds a connection for which you already have an access token
             requestBody:

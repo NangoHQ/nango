@@ -40,6 +40,10 @@ export class InMemoryKVStore implements KVStore {
         return Promise.resolve();
     }
 
+    public async exists(key: string): Promise<boolean> {
+        return Promise.resolve(this.store.has(key));
+    }
+
     private isExpired(value: Value): boolean {
         if (value.ttlInMs > 0 && value.timestamp + value.ttlInMs < Date.now()) {
             return true;

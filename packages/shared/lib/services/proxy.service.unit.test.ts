@@ -1,6 +1,7 @@
 import { expect, describe, it } from 'vitest';
 import proxyService from './proxy.service.js';
 import { HTTP_VERB, AuthModes } from '../models/index.js';
+import type { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 
 describe('Proxy Controller Construct Header Tests', () => {
     it('Should correctly construct a header using an api key with multiple headers', () => {
@@ -455,5 +456,46 @@ describe('Proxy Controller Construct URL Tests', () => {
             'Another-Header': 'value',
             'Content-Type': 'application/json'
         });
+    });
+
+    it('Should retry after', async () => {
+        const mockAxiosError = {
+            response: {
+                status: 429,
+                headers: {
+                    'x-rateLimit-reset-after': '1'
+                },
+                data: {},
+                statusText: 'Too Many Requests',
+                config: {} as InternalAxiosRequestConfig
+            } as AxiosResponse
+        } as AxiosError;
+        const before = Date.now();
+        await proxyService.retryHandler(1, 1, mockAxiosError, 'after', 'x-rateLimit-reset-after');
+        const after = Date.now();
+        const diff = after - before;
+        expect(diff).toBeGreaterThan(1000);
+        expect(diff).toBeLessThan(2000);
+    });
+
+    it('Should retry at', async () => {
+        const nowInSecs = Date.now() / 1000;
+        const mockAxiosError = {
+            response: {
+                status: 429,
+                headers: {
+                    'x-rateLimit-reset': nowInSecs + 1
+                },
+                data: {},
+                statusText: 'Too Many Requests',
+                config: {} as InternalAxiosRequestConfig
+            } as AxiosResponse
+        } as AxiosError;
+        const before = Date.now();
+        await proxyService.retryHandler(1, 1, mockAxiosError, 'at', 'x-rateLimit-reset');
+        const after = Date.now();
+        const diff = after - before;
+        expect(diff).toBeGreaterThan(1000);
+        expect(diff).toBeLessThan(2000);
     });
 });

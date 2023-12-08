@@ -21,6 +21,7 @@ import slackNotificationService from './services/sync/notification/slack.service
 import analytics, { AnalyticsTypes } from './utils/analytics.js';
 import logger from './logger/console.js';
 import routeWebhook from './integrations/scripts/webhook/webhook.manager.js';
+import featureFlags from './utils/featureflags.js';
 
 export * from './services/activity/activity.service.js';
 export * from './services/sync/sync.service.js';
@@ -75,5 +76,6 @@ export {
     analytics,
     AnalyticsTypes,
     routeWebhook,
-    logger
+    logger,
+    featureFlags
 };
