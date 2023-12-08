@@ -100,7 +100,7 @@ export default function FlowCreate() {
 
         const flowObject = flows[data['integration'] as string] as Flow;
 
-        const models = showModels(flow?.returns as string[]) as any;
+        const models = Array.isArray(flow?.returns) ? showModels(flow?.returns as string[]) as any : flow?.returns;
         const flowPayload = {
             provider: data['integration'].toString(),
             type: flow?.type || 'sync',
@@ -162,12 +162,17 @@ export default function FlowCreate() {
         setCanAdd(alreadyAdded === undefined);
     }
 
-    const showModels = (returns: string[]) => {
+    const showModels = (returns: string | string[]) => {
         const builtModels = {} as Flow['models'];
+
+        if (!Array.isArray(returns)) {
+            return models[returns] ?? returns;
+        }
 
         returns.forEach(returnedModel => {
             builtModels[returnedModel] = models[returnedModel];
         });
+        console.log(builtModels)
 
         return builtModels;
     }
