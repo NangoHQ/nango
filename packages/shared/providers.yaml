@@ -537,7 +537,7 @@ hubspot:
     authorization_url: https://app.hubspot.com/oauth/authorize
     token_url: https://api.hubapi.com/oauth/v1/token
     connection_configuration:
-      - portalId
+        - portalId
     post_connection_script: hubspot-post-connection
     webhook_routing_script: hubspot-webhook-routing
     proxy:
