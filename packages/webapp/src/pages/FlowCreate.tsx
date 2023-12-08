@@ -107,7 +107,7 @@ export default function FlowCreate() {
             name: data['flow-name'].toString(),
             runs: flow?.type === 'action' ? null : `every ${frequencyValue} ${frequencyUnit}`,
             auto_start: flow?.auto_start !== false,
-            models: flow?.returns as string[],
+            models: (Array.isArray(flow?.returns) ? flow?.returns : [flow?.returns]) as string[],
             model_schema: JSON.stringify(Object.keys(models).map(model => ({
                 name: model,
                 fields: Object.keys(models[model]).map(field => ({
@@ -172,7 +172,6 @@ export default function FlowCreate() {
         returns.forEach(returnedModel => {
             builtModels[returnedModel] = models[returnedModel];
         });
-        console.log(builtModels)
 
         return builtModels;
     }
