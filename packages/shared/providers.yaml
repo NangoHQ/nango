@@ -536,6 +536,10 @@ hubspot:
     auth_mode: OAUTH2
     authorization_url: https://app.hubspot.com/oauth/authorize
     token_url: https://api.hubapi.com/oauth/v1/token
+    connection_configuration:
+      - portalId
+    post_connection_script: hubspot
+    webhook_routing_script: hubspot
     proxy:
         base_url: https://api.hubapi.com
         decompress: true

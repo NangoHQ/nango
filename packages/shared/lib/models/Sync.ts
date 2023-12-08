@@ -1,7 +1,7 @@
 import type { Context } from '@temporalio/activity';
 import { LogActionEnum } from './Activity.js';
 import type { HTTP_VERB, Timestamps, TimestampsAndDeleted } from './Generic.js';
-import type { NangoSync } from '../sdk/sync.js';
+import type { NangoAction, NangoSync } from '../sdk/sync.js';
 import type { NangoIntegrationData, NangoSyncEndpoint } from './NangoConfig.js';
 
 export enum SyncStatus {
@@ -15,6 +15,7 @@ export enum SyncStatus {
 export enum SyncType {
     INITIAL = 'INITIAL',
     INCREMENTAL = 'INCREMENTAL',
+    WEBHOOK = 'WEBHOOK',
     FULL = 'FULL',
     ACTION = 'ACTION'
 }
@@ -102,7 +103,7 @@ export interface SyncConfig extends TimestampsAndDeleted {
     endpoints?: NangoSyncEndpoint[];
     input?: string;
     sync_type?: SyncType | undefined;
-    webhook_subscriptions?: StoredWebhookSubscription[];
+    webhook_subscriptions?: string[];
 }
 
 export interface SyncEndpoint extends Timestamps {
@@ -177,19 +178,6 @@ export interface IncomingPreBuiltFlowConfig extends InternalIncomingPreBuiltFlow
     };
 }
 
-export interface WebhookSubscription {
-    fileBody: {
-        js: string;
-        ts: string;
-    };
-    name: string;
-}
-
-export interface StoredWebhookSubscription {
-    file_location: string;
-    name: string;
-}
-
 export interface IncomingFlowConfig extends InternalIncomingPreBuiltFlowConfig {
     syncName: string;
     providerConfigKey: string;
@@ -201,7 +189,7 @@ export interface IncomingFlowConfig extends InternalIncomingPreBuiltFlowConfig {
     track_deletes?: boolean;
     input?: string;
     sync_type?: SyncType;
-    webhookSubscriptions?: WebhookSubscription[];
+    webhookSubscriptions?: string[];
 }
 
 export enum ScheduleStatus {
@@ -309,11 +297,12 @@ export interface IntegrationServiceInterface {
         syncName: string,
         syncId: string,
         activityLogId: number | undefined,
-        nango: NangoSync,
+        nango: NangoAction | NangoSync,
         integrationData: NangoIntegrationData,
         environmentId: number,
         writeToDb: boolean,
-        isAction: boolean,
+        isInvokedImmediately: boolean,
+        isWebhook: boolean,
         optionalLoadLocation?: string,
         input?: object,
         temporalContext?: Context

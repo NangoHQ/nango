@@ -3,9 +3,9 @@ import type { Config as ProviderConfig } from '../../../models/Provider.js';
 import crypto from 'crypto';
 
 export function validate(integration: ProviderConfig, headers: Record<string, any>, body: any): boolean {
-    const signature = headers['X-HubSpot-Signature'];
+    const signature = headers['x-hubspot-signature'];
 
-    const combinedSignature = `${integration.oauth_client_secret}${body}`;
+    const combinedSignature = `${integration.oauth_client_secret}${JSON.stringify(body)}`;
     const createdHash = crypto.createHash('sha256').update(combinedSignature).digest('hex');
 
     return signature === createdHash;
@@ -15,18 +15,14 @@ export default async function route(nango: Nango, integration: ProviderConfig, h
     const valid = validate(integration, headers, body);
 
     if (!valid) {
-        console.log(valid);
-        //return;
+        return;
     }
 
-    await nango.executeScriptForWebhooks(integration, body, 'subscriptionType');
-    //const syncConfigsWithWebhooks = await nango.getWebhooks(integration.environment_id, integration.id as number);
-
-    //for (const webhook of webhooks) {
-    //const { file_location, name } = webhook;
-
-    //if (event === 'contact.creation') {
-    //await nango.triggerWebhookSync()
-    //}
-    //}
+    if (Array.isArray(body)) {
+        for (const event of body) {
+            await nango.executeScriptForWebhooks(integration, event, 'subscriptionType', 'portalId');
+        }
+    } else {
+        await nango.executeScriptForWebhooks(integration, body, 'subscriptionType', 'portalId');
+    }
 }

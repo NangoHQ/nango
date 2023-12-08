@@ -52,18 +52,9 @@ class CompileService {
 
         for (const filePath of integrationFiles) {
             try {
-                let providerConfiguration = config.find((config) =>
+                const providerConfiguration = config.find((config) =>
                     [...config.syncs, ...config.actions].find((sync) => sync.name === path.basename(filePath, '.ts'))
                 );
-
-                // if this is a webhook nested under a sync use that configuration
-                const isWebhook = config.find((config) =>
-                    config.syncs.find((sync) => sync.webhookSubscriptions?.find((subscription) => subscription === path.basename(filePath, '.ts')))
-                );
-
-                if (isWebhook) {
-                    providerConfiguration = isWebhook;
-                }
 
                 if (!providerConfiguration) {
                     continue;

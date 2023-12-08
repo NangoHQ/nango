@@ -14,7 +14,7 @@ import { getDeletedKeys, takeSnapshot, clearOldRecords, syncUpdateAtForDeletedRe
 import environmentService from '../environment.service.js';
 import slackNotificationService from './notification/slack.service.js';
 import webhookService from './notification/webhook.service.js';
-import { NangoSync } from '../../sdk/sync.js';
+import { NangoSync, NangoAction } from '../../sdk/sync.js';
 import { isCloud, getApiUrl, JAVASCRIPT_PRIMITIVES } from '../../utils/utils.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { NangoError } from '../../utils/error.js';
@@ -29,6 +29,7 @@ interface SyncRunConfig {
     integrationService: IntegrationServiceInterface;
     writeToDb: boolean;
     isAction?: boolean;
+    isInvokedImmediately?: boolean;
     isWebhook?: boolean;
     nangoConnection: NangoConnection;
     syncName: string;
@@ -53,7 +54,7 @@ export default class SyncRun {
     integrationService: IntegrationServiceInterface;
     writeToDb: boolean;
     isAction: boolean;
-    isWebhook: boolean;
+    isInvokedImmediately: boolean;
     nangoConnection: NangoConnection;
     syncName: string;
     syncType: SyncType;
@@ -70,6 +71,7 @@ export default class SyncRun {
     stubbedMetadata?: Metadata | undefined = undefined;
 
     temporalContext?: Context;
+    isWebhook: boolean;
 
     constructor(config: SyncRunConfig) {
         this.integrationService = config.integrationService;
@@ -79,6 +81,7 @@ export default class SyncRun {
         this.nangoConnection = config.nangoConnection;
         this.syncName = config.syncName;
         this.syncType = config.syncType;
+        this.isInvokedImmediately = Boolean(config.isAction || config.isWebhook);
 
         if (config.syncId) {
             this.syncId = config.syncId;
@@ -235,7 +238,7 @@ export default class SyncRun {
 
             let lastSyncDate: Date | null | undefined = null;
 
-            if (!this.isAction) {
+            if (!this.isInvokedImmediately) {
                 if (!this.writeToDb) {
                     lastSyncDate = optionalLastSyncDate;
                 } else {
@@ -261,7 +264,7 @@ export default class SyncRun {
                 }
             }
 
-            const nango = new NangoSync({
+            const props = {
                 host: optionalHost || getApiUrl(),
                 connectionId: String(this.nangoConnection?.connection_id),
                 environmentId: this.nangoConnection?.environment_id as number,
@@ -277,7 +280,9 @@ export default class SyncRun {
                 track_deletes: trackDeletes as boolean,
                 logMessages: this.logMessages,
                 stubbedMetadata: this.stubbedMetadata
-            });
+            };
+
+            const nango = this.isAction ? new NangoAction(props) : new NangoSync(props);
 
             if (this.debug) {
                 const content = `Last sync date is ${lastSyncDate}`;
@@ -313,7 +318,8 @@ export default class SyncRun {
                     syncData,
                     this.nangoConnection.environment_id,
                     this.writeToDb,
-                    this.isAction,
+                    this.isInvokedImmediately,
+                    this.isWebhook,
                     this.loadLocation,
                     this.input,
                     this.temporalContext
@@ -344,7 +350,7 @@ export default class SyncRun {
                     `provider:${this.provider}`
                 ]);
 
-                if (this.isAction) {
+                if (this.isInvokedImmediately) {
                     const content = `${this.syncName} action was run successfully and results are being sent synchronously.`;
 
                     await updateSuccessActivityLog(this.activityLogId as number, true);
@@ -357,14 +363,16 @@ export default class SyncRun {
                         content
                     });
 
-                    await slackNotificationService.removeFailingConnection(
-                        this.nangoConnection,
-                        this.syncName,
-                        this.syncType,
-                        this.activityLogId as number,
-                        this.nangoConnection.environment_id,
-                        this.provider as string
-                    );
+                    if (!this.isWebhook) {
+                        await slackNotificationService.removeFailingConnection(
+                            this.nangoConnection,
+                            this.syncName,
+                            this.syncType,
+                            this.activityLogId as number,
+                            this.nangoConnection.environment_id,
+                            this.provider as string
+                        );
+                    }
 
                     return { success: true, error: null, response: userDefinedResults };
                 }
@@ -541,14 +549,16 @@ export default class SyncRun {
             // then don't override it
             const override = false;
             await setLastSyncDate(this.syncId as string, syncStartDate, override);
-            await slackNotificationService.removeFailingConnection(
-                this.nangoConnection,
-                this.syncName,
-                this.syncType,
-                this.activityLogId as number,
-                this.nangoConnection.environment_id,
-                this.provider as string
-            );
+            if (!this.isWebhook) {
+                await slackNotificationService.removeFailingConnection(
+                    this.nangoConnection,
+                    this.syncName,
+                    this.syncType,
+                    this.activityLogId as number,
+                    this.nangoConnection.environment_id,
+                    this.provider as string
+                );
+            }
         }
 
         if (trackDeletes) {
@@ -665,14 +675,16 @@ export default class SyncRun {
             return;
         }
 
-        await slackNotificationService.reportFailure(
-            this.nangoConnection,
-            this.syncName,
-            this.syncType,
-            this.activityLogId as number,
-            this.nangoConnection.environment_id,
-            this.provider as string
-        );
+        if (!this.isWebhook) {
+            await slackNotificationService.reportFailure(
+                this.nangoConnection,
+                this.syncName,
+                this.syncType,
+                this.activityLogId as number,
+                this.nangoConnection.environment_id,
+                this.provider as string
+            );
+        }
 
         if (!this.activityLogId || !this.syncJobId) {
             console.error(content);

@@ -45,12 +45,12 @@ export async function action(args: ActionArgs): Promise<object> {
     }
 }
 
-export async function webhook(args: WebhookArgs): Promise<object> {
+export async function webhook(args: WebhookArgs): Promise<boolean> {
     try {
         return await runWebhook(args);
     } catch (e: any) {
         await reportFailure(e, args, DEFAULT_TIMEOUT, MAXIMUM_ATTEMPTS);
 
-        return { success: false };
+        return false;
     }
 }

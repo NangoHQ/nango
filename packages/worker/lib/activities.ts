@@ -52,7 +52,7 @@ export async function routeSync(args: InitialSyncArgs): Promise<boolean | object
 }
 
 export async function runAction(args: ActionArgs): Promise<ServiceResponse> {
-    const { input, nangoConnection, actionName, activityLogId, isWebhook } = args;
+    const { input, nangoConnection, actionName, activityLogId } = args;
 
     const syncConfig: ProviderConfig = (await configService.getProviderConfig(
         nangoConnection?.provider_config_key as string,
@@ -66,7 +66,6 @@ export async function runAction(args: ActionArgs): Promise<ServiceResponse> {
         writeToDb: true,
         nangoConnection,
         syncName: actionName,
-        isWebhook: isWebhook ?? false,
         isAction: true,
         syncType: SyncType.ACTION,
         activityLogId,
@@ -79,6 +78,38 @@ export async function runAction(args: ActionArgs): Promise<ServiceResponse> {
     const actionResults = await syncRun.run();
 
     return actionResults;
+}
+
+export async function runWebhook(args: WebhookArgs): Promise<boolean> {
+    const { input, nangoConnection, activityLogId, parentSyncName } = args;
+
+    const syncConfig: ProviderConfig = (await configService.getProviderConfig(
+        nangoConnection?.provider_config_key as string,
+        nangoConnection?.environment_id as number
+    )) as ProviderConfig;
+
+    const context: Context = Context.current();
+
+    // need a sync job id?
+
+    const syncRun = new syncRunService({
+        integrationService,
+        writeToDb: true,
+        nangoConnection,
+        syncName: parentSyncName,
+        isAction: false,
+        syncType: SyncType.WEBHOOK,
+        isWebhook: true,
+        activityLogId,
+        input,
+        provider: syncConfig.provider,
+        debug: false,
+        temporalContext: context
+    });
+
+    const result = await syncRun.run();
+
+    return result.success;
 }
 
 export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<boolean | object | null> {
@@ -313,9 +344,19 @@ export async function reportFailure(
     MAXIMUM_ATTEMPTS: number
 ): Promise<void> {
     const { nangoConnection } = workflowArguments;
-    const type = 'syncName' in workflowArguments ? 'sync' : 'action';
-    // TODO
-    const name = 'syncName' in workflowArguments ? workflowArguments.syncName : workflowArguments.actionName || workflowArguments.name;
+    let type = 'webhook';
+
+    let name = '';
+    if ('syncName' in workflowArguments) {
+        name = workflowArguments.syncName;
+        type = 'sync';
+    } else if ('actionName' in workflowArguments) {
+        name = workflowArguments.actionName;
+        type = 'action';
+    } else {
+        name = workflowArguments.name;
+    }
+
     let content = `The ${type} "${name}" failed `;
     const context: Context = Context.current();
 

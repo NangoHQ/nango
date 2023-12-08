@@ -29,7 +29,8 @@ class IntegrationService implements IntegrationServiceInterface {
         integrationData: NangoIntegrationData,
         environmentId: number,
         writeToDb: boolean,
-        isAction: boolean,
+        isInvokedImmediately: boolean,
+        isWebhook: boolean,
         optionalLoadLocation?: string,
         input?: object,
         temporalContext?: Context
@@ -85,26 +86,52 @@ class IntegrationService implements IntegrationServiceInterface {
                 const rootDir = getRootDir(optionalLoadLocation);
                 const scriptExports = vm.run(script as string, `${rootDir}/*.js`);
 
-                if (typeof scriptExports.default === 'function') {
-                    const results = isAction ? await scriptExports.default(nango, input) : await scriptExports.default(nango);
+                if (isWebhook) {
+                    if (!scriptExports.onWebhookPayloadReceived) {
+                        const content = `There is no onWebhookPayloadReceived export for ${syncName}`;
+                        if (activityLogId && writeToDb) {
+                            await createActivityLogMessage({
+                                level: 'error',
+                                environment_id: environmentId,
+                                activity_log_id: activityLogId,
+                                content,
+                                timestamp: Date.now()
+                            });
+                        }
+
+                        return { success: false, error: new NangoError(content, 500), response: null };
+                    }
+
+                    const results = await scriptExports.onWebhookPayloadReceived(nango, input);
 
                     return { success: true, error: null, response: results };
                 } else {
-                    const content = `There is no default export that is a function for ${syncName}`;
-                    if (activityLogId && writeToDb) {
-                        await createActivityLogMessage({
-                            level: 'error',
-                            environment_id: environmentId,
-                            activity_log_id: activityLogId,
-                            content,
-                            timestamp: Date.now()
-                        });
-                    }
+                    if (typeof scriptExports.default === 'function') {
+                        const results = isInvokedImmediately ? await scriptExports.default(nango, input) : await scriptExports.default(nango);
 
-                    return { success: false, error: new NangoError(content, 500), response: null };
+                        return { success: true, error: null, response: results };
+                    } else {
+                        const content = `There is no default export that is a function for ${syncName}`;
+                        if (activityLogId && writeToDb) {
+                            await createActivityLogMessage({
+                                level: 'error',
+                                environment_id: environmentId,
+                                activity_log_id: activityLogId,
+                                content,
+                                timestamp: Date.now()
+                            });
+                        }
+
+                        return { success: false, error: new NangoError(content, 500), response: null };
+                    }
                 }
             } catch (err: any) {
-                const errorType = isAction ? 'action_script_failure' : 'sync_script_failre';
+                let errorType = 'sync_script_failure';
+                if (isWebhook) {
+                    errorType = 'webhook_script_failure';
+                } else if (isInvokedImmediately) {
+                    errorType = 'action_script_failure';
+                }
                 const { success, error, response } = formatScriptError(err, errorType, syncName);
 
                 if (activityLogId && writeToDb) {

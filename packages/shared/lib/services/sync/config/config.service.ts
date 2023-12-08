@@ -44,8 +44,10 @@ export async function getSyncConfig(nangoConnection: NangoConnection, syncName?:
             const key = nangoConnection.provider_config_key;
 
             const providerConfig = nangoConfig.integrations[key] ?? {};
+            const configSyncName = syncConfig.sync_name;
+            const fileLocation = syncConfig.file_location;
 
-            providerConfig[syncConfig.sync_name] = {
+            providerConfig[configSyncName] = {
                 sync_config_id: syncConfig.id as number,
                 runs: syncConfig.runs,
                 type: syncConfig.type,
@@ -54,7 +56,7 @@ export async function getSyncConfig(nangoConnection: NangoConnection, syncName?:
                 track_deletes: syncConfig.track_deletes,
                 auto_start: syncConfig.auto_start,
                 attributes: syncConfig.attributes || {},
-                fileLocation: syncConfig.file_location,
+                fileLocation,
                 version: syncConfig.version as string,
                 pre_built: syncConfig.pre_built as boolean,
                 is_public: syncConfig.is_public as boolean,

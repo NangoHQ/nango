@@ -103,10 +103,7 @@ class VerificationService {
 
         const syncNames = config.map((provider) => provider.syncs.map((sync) => sync.name)).flat();
         const actionNames = config.map((provider) => provider.actions.map((action) => action.name)).flat();
-        const webhookSyncnames = config
-            .map((provider) => provider.syncs.map((sync) => sync.webhookSubscriptions?.filter((subscription) => subscription)).flat())
-            .flat();
-        const flows = [...syncNames, ...actionNames, ...webhookSyncnames].filter((name) => name);
+        const flows = [...syncNames, ...actionNames].filter((name) => name);
 
         const tsFiles = glob.sync(`./*.ts`);
 

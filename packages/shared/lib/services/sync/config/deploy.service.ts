@@ -22,8 +22,7 @@ import {
     SyncConfigResult,
     SyncConfigType,
     IncomingPreBuiltFlowConfig,
-    SyncEndpoint,
-    StoredWebhookSubscription
+    SyncEndpoint
 } from '../../../models/Sync.js';
 import { NangoError } from '../../../utils/error.js';
 import metricsManager, { MetricTypes } from '../../../utils/metrics.manager.js';
@@ -598,8 +597,7 @@ async function compileDeployInfo(
         if (flowWithVersions['syncName'] === syncName) {
             return {
                 ...flowWithVersions,
-                version,
-                webhookSubscriptions: flowWithVersions?.webhookSubscriptions?.map((subscription) => subscription.name) as string[]
+                version
             } as unknown as FlowWithVersion;
         }
         return flowWithVersions;
@@ -637,28 +635,6 @@ async function compileDeployInfo(
         }
     }
 
-    const webhook_subscriptions: StoredWebhookSubscription[] = [];
-    if (flow.webhookSubscriptions) {
-        for (const webhookSubscription of flow.webhookSubscriptions) {
-            const { name, fileBody } = webhookSubscription;
-            const file_location = (await remoteFileService.upload(
-                fileBody.js as string,
-                `${env}/account/${accountId}/environment/${environment_id}/config/${config.id}/${name}-v${version}.js`,
-                environment_id
-            )) as string;
-
-            await remoteFileService.upload(
-                fileBody.ts,
-                `${env}/account/${accountId}/environment/${environment_id}/config/${config.id}/${name}.ts`,
-                environment_id
-            );
-            webhook_subscriptions.push({
-                name,
-                file_location
-            });
-        }
-    }
-
     insertData.push({
         environment_id,
         nango_config_id: config?.id as number,
@@ -676,7 +652,7 @@ async function compileDeployInfo(
         model_schema: model_schema as unknown as SyncModelSchema[],
         input: flow.input || '',
         sync_type: flow.sync_type,
-        webhook_subscriptions: JSON.stringify(webhook_subscriptions) as unknown as StoredWebhookSubscription[]
+        webhook_subscriptions: flow.webhookSubscriptions || []
     });
 
     flowReturnData.push({

@@ -10,7 +10,7 @@ import hubspotWebhook from './hubspot.js';
 
 export interface InternalNango {
     getWebhooks: (environment_id: number, nango_config_id: number) => Promise<SyncConfig[] | null>;
-    executeScriptForWebhooks(integration: ProviderConfig, body: any, webhookType: string): Promise<void>;
+    executeScriptForWebhooks(integration: ProviderConfig, body: any, webhookType: string, connectionIdentifier: string): Promise<void>;
 }
 
 async function execute(environmentUuid: string, providerConfigKey: string, headers: Record<string, any>, body: any) {
@@ -37,7 +37,7 @@ async function execute(environmentUuid: string, providerConfigKey: string, heade
 
             return syncConfigsWithWebhooks;
         },
-        executeScriptForWebhooks: async (integration: ProviderConfig, body: any, webhookType: string) => {
+        executeScriptForWebhooks: async (integration: ProviderConfig, body: any, webhookType: string, connectionIdentifier: string) => {
             const syncConfigsWithWebhooks = await internalNango.getWebhooks(integration.environment_id, integration.id as number);
 
             if (!syncConfigsWithWebhooks) {
@@ -56,10 +56,18 @@ async function execute(environmentUuid: string, providerConfigKey: string, heade
                 }
 
                 for (const webhook of webhook_subscriptions) {
-                    const { name } = webhook;
-                    if (body[webhookType] === name) {
+                    if (body[webhookType] === webhook) {
                         for (const connection of connections) {
-                            await syncClient?.triggerAction(connection, name, body, 0, integration.environment_id, false, true);
+                            if (connection?.connection_config && connection?.connection_config[connectionIdentifier] === body[connectionIdentifier]) {
+                                await syncClient?.triggerWebhook(
+                                    connection,
+                                    integration.provider,
+                                    webhook,
+                                    syncConfig.sync_name,
+                                    body,
+                                    integration.environment_id
+                                );
+                            }
                         }
                     }
                 }
@@ -75,8 +83,6 @@ async function execute(environmentUuid: string, providerConfigKey: string, heade
             break;
     }
 
-    // TODO review design to see which logs we want here, think it was the syncs
-    // that were associated with this webhook?
     await webhookService.forward(integration.environment_id, providerConfigKey, provider, body);
 }
 

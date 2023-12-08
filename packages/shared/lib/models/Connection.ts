@@ -47,6 +47,7 @@ export interface NangoConnection {
     connection_id: string;
     provider_config_key: string;
     environment_id: number;
+    connection_config?: ConnectionConfig;
 
     // TODO legacy while the migration is in progress
     account_id?: number;

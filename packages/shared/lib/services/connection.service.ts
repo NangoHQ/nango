@@ -409,7 +409,7 @@ class ConnectionService {
         const result = await db.knex
             .withSchema(db.schema())
             .from<StoredConnection>(`_nango_connections`)
-            .select('id', 'connection_id', 'provider_config_key', 'environment_id')
+            .select('id', 'connection_id', 'provider_config_key', 'environment_id', 'connection_config')
             .where({ environment_id, provider_config_key: providerConfigKey, deleted: false });
 
         if (!result || result.length == 0 || !result[0]) {

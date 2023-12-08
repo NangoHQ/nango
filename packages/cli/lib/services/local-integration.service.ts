@@ -13,7 +13,8 @@ class IntegrationService implements IntegrationServiceInterface {
         _integrationData: NangoIntegrationData,
         _environmentId: number,
         _writeToDb: boolean,
-        isAction: boolean,
+        isInvokedImmediately: boolean,
+        _isWebhook: boolean,
         optionalLoadLocation?: string,
         input?: object
     ): Promise<any> {
@@ -56,7 +57,7 @@ class IntegrationService implements IntegrationServiceInterface {
                 const scriptExports: any = scriptObj.runInContext(context);
 
                 if (scriptExports && typeof scriptExports === 'function') {
-                    const results = isAction ? await scriptExports(nango, input) : await scriptExports(nango);
+                    const results = isInvokedImmediately ? await scriptExports(nango, input) : await scriptExports(nango);
                     return { success: true, error: null, response: results };
                 } else {
                     const content = `There is no default export that is a function for ${syncName}`;
@@ -64,7 +65,7 @@ class IntegrationService implements IntegrationServiceInterface {
                     return { success: false, error: new NangoError(content, 500), response: null };
                 }
             } catch (err: any) {
-                const errorType = isAction ? 'action_script_failure' : 'sync_script_failre';
+                const errorType = isInvokedImmediately ? 'action_script_failure' : 'sync_script_failre';
 
                 return formatScriptError(err, errorType, syncName);
             }
