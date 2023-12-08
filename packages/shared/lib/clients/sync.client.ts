@@ -620,7 +620,6 @@ class SyncClient {
             return { success, error, response };
         } catch (e) {
             const errorMessage = JSON.stringify(e, ['message', 'name'], 2);
-            // TODO
             const error = new NangoError('webhook_script_failure', { errorMessage });
 
             await createActivityLogMessageAndEnd({
