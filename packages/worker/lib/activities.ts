@@ -22,6 +22,7 @@ import {
     updateLatestJobSyncStatus,
     MetricTypes,
     isInitialSyncStillRunning,
+    initialSyncExists,
     logger
 } from '@nangohq/shared';
 import integrationService from './integration.service.js';
@@ -137,12 +138,13 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
 
     // https://typescript.temporal.io/api/classes/activity.Context
     const context: Context = Context.current();
+    const syncType = (await initialSyncExists(syncId as string)) ? SyncType.INCREMENTAL : SyncType.INITIAL;
     try {
         if (!nangoConnection?.environment_id) {
             environmentId = (await environmentService.getEnvironmentIdForAccountAssumingProd(nangoConnection.account_id as number)) as number;
             syncJobId = await createSyncJob(
                 syncId as string,
-                SyncType.INCREMENTAL,
+                syncType,
                 SyncStatus.RUNNING,
                 context.info.workflowExecution.workflowId,
                 nangoConnection,
@@ -151,7 +153,7 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
         } else {
             syncJobId = await createSyncJob(
                 syncId as string,
-                SyncType.INCREMENTAL,
+                syncType,
                 SyncStatus.RUNNING,
                 context.info.workflowExecution.workflowId,
                 nangoConnection,
@@ -169,7 +171,7 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
             syncId,
             syncJobId?.id as number,
             syncName,
-            SyncType.INCREMENTAL,
+            syncType,
             { ...nangoConnection, environment_id: environmentId },
             activityLogId ?? 0,
             context,
@@ -212,7 +214,7 @@ export async function scheduleAndRouteSync(args: ContinuousSyncArgs): Promise<bo
             source: ErrorSourceEnum.PLATFORM,
             operation: LogActionEnum.SYNC,
             metadata: {
-                syncType: SyncType.INCREMENTAL,
+                syncType,
                 connectionId: nangoConnection?.connection_id as string,
                 providerConfigKey: nangoConnection?.provider_config_key as string,
                 syncName
@@ -243,7 +245,7 @@ export async function syncProvider(
     try {
         let activityLogId = existingActivityLogId;
 
-        if (syncType === SyncType.INCREMENTAL) {
+        if (syncType === SyncType.INCREMENTAL || existingActivityLogId === 0) {
             const log = {
                 level: 'info' as LogLevel,
                 success: null,

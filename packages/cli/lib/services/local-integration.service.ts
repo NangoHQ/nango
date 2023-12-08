@@ -14,7 +14,7 @@ class IntegrationService implements IntegrationServiceInterface {
         _environmentId: number,
         _writeToDb: boolean,
         isInvokedImmediately: boolean,
-        _isWebhook: boolean,
+        isWebhook: boolean,
         optionalLoadLocation?: string,
         input?: object
     ): Promise<any> {
@@ -65,7 +65,12 @@ class IntegrationService implements IntegrationServiceInterface {
                     return { success: false, error: new NangoError(content, 500), response: null };
                 }
             } catch (err: any) {
-                const errorType = isInvokedImmediately ? 'action_script_failure' : 'sync_script_failre';
+                let errorType = 'sync_script_failure';
+                if (isWebhook) {
+                    errorType = 'webhook_script_failure';
+                } else if (isInvokedImmediately) {
+                    errorType = 'action_script_failure';
+                }
 
                 return formatScriptError(err, errorType, syncName);
             }

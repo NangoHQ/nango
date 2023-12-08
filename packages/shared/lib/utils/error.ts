@@ -236,11 +236,6 @@ export class NangoError extends Error {
                 this.message = `Missing param 'oauth_client_secret'.`;
                 break;
 
-            case 'missing_app_id':
-                this.status = 400;
-                this.message = `Missing param 'app_id'.`;
-                break;
-
             case 'missing_app_secret':
                 this.status = 400;
                 this.message = `Missing param 'app_secret'.`;
