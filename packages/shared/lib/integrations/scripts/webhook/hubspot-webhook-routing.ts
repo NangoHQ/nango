@@ -15,8 +15,7 @@ export default async function route(nango: Nango, integration: ProviderConfig, h
     const valid = validate(integration, headers, body);
 
     if (!valid) {
-        console.log('Invalid signature');
-        //return;
+        return;
     }
 
     if (Array.isArray(body)) {
