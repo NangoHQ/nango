@@ -356,7 +356,8 @@ class ConnectionController {
                     connectionId: connection.connection_id,
                     providerConfigKey: connection.provider as string,
                     provider: uniqueKeyToProvider[connection.provider] as string,
-                    creationDate: connection.created
+                    creationDate: connection.created,
+                    metadata: connection.metadata
                 };
             });
 

@@ -112,6 +112,7 @@ export interface ConnectionList {
     connection_id: string;
     provider: string;
     created: string;
+    metadata: Metadata;
 }
 
 export interface IntegrationWithCreds extends Integration {
