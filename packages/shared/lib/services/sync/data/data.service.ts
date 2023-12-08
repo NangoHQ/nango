@@ -85,8 +85,8 @@ export async function upsert(
         errorMessage += `Model: ${model}, Unique Key: ${uniqueKey}, Nango Connection ID: ${nangoConnectionId}.\n`;
         errorMessage += `Attempted to insert/update/delete: ${responseWithoutDuplicates.length} records\n`;
 
-        if ('code' in error) errorMessage += `Error code: ${error.code}.\n`;
-        if ('detail' in error) errorMessage += `Detail: ${error.detail}.\n`;
+        if (error.code) errorMessage += `Error code: ${error.code}.\n`;
+        if (error.detail) errorMessage += `Detail: ${error.detail}.\n`;
 
         errorMessage += `Error Message: ${error.message}`;
 
