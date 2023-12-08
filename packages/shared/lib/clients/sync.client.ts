@@ -7,7 +7,7 @@ import type { NangoIntegrationData, NangoConfig, NangoIntegration } from '../mod
 import { Sync, SyncStatus, SyncType, ScheduleStatus, SyncCommand, SyncWithSchedule } from '../models/Sync.js';
 import type { ServiceResponse } from '../models/Generic.js';
 import { LogActionEnum, LogLevel } from '../models/Activity.js';
-import { TASK_QUEUE } from '../constants.js';
+import { SYNC_TASK_QUEUE, WEBHOOK_TASK_QUEUE } from '../constants.js';
 import {
     createActivityLog,
     createActivityLogMessage,
@@ -25,11 +25,11 @@ import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { NangoError } from '../utils/error.js';
 import { isProd } from '../utils/utils.js';
 
-const generateActionWorkflowId = (actionName: string, connectionId: string) => `${TASK_QUEUE}.ACTION:${actionName}.${connectionId}.${Date.now()}`;
+const generateActionWorkflowId = (actionName: string, connectionId: string) => `${SYNC_TASK_QUEUE}.ACTION:${actionName}.${connectionId}.${Date.now()}`;
 const generateWebhookWorkflowId = (parentSyncName: string, webhookName: string, connectionId: string) =>
-    `${TASK_QUEUE}.WEBHOOK:${parentSyncName}:${webhookName}.${connectionId}.${Date.now()}`;
-const generateWorkflowId = (sync: Sync, syncName: string, connectionId: string) => `${TASK_QUEUE}.${syncName}.${connectionId}-${sync.id}`;
-const generateScheduleId = (sync: Sync, syncName: string, connectionId: string) => `${TASK_QUEUE}.${syncName}.${connectionId}-schedule-${sync.id}`;
+    `${WEBHOOK_TASK_QUEUE}.WEBHOOK:${parentSyncName}:${webhookName}.${connectionId}.${Date.now()}`;
+const generateWorkflowId = (sync: Sync, syncName: string, connectionId: string) => `${SYNC_TASK_QUEUE}.${syncName}.${connectionId}-${sync.id}`;
+const generateScheduleId = (sync: Sync, syncName: string, connectionId: string) => `${SYNC_TASK_QUEUE}.${syncName}.${connectionId}-schedule-${sync.id}`;
 
 const OVERLAP_POLICY: ScheduleOverlapPolicy = ScheduleOverlapPolicy.BUFFER_ONE;
 
@@ -209,7 +209,7 @@ class SyncClient {
                 }
 
                 handle = await this.client?.workflow.start('initialSync', {
-                    taskQueue: TASK_QUEUE,
+                    taskQueue: SYNC_TASK_QUEUE,
                     workflowId: jobId,
                     args: [
                         {
@@ -249,7 +249,7 @@ class SyncClient {
                 action: {
                     type: 'startWorkflow',
                     workflowType: 'continuousSync',
-                    taskQueue: TASK_QUEUE,
+                    taskQueue: SYNC_TASK_QUEUE,
                     args: [
                         {
                             syncId: sync.id,
@@ -279,7 +279,7 @@ class SyncClient {
                     level: 'info',
                     environment_id: nangoConnection?.environment_id as number,
                     activity_log_id: activityLogId as number,
-                    content: `Started initial background sync ${handle?.workflowId} and data updated on a schedule ${scheduleId} at ${syncData.runs} in the task queue: ${TASK_QUEUE}`,
+                    content: `Started initial background sync ${handle?.workflowId} and data updated on a schedule ${scheduleId} at ${syncData.runs} in the task queue: ${SYNC_TASK_QUEUE}`,
                     timestamp: Date.now()
                 });
             }
@@ -461,7 +461,7 @@ class SyncClient {
                     level: 'info',
                     environment_id,
                     activity_log_id: activityLogId as number,
-                    content: `Starting action workflow ${workflowId} in the task queue: ${TASK_QUEUE}`,
+                    content: `Starting action workflow ${workflowId} in the task queue: ${SYNC_TASK_QUEUE}`,
                     params: {
                         input: JSON.stringify(input, null, 2)
                     },
@@ -470,7 +470,7 @@ class SyncClient {
             }
 
             const actionHandler = await this.client?.workflow.execute('action', {
-                taskQueue: TASK_QUEUE,
+                taskQueue: SYNC_TASK_QUEUE,
                 workflowId,
                 args: [
                     {
@@ -572,7 +572,7 @@ class SyncClient {
                 level: 'info',
                 environment_id,
                 activity_log_id: activityLogId as number,
-                content: `Starting webhook workflow ${workflowId} in the task queue: ${TASK_QUEUE}`,
+                content: `Starting webhook workflow ${workflowId} in the task queue: ${WEBHOOK_TASK_QUEUE}`,
                 params: {
                     input: JSON.stringify(input, null, 2)
                 },
@@ -580,7 +580,7 @@ class SyncClient {
             });
 
             const webhookHandler = await this.client?.workflow.execute('webhook', {
-                taskQueue: TASK_QUEUE,
+                taskQueue: WEBHOOK_TASK_QUEUE,
                 workflowId,
                 args: [
                     {
@@ -621,7 +621,7 @@ class SyncClient {
         } catch (e) {
             const errorMessage = JSON.stringify(e, ['message', 'name'], 2);
             // TODO
-            const error = new NangoError('action_failure', { errorMessage });
+            const error = new NangoError('webhook_script_failure', { errorMessage });
 
             await createActivityLogMessageAndEnd({
                 level: 'error',

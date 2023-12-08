@@ -96,7 +96,7 @@ export async function runWebhook(args: WebhookArgs): Promise<boolean> {
 
     const syncJobId = await createSyncJob(
         sync?.id as string,
-        SyncType.INCREMENTAL,
+        SyncType.WEBHOOK,
         SyncStatus.RUNNING,
         context.info.workflowExecution.workflowId,
         nangoConnection,

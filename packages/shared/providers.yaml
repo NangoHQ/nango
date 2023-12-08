@@ -538,8 +538,8 @@ hubspot:
     token_url: https://api.hubapi.com/oauth/v1/token
     connection_configuration:
       - portalId
-    post_connection_script: hubspot
-    webhook_routing_script: hubspot
+    post_connection_script: hubspot-post-connection
+    webhook_routing_script: hubspot-webhook-routing
     proxy:
         base_url: https://api.hubapi.com
         decompress: true

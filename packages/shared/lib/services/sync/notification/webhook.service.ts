@@ -152,7 +152,6 @@ class WebhookService {
 
         const activityLogId = await createActivityLog(log);
 
-        // todo type
         const body = {
             from: provider,
             payload

@@ -1,13 +1,22 @@
 import type { AxiosResponse } from 'axios';
 import type { RecentlyCreatedConnection, Connection, ConnectionConfig } from '../../../models/Connection.js';
-import { LogActionEnum } from '../../../models/Activity.js';
+import { LogLevel, LogActionEnum } from '../../../models/Activity.js';
+import { createActivityLogAndLogMessage } from '../../../services/activity/activity.service.js';
 import type { HTTP_VERB } from '../../../models/Generic.js';
 import proxyService from '../../../services/proxy.service.js';
 import connectionService from '../../../services/connection.service.js';
 import environmentService from '../../../services/environment.service.js';
 import metricsManager, { MetricTypes } from '../../../utils/metrics.manager.js';
 
-import hubspotPostConnection from './hubspot.js';
+import * as postConnectionHandlers from './index.js';
+
+interface PostConnectionHandler {
+    (internalNango: InternalNango): Promise<void>;
+}
+
+type PostConnectionHandlersMap = { [key: string]: PostConnectionHandler };
+
+const handlers: PostConnectionHandlersMap = postConnectionHandlers as unknown as PostConnectionHandlersMap;
 
 export interface InternalNango {
     proxy: ({ method, endpoint, data }: { method?: HTTP_VERB; endpoint: string; data?: unknown }) => Promise<AxiosResponse>;
@@ -57,12 +66,48 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
                 return connectionService.updateConnectionConfig(connection as unknown as Connection, connectionConfig);
             }
         };
-        switch (provider) {
-            case 'hubspot':
-                await hubspotPostConnection(internalNango);
-                break;
-            default:
-                break;
+
+        const handler = handlers[`${provider}PostConnection`];
+
+        if (handler) {
+            try {
+                await handler(internalNango);
+            } catch (e: any) {
+                const errorMessage = e.message || 'Unknown error';
+                const errorDetails = {
+                    message: errorMessage,
+                    name: e.name || 'Error',
+                    stack: e.stack || 'No stack trace'
+                };
+
+                const errorString = JSON.stringify(errorDetails);
+                const log = {
+                    level: 'error' as LogLevel,
+                    success: false,
+                    action: LogActionEnum.AUTH,
+                    start: Date.now(),
+                    end: Date.now(),
+                    timestamp: Date.now(),
+                    connection_id: connection_id,
+                    provider: '',
+                    provider_config_key: provider_config_key,
+                    environment_id
+                };
+
+                await createActivityLogAndLogMessage(log, {
+                    level: 'error',
+                    environment_id: environment_id,
+                    timestamp: Date.now(),
+                    content: `Post connection script failed with the error: ${errorString}`
+                });
+
+                await metricsManager.capture(MetricTypes.POST_CONNECTION_SCRIPT_FAILURE, `Post connection script failed, ${errorString}`, LogActionEnum.AUTH, {
+                    environmentId: String(environment_id),
+                    connectionId: connection_id,
+                    providerConfigKey: provider_config_key,
+                    provider: provider
+                });
+            }
         }
     } catch (e: any) {
         const errorMessage = e.message || 'Unknown error';
@@ -74,7 +119,7 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
 
         const errorString = JSON.stringify(errorDetails);
 
-        await metricsManager.capture(MetricTypes.POST_CONNECTION_SCRIPT_FAILURE, `Token refresh failed, ${errorString}`, LogActionEnum.AUTH, {
+        await metricsManager.capture(MetricTypes.POST_CONNECTION_SCRIPT_FAILURE, `Post connection manager failed, ${errorString}`, LogActionEnum.AUTH, {
             environmentId: String(environment_id),
             connectionId: connection_id,
             providerConfigKey: provider_config_key,
