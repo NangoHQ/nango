@@ -802,7 +802,7 @@ export class NangoSync extends NangoAction {
                 timestamp: Date.now()
             });
 
-            //await updateSyncJobResult(this.syncJobId as number, updatedResults, model);
+            await updateSyncJobResult(this.syncJobId as number, updatedResults, model);
 
             return true;
         } else {

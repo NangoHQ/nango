@@ -23,6 +23,7 @@ import {
     MetricTypes,
     isInitialSyncStillRunning,
     initialSyncExists,
+    getSyncByIdAndName,
     logger
 } from '@nangohq/shared';
 import integrationService from './integration.service.js';
@@ -89,14 +90,24 @@ export async function runWebhook(args: WebhookArgs): Promise<boolean> {
         nangoConnection?.environment_id as number
     )) as ProviderConfig;
 
+    const sync = await getSyncByIdAndName(nangoConnection.id as number, parentSyncName);
+
     const context: Context = Context.current();
 
-    // need a sync job id?
+    const syncJobId = await createSyncJob(
+        sync?.id as string,
+        SyncType.INCREMENTAL,
+        SyncStatus.RUNNING,
+        context.info.workflowExecution.workflowId,
+        nangoConnection,
+        context.info.workflowExecution.runId
+    );
 
     const syncRun = new syncRunService({
         integrationService,
         writeToDb: true,
         nangoConnection,
+        syncJobId: syncJobId?.id as number,
         syncName: parentSyncName,
         isAction: false,
         syncType: SyncType.WEBHOOK,

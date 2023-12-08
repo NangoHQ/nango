@@ -612,7 +612,7 @@ class SyncClient {
                 environment_id,
                 activity_log_id: activityLogId as number,
                 timestamp: Date.now(),
-                content: `The webhook workflow ${workflowId} was successfully run. A truncated response is: ${JSON.stringify(response, null, 2)?.slice(0, 100)}`
+                content: `The webhook workflow ${workflowId} was successfully run.`
             });
 
             await updateSuccessActivityLog(activityLogId as number, true);

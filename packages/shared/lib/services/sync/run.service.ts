@@ -350,7 +350,7 @@ export default class SyncRun {
                     `provider:${this.provider}`
                 ]);
 
-                if (this.isInvokedImmediately) {
+                if (this.isAction) {
                     const content = `${this.syncName} action was run successfully and results are being sent synchronously.`;
 
                     await updateSuccessActivityLog(this.activityLogId as number, true);
@@ -363,16 +363,14 @@ export default class SyncRun {
                         content
                     });
 
-                    if (!this.isWebhook) {
-                        await slackNotificationService.removeFailingConnection(
-                            this.nangoConnection,
-                            this.syncName,
-                            this.syncType,
-                            this.activityLogId as number,
-                            this.nangoConnection.environment_id,
-                            this.provider as string
-                        );
-                    }
+                    await slackNotificationService.removeFailingConnection(
+                        this.nangoConnection,
+                        this.syncName,
+                        this.syncType,
+                        this.activityLogId as number,
+                        this.nangoConnection.environment_id,
+                        this.provider as string
+                    );
 
                     return { success: true, error: null, response: userDefinedResults };
                 }
@@ -502,12 +500,12 @@ export default class SyncRun {
     async finishSync(models: string[], syncStartDate: Date, version: string, totalRunTime: number, trackDeletes?: boolean): Promise<void> {
         let i = 0;
         for (const model of models) {
-            if (trackDeletes) {
+            if (!this.isWebhook && trackDeletes) {
                 await clearOldRecords(this.nangoConnection?.id as number, model);
             }
             const deletedKeys = trackDeletes ? await getDeletedKeys('_nango_sync_data_records', 'external_id', this.nangoConnection.id as number, model) : [];
 
-            if (trackDeletes) {
+            if (!this.isWebhook && trackDeletes) {
                 await syncUpdateAtForDeletedRecords(this.nangoConnection.id as number, model, 'external_id', deletedKeys);
             }
 
@@ -547,9 +545,9 @@ export default class SyncRun {
             // any changes while the sync is running
             // but if the sync date was set by the user in the integration script,
             // then don't override it
-            const override = false;
-            await setLastSyncDate(this.syncId as string, syncStartDate, override);
             if (!this.isWebhook) {
+                const override = false;
+                await setLastSyncDate(this.syncId as string, syncStartDate, override);
                 await slackNotificationService.removeFailingConnection(
                     this.nangoConnection,
                     this.syncName,
@@ -561,7 +559,7 @@ export default class SyncRun {
             }
         }
 
-        if (trackDeletes) {
+        if (!this.isWebhook && trackDeletes) {
             await takeSnapshot(this.nangoConnection?.id as number, model);
         }
 
