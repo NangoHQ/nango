@@ -463,6 +463,9 @@ google-sheet:
     proxy:
         base_url: https://sheets.googleapis.com
     docs: https://developers.google.com/sheets/api/reference/rest
+google-drive:
+    alias: google
+    docs: https://developers.google.com/drive/api/reference/rest/v3
 gorgias:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.gorgias.com/oauth/authorize
