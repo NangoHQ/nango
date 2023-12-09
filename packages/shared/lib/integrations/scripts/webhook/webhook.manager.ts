@@ -1,3 +1,4 @@
+import get from 'lodash-es/get.js';
 import configService from '../../../services/config.service.js';
 import SyncClient from '../../../clients/sync.client.js';
 import connectionService from '../../../services/connection.service.js';
@@ -21,7 +22,7 @@ const handlers: WebhookHandlersMap = webhookHandlers as unknown as WebhookHandle
 
 export interface InternalNango {
     getWebhooks: (environment_id: number, nango_config_id: number) => Promise<SyncConfig[] | null>;
-    executeScriptForWebhooks(integration: ProviderConfig, body: any, webhookType: string, connectionIdentifier: string): Promise<void>;
+    executeScriptForWebhooks(integration: ProviderConfig, body: any, webhookType: string, connectionIdentifier: string, propName?: string): Promise<void>;
 }
 
 const internalNango: InternalNango = {
@@ -36,20 +37,19 @@ const internalNango: InternalNango = {
 
         return syncConfigsWithWebhooks;
     },
-    executeScriptForWebhooks: async (integration: ProviderConfig, body: any, webhookType: string, connectionIdentifier: string) => {
+    executeScriptForWebhooks: async (integration: ProviderConfig, body: any, webhookType: string, connectionIdentifier: string, propName?: string) => {
         const syncConfigsWithWebhooks = await internalNango.getWebhooks(integration.environment_id, integration.id as number);
 
         if (!syncConfigsWithWebhooks) {
             return;
         }
-
         const syncClient = await SyncClient.getInstance();
 
-        if (!body[connectionIdentifier]) {
+        if (!get(body, connectionIdentifier)) {
             return;
         }
 
-        const connection = await connectionService.findConnectionByConnectionConfigValue(connectionIdentifier, body[connectionIdentifier]);
+        const connection = await connectionService.findConnectionByConnectionConfigValue(propName || connectionIdentifier, get(body, connectionIdentifier));
 
         if (!connection) {
             return;
@@ -73,7 +73,7 @@ const internalNango: InternalNango = {
             }
 
             for (const webhook of webhook_subscriptions) {
-                if (body[webhookType] === webhook) {
+                if (get(body, webhookType) === webhook) {
                     await syncClient?.triggerWebhook(connection, integration.provider, webhook, syncConfig.sync_name, body, integration.environment_id);
                 }
             }
