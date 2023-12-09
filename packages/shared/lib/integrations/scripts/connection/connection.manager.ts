@@ -43,7 +43,7 @@ async function execute(createdConnection: RecentlyCreatedConnection, provider: s
             isFlow: true,
             isDryRun: false,
             throwErrors: false,
-            connection: connection as unknown as Connection
+            connection
         };
 
         const externalConfig = {
