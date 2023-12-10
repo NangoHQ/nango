@@ -7,6 +7,7 @@ import { Buffer } from 'buffer';
 class IntegrationService implements IntegrationServiceInterface {
     async runScript(
         syncName: string,
+        _syncId: string,
         _activityLogId: number | undefined,
         nango: NangoSync,
         _integrationData: NangoIntegrationData,
@@ -63,7 +64,7 @@ class IntegrationService implements IntegrationServiceInterface {
                     return { success: false, error: new NangoError(content, 500), response: null };
                 }
             } catch (err: any) {
-                const errorType = isAction ? 'action_script_failure' : 'sync_script_failre';
+                const errorType = isAction ? 'action_script_failure' : 'sync_script_failure';
 
                 return formatScriptError(err, errorType, syncName);
             }

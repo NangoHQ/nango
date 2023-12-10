@@ -13,12 +13,14 @@ import userService from './services/user.service.js';
 import remoteFileService from './services/file/remote.service.js';
 import localFileService from './services/file/local.service.js';
 import hmacService from './services/hmac.service.js';
+import proxyService from './services/proxy.service.js';
 import syncRunService from './services/sync/run.service.js';
 import syncOrchestrator from './services/sync/orchestrator.service.js';
 import flowService from './services/flow.service.js';
 import slackNotificationService from './services/sync/notification/slack.service.js';
 import analytics, { AnalyticsTypes } from './utils/analytics.js';
 import logger from './logger/console.js';
+import featureFlags from './utils/featureflags.js';
 
 export * from './services/activity/activity.service.js';
 export * from './services/sync/sync.service.js';
@@ -65,9 +67,11 @@ export {
     syncRunService,
     syncOrchestrator,
     hmacService,
+    proxyService,
     flowService,
     slackNotificationService,
     analytics,
     AnalyticsTypes,
-    logger
+    logger,
+    featureFlags
 };

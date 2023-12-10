@@ -1,4 +1,4 @@
-import type { CursorPagination, LinkPagination, OffsetPagination } from '../sdk/sync.js';
+import type { CursorPagination, LinkPagination, OffsetPagination } from './Proxy.js';
 import type { AuthModes } from './Auth.js';
 import type { TimestampsAndDeleted } from './Generic.js';
 import type { SyncConfig, Action } from './Sync.js';

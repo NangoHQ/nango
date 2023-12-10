@@ -27,7 +27,10 @@ fs.readdirSync(rootDir).forEach((serviceDir) => {
             if (nangoData && nangoData.integrations) {
                 output.integrations = {
                     ...output.integrations,
-                    [integrationName]: nangoData.integrations[integrationName]
+                    [integrationName]: {
+                        ...output.integrations[integrationName],
+                        ...nangoData.integrations[integrationName]
+                    }
                 };
             }
 
@@ -35,7 +38,10 @@ fs.readdirSync(rootDir).forEach((serviceDir) => {
                 if (!output.integrations[integrationName]) {
                     output.integrations[integrationName] = {};
                 }
-                output.integrations[integrationName].models = nangoData.models;
+                output.integrations[integrationName].models = {
+                    ...output.integrations[integrationName].models,
+                    ...nangoData.models
+                };
             }
 
             if (directoryToIntegrationMapping[serviceDir]) {
