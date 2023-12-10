@@ -516,6 +516,10 @@ health-gorilla:
         grant_type: refresh_token
     proxy:
         base_url: https://healthgorilla.com
+hibob-service-user:
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.hibob.com
 highlevel:
     auth_mode: OAUTH2
     authorization_url: https://marketplace.gohighlevel.com/oauth/chooselocation
