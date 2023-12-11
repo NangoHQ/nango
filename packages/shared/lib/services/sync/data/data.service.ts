@@ -86,9 +86,17 @@ export async function upsert(
         errorMessage += `Attempted to insert/update/delete: ${responseWithoutDuplicates.length} records\n`;
 
         if (error.code) errorMessage += `Error code: ${error.code}.\n`;
-        if (error.detail) errorMessage += `Detail: ${error.detail}.\n`;
 
-        errorMessage += `Error Message: ${error.message}`;
+        console.log(`${errorMessage}${error}`);
+
+        let errorDetail = '';
+        switch (error.code) {
+            case '22001': {
+                errorDetail = 'Payload too big. Limit = 256MB';
+                break;
+            }
+        }
+        if (errorDetail) errorMessage += `Info: ${errorDetail}.\n`;
 
         return {
             success: false,
