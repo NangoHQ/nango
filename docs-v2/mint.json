@@ -237,6 +237,7 @@
                         "integrations/all/nationbuilder",
                         "integrations/all/netsuite",
                         "integrations/all/notion",
+                        "integrations/all/okta",
                         "integrations/all/one-drive",
                         "integrations/all/osu",
                         "integrations/all/outreach",
