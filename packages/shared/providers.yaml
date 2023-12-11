@@ -131,6 +131,16 @@ bitbucket:
     token_url: https://bitbucket.org/site/oauth2/access_token
     proxy:
         base_url: https://api.bitbucket.org
+blackbaud:
+    auth_mode: OAUTH2
+    authorization_url: https://app.blackbaud.com/oauth/authorize
+    token_url: https://oauth2.sky.blackbaud.com/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 boldsign:
     auth_mode: OAUTH2
     authorization_url: https://account.boldsign.com/connect/authorize

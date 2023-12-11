@@ -176,6 +176,7 @@
                         "integrations/all/bamboohr",
                         "integrations/all/battlenet",
                         "integrations/all/bitbucket",
+                        "integrations/all/blackbaud",
                         "integrations/all/boldsign",
                         "integrations/all/box",
                         "integrations/all/braintree",
