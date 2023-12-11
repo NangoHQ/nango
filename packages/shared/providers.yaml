@@ -766,6 +766,17 @@ notion:
             limit_name_in_request: page_size
             response_path: results
     docs: https://developers.notion.com/reference
+okta:
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.subdomain}.okta.com/oauth2/v1/authorize
+    token_url: https://${connectionConfig.subdomain}.okta.com/oauth2/v1/token
+    authorization_params:
+        response_type: code
+        response_mode: query
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 one-drive:
     alias: microsoft-teams
 osu:
