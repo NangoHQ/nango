@@ -394,7 +394,7 @@ freshbooks:
 freshdesk:
     auth_mode: BASIC
     proxy:
-        base_url: https://${connectionConfig.subdomain}.freshdesk.com 
+        base_url: https://${connectionConfig.subdomain}.freshdesk.com
 freshservice:
     auth_mode: BASIC
     proxy:
