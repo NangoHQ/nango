@@ -391,6 +391,10 @@ freshbooks:
         response_type: code
     proxy:
         base_url: https://api.freshbooks.com
+freshdesk:
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.freshdesk.com 
 freshservice:
     auth_mode: BASIC
     proxy:
