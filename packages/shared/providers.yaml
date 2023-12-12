@@ -1028,6 +1028,16 @@ servicem8:
         grant_type: authorization_code
     refresh_params:
         grant_type: refresh_token
+servicenow:
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.subdomain}.service-now.com/oauth_auth.do
+    token_url: https://${connectionConfig.subdomain}.service-now.com/oauth_token.do
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 shopify:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.myshopify.com/admin/oauth/authorize
