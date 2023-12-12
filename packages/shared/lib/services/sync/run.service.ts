@@ -14,7 +14,6 @@ import { getDeletedKeys, takeSnapshot, clearOldRecords, syncUpdateAtForDeletedRe
 import environmentService from '../environment.service.js';
 import slackNotificationService from './notification/slack.service.js';
 import webhookService from './notification/webhook.service.js';
-import { NangoSync } from '../../sdk/sync.js';
 import { isCloud, getApiUrl, JAVASCRIPT_PRIMITIVES } from '../../utils/utils.js';
 import errorManager, { ErrorSourceEnum } from '../../utils/error.manager.js';
 import { NangoError } from '../../utils/error.js';
@@ -258,8 +257,9 @@ export default class SyncRun {
                 }
             }
 
-            const nango = new NangoSync({
+            const nangoProps = {
                 host: optionalHost || getApiUrl(),
+                accountId: environment?.account_id as number,
                 connectionId: String(this.nangoConnection?.connection_id),
                 environmentId: this.nangoConnection?.environment_id as number,
                 providerConfigKey: String(this.nangoConnection?.provider_config_key),
@@ -274,7 +274,7 @@ export default class SyncRun {
                 track_deletes: trackDeletes as boolean,
                 logMessages: this.logMessages,
                 stubbedMetadata: this.stubbedMetadata
-            });
+            };
 
             if (this.debug) {
                 const content = `Last sync date is ${lastSyncDate}`;
@@ -306,7 +306,7 @@ export default class SyncRun {
                     (this.syncId as string) ||
                         `${this.syncName}-${this.nangoConnection.environment_id}-${this.nangoConnection.provider_config_key}-${this.nangoConnection.connection_id}`,
                     this.activityLogId as number,
-                    nango,
+                    nangoProps,
                     syncData,
                     this.nangoConnection.environment_id,
                     this.writeToDb,
@@ -319,7 +319,7 @@ export default class SyncRun {
                 if (!success || (error && userDefinedResults === null)) {
                     const message = `The integration was run but there was a problem in retrieving the results from the script "${this.syncName}"${
                         syncData?.version ? ` version: ${syncData.version}` : ''
-                    }.`;
+                    }`;
                     await this.reportFailureForResults(message);
 
                     return { success: false, error, response: false };

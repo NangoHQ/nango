@@ -1,4 +1,4 @@
-import { NangoError, formatScriptError, IntegrationServiceInterface, NangoIntegrationData, NangoSync, localFileService } from '@nangohq/shared';
+import { NangoError, formatScriptError, IntegrationServiceInterface, NangoIntegrationData, NangoSync, NangoProps, localFileService } from '@nangohq/shared';
 import * as vm from 'vm';
 import * as url from 'url';
 import * as crypto from 'crypto';
@@ -9,7 +9,7 @@ class IntegrationService implements IntegrationServiceInterface {
         syncName: string,
         _syncId: string,
         _activityLogId: number | undefined,
-        nango: NangoSync,
+        nangoProps: NangoProps,
         _integrationData: NangoIntegrationData,
         _environmentId: number,
         _writeToDb: boolean,
@@ -18,6 +18,7 @@ class IntegrationService implements IntegrationServiceInterface {
         input?: object
     ): Promise<any> {
         try {
+            const nango = new NangoSync(nangoProps);
             const script: string | null = localFileService.getIntegrationFile(syncName, optionalLoadLocation);
 
             if (!script) {

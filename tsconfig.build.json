@@ -6,6 +6,8 @@
         { "path": "packages/worker" },
         { "path": "packages/cli" },
         { "path": "packages/server" },
-        { "path": "packages/frontend" }
+        { "path": "packages/frontend" },
+        { "path": "packages/runner" },
+        { "path": "packages/jobs" }
     ]
 }
