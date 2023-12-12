@@ -259,6 +259,7 @@
                         "integrations/all/segment",
                         "integrations/all/sendgrid",
                         "integrations/all/servicem8",
+                        "integrations/all/servicenow",
                         "integrations/all/shopify",
                         "integrations/all/shortcut",
                         "integrations/all/slack",
