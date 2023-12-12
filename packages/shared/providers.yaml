@@ -409,6 +409,10 @@ front:
             type: link
             response_path: _results
             link_path_in_response_body: _pagination.next
+getguru:
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.getguru.com/api/v1
 github:
     auth_mode: OAUTH2
     authorization_url: https://github.com/login/oauth/authorize
