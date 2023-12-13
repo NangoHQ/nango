@@ -101,6 +101,17 @@ atlassian:
         grant_type: refresh_token
     proxy:
         base_url: https://api.atlassian.com
+auth0:
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.subdomain}.auth0.com/authorize
+    token_url: https://${connectionConfig.subdomain}.auth0.com/oauth/token
+    authorization_params:
+        response_type: code
+        response_mode: query
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 bamboohr:
     auth_mode: OAUTH2
     authorization_url: https://${connectionConfig.subdomain}.bamboohr.com/authorize.php
@@ -131,6 +142,18 @@ bitbucket:
     token_url: https://bitbucket.org/site/oauth2/access_token
     proxy:
         base_url: https://api.bitbucket.org
+blackbaud:
+    auth_mode: OAUTH2
+    authorization_url: https://app.blackbaud.com/oauth/authorize
+    token_url: https://oauth2.sky.blackbaud.com/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.sky.blackbaud.com
 boldsign:
     auth_mode: OAUTH2
     authorization_url: https://account.boldsign.com/connect/authorize
@@ -368,6 +391,10 @@ freshbooks:
         response_type: code
     proxy:
         base_url: https://api.freshbooks.com
+freshdesk:
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.freshdesk.com
 freshservice:
     auth_mode: BASIC
     proxy:
@@ -523,6 +550,10 @@ health-gorilla:
         grant_type: refresh_token
     proxy:
         base_url: https://healthgorilla.com
+hibob-service-user:
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.hibob.com
 highlevel:
     auth_mode: OAUTH2
     authorization_url: https://marketplace.gohighlevel.com/oauth/chooselocation
@@ -761,6 +792,17 @@ notion:
             limit_name_in_request: page_size
             response_path: results
     docs: https://developers.notion.com/reference
+okta:
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.subdomain}.okta.com/oauth2/v1/authorize
+    token_url: https://${connectionConfig.subdomain}.okta.com/oauth2/v1/token
+    authorization_params:
+        response_type: code
+        response_mode: query
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
 one-drive:
     alias: microsoft-teams
 osu:
@@ -989,6 +1031,16 @@ servicem8:
         base_url: https://api.servicem8.com
     docs: https://developer.servicem8.com/docs
     scope_seprator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+servicenow:
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.subdomain}.service-now.com/oauth_auth.do
+    token_url: https://${connectionConfig.subdomain}.service-now.com/oauth_token.do
     authorization_params:
         response_type: code
     token_params:
