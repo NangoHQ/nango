@@ -3,11 +3,18 @@ import fs from 'fs-extra';
 import * as dotenv from 'dotenv';
 import { createRequire } from 'module';
 import * as activities from './activities.js';
-import { TASK_QUEUE, isProd } from '@nangohq/shared';
+import { TASK_QUEUE, isProd, isCloud } from '@nangohq/shared';
+import tracer from 'dd-trace';
 
 async function run() {
     if (process.env['SERVER_RUN_MODE'] !== 'DOCKERIZED') {
         dotenv.config({ path: '../../.env' });
+    }
+
+    if (isCloud()) {
+        tracer.init({
+            service: 'nango-worker'
+        });
     }
 
     let crt: Buffer | null = null;
@@ -20,17 +27,14 @@ async function run() {
         key = await fs.readFile(`/etc/secrets/${namespace}.key`);
     }
 
+    const span = tracer.startSpan('worker.temporal.connect');
     const connection = await NativeConnection.connect({
         address: process.env['TEMPORAL_ADDRESS'] || 'localhost:7233',
         tls: !isProd()
             ? false
-            : {
-                  clientCertPair: {
-                      crt: crt as Buffer,
-                      key: key as Buffer
-                  }
-              }
+            : { clientCertPair: { crt: crt as Buffer, key: key as Buffer } }
     });
+    span.finish();
 
     const worker = await Worker.create({
         connection,
