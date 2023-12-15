@@ -1,19 +1,20 @@
 import type { Context } from '@temporalio/activity';
-import { NodeVM } from 'vm2';
 import {
     IntegrationServiceInterface,
     createActivityLogMessage,
-    getRootDir,
     NangoIntegrationData,
     NangoProps,
-    NangoSync,
     localFileService,
     remoteFileService,
     isCloud,
+    getEnv,
     ServiceResponse,
     NangoError,
-    formatScriptError
+    formatScriptError,
+    featureFlags
 } from '@nangohq/shared';
+import { getRunner } from './runner/runner.js';
+import tracer from './tracer.js';
 
 class IntegrationService implements IntegrationServiceInterface {
     public runningScripts: { [key: string]: Context } = {};
@@ -35,8 +36,15 @@ class IntegrationService implements IntegrationServiceInterface {
         input?: object,
         temporalContext?: Context
     ): Promise<ServiceResponse<any>> {
+        const span = tracer
+            .startSpan('runScript')
+            .setTag('accountId', nangoProps.accountId)
+            .setTag('environmentId', nangoProps.environmentId)
+            .setTag('connectionId', nangoProps.connectionId)
+            .setTag('providerConfigKey', nangoProps.providerConfigKey)
+            .setTag('syncId', nangoProps.syncId)
+            .setTag('syncName', syncName);
         try {
-            const nango = new NangoSync(nangoProps);
             const script: string | null =
                 isCloud() && !optionalLoadLocation
                     ? await remoteFileService.getFile(integrationData.fileLocation as string, environmentId)
@@ -70,41 +78,25 @@ class IntegrationService implements IntegrationServiceInterface {
                 return { success: false, error, response: null };
             }
 
+            if (temporalContext) {
+                this.runningScripts[syncId] = temporalContext;
+            }
+            if (nangoProps.accountId == null) {
+                throw new Error(`No accountId provided (instead ${nangoProps.accountId})`);
+            }
+
+            const accountId = nangoProps.accountId;
+            const isRunnerForAccountEnabled = await featureFlags.isEnabled('runner-for-account', `${accountId}`, false);
+            const runnerSuffix = isRunnerForAccountEnabled ? `${accountId}` : 'default';
+            const runnerId = `${getEnv()}-runner-account-${runnerSuffix}`;
+            const runner = await getRunner(runnerId);
+
+            const runSpan = tracer.startSpan('runner.run', { childOf: span }).setTag('runnerId', runnerId);
             try {
-                if (temporalContext) {
-                    this.runningScripts[syncId] = temporalContext;
-                }
-
-                const vm = new NodeVM({
-                    console: 'inherit',
-                    sandbox: { nango },
-                    require: {
-                        external: true,
-                        builtin: ['url', 'crypto']
-                    }
-                });
-
-                const rootDir = getRootDir(optionalLoadLocation);
-                const scriptExports = vm.run(script as string, `${rootDir}/*.js`);
-
-                if (typeof scriptExports.default === 'function') {
-                    const results = isAction ? await scriptExports.default(nango, input) : await scriptExports.default(nango);
-
-                    return { success: true, error: null, response: results };
-                } else {
-                    const content = `There is no default export that is a function for ${syncName}`;
-                    if (activityLogId && writeToDb) {
-                        await createActivityLogMessage({
-                            level: 'error',
-                            environment_id: environmentId,
-                            activity_log_id: activityLogId,
-                            content,
-                            timestamp: Date.now()
-                        });
-                    }
-
-                    return { success: false, error: new NangoError(content, 500), response: null };
-                }
+                // TODO: request sent to the runner for it to run the script is synchronous.
+                // TODO: Make the request return immediately and have the runner ping the job service when it's done.
+                const res = await runner.client.run.mutate({ nangoProps, code: script as string, codeParams: input as object, isAction });
+                return { success: true, error: null, response: res };
             } catch (err: any) {
                 const errorType = isAction ? 'action_script_failure' : 'sync_script_failure';
                 const { success, error, response } = formatScriptError(err, errorType, syncName);
@@ -118,12 +110,13 @@ class IntegrationService implements IntegrationServiceInterface {
                         timestamp: Date.now()
                     });
                 }
-
                 return { success, error, response };
+            } finally {
+                runSpan.finish();
             }
         } catch (err) {
             const errorMessage = JSON.stringify(err, ['message', 'name', 'stack'], 2);
-            const content = `The script failed to load for ${syncName} with the following error: ${errorMessage}`;
+            const content = `There was an error running integration '${syncName}': ${errorMessage}`;
 
             if (activityLogId && writeToDb) {
                 await createActivityLogMessage({
@@ -138,6 +131,7 @@ class IntegrationService implements IntegrationServiceInterface {
             return { success: false, error: new NangoError(content, 500), response: null };
         } finally {
             delete this.runningScripts[syncId];
+            span.finish();
         }
     }
 
