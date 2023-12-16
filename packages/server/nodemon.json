@@ -2,5 +2,5 @@
   "watch": ["lib", "../shared/lib", "../../.env", "../shared/providers.yaml"],
   "ext": "ts,json",
   "ignore": ["src/**/*.spec.ts"],
-  "exec": "ts-node-esm -r dotenv/config lib/server.ts Dotenv_config_path=./../../.env"
+  "exec": "tsx -r dotenv/config lib/server.ts Dotenv_config_path=./../../.env"
 }
