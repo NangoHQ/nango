@@ -99,6 +99,8 @@ cd ./packages/shared && npm publish --access public && cd ../../
 update_shared_dep "packages/server/package.json" $(jq -r '.version' $SHARED_PACKAGE_JSON)
 update_shared_dep "packages/worker/package.json" $(jq -r '.version' $SHARED_PACKAGE_JSON)
 update_shared_dep "packages/cli/package.json" $(jq -r '.version' $SHARED_PACKAGE_JSON)
+update_shared_dep "packages/jobs/package.json" $(jq -r '.version' $SHARED_PACKAGE_JSON)
+update_shared_dep "packages/runner/package.json" $(jq -r '.version' $SHARED_PACKAGE_JSON)
 
 # update the webapp and frontend
 FRONTEND_PACKAGE_JSON="packages/frontend/package.json"
