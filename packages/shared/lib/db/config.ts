@@ -9,7 +9,8 @@ const config: { development: Knex.Config<any>; production: Knex.Config<any> } = 
             user: process.env['NANGO_DB_USER'] || 'nango',
             database: process.env['NANGO_DB_NAME'] || 'nango',
             password: process.env['NANGO_DB_PASSWORD'] || 'nango',
-            ssl: process.env['NANGO_DB_SSL'] != null && process.env['NANGO_DB_SSL'].toLowerCase() === 'true' ? { rejectUnauthorized: false } : undefined
+            ssl: process.env['NANGO_DB_SSL'] != null && process.env['NANGO_DB_SSL'].toLowerCase() === 'true' ? { rejectUnauthorized: false } : undefined,
+            statement_timeout: 60000
         },
         migrations: {
             directory: './migrations',
