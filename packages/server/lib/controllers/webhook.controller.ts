@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { routeWebhook } from '@nangohq/shared';
+import { routeWebhook, featureFlags, environmentService } from '@nangohq/shared';
 
 class WebhookController {
     async receive(req: Request, res: Response, next: NextFunction) {
@@ -10,7 +10,18 @@ class WebhookController {
                 return;
             }
 
-            routeWebhook(environmentUuid, providerConfigKey, headers, req.body);
+            const accountUUID = await environmentService.getAccountUUIDFromEnvironmentUUID(environmentUuid);
+
+            if (!accountUUID) {
+                res.status(404).send();
+                return;
+            }
+
+            const areWebhooksEnabled = await featureFlags.isEnabled('external-webhooks', accountUUID, true);
+
+            if (areWebhooksEnabled) {
+                routeWebhook(environmentUuid, providerConfigKey, headers, req.body);
+            }
             res.status(200).send();
         } catch (err) {
             next(err);
